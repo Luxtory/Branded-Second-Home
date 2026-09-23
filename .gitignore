@@ -1,0 +1,86 @@
+# =============================================================================
+# Seller-only artifacts (Claude Code Bootstrap Pro — must NOT reach buyers)
+# These exist on the seller's working machine but are excluded from the
+# master GitHub repo so buyers using "Use this template" never see them.
+# =============================================================================
+tools/
+deliveries/
+*-deliveries/
+_deliveries.tsv
+_repo_access.tsv
+NOTICE.stamped.md
+
+# Personal notes / session worklogs / local memory (never commit)
+WORKLOG.md
+NOTES.md
+notes/
+.notes/
+*.worklog.md
+.session/
+
+# Claude Code — personal/local settings (auto-gitignored by the CLI; declared for clarity)
+.claude/settings.local.json
+.claude/agent-memory-local/
+
+# Secrets / env
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+id_ecdsa*
+credentials.json
+service-account*.json
+serviceAccount*.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build artifacts (kitchen-sink defaults — trim to your stack)
+node_modules/
+.next/
+.nuxt/
+.svelte-kit/
+dist/
+build/
+out/
+target/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+.tox/
+htmlcov/
+coverage/
+*.coverage
+.coverage.*
+
+# IaC state — never commit
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+.terraform.lock.hcl
+.pulumi/
+
+# Logs
+*.log
+logs/
+master-*.zip
+
+SPEC_HOTMART_*.md
+.vercel
+.env*

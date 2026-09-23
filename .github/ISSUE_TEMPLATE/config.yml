@@ -1,0 +1,12 @@
+# [CUSTOMIZE] These contact links appear on your project's "New issue" page.
+# Replace placeholders with real URLs for YOUR project's repo, or delete
+# entries you don't want offered. Setting blank_issues_enabled: false forces
+# users into one of the templates.
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/<owner>/<repo>/security/advisories/new
+    about: Please report security issues privately. See SECURITY.md.
+  - name: Question / discussion
+    url: https://github.com/<owner>/<repo>/discussions
+    about: For questions, ideas, and open-ended discussion

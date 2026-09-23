@@ -1,0 +1,31 @@
+# EditorConfig — https://editorconfig.org/
+# Top-most EditorConfig file
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Python idioms differ
+[*.{py,pyi}]
+indent_size = 4
+
+# Go is tab-indented by language convention
+[*.go]
+indent_style = tab
+
+# Makefile requires tabs
+[Makefile]
+indent_style = tab
+
+# Markdown — preserve hard line breaks (two trailing spaces)
+[*.md]
+trim_trailing_whitespace = false
+
+# YAML strictness
+[*.{yml,yaml}]
+indent_size = 2

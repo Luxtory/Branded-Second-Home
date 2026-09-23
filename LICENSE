@@ -1,0 +1,123 @@
+Claude Code Bootstrap Pro — Commercial License Agreement
+
+Copyright (c) 2026 Bruno Bracaioli — B2 Tech. All rights reserved.
+
+This software (the "Template") is licensed, not sold. By downloading,
+installing, copying, or using the Template you ("Licensee") agree to the
+terms below. If you do not agree, you must delete all copies of the Template
+in your possession and request a refund within the period stated by the
+purchase channel.
+
+────────────────────────────────────────────────────────────────────────────
+1. Grant of license
+────────────────────────────────────────────────────────────────────────────
+Subject to the restrictions in Section 2, Licensor grants Licensee a
+worldwide, non-exclusive, non-transferable, perpetual license to:
+
+  (a) Use the Template as a starting point for an unlimited number of
+      Licensee's own software projects, whether personal, internal, or
+      commercial.
+  (b) Modify, extend, and combine the Template with Licensee's own code.
+  (c) Distribute applications BUILT FROM the Template — including
+      proprietary, closed-source, and commercial products — to Licensee's
+      own end users, provided those applications are substantively
+      Licensee's own work and not a thin re-skin of the Template.
+
+This license is granted to ONE individual or ONE legal entity. A "team
+license" extends use to that entity's employees and contractors working on
+projects owned by that entity. Other purchase tiers, if any, are described
+at the point of sale and supersede this paragraph.
+
+A `NOTICE.md` file accompanies this license and identifies the original
+licensee. That file is for traceability, not enforcement; Licensee may
+keep, ignore, or remove it from copies they make of their own derivative
+work. Removal of `NOTICE.md` does not erase or modify the terms of this
+license.
+
+The Template may also be made available to Licensee through read-only
+access to a private source-code repository operated by Licensor. That
+access is a convenience: the same license terms govern any copy, whether
+obtained as a download or by cloning the repository. Licensor may revoke
+repository access in case of refund or material breach; revocation does
+not affect Licensee's rights with respect to copies they had already
+lawfully obtained.
+
+────────────────────────────────────────────────────────────────────────────
+2. Restrictions
+────────────────────────────────────────────────────────────────────────────
+Licensee SHALL NOT:
+
+  (a) Redistribute, resell, sublicense, lease, rent, lend, or otherwise
+      make the Template available, in source or compiled form, as a
+      stand-alone product or as part of a bundle whose primary purpose is
+      to deliver the Template (or a substantially similar derivative)
+      to third parties.
+  (b) Publish the Template, in whole or in substantial part, to any public
+      repository, package registry, gist, paste site, or training corpus,
+      including AI/ML training datasets, with or without modification.
+  (c) Remove, alter, or obscure copyright, trademark, or attribution
+      notices contained in the Template.
+  (d) Use the Template to create a competing template, scaffolding, or
+      starter-kit product whose primary value derives from the Template's
+      structure, content, or curation.
+
+The output of using the Template (Licensee's own application code) is
+explicitly NOT covered by these restrictions. Licensee owns what they build.
+
+────────────────────────────────────────────────────────────────────────────
+3. Updates and support
+────────────────────────────────────────────────────────────────────────────
+Updates to the Template, when released by Licensor, are made available to
+Licensee under the same terms as the original purchase. Support, if any,
+is described in SUPPORT.md and at the point of sale; nothing in this license
+obligates Licensor to provide support, bug fixes, or updates beyond what is
+explicitly stated there.
+
+────────────────────────────────────────────────────────────────────────────
+4. Third-party components
+────────────────────────────────────────────────────────────────────────────
+The Template may reference or include configuration that integrates with
+third-party software, services, or libraries. Those components are governed
+by their own licenses, not this agreement. Licensee is responsible for
+complying with those licenses.
+
+────────────────────────────────────────────────────────────────────────────
+5. Termination
+────────────────────────────────────────────────────────────────────────────
+This license terminates automatically if Licensee materially breaches any
+of its terms. Upon termination, Licensee must delete all copies of the
+Template in their possession (rights to applications already built from
+the Template survive termination, provided the breach did not involve those
+applications).
+
+────────────────────────────────────────────────────────────────────────────
+6. Disclaimer of warranty
+────────────────────────────────────────────────────────────────────────────
+THE TEMPLATE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. LICENSOR DOES NOT
+WARRANT THAT THE TEMPLATE WILL MEET LICENSEE'S REQUIREMENTS, OPERATE WITHOUT
+INTERRUPTION, OR BE ERROR-FREE.
+
+────────────────────────────────────────────────────────────────────────────
+7. Limitation of liability
+────────────────────────────────────────────────────────────────────────────
+IN NO EVENT SHALL LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF, OR IN CONNECTION WITH THE TEMPLATE OR THE USE OR OTHER
+DEALINGS IN THE TEMPLATE. IN ANY CASE, LICENSOR'S AGGREGATE LIABILITY SHALL
+NOT EXCEED THE AMOUNT LICENSEE ACTUALLY PAID FOR THE TEMPLATE.
+
+────────────────────────────────────────────────────────────────────────────
+8. Governing law
+────────────────────────────────────────────────────────────────────────────
+This Agreement is governed by the laws of the Federative Republic of
+Brazil, without regard to conflict-of-laws rules. Any dispute arising
+from this Agreement shall be subject to the exclusive jurisdiction of
+the courts of the city where Licensor maintains its principal place of
+business at the time of the dispute, or, where required by Brazilian
+consumer-protection law, the courts of Licensee's domicile.
+
+────────────────────────────────────────────────────────────────────────────
+For licensing inquiries beyond the scope of this agreement (OEM, redistribution,
+broader team rights), contact bruno@b2tech.io.

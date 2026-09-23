@@ -1,0 +1,89 @@
+# .gitattributes — enforce consistent line endings across platforms.
+# Without this, contributors on Windows (autocrlf=true) and Linux/Mac
+# (autocrlf=input/false) can produce drifting line endings that break
+# shell scripts and Unix tooling on the buyer's side.
+
+# Default: auto-detect text files, normalize to LF in the repo
+* text=auto eol=lf
+
+# ─── Unix shell scripts (CRLF breaks shebang + most commands) ────────────────
+*.sh   text eol=lf
+*.bash text eol=lf
+
+# ─── Source files ────────────────────────────────────────────────────────────
+*.py   text eol=lf
+*.js   text eol=lf
+*.mjs  text eol=lf
+*.cjs  text eol=lf
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.jsx  text eol=lf
+*.go   text eol=lf
+*.rs   text eol=lf
+*.rb   text eol=lf
+*.java text eol=lf
+*.kt   text eol=lf
+*.kts  text eol=lf
+*.swift text eol=lf
+
+# ─── Config files commonly parsed by Unix tools ──────────────────────────────
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.json  text eol=lf
+*.jsonc text eol=lf
+*.toml  text eol=lf
+*.ini   text eol=lf
+*.conf  text eol=lf
+*.tf    text eol=lf
+*.hcl   text eol=lf
+
+# ─── Documentation ───────────────────────────────────────────────────────────
+*.md       text eol=lf
+*.markdown text eol=lf
+*.rst      text eol=lf
+*.txt      text eol=lf
+
+# ─── Web ─────────────────────────────────────────────────────────────────────
+*.css  text eol=lf
+*.scss text eol=lf
+*.html text eol=lf
+*.svg  text eol=lf
+
+# ─── Hidden / template files ─────────────────────────────────────────────────
+.editorconfig text eol=lf
+.env.example  text eol=lf
+.gitignore    text eol=lf
+.gitattributes text eol=lf
+LICENSE       text eol=lf
+
+# ─── Windows-specific files that REQUIRE CRLF ────────────────────────────────
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# ─── Binary files (explicit to prevent diff/merge issues) ────────────────────
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.pdf  binary
+*.zip  binary
+*.tar  binary
+*.tar.gz binary
+*.tgz  binary
+*.gz   binary
+*.bz2  binary
+*.7z   binary
+*.rar  binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.otf  binary
+*.eot  binary
+
+# ─── Linguist hints (improves GitHub repo language stats) ────────────────────
+docs/**          linguist-documentation
+.claude/**       linguist-vendored=false
+*.md             linguist-detectable

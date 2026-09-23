@@ -1,0 +1,23 @@
+asyncapi: 3.0.0
+info:
+  title: <project-name> Events
+  version: 0.1.0
+  description: |
+    [CUSTOMIZE] Async / event contracts for this project.
+    Update this file **before** producing or consuming a new event.
+  license:
+    name: MIT
+
+servers:
+  broker-prod:
+    host: broker.example.com:9092
+    protocol: kafka
+    description: Production message broker
+
+defaultContentType: application/json
+
+channels: {}
+operations: {}
+components:
+  messages: {}
+  schemas: {}

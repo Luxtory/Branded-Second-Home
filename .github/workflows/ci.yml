@@ -1,0 +1,78 @@
+# [CUSTOMIZE] Stack-agnostic CI skeleton.
+# Replace the install/lint/test/build commands with the ones from
+# CLAUDE.md > ## Commands. The matrix and toolchain setup belong to your stack.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # [CUSTOMIZE] toolchain setup, e.g.:
+      # - uses: actions/setup-node@v4
+      #   with: { node-version: '20', cache: 'pnpm' }
+      # - uses: actions/setup-python@v5
+      #   with: { python-version: '3.12', cache: 'pip' }
+      # - uses: actions/setup-go@v5
+      #   with: { go-version: '1.22' }
+      - name: Install
+        run: echo "[CUSTOMIZE] install command"  # e.g. pnpm install --frozen-lockfile
+      - name: Lint
+        run: echo "[CUSTOMIZE] lint command"      # e.g. pnpm lint
+
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # [CUSTOMIZE] toolchain setup
+      - name: Install
+        run: echo "[CUSTOMIZE] install command"
+      - name: Typecheck
+        run: echo "[CUSTOMIZE] typecheck command"  # e.g. pnpm typecheck, mypy src/, go vet ./...
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # [CUSTOMIZE] toolchain setup
+      - name: Install
+        run: echo "[CUSTOMIZE] install command"
+      - name: Test
+        run: echo "[CUSTOMIZE] test command"        # e.g. pnpm test, pytest, go test ./...
+      - name: Coverage threshold
+        run: echo "[CUSTOMIZE] enforce 80% on domain/ and application/"
+
+  security:
+    name: security
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }  # gitleaks needs full history
+      - name: Secret scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # [CUSTOMIZE] add SAST and dependency scans relevant to your stack:
+      # - run: pip-audit
+      # - run: npm audit --audit-level=high
+      # - run: govulncheck ./...
+      # - run: cargo audit
