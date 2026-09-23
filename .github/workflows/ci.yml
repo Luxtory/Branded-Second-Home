@@ -21,7 +21,7 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # [CUSTOMIZE] toolchain setup, e.g.:
       # - uses: actions/setup-node@v4
       #   with: { node-version: '20', cache: 'pnpm' }
@@ -38,7 +38,7 @@ jobs:
     name: typecheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # [CUSTOMIZE] toolchain setup
       - name: Install
         run: echo "[CUSTOMIZE] install command"
@@ -49,7 +49,7 @@ jobs:
     name: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # [CUSTOMIZE] toolchain setup
       - name: Install
         run: echo "[CUSTOMIZE] install command"
@@ -65,7 +65,7 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with: { fetch-depth: 0 }  # gitleaks needs full history
       - name: Secret scan (gitleaks)
         uses: gitleaks/gitleaks-action@v2
