@@ -40,12 +40,7 @@
       "Edit(./tests/**)",
       "Edit(./docs/**)",
       "Edit(./migrations/**)",
-      "Edit(./infra/**)",
-      "Write(./src/**)",
-      "Write(./tests/**)",
-      "Write(./docs/**)",
-      "Write(./migrations/**)",
-      "Write(./infra/**)"
+      "Edit(./infra/**)"
     ],
     "deny": [
       "Read(**/.env)",
