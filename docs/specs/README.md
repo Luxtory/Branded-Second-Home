@@ -16,6 +16,15 @@ or alongside its implementation.
 
 ## Index
 
+**Canonical documents** (frozen, source of truth; see `CLAUDE.md`):
+
+- [01 — Business Model & Business Rules](canonical/01-business-model-business-rules.md) — v10.1 · 188 BR
+- [02 — Product Spec](canonical/02-product-spec.md) — v4.1 · 63 REQ · 11 PD · 6 INV
+- [03 — Technical Spec](canonical/03-technical-spec.md) — v3.13 · 49 TECH · ADR-001…008
+
+**Module specs** (one per `src/features/<module>/`, created in the wave that implements it,
+citing the canonical IDs):
+
 [CUSTOMIZE] List specs as you add them, e.g.:
 
 - [orders](orders.md) — order placement, payment, fulfillment

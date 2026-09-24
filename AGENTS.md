@@ -1,4 +1,4 @@
-# Project: meu-projeto
+# Project: Luxtory Branded Second Home
 
 > Project memory. Auto-loaded by Codex at startup.
 > Keep concise and up to date. Extensive content goes in `docs/` and is referenced from here.
@@ -15,21 +15,78 @@
 > 5. Adjust `## Conventions > i18n` if your project does not target your default locales.
 > 6. Review `## Anti-patterns` and adapt language-specific items (e.g. `any`/`Any`).
 > 7. Remove this instantiation block once filled in.
+>
+> **Status (2026-09-24):** instantiated for Luxtory — title, `## Stack`, `## Architecture rules`,
+> i18n and docs language filled. `## Commands` is filled in W0 (scaffold), when the scripts exist.
+> This block is kept on purpose: see "Instance constraints" (nothing existing is deleted).
 
 ---
+
+## Canonical documents (source of truth)
+
+Luxtory's business, product and technical definitions live in three **frozen** documents.
+Hierarchy: **01 → 02 → 03 → Software** — a lower level never redefines a higher one; on
+conflict, 01 prevails (BR-380, REQ-104).
+
+| Doc | Path | Defines | IDs |
+|---|---|---|---|
+| 01 — Business Model & Business Rules v10.1 | `docs/specs/canonical/01-business-model-business-rules.md` | what the business is; structural rules | 188 `BR-xxx` |
+| 02 — Product Spec v4.1 | `docs/specs/canonical/02-product-spec.md` | functional behavior, invariants, product decisions | 63 `REQ-xxx` · 6 `INV-n` · 11 `PD-xxx` |
+| 03 — Technical Spec v3.13 | `docs/specs/canonical/03-technical-spec.md` | how to build: data model, locks, ledgers, API, QA | 49 `TECH-xxx` · `ADR-001…008` |
+
+- **Never edit them.** Changes only via a new version issued by Luxtory, followed by impact
+  analysis and traceability update.
+- **They are the spec.** Module specs (`docs/specs/<module>.md`), tests and commits cite the IDs
+  they implement (e.g. `[REQ-034]`, `[INV-1]`). Reference the canonical text; do not paraphrase
+  it into other docs.
+- **Nothing is presumed (TECH-001, BR-352).** A missing value, rate, deadline or rule gets no
+  technical default: the dependent function is blocked with an explicit error
+  (`ERR_PARAMETER_MISSING`, `ERR_POLICY_MISSING`, `ERR_PRL_MISSING`).
+- **Scope** = the 02 (including the §15 edge cases). **Out of scope** = 03 §15. New
+  functionality enters the 02 first.
+- **Guardrails** = 03 §13 — read before every wave. **Terminology** = 02 §1: a Co-Owner holds an
+  **Ação** with **Direito de Uso**; never "cota" (or derivatives) and never "diária(s)" for
+  Co-Owner (REQ-100); no promise of guaranteed return, appreciation, liquidity or income (REQ-101).
+- **Gate:** 63/63 REQ · 11/11 PD · 6/6 INV covered by tests (03 §12).
+
+## Instance constraints (Luxtory)
+
+- **Never delete, move or rename existing files.** The template's "Start a new project"
+  instructions in `README.md` (e.g. `rm LICENSE NOTICE.md SUPPORT.md README.md`) do **not**
+  apply to this repository.
+- **Existing content is only extended** (additions, or filling `<placeholders>` /
+  `[CUSTOMIZE]` markers) — existing information is never removed.
+- **`docs/plan/implementation-waves.md`**: when deriving the Luxtory plan with `/waves`, keep the
+  current content verbatim at the end of the file as "Anexo A — plano do template (concluído)".
+- **Platform and cost:** [ADR-0002](docs/adr/0002-plataforma-e-adaptacoes-economicas.md) —
+  Vercel + Supabase + Upstash; no paid KMS, immutable storage or PITR before go-live
+  (economic adaptations to TECH-100, TECH-092 and TECH-101).
+- **Pending inputs** — do not invent; build behind replaceable seams:
+  - PSP not contracted → `PaymentGateway` port + deterministic fake adapter (TECH-081);
+  - brand guide pending → neutral, replaceable design tokens;
+  - contact/qualification fields of the interest form are not enumerated in REQ-025 → await
+    Luxtory's definition;
+  - commercial policies (PD-009), unset parameters and PRL are **operation** prerequisites
+    (03 §16), not development blockers.
+- **Release order:** R1 public site (Discovery + Interesse) → R2 own use (calendar, Direito de
+  Uso) → R3 Luxtory Club (Créditos, Luxchange, Luxplus, external rental) → R4 delinquency,
+  transfer, conformity and hardening.
 
 ## Stack
 
 > List language, framework, and pinned version of every critical component.
 > Pinned versions reduce API drift and make Codex's suggestions accurate.
 
-- **Backend**: `<language/framework + version>`
-- **Frontend**: `<framework + version>` (omit if not applicable)
-- **DB**: `<database + version>`
-- **Cache**: `<cache + version>` (omit if not applicable)
-- **IaC**: `<tool + version>`
-- **CI/CD**: `<pipeline>`
-- **Cloud / hosting**: `<provider + region>`
+- **Backend**: TypeScript (strict) — Next.js App Router server code, single app (versions pinned in W0)
+- **Frontend**: Next.js App Router + React (same app)
+- **DB**: Supabase PostgreSQL (`sa-east-1`) — Kysely (query builder, no schema generation);
+  SQL migrations with dbmate in `migrations/`
+- **Cache**: Upstash Redis — rate limiting only (never decides state)
+- **IaC**: none for now — Vercel/Supabase/Upstash configured in their consoles; `infra/` reserved
+- **CI/CD**: GitHub Actions (`.github/workflows/ci.yml`) + Vercel Git integration
+- **Cloud / hosting**: Vercel (`gru1`) + Supabase Auth/PostgreSQL/private Storage (`sa-east-1`) + Upstash
+- **Jobs**: Vercel Cron → protected endpoints invoking the same domain commands (TECH-090)
+- Rationale and economic adaptations: [ADR-0002](docs/adr/0002-plataforma-e-adaptacoes-economicas.md)
 
 ## NOTES.md — living document (mandatory)
 
@@ -65,6 +122,8 @@ always keep it updated:**
 - Deploy prod: **CI only** (`<path-to-prod-pipeline>`).
   Local production deploys are forbidden — remote backend / pipeline enforces this.
 
+> Luxtory: the commands above are filled in W0 (scaffold), when the scripts exist.
+
 ## Workflow
 
 - **Spec-Driven.** Every non-trivial feature starts with a spec in
@@ -93,7 +152,11 @@ always keep it updated:**
   - `infrastructure/` — adapters (DB, cache, HTTP clients, queues),
     implementations of `domain/` interfaces
   - `presentation/` — entry points (HTTP handlers, UI components, CLI, workers)
+  - Luxtory modules (03 TECH-011): `identity` · `catalog` · `ownership` · `calendar` ·
+    `inventory` · `booking` · `luxchange` · `credits` · `pricing` · `billing` · `admin` · `platform`
+- `src/app/` — Next.js routes only (presentation shell); delegate to `src/features/<module>/presentation`
 - `docs/specs/` — feature specs (Spec-Driven)
+- `docs/specs/canonical/` — frozen canonical documents 01/02/03 (see above)
 - `docs/plan/` — implementation wave roadmap (`implementation-waves.md`, see `/waves`)
 - `docs/adr/` — Architecture Decision Records (Michael Nygard format)
 - `docs/api/` — OpenAPI / AsyncAPI contracts
@@ -119,6 +182,12 @@ always keep it updated:**
   row-level access control at the DB layer when supported; least
   privilege on all service accounts and credentials.
 - **Minimum coverage**: 80% in `domain/` and `application/`.
+- **Critical commands (03)**: every economic or critical-state mutation carries an `operation_id`
+  (TECH-002) and follows TECH-054 — authorize → idempotency → `BEGIN` → locks in the TECH-053
+  total order → full revalidation → states/ledgers/snapshot/audit → `COMMIT` → outbox.
+- **Writes server-side only**, via direct PostgreSQL connection; **reads protected by RLS**
+  (ADR-002 of 03, TECH-052). Frontend, cache, jobs and external providers never decide
+  availability, balance, price, authorization or economic effect (ADR-001 of 03).
 
 ## Anti-patterns (do not do)
 
@@ -131,6 +200,12 @@ always keep it updated:**
 - ❌ Manual DB changes via console — always versioned migration files
 - ❌ Hardcoded user-facing strings — always go through the i18n layer
 - ❌ Calling production deploy commands from a local machine
+- ❌ Anything in the 03 §13 Guardrails (e.g. economics decided in the frontend, critical writes
+  via PostgREST/`supabase-js`, a second mutable source of availability, rewriting economic or
+  audit history, inventing a missing value)
+- ❌ Floating point for money or Créditos — money is `bigint` minor units + currency, Créditos
+  are exact `numeric` (TECH-033)
+- ❌ "cota" or "diária(s)" for Co-Owner, or any promise of guaranteed return (REQ-100, REQ-101)
 
 ## Conventions
 
@@ -139,11 +214,12 @@ always keep it updated:**
 - **Branches**: `feat/<slug>`, `fix/<slug>`, `sec/<slug>`
 - **PRs**: open as draft first, CI green before requesting review.
   Spec/ADR ship in the same PR as the change.
-- **i18n**: `<default-locale>` is default, `<fallback-locale>` is fallback.
+- **i18n**: `pt-BR` is default, `pt-BR` is fallback (single locale — the 02 defines no other).
   All user-facing strings go through the i18n layer — never hardcoded in
   responses, templates, or components.
 - **Code in English** (variables, functions, comments) — docs and specs
-  in `<docs-language>`.
+  in `pt-BR`. Exception: enum literals defined in the 03 (`spe_pool`, `reserved_right`,
+  `forfeited_right`, `alta`, `media`, `leap`, …) are kept verbatim in the DB and in code.
 - **Migrations**: use the project's migration tool. Always reversible
   (include `down` / rollback). Test rollback before opening PR.
 
@@ -154,6 +230,11 @@ always keep it updated:**
 - Do not modify dependency lockfiles manually (`*.lock`, `package-lock.json`,
   `poetry.lock`, `Cargo.lock`, etc.)
 - Never run production deploys locally — CI only
+- **`activate-ultronpx.mjs` (ultron)** — never edit, move, rename, format, lint, type-check or
+  execute it, and never change the `ULTRONPX_PURCHASE_EMAIL` variable it reads. In W0, add the
+  file to the ignore lists of Prettier, ESLint, TypeScript, coverage and any other tool; env
+  validation must neither require nor strip that variable.
+- `docs/specs/canonical/**` — frozen canonical documents (never edit)
 
 ## Domain glossary
 
@@ -164,6 +245,9 @@ always keep it updated:**
 - **ADR**: Architecture Decision Record (`docs/adr/NNNN-title.md`)
 - **Spec**: feature document (`docs/specs/<feature>.md`)
 - **Threat model**: STRIDE document in `docs/security/threats/<feature>.md`
+- **Luxtory business terms**: 01 §2 (canonical concepts) and 02 §1 (mandatory terminology).
+  03 identifiers: Ação = `stake`, Titular's link to a Residence = `holding`,
+  Data-Residence = `residence_date`, Créditos em Garantia = `held`
 
 ## Checklist before starting a task
 
@@ -176,6 +260,8 @@ always keep it updated:**
    (or `asyncapi.yaml`) before the handler.
 6. New attack surface? Quick threat model (STRIDE) and adjust authz,
    validation, rate limiting, and DB-level access control.
+7. Which canonical IDs (BR/REQ/INV/PD/TECH) does this implement? Cite them in the spec,
+   tests and commits.
 
 ## Definition of Done
 

@@ -1,3 +1,11 @@
+> **Luxtory Branded Second Home** — este repositório é a base do site e do software da Luxtory.
+> Comece por [`CLAUDE.md`](CLAUDE.md) (contexto, restrições e stack) e pelos documentos canônicos
+> em [`docs/specs/canonical/`](docs/specs/canonical/) (01 → 02 → 03).
+> As instruções de instanciação do template que removem arquivos (`rm …`) **não se aplicam** a
+> este repositório. O conteúdo abaixo é o README original do template, preservado.
+
+---
+
 # Claude Code Bootstrap Pro
 
 > Your professional Claude Code project starter.

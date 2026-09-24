@@ -9,6 +9,10 @@ described by Michael Nygard. The ADR process itself is established in
 | #    | Title                                                                | Status   |
 |------|----------------------------------------------------------------------|----------|
 | 0001 | [Record architecture decisions](0001-record-architecture-decisions.md) | Accepted |
+| 0002 | [Plataforma (Vercel + Supabase + Upstash) e adaptações econômicas ao 03](0002-plataforma-e-adaptacoes-economicas.md) | Accepted |
+
+The technical decisions ADR-001…008 of the canonical
+[03 — Technical Spec](../specs/canonical/03-technical-spec.md) also apply, by reference.
 
 ## Adding a new ADR
 
