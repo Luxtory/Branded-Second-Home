@@ -1,0 +1,7 @@
+/* Luxtory Design System — entry point. Import this file only.
+ * Layer order is part of the contract (docs/specs/design-system.md). */
+@layer lx.tokens, lx.base, lx.layout, lx.components, lx.utilities;
+
+@import url("../tokens/tokens.css");
+@import url("./fonts.css");
+@import url("./base.css");

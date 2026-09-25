@@ -28,7 +28,7 @@
    essas classes. Estilos não são reescritos em outra tecnologia.
 4. **Fontes.** Newsreader, Hanken Grotesk e Courier Prime (todas SIL OFL 1.1, gratuitas), self-hosted em woff2
    (subset latin) com `OFL.txt`. Sem requests a terceiros. No W0, `next/font/local` aponta para os mesmos arquivos.
-5. **Testes sem dependências.** `node --test src/design-system/scripts/` (Node 22 nativo) verifica tokens,
+5. **Testes sem dependências.** `node --test src/design-system/scripts/*.test.mjs` (Node 22 nativo) verifica tokens,
    contraste, literais proibidos, terminologia e o peso das fontes até a CI do W0 existir.
 6. **Lab.** `src/design-system/lab/index.html` é a referência de QA visual. No W0 ganha uma rota interna
    `noindex` **adicional**. O HTML permanece.
@@ -49,7 +49,7 @@
 
 ### Neutral / follow-ups
 
-- W0: incluir `node --test src/design-system/scripts/` na CI; criar os wrappers React; adicionar a rota `/lab` interna.
+- W0: incluir `node --test src/design-system/scripts/*.test.mjs` na CI; criar os wrappers React; adicionar a rota `/lab` interna.
 - Receber o kit oficial de logos em `src/design-system/brand/logo/` (commit aditivo).
 
 ## Alternatives considered

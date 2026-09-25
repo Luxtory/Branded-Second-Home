@@ -169,7 +169,7 @@ Uso detalhado, markup e exemplos: [`docs/reference/design-system.md`](../referen
 ## 6. Acceptance criteria
 
 **Tokens e código**
-- [ ] `node --test src/design-system/scripts/` passa.
+- [ ] `node --test src/design-system/scripts/*.test.mjs` passa.
 - [ ] Os 5 valores de marca em `tokens.json` são exatamente os da paleta imutável.
 - [ ] `tokens.css` é idêntico à saída de `build-tokens.mjs`.
 - [ ] Todo par texto/fundo declarado atinge ≥ 4.5:1, e UI/texto grande ≥ 3:1, em `paper`, `wash` e `night`.

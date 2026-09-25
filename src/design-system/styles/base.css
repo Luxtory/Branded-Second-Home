@@ -1,0 +1,142 @@
+/* Luxtory Design System — base: reset, grounds, focus, selection, reduced motion, skip link. */
+@layer lx.base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-padding-top: var(--lx-layout-header-height);
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--lx-color-bg);
+    color: var(--lx-color-fg);
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-body);
+    font-weight: var(--lx-weight-regular);
+    line-height: var(--lx-leading-body);
+    font-kerning: normal;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    accent-color: var(--lx-color-action-bg);
+  }
+
+  /* Grounds re-scope the semantic colors (tokens.css) and paint themselves. */
+  [data-ground] {
+    background-color: var(--lx-color-bg);
+    color: var(--lx-color-fg);
+    accent-color: var(--lx-color-action-bg);
+  }
+
+  [data-ground="night"] {
+    color-scheme: dark;
+  }
+
+  h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd, ol, ul {
+    margin: 0;
+  }
+
+  /* Headings are semantic; their look comes from typography classes. */
+  h1, h2, h3, h4, h5, h6 {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: var(--lx-leading-heading);
+    text-wrap: balance;
+  }
+
+  ol[class], ul[class] {
+    padding: 0;
+    list-style: none;
+  }
+
+  img, picture, video, svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  img {
+    height: auto;
+  }
+
+  input, button, textarea, select {
+    font: inherit;
+    color: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  a {
+    color: var(--lx-color-accent);
+    text-decoration-thickness: var(--lx-border-hairline);
+    text-underline-offset: 0.2em;
+  }
+
+  :focus-visible {
+    outline: var(--lx-focus-width) solid var(--lx-color-focus);
+    outline-offset: var(--lx-focus-offset);
+  }
+
+  ::selection {
+    background-color: var(--lx-color-selection-bg);
+    color: var(--lx-color-selection-fg);
+  }
+
+  /* Skip link: first focusable element of every page. */
+  .lx-skip-link {
+    position: absolute;
+    inset-inline-start: var(--lx-space-4);
+    inset-block-start: var(--lx-space-4);
+    z-index: var(--lx-z-skip-link);
+    padding: var(--lx-space-3) var(--lx-space-4);
+    background-color: var(--lx-palette-dark-moroccan-blue);
+    color: var(--lx-palette-pure-white);
+    font-weight: var(--lx-weight-medium);
+    transform: translateY(-200%);
+  }
+
+  .lx-skip-link:focus-visible {
+    transform: none;
+    outline-color: var(--lx-palette-warm-sand);
+  }
+
+  /* Reduced motion: OS preference or explicit opt-in via <html data-motion="reduce">. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0s !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0s !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  [data-motion="reduce"] *,
+  [data-motion="reduce"] *::before,
+  [data-motion="reduce"] *::after {
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer lx.utilities {
+  .lx-visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+}

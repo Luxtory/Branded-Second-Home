@@ -1,0 +1,183 @@
+/* GENERATED FILE — do not edit.
+ * Source: src/design-system/tokens/tokens.json
+ * Regenerate: node src/design-system/scripts/build-tokens.mjs
+ * Spec: docs/specs/design-system.md */
+@layer lx.tokens {
+  :root {
+    --lx-palette-moroccan-blue: #0F4E67;
+    --lx-palette-dark-moroccan-blue: #003D52;
+    --lx-palette-warm-sand: #CDAD8E;
+    --lx-palette-dark-warm-sand: #9E8567;
+    --lx-palette-pure-white: #FFFFFF;
+    --lx-derived-sand-wash: #F7F2ED;
+    --lx-derived-error: #9B2226;
+    --lx-derived-error-on-night: #F2B8B5;
+    --lx-font-display: "Newsreader", "Newsreader Fallback", "Times New Roman", serif;
+    --lx-font-utility: "Hanken Grotesk", "Hanken Grotesk Fallback", Arial, sans-serif;
+    --lx-font-story: "Courier Prime", "Courier New", monospace;
+    --lx-weight-display: 400;
+    --lx-weight-display-strong: 500;
+    --lx-weight-regular: 400;
+    --lx-weight-medium: 500;
+    --lx-weight-semibold: 600;
+    --lx-weight-story: 400;
+    --lx-weight-story-strong: 700;
+    --lx-text-display-xl: clamp(2.75rem, 1.6rem + 4.6vw, 6rem);
+    --lx-text-display-l: clamp(2.25rem, 1.5rem + 3vw, 4.25rem);
+    --lx-text-display-m: clamp(1.75rem, 1.35rem + 1.6vw, 2.75rem);
+    --lx-text-display-s: clamp(1.375rem, 1.2rem + 0.7vw, 1.75rem);
+    --lx-text-lead: clamp(1.1875rem, 1.1rem + 0.35vw, 1.375rem);
+    --lx-text-body: clamp(1.0625rem, 1.03rem + 0.15vw, 1.125rem);
+    --lx-text-small: 0.9375rem;
+    --lx-text-label: 1rem;
+    --lx-text-marker: 0.8125rem;
+    --lx-leading-display: 1.06;
+    --lx-leading-heading: 1.15;
+    --lx-leading-body: 1.6;
+    --lx-leading-tight: 1.3;
+    --lx-leading-marker: 1.5;
+    --lx-tracking-display: -0.015em;
+    --lx-tracking-body: 0em;
+    --lx-tracking-label: 0.01em;
+    --lx-tracking-marker: 0.14em;
+    --lx-measure-body: 66ch;
+    --lx-measure-narrow: 40ch;
+    --lx-measure-display: 18ch;
+    --lx-space-1: 0.25rem;
+    --lx-space-2: 0.5rem;
+    --lx-space-3: 0.75rem;
+    --lx-space-4: 1rem;
+    --lx-space-6: 1.5rem;
+    --lx-space-8: 2rem;
+    --lx-space-12: 3rem;
+    --lx-space-16: 4rem;
+    --lx-space-24: 6rem;
+    --lx-space-32: 8rem;
+    --lx-space-48: 12rem;
+    --lx-space-scene: clamp(4rem, 2.5rem + 7vw, 10rem);
+    --lx-space-stack: clamp(1.5rem, 1.2rem + 1.2vw, 2.5rem);
+    --lx-layout-container-max: 90rem;
+    --lx-layout-container-narrow: 56rem;
+    --lx-layout-margin: clamp(1.25rem, 0.5rem + 4vw, 6rem);
+    --lx-layout-gutter: clamp(1rem, 0.6rem + 1.4vw, 2rem);
+    --lx-layout-columns-sm: 4;
+    --lx-layout-columns-md: 8;
+    --lx-layout-columns-lg: 12;
+    --lx-layout-header-height: 4.5rem;
+    --lx-breakpoint-sm: 30rem;
+    --lx-breakpoint-md: 48rem;
+    --lx-breakpoint-lg: 64rem;
+    --lx-breakpoint-xl: 80rem;
+    --lx-breakpoint-2xl: 100rem;
+    --lx-radius-none: 0;
+    --lx-radius-hairline: 2px;
+    --lx-border-hairline: 1px;
+    --lx-border-strong: 1px;
+    --lx-border-marker-tick: 0.5625rem;
+    --lx-focus-width: 2px;
+    --lx-focus-offset: 3px;
+    --lx-shadow-overlay: 0 1.5rem 3rem -1.5rem color-mix(in srgb, var(--lx-palette-dark-moroccan-blue) 35%, transparent);
+    --lx-z-base: 0;
+    --lx-z-raised: 10;
+    --lx-z-sticky: 100;
+    --lx-z-overlay: 200;
+    --lx-z-modal: 300;
+    --lx-z-toast: 400;
+    --lx-z-skip-link: 500;
+    --lx-duration-instant: 80ms;
+    --lx-duration-quick: 160ms;
+    --lx-duration-base: 240ms;
+    --lx-duration-slow: 480ms;
+    --lx-duration-cinematic: 900ms;
+    --lx-duration-drift: 4800ms;
+    --lx-duration-reduced: 150ms;
+    --lx-ease-settle: cubic-bezier(0.2, 0, 0, 1);
+    --lx-ease-cinematic: cubic-bezier(0.65, 0, 0.35, 1);
+    --lx-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+    --lx-target-min: 2.75rem;
+    --lx-target-control: 3rem;
+    --lx-ratio-establishing: 21 / 9;
+    --lx-ratio-establishing-mobile: 4 / 5;
+    --lx-ratio-living: 3 / 2;
+    --lx-ratio-detail: 4 / 5;
+    --lx-scrim-color: var(--lx-palette-dark-moroccan-blue);
+    --lx-scrim-min-alpha: 0.68;
+    --lx-scrim-max-alpha: 0.84;
+    --lx-grain-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    --lx-grain-size: 120px;
+    --lx-grain-opacity: 0.035;
+  }
+
+  :root,
+  [data-ground="paper"] {
+    --lx-color-bg: var(--lx-palette-pure-white);
+    --lx-color-surface: var(--lx-derived-sand-wash);
+    --lx-color-fg: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-fg-muted: var(--lx-palette-moroccan-blue);
+    --lx-color-accent: var(--lx-palette-moroccan-blue);
+    --lx-color-marker: var(--lx-palette-moroccan-blue);
+    --lx-color-rule: var(--lx-palette-warm-sand);
+    --lx-color-rule-strong: var(--lx-palette-moroccan-blue);
+    --lx-color-focus: var(--lx-palette-moroccan-blue);
+    --lx-color-action-bg: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-action-bg-hover: var(--lx-palette-moroccan-blue);
+    --lx-color-action-fg: var(--lx-palette-pure-white);
+    --lx-color-field-bg: var(--lx-palette-pure-white);
+    --lx-color-field-fg: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-field-border: var(--lx-palette-moroccan-blue);
+    --lx-color-error: var(--lx-derived-error);
+    --lx-color-success: var(--lx-palette-moroccan-blue);
+    --lx-color-warning: var(--lx-palette-dark-warm-sand);
+    --lx-color-skeleton: var(--lx-derived-sand-wash);
+    --lx-color-selection-bg: var(--lx-palette-warm-sand);
+    --lx-color-selection-fg: var(--lx-palette-dark-moroccan-blue);
+  }
+
+  [data-ground="wash"] {
+    --lx-color-bg: var(--lx-derived-sand-wash);
+    --lx-color-surface: var(--lx-palette-pure-white);
+    --lx-color-fg: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-fg-muted: var(--lx-palette-moroccan-blue);
+    --lx-color-accent: var(--lx-palette-moroccan-blue);
+    --lx-color-marker: var(--lx-palette-moroccan-blue);
+    --lx-color-rule: var(--lx-palette-warm-sand);
+    --lx-color-rule-strong: var(--lx-palette-moroccan-blue);
+    --lx-color-focus: var(--lx-palette-moroccan-blue);
+    --lx-color-action-bg: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-action-bg-hover: var(--lx-palette-moroccan-blue);
+    --lx-color-action-fg: var(--lx-palette-pure-white);
+    --lx-color-field-bg: var(--lx-palette-pure-white);
+    --lx-color-field-fg: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-field-border: var(--lx-palette-moroccan-blue);
+    --lx-color-error: var(--lx-derived-error);
+    --lx-color-success: var(--lx-palette-moroccan-blue);
+    --lx-color-warning: var(--lx-palette-dark-warm-sand);
+    --lx-color-skeleton: var(--lx-palette-pure-white);
+    --lx-color-selection-bg: var(--lx-palette-warm-sand);
+    --lx-color-selection-fg: var(--lx-palette-dark-moroccan-blue);
+  }
+
+  [data-ground="night"] {
+    --lx-color-bg: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-surface: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-fg: var(--lx-palette-pure-white);
+    --lx-color-fg-muted: var(--lx-palette-warm-sand);
+    --lx-color-accent: var(--lx-palette-warm-sand);
+    --lx-color-marker: var(--lx-palette-warm-sand);
+    --lx-color-rule: var(--lx-palette-warm-sand);
+    --lx-color-rule-strong: var(--lx-palette-warm-sand);
+    --lx-color-focus: var(--lx-palette-warm-sand);
+    --lx-color-action-bg: var(--lx-palette-warm-sand);
+    --lx-color-action-bg-hover: var(--lx-palette-pure-white);
+    --lx-color-action-fg: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-field-bg: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-field-fg: var(--lx-palette-pure-white);
+    --lx-color-field-border: var(--lx-palette-warm-sand);
+    --lx-color-error: var(--lx-derived-error-on-night);
+    --lx-color-success: var(--lx-palette-pure-white);
+    --lx-color-warning: var(--lx-palette-warm-sand);
+    --lx-color-skeleton: var(--lx-palette-moroccan-blue);
+    --lx-color-selection-bg: var(--lx-palette-warm-sand);
+    --lx-color-selection-fg: var(--lx-palette-dark-moroccan-blue);
+  }
+}

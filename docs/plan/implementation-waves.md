@@ -13,7 +13,7 @@ Commit Conventional por onda, push em `claude/busy-edison-h75ufo`.
 | Wave | Deliverable | Depends on | Parallel with | Status |
 |------|-------------|------------|---------------|--------|
 | DS-0 | Spec + ADR-0003 + wave plan + NOTES sync | — | — | ✅ |
-| DS-1 | Foundations: tokens, fontes OFL, base, scripts de teste | DS-0 | — | ⬜ |
+| DS-1 | Foundations: tokens, fontes OFL, base, scripts de teste | DS-0 | — | ✅ |
 | DS-2 | Layout e narrativa: Container, Grid, Scene, Marker, Frame, Sequence, Evidence | DS-1 | — | ⬜ |
 | DS-3 | Interação e formulário: Button, Link, Field, Choice Group, Message, States | DS-2 | — | ⬜ |
 | DS-4 | Navegação, Coleção e marca: Header, Mobile Nav, Footer, Collection Card, Credit, Logo slot | DS-3 | — | ⬜ |
@@ -33,9 +33,9 @@ Commit Conventional por onda, push em `claude/busy-edison-h75ufo`.
 
 - **Goal**: tokens, fontes e base prontos e verificados por teste.
 - **Scope (files)**: `src/design-system/{tokens,fonts,styles/base.css,styles/fonts.css,styles/index.css,scripts}`.
-- **Acceptance criteria**: `node --test src/design-system/scripts/` verde; paleta imutável exata; contraste por
+- **Acceptance criteria**: `node --test src/design-system/scripts/*.test.mjs` verde; paleta imutável exata; contraste por
   fundo e scrim aprovado; zero literais proibidos; fontes ≤ 220KB total e ≤ 100KB com preload; `OFL.txt` presentes.
-- **Goal command**: `/goal node --test src/design-system/scripts/ exits 0, stop after 4 tries`
+- **Goal command**: `/goal node --test src/design-system/scripts/*.test.mjs exits 0, stop after 4 tries`
 
 ### DS-2 — Layout e narrativa
 
@@ -43,28 +43,28 @@ Commit Conventional por onda, push em `claude/busy-edison-h75ufo`.
 - **Scope (files)**: `src/design-system/styles/layout.css`, `styles/components/{typography,marker,frame,sequence,evidence,motion}.css`.
 - **Acceptance criteria**: testes verdes; Frames com proporção declarada; drift ≤ 4.8s e 1×; reduced motion
   sem transform.
-- **Goal command**: `/goal node --test src/design-system/scripts/ exits 0 and every DS-2 component class listed in the spec exists in styles/, stop after 3 tries`
+- **Goal command**: `/goal node --test src/design-system/scripts/*.test.mjs exits 0 and every DS-2 component class listed in the spec exists in styles/, stop after 3 tries`
 
 ### DS-3 — Interação e formulário
 
 - **Goal**: controles acessíveis para o formulário de interesse.
 - **Scope (files)**: `styles/components/{button,link,field,choice,message,states}.css`, `src/design-system/icons/`.
 - **Acceptance criteria**: testes verdes; controles ≥ 48px; erro com ícone + texto; foco visível por fundo.
-- **Goal command**: `/goal node --test src/design-system/scripts/ exits 0 and every DS-3 component class listed in the spec exists in styles/, stop after 3 tries`
+- **Goal command**: `/goal node --test src/design-system/scripts/*.test.mjs exits 0 and every DS-3 component class listed in the spec exists in styles/, stop after 3 tries`
 
 ### DS-4 — Navegação, Coleção e marca
 
 - **Goal**: estrutura de navegação e vitrine de Concepts.
 - **Scope (files)**: `styles/components/{header,mobile-nav,footer,collection,credit,logo}.css`, `src/design-system/brand/logo/README.md`.
 - **Acceptance criteria**: testes verdes; nenhum logo provisório versionado; card sem caixa nem sombra.
-- **Goal command**: `/goal node --test src/design-system/scripts/ exits 0 and every DS-4 component class listed in the spec exists in styles/, stop after 3 tries`
+- **Goal command**: `/goal node --test src/design-system/scripts/*.test.mjs exits 0 and every DS-4 component class listed in the spec exists in styles/, stop after 3 tries`
 
 ### DS-5 — Design System Lab
 
 - **Goal**: página de referência visual e de regressão.
 - **Scope (files)**: `src/design-system/lab/{index.html,lab.css,lab.js}`.
 - **Acceptance criteria**: todas as seções da spec §6 presentes; três composições R1; `check-hardcodes` cobre o Lab.
-- **Goal command**: `/goal node --test src/design-system/scripts/ exits 0 and lab/index.html contains the three R1 compositions, stop after 3 tries`
+- **Goal command**: `/goal node --test src/design-system/scripts/*.test.mjs exits 0 and lab/index.html contains the three R1 compositions, stop after 3 tries`
 
 ### DS-6 — Documentação e contexto para IAs
 

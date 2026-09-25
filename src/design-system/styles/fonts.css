@@ -1,0 +1,57 @@
+/* Luxtory Design System — self-hosted fonts (SIL OFL 1.1, free for commercial/web use).
+ * Latin subset from Google Fonts; see src/design-system/fonts/README.md for origin and licenses.
+ * Fallback faces use metric-compatible system fonts + size-adjust (measured) to minimise CLS. */
+
+/* LUXURY — Display: Newsreader, optical size 72 instance, variable weight 400–500. */
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url("../fonts/newsreader/newsreader-opsz72-roman-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Newsreader";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/newsreader/newsreader-opsz72-italic-latin.woff2") format("woff2");
+}
+
+/* UTILITY — Sans: Hanken Grotesk, variable weight 400–600 (tabular figures by default). */
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("../fonts/hanken-grotesk/hanken-grotesk-latin.woff2") format("woff2");
+}
+
+/* STORY — Script: Courier Prime (metric-compatible with Courier New). */
+@font-face {
+  font-family: "Courier Prime";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/courier-prime/courier-prime-400-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Courier Prime";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/courier-prime/courier-prime-700-latin.woff2") format("woff2");
+}
+
+/* Fallbacks: widths measured in Chromium against metric-compatible faces
+ * (Newsreader ≈ Times New Roman × 1.10; Hanken Grotesk ≈ Arial × 1.00). */
+@font-face {
+  font-family: "Newsreader Fallback";
+  src: local("Times New Roman"), local("Liberation Serif"), local("Tinos");
+  size-adjust: 110%;
+}
+@font-face {
+  font-family: "Hanken Grotesk Fallback";
+  src: local("Arial"), local("Liberation Sans"), local("Arimo");
+  size-adjust: 100%;
+}

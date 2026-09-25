@@ -1,0 +1,11 @@
+{
+  "$description": "Font files of the Luxtory Design System. preload=true files are the critical set (≤ 2 files, ≤ 100 KB). Checked by scripts/fonts.test.mjs.",
+  "files": [
+    { "path": "newsreader/newsreader-opsz72-roman-latin.woff2", "family": "Newsreader", "voice": "display", "preload": true },
+    { "path": "hanken-grotesk/hanken-grotesk-latin.woff2", "family": "Hanken Grotesk", "voice": "utility", "preload": true },
+    { "path": "newsreader/newsreader-opsz72-italic-latin.woff2", "family": "Newsreader", "voice": "display", "preload": false },
+    { "path": "courier-prime/courier-prime-400-latin.woff2", "family": "Courier Prime", "voice": "story", "preload": false },
+    { "path": "courier-prime/courier-prime-700-latin.woff2", "family": "Courier Prime", "voice": "story", "preload": false }
+  ],
+  "budget": { "totalBytes": 220000, "preloadBytes": 100000, "preloadFiles": 2 }
+}
