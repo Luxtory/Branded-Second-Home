@@ -43,33 +43,40 @@ Execute the project's deployment pipeline in order. Halt on any failure and repo
 
 ## Trigger the deploy pipeline
 
-5. **[CUSTOMIZE]** Trigger the deploy. Pick what your project uses:
+5. **Luxtory:** there is no manual trigger. The push/merge to `main` runs `.github/workflows/ci.yml`, whose jobs
+   `migrate` → `deploy` publish production after every gate is green (ADR-0004). The tag is only an audit mark.
+   Find the run of the tagged commit:
+   ```bash
+   gh run list --workflow ci --branch main --limit 5 --json databaseId,headSha,status,conclusion
+   ```
+   Template options, kept for reference:
    - GitHub Actions: `gh workflow run deploy.yml -f tag="$TAG"`
    - GCP Cloud Build: `gcloud builds submit --config=cloudbuild.yaml --substitutions=_TAG="$TAG"`
    - AWS CodeBuild: `aws codebuild start-build --project-name <project> --environment-variables-override name=TAG,value="$TAG"`
    - Vercel / Netlify / Render: typically auto-deploy on tag push — verify in their dashboard
    - Custom CI: dispatch with the tag as input
 
-6. **[CUSTOMIZE]** Stream/monitor the build until it completes. Pick what your CI offers:
+6. Stream/monitor the build until it completes (Luxtory: `gh run watch <databaseId> --exit-status`; the `deploy` job
+   log prints the production URL — export it as `PROD_URL`). Pick what your CI offers:
    - `gh run watch`
    - `gcloud builds log <BUILD_ID> --stream`
    - Equivalent for your CI
 
 ## Post-deploy
 
-7. **[CUSTOMIZE]** Smoke-test the health endpoint:
+7. Smoke-test the health endpoint (Luxtory: `/v1/health`):
    ```bash
-   curl -fsS https://<production-host>/health
+   curl -fsS "$PROD_URL/v1/health"
    ```
    Expected: `200 OK` with the project's health-check payload.
 
-8. **[CUSTOMIZE]** Verify the deployed version:
+8. Verify the deployed version (Luxtory: `/v1/version`):
    ```bash
-   curl -fsS https://<production-host>/version
+   curl -fsS "$PROD_URL/v1/version"
    ```
-   Confirm the response matches `$TAG`.
+   Confirm the response matches `$TAG` — Luxtory: `commit` must equal `git rev-parse HEAD`.
 
-9. **[CUSTOMIZE]** Announce the deploy in your team's channel (Slack, Teams, Discord, email):
+9. Announce the deploy in your team's channel (Luxtory: no channel defined yet — record it in `NOTES.md` §1):
    - Channel: `#deploys` (or equivalent)
    - Format: `🚀 deploy $TAG · run <ID> · <link-to-build>`
 
@@ -78,7 +85,8 @@ Execute the project's deployment pipeline in order. Halt on any failure and repo
 If any step fails:
 1. Stop immediately
 2. Capture the error output
-3. Ask the user whether to roll back. **[CUSTOMIZE]** the rollback command — examples:
+3. Ask the user whether to roll back. Luxtory: `npx vercel@60.0.1 rollback <previous-deployment-url>` (or the Vercel
+   dashboard). Never roll back a migration in production: fix forward with a new migration. Examples:
    - GCP Cloud Run: `gcloud run services update-traffic <service> --to-revisions=<previous>=100`
    - AWS ECS: `aws ecs update-service --service <name> --task-definition <previous-revision>`
    - Kubernetes: `kubectl rollout undo deployment/<name>`

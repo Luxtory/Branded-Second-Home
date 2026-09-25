@@ -127,6 +127,11 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   - `## Commands` do `CLAUDE.md` sem `<placeholder>`;
     `git diff --stat origin/main -- docs/specs/canonical activate-ultronpx.mjs` vazio.
 - **Goal command**: `/goal npm ci && npm run verify && npm run test:e2e exit 0, gh pr checks for the W0 PR are all green, CLAUDE.md ## Commands has no <placeholder>, and git diff --stat origin/main -- docs/specs/canonical activate-ultronpx.mjs is empty, stop after 5 tries`
+- **Desvios da execução (2026-09-25, com evidência — ADR-0004)**: ESLint **9.39.5** em vez de 10.11.0 (os plugins do
+  `eslint-config-next` 16.3.6 só aceitam ESLint ≤ 9; o `create-next-app` 16.3.6 instala `^9`); fontes pelo
+  `fonts.css` do Design System, sem `next/font/local` (evita família duplicada; preload na W4); jobs da CI com os
+  nomes do esqueleto (`lint`, `typecheck`, `test`, `security`) + `e2e`, `migrate`, `deploy`, em vez de `quality`
+  (conteúdo existente só é estendido).
 
 #### W0 — `## Commands` (CLAUDE.md e AGENTS.md)
 

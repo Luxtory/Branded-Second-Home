@@ -128,13 +128,17 @@ always keep it updated:**
 > Use the idiomatic command for your stack (e.g. `pytest`, `go test`, `cargo test`,
 > `npm test`, `mvn test`). Keep them runnable as-is from project root.
 
-- Dev: `<dev-command>`
-- Test: `<test-command>`
-- Lint: `<lint-command>`
-- Typecheck: `<typecheck-command>` (omit if language is dynamically typed without checker)
-- Coverage: `<coverage-command>` (must fail if below the minimum defined in Architecture rules)
-- Deploy staging: `<staging-command>`
-- Deploy prod: **CI only** (`<path-to-prod-pipeline>`).
+- Dev: `npm run dev` (PostgreSQL local persistente, quando o app usar banco: `npm run db:start`)
+- Test: `npm test` (Vitest `unit` + `db` com PostgreSQL real + contratos, e testes do Design System)
+- E2E: `npm run test:e2e` (`next build` + Playwright/axe com o Chrome do sistema)
+- Lint: `npm run lint` (ESLint + `prettier --check`)
+- Typecheck: `npm run typecheck` (omit if language is dynamically typed without checker)
+- Coverage: `npm run coverage` (must fail if below the minimum defined in Architecture rules)
+- Migrations: `npm run db:new -- <nome_snake_case>` · `npm run db:check` (up → down → up em PostgreSQL real)
+- Trace: `npm run trace -- --expect <IDs>` (IDs cobertos por testes aprovados) · `npm run trace -- --gate` (03 §12)
+- Verify (gate local de toda wave): `npm run verify` = lint + typecheck + coverage + DS + db:check + build
+- Deploy staging: push da branch → Preview da Vercel (`git push -u origin <branch>`)
+- Deploy prod: **CI only** (`.github/workflows/ci.yml`, jobs `migrate` → `deploy` em push para `main`).
   Local production deploys are forbidden — remote backend / pipeline enforces this.
 
 > Luxtory: the commands above are filled in W0 (scaffold), when the scripts exist.

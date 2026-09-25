@@ -1,16 +1,24 @@
 ---
-# [CUSTOMIZE] Scope to test files
-# paths:
-#   - "tests/**/*"
-#   - "**/*.test.*"
-#   - "**/*.spec.*"
+# Escopo: arquivos de teste
+paths:
+  - "tests/**/*"
+  - "**/*.test.*"
+  - "**/*.spec.*"
 ---
 
 # Testing
 
 ## Strategy
 
-[CUSTOMIZE] Define your test approach.
+Camadas do TECH-110 (`03` §12) — detalhe em ADR-0005:
+
+- `tests/**/*.test.ts` — projeto Vitest `unit` (unit + contratos OpenAPI com Ajv)
+- `tests/**/*.db.test.ts` — projeto Vitest `db`: PostgreSQL 17 real (`embedded-postgres`), banco-modelo migrado e
+  clonado por teste (`tests/support/test-database.ts`); concorrência com conexões reais e barreira determinística
+- `tests/e2e/*.spec.ts` — Playwright + axe sobre o build de produção, com o Chrome do sistema
+- Títulos citam o ID que o teste prova, por extenso: `[REQ-034]`, `[INV-1][CONC-1]`, `[PD-003][EC-3]` — lidos por
+  `npm run trace` (`[EC-n]` = item n do `02` §15; `[CONC-n]` = par n da lista de concorrência do TECH-110)
+- Relógio sempre injetado (`Clock`); nunca `new Date()` em código sob teste
 
 - Unit tests for business logic and utilities
 - Integration tests for API endpoints and database operations
@@ -19,11 +27,18 @@
 ## Commands
 
 ```bash
-[CUSTOMIZE]
 # Run all tests:
+npm test                      # Vitest unit + db e testes do Design System
+npm run test:e2e              # next build + Playwright/axe
 # Run single test:
+npx vitest run tests/features/platform/presentation/lab.test.ts
+npx vitest run --project db   # só os testes com PostgreSQL real
+npx playwright test tests/e2e/lab.spec.ts   # exige um `next build` antes
 # Run with coverage:
+npm run coverage              # falha abaixo de 80% em domain/ e application/
 # Reset test DB:
+# não há estado a limpar: cada execução sobe um PostgreSQL descartável e cada teste clona o banco-modelo
+npm run db:check              # up → down → up das migrations
 ```
 
 ## Conventions
