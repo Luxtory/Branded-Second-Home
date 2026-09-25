@@ -6,6 +6,7 @@ This directory holds security-related documentation for the project.
 
 - [`threats/`](threats/) — feature-level threat models (STRIDE)
   - [`_template.md`](threats/_template.md) — copy this to start a new threat model
+  - [`platform.md`](threats/platform.md) — W0: probes `/v1`, rota `/lab`, logs, pipeline CI/CD e dependências
 - `policies/` — [CUSTOMIZE] add as needed (data retention, access control, incident response)
 - `runbooks/` — [CUSTOMIZE] add as needed (security incident playbooks)
 

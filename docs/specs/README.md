@@ -25,6 +25,8 @@ or alongside its implementation.
 **Module specs** (one per `src/features/<module>/`, created in the wave that implements it,
 citing the canonical IDs):
 
+- [platform](platform.md) — módulo `platform` (TECH-011): probes `/v1`, ambiente, logs com `correlation_id`, `Clock`, `/lab`, harness de testes
+
 **Cross-cutting specs** (not a `src/features/` slice):
 
 - [design-system](design-system.md) — Design System Luxtory (LUXURY + STORY): tokens, tipografia, componentes do R1
