@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
   // A rota interna /lab lê os arquivos do Design System em tempo de execução (ADR-0003).
   outputFileTracingIncludes: {
     '/lab/[[...path]]': ['./src/design-system/{lab,styles,tokens,fonts,brand,icons}/**/*'],
+    '/favicon.ico': ['./src/design-system/brand/logo/*.svg'],
   },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];

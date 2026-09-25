@@ -5,6 +5,7 @@ import '@/design-system/styles/index.css';
 
 export const metadata: Metadata = {
   title: messages.site.name,
+  icons: { icon: { url: '/favicon.ico', type: 'image/svg+xml' } },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

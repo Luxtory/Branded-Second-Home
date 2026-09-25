@@ -59,6 +59,8 @@ Design System Lab e o harness de testes com PostgreSQL real (TECH-110).
 - [x] `[REQ-100]` varredura de terminologia cobre `src/` e `docs/api/`.
 - [x] `[TECH-100]` logs nunca registram PII nem segredo, mesmo aninhados; a validação de ambiente nunca expõe valores.
 - [x] Página 404 em pt-BR com o Design System e axe 0.
+- [x] `/favicon.ico` serve o ícone oficial `icon/moroccan-blue` do kit, byte a byte (sha256 do manifest); zero erros
+      de console no Lab e na página 404.
 
 ## 7. Edge cases
 
