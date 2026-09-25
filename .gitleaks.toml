@@ -1,0 +1,9 @@
+# gitleaks — regras padrão + exceção de caminho (CLAUDE.md → Files & paths to ignore).
+title = "Luxtory gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Arquivo ultron: nunca analisado por ferramentas do projeto"
+paths = ['''^activate-ultronpx\.mjs$''']

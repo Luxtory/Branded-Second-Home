@@ -1,0 +1,14 @@
+# Semgrep CE — um .semgrepignore substitui a lista padrão, então ela é repetida aqui.
+:include .gitignore
+
+# Nunca analisar (CLAUDE.md → Files & paths to ignore)
+activate-ultronpx.mjs
+
+node_modules/
+.next/
+coverage/
+reports/
+test-results/
+playwright-report/
+package-lock.json
+docs/specs/canonical/
