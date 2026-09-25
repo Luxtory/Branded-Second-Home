@@ -16,6 +16,9 @@ Plus three special directories that don't belong to Diátaxis but live here:
 - [`api/`](api/) — OpenAPI / AsyncAPI contracts (API-First)
 - [`security/`](security/) — threat models and security policies
 
+Design System (UI): contract in [`specs/design-system.md`](specs/design-system.md), usage in
+[`reference/design-system.md`](reference/design-system.md), code and Lab in [`../src/design-system/`](../src/design-system/).
+
 ## Where does this go?
 
 - "How does our auth flow work?" → `explanation/`

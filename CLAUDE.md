@@ -64,6 +64,7 @@ conflict, 01 prevails (BR-380, REQ-104).
 - **Pending inputs** — do not invent; build behind replaceable seams:
   - PSP not contracted → `PaymentGateway` port + deterministic fake adapter (TECH-081);
   - brand guide pending → neutral, replaceable design tokens;
+    Design System in place: `docs/specs/design-system.md` (official logo kit and photography still pending);
   - contact/qualification fields of the interest form are not enumerated in REQ-025 → await
     Luxtory's definition;
   - commercial policies (PD-009), unset parameters and PRL are **operation** prerequisites
@@ -87,6 +88,18 @@ conflict, 01 prevails (BR-380, REQ-104).
 - **Cloud / hosting**: Vercel (`gru1`) + Supabase Auth/PostgreSQL/private Storage (`sa-east-1`) + Upstash
 - **Jobs**: Vercel Cron → protected endpoints invoking the same domain commands (TECH-090)
 - Rationale and economic adaptations: [ADR-0002](docs/adr/0002-plataforma-e-adaptacoes-economicas.md)
+
+## Design System
+
+Source of truth for every user-facing UI (**LUXTORY = LUXURY + STORY**). Read before building any screen:
+
+- Contract: [`docs/specs/design-system.md`](docs/specs/design-system.md) · usage: [`docs/reference/design-system.md`](docs/reference/design-system.md) ·
+  decision: [ADR-0003](docs/adr/0003-design-system-camada-compartilhada.md)
+- Code: `src/design-system/` — tokens in `tokens/tokens.json` (single source; `tokens.css` is generated),
+  CSS `lx-*` in `styles/` (import `styles/index.css`), free OFL fonts in `fonts/`, Lab in `lab/index.html`.
+- Tests (until W0 wires CI): `node --test src/design-system/scripts/*.test.mjs` (contrast, hardcodes, fonts,
+  terminology, tokens sync, Lab).
+- Never hardcode color/font/duration/easing/z-index; never recolor or redraw the logo (official kit pending).
 
 ## NOTES.md — living document (mandatory)
 
@@ -155,6 +168,7 @@ always keep it updated:**
   - Luxtory modules (03 TECH-011): `identity` · `catalog` · `ownership` · `calendar` ·
     `inventory` · `booking` · `luxchange` · `credits` · `pricing` · `billing` · `admin` · `platform`
 - `src/app/` — Next.js routes only (presentation shell); delegate to `src/features/<module>/presentation`
+- `src/design-system/` — shared presentation layer (tokens, CSS `lx-*`, fonts, Lab); no domain (ADR-0003)
 - `docs/specs/` — feature specs (Spec-Driven)
 - `docs/specs/canonical/` — frozen canonical documents 01/02/03 (see above)
 - `docs/plan/` — implementation wave roadmap (`implementation-waves.md`, see `/waves`)
@@ -262,6 +276,7 @@ always keep it updated:**
    validation, rate limiting, and DB-level access control.
 7. Which canonical IDs (BR/REQ/INV/PD/TECH) does this implement? Cite them in the spec,
    tests and commits.
+8. Does it touch UI? Use the Design System (`docs/reference/design-system.md`) — tokens and `lx-*` classes only.
 
 ## Definition of Done
 

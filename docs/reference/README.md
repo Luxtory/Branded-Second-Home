@@ -14,11 +14,7 @@ its scope. No tutorials, no opinions, no narrative.
 
 ## Index
 
-[CUSTOMIZE] List reference pages as you add them, e.g.:
-
-- `cli.md` — CLI commands and flags
-- `config.md` — configuration schema
-- `errors.md` — error codes and meanings
+- [`design-system.md`](design-system.md) — Design System Luxtory (LUXURY + STORY): tokens, grounds, tipografia, componentes `lx-*`, a11y
 - The OpenAPI contract is at [`../api/openapi.yaml`](../api/openapi.yaml)
 
 See https://diataxis.fr/reference/

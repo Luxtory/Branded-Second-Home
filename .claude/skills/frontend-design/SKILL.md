@@ -40,18 +40,41 @@ Interpret creatively and make unexpected choices that feel genuinely designed fo
 
 ## Project Design System (if any)
 
-[CUSTOMIZE] If your project has an existing design system, document it here so
-this skill respects it. Replace this whole section with your project's tokens
-and conventions, or delete it for greenfield work. Examples of what to capture:
+**Luxtory Design System — this section OVERRIDES the generic guidance above** (in this project do NOT
+"vary fonts/themes between generations" or invent a new aesthetic: the direction is fixed). Full contract:
+`docs/specs/design-system.md` · normative usage: `docs/reference/design-system.md` · code: `src/design-system/` ·
+visual QA: `src/design-system/lab/index.html`.
 
-- Design tokens / CSS custom properties (color, spacing, typography scales)
-- Required theme(s) and how to switch (e.g. light + dark)
-- i18n requirement (e.g. all user-facing strings via a translation function)
-- Component library to extend (e.g. shadcn/ui, Material UI, Chakra)
-- Allowed font sources / curated font list
-- Accessibility baseline (WCAG level, prefers-reduced-motion handling)
-
-If none of the above is established yet, leave this section empty and design
-from a clean slate.
+- **Thesis — LUXTORY = LUXURY + STORY.** LUXURY ("a Planta"): architectural grid, proportion, hairlines,
+  dimension lines, space, photography in fixed-ratio Frames. STORY ("o Roteiro"): Scenes in sequence, Scene
+  Markers with *real* metadata (place · time · light · chapter), captions that change how the image reads.
+  Grammar: Opening Frame · Chapter · Scene · Scene Marker · Frame · Sequence · Evidence.
+- **Palette (immutable):** Moroccan Blue `#0F4E67`, Dark Moroccan Blue `#003D52`, Warm Sand `#CDAD8E`,
+  Dark Warm Sand `#9E8567`, Pure White `#FFFFFF`. Paper-first: white dominates, Dark Moroccan is the ink,
+  Warm Sand is light (hairlines, markers, action on night). Warm Sand is **never** text on white (2.11:1).
+  Derived functional only: sand-wash `#F7F2ED`, error `#9B2226` / `#F2B8B5` (night).
+- **Grounds:** `data-ground="paper | wash | night"` re-scopes all `--lx-color-*`; components never pick colors.
+  Grounds follow the narrated time of day (dia → fim de tarde → noite).
+- **Typography (all free, SIL OFL, self-hosted):** Display **Newsreader** (opsz 72) for Opening Frames,
+  headlines, Concept names — max one `<em>` italic "story turn" per headline. Utility **Hanken Grotesk** for
+  body, nav, forms, Evidence. Story **Courier Prime** ONLY for Scene Markers, chapters, place/time and
+  captions — max 1 marker per Scene, never body/labels/buttons, `INT.`/`EXT.` only on Opening Frames with real photos.
+- **Tokens & code:** single source `src/design-system/tokens/tokens.json` (DTCG) → generated `tokens.css`.
+  Import `src/design-system/styles/index.css`; compose `lx-*` classes (BEM; states via ARIA/HTML attributes).
+  No literal color, font-family, duration, easing or z-index outside tokens (enforced by
+  `node --test src/design-system/scripts/*.test.mjs`). After W0, React components are thin wrappers over `lx-*`.
+- **Visual rules:** radius 0; 1px hairlines; one shadow (overlays only); no glassmorphism, glow, decorative
+  gradients, boxed/shadowed cards, stock photos posing as the property, lorem ipsum. Without official photos use
+  `lx-frame--typographic`. Text over images: white only, on a Dark Moroccan scrim ≥ 68%. Collection = curated,
+  asymmetric sequence, not a uniform grid. Mobile is designed (full-bleed Frames, 4:5 establishing, fullscreen
+  dialog menu with pinned CTA), never a compressed desktop.
+- **Copy:** short, concrete scenes, pt-BR via i18n. Co-Owner = **Ação** with **Direito de Uso**; never "cota"
+  (or derivatives) nor "diária(s)"; no price per day for Co-Owner; never promise return, appreciation,
+  liquidity or income (REQ-100, REQ-101). Interest ≠ acquisition (BR-050); days are a preference (REQ-025).
+- **Accessibility baseline:** WCAG 2.2 AA — visible 2px focus ring per ground, contrast verified by test,
+  targets 44px (controls 48px), errors with icon + text, `prefers-reduced-motion` + `data-motion="reduce"`
+  honored, no auto-motion > 5s, no horizontal scroll 320–1920px.
+- **Logo:** official files only, verbatim (`src/design-system/brand/logo/README.md`); kit pending →
+  `lx-logo--pending` slot, never styled text.
 
 Remember: Claude is capable of extraordinary creative work. Don't hold back, show what can truly be created when thinking outside the box and committing fully to a distinctive vision.
