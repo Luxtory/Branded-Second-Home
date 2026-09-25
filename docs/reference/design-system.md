@@ -224,7 +224,8 @@ bloqueia, `role="alert"`.
 
 ### States
 
-- `lx-skeleton` (`--text`, `--frame`; estático, sem shimmer; `aria-hidden`, com `aria-busy` na região).
+- `lx-skeleton` (`--text`, `--frame`; estático, sem shimmer; `aria-hidden`). A região recebe `aria-busy="true"` e
+  um texto `lx-visually-hidden` ("Carregando…"). Nunca `aria-label` em `div` sem role.
 - `lx-empty` e `lx-success`: marker + statement + ação.
 
 ### Scene · `lx-scene`

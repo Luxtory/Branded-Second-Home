@@ -19,7 +19,7 @@ Commit Conventional por onda, push em `claude/busy-edison-h75ufo`.
 | DS-4 | Navegação, Coleção e marca: Header, Mobile Nav, Footer, Collection Card, Credit, Logo slot | DS-3 | — | ✅ |
 | DS-5 | Design System Lab + três composições R1 | DS-4 | — | ✅ |
 | DS-6 | Documentação normativa + contexto para IAs | DS-5 | — | ✅ |
-| DS-7 | QA visual, acessibilidade, `/verify` | DS-6 | — | ⬜ |
+| DS-7 | QA visual, acessibilidade, `/verify` | DS-6 | — | ✅ |
 
 ### DS-0 — Governança e spec
 

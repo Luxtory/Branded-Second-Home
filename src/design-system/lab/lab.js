@@ -32,6 +32,9 @@
   const daysTemplate = form.querySelector('[data-lab-days-template]');
   const status = form.querySelector('[data-lab-form-status]');
 
+  // Any edit after a submit clears the previous result (no stale success/failure message).
+  form.addEventListener('input', () => status.replaceChildren());
+
   form.querySelectorAll('[data-lab-modality]').forEach((radio) => {
     radio.addEventListener('change', () => {
       const isCoOwner = form.elements.modalidade.value === 'co-owner';

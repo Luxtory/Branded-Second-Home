@@ -38,7 +38,7 @@
       </nav>
       <div class="lx-header__actions">
         <a class="lx-button lx-button--primary lx-header__cta" href="#composicao-interesse">Manifestar interesse</a>
-        <button class="lx-icon-button lx-header__menu-button" type="button" aria-haspopup="dialog" aria-controls="menu-mobile" data-lab-open-menu>
+        <button class="lx-icon-button lx-header__menu-button" type="button" aria-haspopup="dialog" data-lab-open-menu>
           <svg aria-hidden="true" focusable="false"><use href="#i-menu"/></svg>
           <span class="lx-visually-hidden">Abrir menu</span>
         </button>
@@ -377,7 +377,8 @@
           <h2 id="t-estados" class="lx-display-m">Esperar também <em>tem forma</em>.</h2>
         </div>
         <div class="lab-grid-3">
-          <div aria-busy="true" aria-label="Carregando Concept">
+          <div aria-busy="true">
+            <span class="lx-visually-hidden">Carregando Concept…</span>
             <span class="lx-skeleton lx-skeleton--frame" aria-hidden="true"></span>
             <span class="lx-skeleton lx-skeleton--text" style="--lx-skeleton-width: 40%" aria-hidden="true"></span>
             <span class="lx-skeleton lx-skeleton--text" style="--lx-skeleton-width: 80%" aria-hidden="true"></span>
@@ -460,10 +461,10 @@
           <div class="lx-evidence__item"><dt class="lx-evidence__label">Modalidades</dt><dd class="lx-evidence__value">Owner ou <span class="lx-nowrap">Co-Owner</span></dd></div>
           <div class="lx-evidence__item"><dt class="lx-evidence__label">Residence Edition</dt><dd class="lx-evidence__value">Ainda não lançada</dd></div>
         </dl>
-        <code class="lab-code" style="margin-top: var(--lx-space-8)">&lt;!-- valor ausente → o item não é renderizado (TECH-001) --&gt;
+        <pre class="lab-code" style="margin-top: var(--lx-space-8)" tabindex="0" role="region" aria-label="Exemplo de markup do Evidence">&lt;!-- valor ausente → o item não é renderizado (TECH-001) --&gt;
 &lt;dl class="lx-evidence"&gt;
   &lt;div class="lx-evidence__item"&gt;&lt;dt class="lx-evidence__label"&gt;Região&lt;/dt&gt;&lt;dd class="lx-evidence__value"&gt;…&lt;/dd&gt;&lt;/div&gt;
-&lt;/dl&gt;</code>
+&lt;/dl&gt;</pre>
       </section>
 
       <!-- ============================== 13 COLEÇÃO ============================== -->
@@ -500,7 +501,8 @@
             </article>
           </li>
           <li>
-            <article class="lx-collection-card" aria-busy="true" aria-label="Carregando Concept">
+            <article class="lx-collection-card" aria-busy="true">
+              <span class="lx-visually-hidden">Carregando Concept…</span>
               <span class="lx-skeleton lx-skeleton--frame" style="--lx-frame-ratio: var(--lx-ratio-detail)" aria-hidden="true"></span>
               <span class="lx-skeleton lx-skeleton--text" style="--lx-skeleton-width: 50%" aria-hidden="true"></span>
               <span class="lx-skeleton lx-skeleton--text" style="--lx-skeleton-width: 70%" aria-hidden="true"></span>
@@ -517,7 +519,7 @@
           <p class="lx-body">Header sticky sobre paper, variante overlay sobre Opening Frame e menu mobile em tela cheia com <code>&lt;dialog&gt;</code> nativo: foco preso, Esc fecha, foco volta ao botão. No mobile, o CTA de interesse fica fixo no rodapé do menu.</p>
         </div>
         <div class="lab-row">
-          <button class="lx-button lx-button--secondary" type="button" aria-haspopup="dialog" aria-controls="menu-mobile" data-lab-open-menu>Abrir o menu mobile</button>
+          <button class="lx-button lx-button--secondary" type="button" aria-haspopup="dialog" data-lab-open-menu>Abrir o menu mobile</button>
           <a class="lx-link lx-link--standalone" href="#composicao-opening">Ver header overlay <svg class="lx-link__icon" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
         </div>
       </section>
@@ -587,7 +589,13 @@
                 <li><a class="lx-header__link" href="#composicao-concept">Co-Owner</a></li>
               </ul>
             </nav>
-            <a class="lx-button lx-button--primary lx-header__cta" href="#composicao-interesse">Manifestar interesse</a>
+            <div class="lx-header__actions">
+              <a class="lx-button lx-button--primary lx-header__cta" href="#composicao-interesse">Manifestar interesse</a>
+              <button class="lx-icon-button lx-header__menu-button" type="button" aria-haspopup="dialog" data-lab-open-menu>
+                <svg aria-hidden="true" focusable="false"><use href="#i-menu"/></svg>
+                <span class="lx-visually-hidden">Abrir menu</span>
+              </button>
+            </div>
           </div>
         </header>
         <div class="lx-scene__backdrop">
