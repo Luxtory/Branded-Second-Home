@@ -1,0 +1,94 @@
+/* Header — sticky on paper; --overlay sits on an Opening Frame (use data-ground="night" + a --scrim-top Frame).
+ * Desktop nav from lg; below lg a menu button opens .lx-mobile-nav. Current page: aria-current="page". */
+@layer lx.components {
+  .lx-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--lx-z-sticky);
+    background-color: var(--lx-color-bg);
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-header--overlay {
+    position: absolute;
+    inset-inline: 0;
+    background-color: transparent;
+    border-bottom-color: transparent;
+  }
+
+  .lx-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--lx-space-6);
+    min-height: var(--lx-layout-header-height);
+  }
+
+  .lx-header__nav {
+    display: none;
+  }
+
+  .lx-header__list {
+    display: flex;
+    align-items: center;
+    gap: var(--lx-space-8);
+  }
+
+  .lx-header__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--lx-target-min);
+    color: var(--lx-color-fg);
+    font-size: var(--lx-text-small);
+    font-weight: var(--lx-weight-medium);
+    letter-spacing: var(--lx-tracking-label);
+    text-decoration-line: none;
+    text-decoration-thickness: var(--lx-border-hairline);
+    text-underline-offset: 0.4em;
+  }
+
+  .lx-header__link:hover,
+  .lx-header__link[aria-current="page"] {
+    text-decoration-line: underline;
+  }
+
+  .lx-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--lx-space-4);
+  }
+
+  .lx-header__cta {
+    display: none;
+  }
+
+  @media (min-width: 48rem) {
+    .lx-header__cta { display: inline-flex; }
+  }
+
+  @media (min-width: 64rem) {
+    .lx-header__nav { display: block; }
+    .lx-header__menu-button { display: none; }
+  }
+
+  /* Icon button: 48×48 target for menu/close. Needs an accessible name (aria-label or hidden text). */
+  .lx-icon-button {
+    display: inline-grid;
+    place-items: center;
+    width: var(--lx-target-control);
+    height: var(--lx-target-control);
+    padding: 0;
+    border: var(--lx-border-hairline) solid transparent;
+    background-color: transparent;
+    color: var(--lx-color-fg);
+  }
+
+  .lx-icon-button:hover {
+    border-color: var(--lx-color-rule-strong);
+  }
+
+  .lx-icon-button > svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}

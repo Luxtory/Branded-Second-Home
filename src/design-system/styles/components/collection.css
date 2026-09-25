@@ -1,0 +1,77 @@
+/* Coleção (internal: Collection) — a curated sequence of Residence Concepts, not a real-estate grid.
+ * Card = Frame + marker + name + credit. No box, no shadow, no radius. One link per card (whole card clickable). */
+@layer lx.components {
+  .lx-collection {
+    display: grid;
+    gap: var(--lx-space-16) var(--lx-layout-gutter);
+  }
+
+  @media (min-width: 48rem) {
+    .lx-collection { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lx-collection > :nth-child(even) { margin-top: var(--lx-space-16); }
+  }
+
+  @media (min-width: 64rem) {
+    .lx-collection { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    .lx-collection > :nth-child(odd) { grid-column: 1 / span 7; }
+    .lx-collection > :nth-child(even) { grid-column: 9 / span 4; margin-top: var(--lx-space-24); }
+  }
+
+  .lx-collection-card {
+    position: relative;
+    display: grid;
+    gap: var(--lx-space-4);
+    align-content: start;
+  }
+
+  .lx-collection-card .lx-frame__media > :is(img, picture) {
+    transition: transform var(--lx-duration-cinematic) var(--lx-ease-settle);
+  }
+
+  .lx-collection-card:hover .lx-frame__media > :is(img, picture) {
+    transform: scale(1.02);
+  }
+
+  .lx-collection-card__title {
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-text-display-m);
+    font-weight: var(--lx-weight-display);
+    line-height: var(--lx-leading-heading);
+    letter-spacing: var(--lx-tracking-display);
+    text-wrap: balance;
+  }
+
+  .lx-collection-card__link {
+    color: inherit;
+    text-decoration-line: none;
+    text-decoration-thickness: var(--lx-border-hairline);
+    text-underline-offset: 0.2em;
+  }
+
+  /* Stretched link: the whole card is one target; the card shows the focus ring. */
+  .lx-collection-card__link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: var(--lx-z-raised);
+  }
+
+  .lx-collection-card__link:focus-visible {
+    outline: none;
+  }
+
+  .lx-collection-card:has(.lx-collection-card__link:focus-visible) {
+    outline: var(--lx-focus-width) solid var(--lx-color-focus);
+    outline-offset: var(--lx-focus-offset);
+  }
+
+  .lx-collection-card:hover .lx-collection-card__link {
+    text-decoration-line: underline;
+  }
+
+  .lx-collection-card__summary {
+    font-size: var(--lx-text-body);
+    color: var(--lx-color-fg-muted);
+    max-width: var(--lx-measure-narrow);
+  }
+}

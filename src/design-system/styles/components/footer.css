@@ -1,0 +1,34 @@
+/* Footer — contentinfo landmark on a night ground. Also the no-JS fallback for mobile navigation. */
+@layer lx.components {
+  .lx-footer {
+    position: relative;
+    padding-block: var(--lx-space-16) var(--lx-space-12);
+  }
+
+  .lx-footer__nav-list {
+    display: grid;
+    gap: var(--lx-space-1);
+  }
+
+  .lx-footer__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--lx-target-min);
+    color: var(--lx-color-fg);
+    text-decoration-line: none;
+  }
+
+  .lx-footer__link:hover {
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--lx-border-hairline);
+    text-underline-offset: 0.3em;
+  }
+
+  .lx-footer__legal {
+    margin-top: var(--lx-space-12);
+    padding-top: var(--lx-space-6);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+    font-size: var(--lx-text-small);
+    color: var(--lx-color-fg-muted);
+  }
+}

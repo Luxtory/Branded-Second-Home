@@ -1,0 +1,23 @@
+/* Concept Credit — the Brand Partner slot of a Residence Concept (BR-010, BR-015).
+ * Render ONLY when the data layer carries an active authorization; after the partnership ends it disappears
+ * (BR-021, REQ-021). The partner mark is shown as supplied: never recolored, filtered or redrawn. */
+@layer lx.components {
+  .lx-credit {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--lx-space-2) var(--lx-space-3);
+    font-size: var(--lx-text-small);
+    color: var(--lx-color-fg-muted);
+  }
+
+  .lx-credit__mark {
+    height: 1.5rem;
+    width: auto;
+  }
+
+  .lx-credit__name {
+    font-weight: var(--lx-weight-medium);
+    color: var(--lx-color-fg);
+  }
+}

@@ -1,0 +1,76 @@
+/* Mobile Navigation — native <dialog> opened with showModal(): focus trapped, Esc closes, focus returns.
+ * Designed for mobile: full screen, night ground, large targets, interest CTA pinned at the bottom.
+ * Without JS the menu button can link to the footer navigation (#site-nav). */
+@layer lx.components {
+  .lx-mobile-nav {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    z-index: var(--lx-z-modal);
+    background-color: var(--lx-color-bg);
+    color: var(--lx-color-fg);
+    overscroll-behavior: contain;
+  }
+
+  .lx-mobile-nav[open] {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    animation: lx-mobile-nav-in var(--lx-duration-base) var(--lx-ease-settle) both;
+  }
+
+  .lx-mobile-nav::backdrop {
+    background-color: color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-max-alpha) * 100%), transparent);
+  }
+
+  @keyframes lx-mobile-nav-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .lx-mobile-nav__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: var(--lx-layout-header-height);
+    padding-inline: var(--lx-layout-margin);
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-mobile-nav__body {
+    overflow-y: auto;
+    padding: var(--lx-space-8) var(--lx-layout-margin);
+  }
+
+  .lx-mobile-nav__list > li {
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-mobile-nav__link {
+    display: flex;
+    align-items: center;
+    min-height: calc(var(--lx-target-control) + var(--lx-space-4));
+    color: var(--lx-color-fg);
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-text-display-s);
+    font-weight: var(--lx-weight-display);
+    text-decoration: none;
+  }
+
+  .lx-mobile-nav__link[aria-current="page"] {
+    font-style: italic;
+    color: var(--lx-color-accent);
+  }
+
+  .lx-mobile-nav__footer {
+    display: grid;
+    gap: var(--lx-space-4);
+    padding: var(--lx-space-6) var(--lx-layout-margin) max(var(--lx-space-6), env(safe-area-inset-bottom));
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+}

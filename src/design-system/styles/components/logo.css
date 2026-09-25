@@ -1,0 +1,27 @@
+/* Logo — official files only, used verbatim (src/design-system/brand/logo/README.md).
+ * The link carries the accessible name ("Luxtory — página inicial"). --pending marks the empty slot
+ * until the official kit arrives: never replaced by styled text. */
+@layer lx.components {
+  .lx-logo {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--lx-target-min);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .lx-logo > :is(img, svg) {
+    height: var(--lx-logo-height, 2rem);
+    width: auto;
+  }
+
+  .lx-logo--pending {
+    padding-inline: var(--lx-space-3);
+    border: var(--lx-border-hairline) dashed var(--lx-color-rule-strong);
+    font-family: var(--lx-font-story);
+    font-size: var(--lx-text-marker);
+    letter-spacing: var(--lx-tracking-marker);
+    text-transform: uppercase;
+    color: var(--lx-color-marker);
+  }
+}
