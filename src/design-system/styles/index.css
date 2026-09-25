@@ -12,3 +12,9 @@
 @import url("./components/sequence.css");
 @import url("./components/evidence.css");
 @import url("./components/motion.css");
+@import url("./components/button.css");
+@import url("./components/link.css");
+@import url("./components/field.css");
+@import url("./components/choice.css");
+@import url("./components/message.css");
+@import url("./components/states.css");

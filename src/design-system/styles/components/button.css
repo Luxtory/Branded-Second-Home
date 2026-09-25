@@ -1,0 +1,107 @@
+/* Button — one primary action per block. Colors come from the ground (paper/wash/night).
+ * States: :hover, :active, :focus-visible, [disabled]/[aria-disabled], [aria-busy="true"]. Height ≥ 48px. */
+@layer lx.components {
+  .lx-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--lx-space-3);
+    min-height: var(--lx-target-control);
+    padding: var(--lx-space-3) var(--lx-space-6);
+    border: var(--lx-border-hairline) solid transparent;
+    border-radius: var(--lx-radius-none);
+    background-color: transparent;
+    color: var(--lx-color-fg);
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-label);
+    font-weight: var(--lx-weight-medium);
+    letter-spacing: var(--lx-tracking-label);
+    line-height: var(--lx-leading-tight);
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color var(--lx-duration-base) var(--lx-ease-settle),
+      border-color var(--lx-duration-base) var(--lx-ease-settle),
+      color var(--lx-duration-base) var(--lx-ease-settle);
+  }
+
+  .lx-button--primary {
+    background-color: var(--lx-color-action-bg);
+    border-color: var(--lx-color-action-bg);
+    color: var(--lx-color-action-fg);
+  }
+
+  .lx-button--primary:hover {
+    background-color: var(--lx-color-action-bg-hover);
+    border-color: var(--lx-color-action-bg-hover);
+  }
+
+  .lx-button--secondary {
+    border-color: var(--lx-color-rule-strong);
+    color: var(--lx-color-fg);
+  }
+
+  .lx-button--secondary:hover {
+    background-color: var(--lx-color-action-bg);
+    border-color: var(--lx-color-action-bg);
+    color: var(--lx-color-action-fg);
+  }
+
+  .lx-button--quiet {
+    padding-inline: 0;
+    color: var(--lx-color-accent);
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--lx-border-hairline);
+    text-underline-offset: 0.3em;
+  }
+
+  .lx-button--quiet:hover {
+    text-decoration-thickness: var(--lx-focus-width);
+  }
+
+  .lx-button--block {
+    width: 100%;
+  }
+
+  .lx-button:active {
+    transform: translateY(var(--lx-border-hairline));
+  }
+
+  .lx-button__icon {
+    flex: none;
+    width: 1.125em;
+    height: 1.125em;
+    transition: transform var(--lx-duration-base) var(--lx-ease-settle);
+  }
+
+  .lx-button:hover .lx-button__icon {
+    transform: translateX(var(--lx-space-1));
+  }
+
+  .lx-button:disabled,
+  .lx-button[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.45;
+    transform: none;
+  }
+
+  .lx-button[aria-busy="true"] {
+    cursor: progress;
+  }
+
+  .lx-button[aria-busy="true"]::after {
+    content: "";
+    flex: none;
+    width: 1em;
+    height: 1em;
+    border: var(--lx-focus-width) solid currentColor;
+    border-inline-end-color: transparent;
+    border-radius: 50%;
+    animation: lx-spin var(--lx-duration-cinematic) linear infinite;
+  }
+
+  @keyframes lx-spin {
+    to { transform: rotate(1turn); }
+  }
+}

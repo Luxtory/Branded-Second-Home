@@ -1,0 +1,136 @@
+/* Field — visible label, optional hint, error with icon + text. Native controls, height ≥ 48px, border ≥ 3:1.
+ * Wiring: label[for] ↔ control[id]; control[aria-describedby] → hint/error ids; control[aria-invalid="true"]. */
+@layer lx.components {
+  .lx-field {
+    display: grid;
+    gap: var(--lx-space-2);
+    align-content: start;
+  }
+
+  .lx-field > .lx-label {
+    color: var(--lx-color-fg);
+  }
+
+  .lx-label__optional {
+    font-weight: var(--lx-weight-regular);
+    color: var(--lx-color-fg-muted);
+  }
+
+  .lx-hint {
+    font-size: var(--lx-text-small);
+    line-height: var(--lx-leading-body);
+    color: var(--lx-color-fg-muted);
+    max-width: var(--lx-measure-body);
+  }
+
+  .lx-error {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--lx-space-2);
+    font-size: var(--lx-text-small);
+    font-weight: var(--lx-weight-medium);
+    line-height: var(--lx-leading-tight);
+    color: var(--lx-color-error);
+  }
+
+  .lx-error__icon {
+    flex: none;
+    width: 1.25em;
+    height: 1.25em;
+  }
+
+  .lx-input,
+  .lx-textarea,
+  .lx-select {
+    display: block;
+    width: 100%;
+    min-height: var(--lx-target-control);
+    padding: var(--lx-space-3) var(--lx-space-4);
+    border: var(--lx-border-hairline) solid var(--lx-color-field-border);
+    border-radius: var(--lx-radius-none);
+    background-color: var(--lx-color-field-bg);
+    color: var(--lx-color-field-fg);
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-body);
+    line-height: var(--lx-leading-tight);
+    transition: box-shadow var(--lx-duration-quick) var(--lx-ease-settle);
+  }
+
+  .lx-input:hover,
+  .lx-textarea:hover,
+  .lx-select:hover {
+    box-shadow: inset 0 0 0 var(--lx-border-hairline) var(--lx-color-field-border);
+  }
+
+  .lx-input::placeholder,
+  .lx-textarea::placeholder {
+    color: var(--lx-color-fg-muted);
+    opacity: 1;
+  }
+
+  .lx-textarea {
+    min-height: calc(var(--lx-target-control) * 3);
+    line-height: var(--lx-leading-body);
+    resize: vertical;
+  }
+
+  :is(.lx-input, .lx-textarea, .lx-select)[aria-invalid="true"] {
+    border-color: var(--lx-color-error);
+    box-shadow: inset 0 0 0 var(--lx-border-hairline) var(--lx-color-error);
+  }
+
+  :is(.lx-input, .lx-textarea, .lx-select):disabled {
+    cursor: not-allowed;
+    background-color: var(--lx-color-surface);
+    box-shadow: none;
+  }
+
+  /* Native select with a drawn chevron (currentColor; no image, no color literal). */
+  .lx-select-wrap {
+    position: relative;
+  }
+
+  .lx-select {
+    appearance: none;
+    padding-inline-end: var(--lx-space-12);
+    cursor: pointer;
+  }
+
+  .lx-select-wrap::after {
+    content: "";
+    position: absolute;
+    inset-inline-end: var(--lx-space-4);
+    top: 50%;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-inline-end: var(--lx-focus-width) solid var(--lx-color-field-fg);
+    border-block-end: var(--lx-focus-width) solid var(--lx-color-field-fg);
+    transform: translateY(-70%) rotate(45deg);
+    pointer-events: none;
+  }
+
+  /* Revealed field (e.g. approx. days for Co-Owner): announced, no focus jump. */
+  .lx-field--revealed {
+    animation: lx-field-in var(--lx-duration-slow) var(--lx-ease-settle) both;
+  }
+
+  @keyframes lx-field-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .lx-form {
+    display: grid;
+    gap: var(--lx-space-8);
+    max-width: var(--lx-layout-container-narrow);
+  }
+
+  .lx-form__row {
+    display: grid;
+    gap: var(--lx-space-8) var(--lx-layout-gutter);
+  }
+
+  @media (min-width: 48rem) {
+    .lx-form__row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+}

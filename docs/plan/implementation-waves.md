@@ -15,7 +15,7 @@ Commit Conventional por onda, push em `claude/busy-edison-h75ufo`.
 | DS-0 | Spec + ADR-0003 + wave plan + NOTES sync | — | — | ✅ |
 | DS-1 | Foundations: tokens, fontes OFL, base, scripts de teste | DS-0 | — | ✅ |
 | DS-2 | Layout e narrativa: Container, Grid, Scene, Marker, Frame, Sequence, Evidence | DS-1 | — | ✅ |
-| DS-3 | Interação e formulário: Button, Link, Field, Choice Group, Message, States | DS-2 | — | ⬜ |
+| DS-3 | Interação e formulário: Button, Link, Field, Choice Group, Message, States | DS-2 | — | ✅ |
 | DS-4 | Navegação, Coleção e marca: Header, Mobile Nav, Footer, Collection Card, Credit, Logo slot | DS-3 | — | ⬜ |
 | DS-5 | Design System Lab + três composições R1 | DS-4 | — | ⬜ |
 | DS-6 | Documentação normativa + contexto para IAs | DS-5 | — | ⬜ |

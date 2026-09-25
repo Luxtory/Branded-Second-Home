@@ -1,0 +1,32 @@
+/* States — loading (static skeleton, no shimmer), empty and success. Loading regions use aria-busy. */
+@layer lx.components {
+  .lx-skeleton {
+    display: block;
+    background-color: var(--lx-color-skeleton);
+  }
+
+  .lx-skeleton--text {
+    height: 1em;
+    width: var(--lx-skeleton-width, 100%);
+    margin-block: 0.3em;
+  }
+
+  .lx-skeleton--frame {
+    aspect-ratio: var(--lx-frame-ratio, var(--lx-ratio-living));
+  }
+
+  .lx-empty,
+  .lx-success {
+    display: grid;
+    gap: var(--lx-space-6);
+    justify-items: start;
+    padding-block: var(--lx-space-12);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-success__icon {
+    width: 2rem;
+    height: 2rem;
+    color: var(--lx-color-success);
+  }
+}

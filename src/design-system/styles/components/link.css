@@ -1,0 +1,34 @@
+/* Text Link — always underlined (identifiable without color). --standalone adds an arrow for navigation. */
+@layer lx.components {
+  .lx-link {
+    color: var(--lx-color-accent);
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--lx-border-hairline);
+    text-underline-offset: 0.25em;
+    transition: text-underline-offset var(--lx-duration-base) var(--lx-ease-settle);
+  }
+
+  .lx-link:hover {
+    text-decoration-thickness: var(--lx-focus-width);
+    text-underline-offset: 0.3em;
+  }
+
+  .lx-link--standalone {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lx-space-2);
+    min-height: var(--lx-target-min);
+    font-weight: var(--lx-weight-medium);
+  }
+
+  .lx-link__icon {
+    flex: none;
+    width: 1.125em;
+    height: 1.125em;
+    transition: transform var(--lx-duration-base) var(--lx-ease-settle);
+  }
+
+  .lx-link:hover .lx-link__icon {
+    transform: translateX(var(--lx-space-1));
+  }
+}
