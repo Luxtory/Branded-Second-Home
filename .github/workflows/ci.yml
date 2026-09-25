@@ -89,6 +89,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
+      pull-requests: read   # gitleaks-action lista os commits do PR pela API
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }  # gitleaks needs full history
