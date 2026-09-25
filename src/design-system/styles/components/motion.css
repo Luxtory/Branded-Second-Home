@@ -1,0 +1,24 @@
+/* Motion — reveal on scroll via CSS scroll-driven animations. Progressive: content is visible by default;
+ * only browsers with animation-timeline and no reduced-motion preference animate. */
+@layer lx.components {
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      :root:not([data-motion="reduce"]) .lx-reveal {
+        animation: lx-reveal linear both;
+        animation-timeline: view();
+        animation-range: entry 5% cover 25%;
+      }
+    }
+  }
+
+  @keyframes lx-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(var(--lx-space-3));
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}

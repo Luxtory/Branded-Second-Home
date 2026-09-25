@@ -1,0 +1,117 @@
+/* Frame — every image adds to the story. Declared ratio (CLS = 0), optional caption, measured scrim,
+ * and the Typographic Frame when no official photography exists (never stock posing as the property). */
+@layer lx.components {
+  .lx-frame {
+    position: relative;
+    margin: 0;
+  }
+
+  .lx-frame__media {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: var(--lx-frame-ratio, var(--lx-ratio-living));
+    background-color: var(--lx-color-skeleton);
+  }
+
+  .lx-frame__media > img,
+  .lx-frame__media > picture > img,
+  .lx-frame__media > video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .lx-frame--establishing { --lx-frame-ratio: var(--lx-ratio-establishing-mobile); }
+  .lx-frame--living { --lx-frame-ratio: var(--lx-ratio-living); }
+  .lx-frame--detail { --lx-frame-ratio: var(--lx-ratio-detail); }
+
+  @media (min-width: 64rem) {
+    .lx-frame--establishing { --lx-frame-ratio: var(--lx-ratio-establishing); }
+  }
+
+  .lx-frame__caption {
+    margin-top: var(--lx-space-3);
+    font-family: var(--lx-font-story);
+    font-size: var(--lx-text-marker);
+    line-height: var(--lx-leading-marker);
+    color: var(--lx-color-marker);
+  }
+
+  /* Scrim: only where white text sits on an image. ≥ min-alpha under the text zone (bottom 60%). */
+  .lx-frame--scrim .lx-frame__media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-max-alpha) * 100%), transparent) 0%,
+      color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-min-alpha) * 100%), transparent) 60%,
+      transparent 100%
+    );
+  }
+
+  /* Opening Frames also shade the top band where an overlay header sits. */
+  .lx-frame--scrim-top .lx-frame__media::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: var(--lx-z-raised);
+    height: calc(var(--lx-layout-header-height) + var(--lx-space-8));
+    pointer-events: none;
+    background-image: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-min-alpha) * 100%), transparent) 0%,
+      color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-min-alpha) * 100%), transparent) 70%,
+      transparent 100%
+    );
+  }
+
+  /* Drift: a slow settle of the Opening Frame. ≤ 4.8s, runs once (WCAG 2.2.2). */
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion="reduce"]) .lx-frame--drift .lx-frame__media > :is(img, picture, video) {
+      animation: lx-drift var(--lx-duration-drift) var(--lx-ease-cinematic) both;
+    }
+  }
+
+  @keyframes lx-drift {
+    from { transform: scale(1.03); }
+    to { transform: scale(1); }
+  }
+
+  /* Typographic Frame: premium fallback without photography. Use data-ground="night" on __media. */
+  .lx-frame--typographic .lx-frame__media {
+    display: grid;
+    align-content: end;
+    gap: var(--lx-space-3);
+    padding: var(--lx-space-8);
+    background-color: var(--lx-color-bg);
+    color: var(--lx-color-fg);
+    outline: var(--lx-border-hairline) solid var(--lx-color-rule);
+    outline-offset: calc(-1 * var(--lx-space-4));
+  }
+
+  .lx-frame--typographic .lx-frame__media::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: var(--lx-grain-image);
+    background-size: var(--lx-grain-size);
+    opacity: var(--lx-grain-opacity);
+  }
+
+  .lx-frame__title {
+    position: relative;
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-text-display-m);
+    font-weight: var(--lx-weight-display);
+    line-height: var(--lx-leading-heading);
+    letter-spacing: var(--lx-tracking-display);
+    text-wrap: balance;
+  }
+
+  .lx-frame__meta {
+    position: relative;
+  }
+}

@@ -1,0 +1,39 @@
+/* Scene Marker — the STORY signature. Real metadata only (place · time · light · chapter).
+ * Max. 1 per Scene. Courier Prime, uppercase, tracked. Separator is decorative (not read aloud). */
+@layer lx.components {
+  .lx-marker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    font-family: var(--lx-font-story);
+    font-size: var(--lx-text-marker);
+    font-weight: var(--lx-weight-story);
+    line-height: var(--lx-leading-marker);
+    letter-spacing: var(--lx-tracking-marker);
+    text-transform: uppercase;
+    color: var(--lx-color-marker);
+  }
+
+  .lx-marker > * + *::before {
+    content: "·" / "";
+    padding-inline: 0.7em;
+  }
+
+  .lx-marker strong {
+    font-weight: var(--lx-weight-story-strong);
+  }
+
+  /* In the rail, a hairline introduces the marker — the margin of the script. */
+  .lx-scene__rail .lx-marker {
+    padding-top: var(--lx-space-3);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  /* Caption: Courier in sentence case, beside or under a Frame. */
+  .lx-caption {
+    font-family: var(--lx-font-story);
+    font-size: var(--lx-text-marker);
+    line-height: var(--lx-leading-marker);
+    color: var(--lx-color-marker);
+  }
+}

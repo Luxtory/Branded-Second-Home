@@ -5,3 +5,10 @@
 @import url("../tokens/tokens.css");
 @import url("./fonts.css");
 @import url("./base.css");
+@import url("./layout.css");
+@import url("./components/typography.css");
+@import url("./components/marker.css");
+@import url("./components/frame.css");
+@import url("./components/sequence.css");
+@import url("./components/evidence.css");
+@import url("./components/motion.css");

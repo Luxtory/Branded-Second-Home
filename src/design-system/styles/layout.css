@@ -1,0 +1,132 @@
+/* Luxtory Design System — layout: container, 4/8/12 grid, Scene composition ("a Planta"). */
+@layer lx.layout {
+  .lx-container {
+    width: 100%;
+    max-width: calc(var(--lx-layout-container-max) + 2 * var(--lx-layout-margin));
+    margin-inline: auto;
+    padding-inline: var(--lx-layout-margin);
+  }
+
+  .lx-container--narrow {
+    max-width: calc(var(--lx-layout-container-narrow) + 2 * var(--lx-layout-margin));
+  }
+
+  /* 4 columns < md ≤ 8 columns < lg ≤ 12 columns. DOM order is reading order. */
+  .lx-grid {
+    --lx-grid-columns: var(--lx-layout-columns-sm);
+    display: grid;
+    grid-template-columns: repeat(var(--lx-grid-columns), minmax(0, 1fr));
+    column-gap: var(--lx-layout-gutter);
+    row-gap: var(--lx-space-stack);
+    align-items: start;
+  }
+
+  .lx-grid > * {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  @media (min-width: 48rem) {
+    .lx-grid { --lx-grid-columns: var(--lx-layout-columns-md); }
+    .lx-grid > .lx-col-text { grid-column: 1 / span 6; }
+  }
+
+  @media (min-width: 64rem) {
+    .lx-grid { --lx-grid-columns: var(--lx-layout-columns-lg); }
+    .lx-grid > .lx-col-rail { grid-column: 1 / span 2; }
+    .lx-grid > .lx-col-content { grid-column: 3 / -1; }
+    .lx-grid > .lx-col-text { grid-column: 3 / span 5; }
+    .lx-grid > .lx-col-media { grid-column: 8 / -1; }
+  }
+
+  /* Scene: one narrative unit. Ground (paper | wash | night) comes from data-ground. */
+  .lx-scene {
+    position: relative;
+    isolation: isolate;
+    padding-block: var(--lx-space-scene);
+  }
+
+  .lx-scene__header {
+    display: grid;
+    gap: var(--lx-space-6);
+  }
+
+  .lx-scene__body {
+    display: grid;
+    gap: var(--lx-space-stack);
+    align-content: start;
+  }
+
+  .lx-scene__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--lx-space-4) var(--lx-space-8);
+  }
+
+  /* Marker Rail: on large screens the marker lives in the margin, like a screenplay's margin note. */
+  @media (min-width: 64rem) {
+    .lx-scene__rail {
+      position: sticky;
+      top: calc(var(--lx-layout-header-height) + var(--lx-space-8));
+      padding-top: var(--lx-space-2);
+    }
+  }
+
+  /* Media bleeds to the page edge on mobile and to the container edge on large screens. */
+  .lx-scene__media {
+    margin-inline: calc(-1 * var(--lx-layout-margin));
+  }
+
+  @media (min-width: 64rem) {
+    .lx-scene__media { margin-inline: 0 calc(-1 * var(--lx-layout-margin)); }
+
+    .lx-scene--media-start .lx-grid > .lx-col-text { grid-column: 9 / -1; grid-row: 1; }
+    .lx-scene--media-start .lx-grid > .lx-col-media { grid-column: 1 / span 7; grid-row: 1; }
+    .lx-scene--media-start .lx-grid > .lx-col-rail { grid-column: 9 / -1; grid-row: 1; }
+    .lx-scene--media-start .lx-scene__media { margin-inline: calc(-1 * var(--lx-layout-margin)) 0; }
+
+    .lx-scene--statement .lx-grid > .lx-col-text { grid-column: 3 / span 8; }
+  }
+
+  /* Opening Frame: full-viewport scene; media behind, words at the bottom over a measured scrim. */
+  .lx-scene--opening {
+    display: grid;
+    align-items: end;
+    min-height: min(100svh, 60rem);
+    padding-block: calc(var(--lx-layout-header-height) + var(--lx-space-16)) var(--lx-space-16);
+    overflow: hidden;
+  }
+
+  .lx-scene__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+
+  .lx-scene__backdrop .lx-frame__media {
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  /* Night grounds carry a subtle film grain (tile-based: cheap to paint). */
+  .lx-scene[data-ground="night"]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: var(--lx-grain-image);
+    background-size: var(--lx-grain-size);
+    opacity: var(--lx-grain-opacity);
+  }
+
+  .lx-scene--opening[data-ground="night"]::before {
+    z-index: 0;
+  }
+
+  .lx-scene--opening > .lx-container {
+    position: relative;
+    z-index: var(--lx-z-raised);
+  }
+}

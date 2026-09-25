@@ -1,0 +1,40 @@
+/* Sequence — a filmstrip of Frames. Horizontal scroll-snap with a peek of the next Frame.
+ * Markup: <div class="lx-sequence" role="region" aria-label="…" tabindex="0"><ol class="lx-sequence__track">… */
+@layer lx.components {
+  .lx-sequence {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--lx-layout-margin);
+    margin-inline: calc(-1 * var(--lx-layout-margin));
+    padding: 0 var(--lx-layout-margin) var(--lx-space-4);
+    scrollbar-width: thin;
+    scrollbar-color: var(--lx-color-rule) transparent;
+  }
+
+  .lx-sequence:focus-visible {
+    outline-offset: calc(-1 * var(--lx-focus-width));
+  }
+
+  .lx-sequence__track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 82%;
+    gap: var(--lx-layout-gutter);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .lx-sequence__item {
+    scroll-snap-align: start;
+  }
+
+  @media (min-width: 48rem) {
+    .lx-sequence__track { grid-auto-columns: 46%; }
+  }
+
+  @media (min-width: 64rem) {
+    .lx-sequence__track { grid-auto-columns: calc((100% - 2 * var(--lx-layout-gutter)) / 2.6); }
+  }
+}

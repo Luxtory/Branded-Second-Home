@@ -1,0 +1,58 @@
+/* Evidence — objective data drawn as an architectural dimension line (hairline with end ticks).
+ * <dl class="lx-evidence">. A missing value is NOT rendered — never a default (TECH-001).
+ * Never a price per day for Co-Owner (REQ-100); never a promise of return (REQ-101). */
+@layer lx.components {
+  .lx-evidence {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: var(--lx-space-8) var(--lx-layout-gutter);
+    margin: 0;
+  }
+
+  .lx-evidence__item {
+    position: relative;
+    padding-top: var(--lx-space-4);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-evidence__item::before,
+  .lx-evidence__item::after {
+    content: "";
+    position: absolute;
+    top: calc(var(--lx-border-marker-tick) / -2);
+    width: var(--lx-border-hairline);
+    height: var(--lx-border-marker-tick);
+    background-color: var(--lx-color-rule);
+  }
+
+  .lx-evidence__item::before { inset-inline-start: 0; }
+  .lx-evidence__item::after { inset-inline-end: 0; }
+
+  .lx-evidence__label {
+    font-family: var(--lx-font-story);
+    font-size: var(--lx-text-marker);
+    line-height: var(--lx-leading-marker);
+    letter-spacing: var(--lx-tracking-marker);
+    text-transform: uppercase;
+    color: var(--lx-color-marker);
+  }
+
+  .lx-evidence__value {
+    margin: var(--lx-space-2) 0 0;
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-lead);
+    font-weight: var(--lx-weight-medium);
+    line-height: var(--lx-leading-tight);
+    font-variant-numeric: tabular-nums lining-nums;
+    color: var(--lx-color-fg);
+  }
+
+  .lx-evidence--inline {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    gap: var(--lx-space-6) var(--lx-space-6);
+  }
+
+  .lx-evidence--inline .lx-evidence__value {
+    font-size: var(--lx-text-body);
+  }
+}
