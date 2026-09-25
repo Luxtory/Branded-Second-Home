@@ -103,8 +103,8 @@ Repúdio não se aplica à W0: não há mutation. A trilha de auditoria chega na
 - **Vector**: pacote npm ou action comprometidos.
 - **Likelihood**: Low · **Impact**: High · **Risk**: Medium
 - **Mitigation**:
-  - Config: versões exatas e lockfile; `npm ci`; `npm audit --omit=dev --audit-level=high`; Semgrep CE; Dependabot.
-  - Follow-up: fixar actions por SHA (W30).
+  - Config: versões exatas e lockfile; `npm ci`; `npm audit --omit=dev --audit-level=high`; Semgrep CE; actions
+    fixadas por SHA completo; Dependabot com `cooldown` de 7 dias; `.npmrc` `min-release-age=7` (npm ≥ 11.10).
 - **Owner**: Engenharia · **Tracking**: ADR-0004
 
 ### T-002 [LOW] Information disclosure — Lab indexado ou exposto em produção

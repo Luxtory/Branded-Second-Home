@@ -68,8 +68,8 @@ própria do arquivo. Usá-lo junto do `fonts.css` duplicaria downloads; usá-lo 
 | Contratos | Ajv (JSON Schema 2020-12) + ajv-formats + yaml | 8.20.0 / 3.0.1 / 2.9.1 |
 | E2E e acessibilidade | Playwright com o Chrome do sistema (`channel: 'chrome'`) + axe | 1.63.0 / 4.13.0 |
 | Migrations | dbmate — [ADR-0006](0006-acesso-a-dados.md) | 2.36.0 |
-| Segredos | gitleaks (regras padrão + exceção do arquivo ultron) | action v2 |
-| Dependências | `npm audit --omit=dev --audit-level=high` + Dependabot | — |
+| Segredos | gitleaks (regras padrão + exceção do arquivo ultron) | action v2.3.9 |
+| Dependências | `npm audit --omit=dev --audit-level=high` + Dependabot com `cooldown` de 7 dias; `.npmrc` `min-release-age=7` (efetivo a partir do npm 11.10) | — |
 | SAST | Semgrep CE, regras `p/default`, falha com achado | 1.178.0 |
 
 ### CI/CD (`.github/workflows/ci.yml`)
@@ -120,7 +120,8 @@ e da varredura de terminologia. A validação de ambiente lê só as chaves do c
 
 ### Neutral / follow-ups
 
-- Actions de terceiros estão fixadas por tag de versão maior; fixar por SHA é um endurecimento possível na W30.
+- Actions fixadas por SHA completo, com a versão em comentário (achado do Semgrep na W0); o Dependabot atualiza SHA e
+  comentário.
 - CSP entra com a primeira página pública (W4); a W0 aplica só cabeçalhos sem risco de quebra.
 
 ## Alternatives considered
