@@ -1,3 +1,96 @@
+# Implementation waves — Luxtory Branded Second Home
+
+> Fonte de verdade do roadmap de implementação; a tabela de `NOTES.md` espelha a coluna Status.
+> Derivado com `/waves`. O plano original do template foi preservado verbatim no
+> [Anexo A](#anexo-a--plano-do-template-concluído).
+
+## Design System (DS) — `docs/specs/design-system.md`
+
+Implementação tecnologicamente neutra (ADR-0003): tokens + CSS `lx-*` + Lab estático + docs.
+Todas as ondas são **sequenciais**: compartilham `tokens.json` e `styles/index.css`.
+Commit Conventional por onda, push em `claude/busy-edison-h75ufo`.
+
+| Wave | Deliverable | Depends on | Parallel with | Status |
+|------|-------------|------------|---------------|--------|
+| DS-0 | Spec + ADR-0003 + wave plan + NOTES sync | — | — | ✅ |
+| DS-1 | Foundations: tokens, fontes OFL, base, scripts de teste | DS-0 | — | ⬜ |
+| DS-2 | Layout e narrativa: Container, Grid, Scene, Marker, Frame, Sequence, Evidence | DS-1 | — | ⬜ |
+| DS-3 | Interação e formulário: Button, Link, Field, Choice Group, Message, States | DS-2 | — | ⬜ |
+| DS-4 | Navegação, Coleção e marca: Header, Mobile Nav, Footer, Collection Card, Credit, Logo slot | DS-3 | — | ⬜ |
+| DS-5 | Design System Lab + três composições R1 | DS-4 | — | ⬜ |
+| DS-6 | Documentação normativa + contexto para IAs | DS-5 | — | ⬜ |
+| DS-7 | QA visual, acessibilidade, `/verify` | DS-6 | — | ⬜ |
+
+### DS-0 — Governança e spec
+
+- **Goal**: contrato antes do código.
+- **Scope (files)**: `docs/specs/design-system.md`, `docs/adr/0003-design-system-camada-compartilhada.md`, este
+  arquivo, `docs/adr/README.md`, `docs/specs/README.md`, `NOTES.md` (local).
+- **Acceptance criteria**: spec segue `docs/specs/_template.md`; o Anexo A é idêntico ao plano anterior.
+- **Goal command**: `/goal docs/specs/design-system.md and ADR-0003 exist and the Anexo A section of docs/plan/implementation-waves.md is byte-identical to the previous plan, stop after 2 tries`
+
+### DS-1 — Foundations
+
+- **Goal**: tokens, fontes e base prontos e verificados por teste.
+- **Scope (files)**: `src/design-system/{tokens,fonts,styles/base.css,styles/fonts.css,styles/index.css,scripts}`.
+- **Acceptance criteria**: `node --test src/design-system/scripts/` verde; paleta imutável exata; contraste por
+  fundo e scrim aprovado; zero literais proibidos; fontes ≤ 220KB total e ≤ 100KB com preload; `OFL.txt` presentes.
+- **Goal command**: `/goal node --test src/design-system/scripts/ exits 0, stop after 4 tries`
+
+### DS-2 — Layout e narrativa
+
+- **Goal**: a gramática LUXURY + STORY (Scene, Marker, Frame, Sequence, Evidence) disponível como classes `lx-*`.
+- **Scope (files)**: `src/design-system/styles/layout.css`, `styles/components/{typography,marker,frame,sequence,evidence,motion}.css`.
+- **Acceptance criteria**: testes verdes; Frames com proporção declarada; drift ≤ 4.8s e 1×; reduced motion
+  sem transform.
+- **Goal command**: `/goal node --test src/design-system/scripts/ exits 0 and every DS-2 component class listed in the spec exists in styles/, stop after 3 tries`
+
+### DS-3 — Interação e formulário
+
+- **Goal**: controles acessíveis para o formulário de interesse.
+- **Scope (files)**: `styles/components/{button,link,field,choice,message,states}.css`, `src/design-system/icons/`.
+- **Acceptance criteria**: testes verdes; controles ≥ 48px; erro com ícone + texto; foco visível por fundo.
+- **Goal command**: `/goal node --test src/design-system/scripts/ exits 0 and every DS-3 component class listed in the spec exists in styles/, stop after 3 tries`
+
+### DS-4 — Navegação, Coleção e marca
+
+- **Goal**: estrutura de navegação e vitrine de Concepts.
+- **Scope (files)**: `styles/components/{header,mobile-nav,footer,collection,credit,logo}.css`, `src/design-system/brand/logo/README.md`.
+- **Acceptance criteria**: testes verdes; nenhum logo provisório versionado; card sem caixa nem sombra.
+- **Goal command**: `/goal node --test src/design-system/scripts/ exits 0 and every DS-4 component class listed in the spec exists in styles/, stop after 3 tries`
+
+### DS-5 — Design System Lab
+
+- **Goal**: página de referência visual e de regressão.
+- **Scope (files)**: `src/design-system/lab/{index.html,lab.css,lab.js}`.
+- **Acceptance criteria**: todas as seções da spec §6 presentes; três composições R1; `check-hardcodes` cobre o Lab.
+- **Goal command**: `/goal node --test src/design-system/scripts/ exits 0 and lab/index.html contains the three R1 compositions, stop after 3 tries`
+
+### DS-6 — Documentação e contexto para IAs
+
+- **Goal**: qualquer IA ou dev encontra e segue o sistema.
+- **Scope (files)**: `docs/reference/design-system.md`, `.claude/skills/frontend-design/SKILL.md` (seção
+  `[CUSTOMIZE]`), `CLAUDE.md`, `AGENTS.md`, `docs/reference/README.md`, `docs/README.md`, `CHANGELOG.md`.
+- **Acceptance criteria**: links internos resolvem; somente adições em `CLAUDE.md` e `AGENTS.md`; canônicos intactos.
+- **Goal command**: `/goal every relative link in docs/reference/design-system.md resolves and git diff --stat docs/specs/canonical is empty, stop after 2 tries`
+
+### DS-7 — QA visual, acessibilidade e `/verify`
+
+- **Goal**: evidência de qualidade antes do GO/NO-GO.
+- **Scope (files)**: correções pontuais apontadas pelo QA.
+- **Acceptance criteria**: axe sem violações; sem overflow horizontal em 320–1920px; teclado completo; reduced
+  motion; `/verify` executado.
+- **Goal command**: `/goal axe reports 0 violations on the Lab at 390 and 1440px and no viewport from 320 to 1920 has horizontal overflow, stop after 4 tries`
+
+### Execution notes
+
+- O W0 (scaffold Next.js, CI, `## Commands`) é pré-requisito dos wrappers React do DS, não destas ondas.
+- Pendência externa: kit oficial de logos (commit aditivo em `src/design-system/brand/logo/`).
+
+---
+
+## Anexo A — plano do template (concluído)
+
 # Implementation waves — Loop engineering primitives
 
 > Source spec: `docs/specs/loop-engineering.md`. This file is the source of

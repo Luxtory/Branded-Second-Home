@@ -25,7 +25,6 @@ or alongside its implementation.
 **Module specs** (one per `src/features/<module>/`, created in the wave that implements it,
 citing the canonical IDs):
 
-[CUSTOMIZE] List specs as you add them, e.g.:
+**Cross-cutting specs** (not a `src/features/` slice):
 
-- [orders](orders.md) — order placement, payment, fulfillment
-- [auth](auth.md) — sign-in, sign-up, password reset
+- [design-system](design-system.md) — Design System Luxtory (LUXURY + STORY): tokens, tipografia, componentes do R1
