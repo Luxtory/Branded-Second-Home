@@ -18,8 +18,11 @@ que só rodam na CI quebram a paridade local/CI.
 
 Usaremos **`embedded-postgres`** (binários oficiais do PostgreSQL 17, mesmo major do Supabase) em processo local:
 
-1. **Servidor por execução.** O projeto `db` do Vitest sobe um PostgreSQL em porta livre, com a pasta de dados em
-   `os.tmpdir()` (ext4/tmpfs), descartada no fim (`tests/support/postgres-global-setup.ts`).
+1. **Servidor por execução, em processo filho.** O projeto `db` do Vitest sobe um PostgreSQL em porta livre, com a
+   pasta de dados em `os.tmpdir()` (ext4/tmpfs), descartada no fim (`tests/support/postgres-global-setup.ts`). O
+   servidor roda em `scripts/pg-server.mjs`, nunca no processo do Vitest: o `embedded-postgres` registra
+   `async-exit-hook` ao ser importado, que chama `process.exit(0)` no `beforeExit` e fazia o Vitest sair com 0 mesmo
+   com testes falhando. O setup falha se algum módulo registrar `beforeExit` no processo do Vitest.
 2. **Banco-modelo.** O setup cria `luxtory_template`, aplica a compatibilidade Supabase e roda `dbmate up` com as
    migrations do repositório. Cada teste clona o modelo (`CREATE DATABASE … TEMPLATE`), em isolamento total
    (`tests/support/test-database.ts`).

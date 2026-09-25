@@ -1,7 +1,7 @@
 // Prova de rollback (ADR-0006, TECH-110): as migrations sobem, descem por completo e sobem de novo.
 // "Descer por completo" = depois de todos os rollbacks o catálogo volta exatamente ao estado anterior.
 import { countMigrationFiles, dbmate, MIGRATIONS_SCHEMA, MIGRATIONS_TABLE } from './dbmate.mjs';
-import { withClient } from './embedded-pg.mjs';
+import { withClient } from './pg.mjs';
 
 export class MigrationCheckError extends Error {
   constructor(message) {

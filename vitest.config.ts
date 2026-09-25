@@ -40,7 +40,8 @@ export default defineConfig({
           include: ['tests/**/*.db.test.ts'],
           exclude: [ULTRON],
           globalSetup: ['tests/support/postgres-global-setup.ts'],
-          testTimeout: 30_000,
+          // Folga para o I/O do drvfs (/mnt/c) e para os processos do dbmate e do PostgreSQL.
+          testTimeout: 60_000,
           hookTimeout: 120_000,
         },
       },

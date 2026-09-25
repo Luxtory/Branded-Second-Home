@@ -1,24 +1,33 @@
 import type { TestProject } from 'vitest/node';
 import { migrateUp } from '../../scripts/lib/dbmate.mjs';
-import { applySupabaseCompat, startPostgres } from '../../scripts/lib/embedded-pg.mjs';
+import { applySupabaseCompat, createDatabase } from '../../scripts/lib/pg.mjs';
+import { startPostgresProcess } from '../../scripts/lib/postgres-process.mjs';
 
 const TEMPLATE_DATABASE = 'luxtory_template';
 
 /**
- * Projeto `db` do Vitest (ADR-0005): um PostgreSQL real por execução e um banco-modelo com as migrations do
- * repositório; cada arquivo de teste clona o modelo (tests/support/test-database.ts).
+ * Projeto `db` do Vitest (ADR-0005): um PostgreSQL real por execução, em processo filho, e um banco-modelo com as
+ * migrations do repositório; cada teste clona o modelo (tests/support/test-database.ts).
  */
 export default async function setup(project: TestProject) {
-  const server = await startPostgres();
+  const exitListenersBefore = process.listenerCount('beforeExit');
+  const server = await startPostgresProcess();
   try {
-    const url = await server.createDatabase(TEMPLATE_DATABASE);
+    const url = await createDatabase(server.adminUrl, TEMPLATE_DATABASE);
     await applySupabaseCompat(url);
     await migrateUp(url);
+    // Guarda: um hook de saída no processo do Vitest (ex.: `embedded-postgres` importado aqui) troca o código de
+    // saída por 0 e faria a CI passar com testes falhando.
+    if (process.listenerCount('beforeExit') !== exitListenersBefore) {
+      throw new Error(
+        'A module registered a beforeExit hook in the Vitest process: exit codes would be lost',
+      );
+    }
   } catch (error) {
     await server.stop();
     throw error;
   }
-  project.provide('postgres', { adminUrl: server.url('postgres'), template: TEMPLATE_DATABASE });
+  project.provide('postgres', { adminUrl: server.adminUrl, template: TEMPLATE_DATABASE });
   return async () => {
     await server.stop();
   };

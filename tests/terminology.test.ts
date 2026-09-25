@@ -25,6 +25,8 @@ const TEXT_EXTENSIONS = new Set([
   '.yml',
 ]);
 // Fora da varredura: o arquivo ultron e os testes do Design System, que definem estas mesmas regras.
+// Varre centenas de arquivos: no drvfs (/mnt/c) a leitura pode passar do limite padrão de 5 s.
+const SCAN_TIMEOUT_MS = 30_000;
 const NEVER_SCANNED = new Set(['activate-ultronpx.mjs', join('src', 'design-system', 'scripts')]);
 
 function textFiles(dir: string): string[] {
@@ -37,18 +39,24 @@ function textFiles(dir: string): string[] {
 }
 
 describe('terminologia (02 §1)', () => {
-  it('[REQ-100] varredura de terminologia cobre src/ e docs/api', () => {
-    const files = ROOTS.flatMap(textFiles);
-    const hits = files.flatMap((path) =>
-      readFileSync(path, 'utf8')
-        .split('\n')
-        .flatMap((line, index) =>
-          FORBIDDEN.filter((rule) => rule.test(line)).map((rule) => `${path}:${index + 1} ${rule}`),
-        ),
-    );
+  it(
+    '[REQ-100] varredura de terminologia cobre src/ e docs/api',
+    () => {
+      const files = ROOTS.flatMap(textFiles);
+      const hits = files.flatMap((path) =>
+        readFileSync(path, 'utf8')
+          .split('\n')
+          .flatMap((line, index) =>
+            FORBIDDEN.filter((rule) => rule.test(line)).map(
+              (rule) => `${path}:${index + 1} ${rule}`,
+            ),
+          ),
+      );
 
-    expect(files.some((path) => path.startsWith('docs/api'))).toBe(true);
-    expect(files.some((path) => path.startsWith(join('src', 'features')))).toBe(true);
-    expect(hits).toEqual([]);
-  });
+      expect(files.some((path) => path.startsWith('docs/api'))).toBe(true);
+      expect(files.some((path) => path.startsWith(join('src', 'features')))).toBe(true);
+      expect(hits).toEqual([]);
+    },
+    SCAN_TIMEOUT_MS,
+  );
 });

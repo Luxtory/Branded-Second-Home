@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 const PORT = 3100;
 const baseURL = `http://127.0.0.1:${PORT}`;
-const SERVER_START_TIMEOUT_MS = 60_000;
+const SERVER_START_TIMEOUT_MS = 120_000;
 
 // E2E sobre o build de produção (npm run test:e2e = next build && playwright test), com o Chrome do sistema.
 export default defineConfig({
