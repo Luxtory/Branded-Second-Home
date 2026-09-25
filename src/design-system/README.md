@@ -13,5 +13,5 @@
 | `styles/` | `index.css` (único import), base, layout e `components/*.css` (classes `lx-*`) |
 | `fonts/` | Newsreader, Hanken Grotesk e Courier Prime (SIL OFL, gratuitas), `manifest.json` com os limites de peso |
 | `icons/` | ícones hairline SVG (`currentColor`) |
-| `brand/logo/` | regras de uso do logo; o kit oficial entra aqui |
+| `brand/logo/` | kit oficial de logos (arquivos intocados) + `manifest.json` (chaves e sha256) + regras de uso |
 | `scripts/` | build de tokens e checagens, mais testes `node --test src/design-system/scripts/*.test.mjs` |

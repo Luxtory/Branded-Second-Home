@@ -1,20 +1,43 @@
-/* Logo — official files only, used verbatim (src/design-system/brand/logo/README.md).
- * The link carries the accessible name ("Luxtory — página inicial"). --pending marks the empty slot
- * until the official kit arrives: never replaced by styled text. */
+/* Logo — official kit only, used verbatim through brand/logo/manifest.json keys (README in that folder).
+ * Always as <img> (or <picture>), never inline SVG: the files carry mix-blend-mode:lighten (wordmark vanishes on
+ * light grounds when inlined) and the icon files hide the wordmark outside their viewBox.
+ * The link carries the accessible name ("Luxtory — página inicial"); the image uses alt="".
+ * Clear space = half the logo height (the icon's height in the horizontal lockup), kept by padding/margin. */
 @layer lx.components {
   .lx-logo {
+    --lx-logo-height: 2rem;
     display: inline-flex;
     align-items: center;
+    flex: none;
+    max-width: 100%;
     min-height: var(--lx-target-min);
+    padding-block: calc(var(--lx-logo-height) / 4);
+    margin-inline-end: calc(var(--lx-logo-height) / 2);
     color: inherit;
     text-decoration: none;
   }
 
-  .lx-logo > :is(img, svg) {
-    height: var(--lx-logo-height, 2rem);
-    width: auto;
+  .lx-logo > picture {
+    display: contents;
   }
 
+  /* Height drives the size; if a narrow container caps the width, object-fit keeps the proportion (never distorts). */
+  .lx-logo img,
+  .lx-logo > svg {
+    display: block;
+    height: var(--lx-logo-height);
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    object-position: left center;
+  }
+
+  /* Vertical lockup: brand moments and footer (taller mark). */
+  .lx-logo--vertical {
+    --lx-logo-height: 4.5rem;
+  }
+
+  /* Legacy slot for a missing asset (e.g. a future Pure White variant): never styled text as a logo. */
   .lx-logo--pending {
     padding-inline: var(--lx-space-3);
     border: var(--lx-border-hairline) dashed var(--lx-color-rule-strong);

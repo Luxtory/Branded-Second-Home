@@ -1,0 +1,48 @@
+{
+  "$description": "Official Luxtory logo kit (received 2026-09-25, upload 53c4a5c). Files are kept byte-for-byte as supplied; code and docs refer to them ONLY through these canonical keys. sha256 pins each file (scripts/brand.test.mjs). Use as <img> (or CSS background) — never inline: the SVGs carry mix-blend-mode:lighten and the icon files hide the wordmark outside their viewBox.",
+  "grounds": {
+    "moroccan-blue": ["paper", "wash"],
+    "warm-sand": ["night"]
+  },
+  "logos": {
+    "horizontal/moroccan-blue": {
+      "file": "Logo-Luxtory-Moroccan-Blue-Horizontal.svg",
+      "sha256": "e5d2940d2de123609eb8e0302997037c8e441655a9c67b0967a37d135058f742",
+      "viewBox": [1473.9868, 229.99997],
+      "use": "Header and footer on paper/wash. Canonical horizontal lockup."
+    },
+    "horizontal/warm-sand": {
+      "file": "Logo-Luxtory-Warm-Sand-Horizontal.svg",
+      "sha256": "531cf50a7d293c50b232a17238fefbaf09768103488c421a4961fef0f77716a4",
+      "viewBox": [1473.9868, 229.99997],
+      "use": "Header on night, overlay header over Opening Frames (with scrim), mobile menu."
+    },
+    "vertical/moroccan-blue": {
+      "file": "Luxtory_logo_vertical_moroccan_blue.svg",
+      "sha256": "7f7eb5c13ba0ae943d43cd8c3e874a135e02146ad21d74b26b1eb786b4d9e45e",
+      "viewBox": [1176.3929, 541.6062],
+      "use": "Brand moments on paper/wash (closings, confirmation scenes)."
+    },
+    "vertical/warm-sand": {
+      "file": "Logo-Luxtory-Warm-Sand-Vertical.svg",
+      "sha256": "08ce5e98b8b1508e71e135074b24c2c0bc787532899c6258395e318228394cfd",
+      "viewBox": [1176.3929, 541.6062],
+      "use": "Footer and brand moments on night."
+    },
+    "icon/moroccan-blue": {
+      "file": "Logo-Luxtory-Moroccan-Blue-Icone.svg",
+      "sha256": "e4492f1ea9c5649931797b382d2e9c3ea8308b727a0c85732bae2fb0e24ec639",
+      "viewBox": [370.00002, 324.07452],
+      "use": "Favicon, avatar, header below 360px viewport, spaces narrower than 120px — on paper/wash."
+    },
+    "icon/warm-sand": {
+      "file": "Logo-Luxtory-Warm-Sand-Icone.png.svg",
+      "sha256": "0aa6ebeda3f63d1fa6326bc19beee42ba359d7dcff35d7bc2cac32d247855e92",
+      "viewBox": [370.00002, 324.07452],
+      "use": "Same as icon/moroccan-blue, on night."
+    }
+  },
+  "missing": {
+    "horizontal/pure-white": "Not supplied. Over photography use horizontal/warm-sand on a scrim ≥ 68% until Luxtory decides."
+  }
+}

@@ -74,7 +74,8 @@ Nenhum. O Design System não expõe endpoints nem eventos.
   | Pure White | `#FFFFFF` |
 
 - **Logo.** Arquivos oficiais usados verbatim, sem redesenho, recoloração, distorção ou texto substituto.
-  Ficam em `src/design-system/brand/logo/`, que recebe o kit oficial num commit aditivo.
+  Kit oficial recebido em 2026-09-25, em `src/design-system/brand/logo/`: horizontal, vertical e ícone em Moroccan Blue
+  e Warm Sand. Referência por chave em `manifest.json`, com sha256 fixado; uso sempre como `<img>`.
 - **Derivados funcionais** (não são cores de marca):
 
   | Token | Valor | Uso |
@@ -164,7 +165,7 @@ Uso detalhado, markup e exemplos: [`docs/reference/design-system.md`](../referen
 | Footer | `lx-footer` | — | `contentinfo` |
 | Collection Card | `lx-collection` (`ul`) + `lx-collection-card` | — | um link por card (área inteira clicável); sem caixa nem sombra |
 | Concept Credit | `lx-credit` | — | não renderiza sem autorização nos dados; logo da parceira nunca recolorido |
-| Logo | `lx-logo` | `--pending` (até o kit oficial) | link para a home com nome acessível "Luxtory" |
+| Logo | `lx-logo` | `--vertical`; `--pending` (só para asset ausente) | `<img alt="">` dentro de link com nome acessível; `<picture>` troca pelo ícone abaixo de 360px |
 
 ## 6. Acceptance criteria
 
@@ -227,8 +228,8 @@ Não aplicável (camada visual). Performance acompanhada por Core Web Vitals no 
 
 ## 11. Open questions
 
-1. **Kit oficial de logos** (a Luxtory vai enviar), com horizontal em Moroccan Blue e lockup canônico confirmado.
-   Bloqueia só `lx-logo`.
+1. ~~Kit oficial de logos~~: **recebido em 2026-09-25** (manifest em `src/design-system/brand/logo/`). Falta ainda uma
+   versão **Pure White** para uso sobre fotografia; até lá, Warm Sand sobre scrim ≥ 68%.
 2. **Fotografia oficial** de Concepts e Residences.
 3. **Campos de contato e qualificação** do interesse (REQ-025), incluindo base legal e consentimento LGPD.
 4. **Regras de exposição de marca por Brand Partner** (BR-015).

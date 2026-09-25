@@ -288,7 +288,13 @@ bloqueia, `role="alert"`.
 ### Logo · `lx-logo`
 
 - Link com `aria-label="Luxtory — página inicial"` e imagem `alt=""`.
-- `--pending` até o kit oficial (nunca texto estilizado).
+- Kit oficial via chaves de [`manifest.json`](../../src/design-system/brand/logo/manifest.json): `horizontal`, `vertical` e `icon`, cada um
+  em `moroccan-blue` (paper/wash) e `warm-sand` (night).
+- **Sempre `<img>`/`<picture>`, nunca SVG inline**: os arquivos usam `mix-blend-mode`, e inline o "LUXTORY" some
+  sobre fundo claro.
+- Respiro: metade da altura do logo, garantido por `lx-logo`. Ícone abaixo de 360px de viewport; `lx-logo--vertical`
+  para o lockup vertical.
+- `--pending` só para asset ausente (nunca texto estilizado).
 - Regras: [`src/design-system/brand/logo/README.md`](../../src/design-system/brand/logo/README.md).
 
 ### Utilitários

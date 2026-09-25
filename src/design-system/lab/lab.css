@@ -154,6 +154,7 @@
   .lab-do,
   .lab-dont {
     display: grid;
+    align-content: start;
     gap: var(--lx-space-3);
     padding: var(--lx-space-6);
     border: var(--lx-border-hairline) solid var(--lx-color-rule-strong);

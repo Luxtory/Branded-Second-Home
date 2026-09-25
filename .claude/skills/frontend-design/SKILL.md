@@ -74,7 +74,9 @@ visual QA: `src/design-system/lab/index.html`.
 - **Accessibility baseline:** WCAG 2.2 AA — visible 2px focus ring per ground, contrast verified by test,
   targets 44px (controls 48px), errors with icon + text, `prefers-reduced-motion` + `data-motion="reduce"`
   honored, no auto-motion > 5s, no horizontal scroll 320–1920px.
-- **Logo:** official files only, verbatim (`src/design-system/brand/logo/README.md`); kit pending →
-  `lx-logo--pending` slot, never styled text.
+- **Logo:** official kit (received 2026-09-25), verbatim, via `src/design-system/brand/logo/manifest.json` keys
+  (`horizontal|vertical|icon` × `moroccan-blue` on paper/wash, `warm-sand` on night). Always `<img>`/`<picture>`,
+  never inline SVG (blend modes erase the wordmark on light grounds); clear space = half the logo height; icon below
+  360px viewport; never recolor/filter; never styled text as a logo. Rules: `src/design-system/brand/logo/README.md`.
 
 Remember: Claude is capable of extraordinary creative work. Don't hold back, show what can truly be created when thinking outside the box and committing fully to a distinctive vision.

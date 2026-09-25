@@ -64,7 +64,8 @@ conflict, 01 prevails (BR-380, REQ-104).
 - **Pending inputs** — do not invent; build behind replaceable seams:
   - PSP not contracted → `PaymentGateway` port + deterministic fake adapter (TECH-081);
   - brand guide pending → neutral, replaceable design tokens;
-    Design System in place: `docs/specs/design-system.md` (official logo kit and photography still pending);
+    Design System in place: `docs/specs/design-system.md` (official logo kit received 2026-09-25 —
+    `src/design-system/brand/logo/manifest.json`; official photography and a Pure White logo still pending);
   - contact/qualification fields of the interest form are not enumerated in REQ-025 → await
     Luxtory's definition;
   - commercial policies (PD-009), unset parameters and PRL are **operation** prerequisites
@@ -99,7 +100,8 @@ Source of truth for every user-facing UI (**LUXTORY = LUXURY + STORY**). Read be
   CSS `lx-*` in `styles/` (import `styles/index.css`), free OFL fonts in `fonts/`, Lab in `lab/index.html`.
 - Tests (until W0 wires CI): `node --test src/design-system/scripts/*.test.mjs` (contrast, hardcodes, fonts,
   terminology, tokens sync, Lab).
-- Never hardcode color/font/duration/easing/z-index; never recolor or redraw the logo (official kit pending).
+- Never hardcode color/font/duration/easing/z-index; never recolor or redraw the logo. Logos: official kit in
+  `src/design-system/brand/logo/` — reference files via `manifest.json` keys, always as `<img>` (never inline SVG).
 
 ## NOTES.md — living document (mandatory)
 

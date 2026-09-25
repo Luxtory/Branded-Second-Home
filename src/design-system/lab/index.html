@@ -26,9 +26,7 @@
 
   <header class="lx-header" data-ground="paper">
     <div class="lx-container lx-header__inner">
-      <a class="lx-logo lx-logo--pending" href="#conteudo" aria-label="Luxtory — página inicial">
-        <span aria-hidden="true">Logo · kit oficial</span>
-      </a>
+      <a class="lx-logo" href="#conteudo" aria-label="Luxtory — página inicial"><picture><source media="(max-width: 22.49rem)" srcset="../brand/logo/Logo-Luxtory-Moroccan-Blue-Icone.svg"><img src="../brand/logo/Logo-Luxtory-Moroccan-Blue-Horizontal.svg" alt="" width="1474" height="230"></picture></a>
       <nav class="lx-header__nav" aria-label="Seções do Lab">
         <ul class="lx-header__list">
           <li><a class="lx-header__link" href="#foundations" aria-current="page">Foundations</a></li>
@@ -48,7 +46,7 @@
 
   <dialog class="lx-mobile-nav" id="menu-mobile" data-ground="night" aria-label="Menu">
     <div class="lx-mobile-nav__top">
-      <span class="lx-logo lx-logo--pending" aria-hidden="true">Logo · kit oficial</span>
+      <span class="lx-logo"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Horizontal.svg" alt="Luxtory" width="1474" height="230"></span>
       <button class="lx-icon-button" type="button" data-lab-close-menu>
         <svg aria-hidden="true" focusable="false"><use href="#i-close"/></svg>
         <span class="lx-visually-hidden">Fechar menu</span>
@@ -108,16 +106,39 @@
         <div class="lab-section__head">
           <p class="lx-marker"><span>01</span><span>Logo</span></p>
           <h2 id="t-logo" class="lx-display-m">A marca, <em>intocada</em>.</h2>
-          <p class="lx-body">Arquivos oficiais usados verbatim, sem recolorir, sem distorcer e sem texto no lugar. O kit oficial ainda não chegou. Até lá, o slot fica explícito.</p>
+          <p class="lx-body">Kit oficial recebido: horizontal, vertical e ícone, em Moroccan Blue e Warm Sand. Arquivos usados byte a byte, sempre como imagem. Moroccan Blue no dia, Warm Sand na noite.</p>
         </div>
         <div class="lab-grid-2">
           <div class="lab-panel" data-ground="paper">
-            <a class="lx-logo lx-logo--pending" href="#logo" aria-label="Luxtory — página inicial"><span aria-hidden="true">Logo · kit oficial</span></a>
-            <p class="lx-small">Paper e wash: versão Moroccan Blue.</p>
+            <p class="lx-marker"><span>Paper</span><span>Wash</span><span>Moroccan Blue</span></p>
+            <span class="lx-logo"><img src="../brand/logo/Logo-Luxtory-Moroccan-Blue-Horizontal.svg" alt="Luxtory — horizontal Moroccan Blue" width="1474" height="230"></span>
+            <div class="lab-row">
+              <span class="lx-logo lx-logo--vertical"><img src="../brand/logo/Luxtory_logo_vertical_moroccan_blue.svg" alt="Luxtory — vertical Moroccan Blue" width="1176" height="542"></span>
+              <span class="lx-logo lx-logo--vertical"><img src="../brand/logo/Logo-Luxtory-Moroccan-Blue-Icone.svg" alt="Luxtory — ícone Moroccan Blue" width="370" height="324"></span>
+            </div>
+            <p class="lab-note">horizontal/moroccan-blue · vertical/moroccan-blue · icon/moroccan-blue</p>
           </div>
           <div class="lab-panel" data-ground="night">
-            <a class="lx-logo lx-logo--pending" href="#logo" aria-label="Luxtory — página inicial"><span aria-hidden="true">Logo · kit oficial</span></a>
-            <p class="lx-small">Night: Warm Sand ou Pure White. Sobre foto, só branco com scrim ≥ 68%.</p>
+            <p class="lx-marker"><span>Night</span><span>Warm Sand</span></p>
+            <span class="lx-logo"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Horizontal.svg" alt="Luxtory — horizontal Warm Sand" width="1474" height="230"></span>
+            <div class="lab-row">
+              <span class="lx-logo lx-logo--vertical"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Vertical.svg" alt="Luxtory — vertical Warm Sand" width="1176" height="542"></span>
+              <span class="lx-logo lx-logo--vertical"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Icone.png.svg" alt="Luxtory — ícone Warm Sand" width="370" height="324"></span>
+            </div>
+            <p class="lab-note">horizontal/warm-sand · vertical/warm-sand · icon/warm-sand</p>
+          </div>
+        </div>
+        <div class="lab-grid-2" style="margin-top: var(--lx-space-8)">
+          <div class="lab-do">
+            <p class="lab-verdict"><svg aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Faça</p>
+            <p class="lx-small">Use as chaves do <code>manifest.json</code> e sempre <code>&lt;img&gt;</code>. Respiro de metade da altura do logo. Horizontal a partir de 120px de largura; ícone abaixo de 360px de viewport. O nome acessível fica no link, e a imagem leva <code>alt=""</code>.</p>
+          </div>
+          <div class="lab-dont">
+            <p class="lab-verdict"><svg aria-hidden="true" focusable="false"><use href="#i-close"/></svg>Não faça</p>
+            <div class="lab-panel" data-ground="night">
+              <span class="lx-logo"><img src="../brand/logo/Logo-Luxtory-Moroccan-Blue-Horizontal.svg" alt="Exemplo errado: Moroccan Blue sobre night" width="1474" height="230"></span>
+            </div>
+            <p class="lx-small">Moroccan Blue sobre night (some), Warm Sand sobre branco (2.11:1), SVG inline (o <code>mix-blend-mode</code> apaga o "LUXTORY" em fundo claro), recolorir, filtrar ou distorcer.</p>
           </div>
         </div>
       </section>
@@ -581,7 +602,7 @@
       <section id="composicao-opening" class="lx-scene lx-scene--opening" data-ground="night" aria-labelledby="c-opening-title">
         <header class="lx-header lx-header--overlay" data-ground="night">
           <div class="lx-container lx-header__inner">
-            <a class="lx-logo lx-logo--pending" href="#composicao-opening" aria-label="Luxtory — página inicial"><span aria-hidden="true">Logo · kit oficial</span></a>
+            <a class="lx-logo" href="#composicao-opening" aria-label="Luxtory — página inicial"><picture><source media="(max-width: 22.49rem)" srcset="../brand/logo/Logo-Luxtory-Warm-Sand-Icone.png.svg"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Horizontal.svg" alt="" width="1474" height="230"></picture></a>
             <nav class="lx-header__nav" aria-label="Navegação (exemplo)">
               <ul class="lx-header__list">
                 <li><a class="lx-header__link" href="#composicao-opening" aria-current="page">Coleção</a></li>
@@ -714,7 +735,7 @@
   <footer class="lx-footer" data-ground="night" id="site-nav">
     <div class="lx-container lx-grid">
       <div class="lx-col-rail">
-        <span class="lx-logo lx-logo--pending" aria-hidden="true">Logo · kit oficial</span>
+        <span class="lx-logo lx-logo--vertical"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Vertical.svg" alt="Luxtory" width="1176" height="542"></span>
       </div>
       <nav class="lx-col-content" aria-label="Rodapé (exemplo)">
         <ul class="lx-footer__nav-list">
