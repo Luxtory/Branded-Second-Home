@@ -84,3 +84,6 @@ master-*.zip
 SPEC_HOTMART_*.md
 .vercel
 .env*
+
+# Playwright MCP artifacts (local test snapshots)
+.playwright-mcp/
