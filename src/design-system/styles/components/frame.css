@@ -37,34 +37,47 @@
     color: var(--lx-color-marker);
   }
 
-  /* Scrim: only where white text sits on an image. ≥ min-alpha under the text zone (bottom 60%). */
-  .lx-frame--scrim .lx-frame__media::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image: linear-gradient(
+  /* Scrim: only where white text sits on an image. ≥ min-alpha under the text zone (bottom 60%);
+   * --scrim-top also shades the band where an overlay header sits. Both live in ::after
+   * (::before is reserved for grain). */
+  .lx-frame--scrim,
+  .lx-frame--scrim-top {
+    --lx-scrim-bottom: linear-gradient(
       to top,
       color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-max-alpha) * 100%), transparent) 0%,
       color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-min-alpha) * 100%), transparent) 60%,
       transparent 100%
     );
-  }
-
-  /* Opening Frames also shade the top band where an overlay header sits. */
-  .lx-frame--scrim-top .lx-frame__media::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    z-index: var(--lx-z-raised);
-    height: calc(var(--lx-layout-header-height) + var(--lx-space-8));
-    pointer-events: none;
-    background-image: linear-gradient(
+    --lx-scrim-top: linear-gradient(
       to bottom,
       color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-min-alpha) * 100%), transparent) 0%,
       color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-min-alpha) * 100%), transparent) 70%,
       transparent 100%
     );
+    --lx-scrim-top-size: 100% calc(var(--lx-layout-header-height) + var(--lx-space-8));
+  }
+
+  :is(.lx-frame--scrim, .lx-frame--scrim-top) .lx-frame__media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: var(--lx-z-raised);
+    pointer-events: none;
+    background-repeat: no-repeat;
+  }
+
+  .lx-frame--scrim .lx-frame__media::after {
+    background-image: var(--lx-scrim-bottom);
+  }
+
+  .lx-frame--scrim-top .lx-frame__media::after {
+    background-image: var(--lx-scrim-top);
+    background-size: var(--lx-scrim-top-size);
+  }
+
+  .lx-frame--scrim.lx-frame--scrim-top .lx-frame__media::after {
+    background-image: var(--lx-scrim-top), var(--lx-scrim-bottom);
+    background-size: var(--lx-scrim-top-size), 100% 100%;
   }
 
   /* Drift: a slow settle of the Opening Frame. ≤ 4.8s, runs once (WCAG 2.2.2). */

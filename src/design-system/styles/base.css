@@ -38,6 +38,11 @@
     color-scheme: dark;
   }
 
+  /* Components set display; [hidden] must still hide them. */
+  [hidden] {
+    display: none !important;
+  }
+
   h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd, ol, ul {
     margin: 0;
   }
@@ -128,6 +133,11 @@
 }
 
 @layer lx.utilities {
+  /* Keeps compound terms together (e.g. "Co-Owner" must not break at the hyphen). */
+  .lx-nowrap {
+    white-space: nowrap;
+  }
+
   .lx-visually-hidden {
     position: absolute !important;
     width: 1px !important;

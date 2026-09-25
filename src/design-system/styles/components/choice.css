@@ -30,6 +30,7 @@
     grid-template-columns: auto 1fr;
     gap: var(--lx-space-1) var(--lx-space-3);
     align-items: start;
+    align-content: start;
     min-height: var(--lx-target-min);
     padding: var(--lx-space-4) var(--lx-space-6) var(--lx-space-4) var(--lx-space-4);
     border: var(--lx-border-hairline) solid var(--lx-color-field-border);

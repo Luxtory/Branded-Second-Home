@@ -17,7 +17,7 @@ Commit Conventional por onda, push em `claude/busy-edison-h75ufo`.
 | DS-2 | Layout e narrativa: Container, Grid, Scene, Marker, Frame, Sequence, Evidence | DS-1 | — | ✅ |
 | DS-3 | Interação e formulário: Button, Link, Field, Choice Group, Message, States | DS-2 | — | ✅ |
 | DS-4 | Navegação, Coleção e marca: Header, Mobile Nav, Footer, Collection Card, Credit, Logo slot | DS-3 | — | ✅ |
-| DS-5 | Design System Lab + três composições R1 | DS-4 | — | ⬜ |
+| DS-5 | Design System Lab + três composições R1 | DS-4 | — | ✅ |
 | DS-6 | Documentação normativa + contexto para IAs | DS-5 | — | ⬜ |
 | DS-7 | QA visual, acessibilidade, `/verify` | DS-6 | — | ⬜ |
 
@@ -40,7 +40,7 @@ Commit Conventional por onda, push em `claude/busy-edison-h75ufo`.
 ### DS-2 — Layout e narrativa
 
 - **Goal**: a gramática LUXURY + STORY (Scene, Marker, Frame, Sequence, Evidence) disponível como classes `lx-*`.
-- **Scope (files)**: `src/design-system/styles/layout.css`, `styles/components/{typography,marker,frame,sequence,evidence,motion}.css`.
+- **Scope (files)**: `src/design-system/styles/layout.css`, `styles/components/{typography,marker,frame,scene,sequence,evidence,motion}.css`.
 - **Acceptance criteria**: testes verdes; Frames com proporção declarada; drift ≤ 4.8s e 1×; reduced motion
   sem transform.
 - **Goal command**: `/goal node --test src/design-system/scripts/*.test.mjs exits 0 and every DS-2 component class listed in the spec exists in styles/, stop after 3 tries`

@@ -14,9 +14,19 @@
     color: var(--lx-color-marker);
   }
 
-  .lx-marker > * + *::before {
+  /* Each part carries a leading separator. The marker is shifted left by one separator width and that strip
+   * is clipped, so the separator that starts any line (first or wrapped) is never visible. */
+  .lx-marker {
+    --lx-marker-sep: 1.6em;
+    margin-inline-start: calc(-1 * var(--lx-marker-sep));
+    clip-path: inset(0 0 0 var(--lx-marker-sep));
+  }
+
+  .lx-marker > *::before {
     content: "·" / "";
-    padding-inline: 0.7em;
+    display: inline-block;
+    width: var(--lx-marker-sep);
+    text-align: center;
   }
 
   .lx-marker strong {
@@ -27,6 +37,11 @@
   .lx-scene__rail .lx-marker {
     padding-top: var(--lx-space-3);
     border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  @media (min-width: 64rem) {
+    .lx-scene__rail .lx-marker { flex-direction: column; margin-inline-start: 0; clip-path: none; }
+    .lx-scene__rail .lx-marker > *::before { content: none; }
   }
 
   /* Caption: Courier in sentence case, beside or under a Frame. */

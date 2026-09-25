@@ -1,0 +1,203 @@
+/* Design System Lab — documentation chrome only (swatches, matrix, specimens). Tokens only; no product styles.
+ * Everything a product screen needs lives in ../styles/. Prefix: lab-. */
+@layer lx.utilities {
+  .lab-section {
+    padding-block: var(--lx-space-16);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lab-section__head {
+    display: grid;
+    gap: var(--lx-space-3);
+    margin-bottom: var(--lx-space-12);
+  }
+
+  .lab-stack {
+    display: grid;
+    gap: var(--lx-space-8);
+  }
+
+  .lab-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--lx-space-4) var(--lx-space-6);
+  }
+
+  .lab-grid-2,
+  .lab-grid-3 {
+    display: grid;
+    gap: var(--lx-space-8) var(--lx-layout-gutter);
+  }
+
+  @media (min-width: 48rem) {
+    .lab-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lab-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  .lab-banner {
+    padding: var(--lx-space-4) var(--lx-space-6);
+    border: var(--lx-border-hairline) dashed var(--lx-color-rule-strong);
+    font-size: var(--lx-text-small);
+    max-width: var(--lx-measure-body);
+  }
+
+  .lab-toc {
+    columns: 2 12rem;
+    column-gap: var(--lx-layout-gutter);
+  }
+
+  .lab-toc a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--lx-target-min);
+  }
+
+  /* Swatches */
+  .lab-swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr));
+    gap: var(--lx-space-6) var(--lx-layout-gutter);
+  }
+
+  .lab-swatch__chip {
+    aspect-ratio: 4 / 3;
+    border: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lab-swatch__name {
+    margin-top: var(--lx-space-3);
+    font-weight: var(--lx-weight-medium);
+  }
+
+  .lab-swatch__meta {
+    font-family: var(--lx-font-story);
+    font-size: var(--lx-text-marker);
+    color: var(--lx-color-fg-muted);
+  }
+
+  /* Tables (contrast matrix, token tables) */
+  .lab-table-wrap {
+    overflow-x: auto;
+  }
+
+  .lab-table-wrap:focus-visible {
+    outline-offset: calc(-1 * var(--lx-focus-width));
+  }
+
+  .lab-table {
+    width: 100%;
+    min-width: 36rem;
+    border-collapse: collapse;
+    font-size: var(--lx-text-small);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .lab-table th,
+  .lab-table td {
+    padding: var(--lx-space-3) var(--lx-space-4);
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+    text-align: start;
+    vertical-align: top;
+  }
+
+  .lab-table th {
+    font-weight: var(--lx-weight-semibold);
+  }
+
+  .lab-table caption {
+    margin-bottom: var(--lx-space-3);
+    text-align: start;
+    color: var(--lx-color-fg-muted);
+  }
+
+  .lab-pass { font-weight: var(--lx-weight-semibold); }
+
+  /* Specimens and token scales */
+  .lab-specimen {
+    display: grid;
+    gap: var(--lx-space-3);
+    padding-block: var(--lx-space-6);
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lab-note {
+    font-family: var(--lx-font-story);
+    font-size: var(--lx-text-marker);
+    color: var(--lx-color-fg-muted);
+  }
+
+  .lab-scale {
+    display: grid;
+    gap: var(--lx-space-3);
+  }
+
+  .lab-scale__row {
+    display: grid;
+    grid-template-columns: 6rem 1fr;
+    align-items: center;
+    gap: var(--lx-space-4);
+  }
+
+  .lab-scale__bar {
+    height: var(--lx-space-3);
+    background-color: var(--lx-color-action-bg);
+  }
+
+  .lab-panel {
+    padding: var(--lx-space-8);
+    display: grid;
+    gap: var(--lx-space-6);
+    align-content: start;
+  }
+
+  .lab-do,
+  .lab-dont {
+    display: grid;
+    gap: var(--lx-space-3);
+    padding: var(--lx-space-6);
+    border: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  }
+
+  .lab-dont {
+    border-style: dashed;
+  }
+
+  .lab-verdict {
+    display: flex;
+    align-items: center;
+    gap: var(--lx-space-2);
+    font-weight: var(--lx-weight-semibold);
+  }
+
+  .lab-verdict > svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .lab-code {
+    display: block;
+    overflow-x: auto;
+    padding: var(--lx-space-4);
+    background-color: var(--lx-color-surface);
+    font-family: var(--lx-font-story);
+    font-size: var(--lx-text-marker);
+    line-height: var(--lx-leading-body);
+    white-space: pre;
+  }
+
+  .lab-pending-block {
+    display: grid;
+    gap: var(--lx-space-2);
+    padding: var(--lx-space-6);
+    border: var(--lx-border-hairline) dashed var(--lx-color-rule-strong);
+  }
+
+  .lab-icon-sprite {
+    display: none;
+  }
+
+  .lab-mini-frame {
+    max-width: 22rem;
+  }
+}

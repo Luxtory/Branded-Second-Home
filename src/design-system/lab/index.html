@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Luxtory — Design System Lab</title>
+  <meta name="description" content="Referência visual e de QA do Design System Luxtory (LUXURY + STORY).">
+  <link rel="preload" href="../fonts/newsreader/newsreader-opsz72-roman-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../fonts/hanken-grotesk/hanken-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../styles/index.css">
+  <link rel="stylesheet" href="lab.css">
+  <script src="lab.js" defer></script>
+</head>
+<body data-ground="paper">
+  <svg class="lab-icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M3 12h17M14 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 8h18M3 16h18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M12 3L22 20H2L12 3z"/><path d="M12 10v5M12 17.5v.5"/></g></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></g></symbol>
+  </svg>
+
+  <a class="lx-skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="lx-header" data-ground="paper">
+    <div class="lx-container lx-header__inner">
+      <a class="lx-logo lx-logo--pending" href="#conteudo" aria-label="Luxtory — página inicial">
+        <span aria-hidden="true">Logo · kit oficial</span>
+      </a>
+      <nav class="lx-header__nav" aria-label="Seções do Lab">
+        <ul class="lx-header__list">
+          <li><a class="lx-header__link" href="#foundations" aria-current="page">Foundations</a></li>
+          <li><a class="lx-header__link" href="#componentes">Componentes</a></li>
+          <li><a class="lx-header__link" href="#composicoes">Composições R1</a></li>
+        </ul>
+      </nav>
+      <div class="lx-header__actions">
+        <a class="lx-button lx-button--primary lx-header__cta" href="#composicao-interesse">Manifestar interesse</a>
+        <button class="lx-icon-button lx-header__menu-button" type="button" aria-haspopup="dialog" aria-controls="menu-mobile" data-lab-open-menu>
+          <svg aria-hidden="true" focusable="false"><use href="#i-menu"/></svg>
+          <span class="lx-visually-hidden">Abrir menu</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <dialog class="lx-mobile-nav" id="menu-mobile" data-ground="night" aria-label="Menu">
+    <div class="lx-mobile-nav__top">
+      <span class="lx-logo lx-logo--pending" aria-hidden="true">Logo · kit oficial</span>
+      <button class="lx-icon-button" type="button" data-lab-close-menu>
+        <svg aria-hidden="true" focusable="false"><use href="#i-close"/></svg>
+        <span class="lx-visually-hidden">Fechar menu</span>
+      </button>
+    </div>
+    <nav class="lx-mobile-nav__body" aria-label="Seções do Lab">
+      <ul class="lx-mobile-nav__list">
+        <li><a class="lx-mobile-nav__link" href="#foundations" aria-current="page">Foundations</a></li>
+        <li><a class="lx-mobile-nav__link" href="#componentes">Componentes</a></li>
+        <li><a class="lx-mobile-nav__link" href="#composicoes">Composições R1</a></li>
+      </ul>
+    </nav>
+    <div class="lx-mobile-nav__footer">
+      <a class="lx-button lx-button--primary lx-button--block" href="#composicao-interesse">Manifestar interesse</a>
+    </div>
+  </dialog>
+
+  <main id="conteudo">
+    <!-- ============================== INTRO ============================== -->
+    <section class="lx-scene" data-ground="paper" aria-labelledby="lab-title">
+      <div class="lx-container lx-grid">
+        <div class="lx-col-rail lx-scene__rail">
+          <p class="lx-marker"><span>Design System Lab</span><span>v1</span><span>2026-09-25</span></p>
+        </div>
+        <div class="lx-col-content lx-scene__body">
+          <h1 id="lab-title" class="lx-display-l">Luxtory = Luxury + <em>Story</em>.</h1>
+          <p class="lx-lead">Mostre o luxo. Conte a história. Esta página é a referência viva do sistema: o que está aqui é o que o produto usa.</p>
+          <p class="lab-banner"><strong>Conteúdo de demonstração.</strong> Nomes de Concepts, regiões e textos das composições são exemplos para QA visual, não Residence Concepts reais. Sem fotografia oficial, os Frames usam o Typographic Frame.</p>
+          <nav aria-label="Índice do Lab">
+            <ol class="lab-toc">
+              <li><a class="lx-link" href="#logo">01 Logo</a></li>
+              <li><a class="lx-link" href="#paleta">02 Paleta e contraste</a></li>
+              <li><a class="lx-link" href="#tipografia">03 Tipografia</a></li>
+              <li><a class="lx-link" href="#courier">04 Courier Prime</a></li>
+              <li><a class="lx-link" href="#tokens">05 Tokens</a></li>
+              <li><a class="lx-link" href="#grounds">06 Grounds</a></li>
+              <li><a class="lx-link" href="#botoes">07 Botões e links</a></li>
+              <li><a class="lx-link" href="#formularios">08 Formulários</a></li>
+              <li><a class="lx-link" href="#estados">09 Estados</a></li>
+              <li><a class="lx-link" href="#frames">10 Frames</a></li>
+              <li><a class="lx-link" href="#sequence">11 Sequence</a></li>
+              <li><a class="lx-link" href="#evidence">12 Evidence</a></li>
+              <li><a class="lx-link" href="#colecao">13 Coleção</a></li>
+              <li><a class="lx-link" href="#navegacao">14 Navegação</a></li>
+              <li><a class="lx-link" href="#motion">15 Motion</a></li>
+              <li><a class="lx-link" href="#acessibilidade">16 Acessibilidade</a></li>
+              <li><a class="lx-link" href="#composicoes">R1 Composições</a></li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </section>
+
+    <div id="foundations" class="lx-container">
+      <!-- ============================== 01 LOGO ============================== -->
+      <section id="logo" class="lab-section" aria-labelledby="t-logo">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>01</span><span>Logo</span></p>
+          <h2 id="t-logo" class="lx-display-m">A marca, <em>intocada</em>.</h2>
+          <p class="lx-body">Arquivos oficiais usados verbatim, sem recolorir, sem distorcer e sem texto no lugar. O kit oficial ainda não chegou. Até lá, o slot fica explícito.</p>
+        </div>
+        <div class="lab-grid-2">
+          <div class="lab-panel" data-ground="paper">
+            <a class="lx-logo lx-logo--pending" href="#logo" aria-label="Luxtory — página inicial"><span aria-hidden="true">Logo · kit oficial</span></a>
+            <p class="lx-small">Paper e wash: versão Moroccan Blue.</p>
+          </div>
+          <div class="lab-panel" data-ground="night">
+            <a class="lx-logo lx-logo--pending" href="#logo" aria-label="Luxtory — página inicial"><span aria-hidden="true">Logo · kit oficial</span></a>
+            <p class="lx-small">Night: Warm Sand ou Pure White. Sobre foto, só branco com scrim ≥ 68%.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== 02 PALETA ============================== -->
+      <section id="paleta" class="lab-section" aria-labelledby="t-paleta">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>02</span><span>Paleta e contraste</span></p>
+          <h2 id="t-paleta" class="lx-display-m">Papel, tinta e <em>luz</em>.</h2>
+          <p class="lx-body">O branco domina e o Dark Moroccan é a tinta. A areia é luz: hairlines, markers e ação na noite. Cinco cores de marca, sempre as mesmas.</p>
+        </div>
+        <h3 class="lx-label">Paleta de marca (imutável)</h3>
+        <ul class="lab-swatches" role="list">
+          <li><div class="lab-swatch__chip" style="background-color: var(--lx-palette-moroccan-blue)"></div><p class="lab-swatch__name">Moroccan Blue</p><p class="lab-swatch__meta">#0F4E67 · ênfase, links</p></li>
+          <li><div class="lab-swatch__chip" style="background-color: var(--lx-palette-dark-moroccan-blue)"></div><p class="lab-swatch__name">Dark Moroccan Blue</p><p class="lab-swatch__meta">#003D52 · tinta, night</p></li>
+          <li><div class="lab-swatch__chip" style="background-color: var(--lx-palette-warm-sand)"></div><p class="lab-swatch__name">Warm Sand</p><p class="lab-swatch__meta">#CDAD8E · luz, hairlines</p></li>
+          <li><div class="lab-swatch__chip" style="background-color: var(--lx-palette-dark-warm-sand)"></div><p class="lab-swatch__name">Dark Warm Sand</p><p class="lab-swatch__meta">#9E8567 · aviso (UI)</p></li>
+          <li><div class="lab-swatch__chip" style="background-color: var(--lx-palette-pure-white)"></div><p class="lab-swatch__name">Pure White</p><p class="lab-swatch__meta">#FFFFFF · papel</p></li>
+        </ul>
+        <h3 class="lx-label" style="margin-top: var(--lx-space-12)">Derivados funcionais (não são cores de marca)</h3>
+        <ul class="lab-swatches" role="list">
+          <li><div class="lab-swatch__chip" style="background-color: var(--lx-derived-sand-wash)"></div><p class="lab-swatch__name">Sand Wash</p><p class="lab-swatch__meta">#F7F2ED · ground wash</p></li>
+          <li><div class="lab-swatch__chip" style="background-color: var(--lx-derived-error)"></div><p class="lab-swatch__name">Erro</p><p class="lab-swatch__meta">#9B2226 · paper/wash</p></li>
+          <li><div class="lab-swatch__chip" style="background-color: var(--lx-derived-error-on-night)"></div><p class="lab-swatch__name">Erro na noite</p><p class="lab-swatch__meta">#F2B8B5 · night</p></li>
+        </ul>
+        <div class="lab-table-wrap" role="region" aria-label="Matriz de contraste" tabindex="0" style="margin-top: var(--lx-space-12)">
+          <table class="lab-table">
+            <caption>Matriz de contraste WCAG (texto sobre fundo). ✓ texto ≥ 4.5 · L só texto grande/UI ≥ 3 · ✗ reprovado.</caption>
+            <thead><tr><th scope="col">Texto ↓ / Fundo →</th><th scope="col">Pure White</th><th scope="col">Sand Wash</th><th scope="col">Warm Sand</th><th scope="col">Moroccan Blue</th><th scope="col">Dark Moroccan</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Dark Moroccan</th><td class="lab-pass">11.74 ✓</td><td class="lab-pass">10.55 ✓</td><td class="lab-pass">5.57 ✓</td><td>1.29 ✗</td><td>—</td></tr>
+              <tr><th scope="row">Moroccan Blue</th><td class="lab-pass">9.11 ✓</td><td class="lab-pass">8.19 ✓</td><td>4.32 L</td><td>—</td><td>1.29 ✗</td></tr>
+              <tr><th scope="row">Warm Sand</th><td>2.11 ✗</td><td>1.89 ✗</td><td>—</td><td>4.32 L</td><td class="lab-pass">5.57 ✓</td></tr>
+              <tr><th scope="row">Dark Warm Sand</th><td>3.50 L</td><td>3.14 L</td><td>1.66 ✗</td><td>2.60 ✗</td><td>3.36 L</td></tr>
+              <tr><th scope="row">Pure White</th><td>—</td><td>1.11 ✗</td><td>2.11 ✗</td><td class="lab-pass">9.11 ✓</td><td class="lab-pass">11.74 ✓</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============================== 03 TIPOGRAFIA ============================== -->
+      <section id="tipografia" class="lab-section" aria-labelledby="t-tipo">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>03</span><span>Tipografia</span></p>
+          <h2 id="t-tipo" class="lx-display-m">Três vozes, <em>um sotaque</em>.</h2>
+          <p class="lx-body">Newsreader para desejo, Hanken Grotesk para clareza e Courier Prime para o roteiro. As três são gratuitas (SIL OFL) e ficam hospedadas no próprio site.</p>
+        </div>
+        <div class="lab-specimen">
+          <p class="lab-note">lx-display-xl · Newsreader 400 · Opening Frame</p>
+          <p class="lx-display-xl">A manhã começa <em>na varanda</em>.</p>
+        </div>
+        <div class="lab-specimen">
+          <p class="lab-note">lx-display-l · Scene headline</p>
+          <p class="lx-display-l">Uma casa pensada para <em>ser vivida</em>.</p>
+        </div>
+        <div class="lab-specimen">
+          <p class="lab-note">lx-display-m · nomes de Concept, títulos de seção</p>
+          <p class="lx-display-m">Ação com <em>Direito de Uso</em>.</p>
+        </div>
+        <div class="lab-specimen">
+          <p class="lab-note">lx-display-s · Newsreader 500</p>
+          <p class="lx-display-s">O que você imagina para os seus dias fora.</p>
+        </div>
+        <div class="lab-specimen">
+          <p class="lab-note">lx-lead · Hanken Grotesk</p>
+          <p class="lx-lead">Residence Concepts nascem do universo de marcas desejadas e ganham forma em casas construídas do zero.</p>
+        </div>
+        <div class="lab-specimen">
+          <p class="lab-note">lx-body · Hanken Grotesk 17–18px · medida 66ch</p>
+          <p class="lx-body">Owner tem a Residence inteira. Co-Owner é acionista da SPE proprietária da Residence e tem Direito de Uso. As duas modalidades começam do mesmo jeito: pelo Concept que faz sentido para você.</p>
+        </div>
+        <div class="lab-specimen">
+          <p class="lab-note">lx-small · lx-label</p>
+          <p class="lx-small">Texto de apoio, notas e metadados funcionais.</p>
+          <p class="lx-label">Rótulo de campo</p>
+        </div>
+      </section>
+
+      <!-- ============================== 04 COURIER ============================== -->
+      <section id="courier" class="lab-section" aria-labelledby="t-courier">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>04</span><span>Courier Prime</span></p>
+          <h2 id="t-courier" class="lx-display-m">A voz do <em>roteiro</em>.</h2>
+          <p class="lx-body">Só para metadado real: lugar, hora, luz, capítulo. No máximo um marker por Scene. Rara de propósito, para que cada marker pese como cena.</p>
+        </div>
+        <div class="lab-grid-2">
+          <div class="lab-do">
+            <p class="lab-verdict"><svg aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Faça</p>
+            <p class="lx-marker"><span>Varanda</span><span>18:37</span></p>
+            <p class="lx-marker"><span>Capítulo II</span><span>A casa</span></p>
+            <p class="lx-caption">Sala de estar, fim de tarde. A luz entra pelo pátio.</p>
+          </div>
+          <div class="lab-dont">
+            <p class="lab-verdict"><svg aria-hidden="true" focusable="false"><use href="#i-close"/></svg>Não faça</p>
+            <p class="lx-small">Marker decorativo sem informação ("Scene 01" em todo bloco); INT./EXT. sem imagem real; Courier em texto corrido, label de formulário ou botão.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== 05 TOKENS ============================== -->
+      <section id="tokens" class="lab-section" aria-labelledby="t-tokens">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>05</span><span>Tokens</span></p>
+          <h2 id="t-tokens" class="lx-display-m">Decisões que <em>não se repetem</em>.</h2>
+          <p class="lx-body">Fonte única: <code>tokens/tokens.json</code>. O <code>tokens.css</code> é gerado. Nenhuma cor, fonte, duração, easing ou z-index fica fora dos tokens.</p>
+        </div>
+        <div class="lab-grid-2">
+          <div class="lab-stack">
+            <h3 class="lx-label">Espaço (base 4px)</h3>
+            <div class="lab-scale">
+              <div class="lab-scale__row"><span class="lab-note">space-1 · 4</span><span class="lab-scale__bar" style="width: var(--lx-space-1)"></span></div>
+              <div class="lab-scale__row"><span class="lab-note">space-2 · 8</span><span class="lab-scale__bar" style="width: var(--lx-space-2)"></span></div>
+              <div class="lab-scale__row"><span class="lab-note">space-4 · 16</span><span class="lab-scale__bar" style="width: var(--lx-space-4)"></span></div>
+              <div class="lab-scale__row"><span class="lab-note">space-8 · 32</span><span class="lab-scale__bar" style="width: var(--lx-space-8)"></span></div>
+              <div class="lab-scale__row"><span class="lab-note">space-16 · 64</span><span class="lab-scale__bar" style="width: var(--lx-space-16)"></span></div>
+              <div class="lab-scale__row"><span class="lab-note">space-32 · 128</span><span class="lab-scale__bar" style="width: var(--lx-space-32)"></span></div>
+              <div class="lab-scale__row"><span class="lab-note">scene · fluido</span><span class="lab-scale__bar" style="width: var(--lx-space-scene)"></span></div>
+            </div>
+          </div>
+          <div class="lab-table-wrap" role="region" aria-label="Tokens de layout e motion" tabindex="0">
+            <table class="lab-table">
+              <caption>Layout, forma e motion</caption>
+              <tbody>
+                <tr><th scope="row">Breakpoints</th><td>30 · 48 · 64 · 80 · 100rem (4 col &lt; 48 ≤ 8 col &lt; 64 ≤ 12 col)</td></tr>
+                <tr><th scope="row">Container</th><td>90rem + margem fluida</td></tr>
+                <tr><th scope="row">Raio</th><td>0 (2px só checkbox)</td></tr>
+                <tr><th scope="row">Borda</th><td>hairline 1px</td></tr>
+                <tr><th scope="row">Sombra</th><td>uma só, para overlays</td></tr>
+                <tr><th scope="row">Alvos</th><td>44px mínimo · 48px controles</td></tr>
+                <tr><th scope="row">Durações</th><td>80 · 160 · 240 · 480 · 900 · drift 4800ms</td></tr>
+                <tr><th scope="row">Easing</th><td>settle · cinematic · exit</td></tr>
+                <tr><th scope="row">Scrim</th><td>Dark Moroccan ≥ 68% sob texto branco</td></tr>
+                <tr><th scope="row">z-index</th><td>base · raised · sticky · overlay · modal · toast · skip-link</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== 06 GROUNDS ============================== -->
+      <section id="grounds" class="lab-section" aria-labelledby="t-grounds">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>06</span><span>Grounds</span></p>
+          <h2 id="t-grounds" class="lx-display-m">Do dia <em>à noite</em>.</h2>
+          <p class="lx-body">O fundo acompanha o tempo que a página narra. Os componentes nunca escolhem cor: herdam de <code>data-ground</code>.</p>
+        </div>
+        <div class="lab-grid-3">
+          <div class="lab-panel" data-ground="paper">
+            <p class="lx-marker"><span>Paper</span><span>08:14</span></p>
+            <p class="lx-display-s">Luz da manhã.</p>
+            <p class="lx-small">Texto de apoio em Moroccan Blue.</p>
+            <a class="lx-link" href="#grounds">Link de texto</a>
+            <div class="lab-row"><a class="lx-button lx-button--primary" href="#grounds">Primária</a><a class="lx-button lx-button--secondary" href="#grounds">Secundária</a></div>
+          </div>
+          <div class="lab-panel" data-ground="wash">
+            <p class="lx-marker"><span>Wash</span><span>17:20</span></p>
+            <p class="lx-display-s">Fim de tarde.</p>
+            <p class="lx-small">Texto de apoio em Moroccan Blue.</p>
+            <a class="lx-link" href="#grounds">Link de texto</a>
+            <div class="lab-row"><a class="lx-button lx-button--primary" href="#grounds">Primária</a><a class="lx-button lx-button--secondary" href="#grounds">Secundária</a></div>
+          </div>
+          <div class="lab-panel" data-ground="night">
+            <p class="lx-marker"><span>Night</span><span>22:10</span></p>
+            <p class="lx-display-s">A casa à noite.</p>
+            <p class="lx-small">Texto de apoio em Warm Sand.</p>
+            <a class="lx-link" href="#grounds">Link de texto</a>
+            <div class="lab-row"><a class="lx-button lx-button--primary" href="#grounds">Primária</a><a class="lx-button lx-button--secondary" href="#grounds">Secundária</a></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div id="componentes" class="lx-container">
+      <!-- ============================== 07 BOTÕES ============================== -->
+      <section id="botoes" class="lab-section" aria-labelledby="t-botoes">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>07</span><span>Botões e links</span></p>
+          <h2 id="t-botoes" class="lx-display-m">Uma ação <em>por bloco</em>.</h2>
+          <p class="lx-body">Primária para o próximo passo; secundária para alternativas; quiet para ações leves. Use Tab para ver o foco.</p>
+        </div>
+        <div class="lab-stack">
+          <div class="lab-row">
+            <button class="lx-button lx-button--primary" type="button">Manifestar interesse <svg class="lx-button__icon" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></button>
+            <button class="lx-button lx-button--secondary" type="button">Ver a Coleção</button>
+            <button class="lx-button lx-button--quiet" type="button">Como funciona</button>
+          </div>
+          <div class="lab-row">
+            <button class="lx-button lx-button--primary" type="button" disabled>Desabilitado</button>
+            <button class="lx-button lx-button--primary" type="button" aria-busy="true" >Enviando</button>
+            <a class="lx-link" href="#botoes">Link no texto</a>
+            <a class="lx-link lx-link--standalone" href="#colecao">Conhecer a Coleção <svg class="lx-link__icon" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== 08 FORMULÁRIOS ============================== -->
+      <section id="formularios" class="lab-section" aria-labelledby="t-forms">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>08</span><span>Formulários</span></p>
+          <h2 id="t-forms" class="lx-display-m">Perguntas <em>claras</em>, poucas.</h2>
+          <p class="lx-body">Label sempre visível, dica quando ajuda e erro com ícone e texto. Controles nativos com altura de 48px.</p>
+        </div>
+        <div class="lab-grid-2">
+          <div class="lx-field">
+            <label class="lx-label" for="f-default">Campo padrão</label>
+            <input class="lx-input" id="f-default" type="text" autocomplete="off">
+          </div>
+          <div class="lx-field">
+            <label class="lx-label" for="f-hint">Com dica <span class="lx-label__optional">(opcional)</span></label>
+            <p class="lx-hint" id="f-hint-hint">A dica fica acima do campo, sempre visível.</p>
+            <input class="lx-input" id="f-hint" type="text" aria-describedby="f-hint-hint" autocomplete="off">
+          </div>
+          <div class="lx-field">
+            <label class="lx-label" for="f-error">Com erro</label>
+            <input class="lx-input" id="f-error" type="text" aria-invalid="true" aria-describedby="f-error-msg" value="?" autocomplete="off">
+            <p class="lx-error" id="f-error-msg"><svg class="lx-error__icon" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>Informe a região com o nome da cidade ou do estado.</p>
+          </div>
+          <div class="lx-field">
+            <label class="lx-label" for="f-disabled">Desabilitado</label>
+            <input class="lx-input" id="f-disabled" type="text" value="Indisponível" disabled>
+          </div>
+          <div class="lx-field">
+            <label class="lx-label" for="f-select">Seleção nativa</label>
+            <div class="lx-select-wrap">
+              <select class="lx-select" id="f-select">
+                <option value="">Escolha uma opção</option>
+                <option>Opção vinda dos dados</option>
+              </select>
+            </div>
+          </div>
+          <div class="lx-field">
+            <label class="lx-label" for="f-textarea">Texto longo</label>
+            <textarea class="lx-textarea" id="f-textarea"></textarea>
+          </div>
+        </div>
+        <div class="lab-stack" style="margin-top: var(--lx-space-12)">
+          <fieldset class="lx-choice-group">
+            <legend class="lx-label">Choice Group (radio cards)</legend>
+            <div class="lx-choice-group__options">
+              <label class="lx-choice"><input type="radio" name="demo-choice" checked><span class="lx-choice__title">Opção A</span><span class="lx-choice__desc">Descrição curta da opção.</span></label>
+              <label class="lx-choice"><input type="radio" name="demo-choice"><span class="lx-choice__title">Opção B</span><span class="lx-choice__desc">Mesmo peso visual da opção A.</span></label>
+            </div>
+          </fieldset>
+          <div class="lab-grid-2">
+            <div class="lx-message lx-message--info" role="status"><svg class="lx-message__icon" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><p class="lx-message__title">Informação</p><p class="lx-message__body">Manifestar interesse não é uma aquisição.</p></div>
+            <div class="lx-message lx-message--success" role="status"><svg class="lx-message__icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg><p class="lx-message__title">Recebemos seu interesse</p><p class="lx-message__body">A Luxtory entra em contato quando houver um próximo passo.</p></div>
+            <div class="lx-message lx-message--warning" role="status"><svg class="lx-message__icon" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg><p class="lx-message__title">Atenção</p><p class="lx-message__body">Este Concept ainda não tem Edition lançada.</p></div>
+            <div class="lx-message lx-message--error" role="status"><svg class="lx-message__icon" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg><p class="lx-message__title">Não foi possível enviar</p><p class="lx-message__body">Escolha a modalidade: Owner ou Co-Owner.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== 09 ESTADOS ============================== -->
+      <section id="estados" class="lab-section" aria-labelledby="t-estados">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>09</span><span>Estados</span></p>
+          <h2 id="t-estados" class="lx-display-m">Esperar também <em>tem forma</em>.</h2>
+        </div>
+        <div class="lab-grid-3">
+          <div aria-busy="true" aria-label="Carregando Concept">
+            <span class="lx-skeleton lx-skeleton--frame" aria-hidden="true"></span>
+            <span class="lx-skeleton lx-skeleton--text" style="--lx-skeleton-width: 40%" aria-hidden="true"></span>
+            <span class="lx-skeleton lx-skeleton--text" style="--lx-skeleton-width: 80%" aria-hidden="true"></span>
+          </div>
+          <div class="lx-empty">
+            <p class="lx-marker"><span>Coleção</span></p>
+            <p class="lx-display-s">Nenhum Concept nesta região, por enquanto.</p>
+            <a class="lx-link lx-link--standalone" href="#colecao">Ver toda a Coleção <svg class="lx-link__icon" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
+          </div>
+          <div class="lx-success">
+            <svg class="lx-success__icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>
+            <p class="lx-display-s">Recebemos seu interesse.</p>
+            <p class="lx-small">Isso não é uma aquisição. A Luxtory entra em contato quando houver um próximo passo.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== 10 FRAMES ============================== -->
+      <section id="frames" class="lab-section" aria-labelledby="t-frames">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>10</span><span>Frames</span></p>
+          <h2 id="t-frames" class="lx-display-m">Toda imagem <em>acrescenta</em>.</h2>
+          <p class="lx-body">Establishing (21:9, 4:5 no mobile), Living (3:2) e Detail (4:5), sempre com proporção declarada. Sem foto oficial, entra o Typographic Frame. Nunca foto de banco no lugar do imóvel.</p>
+        </div>
+        <div class="lab-stack">
+          <figure class="lx-frame lx-frame--establishing lx-frame--typographic">
+            <div class="lx-frame__media" data-ground="night">
+              <p class="lx-marker lx-frame__meta"><span>Establishing</span><span>Arquitetura e entorno</span></p>
+              <p class="lx-frame__title">Casa Mirante</p>
+            </div>
+            <figcaption class="lx-frame__caption">Typographic Frame: aguardando a fotografia oficial do Concept.</figcaption>
+          </figure>
+          <div class="lab-grid-2">
+            <figure class="lx-frame lx-frame--living lx-frame--typographic">
+              <div class="lx-frame__media" data-ground="night">
+                <p class="lx-marker lx-frame__meta"><span>Living</span><span>A casa vivida</span></p>
+                <p class="lx-frame__title">Sala, fim de tarde</p>
+              </div>
+              <figcaption class="lx-frame__caption">Living Frame · 3:2</figcaption>
+            </figure>
+            <figure class="lx-frame lx-frame--detail lx-frame--typographic lab-mini-frame">
+              <div class="lx-frame__media" data-ground="night">
+                <p class="lx-marker lx-frame__meta"><span>Detail</span><span>Material e luz</span></p>
+                <p class="lx-frame__title">Madeira, pedra, sombra</p>
+              </div>
+              <figcaption class="lx-frame__caption">Detail Frame · 4:5</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== 11 SEQUENCE ============================== -->
+      <section id="sequence" class="lab-section" aria-labelledby="t-sequence">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>11</span><span>Sequence</span></p>
+          <h2 id="t-sequence" class="lx-display-m">Um dia, <em>em quadros</em>.</h2>
+          <p class="lx-body">Um filmstrip que mostra parte do próximo quadro. Role com o teclado (setas) depois de focar a sequência.</p>
+        </div>
+        <div class="lx-sequence" role="region" aria-label="Sequência: um dia na Casa Varanda (exemplo)" tabindex="0">
+          <ol class="lx-sequence__track">
+            <li class="lx-sequence__item"><figure class="lx-frame lx-frame--living lx-frame--typographic"><div class="lx-frame__media" data-ground="wash"><p class="lx-marker lx-frame__meta"><span>08:14</span></p><p class="lx-frame__title">Café no pátio</p></div></figure></li>
+            <li class="lx-sequence__item"><figure class="lx-frame lx-frame--living lx-frame--typographic"><div class="lx-frame__media" data-ground="wash"><p class="lx-marker lx-frame__meta"><span>11:30</span></p><p class="lx-frame__title">Mar, sem pressa</p></div></figure></li>
+            <li class="lx-sequence__item"><figure class="lx-frame lx-frame--living lx-frame--typographic"><div class="lx-frame__media" data-ground="wash"><p class="lx-marker lx-frame__meta"><span>13:02</span></p><p class="lx-frame__title">Mesa longa</p></div></figure></li>
+            <li class="lx-sequence__item"><figure class="lx-frame lx-frame--living lx-frame--typographic"><div class="lx-frame__media" data-ground="night"><p class="lx-marker lx-frame__meta"><span>18:37</span></p><p class="lx-frame__title">Varanda</p></div></figure></li>
+            <li class="lx-sequence__item"><figure class="lx-frame lx-frame--living lx-frame--typographic"><div class="lx-frame__media" data-ground="night"><p class="lx-marker lx-frame__meta"><span>22:10</span></p><p class="lx-frame__title">A casa acesa</p></div></figure></li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- ============================== 12 EVIDENCE ============================== -->
+      <section id="evidence" class="lab-section" aria-labelledby="t-evidence">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>12</span><span>Evidence</span></p>
+          <h2 id="t-evidence" class="lx-display-m">O dado como <em>anotação</em>.</h2>
+          <p class="lx-body">Uma linha de dimensão com terminais, como numa planta. Valor ausente não aparece: nada de "—" nem valor presumido. Nunca preço por dia para Co-Owner e nunca promessa de retorno.</p>
+        </div>
+        <dl class="lx-evidence">
+          <div class="lx-evidence__item"><dt class="lx-evidence__label">Residence Concept</dt><dd class="lx-evidence__value">Aprovado · versão 1</dd></div>
+          <div class="lx-evidence__item"><dt class="lx-evidence__label">Região</dt><dd class="lx-evidence__value">Litoral Sul da Bahia</dd></div>
+          <div class="lx-evidence__item"><dt class="lx-evidence__label">Modalidades</dt><dd class="lx-evidence__value">Owner ou <span class="lx-nowrap">Co-Owner</span></dd></div>
+          <div class="lx-evidence__item"><dt class="lx-evidence__label">Residence Edition</dt><dd class="lx-evidence__value">Ainda não lançada</dd></div>
+        </dl>
+        <code class="lab-code" style="margin-top: var(--lx-space-8)">&lt;!-- valor ausente → o item não é renderizado (TECH-001) --&gt;
+&lt;dl class="lx-evidence"&gt;
+  &lt;div class="lx-evidence__item"&gt;&lt;dt class="lx-evidence__label"&gt;Região&lt;/dt&gt;&lt;dd class="lx-evidence__value"&gt;…&lt;/dd&gt;&lt;/div&gt;
+&lt;/dl&gt;</code>
+      </section>
+
+      <!-- ============================== 13 COLEÇÃO ============================== -->
+      <section id="colecao" class="lab-section" aria-labelledby="t-colecao">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>13</span><span>Coleção</span></p>
+          <h2 id="t-colecao" class="lx-display-m">Uma curadoria, <em>não uma grade</em>.</h2>
+          <p class="lx-body">Frame, marker, nome e crédito. Sem caixa, sem sombra, sem cantos arredondados. O card inteiro é um único link.</p>
+        </div>
+        <ul class="lx-collection">
+          <li>
+            <article class="lx-collection-card">
+              <figure class="lx-frame lx-frame--living lx-frame--typographic"><div class="lx-frame__media" data-ground="wash"><p class="lx-marker lx-frame__meta"><span>Pátio</span><span>13:02</span></p><p class="lx-frame__title">Sombra ao meio-dia.</p></div></figure>
+              <p class="lx-marker"><span>Litoral Sul da Bahia</span></p>
+              <h3 class="lx-collection-card__title"><a class="lx-collection-card__link" href="#composicao-concept">Casa Pátio</a></h3>
+              <p class="lx-collection-card__summary">Uma casa organizada em volta da sombra.</p>
+              <p class="lx-credit"><span>Residence Concept com</span><span class="lx-credit__name">[Brand Partner autorizada]</span></p>
+            </article>
+          </li>
+          <li>
+            <article class="lx-collection-card">
+              <figure class="lx-frame lx-frame--detail lx-frame--typographic"><div class="lx-frame__media" data-ground="wash"><p class="lx-marker lx-frame__meta"><span>Mirante</span><span>06:40</span></p><p class="lx-frame__title">A serra acorda devagar.</p></div></figure>
+              <p class="lx-marker"><span>Serra da Mantiqueira</span></p>
+              <h3 class="lx-collection-card__title"><a class="lx-collection-card__link" href="#composicao-concept">Casa Mirante</a></h3>
+              <p class="lx-collection-card__summary">Neblina na janela, lareira acesa.</p>
+            </article>
+          </li>
+          <li>
+            <article class="lx-collection-card">
+              <figure class="lx-frame lx-frame--living lx-frame--typographic"><div class="lx-frame__media" data-ground="night"><p class="lx-marker lx-frame__meta"><span>Varanda</span><span>18:37</span></p><p class="lx-frame__title">O mar muda de cor.</p></div></figure>
+              <p class="lx-marker"><span>Litoral Norte de São Paulo</span></p>
+              <h3 class="lx-collection-card__title"><a class="lx-collection-card__link" href="#composicao-concept">Casa Varanda</a></h3>
+              <p class="lx-collection-card__summary">A tarde termina onde a casa encontra o mar.</p>
+            </article>
+          </li>
+          <li>
+            <article class="lx-collection-card" aria-busy="true" aria-label="Carregando Concept">
+              <span class="lx-skeleton lx-skeleton--frame" style="--lx-frame-ratio: var(--lx-ratio-detail)" aria-hidden="true"></span>
+              <span class="lx-skeleton lx-skeleton--text" style="--lx-skeleton-width: 50%" aria-hidden="true"></span>
+              <span class="lx-skeleton lx-skeleton--text" style="--lx-skeleton-width: 70%" aria-hidden="true"></span>
+            </article>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ============================== 14 NAVEGAÇÃO ============================== -->
+      <section id="navegacao" class="lab-section" aria-labelledby="t-nav">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>14</span><span>Navegação</span></p>
+          <h2 id="t-nav" class="lx-display-m">Chegar sem <em>procurar</em>.</h2>
+          <p class="lx-body">Header sticky sobre paper, variante overlay sobre Opening Frame e menu mobile em tela cheia com <code>&lt;dialog&gt;</code> nativo: foco preso, Esc fecha, foco volta ao botão. No mobile, o CTA de interesse fica fixo no rodapé do menu.</p>
+        </div>
+        <div class="lab-row">
+          <button class="lx-button lx-button--secondary" type="button" aria-haspopup="dialog" aria-controls="menu-mobile" data-lab-open-menu>Abrir o menu mobile</button>
+          <a class="lx-link lx-link--standalone" href="#composicao-opening">Ver header overlay <svg class="lx-link__icon" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
+        </div>
+      </section>
+
+      <!-- ============================== 15 MOTION ============================== -->
+      <section id="motion" class="lab-section" aria-labelledby="t-motion">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>15</span><span>Motion</span></p>
+          <h2 id="t-motion" class="lx-display-m">Movimento que <em>orienta</em>.</h2>
+          <p class="lx-body">Reveal por scroll (fade + 12px) só em navegadores com scroll-driven animations; o conteúdo é visível por padrão. O drift do Opening Frame dura até 4.8s, uma vez. Com movimento reduzido, nada se move.</p>
+        </div>
+        <div class="lab-row">
+          <button class="lx-button lx-button--secondary" type="button" aria-pressed="false" data-lab-motion-toggle>Simular movimento reduzido</button>
+          <p class="lx-small" data-lab-motion-status role="status">Movimento: preferência do sistema.</p>
+        </div>
+        <div class="lab-grid-3" style="margin-top: var(--lx-space-8)">
+          <p class="lx-display-s lx-reveal">Primeiro, a paisagem.</p>
+          <p class="lx-display-s lx-reveal">Depois, a casa.</p>
+          <p class="lx-display-s lx-reveal">Por fim, <em>você nela</em>.</p>
+        </div>
+      </section>
+
+      <!-- ============================== 16 ACESSIBILIDADE ============================== -->
+      <section id="acessibilidade" class="lab-section" aria-labelledby="t-a11y">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>16</span><span>Acessibilidade</span></p>
+          <h2 id="t-a11y" class="lx-display-m">Para todos, <em>sem exceção</em>.</h2>
+          <p class="lx-body">Base: WCAG 2.2 AA. Estas garantias vêm do sistema, não de cada tela.</p>
+        </div>
+        <div class="lab-table-wrap" role="region" aria-label="Garantias de acessibilidade" tabindex="0">
+          <table class="lab-table">
+            <tbody>
+              <tr><th scope="row">Foco</th><td>Anel de 2px com offset de 3px: Moroccan Blue em paper/wash, Warm Sand em night. Nunca removido.</td></tr>
+              <tr><th scope="row">Contraste</th><td>64 pares verificados por teste nos três grounds, mais o scrim no pior pixel.</td></tr>
+              <tr><th scope="row">Alvos</th><td>Mínimo de 44px; controles e botões com 48px.</td></tr>
+              <tr><th scope="row">Estados</th><td>Erro, aviso e sucesso sempre com ícone + texto.</td></tr>
+              <tr><th scope="row">Movimento</th><td><code>prefers-reduced-motion</code> e <code>data-motion="reduce"</code> zeram animações; drift ≤ 5s.</td></tr>
+              <tr><th scope="row">Teclado</th><td>Skip link, menu em dialog com foco preso, Sequence e tabelas roláveis focáveis.</td></tr>
+              <tr><th scope="row">Semântica</th><td>Headings pela hierarquia do conteúdo, e não pelo tamanho visual; landmarks rotulados.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================== COMPOSIÇÕES R1 ============================== -->
+    <div id="composicoes">
+      <div class="lx-container">
+        <div class="lab-section">
+          <div class="lab-section__head">
+            <p class="lx-marker"><span>R1</span><span>Composições</span></p>
+            <h2 class="lx-display-m">Discovery + <em>Interesse</em>.</h2>
+            <p class="lx-body">Três composições de referência montadas só com o sistema: o Opening Frame da Coleção, uma Scene de Concept e o formulário de interesse.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- A. Opening Frame da Coleção -->
+      <section id="composicao-opening" class="lx-scene lx-scene--opening" data-ground="night" aria-labelledby="c-opening-title">
+        <header class="lx-header lx-header--overlay" data-ground="night">
+          <div class="lx-container lx-header__inner">
+            <a class="lx-logo lx-logo--pending" href="#composicao-opening" aria-label="Luxtory — página inicial"><span aria-hidden="true">Logo · kit oficial</span></a>
+            <nav class="lx-header__nav" aria-label="Navegação (exemplo)">
+              <ul class="lx-header__list">
+                <li><a class="lx-header__link" href="#composicao-opening" aria-current="page">Coleção</a></li>
+                <li><a class="lx-header__link" href="#composicao-concept">Owner</a></li>
+                <li><a class="lx-header__link" href="#composicao-concept">Co-Owner</a></li>
+              </ul>
+            </nav>
+            <a class="lx-button lx-button--primary lx-header__cta" href="#composicao-interesse">Manifestar interesse</a>
+          </div>
+        </header>
+        <div class="lx-scene__backdrop">
+          <div class="lx-frame lx-frame--typographic lx-frame--scrim lx-frame--scrim-top">
+            <div class="lx-frame__media" data-ground="night"></div>
+          </div>
+        </div>
+        <div class="lx-container lx-grid">
+          <div class="lx-col-content lx-scene__body">
+            <p class="lx-marker"><span>Coleção</span><span>Residence Concepts</span></p>
+            <h2 id="c-opening-title" class="lx-display-xl">Casas que contam <em>uma história</em>.</h2>
+            <p class="lx-lead">Residence Concepts criados a partir de marcas desejadas. Para ter por inteiro ou como Co-Owner, com Ação e Direito de Uso.</p>
+            <div class="lx-scene__actions">
+              <a class="lx-button lx-button--primary" href="#colecao">Conhecer a Coleção <svg class="lx-button__icon" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
+              <a class="lx-link lx-link--standalone" href="#composicao-concept">Como funciona</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- B. Scene de Concept -->
+      <section id="composicao-concept" class="lx-scene lx-scene--media-end" data-ground="paper" aria-labelledby="c-concept-title">
+        <div class="lx-container lx-grid">
+          <div class="lx-col-rail lx-scene__rail">
+            <p class="lx-marker"><span>Varanda</span><span>18:37</span></p>
+          </div>
+          <div class="lx-col-text lx-scene__body">
+            <h2 id="c-concept-title" class="lx-display-l">A tarde termina <em>na varanda</em>.</h2>
+            <p class="lx-body">A Casa Varanda foi desenhada para a hora em que o dia desacelera. Cada Residence nasce do zero, fiel ao Concept aprovado.</p>
+            <dl class="lx-evidence lx-evidence--inline">
+              <div class="lx-evidence__item"><dt class="lx-evidence__label">Concept</dt><dd class="lx-evidence__value">Aprovado · v1</dd></div>
+              <div class="lx-evidence__item"><dt class="lx-evidence__label">Região</dt><dd class="lx-evidence__value">Litoral Norte de SP</dd></div>
+              <div class="lx-evidence__item"><dt class="lx-evidence__label">Modalidades</dt><dd class="lx-evidence__value">Owner ou <span class="lx-nowrap">Co-Owner</span></dd></div>
+            </dl>
+            <div class="lx-scene__actions">
+              <a class="lx-button lx-button--primary" href="#composicao-interesse">Manifestar interesse</a>
+            </div>
+          </div>
+          <figure class="lx-col-media lx-scene__media lx-frame lx-frame--detail lx-frame--typographic lx-reveal">
+            <div class="lx-frame__media" data-ground="night">
+              <p class="lx-marker lx-frame__meta"><span>Varanda</span><span>Luz de fim de tarde</span></p>
+              <p class="lx-frame__title">Casa Varanda</p>
+            </div>
+            <figcaption class="lx-frame__caption">Aguardando a fotografia oficial do Concept.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- C. Formulário de interesse -->
+      <section id="composicao-interesse" class="lx-scene" data-ground="wash" aria-labelledby="c-interest-title">
+        <div class="lx-container lx-grid">
+          <div class="lx-col-rail lx-scene__rail">
+            <p class="lx-marker"><span>Interesse</span></p>
+          </div>
+          <div class="lx-col-content lx-scene__body">
+            <h2 id="c-interest-title" class="lx-display-l">Conte o que <em>você imagina</em>.</h2>
+            <p class="lx-body">Manifestar interesse não é uma aquisição. É o primeiro passo para a Luxtory entender o que faz sentido para você.</p>
+
+            <form class="lx-form" novalidate data-lab-interest-form aria-describedby="c-interest-note">
+              <p class="lx-small" id="c-interest-note">Todos os campos são obrigatórios, exceto quando indicado.</p>
+              <div class="lx-field">
+                <span class="lx-label">Residence Concept</span>
+                <p class="lx-display-s">Casa Varanda <span class="lx-small">(exemplo)</span></p>
+              </div>
+
+              <fieldset class="lx-choice-group" aria-describedby="modalidade-erro">
+                <legend class="lx-label">Como você quer ter a Residence?</legend>
+                <div class="lx-choice-group__options">
+                  <label class="lx-choice"><input type="radio" name="modalidade" value="owner" data-lab-modality><span class="lx-choice__title">Owner</span><span class="lx-choice__desc">A Residence inteira, 100% sua.</span></label>
+                  <label class="lx-choice"><input type="radio" name="modalidade" value="co-owner" data-lab-modality><span class="lx-choice__title">Co-Owner</span><span class="lx-choice__desc">Uma Ação da SPE proprietária da Residence, com Direito de Uso.</span></label>
+                </div>
+                <p class="lx-error" id="modalidade-erro" hidden><svg class="lx-error__icon" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>Escolha a modalidade: Owner ou Co-Owner.</p>
+              </fieldset>
+
+              <div class="lx-form__row">
+                <div class="lx-field">
+                  <label class="lx-label" for="regiao">Região desejada</label>
+                  <div class="lx-select-wrap">
+                    <select class="lx-select" id="regiao" name="regiao" aria-describedby="regiao-erro" required>
+                      <option value="">Escolha uma região</option>
+                      <option>Litoral Norte de São Paulo (exemplo)</option>
+                      <option>Litoral Sul da Bahia (exemplo)</option>
+                      <option>Serra da Mantiqueira (exemplo)</option>
+                    </select>
+                  </div>
+                  <p class="lx-error" id="regiao-erro" hidden><svg class="lx-error__icon" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>Escolha uma região.</p>
+                </div>
+                <div data-lab-days-slot aria-live="polite"></div>
+              </div>
+
+              <template data-lab-days-template>
+                <div class="lx-field lx-field--revealed">
+                  <label class="lx-label" for="dias">Quantos dias por ano, aproximadamente?</label>
+                  <p class="lx-hint" id="dias-dica">Ajuda a Luxtory a formar o grupo da Residence. É uma preferência, não um direito adquirido.</p>
+                  <input class="lx-input" id="dias" name="dias" type="text" inputmode="numeric" autocomplete="off" aria-describedby="dias-dica dias-erro">
+                  <p class="lx-error" id="dias-erro" hidden><svg class="lx-error__icon" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>Informe um número inteiro de dias.</p>
+                </div>
+              </template>
+
+              <div class="lab-pending-block">
+                <p class="lx-marker"><span>Pendente</span><span>REQ-025</span></p>
+                <p class="lx-small">Campos de contato e qualificação: aguardando definição da Luxtory (inclui base legal e consentimento LGPD).</p>
+              </div>
+
+              <div class="lx-scene__actions">
+                <button class="lx-button lx-button--primary" type="submit">Enviar interesse <svg class="lx-button__icon" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></button>
+              </div>
+              <div data-lab-form-status role="status"></div>
+            </form>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="lx-footer" data-ground="night" id="site-nav">
+    <div class="lx-container lx-grid">
+      <div class="lx-col-rail">
+        <span class="lx-logo lx-logo--pending" aria-hidden="true">Logo · kit oficial</span>
+      </div>
+      <nav class="lx-col-content" aria-label="Rodapé (exemplo)">
+        <ul class="lx-footer__nav-list">
+          <li><a class="lx-footer__link" href="#colecao">Coleção</a></li>
+          <li><a class="lx-footer__link" href="#composicao-concept">Owner e Co-Owner</a></li>
+          <li><a class="lx-footer__link" href="#composicao-interesse">Manifestar interesse</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="lx-container">
+      <p class="lx-footer__legal">Design System Lab · referência interna, não publicada · Spec: docs/specs/design-system.md</p>
+    </div>
+  </footer>
+</body>
+</html>

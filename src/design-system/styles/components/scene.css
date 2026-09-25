@@ -1,0 +1,107 @@
+/* Scene — one narrative unit (Opening Frame, Chapter, Scene). Ground via data-ground (paper | wash | night).
+ * Composes the grid (layout.css) with rail (marker), body (words) and media (Frame).
+ * Lives in lx.components and is imported after frame.css; overrides of Frame are scoped under .lx-scene. */
+@layer lx.components {
+  /* Scene: one narrative unit. Ground (paper | wash | night) comes from data-ground. */
+  .lx-scene {
+    position: relative;
+    isolation: isolate;
+    padding-block: var(--lx-space-scene);
+  }
+
+  .lx-scene__header {
+    display: grid;
+    gap: var(--lx-space-6);
+  }
+
+  .lx-scene__body {
+    display: grid;
+    gap: var(--lx-space-stack);
+    align-content: start;
+  }
+
+  .lx-scene__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--lx-space-4) var(--lx-space-8);
+  }
+
+  /* Marker Rail: on large screens the marker lives in the margin, like a screenplay's margin note. */
+  @media (min-width: 64rem) {
+    .lx-scene__rail {
+      position: sticky;
+      top: calc(var(--lx-layout-header-height) + var(--lx-space-8));
+      padding-top: var(--lx-space-2);
+    }
+  }
+
+  /* Media bleeds to the page edge on mobile and to the container edge on large screens. */
+  .lx-scene .lx-scene__media {
+    margin-inline: calc(-1 * var(--lx-layout-margin));
+  }
+
+  /* A bled Frame keeps its caption inside the page margin. */
+  .lx-scene .lx-scene__media .lx-frame__caption {
+    padding-inline: var(--lx-layout-margin);
+  }
+
+  @media (min-width: 64rem) {
+    .lx-scene .lx-scene__media { margin-inline: 0 calc(-1 * var(--lx-layout-margin)); }
+    .lx-scene .lx-scene__media .lx-frame__caption { padding-inline: 0; }
+    .lx-scene.lx-scene--media-start .lx-scene__media .lx-frame__caption { padding-inline-start: var(--lx-layout-margin); }
+
+    .lx-scene--media-start .lx-grid > .lx-col-text { grid-column: 9 / -1; grid-row: 1; }
+    .lx-scene--media-start .lx-grid > .lx-col-media { grid-column: 1 / span 7; grid-row: 1; }
+    .lx-scene--media-start .lx-grid > .lx-col-rail { grid-column: 9 / -1; grid-row: 1; }
+    .lx-scene.lx-scene--media-start .lx-scene__media { margin-inline: calc(-1 * var(--lx-layout-margin)) 0; }
+
+    .lx-scene--statement .lx-grid > .lx-col-text { grid-column: 3 / span 8; }
+  }
+
+  /* Opening Frame: full-viewport scene; media behind, words at the bottom over a measured scrim. */
+  .lx-scene--opening {
+    display: grid;
+    align-items: end;
+    min-height: min(100svh, 60rem);
+    padding-block: calc(var(--lx-layout-header-height) + var(--lx-space-16)) var(--lx-space-16);
+    overflow: hidden;
+  }
+
+  .lx-scene__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+
+  .lx-scene .lx-scene__backdrop .lx-frame {
+    height: 100%;
+  }
+
+  .lx-scene .lx-scene__backdrop .lx-frame__media {
+    height: 100%;
+    aspect-ratio: auto;
+    outline: none;
+  }
+
+  /* Night grounds carry a subtle film grain (tile-based: cheap to paint). */
+  .lx-scene[data-ground="night"]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: var(--lx-grain-image);
+    background-size: var(--lx-grain-size);
+    opacity: var(--lx-grain-opacity);
+  }
+
+  .lx-scene--opening[data-ground="night"]::before {
+    z-index: 0;
+  }
+
+  .lx-scene--opening > .lx-container {
+    position: relative;
+    z-index: var(--lx-z-raised);
+  }
+}
