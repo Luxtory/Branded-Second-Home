@@ -3,3 +3,7 @@ node_modules/
 build/
 dist/
 .vercel/
+package-lock.json
+.playwright-mcp/
+coverage/
+*.log
