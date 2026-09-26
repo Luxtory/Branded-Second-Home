@@ -173,7 +173,10 @@ Mutations futuras usam `POST` + header `Idempotency-Key` (1 a 255 caracteres vis
 
 **Eventos.** `docs/api/asyncapi.yaml`: envelope do outbox (`id`, `type`, `dedup_key`, `operation_id`, `occurred_at`,
 `payload`). Entrega ao menos uma vez; consumidor idempotente por `outbox_receipt(event_id, consumer)`; falha de entrega
-não desfaz o domínio (TECH-091). Evento sem consumidor registrado é marcado entregue.
+não desfaz o domínio (TECH-091). Evento sem consumidor registrado é marcado entregue. A deduplicação pelo recibo é
+**transacional**: recibo, efeitos do consumidor no banco e `delivered_at` comitam juntos, então efeitos no banco
+acontecem uma única vez. Efeito externo (e-mail, PSP, chamada HTTP) fica fora dessa transação e pode se repetir se ela
+falhar depois da chamada: consumidor com efeito externo usa idempotência no destino (chave = `id` do evento).
 
 **Jobs (TECH-090).** Registro de jobs separado do registro de consumidores do outbox; só nomes do TECH-090. W1 entrega
 o job `outbox` (varredura com `FOR UPDATE SKIP LOCKED`, até `OUTBOX_BATCH_SIZE` eventos). Nome fora do registro → 404.

@@ -39,7 +39,9 @@ operations:
     summary: |
       Cada consumidor registrado recebe o evento ao menos uma vez e ignora duplicatas por `outbox_receipt(event_id,
       consumer)`. Falha de um consumidor incrementa `attempts`, mantém o evento pendente e nunca desfaz o domínio
-      (TECH-091).
+      (TECH-091). O recibo comita na mesma transação que os efeitos do consumidor no banco: só esses efeitos têm
+      garantia de uma única vez. Efeito externo pode se repetir numa nova entrega; o consumidor usa idempotência no
+      destino, com o `id` do evento como chave.
     messages:
       - $ref: '#/channels/outbox/messages/outboxEvent'
 

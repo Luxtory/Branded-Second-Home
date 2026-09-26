@@ -12,7 +12,9 @@ export interface OutboxEvent {
 
 /**
  * Consumidor idempotente (TECH-091): recebe o evento dentro de uma transação junto com o próprio recibo, então uma
- * entrega repetida não repete o efeito. Nunca decide estado crítico: invoca os mesmos commands (ADR-006 do `03`).
+ * entrega repetida não repete os efeitos **no banco** feitos com `tx`. Efeito externo (e-mail, PSP, HTTP) não entra
+ * nessa transação e pode se repetir se ela falhar depois da chamada: use idempotência no destino, com `event.id` como
+ * chave. Nunca decide estado crítico: invoca os mesmos commands (ADR-006 do `03`).
  */
 export interface OutboxConsumer<Tx> {
   readonly name: string;
