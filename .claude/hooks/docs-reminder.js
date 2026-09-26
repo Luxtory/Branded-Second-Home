@@ -7,9 +7,10 @@
  * Claude Code passes tool-use data via stdin (JSON). This script reads the
  * modified file path, ignores irrelevant cases (docs/, tests, configs) and
  * prints a reminder to stdout. Claude Code injects stdout into the context.
+ *
+ * Uses only the `process` global, with no require/import: package.json declares "type": "module", so this .js file
+ * runs as ESM, where `require` does not exist.
  */
-
-const fs = require("fs");
 
 let input = "";
 process.stdin.on("data", (chunk) => (input += chunk));
@@ -28,7 +29,8 @@ process.stdin.on("end", () => {
     toolUse?.tool_input?.file_path ||
     "";
 
-  if (!filePath) process.exit(0);
+  // A non-string path (unexpected input) cannot be checked below: nothing to remind.
+  if (typeof filePath !== "string" || !filePath) process.exit(0);
 
   // Skip docs changes themselves to avoid loops
   if (filePath.includes("/docs/") || filePath.startsWith("docs/")) {
