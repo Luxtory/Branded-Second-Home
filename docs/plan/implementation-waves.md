@@ -53,7 +53,7 @@
 | Wave | Deliverable | Slice(s) | IDs (dona) | Depends on | Parallel with | Release | Status |
 |------|-------------|----------|------------|------------|---------------|---------|--------|
 | 0 | Fundação: scaffold, harness TECH-110, CI/CD, ADRs 0004–0006, `## Commands` | platform | — | — | — | R1·base | ✅ |
-| 1 | Núcleo de commands: operação, idempotência, auditoria, outbox, jobs, erros | platform | REQ-015, REQ-098 | 0 | — | R1·base | ⬜ |
+| 1 | Núcleo de commands: operação, idempotência, auditoria, outbox, jobs, erros | platform | REQ-015, REQ-098 | 0 | — | R1·base | ✅ |
 | 2 | Acesso administrativo: Auth, MFA, staff, guard, grants, RLS | identity, admin | REQ-014 | 1 | — | R1·base | ⬜ |
 | 3 | Catálogo + Admin | catalog, admin | REQ-020, REQ-027 | 2 | — | R1 | ⬜ |
 | 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3 | — | R1 | ⬜ |
@@ -261,6 +261,11 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   ignora duplicatas e falha de entrega não desfaz o domínio` · `[REQ-098] cada causa listada no REQ-098 tem código
   TECH-056 e mensagem pt-BR`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-015,REQ-098 exits 0, stop after 5 tries`
+- **Status**: ✅ concluída em 2026-09-26 — PR #11, squash `d29bca7` em `main`, com as correções #12 (`7313248`,
+  `db:password-verifier`) e #13 (`14d869d`, `DATABASE_URL` malformada → 503 nos jobs); `migrate` aplicou as 4
+  migrations no Supabase; runbook pós-merge validado em Production (`dpl_GuKNeteuk3vd5FHdrBTKAmoHmY8n`, commit
+  `14d869d`): cron `/api/jobs/outbox` 200 `job completed` (delivered 0, failed 0), sem erros nos logs, login do
+  `luxtory_app` por SCRAM com TLS `verify-full`, zero grants para `anon`/`authenticated`/`service_role`.
 
 ### Wave 2 — Acesso administrativo
 
