@@ -45,4 +45,15 @@ describe('hooks registrados', () => {
       expect(spawnSync('/bin/bash', ['-n', path]).status).toBe(0);
     },
   );
+
+  // O package.json declara "type": "module": um hook .js com `require` quebra em todo uso (docs-reminder.js, W0).
+  it.each(registered.filter((path) => path.endsWith('.js')))(
+    '%s executa com o tipo de módulo do projeto',
+    (path) => {
+      const result = spawnSync(process.execPath, [path], { input: '{}', encoding: 'utf8' });
+
+      expect(result.stderr).toBe('');
+      expect(result.status).toBe(0);
+    },
+  );
 });

@@ -1,4 +1,5 @@
 import type { Clock } from '../application/clock';
+import { PERSONAL_DATA_KEY, REDACTED } from '../domain/personal-data';
 import { systemClock } from './system-clock';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
@@ -13,10 +14,9 @@ export interface Logger {
   child(fields: LogFields): Logger;
 }
 
-// Defesa em profundidade: PII e segredos nunca vão para logs (TECH-100), mesmo por engano do chamador.
-const SENSITIVE_KEY =
-  /^(cpf|cnpj|document|documento|email|e-mail|phone|telefone|name|nome|password|senha|token|secret|authorization|cookie)$/i;
-const REDACTED = '[redacted]';
+// Defesa em profundidade: PII e segredos nunca vão para logs (TECH-100), mesmo por engano do chamador. A lista de
+// chaves é a mesma da auditoria (domain/personal-data.ts).
+const SENSITIVE_KEY = PERSONAL_DATA_KEY;
 const MAX_DEPTH = 5;
 
 function sanitize(value: unknown, depth: number): unknown {

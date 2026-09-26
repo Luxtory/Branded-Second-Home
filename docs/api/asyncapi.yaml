@@ -11,8 +11,73 @@ info:
 
 defaultContentType: application/json
 
-channels: {}
-operations: {}
+channels:
+  outbox:
+    address: app.outbox
+    title: Outbox transacional
+    description: |
+      Tabela `app.outbox` (ADR-0006). Um command grava seus eventos no mesmo commit do domínio (TECH-054);
+      `dedup_key` único impede o mesmo evento duas vezes. Entrega ao menos uma vez (ADR-006): disparo após o commit
+      (`after()` do Next) e varredura pelo job `outbox` (TECH-090). Evento sem consumidor registrado é marcado entregue.
+      Os tipos de evento (`type`) e seus payloads entram aqui com a wave que os produz.
+    messages:
+      outboxEvent:
+        $ref: '#/components/messages/OutboxEvent'
+
+operations:
+  publishOutboxEvent:
+    action: send
+    channel:
+      $ref: '#/channels/outbox'
+    summary: Um command grava o evento na mesma transação do seu efeito.
+    messages:
+      - $ref: '#/channels/outbox/messages/outboxEvent'
+  consumeOutboxEvent:
+    action: receive
+    channel:
+      $ref: '#/channels/outbox'
+    summary: |
+      Cada consumidor registrado recebe o evento ao menos uma vez e ignora duplicatas por `outbox_receipt(event_id,
+      consumer)`. Falha de um consumidor incrementa `attempts`, mantém o evento pendente e nunca desfaz o domínio
+      (TECH-091). O recibo comita na mesma transação que os efeitos do consumidor no banco: só esses efeitos têm
+      garantia de uma única vez. Efeito externo pode se repetir numa nova entrega; o consumidor usa idempotência no
+      destino, com o `id` do evento como chave.
+    messages:
+      - $ref: '#/channels/outbox/messages/outboxEvent'
+
 components:
-  messages: {}
-  schemas: {}
+  messages:
+    OutboxEvent:
+      name: OutboxEvent
+      title: Envelope de evento do outbox
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/OutboxEnvelope'
+  schemas:
+    OutboxEnvelope:
+      type: object
+      additionalProperties: false
+      required: [id, type, dedup_key, operation_id, occurred_at, payload]
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          description: Tipo do evento, `módulo.evento` em minúsculas.
+          pattern: '^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$'
+        dedup_key:
+          type: string
+          description: Chave de deduplicação escolhida pelo produtor; única em todo o outbox.
+          minLength: 1
+          maxLength: 255
+        operation_id:
+          type: string
+          format: uuid
+          description: Operação (TECH-002) que produziu o evento.
+        occurred_at:
+          type: string
+          format: date-time
+        payload:
+          type: object
+          description: Dados do evento, sem dado pessoal bruto nem segredo (TECH-100).

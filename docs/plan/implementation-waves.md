@@ -52,7 +52,7 @@
 
 | Wave | Deliverable | Slice(s) | IDs (dona) | Depends on | Parallel with | Release | Status |
 |------|-------------|----------|------------|------------|---------------|---------|--------|
-| 0 | Fundação: scaffold, harness TECH-110, CI/CD, ADRs 0004–0006, `## Commands` | platform | — | — | — | R1·base | ⬜ |
+| 0 | Fundação: scaffold, harness TECH-110, CI/CD, ADRs 0004–0006, `## Commands` | platform | — | — | — | R1·base | ✅ |
 | 1 | Núcleo de commands: operação, idempotência, auditoria, outbox, jobs, erros | platform | REQ-015, REQ-098 | 0 | — | R1·base | ⬜ |
 | 2 | Acesso administrativo: Auth, MFA, staff, guard, grants, RLS | identity, admin | REQ-014 | 1 | — | R1·base | ⬜ |
 | 3 | Catálogo + Admin | catalog, admin | REQ-020, REQ-027 | 2 | — | R1 | ⬜ |
@@ -132,6 +132,9 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   `fonts.css` do Design System, sem `next/font/local` (evita família duplicada; preload na W4); jobs da CI com os
   nomes do esqueleto (`lint`, `typecheck`, `test`, `security`) + `e2e`, `migrate`, `deploy`, em vez de `quality`
   (conteúdo existente só é estendido).
+- **Status**: ✅ concluída em 2026-09-26 — PR #3, squash `d4cbc87` em `main`; pipeline de `main` verde (`migrate` com
+  preflight, `deploy` em Production `gru1`); smoke tests em https://branded-second-home.vercel.app: `/v1/health` 200,
+  `/v1/version` = `d4cbc87`, `/lab` 404, `/favicon.ico` 200.
 
 #### W0 — `## Commands` (CLAUDE.md e AGENTS.md)
 
@@ -180,7 +183,7 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 |---|---|---|
 | `DATABASE_URL_MIGRATIONS`, `VERCEL_TOKEN` | secrets do GitHub (+ `DATABASE_URL_MIGRATIONS_STAGING` se D3) | W0 |
 | `VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA` | Vercel, só leitura | W0 |
-| `DATABASE_URL`, `CRON_SECRET` | Vercel (Production, Preview, Development) | W1 |
+| `DATABASE_URL`, `CRON_SECRET` | Vercel (Production, Preview, Development) → **só Production** desde a decisão D3 (2026-09-26, [ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md)) | W1 |
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Vercel | W2 |
 | `AUTH_MODE` (`supabase` ou `test`; `test` é recusado se `VERCEL_ENV` existir) | local e CI | W2 |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Vercel (sensitive) | W5 |
@@ -864,7 +867,7 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 |---|---|---|---|
 | D1 | Vercel Pro antes do go-live público do R1 (termos de uso comercial; cron por minuto) | sim | aberta |
 | D2 | Supabase Pro (backup diário, sem pausa) antes de dados reais; PITR no go-live econômico (ADR-0002). Pré-requisito da W30 | sim, no go-live do R1 | aberta |
-| D3 | Segundo projeto Supabase Free como staging (Previews + validação de migrations na CI) | criar antes da W1 | aberta |
+| D3 | Segundo projeto Supabase Free como staging (Previews + validação de migrations na CI) | criar antes da W1 | **adiada** em 2026-09-26 (opção A: sem staging; Previews sem credencial do banco; reavaliar antes de dados reais, PII, 1ª transação econômica ou go-live — [ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md)) |
 | D4 | Provedor SMTP para login e notificações | escolher antes do go-live do R2 | aberta |
 | D5a | `NOTES.md` já existia → atualizado no lugar, sem recriar | — | adotada em 2026-09-25 |
 | D5b | Este arquivo: seção DS e Anexo A preservados byte a byte; plano Luxtory acrescentado no topo | — | adotada em 2026-09-25 |

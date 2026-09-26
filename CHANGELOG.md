@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   System Lab interno em
   `/lab` (fora de produção). Harness de testes com PostgreSQL 17 real (ADR-0005), E2E com axe, `npm run verify`,
   `npm run trace` e CI/CD com produção só pela CI (ADR-0004). ADRs 0004–0006.
+- W1 — núcleo de commands: pipeline único e idempotente (TECH-054) com `operation`, auditoria só de inserção sem
+  dado pessoal bruto, outbox com entrega ao menos uma vez e notificações dentro do app; registro fechado de commands
+  (TECH-051); códigos de erro TECH-056 com causa funcional em pt-BR (REQ-098) no contrato OpenAPI; job `outbox` em
+  `GET /api/jobs/{job}` (Vercel Cron, `CRON_SECRET`); papel de aplicação `luxtory_app` com TLS verify-full; runbook
+  `docs/how-to/operacao.md`. ADR-0007 (sem staging antes do lançamento — decisão D3 adiada).
 
 ### Changed
 - ...

@@ -97,6 +97,11 @@ própria do arquivo. Usá-lo junto do `fonts.css` duplicaria downloads; usá-lo 
 | W30 | `canonicalize` | 5.1.0 | JCS RFC 8785 do selo (TECH-092) |
 | W30 | OpenTimestamps por HTTP direto | — | o pacote npm está sem manutenção desde 2022 (ADR-0002) |
 
+Execução da W1 (2026-09-26): `kysely` 0.29.6 e `kysely-codegen` 0.20.0 instalados como previsto; `pg` passou a
+dependência de runtime (o app conecta como `luxtory_app`). `@vercel/functions` **não** foi instalado: o `after()`
+do próprio `next/server` agenda o disparo do outbox, e a versão prevista (3.9.9, de 2026-09-22) ainda estava dentro
+do `cooldown` de 7 dias.
+
 ### Arquivo `activate-ultronpx.mjs`
 
 Fica fora de Prettier, ESLint, TypeScript, Vitest (testes e cobertura), Playwright, Semgrep, gitleaks, `.vercelignore`
