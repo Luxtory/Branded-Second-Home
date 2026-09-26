@@ -1,7 +1,10 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import type { JobRegistry } from '../application/jobs/registry';
 import type { LogPort } from '../application/log';
-import { DatabaseEnvironmentError } from '../infrastructure/database/connection';
+import {
+  DatabaseConfigError,
+  DatabaseEnvironmentError,
+} from '../infrastructure/database/connection';
 import {
   ConfigurationMissingError,
   EnvValidationError,
@@ -33,6 +36,8 @@ function unavailableKeys(error: unknown): readonly string[] | null {
   if (error instanceof ConfigurationMissingError) return error.missingKeys;
   if (error instanceof EnvValidationError) return error.invalidKeys;
   if (error instanceof DatabaseEnvironmentError) return ['VERCEL_ENV'];
+  // URL presente porém malformada (ex.: sem `sslmode=verify-full`): configuração inválida, não erro interno.
+  if (error instanceof DatabaseConfigError) return ['DATABASE_URL'];
   return null;
 }
 
