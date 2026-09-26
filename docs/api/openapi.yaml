@@ -21,6 +21,8 @@ servers:
 tags:
   - name: health
     description: Liveness and version probes
+  - name: jobs
+    description: Jobs do TECH-090 disparados pelo Vercel Cron (fora de `/v1`, ADR-0004)
 
 paths:
   /health:
@@ -67,12 +69,60 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
 
+  /api/jobs/{job}:
+    servers:
+      - url: /
+        description: Mesma origem da aplicação; jobs ficam fora de `/v1` (ADR-0004)
+    get:
+      tags: [jobs]
+      summary: Executa um job do TECH-090
+      description: |
+        Chamado pelo Vercel Cron, que só faz `GET`, com `Authorization: Bearer <CRON_SECRET>`. Cada execução e cada
+        item são idempotentes (TECH-090); execuções em paralelo produzem um único efeito. Só existem os jobs do
+        registro de jobs implementados (W1: `outbox`).
+      operationId: runJob
+      security:
+        - cronSecret: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - name: job
+          in: path
+          required: true
+          description: Nome do job no TECH-090.
+          schema:
+            type: string
+            enum: [outbox]
+      responses:
+        '200':
+          description: Execução concluída
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResult'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    cronSecret:
+      type: http
+      scheme: bearer
+      description: |
+        Segredo `CRON_SECRET` (Vercel, só Production — ADR-0007), enviado pelo Vercel Cron. Comparado em tempo
+        constante.
 
   parameters:
     CorrelationId:
@@ -95,6 +145,35 @@ components:
   responses:
     InternalError:
       description: Erro inesperado no servidor. Nunca expõe stack trace nem detalhe interno.
+      headers:
+        x-correlation-id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthenticated:
+      description: Credencial ausente ou inválida (`ERR_UNAUTHENTICATED`).
+      headers:
+        x-correlation-id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Recurso inexistente (`ERR_NOT_FOUND`).
+      headers:
+        x-correlation-id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unavailable:
+      description: |
+        Função indisponível agora (`ERR_UNAVAILABLE`): configuração obrigatória ausente (TECH-001) ou contenção de
+        locks esgotou as tentativas; nada foi gravado.
       headers:
         x-correlation-id:
           $ref: '#/components/headers/CorrelationId'
@@ -129,6 +208,54 @@ components:
           pattern: '^[0-9a-f]{7,40}$'
           example: 53c7d5e0a1b2c3d4e5f60718293a4b5c6d7e8f90
 
+    ErrorCode:
+      type: string
+      description: |
+        Códigos mínimos do TECH-056 e, depois deles, os códigos gerais da plataforma. Cada causa do REQ-098 corresponde
+        a ao menos um código; a mensagem pt-BR vem da camada i18n. Código novo entra aqui antes do código-fonte.
+      enum:
+        - ERR_PERMISSION
+        - ERR_MEMBERSHIP_INELIGIBLE
+        - ERR_WINDOW_NOT_OPEN
+        - ERR_CAPACITY_UNAVAILABLE
+        - ERR_BOOKING_CONFLICT
+        - ERR_USE_RIGHT_BALANCE
+        - ERR_STAY_LENGTH
+        - ERR_MIN_NOTICE
+        - ERR_CREDITS_INSUFFICIENT
+        - ERR_CREDIT_HOLD_INVALID
+        - ERR_PRL_MISSING
+        - ERR_POLICY_MISSING
+        - ERR_PARAMETER_MISSING
+        - ERR_PAYMENT_FAILED
+        - ERR_STATE_TRANSITION
+        - ERR_IDEMPOTENCY_CONFLICT
+        - ERR_CONCURRENT_CONFIRMATION
+        - ERR_COMPLIANCE_SUSPENDED
+        - ERR_DELINQUENCY_RESTRICTED
+        - ERR_INTERNAL
+        - ERR_VALIDATION
+        - ERR_UNAUTHENTICATED
+        - ERR_NOT_FOUND
+        - ERR_UNAVAILABLE
+
+    JobResult:
+      type: object
+      required: [job, result]
+      properties:
+        job:
+          type: string
+          example: outbox
+        result:
+          type: object
+          description: Contagens da execução, por job. `outbox` → `delivered` e `failed`.
+          additionalProperties:
+            type: integer
+            minimum: 0
+          example:
+            delivered: 3
+            failed: 0
+
     Error:
       type: object
       required: [code, message]
@@ -139,6 +266,7 @@ components:
             Stable, machine-readable error code. Códigos do TECH-056 (`ERR_PERMISSION`, `ERR_BOOKING_CONFLICT`,
             `ERR_PARAMETER_MISSING`, …) e `ERR_INTERNAL` para erro inesperado.
           pattern: '^ERR_[A-Z_]+$'
+          $ref: '#/components/schemas/ErrorCode'
           example: ERR_PARAMETER_MISSING
         message:
           type: string
