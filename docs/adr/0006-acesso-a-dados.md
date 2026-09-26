@@ -28,7 +28,9 @@ transação em IPv4; funções serverless da Vercel abrem muitas conexões curta
    de novo, em PostgreSQL real (ADR-0005). Roda em toda CI.
 4. **Produção só pela CI.** O job `migrate` aplica as migrations com `DATABASE_URL_MIGRATIONS` (pooler em modo
    sessão, IPv4, papel dono dos objetos) em push para `main`, antes do `deploy`. Nenhuma migration é aplicada por
-   console, MCP ou máquina local.
+   console, MCP ou máquina local. Antes de aplicar, um **preflight** (`dbmate status`: mesmo cliente e mesmas regras
+   de TLS das migrations, só leitura do histórico, sem criar schema, tabela nem banco) conecta no banco-alvo — uma URL
+   ausente ou inválida (host, porta, credencial, banco) derruba o job já no primeiro push, mesmo sem migrations.
 5. **Papel de aplicação** (criado na W1): `LOGIN`, sem DDL, sem `UPDATE`/`DELETE` em ledgers, snapshots, versões e
    `audit_log` (TECH-052), com só os privilégios que cada command usa. Conecta pelo Supavisor em **modo transação**
    (IPv4, adequado a serverless): nada de estado de sessão entre transações; configurações só com `SET LOCAL` dentro

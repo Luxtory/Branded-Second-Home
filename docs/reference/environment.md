@@ -16,7 +16,7 @@ Regras:
 
 | Nome | Onde | Lida por | Desde |
 |---|---|---|---|
-| `DATABASE_URL_MIGRATIONS` | secret do GitHub Actions | `npm run db:migrate` (job `migrate`): pooler em modo sessão, papel dono do schema | W0 |
+| `DATABASE_URL_MIGRATIONS` | secret do GitHub Actions | `npm run db:migrate` (job `migrate`): pooler em modo sessão, papel dono do schema; validada por preflight de conexão (`dbmate status`, só leitura) antes de aplicar | W0 |
 | `VERCEL_TOKEN` | secret do GitHub Actions | job `deploy` (Vercel CLI) | W0 |
 | `VERCEL_ENV` | Vercel (sistema, só leitura) | `platform`: `/lab` responde 404 com `production` | W0 |
 | `VERCEL_GIT_COMMIT_SHA` | Vercel (sistema, só leitura) | `platform`: `GET /v1/version` | W0 |
