@@ -37,8 +37,14 @@ async function signIn(page: Page, email: string) {
   await page.getByLabel('Código recebido por e-mail').fill(TEST_CODE);
   await page.getByRole('button', { name: 'Entrar' }).click();
   await expect(page).toHaveURL(/\/entrar\/mfa$/);
-  await page.getByRole('button', { name: 'Configurar aplicativo autenticador' }).click();
-  await expect(page.getByRole('img', { name: /QR code/ })).toBeVisible();
+  // Primeiro acesso cadastra o TOTP (QR code); com fator já verificado, a tela pede só o código.
+  const enroll = page.getByRole('button', { name: 'Configurar aplicativo autenticador' });
+  const challenge = page.getByLabel('Código do aplicativo autenticador');
+  await expect(enroll.or(challenge)).toBeVisible();
+  if (await enroll.isVisible()) {
+    await enroll.click();
+    await expect(page.getByRole('img', { name: /QR code/ })).toBeVisible();
+  }
   await page.getByLabel('Código do aplicativo autenticador').fill(TEST_CODE);
   await page.getByRole('button', { name: 'Confirmar' }).click();
 }
