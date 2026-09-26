@@ -52,6 +52,53 @@ Production da Vercel**, nunca em Preview ou Development.
    inválida (`job endpoint unavailable` ou `job unavailable`, campo `keys`) — por exemplo, `DATABASE_URL` sem
    `sslmode=verify-full` ou com a senha sem codificação para URL.
 
+## Preparar a W2 em produção (acesso administrativo)
+
+Auth real só em Production enquanto a D3 estiver adiada ([ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md),
+[ADR-0008](../adr/0008-autenticacao-e-autorizacao-administrativa.md)). Nenhuma variável de Auth em Preview ou
+Development: lá as telas mostram "indisponível" (o build não depende delas).
+
+### Antes do merge da W2
+
+1. No Supabase, em **Authentication → Sign In / Providers**, desligue o cadastro público de usuários ("Allow new
+   users to sign up"). Só entra quem a Luxtory criar; e-mail sem conta recebe a mesma resposta na tela, sem código.
+2. Em **Authentication → Multi-Factor**, confira que o **TOTP (App Authenticator)** está habilitado.
+3. Em **Authentication → Emails → Templates**, no template de **Magic Link**, mostre o código de uso único com
+   `{{ .Token }}` (o login é por código, não por link). Texto sugerido: "Seu código de acesso à Luxtory é
+   {{ .Token }}. Ele vale por poucos minutos. Se você não pediu, ignore este e-mail."
+4. Em **Authentication → URL Configuration**, `Site URL` = `https://branded-second-home.vercel.app`.
+5. Na Vercel, em **Settings → Environment Variables**, marcando **somente Production** em cada uma:
+   - `NEXT_PUBLIC_SUPABASE_URL` = `https://<project-ref>.supabase.co` (a variável já existe: tire Preview e
+     Development);
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` = a chave `sb_publishable_…` de **Project Settings → API Keys**;
+   - apague `NEXT_PUBLIC_SUPABASE_ANON_KEY` (chave legada; o código só aceita o formato `sb_publishable_…`).
+   São chaves públicas (não precisam ser Sensitive), mas ficam fora de Preview (ADR-0007). **Nunca** crie
+   `AUTH_MODE` na Vercel: `test` é recusado com `VERCEL_ENV` presente.
+
+### Depois do merge (`migrate` ✅ e `deploy` ✅)
+
+6. Crie o usuário do primeiro Super Admin em **Authentication → Users → Add user → Create new user**, com o e-mail do
+   responsável, **Auto Confirm User** marcado e uma senha longa aleatória do gerenciador de senhas (não é usada: o
+   login é por código). Enquanto o SMTP próprio não existir (decisão D4), o e-mail precisa ser de um membro da
+   organização do Supabase — o SMTP padrão só envia para eles, com limite baixo por hora. Copie o **User UID**.
+7. No **SQL Editor**, atribua o papel com a base registrada (sem hierarquia: quem também opera como Admin recebe os
+   dois papéis, um por chamada):
+   `SELECT app.assign_staff_role('<User UID>', 'super_admin', '<base registrada, ex.: Ata da diretoria de AAAA-MM-DD>');`
+   A função recusa usuário inexistente e grava `operation` + `audit_log` (REQ-015).
+8. Primeiro login em `https://branded-second-home.vercel.app/entrar`: e-mail → código → **Configurar aplicativo
+   autenticador** (QR code) → código do aplicativo → `/admin` mostra o papel ativo.
+9. Confira (só leitura): uma linha ativa em `app.staff_role`, a `operation` `assign_staff_role` com o `audit_log`; nos
+   logs da Vercel, nenhum `auth unavailable` nem erro.
+
+### Revogar papel de staff ou grant
+
+- Papel: `SELECT app.revoke_staff_role('<id em app.staff_role>', '<base registrada>');`
+- Grant: `SELECT app.revoke_authorization_grant('<id em app.authorization_grant>', '<base registrada>');`
+- Vale no command ou na página seguinte (o guard relê o banco). Cada revogação grava `operation` + `audit_log` com
+  antes/depois; nada é apagado.
+- Aparelho do segundo fator perdido: remova o fator do usuário em **Authentication → Users** (MFA) e ele cadastra um
+  novo no próximo login.
+
 ## Rotacionar segredos
 
 - `CRON_SECRET`: gere outro valor, atualize na Vercel (Production) e refaça o deploy (passo 6).
@@ -64,5 +111,8 @@ Production da Vercel**, nunca em Preview ou Development.
   nova migration ou um novo commit; nunca aplique SQL de schema pelo console, MCP ou máquina local (ADR-0006).
 - Eventos com `attempts` crescendo em `app.outbox`: um consumidor falha; `last_error` guarda só o nome do erro, e o
   log `outbox delivery failed` identifica evento e consumidor. O domínio não é desfeito (TECH-091).
+- `/entrar` ou `/admin` em Production dizem "O acesso não está disponível neste ambiente": o log `auth unavailable`
+  traz as chaves (`keys`) — variável de Auth ausente ou fora do formato (ex.: a chave `anon` legada no lugar da
+  `sb_publishable_…`). Corrija na Vercel (Production) e refaça o deploy pela CI (passo 6 da W1).
 - `command retries exhausted` nos logs: contenção de locks acima do `COMMAND_LOCK_TIMEOUT_MS` em
   `COMMAND_MAX_ATTEMPTS` tentativas; o cliente pode repetir com a mesma `Idempotency-Key`.
