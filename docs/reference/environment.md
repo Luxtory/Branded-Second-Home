@@ -20,7 +20,7 @@ Regras:
 | `VERCEL_TOKEN` | secret do GitHub Actions | job `deploy` (Vercel CLI) | W0 |
 | `VERCEL_ENV` | Vercel (sistema, só leitura) | `platform`: `/lab` responde 404 com `production` | W0 |
 | `VERCEL_GIT_COMMIT_SHA` | Vercel (sistema, só leitura) | `platform`: `GET /v1/version` | W0 |
-| `DATABASE_URL` | Vercel (Production, Preview, Development) | papel de aplicação via Supavisor em modo transação (ADR-0006) | W1 |
+| `DATABASE_URL` | Vercel — **só Production** (Sensitive). Previsto antes também para Preview e Development; a decisão D3 ([ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md)) proíbe credencial do banco canônico fora de Production | papel de aplicação via Supavisor em modo transação (ADR-0006) | W1 |
 | `CRON_SECRET` | Vercel (Sensitive) | autenticação dos endpoints `/api/jobs/*` | W1 |
 | `NEXT_PUBLIC_SUPABASE_URL` | Vercel | Supabase Auth | W2 |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Vercel | Supabase Auth (chave pública) | W2 |

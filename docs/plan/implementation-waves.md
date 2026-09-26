@@ -867,7 +867,7 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 |---|---|---|---|
 | D1 | Vercel Pro antes do go-live público do R1 (termos de uso comercial; cron por minuto) | sim | aberta |
 | D2 | Supabase Pro (backup diário, sem pausa) antes de dados reais; PITR no go-live econômico (ADR-0002). Pré-requisito da W30 | sim, no go-live do R1 | aberta |
-| D3 | Segundo projeto Supabase Free como staging (Previews + validação de migrations na CI) | criar antes da W1 | aberta |
+| D3 | Segundo projeto Supabase Free como staging (Previews + validação de migrations na CI) | criar antes da W1 | **adiada** em 2026-09-26 (opção A: sem staging; Previews sem credencial do banco; reavaliar antes de dados reais, PII, 1ª transação econômica ou go-live — [ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md)) |
 | D4 | Provedor SMTP para login e notificações | escolher antes do go-live do R2 | aberta |
 | D5a | `NOTES.md` já existia → atualizado no lugar, sem recriar | — | adotada em 2026-09-25 |
 | D5b | Este arquivo: seção DS e Anexo A preservados byte a byte; plano Luxtory acrescentado no topo | — | adotada em 2026-09-25 |

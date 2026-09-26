@@ -14,6 +14,7 @@ described by Michael Nygard. The ADR process itself is established in
 | 0004 | [Toolchain, bibliotecas e pipeline](0004-toolchain-bibliotecas-e-pipeline.md) | Accepted |
 | 0005 | [Testes com PostgreSQL real, sem Docker](0005-testes-com-postgresql-real-sem-docker.md) | Accepted |
 | 0006 | [Acesso a dados: schemas, papéis, migrations e leituras sob RLS](0006-acesso-a-dados.md) | Accepted |
+| 0007 | [Ambientes antes do lançamento: sem staging (D3 adiada)](0007-ambientes-pre-lancamento-sem-staging.md) | Accepted |
 
 The technical decisions ADR-001…008 of the canonical
 [03 — Technical Spec](../specs/canonical/03-technical-spec.md) also apply, by reference.
