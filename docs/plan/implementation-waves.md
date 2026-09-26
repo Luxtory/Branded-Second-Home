@@ -285,6 +285,21 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   sem MFA (AAL1) é negado` · `[TECH-052] anon/authenticated não leem staff e grants` · `[TECH-100] POST com origem
   inválida → 403` · E2E de login com autenticação de teste e axe 0. Login real verificado em preview/staging (D3).
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-014 exits 0, stop after 4 tries`
+- **Decisões de execução (aprovadas em 2026-09-26)**:
+  - D-W2-1 — `authorization_grant.grantee_party_id` nasce `uuid` **sem FK**, como dívida transitória deliberada e
+    fail-closed (não é o modelo definitivo): nenhum grant produtivo pode ser criado enquanto `party` não existir; a
+    **W7 adiciona e valida a FK**. O grant nasce revogável, com revogação operacional auditada; revogação por API
+    fica fora da W2.
+  - D-W2-2 — sem hierarquia presumida entre Admin e Super Admin: um usuário pode ter os dois papéis e o guard registra
+    o papel exercido.
+  - D-W2-3 — Auth real só em Production enquanto a D3 estiver adiada; Previews sem variáveis do Supabase canônico. A
+    ausência delas não quebra o build: a recusa ocorre quando o Auth real é usado. Autenticação de teste só local e na
+    CI (ADR-0005 §7).
+  - D-W2-4 — e-mail de staff em `auth.users` é PII: a W2 aciona a reavaliação da D3; decisão da Luxtory: continuar sem
+    staging (registrada no [ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md)).
+  - `CRITICAL_COMMANDS` permanece exatamente a tabela fechada do TECH-051; operações não críticas (REQ-095) ficam em
+    registro separado.
+  - `@supabase/supabase-js` **2.116.0** em vez de 2.117.2 (cooldown de 7 dias do `.npmrc`; ADR-0004).
 
 ### Wave 3 — Catálogo + Admin
 
@@ -362,6 +377,8 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   - Admin cadastra a party e convida o usuário pela Admin API do Supabase; login do Titular por código; estrutura
     da Área do Titular; RLS por party; leitura administrativa mascarada e auditada.
   - API `POST /v1/admin/parties` e `POST /v1/admin/parties/{id}/delegations`. STRIDE `titular-pii`.
+  - **Obrigação herdada da W2 (D-W2-1)**: adicionar e validar a FK `authorization_grant.grantee_party_id → party`
+    (constraint validada, sem `NOT VALID` pendente) e encerrar a dívida transitória no spec `identity`.
 - **Depends on / parallel with**: W2; sequencial.
 - **Acceptance criteria**: `[TECH-100] CPF/CNPJ nunca em claro no banco, nos logs nem no audit_log; HMAC barra
   duplicidade` · `[TECH-050] sem delegação vigente não há acesso` · `[TECH-052] Titular A não lê dados do Titular
@@ -872,7 +889,7 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 |---|---|---|---|
 | D1 | Vercel Pro antes do go-live público do R1 (termos de uso comercial; cron por minuto) | sim | aberta |
 | D2 | Supabase Pro (backup diário, sem pausa) antes de dados reais; PITR no go-live econômico (ADR-0002). Pré-requisito da W30 | sim, no go-live do R1 | aberta |
-| D3 | Segundo projeto Supabase Free como staging (Previews + validação de migrations na CI) | criar antes da W1 | **adiada** em 2026-09-26 (opção A: sem staging; Previews sem credencial do banco; reavaliar antes de dados reais, PII, 1ª transação econômica ou go-live — [ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md)) |
+| D3 | Segundo projeto Supabase Free como staging (Previews + validação de migrations na CI) | criar antes da W1 | **adiada** em 2026-09-26 (opção A: sem staging; Previews sem credencial do banco; reavaliar antes de dados reais, PII, 1ª transação econômica ou go-live — [ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md)); **reavaliada** em 2026-09-26 na W2 (PII do 1º staff em `auth.users`): mantida sem staging; nova reavaliação antes de PII de clientes, 1ª transação econômica ou go-live público |
 | D4 | Provedor SMTP para login e notificações | escolher antes do go-live do R2 | aberta |
 | D5a | `NOTES.md` já existia → atualizado no lugar, sem recriar | — | adotada em 2026-09-25 |
 | D5b | Este arquivo: seção DS e Anexo A preservados byte a byte; plano Luxtory acrescentado no topo | — | adotada em 2026-09-25 |

@@ -102,6 +102,11 @@ dependência de runtime (o app conecta como `luxtory_app`). `@vercel/functions` 
 do próprio `next/server` agenda o disparo do outbox, e a versão prevista (3.9.9, de 2026-09-22) ainda estava dentro
 do `cooldown` de 7 dias.
 
+Execução da W2 (2026-09-26): `@supabase/ssr` 0.12.7 como previsto; `@supabase/supabase-js` **2.116.0** em vez de
+2.117.2 — a 2.117.2 (e as 2.117.x) foram publicadas depois de 2026-09-19 e ainda estavam dentro do `cooldown` de 7
+dias; a 2.116.0 atende ao `peerDependencies` do `@supabase/ssr` (`^2.114.0`). O cliente só é usado pelo namespace
+`.auth`, no servidor ([ADR-0008](0008-autenticacao-e-autorizacao-administrativa.md)).
+
 ### Arquivo `activate-ultronpx.mjs`
 
 Fica fora de Prettier, ESLint, TypeScript, Vitest (testes e cobertura), Playwright, Semgrep, gitleaks, `.vercelignore`

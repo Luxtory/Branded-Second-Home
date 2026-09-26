@@ -32,6 +32,22 @@ já prova toda migration (up → down → up) e todo comportamento de banco num 
 3. primeira transação econômica;
 4. go-live público.
 
+## Reavaliações
+
+### 2026-09-26 — W2: primeira PII (e-mail de staff)
+
+- **Gatilho acionado.** A W2 cria o primeiro usuário do Supabase Auth (o 1º Super Admin). O e-mail de staff em
+  `auth.users` é **dado pessoal**: o gatilho "armazenamento de PII" desta decisão foi acionado. Este registro não
+  restringe o gatilho a dados de clientes — ele vale para qualquer PII.
+- **Decisão da Luxtory:** continuar temporariamente **sem staging**. Contexto: pré-lançamento, nenhum cliente, e a
+  única PII é interna — o e-mail do primeiro membro do staff, guardado pelo Supabase Auth; as tabelas da aplicação
+  guardam só o id do usuário.
+- **Extensão da regra 3 ao Auth:** o Supabase Auth do projeto canônico só é usado em Production. Previews não recebem
+  `NEXT_PUBLIC_SUPABASE_URL` nem `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, e o código recusa o Auth real com `VERCEL_ENV`
+  diferente de `production` ([ADR-0008](0008-autenticacao-e-autorizacao-administrativa.md)).
+- **Continua obrigatória** nova reavaliação antes do primeiro destes eventos: PII de clientes (W7: party cifrada; W6:
+  dados do interesse), primeira transação econômica (W19) ou go-live público.
+
 ## Consequences
 
 ### Positive

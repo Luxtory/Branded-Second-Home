@@ -23,6 +23,8 @@ tags:
     description: Liveness and version probes
   - name: jobs
     description: Jobs do TECH-090 disparados pelo Vercel Cron (fora de `/v1`, ADR-0004)
+  - name: admin
+    description: Operações administrativas (REQ-095) sob o guard, com MFA (TECH-050) e auditoria (REQ-015)
 
 paths:
   /health:
@@ -68,6 +70,55 @@ paths:
                 $ref: '#/components/schemas/VersionResponse'
         '500':
           $ref: '#/components/responses/InternalError'
+
+  /admin/authorization-grants:
+    post:
+      tags: [admin]
+      summary: Registra uma autorização para uma party (REQ-014)
+      description: |
+        Operação não crítica `grant_authorization` (REQ-095), executada pelo pipeline de commands (TECH-054): exige
+        sessão de staff com MFA (AAL2) e papel Admin ativo (TECH-050, ADR-0008); grava `operation` e `audit_log`
+        (REQ-015). `commands` só aceita operações concedíveis a parceiros (autoridade `grantee`) — nenhuma existe
+        ainda, então toda requisição é recusada com `ERR_VALIDATION` até a primeira existir. Enquanto `party` não
+        existir (W7), o banco também recusa qualquer grant (dívida transitória D-W2-1, `docs/specs/identity.md`).
+        `Origin` ausente ou diferente do host → 403 (TECH-100). Repetir com a mesma `Idempotency-Key` e o mesmo
+        corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: createAuthorizationGrant
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizationGrantRequest'
+      responses:
+        '201':
+          description: Autorização registrada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationGrant'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
 
   /api/jobs/{job}:
     servers:
@@ -123,6 +174,14 @@ components:
       description: |
         Segredo `CRON_SECRET` (Vercel, só Production — ADR-0007), enviado pelo Vercel Cron. Comparado em tempo
         constante.
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: sb-<project-ref>-auth-token
+      description: |
+        Sessão do Supabase Auth em cookies `httpOnly` (`SameSite=Lax`), criada pelas telas `/entrar` e `/entrar/mfa`
+        (ADR-0008). O nome segue o padrão do `@supabase/ssr` e pode vir dividido em partes (`.0`, `.1`). O servidor
+        verifica a assinatura do JWT (ES256, JWKS do Supabase Auth). Auth real só em Production (ADR-0007).
 
   parameters:
     CorrelationId:
@@ -136,11 +195,27 @@ components:
         type: string
         pattern: '^[A-Za-z0-9._:-]{8,128}$'
 
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: |
+        Chave de idempotência escolhida pelo cliente (TECH-056, ADR-006 do `03`), por ator. Mesma chave e mesmo corpo
+        → mesma resposta; corpo diferente → `ERR_IDEMPOTENCY_CONFLICT`.
+      schema:
+        type: string
+        pattern: '^[!-~]{1,255}$'
+
   headers:
     CorrelationId:
       description: Id de correlação do request (o recebido, se válido, ou um UUID gerado).
       schema:
         type: string
+    IdempotencyReplayed:
+      description: '`true` quando a resposta é a repetição gravada de uma chave já usada (ADR-006 do `03`).'
+      schema:
+        type: string
+        enum: ['true']
 
   responses:
     InternalError:
@@ -154,6 +229,35 @@ components:
             $ref: '#/components/schemas/Error'
     Unauthenticated:
       description: Credencial ausente ou inválida (`ERR_UNAUTHENTICATED`).
+      headers:
+        x-correlation-id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: |
+        Requisição inválida (`ERR_VALIDATION`): corpo, `Idempotency-Key` ou valor fora do schema.
+      headers:
+        x-correlation-id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: |
+        Operação não permitida (`ERR_PERMISSION`): guard negou (papel, MFA, grant) ou `Origin` inválida (TECH-100).
+      headers:
+        x-correlation-id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Conflito (`ERR_IDEMPOTENCY_CONFLICT`, `ERR_STATE_TRANSITION`).
       headers:
         x-correlation-id:
           $ref: '#/components/headers/CorrelationId'
@@ -256,6 +360,100 @@ components:
             delivered: 3
             failed: 0
 
+    GrantScope:
+      type: object
+      additionalProperties: false
+      required: [type, id]
+      description: "Objeto sobre o qual a autorização vale (por exemplo, um Concept); os tipos chegam com cada módulo."
+      properties:
+        type:
+          type: string
+          pattern: '^[a-z][a-z0-9_]*$'
+          maxLength: 64
+        id:
+          type: string
+          minLength: 1
+          maxLength: 255
+    AuthorizationGrantRequest:
+      type: object
+      additionalProperties: false
+      required: [grantee_party_id, commands, scope, valid_from, valid_until, basis]
+      properties:
+        grantee_party_id:
+          type: string
+          format: uuid
+          description: Party beneficiária (Brand Partner, Investor ou parceiro).
+        commands:
+          type: array
+          minItems: 1
+          maxItems: 64
+          uniqueItems: true
+          description: Operações concedíveis (autoridade `grantee`) que a party poderá executar.
+          items:
+            type: string
+            pattern: '^[a-z][a-z0-9_]*$'
+        scope:
+          $ref: '#/components/schemas/GrantScope'
+        valid_from:
+          type: string
+          format: date-time
+        valid_until:
+          type: string
+          format: date-time
+          description: Fim exclusivo da vigência; posterior a `valid_from` e ao instante do registro.
+        basis:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Referência da base registrada (instrumento, aprovação ou ata).
+    AuthorizationGrant:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - grantee_party_id
+        - commands
+        - scope
+        - valid_from
+        - valid_until
+        - basis
+        - granted_by_user_id
+        - granted_role
+        - operation_id
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        grantee_party_id:
+          type: string
+          format: uuid
+        commands:
+          type: array
+          items:
+            type: string
+        scope:
+          $ref: '#/components/schemas/GrantScope'
+        valid_from:
+          type: string
+          format: date-time
+        valid_until:
+          type: string
+          format: date-time
+        basis:
+          type: string
+        granted_by_user_id:
+          type: string
+          format: uuid
+        granted_role:
+          type: string
+          enum: [admin]
+        operation_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
     Error:
       type: object
       required: [code, message]
