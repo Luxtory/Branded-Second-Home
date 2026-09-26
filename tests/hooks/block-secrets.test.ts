@@ -8,6 +8,8 @@ import { describe, expect, it } from 'vitest';
 // por isso toda falha ao interpretar o input precisa terminar em 2 (fail-closed).
 const HOOK = '.claude/hooks/block-secrets.sh';
 const BASH = '/bin/bash';
+// Cada caso executa bash/node/git; com a suíte inteira em paralelo passa dos 5 s padrão.
+const HOOK_PROCESS_TIMEOUT_MS = 30_000;
 const ALLOW = 0;
 const BLOCK = 2;
 
@@ -19,7 +21,7 @@ function runHook(input: string, env: NodeJS.ProcessEnv = process.env) {
 const toolCall = (toolName: string, toolInput: Record<string, unknown>) =>
   JSON.stringify({ tool_name: toolName, tool_input: toolInput });
 
-describe('block-secrets.sh', () => {
+describe('block-secrets.sh', { timeout: HOOK_PROCESS_TIMEOUT_MS }, () => {
   it.each([
     ['Write em .env.local', toolCall('Write', { file_path: '/repo/.env.local', content: 'x' })],
     ['Edit de chave SSH', toolCall('Edit', { file_path: '/home/u/.ssh/id_ed25519' })],

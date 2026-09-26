@@ -12,8 +12,19 @@
 #   3. Flags a stale NOTES.md (work in the tree, NOTES.md untouched).
 set -uo pipefail
 
+# JSON lido com node (dependência do projeto; `jq` não existe no ambiente).
+# Mesma semântica de `jq -r '.trigger // "unknown"'`; input ilegível → vazio, como com jq.
 INPUT=$(cat)
-TRIGGER=$(echo "$INPUT" | jq -r '.trigger // "unknown"')
+TRIGGER=$(printf '%s' "$INPUT" | node -e '
+let raw = "";
+process.stdin.setEncoding("utf8");
+process.stdin.on("data", (chunk) => (raw += chunk));
+process.stdin.on("end", () => {
+  const value = JSON.parse(raw)?.trigger;
+  const shown = value === undefined || value === null || value === false ? "unknown" : value;
+  process.stdout.write(typeof shown === "string" ? shown : JSON.stringify(shown));
+});
+' 2>/dev/null)
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 cd "$PROJECT_DIR" 2>/dev/null || exit 0

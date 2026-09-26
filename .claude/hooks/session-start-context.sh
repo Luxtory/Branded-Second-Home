@@ -36,7 +36,8 @@ if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
     echo "- Last CI run: $CI_STATUS"
   fi
 
-  OPEN_COUNT=$(gh issue list --state open --json number 2>/dev/null | jq 'length' 2>/dev/null || echo "?")
+  # `--jq` embutido no gh: não depende do binário jq (ausente no ambiente).
+  OPEN_COUNT=$(gh issue list --state open --json number --jq 'length' 2>/dev/null || echo "?")
   echo "- Open issues: $OPEN_COUNT"
 fi
 

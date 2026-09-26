@@ -19,8 +19,29 @@
 # Loop guard: when stop_hook_active=true, never block again (prevents loops).
 set -uo pipefail
 
+# JSON lido e emitido com node (dependência do projeto; `jq` não existe no ambiente).
+# Mesma semântica de `jq -r '.stop_hook_active // false'`; input ilegível → vazio (≠ "true"), como com jq.
 INPUT=$(cat)
-STOP_ACTIVE=$(echo "$INPUT" | jq -r '.stop_hook_active // false')
+STOP_ACTIVE=$(printf '%s' "$INPUT" | node -e '
+let raw = "";
+process.stdin.setEncoding("utf8");
+process.stdin.on("data", (chunk) => (raw += chunk));
+process.stdin.on("end", () => {
+  const value = JSON.parse(raw)?.stop_hook_active;
+  const shown = value === undefined || value === null || value === false ? false : value;
+  process.stdout.write(typeof shown === "string" ? shown : JSON.stringify(shown));
+});
+' 2>/dev/null)
+
+# Emite um objeto JSON a partir de pares chave/valor (substitui `jq -n`).
+emit_json() {
+  node -e '
+const pairs = process.argv.slice(1);
+const out = {};
+for (let i = 0; i < pairs.length; i += 2) out[pairs[i]] = pairs[i + 1];
+process.stdout.write(JSON.stringify(out) + "\n");
+' -- "$@"
+}
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 cd "$PROJECT_DIR" 2>/dev/null || exit 0
@@ -47,7 +68,7 @@ if [ -f NOTES.md ]; then
     # surface the /compact suggestion to the user and end quietly.
     rm -f "$WAVE_PENDING_FILE"
     echo "$DONE_COUNT" > "$WAVE_COUNT_FILE" 2>/dev/null || true
-    jq -n '{systemMessage: "🌊 Wave complete and NOTES.md final pass done. Good moment to run /compact before the next wave — the PreCompact hook snapshots git state and the SessionStart(compact) hook restores continuity automatically."}'
+    emit_json systemMessage "🌊 Wave complete and NOTES.md final pass done. Good moment to run /compact before the next wave — the PreCompact hook snapshots git state and the SessionStart(compact) hook restores continuity automatically."
     exit 0
   fi
 
@@ -72,11 +93,11 @@ Before ending, do the final continuity pass on NOTES.md (it must survive a /comp
 If the pass is already complete, say so explicitly and finish the turn.
 EOF
 )
-        jq -n --arg r "$REASON" '{decision: "block", reason: $r}'
+        emit_json decision block reason "$REASON"
         exit 0
       else
         # Already inside a hook-forced continuation — cannot block again.
-        jq -n '{systemMessage: "🌊 Wave marked ✅ in NOTES.md. Double-check the final continuity pass (status, discoveries, next wave), then consider running /compact before the next wave."}'
+        emit_json systemMessage "🌊 Wave marked ✅ in NOTES.md. Double-check the final continuity pass (status, discoveries, next wave), then consider running /compact before the next wave."
         exit 0
       fi
     elif [ "$DONE_COUNT" -ne "$PREV_COUNT" ]; then
@@ -129,5 +150,5 @@ If none of this is needed (trivial change, no-impact refactor, intentional WIP),
 EOF
 )
 
-jq -n --arg r "$REASON" '{decision: "block", reason: $r}'
+emit_json decision block reason "$REASON"
 exit 0

@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest';
 // Hook PostToolUse (.claude/settings.json): formata o arquivo editado e nunca bloqueia (sempre exit 0).
 const HOOK = '.claude/hooks/format-on-save.sh';
 const BASH = '/bin/bash';
+// Cada caso executa bash/node/git; com a suíte inteira em paralelo passa dos 5 s padrão.
+const HOOK_PROCESS_TIMEOUT_MS = 30_000;
 // `npx prettier` no drvfs (/mnt/c) pode levar alguns segundos.
 const PRETTIER_TIMEOUT_MS = 60_000;
 
@@ -25,7 +27,7 @@ function projectWithFile(content: string) {
   return { projectDir, file };
 }
 
-describe('format-on-save.sh', () => {
+describe('format-on-save.sh', { timeout: HOOK_PROCESS_TIMEOUT_MS }, () => {
   it(
     'formata com o Prettier do projeto o arquivo informado em tool_input.file_path',
     () => {
