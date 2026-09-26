@@ -89,23 +89,23 @@ inexistente.
 
 ## 6. Acceptance criteria
 
-- [ ] `[REQ-014]` sem grant válido é negado: sem grant, grant de outro command, de outro escopo, fora da vigência
+- [x] `[REQ-014]` sem grant válido é negado: sem grant, grant de outro command, de outro escopo, fora da vigência
       (antes e depois) ou revogado; grant válido autoriza e a `operation` registra `authorization_grant:<id>`.
-- [ ] `[REQ-014]` na W2 nenhum grant produtivo pode ser criado: comando não concedível → 400; sem `app.party` o banco
+- [x] `[REQ-014]` na W2 nenhum grant produtivo pode ser criado: comando não concedível → 400; sem `app.party` o banco
       recusa o `INSERT`.
-- [ ] `[TECH-050]` Admin com sessão AAL1 é negado; papel inexistente, revogado ou não aceito pela autoridade é
+- [x] `[TECH-050]` Admin com sessão AAL1 é negado; papel inexistente, revogado ou não aceito pela autoridade é
       negado; Admin e Super Admin não se substituem.
-- [ ] `[TECH-052]` `anon` e `authenticated` não leem `staff_role` nem `authorization_grant`; `luxtory_app` não altera
+- [x] `[TECH-052]` `anon` e `authenticated` não leem `staff_role` nem `authorization_grant`; `luxtory_app` não altera
       nem apaga papéis e grants.
-- [ ] `[TECH-052]` leitura sob RLS: `SET LOCAL ROLE authenticated` + claims verificadas isolam usuários e não vazam
+- [x] `[TECH-052]` leitura sob RLS: `SET LOCAL ROLE authenticated` + claims verificadas isolam usuários e não vazam
       para a transação seguinte.
-- [ ] `[TECH-092]` leitura administrativa grava `audit_log` do tipo `admin_read`.
-- [ ] `[REQ-015]` atribuir e revogar papel e revogar grant gravam `operation` e `audit_log` com antes/depois e base.
-- [ ] `[TECH-100]` `POST` com origem ausente ou de outro host → 403 sem efeito.
-- [ ] `[ADR-0005]` autenticação de teste recusada quando `VERCEL_ENV` existe; Auth real recusado em Preview e
+- [x] `[TECH-092]` leitura administrativa grava `audit_log` do tipo `admin_read`.
+- [x] `[REQ-015]` atribuir e revogar papel e revogar grant gravam `operation` e `audit_log` com antes/depois e base.
+- [x] `[TECH-100]` `POST` com origem ausente ou de outro host → 403 sem efeito.
+- [x] `[ADR-0005]` autenticação de teste recusada quando `VERCEL_ENV` existe; Auth real recusado em Preview e
       Development da Vercel (D-W2-3).
-- [ ] `[TECH-051]` `CRITICAL_COMMANDS` continua exatamente a tabela do TECH-051; operações não críticas ficam fora.
-- [ ] E2E com autenticação de teste: e-mail → código → cadastro TOTP → Admin; usuário sem papel vê 403; axe 0.
+- [x] `[TECH-051]` `CRITICAL_COMMANDS` continua exatamente a tabela do TECH-051; operações não críticas ficam fora.
+- [x] E2E com autenticação de teste: e-mail → código → cadastro TOTP → Admin; usuário sem papel vê 403; axe 0.
 
 ## 7. Edge cases
 

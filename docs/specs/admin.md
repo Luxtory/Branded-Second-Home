@@ -41,10 +41,10 @@ Uma área `/admin` que só abre para staff autenticado com MFA (TECH-050) e que 
 
 ## 6. Acceptance criteria
 
-- [ ] Sem sessão → `/entrar`; sessão AAL1 → `/entrar/mfa`; sessão AAL2 sem papel de staff → tela 403 sem dado; staff
+- [x] Sem sessão → `/entrar`; sessão AAL1 → `/entrar/mfa`; sessão AAL2 sem papel de staff → tela 403 sem dado; staff
       AAL2 → início do Admin com os papéis ativos e "Sair".
-- [ ] Sem banco ou sem Auth no ambiente (Preview, ADR-0007) → tela "indisponível", sem erro 500.
-- [ ] Textos pela camada i18n; classes `lx-*`; axe 0 em 390 e 1440 px (E2E).
+- [x] Sem banco ou sem Auth no ambiente (Preview, ADR-0007) → tela "indisponível", sem erro 500.
+- [x] Textos pela camada i18n; classes `lx-*`; axe 0 em 390 e 1440 px (E2E).
 
 ## 7. Edge cases
 
