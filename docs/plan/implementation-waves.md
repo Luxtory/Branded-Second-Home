@@ -52,7 +52,7 @@
 
 | Wave | Deliverable | Slice(s) | IDs (dona) | Depends on | Parallel with | Release | Status |
 |------|-------------|----------|------------|------------|---------------|---------|--------|
-| 0 | Fundação: scaffold, harness TECH-110, CI/CD, ADRs 0004–0006, `## Commands` | platform | — | — | — | R1·base | ⬜ |
+| 0 | Fundação: scaffold, harness TECH-110, CI/CD, ADRs 0004–0006, `## Commands` | platform | — | — | — | R1·base | ✅ |
 | 1 | Núcleo de commands: operação, idempotência, auditoria, outbox, jobs, erros | platform | REQ-015, REQ-098 | 0 | — | R1·base | ⬜ |
 | 2 | Acesso administrativo: Auth, MFA, staff, guard, grants, RLS | identity, admin | REQ-014 | 1 | — | R1·base | ⬜ |
 | 3 | Catálogo + Admin | catalog, admin | REQ-020, REQ-027 | 2 | — | R1 | ⬜ |
@@ -132,6 +132,9 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   `fonts.css` do Design System, sem `next/font/local` (evita família duplicada; preload na W4); jobs da CI com os
   nomes do esqueleto (`lint`, `typecheck`, `test`, `security`) + `e2e`, `migrate`, `deploy`, em vez de `quality`
   (conteúdo existente só é estendido).
+- **Status**: ✅ concluída em 2026-09-26 — PR #3, squash `d4cbc87` em `main`; pipeline de `main` verde (`migrate` com
+  preflight, `deploy` em Production `gru1`); smoke tests em https://branded-second-home.vercel.app: `/v1/health` 200,
+  `/v1/version` = `d4cbc87`, `/lab` 404, `/favicon.ico` 200.
 
 #### W0 — `## Commands` (CLAUDE.md e AGENTS.md)
 
