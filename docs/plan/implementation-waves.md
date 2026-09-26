@@ -3,6 +3,908 @@
 > Fonte de verdade do roadmap de implementação; a tabela de `NOTES.md` espelha a coluna Status.
 > Derivado com `/waves`. O plano original do template foi preservado verbatim no
 > [Anexo A](#anexo-a--plano-do-template-concluído).
+>
+> Specs-fonte do plano Luxtory: canônicos `01` v10.1 → `02` v4.1 → `03` v3.13 (`docs/specs/canonical/`,
+> congelados). Plano W0–W30 aprovado em 2026-09-25 e revisado com evidência no mesmo dia (achados F1–F20, ver
+> "Registro da revisão"). As seções **Design System (DS)** (concluída) e **Anexo A** abaixo permanecem inalteradas.
+
+## Plano Luxtory — W0…W30
+
+### Premissas verificadas (2026-09-25)
+
+- Canônicos: 63 REQ · 11 PD · 6 INV · 49 TECH · ADR-001…ADR-008 do `03`. Escopo = `02` (inclui §15); fora de
+  escopo = `03` §15; guardrails = `03` §13; terminologia = `02` §1.
+- Repo: Design System completo (DS-0…DS-7); sem `package.json`; CI stub (`echo` + gitleaks); OpenAPI e AsyncAPI
+  com placeholders.
+- Máquina: Node 22.22.1, npm 9.2.0; sem Docker, Podman, `psql` nem sudo não interativo. Os binários do
+  `embedded-postgres` (PostgreSQL 17.10) e o `dbmate` 2.36.0 executam nativamente no WSL. `/mnt/c` é drvfs sem
+  `metadata`: a pasta de dados do PG fica no disco Linux (ext4).
+- Plataforma: Supabase PG 17.6 `sa-east-1` Free (sem backup gerenciado; pausa após 7 dias de baixa atividade);
+  Vercel Hobby (uso comercial vedado; cron 1×/dia, ±59 min); GitHub privado Free (sem branch protection).
+- Versões no npm em 2026-09-25: Next 16.3.6, React 19.3.0, TypeScript 6.0.3 (o 7.x não é aceito pelo
+  typescript-eslint, que exige `<6.1`).
+
+### Regras de execução
+
+- Ordem de releases (`CLAUDE.md`): R1 → R2 → R3 → R4. Uma wave só começa depois da última wave do release
+  anterior, salvo paralelismo marcado. W0–W2 são a base do R1.
+- 1 wave = 1 branch `feat/w<n>-<slug>` = 1 PR (draft → CI verde → squash, Conventional Commits).
+- **Dona** de um ID = a wave que entrega o comportamento decisivo e o teste nomeado. Waves posteriores só
+  acrescentam casos à mesma suíte.
+- Tags de teste lidas pelo `npm run trace`: IDs canônicos sempre por extenso (`[REQ-034]`, `[TECH-044]`);
+  `[EC-n]` = item n da lista do `02` §15; `[CONC-n]` = par n da lista de concorrência do TECH-110, na ordem do
+  `03`: 1 reserva×reserva · 2 bucket×bucket · 3 adjacência · 4 aceite×aceite · 5 aceite×retirada/expiração ·
+  6 confirmação×rental_offer · 7 Direct×Luxplus · 8 mesmos Créditos · 9 Request×Direct · 10 depósito×cancelamento ·
+  11 seleção Luxtory×reserva · 12 retries/jobs paralelos.
+- Aceite comum a toda wave: `npm run verify` (lint, typecheck, testes unit/db/contrato com cobertura ≥ 80% em
+  `domain/` e `application/`, testes do DS, migrations up → down → up, build) + `npm run test:e2e` +
+  `npm run trace -- --expect <IDs>` (conta só testes **aprovados** cujo título traz a tag).
+- Paralelismo só entre waves sem nenhum arquivo em comum (migrations, contratos, registros, `package.json`,
+  `vercel.json`, `CHANGELOG.md`). O Status deste plano e a tabela do `NOTES.md` são atualizados pela sessão
+  principal depois do merge, nunca dentro do PR da wave.
+- Specs por módulo em `docs/specs/<módulo>.md`, criadas ou estendidas pela wave: citam IDs, não parafraseiam os
+  canônicos. STRIDE em `docs/security/threats/` quando a superfície de ataque muda. Rollback testado em toda
+  migration.
+- Nada é presumido (TECH-001): valor ausente → erro explícito (`ERR_PARAMETER_MISSING`, `ERR_POLICY_MISSING`,
+  `ERR_PRL_MISSING`) ou wave bloqueada (⛔).
+
+### Roadmap
+
+| Wave | Deliverable | Slice(s) | IDs (dona) | Depends on | Parallel with | Release | Status |
+|------|-------------|----------|------------|------------|---------------|---------|--------|
+| 0 | Fundação: scaffold, harness TECH-110, CI/CD, ADRs 0004–0006, `## Commands` | platform | — | — | — | R1·base | ⬜ |
+| 1 | Núcleo de commands: operação, idempotência, auditoria, outbox, jobs, erros | platform | REQ-015, REQ-098 | 0 | — | R1·base | ⬜ |
+| 2 | Acesso administrativo: Auth, MFA, staff, guard, grants, RLS | identity, admin | REQ-014 | 1 | — | R1·base | ⬜ |
+| 3 | Catálogo + Admin | catalog, admin | REQ-020, REQ-027 | 2 | — | R1 | ⬜ |
+| 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3 | — | R1 | ⬜ |
+| 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ |
+| 6 | Interesse — formulário público | ownership | — | 4, 5 | — | R1 | ⛔ P-3 |
+| 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ |
+| 8 | Formalização e calendário civil | ownership, calendar | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003 | 3, 7 | — | R2 | ⬜ |
+| 9 | Sorteio auditável | ownership | PD-011 | 8 | 10 | R2 | ⬜ |
+| 10 | Custódia e selagem | calendar, inventory | REQ-040, INV-2, INV-3 | 8 | 9 | R2 | ⬜ |
+| 11 | Direito de Uso, janelas e rotações | calendar | REQ-030, REQ-031, REQ-032, REQ-033, REQ-039, PD-004, INV-4, INV-5 | 9, 10 | — | R2 | ⬜ |
+| 12 | Reserva de uso próprio | booking | REQ-034, REQ-035, REQ-037, PD-002, INV-1 | 11 | — | R2 | ⬜ |
+| 13 | Cancelamento, no-show, recuperação e exceção | booking, inventory | REQ-080, REQ-081, REQ-083, PD-010 | 12 | — | R2 | ⬜ |
+| 14 | Seleção Luxtory, parâmetros e convidados | calendar, admin, booking | REQ-016, REQ-036, REQ-092, REQ-095 | 12 | — | R2 | ⬜ |
+| 15 | Membership | identity | REQ-011, REQ-050, PD-001 | 7 | — | R3 | ⬜ |
+| 16 | PRL, parâmetros econômicos e snapshot | pricing | REQ-013, REQ-052 | 10, 14 | — | R3 | ⬜ |
+| 17 | Créditos e Carteira | credits | REQ-053, REQ-054, PD-008, INV-6 | 15 | — | R3 | ⬜ |
+| 18 | Políticas comerciais | pricing | REQ-082, REQ-104, PD-009 | 16 | — | R3 | ⬜ |
+| 19 | Pagamentos, Fee e settlement | billing | REQ-094 | 16 | — | R3 | ⬜ |
+| 20 | Luxchange — depósito | luxchange | REQ-051, REQ-060 | 13, 16, 17 | — | R3 | ⬜ |
+| 21 | Request — envio | luxchange | REQ-062, PD-005, PD-007 | 18, 19, 20 | — | R3 | ⬜ |
+| 22 | Request — aceite e recusa | luxchange | REQ-061, REQ-063, REQ-064, REQ-096, PD-006 | 21 | — | R3 | ⬜ |
+| 23 | Luxchange Direct | luxchange | REQ-065 | 22 | — | R3 | ⬜ |
+| 24 | Luxplus | booking, billing | REQ-066, REQ-070 | 23 | — | R3 | ⬜ |
+| 25 | Locação externa | booking, billing | REQ-012, REQ-041, REQ-042, REQ-043, REQ-071, REQ-072 | 22 | — | R3 | ⬜ |
+| 26 | Fechamento do R3: testes transversais | transversal | REQ-073, REQ-102, REQ-103 | 24, 25 | — | R3 | ⬜ |
+| 27 | Inadimplência | billing, booking | REQ-090 | 26 | — | R4 | ⬜ |
+| 28 | Transferência | ownership | REQ-093 | 26 | — | R4 | ⬜ |
+| 29 | Conformidade e parceiros | catalog | REQ-021, REQ-038, REQ-091 | 27 | — | R4 | ⬜ |
+| 30 | Hardening e gate final | platform | REQ-097 | 28, 29 | — | R4 | ⬜ |
+
+Paralelismo: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
+canal do AsyncAPI, telas e `CHANGELOG.md`, e o STRIDE do beacon. A W10 toca migrations de `calendar`/`inventory`,
+a entrada `open_exercise` em `vercel.json` e no registro de jobs, e o port de alerta; não tem tela, endpoint,
+pacote novo nem entrada de CHANGELOG. Nenhum arquivo em comum. Todas as outras waves são sequenciais porque
+compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.json` ou `CHANGELOG.md`.
+
+### Wave 0 — Fundação
+
+- **Goal**: base executável e verificável, sem nenhuma regra de negócio.
+- **IDs**: TECH-010 · TECH-011 · TECH-100 (SAST, dependências, segredos) · TECH-110 (camadas de teste) · ADR-001 ·
+  ADR-0002 · ADR-0003.
+- **Scope (slices/files)**:
+  - Scaffold com versões exatas (`save-exact`), lockfile commitado e `engines.node: "22.x"`: `next` 16.3.6 ·
+    `react`/`react-dom` 19.3.0 · `typescript` 6.0.3 · `@types/node` 22.20.4 · `@types/react`/`@types/react-dom`
+    19.3.0 · `eslint` 10.11.0 + `eslint-config-next` 16.3.6 · `prettier` 3.9.9 · `vitest` e
+    `@vitest/coverage-v8` 5.0.2 · `@playwright/test` 1.63.0 + `@axe-core/playwright` 4.13.0 · `zod` 4.6.5 ·
+    `dbmate` 2.36.0 · `embedded-postgres` 17.10.0-beta.17 (só testes) · `pg` 8.23.0 · `yaml` 2.9.1 + `ajv` 8.20.0 +
+    `ajv-formats` 3.0.1.
+  - `src/app/` (rotas só delegam a `src/features/<módulo>/presentation`): layout com o CSS do DS e fontes via
+    `next/font/local`; `GET /v1/health` e `GET /v1/version` (já no OpenAPI); rota interna `/lab` com `noindex`, 404
+    com `VERCEL_ENV=production`, servindo só arquivos permitidos de `src/design-system/` (ADR-0003).
+  - `src/features/platform/`: validação de env (Zod, lê só chaves conhecidas), logger JSON com `correlation_id`,
+    relógio injetável (`Clock`). Os módulos do TECH-011 nascem como slices em `src/features/` na wave que os usa.
+  - `tests/` espelhando `src/`; `scripts/trace.mjs` (tags REQ/PD/INV/TECH/EC/CONC, relatórios JSON do Vitest e do
+    Playwright); `migrations/` vazia.
+  - Contratos: placeholders de `docs/api/openapi.yaml` e `docs/api/asyncapi.yaml` preenchidos — um arquivo de
+    contrato cada (`CLAUDE.md`).
+  - `## Commands` preenchido em `CLAUDE.md` e `AGENTS.md`; `[CUSTOMIZE]` preenchidos em
+    `.github/workflows/ci.yml`, `.claude/rules/testing.md`, na tabela do `/verify` e no `/deploy`.
+  - `docs/reference/environment.md`; `docs/security/threats/platform.md` (STRIDE de `/v1/*`, `/lab` e pipeline);
+    ADRs 0004–0006 e índice `docs/adr/README.md`.
+  - CI/CD, ignores e camadas de teste descritos nas subseções abaixo.
+- **Depends on / parallel with**: — (fundação, sempre sequencial).
+- **Acceptance criteria**:
+  - `[TECH-110] PG embutido sobe, desce e sobe migrations de fixture`;
+    `[CONC-12] duas conexões: índice único parcial serializa inserções concorrentes`;
+    `[TECH-056] /v1/health e /v1/version conformes ao OpenAPI`;
+    `[ADR-0003] /lab com axe 0, sem overflow de 320 a 1920 px e 404 em produção`;
+    `[REQ-100] varredura de terminologia cobre src/ e docs/api`.
+  - `npm ci && npm run verify && npm run test:e2e` verdes localmente e na CI do PR.
+  - `## Commands` do `CLAUDE.md` sem `<placeholder>`;
+    `git diff --stat origin/main -- docs/specs/canonical activate-ultronpx.mjs` vazio.
+- **Goal command**: `/goal npm ci && npm run verify && npm run test:e2e exit 0, gh pr checks for the W0 PR are all green, CLAUDE.md ## Commands has no <placeholder>, and git diff --stat origin/main -- docs/specs/canonical activate-ultronpx.mjs is empty, stop after 5 tries`
+- **Desvios da execução (2026-09-25, com evidência — ADR-0004)**: ESLint **9.39.5** em vez de 10.11.0 (os plugins do
+  `eslint-config-next` 16.3.6 só aceitam ESLint ≤ 9; o `create-next-app` 16.3.6 instala `^9`); fontes pelo
+  `fonts.css` do Design System, sem `next/font/local` (evita família duplicada; preload na W4); jobs da CI com os
+  nomes do esqueleto (`lint`, `typecheck`, `test`, `security`) + `e2e`, `migrate`, `deploy`, em vez de `quality`
+  (conteúdo existente só é estendido).
+
+#### W0 — `## Commands` (CLAUDE.md e AGENTS.md)
+
+| Comando | Script |
+|---|---|
+| Dev | `npm run dev` (PG local com `npm run db:start`) |
+| Test | `npm test` — unit + db (PG real) + contratos + DS |
+| E2E | `npm run test:e2e` |
+| Lint | `npm run lint` — ESLint + `prettier --check` |
+| Typecheck | `npm run typecheck` |
+| Coverage | `npm run coverage` — falha abaixo de 80% em `src/features/**/{domain,application}/**` |
+| Migrations | `npm run db:new -- <nome>` · `npm run db:check` (sobe, desce tudo, sobe de novo) |
+| Trace | `npm run trace -- --expect <IDs>` · `npm run trace -- --gate` |
+| Verify | `npm run verify` = lint + typecheck + coverage + DS + db:check + build |
+| Deploy staging | push de branch → Preview da Vercel |
+| Deploy prod | **só pela CI**: `.github/workflows/ci.yml`, jobs `migrate` → `deploy` em `main` |
+
+#### W0 — CI/CD
+
+- `quality` (PR e `main`): `npm ci` → `npm run verify`.
+- `e2e` (PR e `main`): `npm run test:e2e` com `channel: 'chrome'` (Chrome já vem no `ubuntu-latest` e está no
+  WSL: sem download de browser).
+- `security` (PR e `main`): gitleaks (mantido) + `npm audit --omit=dev --audit-level=high` + Semgrep CE (SAST
+  gratuito em repo privado; CodeQL exige GitHub Advanced Security).
+- `migrate` (push em `main`, depois dos três): `dbmate up` com o secret `DATABASE_URL_MIGRATIONS` (pooler em modo
+  sessão, IPv4). Secret ausente → falha explícita.
+- `deploy` (depois do `migrate`): `vercel pull` / `vercel build --prod` / `vercel deploy --prebuilt --prod` com o
+  secret `VERCEL_TOKEN` (org e project IDs como variáveis não secretas).
+- `vercel.json`: `git.deploymentEnabled.main = false` (produção só pela CI, sem corrida migração × deploy e sem
+  depender de branch protection) e `regions: ["gru1"]`.
+- Orçamento de minutos (repo privado Free: 2.000 min/mês): 3 jobs por push, cache do npm, `cancel-in-progress`.
+
+#### W0 — Ignores do `activate-ultronpx.mjs`
+
+- Entra em `.prettierignore`, `ignores` do `eslint.config.mjs`, `exclude` do `tsconfig.json`, `test.exclude` e
+  `coverage.exclude` do `vitest.config.ts`, `testIgnore` do `playwright.config.ts`, `.semgrepignore`,
+  `.gitleaks.toml` (regras padrão + exceção do caminho), `.vercelignore` e na varredura de terminologia
+  (`CLAUDE.md`: "any other tool"). Nenhum script o importa ou executa.
+- A validação de env não exige nem remove `ULTRONPX_PURCHASE_EMAIL`.
+- O `.prettierignore` também cobre `*.md`, `docs/`, `src/design-system/` e `migrations/`: o hook de formatação ao
+  salvar não reformata canônicos, `CLAUDE.md`, `NOTES.md` nem o Anexo A.
+
+#### W0 — Catálogo de variáveis de ambiente (só nomes; `docs/reference/environment.md`)
+
+| Nome | Onde | Wave |
+|---|---|---|
+| `DATABASE_URL_MIGRATIONS`, `VERCEL_TOKEN` | secrets do GitHub (+ `DATABASE_URL_MIGRATIONS_STAGING` se D3) | W0 |
+| `VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA` | Vercel, só leitura | W0 |
+| `DATABASE_URL`, `CRON_SECRET` | Vercel (Production, Preview, Development) | W1 |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Vercel | W2 |
+| `AUTH_MODE` (`supabase` ou `test`; `test` é recusado se `VERCEL_ENV` existir) | local e CI | W2 |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Vercel (sensitive) | W5 |
+| `SUPABASE_SECRET_KEY`, `PII_ENCRYPTION_KEYRING`, `PII_ENCRYPTION_ACTIVE_KEY_ID`, `PII_HMAC_KEY` | Vercel (sensitive, só servidor) | W7 |
+| `NEXT_PUBLIC_SITE_URL` | Vercel | W7 |
+| `PAYMENT_GATEWAY` (`fake`, recusado em produção) | Preview, Development, CI | W19 |
+| `ULTRONPX_PURCHASE_EMAIL` | fora do catálogo: nem exigida nem removida | — |
+
+`.env.example` está ignorado pelo `.gitignore` (regra `.env*`), por isso o catálogo versionado vive em
+`docs/reference/environment.md`.
+
+#### W0 — Camadas de teste (TECH-110)
+
+| Camada | Como | Estreia |
+|---|---|---|
+| Unit | Vitest (projeto `unit`) | W0 |
+| PostgreSQL real | Vitest (projeto `db`) + `embedded-postgres` 17.10: pasta de dados em ext4; banco-modelo migrado e clonado por arquivo de teste; script de compatibilidade Supabase (papéis `anon`/`authenticated`, `auth.uid()`) | W0 |
+| Contratos API/PSP/webhook | Ajv contra `docs/api/openapi.yaml`; PSP e webhook contra o port e o fake | W0 / W19 |
+| E2E | Playwright + axe sobre `next build && next start` com PG embutido; login por emissor de JWT de teste a partir da W2 | W0 |
+| Concorrência | N conexões reais com barreira determinística | W0 / W1 |
+| Autorização/RLS | `SET LOCAL ROLE` + claims em PG real | W2 |
+| Falhas | fakes com falha injetada (outbox, beacon, PSP, queda entre etapas) | W1 / W9 / W19 |
+| Tempo | `Clock` injetável + casos do TECH-110 | W8 |
+| INV transversais | consultas SQL de INV-1…INV-6 após todo teste `db`; reusadas pela conciliação da W30 | W10 |
+
+#### W0 — ADRs
+
+- **0004 — Toolchain, bibliotecas e pipeline**: tabela decisão · versão · justificativa de 1 linha. Cobre Node 22.x;
+  UI (classes `lx-*` + componentes React finos, sem biblioteca de componentes); validação (Zod); e-mail (só o do
+  Supabase Auth; e-mail transacional aguarda D4; notificações dentro do app); observabilidade (logs JSON com
+  `correlation_id` + Observability nativa da Vercel para métricas e erros não tratados, sem fornecedor extra —
+  ADR-0002); Storage (não usado enquanto nenhum requisito armazenar arquivo; quando usado, privado — TECH-100);
+  contrato único OpenAPI/AsyncAPI; i18n por dicionário tipado por slice; outbox disparado após o commit via
+  `after()` + varredura por cron; jobs em `/api/jobs/*` fora de `/v1` (o Vercel Cron só faz GET); deploy só pela
+  CI; Semgrep.
+- **0005 — Testes com PostgreSQL real sem Docker**: PG embutido, banco-modelo clonado, compatibilidade Supabase,
+  autenticação de teste, `channel: 'chrome'`. Limite assumido: GoTrue e Supavisor só em staging/preview.
+- **0006 — Acesso a dados**: schema `app`; papel de aplicação sem UPDATE/DELETE em ledgers, snapshots, versões e
+  auditoria (TECH-052); migrations como owner só pela CI; aplicação via Supavisor em modo transação (IPv4);
+  leituras no servidor sob RLS (`SET LOCAL ROLE` + claims verificados); Data API do Supabase desligada (ADR-002 do
+  `03`).
+
+#### W0 — Bibliotecas das waves seguintes (fixadas no ADR-0004, instaladas só na wave que as usa)
+
+- W1: `kysely` 0.29.6, `kysely-codegen` 0.20.0 (tipos gerados do banco migrado, nunca o contrário),
+  `@vercel/functions` 3.9.9.
+- W2: `@supabase/ssr` 0.12.7 e `@supabase/supabase-js` 2.117.2, só para Auth.
+- W5: `@upstash/ratelimit` 2.2.0 e `@upstash/redis` 1.39.0.
+- W8: `temporal-polyfill` 1.0.5 · W9: `drand-client` 1.4.2 · W16: `decimal.js` 10.6.0 · W30: `canonicalize` 5.1.0.
+- OpenTimestamps chamado direto por HTTP (o pacote npm está sem manutenção desde 2022).
+
+### Wave 1 — Núcleo de commands
+
+- **Goal**: todo command passa por um único pipeline, idempotente e auditável (TECH-054).
+- **IDs (dona)**: REQ-015, REQ-098. **TECH**: TECH-002, TECH-011, TECH-051, TECH-053, TECH-054, TECH-056, TECH-090,
+  TECH-091, TECH-092, ADR-005, ADR-006.
+- **Scope (slices/files)**: `platform`.
+  - Migrations: schema `app` e papéis (ADR-0006); `operation` (TECH-002), `idempotency_record` (ADR-006),
+    `audit_log` só-inserção sem dado pessoal bruto (TECH-092; o selo fica na W30), `outbox` (TECH-091),
+    `notification` (notificação dentro do app).
+  - `executeCommand` segue o TECH-054 em READ COMMITTED (ADR-005), trava na ordem do TECH-053 e refaz com a mesma
+    chave em deadlock/timeout.
+  - Registro fechado de commands (TECH-051) organizado pelos módulos do TECH-011; códigos TECH-056 com causas
+    funcionais em pt-BR (REQ-098) pela camada i18n por slice; mapeamento constraint → código (TECH-056).
+  - Jobs em `/api/jobs/*` protegidos por `CRON_SECRET`, com registro de jobs separado do registro de consumidores
+    do outbox; job `outbox` (disparo pós-commit + varredura).
+  - AsyncAPI do outbox; runbook `docs/how-to/operacao.md` (cadências e segredos, TECH-001). Sem telas.
+- **Depends on / parallel with**: W0; sequencial (base de todos os commands).
+- **Acceptance criteria**: `[REQ-015][PD-011] todo command registrado grava operation e audit_log com ator, parte
+  representada, papel, instante, objeto, operation, base e antes/depois, sem dado pessoal bruto` (cobre
+  automaticamente os commands futuros) · `[TECH-052] UPDATE/DELETE em audit_log falha` · `[ADR-006] mesma chave e
+  payload repetem a resposta; payload diferente → ERR_IDEMPOTENCY_CONFLICT` · `[ADR-005] a transação do command
+  roda em READ COMMITTED com locks explícitos` · `[TECH-053] lock fora da ordem é rejeitado` · `[CONC-12] jobs e
+  retentativas em paralelo produzem um único efeito` · `[TECH-091] outbox entrega ao menos uma vez, o consumidor
+  ignora duplicatas e falha de entrega não desfaz o domínio` · `[REQ-098] cada causa listada no REQ-098 tem código
+  TECH-056 e mensagem pt-BR`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-015,REQ-098 exits 0, stop after 5 tries`
+
+### Wave 2 — Acesso administrativo
+
+- **Goal**: staff entra com MFA e nada roda fora do guard.
+- **IDs (dona)**: REQ-014. **TECH**: TECH-050, TECH-051, TECH-052, TECH-092, TECH-100, ADR-002.
+- **Scope (slices/files)**: `identity`, `admin`.
+  - Supabase Auth via `@supabase/ssr`, login por código enviado por e-mail (`proxy.ts` renova a sessão); MFA TOTP
+    obrigatório (AAL2) para Admin e Super Admin (TECH-050).
+  - `staff_role` criado por script de operação auditado, sem tela (BR-181).
+  - Guard que nega por padrão (`user → party_delegation → party → holding | authorization_grant`, TECH-050/051);
+    `authorization_grant` + `POST /v1/admin/authorization-grants` (REQ-014).
+  - Leituras no servidor sob RLS; leitura administrativa auditada (TECH-052/092); CSRF por origem (TECH-100);
+    emissor de JWT de teste (ADR-0005), recusado quando `VERCEL_ENV` existe.
+  - Telas: login, MFA e estrutura do Admin. STRIDE `identity-admin`.
+- **Depends on / parallel with**: W1; sequencial.
+- **Acceptance criteria**: `[REQ-014] quem não tem grant válido (escopo e vigência) é negado` · `[TECH-050] Admin
+  sem MFA (AAL1) é negado` · `[TECH-052] anon/authenticated não leem staff e grants` · `[TECH-100] POST com origem
+  inválida → 403` · E2E de login com autenticação de teste e axe 0. Login real verificado em preview/staging (D3).
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-014 exits 0, stop after 4 tries`
+
+### Wave 3 — Catálogo + Admin
+
+- **Goal**: vincular corretamente Brand Partner, Concept (com versões), Edition e Residence, com Investor só sob
+  autorização.
+- **IDs (dona)**: REQ-020, REQ-027. **TECH**: TECH-051.
+- **Scope (slices/files)**: `catalog`, `admin`.
+  - Migrations: `brand_partner`; `concept_version` (elementos essenciais, especificação para apresentação comercial
+    — BR-013, `approval_refs`, estados do REQ-096); `edition` (região, modalidade, condições comerciais registradas
+    — BR-031, trava de estrutura); `residence` (versão do Concept imutável, fuso IANA, Investor com autorização
+    registrada — BR-310).
+  - Commands Admin sob guard e auditoria (REQ-095); encerramento de Brand Partner bloqueia Concepts e Editions
+    novos (BR-021); exposição pública só com autorização registrada (BR-015, P-8); textos registrados passam pela
+    checagem de terminologia (REQ-100/101).
+  - API `POST /v1/admin/{brand-partners,concept-versions,editions,residences}` + `approve` e `terminate`; telas
+    Admin; componente de tabela entra no DS (spec + Lab + teste).
+- **Depends on / parallel with**: W2; sequencial.
+- **Acceptance criteria**: `[REQ-020] Residence sem Concept aprovado é recusada; oferta só existe via Edition` ·
+  `[REQ-027] Residence de Investor sem autorização registrada é recusada; com autorização, existe sem adquirente e
+  a Edition aceita Owner, Co-Owner ou ambas enquanto aberta` · `[BR-025] nova versão do Concept não altera
+  Residence existente` · `[BR-021] Brand Partner encerrada bloqueia Concept e Edition novos` · `[REQ-100] texto com
+  termo vedado é recusado` · contratos OpenAPI.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-020,REQ-027 exits 0, stop after 4 tries`
+
+### Wave 4 — Discovery público
+
+- **Goal**: o visitante percorre Coleção → Concept → Edition/oferta, só com leitura.
+- **IDs (dona)**: REQ-100, REQ-101. **TECH**: ADR-001, ADR-0003.
+- **Scope (slices/files)**: `catalog` (presentation); `src/design-system/` (componentes React finos sobre `lx-*`,
+  ADR-0003). Páginas renderizadas no servidor, lidas como `anon` sob RLS (as políticas de leitura pública do
+  catálogo entram nesta wave). Exibem só a especificação do Concept e as condições comerciais da Edition registradas
+  pela Luxtory — nenhum preço ou número calculado pelo software (ADR-001). Frame tipográfico sem fotografia (P-1);
+  `ConceptCredit` só com autorização; metadata. Sem endpoint novo; o botão de interesse entra na W6.
+- **Depends on / parallel with**: W3; sequencial.
+- **Acceptance criteria**: `[REQ-100] nenhum termo vedado nem preço por dia para Co-Owner` · `[REQ-101] nenhuma
+  promessa de rentabilidade, valorização, liquidez ou renda` · `[REQ-022] Concept sem Edition aparece sem oferta` ·
+  E2E com axe 0 em 390 e 1440 px e sem overflow de 320 a 1920 px.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-100,REQ-101 exits 0, stop after 4 tries`
+
+### Wave 5 — Interesse (núcleo)
+
+- **Goal**: registrar o interesse com os campos canônicos, sem gerar direito.
+- **IDs (dona)**: REQ-023. **TECH**: TECH-100.
+- **Scope (slices/files)**: `ownership`.
+  - Migration `interest` (`03` §3.1): Concept, Edition opcional, modalidade, região em texto, `approx_days` só para
+    Co-Owner (inteiro positivo, sem teto presumido), origem e parceiro autorizado opcional.
+  - `POST /v1/interests` público: Idempotency-Key, validação Zod, limite de requisições (port + adapter Upstash;
+    sem Redis a escrita é recusada).
+  - Lista Admin agrupada por Concept, região e modalidade (BR-062). STRIDE `interest`.
+- **Depends on / parallel with**: W3; sequencial.
+- **Acceptance criteria**: `[REQ-023] origem e parceiro registrados sem prerrogativa` · `[REQ-025] approx_days nunca
+  vira Ação nem Direito de Uso` · `[REQ-022] interesse sem Edition é aceito` · `[TECH-100] excesso de requisições →
+  429 sem efeito` · contrato OpenAPI.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-023 exits 0, stop after 4 tries`
+
+### Wave 6 — Interesse: formulário público ⛔ P-3
+
+- **Goal**: publicar o formulário (composição do Lab) com os campos e o consentimento definidos pela Luxtory.
+- **IDs**: complementa REQ-022, REQ-024, REQ-025, REQ-100, REQ-101.
+- **Scope (slices/files)**: `ownership` (presentation). Campos de contato e qualificação de P-3 (nenhum presumido),
+  aviso de privacidade e consentimento com o texto da Luxtory, rota pública e botão na página do Concept, dados
+  pessoais fora dos logs.
+- **Depends on / parallel with**: W4, W5 e P-3; sequencial — entra na fila quando P-3 chegar.
+- **Acceptance criteria**: E2E `[REQ-025] campo de dias só para Co-Owner, apresentado como preferência` ·
+  `[REQ-024] a confirmação não sugere aquisição` · axe 0.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and the interest form E2E passes with 0 axe violations, stop after 3 tries`
+
+### Wave 7 — Titulares
+
+- **Goal**: o Titular existe como party cifrada e acessa sua área por delegação.
+- **IDs**: TECH-050, TECH-052, TECH-100, ADR-0002.
+- **Scope (slices/files)**: `identity`.
+  - Migrations `party` (CPF/CNPJ em AES-256-GCM + `key_id`; HMAC normalizado `UNIQUE` com segredo separado —
+    ADR-0002; sem campo de nome, que o `03` não prevê) e `party_delegation`.
+  - Admin cadastra a party e convida o usuário pela Admin API do Supabase; login do Titular por código; estrutura
+    da Área do Titular; RLS por party; leitura administrativa mascarada e auditada.
+  - API `POST /v1/admin/parties` e `POST /v1/admin/parties/{id}/delegations`. STRIDE `titular-pii`.
+- **Depends on / parallel with**: W2; sequencial.
+- **Acceptance criteria**: `[TECH-100] CPF/CNPJ nunca em claro no banco, nos logs nem no audit_log; HMAC barra
+  duplicidade` · `[TECH-050] sem delegação vigente não há acesso` · `[TECH-052] Titular A não lê dados do Titular
+  B` · `[ADR-0002] valor cifrado com key_id antigo continua legível após rotação`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect TECH-050,TECH-100 exits 0, stop after 4 tries`
+
+### Wave 8 — Formalização e calendário civil
+
+- **Goal**: `formalize_acquisition` é o único ato que cria titularidade, Ação e Direito de Uso, com a alocação
+  inicial validada contra o calendário civil.
+- **IDs (dona)**: REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003. **TECH**: TECH-020, TECH-026, TECH-040,
+  TECH-041, TECH-051.
+- **Scope (slices/files)**: `ownership`, `calendar`, `catalog`.
+  - Classificação civil pura no módulo `calendar`: temporadas por mês, Carnaval (TECH-041), 29/02 como Média/Baixa,
+    exercício = ano civil local da noite, fuso IANA (TECH-040; `temporal-polyfill`). Usada pela validação da
+    alocação inicial e pela selagem da W10.
+  - Carga imutável de `residence_configuration` com as 4 configurações do `01` §8.1 (TECH-026).
+  - `residence_administration` com cobertura obrigatória do Co-Owner em operação (TECH-020).
+  - `edition_initial_allocation` com as validações do TECH-020, sem fórmula presumida.
+  - `formalize_acquisition` (TECH-051): Owner → `holding` de 100%; Co-Owner → `spe` + N `stake` iguais + `holding`s,
+    exige a alocação no exercício parcial e agenda o sorteio. Trava da estrutura da Edition; o adquirente final
+    segue as mesmas regras (complemento do REQ-027).
+  - API `POST /v1/admin/acquisitions`, `POST /v1/admin/editions/{id}/initial-allocation`,
+    `POST /v1/admin/residences/{id}/administration`; tela Admin.
+- **Depends on / parallel with**: W3, W7; sequencial.
+- **Acceptance criteria**: `[PD-003][EC-3] Carnaval começa na sexta anterior (01/02 se cair em janeiro) e seleciona
+  as 10 primeiras datas válidas, ignorando 29/02 e meses já Alta` · `[TECH-110] Carnaval até 2100, 31/01, 2100 não
+  bissexto, fusos` · `[REQ-010] a mesma party é Owner em A e Co-Owner em B` · `[REQ-024] Owner com 2 adquirentes é
+  recusado; a formalização Owner cria holding de 100%; não existe cadastro de imóvel sem Concept (nem preexistente)`
+  · `[REQ-025] não existe Ação nem Direito de Uso antes da formalização` · `[REQ-026] Ação, Direito de Uso, reserva
+  e Crédito são entidades distintas; Ações iguais (base da divisão de despesas pela Ação; cobrança fora de escopo,
+  03 §15); configuração imutável` · `[REQ-022] modalidade não muda após a trava` · `[TECH-110] Co-Owner em operação
+  sem administração válida falha; alocação com data passada, desigual ou com distribuição sazonal inválida falha`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-010,REQ-022,REQ-024,REQ-025,REQ-026,PD-003 exits 0, stop after 5 tries`
+
+### Wave 9 — Sorteio auditável
+
+- **Goal**: ordem inicial das Ações por sorteio verificável (TECH-093).
+- **IDs (dona)**: PD-011 (fecha aqui; a metade de auditoria vem da W1). **TECH**: TECH-093.
+- **Scope (slices/files)**: `ownership`.
+  - Migration `draw`: participantes congelados, compromisso `SHA-256(seed)`, rodada futura do beacon, seed, valor do
+    beacon, algoritmo `fy-v1` e resultado (posição inicial por Ação) — passos 1–7 do TECH-093.
+  - Port `RandomnessBeacon`: adaptador drand (quicknet, com verificação de assinatura) e fake determinístico.
+  - Conclusão do sorteio agendado pelo `formalize_acquisition` (TECH-020) feita pelo consumidor do outbox — sem
+    command nem job novo (TECH-051, TECH-090).
+  - Evidência na Área do Titular e no Admin; notificação do resultado (REQ-097); STRIDE do beacon.
+- **Depends on / parallel with**: W8; paralela com W10 (nenhum arquivo em comum, ver "Paralelismo").
+- **Acceptance criteria**: `[PD-011] a evidência mostra participantes, método ou insumo de aleatoriedade e
+  resultado` · `[TECH-093] vetor fixo reproduz exatamente fy-v1; índice uniforme por rejection sampling, sem viés de
+  módulo` · `[TECH-110] beacon fora do ar deixa o sorteio pendente, sem resultado parcial`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect PD-011 exits 0, stop after 4 tries`
+
+### Wave 10 — Custódia e selagem
+
+- **Goal**: toda noite de Residence em operação fica selada com exatamente uma custódia ativa.
+- **IDs (dona)**: REQ-040, INV-2, INV-3. **TECH**: ADR-003, ADR-004, TECH-021, TECH-022, TECH-023, TECH-042,
+  TECH-056, TECH-090, TECH-101.
+- **Scope (slices/files)**: `calendar`, `inventory`.
+  - Migrations `residence_date` (ADR-003), `date_custody` e `date_occupancy` com o DDL do `03` §3.2 (ADR-004).
+  - Triggers das barreiras do TECH-021, da cadeia de origem do TECH-022 e da matriz do TECH-023, completas aqui
+    para as waves seguintes só usarem.
+  - Job `open_exercise`: mantém selados o exercício corrente e o seguinte, porque a posição 1 abre em 15/09 do ano
+    anterior (TECH-042); cria a custódia raiz `owner`/`spe_pool` (TECH-021).
+  - Check-in às 14:00 e check-out às 10:00 locais (ADR-003).
+  - Consultas de INV-1/INV-2/INV-3 após todo teste `db`; alerta `open_exercise_failure` (log estruturado +
+    notificação de staff, fora do outbox — TECH-101). Sem telas.
+- **Depends on / parallel with**: W8; paralela com W9.
+- **Acceptance criteria**: `[TECH-110] Data-Residence selada sem custódia ativa falha` · `[TECH-041] a selagem exige
+  103 + 262 datas (+29/02); data selada não é reclassificada` · `[INV-3] quarta origem falha` · `[INV-2] par
+  ocupação/custódia fora da matriz falha com ERR_CAPACITY_UNAVAILABLE` · `[REQ-040] entrada no Inventário Luxtory
+  sem origem, autorização ou tratamento econômico é recusada; reversão só volta à custódia pai` · `[REQ-024]
+  open_exercise cria a custódia owner da Residence Owner formalizada` · `[TECH-110] check-in 14:00 e check-out
+  10:00 locais convertidos em UTC`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-040,INV-2,INV-3 exits 0, stop after 5 tries`
+
+### Wave 11 — Direito de Uso, janelas e rotações
+
+- **Goal**: saldos por Ação, exercício e categoria, e janelas cumulativas conforme o `01`, com folga zero.
+- **IDs (dona)**: REQ-030, REQ-031, REQ-032, REQ-033, REQ-039, PD-004, INV-4, INV-5. **TECH**: TECH-026, TECH-027,
+  TECH-042, TECH-051, TECH-090.
+- **Scope (slices/files)**: `calendar`.
+  - Migrations `use_right_ledger` (só-inserção: grant · consume · restore · expire · correction) e
+    `use_right_balance` (TECH-026); concessões só da configuração ou da alocação inicial.
+  - Saldo próprio do 29/02 (`leap`) e lista bissexta própria (TECH-027/042); janelas e rotação (TECH-042, BR-101).
+  - Job `close_exercise`; `correct_use_right` em `POST /v1/admin/use-right-corrections`.
+  - Consultas de INV-4/INV-5 após todo teste `db`; notificações de abertura anual e de direito ao 29/02 (REQ-097).
+- **Depends on / parallel with**: W9, W10; sequencial.
+- **Acceptance criteria**: `[INV-4] limites somados + Luxtory = capacidade de cada categoria; excesso ou categoria
+  errada falha` · `[INV-5] saldo do ano N não atende N+1` · `[REQ-030] categorias não se compensam; saldo
+  insuficiente → ERR_USE_RIGHT_BALANCE` · `[REQ-031] lista bissexta nunca é recalculada` · `[TECH-110] o 29/02 é
+  Média/Baixa e consome só o saldo leap, nunca o ordinário` · `[REQ-032] rotação e abertura cumulativa` ·
+  `[REQ-033] exercício parcial usa só a alocação da Edition; janelas contam da formalização` · `[PD-004][EC-4] o
+  29/02 abre em 15/09 ou na formalização e expira sem transporte nem Inventário` · `[REQ-039] capacidade não
+  reservada fica coletiva até o fim do exercício` · `[TECH-110] correção nunca altera concessão`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-030,REQ-031,REQ-032,REQ-033,REQ-039,PD-004,INV-4,INV-5 exits 0, stop after 5 tries`
+
+### Wave 12 — Reserva de uso próprio
+
+- **Goal**: Owner e Co-Owner reservam dentro de janelas, saldos e limites de permanência.
+- **IDs (dona)**: REQ-034, REQ-035, REQ-037, PD-002, INV-1. **TECH**: TECH-023, TECH-045, TECH-051, TECH-055.
+- **Scope (slices/files)**: `booking`.
+  - Migration `booking`; `create_own_use_booking` em `POST /v1/bookings` (sem Membership). Co-Owner: `spe_pool →
+    use_right/reserved_right` + consume + ocupação `own_use`. Owner: ocupação sobre `owner`, sem janela nem rotação.
+  - Reserva sobre `reserved_right` já devolvido da mesma Ação não consome de novo (TECH-023; testado na W22).
+  - Validação noite a noite; permanência e adjacência (TECH-045); o 29/02 conta para permanência (REQ-031).
+  - Telas renderizadas no servidor: calendário do Titular (disponibilidade, saldos, janelas), reservas e central de
+    notificações; componente de calendário entra no DS.
+- **Depends on / parallel with**: W11; sequencial.
+- **Acceptance criteria**: `[INV-1][CONC-1] reservas concorrentes na mesma noite → exatamente uma; a outra recebe
+  ERR_BOOKING_CONFLICT` · `[CONC-2][CONC-3] saldo contra saldo e adjacência sob concorrência` · `[PD-002] de 10 a
+  12/03 consome 10 e 11/03` · `[TECH-110] reserva de 1 noite é aceita; 0 noites é recusada` ·
+  `[REQ-034][EC-1][EC-2] período que cruza categoria ou exercício é validado noite a noite; adjacentes acima de 14
+  noites são recusadas` · `[REQ-031][EC-4] o 29/02 conta para permanência e adjacência` · `[REQ-035] o limite vale
+  só no uso próprio do Co-Owner` · `[REQ-037] Owner sem janela nem rotação` · E2E com axe 0.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-034,REQ-035,REQ-037,PD-002,INV-1 exits 0, stop after 5 tries`
+
+### Wave 13 — Cancelamento, no-show, recuperação e exceção
+
+- **Goal**: reversões devolvem à origem econômica certa e exceções não criam efeito econômico.
+- **IDs (dona)**: REQ-080, REQ-081, REQ-083, PD-010. **TECH**: TECH-043, TECH-046, TECH-055, TECH-060, TECH-090.
+- **Scope (slices/files)**: `booking`, `inventory`.
+  - `cancel_own_use_booking` (TECH-043, contado no fuso da Residence) com classificação gravada; tardio → noites
+    futuras `forfeited_right`; Owner permanece `owner`.
+  - `declare_no_show` (TECH-046) + job `flag_no_show_candidates`; `recover_future_capacity`; job
+    `advance_booking_states` (TECH-055).
+  - `open_exception`/`resolve_exception` sobre reserva de uso próprio (mecanismos do Club na W18).
+  - API `POST /v1/bookings/{id}/cancel`, `POST /v1/admin/bookings/{id}/{no-show,recover-future-capacity,exceptions}`,
+    `POST /v1/admin/exceptions/{id}/resolve`; telas do Titular e do Admin; notificações.
+- **Depends on / parallel with**: W12; sequencial.
+- **Acceptance criteria**: `[REQ-080] com 15 dias o saldo volta; com 14 o consumo fica; a classificação gravada não
+  é recalculada` · E2E `[REQ-080] a consequência aparece antes de confirmar` · `[EC-10] após início parcial, só as
+  noites futuras viram forfeited_right e são recuperáveis` · `[REQ-081] cancelamento do Owner não gera Inventário
+  Luxtory` · `[TECH-060] forfeited_right não é reservável, depositável nem locável` · `[PD-010][REQ-083][EC-12]
+  exceção sem restituição, Crédito ou compensação; resolução auditada`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-080,REQ-081,REQ-083,PD-010 exits 0, stop after 4 tries`
+
+### Wave 14 — Seleção Luxtory, parâmetros e convidados
+
+- **Goal**: a Luxtory seleciona seu quantitativo por categoria; parâmetros ganham autoridade e vigência; o Titular indica
+  convidado.
+- **IDs (dona)**: REQ-016, REQ-036, REQ-092, REQ-095. **TECH**: TECH-022, TECH-023, TECH-030, TECH-051.
+- **Scope (slices/files)**: `calendar`, `admin`, `booking`.
+  - `select_luxtory_capacity`: janela N+1, finalidade por data, `inventory ⇔ annual_allocation`; finalidade
+    diferente de `inventory` cria reserva e ocupação `luxtory_use` (TECH-023); manutenção só a partir da janela.
+  - Migration `parameter` (TECH-030: só-inserção, vigências sem sobreposição, autoridade, `authorization_ref`) +
+    `set_parameter`.
+  - `guest_rules` = texto versionado por Residence, exibido e aceito na indicação; nenhuma regra executável
+    presumida (conteúdo em P-5).
+  - `nominate_guest`: sem `guest_rules` publicado → `ERR_PARAMETER_MISSING`; dados do convidado ⛔ P-6 (registra só
+    a indicação e a versão aceita).
+  - Registro fechado dos commands Admin. API `POST /v1/admin/residences/{id}/luxtory-selection`,
+    `POST /v1/admin/parameters`, `POST /v1/bookings/{id}/guests`; telas.
+- **Depends on / parallel with**: W12; sequencial depois da W13 (compartilha `openapi.yaml` e o registro de
+  commands).
+- **Acceptance criteria**: `[REQ-016][EC-5] capacidade da Luxtory preservada com Co-Owners sem saldo` · `[CONC-11] seleção
+  Luxtory contra reserva` · `[TECH-110] seleção para Inventário exige annual_allocation` · `[REQ-036] cada data
+  selecionada tem finalidade; finalidade diferente de inventory ocupa com luxtory_use; manutenção antes da janela é
+  recusada` · `[REQ-095] parâmetro sem autoridade ou vigência é recusado; vigências não se sobrepõem` · `[REQ-092]
+  indicar convidado não consome Direito de Uso nem cria direito; sem guest_rules → ERR_PARAMETER_MISSING`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-016,REQ-036,REQ-092,REQ-095 exits 0, stop after 4 tries`
+
+### Wave 15 — Membership
+
+- **Goal**: Membership condiciona os mecanismos do Club, verificado no instante da ação, sem tocar direitos
+  patrimoniais.
+- **IDs (dona)**: REQ-011, REQ-050, PD-001. **TECH**: TECH-030, TECH-050, TECH-055.
+- **Scope (slices/files)**: `identity`. Migrations `membership` (`party_id UNIQUE`, estados TECH-055) e
+  `membership_plan_version` (opcional; nenhum plano, benefício ou prioridade presumidos — TECH-030; prioridade por
+  plano em P-5); ciclo de vida pelo Admin sob guard e auditoria, efeitos só para o futuro (BR-320/321);
+  elegibilidade por mecanismo (TECH-050) verificada no instante da ação; notificação de mudança de elegibilidade;
+  API `POST /v1/admin/memberships…`; visão do Titular.
+- **Depends on / parallel with**: W7; sequencial.
+- **Acceptance criteria**: `[PD-001] segundo Membership para o mesmo CPF/CNPJ é recusado` · `[REQ-011] suspensão
+  entre duas ações bloqueia a segunda` · `[REQ-050] suspensão e encerramento preservam direitos e compromissos;
+  mudar o Membership não cria nem altera Taxa, despesas, Ação, Direito de Uso ou rotação` · `[REQ-032] plano não
+  altera janela nem rotação` · `[TECH-055] transição inválida → ERR_STATE_TRANSITION`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-011,REQ-050,PD-001 exits 0, stop after 4 tries`
+
+### Wave 16 — PRL, parâmetros econômicos e snapshot
+
+- **Goal**: PRL e parâmetros econômicos versionados, com snapshot do que formou cada operação.
+- **IDs (dona)**: REQ-013, REQ-052. **TECH**: TECH-030, TECH-031, TECH-033.
+- **Scope (slices/files)**: `pricing`. Migration `prl` por (Residence, data) versionado (TECH-030): inicial por Admin
+  ou Super Admin, publicado só o Super Admin altera, efeitos só para o futuro. Tipos de parâmetro: Membership
+  (valor-base), Taxa de Administração (sem cobrança — `03` §15), multiplicador, validade dos Créditos, Fee, prazo da
+  Request, descontos Luxplus, taxas e comissões de locação. Os valores iniciais do TECH-030 são publicados pelo
+  runbook, nunca como padrão no código. Snapshot (TECH-031); `decimal.js` com HALF_UP (TECH-033); API
+  `POST /v1/admin/prl` e `POST /v1/admin/prl/changes`; telas.
+- **Depends on / parallel with**: W10, W14; sequencial.
+- **Acceptance criteria**: `[REQ-013] Admin não altera PRL publicado; Super Admin altera` · `[REQ-052] operação
+  formada preserva o PRL; data sem PRL não é ofertável` · `[TECH-001] parâmetro ausente → ERR_PARAMETER_MISSING;
+  zero nunca presumido` · `[TECH-033] HALF_UP uma única vez no valor final`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-013,REQ-052 exits 0, stop after 4 tries`
+
+### Wave 17 — Créditos e Carteira
+
+- **Goal**: Créditos por lote com ledger imutável, consumo FEFO e Carteira não monetária.
+- **IDs (dona)**: REQ-053, REQ-054, PD-008, INV-6. **TECH**: ADR-007, TECH-025, TECH-044, TECH-051, TECH-070,
+  TECH-071, TECH-072, TECH-090.
+- **Scope (slices/files)**: `credits`. Migrations `credit_lot` e `credit_entry` (ADR-007); movimentos do TECH-070;
+  FEFO e Garantia (TECH-071); validade por adição calendárica em UTC (TECH-044); uso só antes de `expires_at` + job
+  `expire_credit_lots` (TECH-072); `reverse_credit`; Carteira e extrato (estados do REQ-096); consultas de INV-6
+  após todo teste `db`; aviso de expiração próxima ⛔ P-7.
+- **Depends on / parallel with**: W15; sequencial.
+- **Acceptance criteria**: `[INV-6] gasto duplo, transferência ou origem inválida falham` · `[TECH-025] retry não
+  duplica o lote` · `[PD-008] consome o lote que vence antes; empate pela originação mais antiga` · `[TECH-044]
+  31/08 + 24 meses → 31/08; 29/02 + 12 meses → 28/02; job atrasado não prorroga a validade` · `[CONC-8] mesmos
+  Créditos sob concorrência` · `[TECH-070] reversão após a expiração vira expired` · `[REQ-053] Membership
+  inelegível bloqueia uso sem pausar validade; reativação restabelece saldo válido; a Carteira não usa formato
+  monetário nem oferece venda ou cessão` · `[REQ-054] extrato com data, tipo, quantidade, lote e operação`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-053,REQ-054,PD-008,INV-6 exits 0, stop after 4 tries`
+
+### Wave 18 — Políticas comerciais
+
+- **Goal**: nenhum mecanismo confirma sem política vigente e nenhuma política contorna regra estrutural.
+- **IDs (dona)**: REQ-082, REQ-104, PD-009. **TECH**: TECH-032, TECH-051.
+- **Scope (slices/files)**: `pricing`. Migration `commercial_policy` versionada com estrutura fechada por mecanismo
+  (TECH-032); efeitos limitados a `capacity · credits · fee · money · remuneration` e validados contra BR-163 e os
+  INV; `publish_policy`; avaliação por snapshot + evento. Eventos com command: no-show (`declare_no_show`) e exceção
+  (`open_exception`/`resolve_exception`); o evento de cancelamento é avaliado só no domínio até P-11. Componente de
+  aceite da política; `ERR_POLICY_MISSING`; API `POST /v1/admin/policies`.
+- **Depends on / parallel with**: W16; sequencial.
+- **Acceptance criteria**: `[PD-009] sem política vigente nada confirma; a política aceita fica vinculada à
+  operação` · `[REQ-082] nenhum tratamento econômico por padrão` · `[REQ-104] política ou parâmetro que contrarie
+  BR-163 ou um INV é recusado` · `[PD-010] exceção em mecanismo com política aplica só os efeitos da política
+  vinculada`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-082,REQ-104,PD-009 exits 0, stop after 4 tries`
+
+### Wave 19 — Pagamentos, Fee e settlement
+
+- **Goal**: pagamento nunca reserva capacidade e todo efeito financeiro é único, monotônico e separado por categoria.
+- **IDs (dona)**: REQ-094. **TECH**: ADR-006, ADR-008, TECH-025, TECH-080, TECH-081, TECH-082, TECH-083, TECH-090,
+  TECH-101.
+- **Scope (slices/files)**: `billing`. Port `PaymentGateway` com fake determinístico (recusado em produção,
+  TECH-001); `payment` monotônico, `fee_charge`, `refund`, `webhook_inbox` (TECH-025, ADR-006); sequência do
+  TECH-080; Fee = maior entre o percentual do PRL do período e o mínimo publicados (`01` §24, BR-230, BR-232);
+  `settlement` por categoria (TECH-083); conciliação de pagamentos no job `reconciliation` e alerta
+  `payment_without_outcome`; `POST /v1/webhooks/psp/{provider}`; relatório Admin por categoria. STRIDE `payments`.
+- **Depends on / parallel with**: W16; sequencial.
+- **Acceptance criteria**: `[REQ-094] o relatório nunca soma as categorias; Brand Partner e margem do Investor nunca
+  são receita Luxtory` · `[BR-230] Fee calculado pela regra do 01 com os parâmetros publicados` · `[TECH-080]
+  pagamento aprovado + falha no domínio → estorno` · `[TECH-025] retry não duplica settlement nem refund` ·
+  `[TECH-110] webhook duplicado ou fora de ordem não regride o estado; queda após o pagamento → conciliação confirma
+  ou estorna` · `[TECH-082] Fee nunca vira Crédito`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-094 exits 0, stop after 4 tries`
+
+### Wave 20 — Luxchange: depósito
+
+- **Goal**: o Titular converte capacidade elegível em Créditos e a capacidade entra no Inventário Luxtory no mesmo
+  ato.
+- **IDs (dona)**: REQ-051, REQ-060. **TECH**: TECH-023, TECH-043, TECH-051.
+- **Scope (slices/files)**: `luxchange`. `deposit_capacity` em `POST /v1/luxchange/deposits` (Membership;
+  antecedência do TECH-043); Owner deposita `owner` livre, Co-Owner só `reserved_right`. Créditos = Σ PRL das noites
+  × multiplicador publicado (`01` §20). A reserva de uso próprio cedida termina `cancelled` com
+  `release_reason='ceded'`, sem restore (TECH-023). Créditos + custódia `luxchange_cession` no mesmo commit; tela;
+  notificação de originação.
+- **Depends on / parallel with**: W13, W16, W17; sequencial.
+- **Acceptance criteria**: `[REQ-060] Créditos e entrada no Inventário no mesmo resultado; o dia do Co-Owner segue
+  consumido` · `[REQ-051] depósito exige Membership; Co-Owner só data reservada; Owner só capacidade própria livre;
+  Titular com Membership suspenso segue criando e cancelando uso próprio` · `[BR-201] Créditos = Σ PRL × multiplicador
+  publicado` · `[CONC-10] depósito contra cancelamento` · `[TECH-043] antecedência de 14 dias`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-051,REQ-060 exits 0, stop after 4 tries`
+
+### Wave 21 — Request: envio
+
+- **Goal**: enviar Request com snapshot, Garantia e Fee, sem bloquear a capacidade.
+- **IDs (dona)**: REQ-062, PD-005, PD-007. **TECH**: TECH-024, TECH-031, TECH-044, TECH-061, TECH-071, TECH-072,
+  TECH-082, TECH-090.
+- **Scope (slices/files)**: `luxchange`. `send_request` (rota do TECH-061; política aceita antes; snapshot; Garantia
+  só com lotes válidos até a expiração da Request; Fee pago antes — TECH-082; sem bloqueio — TECH-024);
+  `withdraw_request`; job `expire_requests` com expiração também checada nos commands (TECH-044); perda de
+  elegibilidade encerra a Request (TECH-024), com gatilhos nos commands das W12, W13, W15 e W20; API
+  `POST /v1/luxchange/requests` e `POST /v1/luxchange/requests/{id}/withdraw`; telas; notificações de Request
+  recebida, Garantia e Fee.
+- **Depends on / parallel with**: W18, W19, W20; sequencial.
+- **Acceptance criteria**: `[PD-005] exige Membership, Garantia e Fee; Requests coexistem` · `[PD-007][EC-9] PRL
+  alterado não muda o snapshot` · `[REQ-062] Fee apresentado separado dos Créditos` · `[EC-6] lote que vence antes
+  da Request não serve de Garantia` · `[EC-7] perda de elegibilidade encerra, libera Garantia e reverte Fee` ·
+  `[TECH-072] lote vencido em Garantia é liberado como expired, nunca como available` · `[TECH-044] Request vencida
+  não é aceita mesmo sem o job ter rodado`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-062,PD-005,PD-007 exits 0, stop after 5 tries`
+
+### Wave 22 — Request: aceite e recusa
+
+- **Goal**: o primeiro aceite válido confirma, e todas as concorrentes se encerram sem penalidade.
+- **IDs (dona)**: REQ-061, REQ-063, REQ-064, REQ-096, PD-006. **TECH**: TECH-023, TECH-024, TECH-055, TECH-061,
+  TECH-070.
+- **Scope (slices/files)**: `luxchange`. `accept_request` (revalidação integral; cessão + reserva `luxchange_request`
+  + `held→consumed` + Créditos ao cedente com originação própria; encerra concorrentes); `reject_request`; estados da
+  Request (TECH-055); API `POST /v1/luxchange/requests/{id}/accept` e `…/reject`; telas do detentor; notificação do
+  resultado.
+- **Depends on / parallel with**: W21; sequencial.
+- **Acceptance criteria**: `[REQ-061] sem aceite tácito; o solicitante não aceita a própria Request` ·
+  `[REQ-063][EC-8] confirmar uma encerra as concorrentes sem penalidade` · `[REQ-064] revalida capacidade,
+  Membership dos dois e Garantia` · `[PD-006][CONC-4][CONC-5] vale o primeiro aceite válido; aceite contra retirada
+  ou expiração; a avaliação de cancelamento pós-aceite nunca debita os Créditos do cedente` (domínio, P-11) ·
+  `[TECH-023] reserved_right devolvido por política (exceção resolvida) recebe nova reserva de uso próprio sem novo
+  consumo` · `[REQ-096] estados de Concept, Membership, Crédito, Request e Reserva conferem com o 02`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-061,REQ-063,REQ-064,REQ-096,PD-006 exits 0, stop after 5 tries`
+
+### Wave 23 — Luxchange Direct
+
+- **Goal**: reservar capacidade do Inventário Luxtory com Créditos, sem aceite de terceiro.
+- **IDs (dona)**: REQ-065. **TECH**: TECH-061, TECH-080, TECH-082.
+- **Scope (slices/files)**: `luxchange`. `create_direct` em `POST /v1/luxchange/direct`: só Inventário Luxtory,
+  Membership, Créditos por FEFO, Fee antes da confirmação, política, revalidação pós-pagamento (TECH-080).
+- **Depends on / parallel with**: W22; sequencial.
+- **Acceptance criteria**: `[REQ-065] Direct sem aceite de terceiro; exige Membership, Créditos e Fee` · `[CONC-9]
+  Request contra Direct` · `[CONC-8] mesmos Créditos` · `[REQ-035] Direct acima de 14 noites é aceito`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-065 exits 0, stop after 3 tries`
+
+### Wave 24 — Luxplus
+
+- **Goal**: compra em dinheiro de noites do Inventário Luxtory, com preço congelado.
+- **IDs (dona)**: REQ-066, REQ-070. **TECH**: TECH-031, TECH-080, TECH-083.
+- **Scope (slices/files)**: `booking`, `billing`. `buy_luxplus` em `POST /v1/luxplus/purchases`: só Inventário;
+  Membership; independe de Créditos; preço = PRL × (1 − desconto publicado) congelado na compra; pagamento;
+  settlement de receita Luxtory; política.
+- **Depends on / parallel with**: W23 (Direct × Luxplus); sequencial.
+- **Acceptance criteria**: `[REQ-070] preço congelado; sem nova remuneração ao cedente` · `[REQ-066][CONC-7] Direct
+  e Luxplus na mesma data → uma única confirmação` · `[TECH-001] sem desconto publicado → ERR_PARAMETER_MISSING`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-066,REQ-070 exits 0, stop after 4 tries`
+
+### Wave 25 — Locação externa
+
+- **Goal**: o Titular monetiza capacidade elegível pelo canal Luxtory; a receita líquida é dele e o locatário não
+  adquire direitos.
+- **IDs (dona)**: REQ-012, REQ-041, REQ-042, REQ-043, REQ-071, REQ-072. **TECH**: TECH-023, TECH-024, TECH-051,
+  TECH-063, TECH-083.
+- **Scope (slices/files)**: `booking`, `billing`.
+  - `authorize_rental` → `rental_offer` (não altera custódia); `withdraw_rental_offer`; `confirm_rental` (Admin)
+    registra o valor bruto informado pelo canal (BR-253, BR-260).
+  - Toda confirmação incompatível fecha as ofertas abertas no mesmo commit: uso próprio (W12), depósito (W20),
+    aceite (W22), locação e comercialização por inadimplência (W27) — TECH-024.
+  - `rental_contract` sem direitos, com referência externa do canal (⛔ P-6); settlement ao Titular (bruto −
+    deduções publicadas; repasse bancário fora de escopo, `03` §15); Owner sem Membership fica fora do canal
+    (TECH-063).
+  - API `POST /v1/rental-offers`, `POST /v1/rental-offers/{id}/withdraw`, `POST /v1/admin/rental-offers/{id}/confirm`;
+    telas.
+- **Depends on / parallel with**: W22; sequencial.
+- **Acceptance criteria**: `[REQ-041] capacidade locável não entra no Inventário Luxtory` · `[REQ-042][CONC-6]
+  reserva de uso próprio, depósito ou aceite sobre data ofertada fecham a oferta no mesmo ato` · `[REQ-043] oferta
+  retirável até o compromisso` · `[REQ-071] Owner escolhe as datas; sem Membership não usa o canal` · `[TECH-063]
+  voltar ao canal exige ato expresso e revalidação` · `[REQ-072] dia locado do Co-Owner segue consumido, sem
+  Créditos` · `[REQ-012] convidado e locatário sem Ação, Membership, Direito de Uso nem Créditos`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-012,REQ-041,REQ-042,REQ-043,REQ-071,REQ-072 exits 0, stop after 5 tries`
+
+### Wave 26 — Fechamento do R3
+
+- **Goal**: provar, entre todos os mecanismos, unicidade econômica, base registrada e paridade Owner/Co-Owner.
+- **IDs (dona)**: REQ-073, REQ-102, REQ-103. **TECH**: TECH-064, TECH-110.
+- **Scope (slices/files)**: testes transversais, sem feature nova.
+- **Depends on / parallel with**: W24, W25; sequencial (fecha o R3).
+- **Acceptance criteria**: `[REQ-073] para cada par de mecanismos, a mesma data não produz dois benefícios
+  econômicos (Créditos, receita Luxtory, receita do Titular)` · `[REQ-102] toda oferta, reserva do Inventário e
+  locação aponta custódia com base registrada; sem base, é recusada` · `[REQ-103] o mesmo mecanismo produz o mesmo
+  efeito para Owner e Co-Owner, exceto nas diferenças listadas no REQ-103` · `npm run trace` encontra CONC-1 a
+  CONC-12.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-073,REQ-102,REQ-103,CONC-1,CONC-2,CONC-3,CONC-4,CONC-5,CONC-6,CONC-7,CONC-8,CONC-9,CONC-10,CONC-11,CONC-12 exits 0, stop after 3 tries`
+
+### Wave 27 — Inadimplência
+
+- **Goal**: restrição e comercialização por inadimplência só com base registrada, sem tocar reservas confirmadas nem
+  rotação.
+- **IDs (dona)**: REQ-090. **TECH**: TECH-050, TECH-051, TECH-062, TECH-090.
+- **Scope (slices/files)**: `billing`, `booking`. `register_debt`; `apply_delinquency_restriction` (nunca
+  automática; torna o Membership inelegível para o mecanismo — TECH-050; `ERR_DELINQUENCY_RESTRICTED`);
+  `authorize_delinquency_commercialization` com custódia `use_right/delinquency`; venda via `confirm_rental`;
+  settlement dívida → custos → excedente ao Co-Owner, sem Créditos; job `close_delinquency_authorization`; API
+  `POST /v1/admin/debts…`; notificações de suspensão e regularização.
+- **Depends on / parallel with**: W26; sequencial.
+- **Acceptance criteria**: `[REQ-090] débito sem restrição aplicada não bloqueia nada; a restrição bloqueia só novas
+  ações; comercialização limitada ao exercício atual, aos saldos e ao débito; a quitação encerra autorização e
+  restrição` · `[TECH-110] inadimplência não altera reserva confirmada nem rotação` · `[TECH-062] não gera Créditos
+  nem entra no Inventário`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-090 exits 0, stop after 4 tries`
+
+### Wave 28 — Transferência
+
+- **Goal**: transferir a titularidade preservando compromissos e o que pertence à Ação.
+- **IDs (dona)**: REQ-093. **TECH**: TECH-024, TECH-042, TECH-051.
+- **Scope (slices/files)**: `ownership`. `transfer_holding` (TECH-051 e `03` §7) em
+  `POST /v1/admin/holdings/{id}/transfer`: Ação, saldo remanescente, posições e histórico de rotação seguem a Ação;
+  reservas e compromissos continuam; Membership e Créditos não se transferem; adesão do adquirente registrada;
+  Requests e ofertas pendentes tratadas pelo TECH-024; notificação de transferência concluída.
+- **Depends on / parallel with**: W26; sequencial depois da W27.
+- **Acceptance criteria**: `[REQ-093][EC-11] Co-Owner: o adquirente recebe a Ação, o saldo remanescente e as
+  posições e histórico das rotações; reservas e compromissos futuros permanecem; Membership e Créditos do
+  transmitente não se transferem; Owner: Membership não segue`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-093 exits 0, stop after 3 tries`
+
+### Wave 29 — Conformidade e parceiros
+
+- **Goal**: não conformidade suspende o que o `01` permite, sem alterar propriedade, Direito de Uso nem compromissos.
+- **IDs (dona)**: REQ-021, REQ-038, REQ-091. **TECH**: TECH-020.
+- **Scope (slices/files)**: `catalog`. Registro de conformidade (TECH-020); suspensão pela BR-020 →
+  `ERR_COMPLIANCE_SUSPENDED` nos mecanismos do Club; encerramento de Brand Partner com direitos sobreviventes;
+  autorizações de parceiros de execução; Discovery oculta crédito de marca não autorizado.
+- **Depends on / parallel with**: W27 (mesmos guards dos mecanismos); sequencial.
+- **Acceptance criteria**: `[REQ-021] personalização não essencial do Owner é aceita; elemento essencial exige
+  aprovação registrada; não conformidade material suspende Club, certificação e uso de marca sem alterar direitos;
+  após o encerramento da parceria, nenhum uso novo de marca` · `[REQ-038] Residence sem conformidade registrada não
+  participa do Club; administração integral do Owner é opcional` · `[REQ-091] Residence preserva a versão do
+  Concept; parceiro de execução sem autorização é recusado` · `[EC-13] Residence suspensa preserva reservas
+  confirmadas de terceiros` · `[TECH-110] personalização incompatível de Co-Owner falha`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-021,REQ-038,REQ-091 exits 0, stop after 4 tries`
+
+### Wave 30 — Hardening e gate final
+
+- **Goal**: evidência protegida, divergências detectadas e o gate do `03` §12 cumprido.
+- **IDs (dona)**: REQ-097. **TECH**: TECH-090, TECH-092, TECH-101, TECH-110.
+- **Scope (slices/files)**: `platform`. `audit_seal` com cadeia SHA-256 sobre JCS RFC 8785 `audit-v1` (TECH-092),
+  selado após o commit e varrido no `reconciliation` (sem job novo), com a prova `.ots` do OpenTimestamps guardada
+  junto do selo (ADR-0002); conciliação de divergências (saldos × ledgers) com bloqueio do agregado e correção
+  compensatória; alertas `invariant_breach · drift · audit_chain_failure`; teste de restauração sobre backup
+  gerenciado (depende de D2), na sequência restauração → conciliação → reabertura das escritas (TECH-101); STRIDE
+  consolidado e `/security-scan`; catálogo de notificações × REQ-097.
+- **Depends on / parallel with**: W28, W29 e D2; sequencial (última).
+- **Acceptance criteria**: `[TECH-092] commits concorrentes → um selo por evento e cadeia válida` · `[REQ-097] todo
+  evento listado sai pelo outbox, sem duplicata; Titular sem Membership recebe os de calendário` · conciliação sem
+  divergência · migrations up/down · `npm run trace -- --gate` = 63/63 REQ · 11/11 PD · 6/6 INV · 13/13 EC · 12/12
+  CONC.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0, npm run trace -- --expect REQ-097 exits 0, and npm run trace -- --gate reports 63/63 REQ, 11/11 PD, 6/6 INV, 13/13 edge cases and 12/12 concurrency pairs, stop after 5 tries`
+
+### Matriz de cobertura (uma wave dona por ID)
+
+| Wave | REQ | PD | INV |
+|---|---|---|---|
+| W1 | REQ-015, REQ-098 | — | — |
+| W2 | REQ-014 | — | — |
+| W3 | REQ-020, REQ-027 | — | — |
+| W4 | REQ-100, REQ-101 | — | — |
+| W5 | REQ-023 | — | — |
+| W8 | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026 | PD-003 | — |
+| W9 | — | PD-011 | — |
+| W10 | REQ-040 | — | INV-2, INV-3 |
+| W11 | REQ-030, REQ-031, REQ-032, REQ-033, REQ-039 | PD-004 | INV-4, INV-5 |
+| W12 | REQ-034, REQ-035, REQ-037 | PD-002 | INV-1 |
+| W13 | REQ-080, REQ-081, REQ-083 | PD-010 | — |
+| W14 | REQ-016, REQ-036, REQ-092, REQ-095 | — | — |
+| W15 | REQ-011, REQ-050 | PD-001 | — |
+| W16 | REQ-013, REQ-052 | — | — |
+| W17 | REQ-053, REQ-054 | PD-008 | INV-6 |
+| W18 | REQ-082, REQ-104 | PD-009 | — |
+| W19 | REQ-094 | — | — |
+| W20 | REQ-051, REQ-060 | — | — |
+| W21 | REQ-062 | PD-005, PD-007 | — |
+| W22 | REQ-061, REQ-063, REQ-064, REQ-096 | PD-006 | — |
+| W23 | REQ-065 | — | — |
+| W24 | REQ-066, REQ-070 | — | — |
+| W25 | REQ-012, REQ-041, REQ-042, REQ-043, REQ-071, REQ-072 | — | — |
+| W26 | REQ-073, REQ-102, REQ-103 | — | — |
+| W27 | REQ-090 | — | — |
+| W28 | REQ-093 | — | — |
+| W29 | REQ-021, REQ-038, REQ-091 | — | — |
+| W30 | REQ-097 | — | — |
+
+**Total: 63/63 REQ · 11/11 PD · 6/6 INV.** W0, W6 e W7 não são donas de REQ; justificam-se por TECH-010/011/100/110,
+pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
+
+- **Complementos** (acrescentam casos à suíte da dona): REQ-022, REQ-024 e REQ-025 em W5, W6 e W10 · REQ-027 em W8 e
+  W19 · REQ-031 em W12 · REQ-032 em W15 e W27 · REQ-035 e REQ-051 em W21–W25 · REQ-038 em W8 e W19 · REQ-095 em
+  cada wave com command Admin (PRL na W16) · REQ-096 em W3, W12, W13, W15 e W17 · REQ-097 em cada wave que emite
+  evento · REQ-100 e REQ-101 na varredura da W0 e em toda tela · PD-009 em W21–W25 · PD-010 na W18 · PD-011 na W1.
+- **INV como regressão transversal**: as consultas de INV-1…INV-6 rodam após todo teste `db` a partir da wave em que
+  as tabelas nascem (W10, W11, W17); a conciliação da W30 reusa as mesmas consultas.
+- **Edge cases (`02` §15)**: EC-1 e EC-2 → W12 · EC-3 → W8 · EC-4 → W11/W12 · EC-5 → W14 · EC-6, EC-7 e EC-9 → W21 ·
+  EC-8 → W22 · EC-10 e EC-12 → W13 · EC-11 → W28 · EC-13 → W29.
+- **Concorrência (TECH-110)**: CONC-1, CONC-2 e CONC-3 → W12 · CONC-4 e CONC-5 → W22 · CONC-6 → W25 · CONC-7 → W24 ·
+  CONC-8 → W17/W23 · CONC-9 → W23 · CONC-10 → W20 · CONC-11 → W14 · CONC-12 → W0/W1.
+- **Commands e jobs**: todo command do TECH-051 e todo job do TECH-090 têm wave (W1 `outbox`; W10 `open_exercise`;
+  W11 `close_exercise`; W13 `advance_booking_states`, `flag_no_show_candidates`; W17 `expire_credit_lots`; W19 e W30
+  `reconciliation`; W21 `expire_requests`; W27 `close_delinquency_authorization`).
+
+### Pendências externas
+
+| # | Pendência | Bloqueia | Como seguir sem inventar |
+|---|---|---|---|
+| P-1 | Fotografia oficial e logo Pure White | nenhuma wave | Frame tipográfico e Warm Sand sobre scrim; assets chegam como commit aditivo |
+| P-2 | PSP não contratado | go-live de W21–W25 | port + fake determinístico (TECH-081); fake recusado em produção |
+| P-3 | Campos de contato e qualificação do interesse + base LGPD, consentimento e aviso de privacidade (REQ-025) | **W6** e o go-live do R1-Interesse | W5 grava só os campos canônicos |
+| P-4 | Políticas comerciais (PD-009) | operação de W22–W25 | políticas de teste; sem política → `ERR_POLICY_MISSING` (REQ-082) |
+| P-5 | PRL por data; conteúdo de `guest_rules`; descontos Luxplus; taxas e comissões de locação; planos de Membership e seus benefícios (prioridade por plano sem mecânica no `02`/`03`) | operação de W14, W15 e W16–W25 | ausência → `ERR_PARAMETER_MISSING`/`ERR_PRL_MISSING`; zero nunca presumido. Os valores iniciais do TECH-030 **não** são pendência: são publicados pelo runbook |
+| P-6 | Dados do convidado (REQ-092) e do locatário (`rental_contract`) | parte da W14 e da W25 | só a indicação e a versão aceita, ou a referência do canal, sem dado pessoal |
+| P-7 | Antecedência do aviso de expiração próxima de Créditos (REQ-097) | só esse aviso (W17) | não emitido até a definição (TECH-001); o gate o registra como bloqueado |
+| P-8 | Regras de exposição de marca por Brand Partner (BR-015) | nenhuma wave | exposição e `ConceptCredit` só com autorização registrada |
+| P-9 | SMTP próprio (D4) | go-live do login de Titulares (W7) | SMTP padrão do Supabase só envia a membros da org; notificações dentro do app |
+| P-10 | Banco Upstash Redis + envs (`NOTES.md`) | go-live das escritas públicas (W5, W6) | sem Redis a escrita pública é recusada; testes com fake |
+| P-11 | **Lacuna normativa**: o `02` exige cancelamento de Request aceita, Direct, Luxplus e locação pela política (PD-006, PD-009, REQ-082), mas a tabela fechada do TECH-051 só tem `cancel_own_use_booking` | cancelamento pelo usuário nesses mecanismos (W18, W22–W25) | nenhum command criado; avaliação só no domínio; no-show e exceção seguem pelos commands existentes; exige nova versão do `03` (D6) |
+
+### Riscos
+
+1. **Planos gratuitos × produção comercial**: Vercel Hobby veda uso comercial e limita cron a 1×/dia; Supabase Free
+   não tem o backup que o ADR-0002 pressupõe. O plano não depende de job para validade (TECH-044) e dispara o outbox
+   após o commit. Decisões D1 e D2.
+2. **`main` sem proteção e deploy automático concorrendo com migrations**: a W0 desliga esse deploy e só publica
+   depois dos gates e do `migrate`; PR obrigatório por disciplina.
+3. **Fidelidade dos testes**: GoTrue e Supavisor não rodam localmente; SQL, RLS e concorrência são testados em PG
+   real, mas login e pooler reais só em staging (D3).
+4. **Pendências travam releases, não o desenvolvimento**: P-3 segura o R1-Interesse; P-9 o R2; PSP, políticas e PRL
+   a operação do R3; P-11 impede cancelar pelo usuário os mecanismos do Club até a nova versão do `03`.
+5. **Concorrência no R3**: risco de PRs grandes e testes instáveis. Mitigação: Request em duas waves, tags CONC,
+   barreiras determinísticas, retentativa com a mesma chave, relógio injetável e fechamento na W26.
+
+### Decisões
+
+| # | Decisão | Recomendação | Status |
+|---|---|---|---|
+| D1 | Vercel Pro antes do go-live público do R1 (termos de uso comercial; cron por minuto) | sim | aberta |
+| D2 | Supabase Pro (backup diário, sem pausa) antes de dados reais; PITR no go-live econômico (ADR-0002). Pré-requisito da W30 | sim, no go-live do R1 | aberta |
+| D3 | Segundo projeto Supabase Free como staging (Previews + validação de migrations na CI) | criar antes da W1 | aberta |
+| D4 | Provedor SMTP para login e notificações | escolher antes do go-live do R2 | aberta |
+| D5a | `NOTES.md` já existia → atualizado no lugar, sem recriar | — | adotada em 2026-09-25 |
+| D5b | Este arquivo: seção DS e Anexo A preservados byte a byte; plano Luxtory acrescentado no topo | — | adotada em 2026-09-25 |
+| D5c | R1 pode ir ao ar só com Discovery (W3–W4) se P-3 atrasar? | — | aberta |
+| D6 | Encaminhar P-11 à Luxtory: nova versão do `03` com command de cancelamento para os mecanismos do Club | encaminhar antes da W18 | aberta |
+
+### Registro da revisão (2026-09-25)
+
+Revisão com evidência (grep dos canônicos + releitura do `03` §3.2–§12), 20 achados F1–F20:
+
+1. Classificação civil (PD-003, `temporal-polyfill`) movida da W10 para a W8: a alocação inicial da W8 valida a
+   distribuição sazonal (TECH-020) — F1.
+2. REQ-027 passa da W8 para a W3: a autorização do Investor condiciona o cadastro da Residence (BR-310) — F12.
+3. P-11 e D6: o `02` exige cancelamento dos mecanismos do Club, ausente da tabela fechada do TECH-051 — F2.
+4. Paralelismo reduzido a W9 ∥ W10; status atualizado pela sessão principal após o merge — F3.
+5. Contrato único `openapi.yaml`/`asyncapi.yaml`; removido `GET /v1/residences/{id}/calendar` — F4, F19.
+6. Testes novos: TECH-110 (selagem, 29/02, 1 noite, 14h/10h, job atrasado, `expires_at`), TECH-023, TECH-024,
+   TECH-025, TECH-044, TECH-072, fórmulas do Fee e dos Créditos, cláusulas dos REQ-024, REQ-026, REQ-036, REQ-050,
+   REQ-051, REQ-053, REQ-080 e do PD-011 — F6–F10, F20.
+7. Critérios vagos descritos; convenções `EC-n` e `CONC-n`; CONC 12/12 no gate — F11.
+8. TECH-030: Membership e Taxa de Administração como tipos de parâmetro; P-5 corrigida — F13.
+9. ADR-0004 cobre UI, validação, e-mail, observabilidade e Storage; W30 depende de D2 e ganha `.ots` e reabertura
+   das escritas após a conciliação — F14, F15.
+10. Ambiguidades resolvidas: conteúdo do Discovery, `guest_rules`, reserva cedida, prioridade por plano — F16.
+11. Ultron: gitleaks e `.vercelignore` na lista de ignores — F17.
+12. IDs por extenso; TECH-011, ADR-001 e ADR-005 citados; base de 15/09 citada pelo TECH-042; emissor de JWT de teste
+    na W2 — F5, F18.
+
+### Execution notes
+
+- Sequential waves run in the main session, one branch/PR per wave (`feat/w<n>-<slug>`, squash merge, Conventional
+  Commits); o PR cita os IDs cobertos.
+- A sequential wave can run as a **goal loop**: invoke its Goal command and let the evaluator hold the session to the
+  acceptance criteria instead of trusting "looks done". Close the wave with `/verify` before marking it ✅.
+- O único grupo paralelo é **W9 ∥ W10**, que pode rodar como subagentes em worktrees isoladas — uma wave por agente,
+  merge de um PR por vez.
+- Ações do responsável fora do código: secrets `VERCEL_TOKEN` e `DATABASE_URL_MIGRATIONS` após a W0; desligar a Data
+  API do Supabase e definir a senha do papel de aplicação (runbook, W1); indicar o primeiro Super Admin (W2).
+- When a wave completes, mark it ✅ here AND in NOTES.md (sessão principal, após o merge) — the Stop hook then forces
+  the final NOTES.md continuity pass and suggests /compact.
 
 ## Design System (DS) — `docs/specs/design-system.md`
 

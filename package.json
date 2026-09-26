@@ -1,0 +1,53 @@
+{
+  "name": "luxtory-branded-second-home",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings=0 && prettier --check .",
+    "format": "prettier --write .",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run && npm run test:ds",
+    "test:ds": "node --test src/design-system/scripts/*.test.mjs",
+    "test:e2e": "next build && playwright test",
+    "coverage": "vitest run --coverage",
+    "db:start": "node scripts/db-start.mjs",
+    "db:new": "node scripts/db-new.mjs",
+    "db:check": "node scripts/db-check.mjs",
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "trace": "node scripts/trace.mjs",
+    "verify": "npm run lint && npm run typecheck && npm run coverage && npm run test:ds && npm run db:check && npm run build"
+  },
+  "dependencies": {
+    "next": "16.3.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.63.0",
+    "@types/node": "22.20.4",
+    "@types/pg": "8.23.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitest/coverage-v8": "5.0.2",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "dbmate": "2.36.0",
+    "embedded-postgres": "17.10.0-beta.17",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.3.6",
+    "pg": "8.23.0",
+    "prettier": "3.9.9",
+    "typescript": "6.0.3",
+    "vitest": "5.0.2",
+    "yaml": "2.9.1"
+  }
+}

@@ -1,18 +1,13 @@
 asyncapi: 3.0.0
 info:
-  title: <project-name> Events
+  title: Luxtory Branded Second Home Events
   version: 0.1.0
   description: |
-    [CUSTOMIZE] Async / event contracts for this project.
+    Eventos de domínio da plataforma Luxtory. São gravados no outbox transacional do PostgreSQL no mesmo commit do
+    command que os origina e entregues ao menos uma vez a consumidores idempotentes (TECH-091 do
+    `docs/specs/canonical/03-technical-spec.md`); falha de entrega nunca desfaz o domínio. Não há broker externo:
+    o disparo ocorre após o commit e por varredura periódica (ADR-0004). Os canais entram a partir da W1.
     Update this file **before** producing or consuming a new event.
-  license:
-    name: MIT
-
-servers:
-  broker-prod:
-    host: broker.example.com:9092
-    protocol: kafka
-    description: Production message broker
 
 defaultContentType: application/json
 

@@ -87,3 +87,10 @@ SPEC_HOTMART_*.md
 
 # Playwright MCP artifacts (local test snapshots)
 .playwright-mcp/
+
+# Next.js / testes (W0)
+next-env.d.ts
+*.tsbuildinfo
+reports/
+test-results/
+playwright-report/

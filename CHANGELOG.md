@@ -20,6 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (contrast WCAG 2.2 AA, hardcodes, fonts, terminology). Spec `docs/specs/design-system.md`, ADR-0003.
 - Official Luxtory logo kit (horizontal, vertical, icon × Moroccan Blue / Warm Sand) organized via
   `src/design-system/brand/logo/manifest.json` (sha256-pinned, `brand.test.mjs`), wired into header, menu, footer and Lab.
+- W0 — fundação: app Next.js 16 (App Router, TypeScript strict) com `GET /v1/health` e `GET /v1/version`
+  (`x-correlation-id` em toda resposta), página 404 em pt-BR com o Design System, favicon do kit oficial e Design
+  System Lab interno em
+  `/lab` (fora de produção). Harness de testes com PostgreSQL 17 real (ADR-0005), E2E com axe, `npm run verify`,
+  `npm run trace` e CI/CD com produção só pela CI (ADR-0004). ADRs 0004–0006.
 
 ### Changed
 - ...

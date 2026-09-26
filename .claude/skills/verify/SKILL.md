@@ -31,10 +31,11 @@ change as fully verified.
 
 Exercise the changed behavior the way a user or caller would. Pick the row
 that matches the project — [CUSTOMIZE] this table to your stack once, so every
-future verification runs the same way:
+future verification runs the same way (Luxtory: see the first row):
 
 | Project type | How to exercise the change |
 |--------------|---------------------------|
+| **Luxtory (Next.js + PostgreSQL)** | `npm run build && npx next start -p 3100`, then `curl -si` the changed `/v1/*` route (happy path + one invalid input → the TECH-056 `ERR_*` code, never 500) and open the changed page with Playwright (zero console errors, axe 0). Domain changes: run the tagged `db` tests and `npm run trace -- --expect <IDs>` |
 | Web frontend | Start the dev server, open/curl the changed page, interact with the change (new control: click it, confirm the state change), confirm zero new console errors/warnings |
 | HTTP API | Start the server, hit the changed endpoint with `curl` — happy path AND one failure path (bad input → expected 4xx, not 500) |
 | CLI | Run the changed command with real arguments; check exit code and output |

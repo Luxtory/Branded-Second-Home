@@ -2,6 +2,7 @@
 
 - **Date**: 2026-09-25
 - **Status**: Accepted
+- **Amended by**: [ADR-0004](0004-toolchain-bibliotecas-e-pipeline.md) — carregamento de fontes (decisão 4)
 - **Deciders**: Luxtory (produto e marca); Engenharia
 - **Tags**: frontend, design-system, architecture, performance, accessibility
 

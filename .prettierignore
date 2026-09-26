@@ -1,0 +1,25 @@
+# Nunca formatar (CLAUDE.md → Files & paths to ignore; ultron)
+activate-ultronpx.mjs
+
+# Documentos (canônicos, CLAUDE.md, NOTES.md, Anexo A), Design System e migrations: formatação manual
+*.md
+docs/
+src/design-system/
+migrations/
+
+# Configuração de ferramentas que não são do app
+.claude/
+.github/
+.mcp.json
+.mcp.json.example
+.vercel/
+.playwright-mcp/
+
+# Gerados
+.next/
+next-env.d.ts
+package-lock.json
+coverage/
+reports/
+test-results/
+playwright-report/

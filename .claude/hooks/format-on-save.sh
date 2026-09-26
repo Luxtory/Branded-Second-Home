@@ -10,7 +10,16 @@
 set -euo pipefail
 
 INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
+# JSON interpretado com node (dependência do projeto; `jq` não existe no ambiente). Input ilegível: nada a fazer.
+FILE_PATH=$(printf '%s' "$INPUT" | node -e '
+let raw = "";
+process.stdin.setEncoding("utf8");
+process.stdin.on("data", (chunk) => (raw += chunk));
+process.stdin.on("end", () => {
+  const value = JSON.parse(raw)?.tool_input?.file_path;
+  if (typeof value === "string") process.stdout.write(value);
+});
+' 2>/dev/null) || exit 0
 
 # No path: nothing to do
 [[ -z "$FILE_PATH" ]] && exit 0

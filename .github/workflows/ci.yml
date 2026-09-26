@@ -1,6 +1,8 @@
-# [CUSTOMIZE] Stack-agnostic CI skeleton.
-# Replace the install/lint/test/build commands with the ones from
-# CLAUDE.md > ## Commands. The matrix and toolchain setup belong to your stack.
+# Luxtory CI/CD (ADR-0004). Os comandos são os de CLAUDE.md > ## Commands.
+# Actions fixadas por SHA completo (comentário = versão), atualizadas pelo Dependabot.
+# PR e push em main: lint, typecheck, test (Vitest + PostgreSQL real + Design System + migrations), e2e, security.
+# Push em main, com todos verdes: migrate (dbmate) → deploy de produção (Vercel CLI). O deploy Git de main está
+# desligado em vercel.json: produção só sai por este workflow.
 name: ci
 
 on:
@@ -12,51 +14,75 @@ on:
 permissions:
   contents: read
 
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+
+# PRs: uma execução nova cancela a anterior. main: nunca cancela (migrate/deploy não podem parar no meio).
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      # [CUSTOMIZE] toolchain setup, e.g.:
-      # - uses: actions/setup-node@v4
-      #   with: { node-version: '20', cache: 'pnpm' }
-      # - uses: actions/setup-python@v5
-      #   with: { python-version: '3.12', cache: 'pip' }
-      # - uses: actions/setup-go@v5
-      #   with: { go-version: '1.22' }
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with: { node-version: 22, cache: npm }
       - name: Install
-        run: echo "[CUSTOMIZE] install command"  # e.g. pnpm install --frozen-lockfile
+        run: npm ci
       - name: Lint
-        run: echo "[CUSTOMIZE] lint command"      # e.g. pnpm lint
+        run: npm run lint
 
   typecheck:
     name: typecheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      # [CUSTOMIZE] toolchain setup
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with: { node-version: 22, cache: npm }
       - name: Install
-        run: echo "[CUSTOMIZE] install command"
+        run: npm ci
       - name: Typecheck
-        run: echo "[CUSTOMIZE] typecheck command"  # e.g. pnpm typecheck, mypy src/, go vet ./...
+        run: npm run typecheck
 
   test:
     name: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      # [CUSTOMIZE] toolchain setup
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with: { node-version: 22, cache: npm }
       - name: Install
-        run: echo "[CUSTOMIZE] install command"
+        run: npm ci
       - name: Test
-        run: echo "[CUSTOMIZE] test command"        # e.g. pnpm test, pytest, go test ./...
+        run: npm run test:ds          # Design System (node --test)
       - name: Coverage threshold
-        run: echo "[CUSTOMIZE] enforce 80% on domain/ and application/"
+        run: npm run coverage         # Vitest unit + db (PostgreSQL real); falha abaixo de 80% em domain/ e application/
+      - name: Migrations up → down → up
+        run: npm run db:check
+      - name: Traceability
+        run: npm run trace            # lista os IDs cobertos por testes aprovados
+
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with: { node-version: 22, cache: npm }
+      - name: Install
+        run: npm ci
+      - name: E2E (next build + Playwright/axe com o Chrome do runner)
+        run: npm run test:e2e
+      - name: Playwright traces
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
 
   security:
     name: security
@@ -64,15 +90,57 @@ jobs:
     permissions:
       contents: read
       security-events: write
+      pull-requests: read   # gitleaks-action lista os commits do PR pela API
     steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }  # gitleaks needs full history
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { fetch-depth: 0 } # gitleaks needs full history
       - name: Secret scan (gitleaks)
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # [CUSTOMIZE] add SAST and dependency scans relevant to your stack:
-      # - run: pip-audit
-      # - run: npm audit --audit-level=high
-      # - run: govulncheck ./...
-      # - run: cargo audit
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with: { node-version: 22 }
+      - name: Dependency audit
+        run: npm audit --omit=dev --audit-level=high
+      - name: SAST (Semgrep CE)
+        run: pipx run --spec semgrep==1.178.0 semgrep scan --config p/default --error --metrics=off
+
+  migrate:
+    name: migrate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [lint, typecheck, test, e2e, security]
+    runs-on: ubuntu-latest
+    concurrency: { group: production, cancel-in-progress: false }
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with: { node-version: 22, cache: npm }
+      - name: Install
+        run: npm ci
+      - name: Apply migrations (dbmate --strict)
+        run: npm run db:migrate
+        env:
+          DATABASE_URL_MIGRATIONS: ${{ secrets.DATABASE_URL_MIGRATIONS }}
+
+  deploy:
+    name: deploy
+    needs: [migrate]
+    runs-on: ubuntu-latest
+    concurrency: { group: production, cancel-in-progress: false }
+    env:
+      # Identificadores do projeto na Vercel (não são segredo); o token vem de secrets.
+      VERCEL_ORG_ID: team_qTseTMCEpdMeoQFB6WnaATef
+      VERCEL_PROJECT_ID: prj_GJINhlmRANMTVzK6tBzFfOuTldJ0
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with: { node-version: 22, cache: npm }
+      - name: Require VERCEL_TOKEN
+        run: test -n "$VERCEL_TOKEN" || { echo "::error::secret VERCEL_TOKEN is not set"; exit 1; }
+      - name: Pull production settings
+        run: npx --yes vercel@60.0.1 pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - name: Build
+        run: npx --yes vercel@60.0.1 build --prod --token="$VERCEL_TOKEN"
+      - name: Deploy to production
+        run: npx --yes vercel@60.0.1 deploy --prebuilt --prod --token="$VERCEL_TOKEN"

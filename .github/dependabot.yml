@@ -8,11 +8,13 @@ updates:
     directory: /
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
+    cooldown: { default-days: 7 } # espera 7 dias antes de propor versão recém-publicada
 
   - package-ecosystem: npm
     directory: /
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
+    cooldown: { default-days: 7 } # espera 7 dias antes de propor versão recém-publicada
     groups:
       minor-and-patch:
         update-types: [minor, patch]
@@ -21,6 +23,7 @@ updates:
     directory: /
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
+    cooldown: { default-days: 7 } # espera 7 dias antes de propor versão recém-publicada
     groups:
       minor-and-patch:
         update-types: [minor, patch]
@@ -29,18 +32,22 @@ updates:
     directory: /
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
+    cooldown: { default-days: 7 } # espera 7 dias antes de propor versão recém-publicada
 
   - package-ecosystem: cargo
     directory: /
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
+    cooldown: { default-days: 7 } # espera 7 dias antes de propor versão recém-publicada
 
   - package-ecosystem: docker
     directory: /
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
+    cooldown: { default-days: 7 } # espera 7 dias antes de propor versão recém-publicada
 
   - package-ecosystem: terraform
     directory: /infra
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
+    cooldown: { default-days: 7 } # espera 7 dias antes de propor versão recém-publicada

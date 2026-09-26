@@ -11,6 +11,9 @@ described by Michael Nygard. The ADR process itself is established in
 | 0001 | [Record architecture decisions](0001-record-architecture-decisions.md) | Accepted |
 | 0002 | [Plataforma (Vercel + Supabase + Upstash) e adaptações econômicas ao 03](0002-plataforma-e-adaptacoes-economicas.md) | Accepted |
 | 0003 | [Design System como camada compartilhada de apresentação](0003-design-system-camada-compartilhada.md) | Accepted |
+| 0004 | [Toolchain, bibliotecas e pipeline](0004-toolchain-bibliotecas-e-pipeline.md) | Accepted |
+| 0005 | [Testes com PostgreSQL real, sem Docker](0005-testes-com-postgresql-real-sem-docker.md) | Accepted |
+| 0006 | [Acesso a dados: schemas, papéis, migrations e leituras sob RLS](0006-acesso-a-dados.md) | Accepted |
 
 The technical decisions ADR-001…008 of the canonical
 [03 — Technical Spec](../specs/canonical/03-technical-spec.md) also apply, by reference.
