@@ -183,7 +183,7 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 |---|---|---|
 | `DATABASE_URL_MIGRATIONS`, `VERCEL_TOKEN` | secrets do GitHub (+ `DATABASE_URL_MIGRATIONS_STAGING` se D3) | W0 |
 | `VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA` | Vercel, só leitura | W0 |
-| `DATABASE_URL`, `CRON_SECRET` | Vercel (Production, Preview, Development) | W1 |
+| `DATABASE_URL`, `CRON_SECRET` | Vercel (Production, Preview, Development) → **só Production** desde a decisão D3 (2026-09-26, [ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md)) | W1 |
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Vercel | W2 |
 | `AUTH_MODE` (`supabase` ou `test`; `test` é recusado se `VERCEL_ENV` existir) | local e CI | W2 |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Vercel (sensitive) | W5 |
