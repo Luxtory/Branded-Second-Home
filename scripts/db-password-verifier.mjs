@@ -19,10 +19,12 @@ function readSecret(prompt) {
   });
   return new Promise((resolve) => {
     rl.once('line', (line) => {
+      // Resolver antes do close: `rl.close()` emite 'close' de forma síncrona, e o resolve('') abaixo venceria.
+      resolve(line);
       rl.close();
       process.stderr.write('\n');
-      resolve(line);
     });
+    // Só vale quando nenhuma linha chegou (stdin encerrado vazio): a senha vazia é recusada adiante.
     rl.once('close', () => resolve(''));
   });
 }
