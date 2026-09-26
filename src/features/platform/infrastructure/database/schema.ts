@@ -41,6 +41,23 @@ export interface AppAuditLog {
   role: string;
 }
 
+export interface AppAuthorizationGrant {
+  basis: string;
+  commands: string[];
+  created_at: Timestamp;
+  granted_by_user_id: string;
+  granted_role: string;
+  grantee_party_id: string;
+  id: string;
+  operation_id: string;
+  revocation_basis: string | null;
+  revoked_at: Timestamp | null;
+  scope_id: string;
+  scope_type: string;
+  valid_from: Timestamp;
+  valid_until: Timestamp;
+}
+
 export interface AppIdempotencyRecord {
   command: string;
   created_at: Timestamp;
@@ -95,11 +112,23 @@ export interface AppOutboxReceipt {
   received_at: Timestamp;
 }
 
+export interface AppStaffRole {
+  basis: string;
+  granted_at: Timestamp;
+  id: string;
+  revocation_basis: string | null;
+  revoked_at: Timestamp | null;
+  role: string;
+  user_id: string;
+}
+
 export interface DB {
   'app.audit_log': AppAuditLog;
+  'app.authorization_grant': AppAuthorizationGrant;
   'app.idempotency_record': AppIdempotencyRecord;
   'app.notification': AppNotification;
   'app.operation': AppOperation;
   'app.outbox': AppOutbox;
   'app.outbox_receipt': AppOutboxReceipt;
+  'app.staff_role': AppStaffRole;
 }

@@ -37,5 +37,9 @@ CREATE OR REPLACE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql STABLE AS $$
   )::jsonb
 $$;
 
+-- Usuários do Supabase Auth: só a coluna que as funções de operação consultam (W2, `app.assign_staff_role`). No
+-- Supabase real a tabela é do GoTrue e tem muito mais colunas.
+CREATE TABLE IF NOT EXISTS auth.users (id uuid PRIMARY KEY);
+
 GRANT USAGE ON SCHEMA auth, extensions TO anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION auth.uid(), auth.role(), auth.jwt() TO anon, authenticated, service_role;
