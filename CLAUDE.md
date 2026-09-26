@@ -153,6 +153,11 @@ always keep it updated:**
   numbered waves with explicit dependencies, each classified as sequential or
   parallelizable (parallel waves can run as subagents in isolated worktrees).
   The NOTES.md roadmap table mirrors this plan.
+- **Subagents (Luxtory).** Parallelize only for a real time gain on independent tasks — never for simple or strongly
+  sequential work. The main agent owns architecture, integration and commits, and exclusively edits migrations,
+  `openapi.yaml`/`asyncapi.yaml`, the command registry, `package.json`, `vercel.json` and `CHANGELOG.md`. Never
+  parallelize edits to the same files; parallel implementation only with non-overlapping ownership in isolated
+  worktrees. During implementation prefer targeted tests; full gates at checkpoints and at wave close.
 - **API-First.** REST contracts in `docs/api/openapi.yaml`, async/event
   contracts in `docs/api/asyncapi.yaml`. Update the contract BEFORE touching
   any handler.
