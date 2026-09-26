@@ -90,6 +90,36 @@ test('[TECH-050] staff entra com código e TOTP (AAL2) e chega ao Admin; axe 0 e
   await expect(page).toHaveURL(/\/entrar$/);
 });
 
+test('[REQ-014] Admin logado chama a API pelo navegador: sessão aceita, e na W2 nenhum grant é criável', async ({
+  page,
+}) => {
+  await signIn(page, STAFF_EMAIL);
+  await expect(page).toHaveURL(/\/admin$/);
+
+  // Mesma origem e cookies do navegador: a sessão emitida pela tela vale na rota da API.
+  const response = await page.evaluate(async () => {
+    const result = await fetch('/v1/admin/authorization-grants', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'idempotency-key': 'e2e-grant-1' },
+      body: JSON.stringify({
+        grantee_party_id: '00000000-0000-4000-8000-0000000000c1',
+        commands: ['formalize_acquisition'],
+        scope: { type: 'concept', id: 'concept-1' },
+        valid_from: '2026-09-01T00:00:00Z',
+        valid_until: '2026-10-01T00:00:00Z',
+        basis: 'Instrumento de teste',
+      }),
+    });
+    return { status: result.status, body: (await result.json()) as { code: string } };
+  });
+
+  // D-W2-1: nenhuma operação é concedível na W2 → recusa de validação, nunca 401/500.
+  expect(response).toEqual({
+    status: 400,
+    body: expect.objectContaining({ code: 'ERR_VALIDATION' }),
+  });
+});
+
 test('[TECH-050] sessão AAL1 não alcança o Admin: volta ao segundo fator', async ({ page }) => {
   await page.goto('/entrar');
   await page.getByLabel('E-mail').fill(STAFF_EMAIL);

@@ -14,9 +14,22 @@ export const TEST_SESSION_COOKIE = 'lx-test-session';
 
 const SESSION_SECONDS = 3600;
 const MS_PER_SECOND = 1000;
-const signingKey = randomBytes(32);
-// Fatores TOTP por usuário, em memória do processo (o servidor de E2E é um processo só).
-const factors = new Map<string, { readonly id: string; verified: boolean }>();
+
+interface TestAuthState {
+  readonly signingKey: Buffer;
+  /** Fatores TOTP por usuário, em memória do processo (o servidor de E2E é um processo só). */
+  readonly factors: Map<string, { readonly id: string; verified: boolean }>;
+}
+
+// Um estado por processo, não por módulo: o `next start` carrega este módulo em bundles separados (páginas e Server
+// Actions × route handlers); um token emitido num precisa valer no outro.
+const STATE_KEY = Symbol.for('luxtory.identity.testAuth');
+const shared = globalThis as typeof globalThis & { [STATE_KEY]?: TestAuthState };
+const state: TestAuthState = (shared[STATE_KEY] ??= {
+  signingKey: randomBytes(32),
+  factors: new Map(),
+});
+const { signingKey, factors } = state;
 
 const TEST_QR_CODE =
   'data:image/svg+xml;utf8,' +

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { AuthCookie, CookieJar } from '@/features/identity/infrastructure/auth/cookie-jar';
 import {
   createTestAuthGateway,
@@ -83,5 +83,16 @@ describe('autenticação de teste (ADR-0005 §7)', () => {
     await expect(createTestAuthGateway(memoryJar(), clock).startTotpEnrollment()).rejects.toThrow(
       /without a session/,
     );
+  });
+});
+
+describe('estado da autenticação de teste por processo (bundles do Next)', () => {
+  it('[ADR-0005] token emitido por uma instância do módulo vale em outra (páginas × route handlers)', async () => {
+    vi.resetModules();
+    const other = await import('@/features/identity/infrastructure/auth/test-auth-gateway');
+    const token = issueTestToken(testUserId('staff@luxtory.test'), 'aal2', clock);
+
+    expect(other.verifyTestToken).not.toBe(verifyTestToken);
+    expect(other.verifyTestToken(token, clock)).toMatchObject({ assurance: 'aal2' });
   });
 });
