@@ -8,8 +8,6 @@ info:
     `docs/specs/canonical/03-technical-spec.md`); falha de entrega nunca desfaz o domínio. Não há broker externo:
     o disparo ocorre após o commit e por varredura periódica (ADR-0004). Os canais entram a partir da W1.
     Update this file **before** producing or consuming a new event.
-  license:
-    name: MIT
 
 defaultContentType: application/json
 
