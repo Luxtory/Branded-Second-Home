@@ -21,7 +21,10 @@ Regras:
 | `VERCEL_ENV` | Vercel (sistema, só leitura) | `platform`: `/lab` responde 404 com `production` | W0 |
 | `VERCEL_GIT_COMMIT_SHA` | Vercel (sistema, só leitura) | `platform`: `GET /v1/version` | W0 |
 | `DATABASE_URL` | Vercel — **só Production** (Sensitive). Previsto antes também para Preview e Development; a decisão D3 ([ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md)) proíbe credencial do banco canônico fora de Production | papel de aplicação via Supavisor em modo transação (ADR-0006) | W1 |
-| `CRON_SECRET` | Vercel (Sensitive) | autenticação dos endpoints `/api/jobs/*` | W1 |
+| `CRON_SECRET` | Vercel — **só Production** (Sensitive; D3, ADR-0007) | autenticação dos endpoints `/api/jobs/*`, comparada em tempo constante; ausente → 503 | W1 |
+| `COMMAND_MAX_ATTEMPTS` | Vercel — só Production | tentativas de um command em deadlock/`lock_timeout` (TECH-053); valor no runbook `docs/how-to/operacao.md` (TECH-001) | W1 |
+| `COMMAND_LOCK_TIMEOUT_MS` | Vercel — só Production | `lock_timeout` da transação do command; valor no runbook (TECH-001) | W1 |
+| `OUTBOX_BATCH_SIZE` | Vercel — só Production | eventos por execução do job `outbox`; valor no runbook (TECH-001) | W1 |
 | `NEXT_PUBLIC_SUPABASE_URL` | Vercel | Supabase Auth | W2 |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Vercel | Supabase Auth (chave pública) | W2 |
 | `AUTH_MODE` | local e CI | `supabase` ou `test`; `test` é recusado quando `VERCEL_ENV` existe (ADR-0005) | W2 |

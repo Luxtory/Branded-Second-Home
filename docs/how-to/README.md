@@ -15,6 +15,8 @@ solve a specific problem. They are recipes, not tutorials.
 ## Index
 
 - [`loops.md`](loops.md) — how to run Claude Code in loops (turn/goal/time/proactive)
+- [`operacao.md`](operacao.md) — runbook da plataforma: valores de operação (TECH-001), segredos, preparação da W1 em
+  produção, rotação e falhas
 
 [CUSTOMIZE] List guides as you add them, e.g.:
 
