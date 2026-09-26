@@ -69,6 +69,10 @@ Design System Lab e o harness de testes com PostgreSQL real (TECH-110).
 - Variável de ambiente fora do catálogo (inclusive `ULTRONPX_PURCHASE_EMAIL`) → ignorada: nem exigida nem removida.
 - `/lab/../…`, segmentos iniciados por `.`, pastas ou extensões fora da lista, arquivo inexistente → 404.
 - Nenhuma migration em `migrations/` → `db:check`, `db:migrate` e o setup de testes seguem sem erro.
+- "Produção" do `/lab` = `VERCEL_ENV=production`, lido a cada request: é o valor que a Vercel injeta, em runtime, no
+  deployment com target Production (o job `deploy` da CI usa `--prod`). `next build && next start` local não define
+  `VERCEL_ENV` e por isso mantém o Lab, como num preview. Conferido com o mesmo build: `VERCEL_ENV=production` → 404 em
+  `/lab`, no HTML e nos assets; `preview` → Lab disponível.
 
 ## 8. Security considerations
 
