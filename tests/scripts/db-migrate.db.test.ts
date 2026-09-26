@@ -30,15 +30,20 @@ function variant(edit: (url: URL) => void) {
 
 describe('db:migrate — preflight de DATABASE_URL_MIGRATIONS', () => {
   it('conexão válida: passa, segue para as migrations e não altera o banco', async () => {
+    // O banco de teste já tem todas as migrations do repositório (desde a W1): nada pendente, nada muda.
+    const applied = () =>
+      db.pool.query<{ version: string }>(
+        'SELECT version FROM dbmate.schema_migrations ORDER BY version',
+      );
+    const before = (await applied()).rows;
+
     const { status, output } = migrate(db.url);
-    const { rows } = await db.pool.query<{ n: number }>(
-      "SELECT count(*)::int AS n FROM pg_namespace WHERE nspname = 'dbmate'",
-    );
 
     expect(status).toBe(0);
     expect(output).toContain('preflight ok');
-    expect(output).toContain('No migration files');
-    expect(rows[0]?.n).toBe(0);
+    expect(output).toContain('Pending: 0');
+    expect(before.length).toBeGreaterThan(0);
+    expect((await applied()).rows).toEqual(before);
   });
 
   it.each([

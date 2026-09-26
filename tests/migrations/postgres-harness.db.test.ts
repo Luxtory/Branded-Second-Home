@@ -12,11 +12,12 @@ const UNIQUE_VIOLATION = '23505';
 const BARRIER_TIMEOUT_MS = 5_000;
 const BARRIER_POLL_MS = 20;
 
-// Um banco clonado por teste: nenhum teste depende do estado deixado por outro.
+// Um banco vazio por teste (sem as migrations do repositório): as migrations de fixture são as únicas aplicadas, e
+// nenhum teste depende do estado deixado por outro.
 let db: TestDatabase;
 
 beforeEach(async () => {
-  db = await createTestDatabase();
+  db = await createTestDatabase({ migrated: false });
 });
 afterEach(async () => {
   await db.drop();
@@ -82,7 +83,7 @@ describe('PostgreSQL real (ADR-0005)', () => {
   it('[TECH-110] db:check aceita down completo e recusa down que deixa objetos para trás', async () => {
     await expect(checkMigrations(db.url, FIXTURE_MIGRATIONS)).resolves.toBe(FIXTURE_MIGRATION_COUNT);
 
-    const other = await createTestDatabase();
+    const other = await createTestDatabase({ migrated: false });
     try {
       const attempt = checkMigrations(other.url, INCOMPLETE_DOWN_MIGRATIONS);
       await expect(attempt).rejects.toThrow(MigrationCheckError);
@@ -126,7 +127,9 @@ describe('PostgreSQL real (ADR-0005)', () => {
 
   it('auth.uid() lê o sub das claims como no Supabase (compatibilidade para RLS)', async () => {
     const sub = '6c1f3a52-8f0e-4b8f-9a55-2f6a1c7e9d10';
-    const client = await db.pool.connect();
+    // A compatibilidade com o Supabase está no banco-modelo, não no banco vazio das fixtures.
+    const migrated = await createTestDatabase();
+    const client = await migrated.pool.connect();
     try {
       await client.query('BEGIN');
       await client.query("SELECT set_config('request.jwt.claims', $1, true)", [
@@ -139,6 +142,7 @@ describe('PostgreSQL real (ADR-0005)', () => {
       await client.query('ROLLBACK');
     } finally {
       client.release();
+      await migrated.drop();
     }
   });
 });

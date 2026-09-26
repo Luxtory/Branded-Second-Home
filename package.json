@@ -21,11 +21,15 @@
     "db:new": "node scripts/db-new.mjs",
     "db:check": "node scripts/db-check.mjs",
     "db:migrate": "node scripts/db-migrate.mjs",
+    "db:types": "node scripts/db-types.mjs",
+    "db:password-verifier": "node scripts/db-password-verifier.mjs",
     "trace": "node scripts/trace.mjs",
     "verify": "npm run lint && npm run typecheck && npm run coverage && npm run test:ds && npm run db:check && npm run build"
   },
   "dependencies": {
+    "kysely": "0.29.6",
     "next": "16.3.6",
+    "pg": "8.23.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "zod": "4.6.5"
@@ -44,7 +48,7 @@
     "embedded-postgres": "17.10.0-beta.17",
     "eslint": "9.39.5",
     "eslint-config-next": "16.3.6",
-    "pg": "8.23.0",
+    "kysely-codegen": "0.20.0",
     "prettier": "3.9.9",
     "typescript": "6.0.3",
     "vitest": "5.0.2",
