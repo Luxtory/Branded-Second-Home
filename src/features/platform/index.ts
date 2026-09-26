@@ -2,10 +2,18 @@
 // módulos de `presentation/` diretamente.
 export type { Clock } from './application/clock';
 export { systemClock } from './infrastructure/system-clock';
-export { loadEnv, EnvValidationError, type Env, type EnvSource } from './infrastructure/env';
+export {
+  loadEnv,
+  loadRuntimeConfig,
+  ConfigurationMissingError,
+  EnvironmentRestrictionError,
+  EnvValidationError,
+  type Env,
+  type EnvSource,
+} from './infrastructure/env';
 export { createLogger, rootLogger, type Logger, type LogFields } from './infrastructure/logger';
 export { withRoute, type RouteContext } from './presentation/route';
-export { CORRELATION_HEADER } from './presentation/correlation';
+export { CORRELATION_HEADER, resolveCorrelationId } from './presentation/correlation';
 
 // W1 — núcleo de commands (TECH-054), erros (TECH-056), outbox (TECH-091) e banco (ADR-0006).
 export type { JsonObject, JsonValue } from './domain/json';
@@ -21,9 +29,16 @@ export type {
   AuditRecord,
   AuthorizationDecision,
   CommandGuard,
+  CommandScope,
   OutboxEventDraft,
 } from './application/commands/ports';
-export { commandRegistry, type CommandSpec, type Module } from './application/commands/registry';
+export {
+  commandRegistry,
+  CommandRegistry,
+  type Authority,
+  type CommandSpec,
+  type Module,
+} from './application/commands/registry';
 export {
   createCommandExecutor,
   type CommandContext,
@@ -43,3 +58,11 @@ export { createPostgresCommandStore } from './infrastructure/commands/postgres-c
 export { recordNotification } from './infrastructure/notifications/notification-repository';
 export { errorResponse } from './presentation/errors';
 export { scheduleOutboxDispatch } from './presentation/outbox-dispatch';
+
+// W2 — acesso administrativo: executor de produção, leitura sob RLS, auditoria de leitura, CSRF e respostas HTTP.
+export { createProductionExecutor } from './infrastructure/commands/production-executor';
+export { withUserRead, type VerifiedClaims } from './infrastructure/database/user-read';
+export { recordAdminRead, type AdminReadRecord } from './infrastructure/audit/admin-read';
+export { isSameOrigin } from './presentation/origin';
+export { commandResponse, idempotencyKey } from './presentation/commands';
+export { unavailableKeys } from './presentation/unavailable';

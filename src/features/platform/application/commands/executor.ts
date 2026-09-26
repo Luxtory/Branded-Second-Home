@@ -15,6 +15,7 @@ import { idempotencyScope, type Actor } from './actor';
 import type {
   AuditRecord,
   CommandGuard,
+  CommandScope,
   CommandStore,
   IdempotencyEntry,
   OperationDraft,
@@ -45,6 +46,8 @@ export interface CommandHandler<I, R extends JsonValue, Tx> {
   readonly command: string;
   readonly input: ZodType<I>;
   residenceId?(input: I): string | null;
+  /** Objeto do command, para o guard conferir o escopo de um `authorization_grant` (REQ-014). */
+  scope?(input: I): CommandScope;
   execute(context: CommandContext<I, Tx>): Promise<R>;
 }
 
@@ -131,7 +134,8 @@ async function execute<I, R extends JsonValue, Tx>(
   if (!IDEMPOTENCY_KEY.test(request.idempotencyKey)) return early('ERR_VALIDATION');
   const parsed = handler.input.safeParse(request.input);
   if (!parsed.success) return early('ERR_VALIDATION');
-  const decision = await deps.guard.authorize(spec, request.actor, parsed.data);
+  const scope = handler.scope?.(parsed.data) ?? null;
+  const decision = await deps.guard.authorize(spec, request.actor, parsed.data, scope);
   if (!decision.allowed) return early('ERR_PERMISSION');
 
   const base = {
