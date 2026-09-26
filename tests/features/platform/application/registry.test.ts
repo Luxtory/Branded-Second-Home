@@ -6,7 +6,9 @@ import {
   CommandRegistry,
   CommandRegistryError,
   commandRegistry,
+  CRITICAL_COMMANDS,
   MODULES,
+  NON_CRITICAL_OPERATIONS,
   type Authority,
   type CommandSpec,
   type MembershipRule,
@@ -68,6 +70,27 @@ describe('registro de commands (TECH-051, TECH-011)', () => {
 
     expect(registered).toEqual(tech051Table());
     expect(critical).toHaveLength(29);
+  });
+
+  it('[TECH-051] CRITICAL_COMMANDS é exatamente a tabela fechada; operações não críticas ficam fora dela', () => {
+    const table = tech051Table();
+
+    expect(
+      new Map(CRITICAL_COMMANDS.map((spec) => [spec.name, [spec.authority, spec.membership]])),
+    ).toEqual(table);
+    expect(CRITICAL_COMMANDS.every((spec) => spec.critical)).toBe(true);
+    expect(NON_CRITICAL_OPERATIONS.every((spec) => !spec.critical)).toBe(true);
+    expect(NON_CRITICAL_OPERATIONS.filter((spec) => table.has(spec.name))).toEqual([]);
+    expect(commandRegistry.list()).toEqual([...CRITICAL_COMMANDS, ...NON_CRITICAL_OPERATIONS]);
+  });
+
+  it('[REQ-014] na W2 o registro não tem operação concedível a parceiros (grantee)', () => {
+    expect(commandRegistry.grantable()).toEqual([]);
+    expect(commandRegistry.get('grant_authorization')).toMatchObject({
+      module: 'identity',
+      authority: 'admin',
+      critical: false,
+    });
   });
 
   it('[TECH-011] todo command pertence a um módulo do 03', () => {

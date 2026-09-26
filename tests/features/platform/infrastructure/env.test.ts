@@ -69,3 +69,15 @@ describe('loadRuntimeConfig (TECH-001)', () => {
     expect(attempt).not.toThrow(/curto-demais-segredo/);
   });
 });
+
+describe('AUTH_MODE e Auth (W2, ADR-0005 §7, ADR-0008)', () => {
+  it('[ADR-0005] AUTH_MODE=test só fora da Vercel; com VERCEL_ENV falha nomeando AUTH_MODE', () => {
+    expect(loadEnv({ AUTH_MODE: 'test' })).toEqual({ AUTH_MODE: 'test' });
+    expect(loadEnv({ AUTH_MODE: 'supabase', VERCEL_ENV: 'production' })).toEqual({
+      AUTH_MODE: 'supabase',
+      VERCEL_ENV: 'production',
+    });
+    expect(() => loadEnv({ AUTH_MODE: 'test', VERCEL_ENV: 'preview' })).toThrow(/AUTH_MODE/);
+    expect(() => loadEnv({ AUTH_MODE: 'outro' })).toThrow(EnvValidationError);
+  });
+});
