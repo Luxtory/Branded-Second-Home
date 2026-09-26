@@ -224,7 +224,8 @@ explícito que nomeia a chave; nenhum default.
 - Consumidor que falha: `attempts + 1`, `last_error`, evento pendente; a operação continua `committed`.
 - Duas varreduras do outbox em paralelo: cada evento é processado por uma; efeito do consumidor uma vez só.
 - `CRON_SECRET` ausente: `/api/jobs/*` responde 503 e registra a chave ausente; segredo errado → 401.
-- `DATABASE_URL` com `sslmode` diferente de `verify-full` (Supabase) ou `disable` (PostgreSQL local) → recusada.
+- `DATABASE_URL` com `sslmode` diferente de `verify-full` (Supabase) ou `disable` (PostgreSQL local) → recusada, sem
+  abrir conexão; em `/api/jobs/*`, 503 `ERR_UNAVAILABLE` com `DATABASE_URL` só como nome da chave no log.
 
 ### W1.7 Security considerations
 

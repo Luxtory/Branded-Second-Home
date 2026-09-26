@@ -48,8 +48,9 @@ Production da Vercel**, nunca em Preview ou Development.
    `gh run rerun <id do run> --job <id do job deploy>`. Deploy local de produção é proibido.
 7. Confira o job sem deixar o segredo no histórico do shell: `read -rs CRON_SECRET` (cole o valor), depois
    `curl -s -H "Authorization: Bearer $CRON_SECRET" https://branded-second-home.vercel.app/api/jobs/outbox`. Esperado:
-   `{"job":"outbox","result":{"delivered":0,"failed":0}}`. Um `503` traz nos logs da Vercel a chave ausente
-   (`job endpoint unavailable` ou `job unavailable`, campo `keys`).
+   `{"job":"outbox","result":{"delivered":0,"failed":0}}`. Um `503` traz nos logs da Vercel a chave ausente ou
+   inválida (`job endpoint unavailable` ou `job unavailable`, campo `keys`) — por exemplo, `DATABASE_URL` sem
+   `sslmode=verify-full` ou com a senha sem codificação para URL.
 
 ## Rotacionar segredos
 

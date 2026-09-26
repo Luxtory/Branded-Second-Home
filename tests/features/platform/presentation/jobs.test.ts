@@ -1,6 +1,10 @@
+import { randomUUID } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
 import { JobRegistry } from '@/features/platform/application/jobs/registry';
-import { DatabaseEnvironmentError } from '@/features/platform/infrastructure/database/connection';
+import {
+  DatabaseEnvironmentError,
+  parseDatabaseUrl,
+} from '@/features/platform/infrastructure/database/connection';
 import { ConfigurationMissingError } from '@/features/platform/infrastructure/env';
 import { createJobRoute } from '@/features/platform/presentation/jobs';
 import { withRoute } from '@/features/platform/presentation/route';
@@ -83,6 +87,24 @@ describe('GET /api/jobs/{job} (TECH-090)', () => {
     expect((await missing.response).status).toBe(503);
     expect(missing.logged()).toContain('OUTBOX_BATCH_SIZE');
     expect((await preview.response).status).toBe(503);
+  });
+
+  it('[TECH-001] DATABASE_URL malformada → 503 ERR_UNAVAILABLE; o log nomeia só a chave, nunca o valor', async () => {
+    // Mesmo erro da 1ª execução em produção (2026-09-26): a URL chega sem `sslmode=verify-full`.
+    const password = `senha-${randomUUID()}`;
+    const { response, logged } = call({
+      outbox: () => {
+        parseDatabaseUrl(`postgresql://luxtory_app.ref:${password}@pooler.example:6543/postgres`);
+        return Promise.resolve({ delivered: 0, failed: 0 });
+      },
+    });
+    const result = await response;
+
+    expect(result.status).toBe(503);
+    expect(await result.json()).toMatchObject({ code: 'ERR_UNAVAILABLE' });
+    expect(logged()).toContain('"keys":["DATABASE_URL"]');
+    expect(logged()).not.toContain(password);
+    expect(logged()).not.toContain('pooler.example');
   });
 
   it('erro inesperado do job vira 500 no schema Error', async () => {
