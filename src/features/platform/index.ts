@@ -1,6 +1,7 @@
 // Superfície pública do módulo platform (TECH-011) para os outros slices. O shell (`src/app/`) importa os
 // módulos de `presentation/` diretamente.
 export type { Clock } from './application/clock';
+export type { LogPort } from './application/log';
 export { systemClock } from './infrastructure/system-clock';
 export {
   loadEnv,

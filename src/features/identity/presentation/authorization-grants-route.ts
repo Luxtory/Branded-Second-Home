@@ -12,7 +12,9 @@ import {
   unavailableKeys,
   withRoute,
   type Clock,
+  type CommandRegistry,
   type Database,
+  type LogPort,
   type EnvSource,
   type RouteContext,
 } from '@/features/platform';
@@ -30,13 +32,16 @@ export interface AdminCommandRouteDependencies {
   readonly source?: EnvSource;
   readonly clock?: Clock;
   readonly database?: () => Database;
+  readonly registry?: CommandRegistry;
+  /** Disparo do outbox depois de um commit novo; padrão: `after()` do Next (TECH-091). */
+  readonly afterCommit?: (log: LogPort) => void;
 }
 
 const HTTP_CREATED = 201;
 
-// A sessão já foi renovada pelo `proxy.ts`; aqui os cookies só são lidos.
+// A sessão já foi renovada pelo `proxy.ts`; aqui os cookies só são lidos. Só os headers: o corpo fica intacto.
 function requestCookies(request: Request): CookieJar {
-  const cookies = new NextRequest(request).cookies;
+  const cookies = new NextRequest(request.url, { headers: request.headers }).cookies;
   return { getAll: () => cookies.getAll(), setAll: () => undefined };
 }
 
@@ -56,6 +61,8 @@ export function createAuthorizationGrantRoute({
   source,
   clock = systemClock,
   database = () => getDatabase(source),
+  registry = commandRegistry,
+  afterCommit,
 }: AdminCommandRouteDependencies = {}) {
   return async (request: Request, { correlationId, log }: RouteContext) => {
     if (!isSameOrigin(request)) return errorResponse('ERR_PERMISSION', correlationId);
@@ -71,17 +78,23 @@ export function createAuthorizationGrantRoute({
         clock,
       });
       const handler = createGrantAuthorizationHandler({
-        registry: commandRegistry,
+        registry,
         grants: postgresGrantWriter,
         newId: randomUUID,
       });
-      const outcome = await createProductionExecutor({ guard, log, source }).execute(handler, {
+      const executor = createProductionExecutor({ guard, log, source, database: database() });
+      const outcome = await executor.execute(handler, {
         actor: { kind: 'user', userId: session.userId, actingPartyId: null, role: 'admin' },
         idempotencyKey: idempotencyKey(request),
         correlationId,
         input: body.value,
       });
-      return commandResponse(outcome, { correlationId, successStatus: HTTP_CREATED, log });
+      return commandResponse(outcome, {
+        correlationId,
+        successStatus: HTTP_CREATED,
+        log,
+        ...(afterCommit === undefined ? {} : { afterCommit }),
+      });
     } catch (error) {
       const keys = unavailableKeys(error);
       if (keys === null) throw error;
