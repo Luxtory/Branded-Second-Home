@@ -30,6 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (TECH-051); códigos de erro TECH-056 com causa funcional em pt-BR (REQ-098) no contrato OpenAPI; job `outbox` em
   `GET /api/jobs/{job}` (Vercel Cron, `CRON_SECRET`); papel de aplicação `luxtory_app` com TLS verify-full; runbook
   `docs/how-to/operacao.md`. ADR-0007 (sem staging antes do lançamento — decisão D3 adiada).
+- W2 — acesso administrativo: login da equipe Luxtory por código enviado por e-mail (`/entrar`) com segundo fator
+  TOTP obrigatório (`/entrar/mfa`, AAL2) e estrutura do Admin (`/admin`); papéis Admin e Super Admin sem hierarquia,
+  atribuídos e revogados só pelo runbook, com auditoria; guard que nega por padrão (TECH-050/051);
+  `authorization_grant` revogável e `POST /v1/admin/authorization-grants` com CSRF por origem (REQ-014); leituras
+  sob RLS e leitura administrativa auditada. Auth real só em Production (ADR-0008; reavaliação da D3 no ADR-0007).
 
 ### Changed
 - ...

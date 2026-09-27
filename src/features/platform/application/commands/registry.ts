@@ -15,9 +15,19 @@ export const MODULES = [
 ] as const;
 export type Module = (typeof MODULES)[number];
 
-/** Coluna "Autoridade" do TECH-051. Detentor, solicitante e ofertante são Titulares em relação ao objeto. */
+/**
+ * Coluna "Autoridade" do TECH-051. Detentor, solicitante e ofertante são Titulares em relação ao objeto. `grantee`:
+ * operação não crítica que uma party só executa por `authorization_grant` (TECH-051, REQ-014).
+ */
 export type Authority =
-  'titular' | 'holder' | 'requester' | 'offerer' | 'admin' | 'admin_or_super_admin' | 'super_admin';
+  | 'titular'
+  | 'holder'
+  | 'requester'
+  | 'offerer'
+  | 'admin'
+  | 'admin_or_super_admin'
+  | 'super_admin'
+  | 'grantee';
 
 /** Coluna "Membership" do TECH-051: `not_applicable` = "—". */
 export type MembershipRule = 'eligible' | 'not_required' | 'not_applicable';
@@ -77,6 +87,20 @@ export const CRITICAL_COMMANDS: readonly CommandSpec[] = [
   critical('change_published_prl', 'pricing', 'super_admin', 'not_applicable'),
 ];
 
+/**
+ * Operações não críticas do REQ-095: o TECH-051 as submete ao mesmo guard, base registrada e auditoria, sem efeito
+ * econômico novo. Registro separado — `CRITICAL_COMMANDS` continua exatamente a tabela fechada do TECH-051.
+ */
+export const NON_CRITICAL_OPERATIONS: readonly CommandSpec[] = [
+  {
+    name: 'grant_authorization',
+    module: 'identity',
+    authority: 'admin',
+    membership: 'not_applicable',
+    critical: false,
+  },
+];
+
 export class CommandRegistryError extends Error {
   constructor(message: string) {
     super(message);
@@ -107,6 +131,15 @@ export class CommandRegistry {
   list(): readonly CommandSpec[] {
     return [...this.specs.values()];
   }
+
+  /** Operações que um `authorization_grant` pode listar (autoridade `grantee`). */
+  grantable(): readonly CommandSpec[] {
+    return this.list().filter((spec) => spec.authority === 'grantee');
+  }
 }
 
-export const commandRegistry = new CommandRegistry(CRITICAL_COMMANDS);
+/** Registro do executor: a tabela fechada do TECH-051 composta com as operações não críticas. */
+export const commandRegistry = new CommandRegistry([
+  ...CRITICAL_COMMANDS,
+  ...NON_CRITICAL_OPERATIONS,
+]);

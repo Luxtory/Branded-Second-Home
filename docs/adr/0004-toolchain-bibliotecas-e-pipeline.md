@@ -52,7 +52,7 @@ própria do arquivo. Usá-lo junto do `fonts.css` duplicaria downloads; usá-lo 
 | Tema | Decisão | Justificativa |
 |---|---|---|
 | Observabilidade | Logger JSON do módulo `platform` (uma linha por evento, `correlation_id` do header `x-correlation-id` ou UUID); `withRoute` nos route handlers; `onRequestError` em `src/instrumentation.ts` para o resto; métricas e erros não tratados pela Observability nativa da Vercel | sem fornecedor extra (ADR-0002); PII fora de logs (TECH-100) |
-| E-mail | Só o do Supabase Auth (login por código). E-mail transacional aguarda a decisão D4; notificações ficam dentro do app | REQ-097 não exige canal de e-mail |
+| E-mail | Só o do Supabase Auth (login por código). E-mail transacional aguarda a decisão D4; notificações ficam dentro do app. **Atualização 2026-09-27**: D4 resolvida — o Supabase Auth envia pelo SMTP do **Resend** (credencial só no Supabase); e-mail transacional pela aplicação continua fora de escopo até um requisito pedir | REQ-097 não exige canal de e-mail |
 | Storage | Não usado enquanto nenhum requisito armazenar arquivo; quando usado, bucket privado | TECH-100 |
 | Contratos | Um `docs/api/openapi.yaml` e um `docs/api/asyncapi.yaml`; teste de contrato com Ajv | API-First, sem divisão por recurso |
 | Outbox | Disparo após o commit com `after()` (`@vercel/functions`) + varredura por cron (W1) | TECH-091 sem worker dedicado |
@@ -101,6 +101,11 @@ Execução da W1 (2026-09-26): `kysely` 0.29.6 e `kysely-codegen` 0.20.0 instala
 dependência de runtime (o app conecta como `luxtory_app`). `@vercel/functions` **não** foi instalado: o `after()`
 do próprio `next/server` agenda o disparo do outbox, e a versão prevista (3.9.9, de 2026-09-22) ainda estava dentro
 do `cooldown` de 7 dias.
+
+Execução da W2 (2026-09-26): `@supabase/ssr` 0.12.7 como previsto; `@supabase/supabase-js` **2.116.0** em vez de
+2.117.2 — a 2.117.2 (e as 2.117.x) foram publicadas depois de 2026-09-19 e ainda estavam dentro do `cooldown` de 7
+dias; a 2.116.0 atende ao `peerDependencies` do `@supabase/ssr` (`^2.114.0`). O cliente só é usado pelo namespace
+`.auth`, no servidor ([ADR-0008](0008-autenticacao-e-autorizacao-administrativa.md)).
 
 ### Arquivo `activate-ultronpx.mjs`
 

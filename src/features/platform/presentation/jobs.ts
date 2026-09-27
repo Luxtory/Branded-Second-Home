@@ -1,19 +1,11 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import type { JobRegistry } from '../application/jobs/registry';
 import type { LogPort } from '../application/log';
-import {
-  DatabaseConfigError,
-  DatabaseEnvironmentError,
-} from '../infrastructure/database/connection';
-import {
-  ConfigurationMissingError,
-  EnvValidationError,
-  loadRuntimeConfig,
-  type EnvSource,
-} from '../infrastructure/env';
+import { loadRuntimeConfig, type EnvSource } from '../infrastructure/env';
 import { createJobRegistry } from '../infrastructure/jobs/job-registry';
 import { errorResponse } from './errors';
 import { withRoute, type RouteContext } from './route';
+import { unavailableKeys } from './unavailable';
 
 export interface JobRouteParams {
   readonly params: Promise<{ job: string }>;
@@ -29,16 +21,6 @@ const digest = (value: string) => createHash('sha256').update(value).digest();
 
 function isAuthorized(header: string | null, secret: string): boolean {
   return header !== null && timingSafeEqual(digest(header), digest(`Bearer ${secret}`));
-}
-
-// Configuração ausente ou inválida bloqueia a função com erro explícito (TECH-001) e nomeia só as chaves.
-function unavailableKeys(error: unknown): readonly string[] | null {
-  if (error instanceof ConfigurationMissingError) return error.missingKeys;
-  if (error instanceof EnvValidationError) return error.invalidKeys;
-  if (error instanceof DatabaseEnvironmentError) return ['VERCEL_ENV'];
-  // URL presente porém malformada (ex.: sem `sslmode=verify-full`): configuração inválida, não erro interno.
-  if (error instanceof DatabaseConfigError) return ['DATABASE_URL'];
-  return null;
 }
 
 /** `GET /api/jobs/{job}` (OpenAPI `runJob`): Vercel Cron com `Authorization: Bearer <CRON_SECRET>`. */
