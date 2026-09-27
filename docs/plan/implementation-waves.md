@@ -55,7 +55,7 @@
 | 0 | Fundação: scaffold, harness TECH-110, CI/CD, ADRs 0004–0006, `## Commands` | platform | — | — | — | R1·base | ✅ |
 | 1 | Núcleo de commands: operação, idempotência, auditoria, outbox, jobs, erros | platform | REQ-015, REQ-098 | 0 | — | R1·base | ✅ |
 | 2 | Acesso administrativo: Auth, MFA, staff, guard, grants, RLS | identity, admin | REQ-014 | 1 | — | R1·base | ✅ |
-| 2B | Fundação de UI de produto (mobile-first): app shell, layout focado, padrão de página e estados | design-system, admin, identity (presentation) | — | 2 | — | R1·base | ⬜ |
+| 2B | Fundação de UI de produto (mobile-first): app shell, layout focado, padrão de página e estados | design-system, admin, identity (presentation) | — | 2 | — | R1·base | ✅ |
 | 3 | Catálogo + Admin | catalog, admin | REQ-020, REQ-027 | 2B | — | R1 | ⬜ |
 | 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3 | — | R1 | ⬜ |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ |
@@ -337,6 +337,10 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   Playwright WebKit do shell e do login · testes do DS verdes e nenhum `max-width` em media query · E2E de login, MFA
   e acesso ao Admin sem regressão.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and the W2B acceptance criteria in docs/plan/implementation-waves.md pass, stop after 4 tries`
+- **Status**: ✅ concluída em 2026-09-27 — PR #16 (squash `9d6e3c7`): ADR-0009, App Shell (`lx-app`), cabeçalho e
+  seção de página, layout focado (`lx-focused`) para login, segundo fator e estados, navegação `night` aprovada no
+  checkpoint 1, smoke Playwright WebKit na CI; `migrate` sem pendência (`Applied: 7 / Pending: 0`); Production
+  verificada (`/entrar`, `/entrar/mfa`, `/admin` e os 6 logos por chave do manifest), sem mudança no banco.
 
 ### Wave 3 — Catálogo + Admin
 
