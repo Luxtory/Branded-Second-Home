@@ -19,11 +19,20 @@ function collectConsoleErrors(page: Page): string[] {
   return errors;
 }
 
-/** Erros de console conferidos antes do axe: ele gera 404 falsos ao reler as folhas de estilo (NOTES §4). */
+/**
+ * Erros de console conferidos antes do axe: ele gera 404 falsos ao reler as folhas de estilo (NOTES §4). O axe mede a
+ * página assentada: título aplicado (a metadata chega em streaming depois da navegação), ponteiro fora dos controles e
+ * nenhuma transição em curso — senão mede as cores intermediárias do hover.
+ */
 async function expectAccessible(page: Page, consoleErrors: readonly string[]) {
   expect(consoleErrors).toEqual([]);
+  await expect(page).toHaveTitle(/\S/);
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
+    await page.mouse.move(0, 0);
+    await page.waitForFunction(() =>
+      document.getAnimations().every((animation) => animation.playState !== 'running'),
+    );
     const { violations } = await new AxeBuilder({ page }).analyze();
     expect(violations.map((violation) => `${viewport.width}: ${violation.id}`)).toEqual([]);
   }
