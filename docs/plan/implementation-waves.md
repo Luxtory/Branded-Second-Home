@@ -27,7 +27,7 @@
 ### Regras de execução
 
 - Ordem de releases (`CLAUDE.md`): R1 → R2 → R3 → R4. Uma wave só começa depois da última wave do release
-  anterior, salvo paralelismo marcado. W0–W2 são a base do R1.
+  anterior, salvo paralelismo marcado. W0–W2 são a base do R1, com a W2B (fundação de UI de produto) antes da W3.
 - 1 wave = 1 branch `feat/w<n>-<slug>` = 1 PR (draft → CI verde → squash, Conventional Commits).
 - **Dona** de um ID = a wave que entrega o comportamento decisivo e o teste nomeado. Waves posteriores só
   acrescentam casos à mesma suíte.
@@ -54,8 +54,9 @@
 |------|-------------|----------|------------|------------|---------------|---------|--------|
 | 0 | Fundação: scaffold, harness TECH-110, CI/CD, ADRs 0004–0006, `## Commands` | platform | — | — | — | R1·base | ✅ |
 | 1 | Núcleo de commands: operação, idempotência, auditoria, outbox, jobs, erros | platform | REQ-015, REQ-098 | 0 | — | R1·base | ✅ |
-| 2 | Acesso administrativo: Auth, MFA, staff, guard, grants, RLS | identity, admin | REQ-014 | 1 | — | R1·base | ⬜ |
-| 3 | Catálogo + Admin | catalog, admin | REQ-020, REQ-027 | 2 | — | R1 | ⬜ |
+| 2 | Acesso administrativo: Auth, MFA, staff, guard, grants, RLS | identity, admin | REQ-014 | 1 | — | R1·base | ✅ |
+| 2B | Fundação de UI de produto (mobile-first): app shell, layout focado, padrão de página e estados | design-system, admin, identity (presentation) | — | 2 | — | R1·base | ⬜ |
+| 3 | Catálogo + Admin | catalog, admin | REQ-020, REQ-027 | 2B | — | R1 | ⬜ |
 | 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3 | — | R1 | ⬜ |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ |
 | 6 | Interesse — formulário público | ownership | — | 4, 5 | — | R1 | ⛔ P-3 |
@@ -300,6 +301,42 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   - `CRITICAL_COMMANDS` permanece exatamente a tabela fechada do TECH-051; operações não críticas (REQ-095) ficam em
     registro separado.
   - `@supabase/supabase-js` **2.116.0** em vez de 2.117.2 (cooldown de 7 dias do `.npmrc`; ADR-0004).
+- **Status**: ✅ concluída em 2026-09-27 — PR #14 (squash `3d9b6b2`) e PR #15 (`13befad`: cadastro do TOTP guiado em
+  três passos e "Reenviar código"); `migrate` aplicou `staff_role`, `authorization_grant` e `rls_reader_membership`;
+  1º login real em Production (código por e-mail + TOTP → `/admin` com Admin e Super Admin) validado pela Luxtory;
+  conferência só leitura: 1 fator TOTP verificado criado depois do deploy e nenhum não verificado, sessão AAL2,
+  2 `assign_staff_role` com `audit_log` correspondente, logs sem e-mail, código ou token.
+
+### Wave 2B — Fundação de UI de produto (mobile-first)
+
+- **Goal**: toda superfície de produto nasce mobile-first, com paridade funcional, sobre um shell e padrões únicos —
+  o Admin é o primeiro consumidor, não o limite ([ADR-0009](../adr/0009-superficies-de-produto-mobile-first.md)).
+- **IDs (dona)**: nenhum (sem REQ novo, migration, API ou regra de negócio). **TECH**: TECH-100 (sem mudança de
+  superfície de ataque), ADR-0003, ADR-0009.
+- **Scope (slices/files)**: `src/design-system/` (CSS `lx-app-*`, `lx-page-header`, wrappers React finos só para o
+  que tem comportamento ou estrutura repetida), `admin` e `identity` (só `presentation`), docs e testes.
+  - Regra global: mobile-first com paridade funcional (toda função alcançável e concluível a partir de 320 px);
+    exceção só como decisão explícita de produto registrada na spec. `check-hardcodes` recusa `@media (max-width…)`
+    de largura; helper de E2E responsivo compartilhado.
+  - Shell das áreas logadas (`lx-app-*`): abaixo de `lg`, barra superior (logo oficial, título) e gaveta
+    (`lx-mobile-nav`); a partir de `lg`, navegação lateral. O shell recebe `navItems` por composição na camada de
+    apresentação, não conhece regra de negócio, e nenhum slice importa internals de outro.
+  - Layout focado para `/entrar` e `/entrar/mfa` (só visual); padrão de página; estados vazio, erro, acesso negado,
+    indisponível e carregando.
+  - **Consumer-driven**: painel, selo, estado ou token novo só entra se `/admin`, o Auth ou a demonstração necessária
+    no Lab o consumirem. Tabela, filtros, formulários de produto, barras de ação, stepper, calendário, gráficos,
+    toasts e navegação inferior ficam para a wave que os usar (tabela e formulários: W3).
+- **Depends on / parallel with**: W2; sequencial. A W3 depende da W2B.
+- **Checkpoints**: (1) regra global, documentação, shell e início do Admin → capturas 390/1440 px com a navegação em
+  `night` e em `paper` → aprovação visual da Luxtory antes de seguir; (2) layout focado, estados, smoke Playwright
+  WebKit e gates → PR com CI verde, parado antes do merge.
+- **Acceptance criteria**: toda tela da W2B com axe 0 a 390 e 1440 px, sem overflow horizontal não intencional do
+  documento de 320 a 1920 px, zero erro de console e fluxo principal executado a 390 px com toque · shell correto a
+  1023 e 1024 px; gaveta aberta fecha ao cruzar o `lg` e o foco volta a um lugar válido · teclado (skip link, foco
+  visível, foco preso e devolvido pela gaveta, `aria-current`), alvos ≥ 44 px, movimento reduzido · smoke
+  Playwright WebKit do shell e do login · testes do DS verdes e nenhum `max-width` em media query · E2E de login, MFA
+  e acesso ao Admin sem regressão.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and the W2B acceptance criteria in docs/plan/implementation-waves.md pass, stop after 4 tries`
 
 ### Wave 3 — Catálogo + Admin
 
@@ -316,7 +353,7 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
     checagem de terminologia (REQ-100/101).
   - API `POST /v1/admin/{brand-partners,concept-versions,editions,residences}` + `approve` e `terminate`; telas
     Admin; componente de tabela entra no DS (spec + Lab + teste).
-- **Depends on / parallel with**: W2; sequencial.
+- **Depends on / parallel with**: W2B (shell e padrões de página); sequencial.
 - **Acceptance criteria**: `[REQ-020] Residence sem Concept aprovado é recusada; oferta só existe via Edition` ·
   `[REQ-027] Residence de Investor sem autorização registrada é recusada; com autorização, existe sem adquirente e
   a Edition aceita Owner, Co-Owner ou ambas enquanto aberta` · `[BR-025] nova versão do Concept não altera
