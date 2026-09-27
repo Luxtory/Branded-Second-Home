@@ -33,4 +33,11 @@ describe('wrappers React do Design System (ADR-0009)', () => {
     const [width = 0, height = 0] = manifest.logos['icon/moroccan-blue'].viewBox;
     expect(paper).toContain(`width="${Math.round(width)}" height="${Math.round(height)}"`);
   });
+
+  it('[ADR-0009] sem link (layout focado), a própria imagem leva o nome acessível', () => {
+    const plain = renderToStaticMarkup(createElement(Logo, { ground: 'paper', label: 'Luxtory' }));
+    expect(plain).toMatch(/^<span class="lx-logo">/);
+    expect(plain).toContain('alt="Luxtory"');
+    expect(plain).not.toContain('<a ');
+  });
 });

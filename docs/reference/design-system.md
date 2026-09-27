@@ -339,14 +339,25 @@ efeito editorial (como a data de hoje).
 **Page Section · `lx-page-section`** — `section[aria-labelledby]` com `h2.lx-display-s`: distância fixa entre título
 e conteúdo e separação maior entre seções. Sem caixa nem sombra; o filete do próprio conteúdo divide.
 
-**Logo no app** — React: `Logo` (`ground`, `href`, `label`). Escolhe a cor pelo fundo, usa o ícone abaixo de 360 px e
-aponta para `GET /brand/logo/<chave>`, que serve o arquivo da chave do manifest byte a byte.
+**Layout focado · `lx-focused`** — React: `FocusedLayout` (`brand`). Tarefa única sem navegação: login, segundo
+fator, acesso negado, indisponível e erro inesperado. No celular, o painel (`__panel`, que é o `main`) ocupa a tela; a
+partir de `md` fica centralizado sobre `wash`, com filete fino, sem sombra. Estados usam rótulo `lx-label` (nunca
+Courier), `h1`, texto e uma ação. Demonstração: `lab/produto-focado.html`; o shell: `lab/produto-app.html`.
+
+**Logo no app** — React: `Logo` (`ground`, `href?`, `label`). Escolhe a cor pelo fundo, usa o ícone abaixo de 360 px e
+aponta para `GET /brand/logo/<chave>`, que serve o arquivo da chave do manifest byte a byte. Sem `href` (layout
+focado), a imagem leva o nome acessível.
 
 **Gate de UI de toda tela nova** — `tests/e2e/support/ui.ts`: `expectResponsive(page, consoleErrors)` = sem overflow
 não intencional do documento em 320, 360, 390, 768, 1023, 1024, 1440 e 1920 px, zero erro de console e axe 0 a 390 e
 1440 px (página assentada: título aplicado, ponteiro fora dos controles, sem transição em curso). O fluxo principal
 roda a 390 px com toque (`test.use({ viewport, hasTouch: true, isMobile: true })`). Capturas a 390 e 1440 px vão no
 PR como material de revisão, não como baseline.
+
+**Smoke Playwright WebKit** — `tests/e2e/*.webkit.spec.ts`, projeto `webkit` (emulação de iPhone) ligado por
+`PLAYWRIGHT_WEBKIT=1`. A CI instala as dependências (`npx playwright install --with-deps webkit`); localmente elas
+exigem `sudo npx playwright install-deps webkit`. Não equivale a Safari/iOS real: aparelhos reais (Safari/iOS,
+Chrome/Android) ficam na QA de release/go-live.
 
 ### Utilitários
 

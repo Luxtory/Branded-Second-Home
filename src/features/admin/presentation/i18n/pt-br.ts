@@ -1,5 +1,6 @@
 /** Textos do slice admin (pt-BR, único locale — CLAUDE.md → i18n). */
 export const messages = {
+  brand: 'Luxtory',
   shell: {
     skipLink: 'Pular para o conteúdo',
     home: 'Luxtory — início da administração',

@@ -65,6 +65,7 @@
     --lx-layout-columns-lg: 12;
     --lx-layout-header-height: 4.5rem;
     --lx-layout-app-nav-width: 17.5rem;
+    --lx-layout-focused-width: 32rem;
     --lx-breakpoint-sm: 30rem;
     --lx-breakpoint-md: 48rem;
     --lx-breakpoint-lg: 64rem;

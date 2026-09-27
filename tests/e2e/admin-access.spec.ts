@@ -7,7 +7,7 @@ import {
   TEST_CODE,
   VISITOR_EMAIL,
 } from './support/auth';
-import { collectConsoleErrors, expectAccessible } from './support/ui';
+import { collectConsoleErrors, expectAccessible, expectResponsive } from './support/ui';
 
 test('[TECH-050] sem sessão, o Admin leva ao login; a tela de login tem axe 0', async ({
   page,
@@ -17,7 +17,9 @@ test('[TECH-050] sem sessão, o Admin leva ao login; a tela de login tem axe 0',
 
   await expect(page).toHaveURL(/\/entrar$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Entrar na Luxtory');
-  await expectAccessible(page, consoleErrors);
+  // Layout focado (ADR-0009): o logo oficial leva o nome; sem overflow de 320 a 1920 px.
+  await expect(page.getByRole('img', { name: 'Luxtory' })).toBeVisible();
+  await expectResponsive(page, consoleErrors);
 });
 
 test('[TECH-050] código inválido é recusado com mensagem acessível', async ({ page }) => {
@@ -168,7 +170,7 @@ test('[TECH-050] primeiro cadastro do TOTP é guiado: 3 passos, apps oficiais, c
     'support.1password.com',
     'bitwarden.com',
   ]);
-  await expectAccessible(page, consoleErrors);
+  await expectResponsive(page, consoleErrors);
 
   await page.getByRole('button', { name: 'Gerar QR Code' }).click();
   await expect(page.getByRole('img', { name: /QR Code/ })).toBeVisible();
@@ -188,7 +190,7 @@ test('[TECH-050] primeiro cadastro do TOTP é guiado: 3 passos, apps oficiais, c
   expect(copied).toMatch(/^[A-Z2-7]+$/);
   expect(copied).toBe(shown?.replaceAll(' ', ''));
   await expect(page.getByText(/muda a cada 30 segundos/)).toBeVisible();
-  await expectAccessible(page, consoleErrors);
+  await expectResponsive(page, consoleErrors);
 
   // Código do aplicativo (6 dígitos) conclui o cadastro e leva ao Admin (usuário sem papel → 403).
   await page.getByLabel('Código de 6 dígitos do aplicativo').fill(TEST_CODE);
@@ -214,5 +216,6 @@ test('[REQ-014] existir não concede acesso: usuário autenticado sem papel vê 
     'Esta área é restrita à equipe administrativa da Luxtory.',
   );
   await expect(page.getByText('Papéis ativos')).toHaveCount(0);
-  await expectAccessible(page, consoleErrors);
+  await expect(page.getByText('Acesso negado')).toBeVisible();
+  await expectResponsive(page, consoleErrors);
 });

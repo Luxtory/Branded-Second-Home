@@ -51,6 +51,7 @@ Uma área `/admin` que só abre para staff autenticado com MFA (TECH-050) e que 
       `lg`, navegação lateral com o item atual (`aria-current`) e o bloco de conta (papéis ativos + "Sair"). Itens de
       navegação só para seções com tela (`admin-shell.tsx`); início com "Sua sessão" (papéis e segundo fator) e
       "Módulos" (estado vazio honesto). Fluxo principal a 390 px com toque; sem overflow de 320 a 1920 px.
+- [ ] W2B: tela 403 no layout focado (rótulo "Acesso negado" em Hanken, título, texto e "Sair"), sem dado.
 
 ## 7. Edge cases
 

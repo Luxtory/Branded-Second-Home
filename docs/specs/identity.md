@@ -121,6 +121,9 @@ inexistente.
   recebido pode ser usado se ainda não expirou.
 - Fator TOTP não verificado de uma tentativa anterior → removido antes de um novo cadastro: gerar um novo QR Code
   invalida a chave anterior (caminho para descartar uma chave exposta antes da verificação).
+- W2B ([ADR-0009](../adr/0009-superficies-de-produto-mobile-first.md)): `/entrar`, `/entrar/mfa` e a tela
+  "indisponível" usam o layout focado do DS (`FocusedLayout`), com o logo oficial; só apresentação — fluxos, TOTP e
+  AAL2 inalterados. O rótulo "Indisponível" passa a `lx-label` (Hanken), não Courier.
 - Primeiro cadastro do TOTP guiado em três passos (2026-09-27): (1) instalar ou abrir um aplicativo autenticador, com
   links só para páginas oficiais dos fornecedores ou das lojas; (2) adicionar a Luxtory pelo QR Code — a chave manual
   fica oculta em "Não consegue escanear?", com "Copiar chave" para a área de transferência local e o caminho "Adicionar

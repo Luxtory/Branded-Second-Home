@@ -189,12 +189,15 @@ deliberada só dentro de um componente de dados, contida e acessível.
 | App Shell | `lx-app` + `__bar` (< lg), `__nav` (≥ lg), `__nav-list`, `__nav-link`, `__account`, `__main`; gaveta = `lx-mobile-nav` | fundo da navegação por `data-ground` (`night` ou `paper`; o logo acompanha o fundo) | skip link; `nav` rotulado; `aria-current="page"`; gaveta fecha ao cruzar `lg` e o foco vai ao conteúdo |
 | Page Header | `lx-page-header` + `__lead` | — | um `h1` por página; metadata em Courier só se for real e útil |
 | Page Section | `lx-page-section` (`section` com `h2.lx-display-s`) | — | `aria-labelledby` no título; distância fixa título → conteúdo |
-| Layout focado | `lx-focused` (checkpoint 2 da W2B) | — | tarefa única, sem navegação; logo com nome acessível |
+| Layout focado | `lx-focused` + `__panel` (`main`), `__body` | — | tarefa única, sem navegação: login, segundo fator, acesso negado, indisponível e erro; painel em tela cheia no celular e centralizado sobre `wash` a partir de `md` (`--lx-layout-focused-width`); logo sem link, a imagem leva o nome |
 
 - **Composição:** o shell recebe `navItems` e o bloco de conta por props, montados na `presentation` de cada slice.
   O DS não conhece módulos, papéis nem regras; textos chegam por props (i18n do slice).
-- **React** (`src/design-system/react/`): `AppShell`, `PageHeader`, `Logo` (por chave do manifest) e, no
-  checkpoint 2, `FocusedLayout`.
+- **React** (`src/design-system/react/`): `AppShell`, `PageHeader`, `FocusedLayout` e `Logo` (por chave do
+  manifest; com `href` é link para o início, sem `href` a imagem leva o nome).
+- **Estados de produto:** vazio = `lx-empty`; acesso negado, indisponível e erro inesperado = layout focado com rótulo
+  `lx-label`, `h1`, texto e ação (erro: `error.tsx` do App Router, com "Tentar de novo" e sem detalhe técnico na tela).
+  Carregando fica para a primeira tela que carregue dados de forma perceptível (consumer-driven).
 - **Logo no app:** `GET /brand/logo/<chave>` serve o arquivo da chave do manifest (bytes como fornecidos).
 - **Consumer-driven:** componente, estado ou token novo só entra quando uma tela o consome ou o Lab precisa dele
   para demonstrar um componente existente.
@@ -229,6 +232,8 @@ deliberada só dentro de um componente de dados, contida e acessível.
 - [ ] Shell: 1023 px → barra + gaveta; 1024 px → navegação lateral; gaveta aberta fecha ao cruzar `lg` e o foco vai
   a um lugar válido; alvos ≥ 44 px; sem animação com movimento reduzido.
 - [ ] Smoke Playwright WebKit do shell e do login (não equivale a Safari/iOS real).
+- [ ] O Lab mostra as superfícies de produto: seção 17 e as páginas de demonstração `lab/produto-app.html` e
+  `lab/produto-focado.html`, com axe 0 e sem overflow de 320 a 1920 px.
 
 **Repositório**
 - [ ] `frontend-design`, `CLAUDE.md` e `AGENTS.md` apontam para este sistema.

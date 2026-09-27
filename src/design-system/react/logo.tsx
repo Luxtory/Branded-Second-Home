@@ -20,30 +20,42 @@ function asset(key: LogoKey) {
   return { src: logoUrl(key), width: Math.round(width), height: Math.round(height) };
 }
 
-/** Logo oficial como link para o início: imagem `alt=""`, nome acessível no link (docs/reference/design-system.md). */
+/**
+ * Logo oficial. Com `href`, é o link para o início (imagem `alt=""`, nome acessível no link); sem `href` — layout
+ * focado, sem início para onde voltar —, a própria imagem leva o nome (docs/reference/design-system.md).
+ */
 export function Logo({
   ground,
   href,
   label,
 }: {
   readonly ground: Ground;
-  readonly href: string;
+  readonly href?: string;
   readonly label: string;
 }) {
   const color = COLOR_BY_GROUND[ground];
   const horizontal = asset(`horizontal/${color}`);
   const icon = asset(`icon/${color}`);
+  const picture = (
+    <picture>
+      <source
+        media={HORIZONTAL_FROM}
+        srcSet={horizontal.src}
+        width={horizontal.width}
+        height={horizontal.height}
+      />
+      <img
+        src={icon.src}
+        alt={href === undefined ? label : ''}
+        width={icon.width}
+        height={icon.height}
+      />
+    </picture>
+  );
+  if (href === undefined) return <span className="lx-logo">{picture}</span>;
   return (
     <a className="lx-logo" href={href} aria-label={label}>
-      <picture>
-        <source
-          media={HORIZONTAL_FROM}
-          srcSet={horizontal.src}
-          width={horizontal.width}
-          height={horizontal.height}
-        />
-        <img src={icon.src} alt="" width={icon.width} height={icon.height} />
-      </picture>
+      {picture}
     </a>
   );
 }

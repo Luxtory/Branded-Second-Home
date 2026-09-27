@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { PageHeader } from '@/design-system/react';
+import { FocusedLayout, PageHeader } from '@/design-system/react';
 import {
   AuthUnavailable,
   getStaffAccess,
@@ -47,16 +47,12 @@ function AdminHome({ roles }: { readonly roles: readonly StaffRole[] }) {
 function AdminForbidden() {
   const text = messages.forbidden;
   return (
-    <main id="conteudo" className="lx-container">
-      <div className="lx-empty">
-        <p className="lx-marker">
-          <span>{text.marker}</span>
-        </p>
-        <h1 className="lx-display-s">{text.title}</h1>
-        <p className="lx-body">{text.body}</p>
-        <SignOutButton />
-      </div>
-    </main>
+    <FocusedLayout brand={messages.brand}>
+      <p className="lx-label">{text.marker}</p>
+      <h1 className="lx-display-s">{text.title}</h1>
+      <p className="lx-body">{text.body}</p>
+      <SignOutButton />
+    </FocusedLayout>
   );
 }
 

@@ -3,6 +3,12 @@ export const messages = {
   site: {
     name: 'Luxtory',
   },
+  pageError: {
+    marker: 'Erro',
+    title: 'Não foi possível carregar esta página.',
+    body: 'Tente de novo em instantes. Se o problema continuar, procure o responsável pela operação.',
+    retry: 'Tentar de novo',
+  },
   notFound: {
     marker: 'Erro 404',
     title: 'Página não encontrada.',
