@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { loginAction } from './actions';
 import { INITIAL_LOGIN_STATE, type LoginMessage } from './form-state';
 import { messages } from './i18n/pt-br';
@@ -14,20 +14,39 @@ const ERRORS: Partial<Record<LoginMessage, string>> = {
   unavailable: messages.unavailable.title,
 };
 
-/** Formulário de login em dois passos: e-mail → código de uso único (TECH-050). */
+/** Avisos do envio do código (não são erro de campo): o reenvio mantém o formulário do código. */
+const NOTICES: Partial<
+  Record<
+    LoginMessage,
+    { readonly tone: 'success' | 'warning'; readonly title: string; readonly body: string }
+  >
+> = {
+  code_sent: { tone: 'success', title: text.codeSentTitle, body: text.codeSentBody },
+  code_resent: { tone: 'success', title: text.codeResentTitle, body: text.codeResentBody },
+  resend_rate_limited: {
+    tone: 'warning',
+    title: text.resendRateLimitedTitle,
+    body: text.resendRateLimitedBody,
+  },
+};
+
+/** Formulário de login em dois passos: e-mail → código de uso único (TECH-050), com reenvio do código. */
 export function LoginForm() {
   const [state, formAction, pending] = useActionState(loginAction, INITIAL_LOGIN_STATE);
+  // Qual botão enviou o formulário, para o indicador de espera aparecer no botão certo.
+  const [resending, setResending] = useState(false);
   const error = state.message === null ? undefined : ERRORS[state.message];
+  const notice = state.message === null ? undefined : NOTICES[state.message];
   const onCode = state.step === 'code';
 
   return (
     <form className="lx-form" action={formAction} noValidate>
-      {state.message === 'code_sent' ? (
-        <div className="lx-message lx-message--success" role="status">
-          <p className="lx-message__title">{text.codeSentTitle}</p>
-          <p className="lx-message__body">{text.codeSentBody}</p>
+      {notice === undefined ? null : (
+        <div className={`lx-message lx-message--${notice.tone}`} role="status">
+          <p className="lx-message__title">{notice.title}</p>
+          <p className="lx-message__body">{notice.body}</p>
         </div>
-      ) : null}
+      )}
       <input type="hidden" name="step" value={state.step} />
       {onCode ? (
         <>
@@ -84,20 +103,35 @@ export function LoginForm() {
         </p>
       )}
       <div className="lx-form__row">
+        {/* 1º botão de envio: Enter no campo do código confirma, não reenvia. */}
         <button
           className="lx-button lx-button--primary"
           type="submit"
           disabled={pending}
-          aria-busy={pending || undefined}
+          aria-busy={(pending && !resending) || undefined}
+          onClick={() => setResending(false)}
         >
           {onCode ? text.confirmCode : text.sendCode}
         </button>
         {onCode ? (
-          <a className="lx-link" href="/entrar">
-            {text.otherEmail}
-          </a>
+          <button
+            className="lx-button lx-button--quiet"
+            type="submit"
+            name="intent"
+            value="resend"
+            disabled={pending}
+            aria-busy={(pending && resending) || undefined}
+            onClick={() => setResending(true)}
+          >
+            {text.resendCode}
+          </button>
         ) : null}
       </div>
+      {onCode ? (
+        <a className="lx-link" href="/entrar">
+          {text.otherEmail}
+        </a>
+      ) : null}
     </form>
   );
 }

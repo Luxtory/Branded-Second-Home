@@ -16,21 +16,16 @@ const field = (form: FormData, name: string) => {
   return typeof value === 'string' ? value.trim() : '';
 };
 
-/** Login por código (TECH-050): 1º passo envia o código; 2º confirma e leva ao segundo fator. */
+/**
+ * Login por código (TECH-050): 1º passo envia o código; 2º confirma e leva ao segundo fator. No 2º passo, "Reenviar
+ * código" repete o envio para o mesmo e-mail sem sair do passo do código.
+ */
 export async function loginAction(previous: LoginState, form: FormData): Promise<LoginState> {
   const email = emailSchema.safeParse(field(form, 'email'));
   if (!email.success) return { step: 'email', email: '', message: 'invalid_email' };
-  if (field(form, 'step') !== 'code') {
-    const sent = await withAuth(true, async (gateway, log) => {
-      const outcome = await gateway.sendLoginCode(email.data);
-      log.info('auth code requested', { outcome });
-      return outcome;
-    });
-    if (sent === 'unavailable') return { ...previous, message: 'unavailable' };
-    return sent === 'rate_limited'
-      ? { step: 'email', email: email.data, message: 'rate_limited' }
-      : { step: 'code', email: email.data, message: 'code_sent' };
-  }
+  const onCode = field(form, 'step') === 'code';
+  const resend = onCode && field(form, 'intent') === 'resend';
+  if (!onCode || resend) return sendCode(previous, email.data, resend);
   const code = sixDigits.safeParse(field(form, 'code'));
   const verified = await withAuth(true, async (gateway, log) => {
     const ok = code.success && (await gateway.verifyLoginCode(email.data, code.data));
@@ -40,6 +35,22 @@ export async function loginAction(previous: LoginState, form: FormData): Promise
   if (verified === 'unavailable') return { ...previous, message: 'unavailable' };
   if (!verified) return { step: 'code', email: email.data, message: 'invalid_code' };
   redirect('/entrar/mfa');
+}
+
+/** Mesmo envio no 1º pedido e no reenvio: resposta igual com ou sem conta (sem enumerar) e limite do provedor. */
+async function sendCode(previous: LoginState, email: string, resend: boolean): Promise<LoginState> {
+  const sent = await withAuth(true, async (gateway, log) => {
+    const outcome = await gateway.sendLoginCode(email);
+    log.info('auth code requested', { outcome, resend });
+    return outcome;
+  });
+  if (sent === 'unavailable') return { ...previous, message: 'unavailable' };
+  if (sent === 'rate_limited') {
+    return resend
+      ? { step: 'code', email, message: 'resend_rate_limited' }
+      : { step: 'email', email, message: 'rate_limited' };
+  }
+  return { step: 'code', email, message: resend ? 'code_resent' : 'code_sent' };
 }
 
 /** Segundo fator TOTP (AAL2, TECH-050): inicia o cadastro ou confirma um código. */

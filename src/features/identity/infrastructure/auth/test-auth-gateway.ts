@@ -11,6 +11,11 @@ import { SESSION_COOKIE_OPTIONS, type CookieJar } from './cookie-jar';
  */
 export const TEST_AUTH_CODE = '123456';
 export const TEST_SESSION_COOKIE = 'lx-test-session';
+/**
+ * Simula o limite de envio do Supabase Auth (intervalo mínimo por usuário) sem presumir o valor: para este endereço,
+ * só o primeiro envio do processo passa; os seguintes respondem `rate_limited`.
+ */
+export const TEST_RATE_LIMITED_EMAIL = 'limite@luxtory.test';
 
 const SESSION_SECONDS = 3600;
 const MS_PER_SECOND = 1000;
@@ -19,6 +24,8 @@ interface TestAuthState {
   readonly signingKey: Buffer;
   /** Fatores TOTP por usuário, em memória do processo (o servidor de E2E é um processo só). */
   readonly factors: Map<string, { readonly id: string; verified: boolean }>;
+  /** Envios de código para `TEST_RATE_LIMITED_EMAIL` neste processo. */
+  rateLimitedSends: number;
 }
 
 // Um estado por processo, não por módulo: o `next start` carrega este módulo em bundles separados (páginas e Server
@@ -28,6 +35,7 @@ const shared = globalThis as typeof globalThis & { [STATE_KEY]?: TestAuthState }
 const state: TestAuthState = (shared[STATE_KEY] ??= {
   signingKey: randomBytes(32),
   factors: new Map(),
+  rateLimitedSends: 0,
 });
 const { signingKey, factors } = state;
 
@@ -91,7 +99,11 @@ export function createTestAuthGateway(jar: CookieJar, clock: Clock): AuthGateway
 
   return {
     session: () => Promise.resolve(current()),
-    sendLoginCode: () => Promise.resolve('sent'),
+    sendLoginCode(email) {
+      if (email.trim().toLowerCase() !== TEST_RATE_LIMITED_EMAIL) return Promise.resolve('sent');
+      state.rateLimitedSends += 1;
+      return Promise.resolve(state.rateLimitedSends === 1 ? 'sent' : 'rate_limited');
+    },
     verifyLoginCode(email, code) {
       if (code !== TEST_AUTH_CODE) return Promise.resolve(false);
       store(issueTestToken(testUserId(email), 'aal1', clock), SESSION_SECONDS);

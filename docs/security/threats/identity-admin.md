@@ -114,6 +114,9 @@ flowchart LR
 - **Likelihood**: Low · **Impact**: High · **Risk**: Medium
 - **Mitigation**: o cadastro exige a sessão do próprio usuário (código de e-mail recente); fatores não verificados são
   removidos antes de novo cadastro; remoção de fator verificado não tem tela (suporte pelo painel do Supabase).
+  Cadastro guiado (2026-09-27): a chave manual fica oculta até ser pedida (reduz exposição na tela), "Copiar chave" usa
+  só a área de transferência local e os links apontam só para páginas oficiais — nenhum serviço de terceiros recebe
+  a chave. Chave exposta antes da verificação: gerar novo QR Code descarta o fator não verificado.
 - **Residual**: aceito até existir um fluxo de recuperação definido pela Luxtory.
 
 ### T-006 [MEDIUM] Repudiation — Ação administrativa sem rastro
@@ -129,6 +132,7 @@ flowchart LR
 ### T-004 [LOW] Information disclosure — Enumeração de contas e PII em logs
 
 - **Mitigation**: mesma resposta para e-mail existente ou não; logs sem e-mail, código, token ou id de fator.
+  "Reenviar código" (2026-09-27) usa o mesmo envio e a mesma resposta — nenhuma superfície nova.
 
 ### T-011 [LOW] Elevation — Claims ou papel vazando entre transações
 
@@ -140,6 +144,8 @@ flowchart LR
 - **Mitigation**: SMTP padrão só envia para membros da organização (P-9); resposta "muitas tentativas"; D4 (SMTP
   próprio) antes do login de Titulares. **Atualização 2026-09-27**: D4 resolvida — SMTP customizado com Resend; o
   limite de envio passa a ser o do SMTP customizado no Supabase Auth, e a credencial fica só no Supabase.
+  "Reenviar código" passa pelo mesmo limite do Supabase Auth (intervalo por usuário e limite por hora); barrado, a tela
+  pede para aguardar e mantém o formulário do código.
 
 ### T-012 [LOW] Spoofing — Autenticação de teste ativa num deployment
 

@@ -4,6 +4,7 @@ import {
   createTestAuthGateway,
   issueTestToken,
   TEST_AUTH_CODE,
+  TEST_RATE_LIMITED_EMAIL,
   TEST_SESSION_COOKIE,
   testUserId,
   verifyTestToken,
@@ -76,6 +77,19 @@ describe('autenticação de teste (ADR-0005 §7)', () => {
     expect(testUserId('staff@luxtory.test')).toBe(testUserId(' STAFF@luxtory.test'));
     expect(testUserId('staff@luxtory.test')).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-8[0-9a-f]{3}-[0-9a-f]{12}$/,
+    );
+  });
+
+  it('[TECH-050] envio do código responde igual; o endereço reservado simula o limite do provedor', async () => {
+    const gateway = createTestAuthGateway(memoryJar(), clock);
+
+    expect(await gateway.sendLoginCode('staff@luxtory.test')).toBe('sent');
+    expect(await gateway.sendLoginCode('staff@luxtory.test')).toBe('sent');
+    expect(await gateway.sendLoginCode('sem-conta@luxtory.test')).toBe('sent');
+    // Só o primeiro envio do processo passa para o endereço reservado (sem presumir o intervalo real).
+    expect(await gateway.sendLoginCode(TEST_RATE_LIMITED_EMAIL)).toBe('sent');
+    expect(await gateway.sendLoginCode(` ${TEST_RATE_LIMITED_EMAIL.toUpperCase()}`)).toBe(
+      'rate_limited',
     );
   });
 
