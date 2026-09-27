@@ -37,16 +37,25 @@ async function signIn(page: Page, email: string) {
   await page.getByLabel('Código recebido por e-mail').fill(TEST_CODE);
   await page.getByRole('button', { name: 'Entrar' }).click();
   await expect(page).toHaveURL(/\/entrar\/mfa$/);
-  // Primeiro acesso cadastra o TOTP (QR code); com fator já verificado, a tela pede só o código.
-  const enroll = page.getByRole('button', { name: 'Configurar aplicativo autenticador' });
-  const challenge = page.getByLabel('Código do aplicativo autenticador');
+  // Primeiro acesso cadastra o TOTP (QR Code); com fator já verificado, a tela pede só o código.
+  const enroll = page.getByRole('button', { name: 'Gerar QR Code' });
+  const challenge = page.getByLabel('Código de 6 dígitos do aplicativo');
   await expect(enroll.or(challenge)).toBeVisible();
   if (await enroll.isVisible()) {
     await enroll.click();
-    await expect(page.getByRole('img', { name: /QR code/ })).toBeVisible();
+    await expect(page.getByRole('img', { name: /QR Code/ })).toBeVisible();
   }
-  await page.getByLabel('Código do aplicativo autenticador').fill(TEST_CODE);
-  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByLabel('Código de 6 dígitos do aplicativo').fill(TEST_CODE);
+  await page.getByRole('button', { name: /^Confirmar/ }).click();
+}
+
+async function reachMfa(page: Page, email: string) {
+  await page.goto('/entrar');
+  await page.getByLabel('E-mail').fill(email);
+  await page.getByRole('button', { name: 'Enviar código' }).click();
+  await page.getByLabel('Código recebido por e-mail').fill(TEST_CODE);
+  await page.getByRole('button', { name: 'Entrar' }).click();
+  await expect(page).toHaveURL(/\/entrar\/mfa$/);
 }
 
 test('[TECH-050] sem sessão, o Admin leva ao login; a tela de login tem axe 0', async ({
@@ -126,13 +135,68 @@ test('[REQ-014] Admin logado chama a API pelo navegador: sessão aceita, e na W2
   });
 });
 
+test('[TECH-050] primeiro cadastro do TOTP é guiado: 3 passos, apps oficiais, chave manual copiável, axe 0', async ({
+  page,
+  context,
+}) => {
+  // Fluxo longo (login, cadastro e quatro análises do axe): tempo triplicado.
+  test.slow();
+  const consoleErrors = collectConsoleErrors(page);
+  // Usuário novo (sem fator): o cadastro começa do passo 1.
+  await reachMfa(page, 'novo-staff@luxtory.test');
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Proteja sua conta com um aplicativo autenticador',
+  );
+  await expect(page.getByText(/além do código que chegou por e-mail/)).toBeVisible();
+  for (const step of [
+    '1. Instale ou abra um aplicativo autenticador',
+    '2. Adicione a Luxtory ao aplicativo',
+    '3. Digite o código do aplicativo',
+  ]) {
+    await expect(page.getByRole('heading', { level: 2, name: step })).toBeVisible();
+  }
+  // Só páginas oficiais dos fornecedores ou das lojas; nenhuma recebe a chave.
+  const hosts = await page
+    .getByRole('link', { name: /Authenticator|1Password/ })
+    .evaluateAll((links) => links.map((link) => new URL((link as HTMLAnchorElement).href).host));
+  expect(hosts).toEqual([
+    'play.google.com',
+    'apps.apple.com',
+    'www.microsoft.com',
+    'support.1password.com',
+    'bitwarden.com',
+  ]);
+  await expectAccessible(page, consoleErrors);
+
+  await page.getByRole('button', { name: 'Gerar QR Code' }).click();
+  await expect(page.getByRole('img', { name: /QR Code/ })).toBeVisible();
+  // A chave manual fica oculta até ser pedida.
+  const copyButton = page.getByRole('button', { name: 'Copiar chave' });
+  await expect(copyButton).toBeHidden();
+  await page.getByText('Não consegue escanear?').click();
+  await expect(
+    page.getByText(/Inserir chave de configuração → Tipo baseado em tempo \(TOTP\)/),
+  ).toBeVisible();
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await copyButton.click();
+  await expect(page.getByRole('status').filter({ hasText: 'Chave copiada' })).toBeVisible();
+  // A cópia é a chave exibida, sem os espaços de leitura.
+  const shown = await page.locator('details code').textContent();
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied).toMatch(/^[A-Z2-7]+$/);
+  expect(copied).toBe(shown?.replaceAll(' ', ''));
+  await expect(page.getByText(/muda a cada 30 segundos/)).toBeVisible();
+  await expectAccessible(page, consoleErrors);
+
+  // Código do aplicativo (6 dígitos) conclui o cadastro e leva ao Admin (usuário sem papel → 403).
+  await page.getByLabel('Código de 6 dígitos do aplicativo').fill(TEST_CODE);
+  await page.getByRole('button', { name: 'Confirmar e entrar' }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+});
+
 test('[TECH-050] sessão AAL1 não alcança o Admin: volta ao segundo fator', async ({ page }) => {
-  await page.goto('/entrar');
-  await page.getByLabel('E-mail').fill(STAFF_EMAIL);
-  await page.getByRole('button', { name: 'Enviar código' }).click();
-  await page.getByLabel('Código recebido por e-mail').fill(TEST_CODE);
-  await page.getByRole('button', { name: 'Entrar' }).click();
-  await expect(page).toHaveURL(/\/entrar\/mfa$/);
+  await reachMfa(page, STAFF_EMAIL);
 
   await page.goto('/admin');
   await expect(page).toHaveURL(/\/entrar\/mfa$/);

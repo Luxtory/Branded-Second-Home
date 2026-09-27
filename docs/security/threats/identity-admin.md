@@ -114,6 +114,9 @@ flowchart LR
 - **Likelihood**: Low · **Impact**: High · **Risk**: Medium
 - **Mitigation**: o cadastro exige a sessão do próprio usuário (código de e-mail recente); fatores não verificados são
   removidos antes de novo cadastro; remoção de fator verificado não tem tela (suporte pelo painel do Supabase).
+  Cadastro guiado (2026-09-27): a chave manual fica oculta até ser pedida (reduz exposição na tela), "Copiar chave" usa
+  só a área de transferência local e os links apontam só para páginas oficiais — nenhum serviço de terceiros recebe
+  a chave. Chave exposta antes da verificação: gerar novo QR Code descarta o fator não verificado.
 - **Residual**: aceito até existir um fluxo de recuperação definido pela Luxtory.
 
 ### T-006 [MEDIUM] Repudiation — Ação administrativa sem rastro

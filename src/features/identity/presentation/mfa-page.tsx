@@ -16,7 +16,11 @@ export async function MfaPage() {
   if ('assurance' in state) redirect('/admin');
   return (
     <main id="conteudo" className="lx-container lx-container--narrow">
-      <h1 className="lx-display-s">{messages.mfa.title}</h1>
+      {state.factorId === null ? (
+        <h1 className="lx-display-m">{messages.mfa.enrollTitle}</h1>
+      ) : (
+        <h1 className="lx-display-s">{messages.mfa.title}</h1>
+      )}
       <MfaForm factorId={state.factorId} />
     </main>
   );

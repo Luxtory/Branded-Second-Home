@@ -114,7 +114,14 @@ inexistente.
 
 - Código de login inválido ou expirado → mensagem genérica; e-mail não cadastrado → a mesma resposta do envio (sem
   enumerar contas). Limite de envio do Supabase → "muitas tentativas".
-- Fator TOTP não verificado de uma tentativa anterior → removido antes de um novo cadastro.
+- Fator TOTP não verificado de uma tentativa anterior → removido antes de um novo cadastro: gerar um novo QR Code
+  invalida a chave anterior (caminho para descartar uma chave exposta antes da verificação).
+- Primeiro cadastro do TOTP guiado em três passos (2026-09-27): (1) instalar ou abrir um aplicativo autenticador, com
+  links só para páginas oficiais dos fornecedores ou das lojas; (2) adicionar a Luxtory pelo QR Code — a chave manual
+  fica oculta em "Não consegue escanear?", com "Copiar chave" para a área de transferência local e o caminho "Adicionar
+  conta → Inserir chave de configuração → Tipo baseado em tempo (TOTP)"; (3) digitar o código de 6 dígitos do
+  aplicativo, diferente do código do e-mail, que muda a cada 30 segundos (usar o novo, sem recomeçar). TOTP padrão e
+  AAL2 inalterados; nenhum site de terceiros recebe a chave.
 - JWT ainda válido após revogar o papel → o guard lê `staff_role` a cada command: revogação vale na hora.
 - `NEXT_PUBLIC_SUPABASE_*` ausentes → o build passa; telas e API respondem "indisponível" nomeando só a chave.
 - Chave pública fora do formato `sb_publishable_…` (ex.: chave secreta) → recusada como configuração inválida.
