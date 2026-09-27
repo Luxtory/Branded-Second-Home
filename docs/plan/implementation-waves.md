@@ -318,8 +318,8 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   - Regra global: mobile-first com paridade funcional (toda função alcançável e concluível a partir de 320 px);
     exceção só como decisão explícita de produto registrada na spec. `check-hardcodes` recusa `@media (max-width…)`
     de largura; helper de E2E responsivo compartilhado.
-  - Shell das áreas logadas (`lx-app-*`): abaixo de `lg`, barra superior (logo oficial, título) e gaveta
-    (`lx-mobile-nav`); a partir de `lg`, navegação lateral. O shell recebe `navItems` por composição na camada de
+  - Shell das áreas logadas (`lx-app-*`): abaixo de `lg`, barra superior (logo oficial e botão de menu; o título fica
+    no cabeçalho da página) e gaveta (`lx-mobile-nav`); a partir de `lg`, navegação lateral. O shell recebe `navItems` por composição na camada de
     apresentação, não conhece regra de negócio, e nenhum slice importa internals de outro.
   - Layout focado para `/entrar` e `/entrar/mfa` (só visual); padrão de página; estados vazio, erro, acesso negado,
     indisponível e carregando.

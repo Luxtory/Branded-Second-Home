@@ -36,7 +36,8 @@ oficial tem logos Warm Sand para fundo `night`. Nenhum script, hook ou teste lê
 4. **O DS passa a cobrir superfícies de produto**, com nomes genéricos (`lx-app-*`, `lx-page-header`). O Admin é o
    primeiro consumidor, não o limite.
 5. **Dois layouts de aplicação.** *Shell* das áreas logadas com navegação: abaixo de `lg`, barra superior (logo e
-   título) e gaveta (`lx-mobile-nav`, `dialog` nativo); a partir de `lg`, navegação lateral. *Layout focado* para
+   botão de menu; o título da página fica no cabeçalho da página, `lx-page-header`) e gaveta (`lx-mobile-nav`,
+   `dialog` nativo); a partir de `lg`, navegação lateral. *Layout focado* para
    tarefas únicas sem navegação (login, MFA e fluxos futuros do mesmo tipo). O site público mantém `lx-header` e
    `lx-footer`. Navegação inferior só será avaliada quando a Área do Titular existir (W7).
 6. **Composição, sem regra de negócio no shell.** O shell recebe `navItems` e o bloco de conta por composição na
