@@ -2,10 +2,26 @@
 export const messages = {
   shell: {
     skipLink: 'Pular para o conteúdo',
-    brand: 'Luxtory · Administração',
+    home: 'Luxtory — início da administração',
+    nav: 'Navegação da administração',
+    menu: 'Menu da administração',
+    openMenu: 'Abrir menu',
+    closeMenu: 'Fechar menu',
+    rolesLabel: 'Papéis ativos',
+  },
+  nav: {
+    home: 'Início',
+  },
+  home: {
     title: 'Administração',
     lead: 'Área da equipe Luxtory. As telas de operação chegam com cada módulo.',
+    sessionTitle: 'Sua sessão',
     rolesLabel: 'Papéis ativos',
+    mfaLabel: 'Segundo fator',
+    mfaValue: 'Confirmado',
+    modulesTitle: 'Módulos',
+    modulesEmpty:
+      'Ainda não há módulos de operação. Cada um aparece aqui e na navegação quando for liberado.',
   },
   roles: {
     admin: 'Admin',

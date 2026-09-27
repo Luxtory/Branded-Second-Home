@@ -91,7 +91,12 @@ test('[TECH-050] staff entra com código e TOTP (AAL2) e chega ao Admin; axe 0 e
 
   await expect(page).toHaveURL(/\/admin$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Administração');
-  await expect(page.getByRole('definition')).toHaveText('Admin');
+  await expect(
+    page
+      .getByRole('term')
+      .filter({ hasText: 'Papéis ativos' })
+      .locator('xpath=following-sibling::dd[1]'),
+  ).toHaveText('Admin');
   await expectAccessible(page, consoleErrors);
 
   await page.getByRole('button', { name: 'Sair' }).click();

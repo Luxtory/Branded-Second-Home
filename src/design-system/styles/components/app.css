@@ -1,0 +1,112 @@
+/* App Shell — superfícies de produto logadas (ADR-0009). Mobile-first: abaixo de lg, a <header> é uma barra superior
+ * com o logo e o botão de menu (a gaveta é a lx-mobile-nav); a partir de lg, a mesma <header> vira a navegação
+ * lateral, com os itens e o bloco de conta. Um só banner, um só logo visível por largura.
+ * O fundo da navegação vem de data-ground (night ou paper) e o logo acompanha o fundo. Página atual: aria-current.
+ * O shell não conhece módulos nem regras: itens e conta chegam por composição. */
+@layer lx.components {
+  .lx-app {
+    min-height: 100dvh;
+  }
+
+  .lx-app__bar {
+    position: sticky;
+    top: 0;
+    z-index: var(--lx-z-sticky);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--lx-space-4);
+    min-height: var(--lx-layout-header-height);
+    padding-inline: var(--lx-layout-margin);
+    background-color: var(--lx-color-bg);
+    color: var(--lx-color-fg);
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-app__nav,
+  .lx-app__account {
+    display: none;
+  }
+
+  .lx-app__nav-list {
+    display: grid;
+    gap: var(--lx-space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* A página atual ganha o filete de acento à esquerda — a régua do Evidence, não um fundo de "pílula". */
+  .lx-app__nav-link {
+    display: flex;
+    align-items: center;
+    min-height: var(--lx-target-control);
+    padding-inline: var(--lx-space-4);
+    border-inline-start: var(--lx-focus-width) solid transparent;
+    color: var(--lx-color-fg);
+    font-size: var(--lx-text-small);
+    font-weight: var(--lx-weight-medium);
+    letter-spacing: var(--lx-tracking-label);
+    text-decoration-line: none;
+    text-decoration-thickness: var(--lx-border-hairline);
+    text-underline-offset: 0.4em;
+  }
+
+  .lx-app__nav-link:hover {
+    text-decoration-line: underline;
+  }
+
+  .lx-app__nav-link[aria-current="page"] {
+    border-inline-start-color: var(--lx-color-accent);
+    font-weight: var(--lx-weight-semibold);
+  }
+
+  /* Recebe o foco quando a gaveta fecha ao cruzar o lg (o botão de menu some): contêiner, não controle. */
+  .lx-app__main {
+    padding-block: var(--lx-space-8) var(--lx-space-16);
+  }
+
+  .lx-app__main:focus {
+    outline: none;
+  }
+
+  @media (min-width: 64rem) {
+    .lx-app {
+      display: grid;
+      grid-template-columns: var(--lx-layout-app-nav-width) minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .lx-app__bar {
+      height: 100dvh;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: var(--lx-space-12);
+      padding: var(--lx-space-8) var(--lx-space-6);
+      border-bottom: 0;
+      border-inline-end: var(--lx-border-hairline) solid var(--lx-color-rule);
+      overflow-y: auto;
+    }
+
+    .lx-app__menu-button {
+      display: none;
+    }
+
+    .lx-app__nav {
+      display: block;
+    }
+
+    .lx-app__account {
+      display: grid;
+      gap: var(--lx-space-4);
+      margin-top: auto;
+      padding-top: var(--lx-space-6);
+      border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+
+    .lx-app__main {
+      padding-block: var(--lx-space-16) var(--lx-space-24);
+    }
+  }
+}

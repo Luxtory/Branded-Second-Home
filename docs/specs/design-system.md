@@ -250,6 +250,9 @@ deliberada só dentro de um componente de dados, contida e acessível.
 - Sem nova superfície de ataque: nenhum endpoint, dado ou deploy. Threat model dispensado.
 - Fontes self-hosted, sem requests a terceiros (menos rastreamento; bom para a LGPD).
 - O Lab não é publicado. No W0, a rota interna é `noindex` e fica fora de produção.
+- W2B: `GET /brand/logo/<chave>` é uma rota pública de asset — só chaves do manifest (o caminho do arquivo nunca
+  vem do request; chave desconhecida → 404), SVG com CSP `default-src 'none'; style-src 'unsafe-inline'`, sem dado
+  nem estado.
 
 ## 9. Observability
 

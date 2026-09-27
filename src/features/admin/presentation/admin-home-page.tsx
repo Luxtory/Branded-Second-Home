@@ -1,41 +1,48 @@
 import { redirect } from 'next/navigation';
+import { PageHeader } from '@/design-system/react';
 import {
   AuthUnavailable,
   getStaffAccess,
   SignOutButton,
   type StaffRole,
 } from '@/features/identity';
+import { AdminShell, roleNames } from './admin-shell';
 import { messages } from './i18n/pt-br';
 
-/** Estrutura do Admin (`02` §2): cabeçalho com sessão e conteúdo, só para staff AAL2 com papel ativo (TECH-050). */
-function AdminShell({ roles }: { readonly roles: readonly StaffRole[] }) {
-  const text = messages.shell;
+/** Início do Admin (`02` §2): resumo da sessão e os módulos disponíveis — nenhum dado presumido (TECH-001). */
+function AdminHome({ roles }: { readonly roles: readonly StaffRole[] }) {
+  const text = messages.home;
   return (
-    <>
-      <a className="lx-skip-link" href="#conteudo">
-        {text.skipLink}
-      </a>
-      <header className="lx-header">
-        <div className="lx-header__inner">
-          <p className="lx-label">{text.brand}</p>
-          <div className="lx-header__actions">
-            <SignOutButton />
-          </div>
+    <AdminShell roles={roles} current="home">
+      <div className="lx-container">
+        <PageHeader title={text.title} lead={text.lead} />
+        <div className="lx-grid">
+          <section className="lx-prose" aria-labelledby="admin-session">
+            <h2 className="lx-display-s" id="admin-session">
+              {text.sessionTitle}
+            </h2>
+            <dl className="lx-evidence">
+              <div className="lx-evidence__item">
+                <dt className="lx-evidence__label">{text.rolesLabel}</dt>
+                <dd className="lx-evidence__value">{roleNames(roles)}</dd>
+              </div>
+              <div className="lx-evidence__item">
+                <dt className="lx-evidence__label">{text.mfaLabel}</dt>
+                <dd className="lx-evidence__value">{text.mfaValue}</dd>
+              </div>
+            </dl>
+          </section>
+          <section className="lx-prose" aria-labelledby="admin-modules">
+            <h2 className="lx-display-s" id="admin-modules">
+              {text.modulesTitle}
+            </h2>
+            <div className="lx-empty">
+              <p className="lx-body">{text.modulesEmpty}</p>
+            </div>
+          </section>
         </div>
-      </header>
-      <main id="conteudo" className="lx-container">
-        <h1 className="lx-display-s">{text.title}</h1>
-        <p className="lx-lead">{text.lead}</p>
-        <dl className="lx-evidence">
-          <div className="lx-evidence__item">
-            <dt className="lx-evidence__label">{text.rolesLabel}</dt>
-            <dd className="lx-evidence__value">
-              {roles.map((role) => messages.roles[role]).join(', ')}
-            </dd>
-          </div>
-        </dl>
-      </main>
-    </>
+      </div>
+    </AdminShell>
   );
 }
 
@@ -62,5 +69,5 @@ export async function AdminHomePage() {
   if (access.kind === 'mfa_required') redirect('/entrar/mfa');
   if (access.kind === 'unavailable') return <AuthUnavailable />;
   if (access.kind === 'forbidden') return <AdminForbidden />;
-  return <AdminShell roles={access.roles} />;
+  return <AdminHome roles={access.roles} />;
 }
