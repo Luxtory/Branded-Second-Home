@@ -1,74 +1,13 @@
-import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
-
-// Autenticação de teste (AUTH_MODE=test, ADR-0005 §7): código de login e TOTP determinísticos. Os usuários e o papel
-// Admin do staff são criados por tests/support/e2e-server.mjs.
-const TEST_CODE = '123456';
-const STAFF_EMAIL = 'staff@luxtory.test';
-const VISITOR_EMAIL = 'visitante@luxtory.test';
-// O adapter de teste simula o limite de envio do provedor para este endereço (TEST_RATE_LIMITED_EMAIL): só o primeiro
-// envio do processo passa.
-const RATE_LIMITED_EMAIL = 'limite@luxtory.test';
-const VIEWPORTS = [
-  { width: 390, height: 844 },
-  { width: 1440, height: 900 },
-];
-
-function collectConsoleErrors(page: Page): string[] {
-  const errors: string[] = [];
-  page.on('console', (message) => {
-    if (message.type() === 'error') errors.push(`${message.text()} @ ${message.location().url}`);
-  });
-  return errors;
-}
-
-/**
- * Erros de console conferidos antes do axe: ele gera 404 falsos ao reler as folhas de estilo (NOTES §4). O axe mede a
- * página assentada: título aplicado (a metadata chega em streaming depois da navegação), ponteiro fora dos controles e
- * nenhuma transição em curso — senão mede as cores intermediárias do hover.
- */
-async function expectAccessible(page: Page, consoleErrors: readonly string[]) {
-  expect(consoleErrors).toEqual([]);
-  await expect(page).toHaveTitle(/\S/);
-  for (const viewport of VIEWPORTS) {
-    await page.setViewportSize(viewport);
-    await page.mouse.move(0, 0);
-    await page.waitForFunction(() =>
-      document.getAnimations().every((animation) => animation.playState !== 'running'),
-    );
-    const { violations } = await new AxeBuilder({ page }).analyze();
-    expect(violations.map((violation) => `${viewport.width}: ${violation.id}`)).toEqual([]);
-  }
-}
-
-async function signIn(page: Page, email: string) {
-  await page.goto('/entrar');
-  await page.getByLabel('E-mail').fill(email);
-  await page.getByRole('button', { name: 'Enviar código' }).click();
-  await expect(page.getByRole('status')).toContainText('Confira seu e-mail');
-  await page.getByLabel('Código recebido por e-mail').fill(TEST_CODE);
-  await page.getByRole('button', { name: 'Entrar' }).click();
-  await expect(page).toHaveURL(/\/entrar\/mfa$/);
-  // Primeiro acesso cadastra o TOTP (QR Code); com fator já verificado, a tela pede só o código.
-  const enroll = page.getByRole('button', { name: 'Gerar QR Code' });
-  const challenge = page.getByLabel('Código de 6 dígitos do aplicativo');
-  await expect(enroll.or(challenge)).toBeVisible();
-  if (await enroll.isVisible()) {
-    await enroll.click();
-    await expect(page.getByRole('img', { name: /QR Code/ })).toBeVisible();
-  }
-  await page.getByLabel('Código de 6 dígitos do aplicativo').fill(TEST_CODE);
-  await page.getByRole('button', { name: /^Confirmar/ }).click();
-}
-
-async function reachMfa(page: Page, email: string) {
-  await page.goto('/entrar');
-  await page.getByLabel('E-mail').fill(email);
-  await page.getByRole('button', { name: 'Enviar código' }).click();
-  await page.getByLabel('Código recebido por e-mail').fill(TEST_CODE);
-  await page.getByRole('button', { name: 'Entrar' }).click();
-  await expect(page).toHaveURL(/\/entrar\/mfa$/);
-}
+import { expect, test } from '@playwright/test';
+import {
+  RATE_LIMITED_EMAIL,
+  reachMfa,
+  signIn,
+  STAFF_EMAIL,
+  TEST_CODE,
+  VISITOR_EMAIL,
+} from './support/auth';
+import { collectConsoleErrors, expectAccessible } from './support/ui';
 
 test('[TECH-050] sem sessão, o Admin leva ao login; a tela de login tem axe 0', async ({
   page,
