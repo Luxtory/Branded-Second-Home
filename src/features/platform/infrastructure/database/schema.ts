@@ -58,6 +58,53 @@ export interface AppAuthorizationGrant {
   valid_until: Timestamp;
 }
 
+export interface AppBrandPartner {
+  brand_name: string;
+  created_at: Timestamp;
+  exposure_authorization_ref: string | null;
+  exposure_authorized_at: Timestamp | null;
+  id: string;
+  operation_id: string;
+  terminated_effective_at: Timestamp | null;
+  termination_basis: string | null;
+  termination_registered_at: Timestamp | null;
+}
+
+export interface AppConcept {
+  brand_partner_id: string;
+  created_at: Timestamp;
+  id: string;
+  operation_id: string;
+  title: string;
+}
+
+export interface AppConceptVersion {
+  approval_operation_id: string | null;
+  approval_refs: string[] | null;
+  approved_at: Timestamp | null;
+  approved_by_user_id: string | null;
+  approved_role: string | null;
+  concept_id: string;
+  created_at: Timestamp;
+  essential_elements: string[];
+  id: string;
+  operation_id: string;
+  preservation_premises: string[];
+  specification: string;
+  state: string;
+  version: number;
+}
+
+export interface AppEdition {
+  commercial_conditions: string;
+  concept_id: string;
+  created_at: Timestamp;
+  id: string;
+  modality: string;
+  operation_id: string;
+  region: string;
+}
+
 export interface AppIdempotencyRecord {
   command: string;
   created_at: Timestamp;
@@ -67,6 +114,20 @@ export interface AppIdempotencyRecord {
   request_hash: string;
   response: Json | null;
   scope: string;
+}
+
+export interface AppInvestorAuthorization {
+  concept_id: string;
+  created_at: Timestamp;
+  id: string;
+  instrument_ref: string;
+  operation_id: string;
+  registered_by_user_id: string;
+  registered_role: string;
+  revocation_basis: string | null;
+  revoked_at: Timestamp | null;
+  valid_from: Timestamp;
+  valid_until: Timestamp | null;
 }
 
 export interface AppNotification {
@@ -112,6 +173,18 @@ export interface AppOutboxReceipt {
   received_at: Timestamp;
 }
 
+export interface AppResidence {
+  commercially_approved_at: Timestamp;
+  concept_id: string;
+  concept_version_id: string;
+  edition_id: string;
+  id: string;
+  investor_authorization_id: string | null;
+  label: string;
+  operation_id: string;
+  timezone: string;
+}
+
 export interface AppStaffRole {
   basis: string;
   granted_at: Timestamp;
@@ -125,10 +198,16 @@ export interface AppStaffRole {
 export interface DB {
   'app.audit_log': AppAuditLog;
   'app.authorization_grant': AppAuthorizationGrant;
+  'app.brand_partner': AppBrandPartner;
+  'app.concept': AppConcept;
+  'app.concept_version': AppConceptVersion;
+  'app.edition': AppEdition;
   'app.idempotency_record': AppIdempotencyRecord;
+  'app.investor_authorization': AppInvestorAuthorization;
   'app.notification': AppNotification;
   'app.operation': AppOperation;
   'app.outbox': AppOutbox;
   'app.outbox_receipt': AppOutboxReceipt;
+  'app.residence': AppResidence;
   'app.staff_role': AppStaffRole;
 }
