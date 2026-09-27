@@ -1,6 +1,12 @@
 /** Estados dos formulários de login e MFA (compartilhados entre Server Actions e componentes de cliente). */
 export type LoginMessage =
-  'code_sent' | 'invalid_email' | 'invalid_code' | 'rate_limited' | 'unavailable';
+  | 'code_sent'
+  | 'code_resent'
+  | 'invalid_email'
+  | 'invalid_code'
+  | 'rate_limited'
+  | 'resend_rate_limited'
+  | 'unavailable';
 
 export interface LoginState {
   readonly step: 'email' | 'code';

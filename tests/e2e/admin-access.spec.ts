@@ -6,6 +6,9 @@ import { expect, test, type Page } from '@playwright/test';
 const TEST_CODE = '123456';
 const STAFF_EMAIL = 'staff@luxtory.test';
 const VISITOR_EMAIL = 'visitante@luxtory.test';
+// O adapter de teste simula o limite de envio do provedor para este endereço (TEST_RATE_LIMITED_EMAIL): só o primeiro
+// envio do processo passa.
+const RATE_LIMITED_EMAIL = 'limite@luxtory.test';
 const VIEWPORTS = [
   { width: 390, height: 844 },
   { width: 1440, height: 900 },
@@ -97,6 +100,50 @@ test('[TECH-050] código inválido é recusado com mensagem acessível', async (
   await expectAccessible(page, consoleErrors);
 });
 
+test('[TECH-050] "Reenviar código" reenvia para o mesmo e-mail e mantém o formulário do código; axe 0', async ({
+  page,
+}) => {
+  const consoleErrors = collectConsoleErrors(page);
+  await page.goto('/entrar');
+  await page.getByLabel('E-mail').fill(STAFF_EMAIL);
+  await page.getByRole('button', { name: 'Enviar código' }).click();
+  await expect(page.getByRole('status')).toContainText('Confira seu e-mail');
+
+  await page.getByRole('button', { name: 'Reenviar código' }).click();
+  await expect(page.getByRole('status')).toContainText('Novo código enviado');
+  const code = page.getByLabel('Código recebido por e-mail');
+  await expect(code).toBeVisible();
+  await expect(code).not.toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('input[name="email"]')).toHaveValue(STAFF_EMAIL);
+  await expectAccessible(page, consoleErrors);
+
+  // Enter no campo confirma o código (não reenvia) e o login segue para o segundo fator.
+  await code.fill(TEST_CODE);
+  await code.press('Enter');
+  await expect(page).toHaveURL(/\/entrar\/mfa$/);
+});
+
+test('[TECH-050] reenvio barrado pelo limite do provedor: pede para aguardar e mantém o código; axe 0', async ({
+  page,
+}) => {
+  const consoleErrors = collectConsoleErrors(page);
+  await page.goto('/entrar');
+  await page.getByLabel('E-mail').fill(RATE_LIMITED_EMAIL);
+  await page.getByRole('button', { name: 'Enviar código' }).click();
+  await expect(page.getByRole('status')).toContainText('Confira seu e-mail');
+
+  await page.getByRole('button', { name: 'Reenviar código' }).click();
+  const notice = page.getByRole('status');
+  await expect(notice).toContainText('Aguarde para pedir outro código');
+  await expect(notice).toContainText('Espere antes de tentar de novo');
+  const code = page.getByLabel('Código recebido por e-mail');
+  await expect(code).toBeVisible();
+  await expect(code).not.toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('input[name="email"]')).toHaveValue(RATE_LIMITED_EMAIL);
+  await expect(page.getByRole('button', { name: 'Reenviar código' })).toBeEnabled();
+  await expectAccessible(page, consoleErrors);
+});
+
 test('[TECH-050] staff entra com código e TOTP (AAL2) e chega ao Admin; axe 0 e saída', async ({
   page,
 }) => {
@@ -158,6 +205,7 @@ test('[TECH-050] primeiro cadastro do TOTP é guiado: 3 passos, apps oficiais, c
     'Proteja sua conta com um aplicativo autenticador',
   );
   await expect(page.getByText(/além do código que chegou por e-mail/)).toBeVisible();
+  await expect(page.getByText(/instale um destes aplicativos compatíveis/)).toBeVisible();
   for (const step of [
     '1. Instale ou abra um aplicativo autenticador',
     '2. Adicione a Luxtory ao aplicativo',

@@ -12,8 +12,15 @@ export const messages = {
     otherEmail: 'Usar outro e-mail',
     codeSentTitle: 'Confira seu e-mail',
     codeSentBody: 'Se o e-mail estiver cadastrado, você receberá um código em instantes.',
+    resendCode: 'Reenviar código',
+    codeResentTitle: 'Novo código enviado',
+    codeResentBody:
+      'Se o e-mail estiver cadastrado, um novo código chega em instantes. Use o código do e-mail mais recente.',
+    resendRateLimitedTitle: 'Aguarde para pedir outro código',
+    resendRateLimitedBody:
+      'Houve muitos pedidos de código em pouco tempo. Espere antes de tentar de novo. Se o último código recebido ainda não expirou, você pode usá-lo.',
     invalidEmail: 'Informe um e-mail válido.',
-    invalidCode: 'Código inválido ou expirado. Confira o e-mail ou peça um novo código.',
+    invalidCode: 'Código inválido ou expirado. Confira o e-mail ou use “Reenviar código”.',
     rateLimited: 'Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente de novo.',
   },
   mfa: {
@@ -23,7 +30,7 @@ export const messages = {
       'O acesso administrativo pede uma segunda confirmação, além do código que chegou por e-mail: um código de 6 dígitos gerado por um aplicativo autenticador no seu celular ou computador. Você configura uma vez; depois, é só abrir o aplicativo a cada login.',
     installTitle: '1. Instale ou abra um aplicativo autenticador',
     installBody:
-      'Se ainda não tem um, instale um destes aplicativos gratuitos. Um gerenciador de senhas com essa função também serve.',
+      'Se ainda não tem um, instale um destes aplicativos compatíveis. Um gerenciador de senhas com essa função também serve.',
     newTab: '(abre em nova aba)',
     addTitle: '2. Adicione a Luxtory ao aplicativo',
     addBeforeQr:

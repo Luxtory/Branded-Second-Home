@@ -114,6 +114,11 @@ inexistente.
 
 - Código de login inválido ou expirado → mensagem genérica; e-mail não cadastrado → a mesma resposta do envio (sem
   enumerar contas). Limite de envio do Supabase → "muitas tentativas".
+- "Reenviar código" (2026-09-27) no passo do código: mesmo envio para o mesmo e-mail (`shouldCreateUser: false`, mesma
+  resposta com ou sem conta) e o formulário do código continua na tela. Sucesso → "Novo código enviado"; limite do
+  Supabase → aviso para aguardar antes de tentar de novo, sem prazo na tela (o intervalo por usuário é configuração do
+  Supabase Auth — padrão documentado de 60 s, ajustável — e o valor do projeto não está registrado); o último código
+  recebido pode ser usado se ainda não expirou.
 - Fator TOTP não verificado de uma tentativa anterior → removido antes de um novo cadastro: gerar um novo QR Code
   invalida a chave anterior (caminho para descartar uma chave exposta antes da verificação).
 - Primeiro cadastro do TOTP guiado em três passos (2026-09-27): (1) instalar ou abrir um aplicativo autenticador, com
@@ -137,7 +142,7 @@ inexistente.
 
 ## 9. Observability
 
-- Logs: `auth code requested` / `auth code rejected` / `mfa verified` / `mfa rejected` (sem e-mail nem código),
+- Logs: `auth code requested` (com `outcome` e `resend`) / `auth code rejected` / `mfa verified` / `mfa rejected` (sem e-mail nem código),
   `auth unavailable` (chaves), e os logs de command da W1 (`command committed`, `command rejected`).
 
 ## 10. Rollout plan

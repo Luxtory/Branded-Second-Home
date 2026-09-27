@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cadastro do segundo fator (`/entrar/mfa`) guiado em três passos: aplicativo autenticador (links oficiais), QR Code
   com chave manual opcional e botão "Copiar chave", e o código de 6 dígitos do aplicativo — diferente do código do
   e-mail. Segurança inalterada (TOTP padrão, AAL2).
+- Login (`/entrar`): botão "Reenviar código" no passo do código, com aviso de envio e, se o limite de envio for
+  atingido, o pedido para aguardar antes de tentar de novo — o formulário do código continua na tela.
 
 ### Deprecated
 - ...
