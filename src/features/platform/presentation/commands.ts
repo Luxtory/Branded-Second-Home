@@ -18,9 +18,10 @@ export interface CommandResponseOptions {
   readonly afterCommit?: (log: LogPort) => void;
 }
 
-const dispatchAfterCommit = (log: LogPort) => {
+/** Depois de um commit novo, agenda a entrega do outbox sem esperar o cron (TECH-091): rotas e Server Actions. */
+export function dispatchOutboxAfterCommit(log: LogPort): void {
   scheduleOutboxDispatch(createOutboxDispatch({ log }), log);
-};
+}
 
 /**
  * Resposta HTTP de um command (TECH-056, ADR-006 do `03`): resultado com `successStatus`, a mesma resposta com
@@ -28,7 +29,12 @@ const dispatchAfterCommit = (log: LogPort) => {
  */
 export function commandResponse<R extends JsonValue>(
   outcome: CommandOutcome<R>,
-  { correlationId, successStatus, log, afterCommit = dispatchAfterCommit }: CommandResponseOptions,
+  {
+    correlationId,
+    successStatus,
+    log,
+    afterCommit = dispatchOutboxAfterCommit,
+  }: CommandResponseOptions,
 ): Response {
   if (outcome.status === 'rejected') return errorResponse(outcome.code, correlationId);
   if (!outcome.replayed) afterCommit(log);

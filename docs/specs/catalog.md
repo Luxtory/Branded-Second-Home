@@ -131,10 +131,12 @@ command guarda o `operation_id` da criação.
   do `02` §1 e expressões explícitas conhecidas de promessa de retorno (mesmos padrões do teste de terminologia do DS).
   É defesa complementar, não interpretação semântica do REQ-101; o gate editorial continua sendo a aprovação humana da
   versão (`approve_concept_version`).
-- **Travas (ADR-0010 §8).** Ordem do catálogo: `brand_partner` → `concept` → `investor_authorization` → `edition`, por
-  id, antes de qualquer classe do TECH-053 (nenhum command do catálogo toca essas classes). A checagem de encerramento
-  trava a Brand Partner em `FOR SHARE`; encerrar e autorizar a exposição, em `FOR UPDATE`. A aprovação trava o Concept
-  em `FOR UPDATE`; o registro de Residence e de Edition, em `FOR SHARE`.
+- **Travas (ADR-0010 §8).** Ordem do catálogo: `brand_partner` → `investor_authorization`, por id, antes de qualquer
+  classe do TECH-053 (nenhum command do catálogo toca essas classes). Os novos usos (Concept novo, autorização de
+  Investor, Edition, Residence) travam a Brand Partner em `FOR SHARE`; encerrar, autorizar a exposição, criar versão
+  nova e aprovar versão, em `FOR NO KEY UPDATE` — o que serializa numeração e aprovação de versões com o registro de
+  Residences sem bloquear as FKs. O registro de Residence trava a autorização de Investor em `FOR SHARE`; a revogação,
+  em `FOR NO KEY UPDATE`. O resto é contido por constraints.
 
 ## 6. Acceptance criteria
 

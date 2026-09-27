@@ -33,8 +33,11 @@ export const PLATFORM_ERROR_CODES = [
 export const ERROR_CODES = [...TECH_056_ERROR_CODES, ...PLATFORM_ERROR_CODES] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
-/** Recusa funcional de um command: sempre um código do TECH-056. */
-export type RejectionCode = (typeof TECH_056_ERROR_CODES)[number];
+/**
+ * Recusa funcional de um command: um código do TECH-056 ou `ERR_NOT_FOUND`, quando o objeto referenciado não existe
+ * (ADR-0010 §10).
+ */
+export type RejectionCode = (typeof TECH_056_ERROR_CODES)[number] | 'ERR_NOT_FOUND';
 
 /**
  * Causas funcionais do REQ-098 e os códigos do TECH-056 que as comunicam. Os códigos técnicos pertencem ao `03`; a

@@ -52,9 +52,11 @@ canônicos não fixam e que não podem virar regra de negócio nova:
 7. **Leituras do Admin.** Como `luxtory_app`, depois de resolver o acesso de staff com o papel Admin exercido; cada
    leitura grava `admin_read` (TECH-092). RLS ligada em todas as tabelas, com política só para `luxtory_app`: `anon` e
    `authenticated` não leem nada (a leitura pública entra na W4).
-8. **Travas do catálogo.** Ordem `brand_partner` → `concept` → `investor_authorization` → `edition`, por id, antes de
-   qualquer classe do TECH-053 (que o catálogo não usa). Concorrência também é contida por constraints e atualizações
-   condicionais.
+8. **Travas do catálogo.** Ordem `brand_partner` → `investor_authorization`, por id, antes de qualquer classe do
+   TECH-053 (que o catálogo não usa). Novos usos travam a Brand Partner em `FOR SHARE`; encerramento, exposição,
+   versão nova e aprovação, em `FOR NO KEY UPDATE`. Travar `concept` exigiria privilégio de UPDATE numa tabela
+   imutável, por isso a serialização das versões passa pela Brand Partner (contenção desprezível: operação de staff).
+   O resto é contido por constraints.
 9. **Lista de registros, sem tabela (D-W3-2).** `lx-record-list` (lista semântica com filetes e `lx-evidence--inline`)
    serve todas as listas do catálogo de 320 a 1920 px. Tabela e filtros entram quando houver comparação densa ou volume
    que peça filtro (candidatas: W5, W16, W17).
