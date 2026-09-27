@@ -14,6 +14,8 @@ Uma área `/admin` que só abre para staff autenticado com MFA (TECH-050) e que 
 ## 2. Non-goals
 
 - Nenhuma tela de operação, lista ou formulário do Admin (W3 em diante); nenhum componente novo no Design System.
+  **Revisão W2B ([ADR-0009](../adr/0009-superficies-de-produto-mobile-first.md))**: o Admin passa a ser o primeiro
+  consumidor do App Shell do DS; lista, tabela, filtros e formulários continuam na W3.
 - Logo no cabeçalho do Admin: os arquivos do kit só são servidos pelo Lab; a exposição do logo entra com as páginas
   públicas (W4).
 
@@ -45,6 +47,11 @@ Uma área `/admin` que só abre para staff autenticado com MFA (TECH-050) e que 
       AAL2 → início do Admin com os papéis ativos e "Sair".
 - [x] Sem banco ou sem Auth no ambiente (Preview, ADR-0007) → tela "indisponível", sem erro 500.
 - [x] Textos pela camada i18n; classes `lx-*`; axe 0 em 390 e 1440 px (E2E).
+- [ ] W2B: `/admin` no App Shell (`AppShell` + `PageHeader`) — abaixo de `lg`, barra com logo e gaveta; a partir de
+      `lg`, navegação lateral com o item atual (`aria-current`) e o bloco de conta (papéis ativos + "Sair"). Itens de
+      navegação só para seções com tela (`admin-shell.tsx`); início com "Sua sessão" (papéis e segundo fator) e
+      "Módulos" (estado vazio honesto). Fluxo principal a 390 px com toque; sem overflow de 320 a 1920 px.
+- [ ] W2B: tela 403 no layout focado (rótulo "Acesso negado" em Hanken, título, texto e "Sair"), sem dado.
 
 ## 7. Edge cases
 

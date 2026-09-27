@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 // Fails when a visual decision is hardcoded outside tokens.css: color literals, font-family,
 // durations, easings, z-index, or @media widths that are not breakpoint tokens.
+// Width media queries are mobile-first (ADR-0009): only min-width. The base style serves the phone and each
+// breakpoint only adds; a max-width query would open a second styling path and regressions at the cuts. An
+// exception is a deliberate Design System decision (spec + ADR), never a workaround.
 // Scans src/design-system/styles/**/*.css and the Lab (lab/*.css, <style> and style="" in lab/*.html).
 // Usage: node src/design-system/scripts/check-hardcodes.mjs
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -47,9 +50,11 @@ export function scanCss(css, { file = '<inline>', breakpoints = [] } = {}) {
       if (rule.test(prop, value)) violations.push({ file, line: lineOf(clean, m.index), rule: rule.id, text: `${prop}: ${value}` });
     }
   }
-  for (const m of clean.matchAll(/@media[^{]*\((?:min|max)-width:\s*([^)]+)\)/gi)) {
-    if (!breakpoints.includes(m[1].trim())) {
-      violations.push({ file, line: lineOf(clean, m.index), rule: 'media-breakpoint', text: m[0].trim() });
+  for (const m of clean.matchAll(/@media[^{]*\((min|max)-width:\s*([^)]+)\)/gi)) {
+    const line = lineOf(clean, m.index);
+    if (m[1].toLowerCase() === 'max') violations.push({ file, line, rule: 'media-max-width', text: m[0].trim() });
+    if (!breakpoints.includes(m[2].trim())) {
+      violations.push({ file, line, rule: 'media-breakpoint', text: m[0].trim() });
     }
   }
   return violations;

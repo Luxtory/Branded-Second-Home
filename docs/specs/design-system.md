@@ -23,6 +23,9 @@ A prioridade é o **R1 — site público: Discovery + Interesse** (02 §2).
 - Componentes React/Next.js. Entram depois do W0 como wrappers finos das classes `lx-*` (ADR-0003).
 - Área do Titular, Calendário, Club, Carteira e Admin (R2–R4). O sistema já prevê a expressão `product`, mas
   sem componentes específicos (tabelas, calendário, gráficos).
+  - **Revisão 2026-09-27 ([ADR-0009](../adr/0009-superficies-de-produto-mobile-first.md))**: as superfícies de
+    produto entram no DS a partir da W2B (shell, layout focado, padrão de página e estados). Tabela, calendário,
+    gráficos e demais componentes de produto continuam fora até uma wave consumi-los.
 - Definir campos de contato ou qualificação do interesse (REQ-025 não os enumera; aguardam a Luxtory).
 - Redesenhar, recolorir ou derivar versões do logo.
 - Criar regra de negócio, preço, estado ou texto normativo que não exista nos canônicos 01/02/03.
@@ -109,6 +112,9 @@ Nenhum. O Design System não expõe endpoints nem eventos.
   | `night` | Dark Moroccan Blue, com grain | noite |
 
 - **Expressão:** `data-expression="story"` (padrão, Discovery) ou `"product"` (densidade funcional, R2+).
+  - `product` (ADR-0009; o App Shell a aplica): rótulos de interface — inclusive `lx-evidence__label` — ficam em
+    Hanken Grotesk. Courier Prime só para metadata real e curta com valor semântico (ids, códigos, timestamps), nunca
+    para rótulo nem decoração.
 
 ### Contrato de CSS
 
@@ -118,6 +124,10 @@ Nenhum. O Design System não expõe endpoints nem eventos.
   (`aria-invalid`, `aria-busy`, `disabled`, `aria-current`, `aria-expanded`), nunca via classes de estado.
 - Fora de `tokens.css` é proibido declarar literais de cor, `font-family`, duração, easing ou `z-index`
   (`scripts/check-hardcodes.mjs`). Media queries só usam os breakpoints dos tokens.
+- **Mobile-first (ADR-0009):** media queries de largura só com `min-width`; `max-width` é recusado pelo
+  `check-hardcodes`. O estilo base serve o celular e cada breakpoint só acrescenta — `max-width` criaria um segundo
+  caminho de estilos e regressões nos cortes. Uma exceção futura é decisão deliberada do DS (esta spec + ADR), nunca
+  workaround.
 - Sem strings de produto em CSS: `content:` só para glifos decorativos, com texto alternativo vazio.
 - Motion respeita `prefers-reduced-motion` e o atributo `[data-motion="reduce"]` no `<html>`.
 
@@ -167,6 +177,31 @@ Uso detalhado, markup e exemplos: [`docs/reference/design-system.md`](../referen
 | Concept Credit | `lx-credit` | — | não renderiza sem autorização nos dados; logo da parceira nunca recolorido |
 | Logo | `lx-logo` | `--vertical`; `--pending` (só para asset ausente) | `<img alt="">` dentro de link com nome acessível; `<picture>` troca pelo ícone abaixo de 360px |
 
+### Superfícies de produto (W2B, ADR-0009)
+
+Regra global: **mobile-first com paridade funcional** — toda função alcançável e concluível a partir de 320 px; a
+ergonomia pode mudar entre larguras, o resultado não. Exceção só como decisão explícita de produto, registrada na
+spec da funcionalidade. Proibido overflow horizontal **não intencional** do documento; rolagem horizontal
+deliberada só dentro de um componente de dados, contida e acessível.
+
+| Componente | Classe | Variantes | Estados / acessibilidade |
+|---|---|---|---|
+| App Shell | `lx-app` + `__bar` (< lg), `__nav` (≥ lg), `__nav-list`, `__nav-link`, `__account`, `__main`; gaveta = `lx-mobile-nav` | fundo da navegação por `data-ground` (`night` ou `paper`; o logo acompanha o fundo) | skip link; `nav` rotulado; `aria-current="page"`; gaveta fecha ao cruzar `lg` e o foco vai ao conteúdo |
+| Page Header | `lx-page-header` + `__lead` | — | um `h1` por página; metadata em Courier só se for real e útil |
+| Page Section | `lx-page-section` (`section` com `h2.lx-display-s`) | — | `aria-labelledby` no título; distância fixa título → conteúdo |
+| Layout focado | `lx-focused` + `__panel` (`main`), `__body` | — | tarefa única, sem navegação: login, segundo fator, acesso negado, indisponível e erro; painel em tela cheia no celular e centralizado sobre `wash` a partir de `md` (`--lx-layout-focused-width`); logo sem link, a imagem leva o nome |
+
+- **Composição:** o shell recebe `navItems` e o bloco de conta por props, montados na `presentation` de cada slice.
+  O DS não conhece módulos, papéis nem regras; textos chegam por props (i18n do slice).
+- **React** (`src/design-system/react/`): `AppShell`, `PageHeader`, `FocusedLayout` e `Logo` (por chave do
+  manifest; com `href` é link para o início, sem `href` a imagem leva o nome).
+- **Estados de produto:** vazio = `lx-empty`; acesso negado, indisponível e erro inesperado = layout focado com rótulo
+  `lx-label`, `h1`, texto e ação (erro: `error.tsx` do App Router, com "Tentar de novo" e sem detalhe técnico na tela).
+  Carregando fica para a primeira tela que carregue dados de forma perceptível (consumer-driven).
+- **Logo no app:** `GET /brand/logo/<chave>` serve o arquivo da chave do manifest (bytes como fornecidos).
+- **Consumer-driven:** componente, estado ou token novo só entra quando uma tela o consome ou o Lab precisa dele
+  para demonstrar um componente existente.
+
 ## 6. Acceptance criteria
 
 **Tokens e código**
@@ -189,6 +224,16 @@ Uso detalhado, markup e exemplos: [`docs/reference/design-system.md`](../referen
 - [ ] axe-core (WCAG 2.2 AA) não aponta violações no Lab.
 - [ ] O percurso completo por teclado funciona, com foco sempre visível.
 - [ ] Com `prefers-reduced-motion: reduce`, não há transform nem animação.
+
+**Superfícies de produto (ADR-0009)**
+- [ ] Nenhuma media query de largura com `max-width` em `src/design-system/` (`check-hardcodes`).
+- [ ] Telas de produto: axe 0 a 390 e 1440 px; sem overflow horizontal não intencional do documento de 320 a
+  1920 px; zero erro de console; fluxo principal executado a 390 px com toque.
+- [ ] Shell: 1023 px → barra + gaveta; 1024 px → navegação lateral; gaveta aberta fecha ao cruzar `lg` e o foco vai
+  a um lugar válido; alvos ≥ 44 px; sem animação com movimento reduzido.
+- [ ] Smoke Playwright WebKit do shell e do login (não equivale a Safari/iOS real).
+- [ ] O Lab mostra as superfícies de produto: seção 17 e as páginas de demonstração `lab/produto-app.html` e
+  `lab/produto-focado.html`, com axe 0 e sem overflow de 320 a 1920 px.
 
 **Repositório**
 - [ ] `frontend-design`, `CLAUDE.md` e `AGENTS.md` apontam para este sistema.
@@ -214,6 +259,9 @@ Uso detalhado, markup e exemplos: [`docs/reference/design-system.md`](../referen
 - Sem nova superfície de ataque: nenhum endpoint, dado ou deploy. Threat model dispensado.
 - Fontes self-hosted, sem requests a terceiros (menos rastreamento; bom para a LGPD).
 - O Lab não é publicado. No W0, a rota interna é `noindex` e fica fora de produção.
+- W2B: `GET /brand/logo/<chave>` é uma rota pública de asset — só chaves do manifest (o caminho do arquivo nunca
+  vem do request; chave desconhecida → 404), SVG com CSP `default-src 'none'; style-src 'unsafe-inline'`, sem dado
+  nem estado.
 
 ## 9. Observability
 
@@ -225,6 +273,8 @@ Não aplicável (camada visual). Performance acompanhada por Core Web Vitals no 
 - Após o W0: wrappers React, `next/font/local` com os mesmos woff2, rota `/lab` interna adicional, e Vitest,
   Playwright, axe e regressão visual na CI.
 - Mudanças de token são versionadas no `CHANGELOG.md`.
+- W2B ([ADR-0009](../adr/0009-superficies-de-produto-mobile-first.md)): superfícies de produto — shell, layout focado,
+  padrão de página e estados, com o Admin como primeiro consumidor.
 
 ## 11. Open questions
 

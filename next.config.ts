@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/lab/[[...path]]': ['./src/design-system/{lab,styles,tokens,fonts,brand,icons}/**/*'],
     '/favicon.ico': ['./src/design-system/brand/logo/*.svg'],
+    '/brand/logo/[family]/[color]': ['./src/design-system/brand/logo/*.svg'],
   },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];

@@ -1,5 +1,6 @@
 /** Textos do slice identity (pt-BR, único locale — CLAUDE.md → i18n). */
 export const messages = {
+  brand: 'Luxtory',
   login: {
     title: 'Entrar na Luxtory',
     lead: 'Acesso da equipe Luxtory. Enviaremos um código de uso único para o seu e-mail.',

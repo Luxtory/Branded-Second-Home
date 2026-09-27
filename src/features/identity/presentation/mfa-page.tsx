@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { FocusedLayout } from '@/design-system/react';
 import { AuthUnavailable } from './auth-unavailable';
 import { messages } from './i18n/pt-br';
 import { MfaForm } from './mfa-form';
@@ -15,13 +16,13 @@ export async function MfaPage() {
   if (state === null) redirect('/entrar');
   if ('assurance' in state) redirect('/admin');
   return (
-    <main id="conteudo" className="lx-container lx-container--narrow">
+    <FocusedLayout brand={messages.brand}>
       {state.factorId === null ? (
         <h1 className="lx-display-m">{messages.mfa.enrollTitle}</h1>
       ) : (
         <h1 className="lx-display-s">{messages.mfa.title}</h1>
       )}
       <MfaForm factorId={state.factorId} />
-    </main>
+    </FocusedLayout>
   );
 }

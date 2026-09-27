@@ -74,8 +74,12 @@ jobs:
         with: { node-version: 22, cache: npm }
       - name: Install
         run: npm ci
-      - name: E2E (next build + Playwright/axe com o Chrome do runner)
+      - name: Playwright WebKit (smoke do shell e do login, ADR-0009)
+        run: npx playwright install --with-deps webkit
+      - name: E2E (next build + Playwright/axe com o Chrome do runner + smoke WebKit)
         run: npm run test:e2e
+        env:
+          PLAYWRIGHT_WEBKIT: '1'
       - name: Playwright traces
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

@@ -93,6 +93,7 @@
               <li><a class="lx-link" href="#navegacao">14 Navegação</a></li>
               <li><a class="lx-link" href="#motion">15 Motion</a></li>
               <li><a class="lx-link" href="#acessibilidade">16 Acessibilidade</a></li>
+              <li><a class="lx-link" href="#produto">17 Superfícies de produto</a></li>
               <li><a class="lx-link" href="#composicoes">R1 Composições</a></li>
             </ol>
           </nav>
@@ -582,6 +583,36 @@
               <tr><th scope="row">Semântica</th><td>Headings pela hierarquia do conteúdo, e não pelo tamanho visual; landmarks rotulados.</td></tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <!-- ============================== 17 SUPERFÍCIES DE PRODUTO ============================== -->
+      <section id="produto" class="lab-section" aria-labelledby="t-produto">
+        <div class="lab-section__head">
+          <p class="lx-marker"><span>17</span><span>Superfícies de produto</span></p>
+          <h2 id="t-produto" class="lx-display-m">Operar com <em>clareza</em>.</h2>
+          <p class="lx-body">Áreas logadas (Admin, Área do Titular, Club) são mobile-first, com paridade funcional a partir de 320px (ADR-0009). O App Shell tem barra e gaveta no celular e navegação lateral a partir de 64rem; o layout focado serve login, segundo fator e estados. Na expressão <code>product</code>, rótulos ficam em Hanken Grotesk; Courier só para metadata real e curta.</p>
+        </div>
+        <div class="lab-row">
+          <a class="lx-link lx-link--standalone" href="produto-app.html">Abrir o App Shell <svg class="lx-link__icon" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
+          <a class="lx-link lx-link--standalone" href="produto-focado.html">Abrir o layout focado <svg class="lx-link__icon" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
+        </div>
+        <div data-expression="product" style="margin-top: var(--lx-space-12)">
+          <header class="lx-page-header">
+            <h3 class="lx-display-m">Administração</h3>
+            <p class="lx-lead lx-page-header__lead">Page Header: o único título da página, a descrição e o filete que separa do conteúdo.</p>
+          </header>
+          <section class="lx-page-section" aria-labelledby="lab-produto-sessao">
+            <h4 id="lab-produto-sessao" class="lx-display-s">Sua sessão</h4>
+            <dl class="lx-evidence">
+              <div class="lx-evidence__item"><dt class="lx-evidence__label">Papéis ativos</dt><dd class="lx-evidence__value">Admin · Super Admin</dd></div>
+              <div class="lx-evidence__item"><dt class="lx-evidence__label">Segundo fator</dt><dd class="lx-evidence__value">Confirmado</dd></div>
+            </dl>
+          </section>
+          <section class="lx-page-section" aria-labelledby="lab-produto-modulos">
+            <h4 id="lab-produto-modulos" class="lx-display-s">Módulos</h4>
+            <div class="lx-empty"><p class="lx-body">Ainda não há módulos de operação. Cada um aparece aqui e na navegação quando for liberado.</p></div>
+          </section>
         </div>
       </section>
     </div>

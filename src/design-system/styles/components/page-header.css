@@ -1,0 +1,22 @@
+/* Page Header — abre toda página de produto (ADR-0009): um h1 (lx-display-m), a descrição e um filete que separa o
+ * cabeçalho do conteúdo. Metadata em Courier só quando for real e útil — nunca criada para efeito editorial. */
+@layer lx.components {
+  .lx-page-header {
+    display: grid;
+    gap: var(--lx-space-4);
+    padding-bottom: var(--lx-space-8);
+    margin-bottom: var(--lx-space-12);
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-page-header__lead {
+    color: var(--lx-color-fg-muted);
+  }
+
+  @media (min-width: 64rem) {
+    .lx-page-header {
+      padding-bottom: var(--lx-space-12);
+      margin-bottom: var(--lx-space-16);
+    }
+  }
+}

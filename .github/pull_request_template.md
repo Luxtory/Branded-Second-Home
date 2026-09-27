@@ -32,6 +32,9 @@
 - [ ] CHANGELOG.md updated (if user-facing)
 - [ ] Threat model updated in `docs/security/threats/` (if attack surface changed)
 - [ ] Diátaxis docs updated in `docs/{tutorials,how-to,reference,explanation}/` (if user-visible behavior changed)
+- [ ] UI (if changed): mobile-first with functional parity (ADR-0009) — axe 0 at 390 and 1440 px, no unintended
+      horizontal overflow from 320 to 1920 px, main flow run at 390 px with touch; mobile exception only as a
+      product decision recorded in the spec
 - [ ] Migration rollback tested (if any migration was added)
 
 ## Test plan
@@ -49,4 +52,4 @@
 
 ## Screenshots / recordings
 
-<!-- For UI changes -->
+<!-- For UI changes: 390 px and 1440 px captures of each changed screen (review material, not a baseline). -->

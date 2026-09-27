@@ -16,6 +16,12 @@ test('detects color, font, duration, easing and z-index literals', () => {
   assert.deepEqual(rules('@media (min-width: 50rem){a{top:0}}'), ['media-breakpoint']);
 });
 
+test('width media queries are mobile-first: max-width is refused even on a breakpoint token (ADR-0009)', () => {
+  assert.deepEqual(rules('@media (max-width: 48rem){a{top:0}}'), ['media-max-width']);
+  assert.deepEqual(rules('@media (max-width: 50rem){a{top:0}}'), ['media-max-width', 'media-breakpoint']);
+  assert.deepEqual(rules('@media (prefers-reduced-motion: reduce){a{top:0}}'), []);
+});
+
 test('accepts token usage, font definitions and neutral values', () => {
   assert.deepEqual(rules('a{color:var(--lx-color-fg);transition:opacity var(--lx-duration-base) var(--lx-ease-settle)}'), []);
   assert.deepEqual(rules('@font-face{font-family:"X";src:url(x.woff2)}'), []);

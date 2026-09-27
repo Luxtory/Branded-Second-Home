@@ -35,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   atribuídos e revogados só pelo runbook, com auditoria; guard que nega por padrão (TECH-050/051);
   `authorization_grant` revogável e `POST /v1/admin/authorization-grants` com CSRF por origem (REQ-014); leituras
   sob RLS e leitura administrativa auditada. Auth real só em Production (ADR-0008; reavaliação da D3 no ADR-0007).
+- W2B — fundação de UI de produto (ADR-0009): regra global mobile-first com paridade funcional; App Shell das áreas
+  logadas (barra com o logo oficial e gaveta no celular, navegação lateral a partir de 64rem), cabeçalho e seções de
+  página; logo servido pela chave do manifest (`/brand/logo/<chave>`). O Admin é o primeiro consumidor. Layout
+  focado para login, segundo fator, acesso negado, indisponível e erro inesperado (com "Tentar de novo").
 
 ### Changed
 - ...

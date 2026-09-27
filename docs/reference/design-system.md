@@ -131,6 +131,13 @@ Markup: `<p class="lx-marker"><span>Varanda</span><span>18:37</span></p>`. O sep
 - **Mobile é projetado, não comprimido:** Frames em largura total, Establishing em 4:5, Sequence com parte do
   próximo quadro visível, menu em tela cheia com CTA fixo.
 - Nada de grade uniforme de cards. A Coleção alterna 7 e 4 colunas, com deslocamento vertical.
+- **Mobile-first com paridade funcional em toda superfície** ([ADR-0009](../adr/0009-superficies-de-produto-mobile-first.md)):
+  o estilo base é o do celular e cada breakpoint só acrescenta (`@media (min-width: <token>)`; `max-width` é
+  recusado pelo `check-hardcodes`). Toda função é alcançável e concluível a partir de 320 px; a ergonomia pode mudar
+  (por exemplo, uma tabela **pode** virar cartões), o resultado não. Exceção só como decisão de produto registrada
+  na spec da funcionalidade.
+- **Overflow:** nada de rolagem horizontal não intencional do documento. Rolagem horizontal deliberada só dentro de
+  um componente de dados, contida e acessível (região com nome e alcançável por teclado).
 
 ## 7. Forma, profundidade e z-index
 
@@ -297,6 +304,61 @@ bloqueia, `role="alert"`.
 - `--pending` só para asset ausente (nunca texto estilizado).
 - Regras: [`src/design-system/brand/logo/README.md`](../../src/design-system/brand/logo/README.md).
 
+### Superfícies de produto (ADR-0009)
+
+Vale para toda área logada: Admin (primeiro consumidor), Área do Titular, calendário, reservas, Club, Luxchange,
+Luxplus. Componente, estado ou token novo só entra quando uma tela o consome (**consumer-driven**).
+
+**App Shell · `lx-app`** — React: `AppShell` (`@/design-system/react`).
+
+- Abaixo de `lg`: `lx-app__bar` é a barra superior (logo + `lx-app__menu-button`) e a gaveta é a `lx-mobile-nav`.
+  A partir de `lg`, a mesma `<header>` vira a navegação lateral (`--lx-layout-app-nav-width`) com `lx-app__nav` e
+  `lx-app__account` no rodapé. Um só banner; um só logo visível por largura.
+- Composição na `presentation` de cada slice: o shell recebe `navItems` (`href`, `label`, `current`), o bloco de
+  conta (`account`) e os textos (`labels`, do i18n do slice). Não conhece módulos, papéis nem regras; nenhum slice
+  importa internals de outro. Item de navegação só para tela que existe.
+- Fundo da navegação: `navGround` = `night` (padrão, logo Warm Sand) ou `paper` (logo Moroccan Blue).
+- O shell aplica `data-expression="product"`: rótulos de interface em Hanken Grotesk (o `lx-evidence__label` deixa o
+  Courier); Courier Prime só para metadata real e curta (ids, códigos, timestamps).
+- Gaveta: `showModal()` (foco preso, Esc fecha, foco volta ao botão). Ao cruzar o `lg` aberta, fecha e o foco vai ao
+  `<main id="conteudo">`. Página atual: `aria-current="page"`.
+
+```tsx
+<AppShell homeHref="/admin" labels={messages.shell} navItems={items} account={<Account />}>
+  <div className="lx-container">
+    <PageHeader title="Administração" lead="…" />
+    …
+  </div>
+</AppShell>
+```
+
+**Page Header · `lx-page-header`** — React: `PageHeader`. O único `h1` da página (`lx-display-m`), a descrição
+(`__lead`) e o filete que separa do conteúdo. Courier só para metadata real e útil — nunca informação criada para
+efeito editorial (como a data de hoje).
+
+**Page Section · `lx-page-section`** — `section[aria-labelledby]` com `h2.lx-display-s`: distância fixa entre título
+e conteúdo e separação maior entre seções. Sem caixa nem sombra; o filete do próprio conteúdo divide.
+
+**Layout focado · `lx-focused`** — React: `FocusedLayout` (`brand`). Tarefa única sem navegação: login, segundo
+fator, acesso negado, indisponível e erro inesperado. No celular, o painel (`__panel`, que é o `main`) ocupa a tela; a
+partir de `md` fica centralizado sobre `wash`, com filete fino, sem sombra. Estados usam rótulo `lx-label` (nunca
+Courier), `h1`, texto e uma ação. Demonstração: `lab/produto-focado.html`; o shell: `lab/produto-app.html`.
+
+**Logo no app** — React: `Logo` (`ground`, `href?`, `label`). Escolhe a cor pelo fundo, usa o ícone abaixo de 360 px e
+aponta para `GET /brand/logo/<chave>`, que serve o arquivo da chave do manifest byte a byte. Sem `href` (layout
+focado), a imagem leva o nome acessível.
+
+**Gate de UI de toda tela nova** — `tests/e2e/support/ui.ts`: `expectResponsive(page, consoleErrors)` = sem overflow
+não intencional do documento em 320, 360, 390, 768, 1023, 1024, 1440 e 1920 px, zero erro de console e axe 0 a 390 e
+1440 px (página assentada: título aplicado, ponteiro fora dos controles, sem transição em curso). O fluxo principal
+roda a 390 px com toque (`test.use({ viewport, hasTouch: true, isMobile: true })`). Capturas a 390 e 1440 px vão no
+PR como material de revisão, não como baseline.
+
+**Smoke Playwright WebKit** — `tests/e2e/*.webkit.spec.ts`, projeto `webkit` (emulação de iPhone) ligado por
+`PLAYWRIGHT_WEBKIT=1`. A CI instala as dependências (`npx playwright install --with-deps webkit`); localmente elas
+exigem `sudo npx playwright install-deps webkit`. Não equivale a Safari/iOS real: aparelhos reais (Safari/iOS,
+Chrome/Android) ficam na QA de release/go-live.
+
 ### Utilitários
 
 `lx-visually-hidden`, `lx-nowrap`, `lx-container` (`--narrow`), `lx-prose`, `lx-form` / `lx-form__row`,
@@ -343,4 +405,6 @@ bloqueia, `role="alert"`.
 Estética genérica de IA, SaaS ou template Tailwind/shadcn · excesso de cards · cantos arredondados · gradientes
 decorativos · glassmorphism · glow · foto de banco · lorem ipsum · cor literal · Courier em excesso ·
 `SCENE`/`INT.`/`EXT.` como gimmick · componente sem acessibilidade · design system documentado mas não usado ·
-duas fontes de verdade (edite `tokens.json`, nunca `tokens.css`) · recolorir ou reconstruir o logo.
+duas fontes de verdade (edite `tokens.json`, nunca `tokens.css`) · recolorir ou reconstruir o logo · `@media
+(max-width…)` · dashboard SaaS genérico (avatares, ícones em excesso, cartões de KPI com número inventado) · componente
+de produto criado sem tela que o consuma.
