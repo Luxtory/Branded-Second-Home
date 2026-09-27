@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Luxtory — Lab: layout focado</title>
+  <link rel="stylesheet" href="../styles/index.css">
+</head>
+<body data-ground="paper">
+  <!-- Demonstração do layout focado (ADR-0009): login, segundo fator, acesso negado, indisponível e erro. -->
+  <div class="lx-focused" data-ground="wash" data-expression="product">
+    <main class="lx-focused__panel" id="conteudo" data-ground="paper">
+      <span class="lx-logo"><picture><source media="(min-width: 22.5rem)" srcset="../brand/logo/Logo-Luxtory-Moroccan-Blue-Horizontal.svg" width="1474" height="230"><img src="../brand/logo/Logo-Luxtory-Moroccan-Blue-Icone.svg" alt="Luxtory" width="370" height="324"></picture></span>
+      <div class="lx-focused__body">
+        <h1 class="lx-display-s">Entrar na Luxtory</h1>
+        <p class="lx-lead">Acesso da equipe Luxtory. Enviaremos um código de uso único para o seu e-mail.</p>
+        <form class="lx-form" novalidate>
+          <div class="lx-field">
+            <label class="lx-label" for="demo-email">E-mail</label>
+            <p class="lx-hint" id="demo-email-hint">Use o e-mail cadastrado pela Luxtory.</p>
+            <input class="lx-input" id="demo-email" name="email" type="email" autocomplete="email" aria-describedby="demo-email-hint">
+          </div>
+          <div class="lx-form__row">
+            <button class="lx-button lx-button--primary" type="button">Enviar código</button>
+          </div>
+        </form>
+        <p class="lx-body"><a class="lx-link" href="produto-app.html">Ver o App Shell</a> · <a class="lx-link" href="index.html#produto">Voltar ao Lab</a></p>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

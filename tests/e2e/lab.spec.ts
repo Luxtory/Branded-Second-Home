@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { collectConsoleErrors, expectResponsive } from './support/ui';
 
 // Larguras de verificação do Design System (docs/specs/design-system.md): de 320 a 1920 px.
 const WIDTHS = [320, 390, 768, 1024, 1440, 1920];
@@ -30,4 +31,18 @@ test('[ADR-0003] /lab com axe 0 e sem overflow horizontal de 320 a 1920 px', asy
 
   const { violations } = await new AxeBuilder({ page }).analyze();
   expect(violations.map((violation) => `${violation.id}: ${violation.help}`)).toEqual([]);
+});
+
+test('[ADR-0009] Lab: App Shell e layout focado de demonstração com axe 0 e sem overflow de 320 a 1920 px', async ({
+  context,
+}) => {
+  for (const file of ['produto-app.html', 'produto-focado.html']) {
+    // Página nova por arquivo: erros de console (e os 404 falsos do axe) não passam de uma para outra.
+    const page = await context.newPage();
+    const consoleErrors = collectConsoleErrors(page);
+    const response = await page.goto(`/lab/lab/${file}`, { waitUntil: 'networkidle' });
+    expect(response?.status(), file).toBe(200);
+    await expectResponsive(page, consoleErrors);
+    await page.close();
+  }
 });

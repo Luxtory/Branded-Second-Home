@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Luxtory — Lab: App Shell</title>
+  <link rel="stylesheet" href="../styles/index.css">
+  <script src="produto.js" defer></script>
+</head>
+<body data-ground="paper">
+  <!-- Demonstração do App Shell (ADR-0009). Conteúdo de exemplo; no app, o shell é o componente React AppShell. -->
+  <div class="lx-app" data-expression="product">
+    <a class="lx-skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <header class="lx-app__bar" data-ground="night">
+      <a class="lx-logo" href="index.html#produto" aria-label="Luxtory — voltar ao Lab"><picture><source media="(min-width: 22.5rem)" srcset="../brand/logo/Logo-Luxtory-Warm-Sand-Horizontal.svg" width="1474" height="230"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Icone.png.svg" alt="" width="370" height="324"></picture></a>
+      <button class="lx-icon-button lx-app__menu-button" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="menu-app" data-lab-app-open>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><path d="M3 8h18M3 16h18"/></svg>
+        <span class="lx-visually-hidden">Abrir menu</span>
+      </button>
+      <dialog class="lx-mobile-nav" id="menu-app" data-ground="night" aria-label="Menu da administração">
+        <div class="lx-mobile-nav__top">
+          <a class="lx-logo" href="index.html#produto" aria-label="Luxtory — voltar ao Lab"><picture><source media="(min-width: 22.5rem)" srcset="../brand/logo/Logo-Luxtory-Warm-Sand-Horizontal.svg" width="1474" height="230"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Icone.png.svg" alt="" width="370" height="324"></picture></a>
+          <button class="lx-icon-button" type="button" data-lab-app-close>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><path d="M5 5l14 14M19 5L5 19"/></svg>
+            <span class="lx-visually-hidden">Fechar menu</span>
+          </button>
+        </div>
+        <nav class="lx-mobile-nav__body" aria-label="Navegação da administração">
+          <ul class="lx-mobile-nav__list">
+            <li><a class="lx-mobile-nav__link" href="produto-app.html" aria-current="page">Início</a></li>
+            <li><a class="lx-mobile-nav__link" href="produto-focado.html">Seção de exemplo</a></li>
+          </ul>
+        </nav>
+        <div class="lx-mobile-nav__footer">
+          <div><p class="lx-label">Papéis ativos</p><p class="lx-body">Admin · Super Admin</p></div>
+          <a class="lx-button lx-button--quiet" href="produto-focado.html">Sair</a>
+        </div>
+      </dialog>
+      <nav class="lx-app__nav" aria-label="Navegação da administração">
+        <ul class="lx-app__nav-list">
+          <li><a class="lx-app__nav-link" href="produto-app.html" aria-current="page">Início</a></li>
+          <li><a class="lx-app__nav-link" href="produto-focado.html">Seção de exemplo</a></li>
+        </ul>
+      </nav>
+      <div class="lx-app__account">
+        <div><p class="lx-label">Papéis ativos</p><p class="lx-body">Admin · Super Admin</p></div>
+        <a class="lx-button lx-button--quiet" href="produto-focado.html">Sair</a>
+      </div>
+    </header>
+    <main class="lx-app__main" id="conteudo" tabindex="-1">
+      <div class="lx-container">
+        <header class="lx-page-header">
+          <h1 class="lx-display-m">Administração</h1>
+          <p class="lx-lead lx-page-header__lead">Área da equipe Luxtory. As telas de operação chegam com cada módulo.</p>
+        </header>
+        <section class="lx-page-section" aria-labelledby="demo-sessao">
+          <h2 id="demo-sessao" class="lx-display-s">Sua sessão</h2>
+          <dl class="lx-evidence">
+            <div class="lx-evidence__item"><dt class="lx-evidence__label">Papéis ativos</dt><dd class="lx-evidence__value">Admin · Super Admin</dd></div>
+            <div class="lx-evidence__item"><dt class="lx-evidence__label">Segundo fator</dt><dd class="lx-evidence__value">Confirmado</dd></div>
+          </dl>
+        </section>
+        <section class="lx-page-section" aria-labelledby="demo-modulos">
+          <h2 id="demo-modulos" class="lx-display-s">Módulos</h2>
+          <div class="lx-empty"><p class="lx-body">Ainda não há módulos de operação. Cada um aparece aqui e na navegação quando for liberado.</p></div>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
