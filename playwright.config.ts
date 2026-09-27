@@ -1,18 +1,30 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 3100;
 const baseURL = `http://127.0.0.1:${PORT}`;
 const SERVER_START_TIMEOUT_MS = 120_000;
 const SERVER_STOP_TIMEOUT_MS = 30_000;
+const IGNORED = '**/activate-ultronpx.mjs';
+// Smoke Playwright WebKit (ADR-0009): motor do Safari em emulação de iPhone — não equivale a Safari/iOS real (esse fica
+// na QA de release). Liga com PLAYWRIGHT_WEBKIT=1: a CI instala as dependências de sistema; localmente elas exigem
+// `sudo npx playwright install-deps webkit`.
+const WEBKIT_SMOKE = process.env.PLAYWRIGHT_WEBKIT === '1';
+const WEBKIT_SPECS = '**/*.webkit.spec.ts';
 
 // E2E sobre o build de produção (npm run test:e2e = next build && playwright test), com o Chrome do sistema. O
 // servidor sobe o PostgreSQL embutido com as migrations e a autenticação de teste (tests/support/e2e-server.mjs).
 export default defineConfig({
   testDir: 'tests/e2e',
-  testIgnore: ['**/activate-ultronpx.mjs'],
+  testIgnore: [IGNORED],
   forbidOnly: Boolean(process.env.CI),
   reporter: [['list'], ['json', { outputFile: 'reports/playwright.json' }]],
-  use: { baseURL, channel: 'chrome', trace: 'retain-on-failure' },
+  use: { baseURL, trace: 'retain-on-failure' },
+  projects: [
+    { name: 'chrome', testIgnore: [IGNORED, WEBKIT_SPECS], use: { channel: 'chrome' } },
+    ...(WEBKIT_SMOKE
+      ? [{ name: 'webkit', testMatch: [WEBKIT_SPECS], use: { ...devices['iPhone 13'] } }]
+      : []),
+  ],
   webServer: {
     command: `node tests/support/e2e-server.mjs ${PORT}`,
     url: `${baseURL}/v1/health`,
