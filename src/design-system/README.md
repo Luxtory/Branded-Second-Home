@@ -11,6 +11,7 @@
 |---|---|
 | `tokens/` | `tokens.json` (fonte única, DTCG) → `tokens.css` (gerado: `node src/design-system/scripts/build-tokens.mjs`) |
 | `styles/` | `index.css` (único import), base, layout e `components/*.css` (classes `lx-*`) |
+| `react/` | wrappers React finos sobre `lx-*`, só para o que tem comportamento ou estrutura repetida (ADR-0009); textos por props |
 | `fonts/` | Newsreader, Hanken Grotesk e Courier Prime (SIL OFL, gratuitas), `manifest.json` com os limites de peso |
 | `icons/` | ícones hairline SVG (`currentColor`) |
 | `brand/logo/` | kit oficial de logos (arquivos intocados) + `manifest.json` (chaves e sha256) + regras de uso |
