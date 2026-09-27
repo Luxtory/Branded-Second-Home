@@ -55,4 +55,16 @@
   .lx-evidence--inline .lx-evidence__value {
     font-size: var(--lx-text-body);
   }
+
+  /* Expressão product (ADR-0009): o rótulo é interface, então fica em Hanken Grotesk. Courier Prime só para metadata
+   * real e curta (ids, códigos, horários), nunca decorativa. */
+  [data-expression="product"] .lx-evidence__label {
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-small);
+    font-weight: var(--lx-weight-medium);
+    letter-spacing: var(--lx-tracking-label);
+    line-height: var(--lx-leading-tight);
+    text-transform: none;
+    color: var(--lx-color-fg-muted);
+  }
 }

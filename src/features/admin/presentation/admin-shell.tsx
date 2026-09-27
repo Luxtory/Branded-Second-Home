@@ -19,9 +19,7 @@ function Account({ roles }: { readonly roles: readonly StaffRole[] }) {
   return (
     <>
       <div>
-        <p className="lx-marker">
-          <span>{messages.shell.rolesLabel}</span>
-        </p>
+        <p className="lx-label">{messages.shell.rolesLabel}</p>
         <p className="lx-body">{roleNames(roles)}</p>
       </div>
       <SignOutButton />

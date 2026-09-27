@@ -35,6 +35,12 @@ test.describe('celular (390 px, toque)', () => {
     await expect(page).toHaveURL(/\/admin$/);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Administração');
     await expect(sideNav(page)).toBeHidden();
+    // Rótulo de interface fica em Hanken Grotesk; Courier só para metadata real (ADR-0009).
+    const labelFonts = await page
+      .locator('.lx-evidence__label, .lx-app__account .lx-label')
+      .evaluateAll((elements) => elements.map((element) => getComputedStyle(element).fontFamily));
+    expect(labelFonts.length).toBeGreaterThan(0);
+    for (const font of labelFonts) expect(font).toMatch(/^"?Hanken Grotesk/);
 
     await menuButton(page).tap();
     await expect(drawer(page)).toBeVisible();

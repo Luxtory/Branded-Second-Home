@@ -64,7 +64,7 @@ export function AppShell({
 }) {
   const logo = <Logo ground={navGround} href={homeHref} label={labels.home} />;
   return (
-    <div className="lx-app">
+    <div className="lx-app" data-expression="product">
       <a className="lx-skip-link" href={`#${MAIN_ID}`}>
         {labels.skipLink}
       </a>

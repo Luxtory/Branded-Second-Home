@@ -318,6 +318,8 @@ Luxplus. Componente, estado ou token novo só entra quando uma tela o consome (*
   conta (`account`) e os textos (`labels`, do i18n do slice). Não conhece módulos, papéis nem regras; nenhum slice
   importa internals de outro. Item de navegação só para tela que existe.
 - Fundo da navegação: `navGround` = `night` (padrão, logo Warm Sand) ou `paper` (logo Moroccan Blue).
+- O shell aplica `data-expression="product"`: rótulos de interface em Hanken Grotesk (o `lx-evidence__label` deixa o
+  Courier); Courier Prime só para metadata real e curta (ids, códigos, timestamps).
 - Gaveta: `showModal()` (foco preso, Esc fecha, foco volta ao botão). Ao cruzar o `lg` aberta, fecha e o foco vai ao
   `<main id="conteudo">`. Página atual: `aria-current="page"`.
 

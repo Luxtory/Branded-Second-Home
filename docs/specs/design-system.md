@@ -112,6 +112,9 @@ Nenhum. O Design System não expõe endpoints nem eventos.
   | `night` | Dark Moroccan Blue, com grain | noite |
 
 - **Expressão:** `data-expression="story"` (padrão, Discovery) ou `"product"` (densidade funcional, R2+).
+  - `product` (ADR-0009; o App Shell a aplica): rótulos de interface — inclusive `lx-evidence__label` — ficam em
+    Hanken Grotesk. Courier Prime só para metadata real e curta com valor semântico (ids, códigos, timestamps), nunca
+    para rótulo nem decoração.
 
 ### Contrato de CSS
 
