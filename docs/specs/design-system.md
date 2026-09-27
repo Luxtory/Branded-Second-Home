@@ -185,6 +185,7 @@ deliberada só dentro de um componente de dados, contida e acessível.
 |---|---|---|---|
 | App Shell | `lx-app` + `__bar` (< lg), `__nav` (≥ lg), `__nav-list`, `__nav-link`, `__account`, `__main`; gaveta = `lx-mobile-nav` | fundo da navegação por `data-ground` (`night` ou `paper`; o logo acompanha o fundo) | skip link; `nav` rotulado; `aria-current="page"`; gaveta fecha ao cruzar `lg` e o foco vai ao conteúdo |
 | Page Header | `lx-page-header` + `__lead` | — | um `h1` por página; metadata em Courier só se for real e útil |
+| Page Section | `lx-page-section` (`section` com `h2.lx-display-s`) | — | `aria-labelledby` no título; distância fixa título → conteúdo |
 | Layout focado | `lx-focused` (checkpoint 2 da W2B) | — | tarefa única, sem navegação; logo com nome acessível |
 
 - **Composição:** o shell recebe `navItems` e o bloco de conta por props, montados na `presentation` de cada slice.

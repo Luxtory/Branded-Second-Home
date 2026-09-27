@@ -1,0 +1,18 @@
+/* Page Section — blocos do conteúdo de uma página de produto (ADR-0009): título (h2, lx-display-s) a uma distância
+ * fixa do conteúdo e seções bem separadas entre si. Sem caixa nem sombra: o filete do conteúdo faz a divisão. */
+@layer lx.components {
+  .lx-page-section {
+    display: grid;
+    gap: var(--lx-space-6);
+  }
+
+  .lx-page-section + .lx-page-section {
+    margin-top: var(--lx-space-12);
+  }
+
+  @media (min-width: 64rem) {
+    .lx-page-section + .lx-page-section {
+      margin-top: var(--lx-space-16);
+    }
+  }
+}

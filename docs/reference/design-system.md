@@ -334,6 +334,9 @@ Luxplus. Componente, estado ou token novo só entra quando uma tela o consome (*
 (`__lead`) e o filete que separa do conteúdo. Courier só para metadata real e útil — nunca informação criada para
 efeito editorial (como a data de hoje).
 
+**Page Section · `lx-page-section`** — `section[aria-labelledby]` com `h2.lx-display-s`: distância fixa entre título
+e conteúdo e separação maior entre seções. Sem caixa nem sombra; o filete do próprio conteúdo divide.
+
 **Logo no app** — React: `Logo` (`ground`, `href`, `label`). Escolhe a cor pelo fundo, usa o ícone abaixo de 360 px e
 aponta para `GET /brand/logo/<chave>`, que serve o arquivo da chave do manifest byte a byte.
 

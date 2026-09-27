@@ -16,31 +16,29 @@ function AdminHome({ roles }: { readonly roles: readonly StaffRole[] }) {
     <AdminShell roles={roles} current="home">
       <div className="lx-container">
         <PageHeader title={text.title} lead={text.lead} />
-        <div className="lx-grid">
-          <section className="lx-prose" aria-labelledby="admin-session">
-            <h2 className="lx-display-s" id="admin-session">
-              {text.sessionTitle}
-            </h2>
-            <dl className="lx-evidence">
-              <div className="lx-evidence__item">
-                <dt className="lx-evidence__label">{text.rolesLabel}</dt>
-                <dd className="lx-evidence__value">{roleNames(roles)}</dd>
-              </div>
-              <div className="lx-evidence__item">
-                <dt className="lx-evidence__label">{text.mfaLabel}</dt>
-                <dd className="lx-evidence__value">{text.mfaValue}</dd>
-              </div>
-            </dl>
-          </section>
-          <section className="lx-prose" aria-labelledby="admin-modules">
-            <h2 className="lx-display-s" id="admin-modules">
-              {text.modulesTitle}
-            </h2>
-            <div className="lx-empty">
-              <p className="lx-body">{text.modulesEmpty}</p>
+        <section className="lx-page-section" aria-labelledby="admin-session">
+          <h2 className="lx-display-s" id="admin-session">
+            {text.sessionTitle}
+          </h2>
+          <dl className="lx-evidence">
+            <div className="lx-evidence__item">
+              <dt className="lx-evidence__label">{text.rolesLabel}</dt>
+              <dd className="lx-evidence__value">{roleNames(roles)}</dd>
             </div>
-          </section>
-        </div>
+            <div className="lx-evidence__item">
+              <dt className="lx-evidence__label">{text.mfaLabel}</dt>
+              <dd className="lx-evidence__value">{text.mfaValue}</dd>
+            </div>
+          </dl>
+        </section>
+        <section className="lx-page-section" aria-labelledby="admin-modules">
+          <h2 className="lx-display-s" id="admin-modules">
+            {text.modulesTitle}
+          </h2>
+          <div className="lx-empty">
+            <p className="lx-body">{text.modulesEmpty}</p>
+          </div>
+        </section>
       </div>
     </AdminShell>
   );
