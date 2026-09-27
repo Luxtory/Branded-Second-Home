@@ -97,9 +97,11 @@ inexistente.
       negado; Admin e Super Admin não se substituem.
 - [x] `[TECH-052]` `anon` e `authenticated` não leem `staff_role` nem `authorization_grant`; `luxtory_app` não altera
       nem apaga papéis e grants.
-- [x] `[TECH-052]` leitura sob RLS: `SET LOCAL ROLE authenticated` + claims verificadas isolam usuários e não vazam
-      para a transação seguinte.
-- [x] `[TECH-092]` leitura administrativa grava `audit_log` do tipo `admin_read`.
+- [x] `[TECH-052]` mecanismo de leitura sob RLS (`withUserRead`): `SET LOCAL ROLE authenticated` + claims verificadas
+      isolam usuários e não vazam para a transação seguinte. Provado em teste com tabela de fixture; **nenhuma leitura
+      de produção o usa na W2** — os primeiros chamadores chegam com dados de usuário (W7).
+- [x] `[TECH-092]` mecanismo de leitura administrativa auditada (`recordAdminRead`): grava `audit_log` do tipo
+      `admin_read`. Provado em teste; **sem chamador de produção na W2** — as primeiras listas do Admin chegam na W3.
 - [x] `[REQ-015]` atribuir e revogar papel e revogar grant gravam `operation` e `audit_log` com antes/depois e base.
 - [x] `[TECH-100]` `POST` com origem ausente ou de outro host → 403 sem efeito.
 - [x] `[ADR-0005]` autenticação de teste recusada quando `VERCEL_ENV` existe; Auth real recusado em Preview e

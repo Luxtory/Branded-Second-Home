@@ -84,6 +84,8 @@ export function createAuthorizationGrantRoute({
       });
       const executor = createProductionExecutor({ guard, log, source, database: database() });
       const outcome = await executor.execute(handler, {
+        // Papel exercido fixo porque a autoridade de `grant_authorization` é só "Admin"; o guard confere que ele está
+        // ativo. Rota de command "Admin ou Super Admin" precisa deixar o staff escolher o papel exercido (ADR-0008).
         actor: { kind: 'user', userId: session.userId, actingPartyId: null, role: 'admin' },
         idempotencyKey: idempotencyKey(request),
         correlationId,

@@ -76,6 +76,11 @@ flowchart LR
 - **Mitigation**:
   - Code: `POST /v1/*` exige `Origin` igual ao host (403); Server Actions comparam `Origin` e `Host` (Next); cookies
     `SameSite=Lax`; `Idempotency-Key` obrigatório.
+  - Nota (revisão 2026-09-26): a checagem usa `X-Forwarded-Host` (senão `Host`), como o Next faz nas Server Actions.
+    Numa página de terceiros, o navegador não deixa forjar esse header: header customizado (`X-Forwarded-Host`,
+    `Idempotency-Key`) exige preflight CORS, que a rota não autoriza, e `<form>` não envia header customizado. Um
+    cliente fora do navegador pode forjá-lo, mas não carrega os cookies da vítima — não é CSRF. A defesa não depende
+    de o edge da Vercel reescrever `X-Forwarded-Host` (comportamento não verificado nesta wave).
 - **Owner**: Engenharia · **Tracking**: teste `[TECH-100]`
 
 ### T-003 [HIGH] Spoofing — Cookie de sessão forjado ou adulterado
