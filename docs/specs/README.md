@@ -26,6 +26,9 @@ or alongside its implementation.
 citing the canonical IDs):
 
 - [platform](platform.md) — módulo `platform` (TECH-011): probes `/v1`, ambiente, logs com `correlation_id`, `Clock`, `/lab`, harness de testes
+- [identity](identity.md) — módulo `identity`: login do staff, MFA, guard, `staff_role`, `authorization_grant` (W2)
+- [admin](admin.md) — módulo `admin`: superfície `/admin` no App Shell (W2, W2B, W3)
+- [catalog](catalog.md) — módulo `catalog`: Brand Partner, Concept e versões, Edition, Residence, autorização do Investor (W3)
 
 **Cross-cutting specs** (not a `src/features/` slice):
 

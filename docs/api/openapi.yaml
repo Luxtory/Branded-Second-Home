@@ -25,6 +25,11 @@ tags:
     description: Jobs do TECH-090 disparados pelo Vercel Cron (fora de `/v1`, ADR-0004)
   - name: admin
     description: Operações administrativas (REQ-095) sob o guard, com MFA (TECH-050) e auditoria (REQ-015)
+  - name: catalog
+    description: |
+      Catálogo (REQ-020, REQ-027; `docs/specs/catalog.md`, ADR-0010): Brand Partner, Concept e versões, Edition,
+      Residence e autorização do Investor. Operações não críticas do REQ-095 com o papel Admin exercido (AAL2),
+      `operation` e `audit_log`.
 
 paths:
   /health:
@@ -120,6 +125,467 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
+  /admin/brand-partners:
+    post:
+      tags: [admin, catalog]
+      summary: Registra uma Brand Partner (BR-010…016)
+      description: |
+        Operação `register_brand_partner`. A autorização de exposição pública da marca (BR-015) é opcional aqui e pode
+        ser registrada depois.
+        Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
+        com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
+        pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
+        mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: registerBrandPartner
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BrandPartnerRequest'
+      responses:
+        '201':
+          description: Brand Partner registrada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandPartner'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/brand-partners/{id}/exposure-authorization:
+    post:
+      tags: [admin, catalog]
+      summary: Registra a autorização de exposição pública da marca (BR-015)
+      description: |
+        Operação `authorize_brand_exposure`. Registrada uma única vez; o encerramento não a apaga (histórico). Brand
+        Partner inexistente → 404; exposição já registrada ou encerramento eficaz → 409 `ERR_STATE_TRANSITION`.
+        Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
+        com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
+        pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
+        mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: authorizeBrandExposure
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BrandExposureRequest'
+      responses:
+        '200':
+          description: Autorização de exposição registrada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandPartner'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/brand-partners/{id}/terminate:
+    post:
+      tags: [admin, catalog]
+      summary: Registra o encerramento da parceria com a Brand Partner (BR-021)
+      description: |
+        Operação `terminate_brand_partner`. A partir de `terminated_effective_at`, novos usos da marca são recusados
+        (Concept, versão, aprovação, Edition, autorização de Investor, Residence, exposição); o que já existe não muda
+        (BR-022). Direitos sobreviventes ainda não são modelados: sem exceção (limitação temporária, ADR-0010 §4). Já
+        encerrada → 409 `ERR_STATE_TRANSITION`.
+        Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
+        com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
+        pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
+        mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: terminateBrandPartner
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BrandPartnerTerminationRequest'
+      responses:
+        '200':
+          description: Encerramento registrado
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandPartner'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/concept-versions:
+    post:
+      tags: [admin, catalog]
+      summary: Registra um Concept (versão 1) ou uma versão nova de um Concept (BR-013, BR-014)
+      description: |
+        Operação `create_concept_version`. Sem `concept_id`, cria o Concept da Brand Partner com a versão 1; com
+        `concept_id`, cria a versão seguinte. Toda versão nasce "Não aprovado" (REQ-096). Referência inexistente → 404;
+        encerramento eficaz → 409.
+        Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
+        com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
+        pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
+        mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: createConceptVersion
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConceptVersionRequest'
+      responses:
+        '201':
+          description: Versão registrada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConceptVersion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/concept-versions/{id}/approve:
+    post:
+      tags: [admin, catalog]
+      summary: Aprova uma versão do Concept (REQ-096)
+      description: |
+        Operação `approve_concept_version`, com as referências das aprovações registradas (BR-010, BR-018). Só se aprova
+        uma versão maior que a vigente; versão aprovada é imutável. Já aprovada, não maior que a vigente ou encerramento
+        eficaz → 409 `ERR_STATE_TRANSITION`.
+        Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
+        com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
+        pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
+        mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: approveConceptVersion
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConceptVersionApprovalRequest'
+      responses:
+        '200':
+          description: Versão aprovada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConceptVersion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/investor-authorizations:
+    post:
+      tags: [admin, catalog]
+      summary: Registra a autorização da Luxtory a um Investor para um Concept (BR-310)
+      description: |
+        Operação `register_investor_authorization`: Concept, referência estável do instrumento e vigência. Sem dado
+        pessoal; o vínculo com a party do Investor chega na W7. Concept inexistente → 404; encerramento eficaz → 409.
+        Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
+        com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
+        pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
+        mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: registerInvestorAuthorization
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvestorAuthorizationRequest'
+      responses:
+        '201':
+          description: Autorização registrada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvestorAuthorization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/investor-authorizations/{id}/revoke:
+    post:
+      tags: [admin, catalog]
+      summary: Revoga uma autorização de Investor
+      description: |
+        Operação `revoke_investor_authorization`, com a base. Revogação única; Residences já registradas não mudam. Já
+        revogada → 409 `ERR_STATE_TRANSITION`.
+        Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
+        com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
+        pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
+        mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: revokeInvestorAuthorization
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvestorAuthorizationRevocationRequest'
+      responses:
+        '200':
+          description: Autorização revogada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvestorAuthorization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/editions:
+    post:
+      tags: [admin, catalog]
+      summary: Registra uma Edition de um Concept aprovado (BR-031, BR-032)
+      description: |
+        Operação `create_edition`: região, modalidade (Owner, Co-Owner ou ambas) e condições comerciais registradas.
+        Concept sem versão aprovada ou encerramento eficaz → 409; Concept inexistente → 404. Alteração de modalidade e
+        trava da estrutura chegam na W8.
+        Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
+        com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
+        pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
+        mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: createEdition
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditionRequest'
+      responses:
+        '201':
+          description: Edition registrada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Edition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/residences:
+    post:
+      tags: [admin, catalog]
+      summary: Registra uma Residence e sua aprovação comercial (REQ-020, REQ-027, BR-025)
+      description: |
+        Operação `register_residence`: é o evento de aprovação comercial — grava o instante e fixa a versão vigente do
+        Concept da Edition, que nunca muda. Com `investor_authorization_id`, a autorização precisa ser do mesmo Concept,
+        estar na vigência e não revogada (REQ-027); a Residence existe sem adquirente. Edition ou autorização inexistente
+        → 404; Concept sem versão aprovada, autorização inválida ou encerramento eficaz → 409.
+        Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
+        com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
+        pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
+        mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: registerResidence
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResidenceRequest'
+      responses:
+        '201':
+          description: Residence registrada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Residence'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
   /api/jobs/{job}:
     servers:
       - url: /
@@ -205,6 +671,15 @@ components:
       schema:
         type: string
         pattern: '^[!-~]{1,255}$'
+
+    ResourceId:
+      name: id
+      in: path
+      required: true
+      description: Id do objeto da operação.
+      schema:
+        type: string
+        format: uuid
 
   headers:
     CorrelationId:
@@ -454,6 +929,398 @@ components:
         created_at:
           type: string
           format: date-time
+    TextList:
+      type: array
+      minItems: 1
+      maxItems: 50
+      items:
+        type: string
+        minLength: 1
+        maxLength: 500
+    BrandPartnerRequest:
+      type: object
+      additionalProperties: false
+      required: [brand_name]
+      properties:
+        brand_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        exposure_authorization_ref:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Referência da autorização de exposição pública da marca (BR-015), se já existir.
+    BrandExposureRequest:
+      type: object
+      additionalProperties: false
+      required: [exposure_authorization_ref]
+      properties:
+        exposure_authorization_ref:
+          type: string
+          minLength: 1
+          maxLength: 255
+    BrandPartnerTerminationRequest:
+      type: object
+      additionalProperties: false
+      required: [terminated_effective_at, termination_basis]
+      properties:
+        terminated_effective_at:
+          type: string
+          format: date-time
+          description: Instante de eficácia do encerramento (passado ou futuro), com deslocamento.
+        termination_basis:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Referência do instrumento ou da base do encerramento.
+    BrandPartner:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - brand_name
+        - exposure_authorization_ref
+        - exposure_authorized_at
+        - terminated_effective_at
+        - termination_basis
+        - termination_registered_at
+        - operation_id
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        brand_name:
+          type: string
+        exposure_authorization_ref:
+          type: [string, 'null']
+        exposure_authorized_at:
+          type: [string, 'null']
+          format: date-time
+        terminated_effective_at:
+          type: [string, 'null']
+          format: date-time
+        termination_basis:
+          type: [string, 'null']
+        termination_registered_at:
+          type: [string, 'null']
+          format: date-time
+        operation_id:
+          type: string
+          format: uuid
+          description: Operação que registrou a Brand Partner.
+        created_at:
+          type: string
+          format: date-time
+    ConceptVersionRequest:
+      description: Concept novo (com `brand_partner_id` e `title`) ou versão nova (com `concept_id`).
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [brand_partner_id, title, essential_elements, preservation_premises, specification]
+          properties:
+            brand_partner_id:
+              type: string
+              format: uuid
+            title:
+              type: string
+              minLength: 1
+              maxLength: 200
+            essential_elements:
+              $ref: '#/components/schemas/TextList'
+            preservation_premises:
+              $ref: '#/components/schemas/TextList'
+            specification:
+              type: string
+              minLength: 1
+              maxLength: 20000
+        - type: object
+          additionalProperties: false
+          required: [concept_id, essential_elements, preservation_premises, specification]
+          properties:
+            concept_id:
+              type: string
+              format: uuid
+            essential_elements:
+              $ref: '#/components/schemas/TextList'
+            preservation_premises:
+              $ref: '#/components/schemas/TextList'
+            specification:
+              type: string
+              minLength: 1
+              maxLength: 20000
+    ConceptVersionApprovalRequest:
+      type: object
+      additionalProperties: false
+      required: [approval_refs]
+      properties:
+        approval_refs:
+          type: array
+          minItems: 1
+          maxItems: 20
+          uniqueItems: true
+          description: Referências das aprovações registradas (plano estratégico da BR-010, governança da BR-018).
+          items:
+            type: string
+            minLength: 1
+            maxLength: 255
+    ConceptVersion:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - concept_id
+        - brand_partner_id
+        - title
+        - version
+        - state
+        - essential_elements
+        - preservation_premises
+        - specification
+        - approval_refs
+        - approved_at
+        - approved_by_user_id
+        - approved_role
+        - operation_id
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        concept_id:
+          type: string
+          format: uuid
+        brand_partner_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        version:
+          type: integer
+          minimum: 1
+        state:
+          type: string
+          enum: [not_approved, approved]
+          description: Estados do REQ-096 — "Não aprovado" e "Aprovado (versão N)".
+        essential_elements:
+          type: array
+          items:
+            type: string
+        preservation_premises:
+          type: array
+          items:
+            type: string
+        specification:
+          type: string
+        approval_refs:
+          type: [array, 'null']
+          items:
+            type: string
+        approved_at:
+          type: [string, 'null']
+          format: date-time
+        approved_by_user_id:
+          type: [string, 'null']
+          format: uuid
+        approved_role:
+          type: [string, 'null']
+          enum: [admin, null]
+        operation_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+    InvestorAuthorizationRequest:
+      type: object
+      additionalProperties: false
+      required: [concept_id, instrument_ref, valid_from]
+      properties:
+        concept_id:
+          type: string
+          format: uuid
+        instrument_ref:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Referência estável do instrumento de autorização (sem dado pessoal).
+        valid_from:
+          type: string
+          format: date-time
+        valid_until:
+          type: string
+          format: date-time
+          description: Fim exclusivo da vigência, só se o instrumento tiver termo final; posterior a `valid_from`.
+    InvestorAuthorizationRevocationRequest:
+      type: object
+      additionalProperties: false
+      required: [revocation_basis]
+      properties:
+        revocation_basis:
+          type: string
+          minLength: 1
+          maxLength: 255
+    InvestorAuthorization:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - concept_id
+        - instrument_ref
+        - valid_from
+        - valid_until
+        - revoked_at
+        - revocation_basis
+        - registered_by_user_id
+        - registered_role
+        - operation_id
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        concept_id:
+          type: string
+          format: uuid
+        instrument_ref:
+          type: string
+        valid_from:
+          type: string
+          format: date-time
+        valid_until:
+          type: [string, 'null']
+          format: date-time
+        revoked_at:
+          type: [string, 'null']
+          format: date-time
+        revocation_basis:
+          type: [string, 'null']
+        registered_by_user_id:
+          type: string
+          format: uuid
+        registered_role:
+          type: string
+          enum: [admin]
+        operation_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+    EditionModality:
+      type: string
+      enum: [owner, co_owner, owner_and_co_owner]
+      description: Owner, Co-Owner ou as duas alternativas (BR-032).
+    EditionRequest:
+      type: object
+      additionalProperties: false
+      required: [concept_id, region, modality, commercial_conditions]
+      properties:
+        concept_id:
+          type: string
+          format: uuid
+        region:
+          type: string
+          minLength: 1
+          maxLength: 200
+        modality:
+          $ref: '#/components/schemas/EditionModality'
+        commercial_conditions:
+          type: string
+          minLength: 1
+          maxLength: 20000
+          description: Condições comerciais registradas pela Luxtory (BR-031); nenhum valor calculado pelo software.
+    Edition:
+      type: object
+      additionalProperties: false
+      required: [id, concept_id, region, modality, commercial_conditions, operation_id, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        concept_id:
+          type: string
+          format: uuid
+        region:
+          type: string
+        modality:
+          $ref: '#/components/schemas/EditionModality'
+        commercial_conditions:
+          type: string
+        operation_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+    ResidenceRequest:
+      type: object
+      additionalProperties: false
+      required: [edition_id, label, timezone]
+      properties:
+        edition_id:
+          type: string
+          format: uuid
+        label:
+          type: string
+          minLength: 1
+          maxLength: 120
+          description: Referência interna da Residence; sem nome de pessoa nem endereço.
+        timezone:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: Fuso IANA da Residence (TECH-040), sem valor padrão.
+        investor_authorization_id:
+          type: string
+          format: uuid
+          description: Autorização do Investor (REQ-027), quando a Residence é desenvolvida por Investor.
+    Residence:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - edition_id
+        - concept_id
+        - concept_version_id
+        - concept_version
+        - commercially_approved_at
+        - label
+        - timezone
+        - investor_authorization_id
+        - operation_id
+      properties:
+        id:
+          type: string
+          format: uuid
+        edition_id:
+          type: string
+          format: uuid
+        concept_id:
+          type: string
+          format: uuid
+        concept_version_id:
+          type: string
+          format: uuid
+          description: Versão vigente do Concept fixada na aprovação comercial (BR-025).
+        concept_version:
+          type: integer
+          minimum: 1
+        commercially_approved_at:
+          type: string
+          format: date-time
+          description: Instante da aprovação comercial, que é o registro da Residence (ADR-0010 §2).
+        label:
+          type: string
+        timezone:
+          type: string
+        investor_authorization_id:
+          type: [string, 'null']
+          format: uuid
+        operation_id:
+          type: string
+          format: uuid
     Error:
       type: object
       required: [code, message]
