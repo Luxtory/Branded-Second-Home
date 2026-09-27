@@ -138,7 +138,8 @@ flowchart LR
 ### T-007 [LOW] Denial of service — Esgotar o limite de e-mail do Supabase
 
 - **Mitigation**: SMTP padrão só envia para membros da organização (P-9); resposta "muitas tentativas"; D4 (SMTP
-  próprio) antes do login de Titulares.
+  próprio) antes do login de Titulares. **Atualização 2026-09-27**: D4 resolvida — SMTP customizado com Resend; o
+  limite de envio passa a ser o do SMTP customizado no Supabase Auth, e a credencial fica só no Supabase.
 
 ### T-012 [LOW] Spoofing — Autenticação de teste ativa num deployment
 

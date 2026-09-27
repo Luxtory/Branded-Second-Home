@@ -865,7 +865,7 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 | P-6 | Dados do convidado (REQ-092) e do locatário (`rental_contract`) | parte da W14 e da W25 | só a indicação e a versão aceita, ou a referência do canal, sem dado pessoal |
 | P-7 | Antecedência do aviso de expiração próxima de Créditos (REQ-097) | só esse aviso (W17) | não emitido até a definição (TECH-001); o gate o registra como bloqueado |
 | P-8 | Regras de exposição de marca por Brand Partner (BR-015) | nenhuma wave | exposição e `ConceptCredit` só com autorização registrada |
-| P-9 | SMTP próprio (D4) | go-live do login de Titulares (W7) | SMTP padrão do Supabase só envia a membros da org; notificações dentro do app |
+| P-9 | SMTP próprio (D4) — **resolvida em 2026-09-27**: SMTP customizado do Supabase Auth com Resend | go-live do login de Titulares (W7) | SMTP padrão do Supabase só envia a membros da org; notificações dentro do app. Resolvida: o login por código envia pelo Resend (credencial só no Supabase, nunca no repositório) |
 | P-10 | Banco Upstash Redis + envs (`NOTES.md`) | go-live das escritas públicas (W5, W6) | sem Redis a escrita pública é recusada; testes com fake |
 | P-11 | **Lacuna normativa**: o `02` exige cancelamento de Request aceita, Direct, Luxplus e locação pela política (PD-006, PD-009, REQ-082), mas a tabela fechada do TECH-051 só tem `cancel_own_use_booking` | cancelamento pelo usuário nesses mecanismos (W18, W22–W25) | nenhum command criado; avaliação só no domínio; no-show e exceção seguem pelos commands existentes; exige nova versão do `03` (D6) |
 
@@ -879,7 +879,8 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 3. **Fidelidade dos testes**: GoTrue e Supavisor não rodam localmente; SQL, RLS e concorrência são testados em PG
    real, mas login e pooler reais só em staging (D3).
 4. **Pendências travam releases, não o desenvolvimento**: P-3 segura o R1-Interesse; P-9 o R2; PSP, políticas e PRL
-   a operação do R3; P-11 impede cancelar pelo usuário os mecanismos do Club até a nova versão do `03`.
+   a operação do R3; P-11 impede cancelar pelo usuário os mecanismos do Club até a nova versão do `03`. (P-9 resolvida
+   em 2026-09-27 com a D4.)
 5. **Concorrência no R3**: risco de PRs grandes e testes instáveis. Mitigação: Request em duas waves, tags CONC,
    barreiras determinísticas, retentativa com a mesma chave, relógio injetável e fechamento na W26.
 
@@ -890,7 +891,7 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 | D1 | Vercel Pro antes do go-live público do R1 (termos de uso comercial; cron por minuto) | sim | aberta |
 | D2 | Supabase Pro (backup diário, sem pausa) antes de dados reais; PITR no go-live econômico (ADR-0002). Pré-requisito da W30 | sim, no go-live do R1 | aberta |
 | D3 | Segundo projeto Supabase Free como staging (Previews + validação de migrations na CI) | criar antes da W1 | **adiada** em 2026-09-26 (opção A: sem staging; Previews sem credencial do banco; reavaliar antes de dados reais, PII, 1ª transação econômica ou go-live — [ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md)); **reavaliada** em 2026-09-26 na W2 (PII do 1º staff em `auth.users`): mantida sem staging; nova reavaliação antes de PII de clientes, 1ª transação econômica ou go-live público |
-| D4 | Provedor SMTP para login e notificações | escolher antes do go-live do R2 | aberta |
+| D4 | Provedor SMTP para login e notificações | escolher antes do go-live do R2 | **resolvida** em 2026-09-27: **Resend** (SMTP customizado do Supabase Auth, remetente `acesso@luxtory.club`, domínio com SPF/DKIM; credencial exclusiva da plataforma só no Supabase) |
 | D5a | `NOTES.md` já existia → atualizado no lugar, sem recriar | — | adotada em 2026-09-25 |
 | D5b | Este arquivo: seção DS e Anexo A preservados byte a byte; plano Luxtory acrescentado no topo | — | adotada em 2026-09-25 |
 | D5c | R1 pode ir ao ar só com Discovery (W3–W4) se P-3 atrasar? | — | aberta |

@@ -64,6 +64,7 @@ rodam localmente (ADR-0005) e não há staging (ADR-0007).
 
 - Login e MFA reais só são provados em Production depois do merge (sem staging, sem GoTrue local).
 - O SMTP padrão do Supabase só envia a membros da organização e com limite baixo por hora, até a decisão D4.
+  **Resolvido em 2026-09-27**: D4 → Resend (SMTP customizado do Supabase Auth); a restrição deixou de valer.
 - Sessão continua válida até o JWT expirar para o que não passa pelo guard (ex.: navegação sem command); o layout do
   Admin relê os papéis a cada request.
 

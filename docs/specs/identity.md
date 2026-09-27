@@ -17,7 +17,8 @@ acesso ao software (`02` §2).
 
 - `party`, `party_delegation`, holding e o caminho do Titular no guard (W7/W8): até lá esse caminho **nega**.
 - Telas de grants e listas do Admin (W3 em diante); revogação de grant por API.
-- SMTP próprio (decisão D4, P-9); rate limit (W5); selo da auditoria (W30).
+- Configuração do SMTP (decisão D4, P-9 — resolvida em 2026-09-27 com o Resend, feita no Supabase Auth, fora do
+  código); rate limit (W5); selo da auditoria (W30).
 - Atribuição de papel de staff por tela: só pela função de operação do runbook (sem tela, plano → Wave 2).
 
 ## 3. Users / actors
@@ -140,7 +141,8 @@ inexistente.
 
 ## 11. Open questions
 
-- Nenhuma que bloqueie. SMTP (D4) limita o login a membros da organização Supabase até ser decidido.
+- Nenhuma que bloqueie. SMTP (D4) limita o login a membros da organização Supabase até ser decidido. Resolvida em
+  2026-09-27: SMTP customizado com Resend no Supabase Auth; o login não depende mais de ser membro da organização.
 
 ## 12. References
 

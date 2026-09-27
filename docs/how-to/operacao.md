@@ -60,12 +60,17 @@ Development: lá as telas mostram "indisponível" (o build não depende delas).
 
 ### Antes do merge da W2
 
+0. SMTP customizado do Supabase Auth com **Resend** (decisão D4): **feito em 2026-09-27** — remetente
+   `acesso@luxtory.club` / "Luxtory", domínio `luxtory.club` com SPF/DKIM válidos no Resend, credencial exclusiva da
+   plataforma inserida direto no Supabase. Rotação da credencial: gere outra no Resend e troque só no Supabase.
 1. No Supabase, em **Authentication → Sign In / Providers**, desligue o cadastro público de usuários ("Allow new
    users to sign up"). Só entra quem a Luxtory criar; e-mail sem conta recebe a mesma resposta na tela, sem código.
 2. Em **Authentication → Multi-Factor**, confira que o **TOTP (App Authenticator)** está habilitado.
 3. Em **Authentication → Emails → Templates**, no template de **Magic Link**, mostre o código de uso único com
    `{{ .Token }}` (o login é por código, não por link). Texto sugerido: "Seu código de acesso à Luxtory é
    {{ .Token }}. Ele vale por poucos minutos. Se você não pediu, ignore este e-mail."
+   Confira também, em **Sign In / Providers → Email**, que o tamanho do código (**Email OTP Length**) é **6**: a
+   tela de login aceita exatamente seis dígitos.
 4. Em **Authentication → URL Configuration**, `Site URL` = `https://branded-second-home.vercel.app`.
 5. Na Vercel, em **Settings → Environment Variables**, marcando **somente Production** em cada uma:
    - `NEXT_PUBLIC_SUPABASE_URL` = `https://<project-ref>.supabase.co` (a variável já existe: tire Preview e
@@ -79,8 +84,9 @@ Development: lá as telas mostram "indisponível" (o build não depende delas).
 
 6. Crie o usuário do primeiro Super Admin em **Authentication → Users → Add user → Create new user**, com o e-mail do
    responsável, **Auto Confirm User** marcado e uma senha longa aleatória do gerenciador de senhas (não é usada: o
-   login é por código). Enquanto o SMTP próprio não existir (decisão D4), o e-mail precisa ser de um membro da
-   organização do Supabase — o SMTP padrão só envia para eles, com limite baixo por hora. Copie o **User UID**.
+   login é por código). Os e-mails de login saem pelo SMTP customizado com **Resend** (D4, configurado em
+   2026-09-27 no Supabase Auth; a credencial fica só lá, nunca no repositório): qualquer e-mail da equipe recebe o
+   código. Copie o **User UID**.
 7. No **SQL Editor**, atribua o papel com a base registrada (sem hierarquia: quem também opera como Admin recebe os
    dois papéis, um por chamada):
    `SELECT app.assign_staff_role('<User UID>', 'super_admin', '<base registrada, ex.: Ata da diretoria de AAAA-MM-DD>');`

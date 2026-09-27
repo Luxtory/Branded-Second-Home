@@ -52,7 +52,7 @@ própria do arquivo. Usá-lo junto do `fonts.css` duplicaria downloads; usá-lo 
 | Tema | Decisão | Justificativa |
 |---|---|---|
 | Observabilidade | Logger JSON do módulo `platform` (uma linha por evento, `correlation_id` do header `x-correlation-id` ou UUID); `withRoute` nos route handlers; `onRequestError` em `src/instrumentation.ts` para o resto; métricas e erros não tratados pela Observability nativa da Vercel | sem fornecedor extra (ADR-0002); PII fora de logs (TECH-100) |
-| E-mail | Só o do Supabase Auth (login por código). E-mail transacional aguarda a decisão D4; notificações ficam dentro do app | REQ-097 não exige canal de e-mail |
+| E-mail | Só o do Supabase Auth (login por código). E-mail transacional aguarda a decisão D4; notificações ficam dentro do app. **Atualização 2026-09-27**: D4 resolvida — o Supabase Auth envia pelo SMTP do **Resend** (credencial só no Supabase); e-mail transacional pela aplicação continua fora de escopo até um requisito pedir | REQ-097 não exige canal de e-mail |
 | Storage | Não usado enquanto nenhum requisito armazenar arquivo; quando usado, bucket privado | TECH-100 |
 | Contratos | Um `docs/api/openapi.yaml` e um `docs/api/asyncapi.yaml`; teste de contrato com Ajv | API-First, sem divisão por recurso |
 | Outbox | Disparo após o commit com `after()` (`@vercel/functions`) + varredura por cron (W1) | TECH-091 sem worker dedicado |
