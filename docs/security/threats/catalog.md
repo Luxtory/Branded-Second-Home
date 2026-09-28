@@ -2,7 +2,7 @@
 
 - **Date**: 2026-09-27
 - **Author(s)**: Engenharia
-- **Status**: Draft
+- **Status**: Reviewed
 - **Scope**: W3 — tabelas do catálogo, 9 operações do Admin (`POST /v1/admin/*` e Server Actions das telas), telas
   `/admin/catalogo/**` e leituras administrativas
 - **Linked spec**: `docs/specs/catalog.md`, `docs/specs/admin.md`
