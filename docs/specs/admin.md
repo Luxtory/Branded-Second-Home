@@ -58,7 +58,7 @@ Uma área `/admin` que só abre para staff autenticado com MFA (TECH-050) e que 
       navegação só para seções com tela (`admin-shell.tsx`); início com "Sua sessão" (papéis e segundo fator) e
       "Módulos" (estado vazio honesto). Fluxo principal a 390 px com toque; sem overflow de 320 a 1920 px.
 - [x] W2B: tela 403 no layout focado (rótulo "Acesso negado" em Hanken, título, texto e "Sair"), sem dado.
-- [ ] W3: navegação com "Início" e "Catálogo" (item só com o papel Admin ativo; `aria-current` na seção atual);
+- [x] W3: navegação com "Início" e "Catálogo" (item só com o papel Admin ativo; `aria-current` na seção atual);
       "Módulos" do início leva ao Catálogo; staff só Super Admin não vê o item e recebe 403 nas telas do Catálogo.
 
 ## 7. Edge cases

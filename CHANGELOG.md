@@ -39,6 +39,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   logadas (barra com o logo oficial e gaveta no celular, navegação lateral a partir de 64rem), cabeçalho e seções de
   página; logo servido pela chave do manifest (`/brand/logo/<chave>`). O Admin é o primeiro consumidor. Layout
   focado para login, segundo fator, acesso negado, indisponível e erro inesperado (com "Tentar de novo").
+- W3 — Catálogo no Admin (ADR-0010): Brand Partner (autorização de exposição e encerramento), Residence Concept com
+  versões e aprovação como controle editorial, Edition (região, modalidade e condições comerciais registradas),
+  autorização de Investor (sem dado pessoal, revogável) e Residence — cujo registro é a aprovação comercial e fixa a
+  versão vigente do Concept. Telas mobile-first no App Shell (lista de registros, cabeçalho com contexto e ações,
+  ação destrutiva discreta) e API `POST /v1/admin/*` (9 operações) com o mesmo pipeline auditado e o papel Admin
+  exercido; checagem de terminologia nos textos registrados.
 
 ### Changed
 - ...

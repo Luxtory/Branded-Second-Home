@@ -105,6 +105,17 @@ Development: lá as telas mostram "indisponível" (o build não depende delas).
 - Aparelho do segundo fator perdido: remova o fator do usuário em **Authentication → Users** (MFA) e ele cadastra um
   novo no próximo login.
 
+## Preparar a W3 em produção (catálogo)
+
+Nenhuma variável nova e nenhuma ação antes do merge. Depois do `migrate` ✅ e do `deploy` ✅:
+
+1. Conferir (só leitura) as 5 migrations do catálogo em `dbmate.schema_migrations` e as tabelas `app.brand_partner`,
+   `app.concept`, `app.concept_version`, `app.investor_authorization`, `app.edition` e `app.residence` com RLS ligada,
+   políticas só para `luxtory_app` e **zero linhas**.
+2. Entrar no Admin com o papel Admin e abrir **Catálogo** (`/admin/catalogo`): lista vazia, sem erro.
+3. **Não criar registros de teste em Production** (D-W3-5): o catálogo é só de inserção e não há staging
+   (ADR-0007). Os primeiros registros entram com dados reais da Luxtory.
+
 ## Rotacionar segredos
 
 - `CRON_SECRET`: gere outro valor, atualize na Vercel (Production) e refaça o deploy (passo 6).

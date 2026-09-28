@@ -140,26 +140,26 @@ command guarda o `operation_id` da criação.
 
 ## 6. Acceptance criteria
 
-- [ ] `[REQ-020]` Residence sem Concept aprovado ou sem Edition é recusada; condição comercial só existe na Edition;
+- [x] `[REQ-020]` Residence sem Concept aprovado ou sem Edition é recusada; condição comercial só existe na Edition;
       Concept, Edition e Residence são objetos distintos, com vínculos garantidos pelo banco.
-- [ ] `[REQ-027]` Residence com autorização de Investor inexistente, revogada, fora da vigência ou de outro Concept é
+- [x] `[REQ-027]` Residence com autorização de Investor inexistente, revogada, fora da vigência ou de outro Concept é
       recusada; com autorização válida, a Residence existe sem adquirente numa Edition Owner, Co-Owner ou ambas.
-- [ ] `[BR-025]` O registro fixa a versão vigente e o instante da aprovação comercial; uma versão aprovada depois não
+- [x] `[BR-025]` O registro fixa a versão vigente e o instante da aprovação comercial; uma versão aprovada depois não
       altera a Residence; o banco recusa trocar a versão fixada.
-- [ ] `[BR-021]` Depois da eficácia do encerramento, Concept, versão, aprovação, Edition, autorização de Investor,
+- [x] `[BR-021]` Depois da eficácia do encerramento, Concept, versão, aprovação, Edition, autorização de Investor,
       Residence e exposição novos são recusados (inclusive em concorrência com o encerramento); antes da eficácia e para
       o que já existe, nada muda; a autorização de exposição continua registrada.
-- [ ] `[REQ-096]` Concept "Não aprovado" → "Aprovado (versão N)"; aprovar exige `approval_refs`; versão aprovada é
+- [x] `[REQ-096]` Concept "Não aprovado" → "Aprovado (versão N)"; aprovar exige `approval_refs`; versão aprovada é
       imutável; versão menor ou igual à vigente não é aprovada.
-- [ ] `[REQ-100]` `[REQ-101]` Texto com termo vedado ou expressão explícita de promessa é recusado com o campo
+- [x] `[REQ-100]` `[REQ-101]` Texto com termo vedado ou expressão explícita de promessa é recusado com o campo
       indicado.
-- [ ] `[REQ-015]` `[TECH-092]` Cada operação grava `operation` e `audit_log` com antes/depois e o papel exercido; replay
+- [x] `[REQ-015]` `[TECH-092]` Cada operação grava `operation` e `audit_log` com antes/depois e o papel exercido; replay
       pela mesma chave; chave com corpo diferente → `ERR_IDEMPOTENCY_CONFLICT`; cada leitura das telas grava
       `admin_read`.
-- [ ] `[TECH-052]` `anon` e `authenticated` não leem o catálogo; `luxtory_app` não apaga nem altera fora das transições.
-- [ ] `[TECH-100]` `POST` com origem inválida → 403; sem sessão → 401; AAL1, sem papel ou só Super Admin → 403.
-- [ ] Contrato OpenAPI de cada rota (sucesso e erros).
-- [ ] UI (ADR-0009): toda tela com axe 0 a 390 e 1440 px, sem overflow de 320 a 1920 px e zero erro de console;
+- [x] `[TECH-052]` `anon` e `authenticated` não leem o catálogo; `luxtory_app` não apaga nem altera fora das transições.
+- [x] `[TECH-100]` `POST` com origem inválida → 403; sem sessão → 401; AAL1, sem papel ou só Super Admin → 403.
+- [x] Contrato OpenAPI de cada rota (sucesso e erros).
+- [x] UI (ADR-0009): toda tela com axe 0 a 390 e 1440 px, sem overflow de 320 a 1920 px e zero erro de console;
       fluxo completo (Brand Partner → Concept → aprovação → Edition → autorização de Investor → Residence) a 390 px com
       toque; textos pelo i18n.
 
