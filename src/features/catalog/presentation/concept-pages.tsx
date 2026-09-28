@@ -60,8 +60,9 @@ function authorizationState(authorization: InvestorAuthorization, now: Date): st
     : text.authorizationExpired;
 }
 
-function ConceptActions({ detail, now }: { readonly detail: ConceptDetail; readonly now: Date }) {
-  if (!isBrandInUse(detail.partner, now)) return null;
+/** Ações permitidas agora; marca fora de uso → `undefined`, para o cabeçalho não reservar a área de ações. */
+function conceptActions(detail: ConceptDetail, now: Date): ReactElement | undefined {
+  if (!isBrandInUse(detail.partner, now)) return undefined;
   const id = detail.concept.id;
   return (
     <>
@@ -161,7 +162,7 @@ export async function ConceptPage({
         title={detail.concept.title}
         lead={stateLabel(current)}
         context={{ href: paths.brandPartner(detail.partner.id), label: detail.partner.brandName }}
-        actions={<ConceptActions detail={detail} now={now} />}
+        actions={conceptActions(detail, now)}
       />
       <StatusNotice status={status} />
       {inUse ? null : <Notice tone="warning" title={text.blockedNotice} />}

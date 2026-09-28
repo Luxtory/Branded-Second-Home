@@ -5,6 +5,9 @@ import { captureForReview, collectConsoleErrors, expectResponsive } from './supp
 // Catálogo no Admin (W3, docs/specs/catalog.md): telas sobre o App Shell, mobile-first com paridade (ADR-0009).
 // O banco do E2E é compartilhado entre os testes: cada teste usa nomes próprios e não presume lista vazia.
 const unique = (prefix: string) => `${prefix} ${Date.now().toString(36)}`;
+// Cada tela dos fluxos passa pelo gate responsivo (varredura 320–1920 + axe a 390 e 1440): o orçamento acompanha o
+// número de telas, com a suíte rodando em paralelo.
+const FLOW_TIMEOUT_MS = 300_000;
 
 async function openCatalog(page: Page) {
   await page.getByRole('button', { name: 'Abrir menu' }).tap();
@@ -28,7 +31,7 @@ test.describe('celular (390 px, toque)', () => {
   test('[REQ-095] [BR-021] Brand Partner a 390 px com toque: registrar, validar campo, encerrar; cada tela sem overflow e com axe 0', async ({
     page,
   }) => {
-    test.slow();
+    test.setTimeout(FLOW_TIMEOUT_MS);
     const consoleErrors = collectConsoleErrors(page);
     await signIn(page, STAFF_EMAIL);
     await expect(page).toHaveURL(/\/admin$/);
@@ -84,6 +87,8 @@ test.describe('celular (390 px, toque)', () => {
     // Depois da eficácia, nenhum novo uso da marca é oferecido (BR-021).
     await expect(page.getByRole('link', { name: 'Registrar Concept' })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Registrar encerramento' })).toHaveCount(0);
+    // Sem ação permitida, o cabeçalho não reserva a área de ações (nenhum espaço vazio).
+    await expect(page.locator('.lx-page-header__actions')).toHaveCount(0);
     await expectResponsive(page, consoleErrors);
     await captureForReview(page, '06-brand-partner-encerrada');
 
@@ -95,7 +100,7 @@ test.describe('celular (390 px, toque)', () => {
   test('[REQ-020] [REQ-027] [BR-025] fluxo completo a 390 px com toque: Concept → aprovação → Edition → Investor → Residence; cada tela sem overflow e com axe 0', async ({
     page,
   }) => {
-    test.setTimeout(300_000);
+    test.setTimeout(FLOW_TIMEOUT_MS);
     const consoleErrors = collectConsoleErrors(page);
     const heading = page.getByRole('heading', { level: 1 });
     const status = page.getByRole('status');
@@ -208,6 +213,8 @@ test('[TECH-050] quem não tem papel Admin recebe 403 no catálogo e não vê o 
   page,
 }) => {
   await signIn(page, VISITOR_EMAIL);
+  // Espera a confirmação do segundo fator: navegar antes interromperia a sessão AAL2.
+  await expect(page).toHaveURL(/\/admin$/);
   await page.goto('/admin/catalogo');
   await expect(page.getByText('Acesso negado')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Catálogo' })).toHaveCount(0);

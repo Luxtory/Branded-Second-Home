@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import type { ReactElement } from 'react';
 import { PageHeader, RecordList, type RecordAttribute } from '@/design-system/react';
 import { adminRoleGate } from '@/features/admin';
 import { systemClock } from '@/features/platform';
@@ -110,27 +111,35 @@ export async function NewBrandPartnerPage() {
   );
 }
 
-function PartnerActions({ partner, now }: { readonly partner: BrandPartner; readonly now: Date }) {
+/** Ações permitidas agora; nenhuma → `undefined`, para o cabeçalho não reservar a área de ações. */
+function partnerActions(partner: BrandPartner, now: Date): ReactElement | undefined {
   const inUse = isBrandInUse(partner, now);
-  return (
-    <>
-      {inUse ? (
-        <a className="lx-button lx-button--primary" href={paths.newConcept(partner.id)}>
-          {text.registerConcept}
-        </a>
-      ) : null}
-      {inUse && partner.exposureAuthorizedAt === null ? (
-        <a className="lx-button lx-button--secondary" href={paths.exposure(partner.id)}>
-          {text.registerExposure}
-        </a>
-      ) : null}
-      {partner.terminationRegisteredAt === null ? (
-        <a className="lx-button lx-button--destructive" href={paths.termination(partner.id)}>
-          {text.registerTermination}
-        </a>
-      ) : null}
-    </>
-  );
+  const links = [
+    inUse ? (
+      <a key="concept" className="lx-button lx-button--primary" href={paths.newConcept(partner.id)}>
+        {text.registerConcept}
+      </a>
+    ) : null,
+    inUse && partner.exposureAuthorizedAt === null ? (
+      <a
+        key="exposure"
+        className="lx-button lx-button--secondary"
+        href={paths.exposure(partner.id)}
+      >
+        {text.registerExposure}
+      </a>
+    ) : null,
+    partner.terminationRegisteredAt === null ? (
+      <a
+        key="termination"
+        className="lx-button lx-button--destructive"
+        href={paths.termination(partner.id)}
+      >
+        {text.registerTermination}
+      </a>
+    ) : null,
+  ].filter((link) => link !== null);
+  return links.length === 0 ? undefined : <>{links}</>;
 }
 
 function PartnerSummary({ partner }: { readonly partner: BrandPartner }) {
@@ -199,7 +208,7 @@ export async function BrandPartnerPage({
         title={partner.brandName}
         lead={stateValue(partner, now)}
         context={{ href: paths.catalog, label: text.contextLink }}
-        actions={<PartnerActions partner={partner} now={now} />}
+        actions={partnerActions(partner, now)}
       />
       <StatusNotice status={status} />
       <section className="lx-page-section" aria-labelledby="partner-summary">
