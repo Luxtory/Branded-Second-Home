@@ -152,7 +152,7 @@ command guarda o `operation_id` da criação.
 - [x] `[REQ-096]` Concept "Não aprovado" → "Aprovado (versão N)"; aprovar exige `approval_refs`; versão aprovada é
       imutável; versão menor ou igual à vigente não é aprovada.
 - [x] `[REQ-100]` `[REQ-101]` Texto com termo vedado ou expressão explícita de promessa é recusado com o campo
-      indicado.
+      indicado (na tela, ao lado do campo; na API, 400 `ERR_VALIDATION` no schema `Error`, que não expõe campos).
 - [x] `[REQ-015]` `[TECH-092]` Cada operação grava `operation` e `audit_log` com antes/depois e o papel exercido; replay
       pela mesma chave; chave com corpo diferente → `ERR_IDEMPOTENCY_CONFLICT`; cada leitura das telas grava
       `admin_read`.
