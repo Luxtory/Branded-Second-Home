@@ -12,6 +12,7 @@ export const messages = {
   },
   nav: {
     home: 'Início',
+    catalog: 'Catálogo',
   },
   home: {
     title: 'Administração',
@@ -23,6 +24,13 @@ export const messages = {
     modulesTitle: 'Módulos',
     modulesEmpty:
       'Ainda não há módulos de operação. Cada um aparece aqui e na navegação quando for liberado.',
+    modulesLabel: 'Módulos disponíveis',
+    modules: {
+      catalog: {
+        includesLabel: 'Inclui',
+        includes: 'Brand Partners, Concepts, Editions e Residences',
+      },
+    },
   },
   roles: {
     admin: 'Admin',
