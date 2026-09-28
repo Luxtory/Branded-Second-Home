@@ -190,8 +190,9 @@ describe('pipeline de commands em PostgreSQL real (TECH-054)', () => {
     const blocker = await database.pool.connect();
     await blocker.query(`BEGIN; SELECT 1 FROM app.test_widget WHERE id = 'w-1' FOR UPDATE`);
     const { executor, log } = testExecutor(db, { maxAttempts: 3, lockTimeoutMs: 100 });
-    // A 1ª tentativa esgota o lock_timeout; ao logar a nova tentativa, o bloqueio é liberado.
-    log.warn.mockImplementation(() => {
+    // A 1ª tentativa esgota o lock_timeout; ao logar a 1ª nova tentativa, o bloqueio é liberado — uma única vez: com o
+    // runner lento, a 2ª tentativa também pode esgotar antes do COMMIT chegar e logar de novo.
+    log.warn.mockImplementationOnce(() => {
       void blocker.query('COMMIT').finally(() => blocker.release());
     });
 
