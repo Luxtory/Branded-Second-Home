@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PageHeader } from '@/design-system/react';
+import { PageHeader, type RecordAttribute } from '@/design-system/react';
 import { AdminShell, type ExercisedAdminSession } from '@/features/admin';
 import { messages } from './i18n/pt-br';
 import { Notice } from './notice';
@@ -43,5 +43,70 @@ export function CatalogNotFound({ session }: { readonly session: ExercisedAdminS
 export function StatusNotice({ status }: { readonly status: StatusKey | null }) {
   return status === null ? null : (
     <Notice tone="success" role="status" title={messages.status[status]} />
+  );
+}
+
+/** Dados chave-valor de um registro (`lx-evidence--inline`: uma coluna no celular, colunas a partir de md). */
+export function KeyValues({ items }: { readonly items: readonly RecordAttribute[] }) {
+  return (
+    <dl className="lx-evidence lx-evidence--inline">
+      {items.map((item) => (
+        <div className="lx-evidence__item" key={item.label}>
+          <dt className="lx-evidence__label">{item.label}</dt>
+          <dd className="lx-evidence__value">{item.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/** Lista de textos registrados (elementos essenciais, premissas, referências), uma linha por item. */
+export function TextList({ items }: { readonly items: readonly string[] }) {
+  return (
+    <ul>
+      {items.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
+  );
+}
+
+/** Grupo de largura total (um item de `KeyValues` sozinho ocupa a linha): textos longos e listas. */
+export function ContentGroup({
+  label,
+  children,
+}: {
+  readonly label: string;
+  readonly children: ReactNode;
+}) {
+  return <KeyValues items={[{ label, value: children }]} />;
+}
+
+/** Seção de página (`lx-page-section`) com o título `h2` ligado por `aria-labelledby`. */
+export function Section({
+  id,
+  title,
+  children,
+}: {
+  readonly id: string;
+  readonly title: string;
+  readonly children: ReactNode;
+}) {
+  return (
+    <section className="lx-page-section" aria-labelledby={id}>
+      <h2 className="lx-display-s" id={id}>
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+/** Estado vazio honesto (`lx-empty`). */
+export function Empty({ message }: { readonly message: string }) {
+  return (
+    <div className="lx-empty">
+      <p className="lx-body">{message}</p>
+    </div>
   );
 }

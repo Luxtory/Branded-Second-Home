@@ -55,11 +55,18 @@ const versionContent = {
   specification: text(LONG_TEXT_MAX),
 };
 
-/** Concept novo (Brand Partner + título, versão 1) ou versão nova de um Concept existente. */
-export const createConceptVersionInput = z.union([
-  z.strictObject({ brand_partner_id: id, title: text(NAME_MAX), ...versionContent }),
-  z.strictObject({ concept_id: id, ...versionContent }),
-]);
+/** Concept novo: Brand Partner + título, com a versão 1. */
+export const newConceptInput = z.strictObject({
+  brand_partner_id: id,
+  title: text(NAME_MAX),
+  ...versionContent,
+});
+
+/** Versão nova de um Concept existente. */
+export const newVersionInput = z.strictObject({ concept_id: id, ...versionContent });
+
+/** Concept novo (versão 1) ou versão nova — corpo de `create_concept_version`. */
+export const createConceptVersionInput = z.union([newConceptInput, newVersionInput]);
 
 export const approveConceptVersionInput = z.strictObject({
   concept_version_id: id,

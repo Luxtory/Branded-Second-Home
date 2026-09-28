@@ -100,6 +100,101 @@ export function TextField({
   );
 }
 
+export interface Option {
+  readonly value: string;
+  readonly label: string;
+  readonly description?: string;
+}
+
+/** Escolha única em cartões do DS (`lx-choice-group`): opções com o mesmo peso visual (REQ-103). */
+export function ChoiceField({
+  form,
+  name,
+  label,
+  hint,
+  state,
+  options,
+}: FieldProps & { readonly options: readonly Option[] }) {
+  const id = `${form}-${name}`;
+  const error = state.fieldErrors[name];
+  return (
+    <fieldset
+      className="lx-choice-group"
+      aria-describedby={describedBy(id, hint !== undefined, error !== undefined)}
+    >
+      <legend className="lx-label">{label}</legend>
+      {hint === undefined ? null : (
+        <p className="lx-hint" id={`${id}-hint`}>
+          {hint}
+        </p>
+      )}
+      <div className="lx-choice-group__options">
+        {options.map((option) => (
+          <label className="lx-choice" key={option.value}>
+            <input
+              type="radio"
+              name={name}
+              value={option.value}
+              defaultChecked={state.values[name] === option.value}
+              required
+            />
+            <span className="lx-choice__title">{option.label}</span>
+            {option.description === undefined ? null : (
+              <span className="lx-choice__desc">{option.description}</span>
+            )}
+          </label>
+        ))}
+      </div>
+      <FieldError id={id} code={error} />
+    </fieldset>
+  );
+}
+
+/** Seleção nativa (`lx-select`): opções vindas dos dados, nenhuma pré-escolhida (TECH-001). */
+export function SelectField({
+  form,
+  name,
+  label,
+  hint,
+  state,
+  placeholder,
+  options,
+}: FieldProps & { readonly placeholder: string; readonly options: readonly Option[] }) {
+  const id = `${form}-${name}`;
+  const error = state.fieldErrors[name];
+  return (
+    <div className="lx-field">
+      <Label id={id} label={label} />
+      {hint === undefined ? null : (
+        <p className="lx-hint" id={`${id}-hint`}>
+          {hint}
+        </p>
+      )}
+      <div className="lx-select-wrap">
+        <select
+          className="lx-select"
+          id={id}
+          name={name}
+          defaultValue={state.values[name] ?? ''}
+          required
+          aria-invalid={error === undefined ? undefined : true}
+          aria-describedby={describedBy(id, hint !== undefined, error !== undefined)}
+        >
+          <option value="" disabled>
+            {placeholder}
+          </option>
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <FieldError id={id} code={error} />
+    </div>
+  );
+}
+
 /** Instante local digitado no dispositivo → ISO 8601 com deslocamento (o navegador conhece o próprio fuso). */
 function toIso(local: string): string {
   if (local === '') return '';

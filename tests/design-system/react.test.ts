@@ -74,11 +74,13 @@ describe('wrappers React do Design System (ADR-0009)', () => {
             attributes: [{ label: 'Estado', value: 'Ativa' }],
           },
           { id: 'b', href: '/b', title: 'Casa B' },
+          { id: 'c', title: 'Versão 1' },
         ],
       }),
     );
     expect(html).toMatch(/^<ul class="lx-record-list" aria-label="Brand Partners">/);
     expect(html.match(/class="lx-record-list__link"/g)).toHaveLength(2);
+    expect(html).toContain('<h3 class="lx-record-list__title">Versão 1</h3>');
     expect(html.match(/<dl class="lx-record-list__meta">/g)).toHaveLength(1);
     expect(html).toContain('<dt class="lx-record-list__meta-label">Estado</dt>');
   });

@@ -7,12 +7,13 @@ import { isBrandInUse, type BrandPartner } from '../domain/catalog';
 import { postgresCatalogReader } from '../infrastructure/postgres-catalog-reader';
 import { BrandPartnerForm } from './brand-partner-form';
 import { readCatalog } from './catalog-read';
-import { CatalogNotFound, CatalogPage, isRecordId, StatusNotice } from './catalog-page';
+import { CatalogNotFound, CatalogPage, isRecordId, KeyValues, StatusNotice } from './catalog-page';
 import { CATALOG_ROLE } from './handlers';
 import { messages } from './i18n/pt-br';
 import { Instant } from './instant';
 import { Notice } from './notice';
 import { paths, type StatusKey } from './paths';
+import { ExposureForm } from './concept-forms';
 import { TerminationForm } from './termination-form';
 
 const text = messages.brandPartner;
@@ -157,16 +158,7 @@ function PartnerSummary({ partner }: { readonly partner: BrandPartner }) {
         ]),
     { label: text.registeredAtLabel, value: <Instant iso={partner.createdAt.toISOString()} /> },
   ];
-  return (
-    <dl className="lx-evidence lx-evidence--inline">
-      {items.map((item) => (
-        <div className="lx-evidence__item" key={item.label}>
-          <dt className="lx-evidence__label">{item.label}</dt>
-          <dd className="lx-evidence__value">{item.value}</dd>
-        </div>
-      ))}
-    </dl>
-  );
+  return <KeyValues items={items} />;
 }
 
 function TerminationNotice({
@@ -267,6 +259,39 @@ export async function TerminationPage({ id }: { readonly id: string }) {
         </div>
       ) : (
         <Notice tone="warning" title={page.alreadyTerminated} />
+      )}
+    </CatalogPage>
+  );
+}
+
+/** `/admin/catalogo/brand-partners/[id]/exposicao`: autorização de exposição pública da marca (BR-015). */
+export async function ExposurePage({ id }: { readonly id: string }) {
+  const gate = await adminRoleGate(CATALOG_ROLE);
+  if (gate.kind === 'blocked') return gate.page;
+  if (!isRecordId(id)) return <CatalogNotFound session={gate.session} />;
+  const detail = await readCatalog(gate.session, { type: 'brand_partner', id }, (tx) =>
+    postgresCatalogReader.brandPartner(tx, id),
+  );
+  if (detail === null) return <CatalogNotFound session={gate.session} />;
+  const { partner } = detail;
+  const page = messages.exposure;
+  const blocked = !isBrandInUse(partner, systemClock.now());
+  return (
+    <CatalogPage session={gate.session}>
+      <PageHeader
+        title={page.title}
+        lead={page.lead}
+        context={{ href: paths.brandPartner(partner.id), label: partner.brandName }}
+      />
+      {partner.exposureAuthorizedAt !== null ? (
+        <Notice tone="warning" title={page.alreadyRegistered} />
+      ) : blocked ? (
+        <Notice tone="warning" title={page.blocked} />
+      ) : (
+        <div className="lx-form">
+          <p className="lx-small">{page.notice}</p>
+          <ExposureForm brandPartnerId={partner.id} idempotencyKey={randomUUID()} />
+        </div>
       )}
     </CatalogPage>
   );

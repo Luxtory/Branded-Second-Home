@@ -7,15 +7,16 @@ export interface RecordAttribute {
 
 export interface RecordListItem {
   readonly id: string;
-  readonly href: string;
+  /** Sem `href`, o registro não leva a outra tela (ex.: versão já aprovada): só o título. */
+  readonly href?: string;
   readonly title: ReactNode;
   /** Atributos do registro; valor ausente não é passado (TECH-001: nada é presumido). */
   readonly attributes?: readonly RecordAttribute[];
 }
 
 /**
- * Lista de registros das superfícies de produto (D-W3-2, ADR-0010 §9): um item por registro, o título leva ao detalhe
- * e o item inteiro é o alvo. `label` nomeia a lista para leitores de tela.
+ * Lista de registros das superfícies de produto (D-W3-2, ADR-0010 §9): um item por registro; com `href`, o título leva
+ * ao detalhe e o item inteiro é o alvo. `label` nomeia a lista para leitores de tela.
  */
 export function RecordList({
   items,
@@ -29,9 +30,13 @@ export function RecordList({
       {items.map((item) => (
         <li className="lx-record-list__item" key={item.id}>
           <h3 className="lx-record-list__title">
-            <a className="lx-record-list__link" href={item.href}>
-              {item.title}
-            </a>
+            {item.href === undefined ? (
+              item.title
+            ) : (
+              <a className="lx-record-list__link" href={item.href}>
+                {item.title}
+              </a>
+            )}
           </h3>
           {item.attributes === undefined || item.attributes.length === 0 ? null : (
             <dl className="lx-record-list__meta">

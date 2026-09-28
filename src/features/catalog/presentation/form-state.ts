@@ -25,12 +25,11 @@ export interface FormState {
   readonly rejection: FormRejection | null;
 }
 
-export const initialFormState = (key: string): FormState => ({
-  key,
-  values: {},
-  fieldErrors: {},
-  rejection: null,
-});
+/** Estado inicial; `values` pré-preenche o formulário (ex.: versão nova parte da mais recente). */
+export const initialFormState = (
+  key: string,
+  values: Readonly<Record<string, string>> = {},
+): FormState => ({ key, values, fieldErrors: {}, rejection: null });
 
 const CUSTOM: ReadonlySet<string> = new Set([
   FORBIDDEN_TERM,

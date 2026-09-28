@@ -91,6 +91,117 @@ test.describe('celular (390 px, toque)', () => {
     await expect(page.getByRole('link', { name: brand })).toBeVisible();
     await captureForReview(page, '07-catalogo-com-registros');
   });
+
+  test('[REQ-020] [REQ-027] [BR-025] fluxo completo a 390 px com toque: Concept → aprovação → Edition → Investor → Residence; cada tela sem overflow e com axe 0', async ({
+    page,
+  }) => {
+    test.setTimeout(300_000);
+    const consoleErrors = collectConsoleErrors(page);
+    const heading = page.getByRole('heading', { level: 1 });
+    const status = page.getByRole('status');
+    const gate = async (name: string) => {
+      await expectResponsive(page, consoleErrors);
+      await captureForReview(page, name);
+    };
+    await signIn(page, STAFF_EMAIL);
+    await expect(page).toHaveURL(/\/admin$/);
+
+    // Brand Partner e autorização de exposição.
+    const brand = unique('Maison Solar');
+    await page.goto('/admin/catalogo/brand-partners/nova');
+    await page.getByLabel('Nome da marca').fill(brand);
+    await page.getByRole('button', { name: 'Registrar Brand Partner' }).tap();
+    await expect(heading).toHaveText(brand);
+    await page.getByRole('link', { name: 'Registrar autorização de exposição' }).tap();
+    await expect(heading).toHaveText('Registrar autorização de exposição');
+    await gate('08-exposicao');
+    await page.getByLabel('Autorização de exposição pública').fill('Plano estratégico 2026-09');
+    await page.getByRole('button', { name: 'Registrar autorização' }).tap();
+    await expect(status).toContainText('Autorização de exposição registrada.');
+
+    // Concept com a versão 1 (listas uma por linha).
+    await page.getByRole('link', { name: 'Registrar Concept' }).tap();
+    await expect(heading).toHaveText('Registrar Concept');
+    await gate('09-registrar-concept');
+    await page.getByLabel('Nome do Concept').fill('Casa do Pátio');
+    await page.getByLabel('Elementos essenciais').fill('Pátio central\nFachada em pedra local');
+    await page.getByLabel('Premissas de preservação').fill('Materiais regionais');
+    await page.getByLabel('Especificação').fill('Especificação para implantação replicável.');
+    await page.getByRole('button', { name: 'Registrar Concept' }).tap();
+    await expect(heading).toHaveText('Casa do Pátio');
+    await expect(page.getByText('Não aprovado', { exact: true })).toBeVisible();
+    // Sem versão aprovada não há Edition (REQ-020).
+    await expect(page.getByRole('link', { name: 'Registrar Edition' })).toHaveCount(0);
+    await gate('10-concept-nao-aprovado');
+
+    // Aprovação: revisão editorial da versão e referências das aprovações (REQ-096).
+    await page.getByRole('link', { name: 'Versão 1' }).tap();
+    await expect(heading).toHaveText('Aprovar versão 1');
+    await expect(page.getByText('Fachada em pedra local')).toBeVisible();
+    await gate('11-aprovar-versao');
+    await page.getByLabel('Aprovações registradas').fill('Ata de aprovação 2026-09');
+    await page.getByRole('button', { name: 'Aprovar versão 1' }).tap();
+    await expect(status).toContainText('Versão aprovada.');
+    await expect(page.getByText('Aprovado (versão 1)', { exact: true })).toBeVisible();
+
+    // Edition com a modalidade escolhida explicitamente.
+    await page.getByRole('link', { name: 'Registrar Edition' }).tap();
+    await expect(heading).toHaveText('Registrar Edition');
+    await gate('12-registrar-edition');
+    await page.getByLabel('Região').fill('Litoral norte de São Paulo');
+    await page.getByRole('radio', { name: /Owner e Co-Owner/ }).check();
+    await page.getByLabel('Condições comerciais').fill('Condições registradas pela Luxtory.');
+    await page.getByRole('button', { name: 'Registrar Edition' }).tap();
+    await expect(heading).toHaveText('Casa do Pátio — Litoral norte de São Paulo');
+    await gate('13-edition');
+
+    // Autorização de Investor para o Concept (REQ-027).
+    await page.getByRole('link', { name: 'Casa do Pátio', exact: true }).tap();
+    await page.getByRole('link', { name: 'Registrar autorização de Investor' }).tap();
+    await expect(heading).toHaveText('Registrar autorização de Investor');
+    await gate('14-registrar-autorizacao');
+    await page.getByLabel('Instrumento de autorização').fill('Contrato INV-001');
+    await page.getByLabel('Início da vigência').fill('2026-01-01T00:00');
+    await page.getByRole('button', { name: 'Registrar autorização' }).tap();
+    await expect(page.getByRole('link', { name: 'Contrato INV-001' })).toBeVisible();
+    await gate('15-concept-aprovado');
+
+    // Residence com Investor: o registro fixa a versão vigente (BR-025).
+    await page.getByRole('link', { name: 'Litoral norte de São Paulo' }).tap();
+    await page.getByRole('link', { name: 'Registrar Residence' }).tap();
+    await expect(heading).toHaveText('Registrar Residence');
+    await expect(page.getByText('A versão 1 do Concept, vigente agora, será fixada')).toBeVisible();
+    await gate('16-registrar-residence');
+    await page.getByLabel('Referência interna').fill('Unidade 01');
+    await page.getByLabel('Fuso horário da Residence').selectOption('America/Sao_Paulo');
+    await page.getByLabel('Investor', { exact: true }).selectOption({ label: 'Contrato INV-001' });
+    await page.getByRole('button', { name: 'Registrar Residence' }).tap();
+    await expect(heading).toHaveText('Unidade 01');
+    await expect(page.getByText('Versão 1', { exact: true })).toBeVisible();
+    await expect(page.getByText('Contrato INV-001')).toBeVisible();
+    await gate('17-residence');
+
+    // Revogação (ação destrutiva discreta) não muda a Residence registrada.
+    await page.getByRole('link', { name: /Casa do Pátio — Litoral/ }).tap();
+    await page.getByRole('link', { name: 'Casa do Pátio', exact: true }).tap();
+    await page.getByRole('link', { name: 'Contrato INV-001' }).tap();
+    await expect(heading).toHaveText('Revogar autorização de Investor');
+    await gate('18-revogar-autorizacao');
+    await page.getByLabel('Base da revogação').fill('Distrato 2026-09');
+    await page.getByRole('button', { name: 'Revogar autorização' }).tap();
+    await expect(status).toContainText('Autorização revogada.');
+    await expect(page.getByText('Revogada', { exact: true })).toBeVisible();
+
+    // Nova versão parte da mais recente e nasce não aprovada.
+    await page.getByRole('link', { name: 'Nova versão' }).tap();
+    await expect(heading).toHaveText('Nova versão');
+    await expect(page.getByLabel('Especificação')).toHaveValue(
+      'Especificação para implantação replicável.',
+    );
+    await gate('19-nova-versao');
+    await page.getByRole('button', { name: 'Registrar versão' }).tap();
+    await expect(page.getByRole('link', { name: 'Versão 2' })).toBeVisible();
+  });
 });
 
 test('[TECH-050] quem não tem papel Admin recebe 403 no catálogo e não vê o item de navegação', async ({
