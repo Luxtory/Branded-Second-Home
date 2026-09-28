@@ -190,10 +190,14 @@ deliberada só dentro de um componente de dados, contida e acessível.
 | Page Header | `lx-page-header` + `__lead` | — | um `h1` por página; metadata em Courier só se for real e útil |
 | Page Section | `lx-page-section` (`section` com `h2.lx-display-s`) | — | `aria-labelledby` no título; distância fixa título → conteúdo |
 | Layout focado | `lx-focused` + `__panel` (`main`), `__body` | — | tarefa única, sem navegação: login, segundo fator, acesso negado, indisponível e erro; painel em tela cheia no celular e centralizado sobre `wash` a partir de `md` (`--lx-layout-focused-width`); logo sem link, a imagem leva o nome |
+| Page Header — contexto e ações (W3) | `lx-page-header__context`, `lx-page-header__actions` | — | contexto = link para o nível de cima, antes do `h1`; ações depois do texto (no celular dividem a largura); confirmação `lx-message` logo abaixo do cabeçalho ganha a distância do conteúdo |
+| Record List (W3, ADR-0010 §9) | `lx-record-list` (`ul`) + `__item`, `__title` (`h3`), `__link`, `__meta` (`dl`), `__meta-item`, `__meta-label`, `__meta-value` | — | lista nomeada (`aria-label`); um link por item, esticado (o item inteiro é o alvo e mostra o foco); atributos ausentes não são renderizados; mesma estrutura de 320 a 1920 px, atributos ao lado do título a partir de `md` — nenhuma tabela |
+| Ações do formulário (W3) | `lx-form__actions` | — | principal primeiro no DOM; empilhadas em largura total no celular, em linha a partir de `md` |
 
 - **Composição:** o shell recebe `navItems` e o bloco de conta por props, montados na `presentation` de cada slice.
   O DS não conhece módulos, papéis nem regras; textos chegam por props (i18n do slice).
-- **React** (`src/design-system/react/`): `AppShell`, `PageHeader`, `FocusedLayout` e `Logo` (por chave do
+- **React** (`src/design-system/react/`): `AppShell`, `PageHeader` (W3: `context` e `actions`), `RecordList` (W3),
+  `FocusedLayout`, `Icon` (espelho de `icons/{menu,close,alert,check}.svg`) e `Logo` (por chave do
   manifest; com `href` é link para o início, sem `href` a imagem leva o nome).
 - **Estados de produto:** vazio = `lx-empty`; acesso negado, indisponível e erro inesperado = layout focado com rótulo
   `lx-label`, `h1`, texto e ação (erro: `error.tsx` do App Router, com "Tentar de novo" e sem detalhe técnico na tela).
@@ -234,6 +238,8 @@ deliberada só dentro de um componente de dados, contida e acessível.
 - [ ] Smoke Playwright WebKit do shell e do login (não equivale a Safari/iOS real).
 - [ ] O Lab mostra as superfícies de produto: seção 17 e as páginas de demonstração `lab/produto-app.html` e
   `lab/produto-focado.html`, com axe 0 e sem overflow de 320 a 1920 px.
+- [ ] W3: o Lab (seção 17) mostra o Page Header com contexto e ações, a confirmação abaixo do cabeçalho, a Record List
+  e as ações do formulário.
 
 **Repositório**
 - [ ] `frontend-design`, `CLAUDE.md` e `AGENTS.md` apontam para este sistema.

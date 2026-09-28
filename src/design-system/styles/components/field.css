@@ -130,7 +130,16 @@
     gap: var(--lx-space-8) var(--lx-layout-gutter);
   }
 
+  /* Ações do formulário (W3): a principal primeiro no DOM; no celular empilhadas em largura total, a partir de md em
+   * linha. */
+  .lx-form__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--lx-space-4);
+  }
+
   @media (min-width: 48rem) {
     .lx-form__row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lx-form__actions { flex-direction: row; flex-wrap: wrap; align-items: center; }
   }
 }

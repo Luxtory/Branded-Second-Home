@@ -13,9 +13,43 @@
     color: var(--lx-color-fg-muted);
   }
 
+  /* Contexto (W3): link para o nível de cima da hierarquia, antes do h1 — o caminho de volta no celular. */
+  .lx-page-header__context {
+    margin: 0;
+    font-size: var(--lx-text-small);
+  }
+
+  /* Ações da página (W3): abaixo do texto; no celular os botões dividem a largura, a partir de md ficam no tamanho
+   * do conteúdo. */
+  .lx-page-header__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lx-space-4);
+    margin-top: var(--lx-space-2);
+  }
+
+  .lx-page-header__actions > .lx-button {
+    flex: 1 1 auto;
+  }
+
+  /* Confirmação de uma ação logo abaixo do cabeçalho (W3): a mesma distância que separa o cabeçalho do conteúdo. */
+  .lx-page-header + .lx-message {
+    margin-bottom: var(--lx-space-12);
+  }
+
+  @media (min-width: 48rem) {
+    .lx-page-header__actions > .lx-button {
+      flex: 0 0 auto;
+    }
+  }
+
   @media (min-width: 64rem) {
     .lx-page-header {
       padding-bottom: var(--lx-space-12);
+      margin-bottom: var(--lx-space-16);
+    }
+
+    .lx-page-header + .lx-message {
       margin-bottom: var(--lx-space-16);
     }
   }

@@ -614,6 +614,50 @@
             <div class="lx-empty"><p class="lx-body">Ainda não há módulos de operação. Cada um aparece aqui e na navegação quando for liberado.</p></div>
           </section>
         </div>
+        <div data-expression="product" style="margin-top: var(--lx-space-16)">
+          <header class="lx-page-header">
+            <p class="lx-page-header__context"><a class="lx-link" href="#produto">Catálogo</a></p>
+            <h3 class="lx-display-m">Maison Aurora</h3>
+            <p class="lx-lead lx-page-header__lead">Page Header com contexto (o nível de cima, antes do título) e ações (depois do texto; no celular dividem a largura).</p>
+            <div class="lx-page-header__actions">
+              <a class="lx-button lx-button--primary" href="#produto">Registrar Concept</a>
+              <a class="lx-button lx-button--secondary" href="#produto">Registrar encerramento</a>
+            </div>
+          </header>
+          <div class="lx-message lx-message--success" role="status"><svg class="lx-message__icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg><p class="lx-message__title">Registro concluído.</p></div>
+          <section class="lx-page-section" aria-labelledby="lab-produto-registros">
+            <h4 id="lab-produto-registros" class="lx-display-s">Record List</h4>
+            <ul class="lx-record-list" aria-label="Concepts de demonstração">
+              <li class="lx-record-list__item">
+                <h5 class="lx-record-list__title"><a class="lx-record-list__link" href="#produto">Casa do Mar</a></h5>
+                <dl class="lx-record-list__meta">
+                  <div class="lx-record-list__meta-item"><dt class="lx-record-list__meta-label">Estado</dt><dd class="lx-record-list__meta-value">Aprovado (versão 2)</dd></div>
+                  <div class="lx-record-list__meta-item"><dt class="lx-record-list__meta-label">Editions</dt><dd class="lx-record-list__meta-value">3</dd></div>
+                </dl>
+              </li>
+              <li class="lx-record-list__item">
+                <h5 class="lx-record-list__title"><a class="lx-record-list__link" href="#produto">Refúgio da Serra</a></h5>
+                <dl class="lx-record-list__meta">
+                  <div class="lx-record-list__meta-item"><dt class="lx-record-list__meta-label">Estado</dt><dd class="lx-record-list__meta-value">Não aprovado</dd></div>
+                  <div class="lx-record-list__meta-item"><dt class="lx-record-list__meta-label">Editions</dt><dd class="lx-record-list__meta-value">0</dd></div>
+                </dl>
+              </li>
+            </ul>
+          </section>
+          <section class="lx-page-section" aria-labelledby="lab-produto-form">
+            <h4 id="lab-produto-form" class="lx-display-s">Ações do formulário</h4>
+            <form class="lx-form" action="#produto">
+              <div class="lx-field">
+                <label class="lx-label" for="lab-produto-nome">Nome da marca</label>
+                <input class="lx-input" id="lab-produto-nome" type="text" autocomplete="off">
+              </div>
+              <div class="lx-form__actions">
+                <button class="lx-button lx-button--primary" type="button">Registrar</button>
+                <a class="lx-button lx-button--quiet" href="#produto">Cancelar</a>
+              </div>
+            </form>
+          </section>
+        </div>
       </section>
     </div>
 

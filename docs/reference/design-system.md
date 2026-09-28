@@ -336,6 +336,26 @@ Luxplus. Componente, estado ou token novo só entra quando uma tela o consome (*
 (`__lead`) e o filete que separa do conteúdo. Courier só para metadata real e útil — nunca informação criada para
 efeito editorial (como a data de hoje).
 
+Com contexto e ações (W3): `context={{ href, label }}` vira o link `lx-page-header__context` antes do `h1` (o caminho
+de volta no celular); `actions` vai em `lx-page-header__actions`, depois do texto — no celular os botões dividem a
+largura. Uma confirmação (`lx-message` com `role="status"`) logo depois do cabeçalho ganha a mesma distância do
+conteúdo. Aviso fixo da página não é região viva: sem `role`.
+
+**Record List · `lx-record-list`** — React: `RecordList` (`items`, `label`). A lista das superfícies de produto
+(ADR-0010 §9): um item por registro, título em Newsreader que leva ao detalhe (link esticado: o item inteiro é o alvo
+e mostra o foco) e atributos em `dl` ao lado a partir de `md`. Atributo sem valor não é passado (TECH-001). Serve de
+320 a 1920 px sem tabela; tabela e filtros só quando houver comparação densa ou volume que peça filtro.
+
+```tsx
+<RecordList
+  label="Brand Partners"
+  items={[{ id, href, title: 'Maison Aurora', attributes: [{ label: 'Situação', value: 'Ativa' }] }]}
+/>
+```
+
+**Ações do formulário · `lx-form__actions`** — a ação principal primeiro no DOM; no celular empilhadas em largura
+total, em linha a partir de `md`. "Cancelar" é `lx-button--quiet` apontando para a página de origem.
+
 **Page Section · `lx-page-section`** — `section[aria-labelledby]` com `h2.lx-display-s`: distância fixa entre título
 e conteúdo e separação maior entre seções. Sem caixa nem sombra; o filete do próprio conteúdo divide.
 
