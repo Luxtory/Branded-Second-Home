@@ -1,0 +1,273 @@
+import { randomUUID } from 'node:crypto';
+import { PageHeader, RecordList, type RecordAttribute } from '@/design-system/react';
+import { adminRoleGate } from '@/features/admin';
+import { systemClock } from '@/features/platform';
+import type { BrandPartnerSummary, ConceptSummary } from '../application/views';
+import { isBrandInUse, type BrandPartner } from '../domain/catalog';
+import { postgresCatalogReader } from '../infrastructure/postgres-catalog-reader';
+import { BrandPartnerForm } from './brand-partner-form';
+import { readCatalog } from './catalog-read';
+import { CatalogNotFound, CatalogPage, isRecordId, StatusNotice } from './catalog-page';
+import { CATALOG_ROLE } from './handlers';
+import { messages } from './i18n/pt-br';
+import { Instant } from './instant';
+import { Notice } from './notice';
+import { paths, type StatusKey } from './paths';
+import { TerminationForm } from './termination-form';
+
+const text = messages.brandPartner;
+
+/** Situação da parceria para leitura (a regra é do command; aqui só se mostra). */
+function stateValue(partner: Pick<BrandPartner, 'terminatedEffectiveAt'>, now: Date) {
+  if (partner.terminatedEffectiveAt === null) return text.active;
+  return isBrandInUse(partner, now) ? text.terminationScheduled : text.terminated;
+}
+
+function summaryAttributes(partner: BrandPartnerSummary, now: Date): RecordAttribute[] {
+  return [
+    { label: text.stateLabel, value: stateValue(partner, now) },
+    { label: text.conceptsLabel, value: partner.conceptCount },
+    {
+      label: text.exposureLabel,
+      value: partner.exposureAuthorizedAt === null ? text.exposureMissing : text.exposureAuthorized,
+    },
+  ];
+}
+
+function conceptAttributes(concept: ConceptSummary): RecordAttribute[] {
+  return [
+    {
+      label: text.conceptStateLabel,
+      value:
+        concept.currentVersion === null
+          ? text.conceptNotApproved
+          : text.conceptApproved(concept.currentVersion),
+    },
+    { label: text.versionsLabel, value: concept.versionCount },
+    { label: text.editionsLabel, value: concept.editionCount },
+  ];
+}
+
+/** `/admin/catalogo`: Brand Partners (lista de registros, D-W3-2). */
+export async function BrandPartnersPage() {
+  const gate = await adminRoleGate(CATALOG_ROLE);
+  if (gate.kind === 'blocked') return gate.page;
+  const partners = await readCatalog(gate.session, { type: 'brand_partner', id: '*' }, (tx) =>
+    postgresCatalogReader.brandPartners(tx),
+  );
+  const now = systemClock.now();
+  const page = messages.catalog;
+  return (
+    <CatalogPage session={gate.session}>
+      <PageHeader
+        title={page.title}
+        lead={page.lead}
+        actions={
+          <a className="lx-button lx-button--primary" href={paths.newBrandPartner}>
+            {page.register}
+          </a>
+        }
+      />
+      <section className="lx-page-section" aria-labelledby="catalog-partners">
+        <h2 className="lx-display-s" id="catalog-partners">
+          {page.listTitle}
+        </h2>
+        {partners.length === 0 ? (
+          <div className="lx-empty">
+            <p className="lx-body">{page.empty}</p>
+          </div>
+        ) : (
+          <RecordList
+            label={page.listTitle}
+            items={partners.map((partner) => ({
+              id: partner.id,
+              href: paths.brandPartner(partner.id),
+              title: partner.brandName,
+              attributes: summaryAttributes(partner, now),
+            }))}
+          />
+        )}
+      </section>
+    </CatalogPage>
+  );
+}
+
+/** `/admin/catalogo/brand-partners/nova`. */
+export async function NewBrandPartnerPage() {
+  const gate = await adminRoleGate(CATALOG_ROLE);
+  if (gate.kind === 'blocked') return gate.page;
+  const page = messages.newBrandPartner;
+  return (
+    <CatalogPage session={gate.session}>
+      <PageHeader
+        title={page.title}
+        lead={page.lead}
+        context={{ href: paths.catalog, label: text.contextLink }}
+      />
+      <BrandPartnerForm idempotencyKey={randomUUID()} />
+    </CatalogPage>
+  );
+}
+
+function PartnerActions({ partner, now }: { readonly partner: BrandPartner; readonly now: Date }) {
+  const inUse = isBrandInUse(partner, now);
+  return (
+    <>
+      {inUse ? (
+        <a className="lx-button lx-button--primary" href={paths.newConcept(partner.id)}>
+          {text.registerConcept}
+        </a>
+      ) : null}
+      {inUse && partner.exposureAuthorizedAt === null ? (
+        <a className="lx-button lx-button--secondary" href={paths.exposure(partner.id)}>
+          {text.registerExposure}
+        </a>
+      ) : null}
+      {partner.terminationRegisteredAt === null ? (
+        <a className="lx-button lx-button--secondary" href={paths.termination(partner.id)}>
+          {text.registerTermination}
+        </a>
+      ) : null}
+    </>
+  );
+}
+
+function PartnerSummary({ partner }: { readonly partner: BrandPartner }) {
+  const items: RecordAttribute[] = [
+    ...(partner.terminatedEffectiveAt === null
+      ? []
+      : [
+          {
+            label: text.effectiveLabel,
+            value: <Instant iso={partner.terminatedEffectiveAt.toISOString()} />,
+          },
+          { label: text.basisLabel, value: partner.terminationBasis },
+        ]),
+    {
+      label: text.exposureRefLabel,
+      value: partner.exposureAuthorizationRef ?? text.exposureMissing,
+    },
+    ...(partner.exposureAuthorizedAt === null
+      ? []
+      : [
+          {
+            label: text.exposureAtLabel,
+            value: <Instant iso={partner.exposureAuthorizedAt.toISOString()} />,
+          },
+        ]),
+    { label: text.registeredAtLabel, value: <Instant iso={partner.createdAt.toISOString()} /> },
+  ];
+  return (
+    <dl className="lx-evidence lx-evidence--inline">
+      {items.map((item) => (
+        <div className="lx-evidence__item" key={item.label}>
+          <dt className="lx-evidence__label">{item.label}</dt>
+          <dd className="lx-evidence__value">{item.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function TerminationNotice({
+  partner,
+  now,
+}: {
+  readonly partner: BrandPartner;
+  readonly now: Date;
+}) {
+  if (partner.terminatedEffectiveAt === null) return null;
+  return isBrandInUse(partner, now) ? (
+    <Notice tone="warning" title={text.scheduledNoticeTitle} body={text.scheduledNoticeBody} />
+  ) : (
+    <Notice tone="warning" title={text.terminatedNoticeTitle} body={text.terminatedNoticeBody} />
+  );
+}
+
+/** `/admin/catalogo/brand-partners/[id]`: situação da parceria e seus Concepts. */
+export async function BrandPartnerPage({
+  id,
+  status,
+}: {
+  readonly id: string;
+  readonly status: StatusKey | null;
+}) {
+  const gate = await adminRoleGate(CATALOG_ROLE);
+  if (gate.kind === 'blocked') return gate.page;
+  if (!isRecordId(id)) return <CatalogNotFound session={gate.session} />;
+  const detail = await readCatalog(gate.session, { type: 'brand_partner', id }, (tx) =>
+    postgresCatalogReader.brandPartner(tx, id),
+  );
+  if (detail === null) return <CatalogNotFound session={gate.session} />;
+  const { partner, concepts } = detail;
+  const now = systemClock.now();
+  return (
+    <CatalogPage session={gate.session}>
+      <PageHeader
+        title={partner.brandName}
+        lead={stateValue(partner, now)}
+        context={{ href: paths.catalog, label: text.contextLink }}
+        actions={<PartnerActions partner={partner} now={now} />}
+      />
+      <StatusNotice status={status} />
+      <section className="lx-page-section" aria-labelledby="partner-summary">
+        <h2 className="lx-display-s" id="partner-summary">
+          {text.summaryTitle}
+        </h2>
+        <TerminationNotice partner={partner} now={now} />
+        <PartnerSummary partner={partner} />
+      </section>
+      <section className="lx-page-section" aria-labelledby="partner-concepts">
+        <h2 className="lx-display-s" id="partner-concepts">
+          {text.conceptsTitle}
+        </h2>
+        {concepts.length === 0 ? (
+          <div className="lx-empty">
+            <p className="lx-body">{text.conceptsEmpty}</p>
+          </div>
+        ) : (
+          <RecordList
+            label={text.conceptsTitle}
+            items={concepts.map((concept) => ({
+              id: concept.id,
+              href: paths.concept(concept.id),
+              title: concept.title,
+              attributes: conceptAttributes(concept),
+            }))}
+          />
+        )}
+      </section>
+    </CatalogPage>
+  );
+}
+
+/** `/admin/catalogo/brand-partners/[id]/encerramento`: confirmação do encerramento (irreversível). */
+export async function TerminationPage({ id }: { readonly id: string }) {
+  const gate = await adminRoleGate(CATALOG_ROLE);
+  if (gate.kind === 'blocked') return gate.page;
+  if (!isRecordId(id)) return <CatalogNotFound session={gate.session} />;
+  const detail = await readCatalog(gate.session, { type: 'brand_partner', id }, (tx) =>
+    postgresCatalogReader.brandPartner(tx, id),
+  );
+  if (detail === null) return <CatalogNotFound session={gate.session} />;
+  const { partner } = detail;
+  const page = messages.termination;
+  return (
+    <CatalogPage session={gate.session}>
+      <PageHeader
+        title={page.title}
+        lead={page.lead}
+        context={{ href: paths.brandPartner(partner.id), label: partner.brandName }}
+      />
+      {partner.terminationRegisteredAt === null ? (
+        <div className="lx-form">
+          <Notice tone="warning" title={page.warningTitle} body={page.warningBody} />
+          <p className="lx-small">{page.limitationBody}</p>
+          <TerminationForm brandPartnerId={partner.id} idempotencyKey={randomUUID()} />
+        </div>
+      ) : (
+        <Notice tone="warning" title={page.alreadyTerminated} />
+      )}
+    </CatalogPage>
+  );
+}

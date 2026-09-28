@@ -12,12 +12,7 @@ import {
 } from '@/features/platform';
 import { createCatalogHandlers } from '../application/handlers';
 import { postgresCatalogStore } from '../infrastructure/postgres-catalog-store';
-
-/**
- * Papel exercido nas operações do catálogo: a autoridade delas é "Admin" (REQ-095); sem hierarquia, quem só tem Super
- * Admin não opera o catálogo (ADR-0008).
- */
-export const CATALOG_ROLE = 'admin';
+import { CATALOG_ROLE } from './handlers';
 
 const HTTP_OK = 200;
 const HTTP_CREATED = 201;

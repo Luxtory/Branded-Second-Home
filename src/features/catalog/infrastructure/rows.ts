@@ -8,6 +8,7 @@ import type {
   Edition,
   EditionModality,
   InvestorAuthorization,
+  Residence,
   StaffRoleName,
 } from '../domain/catalog';
 
@@ -96,5 +97,19 @@ export function toEdition(row: Row<'app.edition'>): Edition {
     commercialConditions: row.commercial_conditions,
     operationId: row.operation_id,
     createdAt: row.created_at,
+  };
+}
+
+export function toResidence(row: Row<'app.residence'>): Residence {
+  return {
+    id: row.id,
+    editionId: row.edition_id,
+    conceptId: row.concept_id,
+    conceptVersionId: row.concept_version_id,
+    commerciallyApprovedAt: row.commercially_approved_at,
+    label: row.label,
+    timezone: row.timezone,
+    investorAuthorizationId: row.investor_authorization_id,
+    operationId: row.operation_id,
   };
 }
