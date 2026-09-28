@@ -2,5 +2,7 @@
 // repetida. Sem domínio e sem strings de produto — os textos chegam por props.
 export { AppShell, type AppNavItem, type AppShellLabels } from './app-shell';
 export { FocusedLayout } from './focused-layout';
+export { Icon, type IconName } from './icons';
 export { Logo, logoUrl, type Ground } from './logo';
-export { PageHeader } from './page-header';
+export { PageHeader, type PageContext } from './page-header';
+export { RecordList, type RecordAttribute, type RecordListItem } from './record-list';

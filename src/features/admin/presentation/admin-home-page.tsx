@@ -1,17 +1,22 @@
-import { redirect } from 'next/navigation';
-import { FocusedLayout, PageHeader } from '@/design-system/react';
-import {
-  AuthUnavailable,
-  getStaffAccess,
-  SignOutButton,
-  type StaffRole,
-} from '@/features/identity';
-import { AdminShell, roleNames } from './admin-shell';
+import { PageHeader, RecordList, type RecordListItem } from '@/design-system/react';
+import type { StaffRole } from '@/features/identity';
+import { adminGate } from './admin-gate';
+import { AdminShell, availableSections, roleNames } from './admin-shell';
 import { messages } from './i18n/pt-br';
 
 /** Início do Admin (`02` §2): resumo da sessão e os módulos disponíveis — nenhum dado presumido (TECH-001). */
 function AdminHome({ roles }: { readonly roles: readonly StaffRole[] }) {
   const text = messages.home;
+  const modules: RecordListItem[] = availableSections(roles)
+    .filter((section) => section.id !== 'home')
+    .map((section) => ({
+      id: section.id,
+      href: section.href,
+      title: section.label,
+      attributes: [
+        { label: text.modules.catalog.includesLabel, value: text.modules.catalog.includes },
+      ],
+    }));
   return (
     <AdminShell roles={roles} current="home">
       <div className="lx-container">
@@ -35,33 +40,22 @@ function AdminHome({ roles }: { readonly roles: readonly StaffRole[] }) {
           <h2 className="lx-display-s" id="admin-modules">
             {text.modulesTitle}
           </h2>
-          <div className="lx-empty">
-            <p className="lx-body">{text.modulesEmpty}</p>
-          </div>
+          {modules.length === 0 ? (
+            <div className="lx-empty">
+              <p className="lx-body">{text.modulesEmpty}</p>
+            </div>
+          ) : (
+            <RecordList label={text.modulesLabel} items={modules} />
+          )}
         </section>
       </div>
     </AdminShell>
   );
 }
 
-function AdminForbidden() {
-  const text = messages.forbidden;
-  return (
-    <FocusedLayout brand={messages.brand}>
-      <p className="lx-label">{text.marker}</p>
-      <h1 className="lx-display-s">{text.title}</h1>
-      <p className="lx-body">{text.body}</p>
-      <SignOutButton />
-    </FocusedLayout>
-  );
-}
-
 /** `/admin`: o acesso é resolvido a cada request, no servidor, pelo módulo identity. */
 export async function AdminHomePage() {
-  const access = await getStaffAccess();
-  if (access.kind === 'anonymous') redirect('/entrar');
-  if (access.kind === 'mfa_required') redirect('/entrar/mfa');
-  if (access.kind === 'unavailable') return <AuthUnavailable />;
-  if (access.kind === 'forbidden') return <AdminForbidden />;
-  return <AdminHome roles={access.roles} />;
+  const gate = await adminGate();
+  if (gate.kind === 'blocked') return gate.page;
+  return <AdminHome roles={gate.session.roles} />;
 }

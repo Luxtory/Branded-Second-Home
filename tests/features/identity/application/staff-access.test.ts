@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveStaffAccess } from '@/features/identity/application/staff-access';
+import { exercisedRole, resolveStaffAccess } from '@/features/identity/application/staff-access';
 import { STAFF_USER, staffDirectory } from '../../../support/identity-fixtures';
 
 const clock = { now: () => new Date('2026-09-15T00:00:00.000Z') };
@@ -30,6 +30,27 @@ describe('acesso à superfície Admin (TECH-050)', () => {
       kind: 'granted',
       userId: STAFF_USER,
       roles: ['admin', 'super_admin'],
+      records: [
+        { id: 'r1', role: 'admin' },
+        { id: 'r2', role: 'super_admin' },
+      ],
     });
+  });
+});
+
+describe('papel exercido numa tela (ADR-0008)', () => {
+  it('[TECH-050] o papel exercido é explícito: sem o registro ativo desse papel, não há papel exercido', () => {
+    const access = {
+      kind: 'granted',
+      userId: STAFF_USER,
+      roles: ['super_admin'],
+      records: [{ id: 'r2', role: 'super_admin' }],
+    } as const;
+
+    expect(exercisedRole(access, 'super_admin')).toEqual({
+      role: 'super_admin',
+      authorizationRef: 'staff_role:r2',
+    });
+    expect(exercisedRole(access, 'admin')).toBeNull();
   });
 });

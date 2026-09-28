@@ -55,7 +55,7 @@
 | 0 | Fundação: scaffold, harness TECH-110, CI/CD, ADRs 0004–0006, `## Commands` | platform | — | — | — | R1·base | ✅ |
 | 1 | Núcleo de commands: operação, idempotência, auditoria, outbox, jobs, erros | platform | REQ-015, REQ-098 | 0 | — | R1·base | ✅ |
 | 2 | Acesso administrativo: Auth, MFA, staff, guard, grants, RLS | identity, admin | REQ-014 | 1 | — | R1·base | ✅ |
-| 2B | Fundação de UI de produto (mobile-first): app shell, layout focado, padrão de página e estados | design-system, admin, identity (presentation) | — | 2 | — | R1·base | ⬜ |
+| 2B | Fundação de UI de produto (mobile-first): app shell, layout focado, padrão de página e estados | design-system, admin, identity (presentation) | — | 2 | — | R1·base | ✅ |
 | 3 | Catálogo + Admin | catalog, admin | REQ-020, REQ-027 | 2B | — | R1 | ⬜ |
 | 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3 | — | R1 | ⬜ |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ |
@@ -337,6 +337,10 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   Playwright WebKit do shell e do login · testes do DS verdes e nenhum `max-width` em media query · E2E de login, MFA
   e acesso ao Admin sem regressão.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and the W2B acceptance criteria in docs/plan/implementation-waves.md pass, stop after 4 tries`
+- **Status**: ✅ concluída em 2026-09-27 — PR #16 (squash `9d6e3c7`): ADR-0009, App Shell (`lx-app`), cabeçalho e
+  seção de página, layout focado (`lx-focused`) para login, segundo fator e estados, navegação `night` aprovada no
+  checkpoint 1, smoke Playwright WebKit na CI; `migrate` sem pendência (`Applied: 7 / Pending: 0`); Production
+  verificada (`/entrar`, `/entrar/mfa`, `/admin` e os 6 logos por chave do manifest), sem mudança no banco.
 
 ### Wave 3 — Catálogo + Admin
 
@@ -360,6 +364,25 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   Residence existente` · `[BR-021] Brand Partner encerrada bloqueia Concept e Edition novos` · `[REQ-100] texto com
   termo vedado é recusado` · contratos OpenAPI.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-020,REQ-027 exits 0, stop after 4 tries`
+- **Decisões de execução (aprovadas em 2026-09-27;
+  [ADR-0010](../adr/0010-catalogo-versoes-e-mutacoes-do-admin.md), spec [`catalog`](../specs/catalog.md))**:
+  - BR-025: `register_residence` é o evento de aprovação comercial — grava o instante e fixa a versão vigente do
+    Concept; a versão fixada nunca muda.
+  - D-W3-1 — `investor_authorization` próprio, sem dado pessoal: Concept, referência estável do instrumento,
+    vigência e revogação; a Residence referencia `investor_authorization_id`; a **W7** acrescenta o vínculo com a
+    `party` sem reescrever registros.
+  - D-W3-2 — lista de registros (`lx-record-list`) em vez de tabela; sem filtros (nenhum consumidor na W3).
+  - D-W3-3 — autorização de exposição da marca (BR-015, P-8) registrada por Brand Partner, uma vez; o encerramento não
+    a apaga (histórico preservado); a W4 a consome.
+  - D-W3-4 — depois de `terminated_effective_at`, novos usos da marca são recusados (Concept, versão, aprovação,
+    Edition, autorização de Investor, Residence, exposição). Direitos sobreviventes não modelados → fechado para
+    falhas como **limitação temporária**, não regra nova; BR-022/023 não são redefinidas.
+  - D-W3-5 — fechamento em Production sem dados fictícios (catálogo append-only, sem staging).
+  - Checagem de terminologia lexical = defesa complementar; o gate editorial é a aprovação humana da versão.
+  - Entrada única dos commands do Admin (API e Server Actions) com papel exercido explícito e auditado, sem hierarquia
+    entre Admin e Super Admin (ADR-0008).
+  - Alteração de modalidade e trava da estrutura da Edition ficam na W8 (dona do REQ-022); a W3 cria a Edition com a
+    modalidade.
 
 ### Wave 4 — Discovery público
 

@@ -55,6 +55,7 @@ export {
   type Database,
   type DatabaseTransaction,
 } from './infrastructure/database/connection';
+export type { DB as DatabaseTables } from './infrastructure/database/schema';
 export { createPostgresCommandStore } from './infrastructure/commands/postgres-command-store';
 export { recordNotification } from './infrastructure/notifications/notification-repository';
 export { errorResponse } from './presentation/errors';
@@ -65,5 +66,9 @@ export { createProductionExecutor } from './infrastructure/commands/production-e
 export { withUserRead, type VerifiedClaims } from './infrastructure/database/user-read';
 export { recordAdminRead, type AdminReadRecord } from './infrastructure/audit/admin-read';
 export { isSameOrigin } from './presentation/origin';
-export { commandResponse, idempotencyKey } from './presentation/commands';
+export {
+  commandResponse,
+  dispatchOutboxAfterCommit,
+  idempotencyKey,
+} from './presentation/commands';
 export { unavailableKeys } from './presentation/unavailable';

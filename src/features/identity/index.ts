@@ -5,3 +5,12 @@ export type { StaffAccess } from './application/staff-access';
 export { getStaffAccess, type AdminAccess } from './presentation/staff-access';
 export { SignOutButton } from './presentation/sign-out-button';
 export { AuthUnavailable } from './presentation/auth-unavailable';
+export { exercisedRole } from './application/staff-access';
+export type { StaffRoleRecord } from './domain/staff';
+export {
+  createAdminCommandRoute,
+  executeAdminCommand,
+  type AdminCommand,
+  type AdminCommandDependencies,
+  type AdminCommandResult,
+} from './presentation/admin-command';

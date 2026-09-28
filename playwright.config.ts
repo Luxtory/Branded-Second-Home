@@ -10,6 +10,7 @@ const IGNORED = '**/activate-ultronpx.mjs';
 // `sudo npx playwright install-deps webkit`.
 const WEBKIT_SMOKE = process.env.PLAYWRIGHT_WEBKIT === '1';
 const WEBKIT_SPECS = '**/*.webkit.spec.ts';
+const SETUP_SPECS = '**/*.setup.ts';
 
 // E2E sobre o build de produção (npm run test:e2e = next build && playwright test), com o Chrome do sistema. O
 // servidor sobe o PostgreSQL embutido com as migrations e a autenticação de teste (tests/support/e2e-server.mjs).
@@ -20,9 +21,23 @@ export default defineConfig({
   reporter: [['list'], ['json', { outputFile: 'reports/playwright.json' }]],
   use: { baseURL, trace: 'retain-on-failure' },
   projects: [
-    { name: 'chrome', testIgnore: [IGNORED, WEBKIT_SPECS], use: { channel: 'chrome' } },
+    // Estado compartilhado preparado antes dos testes paralelos (TOTP dos usuários de teste; ver auth.setup.ts).
+    { name: 'setup', testMatch: [SETUP_SPECS], use: { channel: 'chrome' } },
+    {
+      name: 'chrome',
+      testIgnore: [IGNORED, WEBKIT_SPECS],
+      dependencies: ['setup'],
+      use: { channel: 'chrome' },
+    },
     ...(WEBKIT_SMOKE
-      ? [{ name: 'webkit', testMatch: [WEBKIT_SPECS], use: { ...devices['iPhone 13'] } }]
+      ? [
+          {
+            name: 'webkit',
+            testMatch: [WEBKIT_SPECS],
+            dependencies: ['setup'],
+            use: { ...devices['iPhone 13'] },
+          },
+        ]
       : []),
   ],
   webServer: {

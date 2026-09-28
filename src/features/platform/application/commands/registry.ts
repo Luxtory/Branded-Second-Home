@@ -91,14 +91,26 @@ export const CRITICAL_COMMANDS: readonly CommandSpec[] = [
  * Operações não críticas do REQ-095: o TECH-051 as submete ao mesmo guard, base registrada e auditoria, sem efeito
  * econômico novo. Registro separado — `CRITICAL_COMMANDS` continua exatamente a tabela fechada do TECH-051.
  */
+const nonCritical = (name: string, module: Module): CommandSpec => ({
+  name,
+  module,
+  authority: 'admin',
+  membership: 'not_applicable',
+  critical: false,
+});
+
 export const NON_CRITICAL_OPERATIONS: readonly CommandSpec[] = [
-  {
-    name: 'grant_authorization',
-    module: 'identity',
-    authority: 'admin',
-    membership: 'not_applicable',
-    critical: false,
-  },
+  nonCritical('grant_authorization', 'identity'),
+  // Catálogo (W3, REQ-095; docs/specs/catalog.md): o Admin opera Concepts, Editions e Residences.
+  nonCritical('register_brand_partner', 'catalog'),
+  nonCritical('authorize_brand_exposure', 'catalog'),
+  nonCritical('terminate_brand_partner', 'catalog'),
+  nonCritical('create_concept_version', 'catalog'),
+  nonCritical('approve_concept_version', 'catalog'),
+  nonCritical('register_investor_authorization', 'catalog'),
+  nonCritical('revoke_investor_authorization', 'catalog'),
+  nonCritical('create_edition', 'catalog'),
+  nonCritical('register_residence', 'catalog'),
 ];
 
 export class CommandRegistryError extends Error {
