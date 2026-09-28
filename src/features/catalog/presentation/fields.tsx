@@ -146,12 +146,21 @@ export function FormAlert({ state }: { readonly state: FormState }) {
   return <Notice tone="error" role="alert" title={text.rejections[state.rejection]} />;
 }
 
-/** Botão principal com o indicador de espera do DS (`aria-busy`) enquanto a Server Action roda. */
-export function SubmitButton({ children }: { readonly children: ReactNode }) {
+/** Tom da ação: principal comum ou irreversível (encerrar, revogar — `lx-button--destructive`, discreto). */
+export type ActionTone = 'primary' | 'destructive';
+
+/** Botão de envio com o indicador de espera do DS (`aria-busy`) enquanto a Server Action roda. */
+export function SubmitButton({
+  children,
+  tone = 'primary',
+}: {
+  readonly children: ReactNode;
+  readonly tone?: ActionTone;
+}) {
   const { pending } = useFormStatus();
   return (
     <button
-      className="lx-button lx-button--primary"
+      className={`lx-button lx-button--${tone}`}
       type="submit"
       disabled={pending}
       aria-busy={pending || undefined}
@@ -161,17 +170,19 @@ export function SubmitButton({ children }: { readonly children: ReactNode }) {
   );
 }
 
-/** Ações do formulário: a principal primeiro; "Cancelar" volta sem gravar. */
+/** Ações do formulário: a de envio primeiro; "Cancelar" volta sem gravar. */
 export function FormActions({
   submit,
   cancelHref,
+  tone = 'primary',
 }: {
   readonly submit: string;
   readonly cancelHref: string;
+  readonly tone?: ActionTone;
 }) {
   return (
     <div className="lx-form__actions">
-      <SubmitButton>{submit}</SubmitButton>
+      <SubmitButton tone={tone}>{submit}</SubmitButton>
       <a className="lx-button lx-button--quiet" href={cancelHref}>
         {text.cancel}
       </a>

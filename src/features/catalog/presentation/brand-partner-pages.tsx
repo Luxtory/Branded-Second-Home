@@ -124,7 +124,7 @@ function PartnerActions({ partner, now }: { readonly partner: BrandPartner; read
         </a>
       ) : null}
       {partner.terminationRegisteredAt === null ? (
-        <a className="lx-button lx-button--secondary" href={paths.termination(partner.id)}>
+        <a className="lx-button lx-button--destructive" href={paths.termination(partner.id)}>
           {text.registerTermination}
         </a>
       ) : null}

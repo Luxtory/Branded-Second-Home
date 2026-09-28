@@ -157,7 +157,7 @@ Uso detalhado, markup e exemplos: [`docs/reference/design-system.md`](../referen
 
 | Componente | Classe | Variantes | Estados / acessibilidade |
 |---|---|---|---|
-| Button | `lx-button` | `--primary`, `--secondary`, `--quiet` (cor pelo fundo) | hover, active, `:focus-visible`, `disabled`, `aria-busy="true"`; altura ≥ 48px |
+| Button | `lx-button` | `--primary`, `--secondary`, `--quiet` (cor pelo fundo); `--destructive` (W3: ação irreversível, contorno e texto no token de erro, sem preenchimento) | hover, active, `:focus-visible`, `disabled`, `aria-busy="true"`; altura ≥ 48px |
 | Text Link | `lx-link` | `--standalone` (com seta) | sublinhado visível; foco visível |
 | Field | `lx-field` + `lx-label`, `lx-hint`, `lx-error` | — | label visível; `aria-describedby`; `aria-invalid`; erro com ícone + texto |
 | Input / Textarea / Select | `lx-input`, `lx-textarea`, `lx-select` | — | nativos; altura ≥ 48px; borda ≥ 3:1 |
@@ -238,8 +238,9 @@ deliberada só dentro de um componente de dados, contida e acessível.
 - [ ] Smoke Playwright WebKit do shell e do login (não equivale a Safari/iOS real).
 - [ ] O Lab mostra as superfícies de produto: seção 17 e as páginas de demonstração `lab/produto-app.html` e
   `lab/produto-focado.html`, com axe 0 e sem overflow de 320 a 1920 px.
-- [ ] W3: o Lab (seção 17) mostra o Page Header com contexto e ações, a confirmação abaixo do cabeçalho, a Record List
-  e as ações do formulário.
+- [ ] W3: o Lab (seção 17) mostra o Page Header com contexto e ações (inclusive a destrutiva), a confirmação abaixo do
+  cabeçalho, a Record List e as ações do formulário.
+- [ ] W3: na expressão `product`, `lx-evidence--inline` fica em uma coluna no celular e ganha colunas a partir de `md`.
 
 **Repositório**
 - [ ] `frontend-design`, `CLAUDE.md` e `AGENTS.md` apontam para este sistema.

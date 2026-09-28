@@ -58,6 +58,18 @@
 
   /* Expressão product (ADR-0009): o rótulo é interface, então fica em Hanken Grotesk. Courier Prime só para metadata
    * real e curta (ids, códigos, horários), nunca decorativa. */
+  /* Expressão product (W3): dados chave-valor em uma coluna no celular, onde colunas comprimiriam rótulo e valor; a
+   * partir de md, colunas com largura mínima legível. */
+  [data-expression="product"] .lx-evidence--inline {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @media (min-width: 48rem) {
+    [data-expression="product"] .lx-evidence--inline {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    }
+  }
+
   [data-expression="product"] .lx-evidence__label {
     font-family: var(--lx-font-utility);
     font-size: var(--lx-text-small);

@@ -42,7 +42,11 @@ export function TerminationForm({
         maxLength={REF_MAX}
         state={state}
       />
-      <FormActions submit={text.submit} cancelHref={paths.brandPartner(brandPartnerId)} />
+      <FormActions
+        submit={text.submit}
+        cancelHref={paths.brandPartner(brandPartnerId)}
+        tone="destructive"
+      />
     </form>
   );
 }

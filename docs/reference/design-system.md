@@ -192,6 +192,8 @@ nunca classes. A cor vem do ground.
 - `--secondary`: alternativa.
 - `--quiet`: ação leve, sublinhada.
 - `--block`: largura total.
+- `--destructive` (W3, superfícies de produto): ação irreversível (encerrar, revogar). Contorno e texto no token de
+  erro, sem preenchimento; no hover, só o fundo `surface`. Discreta: não concorre com a ação principal da página.
 
 Altura 48px. Os estados `:hover`, `:active`, `:focus-visible`, `disabled` e `aria-busy="true"` (spinner) já estão
 estilizados.
@@ -262,7 +264,7 @@ bloqueia, `role="alert"`.
 </dl>
 ```
 
-- `--inline` para densidade menor.
+- `--inline` para densidade menor. Na expressão `product` (W3): uma coluna no celular, colunas a partir de `md`.
 - **Valor ausente: o item não é renderizado** (TECH-001).
 - Sem preço por dia para Co-Owner (REQ-100) e sem promessa de retorno (REQ-101).
 - Termos compostos em `<span class="lx-nowrap">Co-Owner</span>`.

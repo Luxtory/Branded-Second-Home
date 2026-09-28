@@ -48,6 +48,17 @@
     color: var(--lx-color-action-fg);
   }
 
+  /* Ação irreversível (W3: encerrar, revogar): contorno e texto no token de erro, sem preenchimento — discreta, não
+   * concorre com a ação principal. No hover, só o fundo da superfície. */
+  .lx-button--destructive {
+    border-color: var(--lx-color-error);
+    color: var(--lx-color-error);
+  }
+
+  .lx-button--destructive:hover {
+    background-color: var(--lx-color-surface);
+  }
+
   .lx-button--quiet {
     padding-inline: 0;
     color: var(--lx-color-accent);
