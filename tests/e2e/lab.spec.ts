@@ -7,6 +7,8 @@ const WIDTHS = [320, 390, 768, 1024, 1440, 1920];
 const VIEWPORT_HEIGHT = 900;
 
 test('[ADR-0003] /lab com axe 0 e sem overflow horizontal de 320 a 1920 px', async ({ page }) => {
+  // O axe da página inteira do Lab, em paralelo com os fluxos longos do Admin, passa dos 30 s padrão.
+  test.slow();
   const consoleErrors: string[] = [];
   page.on('console', (message) => {
     if (message.type() === 'error')
@@ -36,6 +38,8 @@ test('[ADR-0003] /lab com axe 0 e sem overflow horizontal de 320 a 1920 px', asy
 test('[ADR-0009] Lab: App Shell e layout focado de demonstração com axe 0 e sem overflow de 320 a 1920 px', async ({
   context,
 }) => {
+  // Dois gates responsivos completos (varredura 320–1920 + axe) passam dos 30 s padrão com a suíte em paralelo.
+  test.slow();
   for (const file of ['produto-app.html', 'produto-focado.html']) {
     // Página nova por arquivo: erros de console (e os 404 falsos do axe) não passam de uma para outra.
     const page = await context.newPage();
