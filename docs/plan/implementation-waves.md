@@ -429,6 +429,26 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   promessa de rentabilidade, valorização, liquidez ou renda` · `[REQ-022] Concept sem Edition aparece sem oferta` ·
   E2E com axe 0 em 390 e 1440 px e sem overflow de 320 a 1920 px.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-100,REQ-101 exits 0, stop after 4 tries`
+- **Escopo ajustado e decisões de execução (aprovadas em 2026-09-29;
+  [ADR-0012](../adr/0012-discovery-publico-leitura-anonima-csp-e-publicacao.md), spec [`catalog`](../specs/catalog.md)
+  §13)**:
+  - D-W4-01 — páginas Home (`/`), Como funciona, Coleção e Concept; a Edition e a oferta ficam na página do Concept.
+    Interesse (W6) e Brand Partners (`P-BP-01`) fora.
+  - D-W4-02 — Concept público = versão aprovada + exposição da marca autorizada + antes da eficácia do encerramento; a
+    ocultação depois do encerramento é limitação temporária fechada para falhas (como a D-W3-4) e não redefine
+    BR-021/022/023.
+  - D-W4-03 — menor conteúdo público: título, especificação, Editions (região, modalidade, condições) e nome da marca;
+    elementos essenciais e premissas não são publicados; o Admin identifica os campos publicados.
+  - D-W4-04 — URL por uuid e ordem de registro; slug, resumo e ordem editorial antes do go-live.
+  - D-W4-05 — portão: rotas públicas 404 em Production até `PUBLIC_SITE=open`; Data API desligada verificada (nenhuma
+    rota externa ao Next.js até o catálogo).
+  - D-W4-06 — CSP com nonce no `proxy.ts` para toda página HTML · D-W4-07 — sem cache · D-W4-08 — navegação B2C sem CTA
+    · D-W4-09 — Frames tipográficos · D-W4-10 — interesse só na W6.
+  - Componentes do DS consumer-driven: `SiteHeader` (gaveta extraída do App Shell), `Scene`, `Frame` tipográfico,
+    `Collection`, `Evidence`, `ConceptCredit` e o padrão CSS `lx-pair` (Owner × Co-Owner com o mesmo peso).
+- **Checkpoints**: (1) Home, Como funciona, Coleção, Concept com e sem Edition e menu do celular aberto, a 390 e 1440
+  px, com dados semeados localmente → aprovação de copy, hierarquia, Owner × Co-Owner, Luxtory Club e estética, sem
+  push; (2) gates, E2E, trace e PR draft com CI verde, parado antes do merge.
 
 ### Wave 5 — Interesse (núcleo)
 

@@ -199,3 +199,17 @@ Repúdio não se aplica à W0: não há mutation. A trilha de auditoria chega na
 - Replay de uma mutation com a mesma `Idempotency-Key` e outro corpo → `ERR_IDEMPOTENCY_CONFLICT`, sem efeito.
 - Dois retries simultâneos do cliente → uma única operação; o segundo recebe a mesma resposta (CONC-12).
 - Preview de branch maliciosa tentando ler o banco → sem credencial e conexão recusada pelo código (ADR-0007).
+
+---
+
+## W4 — Content Security Policy (2026-09-29)
+
+- **Scope**: `src/proxy.ts` (CSP com nonce por requisição, composta com a renovação de sessão) · ADR-0012
+- **Mitigação** de XSS e injeção de script em todas as páginas HTML (públicas, `/entrar`, `/admin`): `default-src
+  'self'`; `script-src 'self' 'nonce-…' 'strict-dynamic'`; `style-src 'self' 'nonce-…'`; `img-src 'self' blob: data:`;
+  `font-src 'self'`; `object-src 'none'`; `base-uri 'self'`; `form-action 'self'`; `frame-ancestors 'none'`;
+  `upgrade-insecure-requests`. Nonce novo a cada requisição (`crypto.randomUUID`). Fora do matcher: `/lab` (interno),
+  `/brand/logo` (CSP própria mais restrita), `/v1`, `/api`, `_next`, `favicon.ico`.
+- **Verificação**: E2E com zero erro de console (uma violação de CSP aparece como erro) em todas as telas públicas e
+  do Admin; teste unitário do cabeçalho e do matcher.
+- **Residual**: `'unsafe-eval'` só em `next dev` (desenvolvimento local), nunca no build servido.
