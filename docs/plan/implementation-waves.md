@@ -57,7 +57,7 @@
 | 2 | Acesso administrativo: Auth, MFA, staff, guard, grants, RLS | identity, admin | REQ-014 | 1 | — | R1·base | ✅ |
 | 2B | Fundação de UI de produto (mobile-first): app shell, layout focado, padrão de página e estados | design-system, admin, identity (presentation) | — | 2 | — | R1·base | ✅ |
 | 3 | Catálogo + Admin | catalog, admin | REQ-020, REQ-027 | 2B | — | R1 | ✅ |
-| 3B | Camada de comunicação: Framework Mestre + preenchimentos B2C e Brand Partners (ADR-0011) | docs (sem slice) | — | 3 | — | R1 | ⬜ |
+| 3B | Camada de comunicação: Framework Mestre + preenchimentos B2C e Brand Partners (ADR-0011) | docs (sem slice) | — | 3 | — | R1 | ✅ |
 | 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3, 3B | — | R1 | ⬜ |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ |
 | 6 | Interesse — formulário público | ownership | — | 4, 5 | — | R1 | ⛔ P-3 |
@@ -407,6 +407,9 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   seções mínimas presentes · links internos resolvem · todas as `D-*` registradas como aprovadas · canônicos e
   `activate-ultronpx.mjs` intactos · `npm run verify` verde.
 - **Goal command**: `/goal npm run verify exits 0 including tests/communication.test.ts, every D-* decision in docs/specs/communication/ is recorded as approved, and git diff --stat origin/main -- docs/specs/canonical activate-ultronpx.mjs is empty, stop after 3 tries`
+- **Status**: ✅ concluída em 2026-09-29 — PR #19 (squash `846b2e8`): contrato `communication`, Framework Mestre,
+  preenchimentos base Luxtory, B2C e Brand Partners com todas as `D-*` aprovadas, ADR-0011 e
+  `tests/communication.test.ts`; só documentação e teste (sem migration, API ou tela).
 
 ### Wave 4 — Discovery público
 
