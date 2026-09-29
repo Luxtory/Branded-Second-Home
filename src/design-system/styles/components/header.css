@@ -66,11 +66,6 @@
     .lx-header__cta { display: inline-flex; }
   }
 
-  @media (min-width: 64rem) {
-    .lx-header__nav { display: block; }
-    .lx-header__menu-button { display: none; }
-  }
-
   /* Icon button: 48×48 target for menu/close. Needs an accessible name (aria-label or hidden text). */
   .lx-icon-button {
     display: inline-grid;
@@ -90,5 +85,11 @@
   .lx-icon-button > svg {
     width: 1.5rem;
     height: 1.5rem;
+  }
+
+  /* After .lx-icon-button: same specificity, so the later rule wins — the menu button must stay hidden from lg. */
+  @media (min-width: 64rem) {
+    .lx-header__nav { display: block; }
+    .lx-header__menu-button { display: none; }
   }
 }

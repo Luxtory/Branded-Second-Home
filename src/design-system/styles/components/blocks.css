@@ -1,0 +1,57 @@
+/* Blocks — short peer blocks: a set of options (<ul>) or a short mechanism step by step (<ol>; the order is semantic,
+ * there is no decorative numbering). Mobile-first: one column; from md, two; from lg, as many equal columns as fit —
+ * exactly four blocks stay two by two until xl, so no block is left alone on a row. Each block: a heading and a short
+ * text (or an Evidence), under a hairline. --rows: a longer sequence read top to bottom; from md each block puts its
+ * heading beside its text. */
+@layer lx.components {
+  .lx-blocks {
+    display: grid;
+    gap: var(--lx-space-8) var(--lx-layout-gutter);
+    margin: 0;
+    padding: 0;
+  }
+
+  @media (min-width: 48rem) {
+    .lx-blocks {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .lx-blocks {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    }
+
+    .lx-blocks:has(> :nth-child(4):last-child) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 80rem) {
+    .lx-blocks:has(> :nth-child(4):last-child) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .lx-blocks__item {
+    display: grid;
+    gap: var(--lx-space-3);
+    align-content: start;
+    padding-top: var(--lx-space-4);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  /* After the column rules: same specificity, so --rows wins at every width. */
+  .lx-blocks--rows,
+  .lx-blocks--rows:has(> :nth-child(4):last-child) {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--lx-space-6);
+  }
+
+  @media (min-width: 48rem) {
+    .lx-blocks--rows > .lx-blocks__item {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      column-gap: var(--lx-layout-gutter);
+    }
+  }
+}
