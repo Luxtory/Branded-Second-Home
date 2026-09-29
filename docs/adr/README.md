@@ -18,6 +18,7 @@ described by Michael Nygard. The ADR process itself is established in
 | 0008 | [Autenticação e autorização administrativa](0008-autenticacao-e-autorizacao-administrativa.md) | Accepted |
 | 0009 | [Superfícies de produto mobile-first e shell de aplicação](0009-superficies-de-produto-mobile-first.md) | Accepted |
 | 0010 | [Catálogo: versões, aprovação comercial, Investor e mutações do Admin pela UI](0010-catalogo-versoes-e-mutacoes-do-admin.md) | Accepted |
+| 0011 | [Camada de comunicação das páginas públicas: Framework Mestre e Frameworks preenchidos](0011-camada-de-comunicacao-publica.md) | Accepted |
 
 The technical decisions ADR-001…008 of the canonical
 [03 — Technical Spec](../specs/canonical/03-technical-spec.md) also apply, by reference.

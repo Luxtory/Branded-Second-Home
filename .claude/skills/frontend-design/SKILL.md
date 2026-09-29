@@ -71,6 +71,10 @@ visual QA: `src/design-system/lab/index.html`.
 - **Copy:** short, concrete scenes, pt-BR via i18n. Co-Owner = **Ação** with **Direito de Uso**; never "cota"
   (or derivatives) nor "diária(s)"; no price per day for Co-Owner; never promise return, appreciation,
   liquidity or income (REQ-100, REQ-101). Interest ≠ acquisition (BR-050); days are a preference (REQ-025).
+- **Communication (public pages):** positioning, narrative, tone, proof and CTAs come from the approved communication
+  layer (`docs/specs/communication.md` + `docs/specs/communication/`), never invented per page. One Protagonist per
+  page; B2C and Brand Partners journeys never link to each other; facts only from 01/02/03 by ID; only approved
+  decisions. The page brief lives in the wave spec. The Lab's copy is demo content, never a source.
 - **Accessibility baseline:** WCAG 2.2 AA — visible 2px focus ring per ground, contrast verified by test,
   targets 44px (controls 48px), errors with icon + text, `prefers-reduced-motion` + `data-motion="reduce"`
   honored, no auto-motion > 5s, no horizontal scroll 320–1920px.

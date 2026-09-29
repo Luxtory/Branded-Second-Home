@@ -107,6 +107,21 @@ Source of truth for every user-facing UI (**LUXTORY = LUXURY + STORY**). Read be
   no unintended horizontal overflow of the document. Exceptions only as an explicit product decision recorded in
   the feature spec. Product surfaces compose `lx-app-*` / `lx-page-header`; components are consumer-driven.
 
+## Communication (public pages)
+
+Source of truth for what every **public page** communicates — positioning, narrative, personality, tone, proof and
+CTAs ([ADR-0011](docs/adr/0011-camada-de-comunicacao-publica.md)). Read before specifying or building any public page:
+
+- Contract: [`docs/specs/communication.md`](docs/specs/communication.md) — precedence, F/D/H/P classification, page
+  brief, workflow and PR checklist.
+- Method: `docs/specs/communication/framework-mestre.md` · brand-level fill (Mentor, personality, tone, guardrails):
+  `luxtory.md` · one fill per Protagonist, with its journey map: `b2c.md`, `brand-partners.md`.
+- Facts come only from 01/02/03, cited by ID; only **approved** decisions are used; hypotheses and pending items are
+  never stated as facts. The B2C and Brand Partners journeys never link to each other.
+- The 5Ps are journey architecture, not a page template; the only fixed convention is PICTURE = Hero on Homes that
+  use the full arc. The Design System still owns every UI decision; the Lab's copy is demo content, never a source.
+- Page briefs live in the spec of the wave that builds the page; copy lives in the slice's i18n.
+
 ## NOTES.md — living document (mandatory)
 
 `NOTES.md` at the repo root is the project's living working memory. Bootstrap
@@ -186,6 +201,7 @@ always keep it updated:**
 - `src/design-system/` — shared presentation layer (tokens, CSS `lx-*`, fonts, Lab); no domain (ADR-0003)
 - `docs/specs/` — feature specs (Spec-Driven)
 - `docs/specs/canonical/` — frozen canonical documents 01/02/03 (see above)
+- `docs/specs/communication/` — Framework Mestre and the approved communication fills (see Communication)
 - `docs/plan/` — implementation wave roadmap (`implementation-waves.md`, see `/waves`)
 - `docs/adr/` — Architecture Decision Records (Michael Nygard format)
 - `docs/api/` — OpenAPI / AsyncAPI contracts
@@ -293,6 +309,8 @@ always keep it updated:**
    tests and commits.
 8. Does it touch UI? Use the Design System (`docs/reference/design-system.md`) — tokens and `lx-*` classes only —
    and design mobile-first with functional parity (ADR-0009); new screens use the shared responsive E2E helper.
+9. Is it a public page? Follow `docs/specs/communication.md`: find the page in the Protagonist's journey map,
+   write the page brief in the wave spec, cite facts by ID and use only approved decisions.
 
 ## Definition of Done
 
@@ -315,4 +333,5 @@ Before marking a PR as ready for review:
 - [ ] UI (if changed): mobile-first with functional parity (ADR-0009) — axe 0 at 390 and 1440 px, no unintended
       horizontal overflow from 320 to 1920 px, main flow run at 390 px with touch; any mobile exception recorded
       as a product decision in the spec
+- [ ] Public page (if changed): page brief in the wave spec and the checklist of `docs/specs/communication.md` met
 - [ ] Migration rollback tested (if any migration was added)

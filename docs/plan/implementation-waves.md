@@ -56,8 +56,9 @@
 | 1 | Núcleo de commands: operação, idempotência, auditoria, outbox, jobs, erros | platform | REQ-015, REQ-098 | 0 | — | R1·base | ✅ |
 | 2 | Acesso administrativo: Auth, MFA, staff, guard, grants, RLS | identity, admin | REQ-014 | 1 | — | R1·base | ✅ |
 | 2B | Fundação de UI de produto (mobile-first): app shell, layout focado, padrão de página e estados | design-system, admin, identity (presentation) | — | 2 | — | R1·base | ✅ |
-| 3 | Catálogo + Admin | catalog, admin | REQ-020, REQ-027 | 2B | — | R1 | ⬜ |
-| 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3 | — | R1 | ⬜ |
+| 3 | Catálogo + Admin | catalog, admin | REQ-020, REQ-027 | 2B | — | R1 | ✅ |
+| 3B | Camada de comunicação: Framework Mestre + preenchimentos B2C e Brand Partners (ADR-0011) | docs (sem slice) | — | 3 | — | R1 | ⬜ |
+| 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3, 3B | — | R1 | ⬜ |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ |
 | 6 | Interesse — formulário público | ownership | — | 4, 5 | — | R1 | ⛔ P-3 |
 | 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ |
@@ -383,6 +384,29 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
     entre Admin e Super Admin (ADR-0008).
   - Alteração de modalidade e trava da estrutura da Edition ficam na W8 (dona do REQ-022); a W3 cria a Edition com a
     modalidade.
+- **Status**: ✅ concluída — PR #17 (squash `e221082`) e PR #18 (`b1cf06a`, correção do teste de `lock_timeout`).
+
+### Wave 3B — Camada de comunicação
+
+- **Goal**: toda página pública nasce de uma estratégia de comunicação aprovada — Framework Mestre e preenchimentos por
+  Protagonista —, sem inventar fatos nem reinterpretar a estratégia a cada página
+  ([ADR-0011](../adr/0011-camada-de-comunicacao-publica.md), spec [`communication`](../specs/communication.md)).
+- **IDs**: nenhum dono (sem REQ novo, migration, API ou tela). Guardrails citados: BR-373, BR-374, REQ-100…REQ-104,
+  `03` §13; nos preenchimentos, fatos só por ID.
+- **Scope (slices/files)**: `docs/specs/communication.md` (contrato); `docs/specs/communication/` (`framework-mestre.md`,
+  `luxtory.md`, `b2c.md`, `brand-partners.md`); ADR-0011; `tests/communication.test.ts`; ponteiros em `CLAUDE.md`,
+  `AGENTS.md`, índices de `docs/`, `docs/reference/design-system.md` §2/§11 e skill `frontend-design`.
+  - Jornadas B2C e Brand Partners separadas, sem links entre si; B2C é um único Protagonista (Owner e Co-Owner como
+    modalidades).
+  - Páginas e CTA de Brand Partners não existem no `02` §2: entram no `02` antes de qualquer código B2B (`P-BP-01` em
+    `docs/specs/communication/brand-partners.md`).
+- **Depends on / parallel with**: W3; sequencial (fecha antes da W4).
+- **Checkpoint**: decisões estratégicas propostas com recomendação e aprovadas pela Luxtory antes do fechamento —
+  realizado em 2026-09-29 (todas as `D-*` aprovadas).
+- **Acceptance criteria**: `[ADR-0011]` IDs canônicos citados existem · referências D/H/P definidas nos registros ·
+  seções mínimas presentes · links internos resolvem · todas as `D-*` registradas como aprovadas · canônicos e
+  `activate-ultronpx.mjs` intactos · `npm run verify` verde.
+- **Goal command**: `/goal npm run verify exits 0 including tests/communication.test.ts, every D-* decision in docs/specs/communication/ is recorded as approved, and git diff --stat origin/main -- docs/specs/canonical activate-ultronpx.mjs is empty, stop after 3 tries`
 
 ### Wave 4 — Discovery público
 
@@ -393,7 +417,11 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   catálogo entram nesta wave). Exibem só a especificação do Concept e as condições comerciais da Edition registradas
   pela Luxtory — nenhum preço ou número calculado pelo software (ADR-001). Frame tipográfico sem fotografia (P-1);
   `ConceptCredit` só com autorização; metadata. Sem endpoint novo; o botão de interesse entra na W6.
-- **Depends on / parallel with**: W3; sequencial.
+  - Comunicação (W3B): páginas, papéis e estágios dos 5Ps vêm do mapa de jornada de
+    `docs/specs/communication/b2c.md`, que inclui Home e "Como funciona" — a W4 ajusta o próprio escopo a partir dele
+    e decide o conteúdo público de cada Concept; brief de cada página em `docs/specs/catalog.md`; checklist de
+    `docs/specs/communication.md` no aceite.
+- **Depends on / parallel with**: W3, W3B; sequencial.
 - **Acceptance criteria**: `[REQ-100] nenhum termo vedado nem preço por dia para Co-Owner` · `[REQ-101] nenhuma
   promessa de rentabilidade, valorização, liquidez ou renda` · `[REQ-022] Concept sem Edition aparece sem oferta` ·
   E2E com axe 0 em 390 e 1440 px e sem overflow de 320 a 1920 px.
