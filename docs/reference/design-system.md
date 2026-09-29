@@ -46,6 +46,9 @@ Nomes para a equipe e as IAs. Não aparecem para o usuário.
 **Arco de página** (framework, não template): Opening Frame → Contexto → Desejo/Tensão → Descoberta →
 Experiência → Evidence → Decisão.
 
+Em páginas públicas, a função narrativa e a ordem das mensagens vêm dos 5Ps do Framework preenchido
+([`docs/specs/communication.md`](../specs/communication.md) §7): relação semântica com esta gramática, não estrutural.
+
 ## 3. Cor
 
 ### Paleta de marca (imutável)
@@ -400,6 +403,9 @@ Chrome/Android) ficam na QA de release/go-live.
   adquirido (REQ-025, BR-060).
 - Erros dizem a causa funcional e o que fazer (REQ-098).
 - As strings de produto passam pela camada i18n do W0 (`pt-BR`), nunca por CSS.
+- Posicionamento, personalidade, tom detalhado e provas das páginas públicas:
+  [camada de comunicação](../specs/communication.md) (tom-base em
+  [`communication/luxtory.md`](../specs/communication/luxtory.md) §3). Esta seção mantém microcopy e terminologia.
 
 ## 12. Acessibilidade (WCAG 2.2 AA)
 

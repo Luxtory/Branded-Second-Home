@@ -19,6 +19,10 @@ Plus three special directories that don't belong to Diátaxis but live here:
 Design System (UI): contract in [`specs/design-system.md`](specs/design-system.md), usage in
 [`reference/design-system.md`](reference/design-system.md), code and Lab in [`../src/design-system/`](../src/design-system/).
 
+Public-page communication (positioning, narrative, tone, proof, CTAs): contract in
+[`specs/communication.md`](specs/communication.md), Framework Mestre and approved fills in
+[`specs/communication/`](specs/communication/).
+
 ## Where does this go?
 
 - "How does our auth flow work?" → `explanation/`

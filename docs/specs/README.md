@@ -33,3 +33,5 @@ citing the canonical IDs):
 **Cross-cutting specs** (not a `src/features/` slice):
 
 - [design-system](design-system.md) — Design System Luxtory (LUXURY + STORY): tokens, tipografia, componentes do R1
+- [communication](communication.md) — camada de comunicação das páginas públicas: Framework Mestre e preenchimentos
+  aprovados em [`communication/`](communication/) (base Luxtory, B2C, Brand Partners) — ADR-0011
