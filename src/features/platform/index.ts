@@ -73,3 +73,4 @@ export {
   idempotencyKey,
 } from './presentation/commands';
 export { unavailableKeys } from './presentation/unavailable';
+export { isPublicSiteOpen } from './presentation/public-site';

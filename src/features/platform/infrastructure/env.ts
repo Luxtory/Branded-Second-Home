@@ -12,6 +12,8 @@ const envShape = {
     .optional(),
   // Ausente = Auth real (Supabase). `test` só local e na CI: recusado quando `VERCEL_ENV` existe (ADR-0005 §7).
   AUTH_MODE: z.enum(['supabase', 'test']).optional(),
+  // Portão do site público (W4, ADR-0012): em Production, as páginas públicas só abrem com `open` (go-live).
+  PUBLIC_SITE: z.literal('open').optional(),
 };
 
 const envSchema = z.object(envShape).superRefine((env, context) => {
