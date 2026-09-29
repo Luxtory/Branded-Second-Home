@@ -64,6 +64,7 @@ export { scheduleOutboxDispatch } from './presentation/outbox-dispatch';
 // W2 — acesso administrativo: executor de produção, leitura sob RLS, auditoria de leitura, CSRF e respostas HTTP.
 export { createProductionExecutor } from './infrastructure/commands/production-executor';
 export { withUserRead, type VerifiedClaims } from './infrastructure/database/user-read';
+export { withPublicRead } from './infrastructure/database/public-read';
 export { recordAdminRead, type AdminReadRecord } from './infrastructure/audit/admin-read';
 export { isSameOrigin } from './presentation/origin';
 export {
