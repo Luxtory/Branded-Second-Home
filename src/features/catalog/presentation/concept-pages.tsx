@@ -311,6 +311,7 @@ export async function ApprovalPage({
         {approvable ? (
           <div className="lx-form">
             <Notice tone="warning" title={page.notice} />
+            <Notice tone="warning" title={page.publicNotice} />
             <ApprovalForm
               conceptId={id}
               versionId={version.id}
@@ -338,7 +339,10 @@ export async function NewEditionPage({ id }: { readonly id: string }) {
     <CatalogPage session={session}>
       <ConceptActionHeader detail={detail} title={page.title} lead={page.lead} />
       {allowed ? (
-        <EditionForm conceptId={id} idempotencyKey={randomUUID()} />
+        <div className="lx-form">
+          <Notice tone="warning" title={page.publicNotice} />
+          <EditionForm conceptId={id} idempotencyKey={randomUUID()} />
+        </div>
       ) : (
         <Notice tone="warning" title={page.blocked} />
       )}
