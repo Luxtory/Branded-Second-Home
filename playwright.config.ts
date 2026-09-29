@@ -11,6 +11,7 @@ const IGNORED = '**/activate-ultronpx.mjs';
 const WEBKIT_SMOKE = process.env.PLAYWRIGHT_WEBKIT === '1';
 const WEBKIT_SPECS = '**/*.webkit.spec.ts';
 const SETUP_SPECS = '**/*.setup.ts';
+const SEED_SPECS = '**/*.seed.ts';
 
 // E2E sobre o build de produção (npm run test:e2e = next build && playwright test), com o Chrome do sistema. O
 // servidor sobe o PostgreSQL embutido com as migrations e a autenticação de teste (tests/support/e2e-server.mjs).
@@ -23,10 +24,12 @@ export default defineConfig({
   projects: [
     // Estado compartilhado preparado antes dos testes paralelos (TOTP dos usuários de teste; ver auth.setup.ts).
     { name: 'setup', testMatch: [SETUP_SPECS], use: { channel: 'chrome' } },
+    // Catálogo do Discovery semeado pela API do Admin, depois do TOTP cadastrado (serial; ver catalog.seed.ts).
+    { name: 'seed', testMatch: [SEED_SPECS], dependencies: ['setup'], use: { channel: 'chrome' } },
     {
       name: 'chrome',
       testIgnore: [IGNORED, WEBKIT_SPECS],
-      dependencies: ['setup'],
+      dependencies: ['seed'],
       use: { channel: 'chrome' },
     },
     ...(WEBKIT_SMOKE
@@ -34,7 +37,7 @@ export default defineConfig({
           {
             name: 'webkit',
             testMatch: [WEBKIT_SPECS],
-            dependencies: ['setup'],
+            dependencies: ['seed'],
             use: { ...devices['iPhone 13'] },
           },
         ]
