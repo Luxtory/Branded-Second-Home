@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
-    "@supabase/supabase-js": "2.116.0",
+    "@supabase/supabase-js": "2.117.0",
     "kysely": "0.29.6",
     "next": "16.3.6",
     "pg": "8.23.0",
