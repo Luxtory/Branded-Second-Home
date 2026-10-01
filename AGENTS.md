@@ -56,6 +56,8 @@ conflict, 01 prevails (BR-380, REQ-104).
   apply to this repository.
 - **Existing content is only extended** (additions, or filling `<placeholders>` /
   `[CUSTOMIZE]` markers) — existing information is never removed.
+  **Exception authorized by the founder (2026-09-30):** B2C communication that diverges from the B2C Framework is
+  replaced, not extended; the trail stays in the registers of `docs/specs/communication/` and in Git (ADR-0012).
 - **`docs/plan/implementation-waves.md`**: when deriving the Luxtory plan with `/waves`, keep the
   current content verbatim at the end of the file as "Anexo A — plano do template (concluído)".
 - **Platform and cost:** [ADR-0002](docs/adr/0002-plataforma-e-adaptacoes-economicas.md) —
@@ -106,12 +108,17 @@ Source of truth for every user-facing UI (**LUXTORY = LUXURY + STORY**). Read be
 ## Communication (public pages)
 
 Source of truth for what every **public page** communicates — positioning, narrative, personality, tone, proof and
-CTAs ([ADR-0011](docs/adr/0011-camada-de-comunicacao-publica.md)). Read before specifying or building any public page:
+CTAs ([ADR-0011](docs/adr/0011-camada-de-comunicacao-publica.md),
+[ADR-0012](docs/adr/0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md)). Read before specifying or building any
+public page:
 
-- Contract: [`docs/specs/communication.md`](docs/specs/communication.md) — precedence, F/D/H/P classification, page
-  brief, workflow and PR checklist.
-- Method: `docs/specs/communication/framework-mestre.md` · brand-level fill (Mentor, personality, tone, guardrails):
-  `luxtory.md` · one fill per Protagonist, with its journey map: `b2c.md`, `brand-partners.md`.
+- Contract: [`docs/specs/communication.md`](docs/specs/communication.md) — precedence, F/D/H/P/FW-B2C classification,
+  page brief, workflow and PR checklist.
+- **B2C:** the canonical source is `docs/specs/communication/framework-b2c.md` — the Luxtory B2C Framework, frozen
+  (verbatim, sha256-pinned; changes only via a new Luxtory version). Its application — canonical limits L1–L9,
+  objection answers by ID, page map and register — is `b2c.md`; cross-journey guardrails in `luxtory.md` §4.
+- **Brand Partners** (until the B2B Framework, `P-LX-05`): method `framework-mestre.md` · Mentor, personality and tone
+  in `luxtory.md` §1–§3 · fill and journey map in `brand-partners.md`.
 - Facts come only from 01/02/03, cited by ID; only **approved** decisions are used; hypotheses and pending items are
   never stated as facts. The B2C and Brand Partners journeys never link to each other.
 - The 5Ps are journey architecture, not a page template; the only fixed convention is PICTURE = Hero on Homes that
