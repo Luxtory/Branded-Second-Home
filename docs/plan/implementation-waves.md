@@ -489,6 +489,27 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   promessa de rentabilidade, valorização, liquidez ou renda` · `[REQ-022] Concept sem Edition aparece sem oferta` ·
   E2E com axe 0 em 390 e 1440 px e sem overflow de 320 a 1920 px.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-100,REQ-101 exits 0, stop after 4 tries`
+- **Escopo e decisões de execução (aprovados em 2026-10-01;
+  [ADR-0014](../adr/0014-discovery-publico-leitura-anonima-csp-e-publicacao.md), spec [`catalog`](../specs/catalog.md)
+  §13)**:
+  - Páginas: Home (`/`, Unaware → Product Aware, arco completo, PICTURE = Hero), Como funciona (`/como-funciona`,
+    PROOF → PUSH), Coleção (`/colecao`, PROOF → PUSH) e Concept (`/colecao/[conceptId]`, PUSH + prova necessária), com
+    as Editions e a oferta dentro do Concept. Interesse (W6) e páginas Brand Partners (`P-BP-01`) fora.
+  - CTA da Home e do Como funciona por disponibilidade (`D-B2C-13`, `D-B2C-16`): Edition publicada → "Conheça as
+    Residence Editions" (primeira oferta da Coleção); só Concepts → "Conheça os Residence Concepts"; nenhum Concept →
+    sem CTA para a Coleção; dados indisponíveis → estado desconhecido, nunca tratado como "sem Edition".
+  - Coleção em dois grupos sem repetição: Residence Editions (Concepts com Edition) primeiro, Residence Concepts (ainda
+    sem Edition) depois. Configurações canônicas do Co-Owner (`01` §8.1) só no Como funciona, no PROOF, como detalhe
+    secundário. Tríade do Framework com Patrimônio → Posse; no Co-Owner, sempre Ação da SPE proprietária + Direito de
+    Uso (L1, `P-LX-03`).
+  - Técnica mantida das decisões de 2026-09-29: Concept público = versão aprovada + exposição da marca autorizada +
+    antes da eficácia do encerramento (limitação temporária que não redefine BR-021/022/023); menor conteúdo público
+    (sem elementos essenciais nem premissas); URL por uuid e ordem de registro; portão `PUBLIC_SITE` fechado em
+    Production (Data API desligada, sem rota externa ao catálogo); CSP com nonce; sem cache; Frames tipográficos (P-1);
+    Admin identifica o conteúdo publicado.
+- **Checkpoints**: (1) Checkpoint Visual — Home, Como funciona, Coleção, Concept com e sem Edition, menu do celular
+  aberto e Admin com "Público no site", a 390 e 1440 px, sem push → aprovação de copy, narrativa, hierarquia, layout e
+  estética; (2) gates, E2E, trace e PR draft com CI verde, parado antes do merge.
 
 ### Wave 5 — Interesse (núcleo)
 

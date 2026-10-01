@@ -130,6 +130,7 @@ externas (`P-LX-01`) e fotografia oficial (`P-LX-02`) ainda não existem.
 | D-B2C-13 | CTA da Home e do "Como funciona": "Conheça as Residence Editions." → Coleção, só com ao menos uma Edition publicada; sem Edition, a página fecha com a qualificação do PUSH e "Conheça os Residence Concepts" | aprovada em 2026-10-01 (fundador) | `[FW-B2C: §8 P5, §12]`; BR-004, BR-030, REQ-022, TECH-001; `D-B2C-10` |
 | D-B2C-14 | Mapa de páginas (§8): as mesmas páginas do mapa anterior; Home a mais abrangente, seguindo estritamente o Framework; "Como funciona" aprofunda o produto em detalhe; Coleção mostra as Second Homes | aprovada em 2026-10-01 (fundador) | `[FW-B2C: §7, §8.1, §12, §13]`; `02` §2 |
 | D-B2C-15 | "Isso é timeshare?" → não (§5) | aprovada em 2026-10-01 (fundador) | BR-071, BR-373, `01` §8 |
+| D-B2C-16 | CTA da Home e do "Como funciona" por disponibilidade, complementando `D-B2C-13`: Edition publicada → "Conheça as Residence Editions." (leva à primeira oferta da Coleção); Concepts publicados sem nenhuma Edition → "Conheça os Residence Concepts"; nenhum Concept publicado → sem CTA para a Coleção (na Home, só o "Como funciona"); dados indisponíveis → estado desconhecido, nunca tratado como inexistência de Edition ou de Concept | aprovada em 2026-10-01 (fundador) | `D-B2C-13`; BR-004, BR-030, REQ-022, TECH-001 |
 
 | ID | Hipótese | Como validar | Status |
 |---|---|---|---|
