@@ -1,0 +1,32 @@
+import type { ReactNode } from 'react';
+import type { Ground } from './logo';
+
+export type SceneVariant = 'opening' | 'statement' | 'media-end' | 'media-start';
+
+/**
+ * Scene (`lx-scene`): uma unidade narrativa — `section` rotulada pelo seu título, fundo por `data-ground` e o grid do
+ * DS. Os filhos são as colunas (`lx-col-*`). `backdrop` fica atrás do conteúdo (Opening Frame). A função narrativa
+ * (5Ps) não aparece no DOM: é do brief, não do componente.
+ */
+export function Scene({
+  titleId,
+  ground,
+  variant,
+  backdrop,
+  children,
+}: {
+  /** `id` do título (`h1`/`h2`) que nomeia a seção. */
+  readonly titleId: string;
+  readonly ground: Ground;
+  readonly variant?: SceneVariant;
+  readonly backdrop?: ReactNode;
+  readonly children: ReactNode;
+}) {
+  const className = variant === undefined ? 'lx-scene' : `lx-scene lx-scene--${variant}`;
+  return (
+    <section className={className} data-ground={ground} aria-labelledby={titleId}>
+      {backdrop === undefined ? null : <div className="lx-scene__backdrop">{backdrop}</div>}
+      <div className="lx-container lx-grid">{children}</div>
+    </section>
+  );
+}
