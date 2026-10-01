@@ -98,6 +98,28 @@ describe('regras do catálogo (domínio puro)', () => {
     }
   });
 
+  it('[REQ-101] checagem de terminologia recusa receita, vendas, demanda, escala ou remuneração garantidas', () => {
+    for (const text of [
+      'Receita garantida',
+      'receitas asseguradas',
+      'vendas garantidas',
+      'Demanda garantida',
+      'escala assegurada',
+      'royalties garantidos',
+      'Remuneração garantida',
+    ]) {
+      expect(hasForbiddenTerm(text), text).toBe(true);
+    }
+    for (const text of [
+      'Remuneração definida em contrato',
+      'O modelo é orientado por demanda',
+      'Sem garantia de vendas ou escala',
+      'Receita da Luxtory, separada da remuneração da Brand Partner',
+    ]) {
+      expect(hasForbiddenTerm(text), text).toBe(false);
+    }
+  });
+
   it('[TECH-001] fuso da Residence: só nomes IANA do runtime, sem padrão', () => {
     expect(isIanaTimeZone('America/Sao_Paulo')).toBe(true);
     expect(isIanaTimeZone('Europe/Lisbon')).toBe(true);

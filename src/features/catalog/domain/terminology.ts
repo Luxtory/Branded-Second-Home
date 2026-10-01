@@ -1,13 +1,13 @@
 /**
- * Checagem lexical de terminologia (REQ-100, REQ-101; ADR-0010 §5, ADR-0012): termos vedados do `02` §1 e expressões
- * explícitas conhecidas de promessa de retorno e de disponibilidade sem limite. É defesa complementar — não interpreta o
- * sentido do texto; o gate editorial é a aprovação humana da versão do Concept. Os mesmos padrões estão nos testes de
- * terminologia de `src/` e do Design System, aqui com fronteira de palavra que reconhece letras acentuadas.
+ * Checagem lexical de terminologia (REQ-100, REQ-101; ADR-0010 §5, ADR-0012, ADR-0013): termos vedados do `02` §1 e
+ * expressões explícitas conhecidas de promessa de retorno e de disponibilidade sem limite. É defesa complementar — não
+ * interpreta o sentido do texto; o gate editorial é a aprovação humana da versão do Concept. Os mesmos padrões estão
+ * nos testes de terminologia de `src/` e do Design System, aqui com fronteira de palavra que reconhece letras acentuadas.
  */
 const FORBIDDEN_PATTERNS: readonly RegExp[] = [
   /(?<![\p{L}\p{N}])cot(a|as|ista|istas|izar|ização)(?![\p{L}\p{N}])/iu,
   /(?<![\p{L}\p{N}])di[aá]rias?(?![\p{L}\p{N}])/iu,
-  /(?<![\p{L}\p{N}])(rentabilidade|valoriza[çc][ãa]o|renda|retorno|lucro|rendimento|liquidez)\s+(garantid|assegurad)[ao]s?(?![\p{L}\p{N}])/iu,
+  /(?<![\p{L}\p{N}])(rentabilidade|valoriza[çc][ãa]o|renda|retorno|lucro|rendimento|liquidez|receitas?|vendas|demanda|escala|royalt(?:y|ies)|remunera[çc][ãa]o)\s+(garantid|assegurad)[ao]s?(?![\p{L}\p{N}])/iu,
   // Liberdade não é ausência de regras: disponibilidade e uso nunca são prometidos sem limite (Framework B2C §14,
   // regras 11 e 13; BR-190).
   /(?<![\p{L}\p{N}])(disponibilidade|uso)s?\s+(garantid|irrestrit|ilimitad)[ao]s?(?![\p{L}\p{N}])/iu,

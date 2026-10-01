@@ -128,8 +128,9 @@ command guarda o `operation_id` da criação.
   Edition nova, autorização de Investor nova, Residence nova e autorização de exposição. O que já existe não muda
   (BR-022). Ver §7 sobre direitos sobreviventes.
 - **Terminologia (REQ-100/101).** Todo texto registrado passa por uma checagem **lexical**: recusa os termos vedados
-  do `02` §1 e expressões explícitas conhecidas de promessa de retorno e de disponibilidade ou uso sem limite (Framework
-  B2C §14, regras 11 e 13 — ADR-0012); os mesmos padrões estão nas varreduras de `src/` e do Design System.
+  do `02` §1 e expressões explícitas conhecidas de promessa de retorno (inclusive receita, vendas, demanda, escala,
+  royalty e remuneração garantidas — Framework Brand Partners §8, ADR-0013) e de disponibilidade ou uso sem limite
+  (Framework B2C §14, regras 11 e 13 — ADR-0012); os mesmos padrões estão nas varreduras de `src/` e do Design System.
   É defesa complementar, não interpretação semântica do REQ-101; o gate editorial continua sendo a aprovação humana da
   versão (`approve_concept_version`).
 - **Travas (ADR-0010 §8).** Ordem do catálogo: `brand_partner` → `investor_authorization`, por id, antes de qualquer
