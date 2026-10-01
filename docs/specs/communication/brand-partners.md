@@ -4,6 +4,9 @@
 > [`luxtory.md`](luxtory.md) · Método: [Framework Mestre](framework-mestre.md).
 > Estado: **aprovado em 2026-09-29** (checkpoint da W3B). O `02` ainda não prevê superfície pública nem CTA para Brand Partners
 > (`02` §2; REQ-014): este preenchimento define a estratégia; páginas e CTA dependem de `P-BP-01`.
+>
+> Escopo: o [Framework B2C](framework-b2c.md) não se aplica a esta jornada. O Framework B2B, anunciado pelo fundador
+> (`P-LX-05`), substituirá este preenchimento quando chegar.
 
 ## 1. Protagonista e escopo
 

@@ -57,8 +57,9 @@
 | 2 | Acesso administrativo: Auth, MFA, staff, guard, grants, RLS | identity, admin | REQ-014 | 1 | — | R1·base | ✅ |
 | 2B | Fundação de UI de produto (mobile-first): app shell, layout focado, padrão de página e estados | design-system, admin, identity (presentation) | — | 2 | — | R1·base | ✅ |
 | 3 | Catálogo + Admin | catalog, admin | REQ-020, REQ-027 | 2B | — | R1 | ✅ |
-| 3B | Camada de comunicação: Framework Mestre + preenchimentos B2C e Brand Partners (ADR-0011) | docs (sem slice) | — | 3 | — | R1 | ⬜ |
-| 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3, 3B | — | R1 | ⬜ |
+| 3B | Camada de comunicação: Framework Mestre + preenchimentos B2C e Brand Partners (ADR-0011) | docs (sem slice) | — | 3 | — | R1 | ✅ |
+| 3C | Framework B2C como fonte canônica da comunicação B2C (ADR-0012) | docs + catalog (domain) | — | 3B | — | R1 | ⬜ |
+| 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3, 3C | — | R1 | ⬜ |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ |
 | 6 | Interesse — formulário público | ownership | — | 4, 5 | — | R1 | ⛔ P-3 |
 | 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ |
@@ -407,6 +408,29 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   seções mínimas presentes · links internos resolvem · todas as `D-*` registradas como aprovadas · canônicos e
   `activate-ultronpx.mjs` intactos · `npm run verify` verde.
 - **Goal command**: `/goal npm run verify exits 0 including tests/communication.test.ts, every D-* decision in docs/specs/communication/ is recorded as approved, and git diff --stat origin/main -- docs/specs/canonical activate-ultronpx.mjs is empty, stop after 3 tries`
+- **Status**: ✅ concluída — PR #19 (squash `846b2e8`).
+
+### Wave 3C — Framework B2C como fonte canônica da comunicação B2C
+
+- **Goal**: o Framework Mestre de Estratégia de Comunicação B2C, entregue pela Luxtory em 2026-09-30, é a fonte
+  canônica principal da comunicação B2C; todo documento ou código divergente é ajustado ou substituído, sem alterar o
+  modelo de negócio ([ADR-0012](../adr/0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md), spec
+  [`communication`](../specs/communication.md)).
+- **IDs**: nenhum dono. Guardrails citados: BR-373, BR-374, BR-380, REQ-100, REQ-101, REQ-104, `03` §13.
+- **Scope (slices/files)**: `docs/specs/communication/framework-b2c.md` (cópia byte a byte, congelada);
+  `docs/specs/communication/b2c.md` (substituído pela aplicação: limites L1–L9, objeções com IDs, mapa de páginas,
+  registro); contrato `docs/specs/communication.md`; escopo de `luxtory.md` §1–§3, `framework-mestre.md` e `D-LX-07`
+  a Brand Partners até o Framework B2B (`P-LX-05`); ADR-0012; `tests/communication.test.ts`; guardas lexicais
+  (`src/features/catalog/domain/terminology.ts`, `tests/terminology.test.ts`, teste de terminologia do DS); ponteiros em
+  `CLAUDE.md`, `AGENTS.md`, índices, DS ref §2/§11, skill `frontend-design`; CTA do Lab.
+- **Depends on / parallel with**: W3B; sequencial (fecha antes da W4).
+- **Checkpoint**: decisões aprovadas pelo fundador em 2026-09-30 (Framework como fonte canônica; `D-B2C-12`) e
+  2026-10-01 (`D-B2C-13`, `D-B2C-14`, `D-B2C-15`).
+- **Acceptance criteria**: `[ADR-0012]` sha256 do Framework B2C igual ao recebido · toda referência ao Framework
+  resolve · nenhuma decisão ou hipótese substituída citada fora dos registros · `b2c.md` sem decisões só de Brand
+  Partners · `[REQ-101]` guarda de disponibilidade ou uso sem limite · canônicos e `activate-ultronpx.mjs` intactos ·
+  `npm run verify` verde.
+- **Goal command**: `/goal npm run verify exits 0 including tests/communication.test.ts and tests/terminology.test.ts, docs/specs/communication/framework-b2c.md matches the pinned sha256, no superseded D-* or H-* is cited outside a register row, and git diff --stat origin/main -- docs/specs/canonical activate-ultronpx.mjs is empty, stop after 3 tries`
 
 ### Wave 4 — Discovery público
 
@@ -417,11 +441,12 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   catálogo entram nesta wave). Exibem só a especificação do Concept e as condições comerciais da Edition registradas
   pela Luxtory — nenhum preço ou número calculado pelo software (ADR-001). Frame tipográfico sem fotografia (P-1);
   `ConceptCredit` só com autorização; metadata. Sem endpoint novo; o botão de interesse entra na W6.
-  - Comunicação (W3B): páginas, papéis e estágios dos 5Ps vêm do mapa de jornada de
-    `docs/specs/communication/b2c.md`, que inclui Home e "Como funciona" — a W4 ajusta o próprio escopo a partir dele
-    e decide o conteúdo público de cada Concept; brief de cada página em `docs/specs/catalog.md`; checklist de
-    `docs/specs/communication.md` no aceite.
-- **Depends on / parallel with**: W3, W3B; sequencial.
+  - Comunicação (W3C): fonte canônica = Framework B2C (`docs/specs/communication/framework-b2c.md`, ADR-0012);
+    páginas, papéis, conscientização e estágios dos 5Ps vêm do mapa de `docs/specs/communication/b2c.md` §8, que
+    inclui Home e "Como funciona" — a W4 ajusta o próprio escopo a partir dele e decide o conteúdo público de cada
+    Concept. A Home segue estritamente o Brief Narrativo do Framework (§12); CTA conforme `D-B2C-13`; limites L1–L9 de
+    `b2c.md` §2. Brief de cada página em `docs/specs/catalog.md`; checklist de `docs/specs/communication.md` no aceite.
+- **Depends on / parallel with**: W3, W3C; sequencial.
 - **Acceptance criteria**: `[REQ-100] nenhum termo vedado nem preço por dia para Co-Owner` · `[REQ-101] nenhuma
   promessa de rentabilidade, valorização, liquidez ou renda` · `[REQ-022] Concept sem Edition aparece sem oferta` ·
   E2E com axe 0 em 390 e 1440 px e sem overflow de 320 a 1920 px.

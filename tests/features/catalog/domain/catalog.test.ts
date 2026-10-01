@@ -78,6 +78,26 @@ describe('regras do catálogo (domínio puro)', () => {
     }
   });
 
+  it('[REQ-101] checagem de terminologia recusa disponibilidade ou uso garantidos, irrestritos ou ilimitados', () => {
+    for (const text of [
+      'Disponibilidade garantida',
+      'disponibilidades garantidas',
+      'USO IRRESTRITO',
+      'uso ilimitado da casa',
+      'Direito de Uso garantido',
+    ]) {
+      expect(hasForbiddenTerm(text), text).toBe(true);
+    }
+    for (const text of [
+      'conforme disponibilidade e regras',
+      'Créditos não garantem disponibilidade',
+      'Uso próprio independe de Membership',
+      'Disponibilidade sujeita às regras da Residence',
+    ]) {
+      expect(hasForbiddenTerm(text), text).toBe(false);
+    }
+  });
+
   it('[TECH-001] fuso da Residence: só nomes IANA do runtime, sem padrão', () => {
     expect(isIanaTimeZone('America/Sao_Paulo')).toBe(true);
     expect(isIanaTimeZone('Europe/Lisbon')).toBe(true);

@@ -1,5 +1,9 @@
 # FRAMEWORK MESTRE DE ESTRATÉGIA DE COMUNICAÇÃO
 
+> **Escopo (desde 2026-09-30, [ADR-0012](../../adr/0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md)):** este
+> método genérico **não se aplica ao B2C**, cuja fonte canônica é o [Framework B2C](framework-b2c.md). Vale para as
+> jornadas sem Framework próprio — hoje, Brand Partners, até o Framework B2B.
+
 ## 1. Objetivo
 
 Framework personalizável para orientar a comunicação de qualquer marca em **sites, apresentações, campanhas e materiais comerciais**.

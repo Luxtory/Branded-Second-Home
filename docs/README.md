@@ -20,8 +20,9 @@ Design System (UI): contract in [`specs/design-system.md`](specs/design-system.m
 [`reference/design-system.md`](reference/design-system.md), code and Lab in [`../src/design-system/`](../src/design-system/).
 
 Public-page communication (positioning, narrative, tone, proof, CTAs): contract in
-[`specs/communication.md`](specs/communication.md), Framework Mestre and approved fills in
-[`specs/communication/`](specs/communication/).
+[`specs/communication.md`](specs/communication.md); B2C canonical source in
+[`specs/communication/framework-b2c.md`](specs/communication/framework-b2c.md) (frozen, ADR-0012) with its application
+in `b2c.md`; Framework Mestre and the Brand Partners fills in [`specs/communication/`](specs/communication/).
 
 ## Where does this go?
 
