@@ -48,8 +48,9 @@ Experiência → Evidence → Decisão.
 
 Em páginas públicas, a função narrativa e a ordem das mensagens vêm dos 5Ps do Framework preenchido
 ([`docs/specs/communication.md`](../specs/communication.md) §7): relação semântica com esta gramática, não estrutural.
-Nas páginas B2C, a ordem narrativa e a transição de consciência vêm do
-[Framework B2C](../specs/communication/framework-b2c.md) (§7, §8); o arco acima é só vocabulário de composição.
+A ordem narrativa e a transição de consciência vêm do Framework da jornada —
+[B2C](../specs/communication/framework-b2c.md) ou [Brand Partners](../specs/communication/framework-brand-partners.md)
+(§7, §8); o arco acima é só vocabulário de composição.
 
 ## 3. Cor
 
@@ -406,10 +407,10 @@ Chrome/Android) ficam na QA de release/go-live.
 - Erros dizem a causa funcional e o que fazer (REQ-098).
 - As strings de produto passam pela camada i18n do W0 (`pt-BR`), nunca por CSS.
 - Posicionamento, personalidade, tom detalhado e provas das páginas públicas:
-  [camada de comunicação](../specs/communication.md). Páginas públicas B2C: voz e tom do
-  [Framework B2C](../specs/communication/framework-b2c.md) §11, que prevalecem sobre os adjetivos do primeiro item;
-  Brand Partners: tom-base em [`communication/luxtory.md`](../specs/communication/luxtory.md) §3. Esta seção mantém
-  microcopy e terminologia.
+  [camada de comunicação](../specs/communication.md). Voz e tom das páginas públicas vêm do §11 do Framework da
+  jornada — [B2C](../specs/communication/framework-b2c.md) ou
+  [Brand Partners](../specs/communication/framework-brand-partners.md) —, que prevalece sobre os adjetivos do primeiro
+  item. Esta seção mantém microcopy e terminologia.
 
 ## 12. Acessibilidade (WCAG 2.2 AA)
 
