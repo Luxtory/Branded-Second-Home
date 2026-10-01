@@ -101,3 +101,64 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 
 - `docs/security/threats/identity-admin.md` (sessão, guard, CSRF da W2)
 - `03`: TECH-050…054, TECH-092, TECH-100, §13
+
+---
+
+## W4 — Discovery público: leitura anônima (2026-10-01)
+
+- **Status**: Draft (revisado no fechamento da W4)
+- **Scope**: páginas `/`, `/como-funciona`, `/colecao`, `/colecao/[conceptId]` (sem autenticação), leitura como `anon`
+  sob RLS, portão de publicação, conteúdo público cadastrado no Admin
+- **Linked spec / ADR**: `docs/specs/catalog.md` §13 · ADR-0014
+
+### Superfície nova
+
+| Component | S | T | R | I | D | E | Notes |
+|---|---|---|---|---|---|---|---|
+| Páginas públicas (Server Components) | — | C-W4-4 | — | C-W4-1 | C-W4-5 | — | leitura por requisição (Home e Como funciona só a disponibilidade), sem entrada além do id na URL |
+| Papel `anon` no banco | — | — | — | C-W4-1 | — | C-W4-2 | grants por coluna, RLS, predicados `SECURITY DEFINER` |
+| Data API do Supabase | — | — | — | C-W4-3 | — | — | desligada; `app` nunca exposto |
+| Textos cadastrados no Admin | — | C-W4-4 | — | C-W4-6 | — | — | publicados literalmente depois da aprovação |
+
+### C-W4-1 [HIGH] Information disclosure — Coluna ou linha não pública chegando ao site
+
+- **Mitigação**: `anon` só tem `SELECT` nas colunas publicáveis (spec §13.2); visibilidade só pela RLS (versão aprovada,
+  exposição autorizada, antes da eficácia do encerramento). Uma consulta errada falha no banco em vez de vazar. Testes
+  `db` como `anon`: colunas e tabelas fora da lista → `permission denied`; linhas não públicas → invisíveis.
+
+### C-W4-2 [MEDIUM] Elevation — `anon` executando funções de `app`
+
+- **Mitigação**: o `USAGE` em `app` expõe a `anon` o que tem `EXECUTE` para `PUBLIC`. As funções sensíveis
+  (`assign_staff_role`, `revoke_staff_role`, `record_operator_change`, `revoke_authorization_grant`,
+  `authorization_grant_require_party`) já têm `EXECUTE` revogado de `PUBLIC`; os predicados novos têm `EXECUTE` só para
+  `anon` e devolvem só booleano. Teste `db`: `anon` não executa nenhuma função de `app` além dos predicados e das
+  funções puras de validação.
+
+### C-W4-3 [HIGH] Information disclosure — Rota externa ao Next.js contornando o portão
+
+- **Mitigação**: Data API desligada (verificado em 2026-09-29: `PGRST002` com `db-schemas=pg_pgrst_no_exposed_schemas`
+  em `/rest/v1` e `/graphql/v1`; `pg_graphql` ausente); `anon` só é alcançável por `SET ROLE` de quem já é
+  `luxtory_app`. Religar a Data API ou expor `app` é proibido (runbook); verificação repetida depois do `migrate`.
+
+### C-W4-4 [MEDIUM] Tampering — XSS por texto cadastrado
+
+- **Mitigação**: React escapa todo texto; nenhum `dangerouslySetInnerHTML`; parágrafos montados por divisão do texto,
+  sem HTML. CSP com nonce e `'strict-dynamic'` (ADR-0014) limita o impacto de qualquer injeção.
+
+### C-W4-5 [LOW] Denial of service — Leitura por requisição sem cache
+
+- **Mitigação**: consultas pequenas e indexadas; `statement_timeout` de `anon` (3 s no Supabase); proteção de borda da
+  Vercel. Portão fechado em Production até o go-live. Revisar cache no go-live.
+
+### C-W4-6 [MEDIUM] Information disclosure — Nota interna digitada num campo público
+
+- **Mitigação**: o Admin marca "Público no site" no rótulo de todo campo publicado literalmente e avisa a consequência
+  nas telas que publicam (spec §13.5); a aprovação da versão é o gate editorial humano; checagem lexical de
+  terminologia continua.
+
+### Residual risk
+
+- A regra de visibilidade usa o `now()` do banco e os commands usam o relógio do servidor: diferença de milissegundos
+  no instante do encerramento (aceito).
+- Enquanto a Data API estiver desligada, o risco C-W4-3 depende de configuração do console do Supabase (aceito com a
+  verificação no runbook).

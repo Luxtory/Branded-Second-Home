@@ -116,6 +116,23 @@ Nenhuma variável nova e nenhuma ação antes do merge. Depois do `migrate` ✅ 
 3. **Não criar registros de teste em Production** (D-W3-5): o catálogo é só de inserção e não há staging
    (ADR-0007). Os primeiros registros entram com dados reais da Luxtory.
 
+## Preparar a W4 em produção (Discovery público)
+
+Nenhuma ação antes do merge. **Não crie `PUBLIC_SITE`**: sem ela, as páginas públicas respondem 404 em Production
+(portão de publicação, ADR-0014). Depois do `migrate` ✅ e do `deploy` ✅:
+
+1. Conferir (só leitura) a migration `catalog_public_read`: `anon` membro de `luxtory_app` só com `SET`; `USAGE` em
+   `app` para `anon`; grants por coluna da spec `catalog` §13.2; políticas `FOR SELECT TO anon` nas 4 tabelas; os dois
+   predicados com `EXECUTE` só para `anon`.
+2. **Data API continua desligada** e `app` fora dos Exposed schemas: `GET /rest/v1/concept?select=id` com
+   `Accept-Profile: app` e a chave publicável responde `PGRST002` (ou recusa), nunca dados. Religar a Data API ou incluir
+   `app` nos Exposed schemas é **proibido** — publicaria o catálogo público fora do portão.
+3. `/`, `/como-funciona`, `/colecao` e `/colecao/<id>` → 404; `/entrar` e `/admin` com `Content-Security-Policy`
+   contendo `nonce-` e sem erro de console.
+
+**Go-live do site público** (depois da revisão jurídica `P-LX-03`, de D1 e da D5c): criar `PUBLIC_SITE=open` só em
+Production e fazer um novo deploy.
+
 ## Rotacionar segredos
 
 - `CRON_SECRET`: gere outro valor, atualize na Vercel (Production) e refaça o deploy (passo 6).
