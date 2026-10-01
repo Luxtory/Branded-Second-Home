@@ -1,7 +1,7 @@
 # 0011. Camada de comunicação das páginas públicas: Framework Mestre e Frameworks preenchidos
 
 - **Date**: 2026-09-29
-- **Status**: Accepted — complementado pelo [ADR-0012](0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md) na jornada B2C
+- **Status**: Accepted — complementado pelo [ADR-0012](0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md) (B2C) e pelo [ADR-0013](0013-framework-brand-partners-fonte-canonica.md) (Brand Partners; método genérico substituído)
 - **Deciders**: Luxtory, Engenharia
 - **Tags**: communication, frontend, documentation, design-system
 
