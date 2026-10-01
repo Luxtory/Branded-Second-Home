@@ -277,6 +277,9 @@ Decisões técnicas (aprovadas em 2026-09-29 e mantidas em 2026-10-01):
 
   Ausência técnica de dados nunca é tratada como inexistência de Edition ou de Concept.
 
+  Nomes públicos (`D-LX-08`, `D-B2C-18`): os CTAs aparecem como "Conheça as Home Editions" e "Conheça os Home
+  Concepts"; no site, a casa é Second Home, o Concept é Home Concept e a Edition é Home Edition.
+
 ### 13.3 Portão e exposição externa
 
 - `PUBLIC_SITE` ausente em Production → o layout do grupo público responde 404 (página 404 da plataforma). Só `open` é
@@ -326,6 +329,10 @@ Comum às quatro páginas — Brief Narrativo `[FW-B2C: §12]`:
 7. **Não afirmar:** comunidade como recurso existente (L6); mecanismos do Club como disponíveis hoje (L7); receita,
    valorização, liquidez; prova social; números.
 8. **Aceite:** §13.6.
+9. **Copy (2026-10-01):** a copy da Home é a escrita pelo fundador (`D-B2C-18`), com as decisões da revisão de
+   2026-10-01; ela substitui a mensagem-chave da tabela acima e acrescenta três seções: a regra da renúncia (PROBLEM,
+   vilão), a Luxtory com os pilares Pertencimento, Patrimônio, Liberdade e a Gestão (PROOF) e as dúvidas essenciais
+   (FAQ, depois do PUSH). Ordem das seções e textos: `presentation/i18n/discovery-pt-br.ts` (`home`).
 
 #### Como funciona — `/como-funciona`
 
