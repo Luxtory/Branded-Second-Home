@@ -53,6 +53,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   e-mail. Segurança inalterada (TOTP padrão, AAL2).
 - Login (`/entrar`): botão "Reenviar código" no passo do código, com aviso de envio e, se o limite de envio for
   atingido, o pedido para aguardar antes de tentar de novo — o formulário do código continua na tela.
+- Checagem de terminologia do catálogo (Admin): passa a recusar também disponibilidade ou uso garantidos, irrestritos
+  ou ilimitados (REQ-101; Framework B2C §14, ADR-0012). As varreduras de `src/` e do Design System usam os mesmos
+  padrões do catálogo.
 
 ### Deprecated
 - ...
