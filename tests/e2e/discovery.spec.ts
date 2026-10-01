@@ -29,8 +29,9 @@ function pathOf(name: PageName): string {
   return paths[name];
 }
 
-const visibleText = (page: Page) => page.locator('body').innerText();
-const EDITIONS_CTA = 'Conheça as Residence Editions';
+// textContent: inclui as respostas fechadas do FAQ.
+const visibleText = async (page: Page) => (await page.locator('body').textContent()) ?? '';
+const EDITIONS_CTA = 'Conheça as Home Editions';
 
 test.describe('Discovery público — gate de UI (ADR-0009)', () => {
   for (const name of PAGE_NAMES) {
@@ -70,16 +71,14 @@ test.describe('Discovery público — gate de UI (ADR-0009)', () => {
 test.describe('Discovery público — jornada a 390 px com toque', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
-  test('Home → Residence Editions → Concept → Como funciona → Residence Editions', async ({
-    page,
-  }) => {
+  test('Home → Home Editions → Concept → Como funciona → Home Editions', async ({ page }) => {
     const seed = readSeed();
     const errors = collectConsoleErrors(page);
     await page.goto('/');
     await page.getByRole('link', { name: EDITIONS_CTA }).tap();
-    await expect(page).toHaveURL(/\/colecao#residence-editions$/);
+    await expect(page).toHaveURL(/\/colecao#home-editions$/);
     await page
-      .getByRole('list', { name: 'Residence Concepts com Residence Edition' })
+      .getByRole('list', { name: 'Home Concepts com Home Edition' })
       .getByRole('link', { name: seed.withEdition.title })
       .tap();
     await expect(page).toHaveURL(new RegExp(`/colecao/${seed.withEdition.id}$`));
@@ -87,7 +86,7 @@ test.describe('Discovery público — jornada a 390 px com toque', () => {
     await page.getByRole('link', { name: 'Entenda como funciona' }).tap();
     await expect(page).toHaveURL(/\/como-funciona$/);
     await page.getByRole('link', { name: EDITIONS_CTA }).tap();
-    await expect(page).toHaveURL(/\/colecao#residence-editions$/);
+    await expect(page).toHaveURL(/\/colecao#home-editions$/);
     expect(errors).toEqual([]);
   });
 });
@@ -105,43 +104,54 @@ test.describe('Discovery público — conteúdo', () => {
     }
   });
 
-  test('Hero com função de desejo: abre a página, sem ação, antes do conflito, da categoria e da oferta', async ({
+  test('Hero com função de desejo: abre a página; seu único convite desce para a renúncia, sem ação comercial', async ({
     page,
   }) => {
     await page.goto('/');
     const sections = await page
-      .locator('main > section[aria-labelledby]')
-      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('aria-labelledby')));
-    // A ordem dos 5Ps no DOM: PICTURE (Hero) → PROBLEM → PROMISE → PROOF → … → PUSH.
-    expect(sections.filter((id) => HOME_SECTIONS.includes(id as never))).toEqual([
-      ...HOME_SECTIONS,
-    ]);
-    expect(sections[0]).toBe(HOME_SECTIONS[0]);
+      .locator('main > section[id]')
+      .evaluateAll((nodes) => nodes.map((node) => node.id));
+    // A ordem da copy do fundador (D-B2C-18): PICTURE (Hero) → PROBLEM → PROMISE → PROOF → PUSH → dúvidas.
+    expect(sections).toEqual([...HOME_SECTIONS]);
 
-    const hero = page.locator(`section[aria-labelledby="${HOME_SECTIONS[0]}"]`);
+    const hero = page.locator(`section#${HOME_SECTIONS[0]}`);
     await expect(hero.getByRole('heading', { level: 1 })).toBeVisible();
-    // O desejo se sustenta sozinho: nenhum link nem botão no Hero, e a categoria só aparece na virada (PROMISE).
-    await expect(hero.getByRole('link')).toHaveCount(0);
+    const invite = hero.getByRole('link');
+    await expect(invite).toHaveCount(1);
+    await expect(invite).toHaveAttribute('href', `#${HOME_SECTIONS[1]}`);
     await expect(hero.getByRole('button')).toHaveCount(0);
-    const firstCategory = page.getByText('Branded Second Home', { exact: false }).first();
-    await expect(firstCategory).toBeVisible();
-    expect(
-      await firstCategory.evaluate((node) =>
-        node.closest('section')?.getAttribute('aria-labelledby'),
-      ),
-    ).toBe(HOME_SECTIONS[2]);
   });
 
-  test('[REQ-022] Concept sem Edition: só no grupo Residence Concepts e sem oferta; com Edition, região, modalidade e condições como registradas', async ({
+  test('[REQ-100] [REQ-101] FAQ da Home: perguntas abrem no lugar e as respostas passam pela guarda de terminologia', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const faq = page.locator(`section#${HOME_SECTIONS.at(-1)}`);
+    const questions = faq.locator('summary');
+    await expect(questions).toHaveCount(discoveryMessages.home.faq.items.length + 1);
+    const timeshare = faq.locator('details', { hasText: 'A Luxtory é timeshare?' });
+    await expect(timeshare.getByText('Você não compra semanas de hospedagem')).toBeHidden();
+    await timeshare.locator('summary').click();
+    await expect(timeshare.getByText('Você não compra semanas de hospedagem')).toBeVisible();
+    const answers = (await faq.textContent()) ?? '';
+    expect(hasForbiddenTerm(answers)).toBe(false);
+    await questions.last().click();
+    await expect(faq.getByRole('link', { name: 'Como Funciona' })).toHaveAttribute(
+      'href',
+      '/como-funciona',
+    );
+  });
+
+  test('[REQ-022] Concept sem Edition: só no grupo Home Concepts e sem oferta; com Edition, região, modalidade e condições como registradas', async ({
     page,
   }) => {
     const seed = readSeed();
     await page.goto(pathOf('collection'));
     const withEditions = page.getByRole('list', {
-      name: 'Residence Concepts com Residence Edition',
+      name: 'Home Concepts com Home Edition',
     });
     const withoutEditions = page.getByRole('list', {
-      name: 'Residence Concepts sem Residence Edition',
+      name: 'Home Concepts sem Home Edition',
     });
     await expect(withEditions.getByRole('link', { name: seed.withEdition.title })).toBeVisible();
     await expect(withEditions.getByRole('link', { name: seed.coOwnerOnly.title })).toBeVisible();
@@ -216,11 +226,9 @@ test.describe('Discovery público — conteúdo', () => {
       await page.goto(path);
       await expect(page.getByRole('link', { name: EDITIONS_CTA }), path).toHaveAttribute(
         'href',
-        '/colecao#residence-editions',
+        '/colecao#home-editions',
       );
-      await expect(page.getByRole('link', { name: 'Conheça os Residence Concepts' })).toHaveCount(
-        0,
-      );
+      await expect(page.getByRole('link', { name: 'Conheça os Home Concepts' })).toHaveCount(0);
     }
   });
 

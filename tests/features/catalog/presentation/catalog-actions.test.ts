@@ -34,26 +34,26 @@ describe('CTA do Discovery por disponibilidade', () => {
     expect(links(render('editions', 'home'))).toEqual([
       {
         primary: true,
-        href: '/colecao#residence-editions',
-        label: 'Conheça as Residence Editions',
+        href: '/colecao#home-editions',
+        label: 'Conheça as Home Editions',
       },
       { primary: false, href: '/como-funciona', label: 'Entenda como funciona' },
     ]);
     expect(links(render('editions', 'howItWorks'))).toEqual([
       {
         primary: true,
-        href: '/colecao#residence-editions',
-        label: 'Conheça as Residence Editions',
+        href: '/colecao#home-editions',
+        label: 'Conheça as Home Editions',
       },
     ]);
   });
 
-  it('[REQ-022] só com Concepts sem Edition, o CTA é "Conheça os Residence Concepts"', () => {
+  it('[REQ-022] só com Concepts sem Edition, o CTA é "Conheça os Home Concepts"', () => {
     expect(catalogCta({ concepts: true, editions: false })).toBe('concepts');
     expect(links(render('concepts', 'home'))[0]).toEqual({
       primary: true,
-      href: '/colecao#residence-concepts',
-      label: 'Conheça os Residence Concepts',
+      href: '/colecao#home-concepts',
+      label: 'Conheça os Home Concepts',
     });
     expect(render('concepts', 'home')).toContain(qualification.next.concepts);
   });

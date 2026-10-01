@@ -12,7 +12,7 @@ const collectionHref = {
 
 /**
  * Próximo passo por disponibilidade (D-B2C-13, D-B2C-16; spec catalog §13.2). Com Edition, o CTA leva à primeira
- * oferta da Coleção; só com Concepts, aos Residence Concepts; sem Concept ou com estado desconhecido, nenhum CTA de
+ * oferta da Coleção; só com Concepts, aos Home Concepts; sem Concept ou com estado desconhecido, nenhum CTA de
  * catálogo — a falta de dados nunca vira "não há". `from` é a página que compõe: no Como funciona, o caminho para ele
  * não se repete.
  */

@@ -9,12 +9,15 @@ export type SceneVariant = 'opening' | 'statement' | 'media-end' | 'media-start'
  * (5Ps) não aparece no DOM: é do brief, não do componente.
  */
 export function Scene({
+  id,
   titleId,
   ground,
   variant,
   backdrop,
   children,
 }: {
+  /** Âncora da seção (destino de link na página); ausente = sem `id`. */
+  readonly id?: string;
   /** `id` do título (`h1`/`h2`) que nomeia a seção. */
   readonly titleId: string;
   readonly ground: Ground;
@@ -24,7 +27,7 @@ export function Scene({
 }) {
   const className = variant === undefined ? 'lx-scene' : `lx-scene lx-scene--${variant}`;
   return (
-    <section className={className} data-ground={ground} aria-labelledby={titleId}>
+    <section id={id} className={className} data-ground={ground} aria-labelledby={titleId}>
       {backdrop === undefined ? null : <div className="lx-scene__backdrop">{backdrop}</div>}
       <div className="lx-container lx-grid">{children}</div>
     </section>

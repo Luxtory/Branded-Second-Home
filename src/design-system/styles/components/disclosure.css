@@ -1,0 +1,58 @@
+/* Disclosure — perguntas que se abrem no lugar (FAQ), com <details>/<summary> nativos: sem JavaScript, teclado e leitor
+ * de tela do próprio navegador. A pergunta é o alvo inteiro (≥ 48 px), em Display, sob um filete; a seta do kit aponta
+ * para baixo e vira para cima quando aberta. Fechada, a resposta sai da leitura. Sem caixa, sem sombra. */
+@layer lx.components {
+  .lx-disclosure {
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-disclosure__item {
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-disclosure__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--lx-space-6);
+    min-height: var(--lx-target-min);
+    padding-block: var(--lx-space-4);
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-text-display-s);
+    font-weight: var(--lx-weight-display);
+    line-height: var(--lx-leading-heading);
+    letter-spacing: var(--lx-tracking-display);
+    text-wrap: balance;
+  }
+
+  .lx-disclosure__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .lx-disclosure__summary:focus-visible {
+    outline: var(--lx-focus-width) solid var(--lx-color-focus);
+    outline-offset: var(--lx-focus-offset);
+  }
+
+  .lx-disclosure__icon {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--lx-color-accent);
+    transform: rotate(90deg);
+    transition: transform var(--lx-duration-base) var(--lx-ease-settle);
+  }
+
+  .lx-disclosure__item[open] > .lx-disclosure__summary .lx-disclosure__icon {
+    transform: rotate(-90deg);
+  }
+
+  .lx-disclosure__body {
+    display: grid;
+    gap: var(--lx-space-3);
+    max-width: var(--lx-measure-body);
+    padding-bottom: var(--lx-space-8);
+  }
+}

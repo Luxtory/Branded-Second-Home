@@ -47,8 +47,8 @@ const modality = {
 
 const actions = {
   // D-B2C-13, D-B2C-16: o CTA de catálogo depende do que está publicado.
-  editions: 'Conheça as Residence Editions',
-  concepts: 'Conheça os Residence Concepts',
+  editions: 'Conheça as Home Editions',
+  concepts: 'Conheça os Home Concepts',
   howItWorks: 'Entenda como funciona',
   collection: 'Ver a Coleção',
   otherConcepts: 'Conheça outros Concepts',
@@ -66,7 +66,7 @@ const qualification = {
     'Valoriza patrimônio.',
     'Quer ampliar as possibilidades de experiência.',
     'Valoriza pertencimento.',
-    'Se identifica com um Residence Concept.',
+    'Se identifica com um Home Concept.',
     'Quer viver essas experiências com família e amigos.',
     'Entende e aceita as regras da modalidade escolhida.',
   ],
@@ -79,22 +79,21 @@ const qualification = {
     'Não vê valor em lifestyle, propriedade ou pertencimento.',
   ],
   /** BR-054. */
-  existingProperty: 'Quer adaptar um imóvel que já tem: toda Residence é construída do zero.',
+  existingProperty: 'Quer adaptar um imóvel que já tem: toda Second Home é construída do zero.',
   /** BR-019, BR-101, BR-104. */
   coOwnerFit:
-    'Quer, como Co-Owner, as mesmas datas todos os anos ou uma casa personalizada: a Residence Co-Owner é padronizada e a ordem do calendário gira.',
+    'Quer, como Co-Owner, as mesmas datas todos os anos ou uma casa personalizada: a Second Home Co-Owner é padronizada e a ordem do calendário gira.',
   /** Próximo passo por disponibilidade (D-B2C-16); `unknown` nunca diz que não há catálogo. */
   next: {
     editions:
-      'O próximo passo é conhecer as Residence Editions: os lançamentos com oferta, por região e modalidade.',
-    concepts:
-      'Ainda não há uma Residence Edition lançada. Os Residence Concepts já podem ser conhecidos.',
-    none: 'Os primeiros Residence Concepts ainda não foram publicados. Enquanto isso, veja em detalhe como tudo funciona.',
+      'O próximo passo é conhecer as Home Editions: os lançamentos com oferta, por região e modalidade.',
+    concepts: 'Ainda não há uma Home Edition lançada. Os Home Concepts já podem ser conhecidos.',
+    none: 'Os primeiros Home Concepts ainda não foram publicados. Enquanto isso, veja em detalhe como tudo funciona.',
     unknown: 'Veja em detalhe como tudo funciona.',
   },
   /** No Como funciona: sem Concept, a frase não manda para a própria página; desconhecido, nenhuma frase. */
   nextHowItWorks: {
-    none: 'Os primeiros Residence Concepts ainda não foram publicados.',
+    none: 'Os primeiros Home Concepts ainda não foram publicados.',
   },
 };
 
@@ -116,131 +115,328 @@ export const discoveryMessages = {
   triad,
 
   home: {
-    // PICTURE = Hero `[FW-B2C: §8 P1, §14 regra 25]`: desejo primeiro, sem depender de produto, categoria ou problema.
-    // CARE + SEEKING · Estética + Compaixão; ritmo contemplativo.
+    // Copy da Home escrita pelo fundador (D-B2C-18), com as decisões da revisão de 2026-10-01 e a nomenclatura pública
+    // de D-LX-08. Não reescrever: mudança de texto só com nova decisão do fundador. Os markers ficam em caixa normal
+    // aqui; o `lx-marker` os mostra em caixa alta.
     hero: {
-      title: { lead: 'As suas conquistas, ', turn: 'vividas com quem importa.' } satisfies Headline,
-      text: 'Em lugares que falam a sua língua, onde você se vê vivendo — e que, a cada volta, passam a fazer parte da sua história.',
-    },
-    // PROBLEM `[FW-B2C: §2 Trade-offs, §8 P2]`: categorias nomeadas, com "tende a"; nenhuma empresa (luxtory.md §6).
-    // SEEKING · Intelecto + Assertividade.
-    conflict: {
       title: {
-        lead: 'Patrimônio, liberdade e pertencimento ',
-        turn: 'raramente vêm juntos.',
+        lead: 'Seja protagonista de histórias extraordinárias, ',
+        turn: 'com quem ama,',
+        tail: ' em lugares com os quais se identifica.',
       } satisfies Headline,
-      text: 'As formas mais conhecidas de viver o lazer tendem a entregar uma parte e pedir que você abra mão do resto.',
-      listLabel: 'Alternativas e seus trade-offs',
-      givesLabel: 'Tende a entregar',
-      forgoesLabel: 'Tende a abrir mão de',
+      text: 'Uma nova forma de viver seu lazer com mais valor.',
+      action: 'Descubra uma nova forma de viver',
+    },
+    renunciation: {
+      marker: 'A cada escolha, uma renúncia',
+      title: {
+        lead: 'As alternativas mudam. ',
+        turn: 'A\u00a0renúncia continua.',
+      } satisfies Headline,
+      intro: 'No mercado de lazer, tudo gira em torno de três valores:',
+      values: 'Patrimônio. Liberdade. Pertencimento.',
+      tension:
+        'Você quer os três, mas as alternativas ainda costumam fazer você abrir mão de uma parte importante para ter as outras.',
       alternatives: [
         {
           title: 'Propriedade tradicional',
-          gives: 'Patrimônio e um lugar para chamar de seu.',
-          forgoes:
-            'Liberdade. O uso se concentra num só destino, e as responsabilidades da casa ficam com você.',
+          text: [
+            'Ter um imóvel de lazer entrega patrimônio e pode criar uma forte relação com o lugar.',
+            'Mas tende a limitar o seu lazer em um único destino, além de assumir a gestão, manutenção e responsabilidades.',
+          ],
         },
         {
           title: 'Hotelaria e locação',
-          gives: 'Liberdade para escolher e, conforme o uso, eficiência.',
-          forgoes:
-            'Posse. Nenhuma relação patrimonial com o imóvel, e um vínculo menos permanente com o lugar.',
+          text: [
+            'Você ganha liberdade para escolher onde ficar e pode usar seu dinheiro de forma eficiente, dependendo de quanto viaja.',
+            'Mas não constrói patrimônio naquele imóvel nem a mesma relação de pertencimento com o lugar.',
+          ],
         },
         {
-          title: 'Compartilhamento genérico',
-          gives: 'Patrimônio e um uso mais eficiente.',
-          forgoes: 'Liberdade e pertencimento, que nem sempre chegam na mesma proposta.',
+          title: 'Modelos genéricos de compartilhamento',
+          text: [
+            'Podem tornar a propriedade mais eficiente e dar acesso a um patrimônio real.',
+            'Mas nem sempre integram liberdade, identidade e pertencimento na mesma experiência.',
+          ],
+        },
+      ],
+      closing: [
+        'No fim, você acaba sendo levado a escolher qual parte importa mais.',
+        'Não porque seja impossível reunir os três.',
+      ],
+      closingTurn: 'Mas porque as alternativas foram construídas separadamente.',
+    },
+    rule: {
+      marker: 'Quando abrir mão vira regra',
+      title: 'Abrir mão de alguma coisa passou a parecer normal.',
+      split: [
+        'Patrimônio de um lado.',
+        'Liberdade do outro.',
+        'Pertencimento quase sempre ficando em segundo plano.',
+      ],
+      text: [
+        'Cada alternativa resolve uma parte da equação.',
+        'E, com o tempo, passamos a tratar essa renúncia como se fosse inevitável.',
+      ],
+      question: 'Por que deveria abrir mão de algo que também importa para você?',
+      closing: [
+        'Talvez o problema não esteja no que você deseja.',
+        'Talvez esteja na forma como o mercado escolheu entregar.',
+      ],
+    },
+    possibility: {
+      marker: 'Uma outra possibilidade',
+      title: { lead: 'E se você ', turn: 'não precisasse escolher?' } satisfies Headline,
+      imagine: [
+        'Imagine ter um lugar que represente quem você é.',
+        'Onde possa fazer o que ama, com quem ama.',
+      ],
+      values: [
+        'Um patrimônio para chamar de seu.',
+        'Liberdade para continuar descobrindo novos lugares, experiências e histórias.',
+        'E pertencimento para sentir que cada experiência tem a ver com a vida que você deseja viver.',
+      ],
+      triad: 'Patrimônio. Liberdade. Pertencimento.',
+      promise: 'Você pode ter os três.',
+      logic: 'Essa é a nossa lógica.',
+    },
+    luxtory: {
+      marker: 'Foi para isso que criamos a Luxtory',
+      intro:
+        'A Luxtory é um clube de Branded Second Homes de alto padrão construído em torno de uma ideia simples:',
+      idea: 'O lugar onde você aproveita o seu lazer deve oferecer a vida que você quer viver.',
+      start: 'Na Luxtory, a casa não começa pela planta.',
+      startTurn: 'Começa por um lifestyle com o qual você se identifica.',
+      partners:
+        'E passa pelas marcas parceiras que representam esses universos: com elas, criamos Second Homes com identidade própria, para que você viva o seu lazer como deseja.',
+      club: 'Tudo conectado ao Luxtory Club.',
+      architecture: 'Uma arquitetura pensada para reunir:',
+      triad: 'Patrimônio. Liberdade. Pertencimento.',
+    },
+    belonging: {
+      marker: ['Pertencimento', 'Branded Second Homes'],
+      title: 'Primeiro, encontre um lifestyle que faça parte da sua identidade.',
+      brands: [
+        'Existem marcas com as quais você se identifica não apenas pelo que elas vendem.',
+        'Mas pelo universo que representam.',
+      ],
+      universe: ['Valores.', 'Estética.', 'Cultura.', 'Experiências.', 'Uma forma de viver.'],
+      place: 'Na Luxtory, esse universo se transforma no seu lugar.',
+      text: [
+        'O Brand DNA inspira seu conceito, arquitetura, interiores, paisagismo, amenidades e experiências.',
+        'E tudo isso ganha ainda mais significado quando é vivido com sua família, seus amigos e as pessoas que importam para você.',
+      ],
+      arrival: 'Tudo para que, quando você chegar, não pense apenas:',
+      notOnly: '“Que lugar incrível.”',
+      but: 'Mas:',
+      mine: '“Esse lugar é a minha cara!”',
+    },
+    patrimony: {
+      marker: ['Patrimônio', 'Branded Second Home'],
+      title: {
+        lead: 'Um lugar que representa você\u00a0— ',
+        turn: 'e também é seu.',
+      } satisfies Headline,
+      intro: 'Na Luxtory, pertencimento não termina na experiência.',
+      text: [
+        'Você estabelece uma relação patrimonial real com sua Branded Second Home que representa o seu lifestyle.',
+        'E pode fazer isso de duas formas.',
+      ],
+      pair: {
+        owner: [
+          'A Second Home inteira é sua.',
+          'Você possui integralmente o imóvel.',
+          'Uma Second Home criada para fazer parte da sua vida e conectada ao ecossistema Luxtory.',
+        ],
+        coOwner: [
+          'Você possui uma participação real que faz sentido para sua vida.',
+          'Você adquire uma Ação da SPE, a empresa proprietária do imóvel, com Direito de Uso correspondente à sua participação.',
+          'Você é acionista da SPE proprietária do imóvel.',
+        ],
+      } satisfies ModalityPair,
+      both: {
+        title: 'Duas formas de possuir',
+        text: [
+          'Owner e Co-Owner funcionam de maneiras diferentes.',
+          'Mas partem do mesmo princípio:',
+        ],
+        principle: 'Patrimônio real.',
+      },
+    },
+    freedom: {
+      marker: ['Liberdade', 'Muito além de um único endereço'],
+      title: 'Ter um lugar seu não significa ficar preso a ele.',
+      text: [
+        'Sua Second Home pode ser o lugar onde você se sente em casa.',
+        'Mas não precisa ser o único lugar onde você vive suas histórias.',
+      ],
+      mechanisms: [
+        {
+          title: 'Luxchange',
+          text: [
+            'No Luxchange, você escolhe períodos que tem direito de uso da sua Second Home para converter em créditos equivalentes e diversificar estadias em outros imóveis da rede.',
+            'Pode continuar em um universo parecido com o seu.',
+            'Ou experimentar um conceito completamente diferente.',
+            'Sempre de acordo com os períodos disponíveis, plano Membership, e as regras do clube.',
+          ],
+        },
+        {
+          title: 'Luxplus',
+          text: [
+            'Quer mais tempo?',
+            'O Luxplus permite adquirir noites adicionais disponíveis no inventário da Luxtory.',
+            'Uma forma de ampliar suas possibilidades quando os dias da sua Second Home ou seus créditos do Luxchange não forem suficientes.',
+          ],
+        },
+        {
+          title: 'Locação de temporada',
+          text: [
+            'E quando houver períodos que você não pretende usar, poderá autorizar sua locação conforme a modalidade e as regras aplicáveis.',
+            'Você continua no controle da decisão.',
+          ],
         },
       ],
       closing: {
-        lead: 'O conflito não é escolher qual valor importa. ',
-        turn: 'Os três importam.',
+        lead: 'Um lugar para chamar de seu. ',
+        turn: 'Mais possibilidades para viver.',
       } satisfies Headline,
     },
-    // PROMISE `[FW-B2C: §8 P3]`: o insight e a nova lógica; categoria explicada na primeira menção (D-LX-06; BR-003,
-    // BR-053). SEEKING · Intelecto + Assertividade.
-    promise: {
-      title: {
-        lead: 'Não comece escolhendo entre comprar ou alugar. ',
-        turn: 'Comece pelo que você quer viver.',
-      } satisfies Headline,
-      text: 'Primeiro, os valores que você quer na sua vida de lazer. Depois, a forma de chegar lá: uma second home construída a partir do lifestyle que tem a ver com você e conectada ao que reúne os três.',
-      category:
-        'Essa é a Branded Second Home: uma segunda casa concebida a partir do universo de uma marca e construída do zero.',
-      triadLabel: 'Patrimônio, Liberdade e Pertencimento',
-    },
-    // PROOF `[FW-B2C: §8 P4]`: o mecanismo costura três capítulos. SEEKING + FEAR↓ · Diligência + Ordem.
-    proof: {
-      title: { lead: 'Como a Luxtory ', turn: 'reúne os três.' } satisfies Headline,
-      text: 'Tudo parte de um lifestyle e de uma marca que o representa: a Brand Partner. Do Brand DNA dela — identidade, estética, valores e experiências — nasce um Residence Concept, uma casa pensada para ser replicada, com arquitetura, interiores e forma de viver próprios. Cada lançamento de um Concept numa região é uma Residence Edition; cada casa construída a partir dele, uma Residence.',
-      patrimony: {
-        // L1, L8; BR-052, BR-071, BR-373, BR-374. Retraimento na nota de mercado.
-        marker: ['Patrimônio', 'Posse'],
-        title: {
-          lead: 'Uma relação patrimonial real ',
-          turn: 'com a sua second home.',
-        } satisfies Headline,
-        text: 'Em duas modalidades, com o mesmo peso.',
-        pair: {
-          owner: [
-            'A Residence é sua, por inteiro: 100% do imóvel e de toda a sua capacidade de uso.',
-          ],
-          coOwner: [
-            'Uma Ação da SPE — a sociedade criada para ser a proprietária da Residence —, com Direito de Uso equivalente ao dos demais Co-Owners.',
-          ],
-        } satisfies ModalityPair,
-        note: 'Como todo patrimônio imobiliário, tem valor econômico e acompanha o mercado, para cima ou para baixo. Não há promessa de valorização, renda, liquidez ou retorno.',
-      },
-      freedom: {
-        // L3, L4, L7; BR-072, BR-130, BR-146, BR-147, BR-151. Mecanismos como componentes do modelo, sem link.
-        marker: ['Liberdade', 'Possibilidades'],
-        title: { lead: 'Mais possibilidades, ', turn: 'menos amarras.' } satisfies Headline,
-        text: 'A gestão cuida da casa, e o Luxtory Club — a rede de Residences, serviços e experiências da Luxtory — amplia o que você pode viver. O uso da sua própria Residence não depende do Membership, a associação ao Club.',
-        items: [
-          {
-            title: 'Gestão',
-            text: 'Administração própria de cada modalidade: obrigatória no Co-Owner, opcional no Owner, sempre com os custos de cada uma.',
-          },
-          {
-            title: 'Luxchange',
-            text: 'Com Membership vigente, viver outras Residences da rede, conforme regras e disponibilidade.',
-          },
-          {
-            title: 'Luxplus',
-            text: 'Com Membership vigente, noites adicionais do inventário da Luxtory, quando disponíveis.',
-          },
-          {
-            title: 'Locação',
-            text: 'Com Membership vigente e quando elegível, datas destinadas à locação pelo canal Luxtory, conforme a modalidade.',
-          },
-        ] satisfies readonly Item[],
-        note: 'Liberdade é ampliar possibilidades e reduzir atritos — não ausência de regras.',
-      },
-      belonging: {
-        // L5, L6, L9; BR-003, BR-013, BR-053, BR-330. Comunidade como aspiração (FW §14 regra 14).
-        marker: ['Pertencimento', 'Identificação + Lugar + Pessoas'],
-        title: { lead: 'Um lugar que ', turn: 'tem a ver com você.' } satisfies Headline,
-        // [FW-B2C: §2, Pertencimento].
-        text: 'Sentir que o lugar, as experiências e as relações têm a ver com quem você é e com a vida que você quer viver.',
-        items: [
-          {
-            title: 'Identificação',
-            text: 'O Residence Concept nasce do lifestyle de uma marca com a qual você se identifica: sua estética, seus valores, suas experiências.',
-          },
-          {
-            title: 'Lugar',
-            text: 'A Residence é construída do zero e fiel ao Concept — um lugar onde você se reconhece.',
-          },
-          {
-            title: 'Pessoas',
-            text: 'É a casa para receber família e amigos. E, à medida que a rede cresce, o Luxtory Club pode ampliar experiências e conexões entre pessoas com afinidades parecidas.',
-          },
-        ] satisfies readonly Item[],
-      },
+    management: {
+      marker: ['Gestão', 'Sua Second Home. Não um segundo trabalho.'],
+      title: { lead: 'Aproveite mais. ', turn: 'Administre menos.' } satisfies Headline,
+      intro:
+        'Ter uma casa de lazer costuma trazer junto manutenção, fornecedores, preparação, imprevistos e uma lista de coisas para resolver.',
+      text: 'A Luxtory coordena os serviços de gestão e manutenção aplicáveis a cada Second Home para reduzir boa parte desses atritos.',
+      pair: {
+        owner: [
+          'A gestão pode ser estruturada conforme os serviços contratados e as necessidades da sua Second Home.',
+        ],
+        coOwner: [
+          'Como a Second Home pertence a mais de um proprietário, sua administração e manutenção funcionam de forma coordenada para preservar o ativo e a experiência de todos.',
+        ],
+      } satisfies ModalityPair,
       closing: {
-        title: { lead: 'Os três, ', turn: 'na mesma arquitetura.' } satisfies Headline,
-        // Presença da tríade, não maximização `[FW-B2C: §2, §14 regra 10]`.
-        text: 'Não se trata de levar cada valor ao máximo, sem limite. Trata-se de não precisar abrir mão de nenhum deles.',
+        lead: 'Menos tempo administrando. ',
+        turn: 'Mais tempo vivendo.',
+      } satisfies Headline,
+    },
+    push: {
+      marker: 'Patrimônio + Liberdade + Pertencimento',
+      title: {
+        lead: 'Uma nova forma de viver ',
+        turn: 'aquilo que você conquistou.',
+      } satisfies Headline,
+      intro: 'Na Luxtory, seu lifestyle pode se transformar em uma Branded Second Home.',
+      promises: [
+        'Um lugar que representa você.',
+        'Um patrimônio que é realmente seu.',
+        'Mais possibilidades para viver outros lugares e experiências.',
+        'E uma estrutura criada para reduzir os atritos de ter uma Second Home.',
+      ],
+      forWhom: [
+        'A Luxtory é para quem espera mais da forma como vive seu lazer.',
+        'Para quem não quer escolher entre construir patrimônio, preservar liberdade e pertencer a lugares que representem quem é.',
+        'Para quem acredita que suas conquistas também devem se transformar em experiências, histórias e tempo bem vivido com as pessoas que importam.',
+      ],
+      next: 'Se essa combinação faz sentido para a vida que você quer viver, o próximo passo é descobrir qual Second Home combina com você.',
+    },
+    faq: {
+      marker: 'O essencial antes de continuar',
+      title: 'Ficou alguma dúvida?',
+      items: [
+        {
+          question: 'O que é a Luxtory?',
+          answer: [
+            'A Luxtory cria Branded Second Homes inspiradas em diferentes lifestyles e conectadas ao Luxtory Club.',
+            'Cada Second Home é estruturada para reunir patrimônio, liberdade e pertencimento em uma mesma proposta.',
+          ],
+        },
+        {
+          question: 'O que é uma Branded Second Home?',
+          answer: [
+            'É uma Second Home criada a partir de um lifestyle e do universo de uma Brand Partner.',
+            'Seu Brand DNA inspira o Home Concept e ajuda a orientar arquitetura, interiores, paisagismo, amenidades e experiências.',
+          ],
+        },
+        {
+          question: 'O que é uma Brand Partner?',
+          answer: [
+            'É uma marca com identidade definida que representa um lifestyle com o qual determinadas pessoas se identificam.',
+            'Seus valores, sua estética, sua cultura e sua forma de viver servem como inspiração para o conceito da Second Home.',
+          ],
+        },
+        {
+          question: 'O que é uma Home Edition?',
+          answer: [
+            'É o lançamento comercial de um Home Concept em uma região, com as condições comerciais aplicáveis.',
+            'Ela define, entre outros pontos, a modalidade disponível — Owner, Co-Owner ou ambas.',
+          ],
+        },
+        {
+          question: 'Qual é a diferença entre Owner e Co-Owner?',
+          answer: [
+            'No Owner, você possui integralmente a Second Home.',
+            'No Co-Owner, você possui participação na SPE, a empresa proprietária da Second Home, junto com o Direito de Uso correspondente à sua participação.',
+          ],
+        },
+        {
+          question: 'A Luxtory é timeshare?',
+          answer: [
+            'Não.',
+            'No Owner, você é proprietário do imóvel inteiro.',
+            'No Co-Owner, você possui participação real na empresa proprietária do imóvel.',
+            'Você não compra semanas de hospedagem: tem uma participação societária, com Direito de Uso.',
+          ],
+        },
+        {
+          question: 'Vou ficar preso à minha Second Home?',
+          answer: [
+            'Não.',
+            'Sua Second Home é o ponto de partida, mas mecanismos como Luxchange e Luxplus podem ampliar suas possibilidades de viver outras Second Homes e períodos adicionais, sempre de acordo com disponibilidade e regras aplicáveis.',
+          ],
+        },
+        {
+          question: 'Como funciona o Luxchange?',
+          answer: [
+            'Você pode disponibilizar determinados períodos da sua Second Home e, seguindo as regras do clube, transformá-los em créditos para viver experiências em outras Second Homes da rede.',
+          ],
+        },
+        {
+          question: 'O que é o Luxplus?',
+          answer: [
+            'É uma forma de adquirir noites adicionais disponíveis no inventário da Luxtory quando você quiser viver mais do que seus dias ou créditos disponíveis permitem.',
+          ],
+        },
+        {
+          question: 'Posso alugar os períodos que não usar?',
+          answer: [
+            'Quando a modalidade e a Second Home permitirem, com Membership vigente e pelos canais autorizados: no Owner, as datas que você decidir disponibilizar; no Co-Owner, só datas já reservadas no seu Direito de Uso.',
+            'A receita depende da procura, da ocupação, dos preços praticados, dos custos e do mercado. Não há garantia de resultado.',
+          ],
+        },
+        {
+          question: 'Quem cuida da Second Home?',
+          answer: [
+            'A Luxtory coordena os serviços de gestão e manutenção previstos para cada Second Home.',
+            'O escopo varia conforme a Home Edition, a modalidade e os serviços aplicáveis.',
+          ],
+        },
+        {
+          question: 'Existe garantia de valorização ou retorno?',
+          answer: [
+            'Não.',
+            'A propriedade possui valor econômico e está exposta ao mercado imobiliário, podendo valorizar ou desvalorizar.',
+            'Não há garantia de valorização, renda, liquidez ou retorno.',
+          ],
+        },
+      ] satisfies readonly Answer[],
+      // A última resposta leva à página citada: o nome da página é o link.
+      details: {
+        question: 'Onde posso entender tudo com mais detalhes?',
+        before: 'Na página ',
+        link: 'Como Funciona',
+        after:
+          ', você poderá entender melhor as modalidades, a propriedade, o uso, a gestão, o Luxchange, o Luxplus e os demais mecanismos da Luxtory.',
       },
     },
   },
@@ -253,7 +449,7 @@ export const discoveryMessages = {
     },
     chain: {
       // Mecanismo `[FW-B2C: §2, §8 P4]`; fatos: luxtory.md §5, BR-004, BR-031, BR-053, BR-300, BR-301 (L9).
-      title: { lead: 'Do lifestyle ', turn: 'à Residence.' } satisfies Headline,
+      title: { lead: 'Do lifestyle ', turn: 'à Second Home.' } satisfies Headline,
       steps: [
         { title: 'Lifestyle', text: 'O universo com o qual você se identifica.' },
         {
@@ -262,25 +458,25 @@ export const discoveryMessages = {
         },
         { title: 'Brand DNA', text: 'Identidade, estética, valores e experiências da marca.' },
         {
-          title: 'Residence Concept',
+          title: 'Home Concept',
           text: 'A tradução desse DNA numa casa replicável: arquitetura, interiores, paisagismo, amenidades e forma de viver.',
         },
         {
-          title: 'Residence Edition',
+          title: 'Home Edition',
           text: 'O lançamento de um Concept numa região, com condições comerciais próprias. Toda oferta passa por uma Edition.',
         },
         {
           title: 'Owner ou Co-Owner',
-          text: 'As duas modalidades: a Residence inteira, ou uma Ação da SPE proprietária com Direito de Uso.',
+          text: 'As duas modalidades: a Second Home inteira, ou uma Ação da SPE proprietária com Direito de Uso.',
         },
         {
           title: 'Design & Build',
           text: 'Arquitetura, interiores, engenharia e obra, que a Luxtory pode coordenar por inteiro, sempre preservando o Concept.',
         },
-        { title: 'Residence', text: 'A casa, construída do zero e fiel ao Concept.' },
+        { title: 'Second Home', text: 'A casa, construída do zero e fiel ao Concept.' },
         {
           title: 'Luxtory Club',
-          text: 'A rede de Residences, serviços e experiências da Luxtory, acessada com Membership.',
+          text: 'A rede de Second Homes, serviços e experiências da Luxtory, acessada com Membership.',
         },
       ] satisfies readonly Item[],
     },
@@ -292,12 +488,12 @@ export const discoveryMessages = {
         question: 'O que exatamente eu possuo?',
         pair: {
           owner: [
-            'A Residence, por inteiro: 100% do imóvel e de toda a sua capacidade de uso.',
+            'A Second Home, por inteiro: 100% do imóvel e de toda a sua capacidade de uso.',
             'A aquisição pode ser feita por um único adquirente.',
           ],
           coOwner: [
-            'Uma Ação da SPE, a sociedade anônima fechada criada para ser a proprietária da Residence, com Direito de Uso.',
-            'Todos os Co-Owners da mesma Residence têm participação e Direito de Uso equivalentes. A Luxtory não é acionista.',
+            'Uma Ação da SPE, a sociedade anônima fechada criada para ser a proprietária da Second Home, com Direito de Uso.',
+            'Todos os Co-Owners da mesma Second Home têm participação e Direito de Uso equivalentes. A Luxtory não é acionista.',
           ],
         } satisfies ModalityPair,
         after: 'Nas duas modalidades, a posição nasce na formalização da aquisição.',
@@ -306,13 +502,13 @@ export const discoveryMessages = {
         {
           question: 'Isso é timeshare?',
           answer: [
-            'Não. O Co-Owner é acionista da SPE proprietária da Residence, com Direito de Uso: uma participação societária, não a compra de tempo ou de dias.',
+            'Não. O Co-Owner é acionista da SPE proprietária da Second Home, com Direito de Uso: uma participação societária, não a compra de tempo ou de dias.',
           ],
         },
         {
           question: 'Existe garantia de retorno, valorização ou liquidez?',
           answer: [
-            'Não. A Residence e a Ação têm valor econômico, podem ser transferidas conforme as regras aplicáveis e acompanham o mercado imobiliário, para cima ou para baixo.',
+            'Não. A Second Home e a Ação têm valor econômico, podem ser transferidas conforme as regras aplicáveis e acompanham o mercado imobiliário, para cima ou para baixo.',
             'Não há promessa de valorização, renda, liquidez ou retorno.',
           ],
         },
@@ -326,11 +522,11 @@ export const discoveryMessages = {
         question: 'Como funciona meu uso?',
         pair: {
           owner: [
-            'Toda a capacidade de uso da Residence é sua.',
+            'Toda a capacidade de uso da Second Home é sua.',
             'Você escolhe as datas que mantém para uso próprio.',
           ],
           coOwner: [
-            'O Direito de Uso anual da configuração da Residence, com limites por temporada que não se compensam entre si.',
+            'O Direito de Uso anual da configuração da Second Home, com limites por temporada que não se compensam entre si.',
             'O calendário abre numa ordem sorteada que gira a cada ano — vantagem de tempo, não exclusividade sobre datas. Cada permanência vai até 14 dias seguidos.',
           ],
         } satisfies ModalityPair,
@@ -339,7 +535,7 @@ export const discoveryMessages = {
       // `01` §8.1 e §9, sem a capacidade da Luxtory; detalhe secundário (aprovado em 2026-10-01).
       configurations: {
         title: 'As quatro configurações Co-Owner',
-        text: 'Toda Residence Co-Owner adota uma destas configurações, definida pela Luxtory conforme a demanda e a viabilidade de cada lançamento. Alta/Super Alta: janeiro, julho, dezembro e a janela de Carnaval. Média/Baixa: as demais datas.',
+        text: 'Toda Second Home Co-Owner adota uma destas configurações, definida pela Luxtory conforme a demanda e a viabilidade de cada lançamento. Alta/Super Alta: janeiro, julho, dezembro e a janela de Carnaval. Média/Baixa: as demais datas.',
         labels: {
           share: 'Participação',
           annual: 'Direito de Uso anual',
@@ -397,21 +593,21 @@ export const discoveryMessages = {
         pair: {
           owner: [
             'A administração integral pela Luxtory é opcional, assim como a Taxa de Administração.',
-            'As despesas da Residence são suas.',
+            'As despesas da Second Home são suas.',
           ],
           coOwner: [
             'A administração profissional é obrigatória, com Taxa de Administração.',
-            'As despesas da Residence são rateadas entre os Co-Owners.',
+            'As despesas da Second Home são rateadas entre os Co-Owners.',
           ],
         } satisfies ModalityPair,
       },
       club: {
         question: 'Consigo usar outros lugares?',
-        text: 'Sim, pelo Luxtory Club — a rede de Residences, serviços e experiências da Luxtory —, com Membership vigente, a associação ao Club por titular, e conforme regras e disponibilidade.',
+        text: 'Sim, pelo Luxtory Club — a rede de Second Homes, serviços e experiências da Luxtory —, com Membership vigente, a associação ao Club por titular, e conforme regras e disponibilidade.',
         items: [
           {
             title: 'Luxchange',
-            text: 'Com Membership vigente, você troca capacidade elegível por Créditos e usa Créditos para estadias em outras Residences da rede. No Co-Owner, só uma data já reservada pode ser cedida. Créditos não são moeda, investimento nem garantia de disponibilidade.',
+            text: 'Com Membership vigente, você troca capacidade elegível por Créditos e usa Créditos para estadias em outras Second Homes da rede. No Co-Owner, só uma data já reservada pode ser cedida. Créditos não são moeda, investimento nem garantia de disponibilidade.',
           },
           {
             title: 'Luxplus',
@@ -440,8 +636,8 @@ export const discoveryMessages = {
         {
           question: 'Qual a diferença para uma second home tradicional?',
           answer: [
-            'Aqui a casa nasce de um lifestyle. A Luxtory traduz o universo de uma marca num Residence Concept com especificação definida, e cada Residence é construída do zero, fiel a ele — nunca um imóvel existente adaptado.',
-            'O Owner pode personalizar o que não é essencial ao Concept; a Residence Co-Owner é padronizada. A gestão reduz o trabalho de manter a casa, e o Luxtory Club amplia o uso para além dela.',
+            'Aqui a casa nasce de um lifestyle. A Luxtory traduz o universo de uma marca num Home Concept com especificação definida, e cada Second Home é construída do zero, fiel a ele — nunca um imóvel existente adaptado.',
+            'O Owner pode personalizar o que não é essencial ao Concept; a Second Home Co-Owner é padronizada. A gestão reduz o trabalho de manter a casa, e o Luxtory Club amplia o uso para além dela.',
           ],
         },
         {
@@ -453,7 +649,7 @@ export const discoveryMessages = {
         {
           question: 'E as pessoas que importam?',
           answer: [
-            'O Titular — Owner ou Co-Owner — pode receber família e amigos como convidados, conforme as regras de cada Residence, sem consumir Direito de Uso adicional. O convidado não se torna Titular.',
+            'O Titular — Owner ou Co-Owner — pode receber família e amigos como convidados, conforme as regras de cada Second Home, sem consumir Direito de Uso adicional. O convidado não se torna Titular.',
             'À medida que a rede cresce, o Luxtory Club pode ampliar experiências e conexões entre pessoas com afinidades parecidas.',
           ],
         },
@@ -463,10 +659,10 @@ export const discoveryMessages = {
       // BR-004, BR-031, BR-054, BR-143, BR-373, BR-374; L2 em positivo. FEAR↓ · Retraimento + Diligência.
       title: { lead: 'O que mais ', turn: 'você precisa saber.' } satisfies Headline,
       items: [
-        'Toda oferta comercial é feita por uma Residence Edition, com as condições registradas pela Luxtory.',
+        'Toda oferta comercial é feita por uma Home Edition, com as condições registradas pela Luxtory.',
         'Valores de Membership, Taxa de Administração e planos fazem parte das condições comerciais aplicáveis e não são fixados nesta página.',
-        'O Co-Owner tem uma Ação com Direito de Uso: participação societária na SPE proprietária da Residence.',
-        'Toda Residence é construída do zero; imóveis existentes, reformas e adaptações não fazem parte do modelo.',
+        'O Co-Owner tem uma Ação com Direito de Uso: participação societária na SPE proprietária da Second Home.',
+        'Toda Second Home é construída do zero; imóveis existentes, reformas e adaptações não fazem parte do modelo.',
         'Nenhuma promessa de rentabilidade, valorização, liquidez ou renda.',
       ],
     },
@@ -476,21 +672,21 @@ export const discoveryMessages = {
     // PROOF → PUSH; Discovery de produto, não marketplace. BR-001, BR-002, BR-004, REQ-022.
     header: {
       title: 'Coleção',
-      text: 'Cada Residence Concept traduz o universo de uma marca numa casa. Cada Residence Edition é o lançamento de um Concept numa região, com condições próprias — e é por ela que existe oferta.',
+      text: 'Cada Home Concept traduz o universo de uma marca numa casa. Cada Home Edition é o lançamento de um Concept numa região, com condições próprias — e é por ela que existe oferta.',
     },
     editions: {
-      title: 'Residence Editions',
+      title: 'Home Editions',
       text: 'Concepts com lançamento: a região e a modalidade de cada Edition.',
-      listLabel: 'Residence Concepts com Residence Edition',
+      listLabel: 'Home Concepts com Home Edition',
     },
     concepts: {
-      title: 'Residence Concepts',
-      text: 'Concepts ainda sem Residence Edition — por enquanto, sem oferta comercial.',
-      listLabel: 'Residence Concepts sem Residence Edition',
+      title: 'Home Concepts',
+      text: 'Concepts ainda sem Home Edition — por enquanto, sem oferta comercial.',
+      listLabel: 'Home Concepts sem Home Edition',
     },
     credit: 'A partir do universo de',
-    editionsLabel: 'Residence Editions deste Concept',
-    empty: 'Ainda não há Residence Concepts publicados.',
+    editionsLabel: 'Home Editions deste Concept',
+    empty: 'Ainda não há Home Concepts publicados.',
     unavailable: 'Não foi possível carregar a Coleção agora. Tente de novo em instantes.',
   },
 
@@ -501,20 +697,19 @@ export const discoveryMessages = {
     faithful: {
       title: { lead: 'Construída do zero, ', turn: 'fiel ao Concept.' } satisfies Headline,
       text: [
-        'Toda Residence nasce de um Residence Concept aprovado e é construída do zero, preservando os elementos essenciais que definem a sua identidade.',
-        'O Owner pode personalizar o que não é essencial; a Residence Co-Owner é padronizada. A Luxtory pode coordenar todo o Design & Build — arquitetura, interiores, engenharia e obra —, sempre preservando o Concept.',
+        'Toda Second Home nasce de um Home Concept aprovado e é construída do zero, preservando os elementos essenciais que definem a sua identidade.',
+        'O Owner pode personalizar o que não é essencial; a Second Home Co-Owner é padronizada. A Luxtory pode coordenar todo o Design & Build — arquitetura, interiores, engenharia e obra —, sempre preservando o Concept.',
       ],
     },
     offer: {
-      title: 'Residence Editions',
-      lead: 'Uma Residence Edition é o lançamento deste Concept numa região, com condições comerciais próprias.',
+      title: 'Home Editions',
+      lead: 'Uma Home Edition é o lançamento deste Concept numa região, com condições comerciais próprias.',
       modality: 'Modalidade',
       conditions: 'Condições comerciais',
       // Sem Edition, sem oferta (BR-004, REQ-022).
-      none: 'Este Concept ainda não tem uma Residence Edition. Por isso, ainda não há oferta comercial.',
+      none: 'Este Concept ainda não tem uma Home Edition. Por isso, ainda não há oferta comercial.',
     },
-    unavailable:
-      'Não foi possível carregar este Residence Concept agora. Tente de novo em instantes.',
+    unavailable: 'Não foi possível carregar este Home Concept agora. Tente de novo em instantes.',
   },
 
   notFound: {
@@ -535,7 +730,7 @@ export const discoveryMessages = {
     },
     collection: {
       title: 'Coleção — Luxtory',
-      description: 'Residence Concepts e Residence Editions da Luxtory.',
+      description: 'Home Concepts e Home Editions da Luxtory.',
     },
     conceptSuffix: ' — Luxtory',
     notFound: 'Página não encontrada — Luxtory',
