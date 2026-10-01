@@ -17,11 +17,13 @@ describe('catálogo — leitura pública como anon', () => {
   let database: TestDatabase;
   let db: Database;
   let harness: ReturnType<typeof catalogHarness>;
+  let clock: ReturnType<typeof controlledClock>;
 
   beforeEach(async () => {
     database = await createTestDatabase();
     db = appDatabase(database.appUrl);
-    harness = catalogHarness(db, controlledClock(START));
+    clock = controlledClock(START);
+    harness = catalogHarness(db, clock);
   });
 
   afterEach(async () => {
@@ -151,6 +153,8 @@ describe('catálogo — leitura pública como anon', () => {
     const withoutEdition = await publicConcept('Casa sem Edition');
     const withEditions = await publicConcept('Casa com Editions');
     await build.edition(withEditions.conceptId, 'owner');
+    // Ordem de registro: a segunda Edition nasce depois (no mesmo instante, o desempate por id não é a ordem).
+    clock.advance(DAY);
     await build.edition(withEditions.conceptId, 'co_owner');
 
     expect(await concept(withoutEdition.conceptId)).toMatchObject({ editions: [] });
