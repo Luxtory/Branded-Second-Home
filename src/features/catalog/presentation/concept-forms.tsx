@@ -46,6 +46,7 @@ function VersionContent({ form, state }: { readonly form: string; readonly state
         form={form}
         name="specification"
         label={fields.specificationLabel}
+        publicTag={messages.form.publicTag}
         hint={fields.specificationHint}
         multiline
         maxLength={LONG_MAX}
@@ -72,6 +73,7 @@ export function ConceptForm({
         form="concept"
         name="title"
         label={fields.titleLabel}
+        publicTag={messages.form.publicTag}
         hint={fields.titleHint}
         maxLength={NAME_MAX}
         state={state}

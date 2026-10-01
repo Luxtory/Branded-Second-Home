@@ -299,6 +299,7 @@ export async function ExposurePage({ id }: { readonly id: string }) {
       ) : (
         <div className="lx-form">
           <p className="lx-small">{page.notice}</p>
+          <Notice tone="warning" title={page.publicNotice} />
           <ExposureForm brandPartnerId={partner.id} idempotencyKey={randomUUID()} />
         </div>
       )}

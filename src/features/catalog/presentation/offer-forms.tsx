@@ -44,6 +44,7 @@ export function EditionForm({
         form="edition"
         name="region"
         label={text.regionLabel}
+        publicTag={messages.form.publicTag}
         hint={text.regionHint}
         maxLength={NAME_MAX}
         state={state}
@@ -52,6 +53,7 @@ export function EditionForm({
         form="edition"
         name="modality"
         label={text.modalityLegend}
+        publicTag={messages.form.publicTag}
         hint={text.modalityHint}
         state={state}
         options={[
@@ -68,6 +70,7 @@ export function EditionForm({
         form="edition"
         name="commercial_conditions"
         label={text.conditionsLabel}
+        publicTag={messages.form.publicTag}
         hint={text.conditionsHint}
         multiline
         maxLength={LONG_MAX}

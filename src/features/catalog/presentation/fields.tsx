@@ -40,22 +40,31 @@ interface FieldProps {
   readonly label: string;
   readonly hint?: string;
   readonly optional?: boolean;
+  /** Marca visível no rótulo quando o valor vai ao site como está (docs/specs/catalog.md §13.5). */
+  readonly publicTag?: string;
   readonly state: FormState;
+}
+
+function PublicTag({ tag }: { readonly tag?: string }) {
+  return tag === undefined ? null : <span className="lx-label__tag">{tag}</span>;
 }
 
 function Label({
   id,
   label,
   optional,
+  publicTag,
 }: {
   readonly id: string;
   readonly label: string;
   readonly optional?: boolean;
+  readonly publicTag?: string;
 }) {
   return (
     <label className="lx-label" htmlFor={id}>
       {label}
       {optional === true ? <span className="lx-label__optional"> {text.optional}</span> : null}
+      <PublicTag tag={publicTag} />
     </label>
   );
 }
@@ -67,6 +76,7 @@ export function TextField({
   label,
   hint,
   optional,
+  publicTag,
   state,
   multiline = false,
   maxLength,
@@ -84,7 +94,7 @@ export function TextField({
   } as const;
   return (
     <div className="lx-field">
-      <Label id={id} label={label} optional={optional} />
+      <Label id={id} label={label} optional={optional} publicTag={publicTag} />
       {hint === undefined ? null : (
         <p className="lx-hint" id={`${id}-hint`}>
           {hint}
@@ -112,6 +122,7 @@ export function ChoiceField({
   name,
   label,
   hint,
+  publicTag,
   state,
   options,
 }: FieldProps & { readonly options: readonly Option[] }) {
@@ -122,7 +133,10 @@ export function ChoiceField({
       className="lx-choice-group"
       aria-describedby={describedBy(id, hint !== undefined, error !== undefined)}
     >
-      <legend className="lx-label">{label}</legend>
+      <legend className="lx-label">
+        {label}
+        <PublicTag tag={publicTag} />
+      </legend>
       {hint === undefined ? null : (
         <p className="lx-hint" id={`${id}-hint`}>
           {hint}
