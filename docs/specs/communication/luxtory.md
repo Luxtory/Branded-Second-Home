@@ -1,10 +1,15 @@
 # Framework preenchido — base Luxtory (Mentor)
 
-> O que é transversal à marca e vale para todos os Protagonistas. Contrato e convenções:
-> [`../communication.md`](../communication.md). Método: [Framework Mestre](framework-mestre.md).
-> Estado: **aprovado em 2026-09-29** (checkpoint da W3B). Decisão nova ou alterada passa pelo registro (§7).
+> O que é transversal à marca. Contrato e convenções: [`../communication.md`](../communication.md). Método:
+> [Framework Mestre](framework-mestre.md). Estado: **aprovado em 2026-09-29** (checkpoint da W3B). Decisão nova ou
+> alterada passa pelo registro (§7).
+> **Escopo desde 2026-09-30 ([ADR-0012](../../adr/0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md)):** no B2C,
+> a fonte canônica é o [Framework B2C](framework-b2c.md). §1–§3 valem só para Brand Partners até o Framework B2B
+> (`P-LX-05`); §4–§6 valem para todas as jornadas, com a ressalva do `D-LX-07`.
 
 ## 1. Mentor e princípios globais
+
+> B2C: substituído por `[FW-B2C: §1, §5]`; vale só para Brand Partners até o Framework B2B (`P-LX-05`).
 
 **Mentor = Luxtory.** Pelo modelo, a Brand Partner aporta identidade, lifestyle, desejo e comunidade; a Luxtory traduz
 esse universo em um Residence Concept replicável, coordena a realização e integra a Residence a uma rede
@@ -25,6 +30,8 @@ Princípios globais (`D-LX-02`):
    `[F: docs/reference/design-system.md §8]`.
 
 ## 2. Personalidade do Mentor (Mestre §7) — `D-LX-03`
+
+> B2C: substituído por `[FW-B2C: §10, §10.1, §10.2]`; vale só para Brand Partners até o Framework B2B (`P-LX-05`).
 
 | Fator | Subfator | Nível | Manifestação |
 |---|---|---|---|
@@ -47,6 +54,8 @@ Base: tese LUXURY + STORY e voz do Design System (`docs/specs/design-system.md` 
 §11 e §14), aprovados com o DS.
 
 ## 3. Tom-base (Mestre §8) — `D-LX-04`, `D-LX-05`
+
+> B2C: substituído por `[FW-B2C: §9, §11]`; vale só para Brand Partners até o Framework B2B (`P-LX-05`).
 
 | Dimensão | Direção |
 |---|---|
@@ -73,7 +82,7 @@ lugares.
 | Argumentação | fato → o que muda na vida do Protagonista; mecanismo antes do benefício; limites junto dos benefícios | benefício sem mecanismo; número sem fonte; comparação com concorrentes |
 | Emoção | nasce da cena e de quem está nela | medo, escassez, urgência, ostentação de status |
 | Autoridade | vem do rigor do método e da clareza das regras | autoelogio ("líder", "referência"), credenciais inexistentes |
-| CTAs | verbo + objeto concreto, honestos sobre o passo ("Conhecer a Coleção", "Entender como funciona") | "Compre agora", "Garanta a sua", "Últimas unidades", "Reserve já" |
+| CTAs | verbo + objeto concreto, honestos sobre o passo ("Entender como funciona") | "Compre agora", "Garanta a sua", "Últimas unidades", "Reserve já" |
 
 **Variação pelos 5Ps** (a personalidade não muda; a intensidade sim): PICTURE — sensorial e contemplativo; PROBLEM —
 lúcido, incisivo pela precisão e não pelo medo; PROMISE — revelador e confiante; PROOF — didático, preciso, transparente
@@ -121,23 +130,25 @@ Só os que as duas jornadas usam; o restante é citado direto em cada preenchime
   Club, Membership. Ação e Direito de Uso sempre em português `[F: 02 §1]`.
 - Vitrine pública de Concepts: **Coleção** (recomendação do DS, open question 5).
 - Contraste com **convenções** (o imóvel genérico, o licenciamento superficial), nunca com concorrentes ou categorias de
-  concorrentes nomeados.
+  concorrentes nomeados — **só Brand Partners** (`D-LX-07`). No B2C, as categorias de alternativas são nomeadas para
+  mostrar seus trade-offs `[FW-B2C: §2, P2]`; marcas e empresas, nunca.
 
 ## 7. Registro
 
 | ID | Decisão | Status | Base |
 |---|---|---|---|
 | D-LX-01 | Jornadas B2C e Brand Partners separadas: nenhuma navegação, CTA ou link de uma leva à outra | aprovada em 2026-09-29 | decisão da Luxtory no planejamento da W3B |
-| D-LX-02 | Papel do Mentor e princípios globais (§1) | aprovada em 2026-09-29 | `01` §1, BR-041; DS spec §1; DS ref §8, §11 |
-| D-LX-03 | Personalidade: curadora e arquiteta de experiências (§2) | aprovada em 2026-09-29 | DS spec §1; DS ref §11, §14 |
-| D-LX-04 | Tom-base "conversacional culto", reconciliando o "coloquial" do DS §11 (§3) | aprovada em 2026-09-29 | DS ref §11; Mestre §8 |
-| D-LX-05 | Regras observáveis do tom e variação pelos 5Ps (§3) | aprovada em 2026-09-29 | Mestre §8, §9 |
+| D-LX-02 | Papel do Mentor e princípios globais (§1) | aprovada em 2026-09-29 · só Brand Partners (B2C: `[FW-B2C: §1, §5]`) | `01` §1, BR-041; DS spec §1; DS ref §8, §11 |
+| D-LX-03 | Personalidade: curadora e arquiteta de experiências (§2) | aprovada em 2026-09-29 · só Brand Partners (B2C: `[FW-B2C: §10]`) | DS spec §1; DS ref §11, §14 |
+| D-LX-04 | Tom-base "conversacional culto", reconciliando o "coloquial" do DS §11 (§3) | aprovada em 2026-09-29 · só Brand Partners (B2C: `[FW-B2C: §11]`) | DS ref §11; Mestre §8 |
+| D-LX-05 | Regras observáveis do tom e variação pelos 5Ps (§3) | aprovada em 2026-09-29 · só Brand Partners (B2C: `[FW-B2C: §9, §11]`) | Mestre §8, §9 |
 | D-LX-06 | Nomenclatura pública: termos canônicos + "Coleção" (§6) | aprovada em 2026-09-29 | `02` §1; DS spec §11 (open question 5) |
-| D-LX-07 | Contraste com convenções, nunca com concorrentes nomeados (§6) | aprovada em 2026-09-29 | Mestre §4 (Vilão); REQ-100 |
+| D-LX-07 | Contraste com convenções, nunca com concorrentes nomeados (§6) | aprovada em 2026-09-29 · só Brand Partners (B2C: `[FW-B2C: §2]`) | Mestre §4 (Vilão); REQ-100 |
 
 | ID | Pendência | Bloqueia |
 |---|---|---|
 | P-LX-01 | Provas externas — depoimentos, cases, números, prêmios, imprensa: não existem | qualquer uso de prova social ou dado de mercado |
 | P-LX-02 | Fotografia oficial de Concepts e Residences (P-1 do roadmap); até lá, Frame tipográfico | PICTURE com fotografia real |
-| P-LX-03 | Revisão jurídica da comunicação pública (Ação de SPE para público indeterminado, uso de marcas de terceiros) | go-live das páginas, não o preenchimento |
+| P-LX-03 | Revisão jurídica da comunicação pública (Ação de SPE para público indeterminado, uso de marcas de terceiros; no B2C, também o termo "posse" e a menção comparativa a categorias de alternativas) | go-live das páginas, não o preenchimento |
 | P-LX-04 | Brand guide oficial: quando chegar, entra pelo protocolo de conflito do contrato | nada até lá |
+| P-LX-05 | Framework B2B (Brand Partners), anunciado pelo fundador em 2026-09-30 | harmonização de §1–§3 deste arquivo e de `brand-partners.md`; nada no B2C |
