@@ -59,6 +59,7 @@
 | 3 | Catálogo + Admin | catalog, admin | REQ-020, REQ-027 | 2B | — | R1 | ✅ |
 | 3B | Camada de comunicação: Framework Mestre + preenchimentos B2C e Brand Partners (ADR-0011) | docs (sem slice) | — | 3 | — | R1 | ✅ |
 | 3C | Framework B2C como fonte canônica da comunicação B2C (ADR-0012) | docs + catalog (domain) | — | 3B | — | R1 | ✅ |
+| 3D | Framework Brand Partners como fonte canônica da comunicação Brand Partners (ADR-0013) | docs + catalog (domain) | — | 3C | — | R1 | ⬜ |
 | 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3, 3C | — | R1 | ⬜ |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ |
 | 6 | Interesse — formulário público | ownership | — | 4, 5 | — | R1 | ⛔ P-3 |
@@ -432,6 +433,41 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   `npm run verify` verde.
 - **Goal command**: `/goal npm run verify exits 0 including tests/communication.test.ts and tests/terminology.test.ts, docs/specs/communication/framework-b2c.md matches the pinned sha256, no superseded D-* or H-* is cited outside a register row, and git diff --stat origin/main -- docs/specs/canonical activate-ultronpx.mjs is empty, stop after 3 tries`
 - **Status**: ✅ concluída — PR #21 (squash `7818aab`).
+
+### Wave 3D — Framework Brand Partners como fonte canônica da comunicação Brand Partners
+
+- **Goal**: o Framework Mestre de Estratégia de Comunicação Brand Partners, entregue pela Luxtory em 2026-10-01, é a
+  fonte canônica da comunicação Brand Partners, com o mesmo arranjo do B2C, sem alterar o modelo de negócio
+  ([ADR-0013](../adr/0013-framework-brand-partners-fonte-canonica.md), spec [`communication`](../specs/communication.md)).
+- **IDs**: nenhum dono. Guardrails citados: BR-010…BR-025, BR-040…BR-043, BR-350, BR-374, BR-380, REQ-101, REQ-104,
+  `03` §13.
+- **Scope (slices/files)**:
+  - Framework e aplicação:
+    - `docs/specs/communication/framework-brand-partners.md` — cópia byte a byte, congelada;
+    - `docs/specs/communication/brand-partners.md` — substituído pela aplicação: limites L1–L10, 12 objeções com IDs,
+      mapa de páginas, registro.
+  - Base e método:
+    - `luxtory.md` fica só com guardrails, fatos e nomenclatura; Mentor, personalidade e tom passam aos Frameworks;
+      `D-LX-02` a `D-LX-05` e `D-LX-07` substituídas; `P-LX-05` resolvida;
+    - `framework-mestre.md` substituído.
+  - Decisões: contrato generalizado; ADR-0013.
+  - Testes: `tests/communication.test.ts` com os dois Frameworks; guarda lexical de receita, demanda ou remuneração
+    garantidas no catálogo e nas varreduras.
+  - Ponteiros em `CLAUDE.md`, `AGENTS.md`, índices, DS ref §2/§11 e skill `frontend-design`.
+  - Páginas e CTA Brand Partners seguem fora do escopo de qualquer wave até a superfície entrar no `02` (`P-BP-01`).
+- **Depends on / parallel with**: W3C; sequencial.
+- **Checkpoint**: Framework entregue e "mesmos passos do B2C" pedidos pelo fundador em 2026-10-01 (`D-BP-11`,
+  `D-BP-12` pelo mesmo critério do B2C).
+- **Acceptance criteria**:
+  - `[ADR-0013]`:
+    - sha256 de cada Framework igual ao recebido;
+    - toda referência aos Frameworks resolve;
+    - cada aplicação cita só o próprio Framework;
+    - nenhuma decisão ou hipótese substituída é citada fora dos registros.
+  - `[REQ-101]`: a guarda recusa receita, demanda ou remuneração garantidas.
+  - Canônicos e `activate-ultronpx.mjs` intactos.
+  - `npm run verify` verde.
+- **Goal command**: `/goal npm run verify exits 0 including tests/communication.test.ts and tests/terminology.test.ts, both frameworks match their pinned sha256, no superseded D-* or H-* is cited outside a register row, and git diff --stat origin/main -- docs/specs/canonical activate-ultronpx.mjs is empty, stop after 3 tries`
 
 ### Wave 4 — Discovery público
 

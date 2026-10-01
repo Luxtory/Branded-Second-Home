@@ -1,11 +1,13 @@
 # Spec: communication — camada de comunicação das páginas públicas
 
 > Contrato da camada. Decisões: [ADR-0011](../adr/0011-camada-de-comunicacao-publica.md) ·
-> [ADR-0012](../adr/0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md).
+> [ADR-0012](../adr/0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md) ·
+> [ADR-0013](../adr/0013-framework-brand-partners-fonte-canonica.md).
 > **B2C:** fonte canônica [Framework B2C](communication/framework-b2c.md) (congelado) · aplicação
-> [`b2c.md`](communication/b2c.md). **Brand Partners** (até o Framework B2B, `P-LX-05`): método
-> [Framework Mestre](communication/framework-mestre.md) · [base Luxtory](communication/luxtory.md) ·
-> [Brand Partners](communication/brand-partners.md).
+> [`b2c.md`](communication/b2c.md). **Brand Partners:** fonte canônica
+> [Framework Brand Partners](communication/framework-brand-partners.md) (congelado) · aplicação
+> [`brand-partners.md`](communication/brand-partners.md). **Todas as jornadas:** [base Luxtory](communication/luxtory.md)
+> (guardrails, fatos e nomenclatura).
 
 ## 1. Goal
 
@@ -17,8 +19,9 @@ do zero** e sem inventar fatos.
 ```
 01 / 02 / 03 (fatos, citados direto)  +  Design System (forma da UI)
         ↓
-B2C: Framework B2C (fonte canônica, congelado) → b2c.md (aplicação: limites canônicos, objeções, mapa de páginas)
-Brand Partners: Framework Mestre + base Luxtory + brand-partners.md (até o Framework B2B)
+Framework da jornada (fonte canônica, congelado) → aplicação (limites canônicos, objeções, mapa de páginas)
+  B2C: framework-b2c.md → b2c.md · Brand Partners: framework-brand-partners.md → brand-partners.md
+  + base Luxtory (luxtory.md): guardrails, fatos e nomenclatura de todas as jornadas
         ↓
 brief de página (na spec do módulo da wave que constrói a página)
         ↓
@@ -27,8 +30,8 @@ layout (DS) + UX + copy (i18n do slice) + implementação
 
 ## 2. Non-goals
 
-- Criar, alterar ou interpretar Business Rules, requisitos, funcionalidades, preços, benefícios ou provas. O Framework
-  preenchido **interpreta fatos para comunicar**; não os produz.
+- Criar, alterar ou interpretar Business Rules, requisitos, funcionalidades, preços, benefícios ou provas. A camada
+  **interpreta fatos para comunicar**; não os produz.
 - Materialização da interface (componentes, tokens, tipografia, espaço, breakpoints, acessibilidade): é do
   [Design System](design-system.md).
 - Superfícies logadas (Admin, Área do Titular, Club, Carteira), notificações e e-mails: seguem o DS (expressão
@@ -42,16 +45,15 @@ layout (DS) + UX + copy (i18n do slice) + implementação
 |---|---|---|
 | `01` → `02` → `03` ([canônicos](canonical/)) | o que é verdade no negócio, no produto e na técnica; prevalecem sempre | — |
 | [Design System](design-system.md) ([uso](../reference/design-system.md)) | **como** a interface se materializa | decidir mensagem, posicionamento ou prova |
-| [Framework B2C](communication/framework-b2c.md) | **fonte canônica principal da comunicação B2C**: posicionamento, Protagonista, narrativa, JTBD, MCR, conscientização, 5Ps, regra afetiva, personalidade, tom, brief, testes e regras de execução; prevalece sobre qualquer outro documento de comunicação no B2C | ser editado (só nova versão da Luxtory); criar ou alterar fato do `01`/`02`/`03` |
-| [`b2c.md`](communication/b2c.md) | aplicação do Framework B2C: limites canônicos (L1–L9), respostas às objeções com IDs, mapa de páginas, registro | repetir ou parafrasear o Framework; contrariá-lo |
-| Framework preenchido de Brand Partners ([`luxtory.md`](communication/luxtory.md), [`brand-partners.md`](communication/brand-partners.md)) | **o que** comunicar, para quem, em que ordem, com que narrativa, personalidade, tom, provas e CTA; intenção de UX e de layout | criar regra, funcionalidade, benefício, dado, preço ou prova; especificar componente ou token |
-| [Framework Mestre](communication/framework-mestre.md) | o método das jornadas sem Framework próprio (hoje, só Brand Partners) | ser fonte de fatos sobre a Luxtory; valer para o B2C |
+| Framework da jornada — [B2C](communication/framework-b2c.md) · [Brand Partners](communication/framework-brand-partners.md) | **fonte canônica principal da comunicação da jornada**: posicionamento, Protagonista, narrativa, JTBD, MCR, conscientização, 5Ps, regra afetiva, personalidade, tom, brief, testes e regras de execução; prevalece sobre qualquer outro documento de comunicação da jornada | ser editado (só nova versão da Luxtory); criar ou alterar fato do `01`/`02`/`03` |
+| Aplicação — [`b2c.md`](communication/b2c.md) · [`brand-partners.md`](communication/brand-partners.md) | limites canônicos (L1…), respostas às objeções com IDs, mapa de páginas, registro do que o Framework não decide | repetir ou parafrasear o Framework; contrariá-lo |
+| [`luxtory.md`](communication/luxtory.md) | guardrails, fatos e nomenclatura de todas as jornadas | redefinir Mentor, personalidade ou tom (são dos Frameworks) |
 | Brief de página (spec do módulo da wave) | a página: seções, mensagens, provas, intenção de layout, dados, aceite | reposicionar a marca |
 | i18n do slice (`src/features/<slice>/presentation/i18n/`) | a copy final pt-BR | — |
 | Lab do DS (`src/design-system/lab/`) | demonstração visual | **nunca** é fonte de copy nem de posicionamento |
 
-Design System e Framework preenchido são pares com domínios separados: onde se tocam (hierarquia visual), o Framework
-dá a intenção e o DS dá a forma.
+Design System e Framework são pares com domínios separados: onde se tocam (hierarquia visual), o Framework dá a
+intenção e o DS dá a forma.
 
 **Protocolo de conflito** — entre quaisquer fontes, inclusive um brand guide futuro: **detectar → comparar as
 responsabilidades → propor reconciliação → aprovar → atualizar a fonte correspondente.** Nenhum documento sobrescreve
@@ -64,12 +66,13 @@ pendência (`P-*`) e só a parte dependente fica bloqueada.
 |---|---|
 | [`communication/framework-b2c.md`](communication/framework-b2c.md) | Framework Mestre de Estratégia de Comunicação B2C — Luxtory Branded Second Home, recebido em 2026-09-30, cópia byte a byte (sha256 `7b0ec6c1b8eb828f509b46e77c1c8f2205825190412c9f4aa5176e7a4dab5577`, fixado em teste). Congelado: nunca é editado |
 | [`communication/b2c.md`](communication/b2c.md) | aplicação do Framework B2C: limites canônicos, objeções com IDs, mapa de páginas e registro (Owner e Co-Owner como modalidades do mesmo Protagonista) |
-| [`communication/framework-mestre.md`](communication/framework-mestre.md) | versão aprovada do Framework Mestre genérico (método), versionada pelo Git; vale só para jornadas sem Framework próprio. Alterá-la exige revisão de impacto nos preenchimentos |
-| [`communication/luxtory.md`](communication/luxtory.md) | guardrails e fatos transversais (todas as jornadas); Mentor, personalidade e tom-base só para Brand Partners até o Framework B2B |
-| [`communication/brand-partners.md`](communication/brand-partners.md) | Protagonista Brand Partner e jornada Brand Partners |
+| [`communication/framework-brand-partners.md`](communication/framework-brand-partners.md) | Framework Mestre de Estratégia de Comunicação Brand Partners — Luxtory Branded Second Home, recebido em 2026-10-01, cópia byte a byte (sha256 `b97c8ae37dc911d7fa17d947f7fa5f622c17bd30e913bd672f46bd68ac2364a7`, fixado em teste). Congelado: nunca é editado |
+| [`communication/brand-partners.md`](communication/brand-partners.md) | aplicação do Framework Brand Partners: limites canônicos, objeções com IDs, mapa de páginas e registro |
+| [`communication/luxtory.md`](communication/luxtory.md) | guardrails, fatos e nomenclatura de todas as jornadas |
+| [`communication/framework-mestre.md`](communication/framework-mestre.md) | método genérico da W3B, substituído pelos Frameworks das jornadas (ADR-0013); não vale para nenhuma jornada |
 
-Um Protagonista novo (ex.: Investor) ganha um arquivo com o mesmo esqueleto de `brand-partners.md` — ou, se vier com
-Framework próprio, o mesmo arranjo do B2C (Framework congelado + aplicação) —, sem tocar nos demais.
+Um Protagonista novo (ex.: Investor) só ganha comunicação quando a Luxtory entregar o Framework dele, com o mesmo
+arranjo (Framework congelado + aplicação), sem tocar nos demais. Até lá, nada é presumido.
 
 ## 5. Classificação das informações
 
@@ -79,24 +82,25 @@ Framework próprio, o mesmo arranjo do B2C (Framework congelado + aplicação) �
 | `D-LX-nn` · `D-B2C-nn` · `D-BP-nn` | **Decisão de comunicação/branding** — julgamento estratégico sustentado pelo contexto | nasce como *proposta* com justificativa; só é usada como decisão depois de *aprovada* (data no registro) |
 | `H-B2C-nn` · `H-BP-nn` | **Hipótese** sobre o público — interpretação ainda não validada | orienta a narrativa, **nunca** é afirmada como fato na página; diz como validar |
 | `P-LX-nn` · `P-B2C-nn` · `P-BP-nn` | **Pendência** — depende de insumo externo (foto, preço, parceira autorizada, superfície no 02…) | bloqueia só o que depende dela |
-| `[FW-B2C: §8 P4]` | **Diretriz do Framework B2C** — referência a uma seção do Framework (tokens `§<n>`, `§<n.m>` e `P1`–`P5`) | referenciar, nunca parafrasear; não é fato de negócio (fatos seguem `[F: …]`) |
+| `[FW-B2C: §8 P4]` · `[FW-BP: §8 P4]` | **Diretriz do Framework da jornada** — referência a uma seção do Framework (tokens `§<n>`, `§<n.m>` e `P1`–`P5`) | referenciar, nunca parafrasear; não é fato de negócio (fatos seguem `[F: …]`) |
 
-- Não inventar fatos ≠ não exercer julgamento: o que os canônicos não decidem (ênfase de posicionamento, antagonista,
-  crença final, expressão do desejo) é **proposto** como decisão, com recomendação, e levado à aprovação.
+- Não inventar fatos ≠ não exercer julgamento: o que os canônicos e os Frameworks não decidem é **proposto** como
+  decisão, com recomendação, e levado à aprovação.
 - D e H **nunca** viram Business Rule, requisito ou funcionalidade.
-- Cada preenchimento mantém o próprio registro de D/H/P no fim do arquivo.
-- Nível de conscientização: no B2C, escala de Schwartz e Disposição para mudança identificadas separadamente
-  `[FW-B2C: §3.1, §7, §7.1]`; nas demais jornadas, descrito em texto, por público e por página.
+- Cada aplicação mantém o próprio registro de D/H/P no fim do arquivo.
+- Nível de conscientização: escala de Schwartz e Disposição para mudança identificadas separadamente, nas duas
+  jornadas `[FW-B2C: §3.1, §7, §7.1]` `[FW-BP: §3.1, §7, §7.1]`.
 - Linha de registro substituída fica com status `substituída em <data> → <destino>` e não é citada fora dos registros.
 
 ## 6. Protagonistas e jornadas
 
-- **Uma página, um Protagonista.** A marca é sempre o Mentor. Personalidade e tom: no B2C, `[FW-B2C: §10, §11]`; em
-  Brand Partners, [`luxtory.md`](communication/luxtory.md) §2–§3 até o Framework B2B (`P-LX-05`).
+- **Uma página, um Protagonista.** A marca é sempre o Mentor. Personalidade e tom vêm do Framework da jornada:
+  B2C `[FW-B2C: §10, §11]`; Brand Partners `[FW-BP: §10, §11]`.
 - **Jornadas B2C e Brand Partners são separadas:** navegação, CTAs e links de uma nunca levam à outra (`D-LX-01`).
 - **B2C é um único Protagonista:** Owner e Co-Owner são modalidades do mesmo adquirente final (BR-005), com peso
   equivalente (REQ-103).
-- Superfície nova (ex.: páginas e CTA de Brand Partners, que o `02` §2 não prevê) entra no `02` antes do código.
+- Superfície nova (ex.: páginas e CTA de Brand Partners, que o `02` §2 não prevê) entra no `02` antes do código
+  (`P-BP-01`).
 
 ## 7. 5Ps e Design System
 
@@ -106,14 +110,15 @@ Opening Frame, Scene, Sequence e Evidence ([DS ref §2](../reference/design-syst
 estágio pode ser materializado por composições diferentes. Os 5Ps não são componentes nem estrutura de DOM.
 
 Única convenção fixa: **nas Homes que usam o arco completo, PICTURE = Hero (Opening Frame)** e a progressão seguinte
-parte de PROBLEM. Na Home B2C, a jornada começa em Unaware `[FW-B2C: §8 P1, §13]`. Páginas de Discovery, explicação ou produto executam só os estágios necessários à sua função, conforme
-o mapa de jornada do Protagonista.
+parte de PROBLEM. Nas Homes institucionais das duas jornadas, a página começa em Unaware `[FW-B2C: §8 P1, §13]`
+`[FW-BP: §8 P1, §12]`. Páginas de Discovery, explicação ou produto executam só os estágios necessários à sua função,
+conforme o mapa de jornada do Protagonista.
 
 ## 8. Brief de página
 
-Escrito na spec do módulo da wave que constrói a página (ex.: `docs/specs/catalog.md` na W4), no mesmo PR. **B2C:**
-os campos do Brief Narrativo `[FW-B2C: §12]` mais os itens 1, 4, 5, 6, 7 e 8 abaixo. **Brand Partners:** os itens
-abaixo. Campos:
+Escrito na spec do módulo da wave que constrói a página (ex.: `docs/specs/catalog.md` na W4), no mesmo PR, com os
+campos do Brief Narrativo do Framework da jornada (§12: `[FW-B2C: §12]` · `[FW-BP: §12]`) mais os itens 1, 4, 5, 6, 7 e
+8 abaixo:
 
 1. Página, jornada e Protagonista (link para a entrada no mapa de jornada).
 2. Função da página e nível de conscientização de entrada e de saída.
@@ -129,11 +134,10 @@ abaixo. Campos:
 ## 9. Fluxo de trabalho para uma página pública
 
 1. Ler este contrato.
-2. Achar a página e o Protagonista no mapa de jornada (B2C: [`b2c.md`](communication/b2c.md) §8). Sem entrada
-   aprovada: parar e registrar pendência — não improvisar.
-3. **B2C:** ler o [Framework B2C](communication/framework-b2c.md) inteiro, [`b2c.md`](communication/b2c.md) e os
-   guardrails de [`luxtory.md`](communication/luxtory.md) §4. **Brand Partners:** ler o preenchimento,
-   [`luxtory.md`](communication/luxtory.md) e, no Mestre, §6 (5Ps), §8 (variação de tom) e §9 (regras de execução).
+2. Achar a página e o Protagonista no mapa de jornada da aplicação (B2C: [`b2c.md`](communication/b2c.md) §8; Brand
+   Partners: [`brand-partners.md`](communication/brand-partners.md) §7). Sem entrada aprovada: parar e registrar
+   pendência — não improvisar.
+3. Ler o Framework da jornada inteiro, a aplicação e os guardrails de [`luxtory.md`](communication/luxtory.md) §4.
 4. Escrever o brief (§8) na spec do módulo.
 5. Materializar com o [Design System](../reference/design-system.md) e escrever a copy no i18n do slice.
 6. Verificar (§10). Faltou decisão: registrar como proposta ou pendência e perguntar; nunca inventar.
@@ -144,33 +148,33 @@ abaixo. Campos:
 - [ ] Estágios dos 5Ps = os do mapa; em Home com arco completo, o Hero cumpre PICTURE.
 - [ ] Todo fato cita fonte (IDs); só decisões **aprovadas**; nenhuma hipótese ou pendência afirmada como fato.
 - [ ] Nenhum número, preço, prova social, depoimento, dado, prêmio ou parceira inventados; valores de parâmetro
-      (Membership, Fee, multiplicador…) não fixados na copy.
+      (Membership, Fee, multiplicador…) e de remuneração da Brand Partner não fixados na copy.
 - [ ] Terminologia do `02` §1 e guardrails de [`luxtory.md`](communication/luxtory.md#4-guardrails-compartilhados)
       (varredura de terminologia verde).
 - [ ] Owner e Co-Owner com peso equivalente quando aparecem juntos (REQ-103).
-- [ ] B2C: os 6 Testes de Validação `[FW-B2C: §13]`, as regras de execução `[FW-B2C: §14]` e as regras de mensagem
-      `[FW-B2C: §16]` atendidos; limites L1–L9 de [`b2c.md`](communication/b2c.md) §2 respeitados.
-- [ ] B2C: tom derivado conforme `[FW-B2C: §11]`; sistema afetivo por 5P `[FW-B2C: §9]`; no máximo dois traços OCEAN,
-      nunca Volatilidade e Retraimento juntos `[FW-B2C: §10.1, §10.2]` (D-B2C-12). Brand Partners: tom-base + variação
-      do estágio + modulação do Protagonista; personalidade estável.
+- [ ] Os 6 Testes de Validação (§13) e as regras de execução (§14) do Framework da jornada atendidos — no B2C, também
+      as regras de mensagem `[FW-B2C: §16]`; limites da aplicação (§2 de [`b2c.md`](communication/b2c.md) ou de
+      [`brand-partners.md`](communication/brand-partners.md)) respeitados.
+- [ ] Tom derivado conforme o §11 do Framework; sistema afetivo pelo §9; no máximo dois traços OCEAN, nunca
+      Volatilidade e Retraimento juntos (§10.1, §10.2; no B2C, D-B2C-12).
 - [ ] Design System: só tokens e `lx-*`; gate `expectResponsive`; capturas a 390 e 1440 px no PR.
 
 ## 11. Manutenção
 
-- **Framework B2C:** nova versão da Luxtory troca o arquivo inteiro, atualiza o sha256 em `tests/communication.test.ts`
-  e revisa `b2c.md` (referências ao Framework, limites e registro), no mesmo PR.
-- **Mestre:** mudança só com nova versão aprovada, seguida de revisão de impacto nos preenchimentos.
-- **Canônicos:** nova versão do `01`/`02`/`03` inclui revisão das citações nos preenchimentos.
-- **Preenchimentos:** decisão nova ou alterada passa pelo registro (proposta → aprovada, com data).
+- **Frameworks:** nova versão da Luxtory troca o arquivo inteiro, atualiza o sha256 em `tests/communication.test.ts`
+  e revisa a aplicação da jornada (referências ao Framework, limites e registro), no mesmo PR.
+- **Canônicos:** nova versão do `01`/`02`/`03` inclui revisão das citações nas aplicações e em `luxtory.md`.
+- **Aplicações e base:** decisão nova ou alterada passa pelo registro (proposta → aprovada, com data).
 - **Brand guide, fotografia, parceiras autorizadas:** entram pelo protocolo de conflito da §3.
 - Integridade mecânica: `tests/communication.test.ts` (IDs canônicos citados existem, links internos resolvem, seções
-  mínimas presentes, referências D/H/P definidas, sha256 do Framework B2C, referências ao Framework resolvem, nenhuma
-  linha substituída citada fora dos registros).
+  mínimas presentes, referências D/H/P definidas, sha256 de cada Framework, referências aos Frameworks resolvem e cada
+  aplicação cita só o seu, nenhuma linha substituída citada fora dos registros).
 
 ## 12. References
 
 - [ADR-0011](../adr/0011-camada-de-comunicacao-publica.md) ·
-  [ADR-0012](../adr/0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md) · [ADR-0003](../adr/0003-design-system-camada-compartilhada.md)
-  · [ADR-0009](../adr/0009-superficies-de-produto-mobile-first.md)
+  [ADR-0012](../adr/0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md) ·
+  [ADR-0013](../adr/0013-framework-brand-partners-fonte-canonica.md) ·
+  [ADR-0003](../adr/0003-design-system-camada-compartilhada.md) · [ADR-0009](../adr/0009-superficies-de-produto-mobile-first.md)
 - Canônicos: `01` §1–§5, §37 · `02` §1, §2, §16 · `03` §13
-- [`docs/plan/implementation-waves.md`](../plan/implementation-waves.md) → Waves 3B e 3C
+- [`docs/plan/implementation-waves.md`](../plan/implementation-waves.md) → Waves 3B, 3C e 3D

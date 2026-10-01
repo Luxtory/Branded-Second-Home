@@ -33,7 +33,7 @@ citing the canonical IDs):
 **Cross-cutting specs** (not a `src/features/` slice):
 
 - [design-system](design-system.md) — Design System Luxtory (LUXURY + STORY): tokens, tipografia, componentes do R1
-- [communication](communication.md) — camada de comunicação das páginas públicas — ADR-0011, ADR-0012. B2C: fonte
-  canônica [Framework B2C](communication/framework-b2c.md) (congelado) e sua aplicação
-  [`b2c.md`](communication/b2c.md); Brand Partners: Framework Mestre, base Luxtory e preenchimento em
-  [`communication/`](communication/)
+- [communication](communication.md) — camada de comunicação das páginas públicas — ADR-0011, ADR-0012, ADR-0013.
+  Fontes canônicas congeladas por jornada: [Framework B2C](communication/framework-b2c.md) (aplicação
+  [`b2c.md`](communication/b2c.md)) e [Framework Brand Partners](communication/framework-brand-partners.md) (aplicação
+  [`brand-partners.md`](communication/brand-partners.md)); base transversal [`luxtory.md`](communication/luxtory.md)

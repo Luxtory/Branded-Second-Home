@@ -56,8 +56,9 @@ conflict, 01 prevails (BR-380, REQ-104).
   apply to this repository.
 - **Existing content is only extended** (additions, or filling `<placeholders>` /
   `[CUSTOMIZE]` markers) — existing information is never removed.
-  **Exception authorized by the founder (2026-09-30):** B2C communication that diverges from the B2C Framework is
-  replaced, not extended; the trail stays in the registers of `docs/specs/communication/` and in Git (ADR-0012).
+  **Exception authorized by the founder (2026-09-30, extended to Brand Partners on 2026-10-01):** communication that
+  diverges from its journey's Framework (B2C or Brand Partners) is replaced, not extended; the trail stays in the
+  registers of `docs/specs/communication/` and in Git (ADR-0012, ADR-0013).
 - **`docs/plan/implementation-waves.md`**: when deriving the Luxtory plan with `/waves`, keep the
   current content verbatim at the end of the file as "Anexo A — plano do template (concluído)".
 - **Platform and cost:** [ADR-0002](docs/adr/0002-plataforma-e-adaptacoes-economicas.md) —
@@ -109,16 +110,21 @@ Source of truth for every user-facing UI (**LUXTORY = LUXURY + STORY**). Read be
 
 Source of truth for what every **public page** communicates — positioning, narrative, personality, tone, proof and
 CTAs ([ADR-0011](docs/adr/0011-camada-de-comunicacao-publica.md),
-[ADR-0012](docs/adr/0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md)). Read before specifying or building any
-public page:
+[ADR-0012](docs/adr/0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md),
+[ADR-0013](docs/adr/0013-framework-brand-partners-fonte-canonica.md)). Read before specifying or building any public
+page:
 
-- Contract: [`docs/specs/communication.md`](docs/specs/communication.md) — precedence, F/D/H/P/FW-B2C classification,
-  page brief, workflow and PR checklist.
+- Contract: [`docs/specs/communication.md`](docs/specs/communication.md) — precedence, F/D/H/P/FW-B2C/FW-BP
+  classification, page brief, workflow and PR checklist.
 - **B2C:** the canonical source is `docs/specs/communication/framework-b2c.md` — the Luxtory B2C Framework, frozen
   (verbatim, sha256-pinned; changes only via a new Luxtory version). Its application — canonical limits L1–L9,
   objection answers by ID, page map and register — is `b2c.md`; cross-journey guardrails in `luxtory.md` §4.
-- **Brand Partners** (until the B2B Framework, `P-LX-05`): method `framework-mestre.md` · Mentor, personality and tone
-  in `luxtory.md` §1–§3 · fill and journey map in `brand-partners.md`.
+- **Brand Partners:** the canonical source is `docs/specs/communication/framework-brand-partners.md` — the Luxtory
+  Brand Partners Framework, frozen (verbatim, sha256-pinned). Its application — canonical limits L1–L10, objection
+  answers by ID, page map and register — is `brand-partners.md`. Pages and CTA wait for a Brand Partners surface in
+  the 02 (`P-BP-01`).
+- Mentor, personality and tone come from each journey's Framework; `luxtory.md` keeps only cross-journey guardrails
+  (§4), facts (§5) and naming (§6). The generic `framework-mestre.md` is superseded and applies to no journey.
 - Facts come only from 01/02/03, cited by ID; only **approved** decisions are used; hypotheses and pending items are
   never stated as facts. The B2C and Brand Partners journeys never link to each other.
 - The 5Ps are journey architecture, not a page template; the only fixed convention is PICTURE = Hero on Homes that
@@ -199,7 +205,8 @@ always keep it updated:**
 - `src/design-system/` — shared presentation layer (tokens, CSS `lx-*`, fonts, Lab); no domain (ADR-0003)
 - `docs/specs/` — feature specs (Spec-Driven)
 - `docs/specs/canonical/` — frozen canonical documents 01/02/03 (see above)
-- `docs/specs/communication/` — Framework Mestre and the approved communication fills (see Communication)
+- `docs/specs/communication/` — the frozen communication Frameworks (B2C, Brand Partners), their applications and the
+  cross-journey base (see Communication)
 - `docs/plan/` — implementation wave roadmap (`implementation-waves.md`, see `/waves`)
 - `docs/adr/` — Architecture Decision Records (Michael Nygard format)
 - `docs/api/` — OpenAPI / AsyncAPI contracts

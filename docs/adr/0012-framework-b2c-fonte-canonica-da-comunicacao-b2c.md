@@ -1,7 +1,7 @@
 # 0012. Framework B2C como fonte canônica principal da comunicação B2C
 
 - **Date**: 2026-10-01
-- **Status**: Accepted
+- **Status**: Accepted — complementado pelo [ADR-0013](0013-framework-brand-partners-fonte-canonica.md) (Brand Partners; `P-LX-05` resolvida)
 - **Deciders**: Luxtory (fundador), Engenharia
 - **Tags**: communication, documentation, frontend
 

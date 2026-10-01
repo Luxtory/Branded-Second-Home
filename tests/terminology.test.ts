@@ -9,8 +9,9 @@ const FORBIDDEN = [
   /\bdi[aá]rias?\b/i,
   /\b(rentabilidade|valoriza[çc][ãa]o|renda) garantid[ao]s?\b/i,
   /\bretorno garantido\b/i,
-  // Alinhados a src/features/catalog/domain/terminology.ts (ADR-0012): promessa de retorno e disponibilidade sem limite.
-  /(?<![\p{L}\p{N}])(rentabilidade|valoriza[çc][ãa]o|renda|retorno|lucro|rendimento|liquidez)\s+(garantid|assegurad)[ao]s?(?![\p{L}\p{N}])/iu,
+  // Alinhados a src/features/catalog/domain/terminology.ts (ADR-0012, ADR-0013): promessa de retorno e disponibilidade
+  // sem limite.
+  /(?<![\p{L}\p{N}])(rentabilidade|valoriza[çc][ãa]o|renda|retorno|lucro|rendimento|liquidez|receitas?|vendas|demanda|escala|royalt(?:y|ies)|remunera[çc][ãa]o)\s+(garantid|assegurad)[ao]s?(?![\p{L}\p{N}])/iu,
   /(?<![\p{L}\p{N}])(disponibilidade|uso)s?\s+(garantid|irrestrit|ilimitad)[ao]s?(?![\p{L}\p{N}])/iu,
 ];
 const ROOTS = ['src', 'docs/api'];

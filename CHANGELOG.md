@@ -56,6 +56,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Checagem de terminologia do catálogo (Admin): passa a recusar também disponibilidade ou uso garantidos, irrestritos
   ou ilimitados (REQ-101; Framework B2C §14, ADR-0012). As varreduras de `src/` e do Design System usam os mesmos
   padrões do catálogo.
+- Checagem de terminologia do catálogo (Admin): passa a recusar também receita, vendas, demanda, escala, royalty ou
+  remuneração garantidas ou asseguradas (REQ-101, BR-374; Framework Brand Partners §8, ADR-0013), com as mesmas
+  varreduras de `src/` e do Design System.
 
 ### Deprecated
 - ...
