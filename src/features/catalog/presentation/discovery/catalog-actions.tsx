@@ -39,7 +39,7 @@ export function CatalogActions({
     <>
       {sentence === undefined ? null : <p className="lx-lead">{sentence}</p>}
       {catalog === null && !howItWorks ? null : (
-        <div className="lx-scene__actions">
+        <div className="lx-actions-stack">
           {catalog === null ? null : (
             <ActionLink primary href={catalog.href} label={catalog.label} />
           )}

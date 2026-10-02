@@ -38,6 +38,13 @@ const triad = {
   belonging: { lead: 'Pertencimento ', turn: 'para chamar de seu.' },
 } satisfies Record<string, Headline>;
 
+/** As três palavras da tríade, como na copy — rótulos dos desenhos (aria-hidden) e da linha de valores. */
+const values = {
+  patrimony: 'Patrimônio',
+  freedom: 'Liberdade',
+  belonging: 'Pertencimento',
+};
+
 const modality = {
   owner: 'Owner',
   co_owner: 'Co-Owner',
@@ -113,6 +120,7 @@ export const discoveryMessages = {
   actions,
   qualification,
   triad,
+  values,
 
   home: {
     // Copy da Home escrita pelo fundador (D-B2C-18), com as decisões da revisão de 2026-10-01 e a nomenclatura pública
@@ -137,6 +145,8 @@ export const discoveryMessages = {
       values: 'Patrimônio. Liberdade. Pertencimento.',
       tension:
         'Você quer os três, mas as alternativas ainda costumam fazer você abrir mão de uma parte importante para ter as outras.',
+      /** Nome acessível da sequência das alternativas (não visível; distinto do título da seção). */
+      alternativesLabel: 'As alternativas',
       alternatives: [
         {
           title: 'Propriedade tradicional',
@@ -447,6 +457,8 @@ export const discoveryMessages = {
       title: 'Como funciona',
       text: 'A arquitetura que reúne patrimônio, liberdade e pertencimento — e as regras que a sustentam, em detalhe.',
     },
+    /** Rótulo do índice dos três capítulos (navegação na página). */
+    index: 'Capítulos',
     chain: {
       // Mecanismo `[FW-B2C: §2, §8 P4]`; fatos: luxtory.md §5, BR-004, BR-031, BR-053, BR-300, BR-301 (L9).
       title: { lead: 'Do lifestyle ', turn: 'à Second Home.' } satisfies Headline,

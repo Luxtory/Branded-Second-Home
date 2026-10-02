@@ -8,7 +8,7 @@ const { qualification } = text;
 
 function List({ items }: { readonly items: readonly string[] }) {
   return (
-    <ul className="lx-prose">
+    <ul className="lx-rows">
       {items.map((item) => (
         <li className="lx-body" key={item}>
           {nb(item)}
@@ -20,8 +20,8 @@ function List({ items }: { readonly items: readonly string[] }) {
 
 /**
  * PUSH `[FW-B2C: §8 P5]`: para quem faz e para quem pode não fazer sentido, lado a lado com o mesmo peso (`lx-pair`),
- * e o próximo passo. A lista base é a mesma em todas as páginas; `extraNotFits` recebe os complementos factuais da
- * página (b2c.md §8).
+ * cada critério na sua linha, e o próximo passo num fecho. A lista base é a mesma em todas as páginas; `extraNotFits`
+ * recebe os complementos factuais da página (b2c.md §8).
  */
 export function Qualification({
   titleId,
@@ -34,23 +34,21 @@ export function Qualification({
   readonly children: ReactNode;
 }) {
   return (
-    <Scene titleId={titleId} ground="wash">
-      <div className="lx-col-content lx-scene__body">
-        <h2 id={titleId} className="lx-display-l">
-          <HeadlineText headline={qualification.title} />
-        </h2>
-        <div className="lx-pair">
-          <div className="lx-pair__item">
-            <h3 className="lx-display-s">{qualification.fitsTitle}</h3>
-            <List items={qualification.fits} />
-          </div>
-          <div className="lx-pair__item">
-            <h3 className="lx-display-s">{qualification.notFitsTitle}</h3>
-            <List items={[...qualification.notFits, ...extraNotFits]} />
-          </div>
+    <Scene titleId={titleId} ground="wash" chapter>
+      <h2 id={titleId} className="lx-place-wide lx-display-xl">
+        <HeadlineText headline={qualification.title} />
+      </h2>
+      <div className="lx-place-full lx-pair">
+        <div className="lx-pair__item">
+          <h3 className="lx-display-s">{qualification.fitsTitle}</h3>
+          <List items={qualification.fits} />
         </div>
-        {children}
+        <div className="lx-pair__item">
+          <h3 className="lx-display-s">{qualification.notFitsTitle}</h3>
+          <List items={[...qualification.notFits, ...extraNotFits]} />
+        </div>
       </div>
+      <div className="lx-place-full lx-coda">{children}</div>
     </Scene>
   );
 }

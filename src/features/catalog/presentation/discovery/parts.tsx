@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Icon } from '@/design-system/react';
+import { Icon, TriadDrawing, type TriadVertex } from '@/design-system/react';
 import type { EditionModality } from '../../domain/catalog';
 import {
   discoveryMessages as text,
@@ -50,16 +50,19 @@ export function Paragraphs({
 export function ModalityPairView({
   pair,
   level,
+  deed = false,
 }: {
   readonly pair: ModalityPair;
   readonly level: Level;
+  /** Duas folhas altas do mesmo jogo de pranchas, divididas por um filete vertical. */
+  readonly deed?: boolean;
 }) {
   const sides = [
     { key: 'owner', title: text.modality.owner, lines: pair.owner },
     { key: 'co-owner', title: text.modality.co_owner, lines: pair.coOwner },
   ];
   return (
-    <div className="lx-pair">
+    <div className={deed ? 'lx-pair lx-pair--deed' : 'lx-pair'}>
       {sides.map((side) => (
         <div className="lx-pair__item" key={side.key}>
           <Heading level={level} className="lx-display-s">
@@ -148,5 +151,64 @@ export function ModalityText({ value }: { readonly value: EditionModality }) {
       {text.modality.join}
       {coOwner}
     </>
+  );
+}
+
+/** Marker de capítulo (texto real, no máximo um por Scene). */
+export function Marker({ parts }: { readonly parts: string | readonly string[] }) {
+  const list = typeof parts === 'string' ? [parts] : parts;
+  return (
+    <p className="lx-marker">
+      {list.map((part) => (
+        <span key={part}>{part}</span>
+      ))}
+    </p>
+  );
+}
+
+/**
+ * Cabeçalho de capítulo: o número do capítulo (metadado, fora da leitura), o marker e a tríade em miniatura com o
+ * vértice do capítulo em destaque.
+ */
+export function ChapterHead({
+  numeral,
+  marker,
+  focus,
+}: {
+  readonly numeral?: string;
+  readonly marker: string | readonly string[];
+  readonly focus?: TriadVertex;
+}) {
+  return (
+    <div className="lx-chapter-head">
+      {numeral === undefined ? null : (
+        <span className="lx-numeral" aria-hidden="true">
+          {numeral}
+        </span>
+      )}
+      <Marker parts={marker} />
+      {focus === undefined ? null : <TriadDrawing size="mini" focus={focus} />}
+    </div>
+  );
+}
+
+/** "Patrimônio. Liberdade. Pertencimento." em três palavras, cada uma sob a sua linha de medida (`lx-values`). */
+export function ValuesLine({
+  text,
+  joined = false,
+  className = '',
+}: {
+  readonly text: string;
+  readonly joined?: boolean;
+  readonly className?: string;
+}) {
+  const words = text.split(/(?<=\.)\s+/);
+  const variant = joined ? 'lx-values lx-values--joined' : 'lx-values lx-values--apart';
+  return (
+    <p className={`${variant} ${className}`.trim()}>
+      {words.map((word) => (
+        <span key={word}>{word}</span>
+      ))}
+    </p>
   );
 }

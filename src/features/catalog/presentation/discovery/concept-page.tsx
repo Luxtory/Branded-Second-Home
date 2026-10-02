@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
-import { ConceptCredit, Evidence, Scene, TypographicFrame } from '@/design-system/react';
+import { ConceptCredit, Evidence, HorizonDrawing, Scene } from '@/design-system/react';
 import {
   distinctRegions,
   publicConceptId,
@@ -10,7 +10,7 @@ import { postgresPublicCatalogReader as reader } from '../../infrastructure/post
 import { discoveryMessages as text } from '../i18n/discovery-pt-br';
 import { HeadlineText } from './headline';
 import { toParagraphs } from './paragraphs';
-import { ActionLink, ModalityText, Paragraphs } from './parts';
+import { ActionLink, Marker, ModalityText, Paragraphs } from './parts';
 import { discoveryPaths } from './paths';
 import { Qualification } from './qualification';
 import { readPublicCatalog } from './read';
@@ -27,9 +27,9 @@ export const loadPublicConcept = cache(async (conceptId: string) => {
 });
 
 /** Texto registrado, em parágrafos, como está (BR-013, BR-031; spec catalog §13.7). */
-function Registered({ value }: { readonly value: string }) {
+function Registered({ value, className }: { readonly value: string; readonly className: string }) {
   return (
-    <div className="lx-prose">
+    <div className={className}>
       {toParagraphs(value).map((paragraph) => (
         <p className="lx-body" key={paragraph}>
           {paragraph}
@@ -39,27 +39,39 @@ function Registered({ value }: { readonly value: string }) {
   );
 }
 
-/** Oferta: cada Edition como registrada; sem Edition, sem oferta comercial (BR-004, REQ-022). */
+/**
+ * Oferta: cada Edition como uma ficha — a região, a modalidade e as condições como registradas; sem Edition, sem oferta
+ * comercial (BR-004, REQ-022).
+ */
 function Offer({ concept }: { readonly concept: PublicConcept }) {
-  if (concept.editions.length === 0) return <p className="lx-lead">{copy.offer.none}</p>;
+  if (concept.editions.length === 0) {
+    return (
+      <div className="lx-place-full lx-coda">
+        <p className="lx-display-m">{copy.offer.none}</p>
+      </div>
+    );
+  }
   return (
     <>
-      <p className="lx-lead">{copy.offer.lead}</p>
-      <ul className="lx-blocks">
-        {concept.editions.map((edition) => (
-          <li className="lx-blocks__item" key={edition.id}>
-            <h3 className="lx-display-s">{edition.region}</h3>
+      {concept.editions.map((edition, index) => (
+        <article className="lx-place-full lx-qa lx-edition" key={edition.id}>
+          <div className="lx-edition__head">
+            <span className="lx-numeral" aria-hidden="true">
+              {String(index + 1).padStart(2, '0')}
+            </span>
+            <h3 className="lx-display-l">{edition.region}</h3>
+          </div>
+          <div className="lx-qa__answer">
             <Evidence
-              inline
               items={[
                 { label: copy.offer.modality, value: <ModalityText value={edition.modality} /> },
               ]}
             />
             <h4 className="lx-label">{copy.offer.conditions}</h4>
-            <Registered value={edition.commercialConditions} />
-          </li>
-        ))}
-      </ul>
+            <Registered value={edition.commercialConditions} className="lx-prose" />
+          </div>
+        </article>
+      ))}
     </>
   );
 }
@@ -94,56 +106,56 @@ export async function ConceptPage({ conceptId }: { readonly conceptId: string })
 
   return (
     <DiscoverySite current="collection">
-      <Scene
-        titleId="concept"
-        ground="night"
-        variant="opening"
-        backdrop={<TypographicFrame kind="establishing" scrim />}
-      >
-        <div className="lx-col-content lx-scene__body">
-          {regions.length === 0 ? null : (
-            <p className="lx-marker">
-              {regions.map((region) => (
-                <span key={region}>{region}</span>
-              ))}
-            </p>
-          )}
-          <h1 id="concept" className="lx-display-xl">
-            {concept.title}
-          </h1>
+      {/* Capa de monografia: o nome em escala de monumento, a região real e a marca sobre a régua do grid. */}
+      <Scene titleId="concept" ground="night" chapter>
+        {regions.length === 0 ? null : (
+          <div className="lx-place-full">
+            <Marker parts={regions} />
+          </div>
+        )}
+        <h1 id="concept" className="lx-place-wide lx-display-2xl">
+          {concept.title}
+        </h1>
+        <div className="lx-place-full lx-opening-row">
+          <HorizonDrawing sun={false} />
           <ConceptCredit lead={copy.credit} brandName={concept.brandName} />
+          {concept.editions.length === 0 ? null : (
+            <ActionLink href="#editions" label={copy.offer.title} />
+          )}
         </div>
       </Scene>
 
-      <Scene titleId="proposta" ground="paper">
-        <div className="lx-col-text lx-scene__body">
-          <h2 id="proposta" className="lx-display-m">
+      {/* A especificação registrada, com o primeiro parágrafo como abertura editorial. */}
+      <Scene titleId="proposta" ground="paper" chapter>
+        <div className="lx-place-aside lx-sticky">
+          <h2 id="proposta" className="lx-display-l">
             {copy.residence.title}
           </h2>
-          <Registered value={concept.specification} />
+        </div>
+        <Registered value={concept.specification} className="lx-place-main lx-prose lx-spec" />
+      </Scene>
+
+      <Scene titleId="fiel-ao-concept" ground="night" chapter>
+        <h2 id="fiel-ao-concept" className="lx-place-wide lx-display-xl">
+          <HeadlineText headline={copy.faithful.title} />
+        </h2>
+        <div className="lx-place-offset lx-prose">
+          <Paragraphs lines={copy.faithful.text} className="lx-lead" />
         </div>
       </Scene>
 
-      <Scene titleId="fiel-ao-concept" ground="night" variant="statement">
-        <div className="lx-col-text lx-scene__body">
-          <h2 id="fiel-ao-concept" className="lx-display-l">
-            <HeadlineText headline={copy.faithful.title} />
-          </h2>
-          <Paragraphs lines={copy.faithful.text} />
-        </div>
-      </Scene>
-
-      <Scene titleId="editions" ground="paper">
-        <div className="lx-col-content lx-scene__body">
-          <h2 id="editions" className="lx-display-l">
+      <Scene id="editions" titleId="editions-titulo" ground="paper" chapter>
+        <div className="lx-place-full lx-group-head">
+          <h2 id="editions-titulo" className="lx-display-xl">
             {copy.offer.title}
           </h2>
-          <Offer concept={concept} />
+          {concept.editions.length === 0 ? null : <p className="lx-lead">{copy.offer.lead}</p>}
         </div>
+        <Offer concept={concept} />
       </Scene>
 
       <Qualification titleId="para-quem">
-        <div className="lx-scene__actions">
+        <div className="lx-actions-stack">
           <ActionLink primary href={discoveryPaths.collection} label={actions.otherConcepts} />
           <ActionLink href={discoveryPaths.howItWorks} label={actions.howItWorks} />
         </div>
