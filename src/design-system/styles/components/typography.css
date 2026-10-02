@@ -1,6 +1,7 @@
 /* Typography — three voices. LUXURY: Display (Newsreader). UTILITY: Sans (Hanken Grotesk).
  * STORY: Script (Courier Prime) lives in marker.css and captions only. */
 @layer lx.components {
+  .lx-display-2xl,
   .lx-display-xl,
   .lx-display-l,
   .lx-display-m,
@@ -13,6 +14,9 @@
     hyphens: none;
   }
 
+  /* Monument: poster scale for the one sentence a Scene exists to say. Short lines only; no max-width — the grid
+   * column measures it. */
+  .lx-display-2xl { font-size: var(--lx-text-display-2xl); line-height: 1; }
   .lx-display-xl { font-size: var(--lx-text-display-xl); max-width: var(--lx-measure-display); }
   .lx-display-l { font-size: var(--lx-text-display-l); max-width: calc(var(--lx-measure-display) * 1.25); }
   .lx-display-m { font-size: var(--lx-text-display-m); line-height: var(--lx-leading-heading); }
@@ -24,7 +28,7 @@
   }
 
   /* The "story turn": at most one italic phrase per headline. */
-  :is(.lx-display-xl, .lx-display-l, .lx-display-m, .lx-display-s) em {
+  :is(.lx-display-2xl, .lx-display-xl, .lx-display-l, .lx-display-m, .lx-display-s) em {
     font-style: italic;
     font-weight: var(--lx-weight-display);
   }

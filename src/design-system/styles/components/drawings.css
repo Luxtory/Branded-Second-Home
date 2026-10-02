@@ -1,0 +1,171 @@
+/* Drawings — line art of "a Planta" (react/drawings.tsx): the Triad, the Opening Frame horizon and the proportional
+ * measure. Hairlines in the ground's accent; never color by meaning alone (absent = hollow + dashed, not a hue).
+ * Motion: only the Opening Frame's sun, once; off under reduced motion. */
+@layer lx.components {
+  /* Triad ------------------------------------------------------------------------------------------------------ */
+  .lx-triad {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    color: var(--lx-color-accent);
+  }
+
+  .lx-triad--small { max-width: 18rem; }
+  .lx-triad--mini { width: 3.5rem; }
+
+  .lx-triad__edge {
+    stroke: currentColor;
+    stroke-width: var(--lx-border-hairline);
+    vector-effect: non-scaling-stroke;
+  }
+
+  .lx-triad__edge--absent {
+    stroke-dasharray: 0.02 0.03;
+    opacity: 0.7;
+  }
+
+  .lx-triad__ring {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: var(--lx-border-hairline);
+    vector-effect: non-scaling-stroke;
+  }
+
+  .lx-triad__dot {
+    fill: currentColor;
+    stroke: currentColor;
+    stroke-width: var(--lx-border-hairline);
+    vector-effect: non-scaling-stroke;
+  }
+
+  .lx-triad__node--absent .lx-triad__dot {
+    fill: var(--lx-color-bg);
+  }
+
+  .lx-triad__node--absent .lx-triad__ring {
+    stroke-dasharray: 3 4;
+  }
+
+  .lx-triad__node--focus .lx-triad__ring {
+    fill: currentColor;
+  }
+
+  .lx-triad__node--focus .lx-triad__dot {
+    fill: var(--lx-color-bg);
+  }
+
+  .lx-triad--mini .lx-triad__ring { display: none; }
+  .lx-triad--mini .lx-triad__node--focus .lx-triad__ring { display: inline; }
+
+  .lx-triad__label {
+    fill: var(--lx-color-fg);
+    font-family: var(--lx-font-story);
+    font-size: 19px;
+    letter-spacing: var(--lx-tracking-marker);
+    text-transform: uppercase;
+  }
+
+  .lx-triad__label--absent {
+    fill: var(--lx-color-fg-muted);
+  }
+
+  /* Horizon: lives inside the row that carries the rule (lx-opening-row); behind the words (z-index -1). ----- */
+  .lx-horizon {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    color: var(--lx-color-accent);
+    pointer-events: none;
+  }
+
+  .lx-horizon__sky {
+    position: absolute;
+    inset-inline-end: 0;
+    bottom: 100%;
+    width: min(78%, 40rem);
+    aspect-ratio: 2 / 1;
+    overflow: hidden;
+  }
+
+  .lx-horizon__sun {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .lx-horizon__sun path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: var(--lx-border-hairline);
+    vector-effect: non-scaling-stroke;
+  }
+
+  .lx-horizon__halo {
+    stroke-dasharray: 2 10;
+  }
+
+  .lx-horizon__core {
+    opacity: 0.6;
+  }
+
+  /* The grid's columns marked on the horizon: one bracket per column (4 · 8 · 12). */
+  .lx-horizon__ticks {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--lx-grid-columns, var(--lx-layout-columns-sm)), minmax(0, 1fr));
+    column-gap: var(--lx-layout-gutter);
+    height: var(--lx-space-3);
+  }
+
+  .lx-horizon__ticks > span {
+    border-inline: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-horizon__ticks > :nth-child(n + 5) { display: none; }
+
+  @media (min-width: 48rem) {
+    .lx-horizon__ticks > :nth-child(-n + 8) { display: block; }
+  }
+
+  @media (min-width: 64rem) {
+    .lx-horizon__ticks > :nth-child(n + 5) { display: block; }
+  }
+
+  /* Measure ----------------------------------------------------------------------------------------------------- */
+  .lx-measure {
+    display: block;
+    width: 100%;
+    height: 1.25rem;
+    color: var(--lx-color-accent);
+  }
+
+  .lx-measure :is(line, rect) {
+    stroke: currentColor;
+    stroke-width: var(--lx-border-hairline);
+    vector-effect: non-scaling-stroke;
+  }
+
+  .lx-measure__track,
+  .lx-measure__tick {
+    stroke: var(--lx-color-rule);
+  }
+
+  .lx-measure__segment--solid { fill: currentColor; }
+  .lx-measure__segment--outline { fill: none; }
+
+  /* Motion: the sun settles once on the horizon on load (≤ 4.8s, WCAG 2.2.2); nothing moves with the scroll. ---- */
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion="reduce"]) .lx-horizon__sun {
+      animation: lx-rise var(--lx-duration-drift) var(--lx-ease-cinematic) both;
+    }
+  }
+
+  @keyframes lx-rise {
+    from { transform: translateY(16%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+}

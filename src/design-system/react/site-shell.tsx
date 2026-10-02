@@ -52,11 +52,14 @@ export function SiteShell({
   homeHref,
   labels,
   navItems,
+  menuFooter,
   children,
 }: {
   readonly homeHref: string;
   readonly labels: SiteShellLabels;
   readonly navItems: readonly SiteNavItem[];
+  /** Rodapé fixo da gaveta do celular (ex.: o desenho do horizonte); ausente = sem rodapé. */
+  readonly menuFooter?: ReactNode;
   readonly children: ReactNode;
 }) {
   return (
@@ -89,6 +92,7 @@ export function SiteShell({
                   linkClass="lx-mobile-nav__link"
                 />
               }
+              footer={menuFooter}
             />
           </div>
         </div>

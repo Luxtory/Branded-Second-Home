@@ -14,6 +14,7 @@ export function Scene({
   ground,
   variant,
   backdrop,
+  chapter = false,
   children,
 }: {
   /** Âncora da seção (destino de link na página); ausente = sem `id`. */
@@ -23,13 +24,17 @@ export function Scene({
   readonly ground: Ground;
   readonly variant?: SceneVariant;
   readonly backdrop?: ReactNode;
+  /** Ritmo de capítulo: linhas do grid mais espaçadas e preenchimento denso (composições em várias linhas). */
+  readonly chapter?: boolean;
   readonly children: ReactNode;
 }) {
   const className = variant === undefined ? 'lx-scene' : `lx-scene lx-scene--${variant}`;
   return (
     <section id={id} className={className} data-ground={ground} aria-labelledby={titleId}>
       {backdrop === undefined ? null : <div className="lx-scene__backdrop">{backdrop}</div>}
-      <div className="lx-container lx-grid">{children}</div>
+      <div className={chapter ? 'lx-container lx-grid lx-grid--chapter' : 'lx-container lx-grid'}>
+        {children}
+      </div>
     </section>
   );
 }

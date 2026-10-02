@@ -13,3 +13,10 @@ export { MobileNav, type MobileNavLabels } from './mobile-nav';
 export { Scene, type SceneVariant } from './scene';
 export { SiteShell, type SiteNavItem, type SiteShellLabels } from './site-shell';
 export { TypographicFrame, type FrameKind } from './typographic-frame';
+export {
+  HorizonDrawing,
+  MeasureBar,
+  TriadDrawing,
+  type MeasureSegment,
+  type TriadVertex,
+} from './drawings';
