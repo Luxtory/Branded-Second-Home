@@ -632,19 +632,25 @@
   .lx-renunciation__title {
     display: grid;
     gap: 0;
-    max-width: 18ch;
+    width: max-content;
+    max-width: 100%;
     margin: 0;
     font-family: var(--lx-font-display);
     font-size: var(--lx-text-display-m);
     font-weight: var(--lx-weight-display);
     line-height: 1.05;
     letter-spacing: var(--lx-tracking-display);
-    color: var(--lx-color-accent);
+    color: var(--lx-palette-warm-sand);
   }
 
   .lx-renunciation__title > span,
   .lx-renunciation__title > em {
     display: block;
+    white-space: nowrap;
+  }
+
+  .lx-renunciation__title > span {
+    font-style: normal;
   }
 
   .lx-renunciation__title em {
