@@ -87,9 +87,21 @@
     height: 1.5rem;
   }
 
+  .lx-menu-trigger__mark {
+    display: block;
+    width: 1.65rem;
+    height: auto;
+  }
+
+  .lx-header--retractable .lx-header__menu-button {
+    display: inline-grid;
+  }
+
   /* After .lx-icon-button: same specificity, so the later rule wins — the menu button must stay hidden from lg. */
   @media (min-width: 64rem) {
     .lx-header__nav { display: block; }
     .lx-header__menu-button { display: none; }
+    .lx-header--retractable .lx-header__nav { display: none; }
+    .lx-header--retractable .lx-header__menu-button { display: inline-grid; }
   }
 }

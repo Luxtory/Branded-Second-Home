@@ -1,0 +1,151 @@
+/* Home Hero — approved B2C cinematic opening: full-bleed photography, restrained 44px display,
+ * overlay header and discreet carousel controls. */
+@layer lx.components {
+  .lx-home-hero {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    align-items: end;
+    min-height: 100svh;
+    overflow: hidden;
+    background: var(--lx-palette-dark-moroccan-blue);
+    color: var(--lx-palette-pure-white);
+  }
+
+  .lx-home-hero__slides,
+  .lx-home-hero__slide,
+  .lx-home-hero__scrim { position: absolute; inset: 0; }
+
+  .lx-home-hero__slides {
+    z-index: -1;
+    overflow: hidden;
+    background: var(--lx-palette-dark-moroccan-blue);
+  }
+
+  .lx-home-hero__slide {
+    opacity: 0;
+    transition: opacity var(--lx-duration-cinematic) var(--lx-ease-cinematic);
+  }
+
+  .lx-home-hero__slide--active { opacity: 1; }
+  .lx-home-hero__slide img { object-fit: cover; }
+
+  .lx-home-hero__scrim {
+    background:
+      linear-gradient(90deg, rgb(0 35 49 / 0.68) 0%, rgb(0 35 49 / 0.44) 50%, rgb(0 35 49 / 0.22) 100%),
+      linear-gradient(0deg, rgb(0 35 49 / 0.60) 0%, rgb(0 35 49 / 0.08) 60%, rgb(0 35 49 / 0.28) 100%);
+  }
+
+  .lx-home-hero__content {
+    display: grid;
+    gap: var(--lx-space-8);
+    align-content: end;
+    width: 100%;
+    padding-top: calc(var(--lx-layout-header-height) + var(--lx-space-12));
+    padding-bottom: clamp(5.5rem, 10vh, 8rem);
+  }
+
+  .lx-home-hero__title {
+    max-width: 22ch;
+    margin: 0;
+    font-family: var(--lx-font-display);
+    font-size: clamp(2.2rem, 2rem + 1.6vw, 2.75rem);
+    font-weight: var(--lx-weight-display);
+    line-height: 1.02;
+    letter-spacing: var(--lx-tracking-display);
+    text-wrap: balance;
+    color: var(--lx-palette-pure-white);
+  }
+
+  .lx-home-hero__title em {
+    color: var(--lx-palette-warm-sand);
+    font-style: italic;
+    font-weight: var(--lx-weight-display);
+  }
+
+  .lx-home-hero__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--lx-space-6) var(--lx-space-8);
+  }
+
+  .lx-home-hero__lead {
+    max-width: 36rem;
+    margin: 0;
+    font-size: var(--lx-text-lead);
+    line-height: var(--lx-leading-tight);
+    color: var(--lx-palette-pure-white);
+  }
+
+  .lx-home-hero__action {
+    background: var(--lx-palette-warm-sand);
+    border-color: var(--lx-palette-warm-sand);
+    color: var(--lx-palette-dark-moroccan-blue);
+  }
+
+  .lx-home-hero__controls {
+    position: absolute;
+    inset-inline-end: var(--lx-layout-margin);
+    bottom: var(--lx-space-8);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: var(--lx-space-3);
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-small);
+    color: var(--lx-palette-pure-white);
+  }
+
+  .lx-home-hero__controls button {
+    display: inline-grid;
+    place-items: center;
+    min-width: 2rem;
+    min-height: 2rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .lx-home-hero__controls button:focus-visible {
+    outline: var(--lx-focus-width) solid var(--lx-palette-warm-sand);
+    outline-offset: var(--lx-focus-offset);
+  }
+
+  .lx-home-hero__counter,
+  .lx-home-hero__total { font-variant-numeric: tabular-nums; }
+
+  .lx-home-hero__progress {
+    width: clamp(2rem, 4vw, 3.5rem);
+    height: var(--lx-border-hairline);
+    background: color-mix(in srgb, var(--lx-palette-pure-white) 45%, transparent);
+  }
+
+  @media (max-width: 47.99rem) {
+    .lx-home-hero { min-height: 42rem; }
+    .lx-home-hero__content { gap: var(--lx-space-6); padding-bottom: 7.5rem; }
+    .lx-home-hero__title { max-width: 18ch; font-size: clamp(2rem, 9vw, 2.65rem); }
+    .lx-home-hero__break { display: none; }
+    .lx-home-hero__bottom { align-items: stretch; }
+    .lx-home-hero__action { width: 100%; }
+    .lx-home-hero__controls { inset-inline: var(--lx-layout-margin); justify-content: flex-end; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion="reduce"]) .lx-home-hero__slide--active img {
+      animation: lx-home-hero-drift var(--lx-duration-drift) var(--lx-ease-cinematic) both;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lx-home-hero__slide { transition-duration: var(--lx-duration-reduced); }
+  }
+
+  @keyframes lx-home-hero-drift {
+    from { transform: scale(1.012) translate3d(0, 0, 0); }
+    to { transform: scale(1.035) translate3d(-0.35%, -0.2%, 0); }
+  }
+}

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Logo } from './logo';
+import { Logo, logoUrl } from './logo';
 import { MobileNav } from './mobile-nav';
 
 export interface SiteNavItem {
@@ -8,7 +8,6 @@ export interface SiteNavItem {
   readonly current: boolean;
 }
 
-/** Textos da casca pública: vêm do i18n do slice que compõe (o DS não tem strings de produto). */
 export interface SiteShellLabels {
   readonly skipLink: string;
   readonly home: string;
@@ -43,23 +42,21 @@ function NavList({
   );
 }
 
-/**
- * Casca do site público (`lx-header`, `lx-mobile-nav`, `lx-footer`): skip link, cabeçalho fixo em `paper` com
- * navegação a partir do `lg` e gaveta `night` abaixo dele, conteúdo e rodapé `night` — que também é a navegação sem
- * JavaScript. Recebe os itens por composição; sem CTA no cabeçalho enquanto o slice não passar um.
- */
 export function SiteShell({
   homeHref,
   labels,
   navItems,
   menuFooter,
+  overlayHeader = false,
+  retractableMenu = false,
   children,
 }: {
   readonly homeHref: string;
   readonly labels: SiteShellLabels;
   readonly navItems: readonly SiteNavItem[];
-  /** Rodapé fixo da gaveta do celular (ex.: o desenho do horizonte); ausente = sem rodapé. */
   readonly menuFooter?: ReactNode;
+  readonly overlayHeader?: boolean;
+  readonly retractableMenu?: boolean;
   readonly children: ReactNode;
 }) {
   return (
@@ -67,16 +64,30 @@ export function SiteShell({
       <a className="lx-skip-link" href={`#${MAIN_ID}`}>
         {labels.skipLink}
       </a>
-      <header className="lx-header" data-ground="paper">
+      <header
+        className={[
+          'lx-header',
+          overlayHeader ? 'lx-header--overlay' : '',
+          retractableMenu ? 'lx-header--retractable' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        data-ground={overlayHeader ? 'night' : 'paper'}
+      >
         <div className="lx-container lx-header__inner">
-          <Logo ground="paper" href={homeHref} label={labels.home} />
-          <nav className="lx-header__nav" aria-label={labels.nav}>
-            <NavList items={navItems} listClass="lx-header__list" linkClass="lx-header__link" />
-          </nav>
+          <Logo ground={overlayHeader ? 'night' : 'paper'} href={homeHref} label={labels.home} />
+
+          {retractableMenu ? null : (
+            <nav className="lx-header__nav" aria-label={labels.nav}>
+              <NavList items={navItems} listClass="lx-header__list" linkClass="lx-header__link" />
+            </nav>
+          )}
+
           <div className="lx-header__actions">
             <MobileNav
               ground="night"
               mainId={MAIN_ID}
+              mode={retractableMenu ? 'retractable' : 'mobile'}
               labels={{
                 open: labels.openMenu,
                 close: labels.closeMenu,
@@ -84,6 +95,16 @@ export function SiteShell({
                 nav: labels.nav,
               }}
               buttonClassName="lx-header__menu-button"
+              trigger={
+                retractableMenu ? (
+                  <img
+                    className="lx-menu-trigger__mark"
+                    src={logoUrl('icon/warm-sand')}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                ) : undefined
+              }
               logo={<Logo ground="night" href={homeHref} label={labels.home} />}
               nav={
                 <NavList

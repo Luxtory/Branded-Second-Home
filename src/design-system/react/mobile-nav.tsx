@@ -11,11 +11,6 @@ export interface MobileNavLabels {
   readonly nav: string;
 }
 
-/**
- * Gaveta abaixo do `lg` (`lx-mobile-nav`): `dialog` nativo com `showModal()` — foco preso, Esc fecha e o foco volta ao
- * botão. Se a janela cruzar o `lg` com a gaveta aberta, ela fecha e o foco vai ao conteúdo principal, porque o botão
- * de menu deixa de existir. Serve ao App Shell e ao cabeçalho do site público.
- */
 export function MobileNav({
   ground,
   mainId,
@@ -24,23 +19,25 @@ export function MobileNav({
   logo,
   nav,
   footer,
+  trigger,
+  mode = 'mobile',
 }: {
   readonly ground: Ground;
   readonly mainId: string;
   readonly labels: MobileNavLabels;
-  /** Classe de posição do botão no cabeçalho que o contém (ex.: `lx-header__menu-button`). */
   readonly buttonClassName: string;
   readonly logo: ReactNode;
   readonly nav: ReactNode;
-  /** Rodapé fixo da gaveta; ausente = sem rodapé. */
   readonly footer?: ReactNode;
+  readonly trigger?: ReactNode;
+  readonly mode?: 'mobile' | 'retractable';
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const dialogId = useId();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    // O corte vem do token (--lx-breakpoint-lg), não de um valor repetido aqui.
+    if (mode === 'retractable') return;
     const lg = getComputedStyle(document.documentElement).getPropertyValue('--lx-breakpoint-lg');
     const query = window.matchMedia(`(min-width: ${lg.trim()})`);
     const onChange = (event: MediaQueryListEvent) => {
@@ -50,7 +47,7 @@ export function MobileNav({
     };
     query.addEventListener('change', onChange);
     return () => query.removeEventListener('change', onChange);
-  }, [mainId]);
+  }, [mainId, mode]);
 
   return (
     <>
@@ -65,7 +62,7 @@ export function MobileNav({
           setOpen(true);
         }}
       >
-        <Icon name="menu" />
+        {trigger ?? <Icon name="menu" />}
         <span className="lx-visually-hidden">{labels.open}</span>
       </button>
       <dialog
@@ -73,6 +70,7 @@ export function MobileNav({
         id={dialogId}
         className="lx-mobile-nav"
         data-ground={ground}
+        data-mode={mode}
         aria-label={labels.menu}
         onClose={() => setOpen(false)}
       >

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { HorizonDrawing, SiteShell } from '@/design-system/react';
+import { HorizonDrawing, Logo, SiteShell } from '@/design-system/react';
 import { discoveryMessages as text } from '../i18n/discovery-pt-br';
 import { discoveryPaths, type DiscoverySection } from './paths';
 
@@ -19,7 +19,17 @@ export function DiscoverySite({
     <SiteShell
       homeHref={discoveryPaths.home}
       labels={text.site}
-      menuFooter={<HorizonDrawing />}
+      overlayHeader={current === 'home'}
+      retractableMenu={current === 'home'}
+      menuFooter={
+        current === 'home' ? (
+          <div className="lx-mobile-nav__brand">
+            <Logo ground="night" href={discoveryPaths.home} label={text.site.home} />
+          </div>
+        ) : (
+          <HorizonDrawing />
+        )
+      }
       navItems={[
         {
           href: discoveryPaths.collection,

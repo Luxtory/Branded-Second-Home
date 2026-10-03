@@ -1,13 +1,14 @@
 import Image from 'next/image';
-import { HorizonDrawing, Icon, Scene, TriadDrawing } from '@/design-system/react';
+import { Icon, Scene, TriadDrawing } from '@/design-system/react';
 import { catalogCta } from '../../application/public-views';
 import { discoveryMessages as text } from '../i18n/discovery-pt-br';
 import { CatalogActions } from './catalog-actions';
 import { HeadlineText } from './headline';
 import { nb } from './no-break';
-import { ActionLink, ChapterHead, Marker, ModalityPairView, Paragraphs, ValuesLine } from './parts';
+import { ChapterHead, Marker, ModalityPairView, Paragraphs, ValuesLine } from './parts';
 import { discoveryPaths, HOME_SECTIONS } from './paths';
 import { readAvailability } from './read';
+import { HomeHero } from './home-hero';
 import { DiscoverySite } from './site';
 
 const { home, triad, values } = text;
@@ -40,19 +41,14 @@ export async function HomePage() {
   const cta = catalogCta(await readAvailability());
   return (
     <DiscoverySite current="home">
-      {/* PICTURE — um fim de tarde desenhado em linha: o desejo antes de tudo. */}
-      <Scene id={HERO} titleId={titleOf(HERO)} ground="night" variant="opening">
-        <h1 id={titleOf(HERO)} className="lx-place-wide lx-display-xl lx-headline-wide">
-          <HeadlineText headline={hero.title} />
-        </h1>
-        <div className="lx-place-full lx-opening-row">
-          <HorizonDrawing />
-          <p className="lx-lead">{nb(hero.text)}</p>
-          <div className="lx-actions-stack">
-            <ActionLink primary href={`#${RENUNCIATION}`} label={hero.action} />
-          </div>
-        </div>
-      </Scene>
+      <HomeHero
+        id={HERO}
+        titleId={titleOf(HERO)}
+        title={hero.title}
+        text={hero.text}
+        action={hero.action}
+        nextSectionId={RENUNCIATION}
+      />
 
       {/* PROBLEM — a renúncia: texto e tríade original do Luxtory2.0 em equilíbrio. */}
       <Scene id={RENUNCIATION} titleId={titleOf(RENUNCIATION)} ground="night">
@@ -60,8 +56,9 @@ export async function HomePage() {
           <div className="lx-renunciation__opening">
             <div className="lx-renunciation__copy">
               <Marker parts={renunciation.marker} />
-              <h2 id={titleOf(RENUNCIATION)} className="lx-display-m lx-renunciation__title">
-                <HeadlineText headline={renunciation.title} />
+              <h2 id={titleOf(RENUNCIATION)} className="lx-renunciation__title">
+                <span>{renunciation.title.lead.trim()}</span>
+                <em>{renunciation.title.turn}</em>
               </h2>
               <div className="lx-renunciation__intro">
                 <p className="lx-body">{nb(renunciation.intro)}</p>
@@ -81,15 +78,8 @@ export async function HomePage() {
           </div>
 
           <ol className="lx-renunciation__alternatives" aria-label={renunciation.alternativesLabel}>
-            {renunciation.alternatives.map((alternative, index) => (
-              <li
-                className={
-                  index === 1
-                    ? 'lx-renunciation__alternative lx-renunciation__alternative--accent'
-                    : 'lx-renunciation__alternative'
-                }
-                key={alternative.title}
-              >
+            {renunciation.alternatives.map((alternative) => (
+              <li className="lx-renunciation__alternative" key={alternative.title}>
                 <h3 className="lx-display-s">{alternative.title}</h3>
                 <Paragraphs lines={alternative.text} />
               </li>
