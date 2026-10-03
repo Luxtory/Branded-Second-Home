@@ -94,7 +94,7 @@
   @media (min-width: 48rem) {
     .lx-values {
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      font-size: clamp(1.35rem, 6.5vw, 1.75rem);
+      font-size: var(--lx-text-display-m);
     }
   }
 
@@ -636,7 +636,7 @@
     max-width: 100%;
     margin: 0;
     font-family: var(--lx-font-display);
-    font-size: var(--lx-text-display-m);
+    font-size: clamp(1.35rem, 6.5vw, 1.75rem);
     font-weight: var(--lx-weight-display);
     line-height: 1.05;
     letter-spacing: var(--lx-tracking-display);
