@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { Icon, Scene, TriadDrawing } from '@/design-system/react';
 import { catalogCta } from '../../application/public-views';
 import { discoveryMessages as text } from '../i18n/discovery-pt-br';
@@ -67,12 +66,12 @@ export async function HomePage() {
             </div>
 
             <figure className="lx-renunciation__diagram">
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element -- original Luxtory2.0 SVG is served verbatim; Next/Image injects an inline style blocked by the strict CSP. */}
+              <img
                 src="/diagrams/triade-valor-desejado.svg"
                 alt={`Diagrama da tríade de valor: ${renunciation.values}`}
                 width={723}
                 height={640}
-                unoptimized
               />
             </figure>
           </div>
