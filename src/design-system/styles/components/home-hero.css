@@ -132,7 +132,7 @@
     background: color-mix(in srgb, var(--lx-palette-pure-white) 45%, transparent);
   }
 
-  @media (min-width: 48rem) {
+  @media (min-width: 64rem) {
     .lx-home-hero__title {
       white-space: nowrap;
     }
