@@ -683,11 +683,27 @@
     .lx-renunciation__opening {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: var(--lx-space-12) var(--lx-layout-gutter);
+      align-items: stretch;
     }
 
     .lx-renunciation__diagram {
-      width: min(100%, 22rem);
+      position: relative;
+      width: 100%;
+      max-width: 26rem;
+      min-height: 0;
       justify-self: end;
+      align-self: stretch;
+    }
+
+    .lx-renunciation__diagram img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      max-height: none;
+      object-fit: contain;
+      object-position: center;
     }
   }
 

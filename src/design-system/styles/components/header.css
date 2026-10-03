@@ -87,10 +87,14 @@
     height: 1.5rem;
   }
 
+  .lx-header--overlay .lx-logo {
+    --lx-logo-height: 1.5rem;
+  }
+
   .lx-menu-trigger__mark {
     display: block;
-    width: 1.65rem;
-    height: auto;
+    width: auto;
+    height: 1.5rem;
   }
 
   .lx-header--retractable .lx-header__menu-button {

@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import type { Headline } from '../i18n/discovery-pt-br';
 
@@ -75,13 +74,12 @@ export function HomeHero({
             }
             key={slide.src}
           >
-            <Image
-              src={slide.src}
-              alt=""
-              fill
-              priority={index === 0}
-              sizes="100vw"
-              style={{ objectPosition: slide.position }}
+            <div
+              className="lx-home-hero__image"
+              style={{
+                backgroundImage: `url("${slide.src}")`,
+                backgroundPosition: slide.position,
+              }}
             />
           </div>
         ))}
