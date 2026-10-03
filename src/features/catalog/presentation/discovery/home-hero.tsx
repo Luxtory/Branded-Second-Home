@@ -53,8 +53,7 @@ export function HomeHero({
     return () => window.clearInterval(timer);
   }, [isPlaying]);
 
-  const previous = () =>
-    setCurrent((index) => (index - 1 + SLIDES.length) % SLIDES.length);
+  const previous = () => setCurrent((index) => (index - 1 + SLIDES.length) % SLIDES.length);
   const next = () => setCurrent((index) => (index + 1) % SLIDES.length);
 
   return (
@@ -75,9 +74,7 @@ export function HomeHero({
             }
             key={slide}
           >
-            <div
-              className={`lx-home-hero__image lx-home-hero__image--${index + 1}`}
-            />
+            <div className={`lx-home-hero__image lx-home-hero__image--${index + 1}`} />
           </div>
         ))}
         <div className="lx-home-hero__scrim" />
