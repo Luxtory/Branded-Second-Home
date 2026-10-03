@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import type { ReactNode } from 'react';
 import { Logo, logoUrl } from './logo';
 import { MobileNav } from './mobile-nav';
@@ -98,14 +97,15 @@ export function SiteShell({
               buttonClassName="lx-header__menu-button"
               trigger={
                 retractableMenu ? (
-                  <Image
-                    className="lx-menu-trigger__mark"
-                    src={logoUrl('icon/warm-sand')}
-                    alt=""
-                    width={370}
-                    height={324}
-                    aria-hidden="true"
-                  />
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- official logo asset is served verbatim; Next/Image would route it through the optimizer and violate the strict CSP contract. */}
+                    <img
+                      className="lx-menu-trigger__mark"
+                      src={logoUrl('icon/warm-sand')}
+                      alt=""
+                      aria-hidden="true"
+                    />
+                  </>
                 ) : undefined
               }
               logo={<Logo ground="night" href={homeHref} label={labels.home} />}
