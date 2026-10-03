@@ -119,7 +119,13 @@ test.describe('Discovery público — conteúdo', () => {
     const invite = hero.getByRole('link');
     await expect(invite).toHaveCount(1);
     await expect(invite).toHaveAttribute('href', `#${HOME_SECTIONS[1]}`);
-    await expect(hero.getByRole('button')).toHaveCount(0);
+    const controls = hero.getByRole('button');
+    await expect(controls).toHaveCount(3);
+    await expect(hero.getByRole('button', { name: 'Imagem anterior' })).toBeVisible();
+    await expect(
+      hero.getByRole('button', { name: /Pausar carrossel|Reproduzir carrossel/ }),
+    ).toBeVisible();
+    await expect(hero.getByRole('button', { name: 'Próxima imagem' })).toBeVisible();
   });
 
   test('[REQ-100] [REQ-101] FAQ da Home: perguntas abrem no lugar e as respostas passam pela guarda de terminologia', async ({
