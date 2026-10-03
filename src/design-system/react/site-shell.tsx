@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import type { ReactNode } from 'react';
 import { Logo, logoUrl } from './logo';
 import { MobileNav } from './mobile-nav';
@@ -97,10 +98,12 @@ export function SiteShell({
               buttonClassName="lx-header__menu-button"
               trigger={
                 retractableMenu ? (
-                  <img
+                  <Image
                     className="lx-menu-trigger__mark"
                     src={logoUrl('icon/warm-sand')}
                     alt=""
+                    width={370}
+                    height={324}
                     aria-hidden="true"
                   />
                 ) : undefined
