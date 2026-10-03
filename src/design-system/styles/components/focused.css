@@ -10,11 +10,20 @@
 
   .lx-focused__panel {
     display: grid;
+    width: 100%;
+    min-width: 0;
     align-content: start;
     gap: var(--lx-space-8);
     padding: var(--lx-space-6) var(--lx-layout-margin) var(--lx-space-16);
     background-color: var(--lx-color-bg);
     color: var(--lx-color-fg);
+  }
+
+  .lx-focused__body,
+  .lx-focused__body > *,
+  .lx-focused__panel .lx-form,
+  .lx-focused__panel .lx-field {
+    min-width: 0;
   }
 
   .lx-focused__body {
