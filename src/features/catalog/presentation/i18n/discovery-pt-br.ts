@@ -141,7 +141,8 @@ export const discoveryMessages = {
         lead: 'As alternativas mudam. ',
         turn: 'A\u00a0renúncia continua.',
       } satisfies Headline,
-      intro: 'No mercado de lazer, tudo gira em torno de três valores: patrimônio, liberdade e pertencimento.',
+      intro:
+        'No mercado de lazer, tudo gira em torno de três valores: patrimônio, liberdade e pertencimento.',
       values: 'Patrimônio. Liberdade. Pertencimento.',
       tension:
         'Você quer os três, mas as alternativas ainda costumam fazer você abrir mão de uma parte importante para ter as outras.',
