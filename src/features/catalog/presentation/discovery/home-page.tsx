@@ -1,4 +1,5 @@
-import { HorizonDrawing, Icon, Scene, TriadDrawing, type TriadVertex } from '@/design-system/react';
+import Image from 'next/image';
+import { HorizonDrawing, Icon, Scene, TriadDrawing } from '@/design-system/react';
 import { catalogCta } from '../../application/public-views';
 import { discoveryMessages as text } from '../i18n/discovery-pt-br';
 import { CatalogActions } from './catalog-actions';
@@ -31,17 +32,6 @@ const [
 const titleOf = (section: string) => `${section}-titulo`;
 
 /**
- * O que cada alternativa entrega, como a copy o diz; o que ela costuma deixar de fora fica vazado no desenho
- * (propriedade tradicional: liberdade; hotelaria e locação: patrimônio e pertencimento; compartilhamento genérico:
- * liberdade e pertencimento).
- */
-const ALTERNATIVE_PRESENCE: readonly (readonly TriadVertex[])[] = [
-  ['patrimony', 'belonging'],
-  ['freedom'],
-  ['patrimony'],
-];
-
-/**
  * Home `/` (spec catalog §13.4): a copy do fundador (D-B2C-18), Unaware → Product Aware. Direção visual: a tríade como
  * planta — o desenho de três pontos que cada alternativa quebra, que a renúncia afasta e que a promessa fecha. PICTURE =
  * Hero sem ação comercial; PUSH com o CTA por disponibilidade (D-B2C-16).
@@ -64,54 +54,54 @@ export async function HomePage() {
         </div>
       </Scene>
 
-      {/* PROBLEM — antagonista: cada alternativa quebra o desenho. */}
-      <Scene id={RENUNCIATION} titleId={titleOf(RENUNCIATION)} ground="paper" chapter>
-        <div className="lx-place-wide lx-scene__body">
-          <Marker parts={renunciation.marker} />
-          <h2 id={titleOf(RENUNCIATION)} className="lx-display-xl">
-            <HeadlineText headline={renunciation.title} />
-          </h2>
-        </div>
-        <div className="lx-place-full lx-scene__body">
-          <p className="lx-lead">{nb(renunciation.intro)}</p>
-          <ValuesLine text={renunciation.values} />
-          <p className="lx-lead">{nb(renunciation.tension)}</p>
-        </div>
-        <div
-          className="lx-place-full lx-sequence lx-sequence--fit"
-          role="region"
-          aria-label={renunciation.alternativesLabel}
-          tabIndex={0}
-        >
-          <ol className="lx-sequence__track">
+      {/* PROBLEM — a renúncia: texto e tríade original do Luxtory2.0 em equilíbrio. */}
+      <Scene id={RENUNCIATION} titleId={titleOf(RENUNCIATION)} ground="night">
+        <div className="lx-place-full lx-renunciation">
+          <div className="lx-renunciation__opening">
+            <div className="lx-renunciation__copy">
+              <Marker parts={renunciation.marker} />
+              <h2 id={titleOf(RENUNCIATION)} className="lx-display-m lx-renunciation__title">
+                <HeadlineText headline={renunciation.title} />
+              </h2>
+              <div className="lx-renunciation__intro">
+                <p className="lx-body">{nb(renunciation.intro)}</p>
+                <p className="lx-body">{nb(renunciation.tension)}</p>
+              </div>
+            </div>
+
+            <figure className="lx-renunciation__diagram">
+              <Image
+                src="/diagrams/triade-valor-desejado.svg"
+                alt={`Diagrama da tríade de valor: ${renunciation.values}`}
+                width={723}
+                height={640}
+                unoptimized
+              />
+            </figure>
+          </div>
+
+          <ol className="lx-renunciation__alternatives" aria-label={renunciation.alternativesLabel}>
             {renunciation.alternatives.map((alternative, index) => (
-              <li className="lx-sequence__item" key={alternative.title}>
-                <article className="lx-scene__body">
-                  <div className="lx-frame lx-frame--detail lx-frame--typographic lx-frame--drawing">
-                    <div className="lx-frame__media" data-ground="night">
-                      <TriadDrawing
-                        present={ALTERNATIVE_PRESENCE[index]}
-                        labels={values}
-                        size="small"
-                      />
-                      <h3 className="lx-frame__title">{alternative.title}</h3>
-                    </div>
-                  </div>
-                  <div className="lx-prose">
-                    <Paragraphs lines={alternative.text} />
-                  </div>
-                </article>
+              <li
+                className={
+                  index === 1
+                    ? 'lx-renunciation__alternative lx-renunciation__alternative--accent'
+                    : 'lx-renunciation__alternative'
+                }
+                key={alternative.title}
+              >
+                <h3 className="lx-display-s">{alternative.title}</h3>
+                <Paragraphs lines={alternative.text} />
               </li>
             ))}
           </ol>
-        </div>
-        <div className="lx-place-center lx-coda">
-          <div className="lx-prose">
-            <Paragraphs lines={renunciation.closing} className="lx-lead" />
+
+          <div className="lx-renunciation__closing">
+            <div className="lx-renunciation__closing-copy">
+              <Paragraphs lines={renunciation.closing} />
+            </div>
+            <p className="lx-lead lx-renunciation__closing-turn">{renunciation.closingTurn}</p>
           </div>
-          <p className="lx-display-l">
-            <em>{renunciation.closingTurn}</em>
-          </p>
         </div>
       </Scene>
 

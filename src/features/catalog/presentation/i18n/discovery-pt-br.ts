@@ -123,7 +123,7 @@ export const discoveryMessages = {
   values,
 
   home: {
-    // Copy da Home escrita pelo fundador (D-B2C-18), com as decisões da revisão de 2026-10-01 e a nomenclatura pública
+    // Copy da Home escrita pelo fundador (D-B2C-18), com as decisões das revisões de 2026-10-01 e 2026-10-03 e a nomenclatura pública
     // de D-LX-08. Não reescrever: mudança de texto só com nova decisão do fundador. Os markers ficam em caixa normal
     // aqui; o `lx-marker` os mostra em caixa alta.
     hero: {
@@ -149,24 +149,21 @@ export const discoveryMessages = {
       alternativesLabel: 'As alternativas',
       alternatives: [
         {
-          title: 'Propriedade tradicional',
+          title: 'Second Home',
           text: [
-            'Ter um imóvel de lazer entrega patrimônio e pode criar uma forte relação com o lugar.',
-            'Mas tende a limitar o seu lazer em um único destino, além de assumir a gestão, manutenção e responsabilidades.',
+            'Entrega patrimônio e pertencimento, mas limita a liberdade a um destino, e responsabilidades de gestão e manutenção do imóvel.',
           ],
         },
         {
-          title: 'Hotelaria e locação',
+          title: 'Hospedagem',
           text: [
-            'Você ganha liberdade para escolher onde ficar e pode usar seu dinheiro de forma eficiente, dependendo de quanto viaja.',
-            'Mas não constrói patrimônio naquele imóvel nem a mesma relação de pertencimento com o lugar.',
+            'A locação de temporada ou hoteleira oferece liberdade, mas dificilmente pertencimento e certamente não constrói patrimônio.',
           ],
         },
         {
-          title: 'Modelos genéricos de compartilhamento',
+          title: 'Copropriedade',
           text: [
-            'Podem tornar a propriedade mais eficiente e dar acesso a um patrimônio real.',
-            'Mas nem sempre integram liberdade, identidade e pertencimento na mesma experiência.',
+            'Entrega patrimônio com eficiência, mas dificilmente liberdade e pertencimento na mesma experiência.',
           ],
         },
       ],
