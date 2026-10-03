@@ -53,7 +53,8 @@ export function HomeHero({
     return () => window.clearInterval(timer);
   }, [isPlaying]);
 
-  const previous = () => setCurrent((index) => (index - 1 + SLIDES.length) % SLIDES.length);
+  const previous = () =>
+    setCurrent((index) => (index - 1 + SLIDES.length) % SLIDES.length);
   const next = () => setCurrent((index) => (index + 1) % SLIDES.length);
 
   return (
@@ -74,7 +75,9 @@ export function HomeHero({
             }
             key={slide}
           >
-            <div className={`lx-home-hero__image lx-home-hero__image--${index + 1}`} />
+            <div
+              className={`lx-home-hero__image lx-home-hero__image--${index + 1}`}
+            />
           </div>
         ))}
         <div className="lx-home-hero__scrim" />
@@ -90,7 +93,10 @@ export function HomeHero({
 
         <div className="lx-home-hero__bottom">
           <p className="lx-home-hero__lead">{text}</p>
-          <a className="lx-button lx-button--primary lx-home-hero__action" href={`#${nextSectionId}`}>
+          <a
+            className="lx-button lx-button--primary lx-home-hero__action"
+            href={`#${nextSectionId}`}
+          >
             {action}
             <span aria-hidden="true">→</span>
           </a>
@@ -98,7 +104,9 @@ export function HomeHero({
       </div>
 
       <div className="lx-home-hero__controls" role="group" aria-label="Controles do carrossel">
-        <button type="button" onClick={previous} aria-label="Imagem anterior">‹</button>
+        <button type="button" onClick={previous} aria-label="Imagem anterior">
+          ‹
+        </button>
         <button
           type="button"
           className="lx-home-hero__counter"
@@ -109,8 +117,12 @@ export function HomeHero({
           {pad(current + 1)}
         </button>
         <span className="lx-home-hero__progress" aria-hidden="true" />
-        <span className="lx-home-hero__total" aria-hidden="true">{pad(SLIDES.length)}</span>
-        <button type="button" onClick={next} aria-label="Próxima imagem">›</button>
+        <span className="lx-home-hero__total" aria-hidden="true">
+          {pad(SLIDES.length)}
+        </span>
+        <button type="button" onClick={next} aria-label="Próxima imagem">
+          ›
+        </button>
       </div>
     </section>
   );
