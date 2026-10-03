@@ -94,7 +94,7 @@
   @media (min-width: 48rem) {
     .lx-values {
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      font-size: var(--lx-text-display-m);
+      font-size: clamp(1.35rem, 6.5vw, 1.75rem);
     }
   }
 
@@ -683,6 +683,12 @@
     height: auto;
     max-height: 15.5rem;
     object-fit: contain;
+  }
+
+  @media (min-width: 48rem) {
+    .lx-renunciation__title {
+      font-size: var(--lx-text-display-m);
+    }
   }
 
   @media (min-width: 64rem) {
