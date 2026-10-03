@@ -686,6 +686,12 @@
       align-items: stretch;
     }
 
+    .lx-renunciation__copy {
+      width: 100%;
+      max-width: 26rem;
+      justify-self: start;
+    }
+
     .lx-renunciation__diagram {
       position: relative;
       width: 100%;

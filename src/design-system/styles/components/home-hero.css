@@ -1,4 +1,4 @@
-/* Home Hero — approved B2C cinematic opening: full-bleed photography, restrained 44px display,
+/* Home Hero — approved B2C cinematic opening: full-bleed photography, restrained ~40px display,
  * overlay header and discreet carousel controls. */
 @layer lx.components {
   .lx-home-hero {
@@ -38,6 +38,22 @@
     background-size: cover;
   }
 
+  /* URLs and crops live in CSS so the strict CSP never needs inline background styles. */
+  .lx-home-hero__image--1 {
+    background-image: url("/images/home/hero/luxury-property-facade-hero.jpg");
+    background-position: center 52%;
+  }
+
+  .lx-home-hero__image--2 {
+    background-image: url("/images/home/hero/hero-lifestyle.jpg");
+    background-position: center 52%;
+  }
+
+  .lx-home-hero__image--3 {
+    background-image: url("/images/home/hero/home-solucao-firepit-family.jpg");
+    background-position: center 48%;
+  }
+
   .lx-home-hero__scrim {
     background:
       linear-gradient(90deg, rgb(0 35 49 / 0.68) 0%, rgb(0 35 49 / 0.44) 50%, rgb(0 35 49 / 0.22) 100%),
@@ -46,7 +62,7 @@
 
   .lx-home-hero__content {
     display: grid;
-    gap: var(--lx-space-8);
+    gap: var(--lx-space-6);
     align-content: end;
     width: 100%;
     padding-top: calc(var(--lx-layout-header-height) + var(--lx-space-12));
@@ -57,7 +73,7 @@
     max-width: 58rem;
     margin: 0;
     font-family: var(--lx-font-display);
-    font-size: clamp(2.2rem, 2rem + 1.6vw, 2.75rem);
+    font-size: clamp(2.1rem, 1.95rem + 1.35vw, 2.5rem);
     font-weight: var(--lx-weight-display);
     line-height: 1.02;
     letter-spacing: var(--lx-tracking-display);

@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import type { Headline } from '../i18n/discovery-pt-br';
 
 const SLIDES = [
-  { src: '/images/home/hero/luxury-property-facade-hero.jpg', position: 'center 52%' },
-  { src: '/images/home/hero/hero-lifestyle.jpg', position: 'center 52%' },
-  { src: '/images/home/hero/home-solucao-firepit-family.jpg', position: 'center 48%' },
+  '/images/home/hero/luxury-property-facade-hero.jpg',
+  '/images/home/hero/hero-lifestyle.jpg',
+  '/images/home/hero/home-solucao-firepit-family.jpg',
 ] as const;
 
 const INTERVAL_MS = 8000;
@@ -72,15 +72,9 @@ export function HomeHero({
                 ? 'lx-home-hero__slide lx-home-hero__slide--active'
                 : 'lx-home-hero__slide'
             }
-            key={slide.src}
+            key={slide}
           >
-            <div
-              className="lx-home-hero__image"
-              style={{
-                backgroundImage: `url("${slide.src}")`,
-                backgroundPosition: slide.position,
-              }}
-            />
+            <div className={`lx-home-hero__image lx-home-hero__image--${index + 1}`} />
           </div>
         ))}
         <div className="lx-home-hero__scrim" />
