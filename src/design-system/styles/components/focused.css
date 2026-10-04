@@ -4,7 +4,10 @@
 @layer lx.components {
   .lx-focused {
     display: grid;
+    width: 100%;
+    max-width: 100vw;
     min-height: 100dvh;
+    overflow-x: clip;
     background-color: var(--lx-color-bg);
   }
 
