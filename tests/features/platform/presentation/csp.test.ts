@@ -21,11 +21,17 @@ describe('CSP e portão do site público (ADR-0014)', () => {
     expect(policy).toContain("object-src 'none'");
     expect(policy).not.toContain('unsafe-eval');
     expect(
-      contentSecurityPolicy(nonce, { development: true, secureTransport: false }),
+      contentSecurityPolicy(nonce, {
+        development: true,
+        secureTransport: false,
+      }),
     ).toContain("'unsafe-eval'");
     expect(policy).toContain('upgrade-insecure-requests');
     expect(
-      contentSecurityPolicy(nonce, { development: false, secureTransport: false }),
+      contentSecurityPolicy(nonce, {
+        development: false,
+        secureTransport: false,
+      }),
     ).not.toContain('upgrade-insecure-requests');
   });
 
