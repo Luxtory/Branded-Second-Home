@@ -33,6 +33,281 @@ function pathOf(name: PageName): string {
 const visibleText = async (page: Page) => (await page.locator('body').textContent()) ?? '';
 const EDITIONS_CTA = 'Conheça as Home Editions';
 
+test.describe('Hero congelada — comportamento acessível', () => {
+  const counter = (page: Page) => page.locator('.lx-home-hero__counter');
+  const hero = (page: Page) => page.locator('.lx-home-hero');
+
+  async function openHero(page: Page, reduced = false) {
+    const start = new Date('2026-10-04T00:00:00Z');
+    await page.clock.install({ time: start });
+    // Pause before navigation, leaving headroom for install's running clock.
+    await page.clock.pauseAt(new Date(start.getTime() + 60_000));
+    await page.goto('/');
+    await expect(counter(page)).toHaveAttribute(
+      'aria-label',
+      reduced ? 'Reproduzir carrossel' : 'Pausar carrossel',
+    );
+  }
+
+  async function leaveHero(page: Page) {
+    await page.locator(`section#${HOME_SECTIONS[1]} h2`).hover();
+  }
+
+  test('avança a cada 8000 ms e percorre os três slides na ordem, voltando ao primeiro', async ({
+    page,
+  }) => {
+    await openHero(page);
+    await page.clock.runFor(7999);
+    await expect(counter(page)).toHaveText('01');
+    await page.clock.runFor(1);
+    await expect(counter(page)).toHaveText('02');
+    await page.clock.runFor(8000);
+    await expect(counter(page)).toHaveText('03');
+    await page.clock.runFor(8000);
+    await expect(counter(page)).toHaveText('01');
+  });
+
+  test('o contador pausa e só a reprodução explícita retoma após a pausa manual', async ({
+    page,
+  }) => {
+    await openHero(page);
+    await counter(page).click();
+    await expect(counter(page)).toHaveAttribute('aria-pressed', 'true');
+    await leaveHero(page);
+    await page.clock.runFor(16000);
+    await expect(counter(page)).toHaveText('01');
+    await counter(page).focus();
+    await counter(page).press('Enter');
+    await expect(counter(page)).toHaveAttribute('aria-label', 'Pausar carrossel');
+    await leaveHero(page);
+    await page.clock.runFor(8000);
+    await expect(counter(page)).toHaveText('02');
+    await counter(page).press('Space');
+    await expect(counter(page)).toHaveAttribute('aria-label', 'Reproduzir carrossel');
+  });
+
+  test('setas por teclado navegam com retorno circular e conservam foco visível', async ({
+    page,
+  }) => {
+    await openHero(page);
+    const previous = hero(page).getByRole('button', { name: 'Imagem anterior' });
+    const next = hero(page).getByRole('button', { name: 'Próxima imagem' });
+    await previous.focus();
+    await previous.press('Enter');
+    await expect(counter(page)).toHaveText('03');
+    await next.focus();
+    await next.press('Space');
+    await expect(counter(page)).toHaveText('01');
+    await expect(next).toBeFocused();
+    expect(await next.evaluate((node) => node.matches(':focus-visible'))).toBe(true);
+    expect(await next.evaluate((node) => getComputedStyle(node).outlineStyle)).toBe('solid');
+    await page.clock.runFor(16000);
+    await expect(counter(page)).toHaveText('01');
+  });
+
+  test('entrar por teclado pausa e sair da região não reinicia automaticamente', async ({
+    page,
+  }) => {
+    await openHero(page);
+    await hero(page).getByRole('link').focus();
+    await page.keyboard.press('Tab');
+    await expect(hero(page).getByRole('button', { name: 'Imagem anterior' })).toBeFocused();
+    await expect(counter(page)).toHaveAttribute('aria-label', 'Reproduzir carrossel');
+    await page.getByRole('button', { name: 'Abrir menu' }).focus();
+    await page.clock.runFor(16000);
+    await expect(counter(page)).toHaveText('01');
+    await counter(page).focus();
+    await counter(page).press('Space');
+    await page.clock.runFor(8000);
+    await expect(counter(page)).toHaveText('02');
+  });
+
+  test('hover suspende temporariamente e não desfaz a pausa manual ou de foco', async ({
+    page,
+  }) => {
+    await openHero(page);
+    await hero(page).getByRole('heading', { level: 1 }).hover();
+    await page.clock.runFor(16000);
+    await expect(counter(page)).toHaveText('01');
+    await leaveHero(page);
+    await page.clock.runFor(8000);
+    await expect(counter(page)).toHaveText('02');
+    await counter(page).click();
+    await hero(page).getByRole('heading', { level: 1 }).hover();
+    await leaveHero(page);
+    await page.clock.runFor(16000);
+    await expect(counter(page)).toHaveText('02');
+    await counter(page).focus();
+    await counter(page).press('Enter');
+    await hero(page).getByRole('link').focus();
+    await page.keyboard.press('Tab');
+    await hero(page).getByRole('heading', { level: 1 }).hover();
+    await leaveHero(page);
+    await page.clock.runFor(16000);
+    await expect(counter(page)).toHaveText('02');
+  });
+
+  test('preferência nativa reduzida inicial impede autoplay, drift e fade e permite setas', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openHero(page, true);
+    await page.clock.runFor(24000);
+    await expect(counter(page)).toHaveText('01');
+    await hero(page).getByRole('button', { name: 'Próxima imagem' }).click();
+    await expect(counter(page)).toHaveText('02');
+    expect(
+      await hero(page)
+        .locator('.lx-home-hero__slide--active .lx-home-hero__image')
+        .evaluate((node) => getComputedStyle(node).animationName),
+    ).toBe('none');
+    expect(
+      await hero(page)
+        .locator('.lx-home-hero__slide--active')
+        .evaluate((node) => getComputedStyle(node).transitionDuration),
+    ).toBe('0s');
+  });
+
+  test('alteração da preferência nativa suspende autoplay e preserva a pausa escolhida', async ({
+    page,
+  }) => {
+    await openHero(page);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(counter(page)).toHaveAttribute('aria-label', 'Reproduzir carrossel');
+    await page.clock.runFor(16000);
+    await expect(counter(page)).toHaveText('01');
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await expect(counter(page)).toHaveAttribute('aria-label', 'Pausar carrossel');
+    await page.clock.runFor(8000);
+    await expect(counter(page)).toHaveText('02');
+    await counter(page).click();
+    await leaveHero(page);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await expect(counter(page)).toHaveAttribute('aria-label', 'Reproduzir carrossel');
+    await page.clock.runFor(16000);
+    await expect(counter(page)).toHaveText('02');
+  });
+
+  test('opt-in inicial do DS e sua remoção preservam a pausa escolhida por teclado', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      document.addEventListener(
+        'DOMContentLoaded',
+        () => document.documentElement.setAttribute('data-motion', 'reduce'),
+        { once: true },
+      );
+    });
+    await openHero(page, true);
+    await page.clock.runFor(16000);
+    await expect(counter(page)).toHaveText('01');
+    await page.evaluate(() => document.documentElement.removeAttribute('data-motion'));
+    await expect(counter(page)).toHaveAttribute('aria-label', 'Pausar carrossel');
+    await page.clock.runFor(8000);
+    await expect(counter(page)).toHaveText('02');
+    await hero(page).getByRole('link').focus();
+    await page.keyboard.press('Tab');
+    await page.evaluate(() => document.documentElement.setAttribute('data-motion', 'reduce'));
+    await expect(counter(page)).toHaveAttribute('aria-label', 'Reproduzir carrossel');
+    await page.evaluate(() => document.documentElement.removeAttribute('data-motion'));
+    await expect(counter(page)).toHaveAttribute('aria-label', 'Reproduzir carrossel');
+    await page.clock.runFor(16000);
+    await expect(counter(page)).toHaveText('02');
+  });
+
+  test('opt-in do DS em runtime interrompe timer e movimento sem afetar navegação manual', async ({
+    page,
+  }) => {
+    await openHero(page);
+    await page.evaluate(() => document.documentElement.setAttribute('data-motion', 'reduce'));
+    await expect(counter(page)).toHaveAttribute('aria-label', 'Reproduzir carrossel');
+    await page.clock.runFor(16000);
+    await expect(counter(page)).toHaveText('01');
+    await hero(page).getByRole('button', { name: 'Próxima imagem' }).click();
+    await expect(counter(page)).toHaveText('02');
+    expect(
+      await hero(page)
+        .locator('.lx-home-hero__slide--active .lx-home-hero__image')
+        .evaluate((node) => getComputedStyle(node).animationName),
+    ).toBe('none');
+    expect(
+      await hero(page)
+        .locator('.lx-home-hero__slide--active')
+        .evaluate((node) => getComputedStyle(node).transitionDuration),
+    ).toBe('0s');
+    await leaveHero(page);
+    await page.evaluate(() => document.documentElement.removeAttribute('data-motion'));
+    await expect(counter(page)).toHaveAttribute('aria-label', 'Pausar carrossel');
+    await page.clock.runFor(8000);
+    await expect(counter(page)).toHaveText('03');
+  });
+
+  for (const width of [390, 1440]) {
+    test(`alvos invisíveis a ${width}px têm ao menos 44px, funcionam fora da caixa visível e não se sobrepõem`, async ({
+      page,
+    }, testInfo) => {
+      await page.setViewportSize({ width, height: 900 });
+      await openHero(page);
+      const regions = await hero(page)
+        .getByRole('button')
+        .evaluateAll((buttons) =>
+          buttons.map((button) => {
+            const box = button.getBoundingClientRect();
+            const hit = getComputedStyle(button, '::after');
+            if (hit.content === 'none') {
+              return {
+                visibleWidth: box.width,
+                visibleHeight: box.height,
+                x: box.x,
+                y: box.y,
+                width: box.width,
+                height: box.height,
+              };
+            }
+            const transform = new DOMMatrix(hit.transform);
+            return {
+              visibleWidth: box.width,
+              visibleHeight: box.height,
+              x: box.x + parseFloat(hit.left) + transform.m41,
+              y: box.y + parseFloat(hit.top) + transform.m42,
+              width: parseFloat(hit.width),
+              height: parseFloat(hit.height),
+            };
+          }),
+        );
+      await testInfo.attach('hero-hit-regions', {
+        body: JSON.stringify({ viewportWidth: width, regions }, null, 2),
+        contentType: 'application/json',
+      });
+      for (const [index, region] of regions.entries()) {
+        expect(region.visibleWidth).toBe(32);
+        expect(region.visibleHeight).toBe(32);
+        expect(region.width).toBeGreaterThanOrEqual(44);
+        expect(region.height).toBeGreaterThanOrEqual(44);
+        for (const other of regions.slice(index + 1)) {
+          const overlap =
+            region.x < other.x + other.width &&
+            other.x < region.x + region.width &&
+            region.y < other.y + other.height &&
+            other.y < region.y + region.height;
+          expect(overlap).toBe(false);
+        }
+      }
+      const [previous, pause, next] = regions;
+      await page.mouse.click(previous!.x + 1, previous!.y + previous!.height / 2);
+      await expect(counter(page)).toHaveText('03');
+      await page.mouse.click(next!.x + 1, next!.y + next!.height / 2);
+      await expect(counter(page)).toHaveText('01');
+      await page.mouse.click(pause!.x + 1, pause!.y + pause!.height / 2);
+      await expect(counter(page)).toHaveAttribute('aria-label', 'Reproduzir carrossel');
+      await leaveHero(page);
+      await page.clock.runFor(16000);
+      await expect(counter(page)).toHaveText('01');
+    });
+  }
+});
+
 test.describe('Discovery público — gate de UI (ADR-0009)', () => {
   for (const name of PAGE_NAMES) {
     test(`${name}: axe 0 a 390 e 1440 px, sem overflow de 320 a 1920 px, console limpo`, async ({

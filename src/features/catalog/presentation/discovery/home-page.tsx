@@ -47,6 +47,7 @@ export async function HomePage() {
         text={hero.text}
         action={hero.action}
         nextSectionId={RENUNCIATION}
+        carouselLabels={hero.carousel}
       />
 
       {/* PROBLEM — a renúncia: texto e tríade original do Luxtory2.0 em equilíbrio. */}
@@ -69,7 +70,7 @@ export async function HomePage() {
               {/* eslint-disable-next-line @next/next/no-img-element -- original Luxtory2.0 SVG is served verbatim; Next/Image injects an inline style blocked by the strict CSP. */}
               <img
                 src="/diagrams/triade-valor-desejado.svg"
-                alt={`Diagrama da tríade de valor: ${renunciation.values}`}
+                alt={renunciation.diagramAlt}
                 width={723}
                 height={640}
               />

@@ -134,6 +134,14 @@ export const discoveryMessages = {
       } satisfies Headline,
       text: 'Uma nova forma de viver seu lazer com mais valor.',
       action: 'Descubra uma nova forma de viver',
+      carousel: {
+        description: 'carrossel',
+        controls: 'Controles do carrossel',
+        previous: 'Imagem anterior',
+        next: 'Próxima imagem',
+        pause: 'Pausar carrossel',
+        play: 'Reproduzir carrossel',
+      },
     },
     renunciation: {
       marker: 'A cada escolha, uma renúncia',
@@ -144,6 +152,7 @@ export const discoveryMessages = {
       intro:
         'No mercado de lazer, tudo gira em torno de três valores: patrimônio, liberdade e pertencimento.',
       values: 'Patrimônio. Liberdade. Pertencimento.',
+      diagramAlt: 'Diagrama da tríade de valor: Patrimônio. Liberdade. Pertencimento.',
       tension:
         'Você quer os três, mas as alternativas ainda costumam fazer você abrir mão de uma parte importante para ter as outras.',
       /** Nome acessível da sequência das alternativas (não visível; distinto do título da seção). */

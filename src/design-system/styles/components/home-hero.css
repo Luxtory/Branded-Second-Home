@@ -124,6 +124,7 @@
   }
 
   .lx-home-hero__controls button {
+    position: relative;
     display: inline-grid;
     place-items: center;
     min-width: 2rem;
@@ -134,6 +135,17 @@
     color: inherit;
     font: inherit;
     cursor: pointer;
+  }
+
+  /* Expand only the invisible hit area; adjacent 32px buttons have a 12px gap. */
+  .lx-home-hero__controls button::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, var(--lx-target-min));
+    height: max(100%, var(--lx-target-min));
+    transform: translate(-50%, -50%);
   }
 
   .lx-home-hero__controls button:focus-visible {
@@ -206,6 +218,14 @@
 
   @media (prefers-reduced-motion: reduce) {
     .lx-home-hero__slide { transition-duration: var(--lx-duration-reduced); }
+  }
+
+  .lx-home-hero[data-motion="reduce"] .lx-home-hero__slide {
+    transition: none;
+  }
+
+  .lx-home-hero[data-motion="reduce"] .lx-home-hero__slide--active .lx-home-hero__image {
+    animation: none;
   }
 
   @keyframes lx-home-hero-drift {
