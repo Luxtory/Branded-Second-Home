@@ -51,6 +51,14 @@ export async function expectNoDocumentOverflow(page: Page) {
   const original = page.viewportSize();
   for (const width of OVERFLOW_WIDTHS) {
     await page.setViewportSize({ width, height: SWEEP_HEIGHT });
+    // WebKit pode resolver o resize antes do reflow completo (especialmente quando <picture> troca de source).
+    // Aguarda dois frames para medir o layout assentado, sem mascarar overflow real.
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+        }),
+    );
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );

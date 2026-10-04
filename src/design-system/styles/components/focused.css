@@ -4,17 +4,13 @@
 @layer lx.components {
   .lx-focused {
     display: grid;
-    width: 100%;
-    max-width: 100vw;
     min-height: 100dvh;
-    overflow-x: hidden;
     background-color: var(--lx-color-bg);
   }
 
   .lx-focused__panel {
     display: grid;
-    box-sizing: border-box;
-    max-width: 100%;
+    width: 100%;
     min-width: 0;
     align-content: start;
     gap: var(--lx-space-8);
