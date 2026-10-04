@@ -11,11 +11,20 @@ export function createNonce(): string {
   return btoa(crypto.randomUUID());
 }
 
-/** `'unsafe-eval'` só no `next dev` (depuração do React); nunca no build servido. */
-export function contentSecurityPolicy(nonce: string, { development }: { development: boolean }) {
+/** `'unsafe-eval'` só no `next dev`; upgrade de HTTP só quando a própria requisição já chegou por HTTPS. */
+export function contentSecurityPolicy(
+  nonce: string,
+  {
+    development,
+    secureTransport,
+  }: {
+    development: boolean;
+    secureTransport: boolean;
+  },
+) {
   const script = [`'self'`, `'nonce-${nonce}'`, `'strict-dynamic'`];
   if (development) script.push(`'unsafe-eval'`);
-  return [
+  const directives = [
     `default-src 'self'`,
     `script-src ${script.join(' ')}`,
     `style-src 'self' 'nonce-${nonce}'`,
@@ -25,8 +34,11 @@ export function contentSecurityPolicy(nonce: string, { development }: { developm
     `base-uri 'self'`,
     `form-action 'self'`,
     `frame-ancestors 'none'`,
-    `upgrade-insecure-requests`,
-  ].join('; ');
+  ];
+  // Em localhost HTTP, WebKit aplica o upgrade também aos assets self e tenta TLS em 127.0.0.1.
+  // Em produção/preview HTTPS a diretiva permanece ativa.
+  if (secureTransport) directives.push(`upgrade-insecure-requests`);
+  return directives.join('; ');
 }
 
 /** Cópia dos cabeçalhos da requisição com os cabeçalhos da CSP (repassados ao render). */

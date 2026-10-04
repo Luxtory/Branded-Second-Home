@@ -14,8 +14,12 @@ import {
  */
 export async function proxy(request: NextRequest) {
   const nonce = createNonce();
+  const forwardedProto = request.headers.get('x-forwarded-proto');
+  const secureTransport =
+    forwardedProto === 'https' || (forwardedProto === null && request.nextUrl.protocol === 'https:');
   const policy = contentSecurityPolicy(nonce, {
     development: process.env.NODE_ENV === 'development',
+    secureTransport,
   });
   const forwarded = { [NONCE_HEADER]: nonce, [CSP_HEADER]: policy };
   const response = isSessionPath(request.nextUrl.pathname)

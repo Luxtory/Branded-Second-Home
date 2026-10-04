@@ -12,12 +12,18 @@ describe('CSP e portão do site público (ADR-0014)', () => {
     const nonce = createNonce();
     expect(nonce).toMatch(/^[A-Za-z0-9+/=]{24,}$/);
     expect(createNonce()).not.toBe(nonce);
-    const policy = contentSecurityPolicy(nonce, { development: false });
+    const policy = contentSecurityPolicy(nonce, { development: false, secureTransport: true });
     expect(policy).toContain(`script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`);
     expect(policy).toContain("frame-ancestors 'none'");
     expect(policy).toContain("object-src 'none'");
     expect(policy).not.toContain('unsafe-eval');
-    expect(contentSecurityPolicy(nonce, { development: true })).toContain("'unsafe-eval'");
+    expect(
+      contentSecurityPolicy(nonce, { development: true, secureTransport: false }),
+    ).toContain("'unsafe-eval'");
+    expect(policy).toContain('upgrade-insecure-requests');
+    expect(
+      contentSecurityPolicy(nonce, { development: false, secureTransport: false }),
+    ).not.toContain('upgrade-insecure-requests');
   });
 
   it('[TECH-100] os cabeçalhos da CSP seguem para o render sem alterar os da requisição', () => {
