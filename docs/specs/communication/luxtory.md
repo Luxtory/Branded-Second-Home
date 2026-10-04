@@ -61,6 +61,10 @@ Só os que as duas jornadas usam; o restante é citado direto na aplicação de 
   maliciosa `[FW-B2C: §5, §14]`; no Brand Partners, o Vilão é uma lógica, não uma empresa `[FW-BP: §5]`. Nome de empresa
   concorrente na copy passa pela revisão jurídica (`P-LX-03`).
 
+- **Site B2C (`D-LX-08`):** a casa é **Second Home**; Residence Concept → **Home Concept**; Residence Edition →
+  **Home Edition**. Branded Second Home (categoria), Luxtory Club, Membership e a página **Coleção** continuam. Admin,
+  banco, `01/02/03` e instrumentos jurídicos usam os nomes canônicos.
+
 ## 7. Registro
 
 | ID | Decisão | Status | Base |
@@ -72,6 +76,7 @@ Só os que as duas jornadas usam; o restante é citado direto na aplicação de 
 | D-LX-05 | Regras observáveis do tom e variação pelos 5Ps (§3 da versão anterior) | substituída em 2026-10-01 → `[FW-B2C: §9, §11]` · `[FW-BP: §9, §11]` | Mestre §8, §9 |
 | D-LX-06 | Nomenclatura pública: termos canônicos + "Coleção" (§6) | aprovada em 2026-09-29 | `02` §1; DS spec §11 (open question 5) |
 | D-LX-07 | Contraste com convenções, nunca com concorrentes nomeados | substituída em 2026-10-01 → `[FW-B2C: §2, §5]` · `[FW-BP: §5, §15]` | Mestre §4 (Vilão); REQ-100 |
+| D-LX-08 | Nomenclatura pública do site B2C (§6), complementando `D-LX-06`: Second Home, Home Concept e Home Edition no lugar de Residence, Residence Concept e Residence Edition; nomes canônicos no Admin, no banco, nos canônicos e nos instrumentos | aprovada em 2026-10-01 (fundador) | `01` §1, §2; BR-001, BR-004 |
 
 | ID | Pendência | Bloqueia |
 |---|---|---|

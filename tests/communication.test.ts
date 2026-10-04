@@ -37,7 +37,8 @@ const JOURNEYS = [
   {
     mark: 'FW-B2C',
     framework: join(DIR, 'framework-b2c.md'),
-    sha256: '7b0ec6c1b8eb828f509b46e77c1c8f2205825190412c9f4aa5176e7a4dab5577',
+    // Versão de 2026-10-01 (fundador; D-B2C-17): "outros clubes de second homes" no §2.
+    sha256: 'bf1a7f74f8cc2faf02236eeec17864ae5920b31248ca60fb12acec2177c5f6f3',
     application: B2C,
     sections: [...APPLICATION_SECTIONS, 'Variações por modalidade'],
     anchors: ['Conheça as Residence Editions.', 'Unaware → Product Aware'],

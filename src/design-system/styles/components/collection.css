@@ -74,4 +74,77 @@
     color: var(--lx-color-fg-muted);
     max-width: var(--lx-measure-narrow);
   }
+
+  /* Card details (credit, Editions, cue) as one block beside or below the Frame. */
+  .lx-collection-card__details {
+    display: grid;
+    gap: var(--lx-space-4);
+    align-content: start;
+  }
+
+  /* The card's place in the sequence (decorative, aria-hidden): a numeral at the Frame's top corner. */
+  .lx-collection-card__index {
+    position: absolute;
+    top: var(--lx-space-8);
+    inset-inline-start: var(--lx-space-8);
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-text-display-m);
+    line-height: 1;
+    font-variant-numeric: lining-nums;
+    color: var(--lx-color-accent);
+  }
+
+  /* Feature: one Concept per row — a wide Frame on one side, its data on the other, the side alternating. -- */
+  .lx-collection--feature {
+    gap: var(--lx-space-16);
+  }
+
+  @media (min-width: 48rem) {
+    .lx-collection--feature { grid-template-columns: minmax(0, 1fr); }
+    .lx-collection--feature > :nth-child(even) { margin-top: 0; }
+  }
+
+  @media (min-width: 64rem) {
+    .lx-collection--feature { gap: var(--lx-space-24); }
+
+    .lx-collection--feature > :nth-child(odd),
+    .lx-collection--feature > :nth-child(even) {
+      grid-column: 1 / -1;
+      margin-top: 0;
+    }
+
+    .lx-collection--feature .lx-collection-card {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--lx-layout-gutter);
+      align-items: end;
+    }
+
+    .lx-collection--feature .lx-collection-card > .lx-frame { grid-column: 1 / span 7; grid-row: 1; }
+    .lx-collection--feature .lx-collection-card__details { grid-column: 9 / -1; grid-row: 1; }
+    .lx-collection--feature > :nth-child(even) .lx-collection-card > .lx-frame { grid-column: 6 / -1; }
+    .lx-collection--feature > :nth-child(even) .lx-collection-card__details { grid-column: 1 / span 4; }
+
+    .lx-collection--feature .lx-frame__title {
+      font-size: var(--lx-text-display-l);
+      line-height: var(--lx-leading-display);
+    }
+  }
+
+  /* Feature from lg: a panoramic Frame (21:9) — the name on a band, not a block of empty color. */
+  @media (min-width: 64rem) {
+    .lx-collection--feature .lx-frame { --lx-frame-ratio: var(--lx-ratio-establishing); }
+  }
+
+  /* Compact: up to three per row from lg, stepped (the middle one lower). */
+  @media (min-width: 64rem) {
+    .lx-collection--compact { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .lx-collection--compact > :nth-child(odd),
+    .lx-collection--compact > :nth-child(even) {
+      grid-column: auto;
+      margin-top: 0;
+    }
+
+    .lx-collection--compact > :nth-child(3n + 2) { margin-top: var(--lx-space-16); }
+  }
 }

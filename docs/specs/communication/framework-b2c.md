@@ -65,7 +65,7 @@ Esses campos devem partir da realidade do público.
 **Luxtory Branded Second Home: Residences concebidas a partir do Brand DNA de Brand Partners, estruturadas em Residence Editions nas modalidades Owner e/ou Co-Owner e conectadas ao Luxtory Club conforme elegibilidade e regras aplicáveis.**
 
 **Alternativas:**\
-**Hotéis e resorts; locação de temporada; aquisição convencional de segunda residência; modelos de co-ownership; clubes de second homes, intercâmbio ou hospitalidade; e manutenção da situação atual.**
+**Hotéis e resorts; locação de temporada; aquisição convencional de segunda residência; modelos de co-ownership; outros clubes de second homes, intercâmbio ou hospitalidade; e manutenção da situação atual.**
 
 ### Trade-offs das alternativas
 

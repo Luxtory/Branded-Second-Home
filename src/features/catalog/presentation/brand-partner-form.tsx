@@ -25,6 +25,7 @@ export function BrandPartnerForm({ idempotencyKey }: { readonly idempotencyKey: 
         form={FORM}
         name="brand_name"
         label={text.nameLabel}
+        publicTag={messages.form.publicWithExposureTag}
         hint={text.nameHint}
         maxLength={NAME_MAX}
         state={state}

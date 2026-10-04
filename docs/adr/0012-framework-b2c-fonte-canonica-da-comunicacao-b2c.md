@@ -84,3 +84,9 @@ A restrição permanece: a comunicação não redefine o modelo de negócio. Os 
 - Contrato: [`docs/specs/communication.md`](../specs/communication.md)
 - Canônicos: `01` §1, §2, §8, §37 (BR-373, BR-374, BR-380) · `02` §1, §2, §16 (REQ-100…REQ-104) · `03` §13
 - [`docs/plan/implementation-waves.md`](../plan/implementation-waves.md) → Wave 3C
+
+## Versões do Framework
+
+- **2026-10-01 (fundador, `D-B2C-17`):** no §2, a lista de alternativas passa a dizer "outros clubes de second homes,
+  intercâmbio ou hospitalidade" — a Luxtory se apresenta como clube de Branded Second Homes. Única alteração; sha256
+  `bf1a7f74f8cc2faf02236eeec17864ae5920b31248ca60fb12acec2177c5f6f3` (antes `7b0ec6c1…dab5577`).

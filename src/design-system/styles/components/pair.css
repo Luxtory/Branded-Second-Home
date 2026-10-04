@@ -1,0 +1,25 @@
+/* Pair — two peers with the same weight, side by side (Owner × Co-Owner, REQ-103; "faz sentido" × "pode não fazer
+ * sentido"). Mobile-first: stacked in DOM order; two equal columns from md. Both sides share one structure: a heading
+ * (h2/h3, same level) and content, under a strong hairline. Never style one side differently from the other. */
+@layer lx.components {
+  .lx-pair {
+    display: grid;
+    gap: var(--lx-space-12) var(--lx-layout-gutter);
+    margin: 0;
+    padding: 0;
+  }
+
+  @media (min-width: 48rem) {
+    .lx-pair {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .lx-pair__item {
+    display: grid;
+    gap: var(--lx-space-4);
+    align-content: start;
+    padding-top: var(--lx-space-6);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  }
+}

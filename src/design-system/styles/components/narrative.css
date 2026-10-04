@@ -1,0 +1,797 @@
+/* Narrative compositions — the architectural grid made visible for long-form public pages (W4 redesign).
+ * Placement helpers on the 12-column grid, sticky asides, chapter heads with numerals, monument codas, the values
+ * line, staged lines, contrast splits, ledgers, axes, Q&A rows, deeds and the triad callouts.
+ * Mobile-first: everything stacks in DOM order (designed rhythm, not a squeezed desktop); the grid opens at lg. */
+@layer lx.components {
+  /* Placement on the 12 columns (from lg; below, full width in DOM order). ----------------------------------- */
+  @media (min-width: 64rem) {
+    .lx-grid > .lx-place-wide { grid-column: 1 / span 11; }
+    .lx-grid > .lx-place-full { grid-column: 1 / -1; }
+    .lx-grid > .lx-place-left { grid-column: 1 / span 5; }
+    .lx-grid > .lx-place-right { grid-column: 7 / -1; }
+    .lx-grid > .lx-place-aside { grid-column: 1 / span 4; }
+    .lx-grid > .lx-place-main { grid-column: 6 / -1; }
+    .lx-grid > .lx-place-center { grid-column: 3 / span 8; }
+    .lx-grid > .lx-place-offset { grid-column: 5 / -1; }
+    .lx-grid > .lx-place-half { grid-column: 1 / span 6; }
+
+    .lx-sticky {
+      position: sticky;
+      top: calc(var(--lx-layout-header-height) + var(--lx-space-8));
+      align-self: start;
+    }
+  }
+
+  /* A Scene whose rows breathe more than the default stack. */
+  .lx-grid--chapter {
+    row-gap: var(--lx-space-16);
+    grid-auto-flow: row dense;
+  }
+
+  @media (min-width: 64rem) {
+    .lx-grid--chapter { row-gap: var(--lx-space-24); }
+    .lx-grid > .lx-span-rows { grid-row: span 2; }
+  }
+
+  /* Chapter head: numeral + rule + marker (+ mini triad). The numeral is the chapter's real metadata. ---------- */
+  .lx-chapter-head {
+    display: flex;
+    align-items: center;
+    gap: var(--lx-space-4) var(--lx-space-6);
+    flex-wrap: wrap;
+    padding-top: var(--lx-space-4);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-chapter-head .lx-marker {
+    flex: 1 1 12rem;
+  }
+
+  .lx-numeral {
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-text-display-l);
+    font-weight: var(--lx-weight-display);
+    line-height: 1;
+    font-variant-numeric: lining-nums;
+    color: var(--lx-color-accent);
+  }
+
+  /* A headline allowed a wider measure (long Opening Frame sentence: four lines, not six). */
+  .lx-headline-wide {
+    max-width: calc(var(--lx-measure-display) * 1.35);
+  }
+
+  /* Monument coda: one closing line, given the whole width and silence around it. ----------------------------- */
+  .lx-coda {
+    display: grid;
+    gap: var(--lx-space-6);
+    padding-block: var(--lx-space-12);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-coda--center {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .lx-coda--center > * {
+    max-width: none;
+  }
+
+  /* The values line: three words on one measured line, each under its own dimension tick. -------------------- */
+  .lx-values {
+    display: grid;
+    gap: var(--lx-space-6) var(--lx-layout-gutter);
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-text-display-l);
+    font-weight: var(--lx-weight-display);
+    line-height: var(--lx-leading-display);
+    letter-spacing: var(--lx-tracking-display);
+    counter-reset: lx-value;
+  }
+
+  /* Side by side, each word gets a third of the line: one size down so the longest word keeps its column. */
+  @media (min-width: 48rem) {
+    .lx-values {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      font-size: var(--lx-text-display-m);
+    }
+  }
+
+  .lx-values > span {
+    position: relative;
+    display: grid;
+    gap: var(--lx-space-3);
+    padding-top: var(--lx-space-4);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+    counter-increment: lx-value;
+  }
+
+  .lx-values > span::before {
+    content: counter(lx-value, decimal-leading-zero) / "";
+    font-family: var(--lx-font-story);
+    font-size: var(--lx-text-marker);
+    letter-spacing: var(--lx-tracking-marker);
+    color: var(--lx-color-marker);
+  }
+
+  /* Separated: each word keeps its own rule, with gaps — the market sells them apart. */
+  .lx-values--apart > span { border-top-style: dashed; }
+
+  /* Joined: one continuous rule under the three — the same architecture. */
+  .lx-values--joined {
+    column-gap: 0;
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  }
+
+  .lx-values--joined > span {
+    border-top: 0;
+    padding-inline-end: var(--lx-layout-gutter);
+  }
+
+  @media (min-width: 48rem) {
+    .lx-values--joined > span + span {
+      padding-inline-start: var(--lx-layout-gutter);
+      border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+  }
+
+  /* Lines: a short list of display sentences, each on its own measured line. --------------------------------- */
+  .lx-lines {
+    display: grid;
+    margin: 0;
+    padding: 0;
+  }
+
+  .lx-lines > li {
+    padding-block: var(--lx-space-6);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-lines > li:last-child {
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  /* Staged lines: phrases set apart in space (start · end · back). ------------------------------------------- */
+  .lx-staging {
+    display: grid;
+    gap: var(--lx-space-8);
+    margin: 0;
+    padding: 0;
+  }
+
+  .lx-staging__line--end {
+    justify-self: end;
+    text-align: end;
+  }
+
+  .lx-staging__line--back {
+    justify-self: center;
+    text-align: center;
+    color: var(--lx-color-fg-muted);
+  }
+
+  @media (min-width: 64rem) {
+    .lx-staging { gap: var(--lx-space-12); }
+    .lx-staging__line--start { padding-inline-end: 40%; }
+    .lx-staging__line--end { padding-inline-start: 40%; }
+  }
+
+  /* Contrast split: what it is not | what it is, divided by a vertical hairline. ----------------------------- */
+  .lx-contrast {
+    display: grid;
+    gap: var(--lx-space-6) var(--lx-layout-gutter);
+  }
+
+  .lx-contrast > :first-child {
+    color: var(--lx-color-fg-muted);
+  }
+
+  .lx-contrast > :last-child {
+    color: var(--lx-color-accent);
+  }
+
+  @media (min-width: 48rem) {
+    .lx-contrast { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lx-contrast > :last-child {
+      padding-inline-start: var(--lx-layout-gutter);
+      border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+  }
+
+  /* Ledger: numbered rows (index · title · text), like the pages of a project dossier. ----------------------- */
+  .lx-ledger {
+    margin: 0;
+    padding: 0;
+    counter-reset: lx-ledger;
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-ledger__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--lx-space-3) var(--lx-space-6);
+    padding-block: var(--lx-space-8);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+    counter-increment: lx-ledger;
+  }
+
+  .lx-ledger__item::before {
+    content: counter(lx-ledger, decimal-leading-zero) / "";
+    grid-row: 1;
+    font-family: var(--lx-font-story);
+    font-size: var(--lx-text-marker);
+    letter-spacing: var(--lx-tracking-marker);
+    line-height: var(--lx-leading-heading);
+    color: var(--lx-color-marker);
+    padding-top: var(--lx-space-2);
+  }
+
+  .lx-ledger__item > :first-child { grid-column: 2; }
+  .lx-ledger__item > :not(:first-child) { grid-column: 2; }
+
+  @media (min-width: 48rem) {
+    .lx-ledger__item {
+      grid-template-columns: 4rem minmax(0, 2fr) minmax(0, 3fr);
+      column-gap: var(--lx-layout-gutter);
+    }
+
+    .lx-ledger__item > :first-child { grid-column: 2; grid-row: 1 / span 4; }
+    .lx-ledger__item > :not(:first-child) { grid-column: 3; }
+  }
+
+  /* A row with one sentence only: it takes both text columns. */
+  @media (min-width: 48rem) {
+    .lx-ledger__item > :only-child { grid-column: 2 / -1; grid-row: auto; }
+  }
+
+  /* Axis: a sequence hung on one vertical line, each step a square node (the mechanism, lifestyle → Club). --- */
+  .lx-axis {
+    position: relative;
+    display: grid;
+    gap: var(--lx-space-8);
+    margin: 0;
+    padding: 0 0 0 var(--lx-space-8);
+    counter-reset: lx-axis;
+  }
+
+  .lx-axis::before {
+    content: "";
+    position: absolute;
+    inset-block: var(--lx-space-2);
+    inset-inline-start: var(--lx-space-1);
+    border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  }
+
+  .lx-axis__item {
+    position: relative;
+    display: grid;
+    gap: var(--lx-space-2);
+    counter-increment: lx-axis;
+  }
+
+  .lx-axis__item::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: calc(-1 * var(--lx-space-8) + var(--lx-space-1) - 0.3125rem);
+    top: var(--lx-space-2);
+    width: 0.625rem;
+    height: 0.625rem;
+    border: var(--lx-border-hairline) solid var(--lx-color-accent);
+    background: var(--lx-color-bg);
+  }
+
+  .lx-axis__item:last-child::before {
+    background: var(--lx-color-accent);
+  }
+
+  .lx-axis__item::after {
+    content: counter(lx-axis, decimal-leading-zero) / "";
+    order: -1;
+    font-family: var(--lx-font-story);
+    font-size: var(--lx-text-marker);
+    letter-spacing: var(--lx-tracking-marker);
+    color: var(--lx-color-marker);
+  }
+
+  @media (min-width: 64rem) {
+    .lx-axis { gap: var(--lx-space-12); }
+  }
+
+  /* Q&A rows: the Protagonist's question on the left, the answer on the right. -------------------------------- */
+  .lx-qa {
+    display: grid;
+    gap: var(--lx-space-4) var(--lx-layout-gutter);
+    padding-top: var(--lx-space-6);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  @media (min-width: 64rem) {
+    .lx-qa { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+  }
+
+  .lx-qa__answer {
+    display: grid;
+    gap: var(--lx-space-4);
+    align-content: start;
+  }
+
+  /* Deeds: Owner and Co-Owner as two tall sheets of the same drawing set (REQ-103: same structure). ---------- */
+  .lx-pair--deed {
+    gap: 0;
+  }
+
+  .lx-pair--deed > .lx-pair__item {
+    gap: var(--lx-space-6);
+    padding-block: var(--lx-space-8) var(--lx-space-12);
+  }
+
+  @media (min-width: 48rem) {
+    .lx-pair--deed > .lx-pair__item + .lx-pair__item {
+      padding-inline-start: var(--lx-layout-gutter);
+      border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+
+    .lx-pair--deed > .lx-pair__item:first-child {
+      padding-inline-end: var(--lx-layout-gutter);
+    }
+  }
+
+  .lx-pair--deed .lx-pair__item > :first-child {
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-text-display-l);
+    font-weight: var(--lx-weight-display);
+    line-height: var(--lx-leading-display);
+    letter-spacing: var(--lx-tracking-display);
+  }
+
+  /* Triad callouts: the closed triad with one note at each vertex. ----------------------------------------------- */
+  .lx-callouts {
+    display: grid;
+    gap: var(--lx-space-8) var(--lx-layout-gutter);
+    align-items: start;
+    margin: 0;
+    padding: 0;
+  }
+
+  .lx-callouts__drawing {
+    justify-self: center;
+    width: min(100%, 26rem);
+  }
+
+  .lx-callouts__note {
+    display: grid;
+    gap: var(--lx-space-3);
+    padding-top: var(--lx-space-4);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  @media (min-width: 64rem) {
+    .lx-callouts {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr);
+      grid-template-areas:
+        "patrimony drawing freedom"
+        ". belonging .";
+    }
+
+    .lx-callouts__drawing { grid-area: drawing; width: 100%; }
+    .lx-callouts__note--patrimony { grid-area: patrimony; margin-top: var(--lx-space-12); }
+    .lx-callouts__note--freedom { grid-area: freedom; margin-top: var(--lx-space-12); text-align: end; }
+    .lx-callouts__note--belonging { grid-area: belonging; text-align: center; }
+  }
+
+  /* Frame holding a line drawing (the alternatives): drawing on top, title at the foot. --------------------- */
+  .lx-frame--drawing .lx-frame__media {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: space-between;
+  }
+
+  .lx-frame--drawing .lx-triad {
+    position: relative;
+    width: min(100%, 14rem);
+  }
+
+  /* Opening Frame row: lead and action share one baseline under a hairline (from lg). ----------------------- */
+  .lx-opening-row {
+    position: relative;
+    display: grid;
+    gap: var(--lx-space-6) var(--lx-layout-gutter);
+    padding-top: var(--lx-space-6);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  @media (min-width: 64rem) {
+    .lx-opening-row {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+    }
+  }
+
+  /* Mobile: primary actions span the thumb zone; from md they size to content. ------------------------------- */
+  .lx-actions-stack {
+    display: grid;
+    gap: var(--lx-space-4);
+  }
+
+  .lx-actions-stack > .lx-button {
+    justify-content: center;
+  }
+
+  @media (min-width: 48rem) {
+    .lx-actions-stack {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--lx-space-4) var(--lx-space-8);
+    }
+  }
+
+  /* Sequence that fits its items side by side from lg (no horizontal scroll on desktop). -------------------- */
+  @media (min-width: 64rem) {
+    .lx-sequence--fit {
+      overflow: visible;
+      margin-inline: 0;
+      padding: 0;
+    }
+
+    .lx-sequence--fit .lx-sequence__track {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .lx-sequence--fit .lx-sequence__item > * {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* Rows: a plain list read line by line, each item under its hairline (criteria, Editions of a card). ------- */
+  .lx-rows {
+    display: grid;
+    margin: 0;
+    padding: 0;
+  }
+
+  .lx-rows > li {
+    padding-block: var(--lx-space-3);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-rows > li:last-child {
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  /* Legend of a drawing: shape + word (never color alone). ------------------------------------------------- */
+  .lx-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lx-space-3) var(--lx-space-6);
+    margin: 0;
+    padding: 0;
+    font-size: var(--lx-text-small);
+    color: var(--lx-color-fg-muted);
+  }
+
+  .lx-legend > li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lx-space-2);
+  }
+
+  .lx-legend__swatch {
+    display: inline-block;
+    width: var(--lx-space-6);
+    height: var(--lx-space-3);
+    border: var(--lx-border-hairline) solid var(--lx-color-accent);
+  }
+
+  .lx-legend__swatch--solid { background-color: var(--lx-color-accent); }
+
+  /* Configurations: each option a row — name, the drawn proportion, the values. ------------------------------ */
+  .lx-configs {
+    display: grid;
+    margin: 0;
+    padding: 0;
+  }
+
+  .lx-configs__item {
+    display: grid;
+    gap: var(--lx-space-4);
+    padding-block: var(--lx-space-6);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-configs__item:last-child {
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  /* Page index: the chapters as numbered lines on the rule (opening of a long page). ------------------------- */
+  .lx-index {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    counter-reset: lx-index;
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  }
+
+  @media (min-width: 48rem) {
+    .lx-index { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  .lx-index__item {
+    counter-increment: lx-index;
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  @media (min-width: 48rem) {
+    .lx-index__item { border-bottom: 0; }
+    .lx-index__item + .lx-index__item { border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule); }
+  }
+
+  .lx-index__link {
+    display: grid;
+    gap: var(--lx-space-2);
+    min-height: var(--lx-target-min);
+    padding: var(--lx-space-4) var(--lx-space-4) var(--lx-space-6) 0;
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-text-display-s);
+    line-height: var(--lx-leading-heading);
+    color: var(--lx-color-fg);
+    text-decoration: none;
+  }
+
+  @media (min-width: 48rem) {
+    .lx-index__item + .lx-index__item .lx-index__link { padding-inline-start: var(--lx-layout-gutter); }
+  }
+
+  .lx-index__link::before {
+    content: counter(lx-index, decimal-leading-zero) / "";
+    font-family: var(--lx-font-story);
+    font-size: var(--lx-text-marker);
+    letter-spacing: var(--lx-tracking-marker);
+    color: var(--lx-color-marker);
+  }
+
+  .lx-index__link:hover {
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--lx-border-hairline);
+    text-underline-offset: 0.2em;
+  }
+
+  /* Prelude: a page title beside its drawing (from lg the drawing takes the right half). --------------------- */
+  .lx-prelude__drawing {
+    width: min(100%, 22rem);
+    justify-self: center;
+  }
+
+  @media (min-width: 64rem) {
+    .lx-prelude { align-self: end; }
+    .lx-prelude__drawing { width: min(100%, 30rem); justify-self: end; }
+  }
+
+  /* Group head: the group's name and its sentence share one line (from lg), under the rule. ----------------- */
+  .lx-group-head {
+    display: grid;
+    gap: var(--lx-space-6) var(--lx-layout-gutter);
+    align-items: end;
+  }
+
+  @media (min-width: 64rem) {
+    .lx-group-head { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  }
+
+  /* Specification: the first paragraph opens like a standfirst. ---------------------------------------------- */
+  .lx-spec > :first-child {
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-text-display-s);
+    line-height: var(--lx-leading-heading);
+  }
+
+  /* Edition sheet: number and region on the left, the conditions on the right. ------------------------------- */
+  .lx-edition__head {
+    display: grid;
+    gap: var(--lx-space-3);
+    align-content: start;
+  }
+
+  /* A pair answering a question: the row's rule already opens it. */
+  .lx-qa .lx-pair--deed > .lx-pair__item:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  @media (min-width: 48rem) {
+    .lx-qa .lx-pair--deed > .lx-pair__item {
+      padding-top: 0;
+      border-top: 0;
+    }
+  }
+
+  /* The Concept's credit on the cover reads at lead size. */
+  .lx-opening-row .lx-credit {
+    font-size: var(--lx-text-lead);
+  }
+
+  /* Home — "A cada escolha, uma renúncia": dark field, balanced copy × original triad, three equal alternatives. */
+  .lx-renunciation {
+    display: grid;
+    gap: var(--lx-space-12);
+  }
+
+  .lx-renunciation__opening {
+    display: grid;
+    gap: var(--lx-space-8) var(--lx-layout-gutter);
+    align-items: start;
+  }
+
+  .lx-renunciation__copy {
+    display: grid;
+    gap: var(--lx-space-4);
+    align-content: start;
+  }
+
+  .lx-renunciation__title {
+    display: grid;
+    gap: 0;
+    width: max-content;
+    max-width: 100%;
+    margin: 0;
+    font-family: var(--lx-font-display);
+    font-size: clamp(1.35rem, 6.5vw, 1.75rem);
+    font-weight: var(--lx-weight-display);
+    line-height: 1.05;
+    letter-spacing: var(--lx-tracking-display);
+    color: var(--lx-palette-warm-sand);
+  }
+
+  .lx-renunciation__title > span,
+  .lx-renunciation__title > em {
+    display: block;
+    white-space: nowrap;
+  }
+
+  .lx-renunciation__title > span {
+    font-style: normal;
+  }
+
+  .lx-renunciation__title em {
+    font-style: italic;
+    font-weight: var(--lx-weight-display);
+  }
+
+  .lx-renunciation__intro {
+    display: grid;
+    gap: var(--lx-space-4);
+  }
+
+  .lx-renunciation__intro > * {
+    max-width: var(--lx-measure-narrow);
+  }
+
+  .lx-renunciation__diagram {
+    display: flex;
+    width: min(100%, 22rem);
+    margin: 0;
+    justify-self: center;
+    align-self: start;
+    justify-content: center;
+  }
+
+  .lx-renunciation__diagram img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 15.5rem;
+    object-fit: contain;
+  }
+
+  @media (min-width: 48rem) {
+    .lx-renunciation__title {
+      font-size: var(--lx-text-display-m);
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .lx-renunciation__opening {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--lx-space-12) var(--lx-layout-gutter);
+      align-items: stretch;
+    }
+
+    .lx-renunciation__copy {
+      width: 100%;
+      max-width: 26rem;
+      justify-self: start;
+    }
+
+    .lx-renunciation__diagram {
+      position: relative;
+      width: 100%;
+      max-width: 26rem;
+      min-height: 0;
+      justify-self: end;
+      align-self: stretch;
+    }
+
+    .lx-renunciation__diagram img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      max-height: none;
+      object-fit: contain;
+      object-position: center;
+    }
+  }
+
+  .lx-renunciation__alternatives {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-block: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-renunciation__alternative {
+    display: grid;
+    gap: var(--lx-space-4);
+    align-content: start;
+    padding-block: var(--lx-space-6);
+  }
+
+  .lx-renunciation__alternative + .lx-renunciation__alternative {
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-renunciation__alternative > :first-child {
+    color: var(--lx-color-accent);
+  }
+
+  @media (min-width: 48rem) {
+    .lx-renunciation__alternatives {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .lx-renunciation__alternative {
+      padding-inline: var(--lx-layout-gutter);
+    }
+
+    .lx-renunciation__alternative:first-child {
+      padding-inline-start: 0;
+    }
+
+    .lx-renunciation__alternative:last-child {
+      padding-inline-end: 0;
+    }
+
+    .lx-renunciation__alternative + .lx-renunciation__alternative {
+      border-top: 0;
+      border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+  }
+
+  .lx-renunciation__closing {
+    display: grid;
+    gap: var(--lx-space-3);
+    justify-items: center;
+    text-align: center;
+  }
+
+  .lx-renunciation__closing-copy {
+    display: grid;
+    gap: var(--lx-space-2);
+    justify-items: center;
+  }
+
+  .lx-renunciation__closing-copy > *,
+  .lx-renunciation__closing-turn {
+    max-width: var(--lx-measure-body);
+  }
+
+  .lx-renunciation__closing-turn {
+    color: var(--lx-color-accent);
+  }
+
+}

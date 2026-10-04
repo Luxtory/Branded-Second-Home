@@ -61,7 +61,8 @@ export const messages = {
     title: 'Registrar Brand Partner',
     lead: 'A marca parceira que aporta seu Brand DNA ao modelo Luxtory.',
     nameLabel: 'Nome da marca',
-    nameHint: 'Como a marca é identificada nos registros da Luxtory.',
+    nameHint:
+      'Como a marca é identificada nos registros da Luxtory. Depois da autorização de exposição, aparece como está no site, no crédito dos Concepts aprovados.',
     exposureLabel: 'Autorização de exposição pública',
     exposureHint:
       'Referência do documento que autoriza a exposição pública da marca. Pode ser registrada depois.',
@@ -86,6 +87,9 @@ export const messages = {
   },
   form: {
     optional: '(opcional)',
+    // Conteúdo publicado como está no site (docs/specs/catalog.md §13.5).
+    publicTag: 'Público no site',
+    publicWithExposureTag: 'Público com a exposição autorizada',
     cancel: 'Cancelar',
     timeZoneHint: (zone: string) => `Horário do seu dispositivo (${zone}).`,
     errorSummary: 'Revise os campos indicados.',
@@ -120,19 +124,24 @@ export const messages = {
     refLabel: 'Autorização de exposição pública',
     refHint: 'Referência do documento que autoriza a exposição pública da marca.',
     submit: 'Registrar autorização',
+    publicNotice:
+      'Ao registrar, o nome da marca e os Concepts com versão aprovada desta Brand Partner passam a aparecer no site.',
     alreadyRegistered: 'A autorização de exposição desta Brand Partner já foi registrada.',
     blocked: 'A parceria está encerrada: a autorização de exposição não pode mais ser registrada.',
   },
   versionFields: {
     titleLabel: 'Nome do Concept',
-    titleHint: 'Como o Concept é identificado nos registros da Luxtory.',
+    titleHint:
+      'Como o Concept é identificado nos registros da Luxtory. Aparece como está no site, na Coleção e na página do Concept, depois da aprovação de uma versão e da autorização de exposição da marca.',
     essentialLabel: 'Elementos essenciais',
-    essentialHint: 'Um por linha. O que identifica o Concept e não pode ser descaracterizado.',
+    essentialHint:
+      'Um por linha. O que identifica o Concept e não pode ser descaracterizado. Uso interno: não aparece no site.',
     premisesLabel: 'Premissas de preservação',
     premisesHint:
-      'Uma por linha. O que precisa ser mantido para preservar a identidade do Concept.',
+      'Uma por linha. O que precisa ser mantido para preservar a identidade do Concept. Uso interno: não aparece no site.',
     specificationLabel: 'Especificação',
-    specificationHint: 'Suficiente para implantação replicável e para a apresentação comercial.',
+    specificationHint:
+      'Suficiente para implantação replicável e para a apresentação comercial. Aparece como está na página do Concept no site, quando a versão for a vigente; separe parágrafos com uma linha em branco.',
   },
   newConcept: {
     title: 'Registrar Concept',
@@ -194,6 +203,8 @@ export const messages = {
     lead: 'Confira o conteúdo desta versão antes de aprová-la.',
     notice:
       'A aprovação é o controle editorial do Concept: confira a terminologia e a ausência de promessas. Depois de aprovada, a versão não muda, e as novas Residences passam a fixá-la.',
+    publicNotice:
+      'Ao aprovar, o nome do Concept e a especificação desta versão passam a aparecer como estão no site, se a exposição da marca estiver autorizada e a parceria ativa.',
     refsLabel: 'Aprovações registradas',
     refsHint:
       'Uma por linha. Referências das aprovações aplicáveis (por exemplo, o plano estratégico aprovado pela Brand Partner).',
@@ -205,14 +216,19 @@ export const messages = {
     title: 'Registrar Edition',
     lead: 'Um lançamento comercial deste Concept, com região, modalidade e condições comerciais.',
     regionLabel: 'Região',
-    regionHint: 'Região do lançamento, como a Luxtory a descreve.',
+    regionHint:
+      'Região do lançamento, como a Luxtory a descreve. Aparece como está no site, na Coleção e na página do Concept.',
     modalityLegend: 'Modalidade',
-    modalityHint: 'Owner, Co-Owner ou as duas alternativas, enquanto a estrutura estiver aberta.',
+    modalityHint:
+      'Owner, Co-Owner ou as duas alternativas, enquanto a estrutura estiver aberta. Aparece no site, na Coleção e na página do Concept.',
     ownerDesc: 'A Residence inteira, para um único adquirente.',
     coOwnerDesc: 'Ações da SPE proprietária, com Direito de Uso.',
     bothDesc: 'As duas alternativas enquanto a estrutura estiver aberta.',
+    publicNotice:
+      'Ao registrar, a região e a modalidade passam a aparecer no site, na Coleção e na página do Concept, e as condições comerciais na página do Concept — como estão.',
     conditionsLabel: 'Condições comerciais',
-    conditionsHint: 'Registradas pela Luxtory. O sistema não calcula valores.',
+    conditionsHint:
+      'Registradas pela Luxtory. O sistema não calcula valores. Aparecem como estão na página do Concept no site; separe parágrafos com uma linha em branco.',
     submit: 'Registrar Edition',
     blocked: 'Uma Edition exige uma versão aprovada do Concept e a parceria ativa.',
   },

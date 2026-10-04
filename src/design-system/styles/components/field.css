@@ -16,6 +16,19 @@
     color: var(--lx-color-fg-muted);
   }
 
+  /* Tag after a label that says where the value goes (e.g. "Público no site"): visible text and a hairline, never
+   * color alone. Part of the label, so screen readers read it with the field name. */
+  .lx-label__tag {
+    display: inline-block;
+    margin-inline-start: var(--lx-space-2);
+    padding-inline: var(--lx-space-2);
+    border: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+    font-size: var(--lx-text-small);
+    font-weight: var(--lx-weight-medium);
+    color: var(--lx-color-accent);
+    white-space: nowrap;
+  }
+
   .lx-hint {
     font-size: var(--lx-text-small);
     line-height: var(--lx-leading-body);

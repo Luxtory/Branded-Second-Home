@@ -7,6 +7,8 @@
 Módulo `catalog` do TECH-011 (`src/features/catalog/`). Esta versão cobre a W3 (Catálogo + Admin); a W4 acrescenta a
 leitura pública (Discovery), a W8 a configuração da Residence, a trava da estrutura e a alteração de modalidade da
 Edition, e a W29 a conformidade (REQ-021, BR-020). Decisões: [ADR-0010](../adr/0010-catalogo-versoes-e-mutacoes-do-admin.md).
+A leitura pública da W4 (Discovery B2C) está na [§13](#13-discovery-público-b2c-w4); decisões técnicas em
+[ADR-0014](../adr/0014-discovery-publico-leitura-anonima-csp-e-publicacao.md).
 
 ## 1. Goal
 
@@ -19,6 +21,7 @@ Edition; a Residence de Investor só existe com autorização registrada (REQ-02
 
 - Leitura pública, páginas do Discovery e políticas de RLS para `anon` (W4). Nenhum `GET` REST: as telas do Admin
   leem no servidor.
+  → entregues pela W4 (§13), ainda sem `GET` REST: as páginas públicas também leem no servidor.
 - `residence_configuration`, `residence_administration`, trava da estrutura, alteração de modalidade da Edition e
   formalização (W8); `party` e o vínculo Investor → party (W7); margem do Investor (W19); conformidade, personalização
   e suspensão (W29).
@@ -214,3 +217,227 @@ command guarda o `operation_id` da criação.
 - `03`: §3.1, TECH-002, TECH-020, TECH-051, TECH-052, TECH-053, TECH-054, TECH-056, TECH-092, TECH-100, §13.
 - ADR-0006, ADR-0008, ADR-0009, ADR-0010. Specs [`admin`](admin.md), [`identity`](identity.md),
   [`design-system`](design-system.md).
+- W4 (§13): `01` §1, §2, §8, §8.1; BR-002, BR-005, BR-017, BR-019, BR-031, BR-051…054, BR-063, BR-065, BR-071…076,
+  BR-082, BR-100…104, BR-111, BR-130, BR-143, BR-144, BR-146…151, BR-162, BR-190, BR-192, BR-240, BR-242, BR-250, BR-252,
+  BR-257…259, BR-300, BR-301, BR-330…332, BR-340…345; `02` §2, REQ-070…072, REQ-092, REQ-103; ADR-0011…ADR-0014;
+  [`communication`](communication.md), [Framework B2C](communication/framework-b2c.md), [`b2c.md`](communication/b2c.md).
+
+## 13. Discovery público B2C (W4)
+
+Superfície **Discovery** do `02` §2 para o Protagonista B2C, pelo mapa de páginas `D-B2C-14` de
+[`b2c.md`](communication/b2c.md#8-jornada-e-5ps). Fonte canônica da comunicação: [Framework B2C](communication/framework-b2c.md)
+(ADR-0012); limites L1–L9 e objeções: [`b2c.md`](communication/b2c.md) §2 e §5; contrato: [`communication.md`](communication.md).
+Decisões técnicas: [ADR-0014](../adr/0014-discovery-publico-leitura-anonima-csp-e-publicacao.md). Donos: REQ-100, REQ-101.
+
+### 13.1 Escopo e decisões
+
+| Página | Rota | Dados | Schwartz | 5Ps |
+|---|---|---|---|---|
+| Home | `/` | disponibilidade (§13.2) | Unaware → Product Aware | arco completo; PICTURE = Hero |
+| Como funciona | `/como-funciona` | disponibilidade | Product Aware → Most Aware | PROOF → PUSH |
+| Coleção | `/colecao` | Concepts e Editions públicos | Product Aware → Most Aware | PROOF → PUSH |
+| Concept, com as Editions e a oferta | `/colecao/[conceptId]` | o Concept e suas Editions | Most Aware | PUSH + prova necessária |
+
+Fora da W4: Interesse (W6, `P-B2C-01`), páginas Brand Partners (`P-BP-01`; jornadas separadas, `D-LX-01`), página
+própria de Edition, fotografia (`P-LX-02`), robots/sitemap e go-live.
+
+Decisões técnicas (aprovadas em 2026-09-29 e mantidas em 2026-10-01):
+
+| Tema | Decisão |
+|---|---|
+| Visibilidade | Concept público = versão aprovada **e** autorização de exposição da marca registrada (BR-015) **e** instante anterior à eficácia do encerramento (BR-021). Depois da eficácia, o Concept sai da Coleção e a URL responde 404 — **limitação temporária, fechada para falhas** (como a D-W3-4, §7), que **não redefine BR-021, BR-022 nem BR-023**; quando os direitos sobreviventes virarem dado, a visibilidade passa a respeitá-los |
+| Conteúdo público | o menor necessário, sem campo novo: título do Concept, especificação da versão vigente, região, modalidade e condições comerciais de cada Edition (como registradas) e nome da marca. `essential_elements` e `preservation_premises` não são publicados; a página afirma o fato (BR-014, BR-301) sem as listas. Nunca públicos: número da versão, dados de aprovação, Residences, Investor e referências de instrumento |
+| URL e ordem | `/colecao/<uuid>`; ordem de registro do Concept dentro de cada grupo da Coleção |
+| Portão | rotas públicas 404 em Production até `PUBLIC_SITE=open` (go-live depende de `P-LX-03`, D1 e D5c); abertas em local, CI e Preview |
+| CSP e cache | CSP com nonce por requisição em toda página HTML; leitura pública sem cache |
+| Imagem | Frame tipográfico (P-1); Courier só com metadado real (regiões, capítulos) |
+
+### 13.2 Leitura pública: contrato de dados
+
+- **Papel:** transação só de leitura em que `luxtory_app` vira `anon` (`SET LOCAL ROLE anon`); sem claims, sem escrita,
+  sem `admin_read`.
+- **Colunas concedidas a `anon`:** `brand_partner(id, brand_name)`; `concept(id, brand_partner_id, title, created_at)`;
+  `concept_version(id, concept_id, version, state, specification)`; `edition(id, concept_id, region, modality,
+  commercial_conditions, created_at)`. Nada mais em `app`.
+- **Visibilidade = RLS** (fonte única): políticas `FOR SELECT TO anon` sobre os predicados `SECURITY DEFINER`
+  `app.brand_partner_is_public` e `app.concept_is_public` (só booleano, `EXECUTE` só para `anon`). Versão: só
+  `approved`; vigente = a aprovada de maior número.
+- **Leituras** (`application/public-views.ts`, nenhum campo numérico ou preço calculado — ADR-001 do `03`):
+  - `collection()` — cada Concept público com título, marca e suas Editions (região, modalidade);
+  - `concept(id)` — título, marca, especificação vigente e Editions (região, modalidade, condições);
+  - `availability()` — há Edition publicada? há Concept publicado? Lida pela Home e pelo Como funciona.
+- **Disponibilidade e CTA (`D-B2C-13`, `D-B2C-16`):**
+
+  | Estado | CTA da Home | CTA do Como funciona |
+  |---|---|---|
+  | ao menos uma Edition publicada | "Conheça as Residence Editions" → primeiro grupo da Coleção | o mesmo |
+  | Concepts publicados, nenhuma Edition | "Conheça os Residence Concepts" → Coleção | o mesmo |
+  | nenhum Concept publicado | "Entenda como funciona" (nenhum CTA para a Coleção) | nenhum CTA de catálogo |
+  | dados indisponíveis (Preview sem banco, falha) | **desconhecido**: nenhum CTA de catálogo, "Entenda como funciona"; log estruturado | **desconhecido**: nenhum CTA de catálogo |
+
+  Ausência técnica de dados nunca é tratada como inexistência de Edition ou de Concept.
+
+  Nomes públicos (`D-LX-08`, `D-B2C-18`): os CTAs aparecem como "Conheça as Home Editions" e "Conheça os Home
+  Concepts"; no site, a casa é Second Home, o Concept é Home Concept e a Edition é Home Edition.
+
+### 13.3 Portão e exposição externa
+
+- `PUBLIC_SITE` ausente em Production → o layout do grupo público responde 404 (página 404 da plataforma). Só `open` é
+  aceito pela validação de ambiente.
+- Verificado em 2026-09-29 (só leitura): a Data API do Supabase está desligada — o PostgREST registra
+  `db-schemas=pg_pgrst_no_exposed_schemas` e responde `PGRST002` a `/rest/v1/…` (inclusive com `Accept-Profile: app`) e
+  a `/graphql/v1`; `pg_graphql` não está instalado; nenhum papel de API tinha `USAGE` em `app`. Com a W4, `anon` passa
+  a ter `USAGE` e os grants por coluna, alcançáveis só por quem já é `luxtory_app`. **Religar a Data API ou expor `app`
+  é proibido** (runbook e ADR-0014); a verificação se repete depois do `migrate`.
+
+### 13.4 Briefs de página
+
+Comum às quatro páginas — Brief Narrativo `[FW-B2C: §12]`:
+
+- **Protagonista:** potencial Titular que deseja aproveitar melhor seu lazer e suas conquistas com os Aliados
+  `[FW-B2C: §3, §12]`. Owner e Co-Owner são modalidades do mesmo Protagonista, com o mesmo peso (REQ-103).
+- **Contexto:** aberto à melhor solução para aproveitar com mais valor o lazer com os Aliados. **Disposição:** Aberto
+  `[FW-B2C: §3.1]`; a ambivalência é tratada pelas objeções (`b2c.md` §5) no PROOF e no PUSH `[FW-B2C: §7.1]`.
+- **Desejo, Job e Solução Desejada:** `[FW-B2C: §4, §4.1, §4.3, §12]` — Patrimônio + Liberdade + Pertencimento.
+- **Tom:** `[FW-B2C: §11]`, derivado por seção; no máximo dois traços OCEAN `[FW-B2C: §10.1]`; contexto negativo com
+  Retraimento `[FW-B2C: §10.2]`; Volatilidade só como em `D-B2C-12`.
+- **Limites:** L1–L9 de `b2c.md` §2 e guardrails de [`luxtory.md`](communication/luxtory.md) §4. Termos canônicos
+  explicados na primeira menção da página (`D-LX-06`). Nenhuma prova externa (`P-LX-01`) nem fotografia (`P-LX-02`).
+- **Copy:** `presentation/i18n/discovery-pt-br.ts`; a copy final é aprovada no Checkpoint Visual.
+- **Peso:** emoção · explicação · evidência, em proporção aproximada.
+
+#### Home — `/`
+
+1. **Jornada:** `D-B2C-14`, linha "Home" — a mais abrangente; segue estritamente o Brief Narrativo `[FW-B2C: §12]`.
+2. **Função:** despertar o desejo pela vida que a tríade possibilita, tornar consciente o trade-off das alternativas,
+   apresentar a nova lógica e demonstrar como a Luxtory integra os três valores `[FW-B2C: §12]`. **Schwartz:** Unaware →
+   Product Aware `[FW-B2C: §7, §13]`. **Camada de solução:** Progresso → Solução Desejada → Categoria → Oferta
+   `[FW-B2C: §4.4]`. **MCR:** Estratégica — Interna + Cooperação `[FW-B2C: §6]`.
+3. **5Ps:** arco completo; PICTURE = Hero; a progressão seguinte parte de PROBLEM `[FW-B2C: §8 P1, §14]`.
+4. **Seções:**
+
+   | Seção | 5P | Pergunta mental | Mensagem-chave (ideia, não copy) | Fatos e limites | Afeto · OCEAN | Peso | Composição (DS) |
+   |---|---|---|---|---|---|---|---|
+   | Hero | PICTURE | "Como seria se meu lazer fosse assim?" | a vida de lazer desejada: viver mais e melhor as conquistas com os Aliados, em lugares que têm a ver com você e passam a fazer parte da sua história. Desperta o desejo primeiro e faz sentido sem depender de produto, categoria ou problema `[FW-B2C: §8 P1]`. Resultado: "Eu quero essa vida pra mim." | nenhuma afirmação de produto | CARE + SEEKING · Estética + Compaixão | 80·20·0 | Opening Frame com Frame tipográfico `night`; `lx-display-xl` com no máximo uma virada em itálico; uma frase de apoio em cena; sem CTA comercial |
+   | O conflito | PROBLEM | "Por que eu preciso abrir mão de algo?" | as alternativas entregam partes da tríade — propriedade tradicional, hotelaria e locação, compartilhamento genérico, cada uma com o que tende a entregar e do que tende a abrir mão; os três importam `[FW-B2C: §2, §8 P2]`. Resultado: "Por que eu deveria abrir mão de um deles?" | trade-offs com "tende a" e "pode"; categorias nomeadas, nenhuma empresa (`luxtory.md` §6) | SEEKING · Intelecto + Assertividade | 40·50·10 | Scene em `paper`: afirmação curta + as três alternativas em `lx-blocks`, cada uma com o que entrega e do que abre mão (`dl`), sem caixa nem sombra |
+   | A virada | PROMISE | "Existe outra forma?" | o insight: não começar escolhendo entre comprar ou alugar, e sim pelos valores; a nova lógica — uma second home construída a partir do lifestyle e conectada a mecanismos que reúnem os três valores; a categoria Branded Second Home, explicada na primeira menção `[FW-B2C: §8 P3]`. Resultado: "Eu posso ter os três." | BR-003, BR-053 (construída do zero) | SEEKING · Intelecto + Assertividade | 30·70·0 | Scene `--statement` em `night`: virada tipográfica grande e a tríade do Framework em três linhas `[FW-B2C: §2]` |
+   | A arquitetura | PROOF | "Como a Luxtory entrega os três, de verdade?" | o mecanismo `[FW-B2C: §8 P4]` costura três capítulos: **Patrimônio → Posse** (Owner: a Residence inteira; Co-Owner: Ação da SPE proprietária com Direito de Uso; patrimônio com valor econômico, sem garantia); **Liberdade → Possibilidades** (gestão aplicável; Luxchange e Luxplus com Membership vigente; locação autorizada quando elegível — ampliar possibilidades, não ausência de regras); **Pertencimento → Identificação + Lugar + Pessoas** (marca, Brand DNA, Concept, Residence, Aliados; o Club amplia progressivamente). Fecha mostrando os três na mesma arquitetura — presença, não maximização. Resultado: "Agora entendo como a Luxtory garante a presença dos três valores." | L1, L3, L4, L5, L6, L7, L8, L9; BR-052, BR-071, BR-146, BR-147, BR-374 | SEEKING + FEAR↓ · Diligência + Ordem | 10·50·40 | um Chapter de três Scenes com marker de capítulo no rail ("Patrimônio · Posse"…), Frame tipográfico alternando de lado com a linha da tríade; Owner e Co-Owner em `lx-pair`; link discreto para o Como funciona; nenhum link para mecanismo do Club (L7) |
+   | Para quem | PUSH | "Isso faz sentido para mim?" | a autosseleção `[FW-B2C: §8 P5]` e o próximo passo coerente. Resultado: "Quero descobrir qual Residence faz sentido para minha vida." | qualificação `[FW-B2C: §8 P5]` + BR-054 | CARE · Polidez + Compaixão | 20·50·30 | Scene em `wash`: `lx-pair` (faz sentido · pode não fazer sentido) + o CTA da §13.2 |
+
+5. **CTA:** por disponibilidade (§13.2).
+6. **Dados dinâmicos:** só a disponibilidade; o resto é estático.
+7. **Não afirmar:** comunidade como recurso existente (L6); mecanismos do Club como disponíveis hoje (L7); receita,
+   valorização, liquidez; prova social; números.
+8. **Aceite:** §13.6.
+9. **Copy (2026-10-01):** a copy da Home é a escrita pelo fundador (`D-B2C-18`), com as decisões da revisão de
+   2026-10-01; ela substitui a mensagem-chave da tabela acima e acrescenta três seções: a regra da renúncia (PROBLEM,
+   vilão), a Luxtory com os pilares Pertencimento, Patrimônio, Liberdade e a Gestão (PROOF) e as dúvidas essenciais
+   (FAQ, depois do PUSH). Ordem das seções e textos: `presentation/i18n/discovery-pt-br.ts` (`home`).
+
+#### Como funciona — `/como-funciona`
+
+1. **Jornada:** `D-B2C-14`, linha "Como funciona" — aprofunda, em detalhe, modalidades, Direito de Uso, gestão, Luxtory
+   Club, condições e limites.
+2. **Função:** demonstrar a arquitetura e responder às objeções com fatos. **Schwartz:** Product Aware → Most Aware
+   `[FW-B2C: §8.1, §13]`. **MCR:** Estratégica — Interna + Enfrentamento (escolha consistente diante de custos, regras e
+   uso real) `[FW-B2C: §6.2]`.
+3. **5Ps:** PROOF → PUSH `[FW-B2C: §8.1]`; PICTURE, PROBLEM e PROMISE ficam na Home.
+4. **Seções** (organizadas pelas perguntas do Protagonista, `[FW-B2C: §5]`, respondidas por `b2c.md` §5):
+
+   | Seção | 5P | Perguntas | Mensagem-chave (ideia) | Fatos e limites | Afeto · OCEAN | Composição (DS) |
+   |---|---|---|---|---|---|---|
+   | Abertura | PROOF | "Como a arquitetura funciona?" | a tríade e o mecanismo, do lifestyle à Residence e ao Club | `[FW-B2C: §8 P4]`; `luxtory.md` §5 | SEEKING · Intelecto + Ordem | cabeçalho de página + a cadeia em `lx-blocks--rows` |
+   | Patrimônio → Posse | PROOF | "O que exatamente eu possuo?" · "Qual a diferença entre Owner e Co-Owner?" · "Isso é timeshare?" · "Existe garantia de retorno, valorização ou liquidez?" | Owner: a Residence inteira; Co-Owner: Ação da SPE proprietária com Direito de Uso, equivalente entre Co-Owners; ambos nascem na formalização; transferência conforme as regras aplicáveis; não é timeshare (`D-B2C-15`); nenhuma garantia | L1, L8; BR-052, BR-065, BR-071, BR-341, BR-373, BR-374 | SEEKING + FEAR↓ · Diligência + Ordem | marker de capítulo; perguntas como títulos; Owner e Co-Owner em `lx-pair` |
+   | Liberdade → Possibilidades | PROOF | "Como funciona meu uso?" · "Vou usar o suficiente?" · "O que acontece quando não utilizo?" · "Como funcionam gestão e manutenção?" · "Consigo usar outros lugares?" · "Isso reduz minha liberdade?" | Owner: toda a capacidade de uso; Co-Owner: Direito de Uso anual da configuração, limites por temporada, abertura sorteada e rotativa, até 14 dias seguidos — com as **quatro configurações canônicas como detalhe secundário**; gestão por modalidade, nunca "sem custos"; Club com Membership vigente, cada mecanismo com regras próprias; liberdade = possibilidades, não ausência de regras | `01` §8.1 (sem a capacidade Luxtory); L3, L4, L7; BR-075, BR-076, BR-082, BR-100…104, BR-111, BR-147, BR-151, BR-162 | SEEKING + FEAR↓ · Diligência + Ordem; Retraimento nas regras e custos | marker de capítulo; perguntas como títulos; configurações em `Evidence` dentro de `lx-blocks` |
+   | Pertencimento → Identificação + Lugar + Pessoas | PROOF | "Qual a diferença para uma second home tradicional?" · "Por que não continuar alugando?" | da marca ao Brand DNA, ao Concept e à Residence construída do zero e fiel a ele; Aliados como convidados; o Club amplia progressivamente; o contraste com as alternativas pelos trade-offs | L5, L6, L9; BR-003, BR-013, BR-053, BR-330…332 | CARE + SEEKING · Estética + Ordem | marker de capítulo; texto + cadeia curta |
+   | Condições e limites | PROOF | "O que mais preciso saber?" | oferta só por uma Residence Edition, com condições registradas; valores de planos e taxas não fixados nesta página; Ação com Direito de Uso (dito em positivo); nenhuma garantia de retorno | BR-004, BR-031, BR-143, L2, REQ-100, REQ-101 | FEAR↓ · Retraimento + Diligência | Scene `--statement` |
+   | Para quem | PUSH | "Faz sentido para mim?" | qualificação completa | `[FW-B2C: §8 P5]` + BR-054, BR-019, BR-101, BR-104 | CARE · Polidez + Compaixão | `lx-pair` + CTA da §13.2 |
+
+5. **CTA:** §13.2.
+6. **Dados:** disponibilidade; o resto é estático.
+7. **Não afirmar:** valores de Membership, Fee, Taxa de Administração e descontos (BR-143); regras de convidado ainda
+   não definidas (P-5); o passo de manifestar interesse (W6).
+
+#### Coleção — `/colecao`
+
+1. **Jornada:** `D-B2C-14`, linha "Coleção" — as Second Homes: Concepts e suas Editions, como Discovery de produto, não
+   marketplace.
+2. **Função:** levar o Protagonista à Residence que faz sentido. **Schwartz:** Product Aware → Most Aware.
+3. **5Ps:** PROOF → PUSH.
+4. **Seções:**
+
+   | Seção | 5P | Pergunta mental | Mensagem-chave (ideia) | Fatos | Composição (DS) |
+   |---|---|---|---|---|---|
+   | Abertura | PROOF | "O que estou vendo?" | Residence Concept × Residence Edition em uma frase: o Concept traduz um lifestyle em uma casa; a Edition é o seu lançamento numa região, com condições | BR-001, BR-002, BR-004, `D-LX-06` | cabeçalho de página |
+   | Residence Editions | PROOF → PUSH | "Onde há oferta?" | Concepts com ao menos uma Edition: card com o título no Frame, a marca e cada Edition (região · modalidade) | dados; REQ-103 | `Collection` (alternância 7/4), âncora do CTA da Home |
+   | Residence Concepts | PROOF → PUSH | "Quais Concepts existem?" | Concepts ainda sem Edition, sem oferta comercial | REQ-022, BR-030 | `Collection`; um Concept nunca aparece nos dois grupos |
+
+5. **CTA:** o card leva ao Concept ("Ver o Concept"). Vazio ou indisponível → frase honesta + "Entenda como funciona".
+6. **Dados:** §13.2; grupo vazio não aparece.
+7. **Não afirmar:** disponibilidade, estoque, escassez, quantidades.
+
+#### Concept — `/colecao/[conceptId]`
+
+1. **Jornada:** `D-B2C-14`, linha "Concept, com Edition e oferta quando existirem (REQ-022)" — a Residence específica.
+2. **Função:** dar a prova necessária para a decisão. **Schwartz:** Most Aware `[FW-B2C: §8.1]`.
+3. **5Ps:** PUSH + prova necessária.
+4. **Seções:**
+
+   | Seção | Função | Pergunta mental | Mensagem-chave (ideia) | Fatos | Composição (DS) |
+   |---|---|---|---|---|---|
+   | Abertura | prova (Pertencimento) | "Que Residence é esta?" | título, a marca que ela traduz, as regiões com lançamento | dados; BR-015 | Opening Frame tipográfico `night`; `ConceptCredit`; marker com as regiões reais |
+   | A Residence | prova | "O que ela propõe?" | a especificação registrada, como está | BR-013 | `lx-prose` |
+   | Fiel ao Concept | prova | "A casa vai ser assim?" | construída do zero e fiel ao Concept; o Owner personaliza o que não é essencial; a Residence Co-Owner é padronizada | L9; BR-014, BR-017, BR-019, BR-301 | Scene `--statement` |
+   | Oferta | prova | "Existe oferta? Onde, e em que modalidade?" | cada Edition: região, modalidade (Owner e Co-Owner com o mesmo peso) e condições registradas; sem Edition, sem oferta comercial | BR-004, BR-031, REQ-020, REQ-022, REQ-100 | `Evidence` + `lx-prose` |
+   | Para quem | PUSH | "Faz sentido para mim?" | qualificação e próximo passo possível hoje | `[FW-B2C: §8 P5]` | `lx-pair` + ações |
+
+5. **CTA:** "Manifestar interesse" ausente até a W6 (`D-B2C-10`, `P-B2C-01`). Decisão deste brief: o PUSH oferece
+   "Conheça outros Concepts" (Coleção) e "Entenda como funciona".
+6. **Dados:** §13.2. Concept não público ou inexistente → 404 do grupo público, com a navegação. Metadata: só o título.
+7. **Não afirmar:** disponibilidade, prazo de obra, preço calculado, número de Residences, configuração Co-Owner da
+   Edition (definida conforme a demanda, BR-063), Investor.
+
+### 13.5 Admin: conteúdo público identificado
+
+- Os campos publicados como estão — título do Concept, especificação, região, modalidade e condições comerciais da
+  Edition — levam no rótulo a marca visível **"Público no site"** e uma dica que diz onde o texto aparece; o nome da
+  marca diz que só é público com a exposição autorizada.
+- `essential_elements` e `preservation_premises` dizem na dica que não aparecem no site.
+- Antes de confirmar, as telas que publicam dizem a consequência: aprovar uma versão, autorizar a exposição da marca e
+  registrar uma Edition.
+
+### 13.6 Aceite da W4
+
+- [ ] `[REQ-100]` `[REQ-101]` o texto renderizado das páginas públicas, inclusive com os dados do catálogo, passa pela
+      guarda canônica de terminologia (`domain/terminology.ts`).
+- [ ] `[REQ-022]` Concept sem Edition aparece sem oferta; na Coleção, só no grupo Residence Concepts.
+- [ ] `[REQ-103]` Owner e Co-Owner com a mesma estrutura (mesmo nível de título, mesmas dimensões) onde aparecem juntos.
+- [ ] `[BR-015]` `[BR-021]` sem exposição autorizada, sem versão aprovada ou depois da eficácia do encerramento, o
+      Concept não aparece e a URL responde 404.
+- [ ] `[TECH-052]` `anon` só lê as colunas da §13.2 das linhas visíveis, não escreve e só executa os dois predicados.
+- [ ] CTA por disponibilidade nos quatro estados da §13.2; dados indisponíveis nunca viram "sem Edition".
+- [ ] Hero com função de desejo: abre a página sem depender de produto, categoria ou problema para fazer sentido.
+- [ ] Nenhum link para a jornada Brand Partners nem para o Admin.
+- [ ] Portão: com `VERCEL_ENV=production` e sem `PUBLIC_SITE=open`, as rotas públicas respondem 404.
+- [ ] CSP com nonce em toda página HTML; zero erro de console nas telas públicas e do Admin.
+- [ ] Admin: conteúdo público identificado (§13.5).
+- [ ] UI (ADR-0009): axe 0 a 390 e 1440 px; sem overflow de 320 a 1920 px; jornada Home → Coleção → Concept → Como
+      funciona a 390 px com toque; menu do celular; smoke Playwright WebKit.
+- [ ] Checklist da §10 do contrato de comunicação, inclusive os 6 Testes de Validação e as regras de execução do
+      Framework `[FW-B2C: §13, §14]`; capturas a 390 e 1440 px no PR.
+
+### 13.7 Edge cases
+
+- **Encerramento com eficácia futura:** o Concept aparece até o instante (`now()` do banco) e some na requisição
+  seguinte.
+- **Versão nova ainda não aprovada:** a página continua na vigente.
+- **Especificação e condições:** parágrafos separados por linha em branco; quebra simples vira espaço; nenhum HTML.
+- **Banco indisponível:** estado desconhecido (§13.2) na Home e no Como funciona; estado indisponível na Coleção e no
+  Concept.
+
+### 13.8 Pendências (não bloqueiam a W4)
+
+- Slug legível, resumo editorial e ordem editorial da Coleção — antes do go-live, com contrato próprio.
+- Direitos sobreviventes do encerramento como dado (§7).
+- `P-LX-03` (inclui o termo "posse"), D1 e D5c — condicionam abrir o portão.
+- P-8 (regras de exposição por marca), P-1 (fotografia) e P-3 (textos jurídicos do rodapé).

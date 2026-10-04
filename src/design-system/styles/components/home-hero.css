@@ -1,0 +1,215 @@
+/* Home Hero — approved B2C cinematic opening: full-bleed photography, restrained ~40px display,
+ * overlay header and discreet carousel controls. */
+@layer lx.components {
+  .lx-home-hero {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    align-items: end;
+    min-height: 42rem;
+    overflow: hidden;
+    background: var(--lx-palette-dark-moroccan-blue);
+    color: var(--lx-palette-pure-white);
+  }
+
+  .lx-home-hero__slides,
+  .lx-home-hero__slide,
+  .lx-home-hero__scrim { position: absolute; inset: 0; }
+
+  .lx-home-hero__slides {
+    z-index: -1;
+    overflow: hidden;
+    background: var(--lx-palette-dark-moroccan-blue);
+  }
+
+  .lx-home-hero__slide {
+    opacity: 0;
+    transition: opacity var(--lx-duration-cinematic) var(--lx-ease-cinematic);
+  }
+
+  .lx-home-hero__slide--active { opacity: 1; }
+
+  .lx-home-hero__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  /* URLs and crops live in CSS so the strict CSP never needs inline background styles. */
+  .lx-home-hero__image--1 {
+    background-image: url("/images/home/hero/luxury-property-facade-hero.jpg");
+    background-position: center 52%;
+  }
+
+  .lx-home-hero__image--2 {
+    background-image: url("/images/home/hero/hero-lifestyle.jpg");
+    background-position: center 52%;
+  }
+
+  .lx-home-hero__image--3 {
+    background-image: url("/images/home/hero/home-solucao-firepit-family.jpg");
+    background-position: center 48%;
+  }
+
+  .lx-home-hero__scrim {
+    background:
+      linear-gradient(90deg, var(--lx-color-bg) 0%, transparent 100%),
+      linear-gradient(0deg, var(--lx-color-bg) 0%, transparent 70%);
+    opacity: var(--lx-scrim-min-alpha);
+  }
+
+  .lx-home-hero__content {
+    display: grid;
+    gap: var(--lx-space-6);
+    align-content: end;
+    width: 100%;
+    padding-top: calc(var(--lx-layout-header-height) + var(--lx-space-12));
+    padding-bottom: 7.5rem;
+  }
+
+  .lx-home-hero__title {
+    max-width: 18ch;
+    margin: 0;
+    font-family: var(--lx-font-display);
+    font-size: clamp(2rem, 9vw, 2.65rem);
+    font-weight: var(--lx-weight-display);
+    line-height: 1.02;
+    letter-spacing: var(--lx-tracking-display);
+    text-wrap: balance;
+    color: var(--lx-palette-pure-white);
+  }
+
+  .lx-home-hero__title em {
+    color: var(--lx-palette-warm-sand);
+    font-style: italic;
+    font-weight: var(--lx-weight-display);
+  }
+
+  .lx-home-hero__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: var(--lx-space-6) var(--lx-space-8);
+  }
+
+  .lx-home-hero__lead {
+    max-width: 36rem;
+    margin: 0;
+    font-size: var(--lx-text-lead);
+    line-height: var(--lx-leading-tight);
+    color: var(--lx-palette-pure-white);
+  }
+
+  .lx-home-hero__action {
+    width: 100%;
+    background: var(--lx-palette-warm-sand);
+    border-color: var(--lx-palette-warm-sand);
+    color: var(--lx-palette-dark-moroccan-blue);
+  }
+
+  .lx-home-hero__controls {
+    position: absolute;
+    inset-inline-end: var(--lx-layout-margin);
+    bottom: var(--lx-space-8);
+    z-index: var(--lx-z-raised);
+    display: flex;
+    align-items: center;
+    gap: var(--lx-space-3);
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-small);
+    color: var(--lx-palette-pure-white);
+  }
+
+  .lx-home-hero__controls button {
+    display: inline-grid;
+    place-items: center;
+    min-width: 2rem;
+    min-height: 2rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .lx-home-hero__controls button:focus-visible {
+    outline: var(--lx-focus-width) solid var(--lx-palette-warm-sand);
+    outline-offset: var(--lx-focus-offset);
+  }
+
+  .lx-home-hero__counter,
+  .lx-home-hero__total { font-variant-numeric: tabular-nums; }
+
+  .lx-home-hero__progress {
+    width: clamp(2rem, 4vw, 3.5rem);
+    height: var(--lx-border-hairline);
+    background: color-mix(in srgb, var(--lx-palette-pure-white) 45%, transparent);
+  }
+
+  .lx-home-hero__break {
+    display: none;
+  }
+
+  .lx-home-hero__controls {
+    inset-inline: var(--lx-layout-margin);
+    justify-content: flex-end;
+  }
+
+  @media (min-width: 48rem) {
+    .lx-home-hero {
+      min-height: 100svh;
+    }
+
+    .lx-home-hero__content {
+      padding-bottom: clamp(5.5rem, 10vh, 8rem);
+    }
+
+    .lx-home-hero__title {
+      max-width: 58rem;
+      font-size: clamp(2.1rem, 1.95rem + 1.35vw, 2.5rem);
+    }
+
+    .lx-home-hero__break {
+      display: initial;
+    }
+
+    .lx-home-hero__bottom {
+      align-items: center;
+    }
+
+    .lx-home-hero__action {
+      width: auto;
+    }
+
+    .lx-home-hero__controls {
+      inset-inline-start: auto;
+      inset-inline-end: var(--lx-layout-margin);
+      justify-content: initial;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .lx-home-hero__title {
+      white-space: nowrap;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion="reduce"]) .lx-home-hero__slide--active .lx-home-hero__image {
+      animation: lx-home-hero-drift var(--lx-duration-drift) var(--lx-ease-cinematic) both;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lx-home-hero__slide { transition-duration: var(--lx-duration-reduced); }
+  }
+
+  @keyframes lx-home-hero-drift {
+    from { transform: scale(1.012) translate3d(0, 0, 0); }
+    to { transform: scale(1.035) translate3d(-0.35%, -0.2%, 0); }
+  }
+}
