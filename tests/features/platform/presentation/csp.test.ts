@@ -12,7 +12,10 @@ describe('CSP e portão do site público (ADR-0014)', () => {
     const nonce = createNonce();
     expect(nonce).toMatch(/^[A-Za-z0-9+/=]{24,}$/);
     expect(createNonce()).not.toBe(nonce);
-    const policy = contentSecurityPolicy(nonce, { development: false, secureTransport: true });
+    const policy = contentSecurityPolicy(nonce, {
+      development: false,
+      secureTransport: true,
+    });
     expect(policy).toContain(`script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`);
     expect(policy).toContain("frame-ancestors 'none'");
     expect(policy).toContain("object-src 'none'");
