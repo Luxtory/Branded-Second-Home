@@ -136,9 +136,17 @@ test.describe('Discovery público — conteúdo', () => {
     const questions = faq.locator('summary');
     await expect(questions).toHaveCount(discoveryMessages.home.faq.items.length + 1);
     const timeshare = faq.locator('details', { hasText: 'A Luxtory é timeshare?' });
-    await expect(timeshare.getByText('Você não compra semanas de hospedagem')).toBeHidden();
+    await expect(
+      timeshare.getByText(
+        'Como Co-Owner, você adquire uma Ação da SPE proprietária do imóvel, com Direito de Uso.',
+      ),
+    ).toBeHidden();
     await timeshare.locator('summary').click();
-    await expect(timeshare.getByText('Você não compra semanas de hospedagem')).toBeVisible();
+    await expect(
+      timeshare.getByText(
+        'Como Co-Owner, você adquire uma Ação da SPE proprietária do imóvel, com Direito de Uso.',
+      ),
+    ).toBeVisible();
     const answers = (await faq.textContent()) ?? '';
     expect(hasForbiddenTerm(answers)).toBe(false);
     await questions.last().click();

@@ -1,9 +1,14 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { catalogCta, type CatalogCta } from '@/features/catalog/application/public-views';
 import { CatalogActions } from '@/features/catalog/presentation/discovery/catalog-actions';
+import { HomePage } from '@/features/catalog/presentation/discovery/home-page';
+import { readAvailability } from '@/features/catalog/presentation/discovery/read';
 import { discoveryMessages } from '@/features/catalog/presentation/i18n/discovery-pt-br';
+
+// Availability is the Home's request-scoped PostgreSQL IO seam; all rendering stays real.
+vi.mock('@/features/catalog/presentation/discovery/read', () => ({ readAvailability: vi.fn() }));
 
 // CTA por disponibilidade (D-B2C-13, D-B2C-16; docs/specs/catalog.md §13.2). O E2E roda com Edition publicada; aqui,
 // os quatro estados, na Home e no Como funciona.
@@ -81,4 +86,63 @@ describe('CTA do Discovery por disponibilidade', () => {
     }
     expect(render('unknown', 'howItWorks')).toBe('');
   });
+});
+
+describe('PUSH da Home real por disponibilidade', () => {
+  const publishedNext =
+    'Se essa combinação faz sentido para a vida que você quer viver, o próximo passo é descobrir qual Second Home combina com você.';
+  const noneNext =
+    'Os primeiros Home Concepts ainda não foram publicados. Enquanto isso, veja em detalhe como tudo funciona.';
+  const unknownNext = 'Veja em detalhe como tudo funciona.';
+
+  it.each([
+    {
+      state: 'editions',
+      availability: { editions: true, concepts: true },
+      instruction: publishedNext,
+      expectedLinks: [
+        { primary: true, href: '/colecao#home-editions', label: 'Conheça as Home Editions' },
+        { primary: false, href: '/como-funciona', label: 'Entenda como funciona' },
+      ],
+    },
+    {
+      state: 'concepts',
+      availability: { editions: false, concepts: true },
+      instruction: publishedNext,
+      expectedLinks: [
+        { primary: true, href: '/colecao#home-concepts', label: 'Conheça os Home Concepts' },
+        { primary: false, href: '/como-funciona', label: 'Entenda como funciona' },
+      ],
+    },
+    {
+      state: 'none',
+      availability: { editions: false, concepts: false },
+      instruction: noneNext,
+      expectedLinks: [{ primary: true, href: '/como-funciona', label: 'Entenda como funciona' }],
+    },
+    {
+      state: 'unknown',
+      availability: null,
+      instruction: unknownNext,
+      expectedLinks: [{ primary: true, href: '/como-funciona', label: 'Entenda como funciona' }],
+    },
+  ])(
+    '[REQ-022] [TECH-001] $state: uma instrução compatível e os caminhos disponíveis',
+    async ({ availability, instruction, expectedLinks }) => {
+      vi.mocked(readAvailability).mockResolvedValueOnce(availability);
+      const html = renderToStaticMarkup(await HomePage());
+      const push = html.match(/<section\b[^>]*id="para-quem"[\s\S]*?<\/section>/)?.[0];
+      expect(push).toBeDefined();
+      const paragraphs = [...(push ?? '').matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)].map(([, line]) =>
+        line?.replace(/<[^>]*>/g, '').replace(/\u00a0/g, ' '),
+      );
+      expect(paragraphs.filter((line) => line === instruction)).toHaveLength(1);
+      for (const other of [publishedNext, noneNext, unknownNext].filter(
+        (line) => line !== instruction,
+      )) {
+        expect(paragraphs).not.toContain(other);
+      }
+      expect(links(push ?? '')).toEqual(expectedLinks);
+    },
+  );
 });

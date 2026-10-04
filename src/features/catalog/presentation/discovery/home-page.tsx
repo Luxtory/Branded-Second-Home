@@ -325,8 +325,16 @@ export async function HomePage() {
           <Paragraphs lines={push.forWhom} className="lx-lead" />
         </div>
         <div className="lx-place-full lx-coda">
-          <p className="lx-lead">{nb(push.next)}</p>
-          <CatalogActions cta={cta} next={{}} from="home" />
+          <CatalogActions
+            cta={cta}
+            next={{
+              editions: push.next,
+              concepts: push.next,
+              none: text.qualification.next.none,
+              unknown: text.qualification.next.unknown,
+            }}
+            from="home"
+          />
         </div>
       </Scene>
 
