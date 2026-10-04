@@ -1,0 +1,73 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/mnt/c/Users/rjr-idb/Documents/branded_second_home_luxtory/.codex/hooks/block-secrets.sh'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/mnt/c/Users/rjr-idb/Documents/branded_second_home_luxtory/.codex/hooks/format-on-save.sh'"
+          },
+          {
+            "type": "command",
+            "command": "node '/mnt/c/Users/rjr-idb/Documents/branded_second_home_luxtory/.codex/hooks/docs-reminder.js'"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/mnt/c/Users/rjr-idb/Documents/branded_second_home_luxtory/.codex/hooks/pre-compact-snapshot.sh'",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/mnt/c/Users/rjr-idb/Documents/branded_second_home_luxtory/.codex/hooks/session-start-context.sh'"
+          }
+        ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/mnt/c/Users/rjr-idb/Documents/branded_second_home_luxtory/.codex/hooks/session-start-compact-resume.sh'",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/mnt/c/Users/rjr-idb/Documents/branded_second_home_luxtory/.codex/hooks/stop-notes-reminder.sh'",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
