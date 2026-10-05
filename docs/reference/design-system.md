@@ -464,3 +464,26 @@ e em painéis, lista numerada/disclosure e os dois SVGs originais distintos. Use
 capturas completas, recortes desktop/mobile e estados da Hero, todos servidos pela mesma rota privada existente.
 Patterns são opções de composição; page recipes escolhem apenas os adequados ao conteúdo. Sem extração React
 automática, mudanças de copy ou aplicação antecipada à Home/Admin/Auth.
+
+### Receita da Home após o aceite do CP1
+
+O CP1 revisado foi aprovado pelo fundador. A aplicação opt-in seguinte consome o mesmo Core/patterns e fica
+restrita à Home. As outras superfícies preservam sua expressão até o checkpoint correspondente.
+
+| Seção / função | Pattern | Mídia | Desktop → mobile |
+|---|---|---|---|
+| Hero / PICTURE | Cinematic Hero | Três fotos existentes da Hero | Fotografia dominante, conteúdo inferior → mesmos crops aprovados por breakpoint. |
+| Renúncia / PROBLEM | Problem / Triad Comparison | SVG original de tensão | Copy + tríade, alternativas abaixo → copy, tríade, alternativas. |
+| Regra / PROBLEM | Editorial / pausa | Nenhuma | Centro editorial e três afirmações equivalentes → ordem textual preservada. |
+| Possibilidade / PROMISE | Solution Diagram + Triad Statement | SVG original de integração | Copy / diagrama, statement abaixo → copy, diagrama, células e statement. |
+| Luxtory / PROOF | Editorial centralizado | Nenhuma | Medida de leitura e turn autorizado → continuidade textual, sem coluna residual. |
+| Pertencimento / PROOF | Split Text / Media + fechamento | Foto de convivência já presente na Home | Texto / foto, fechamento abaixo → texto, foto e fechamento. |
+| Patrimônio / PROOF | Split Media / Text + Editorial Comparison | Foto exterior já presente na Home | Foto / texto, Owner/Co-Owner abaixo → foto, texto, comparação e closing. |
+| Liberdade / PROOF | Numbered Editorial List | Nenhuma | Número / título / descrições / link → número, título/ação, descrições; condições visíveis. |
+| Gestão / PROOF | Editorial Comparison | Nenhuma | Intro e modalidades equivalentes → unidades completas na mesma ordem. |
+| PUSH | Sibling Blocks + Closing | Nenhuma | Dois pares de promessas em duas colunas e CTA por disponibilidade → promessas na ordem original, qualificação e CTA. |
+| FAQ | Numbered Editorial Disclosure | Nenhuma | Número / pergunta / ação, resposta ao abrir → mesma ordem e affordance; sem resumo inventado. |
+
+Esta receita aguarda aceite visual próprio. Não exige todas as opções do Lab, novas mídias, componentes por
+pattern ou promoção antecipada de qualquer outra página. No consumidor Home, `ModalityPairView` reutiliza a
+semântica existente com variante editorial explícita; os consumidores atuais mantêm o comportamento padrão.

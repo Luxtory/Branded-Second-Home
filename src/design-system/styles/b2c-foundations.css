@@ -1,5 +1,5 @@
-/* Core Luxtory DS candidates: CP1-only opt-in, not a permanent parallel B2C system.
- * Promotion to shared foundations/primitives awaits the founder's visual approval. */
+/* Approved Core Luxtory DS foundations, explicitly scoped to the Lab and Home migration.
+ * Other consumers adopt the Core only at their authorized migration checkpoint. */
 @layer lx.base {
   .lx-b2c,
   .lx-b2c [data-b2c-surface="white"] {
@@ -7,6 +7,7 @@
     --lx-color-fg: var(--lx-palette-dark-moroccan-blue);
     --lx-color-fg-muted: var(--lx-palette-moroccan-blue);
     --lx-color-accent: var(--lx-palette-moroccan-blue);
+    --lx-color-inline-emphasis: var(--lx-palette-dark-moroccan-blue);
     --lx-color-focus: var(--lx-palette-moroccan-blue);
     --lx-color-rule-strong: var(--lx-palette-moroccan-blue);
     --lx-color-rule: color-mix(in srgb, var(--lx-palette-moroccan-blue) 35%, transparent);
@@ -37,6 +38,7 @@
     --lx-color-fg: var(--lx-palette-pure-white);
     --lx-color-fg-muted: var(--lx-palette-pure-white);
     --lx-color-accent: var(--lx-palette-pure-white);
+    --lx-color-inline-emphasis: var(--lx-palette-warm-sand);
     --lx-color-focus: var(--lx-palette-warm-sand);
     --lx-color-rule-strong: var(--lx-palette-pure-white);
     --lx-color-rule: color-mix(in srgb, var(--lx-palette-warm-sand) 55%, transparent);
@@ -83,7 +85,7 @@
     line-height: inherit;
     letter-spacing: inherit;
     font-style: italic;
-    color: var(--lx-palette-warm-sand);
+    color: var(--lx-color-inline-emphasis);
   }
   .lx-b2c .lx-lead { font-size: var(--lx-b2c-subheadline); line-height: var(--lx-b2c-support-leading); }
   .lx-b2c .lx-b2c-closing { font-size: var(--lx-b2c-title); line-height: var(--lx-b2c-support-leading); }

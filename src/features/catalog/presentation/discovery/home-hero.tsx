@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Headline } from '../i18n/discovery-pt-br';
 
 const SLIDES = [
@@ -22,6 +22,7 @@ export function HomeHero({
   text,
   action,
   nextSectionId,
+  carouselLabels,
 }: {
   readonly id: string;
   readonly titleId: string;
@@ -29,29 +30,45 @@ export function HomeHero({
   readonly text: string;
   readonly action: string;
   readonly nextSectionId: string;
+  readonly carouselLabels: {
+    readonly description: string;
+    readonly controls: string;
+    readonly previous: string;
+    readonly next: string;
+    readonly pause: string;
+    readonly play: string;
+  };
 }) {
   const [current, setCurrent] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const reduceMotion = useRef(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(true);
+  // Hover only suspends the timer; the counter still toggles the visitor's playback choice.
+  const isPlaying = !isPaused && !reducedMotion;
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const root = document.documentElement;
     const sync = () => {
-      reduceMotion.current = media.matches;
-      setIsPlaying((playing) => (media.matches ? false : playing || true));
+      setReducedMotion(media.matches || root.dataset.motion === 'reduce');
     };
+    const observer = new MutationObserver(sync);
+    observer.observe(root, { attributes: true, attributeFilter: ['data-motion'] });
     sync();
     media.addEventListener('change', sync);
-    return () => media.removeEventListener('change', sync);
+    return () => {
+      media.removeEventListener('change', sync);
+      observer.disconnect();
+    };
   }, []);
 
   useEffect(() => {
-    if (!isPlaying || reduceMotion.current || SLIDES.length < 2) return;
+    if (!isPlaying || isHovered || SLIDES.length < 2) return;
     const timer = window.setInterval(() => {
       setCurrent((index) => (index + 1) % SLIDES.length);
     }, INTERVAL_MS);
     return () => window.clearInterval(timer);
-  }, [isPlaying]);
+  }, [isPlaying, isHovered]);
 
   const previous = () => setCurrent((index) => (index - 1 + SLIDES.length) % SLIDES.length);
   const next = () => setCurrent((index) => (index + 1) % SLIDES.length);
@@ -61,8 +78,15 @@ export function HomeHero({
       id={id}
       className="lx-home-hero"
       data-ground="night"
+      data-b2c-surface="dark-blue"
+      data-motion={reducedMotion ? 'reduce' : undefined}
       aria-labelledby={titleId}
-      aria-roledescription="carrossel"
+      aria-roledescription={carouselLabels.description}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onFocusCapture={(event) => {
+        if (event.target.matches(':focus-visible')) setIsPaused(true);
+      }}
     >
       <div className="lx-home-hero__slides" aria-hidden="true">
         {SLIDES.map((slide, index) => (
@@ -85,7 +109,7 @@ export function HomeHero({
           <span>{title.lead}</span>
           {title.turn === undefined ? null : <em>{title.turn}</em>}
           <br className="lx-home-hero__break" />
-          {title.tail === undefined ? null : <span>{title.tail.trimStart()}</span>}
+          {title.tail === undefined ? null : <span>{title.tail}</span>}
         </h1>
 
         <div className="lx-home-hero__bottom">
@@ -100,15 +124,15 @@ export function HomeHero({
         </div>
       </div>
 
-      <div className="lx-home-hero__controls" role="group" aria-label="Controles do carrossel">
-        <button type="button" onClick={previous} aria-label="Imagem anterior">
+      <div className="lx-home-hero__controls" role="group" aria-label={carouselLabels.controls}>
+        <button type="button" onClick={previous} aria-label={carouselLabels.previous}>
           ‹
         </button>
         <button
           type="button"
           className="lx-home-hero__counter"
-          onClick={() => setIsPlaying((playing) => !playing)}
-          aria-label={isPlaying ? 'Pausar carrossel' : 'Reproduzir carrossel'}
+          onClick={() => setIsPaused(isPlaying)}
+          aria-label={isPlaying ? carouselLabels.pause : carouselLabels.play}
           aria-pressed={!isPlaying}
         >
           {pad(current + 1)}
@@ -117,7 +141,7 @@ export function HomeHero({
         <span className="lx-home-hero__total" aria-hidden="true">
           {pad(SLIDES.length)}
         </span>
-        <button type="button" onClick={next} aria-label="Próxima imagem">
+        <button type="button" onClick={next} aria-label={carouselLabels.next}>
           ›
         </button>
       </div>

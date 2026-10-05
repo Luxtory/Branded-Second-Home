@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Aplicação à Home do Design System Luxtory aprovado no CP1: Hero cinematográfica, Problem integrado,
+  diagramas originais, splits, comparações editoriais e listas numeradas, com copy previamente autorizada.
+  Escopo isolado da Home; demais páginas e go-live continuam sujeitos a aprovação posterior.
 - Revisão do CP1 privado do Design System Luxtory: candidatos ao Core separados dos patterns editoriais B2C;
   Cinematic Hero e Problem derivados da Home implementada, Triad Statement, duas comparações distintas,
   lista numerada/disclosure e os dois diagramas originais como assets reutilizáveis. Sem migração de páginas.

@@ -51,20 +51,27 @@ export function ModalityPairView({
   pair,
   level,
   deed = false,
+  editorial = false,
 }: {
   readonly pair: ModalityPair;
   readonly level: Level;
   /** Duas folhas altas do mesmo jogo de pranchas, divididas por um filete vertical. */
   readonly deed?: boolean;
+  /** Founder-approved open comparison; opt-in consumer is Home only. */
+  readonly editorial?: boolean;
 }) {
   const sides = [
     { key: 'owner', title: text.modality.owner, lines: pair.owner },
     { key: 'co-owner', title: text.modality.co_owner, lines: pair.coOwner },
   ];
   return (
-    <div className={deed ? 'lx-pair lx-pair--deed' : 'lx-pair'}>
+    <div
+      className={
+        editorial ? 'lx-b2c-editorial-comparison' : deed ? 'lx-pair lx-pair--deed' : 'lx-pair'
+      }
+    >
       {sides.map((side) => (
-        <div className="lx-pair__item" key={side.key}>
+        <div className={editorial ? 'lx-b2c-editorial-unit' : 'lx-pair__item'} key={side.key}>
           <Heading level={level} className="lx-display-s">
             <span className="lx-nowrap">{side.title}</span>
           </Heading>

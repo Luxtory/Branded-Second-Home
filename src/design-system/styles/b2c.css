@@ -1,4 +1,4 @@
-/* B2C/editorial patterns, demonstrated only in CP1. Core candidates remain in b2c-foundations.css.
+/* Approved B2C/editorial patterns and Home recipe. Core foundations remain in b2c-foundations.css.
  * A pattern is composition vocabulary, not an automatic React component or page recipe. */
 @layer lx.components {
   .lx-b2c-section { padding-block: var(--lx-b2c-section-space); }
@@ -133,6 +133,33 @@
   .lx-b2c-footer nav ul { display: grid; gap: var(--lx-space-4); }
   .lx-b2c-footer nav a { display: inline-flex; align-items: center; min-height: var(--lx-target-min); }
   .lx-b2c-footer__note { margin-top: var(--lx-space-12); }
+  /* Home recipe: existing public shell, with the approved visual treatment scoped to this consumer. */
+  .lx-b2c-home { position: relative; }
+  .lx-b2c-home .lx-header .lx-container { max-width: var(--lx-layout-container-max); padding-inline: var(--lx-layout-margin); }
+  .lx-b2c-home .lx-header__inner { padding-block: var(--lx-space-6); }
+  .lx-b2c-home .lx-header--overlay .lx-logo { --lx-logo-height: 1.5rem; }
+  .lx-b2c-home .lx-header__menu-button { background: color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-min-alpha) * 100%), transparent); }
+  .lx-b2c-home .lx-mobile-nav[data-mode="retractable"] { width: min(100%, max(var(--lx-layout-app-nav-width), 25vw)); box-shadow: none; }
+  .lx-b2c-home .lx-mobile-nav[data-mode="retractable"] .lx-mobile-nav__link { font-size: var(--lx-b2c-subheadline); }
+  .lx-b2c-home .lx-footer { --lx-color-bg: var(--lx-palette-moroccan-blue); padding-block: var(--lx-b2c-pause-space); }
+  .lx-b2c-home .lx-footer .lx-grid { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--lx-space-12); }
+  .lx-b2c-home .lx-footer__nav-list { gap: var(--lx-space-4); }
+  .lx-b2c-home .lx-b2c-editorial .lx-b2c-stack > div { max-width: var(--lx-b2c-reading-width); }
+  .lx-b2c-home__three { display: grid; gap: var(--lx-space-6); width: 100%; margin-block: var(--lx-space-6); }
+  .lx-b2c-home__three > * { padding: var(--lx-space-4); min-width: 0; }
+  .lx-b2c-home__three > * + * { border-top: var(--lx-border-hairline) solid var(--lx-color-rule); }
+  .lx-b2c-home__statement { margin-top: var(--lx-space-12); }
+  .lx-b2c-home__statement .lx-b2c-statement__values p { grid-column: 2; }
+  .lx-b2c-home__statement > .lx-small { margin-top: var(--lx-space-8); }
+  .lx-b2c-home__turn { margin-block: var(--lx-space-12); }
+  .lx-b2c-home__turn > p + p { margin-top: var(--lx-space-4); }
+  .lx-b2c-home__universe { display: flex; flex-wrap: wrap; gap: var(--lx-space-3) var(--lx-space-6); margin-top: var(--lx-space-6); }
+  .lx-b2c-home__comparison { padding-block: var(--lx-space-8) 0; }
+  .lx-b2c-home__description { grid-column: 2; grid-row: 2; }
+  .lx-b2c-home__description p + p { margin-top: var(--lx-space-4); }
+  .lx-b2c-home .lx-b2c-numbered__action > svg { width: 1.5rem; height: 1.5rem; }
+  .lx-b2c-home .lx-b2c-numbered__row.lx-b2c-home__question { grid-template-columns: 3ch minmax(0, 1fr) var(--lx-target-min); }
+  .lx-b2c-home .lx-b2c-home__question .lx-b2c-numbered__action { grid-column: 3; }
   @media (min-width: 48rem) {
     .lx-b2c-split { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .lx-b2c-photo { aspect-ratio: auto; }
@@ -160,5 +187,9 @@
     .lx-b2c-numbered__answer { padding-inline-start: calc(3ch + var(--lx-space-8)); }
     .lx-b2c-palette { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .lx-b2c-footer__grid { grid-template-columns: 1fr 1fr 1fr; }
+    .lx-b2c-home__three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .lx-b2c-home__three > * + * { border-top: 0; border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule); }
+    .lx-b2c-home__statement .lx-b2c-statement__values p { grid-column: 1; }
+    .lx-b2c-home__description { grid-column: 3; grid-row: 1; }
   }
 }

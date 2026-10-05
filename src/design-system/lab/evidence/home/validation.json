@@ -1,0 +1,261 @@
+{
+  "reports": [
+    {
+      "width": 1440,
+      "status": 200,
+      "axe": [],
+      "menuAxe": [],
+      "sectionIds": [
+        "inicio",
+        "renuncia",
+        "regra",
+        "possibilidade",
+        "luxtory",
+        "pertencimento",
+        "patrimonio",
+        "liberdade",
+        "gestao",
+        "para-quem",
+        "duvidas"
+      ],
+      "emphasis": [
+        {
+          "text": "com quem ama,",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "A renúncia continua.",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "não precisasse escolher?",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "Você pode ter os três.",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "“Esse lugar é a minha cara!”",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "e também é seu.",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(0, 61, 82)"
+        },
+        {
+          "text": "Administre menos.",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(0, 61, 82)"
+        },
+        {
+          "text": "aquilo que você conquistou.",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(205, 173, 142)"
+        }
+      ],
+      "errors": [],
+      "cspNonce": true,
+      "inlineStyles": 0,
+      "faqKeyboard": true,
+      "menuFocusReturn": true
+    },
+    {
+      "width": 390,
+      "status": 200,
+      "axe": [],
+      "menuAxe": [],
+      "sectionIds": [
+        "inicio",
+        "renuncia",
+        "regra",
+        "possibilidade",
+        "luxtory",
+        "pertencimento",
+        "patrimonio",
+        "liberdade",
+        "gestao",
+        "para-quem",
+        "duvidas"
+      ],
+      "emphasis": [
+        {
+          "text": "com quem ama,",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "A renúncia continua.",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "não precisasse escolher?",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "Você pode ter os três.",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "“Esse lugar é a minha cara!”",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "e também é seu.",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(0, 61, 82)"
+        },
+        {
+          "text": "Administre menos.",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(0, 61, 82)"
+        },
+        {
+          "text": "aquilo que você conquistou.",
+          "matching": true,
+          "italic": true,
+          "color": "rgb(205, 173, 142)"
+        }
+      ],
+      "errors": [],
+      "cspNonce": true,
+      "inlineStyles": 0,
+      "faqKeyboard": true,
+      "menuFocusReturn": true
+    }
+  ],
+  "overflow": [
+    {
+      "width": 320,
+      "overflow": false,
+      "offenders": []
+    },
+    {
+      "width": 360,
+      "overflow": false,
+      "offenders": []
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "offenders": []
+    },
+    {
+      "width": 480,
+      "overflow": false,
+      "offenders": []
+    },
+    {
+      "width": 768,
+      "overflow": false,
+      "offenders": []
+    },
+    {
+      "width": 1024,
+      "overflow": false,
+      "offenders": []
+    },
+    {
+      "width": 1440,
+      "overflow": false,
+      "offenders": []
+    },
+    {
+      "width": 1920,
+      "overflow": false,
+      "offenders": []
+    }
+  ],
+  "finalAdjustment": {
+    "pattern": "Existing approved Sibling Blocks pair variant for four promises",
+    "geometry": [
+      {
+        "width": 1440,
+        "columns": 2,
+        "items": [
+          {
+            "left": 192,
+            "top": -1771.40625,
+            "width": 516
+          },
+          {
+            "left": 732,
+            "top": -1771.40625,
+            "width": 516
+          },
+          {
+            "left": 192,
+            "top": -1655.8125,
+            "width": 516
+          },
+          {
+            "left": 732,
+            "top": -1655.8125,
+            "width": 516
+          }
+        ],
+        "overflow": false,
+        "headlineWhitespace": true
+      },
+      {
+        "width": 390,
+        "columns": 1,
+        "items": [
+          {
+            "left": 24,
+            "top": -2330.265625,
+            "width": 342
+          },
+          {
+            "left": 24,
+            "top": -2219.265625,
+            "width": 342
+          },
+          {
+            "left": 24,
+            "top": -2085.265625,
+            "width": 342
+          },
+          {
+            "left": 24,
+            "top": -1951.265625,
+            "width": 342
+          }
+        ],
+        "overflow": false,
+        "headlineWhitespace": true
+      }
+    ]
+  },
+  "review": {
+    "homeCopy": "Exact match to previously authorized Home source; only approved Lab diagram alt added",
+    "otherCopyUnchanged": true,
+    "svgByteIdenticalToApprovedLab": true,
+    "scope": "Home only; other pages keep their existing opt-out consumers"
+  }
+}

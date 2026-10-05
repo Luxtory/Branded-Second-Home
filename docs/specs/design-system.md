@@ -383,3 +383,23 @@ No Lab, a ênfase sobre fotografia recebe halo funcional de uma hairline em Dark
 nas letras, sem mudar família, tamanho, peso/métricas ou escurecer globalmente a imagem. Verificação focal
 considera o fundo real sob os glifos nas três imagens e nos dois viewports, além do axe.
 Ao entregar o CP1 revisado, parar e aguardar aprovação visual; nenhuma página é migrada automaticamente.
+
+## Aceite do CP1 e aplicação à Home (2026-10-05)
+
+O fundador aprovou visualmente o CP1 revisado no SHA `078fdf490d38ede221a6f9ff2579286eba7870ac`.
+Conforme o gate incremental acima, esse aceite autoriza somente a etapa Home. Foundations/primitives do Core
+e patterns editoriais aprovados são reutilizados pelo opt-in da Home, sem promover o visual para Admin/Auth
+ou outra página. O namespace técnico `.lx-b2c` permanece temporário; não representa um sistema paralelo.
+
+A receita preserva as onze seções/âncoras e a copy D-B2C-18, incluindo os ajustes de guardrails previamente
+autorizados: Membership, Crédito, SPE/Direito de Uso e gestão/FAQ. Não há nova formulação editorial. O alt do
+diagrama de solução reutiliza a descrição já aprovada no Lab. Ênfase permanece no trecho autorizado; em
+superfície clara/Warm Sand, usa a tinta Dark Blue para contraste, mantendo as métricas e o itálico.
+
+Os SVGs aprovados são servidos estaticamente em `public/diagrams/` porque `/lab` permanece vedado em Production.
+Geometria original preservada, sem API nova. Fotos existentes da própria Home são ilustrativas/contextuais,
+sem alegação de Edition, prova de Concept ou serviço. Kaizen permanece somente como candidato do Lab.
+
+Aceite desta etapa: Home completa e seções em 1440/390; copy e ordem preservadas; massa/crops/geometria
+coerentes com os patterns aprovados; quatro estados do CTA mantidos; foco/menu/FAQ/carrossel e reduced motion;
+axe e ausência de overflow 320–1920. Aprovação visual da Home precede qualquer migração das demais superfícies.

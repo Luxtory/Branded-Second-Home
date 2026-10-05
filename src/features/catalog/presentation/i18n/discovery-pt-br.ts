@@ -123,6 +123,10 @@ export const discoveryMessages = {
   values,
 
   home: {
+    media: {
+      solutionDiagram:
+        'Diagrama original de solução: Patrimônio, Liberdade e Pertencimento integrados, com Luxtory no encontro das três dimensões.',
+    },
     // Copy da Home escrita pelo fundador (D-B2C-18), com as decisões das revisões de 2026-10-01 e 2026-10-03 e a nomenclatura pública
     // de D-LX-08. Não reescrever: mudança de texto só com nova decisão do fundador. Os markers ficam em caixa normal
     // aqui; o `lx-marker` os mostra em caixa alta.
@@ -134,6 +138,14 @@ export const discoveryMessages = {
       } satisfies Headline,
       text: 'Uma nova forma de viver seu lazer com mais valor.',
       action: 'Descubra uma nova forma de viver',
+      carousel: {
+        description: 'carrossel',
+        controls: 'Controles do carrossel',
+        previous: 'Imagem anterior',
+        next: 'Próxima imagem',
+        pause: 'Pausar carrossel',
+        play: 'Reproduzir carrossel',
+      },
     },
     renunciation: {
       marker: 'A cada escolha, uma renúncia',
@@ -144,6 +156,7 @@ export const discoveryMessages = {
       intro:
         'No mercado de lazer, tudo gira em torno de três valores: patrimônio, liberdade e pertencimento.',
       values: 'Patrimônio. Liberdade. Pertencimento.',
+      diagramAlt: 'Diagrama da tríade de valor: Patrimônio. Liberdade. Pertencimento.',
       tension:
         'Você quer os três, mas as alternativas ainda costumam fazer você abrir mão de uma parte importante para ter as outras.',
       /** Nome acessível da sequência das alternativas (não visível; distinto do título da seção). */
@@ -282,7 +295,8 @@ export const discoveryMessages = {
         {
           title: 'Luxchange',
           text: [
-            'No Luxchange, você escolhe períodos que tem direito de uso da sua Second Home para converter em créditos equivalentes e diversificar estadias em outros imóveis da rede.',
+            'Com Membership vigente, no Luxchange você escolhe períodos elegíveis da sua Second Home para converter em créditos equivalentes e diversificar estadias em outros imóveis da rede; no Co-Owner, somente datas já reservadas no seu Direito de Uso podem ser cedidas.',
+            'Créditos não são moeda, investimento nem garantia de disponibilidade.',
             'Pode continuar em um universo parecido com o seu.',
             'Ou experimentar um conceito completamente diferente.',
             'Sempre de acordo com os períodos disponíveis, plano Membership, e as regras do clube.',
@@ -292,14 +306,14 @@ export const discoveryMessages = {
           title: 'Luxplus',
           text: [
             'Quer mais tempo?',
-            'O Luxplus permite adquirir noites adicionais disponíveis no inventário da Luxtory.',
+            'Com Membership vigente, o Luxplus permite adquirir noites adicionais disponíveis no inventário da Luxtory.',
             'Uma forma de ampliar suas possibilidades quando os dias da sua Second Home ou seus créditos do Luxchange não forem suficientes.',
           ],
         },
         {
           title: 'Locação de temporada',
           text: [
-            'E quando houver períodos que você não pretende usar, poderá autorizar sua locação conforme a modalidade e as regras aplicáveis.',
+            'E quando houver períodos que você não pretende usar, com Membership vigente poderá autorizar sua locação pelo canal Luxtory conforme a modalidade e as regras aplicáveis; no Co-Owner, somente datas já reservadas no seu Direito de Uso podem ser disponibilizadas pelos canais autorizados.',
             'Você continua no controle da decisão.',
           ],
         },
@@ -318,9 +332,13 @@ export const discoveryMessages = {
       pair: {
         owner: [
           'A gestão pode ser estruturada conforme os serviços contratados e as necessidades da sua Second Home.',
+          'A administração integral pela Luxtory é opcional, assim como a Taxa de Administração.',
+          'As despesas da Second Home são suas.',
         ],
         coOwner: [
-          'Como a Second Home pertence a mais de um proprietário, sua administração e manutenção funcionam de forma coordenada para preservar o ativo e a experiência de todos.',
+          'Como a Second Home pertence à SPE proprietária, sua administração e manutenção funcionam de forma coordenada para preservar o ativo e a experiência de todos.',
+          'A administração profissional é obrigatória, com Taxa de Administração.',
+          'As despesas da Second Home são rateadas entre os Co-Owners.',
         ],
       } satisfies ModalityPair,
       closing: {
@@ -393,26 +411,26 @@ export const discoveryMessages = {
             'Não.',
             'No Owner, você é proprietário do imóvel inteiro.',
             'No Co-Owner, você possui participação real na empresa proprietária do imóvel.',
-            'Você não compra semanas de hospedagem: tem uma participação societária, com Direito de Uso.',
+            'Como Co-Owner, você adquire uma Ação da SPE proprietária do imóvel, com Direito de Uso.',
           ],
         },
         {
           question: 'Vou ficar preso à minha Second Home?',
           answer: [
             'Não.',
-            'Sua Second Home é o ponto de partida, mas mecanismos como Luxchange e Luxplus podem ampliar suas possibilidades de viver outras Second Homes e períodos adicionais, sempre de acordo com disponibilidade e regras aplicáveis.',
+            'Sua Second Home é o ponto de partida, mas, com Membership vigente, mecanismos como Luxchange e Luxplus podem ampliar suas possibilidades de viver outras Second Homes e períodos adicionais, sempre de acordo com disponibilidade e regras aplicáveis.',
           ],
         },
         {
           question: 'Como funciona o Luxchange?',
           answer: [
-            'Você pode disponibilizar determinados períodos da sua Second Home e, seguindo as regras do clube, transformá-los em créditos para viver experiências em outras Second Homes da rede.',
+            'Com Membership vigente, você pode disponibilizar determinados períodos elegíveis da sua Second Home e, seguindo as regras do clube, transformá-los em créditos para viver experiências em outras Second Homes da rede; no Co-Owner, somente datas já reservadas no seu Direito de Uso podem ser cedidas. Créditos não são moeda, investimento nem garantia de disponibilidade.',
           ],
         },
         {
           question: 'O que é o Luxplus?',
           answer: [
-            'É uma forma de adquirir noites adicionais disponíveis no inventário da Luxtory quando você quiser viver mais do que seus dias ou créditos disponíveis permitem.',
+            'Com Membership vigente, é uma forma de adquirir noites adicionais disponíveis no inventário da Luxtory quando você quiser viver mais do que seus dias ou créditos disponíveis permitem.',
           ],
         },
         {
@@ -427,6 +445,8 @@ export const discoveryMessages = {
           answer: [
             'A Luxtory coordena os serviços de gestão e manutenção previstos para cada Second Home.',
             'O escopo varia conforme a Home Edition, a modalidade e os serviços aplicáveis.',
+            'No Owner, a administração integral pela Luxtory é opcional, assim como a Taxa de Administração. As despesas da Second Home são suas.',
+            'No Co-Owner, a administração profissional é obrigatória, com Taxa de Administração. As despesas da Second Home são rateadas entre os Co-Owners.',
           ],
         },
         {

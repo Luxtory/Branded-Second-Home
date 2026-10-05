@@ -15,7 +15,7 @@ export function DiscoverySite({
   readonly current: DiscoverySection;
   readonly children: ReactNode;
 }) {
-  return (
+  const shell = (
     <SiteShell
       homeHref={discoveryPaths.home}
       labels={text.site}
@@ -46,4 +46,5 @@ export function DiscoverySite({
       {children}
     </SiteShell>
   );
+  return current === 'home' ? <div className="lx-b2c lx-b2c-home">{shell}</div> : shell;
 }
