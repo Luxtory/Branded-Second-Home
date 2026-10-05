@@ -109,6 +109,21 @@
     --lx-grain-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
     --lx-grain-size: 120px;
     --lx-grain-opacity: 0.035;
+    --lx-b2c-hero: clamp(2rem, 1.63rem + 1.5vw, 3rem);
+    --lx-b2c-headline: clamp(1.75rem, 1.45rem + 1.2vw, 2.5rem);
+    --lx-b2c-title: clamp(1.25rem, 1.156rem + 0.385vw, 1.5rem);
+    --lx-b2c-subheadline: clamp(1.125rem, 1.078rem + 0.192vw, 1.25rem);
+    --lx-b2c-body: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+    --lx-b2c-small: 0.875rem;
+    --lx-b2c-marker: 0.75rem;
+    --lx-b2c-hero-leading: 1.1;
+    --lx-b2c-support-leading: 1.45;
+    --lx-b2c-container: 72rem;
+    --lx-b2c-padding: clamp(1.5rem, 0.938rem + 2.308vw, 3rem);
+    --lx-b2c-reading-width: 35rem;
+    --lx-b2c-section-space: clamp(4rem, 3.25rem + 3vw, 6rem);
+    --lx-b2c-pause-space: clamp(3rem, 2.625rem + 1.5vw, 4rem);
+    --lx-b2c-radius: 0.375rem;
   }
 
   :root,

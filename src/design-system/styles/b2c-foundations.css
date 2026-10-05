@@ -1,0 +1,114 @@
+/* CP1 foundations: opt-in only. Brand primitives match canonical Luxtory2.0 tokens.
+ * Numeric B2C dimensions remain proposals until the founder's visual approval. */
+@layer lx.base {
+  .lx-b2c,
+  .lx-b2c [data-b2c-surface="white"] {
+    --lx-color-bg: var(--lx-palette-pure-white);
+    --lx-color-fg: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-fg-muted: var(--lx-palette-moroccan-blue);
+    --lx-color-accent: var(--lx-palette-moroccan-blue);
+    --lx-color-focus: var(--lx-palette-moroccan-blue);
+    --lx-color-rule-strong: var(--lx-palette-moroccan-blue);
+    --lx-color-action-bg: var(--lx-palette-moroccan-blue);
+    --lx-color-action-bg-hover: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-action-fg: var(--lx-palette-pure-white);
+    --lx-color-field-bg: var(--lx-palette-pure-white);
+    --lx-color-field-fg: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-field-border: var(--lx-palette-moroccan-blue);
+    --lx-color-surface: var(--lx-derived-sand-wash);
+    --lx-color-error: var(--lx-derived-error);
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-b2c-body);
+    line-height: var(--lx-leading-body);
+    background-color: var(--lx-color-bg);
+    color: var(--lx-color-fg);
+  }
+  .lx-b2c [data-b2c-surface="sand"] {
+    --lx-color-bg: var(--lx-palette-warm-sand);
+    --lx-color-fg: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-fg-muted: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-accent: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-focus: var(--lx-palette-dark-moroccan-blue);
+  }
+  .lx-b2c [data-b2c-surface="blue"],
+  .lx-b2c [data-b2c-surface="dark-blue"] {
+    --lx-color-bg: var(--lx-palette-moroccan-blue);
+    --lx-color-fg: var(--lx-palette-pure-white);
+    --lx-color-fg-muted: var(--lx-palette-pure-white);
+    --lx-color-accent: var(--lx-palette-pure-white);
+    --lx-color-focus: var(--lx-palette-warm-sand);
+    --lx-color-rule-strong: var(--lx-palette-pure-white);
+    --lx-color-action-bg: var(--lx-palette-warm-sand);
+    --lx-color-action-bg-hover: var(--lx-palette-pure-white);
+    --lx-color-action-fg: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-field-bg: color-mix(in srgb, var(--lx-palette-pure-white) 5%, var(--lx-color-bg));
+    --lx-color-field-fg: var(--lx-palette-pure-white);
+    --lx-color-field-border: var(--lx-palette-pure-white);
+    --lx-color-surface: var(--lx-palette-dark-moroccan-blue);
+    --lx-color-error: var(--lx-derived-error-on-night);
+    color-scheme: dark;
+  }
+  .lx-b2c [data-b2c-surface="dark-blue"] {
+    --lx-color-bg: var(--lx-palette-dark-moroccan-blue);
+  }
+  .lx-b2c [data-b2c-surface] {
+    background-color: var(--lx-color-bg);
+    color: var(--lx-color-fg);
+    accent-color: var(--lx-color-action-bg);
+  }
+}
+@layer lx.layout {
+  .lx-b2c .lx-container {
+    max-width: var(--lx-b2c-container);
+    padding-inline: var(--lx-b2c-padding);
+  }
+}
+@layer lx.components {
+  .lx-b2c :is(.lx-display-l, .lx-display-m, .lx-display-s) {
+    font-family: var(--lx-font-display);
+    font-weight: var(--lx-weight-display);
+    line-height: var(--lx-leading-heading);
+    letter-spacing: var(--lx-tracking-display);
+    max-width: none;
+  }
+  .lx-b2c .lx-display-l { font-size: var(--lx-b2c-hero); line-height: var(--lx-b2c-hero-leading); }
+  .lx-b2c .lx-display-m { font-size: var(--lx-b2c-headline); }
+  .lx-b2c .lx-display-s { font-size: var(--lx-b2c-title); }
+  .lx-b2c :is(.lx-display-l, .lx-display-m, .lx-display-s) em {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    font-style: italic;
+    color: var(--lx-palette-warm-sand);
+  }
+  .lx-b2c .lx-lead { font-size: var(--lx-b2c-subheadline); line-height: var(--lx-b2c-support-leading); }
+  .lx-b2c .lx-b2c-closing { font-size: var(--lx-b2c-title); line-height: var(--lx-b2c-support-leading); }
+  .lx-b2c .lx-body { font-size: var(--lx-b2c-body); }
+  .lx-b2c .lx-small { font-size: var(--lx-b2c-small); }
+  .lx-b2c .lx-marker {
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-b2c-marker);
+    color: var(--lx-color-fg-muted);
+    letter-spacing: var(--lx-tracking-label);
+    text-transform: none;
+  }
+  .lx-b2c :is(.lx-input, .lx-select, .lx-textarea) {
+    font-size: var(--lx-b2c-body);
+    border-radius: var(--lx-b2c-radius);
+  }
+  .lx-b2c :is(.lx-label, .lx-button) { letter-spacing: var(--lx-tracking-body); }
+  .lx-b2c .lx-hint { font-size: var(--lx-b2c-small); }
+  .lx-b2c .lx-mobile-nav {
+    inset: 0 0 0 auto;
+    width: min(100%, max(var(--lx-layout-app-nav-width), 25vw));
+    height: 100dvh;
+  }
+  .lx-b2c .lx-mobile-nav__top,
+  .lx-b2c .lx-mobile-nav__body,
+  .lx-b2c .lx-mobile-nav__footer { padding-inline: var(--lx-space-6); border: 0; }
+  .lx-b2c .lx-mobile-nav__list > li { border: 0; }
+  .lx-b2c .lx-mobile-nav__link { font-family: var(--lx-font-utility); font-size: var(--lx-b2c-subheadline); }
+  .lx-b2c .lx-icon-button { min-width: var(--lx-target-min); min-height: var(--lx-target-min); }
+}

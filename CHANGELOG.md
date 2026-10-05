@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- CP1 privado do rebase visual B2C em `/lab/lab/b2c.html`: foundations propostas e composições derivadas do
+  Luxtory2.0, fontes atuais e ênfase inline, forms acessíveis e mídias candidatas identificadas (incluindo Kaizen).
+  Nenhuma migração da Home, Admin ou outra página do produto nesta etapa.
 - Design System Luxtory (LUXURY + STORY): tokens DTCG (`src/design-system/tokens/tokens.json`), grounds
   paper/wash/night, three free OFL fonts (Newsreader, Hanken Grotesk, Courier Prime), CSS components `lx-*` for R1
   (Scene, Scene Marker, Frame, Sequence, Evidence, Button, Link, Field, Choice Group, Message, States, Header,

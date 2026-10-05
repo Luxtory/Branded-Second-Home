@@ -298,3 +298,33 @@ Não aplicável (camada visual). Performance acompanhada por Core Web Vitals no 
 - Canônicos: [01](canonical/01-business-model-business-rules.md) · [02](canonical/02-product-spec.md) ·
   [03](canonical/03-technical-spec.md)
 - Referência histórica: `Luxtory/Luxtory2.0` (princípios de scrim, grain em tile, editorial; nada importado).
+
+## CP1 — rebase visual B2C (2026-10-05)
+
+Plano e clarificações aprovados pelo fundador na conversa de 2026-10-05. Escopo deste checkpoint:
+foundations aditivas e demonstração privada em `/lab/lab/b2c.html`; nenhuma página do produto migra nesta etapa.
+Este registro supersede a direção estética anterior somente para a expressão pública B2C, respeitando os gates abaixo.
+Admin e demais consumidores internos mantêm seus contratos e sua aparência.
+
+- Composição/UI: padrões recorrentes nas páginas prioritárias do Luxtory2.0 (Home, Associação/Candidatura,
+  Develop & Sell) prevalecem sobre soluções isoladas. Empates estéticos reais são apresentados no CP1 ao fundador.
+- Marca: paleta canônica do Luxtory2.0, equivalente aos tokens existentes; drift RGB publicado não é referência.
+- Preservações visuais obrigatórias: Newsreader, Hanken e ênfase inline. Ênfase = Newsreader da headline,
+  mesmo tamanho/peso/métricas, itálico e Warm Sand, com contraste acessível. Palavras vêm da copy autorizada.
+  Logo oficial é ativo de marca; reutilizar primitives preserva comportamento/semântica/acessibilidade quando
+  adequados, sem congelar a aparência anterior.
+- Composição: equilíbrio de massa; split 50/50 de referência, variações justificadas; mídia contextual preenchendo
+  sua área; ordem mobile narrativa/DOM. Sem mídia adequada, composição editorial própria, sem coluna residual.
+- Implementação: grupo aditivo `b2c` em tokens.json; valores dimensionais são propostas do CP1. Foundations e
+  variantes escopadas em `.lx-b2c`, importadas exclusivamente pela nova demonstração, sem alterar o entrypoint atual.
+- Mídia: legado e Kaizen são candidatos identificados de avaliação privada. Autorização definitiva não bloqueia
+  CP1; aprovação/contexto devem ser confirmados antes de produção. Kaizen não é Edition disponível, prova de outro
+  Concept ou benefício atual. A tríade preserva a geometria original, com fontes e contraste adaptados no Lab.
+- Forms: exemplos genéricos sem envio/armazenamento ou definição de campos da W6. Sem backend, API, migration,
+  dependência ou componente React antecipado.
+- Gates: CP1 DS → aprovação explícita → Home → aprovação explícita → demais superfícies. Cada aprovação autoriza
+  somente a etapa seguinte. A rota interna mantém 404 em Production e noindex/no-store fora dela.
+
+Aceite do CP1: evidências acessíveis em 1440/390; paleta e fontes corretas; equivalência métrica da ênfase;
+composição/crops contextualizados; irmãos coerentes; teclado/foco/disclosures/forms; axe e overflow 320–1920.
+Pendências externas da Wave 4 ficam fora desta iniciativa.

@@ -441,3 +441,13 @@ decorativos · glassmorphism · glow · foto de banco · lorem ipsum · cor lite
 duas fontes de verdade (edite `tokens.json`, nunca `tokens.css`) · recolorir ou reconstruir o logo · `@media
 (max-width…)` · dashboard SaaS genérico (avatares, ícones em excesso, cartões de KPI com número inventado) · componente
 de produto criado sem tela que o consuma.
+
+## Avaliação privada — CP1 B2C
+
+Abrir `/lab/lab/b2c.html` fora de Production. O checkpoint demonstra foundations propostas, splits nas duas
+orientações, irmãos/comparação, lista/disclosure, diagrama funcional, pausas, forms e shell com mídia candidata
+identificada, incluindo Kaizen. Contrato e limites: `docs/specs/design-system.md` → “CP1 — rebase visual B2C”.
+
+Opt-in somente da demonstração: raiz `.lx-b2c`, styles/index.css seguido de b2c-foundations.css e b2c.css.
+Este último contém composição/variantes; tokens e foundations permanecem separados. Não aplicar esse opt-in à
+Home ou a outra superfície antes da aprovação correspondente. A aprovação do CP1 permite somente a etapa Home.

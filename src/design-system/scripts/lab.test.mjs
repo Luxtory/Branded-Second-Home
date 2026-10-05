@@ -38,3 +38,17 @@ test('every in-page anchor points to an existing id', () => {
   const anchors = [...html.matchAll(/\shref="#([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(anchors.filter((a) => !ids.has(a)), []);
 });
+
+test('B2C CP1 references resolve inside the existing Lab and declare private evaluation', () => {
+  const file = join(LAB, 'b2c.html');
+  assert.ok(existsSync(file), 'the authorized B2C checkpoint must be available in the Lab');
+  const checkpoint = readFileSync(file, 'utf8');
+  assert.match(checkpoint, /name="robots" content="noindex, nofollow"/);
+  assert.equal((checkpoint.match(/<h1[\s>]/g) ?? []).length, 1);
+  const refs = [...checkpoint.matchAll(/\s(?:href|src)="([^"#][^"]*)"/g)]
+    .map((match) => match[1]).filter((ref) => !/^[a-z]+:|^\//i.test(ref));
+  assert.deepEqual(refs.filter((ref) => !existsSync(resolve(LAB, ref))), []);
+  const ids = new Set([...checkpoint.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]));
+  const anchors = [...checkpoint.matchAll(/\shref="#([^"]+)"/g)].map((match) => match[1]);
+  assert.deepEqual(anchors.filter((anchor) => !ids.has(anchor)), []);
+});
