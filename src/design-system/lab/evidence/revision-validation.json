@@ -1,0 +1,459 @@
+{
+  "reports": [
+    {
+      "width": 1440,
+      "httpStatus": 200,
+      "errors": [],
+      "copyMismatches": [],
+      "emphasis": [
+        {
+          "text": "com quem ama,",
+          "parentFamily": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "family": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "parentSize": "40px",
+          "size": "40px",
+          "parentWeight": "400",
+          "weight": "400",
+          "parentLeading": "40.8px",
+          "leading": "40.8px",
+          "parentTracking": "-0.6px",
+          "tracking": "-0.6px",
+          "italic": "italic",
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "A renúncia continua.",
+          "parentFamily": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "family": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "parentSize": "40px",
+          "size": "40px",
+          "parentWeight": "400",
+          "weight": "400",
+          "parentLeading": "42px",
+          "leading": "42px",
+          "parentTracking": "-0.6px",
+          "tracking": "-0.6px",
+          "italic": "italic",
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "Você pode ter os três.",
+          "parentFamily": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "family": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "parentSize": "91.84px",
+          "size": "91.84px",
+          "parentWeight": "400",
+          "weight": "400",
+          "parentLeading": "97.3504px",
+          "leading": "97.3504px",
+          "parentTracking": "-1.3776px",
+          "tracking": "-1.3776px",
+          "italic": "italic",
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "não precisasse escolher?",
+          "parentFamily": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "family": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "parentSize": "40px",
+          "size": "40px",
+          "parentWeight": "400",
+          "weight": "400",
+          "parentLeading": "46px",
+          "leading": "46px",
+          "parentTracking": "-0.6px",
+          "tracking": "-0.6px",
+          "italic": "italic",
+          "color": "rgb(205, 173, 142)"
+        }
+      ],
+      "heroGeometry": {
+        "height": 900,
+        "titleTopRatio": 0.7293402777777778,
+        "scrimTopRatio": 0.6,
+        "scrimHeightRatio": 0.4,
+        "pseudo": "none"
+      },
+      "images": [
+        {
+          "src": "../brand/logo/Logo-Luxtory-Warm-Sand-Horizontal.svg",
+          "ok": true
+        },
+        {
+          "src": "../brand/logo/Logo-Luxtory-Warm-Sand-Icone.png.svg",
+          "ok": true
+        },
+        {
+          "src": "assets/diagrams/triade-valor-desejado.svg",
+          "ok": true
+        },
+        {
+          "src": "/images/home/hero/home-solucao-firepit-family.jpg",
+          "ok": true
+        },
+        {
+          "src": "https://pengvnuhfafydtraytat.supabase.co/storage/v1/object/public/anteprojeto-midias/9ad6e032-7636-4cb6-ae8f-b8dd4f4d3640/076c250a-7d54-45db-9a9f-73f9e361aee2.jpeg",
+          "ok": true
+        },
+        {
+          "src": "assets/diagrams/diagrama-solucao-luxtory.svg",
+          "ok": true
+        },
+        {
+          "src": "https://pengvnuhfafydtraytat.supabase.co/storage/v1/object/public/anteprojeto-midias/9ad6e032-7636-4cb6-ae8f-b8dd4f4d3640/a4be3d76-078d-4877-9978-69236ca7e2e6.jpeg",
+          "ok": true
+        },
+        {
+          "src": "../brand/logo/Logo-Luxtory-Warm-Sand-Vertical.svg",
+          "ok": true
+        }
+      ],
+      "violations": [],
+      "menuViolations": [],
+      "backgroundFocusRejected": true,
+      "focusRestored": true,
+      "disclosureOpen": true,
+      "formStatus": "Demonstração visual. Nenhum dado foi enviado.",
+      "submissions": 0
+    },
+    {
+      "width": 390,
+      "httpStatus": 200,
+      "errors": [],
+      "copyMismatches": [],
+      "emphasis": [
+        {
+          "text": "com quem ama,",
+          "parentFamily": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "family": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "parentSize": "35.1px",
+          "size": "35.1px",
+          "parentWeight": "400",
+          "weight": "400",
+          "parentLeading": "35.802px",
+          "leading": "35.802px",
+          "parentTracking": "-0.5265px",
+          "tracking": "-0.5265px",
+          "italic": "italic",
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "A renúncia continua.",
+          "parentFamily": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "family": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "parentSize": "28px",
+          "size": "28px",
+          "parentWeight": "400",
+          "weight": "400",
+          "parentLeading": "29.4px",
+          "leading": "29.4px",
+          "parentTracking": "-0.42px",
+          "tracking": "-0.42px",
+          "italic": "italic",
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "Você pode ter os três.",
+          "parentFamily": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "family": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "parentSize": "44px",
+          "size": "44px",
+          "parentWeight": "400",
+          "weight": "400",
+          "parentLeading": "46.64px",
+          "leading": "46.64px",
+          "parentTracking": "-0.66px",
+          "tracking": "-0.66px",
+          "italic": "italic",
+          "color": "rgb(205, 173, 142)"
+        },
+        {
+          "text": "não precisasse escolher?",
+          "parentFamily": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "family": "Newsreader, \"Newsreader Fallback\", \"Times New Roman\", serif",
+          "parentSize": "28px",
+          "size": "28px",
+          "parentWeight": "400",
+          "weight": "400",
+          "parentLeading": "32.2px",
+          "leading": "32.2px",
+          "parentTracking": "-0.42px",
+          "tracking": "-0.42px",
+          "italic": "italic",
+          "color": "rgb(205, 173, 142)"
+        }
+      ],
+      "heroGeometry": {
+        "height": 844,
+        "titleTopRatio": 0.5159952606635071,
+        "scrimTopRatio": 0.4500148104265403,
+        "scrimHeightRatio": 0.5499851895734598,
+        "pseudo": "none"
+      },
+      "images": [
+        {
+          "src": "../brand/logo/Logo-Luxtory-Warm-Sand-Horizontal.svg",
+          "ok": true
+        },
+        {
+          "src": "../brand/logo/Logo-Luxtory-Warm-Sand-Icone.png.svg",
+          "ok": true
+        },
+        {
+          "src": "assets/diagrams/triade-valor-desejado.svg",
+          "ok": true
+        },
+        {
+          "src": "/images/home/hero/home-solucao-firepit-family.jpg",
+          "ok": true
+        },
+        {
+          "src": "https://pengvnuhfafydtraytat.supabase.co/storage/v1/object/public/anteprojeto-midias/9ad6e032-7636-4cb6-ae8f-b8dd4f4d3640/076c250a-7d54-45db-9a9f-73f9e361aee2.jpeg",
+          "ok": true
+        },
+        {
+          "src": "assets/diagrams/diagrama-solucao-luxtory.svg",
+          "ok": true
+        },
+        {
+          "src": "https://pengvnuhfafydtraytat.supabase.co/storage/v1/object/public/anteprojeto-midias/9ad6e032-7636-4cb6-ae8f-b8dd4f4d3640/a4be3d76-078d-4877-9978-69236ca7e2e6.jpeg",
+          "ok": true
+        },
+        {
+          "src": "../brand/logo/Logo-Luxtory-Warm-Sand-Vertical.svg",
+          "ok": true
+        }
+      ],
+      "violations": [],
+      "menuViolations": [],
+      "backgroundFocusRejected": true,
+      "focusRestored": true,
+      "disclosureOpen": true,
+      "formStatus": "Demonstração visual. Nenhum dado foi enviado.",
+      "submissions": 0
+    }
+  ],
+  "carousel": {
+    "advanced": true,
+    "stopped": true,
+    "unchanged": true,
+    "forward": true,
+    "backward": true,
+    "reduced": true,
+    "noReducedAutoplay": true
+  },
+  "overflow": [
+    {
+      "width": 320,
+      "scroll": 320,
+      "offenders": []
+    },
+    {
+      "width": 360,
+      "scroll": 360,
+      "offenders": []
+    },
+    {
+      "width": 390,
+      "scroll": 390,
+      "offenders": []
+    },
+    {
+      "width": 480,
+      "scroll": 480,
+      "offenders": []
+    },
+    {
+      "width": 768,
+      "scroll": 768,
+      "offenders": []
+    },
+    {
+      "width": 1024,
+      "scroll": 1024,
+      "offenders": []
+    },
+    {
+      "width": 1440,
+      "scroll": 1440,
+      "offenders": []
+    },
+    {
+      "width": 1920,
+      "scroll": 1920,
+      "offenders": []
+    }
+  ],
+  "photographicContrast": {
+    "method": "Contrast at opaque glyph positions against the rendered photographic background, including the functional hairline halo; large headlines >= 3:1, body >= 4.5:1.",
+    "samples": [
+      {
+        "width": 1440,
+        "slide": 1,
+        "text": ".lx-home-hero__title",
+        "min": 4.988,
+        "threshold": 3,
+        "pixels": 4262
+      },
+      {
+        "width": 1440,
+        "slide": 1,
+        "text": ".lx-home-hero__title em",
+        "min": 5.282,
+        "threshold": 3,
+        "pixels": 729
+      },
+      {
+        "width": 1440,
+        "slide": 1,
+        "text": ".lx-home-hero__lead",
+        "min": 7.585,
+        "threshold": 4.5,
+        "pixels": 255
+      },
+      {
+        "width": 1440,
+        "slide": 2,
+        "text": ".lx-home-hero__title",
+        "min": 5.162,
+        "threshold": 3,
+        "pixels": 4262
+      },
+      {
+        "width": 1440,
+        "slide": 2,
+        "text": ".lx-home-hero__title em",
+        "min": 4.898,
+        "threshold": 3,
+        "pixels": 729
+      },
+      {
+        "width": 1440,
+        "slide": 2,
+        "text": ".lx-home-hero__lead",
+        "min": 5.465,
+        "threshold": 4.5,
+        "pixels": 255
+      },
+      {
+        "width": 1440,
+        "slide": 3,
+        "text": ".lx-home-hero__title",
+        "min": 4.59,
+        "threshold": 3,
+        "pixels": 4262
+      },
+      {
+        "width": 1440,
+        "slide": 3,
+        "text": ".lx-home-hero__title em",
+        "min": 4.886,
+        "threshold": 3,
+        "pixels": 729
+      },
+      {
+        "width": 1440,
+        "slide": 3,
+        "text": ".lx-home-hero__lead",
+        "min": 6.298,
+        "threshold": 4.5,
+        "pixels": 255
+      },
+      {
+        "width": 390,
+        "slide": 1,
+        "text": ".lx-home-hero__title",
+        "min": 3.195,
+        "threshold": 3,
+        "pixels": 2632
+      },
+      {
+        "width": 390,
+        "slide": 1,
+        "text": ".lx-home-hero__title em",
+        "min": 5.353,
+        "threshold": 3,
+        "pixels": 457
+      },
+      {
+        "width": 390,
+        "slide": 1,
+        "text": ".lx-home-hero__lead",
+        "min": 5.906,
+        "threshold": 4.5,
+        "pixels": 127
+      },
+      {
+        "width": 390,
+        "slide": 2,
+        "text": ".lx-home-hero__title",
+        "min": 4.544,
+        "threshold": 3,
+        "pixels": 2632
+      },
+      {
+        "width": 390,
+        "slide": 2,
+        "text": ".lx-home-hero__title em",
+        "min": 5.417,
+        "threshold": 3,
+        "pixels": 457
+      },
+      {
+        "width": 390,
+        "slide": 2,
+        "text": ".lx-home-hero__lead",
+        "min": 6.122,
+        "threshold": 4.5,
+        "pixels": 127
+      },
+      {
+        "width": 390,
+        "slide": 3,
+        "text": ".lx-home-hero__title",
+        "min": 3.772,
+        "threshold": 3,
+        "pixels": 2632
+      },
+      {
+        "width": 390,
+        "slide": 3,
+        "text": ".lx-home-hero__title em",
+        "min": 5.101,
+        "threshold": 3,
+        "pixels": 457
+      },
+      {
+        "width": 390,
+        "slide": 3,
+        "text": ".lx-home-hero__lead",
+        "min": 4.606,
+        "threshold": 4.5,
+        "pixels": 127
+      }
+    ]
+  },
+  "designSystemTests": {
+    "command": "node --test src/design-system/scripts/*.test.mjs",
+    "passed": 34,
+    "failed": 0,
+    "exitCode": 0,
+    "scope": "Design System and Lab only"
+  },
+  "menuAnchorNavigation": {
+    "hash": "#lista",
+    "destinationTop": 71.796875,
+    "activeElement": "SECTION",
+    "focusId": "lista",
+    "passed": true
+  },
+  "review": {
+    "scope": "CP1 Lab only",
+    "productPagesChanged": false,
+    "corePromotion": false,
+    "copySourceMismatches": 0,
+    "diagramGeometryPreserved": true,
+    "diffCheckPassed": true,
+    "javascriptSyntaxPassed": true
+  }
+}

@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Revisão do CP1 privado do Design System Luxtory: candidatos ao Core separados dos patterns editoriais B2C;
+  Cinematic Hero e Problem derivados da Home implementada, Triad Statement, duas comparações distintas,
+  lista numerada/disclosure e os dois diagramas originais como assets reutilizáveis. Sem migração de páginas.
 - CP1 privado do rebase visual B2C em `/lab/lab/b2c.html`: foundations propostas e composições derivadas do
   Luxtory2.0, fontes atuais e ênfase inline, forms acessíveis e mídias candidatas identificadas (incluindo Kaizen).
   Nenhuma migração da Home, Admin ou outra página do produto nesta etapa.

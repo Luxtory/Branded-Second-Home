@@ -1,5 +1,5 @@
-/* CP1 foundations: opt-in only. Brand primitives match canonical Luxtory2.0 tokens.
- * Numeric B2C dimensions remain proposals until the founder's visual approval. */
+/* Core Luxtory DS candidates: CP1-only opt-in, not a permanent parallel B2C system.
+ * Promotion to shared foundations/primitives awaits the founder's visual approval. */
 @layer lx.base {
   .lx-b2c,
   .lx-b2c [data-b2c-surface="white"] {
@@ -9,6 +9,7 @@
     --lx-color-accent: var(--lx-palette-moroccan-blue);
     --lx-color-focus: var(--lx-palette-moroccan-blue);
     --lx-color-rule-strong: var(--lx-palette-moroccan-blue);
+    --lx-color-rule: color-mix(in srgb, var(--lx-palette-moroccan-blue) 35%, transparent);
     --lx-color-action-bg: var(--lx-palette-moroccan-blue);
     --lx-color-action-bg-hover: var(--lx-palette-dark-moroccan-blue);
     --lx-color-action-fg: var(--lx-palette-pure-white);
@@ -38,6 +39,7 @@
     --lx-color-accent: var(--lx-palette-pure-white);
     --lx-color-focus: var(--lx-palette-warm-sand);
     --lx-color-rule-strong: var(--lx-palette-pure-white);
+    --lx-color-rule: color-mix(in srgb, var(--lx-palette-warm-sand) 55%, transparent);
     --lx-color-action-bg: var(--lx-palette-warm-sand);
     --lx-color-action-bg-hover: var(--lx-palette-pure-white);
     --lx-color-action-fg: var(--lx-palette-dark-moroccan-blue);
@@ -74,7 +76,7 @@
   .lx-b2c .lx-display-l { font-size: var(--lx-b2c-hero); line-height: var(--lx-b2c-hero-leading); }
   .lx-b2c .lx-display-m { font-size: var(--lx-b2c-headline); }
   .lx-b2c .lx-display-s { font-size: var(--lx-b2c-title); }
-  .lx-b2c :is(.lx-display-l, .lx-display-m, .lx-display-s) em {
+  .lx-b2c :is(.lx-display-l, .lx-display-m, .lx-display-s, .lx-home-hero__title, .lx-renunciation__title, .lx-b2c-statement__title) em {
     font-family: inherit;
     font-size: inherit;
     font-weight: inherit;
@@ -111,4 +113,7 @@
   .lx-b2c .lx-mobile-nav__list > li { border: 0; }
   .lx-b2c .lx-mobile-nav__link { font-family: var(--lx-font-utility); font-size: var(--lx-b2c-subheadline); }
   .lx-b2c .lx-icon-button { min-width: var(--lx-target-min); min-height: var(--lx-target-min); }
+  @media (min-width: 48rem) {
+    .lx-b2c { --lx-b2c-hero: var(--lx-b2c-hero-wide); }
+  }
 }

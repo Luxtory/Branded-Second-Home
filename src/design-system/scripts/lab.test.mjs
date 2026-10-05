@@ -2,6 +2,7 @@
 // [docs/specs/design-system.md §6 — Lab]
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { DS_ROOT } from './lib/tokens.mjs';
@@ -51,4 +52,20 @@ test('B2C CP1 references resolve inside the existing Lab and declare private eva
   const ids = new Set([...checkpoint.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]));
   const anchors = [...checkpoint.matchAll(/\shref="#([^"]+)"/g)].map((match) => match[1]);
   assert.deepEqual(anchors.filter((anchor) => !ids.has(anchor)), []);
+});
+
+// Frozen geometry signatures from the two original Luxtory2.0 assets. Only paint/font adaptations are allowed.
+test('CP1 diagrams preserve the geometry and relationships of the distinct original assets', () => {
+  const originals = [
+    ['triade-valor-desejado.svg', 'bcf3b1f84e2aa87a39ae7bd7035c216cc353d5dc755d156c4c087afc0f901e10'],
+    ['diagrama-solucao-luxtory.svg', 'ce864d4ce38b5f0f3acfc518bf68fdb8b3f3da21142487fab906c3012edcd5c0'],
+  ];
+  for (const [name, expected] of originals) {
+    const file = join(LAB, 'assets', 'diagrams', name);
+    assert.ok(existsSync(file), `the original ${name} must be available as a reusable Lab asset`);
+    const svg = readFileSync(file, 'utf8');
+    const geometry = [...svg.matchAll(/\b(?:d|points|transform|viewBox|cx|cy|r|rx|ry|x|y|width|height)="[^"]*"/g)]
+      .map((match) => match[0]).join('\n');
+    assert.equal(createHash('sha256').update(geometry).digest('hex'), expected, name);
+  }
 });

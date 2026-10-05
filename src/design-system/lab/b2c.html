@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Luxtory — CP1 Design System B2C</title>
+  <title>Luxtory — CP1 Design System Luxtory</title>
   <link rel="preload" href="../fonts/newsreader/newsreader-opsz72-roman-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../fonts/hanken-grotesk/hanken-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../styles/index.css">
@@ -15,41 +15,69 @@
 <body class="lx-b2c">
   <a class="lx-skip-link" href="#conteudo">Pular para o conteúdo</a>
   <dialog id="menu-b2c" class="lx-mobile-nav" data-b2c-surface="dark-blue" aria-labelledby="menu-title">
-    <div class="lx-mobile-nav__top">
-      <h2 id="menu-title" class="lx-label">Design System B2C</h2>
-      <button class="lx-icon-button" type="button" data-lab-close-menu aria-label="Fechar menu">×</button>
-    </div>
-    <nav class="lx-mobile-nav__body" aria-label="Seções do checkpoint">
-      <ul class="lx-mobile-nav__list">
-        <li><a class="lx-mobile-nav__link" href="#foundations">Foundations</a></li>
-        <li><a class="lx-mobile-nav__link" href="#pertencimento">Split editorial</a></li>
-        <li><a class="lx-mobile-nav__link" href="#irmaos">Blocos irmãos</a></li>
-        <li><a class="lx-mobile-nav__link" href="#diagrama">Texto + diagrama</a></li>
-        <li><a class="lx-mobile-nav__link" href="#formulario">Formulários</a></li>
-        <li><a class="lx-mobile-nav__link" href="#midia">Mídia candidata</a></li>
-      </ul>
-    </nav>
-    <div class="lx-mobile-nav__footer"><p class="lx-small">Preview privado de avaliação. A Home ainda não foi migrada.</p></div>
+    <div class="lx-mobile-nav__top"><h2 id="menu-title" class="lx-label">Design System Luxtory</h2><button class="lx-icon-button" type="button" data-lab-close-menu aria-label="Fechar menu">×</button></div>
+    <nav class="lx-mobile-nav__body" aria-label="Seções do checkpoint"><ul class="lx-mobile-nav__list">
+      <li><a class="lx-mobile-nav__link" href="#foundations">Core candidato</a></li>
+      <li><a class="lx-mobile-nav__link" href="#problema">Problem / Triad Comparison</a></li>
+      <li><a class="lx-mobile-nav__link" href="#statement">Triad Statement</a></li>
+      <li><a class="lx-mobile-nav__link" href="#pertencimento">Split Editorial</a></li>
+      <li><a class="lx-mobile-nav__link" href="#diagrama">Solution Diagram</a></li>
+      <li><a class="lx-mobile-nav__link" href="#comparacao">Comparisons</a></li>
+      <li><a class="lx-mobile-nav__link" href="#lista">Numbered Editorial List</a></li>
+      <li><a class="lx-mobile-nav__link" href="#formulario">Forms</a></li>
+      <li><a class="lx-mobile-nav__link" href="#evidencias">Evidências</a></li>
+    </ul></nav>
+    <div class="lx-mobile-nav__footer"><p class="lx-small">Preview privado de avaliação. Nenhuma página do produto foi migrada.</p></div>
   </dialog>
   <main id="conteudo">
-    <section class="lx-b2c-cover" data-b2c-surface="dark-blue" aria-labelledby="hero-title">
-      <img class="lx-b2c-cover__photo" src="/images/home/hero/luxury-property-facade-hero.jpg" alt="Residência contemporânea entre vegetação, piscina e paisagem costeira ao entardecer." width="1344" height="768" fetchpriority="high" data-media-candidate="legacy-exterior">
+<section id="cinematic-hero" class="lx-home-hero" data-pattern="cinematic-hero" data-b2c-surface="dark-blue" aria-labelledby="hero-title" aria-roledescription="carrossel">
+      <div class="lx-home-hero__slides" aria-hidden="true">
+        <div class="lx-home-hero__slide lx-home-hero__slide--active"><div class="lx-home-hero__image lx-home-hero__image--1"></div></div>
+        <div class="lx-home-hero__slide"><div class="lx-home-hero__image lx-home-hero__image--2"></div></div>
+        <div class="lx-home-hero__slide"><div class="lx-home-hero__image lx-home-hero__image--3"></div></div>
+        <div class="lx-home-hero__scrim"></div>
+      </div>
       <header class="lx-container lx-b2c-header">
         <a class="lx-logo" href="#conteudo" aria-label="Luxtory — início do checkpoint"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Horizontal.svg" alt="" width="1474" height="230"></a>
         <button class="lx-icon-button lx-b2c-header__menu" type="button" data-lab-open-menu aria-label="Abrir menu do checkpoint" aria-haspopup="dialog" aria-controls="menu-b2c"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Icone.png.svg" alt="" width="370" height="324"></button>
       </header>
-      <div class="lx-container lx-b2c-cover__body">
-        <h1 id="hero-title" class="lx-display-l">Seja protagonista de histórias <em>com quem ama,</em> em lugares com os quais se identifica.</h1>
-        <p class="lx-lead">Uma nova forma de viver seu lazer com mais valor.</p>
-        <p class="lx-b2c-meta">CP1 · Design System B2C · abertura/mídia<br>Foto do Luxtory2.0 já utilizada no BSH; composição de avaliação.</p>
+      <div class="lx-container lx-home-hero__content">
+        <h1 id="hero-title" class="lx-home-hero__title" data-copy-source="home.hero.title"><span>Seja protagonista de histórias </span><em>com quem ama,</em><br class="lx-home-hero__break"><span> em lugares com os quais se identifica.</span></h1>
+        <div class="lx-home-hero__bottom"><p class="lx-home-hero__lead" data-copy-source="home.hero.text">Uma nova forma de viver seu lazer com mais valor.</p><a class="lx-button lx-button--primary lx-home-hero__action" href="#problema" data-copy-source="home.hero.action">Descubra uma nova forma de viver<span aria-hidden="true">→</span></a></div>
+      </div>
+      <div class="lx-home-hero__controls" role="group" aria-label="Controles do carrossel">
+        <button type="button" data-carousel-previous aria-label="Imagem anterior">‹</button>
+        <button type="button" class="lx-home-hero__counter" data-carousel-toggle aria-label="Reproduzir carrossel" aria-pressed="true">01</button>
+        <span class="lx-home-hero__progress" aria-hidden="true"></span><span class="lx-home-hero__total" aria-hidden="true">03</span>
+        <button type="button" data-carousel-next aria-label="Próxima imagem">›</button>
+      </div>
+      <p class="lx-visually-hidden" data-carousel-status aria-live="off">Imagem 1 de 3</p>
+    </section>
+<section id="problema" class="lx-b2c-section lx-b2c-problem" data-pattern="problem-triad-comparison" data-b2c-surface="dark-blue" aria-labelledby="problem-title">
+      <div class="lx-container lx-renunciation">
+        <div class="lx-renunciation__opening">
+          <div class="lx-renunciation__copy"><p class="lx-b2c-meta" data-copy-source="home.renunciation.marker">A cada escolha, uma renúncia</p><h2 id="problem-title" class="lx-renunciation__title" data-copy-source="home.renunciation.title"><span>As alternativas mudam.</span><em>A renúncia continua.</em></h2><div class="lx-renunciation__intro"><p class="lx-body" data-copy-source="home.renunciation.intro">No mercado de lazer, tudo gira em torno de três valores: patrimônio, liberdade e pertencimento.</p><p class="lx-body" data-copy-source="home.renunciation.tension">Você quer os três, mas as alternativas ainda costumam fazer você abrir mão de uma parte importante para ter as outras.</p></div></div>
+          <figure class="lx-renunciation__diagram"><img src="assets/diagrams/triade-valor-desejado.svg" alt="Tríade de valor desejado: Patrimônio, Liberdade e Pertencimento ligados por um triângulo de tensão." width="723" height="640" loading="lazy"></figure>
+        </div>
+        <ol class="lx-renunciation__alternatives" aria-label="As alternativas">
+          <li class="lx-renunciation__alternative"><h3 class="lx-display-s">Second Home</h3><p class="lx-body" data-copy-source="home.renunciation.alternatives.0.text.0">Entrega patrimônio e pertencimento, mas limita a liberdade a um destino, e responsabilidades de gestão e manutenção do imóvel.</p></li>
+          <li class="lx-renunciation__alternative"><h3 class="lx-display-s">Hospedagem</h3><p class="lx-body" data-copy-source="home.renunciation.alternatives.1.text.0">A locação de temporada ou hoteleira oferece liberdade, mas dificilmente pertencimento e certamente não constrói patrimônio.</p></li>
+          <li class="lx-renunciation__alternative"><h3 class="lx-display-s">Copropriedade</h3><p class="lx-body" data-copy-source="home.renunciation.alternatives.2.text.0">Entrega patrimônio com eficiência, mas dificilmente liberdade e pertencimento na mesma experiência.</p></li>
+        </ol>
+        <div class="lx-renunciation__closing"><div class="lx-renunciation__closing-copy"><p class="lx-body" data-copy-source="home.renunciation.closing.0">No fim, você acaba sendo levado a escolher qual parte importa mais.</p><p class="lx-body" data-copy-source="home.renunciation.closing.1">Não porque seja impossível reunir os três.</p></div><p class="lx-lead lx-renunciation__closing-turn" data-copy-source="home.renunciation.closingTurn">Mas porque as alternativas foram construídas separadamente.</p></div>
       </div>
     </section>
-    <section id="foundations" class="lx-b2c-section lx-b2c-editorial" data-b2c-surface="white" aria-labelledby="foundations-title">
+<section id="statement" class="lx-b2c-section lx-b2c-statement" data-pattern="triad-statement" data-b2c-surface="blue" aria-labelledby="statement-title">
+      <div class="lx-container"><div class="lx-b2c-statement__values">
+        <div><span class="lx-b2c-meta">01</span><strong class="lx-display-s">Patrimônio</strong></div><div><span class="lx-b2c-meta">02</span><strong class="lx-display-s">Liberdade</strong></div><div><span class="lx-b2c-meta">03</span><strong class="lx-display-s">Pertencimento</strong></div>
+      </div><h2 id="statement-title" class="lx-b2c-statement__title" data-copy-source="home.possibility.promise"><em>Você pode ter os três.</em></h2><p class="lx-b2c-closing" data-copy-source="home.possibility.logic">Essa é a nossa lógica.</p></div>
+    </section>
+<section id="foundations" class="lx-b2c-section lx-b2c-editorial" data-b2c-surface="white" aria-labelledby="foundations-title">
       <div class="lx-container">
         <div class="lx-b2c-stack">
-          <p class="lx-b2c-meta">Foundations · paleta canônica · dimensões propostas para aprovação</p>
+          <p class="lx-b2c-meta">Core Luxtory DS · candidatos · dimensões propostas para aprovação</p>
           <h2 id="foundations-title" class="lx-display-m">Uma linguagem, do primeiro olhar ao último detalhe.</h2>
-          <p class="lx-body">Newsreader nas headlines. Hanken Grotesk no corpo e na interface. A composição vem das melhores implementações recorrentes do Luxtory2.0.</p>
+          <p class="lx-body">Newsreader nas headlines. Hanken Grotesk no corpo e na interface. Foundations e primitives gerais são candidatos ao Core. As composições editoriais são patterns B2C. O isolamento técnico deste Lab é temporário; nenhuma página do produto foi migrada.</p>
         </div>
         <div class="lx-b2c-palette" aria-label="Superfícies da paleta canônica">
           <div data-b2c-surface="blue"><strong>Moroccan Blue</strong><span class="lx-small">#0F4E67</span></div>
@@ -66,7 +94,7 @@
         </div>
       </div>
     </section>
-    <section id="pertencimento" class="lx-b2c-split" data-b2c-surface="white" aria-labelledby="belonging-title">
+<section data-pattern="split-text-media" id="pertencimento" class="lx-b2c-split" data-b2c-surface="white" aria-labelledby="belonging-title">
       <div class="lx-b2c-split__text lx-b2c-stack">
         <p class="lx-b2c-meta">Split editorial · texto → imagem · copy autorizada</p>
         <h2 id="belonging-title" class="lx-display-m">Primeiro, encontre um lifestyle que faça parte da sua identidade.</h2>
@@ -79,14 +107,8 @@
         <figcaption>Convivência · Luxtory2.0 · candidata de avaliação</figcaption>
       </figure>
     </section>
-    <section class="lx-b2c-pause" data-b2c-surface="sand" aria-labelledby="pause-title">
-      <div class="lx-container lx-b2c-stack">
-        <p class="lx-b2c-meta">Pausa editorial · largura total</p>
-        <h2 id="pause-title" class="lx-display-m">Você pode ter os três.</h2>
-        <p class="lx-b2c-closing">Essa é a nossa lógica.</p>
-      </div>
-    </section>
-    <section id="arquitetura" class="lx-b2c-split" data-b2c-surface="white" aria-labelledby="architecture-title">
+<section id="pausa" class="lx-b2c-pause" data-pattern="editorial-pause" data-b2c-surface="sand" aria-labelledby="pause-title"><div class="lx-container lx-b2c-stack"><p class="lx-b2c-meta">B2C Pattern · pausa editorial · largura total</p><h2 id="pause-title" class="lx-display-m" data-copy-source="home.luxtory.start">Na Luxtory, a casa não começa pela planta.</h2><p class="lx-b2c-closing" data-copy-source="home.luxtory.startTurn">Começa por um lifestyle com o qual você se identifica.</p></div></section>
+<section data-pattern="split-media-text" id="arquitetura" class="lx-b2c-split" data-b2c-surface="white" aria-labelledby="architecture-title">
       <figure class="lx-b2c-photo lx-b2c-photo--arquitetura">
         <img src="https://pengvnuhfafydtraytat.supabase.co/storage/v1/object/public/anteprojeto-midias/9ad6e032-7636-4cb6-ae8f-b8dd4f4d3640/076c250a-7d54-45db-9a9f-73f9e361aee2.jpeg" alt="Imagem conceitual do Kaizen Residence, com fachada de concreto, brises de madeira e paisagismo." width="1376" height="768" loading="lazy" data-media-candidate="kaizen-k01">
         <figcaption>Kaizen K01 · projeto conceitual · candidata, não oferta</figcaption>
@@ -98,244 +120,42 @@
         <p class="lx-small">A imagem demonstra composição e crop. O Kaizen é apresentado como referência conceitual identificada; não como Edition disponível ou evidência de outro Concept.</p>
       </div>
     </section>
-    <section id="irmaos" class="lx-b2c-section" data-b2c-surface="sand" aria-labelledby="siblings-title">
+<section id="diagrama" class="lx-b2c-section" data-pattern="solution-diagram" data-b2c-surface="dark-blue" aria-labelledby="diagram-title">
+      <div class="lx-container lx-b2c-diagram-layout"><div class="lx-b2c-stack"><p class="lx-b2c-meta">B2C Pattern · Solution Diagram · original Luxtory2.0</p><h2 id="diagram-title" class="lx-display-m" data-copy-source="home.possibility.title">E se você <em>não precisasse escolher?</em></h2><p class="lx-body" data-copy-source="home.possibility.imagine.0">Imagine ter um lugar que represente quem você é.</p><p class="lx-body" data-copy-source="home.possibility.imagine.1">Onde possa fazer o que ama, com quem ama.</p><p class="lx-small">Diagrama de solução Luxtory.svg: integração das três dimensões. Geometria original; apenas fonte, cor canônica e contraste adaptados.</p></div><figure class="lx-b2c-diagram"><img src="assets/diagrams/diagrama-solucao-luxtory.svg" alt="Diagrama original de solução: Patrimônio, Liberdade e Pertencimento integrados, com Luxtory no encontro das três dimensões." width="630" height="707" loading="lazy"><figcaption class="lx-small">Solução integrada · asset original reutilizável</figcaption></figure></div>
+    </section>
+<section id="comparacao" class="lx-b2c-section" data-pattern="editorial-comparison" data-b2c-surface="white" aria-labelledby="comparison-title">
+      <div class="lx-container"><div class="lx-b2c-stack"><p class="lx-b2c-meta">B2C Pattern · Editorial Comparison · mesma semântica, composição aberta</p><h2 id="comparison-title" class="lx-display-m">Owner e Co-Owner</h2></div><div class="lx-b2c-editorial-comparison">
+        <article class="lx-b2c-editorial-unit"><h3 class="lx-display-s">Owner</h3><p class="lx-body">A administração integral pela Luxtory é opcional, assim como a Taxa de Administração.</p><p class="lx-body">As despesas da Second Home são suas.</p></article>
+        <article class="lx-b2c-editorial-unit"><h3 class="lx-display-s">Co-Owner</h3><p class="lx-body">A administração profissional é obrigatória, com Taxa de Administração.</p><p class="lx-body">As despesas da Second Home são rateadas entre os Co-Owners.</p></article>
+      </div></div>
+    </section>
+<section id="paineis" class="lx-b2c-section" data-pattern="panel-comparison" data-b2c-surface="blue" aria-labelledby="panels-title">
+      <div class="lx-container"><div class="lx-b2c-stack"><p class="lx-b2c-meta">B2C Pattern · Panel Comparison · informação mais densa</p><h2 id="panels-title" class="lx-display-m" data-copy-source="home.patrimony.both.title">Duas formas de possuir</h2></div><div class="lx-b2c-panel-comparison">
+        <article class="lx-b2c-panel" data-b2c-surface="dark-blue"><h3 class="lx-display-s">Owner</h3><p class="lx-body" data-copy-source="home.patrimony.pair.owner.0">A Second Home inteira é sua.</p><p class="lx-b2c-panel__eyebrow">Propriedade e gestão</p><ul><li data-copy-source="home.patrimony.pair.owner.1">Você possui integralmente o imóvel.</li><li>A administração integral pela Luxtory é opcional, assim como a Taxa de Administração.</li><li>As despesas da Second Home são suas.</li></ul><p class="lx-b2c-panel__closing" data-copy-source="home.patrimony.both.principle">Patrimônio real.</p></article>
+        <article class="lx-b2c-panel" data-b2c-surface="dark-blue"><h3 class="lx-display-s">Co-Owner</h3><p class="lx-body" data-copy-source="home.patrimony.pair.coOwner.0">Você possui uma participação real que faz sentido para sua vida.</p><p class="lx-b2c-panel__eyebrow">Propriedade e gestão</p><ul><li data-copy-source="home.patrimony.pair.coOwner.1">Você adquire uma Ação da SPE, a empresa proprietária do imóvel, com Direito de Uso correspondente à sua participação.</li><li>A administração profissional é obrigatória, com Taxa de Administração.</li><li>As despesas da Second Home são rateadas entre os Co-Owners.</li></ul><p class="lx-b2c-panel__closing" data-copy-source="home.patrimony.both.principle">Patrimônio real.</p></article>
+      </div></div>
+    </section>
+<section data-pattern="sibling-blocks" id="irmaos" class="lx-b2c-section" data-b2c-surface="sand" aria-labelledby="siblings-title">
       <div class="lx-container">
         <div class="lx-b2c-stack"><p class="lx-b2c-meta">Blocos irmãos · três colunas · copy autorizada</p><h2 id="siblings-title" class="lx-display-m">Patrimônio. Liberdade. Pertencimento.</h2></div>
         <div class="lx-b2c-siblings">
-          <article class="lx-b2c-card" data-b2c-surface="dark-blue"><h3 class="lx-display-s">Patrimônio</h3><p class="lx-body">Um patrimônio para chamar de seu.</p></article>
-          <article class="lx-b2c-card" data-b2c-surface="dark-blue"><h3 class="lx-display-s">Liberdade</h3><p class="lx-body">Liberdade para continuar descobrindo novos lugares, experiências e histórias.</p></article>
-          <article class="lx-b2c-card" data-b2c-surface="dark-blue"><h3 class="lx-display-s">Pertencimento</h3><p class="lx-body">E pertencimento para sentir que cada experiência tem a ver com a vida que você deseja viver.</p></article>
+          <article class="lx-b2c-sibling" data-b2c-surface="dark-blue"><h3 class="lx-display-s">Patrimônio</h3><p class="lx-body">Um patrimônio para chamar de seu.</p></article>
+          <article class="lx-b2c-sibling" data-b2c-surface="dark-blue"><h3 class="lx-display-s">Liberdade</h3><p class="lx-body">Liberdade para continuar descobrindo novos lugares, experiências e histórias.</p></article>
+          <article class="lx-b2c-sibling" data-b2c-surface="dark-blue"><h3 class="lx-display-s">Pertencimento</h3><p class="lx-body">E pertencimento para sentir que cada experiência tem a ver com a vida que você deseja viver.</p></article>
         </div>
       </div>
     </section>
-    <section id="diagrama" class="lx-b2c-section" data-b2c-surface="blue" aria-labelledby="diagram-title">
-      <div class="lx-container lx-b2c-diagram-layout">
-        <div class="lx-b2c-stack"><p class="lx-b2c-meta">Texto + diagrama · relação real, sem ornamento</p><h2 id="diagram-title" class="lx-display-m">E se você <em>não precisasse escolher?</em></h2><p class="lx-body">No mercado de lazer, tudo gira em torno de três valores: patrimônio, liberdade e pertencimento.</p><p class="lx-small">Geometria original da tríade do Luxtory2.0; tipografia e contraste adaptados para o CP1.</p></div>
-        <figure class="lx-b2c-diagram"><svg class="lx-b2c-legacy-triad" aria-hidden="true" focusable="false"
-   width="191.15996mm"
-   height="169.2403mm"
-   viewBox="0 0 191.15996 169.2403"
-   version="1.1"
-   id="svg1"
-   inkscape:export-filename="Triade de valor desejado.svg"
-   inkscape:export-xdpi="96"
-   inkscape:export-ydpi="96"
-   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
-   sodipodi:docname="Triade de valor desejado.svg"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <sodipodi:namedview
-     id="namedview1"
-     pagecolor="var(--lx-palette-pure-white)"
-     bordercolor="var(--lx-palette-dark-moroccan-blue)"
-     borderopacity="0"
-     inkscape:showpageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1"
-     inkscape:document-units="px"
-     inkscape:zoom="1.2472578"
-     inkscape:cx="583.68046"
-     inkscape:cy="582.47782"
-     inkscape:window-width="1366"
-     inkscape:window-height="697"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="g94" />
-  <defs
-     id="defs1">
-    <rect
-       x="4900"
-       y="940.625"
-       width="153.8701"
-       height="123.29687"
-       id="rect69" />
-    <clipPath
-       clipPathUnits="userSpaceOnUse"
-       id="clipPath266">
-      <rect
-         x="-2372.2502"
-         y="1908"
-         width="398"
-         height="396"
-         id="rect267" />
-    </clipPath>
-  </defs>
-  <g
-     inkscape:label="Camada 1"
-     inkscape:groupmode="layer"
-     id="layer1"
-     transform="translate(-7.1500269,-70.218753)">
-    <g
-       id="g101"
-       transform="matrix(0.26458333,0,0,0.26458333,-4602.4176,-165.20994)">
-      <g
-         id="g102"
-         transform="translate(-12.013391,-526.18656)">
-        <text
-           xml:space="preserve"
-           transform="translate(12823.117,635.59051)"
-           id="text69"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.3333px;line-height:1.1;font-family:var(--lx-font-utility);font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;letter-spacing:3px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect69);display:inline;fill:var(--lx-palette-warm-sand);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2;stroke-dasharray:none;stroke-opacity:1"
-           x="164.0625"
-           y="0"><tspan
-             x="4901.0023"
-             y="970.96282"
-             id="tspan6">TRÍADE </tspan><tspan
-             x="4950.5518"
-             y="1012.0295"
-             id="tspan7">DE </tspan><tspan
-             x="4909.0466"
-             y="1053.0961"
-             id="tspan8">VALOR</tspan></text>
-        <g
-           id="g99"
-           transform="translate(12574.372,263.70936)">
-          <g
-             id="g94">
-            <g
-               id="g98">
-              <path
-                 d="m -2370.7503,1908.5 h 35.2314 4.5823 355.1863 l -197.5,394 z"
-                 stroke="#2f528f"
-                 stroke-width="1.33333"
-                 stroke-miterlimit="8"
-                 fill="#4472c4"
-                 fill-rule="evenodd"
-                 id="path63"
-                 style="fill:none;stroke:var(--lx-palette-warm-sand);stroke-width:3;stroke-dasharray:none;stroke-opacity:1"
-                 clip-path="url(#clipPath266)"
-                 transform="matrix(1.227128,0,0,1.227128,7892.6013,-1108.2855)"
-                 sodipodi:nodetypes="cccccc" />
-            </g>
-            <g
-               id="g91"
-               transform="translate(-5.8393202,0.99432052)"
-               style="fill:var(--lx-palette-dark-moroccan-blue);fill-opacity:0;stroke:var(--lx-palette-warm-sand);stroke-opacity:1">
-              <circle
-                 style="fill:var(--lx-palette-dark-moroccan-blue);fill-opacity:0;fill-rule:nonzero;stroke:var(--lx-palette-warm-sand);stroke-width:1.05729;stroke-dasharray:none;stroke-opacity:1"
-                 id="circle70"
-                 cx="5473.5923"
-                 cy="1233.6326"
-                 r="33.487103" />
-              <circle
-                 style="display:inline;fill:var(--lx-palette-dark-moroccan-blue);fill-opacity:0;fill-rule:nonzero;stroke:var(--lx-palette-warm-sand);stroke-width:1.22559;stroke-dasharray:none;stroke-opacity:1"
-                 id="ellipse70"
-                 cx="5473.5923"
-                 cy="1233.6326"
-                 r="0.86122268" />
-            </g>
-            <g
-               id="g89"
-               transform="translate(6.1925258,-0.90704667)"
-               inkscape:transform-center-x="-0.35581659"
-               inkscape:transform-center-y="0.16604774"
-               style="fill:var(--lx-palette-dark-moroccan-blue);fill-opacity:0.105882;stroke:var(--lx-palette-warm-sand);stroke-opacity:1">
-              <g
-                 id="g90"
-                 style="fill:var(--lx-palette-dark-moroccan-blue);fill-opacity:0.105882;stroke:var(--lx-palette-warm-sand);stroke-opacity:1">
-                <circle
-                   style="fill:none;fill-opacity:0.105882;fill-rule:nonzero;stroke:var(--lx-palette-warm-sand);stroke-width:1.05729;stroke-dasharray:none;stroke-opacity:1"
-                   id="circle72"
-                   cx="4977.2651"
-                   cy="1235.5339"
-                   r="33.487103" />
-                <circle
-                   style="display:inline;fill:var(--lx-palette-dark-moroccan-blue);fill-opacity:0.105882;fill-rule:nonzero;stroke:var(--lx-palette-warm-sand);stroke-width:1.22559;stroke-dasharray:none;stroke-opacity:1"
-                   id="ellipse72"
-                   cx="4977.2651"
-                   cy="1235.5339"
-                   r="0.86122143" />
-              </g>
-            </g>
-          </g>
-          <text
-             xml:space="preserve"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:36.5;font-family:var(--lx-font-utility);font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:6px;writing-mode:lr-tb;direction:ltr;display:inline;fill:var(--lx-palette-dark-moroccan-blue);fill-opacity:1;stroke:var(--lx-palette-moroccan-blue);stroke-width:0.755906;stroke-dasharray:none;stroke-opacity:0"
-             x="5351.998"
-             y="1181.6139"
-             id="text88"
-             transform="scale(1.0002096,0.99979045)"><tspan
-               sodipodi:role="line"
-               id="tspan87"
-               x="5351.998"
-               y="1181.6139"
-               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:36.5;font-family:var(--lx-font-utility);font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:6px;opacity:1;fill:var(--lx-palette-warm-sand);fill-opacity:1;stroke:var(--lx-palette-warm-sand);stroke-width:0.755906;stroke-dasharray:none;stroke-opacity:1">LIBERDADE</tspan></text>
-          <text
-             xml:space="preserve"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:28.5599px;line-height:36.5;font-family:var(--lx-font-utility);font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:5.35497px;writing-mode:lr-tb;direction:ltr;white-space:pre;inline-size:229.116;display:inline;fill:var(--lx-palette-dark-moroccan-blue);fill-opacity:1;stroke:var(--lx-palette-moroccan-blue);stroke-width:0.860131;stroke-opacity:0"
-             x="5248.3643"
-             y="458.31897"
-             id="text89"
-             transform="matrix(1.1206886,0,0,1.1202191,-1022.2009,667.36045)"><tspan
-               x="5248.3643"
-               y="458.31897"
-               id="tspan10"><tspan
-                 style="opacity:1;fill:var(--lx-palette-warm-sand);stroke:var(--lx-palette-warm-sand);stroke-opacity:1"
-                 id="tspan9">PATRIMÔNIO</tspan></tspan></text>
-          <text
-             xml:space="preserve"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:36.5;font-family:var(--lx-font-utility);font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:6px;writing-mode:lr-tb;direction:ltr;display:inline;fill:var(--lx-palette-dark-moroccan-blue);fill-opacity:1;stroke:var(--lx-palette-moroccan-blue);stroke-width:0.755906;stroke-dasharray:none;stroke-opacity:0"
-             x="5056.7837"
-             y="1791.448"
-             id="text87"
-             transform="scale(1.0002096,0.99979045)"><tspan
-               sodipodi:role="line"
-               id="tspan86"
-               x="5056.7837"
-               y="1791.448"
-               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:36.5;font-family:var(--lx-font-utility);font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:6px;opacity:1;fill:var(--lx-palette-warm-sand);fill-opacity:1;stroke:var(--lx-palette-warm-sand);stroke-width:0.755906;stroke-dasharray:none;stroke-opacity:1">PERTENCIMENTO</tspan></text>
-          <g
-             id="g93"
-             transform="translate(-247.98697,483.87438)"
-             style="fill:none;fill-opacity:0.105882;stroke:var(--lx-palette-warm-sand);stroke-opacity:1">
-            <circle
-               style="fill:none;fill-opacity:0.105882;fill-rule:nonzero;stroke:var(--lx-palette-warm-sand);stroke-width:1.05729;stroke-dasharray:none;stroke-opacity:1"
-               id="circle92"
-               cx="5473.5923"
-               cy="1233.6326"
-               r="33.487103" />
-            <circle
-               style="display:inline;fill:none;fill-opacity:0.105882;fill-rule:nonzero;stroke:var(--lx-palette-warm-sand);stroke-width:1.22559;stroke-dasharray:none;stroke-opacity:1"
-               id="circle93"
-               cx="5473.5923"
-               cy="1233.6326"
-               r="0.86122268" />
-          </g>
-        </g>
-      </g>
-    </g>
-  </g>
-</svg>
-<figcaption class="lx-small">Patrimônio · Liberdade · Pertencimento</figcaption></figure>
-      </div>
+<section id="lista" class="lx-b2c-section" data-pattern="numbered-editorial-list" data-b2c-surface="sand" aria-labelledby="list-title">
+      <div class="lx-container"><div class="lx-b2c-stack"><p class="lx-b2c-meta">B2C Pattern · Numbered Editorial List / Disclosure</p><h2 id="list-title" class="lx-display-m" data-copy-source="home.luxtory.architecture">Uma arquitetura pensada para reunir:</h2></div><ol class="lx-b2c-numbered">
+        <li class="lx-b2c-numbered__row"><span class="lx-b2c-numbered__number">01</span><h3 id="list-patrimony" class="lx-display-s">Patrimônio</h3><p class="lx-body" data-copy-source="home.possibility.values.0">Um patrimônio para chamar de seu.</p><a class="lx-b2c-numbered__action" href="#comparacao" aria-label="Ver comparação de modalidades — Patrimônio"><span aria-hidden="true">›</span></a></li>
+        <li class="lx-b2c-numbered__row"><span class="lx-b2c-numbered__number">02</span><h3 class="lx-display-s">Liberdade</h3><p class="lx-body" data-copy-source="home.possibility.values.1">Liberdade para continuar descobrindo novos lugares, experiências e histórias.</p><a class="lx-b2c-numbered__action" href="#diagrama" aria-label="Ver solução integrada — Liberdade"><span aria-hidden="true">›</span></a></li>
+        <li class="lx-b2c-numbered__row"><span class="lx-b2c-numbered__number">03</span><h3 class="lx-display-s">Pertencimento</h3><p class="lx-body" data-copy-source="home.possibility.values.2">E pertencimento para sentir que cada experiência tem a ver com a vida que você deseja viver.</p><a class="lx-b2c-numbered__action" href="#pertencimento" aria-label="Ver split editorial — Pertencimento"><span aria-hidden="true">›</span></a></li>
+        <li><details class="lx-b2c-numbered__disclosure"><summary class="lx-b2c-numbered__row"><span class="lx-b2c-numbered__number">04</span><h3 class="lx-display-s">Créditos são moeda?</h3><span class="lx-body">Luxtory Club</span><span class="lx-b2c-numbered__action" aria-hidden="true">›</span></summary><div class="lx-b2c-numbered__answer"><p class="lx-body">Créditos não são moeda, investimento nem garantia de disponibilidade.</p></div></details></li>
+      </ol></div>
     </section>
-    <section id="comparacao" class="lx-b2c-section" data-b2c-surface="white" aria-labelledby="comparison-title">
+<section data-pattern="forms" id="formulario" class="lx-b2c-section" data-b2c-surface="blue" aria-labelledby="form-title">
       <div class="lx-container">
-        <div class="lx-b2c-stack"><p class="lx-b2c-meta">Comparação · modalidades com peso equivalente</p><h2 id="comparison-title" class="lx-display-m">Owner e Co-Owner</h2></div>
-        <div class="lx-b2c-siblings lx-b2c-siblings--pair">
-          <article class="lx-b2c-card" data-b2c-surface="sand"><h3 class="lx-display-s">Owner</h3><p class="lx-body">A administração integral pela Luxtory é opcional, assim como a Taxa de Administração.</p><p class="lx-body">As despesas da Second Home são suas.</p></article>
-          <article class="lx-b2c-card" data-b2c-surface="sand"><h3 class="lx-display-s">Co-Owner</h3><p class="lx-body">A administração profissional é obrigatória, com Taxa de Administração.</p><p class="lx-body">As despesas da Second Home são rateadas entre os Co-Owners.</p></article>
-        </div>
-      </div>
-    </section>
-    <section id="lista" class="lx-b2c-section" data-b2c-surface="white" aria-labelledby="list-title">
-      <div class="lx-container">
-        <div class="lx-b2c-stack"><p class="lx-b2c-meta">Lista editorial · hierarquia compartilhada</p><h2 id="list-title" class="lx-display-m">Uma arquitetura pensada para reunir:</h2></div>
-        <ul class="lx-b2c-list">
-          <li><h3 class="lx-display-s">Patrimônio</h3><p class="lx-body">Um patrimônio para chamar de seu.</p></li>
-          <li><h3 class="lx-display-s">Liberdade</h3><p class="lx-body">Liberdade para continuar descobrindo novos lugares, experiências e histórias.</p></li>
-          <li><h3 class="lx-display-s">Pertencimento</h3><p class="lx-body">E pertencimento para sentir que cada experiência tem a ver com a vida que você deseja viver.</p></li>
-        </ul>
-        <details><summary>Créditos são moeda?</summary><p class="lx-body">Créditos não são moeda, investimento nem garantia de disponibilidade.</p></details>
-      </div>
-    </section>
-    <section id="formulario" class="lx-b2c-section" data-b2c-surface="blue" aria-labelledby="form-title">
-      <div class="lx-container">
-        <div class="lx-b2c-stack lx-b2c-form"><p class="lx-b2c-meta">Formulário · referência Candidatura · demonstração sem envio</p><h2 id="form-title" class="lx-display-m">Uma interface clara, em cada escolha.</h2><p class="lx-body">Campos genéricos de avaliação visual. Não são definição de cadastro, qualificação ou Interesse.</p>
+        <div class="lx-b2c-stack lx-b2c-form"><p class="lx-b2c-meta">Core candidato · Forms · referência Candidatura · sem envio</p><h2 id="form-title" class="lx-display-m">Uma interface clara, em cada escolha.</h2><p class="lx-body">Campos genéricos de avaliação visual. Não são definição de cadastro, qualificação ou Interesse.</p>
           <form class="lx-form lx-b2c-form" novalidate data-cp1-form aria-describedby="form-note">
             <p class="lx-small" id="form-note">Avalie labels, foco, helper, erro e seleção. Nenhum dado é armazenado.</p>
             <div class="lx-form__row">
@@ -353,20 +173,36 @@
         </div>
       </div>
     </section>
-    <section id="midia" class="lx-b2c-split" data-b2c-surface="white" aria-labelledby="media-title">
+<section data-pattern="media-candidate" id="midia" class="lx-b2c-split" data-b2c-surface="white" aria-labelledby="media-title">
       <div class="lx-b2c-split__text lx-b2c-stack"><p class="lx-b2c-meta">Mídia contextual · convivência · pool prioritário</p><h2 id="media-title" class="lx-display-m">Composição com mídia do Kaizen.</h2><p class="lx-body">Um segundo candidato permite avaliar presença de pessoas, proporção e crop no desktop e no mobile.</p><p class="lx-small">K09 · imagem conceitual identificada. Referência de convivência; não comprova uma oferta, serviço ou benefício atual.</p><a class="lx-link" href="https://luxtory.club/projetos-conceituais/kaizen-residence">Consultar a origem no Luxtory2.0</a></div>
       <figure class="lx-b2c-photo lx-b2c-photo--convivencia"><img src="https://pengvnuhfafydtraytat.supabase.co/storage/v1/object/public/anteprojeto-midias/9ad6e032-7636-4cb6-ae8f-b8dd4f4d3640/a4be3d76-078d-4877-9978-69236ca7e2e6.jpeg" alt="Imagem conceitual de pessoas junto à piscina e à fachada do Kaizen Residence." width="1376" height="768" loading="lazy" data-media-candidate="kaizen-k09"><figcaption>Kaizen K09 · projeto conceitual · candidata de avaliação</figcaption></figure>
     </section>
-    <section class="lx-b2c-pause" data-b2c-surface="dark-blue" aria-labelledby="closing-title"><div class="lx-container lx-b2c-stack"><p class="lx-b2c-meta">Editorial / fechamento · pausa antes do rodapé</p><h2 id="closing-title" class="lx-display-m">O lugar onde você aproveita o seu lazer deve oferecer a vida que você quer viver.</h2><p class="lx-small">CP1 pronto para avaliação visual. Aplicação na Home depende de aprovação explícita.</p><a class="lx-button lx-button--primary" href="#foundations">Rever o sistema</a></div></section>
+<section id="fechamento" class="lx-b2c-pause" data-pattern="editorial-closing" data-b2c-surface="dark-blue" aria-labelledby="closing-title"><div class="lx-container lx-b2c-stack"><p class="lx-b2c-meta">B2C Pattern · Editorial Closing</p><h2 id="closing-title" class="lx-display-m" data-copy-source="home.luxtory.idea">O lugar onde você aproveita o seu lazer deve oferecer a vida que você quer viver.</h2><p class="lx-small">CP1 em avaliação visual. Promoção ao Core e aplicação na Home dependem de aprovação explícita.</p><a class="lx-button lx-button--primary" href="#evidencias">Consultar as evidências</a></div></section>
+<section id="evidencias" class="lx-b2c-section" data-b2c-surface="white" aria-labelledby="evidence-title"><div class="lx-container lx-b2c-stack"><p class="lx-b2c-meta">CP1 · evidências acessíveis · avaliação do fundador</p><h2 id="evidence-title" class="lx-display-m">Core candidato. Patterns editoriais. Nenhuma página migrada.</h2><p class="lx-body">Paleta, tipografia, spacing, grid, borders, foco, interação e primitives gerais são candidatos ao Core Luxtory DS. Hero, splits, comparações, diagramas, statement, listas e fechamentos são patterns B2C. Um pattern só vira componente quando houver consumidor e reutilização justificável.</p><p class="lx-small">Hero e Problem usam a implementação da Home de referência. As outras composições seguem as estruturas especificadas pelo fundador. As imagens são candidatas para avaliação privada, incluindo Kaizen K01/K09; nenhuma representa uma Edition disponível, prova de outro Concept, serviço ou benefício atual.</p><p><a class="lx-link" href="evidence/cp1-1440.png">Página completa · 1440px</a> · <a class="lx-link" href="evidence/cp1-390.png">Página completa · 390px</a></p><ul class="lx-b2c-evidence-list"><li><span>Cinematic Hero</span><a href="evidence/cinematic-hero-1440.png">1440px</a><a href="evidence/cinematic-hero-390.png">390px</a></li>
+<li><span>Problem / Triad Comparison</span><a href="evidence/problem-triad-comparison-1440.png">1440px</a><a href="evidence/problem-triad-comparison-390.png">390px</a></li>
+<li><span>Triad Statement</span><a href="evidence/triad-statement-1440.png">1440px</a><a href="evidence/triad-statement-390.png">390px</a></li>
+<li><span>Split Editorial — Text / Media</span><a href="evidence/split-text-media-1440.png">1440px</a><a href="evidence/split-text-media-390.png">390px</a></li>
+<li><span>Split Editorial — Media / Text</span><a href="evidence/split-media-text-1440.png">1440px</a><a href="evidence/split-media-text-390.png">390px</a></li>
+<li><span>Solution Diagram</span><a href="evidence/solution-diagram-1440.png">1440px</a><a href="evidence/solution-diagram-390.png">390px</a></li>
+<li><span>Editorial Comparison</span><a href="evidence/editorial-comparison-1440.png">1440px</a><a href="evidence/editorial-comparison-390.png">390px</a></li>
+<li><span>Panel Comparison</span><a href="evidence/panel-comparison-1440.png">1440px</a><a href="evidence/panel-comparison-390.png">390px</a></li>
+<li><span>Sibling Blocks</span><a href="evidence/sibling-blocks-1440.png">1440px</a><a href="evidence/sibling-blocks-390.png">390px</a></li>
+<li><span>Numbered Editorial List / Disclosure</span><a href="evidence/numbered-editorial-list-1440.png">1440px</a><a href="evidence/numbered-editorial-list-390.png">390px</a></li>
+<li><span>Editorial Pause</span><a href="evidence/editorial-pause-1440.png">1440px</a><a href="evidence/editorial-pause-390.png">390px</a></li>
+<li><span>Editorial Closing</span><a href="evidence/editorial-closing-1440.png">1440px</a><a href="evidence/editorial-closing-390.png">390px</a></li>
+<li><span>Forms</span><a href="evidence/forms-1440.png">1440px</a><a href="evidence/forms-390.png">390px</a></li>
+<li><span>Header</span><a href="evidence/header-1440.png">1440px</a><a href="evidence/header-390.png">390px</a></li>
+<li><span>Mobile Menu</span><a href="evidence/menu-1440.png">1440px</a><a href="evidence/menu-390.png">390px</a></li>
+<li><span>Footer</span><a href="evidence/footer-1440.png">1440px</a><a href="evidence/footer-390.png">390px</a></li></ul><p class="lx-small">Hero: <a href="evidence/cinematic-hero-slide-2-1440.png">imagem 2 · desktop</a> · <a href="evidence/cinematic-hero-slide-2-390.png">imagem 2 · mobile</a> · <a href="evidence/cinematic-hero-slide-3-1440.png">imagem 3 · desktop</a> · <a href="evidence/cinematic-hero-slide-3-390.png">imagem 3 · mobile</a></p></div></section>
   </main>
-  <footer class="lx-b2c-footer" data-b2c-surface="blue">
+  <footer id="rodape" class="lx-b2c-footer" data-b2c-surface="blue">
     <div class="lx-container">
       <div class="lx-b2c-footer__grid">
         <a class="lx-logo lx-logo--vertical" href="#conteudo" aria-label="Luxtory — início do checkpoint"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Vertical.svg" alt="" width="1176" height="542"></a>
-        <nav aria-label="Composições do checkpoint"><ul><li><a href="#pertencimento">Split editorial</a></li><li><a href="#diagrama">Texto + diagrama</a></li><li><a href="#comparacao">Comparação</a></li></ul></nav>
-        <nav aria-label="Foundations do checkpoint"><ul><li><a href="#foundations">Tipografia e superfícies</a></li><li><a href="#formulario">Forms e estados</a></li><li><a href="#midia">Mídias candidatas</a></li></ul></nav>
+        <nav aria-label="Composições do checkpoint"><ul><li><a href="#pertencimento">Split editorial</a></li><li><a href="#diagrama">Solution Diagram</a></li><li><a href="#comparacao">Comparação</a></li></ul></nav>
+        <nav aria-label="Foundations do checkpoint"><ul><li><a href="#foundations">Tipografia e superfícies</a></li><li><a href="#formulario">Core · Forms e estados</a></li><li><a href="#midia">Mídias candidatas</a></li></ul></nav>
       </div>
-      <p class="lx-small lx-b2c-footer__note"><a href="evidence/cp1-1440.png">Captura 1440px</a> · <a href="evidence/cp1-390.png">Captura 390px</a><br>Lab privado · CP1 do Design System B2C. As mídias são candidatas de avaliação. Aprovação e contexto de uso definitivo serão confirmados antes da incorporação ao produto/produção.</p>
+      <p class="lx-small lx-b2c-footer__note"><a href="evidence/cp1-1440.png">Captura 1440px</a> · <a href="evidence/cp1-390.png">Captura 390px</a><br>Lab privado · CP1 do Design System Luxtory. As mídias são candidatas de avaliação. Aprovação e contexto de uso definitivo serão confirmados antes da incorporação ao produto/produção.</p>
     </div>
   </footer>
 </body>

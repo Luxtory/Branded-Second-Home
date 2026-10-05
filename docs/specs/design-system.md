@@ -328,3 +328,58 @@ Admin e demais consumidores internos mantêm seus contratos e sua aparência.
 Aceite do CP1: evidências acessíveis em 1440/390; paleta e fontes corretas; equivalência métrica da ênfase;
 composição/crops contextualizados; irmãos coerentes; teclado/foco/disclosures/forms; axe e overflow 320–1920.
 Pendências externas da Wave 4 ficam fora desta iniciativa.
+
+## CP1 revisado — Design System Luxtory (2026-10-05)
+
+Decisões vinculantes do fundador nesta revisão supersedem a precedência visual e o conjunto de demonstrações
+do registro inicial acima, que permanece como histórico. O CP1 valida o sistema-mãe Luxtory pela superfície B2C;
+a expressão visual ainda aguarda aprovação. `.lx-b2c`, `b2c-foundations.css`, `b2c.css` e o grupo de tokens `b2c`
+são isolamento temporário do Lab, **não um Design System paralelo definitivo**. Nenhuma promoção ao Core ou
+migração de Home, Admin/Auth ou outra página ocorre nesta rodada.
+
+**Precedência:** produto/negócio/copy = canônicos atuais → Framework B2C → copy explicitamente aprovada.
+Composição visual = Home de referência implementada (`home-hero.tsx`, `home-hero.css`, `home-page.tsx`,
+`lx-renunciation*`) → estruturas dos prints especificadas pelo fundador → padrões recorrentes das páginas
+prioritárias do Luxtory2.0 → DS anterior somente para Newsreader, Hanken e inline emphasis. A paleta usa os
+primitivos canônicos do legado; drift RGB publicado não é importado. Logo oficial continua como ativo de marca.
+Empate estrutural não resolvido pela precedência deve ser apresentado ao fundador, sem terceira solução inventada.
+
+| Camada | Decisões deste CP1 | Promoção |
+|---|---|---|
+| Core candidato / foundations | Paleta, famílias, escala tipográfica, inline emphasis, spacing, container/grid, borders, motion e foco. Ênfase herda família/tamanho/peso/métricas, usa itálico e Warm Sand com contraste; palavras exclusivamente da copy. | Após aprovação visual; consolidar nas camadas existentes, sem duplicação. |
+| Core candidato / primitives | Button, Link, Field/forms, Logo, Disclosure e Media; comportamento/semântica/acessibilidade reutilizados, expressão visual adaptada. Forms genéricos sem envio, cadastro ou definição de campos da W6. | Mesma aprovação; sem promoção técnica nesta rodada. |
+| B2C / patterns | As composições abaixo. `b2c.css` contém somente composição e variantes; foundations/tokens/primitives não são duplicados. | Vocabulário editorial; não são automaticamente componentes React. |
+| Page recipes | Combinações adequadas à função narrativa de cada página; nenhuma página deve usar todos os patterns. | Fora do CP1; Home exige nova autorização. |
+
+| Pattern | Estrutura vinculante / desktop | Mobile |
+|---|---|---|
+| Cinematic Hero | Fotografia full-bleed; header/logo/menu sobre a imagem; área visual livre; headline/subheadline/CTA ancorados abaixo; contador/controles inferiores direitos. Contraste localizado, sem scrim global; crops por imagem/breakpoint. | Preservar fotografia/assunto, ordem e targets; carrossel pausável, pausa por foco/hover, reduced motion sem autoplay. |
+| Problem / Triad Comparison | Um único pattern derivado de `lx-renunciation`: copy + tríade acima; Second Home/Hospedagem/Copropriedade em três colunas equivalentes abaixo, divisores/padding/hierarquia coerentes, sem cards. | Copy → diagrama → alternativas; mesmos níveis e equivalência. |
+| Triad Statement | Regra superior; três células numeradas com divisores; statement monumental e fechamento centralizado. A ênfase integral de “Você pode ter os três.” segue a implementação fonte, sem escolher outro trecho. | Células em linhas número/título; statement e fechamento preservados, sem reduzir a cards/pausa. |
+| Split Editorial — Text / Media | 50/50 de referência, texto → mídia; fotografia contextual preenchendo toda a área. 5/7 ou 7/5 somente com justificativa de conteúdo/crop. | Ordem semântica do DOM, medida de leitura e crop próprios. |
+| Split Editorial — Media / Text | Mesma geometria, mídia → texto; nenhum preenchimento ornamental/coluna residual. | Ordem narrativa preservada. |
+| Solution Diagram | Copy + **Diagrama de solução Luxtory.svg** em “E se você não precisasse escolher?”. Integração das três dimensões; geometria original. | Texto → asset dimensionado, sem reconstrução de relações. |
+| Editorial Comparison | Superfície clara, duas colunas abertas equivalentes, linha superior/divisor, títulos alinhados, conteúdo com respiro; sem caixa preenchida/sombra. | Duas unidades com regra horizontal e igual hierarquia/padding. |
+| Panel Comparison | Moroccan Blue, duas unidades escuras irmãs com hairline, título, descrição curta, eyebrow, lista e closing. Mesma semântica da comparação editorial, expressão distinta; tracks compartilhados no desktop. | Unidades completas, mesma ordem/geometria/hierarquia, listas legíveis. |
+| Sibling Blocks | Unidades equivalentes em geometria, tipografia, espaçamento e peso; sem sombra/ornamento. | Preservar níveis e equivalência. |
+| Numbered Editorial List / Disclosure | Warm Sand; número / título / descrição / ação ou disclosure; divisores e alinhamentos estáveis. | Número/título/ação na primeira linha, descrição abaixo; affordance e teclado preservados. |
+| Editorial Pause / Closing | Largura total e composição centralizada, respiro com função narrativa; nenhuma mídia ornamental. | Mesma função/continuidade, largura de leitura adequada. |
+| Forms | Label/helper/error associados; input/select/textarea/checkbox/radio, grupos, CTA e estados. Aparência derivada de Candidatura, sem envio/armazenamento. | Campos legíveis, grupos e ações com reflow e targets adequados. |
+| Header / Mobile Menu / Footer | Logo oficial, gatilho/menu nativo e navegação; sem promover o shell do produto. | Dialog com Escape/retorno de foco, conteúdo de fundo inerte, links e footer acessíveis. |
+
+**Diagramas:** assets em `lab/assets/diagrams/`, originados de `Luxtory2.0/src/assets/`.
+`Triade de valor desejado.svg` = tensão; `Diagrama de solução Luxtory.svg` = integração. Somente fonte,
+cor canônica/contraste e dimensionamento foram adaptados. Coordenadas, paths, transformações, relações e lógica
+originais são protegidos por assinaturas de geometria em `lab.test.mjs`. Fontes OFL existentes incorporadas nos
+assets evitam fallback quando o SVG é servido como imagem; nenhuma dependência ou geometria nova.
+
+**Mídia e aceite:** imagens contextualizadas, crops intencionais e alt apropriado; Kaizen K01/K09 continuam
+candidatos identificados para avaliação privada, sem alegação de Edition/oferta, prova de outro Concept/serviço
+ou benefício atual. Preview e capturas completas/recortes de todos os patterns em 1440/390 devem ser acessíveis.
+WCAG 2.2 AA, foco/teclado/dialog/disclosure, targets, contraste e reduced motion; sem overflow 320–1920.
+Nenhuma coluna vazia, imagem residual, assimetria involuntária ou ornamento para preencher massa. A fotografia
+da Hero deve preservar luminosidade/atmosfera; inline emphasis deve manter métricas da própria headline.
+No Lab, a ênfase sobre fotografia recebe halo funcional de uma hairline em Dark Blue: contraste localizado
+nas letras, sem mudar família, tamanho, peso/métricas ou escurecer globalmente a imagem. Verificação focal
+considera o fundo real sob os glifos nas três imagens e nos dois viewports, além do axe.
+Ao entregar o CP1 revisado, parar e aguardar aprovação visual; nenhuma página é migrada automaticamente.

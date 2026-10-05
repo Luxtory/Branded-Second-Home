@@ -451,3 +451,16 @@ identificada, incluindo Kaizen. Contrato e limites: `docs/specs/design-system.md
 Opt-in somente da demonstração: raiz `.lx-b2c`, styles/index.css seguido de b2c-foundations.css e b2c.css.
 Este último contém composição/variantes; tokens e foundations permanecem separados. Não aplicar esse opt-in à
 Home ou a outra superfície antes da aprovação correspondente. A aprovação do CP1 permite somente a etapa Home.
+
+### CP1 revisado — Core candidato e patterns editoriais
+
+O registro vigente é `docs/specs/design-system.md` → “CP1 revisado — Design System Luxtory”. O prefixo `.lx-b2c`
+isola o checkpoint; não define um sistema paralelo. `b2c-foundations.css` demonstra candidatos a foundations e
+primitives gerais do Core; `b2c.css` demonstra os patterns editoriais B2C. Nenhum consumidor do produto recebe
+esse opt-in nesta rodada. Promoção futura ao Core consolidará as camadas existentes após aprovação visual.
+
+O Lab apresenta os 13 patterns solicitados, incluindo o Problem completo, Triad Statement, comparações editorial
+e em painéis, lista numerada/disclosure e os dois SVGs originais distintos. Use a seção “Evidências” para abrir
+capturas completas, recortes desktop/mobile e estados da Hero, todos servidos pela mesma rota privada existente.
+Patterns são opções de composição; page recipes escolhem apenas os adequados ao conteúdo. Sem extração React
+automática, mudanças de copy ou aplicação antecipada à Home/Admin/Auth.
