@@ -47,6 +47,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   exercido; checagem de terminologia nos textos registrados.
 
 ### Changed
+- Home — proposta pré-CP1 da W4: copy do fundador com correções canônicas de Membership, capacidade elegível e
+  Ação da SPE com Direito de Uso, emendas exatas sobre Créditos e gestão por modalidade; PUSH com uma instrução
+  por estado do catálogo. Hero com pausa por foco/hover, controles de teclado e movimento reduzido, mantendo a
+  aparência aprovada da Hero e antagonista; composição compacta das seções 3–11 com paridade Owner/Co-Owner e FAQ
+  nativa. `D-B2C-18`, `D-B2C-16`, REQ-100/REQ-101/REQ-103; aceite visual CP1 pendente, W4 aberta, sem publicação.
 - ...
 - Cadastro do segundo fator (`/entrar/mfa`) guiado em três passos: aplicativo autenticador (links oficiais), QR Code
   com chave manual opcional e botão "Copiar chave", e o código de 6 dígitos do aplicativo — diferente do código do

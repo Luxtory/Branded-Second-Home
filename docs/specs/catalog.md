@@ -308,6 +308,12 @@ Comum às quatro páginas — Brief Narrativo `[FW-B2C: §12]`:
 
 #### Home — `/`
 
+> **Supersessão parcial — 2026-10-04:** a mensagem-chave da tabela histórica abaixo já foi substituída pela
+> copy do fundador em 2026-10-01 (item 9, `D-B2C-18`). Para a Home, sua coluna de composição e a aprovação de
+> copy no Checkpoint Visual do brief comum cedem ao adendo pré-CP1 abaixo: copy aprovada com emendas;
+> Hero e antagonista visualmente aprovadas e congeladas; composição das seções 3–11 proposta para CP1 ainda pendente.
+> A tabela permanece como histórico. Os briefs das outras páginas continuam como estão.
+
 1. **Jornada:** `D-B2C-14`, linha "Home" — a mais abrangente; segue estritamente o Brief Narrativo `[FW-B2C: §12]`.
 2. **Função:** despertar o desejo pela vida que a tríade possibilita, tornar consciente o trade-off das alternativas,
    apresentar a nova lógica e demonstrar como a Luxtory integra os três valores `[FW-B2C: §12]`. **Schwartz:** Unaware →
@@ -333,6 +339,92 @@ Comum às quatro páginas — Brief Narrativo `[FW-B2C: §12]`:
    2026-10-01; ela substitui a mensagem-chave da tabela acima e acrescenta três seções: a regra da renúncia (PROBLEM,
    vilão), a Luxtory com os pilares Pertencimento, Patrimônio, Liberdade e a Gestão (PROOF) e as dúvidas essenciais
    (FAQ, depois do PUSH). Ordem das seções e textos: `presentation/i18n/discovery-pt-br.ts` (`home`).
+
+##### Adendo Home pré-CP1 — 2026-10-04
+
+**Estado:** autorização de execução limitada à Home até CP1; `D-B2C-18` continua a fonte de copy, com as emendas
+Créditos/gestão do fundador e as correções canônicas abaixo. Hero e antagonista conservam a aparência aprovada;
+seções 3–11 seguem a composição controlada abaixo, ainda sujeita à aprovação visual do fundador no CP1. A W4
+continua aberta; este adendo não aprova as outras páginas nem abre o portão público.
+
+**Allowlist da copy.** Atual = texto antes da execução; proposto = delta aprovado e implementado em
+`src/features/catalog/presentation/i18n/discovery-pt-br.ts` (`home`). Todos os demais campos e repetições são
+preservados. Os limites são os de `b2c.md` §2: L1 = propriedade/SPE; L2 = Co-Owner em positivo; L3 = Club,
+Membership e Créditos; L4 = gestão. As âncoras qualificam o delta, sem alterar os textos aprovados.
+
+| Campo | Atual | Proposto aprovado | Motivo e âncora canônica |
+|---|---|---|---|
+| `home.freedom.mechanisms[0].text[0]` | No Luxchange, você escolhe períodos que tem direito de uso da sua Second Home para converter em créditos equivalentes e diversificar estadias em outros imóveis da rede. | Com Membership vigente, no Luxchange você escolhe períodos elegíveis da sua Second Home para converter em créditos equivalentes e diversificar estadias em outros imóveis da rede; no Co-Owner, somente datas já reservadas no seu Direito de Uso podem ser cedidas. | Membership e capacidade elegível, reserva prévia Co-Owner: L3; BR-146, BR-151; L1/L2, BR-071, BR-373; D-B2C-15. |
+| `home.freedom.mechanisms[0].text` (inserção após o primeiro parágrafo) | Sem este parágrafo; os três parágrafos seguintes permanecem. | Créditos não são moeda, investimento nem garantia de disponibilidade. | Emenda Créditos do fundador; L3, BR-190, REQ-101. |
+| `home.freedom.mechanisms[1].text[1]` | O Luxplus permite adquirir noites adicionais disponíveis no inventário da Luxtory. | Com Membership vigente, o Luxplus permite adquirir noites adicionais disponíveis no inventário da Luxtory. | Membership e Inventário Luxtory: L3; BR-146, BR-240. |
+| `home.freedom.mechanisms[2].text[0]` | E quando houver períodos que você não pretende usar, poderá autorizar sua locação conforme a modalidade e as regras aplicáveis. | E quando houver períodos que você não pretende usar, com Membership vigente poderá autorizar sua locação pelo canal Luxtory conforme a modalidade e as regras aplicáveis; no Co-Owner, somente datas já reservadas no seu Direito de Uso podem ser disponibilizadas pelos canais autorizados. | Membership, reserva prévia e canais autorizados: L3; BR-146, BR-151, BR-258, BR-259. |
+| `home.management.pair.coOwner[0]` | Como a Second Home pertence a mais de um proprietário, sua administração e manutenção funcionam de forma coordenada para preservar o ativo e a experiência de todos. | Como a Second Home pertence à SPE proprietária, sua administração e manutenção funcionam de forma coordenada para preservar o ativo e a experiência de todos. | Precisão da propriedade da SPE: L1/L2; BR-071, BR-373, REQ-100; `01` §8. |
+| `home.faq.items[5].answer[3]` | Você não compra semanas de hospedagem: tem uma participação societária, com Direito de Uso. | Como Co-Owner, você adquire uma Ação da SPE proprietária do imóvel, com Direito de Uso. | Objeto adquirido em positivo, timeshare: L1/L2; BR-071, BR-373, REQ-100; D-B2C-15. |
+| `home.faq.items[6].answer[1]` | Sua Second Home é o ponto de partida, mas mecanismos como Luxchange e Luxplus podem ampliar suas possibilidades de viver outras Second Homes e períodos adicionais, sempre de acordo com disponibilidade e regras aplicáveis. | Sua Second Home é o ponto de partida, mas, com Membership vigente, mecanismos como Luxchange e Luxplus podem ampliar suas possibilidades de viver outras Second Homes e períodos adicionais, sempre de acordo com disponibilidade e regras aplicáveis. | Condição dos mecanismos na mesma frase: L3; BR-146. |
+| `home.faq.items[7].answer[0]` | Você pode disponibilizar determinados períodos da sua Second Home e, seguindo as regras do clube, transformá-los em créditos para viver experiências em outras Second Homes da rede. | Com Membership vigente, você pode disponibilizar determinados períodos elegíveis da sua Second Home e, seguindo as regras do clube, transformá-los em créditos para viver experiências em outras Second Homes da rede; no Co-Owner, somente datas já reservadas no seu Direito de Uso podem ser cedidas. Créditos não são moeda, investimento nem garantia de disponibilidade. | Membership, reserva prévia e emenda Créditos do fundador: L3; BR-146, BR-151, BR-190; L1/L2, BR-071, BR-373. |
+| `home.faq.items[8].answer[0]` | É uma forma de adquirir noites adicionais disponíveis no inventário da Luxtory quando você quiser viver mais do que seus dias ou créditos disponíveis permitem. | Com Membership vigente, é uma forma de adquirir noites adicionais disponíveis no inventário da Luxtory quando você quiser viver mais do que seus dias ou créditos disponíveis permitem. | Membership e Inventário Luxtory: L3; BR-146, BR-240. |
+| `home.management.pair.owner` (acréscimos) | Parágrafos anteriores preservados. | A administração integral pela Luxtory é opcional, assim como a Taxa de Administração.<br>As despesas da Second Home são suas. | Emenda gestão do fundador; L4, BR-130, BR-148, BR-149. |
+| `home.management.pair.coOwner` (acréscimos) | Parágrafos anteriores preservados. | A administração profissional é obrigatória, com Taxa de Administração.<br>As despesas da Second Home são rateadas entre os Co-Owners. | Emenda gestão do fundador; L4, BR-072, BR-073, BR-148, BR-149. |
+| `home.faq.items[10].answer` (acréscimos) | Parágrafos anteriores preservados. | No Owner, a administração integral pela Luxtory é opcional, assim como a Taxa de Administração. As despesas da Second Home são suas.<br>No Co-Owner, a administração profissional é obrigatória, com Taxa de Administração. As despesas da Second Home são rateadas entre os Co-Owners. | Identificação de cada modalidade na FAQ; emenda gestão do fundador; L4, BR-072, BR-073, BR-130, BR-148, BR-149. |
+| `home.hero.carousel` (seis labels) | Labels hardcoded no componente. | `description`: “carrossel”; `controls`: “Controles do carrossel”; `previous`: “Imagem anterior”; `next`: “Próxima imagem”; `pause`: “Pausar carrossel”; `play`: “Reproduzir carrossel” | Nomes acessíveis via i18n; sem nova afirmação de produto. |
+| `home.renunciation.diagramAlt` | Alt hardcoded no componente. | Diagrama da tríade de valor: Patrimônio. Liberdade. Pertencimento. | Equivalente textual do diagrama existente via i18n; sem mudança visual. |
+
+A inserção em Luxchange conserva, na ordem, “Pode continuar em um universo parecido com o seu.”, “Ou experimentar
+um conceito completamente diferente.” e “Sempre de acordo com os períodos disponíveis, plano Membership, e as
+regras do clube.”. A auditoria local `reports/w4-home-cp1/copy-audit.json` registra 25 deltas brutos de folhas
+(inclusive deslocamento de índices e sete labels de UI), zero delta inesperado; é artefato gitignored.
+
+**PUSH por disponibilidade** (`D-B2C-16`, `D-B2C-18`, REQ-022, TECH-001): uma única instrução por estado,
+sem a repetição incondicional de `home.push.next`. A navegação global da Coleção permanece.
+
+| Estado | Instrução existente usada | Ações da Home |
+|---|---|---|
+| `editions` | `home.push.next` integral | “Conheça as Home Editions” → `/colecao#home-editions`; “Entenda como funciona” → `/como-funciona` |
+| `concepts` | `home.push.next` integral | “Conheça os Home Concepts” → `/colecao#home-concepts`; “Entenda como funciona” → `/como-funciona` |
+| `none` | `qualification.next.none` | “Entenda como funciona” → `/como-funciona` |
+| `unknown` | `qualification.next.unknown` | “Entenda como funciona” → `/como-funciona`; falha de leitura não é ausência de catálogo |
+
+**Hero: comportamento com aparência congelada.** Três slides na ordem existente, intervalo de 8000 ms; contador
+pausa/reproduz, setas navegam com retorno circular e teclado. Entrada de foco pausa até reprodução explícita;
+sair da região não retoma. Hover suspende enquanto presente, sem desfazer a pausa manual ou de foco.
+`prefers-reduced-motion: reduce` e `html[data-motion="reduce"]`, inclusive mudanças em runtime, suspendem timer,
+drift e fade sem apagar a pausa escolhida. Navegação manual permanece. Alvos efetivos usam `target-min`/
+`target-control`, sem alterar caixas e glyphs visíveis ou sobrepor regiões; foco visível e labels i18n.
+Nenhuma mudança de fotos, scrims, tipografia, posição, margens, headline ou CTA. A antagonista recebe somente o alt
+acima, mantendo geometria e composição.
+
+**Composição operacional das seções 3–11.** `Scene` sem chapter; `Marker` preservado, sem ChapterHead, numeral,
+desenho de cabeçalho, sticky ou movimento novo. H2 `lx-display-m`, H3 `lx-display-s`, intro/fechos `lx-lead`,
+explicação `lx-body`; sem truncar copy, alturas fixas ou CSS novo. Placements existentes a partir de `lg` (64rem);
+abaixo, DOM empilhado. Pares iguais desde `md`; Owner antes de Co-Owner. Um único destaque `lx-display-l`:
+“Você pode ter os três.”.
+
+| # · seção · ground | Ordem de leitura e composição controlada |
+|---|---|
+| 3 · Regra · `night` | Marker/H2 full → texto metade esquerda → split `lx-lines`/lead metade direita → pergunta display-s e fecho lead full; dominante: separação das possibilidades |
+| 4 · Possibilidade · `wash` | Marker/H2 → imagine/values esquerda → TriadDrawing direita, decorativo com texto equivalente intacto → triad/promise/logic full; mobile texto → desenho → promessa |
+| 5 · Luxtory · `night` | Marker/intro/H2 esquerda → `lx-axis` direita com start/startTurn, partners, club → architecture/triad full; nenhum heading inventado |
+| 6 · Pertencimento · `paper` | Marker/H2 full → brands esquerda → Frame `--detail --typographic`, ground night, direita em duas linhas → place/text esquerda → arrival/notOnly/but/mine full; cinco palavras display-s completas e acessíveis |
+| 7 · Patrimônio · `wash` | Marker/H2 → intro/text → ModalityPair full, level 3, sem deed, pesos iguais → both.title/text/principle; dominante: comparação equivalente |
+| 8 · Liberdade · `paper` | Marker/H2/intro aside 4 → Ledger main 7, Luxchange → Luxplus → locação → fecho full; Créditos logo após a frase inicial, condições completas no mobile |
+| 9 · Gestão · `wash` | Marker/H2 → intro/text → ModalityPair full, level 3, sem deed → fecho; três parágrafos por modalidade, mesma estrutura/classes, metades iguais desde md |
+| 10 · PUSH · `night` | Marker/H2 → intro → quatro promises `lx-blocks` (1 mobile/2 md/4 xl) → três frases triad esquerda → forWhom direita → instrução do estado e ações full; apenas o TriadDrawing decorativo é retirado |
+| 11 · FAQ · `paper` | Marker/H2 aside 4 → 13 details/summary nativos com Icon e link final main 7; perguntas/respostas integrais, teclado/foco/nome acessível preservados |
+
+**Critérios CP1 Home (pendentes de fechamento conjunto):**
+
+- [ ] Copy restrita à allowlist; terminologia REQ-100/REQ-101 e paridade REQ-103 preservadas.
+- [ ] PUSH real nos quatro estados; Hero operável por teclado, foco/hover e ambas as preferências de movimento;
+      FAQ com Enter/Space, Tab, foco visível e nomes acessíveis.
+- [ ] Sem overflow a 320/360/390/768/1023/1024/1440/1920 px; axe 0 a 390/1440; landmarks, headings e ordem de
+      leitura corretos; zero erro de console.
+- [ ] Comparação equivalente antes/depois dos três slides e antagonista a 390/1440 confirma aparência congelada;
+      capturas das 11 seções e FAQ expandida evidenciam a proposta.
+- [ ] Fundador aprova visualmente as seções 3–11 no CP1. Resultados técnicos não substituem esse aceite.
+
+Evidências locais ficam em `reports/w4-home-cp1/`, fora do commit. O gate global `npm run verify` tem falha conhecida
+de formatação no hook de documentação herdado de main; correção isolada no PR #29, CI verde, ainda sem merge.
+Este registro não declara o gate global verde nem a W4 concluída, site publicado ou go-live.
 
 #### Como funciona — `/como-funciona`
 

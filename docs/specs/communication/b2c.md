@@ -134,6 +134,19 @@ externas (`P-LX-01`) e fotografia oficial (`P-LX-02`) ainda não existem.
 | D-B2C-17 | Nova versão do Framework B2C: no §2, "outros clubes de second homes, intercâmbio ou hospitalidade"; a Luxtory se apresenta como "clube de Branded Second Homes de alto padrão" | aprovada em 2026-10-01 (fundador) | `[FW-B2C: §2]`; ADR-0012 |
 | D-B2C-18 | Copy da Home escrita pelo fundador (Hero → FAQ) é a fonte autorizada da Home; CTAs de catálogo com os nomes de `D-LX-08` nos estados de `D-B2C-16`: "Conheça as Home Editions", "Conheça os Home Concepts", "Entenda como funciona" | aprovada em 2026-10-01 (fundador) | `D-B2C-13`, `D-B2C-16`, `D-LX-08`; BR-146, BR-373, BR-374 |
 
+**Adendo a D-B2C-18 — 2026-10-04 (Home aprovada com emendas):** o registro de 2026-10-01 acima permanece.
+A copy do fundador continua autorizada da Hero à FAQ; a execução incorpora somente a allowlist de
+[`catalog.md`, adendo Home pré-CP1](../catalog.md#adendo-home-pré-cp1--2026-10-04): Membership e capacidade elegível
+nos mecanismos (L3; BR-146, BR-151, BR-240, BR-258, BR-259), propriedade da SPE/Ação com Direito de Uso em positivo
+(L1/L2; BR-071, BR-373, REQ-100, D-B2C-15) e as emendas verbatim do fundador sobre Créditos (L3; BR-190, REQ-101)
+e gestão (L4; BR-072, BR-073, BR-130, BR-148, BR-149), inclusive na FAQ. Parágrafos anteriores corretos e
+repetições permanecem; sete labels acessíveis passam pela i18n. PUSH usa uma instrução existente por estado,
+com os nomes de D-B2C-18 e os destinos de D-B2C-16, sem confundir dados indisponíveis com catálogo vazio.
+
+Hero e antagonista estão visualmente aprovadas e congeladas; suas correções operacionais preservam a aparência.
+A composição controlada das seções 3–11 é proposta pré-CP1: o aceite visual do fundador permanece pendente.
+Este adendo só alcança a Home; não muda os outros briefs, não fecha a W4 nem autoriza publicação.
+
 | ID | Hipótese | Como validar | Status |
 |---|---|---|---|
 | H-B2C-01 | Perfil: contexto e comportamento atual | conversas comerciais e origem dos interesses registrados (W5) | substituída em 2026-09-30 → `[FW-B2C: §3, §5]` |
