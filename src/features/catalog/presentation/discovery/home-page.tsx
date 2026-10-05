@@ -4,7 +4,7 @@ import { discoveryMessages as text } from '../i18n/discovery-pt-br';
 import { CatalogActions } from './catalog-actions';
 import { HeadlineText } from './headline';
 import { nb } from './no-break';
-import { ChapterHead, Marker, ModalityPairView, Paragraphs, ValuesLine } from './parts';
+import { Marker, ModalityPairView, Paragraphs } from './parts';
 import { discoveryPaths, HOME_SECTIONS } from './paths';
 import { readAvailability } from './read';
 import { HomeHero } from './home-hero';
@@ -95,108 +95,102 @@ export async function HomePage() {
         </div>
       </Scene>
 
-      {/* PROBLEM — vilão: as três palavras afastadas no espaço. */}
-      <Scene id={RULE} titleId={titleOf(RULE)} ground="night" chapter>
-        <div className="lx-place-wide lx-scene__body">
+      {/* PROBLEM — the three possibilities remain separate. */}
+      <Scene id={RULE} titleId={titleOf(RULE)} ground="night">
+        <div className="lx-place-full lx-scene__body">
           <Marker parts={rule.marker} />
-          <h2 id={titleOf(RULE)} className="lx-display-xl">
+          <h2 id={titleOf(RULE)} className="lx-display-m">
             {rule.title}
           </h2>
         </div>
-        <ul className="lx-place-full lx-staging">
-          <li className="lx-display-l lx-staging__line--start">{rule.split[0]}</li>
-          <li className="lx-display-l lx-staging__line--end">{rule.split[1]}</li>
-          <li className="lx-display-m lx-staging__line--back">{rule.split[2]}</li>
-        </ul>
         <div className="lx-place-half lx-prose">
-          <Paragraphs lines={rule.text} className="lx-lead" />
+          <Paragraphs lines={rule.text} />
         </div>
-        <p className="lx-place-wide lx-display-xl">
+        <ul className="lx-place-right lx-lines">
+          {rule.split.map((line) => (
+            <li className="lx-lead" key={line}>
+              {line}
+            </li>
+          ))}
+        </ul>
+        <p className="lx-place-full lx-display-s">
           <em>{rule.question}</em>
         </p>
-        <div className="lx-place-offset lx-prose">
+        <div className="lx-place-full lx-prose">
           <Paragraphs lines={rule.closing} className="lx-lead" />
         </div>
       </Scene>
 
       {/* PROMISE — o desenho se fecha. */}
-      <Scene id={POSSIBILITY} titleId={titleOf(POSSIBILITY)} ground="wash" chapter>
+      <Scene id={POSSIBILITY} titleId={titleOf(POSSIBILITY)} ground="wash">
         <div className="lx-place-full lx-scene__body">
           <Marker parts={possibility.marker} />
-          <h2 id={titleOf(POSSIBILITY)} className="lx-display-2xl">
+          <h2 id={titleOf(POSSIBILITY)} className="lx-display-m">
             <HeadlineText headline={possibility.title} />
           </h2>
         </div>
-        <div className="lx-place-offset lx-prose">
+        <div className="lx-place-half lx-prose">
           <Paragraphs lines={possibility.imagine} className="lx-lead" />
+          <Paragraphs lines={possibility.values} />
         </div>
-        <div className="lx-place-full lx-callouts">
-          <div className="lx-callouts__drawing">
-            <TriadDrawing labels={values} />
-          </div>
-          <p className="lx-callouts__note lx-callouts__note--patrimony lx-display-s">
-            {possibility.values[0]}
-          </p>
-          <p className="lx-callouts__note lx-callouts__note--freedom lx-display-s">
-            {possibility.values[1]}
-          </p>
-          <p className="lx-callouts__note lx-callouts__note--belonging lx-display-s">
-            {possibility.values[2]}
-          </p>
+        <div className="lx-place-right">
+          <TriadDrawing labels={values} />
         </div>
         <div className="lx-place-full lx-coda lx-coda--center">
-          <ValuesLine text={possibility.triad} joined />
-          <p className="lx-display-2xl">
+          <p className="lx-lead">{possibility.triad}</p>
+          <p className="lx-display-l">
             <em>{possibility.promise}</em>
           </p>
           <p className="lx-lead">{possibility.logic}</p>
         </div>
       </Scene>
 
-      {/* PROOF — a Luxtory: o manifesto. */}
-      <Scene id={LUXTORY} titleId={titleOf(LUXTORY)} ground="night" chapter>
+      {/* PROOF — Luxtory gives the possibility a concrete axis. */}
+      <Scene id={LUXTORY} titleId={titleOf(LUXTORY)} ground="night">
         <div className="lx-place-half lx-scene__body">
           <Marker parts={luxtory.marker} />
           <p className="lx-lead">{nb(luxtory.intro)}</p>
+          <h2 id={titleOf(LUXTORY)} className="lx-display-m">
+            {luxtory.idea}
+          </h2>
         </div>
-        <h2 id={titleOf(LUXTORY)} className="lx-place-wide lx-display-xl">
-          {luxtory.idea}
-        </h2>
-        <div className="lx-place-full lx-contrast">
-          <p className="lx-display-m">{luxtory.start}</p>
-          <p className="lx-display-m">
-            <em>{luxtory.startTurn}</em>
-          </p>
-        </div>
-        <p className="lx-place-offset lx-lead">{nb(luxtory.partners)}</p>
+        <ol className="lx-place-right lx-axis">
+          <li className="lx-axis__item">
+            <p className="lx-body">{luxtory.start}</p>
+            <p className="lx-body">
+              <em>{luxtory.startTurn}</em>
+            </p>
+          </li>
+          <li className="lx-axis__item">
+            <p className="lx-body">{nb(luxtory.partners)}</p>
+          </li>
+          <li className="lx-axis__item">
+            <p className="lx-body">{luxtory.club}</p>
+          </li>
+        </ol>
         <div className="lx-place-full lx-coda">
-          <div className="lx-prose">
-            <p className="lx-lead">{luxtory.club}</p>
-            <p className="lx-lead">{luxtory.architecture}</p>
-          </div>
-          <ValuesLine text={luxtory.triad} joined />
+          <p className="lx-lead">{luxtory.architecture}</p>
+          <p className="lx-lead">{luxtory.triad}</p>
         </div>
       </Scene>
 
-      {/* Capítulo 01 — Pertencimento: o universo da marca num Frame tipográfico (sem fotografia, P-LX-02). */}
-      <Scene id={BELONGING} titleId={titleOf(BELONGING)} ground="paper" chapter>
-        <div className="lx-place-full">
-          <ChapterHead numeral="01" marker={belonging.marker} focus="belonging" />
-        </div>
-        <div className="lx-place-right lx-scene__body">
-          <h2 id={titleOf(BELONGING)} className="lx-display-xl">
+      {/* Belonging: the brand universe in a typographic Frame (without photography, P-LX-02). */}
+      <Scene id={BELONGING} titleId={titleOf(BELONGING)} ground="paper">
+        <div className="lx-place-full lx-scene__body">
+          <Marker parts={belonging.marker} />
+          <h2 id={titleOf(BELONGING)} className="lx-display-m">
             {belonging.title}
           </h2>
-          <div className="lx-prose">
-            <Paragraphs lines={belonging.brands} className="lx-lead" />
-          </div>
         </div>
-        <div className="lx-place-left lx-span-rows lx-sticky">
+        <div className="lx-place-half lx-prose">
+          <Paragraphs lines={belonging.brands} />
+        </div>
+        <div className="lx-place-right lx-span-rows">
           <div className="lx-frame lx-frame--detail lx-frame--typographic">
             <div className="lx-frame__media" data-ground="night">
               <ul className="lx-prose">
                 {belonging.universe.map((word) => (
-                  <li className="lx-frame__title" key={word}>
+                  <li className="lx-display-s" key={word}>
                     {word}
                   </li>
                 ))}
@@ -204,55 +198,53 @@ export async function HomePage() {
             </div>
           </div>
         </div>
-        <div className="lx-place-right lx-scene__body">
-          <p className="lx-display-m">{nb(belonging.place)}</p>
+        <div className="lx-place-half lx-scene__body">
+          <p className="lx-lead">{nb(belonging.place)}</p>
           <div className="lx-prose">
             <Paragraphs lines={belonging.text} />
           </div>
         </div>
         <div className="lx-place-full lx-coda lx-coda--center">
           <p className="lx-lead">{belonging.arrival}</p>
-          <p className="lx-display-m">{belonging.notOnly}</p>
+          <p className="lx-lead">{belonging.notOnly}</p>
           <p className="lx-lead">{belonging.but}</p>
-          <p className="lx-display-2xl">
+          <p className="lx-lead">
             <em>{belonging.mine}</em>
           </p>
         </div>
       </Scene>
 
-      {/* Capítulo 02 — Patrimônio: Owner e Co-Owner como duas pranchas do mesmo jogo (REQ-103). */}
-      <Scene id={PATRIMONY} titleId={titleOf(PATRIMONY)} ground="wash" chapter>
-        <div className="lx-place-full">
-          <ChapterHead numeral="02" marker={patrimony.marker} focus="patrimony" />
+      {/* Patrimony: Owner and Co-Owner carry the same weight (REQ-103). */}
+      <Scene id={PATRIMONY} titleId={titleOf(PATRIMONY)} ground="wash">
+        <div className="lx-place-full lx-scene__body">
+          <Marker parts={patrimony.marker} />
+          <h2 id={titleOf(PATRIMONY)} className="lx-display-m">
+            <HeadlineText headline={patrimony.title} />
+          </h2>
         </div>
-        <h2 id={titleOf(PATRIMONY)} className="lx-place-wide lx-display-xl">
-          <HeadlineText headline={patrimony.title} />
-        </h2>
-        <div className="lx-place-offset lx-prose">
+        <div className="lx-place-full lx-prose">
           <p className="lx-lead">{patrimony.intro}</p>
           <Paragraphs lines={patrimony.text} />
         </div>
         <div className="lx-place-full">
-          <ModalityPairView pair={patrimony.pair} level={3} deed />
+          <ModalityPairView pair={patrimony.pair} level={3} />
         </div>
         <div className="lx-place-full lx-coda lx-coda--center">
           <h3 className="lx-display-s">{patrimony.both.title}</h3>
           <div className="lx-prose">
-            <Paragraphs lines={patrimony.both.text} className="lx-lead" />
+            <Paragraphs lines={patrimony.both.text} />
           </div>
-          <p className="lx-display-2xl">
+          <p className="lx-lead">
             <em>{patrimony.both.principle}</em>
           </p>
         </div>
       </Scene>
 
-      {/* Capítulo 03 — Liberdade: cada mecanismo numa linha do dossiê. */}
-      <Scene id={FREEDOM} titleId={titleOf(FREEDOM)} ground="paper" chapter>
-        <div className="lx-place-full">
-          <ChapterHead numeral="03" marker={freedom.marker} focus="freedom" />
-        </div>
-        <div className="lx-place-aside lx-sticky lx-scene__body">
-          <h2 id={titleOf(FREEDOM)} className="lx-display-l">
+      {/* Freedom: each mechanism occupies a ledger row. */}
+      <Scene id={FREEDOM} titleId={titleOf(FREEDOM)} ground="paper">
+        <div className="lx-place-aside lx-scene__body">
+          <Marker parts={freedom.marker} />
+          <h2 id={titleOf(FREEDOM)} className="lx-display-m">
             {freedom.title}
           </h2>
           <div className="lx-prose">
@@ -262,67 +254,64 @@ export async function HomePage() {
         <ol className="lx-place-main lx-ledger">
           {freedom.mechanisms.map((mechanism) => (
             <li className="lx-ledger__item" key={mechanism.title}>
-              <h3 className="lx-display-m">{mechanism.title}</h3>
+              <h3 className="lx-display-s">{mechanism.title}</h3>
               <Paragraphs lines={mechanism.text} />
             </li>
           ))}
         </ol>
         <div className="lx-place-full lx-coda">
-          <p className="lx-display-l">
+          <p className="lx-lead">
             <HeadlineText headline={freedom.closing} />
           </p>
         </div>
       </Scene>
 
-      {/* Gestão: a casa sem o segundo trabalho. */}
-      <Scene id={MANAGEMENT} titleId={titleOf(MANAGEMENT)} ground="wash" chapter>
-        <div className="lx-place-full">
-          <ChapterHead marker={management.marker} />
+      {/* Management: factual equivalence between the Owner and Co-Owner regimes. */}
+      <Scene id={MANAGEMENT} titleId={titleOf(MANAGEMENT)} ground="wash">
+        <div className="lx-place-full lx-scene__body">
+          <Marker parts={management.marker} />
+          <h2 id={titleOf(MANAGEMENT)} className="lx-display-m">
+            <HeadlineText headline={management.title} />
+          </h2>
         </div>
-        <h2 id={titleOf(MANAGEMENT)} className="lx-place-wide lx-display-2xl">
-          <HeadlineText headline={management.title} />
-        </h2>
-        <div className="lx-place-aside lx-prose">
+        <div className="lx-place-full lx-prose">
           <p className="lx-lead">{nb(management.intro)}</p>
           <p className="lx-body">{nb(management.text)}</p>
         </div>
-        <div className="lx-place-main">
-          <ModalityPairView pair={management.pair} level={3} deed />
+        <div className="lx-place-full">
+          <ModalityPairView pair={management.pair} level={3} />
         </div>
         <div className="lx-place-full lx-coda lx-coda--center">
-          <p className="lx-display-l">
+          <p className="lx-lead">
             <HeadlineText headline={management.closing} />
           </p>
         </div>
       </Scene>
 
-      {/* PUSH — o clímax: a tríade inteira e o próximo passo por disponibilidade. */}
-      <Scene id={PUSH} titleId={titleOf(PUSH)} ground="night" chapter>
+      {/* PUSH — the complete triad and the next step by availability. */}
+      <Scene id={PUSH} titleId={titleOf(PUSH)} ground="night">
         <div className="lx-place-full lx-scene__body">
           <Marker parts={push.marker} />
-          <h2 id={titleOf(PUSH)} className="lx-display-2xl">
+          <h2 id={titleOf(PUSH)} className="lx-display-m">
             <HeadlineText headline={push.title} />
           </h2>
         </div>
-        <p className="lx-place-offset lx-lead">{nb(push.intro)}</p>
+        <p className="lx-place-full lx-lead">{nb(push.intro)}</p>
         <ul className="lx-place-full lx-blocks">
           {push.promises.map((promise) => (
             <li className="lx-blocks__item" key={promise}>
-              <p className="lx-display-s">{nb(promise)}</p>
+              <p className="lx-lead">{nb(promise)}</p>
             </li>
           ))}
         </ul>
-        <div className="lx-place-left lx-sticky">
-          <TriadDrawing labels={values} />
-        </div>
-        <ul className="lx-place-right lx-lines">
+        <ul className="lx-place-half lx-lines">
           {[triad.patrimony, triad.freedom, triad.belonging].map((line) => (
-            <li className="lx-display-l" key={line.lead}>
+            <li className="lx-display-s" key={line.lead}>
               <HeadlineText headline={line} />
             </li>
           ))}
         </ul>
-        <div className="lx-place-half lx-prose">
+        <div className="lx-place-right lx-prose">
           <Paragraphs lines={push.forWhom} className="lx-lead" />
         </div>
         <div className="lx-place-full lx-coda">
@@ -339,11 +328,11 @@ export async function HomePage() {
         </div>
       </Scene>
 
-      {/* Dúvidas essenciais: o título fica, as perguntas abrem no lugar. */}
+      {/* Essential questions: complete native disclosures in reading order. */}
       <Scene id={FAQ} titleId={titleOf(FAQ)} ground="paper">
-        <div className="lx-place-aside lx-sticky lx-scene__body">
+        <div className="lx-place-aside lx-scene__body">
           <Marker parts={faq.marker} />
-          <h2 id={titleOf(FAQ)} className="lx-display-xl">
+          <h2 id={titleOf(FAQ)} className="lx-display-m">
             {faq.title}
           </h2>
         </div>

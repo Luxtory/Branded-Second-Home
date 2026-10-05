@@ -410,6 +410,27 @@ test.describe('Discovery público — conteúdo', () => {
     const faq = page.locator(`section#${HOME_SECTIONS.at(-1)}`);
     const questions = faq.locator('summary');
     await expect(questions).toHaveCount(discoveryMessages.home.faq.items.length + 1);
+    const expectedNames = [
+      ...discoveryMessages.home.faq.items.map((item) => item.question),
+      discoveryMessages.home.faq.details.question,
+    ];
+    for (const [index, name] of expectedNames.entries()) {
+      const question = questions.nth(index);
+      const disclosure = faq.locator('details').nth(index);
+      await expect(question).toHaveAccessibleName(name);
+      await question.focus();
+      await expect(question).toBeFocused();
+      expect(await question.evaluate((node) => node.matches(':focus-visible'))).toBe(true);
+      expect(await question.evaluate((node) => getComputedStyle(node).outlineStyle)).toBe('solid');
+      await question.press('Enter');
+      await expect(disclosure).toHaveAttribute('open', '');
+      await question.press('Space');
+      await expect(disclosure).not.toHaveAttribute('open');
+      if (index < expectedNames.length - 1) {
+        await page.keyboard.press('Tab');
+        await expect(questions.nth(index + 1)).toBeFocused();
+      }
+    }
     const timeshare = faq.locator('details', { hasText: 'A Luxtory é timeshare?' });
     await expect(
       timeshare.getByText(
@@ -424,7 +445,10 @@ test.describe('Discovery público — conteúdo', () => {
     ).toBeVisible();
     const answers = (await faq.textContent()) ?? '';
     expect(hasForbiddenTerm(answers)).toBe(false);
-    await questions.last().click();
+    await questions.last().focus();
+    await questions.last().press('Enter');
+    await page.keyboard.press('Tab');
+    await expect(faq.getByRole('link', { name: 'Como Funciona' })).toBeFocused();
     await expect(faq.getByRole('link', { name: 'Como Funciona' })).toHaveAttribute(
       'href',
       '/como-funciona',
