@@ -45,12 +45,17 @@
     gap: var(--lx-space-4);
   }
   [data-lx="core"] .lx-section-closing {
-    max-width: var(--lx-layout-measure);
+    max-width: var(--lx-layout-container-narrow);
     margin: max(var(--lx-space-12), calc(var(--lx-space-section) / 2)) auto 0;
     text-align: center;
   }
   [data-lx="core"] .lx-section-closing p {
+    max-width: none;
     text-wrap: balance;
+  }
+  /* A closing that is also the container keeps the same text width (its gutters come on top). */
+  [data-lx="core"] .lx-container.lx-section-closing {
+    max-width: calc(var(--lx-layout-container-narrow) + 2 * var(--lx-layout-margin));
   }
   [data-lx="core"] .lx-section-closing :is(.lx-actions-stack, .lx-hero__actions) {
     justify-content: center;
@@ -233,6 +238,21 @@
     }
   }
 
+  /* Home Hero (revisão do fundador, 2026-10-06): a composição da W4 (lx-home-hero) com scrim um pouco mais escuro sobre
+   * toda a fotografia e a headline menor, que cabe em duas linhas a partir do lg (escala com a viewport). */
+  [data-lx="core"] .lx-home-hero__scrim {
+    background:
+      linear-gradient(90deg, var(--lx-color-bg) 0%, transparent 100%),
+      linear-gradient(0deg, var(--lx-color-bg) 0%, transparent 70%),
+      color-mix(in srgb, var(--lx-color-bg) 45%, transparent);
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-home-hero__title {
+      max-width: none;
+      font-size: clamp(1.75rem, 2.75vw, 2.5rem);
+    }
+  }
+
   /* Problem / Triad Comparison — one composition: copy + the value triad on top, three equivalent alternatives below. */
   [data-lx="core"] .lx-triad-comparison__top {
     display: grid;
@@ -294,8 +314,25 @@
   }
   @media (min-width: 64rem) {
     [data-lx="core"] .lx-triad-comparison__top {
-      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       column-gap: calc(var(--lx-layout-gutter) * 2);
+      align-items: stretch;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    [data-lx="core"] :is(.lx-triad-comparison__diagram, .lx-diagram--even .lx-diagram__figure) {
+      position: relative;
+      align-self: stretch;
+      justify-self: stretch;
+      width: 100%;
+    }
+    [data-lx="core"] :is(.lx-triad-comparison__diagram, .lx-diagram--even .lx-diagram__figure) > img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
   }
 
@@ -605,6 +642,7 @@
     }
     [data-lx="core"] .lx-diagram--even {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: stretch;
     }
   }
 
@@ -642,6 +680,13 @@
     margin-inline: 0;
   }
 
+  [data-lx="core"] .lx-eyebrow--accent {
+    color: var(--lx-color-accent);
+  }
+  [data-lx="core"] .lx-headline--turn-fg em {
+    color: var(--lx-color-fg);
+  }
+
   /* Panel Switch — one interactive panel: the alternatives as a row of text options on a hairline (native radios:
    * arrows move, focus is visible, the result is announced by the component), then rows ATTRIBUTE ——— VALUE. The
    * chosen option = Warm Sand underline + semibold + full colour, never colour alone. Framed from md; open on phones. */
@@ -652,6 +697,7 @@
   [data-lx="core"] .lx-panel-switch__options {
     display: flex;
     flex-wrap: wrap;
+    column-gap: var(--lx-space-4);
     min-width: 0;
     margin: 0;
     padding: 0;
@@ -663,18 +709,14 @@
     display: inline-flex;
     align-items: center;
     min-height: var(--lx-target-control);
-    padding-inline: var(--lx-space-3);
     margin-bottom: calc(-1 * var(--lx-border-hairline));
     border-bottom: var(--lx-border-outline) solid transparent;
     color: var(--lx-color-fg-muted);
-    font-size: var(--lx-type-label);
-    font-weight: var(--lx-weight-medium);
-    letter-spacing: var(--lx-tracking-body);
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-type-ordinal);
+    line-height: var(--lx-leading-heading);
     cursor: pointer;
     transition: border-color var(--lx-duration-moderate) var(--lx-ease-editorial);
-  }
-  [data-lx="core"] .lx-panel-switch__option:first-of-type {
-    padding-inline-start: 0;
   }
   [data-lx="core"] .lx-panel-switch__option > input {
     position: absolute;
@@ -688,7 +730,6 @@
   [data-lx="core"] .lx-panel-switch__option:has(> input:checked) {
     border-bottom-color: var(--lx-color-accent);
     color: var(--lx-color-fg);
-    font-weight: var(--lx-weight-semibold);
   }
   [data-lx="core"] .lx-panel-switch__option:has(> input:focus-visible) {
     outline: var(--lx-focus-width) solid var(--lx-color-focus);
@@ -713,11 +754,9 @@
   }
   [data-lx="core"] .lx-panel-switch__attribute {
     order: 0;
-    font-size: var(--lx-type-label);
-    font-weight: var(--lx-weight-medium);
-    letter-spacing: var(--lx-tracking-eyebrow);
-    line-height: var(--lx-leading-tight);
-    text-transform: uppercase;
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-type-ordinal);
+    line-height: var(--lx-leading-heading);
     color: var(--lx-color-fg);
   }
   [data-lx="core"] .lx-panel-switch__value {
@@ -740,11 +779,8 @@
   }
   @media (min-width: 48rem) {
     [data-lx="core"] .lx-panel-switch {
-      padding: var(--lx-space-8) var(--lx-space-12) var(--lx-space-12);
+      padding: var(--lx-space-8) var(--lx-space-6) var(--lx-space-12);
       border: var(--lx-border-hairline) solid var(--lx-color-rule);
-    }
-    [data-lx="core"] .lx-panel-switch__option {
-      padding-inline: var(--lx-space-6);
     }
   }
 

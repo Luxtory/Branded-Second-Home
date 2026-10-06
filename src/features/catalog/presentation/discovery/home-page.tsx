@@ -89,7 +89,7 @@ export async function HomePage() {
         <div className="lx-container lx-triad-comparison">
           <div className="lx-triad-comparison__top">
             <div className="lx-triad-comparison__copy">
-              <Eyebrow>{renunciation.marker}</Eyebrow>
+              <Eyebrow accent>{renunciation.marker}</Eyebrow>
               <h2 id={titleOf(RENUNCIATION)} className="lx-headline">
                 {renunciation.title.lead.trim()}
                 <br />
@@ -124,7 +124,7 @@ export async function HomePage() {
           </ol>
           <div className="lx-section-closing lx-stack">
             <Paragraphs lines={renunciation.closing} className="lx-subheadline" />
-            <p className="lx-display-m">{renunciation.closingTurn}</p>
+            <p className="lx-headline">{renunciation.closingTurn}</p>
           </div>
         </div>
       </section>
@@ -144,7 +144,7 @@ export async function HomePage() {
           </div>
           <div className="lx-section-closing lx-stack">
             <p className="lx-subheadline">{rule.closing[0]}</p>
-            <p className="lx-display-m">{rule.closing[1]}</p>
+            <p className="lx-headline">{rule.closing[1]}</p>
           </div>
         </div>
       </section>
@@ -159,7 +159,7 @@ export async function HomePage() {
         <div className="lx-container">
           <div className="lx-diagram lx-diagram--even">
             <div className="lx-stack">
-              <Eyebrow>{possibility.marker}</Eyebrow>
+              <Eyebrow accent>{possibility.marker}</Eyebrow>
               <h2 id={titleOf(POSSIBILITY)} className="lx-headline">
                 <HeadlineText headline={possibility.title} />
               </h2>
@@ -187,7 +187,7 @@ export async function HomePage() {
                 </li>
               ))}
             </ol>
-            <p className="lx-statement lx-triad-statement__statement">
+            <p className="lx-headline lx-triad-statement__statement">
               <em>{possibility.promise}</em>
             </p>
             <p className="lx-subheadline lx-triad-statement__closing">{possibility.logic}</p>
@@ -209,7 +209,6 @@ export async function HomePage() {
             height={768}
             alt={media.kaizen.alt}
             crop="lx-crop-x-35 lx-crop-y-65"
-            caption={media.kaizen.caption}
           />
           <div className="lx-split__text">
             <div className="lx-split__inner">
@@ -218,7 +217,7 @@ export async function HomePage() {
                 {luxtory.idea}
               </h2>
               <p className="lx-body">{nb(luxtory.intro)}</p>
-              <p className="lx-closing">
+              <p className="lx-display-m">
                 <em>{luxtory.lifestyle}</em>
               </p>
               <p className="lx-body">{nb(luxtory.partners)}</p>
@@ -242,7 +241,7 @@ export async function HomePage() {
         <div className="lx-split lx-split--wide-media">
           <div className="lx-split__text">
             <div className="lx-split__inner">
-              <Eyebrow>{belonging.marker}</Eyebrow>
+              <Eyebrow accent>{belonging.marker}</Eyebrow>
               <h2 id={titleOf(BELONGING)} className="lx-headline">
                 {belonging.title}
               </h2>
@@ -262,14 +261,13 @@ export async function HomePage() {
             height={768}
             alt={media.kaizenWellness.alt}
             crop="lx-crop-x-50 lx-crop-y-65"
-            caption={media.kaizen.caption}
           />
         </div>
         <div className="lx-container lx-section-closing lx-stack">
           <p className="lx-subheadline">{belonging.arrival}</p>
           <p className="lx-closing">{belonging.notOnly}</p>
           <p className="lx-subheadline">{belonging.but}</p>
-          <p className="lx-statement">
+          <p className="lx-headline">
             <em>{belonging.mine}</em>
           </p>
         </div>
@@ -288,13 +286,13 @@ export async function HomePage() {
             <h2 id={titleOf(PATRIMONY)} className="lx-headline">
               <HeadlineText headline={patrimony.title} />
             </h2>
-            <p className="lx-subheadline">{patrimony.intro}</p>
+            <p className="lx-body">{patrimony.intro}</p>
             <Paragraphs lines={patrimony.text} />
           </div>
           <ModalityComparison pair={patrimony.pair} headlines />
           <div className="lx-section-closing lx-stack">
             <Eyebrow>{patrimony.both.title}</Eyebrow>
-            <Paragraphs lines={patrimony.both.text} />
+            <Paragraphs lines={patrimony.both.text} className="lx-subheadline" />
             <p className="lx-headline">{patrimony.both.principle}</p>
           </div>
         </div>
@@ -339,7 +337,7 @@ export async function HomePage() {
               </li>
             ))}
           </ol>
-          <p className="lx-section-closing lx-headline">
+          <p className="lx-section-closing lx-headline lx-headline--turn-fg">
             <HeadlineText headline={freedom.closing} />
           </p>
         </div>
@@ -369,7 +367,6 @@ export async function HomePage() {
             height={768}
             alt={media.kaizenSuite.alt}
             crop="lx-crop-x-35 lx-crop-y-65"
-            caption={media.kaizen.caption}
           />
         </div>
         <div className="lx-container">
@@ -380,34 +377,44 @@ export async function HomePage() {
         </div>
       </section>
 
-      {/* 06 — PUSH: A) o argumento final sobre Deep; B) o CTA cinematográfico sobre a fotografia de fechamento. */}
+      {/* 06 — PUSH: A) argumento (texto | fotografia) sobre Deep; B) o CTA cinematográfico sobre a fotografia de fechamento. */}
       <section id={PUSH} aria-labelledby={titleOf(PUSH)}>
-        <div className="lx-section" data-surface="deep">
-          <div className="lx-container lx-container--content">
-            <div className="lx-section-head lx-section-head--center">
-              <Eyebrow>{push.marker}</Eyebrow>
-              <h2 id={titleOf(PUSH)} className="lx-headline">
-                <HeadlineText headline={push.title} />
-              </h2>
-              <p className="lx-subheadline">{nb(push.intro)}</p>
-              <Paragraphs lines={push.promises} />
+        {/* A: texto à esquerda, fotografia à direita (6/6); o texto de decisão fecha abaixo. */}
+        <div className="lx-section-split" data-surface="deep">
+          <div className="lx-split">
+            <div className="lx-split__text">
+              <div className="lx-split__inner">
+                <Eyebrow>{push.marker}</Eyebrow>
+                <h2 id={titleOf(PUSH)} className="lx-headline">
+                  <HeadlineText headline={push.title} />
+                </h2>
+                <p className="lx-body">{nb(push.intro)}</p>
+                <Paragraphs lines={push.promises} />
+                <ol className="lx-numbered lx-numbered--compact">
+                  {[triad.patrimony, triad.freedom, triad.belonging].map((line, index) => (
+                    <li className="lx-numbered__item" key={line.lead}>
+                      <span className="lx-ordinal lx-numbered__number" aria-hidden="true">
+                        {ordinal(index)}
+                      </span>
+                      <span className="lx-display-m">
+                        <HeadlineText headline={line} />
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
             </div>
-            <ol className="lx-triad-statement__cells lx-triad-statement--lines">
-              {[triad.patrimony, triad.freedom, triad.belonging].map((line, index) => (
-                <li className="lx-triad-statement__cell" key={line.lead}>
-                  <span className="lx-ordinal" aria-hidden="true">
-                    {ordinal(index)}
-                  </span>
-                  <span className="lx-triad-statement__word">
-                    <HeadlineText headline={line} />
-                  </span>
-                </li>
-              ))}
-            </ol>
-            <div className="lx-section-closing lx-stack">
-              <Paragraphs lines={push.forWhom} className="lx-subheadline" />
-              <p className="lx-body">{nb(push.next)}</p>
-            </div>
+            <SplitPhoto
+              src="/images/home/hero/hero-lifestyle.jpg"
+              width={1344}
+              height={768}
+              alt=""
+              crop="lx-crop-x-80"
+            />
+          </div>
+          <div className="lx-container lx-section-closing lx-stack">
+            <Paragraphs lines={push.forWhom} className="lx-subheadline" />
+            <p className="lx-subheadline">{nb(push.next)}</p>
           </div>
         </div>
         <div className="lx-hero lx-hero--closing" data-surface="blue">

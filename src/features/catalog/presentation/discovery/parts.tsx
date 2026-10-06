@@ -87,9 +87,18 @@ export function ModalityText({ value }: { readonly value: EditionModality }) {
   );
 }
 
-/** Eyebrow do Core (`lx-eyebrow`): caixa alta pelo CSS, cor do papel `marker` da superfície. */
-export function Eyebrow({ children }: { readonly children: ReactNode }) {
-  return <p className="lx-eyebrow">{children}</p>;
+/**
+ * Eyebrow do Core (`lx-eyebrow`): caixa alta pelo CSS, cor do papel `marker` da superfície. `accent`: Warm Sand sobre
+ * Moroccan Blue (decisão do fundador na Home, 2026-10-06).
+ */
+export function Eyebrow({
+  children,
+  accent = false,
+}: {
+  readonly children: ReactNode;
+  readonly accent?: boolean;
+}) {
+  return <p className={accent ? 'lx-eyebrow lx-eyebrow--accent' : 'lx-eyebrow'}>{children}</p>;
 }
 
 /** Ordinal editorial (01, 02, 03): leitura visual; a ordem já vem da lista. */

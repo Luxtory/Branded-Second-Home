@@ -134,7 +134,7 @@ test.describe('Discovery público — conteúdo', () => {
     await expect(invite).toHaveCount(1);
     await expect(invite).toHaveAttribute('href', `#${HOME_SECTIONS[1]}`);
     // Carrossel só com duas ou mais fotos (spec catalog §13.10): então anterior, próxima e pausa; com uma, nenhum.
-    const slides = await hero.locator('.lx-hero__slide').count();
+    const slides = await hero.locator('.lx-home-hero__slide').count();
     const controls = hero.getByRole('button');
     if (slides < 2) {
       await expect(controls).toHaveCount(0);

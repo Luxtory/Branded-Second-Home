@@ -268,7 +268,7 @@ export const discoveryMessages = {
         'Existem marcas com as quais você se identifica não apenas pelo que elas vendem.',
         'Mas pelo universo que representam.',
       ],
-      universe: ['Valores.', 'Estética.', 'Cultura.', 'Experiências.', 'Uma forma de viver.'],
+      universe: ['Valores.', 'Estética.', 'Cultura.', 'Experiências.', 'Um estilo de vida.'],
       place: 'Na Luxtory, esse universo se transforma no seu lugar.',
       text: [
         'O Brand DNA inspira seu conceito, arquitetura, interiores, paisagismo, amenidades e experiências.',
@@ -292,12 +292,12 @@ export const discoveryMessages = {
       ],
       pair: {
         owner: [
-          'A Residence inteira é sua.',
+          'Você como proprietário do imóvel.',
           'Você possui integralmente o imóvel.',
           'Uma Second Home criada para fazer parte da sua vida e conectada ao ecossistema Luxtory.',
         ],
         coOwner: [
-          'Você possui uma participação real que faz sentido para sua vida.',
+          'Você como acionista da SPE proprietária do imóvel.',
           'Você adquire uma Ação da SPE, a empresa proprietária do imóvel, com Direito de Uso correspondente à sua participação.',
           'Você é acionista da SPE proprietária do imóvel.',
         ],
@@ -318,30 +318,25 @@ export const discoveryMessages = {
         'Sua Second Home pode ser o lugar onde você se sente em casa.',
         'Mas não precisa ser o único lugar onde você vive suas histórias.',
       ],
+      // Revisão do fundador (2026-10-06): na Home só o essencial; o detalhe operacional fica no Como funciona.
       mechanisms: [
         {
-          title: 'Luxchange',
+          title: 'Luxchange — intercâmbio da rede',
           text: [
-            'Com Membership vigente, no Luxchange você escolhe períodos elegíveis da sua Second Home para converter em créditos equivalentes e diversificar estadias em outros imóveis da rede; no Co-Owner, somente datas já reservadas no seu Direito de Uso podem ser cedidas.',
-            'Créditos não são moeda, investimento nem garantia de disponibilidade.',
-            'Pode continuar em um universo parecido com o seu.',
-            'Ou experimentar um conceito completamente diferente.',
-            'Sempre de acordo com os períodos disponíveis e as regras do clube.',
+            'No Luxchange, você escolhe períodos da sua residência para converter em créditos equivalentes e diversificar estadias em outros imóveis da rede.',
           ],
         },
         {
-          title: 'Luxplus',
+          title: 'Luxplus — reservas extras',
           text: [
-            'Quer mais tempo?',
-            'Com Membership vigente, o Luxplus permite adquirir noites adicionais disponíveis no inventário da Luxtory.',
-            'Uma forma de ampliar suas possibilidades quando os dias da sua Second Home ou seus créditos do Luxchange não forem suficientes.',
+            'O Luxplus dá acesso a estadias adicionais quando os dias da sua residência e os créditos do Luxchange não bastarem.',
           ],
         },
         {
-          title: 'Locação de temporada',
+          title: 'Locação de temporada — monetizar tempo ocioso',
           text: [
-            'E quando houver períodos que você não pretende usar, com Membership vigente poderá autorizar sua locação pelo canal Luxtory conforme a modalidade e as regras aplicáveis; no Co-Owner, somente datas já reservadas no seu Direito de Uso podem ser disponibilizadas pelos canais autorizados.',
-            'Você continua no controle da decisão.',
+            'Quando houver períodos que você não pretende usar, você pode autorizar a locação pelo canal Luxtory, conforme a modalidade e as regras aplicáveis.',
+            'No Co-Owner, apenas datas já reservadas do seu Direito de Uso podem ser disponibilizadas.',
           ],
         },
       ],
