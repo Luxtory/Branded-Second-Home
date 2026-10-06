@@ -143,7 +143,10 @@ export async function HowItWorksPage() {
                     {ordinal(index)}
                   </span>
                   <a className="lx-link lx-title" href={`#${CHAPTERS[vertex]}`}>
-                    <HeadlineText headline={triad[vertex]} />
+                    {/* Um só item no link (inline-flex): o espaço entre o nome e a virada não se perde. */}
+                    <span>
+                      <HeadlineText headline={triad[vertex]} />
+                    </span>
                   </a>
                 </li>
               ))}
