@@ -60,7 +60,7 @@
 | 3B | Camada de comunicação: Framework Mestre + preenchimentos B2C e Brand Partners (ADR-0011) | docs (sem slice) | — | 3 | — | R1 | ✅ |
 | 3C | Framework B2C como fonte canônica da comunicação B2C (ADR-0012) | docs + catalog (domain) | — | 3B | — | R1 | ✅ |
 | 3D | Framework Brand Partners como fonte canônica da comunicação Brand Partners (ADR-0013) | docs + catalog (domain) | — | 3C | — | R1 | ✅ |
-| 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3, 3C | — | R1 | ⬜ |
+| 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3, 3C | — | R1 | ✅ (CP2, #32, `ba1dc8d`) |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ |
 | 6 | Interesse — formulário público | ownership | — | 4, 5 | — | R1 | ⛔ P-3 |
 | 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ |
@@ -1200,7 +1200,7 @@ Commit Conventional por onda, push em `claude/busy-edison-h75ufo`.
 |------------|-------------|------------|---------------|--------|
 | CP1 | Core DS + Lab: foundations, primitives, estados, patterns oficiais, diagramas, contratos; nenhuma página migrada | — | — | ✅ (#30, `d04e8ef`) |
 | GATE-COPY-W4 | Fonte autorizada da copy da W4 (Framework → `b2c.md`/registro → fundador) | CP1 | — | ✅ (`D-B2C-19`) |
-| CP2 = W4 | Core aplicado às superfícies da W4 (`/`, `/como-funciona`, `/colecao`, `/colecao/[conceptId]`, shell, 404) | CP1, GATE-COPY-W4 | — | 🟡 CP2-A |
+| CP2 = W4 | Core aplicado às superfícies da W4 (`/`, `/como-funciona`, `/colecao`, `/colecao/[conceptId]`, shell, 404) | CP1, GATE-COPY-W4 | — | ✅ (#32, `ba1dc8d`) |
 | CP3 | Auth no Core (`/entrar`, `/entrar/mfa`, estados focados) | CP2 | — | ⬜ |
 | CP4 | Admin no Core ("folha de papel inteligente", 16 rotas) | CP3 | — | ⬜ |
 | CP5 | Consolidação: Core default, legado sem consumidores, docs sincronizados | CP4 | — | ⬜ |
