@@ -441,3 +441,40 @@ Comum às quatro páginas — Brief Narrativo `[FW-B2C: §12]`:
 - Direitos sobreviventes do encerramento como dado (§7).
 - `P-LX-03` (inclui o termo "posse"), D1 e D5c — condicionam abrir o portão.
 - P-8 (regras de exposição por marca), P-1 (fotografia) e P-3 (textos jurídicos do rodapé).
+
+### 13.9 Receitas visuais do Core Design System (CP2)
+
+> Documentadas no CP1 (2026-10-06) a partir da estrutura das páginas na `main`; aplicadas no CP2. Patterns e superfícies
+> de [`design-system.md` §13](design-system.md). Receita = composição, não copy: a fonte autorizada da copy é decidida no
+> **GATE-COPY-W4**, antes do CP2. Âncoras, ordem das seções, dados, CTA por disponibilidade e regras da §13 continuam
+> como estão. Mídia só com asset autorizado; sem ela, o pattern sem mídia (P-1).
+
+**Shell público:** SiteHeader `--overlay` sobre o hero da Home e sólido `blue` nas demais; Menu (`lx-mobile-nav`) com o
+gatilho do ícone oficial; Footer `deep`.
+
+| Página | Seção | Superfície | Pattern |
+|---|---|---|---|
+| Home | Hero | fotografia | Cinematic Hero (3 fotos existentes; o único convite desce para a renúncia) |
+| Home | Renúncia | `blue` | Problem / Triad Comparison (Tríade de valor + três alternativas) |
+| Home | Regra | `sand` | Statement/Pause (as três linhas, a pergunta e o fechamento) |
+| Home | Possibilidade | `blue` | Text + Diagram (Diagrama de solução) + Triad Statement ("Você pode ter os três.") |
+| Home | Luxtory | `sand` | Editorial Comparison (os dois polos do contraste) + fechamento |
+| Home | Pertencimento | `blue` | Editorial Split media/text com mídia autorizada; sem ela, uma coluna |
+| Home | Patrimônio | `sand` | Editorial Comparison Owner \| Co-Owner (mesma estrutura, REQ-103) + princípio |
+| Home | Liberdade | `blue` | Numbered Editorial List (mecanismos) |
+| Home | Gestão | `sand` | Panel Comparison Owner \| Co-Owner (painéis `deep`) + fechamento |
+| Home | PUSH | `blue` | Sibling Blocks (quatro promessas, 2 × 2) + linhas da tríade + CTA nos quatro estados |
+| Home | FAQ | `white` | FAQ / Disclosure |
+| Como funciona | Abertura + índice | `blue` | Statement/Pause `--opening` + Numbered Editorial List com links |
+| Como funciona | Mecanismo, capítulos e condições | `sand` ↔ `blue` | Numbered Editorial List / Disclosure; configurações canônicas do Co-Owner como Panel Comparison (detalhe secundário do PROOF) |
+| Como funciona | PUSH | `blue` | Statement/Pause com o CTA por disponibilidade |
+| Coleção | Abertura | `blue` | Statement/Pause `--opening` |
+| Coleção | Residence Editions, depois Residence Concepts | `sand` / `white` | Sibling Blocks de CollectionCard tipográficos (P-1); estados vazio e indisponível |
+| Concept | Abertura | `blue` | Statement/Pause `--opening` + ConceptCredit (só com autorização) |
+| Concept | Proposta | `white` | Editorial Split sem mídia (uma coluna) |
+| Concept | Fiel ao Concept | `deep` | Statement/Pause |
+| Concept | Editions e oferta | `white` | Sibling Blocks com Evidence; sem Edition, sem oferta (REQ-022) |
+| 404 público | — | `white` | Statement/Pause com o link de volta |
+
+Aceite visual no **Checkpoint Visual do CP2 (sem push)**: Home, Como funciona, Coleção, Concept com e sem Edition, menu
+do celular aberto e Admin com "Público no site", a 390 e 1440 px.

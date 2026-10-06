@@ -441,3 +441,89 @@ decorativos · glassmorphism · glow · foto de banco · lorem ipsum · cor lite
 duas fontes de verdade (edite `tokens.json`, nunca `tokens.css`) · recolorir ou reconstruir o logo · `@media
 (max-width…)` · dashboard SaaS genérico (avatares, ícones em excesso, cartões de KPI com número inventado) · componente
 de produto criado sem tela que o consuma.
+
+## 15. Core Design System — uso (CP1, 2026-10-06)
+
+> Contrato: [`docs/specs/design-system.md` §13](../specs/design-system.md). Lab: `/lab/lab/core.html` (Public),
+> `core-auth.html`, `core-admin.html`. As seções 1–14 acima documentam o DS anterior, que continua servindo as páginas
+> ainda não migradas (CP2–CP4) e sai de uso no CP5.
+
+### Ativar o Core
+
+- O Core só vale dentro de `data-lx="core"`, no elemento raiz do shell. Fora dele, nada muda (contrato testado).
+- Cada bloco declara a superfície em `data-surface` (`white`, `wash`, `sand`, `blue`, `deep`); componentes nunca
+  escolhem cor pelo fundo. Painéis aninhados declaram a própria superfície (ex.: `data-surface="deep"` sobre `sand`).
+- Sobre `sand`: sem formulários nem mensagens de estado.
+
+```html
+<html lang="pt-BR" data-lx="core">
+  <body data-surface="white">
+    <section class="lx-section" data-surface="blue" aria-labelledby="t-1">…</section>
+  </body>
+</html>
+```
+
+### Tipografia
+
+| Classe | Uso |
+|---|---|
+| `lx-statement` | grande statement editorial (Triad Statement) |
+| `lx-headline` | H1 do hero e H2 de seção (mesmo papel); cor `headline` da superfície |
+| `lx-ordinal` | numerais de sequência (01, 02…), cor de acento |
+| `lx-title` | título de tópico (h3) e itens de lista |
+| `lx-closing` | linha de fechamento de seção |
+| `lx-subheadline` · `lx-body` · `lx-compact` | apoio, corpo (leading 1,75) e texto compacto |
+| `lx-eyebrow` | rótulo acima do título (uppercase, `tracking.eyebrow`) |
+| `lx-meta` | Courier Prime: só ids, códigos e horários no produto |
+
+`em` só onde a copy autoriza ênfase: itálico, mesma cor e métricas da headline. No produto, `lx-display-m` (título de
+página) e `lx-display-s` (título de seção) são reexpressos pelo Core.
+
+### Cabeçalho de seção
+
+```html
+<div class="lx-section-head">
+  <div class="lx-section-head__mark">
+    <span class="lx-ordinal" aria-hidden="true">01</span>
+    <span class="lx-section-head__rule" aria-hidden="true"></span>
+    <p class="lx-eyebrow">Eyebrow</p>
+  </div>
+  <h2 id="t-1" class="lx-headline">Headline <em>com ênfase autorizada.</em></h2>
+</div>
+```
+
+### Patterns oficiais (markup mínimo)
+
+- **Cinematic Hero** — `section.lx-hero[data-surface=blue]` > `ul.lx-hero__slides[aria-hidden]` > `li.lx-hero__slide[data-active]`
+  > `img.lx-hero__image.lx-crop-*`; `div.lx-container.lx-hero__content` > `div.lx-hero__copy` (h1 `lx-headline`,
+  `lx-subheadline`, `div.lx-hero__actions` com `lx-button--primary lx-button--large`) + `div.lx-hero__controls[role=group]`
+  (contador + anterior/pausar/próxima, `aria-pressed` no pausar). O scrim é local (`.lx-hero__copy::before`).
+- **Problem / Triad Comparison** — `section.lx-triad-comparison` > `.lx-triad-comparison__top` (copy +
+  `figure.lx-triad-comparison__diagram` com `/diagrams/core/triade-valor-desejado.svg`) +
+  `ol.lx-triad-comparison__alternatives` > `li.lx-triad-comparison__alternative`.
+- **Triad Statement** — `ol.lx-triad-statement__cells` > `li.lx-triad-statement__cell` (`lx-ordinal` +
+  `.lx-triad-statement__word`) + `p.lx-statement.lx-triad-statement__statement` + `p.lx-closing.lx-triad-statement__closing`.
+- **Editorial Comparison** — `div.lx-comparison` > `article.lx-comparison__item` (eyebrow, `lx-title`,
+  `ul.lx-comparison__list`). Owner e Co-Owner com a mesma estrutura (REQ-103).
+- **Panel Comparison** — `div.lx-panels` > `article.lx-panels__panel[data-surface=deep]` com eyebrow, título, descrição,
+  `ul.lx-panels__list` e `.lx-panels__closing` (sempre os cinco, para o subgrid alinhar).
+- **Numbered Editorial List** — `ol.lx-numbered` > `li.lx-numbered__item` (`span.lx-ordinal.lx-numbered__number`,
+  `h3.lx-title`, `p.lx-numbered__text`); interativa: `details.lx-numbered__details` > `summary.lx-numbered__summary`.
+- **Editorial Split** — `section.lx-split` > `.lx-split__text` > `.lx-split__inner` + `figure.lx-split__media.lx-media` >
+  `img.lx-crop-*`. `--media-start` (media/text), `--wide-text` (58/42). Sem `figure`, vira uma coluna.
+
+Complementares consumidos pela W4: `lx-diagram` (Text + Diagram, `/diagrams/core/diagrama-solucao-luxtory.svg`),
+`lx-pause` (`--opening` para abertura tipográfica), `lx-faq` (com `lx-disclosure`), `lx-siblings` (`--pair` = 2 × 2),
+`lx-section-closing`.
+
+### Mídia e recorte
+
+- `lx-crop-x-{20,35,50,65,80}` e `lx-crop-y-{…}` definem o foco da foto; `lx-crop-lg-*` muda a partir de `lg`.
+- Nunca `style` inline (a CSP de produção bloqueia) e nunca foto pequena num grande vazio: sem mídia adequada, outro
+  pattern.
+
+### Contextos
+
+- **Auth:** `div.lx-focused[data-surface=blue]` > `main.lx-focused__panel[data-surface=deep]`; título `lx-display-m`.
+- **Admin:** `div.lx-app` > `header.lx-app__bar[data-surface=blue]` + `main.lx-app__main[data-surface=white]`.
+- **Club:** consumirá o mesmo Core quando uma wave real exigir.

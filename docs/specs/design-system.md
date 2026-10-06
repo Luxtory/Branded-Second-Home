@@ -298,3 +298,198 @@ Não aplicável (camada visual). Performance acompanhada por Core Web Vitals no 
 - Canônicos: [01](canonical/01-business-model-business-rules.md) · [02](canonical/02-product-spec.md) ·
   [03](canonical/03-technical-spec.md)
 - Referência histórica: `Luxtory/Luxtory2.0` (princípios de scrim, grain em tile, editorial; nada importado).
+
+## 13. Core Design System Luxtory (2026-10-06)
+
+> Plano FINAL aprovado pelo fundador em 2026-10-06. Esta seção **supersede a direção visual** das seções anteriores
+> (que ficam como histórico) e é o contrato vigente do sistema. As decisões aceitas no
+> [ADR-0003](../adr/0003-design-system-camada-compartilhada.md) continuam válidas: camada compartilhada em
+> `src/design-system/`, `tokens.json` único (DTCG) → `tokens.css` gerado, cascade layers, classes `lx-*`, wrappers React
+> finos, as mesmas três fontes, testes `node --test` e Lab com `lab/index.html` como entrada. Por isso não há ADR novo.
+
+**Missão.** Um único Core Design System para toda a Luxtory. A primeira implementação real é a **Wave 4 — Discovery
+público** (CP2); Auth (CP3) e Admin (CP4) vêm depois e não bloqueiam a W4. Club (R2/R3) consumirá o mesmo Core quando
+uma wave real exigir (consumer-driven).
+
+### 13.1 Precedência e herança
+
+1. Direção atual do fundador. 2. Padrões recorrentes das páginas prioritárias do Luxtory2.0 (Home, Quero ser associado,
+Candidatura, Develop & Sell), medidos no código e em produção. 3. UX, acessibilidade (WCAG 2.2 AA) e responsividade
+(320–1920 px). 4. Necessidades reais da W4. 5. Código anterior só quando compatível.
+
+- Do DS visual anterior, a única herança são as famílias tipográficas (§5): Newsreader, Hanken Grotesk, Courier Prime.
+- Logo, copy, funcionalidade e regras de negócio seguem suas próprias fontes de verdade, não herança visual.
+- Aprovações visuais de experimentos anteriores (CP1 B2C, Home) não são fonte de verdade; branches não integradas são
+  só referência. O namespace `b2c` não entra no Core.
+- Defeitos objetivos de contraste do legado não são herdados (ex.: corpo Moroccan Blue sobre Warm Sand, 4,32:1).
+
+### 13.2 Migração sem big-bang
+
+- **Flag único de geração:** `data-lx="core"` no elemento raiz de um shell ativa as regras do Core. Toda regra em
+  `styles/core/` (exceto `surfaces.css`) começa por `[data-lx="core"]`, nas layers existentes, importada depois do legado
+  em `styles/index.css`. Sem o flag, nada do Core se aplica (testado).
+- **Superfícies** (`data-surface`) e os tokens novos não colidem com o legado (`data-ground`, `text.*`).
+- Ordem: CP1 só o Lab liga o flag · CP2 shell público (W4) · CP3 FocusedLayout (Auth) · CP4 AppShell (Admin) · CP5 o flag
+  vira default, o legado sai do entrypoint e os tokens superseded (§13.9) são removidos quando permitido. Arquivos não
+  são apagados nem movidos (governança): ficam sem consumidores, com cabeçalho de supersessão.
+- Cada checkpoint tem branch/PR próprio a partir da `main` com o anterior mergeado; STOP e aprovação do fundador antes
+  do merge.
+
+### 13.3 Foundations
+
+**Paleta de marca** (inalterada, §5): exatamente os cinco valores. Cores funcionais não são cores de marca.
+
+**Superfícies** (`data-surface`, grupo `surface` em `tokens.json`). Os papéis são referências à paleta; `lx.alpha`
+compõe a cor sobre o fundo (testado contra o fundo da superfície).
+
+| Superfície | Fundo | Headline (≥ 24 px) | Corpo / secundário | Ação (fundo / texto) | Foco | Divisor decorativo |
+|---|---|---|---|---|---|---|
+| `blue` | Moroccan Blue | Warm Sand (4,32) | White / White 80% | Warm Sand / Dark Blue; hover White | Warm Sand | White 20% |
+| `deep` | Dark Moroccan Blue | Warm Sand (5,57) | White / White 80% | Warm Sand / Dark Blue; hover White | Warm Sand | White 20% |
+| `sand` | Warm Sand | Moroccan Blue (4,32) | Dark Blue / Dark Blue | Dark Blue / White; hover Moroccan Blue | Dark Blue | Moroccan Blue 25% |
+| `white` | Pure White | Moroccan Blue | Dark Blue / Moroccan Blue | Moroccan Blue / White; hover Dark Blue | Dark Blue | Moroccan Blue 15% |
+| `wash` | Sand Wash | Moroccan Blue | Dark Blue / Moroccan Blue | Moroccan Blue / White; hover Dark Blue | Dark Blue | Moroccan Blue 15% |
+
+- **Headline sobre Blue/Deep (D1-A):** a headline principal é Warm Sand quando o contraste permite (Blue: só ≥ 24 px;
+  Deep: qualquer tamanho; sobre foto: medido nos pixels). `em` só quando a copy autoriza ênfase: Newsreader itálico,
+  herdando tamanho, métricas e cor da headline. O padrão "headline White + `em` Warm Sand" não é regra do sistema.
+- **Sobre `sand`:** texto sempre Dark Blue 100% (nenhuma transparência em texto); Moroccan Blue só em display ≥ 24 px.
+  Formulários e mensagens de estado não são permitidos sobre `sand`.
+- **Estados semânticos (funcionais).** Consumidores reais: `error`, `success`, `warning` (avisos e campos do Admin/Auth);
+  `info` só com consumidor. Estado = cor semântica + ícone/texto + ARIA, nunca só cor.
+  - `error`: `#9B2226` nas superfícies claras e `#F2B8B5` nas escuras — valores existentes reavaliados no CP1 e mantidos
+    (7,92 white · 7,12 wash · 5,33 blue · 6,87 deep). Sobre `sand` reprova (3,76): por isso estados não vão sobre `sand`.
+  - `success`: Moroccan Blue (claro) / White (escuro), com ícone de confirmação. `warning`: indicador Dark Warm Sand
+    (claro, ≥ 3:1) / Warm Sand (escuro), texto na cor do corpo. Distinguíveis entre si quando coexistem.
+- **Tipografia** (grupo `type`; leading e tracking nos grupos existentes):
+
+| Papel | Família | Tamanho (390 → 1440 px) | Leading |
+|---|---|---|---|
+| `type.statement` | Newsreader 400 | 2,25 → 4,5rem | `leading.display` |
+| `type.headline` (hero = H2) | Newsreader 400 | 1,75 → 3rem | `leading.heading` |
+| `type.page-title` (produto) / `type.ordinal` | Newsreader 400 | 1,5 → 2,25rem | `leading.heading` |
+| `type.section-title` (produto) | Newsreader 400 | 1,25 → 1,5rem | `leading.heading` |
+| `type.title` (tópico) | Newsreader 400 | 1,125 → 1,25rem | `leading.title` |
+| `type.closing` / `type.subheadline` | Newsreader / Hanken 400 | 1,125 → 1,5rem | `leading.support` |
+| `type.body` | Hanken 400 | 1 → 1,125rem | `leading.reading` |
+| `type.compact` | Hanken 400 | 0,9375rem | `leading.compact` |
+| `type.label` | Hanken 500 | 0,875rem | `leading.tight` |
+| `type.button` / `type.button-large` | Hanken 500, uppercase, `tracking.button` | 0,8125rem / 1rem | — |
+| `type.eyebrow` | Hanken 600, uppercase, `tracking.eyebrow` | 0,75rem | — |
+| `type.meta` | Courier Prime 400 | 0,8125rem | só ids, códigos e timestamps no produto; nunca no público |
+
+- **Espaço e layout:** escala de 4 pt existente; `space.section` 64 → 144 px (editorial); `space.section-operational`
+  32 → 48 px; margem `layout.margin`; `layout.container` 87,5rem · `layout.content` 72rem · `layout.measure` 45rem ·
+  `layout.split-text` 32,5rem · `layout.split-text-wide` 38,75rem · `layout.faq` 50rem · `layout.split-media-min` 35rem ·
+  `layout.focused-panel` 28rem · `layout.bar-height` 4rem; colunas 4/8/12; breakpoints atuais.
+- **Forma:** radius 0 em superfícies e mídia, `radius.hairline` (2 px) em controles; pill só em indicadores (nenhum
+  consumidor no CP1). Borda: hairline decorativa 1 px; controle 1 px com ≥ 3:1; `border.outline` 1,5 px. Sombra: só
+  `shadow.overlay` (dialog e drawer); sem glass, glow, grain; gradiente só como scrim. `opacity.disabled` 0,5.
+- **Motion:** `duration.quick` 160 · `duration.moderate` 280 · `duration.slow` 480 · `duration.cinematic` 900 ms;
+  `ease.editorial`; reveal = fade-up único (≤ 8 px, 480 ms) como melhoria progressiva (conteúdo visível sem JS);
+  sem zoom, ScrollProgress, pulse ou drift; reduced motion = nenhuma animação nem transform.
+- **Foco e alvos:** outline 2 px, `focus.ring-offset` 2 px, cor pelo papel `focus`; alvos ≥ 44 px, controles 48 px, CTA do
+  hero `target.hero` 56 px.
+- **Imagery:** fotografia só com relação semântica e asset autorizado; crop por imagem e breakpoint com as classes
+  `lx-crop-x-*`/`lx-crop-y-*` (e `lx-crop-lg-*`), sem atributo `style` — a CSP de produção bloqueia estilo inline;
+  proporções `ratio.media-sm/md/lg` (5:4 → 4:3 → 3:2) e altura livre ≥ 35rem a partir de `lg`; scrim localizado em
+  Dark Blue (nunca camada global), validado nos pixels reais sob o texto. Sem mídia adequada, usar um pattern sem
+  mídia. Concept sem fotografia oficial = composição tipográfica (P-1).
+
+**Política de tokens.** Tokenizado: paleta, papéis de superfície, cores funcionais, tipografia, escala de espaço,
+layout, breakpoints, borda e radius globais, sombra, opacidade, motion, foco, z-index, alvos, proporções e scrim. Uma
+dimensão local, específica de um componente e sem significado sistêmico, pode ficar local (sem token soup). O
+`check-hardcodes` proíbe fora do `tokens.css`: literais de cor, `font-family`, duração, easing, z-index, `border-radius`
+(exceto `0` e `50%`) e comprimentos em `box-shadow`; `@media` só com breakpoints e só `min-width` — proibido
+`@media (max-width: …)`. A **propriedade** `max-width:` é permitida (containers, medida, componentes).
+**Contextos não duplicam foundations:** nenhum grupo `b2c.*`, `admin.*`, `auth.*`, `club.*` ou `public.*`; aliases
+contextuais só como referência ao Core e expressando função (testado).
+
+### 13.4 Primitives (classes existentes, expressão do Core sob o flag)
+
+| Primitive | Classe | Core |
+|---|---|---|
+| Button | `lx-button` + `--primary` `--secondary` `--quiet` `--destructive` `--large` `--block` | uppercase `type.button`, `tracking.button`, 48 px (`--large` 56 px), radius 2 px; secundário com contorno 1,5 px; destrutivo no papel `error`; `disabled`/`aria-busy` |
+| Link | `lx-link`, `--standalone` | sempre sublinhado; cor do papel `link`; hover engrossa o traço |
+| Icon Button | `lx-icon-button` | 48 × 48, nome acessível obrigatório |
+| Logo | `lx-logo` | kit oficial por `manifest.json`, sempre `<img>`; Warm Sand sobre Blue/Deep, Moroccan Blue sobre claros |
+| Field | `lx-field`, `lx-label`, `lx-hint`, `lx-error`, `lx-input`, `lx-textarea`, `lx-select` | 48 px, texto 16 px, radius 2 px, borda ≥ 3:1, label em sentence case; erro = papel `error` + ícone + texto + `aria-invalid` |
+| Radio/Choice | `lx-choice-group`, `lx-choice` | retangular, 48 px, borda ≥ 3:1, alvo inteiro |
+| Form Message | `lx-message--success/--warning/--error` | barra semântica + ícone + título; `role="status"`/`"alert"` |
+| Disclosure | `lx-disclosure` | `<details>` nativo, pergunta em Newsreader, hairlines, seta que gira; sem caixa nem sombra |
+| Dialog / Drawer | `lx-mobile-nav` | `<dialog>` nativo à direita (largura total no celular), superfície `blue`, links em Newsreader; foco preso, Esc, retorno do foco |
+| Skeleton / Empty / Error | `lx-skeleton`, `lx-empty`, layout focado | estáticos; erro sem detalhe técnico |
+| Tipografia | `lx-statement`, `lx-headline`, `lx-title`, `lx-subheadline`, `lx-closing`, `lx-ordinal`, `lx-eyebrow`, `lx-meta`, `lx-compact`; legado sob o flag: `lx-display-m` → título de página, `lx-display-s` → título de seção, `lx-lead`, `lx-body`, `lx-small`, `lx-label` | §13.3 |
+
+Só contrato (sem consumidor; entram com a primeira wave que consumir): Checkbox, Badge, Tabs, Table, Pagination,
+Loading, KPI e Filter.
+
+### 13.5 Components
+
+SiteHeader (`lx-header`: sólido `blue` e `--overlay` transparente sobre a mídia; com JS, fixo e sólido após rolagem),
+Menu (`lx-mobile-nav`), Footer (`lx-footer`, superfície `deep`), AppShell (`lx-app`: navegação `blue`, conteúdo `white`,
+item ativo Warm Sand + Dark Blue), FocusedLayout (`lx-focused`: canvas `blue`, painel `deep` com hairline, sem sombra),
+PageHeader, PageSection, RecordList, FormActions, Evidence (`lx-evidence`, `dl` de atributos), Media (`lx-media`),
+HeroCarousel, CollectionCard e ConceptCredit.
+Componentes novos só com consumidor real.
+
+### 13.6 Patterns oficiais
+
+Requisitos definidos pelo fundador; composições CSS, não automaticamente React. Uma página escolhe só os que servem à
+sua função.
+
+| Pattern | Classe | Estrutura obrigatória | Mobile |
+|---|---|---|---|
+| Cinematic Hero | `lx-hero` | foto protagonista full-bleed; conteúdo baixo; header sobre a mídia; CTA e controles discretos; scrim só localizado | assunto preservado por crop; carrossel pausável; reduced motion sem autoplay |
+| Problem / Triad Comparison | `lx-triad-comparison` | copy + Tríade de valor no topo; três alternativas equivalentes abaixo; uma única composição | copy → tríade → alternativas |
+| Triad Statement | `lx-triad-statement` | 01 Patrimônio · 02 Liberdade · 03 Pertencimento; divisores; grande statement; sem cards | células em linha (número + palavra) |
+| Editorial Comparison | `lx-comparison` | colunas abertas, sem caixas preenchidas; respiro + hairlines | unidades com regra horizontal |
+| Panel Comparison | `lx-panels` | versão densa; painéis irmãos com a mesma geometria e hierarquia (subgrid) | painéis completos, mesma ordem |
+| Numbered Editorial List / Disclosure | `lx-numbered` | número, título, descrição, divisor; affordance quando interativa | número + título, descrição abaixo |
+| Editorial Split | `lx-split` (`--media-start`, `--wide-text`) | text/media e media/text; mídia preenche a massa; 50/50 de referência, 58/42 quando justificado | ordem do DOM; sem mídia = uma coluna, nunca vazio |
+
+Complementares consumidos pela W4 (receitas em [`catalog.md` §13.9](catalog.md)): Text + Diagram (`lx-diagram`),
+Statement/Pause (`lx-pause`, com `--opening` para aberturas tipográficas), FAQ (`lx-faq`) e Sibling Blocks
+(`lx-siblings`). Final CTA e Form Section esperam consumidor. Cabeçalho de seção: `lx-section-head` (índice, filete,
+eyebrow, título).
+
+**Diagramas** — dois ativos distintos, geometria original preservada (assinatura testada contra o original):
+
+| Diagrama | Arquivo | Representa | Uso |
+|---|---|---|---|
+| Tríade de valor desejado | `public/diagrams/core/triade-valor-desejado.svg` | Patrimônio + Liberdade + Pertencimento como tensão | Problem / Triad Comparison |
+| Diagrama de solução Luxtory | `public/diagrams/core/diagrama-solucao-luxtory.svg` | integração das dimensões | "E se você não precisasse escolher?" (Text + Diagram) |
+
+Originais em `Luxtory2.0/src/assets/`. Só fonte (Newsreader/Hanken embutidas, OFL), pintura canônica e contraste foram
+adaptados; a versão em `public/diagrams/triade-valor-desejado.svg` continua servindo a Home legada até o CP2.
+
+### 13.7 Contextos
+
+| Contexto | Superfícies e expressão | Shell | Patterns | Proibido |
+|---|---|---|---|---|
+| Public (W4) | `blue`/`sand` alternados, `white` (FAQ, leitura densa), `deep` (painéis), foto; editorial | SiteHeader, Menu, Footer | oficiais + complementares consumidos | KPIs, densidade |
+| Auth | canvas `blue` + painel `deep`; operacional | FocusedLayout | Focused Task | foto, hero, storytelling, mais de 1 CTA |
+| Admin | papel `white`, navegação `blue`, Sand como acento; densidade controlada | AppShell | Operational Page, Record List, Form, Focused Task | storytelling, foto, hero |
+| Club | R2/R3 consumirão o mesmo Core | — | consumer-driven | criar qualquer coisa agora |
+
+### 13.8 Aceite do CP1
+
+- Contratos do DS (`npm run test:ds`): exatamente os cinco valores da paleta (não proíbe cores funcionais justificadas);
+  exatamente as três famílias; sha do logo; matriz completa papel semântico × superfície (`white`, `sand`, `blue`,
+  `deep`, `wash`) conforme os papéis permitidos em cada uma; `check-hardcodes` ampliado; nenhum grupo de token por
+  contexto; regras do Core só sob o flag; nenhum shell do produto liga o flag no CP1; assinatura dos diagramas;
+  terminologia.
+- Lab do Core (`lab/core.html`, `lab/core-auth.html`, `lab/core-admin.html`): axe 0 a 390 e 1440 px; sem overflow de 320
+  a 1920 px; teclado e foco; dialog; carrossel pausável; reduced motion; alvos ≥ 44 px; contraste do hero medido nos
+  pixels; evidências a 390, 768, 1024 e 1440 px e patterns isolados.
+- Superfícies da W4 idênticas ao baseline da `main` (nenhuma página liga o flag); lint, typecheck e build verdes.
+
+### 13.9 Superseded (removidos no CP5, quando permitido)
+
+Grupos e tokens: `ground.*` (`paper`, `wash`, `night`), `text.*`, `measure.*`, `space.scene`, `ratio.establishing*`,
+`ratio.living`, `ratio.detail`, `grain.*`, `layout.container-max`, `layout.container-narrow`, `layout.header-height`,
+`layout.focused-width`, `duration.drift`, `duration.base`, `ease.settle`, `ease.cinematic`, `focus.offset`,
+`leading.body`, `tracking.label`, `tracking.marker`. CSS: `narrative.css`, `home-hero.css`, `scene.css`, `frame.css`,
+`marker.css`, `sequence.css`, `pair.css`, `blocks.css`, `drawings.css` e as regras legadas dos componentes que o
+Core reexpressa. React: `Scene`, `TriadDrawing`, `HorizonDrawing`, `TypographicFrame` e o `SiteShell` com `data-ground`. A lista final é conferida no CP5
+pelo teste de zero consumidores.
