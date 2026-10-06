@@ -1,4 +1,4 @@
-// Traçados espelhados de src/design-system/icons/{menu,close,alert,check,arrow-right}.svg (um teste compara os dois).
+// Traçados espelhados de src/design-system/icons/<nome>.svg, um arquivo por ícone (um teste compara os dois).
 // Ícones hairline em currentColor, decorativos: o nome acessível fica no controle ou no texto ao lado.
 export const ICON_PATHS = {
   menu: ['M3 8h18M3 16h18'],
@@ -6,6 +6,10 @@ export const ICON_PATHS = {
   alert: ['M12 3L22 20H2L12 3z', 'M12 10v5M12 17.5v.5'],
   check: ['M4 12.5l5 5L20 6.5'],
   'arrow-right': ['M3 12h17M14 6l6 6-6 6'],
+  'chevron-left': ['M15 5l-7 7 7 7'],
+  'chevron-right': ['M9 5l7 7-7 7'],
+  pause: ['M8 5v14M16 5v14'],
+  play: ['M7 5l12 7-12 7z'],
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;

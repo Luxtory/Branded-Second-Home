@@ -81,6 +81,15 @@
     render();
   }
 
+  // Panel Switch: a escolha troca os valores (no app, o componente React da página).
+  for (const panel of document.querySelectorAll('[data-lab-switch]')) {
+    const cells = [...panel.querySelectorAll('[data-lab-value]')];
+    panel.addEventListener('change', (event) => {
+      const values = event.target.getAttribute('data-lab-values')?.split('|') ?? [];
+      cells.forEach((cell, index) => { cell.textContent = values[index] ?? ''; });
+    });
+  }
+
   // Reveal: um fade-up único quando a seção entra na tela; nada com movimento reduzido.
   const revealables = document.querySelectorAll('[data-reveal]');
   if (revealables.length && 'IntersectionObserver' in window && !prefersReduced()) {

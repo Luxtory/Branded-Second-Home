@@ -1,12 +1,7 @@
 import type { ReactNode } from 'react';
-import { Icon, TriadDrawing, type TriadVertex } from '@/design-system/react';
+import { Icon } from '@/design-system/react';
 import type { EditionModality } from '../../domain/catalog';
-import {
-  discoveryMessages as text,
-  type Answer,
-  type Item,
-  type ModalityPair,
-} from '../i18n/discovery-pt-br';
+import { discoveryMessages as text, type ModalityPair } from '../i18n/discovery-pt-br';
 import { nb } from './no-break';
 
 type Level = 3 | 4;
@@ -44,98 +39,36 @@ export function Paragraphs({
 }
 
 /**
- * Owner e Co-Owner lado a lado, com a mesma estrutura (`lx-pair`): mesmo nível de título e o mesmo tipo de conteúdo
- * (REQ-103, BR-376).
+ * Link de navegação com seta (ação principal = botão; secundária = link, ou botão de contorno sobre fotografia).
+ * `large` = 56px, o tamanho das ações sobre o Cinematic Hero.
  */
-export function ModalityPairView({
-  pair,
-  level,
-  deed = false,
-}: {
-  readonly pair: ModalityPair;
-  readonly level: Level;
-  /** Duas folhas altas do mesmo jogo de pranchas, divididas por um filete vertical. */
-  readonly deed?: boolean;
-}) {
-  const sides = [
-    { key: 'owner', title: text.modality.owner, lines: pair.owner },
-    { key: 'co-owner', title: text.modality.co_owner, lines: pair.coOwner },
-  ];
-  return (
-    <div className={deed ? 'lx-pair lx-pair--deed' : 'lx-pair'}>
-      {sides.map((side) => (
-        <div className="lx-pair__item" key={side.key}>
-          <Heading level={level} className="lx-display-s">
-            <span className="lx-nowrap">{side.title}</span>
-          </Heading>
-          <Paragraphs lines={side.lines} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/**
- * Pergunta do Protagonista como título e a resposta ancorada (b2c.md §5), num `lx-page-section`: a pergunta fica mais
- * perto da sua resposta que da resposta anterior.
- */
-export function AnswerView({ answer, level }: { readonly answer: Answer; readonly level: Level }) {
-  return (
-    <div className="lx-page-section">
-      <Heading level={level} className={level === 3 ? 'lx-display-m' : 'lx-display-s'}>
-        {answer.question}
-      </Heading>
-      <Paragraphs lines={answer.answer} />
-    </div>
-  );
-}
-
-/** Blocos curtos com título (`lx-blocks`); `ordered` quando a ordem é o conteúdo (mecanismo). */
-export function Blocks({
-  items,
-  level,
-  label,
-  ordered = false,
-  rows = false,
-}: {
-  readonly items: readonly Item[];
-  readonly level: Level;
-  readonly label?: string;
-  readonly ordered?: boolean;
-  readonly rows?: boolean;
-}) {
-  const List = ordered ? 'ol' : 'ul';
-  return (
-    <List className={rows ? 'lx-blocks lx-blocks--rows' : 'lx-blocks'} aria-label={label}>
-      {items.map((item) => (
-        <li className="lx-blocks__item" key={item.title}>
-          <Heading level={level} className="lx-display-s">
-            {nb(item.title)}
-          </Heading>
-          <p className="lx-body">{nb(item.text)}</p>
-        </li>
-      ))}
-    </List>
-  );
-}
-
-/** Link de navegação com seta (ação principal = botão; secundária = link). */
 export function ActionLink({
   href,
   label,
   primary = false,
+  outline = false,
+  large = false,
 }: {
   readonly href: string;
   readonly label: string;
   readonly primary?: boolean;
+  readonly outline?: boolean;
+  readonly large?: boolean;
 }) {
+  const button = primary || outline;
+  const className = button
+    ? [
+        'lx-button',
+        primary ? 'lx-button--primary' : 'lx-button--secondary',
+        large ? 'lx-button--large' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')
+    : 'lx-link lx-link--standalone';
   return (
-    <a
-      className={primary ? 'lx-button lx-button--primary' : 'lx-link lx-link--standalone'}
-      href={href}
-    >
+    <a className={className} href={href}>
       {label}
-      <Icon name="arrow-right" className={primary ? 'lx-button__icon' : 'lx-link__icon'} />
+      <Icon name="arrow-right" className={button ? 'lx-button__icon' : 'lx-link__icon'} />
     </a>
   );
 }
@@ -154,61 +87,68 @@ export function ModalityText({ value }: { readonly value: EditionModality }) {
   );
 }
 
-/** Marker de capítulo (texto real, no máximo um por Scene). */
-export function Marker({ parts }: { readonly parts: string | readonly string[] }) {
-  const list = typeof parts === 'string' ? [parts] : parts;
-  return (
-    <p className="lx-marker">
-      {list.map((part) => (
-        <span key={part}>{part}</span>
-      ))}
-    </p>
-  );
+/**
+ * Eyebrow do Core (`lx-eyebrow`): caixa alta pelo CSS, cor do papel `marker` da superfície. `accent`: Warm Sand sobre
+ * Moroccan Blue (decisão do fundador na Home, 2026-10-06).
+ */
+export function Eyebrow({
+  children,
+  accent = false,
+}: {
+  readonly children: ReactNode;
+  readonly accent?: boolean;
+}) {
+  return <p className={accent ? 'lx-eyebrow lx-eyebrow--accent' : 'lx-eyebrow'}>{children}</p>;
 }
+
+/** Ordinal editorial (01, 02, 03): leitura visual; a ordem já vem da lista. */
+export const ordinal = (index: number) => String(index + 1).padStart(2, '0');
 
 /**
- * Cabeçalho de capítulo: o número do capítulo (metadado, fora da leitura), o marker e a tríade em miniatura com o
- * vértice do capítulo em destaque.
+ * Owner e Co-Owner com o mesmo peso e a mesma estrutura (REQ-103) no Core: Editorial Comparison com hairline
+ * superior e divisor central (empilhados no celular, Owner primeiro). Com `headlines`, a primeira frase de cada lado é
+ * o título e o nome da modalidade vira eyebrow; sem, o nome da modalidade é o título.
  */
-export function ChapterHead({
-  numeral,
-  marker,
-  focus,
+export function ModalityComparison({
+  pair,
+  headlines = false,
+  level = 3,
 }: {
-  readonly numeral?: string;
-  readonly marker: string | readonly string[];
-  readonly focus?: TriadVertex;
+  readonly pair: ModalityPair;
+  readonly headlines?: boolean;
+  readonly level?: Level;
 }) {
+  const sides = [
+    { key: 'owner', name: text.modality.owner, lines: pair.owner },
+    { key: 'co-owner', name: text.modality.co_owner, lines: pair.coOwner },
+  ];
   return (
-    <div className="lx-chapter-head">
-      {numeral === undefined ? null : (
-        <span className="lx-numeral" aria-hidden="true">
-          {numeral}
-        </span>
-      )}
-      <Marker parts={marker} />
-      {focus === undefined ? null : <TriadDrawing size="mini" focus={focus} />}
+    <div className="lx-comparison lx-comparison--divided" data-pair="modality">
+      {sides.map((side) => {
+        const [first = '', ...rest] = side.lines;
+        return (
+          <div className="lx-comparison__item" key={side.key}>
+            {headlines ? (
+              <>
+                <Eyebrow>
+                  <span className="lx-nowrap">{side.name}</span>
+                </Eyebrow>
+                <Heading level={level} className="lx-display-m">
+                  {nb(first)}
+                </Heading>
+                <Paragraphs lines={rest} />
+              </>
+            ) : (
+              <>
+                <Heading level={level} className="lx-display-m">
+                  <span className="lx-nowrap">{side.name}</span>
+                </Heading>
+                <Paragraphs lines={side.lines} />
+              </>
+            )}
+          </div>
+        );
+      })}
     </div>
-  );
-}
-
-/** "Patrimônio. Liberdade. Pertencimento." em três palavras, cada uma sob a sua linha de medida (`lx-values`). */
-export function ValuesLine({
-  text,
-  joined = false,
-  className = '',
-}: {
-  readonly text: string;
-  readonly joined?: boolean;
-  readonly className?: string;
-}) {
-  const words = text.split(/(?<=\.)\s+/);
-  const variant = joined ? 'lx-values lx-values--joined' : 'lx-values lx-values--apart';
-  return (
-    <p className={`${variant} ${className}`.trim()}>
-      {words.map((word) => (
-        <span key={word}>{word}</span>
-      ))}
-    </p>
   );
 }

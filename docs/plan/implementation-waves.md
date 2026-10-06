@@ -1198,9 +1198,9 @@ Commit Conventional por onda, push em `claude/busy-edison-h75ufo`.
 
 | Checkpoint | Deliverable | Depends on | Parallel with | Status |
 |------------|-------------|------------|---------------|--------|
-| CP1 | Core DS + Lab: foundations, primitives, estados, patterns oficiais, diagramas, contratos; nenhuma página migrada | — | — | 🟡 |
-| GATE-COPY-W4 | Fonte autorizada da copy da W4 (Framework → `b2c.md`/registro → fundador) | CP1 | — | ⬜ |
-| CP2 = W4 | Core aplicado às superfícies da W4 (`/`, `/como-funciona`, `/colecao`, `/colecao/[conceptId]`, shell, 404) | CP1, GATE-COPY-W4 | — | ⬜ |
+| CP1 | Core DS + Lab: foundations, primitives, estados, patterns oficiais, diagramas, contratos; nenhuma página migrada | — | — | ✅ (#30, `d04e8ef`) |
+| GATE-COPY-W4 | Fonte autorizada da copy da W4 (Framework → `b2c.md`/registro → fundador) | CP1 | — | ✅ (`D-B2C-19`) |
+| CP2 = W4 | Core aplicado às superfícies da W4 (`/`, `/como-funciona`, `/colecao`, `/colecao/[conceptId]`, shell, 404) | CP1, GATE-COPY-W4 | — | 🟡 CP2-A |
 | CP3 | Auth no Core (`/entrar`, `/entrar/mfa`, estados focados) | CP2 | — | ⬜ |
 | CP4 | Admin no Core ("folha de papel inteligente", 16 rotas) | CP3 | — | ⬜ |
 | CP5 | Consolidação: Core default, legado sem consumidores, docs sincronizados | CP4 | — | ⬜ |

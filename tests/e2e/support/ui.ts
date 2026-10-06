@@ -27,6 +27,30 @@ async function settle(page: Page) {
 }
 
 /**
+ * Exceção registrada (decisão do fundador, 2026-10-06; spec catalog §13.10): os eyebrows Warm Sand sobre Moroccan Blue
+ * da Home (`.lx-eyebrow--accent`) medem 4,32:1 a 12 px. Só a regra `color-contrast` e só esses elementos são
+ * tolerados; qualquer outro nó ou regra continua reprovando.
+ */
+const CONTRAST_EXCEPTION = 'lx-eyebrow--accent';
+
+type AxeViolation = Awaited<ReturnType<AxeBuilder['analyze']>>['violations'][number];
+
+function withoutRecordedException(violations: readonly AxeViolation[]) {
+  return violations
+    .map((violation) =>
+      violation.id === 'color-contrast'
+        ? {
+            ...violation,
+            nodes: violation.nodes.filter(
+              (node) => !node.target.some((target) => String(target).includes(CONTRAST_EXCEPTION)),
+            ),
+          }
+        : violation,
+    )
+    .filter((violation) => violation.nodes.length > 0);
+}
+
+/**
  * Erros de console conferidos antes do axe: ele gera 404 falsos ao reler as folhas de estilo (NOTES §4). O título
  * precisa estar aplicado (a metadata chega em streaming depois da navegação). Devolve o viewport original.
  */
@@ -38,7 +62,9 @@ export async function expectAccessible(page: Page, consoleErrors: readonly strin
     await page.setViewportSize(viewport);
     await settle(page);
     const { violations } = await new AxeBuilder({ page }).analyze();
-    expect(violations.map((violation) => `${viewport.width}: ${violation.id}`)).toEqual([]);
+    expect(
+      withoutRecordedException(violations).map((violation) => `${viewport.width}: ${violation.id}`),
+    ).toEqual([]);
   }
   if (original !== null) await page.setViewportSize(original);
 }

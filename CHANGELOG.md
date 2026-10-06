@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Wave 4 — Discovery público no Core Design System (CP2): Home conforme a Especificação Visual Final do fundador
+  (Cinematic Hero, Problem/Triad Comparison, Panel Switch das alternativas, Text + Diagram e Triad Statement, Editorial
+  Splits com imagens conceituais do Kaizen, Owner | Co-Owner com o mesmo peso, PUSH com o CTA por disponibilidade sobre
+  a fotografia de fechamento, FAQ), copy do GATE-COPY-W4 (`D-B2C-19`); Como funciona, Coleção, Concept e 404 nas
+  receitas do Core; header, menu e rodapé do site no Core.
 - Core Design System Luxtory (CP1, `docs/specs/design-system.md` §13): superfícies `white`/`wash`/`sand`/`blue`/`deep`
   (`data-surface`), papéis de tipo `type.*`, ritmo, layout, motion e foco como tokens; primitives e componentes
   reexpressos e patterns oficiais (Cinematic Hero, Problem/Triad Comparison, Triad Statement, Editorial e Panel

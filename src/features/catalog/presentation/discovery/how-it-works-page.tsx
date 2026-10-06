@@ -1,23 +1,16 @@
 import type { ReactNode } from 'react';
-import {
-  Evidence,
-  MeasureBar,
-  Scene,
-  TriadDrawing,
-  type Ground,
-  type TriadVertex,
-} from '@/design-system/react';
+import { Evidence, type TriadVertex } from '@/design-system/react';
 import { catalogCta } from '../../application/public-views';
 import { discoveryMessages as text, type Answer, type Headline } from '../i18n/discovery-pt-br';
 import { CatalogActions } from './catalog-actions';
 import { HeadlineText } from './headline';
 import { nb } from './no-break';
-import { ChapterHead, ModalityPairView, Paragraphs } from './parts';
+import { Eyebrow, ModalityComparison, ordinal, Paragraphs } from './parts';
 import { Qualification } from './qualification';
 import { readAvailability } from './read';
 import { DiscoverySite } from './site';
 
-const { howItWorks: page, qualification, triad, values } = text;
+const { howItWorks: page, qualification, triad } = text;
 const { patrimony, freedom, belonging } = page;
 
 /** Âncoras dos capítulos (índice da abertura). */
@@ -27,104 +20,90 @@ const CHAPTERS = {
   belonging: 'pertencimento',
 } as const satisfies Record<TriadVertex, string>;
 
+const VERTICES = Object.keys(CHAPTERS) as TriadVertex[];
+
 const titleOf = (section: string) => `${section}-titulo`;
 
-/** Escala do desenho das configurações: os dias do ano. Ilustração da proporção; os valores estão no texto. */
-const DAYS_IN_YEAR = 365;
-
-/** "até 10 dias" → 10 (o número da própria copy, sem valor presumido). */
-const daysIn = (value: string) => Number(/\d+/.exec(value)?.[0] ?? 0);
-
-/** Capítulo de um pilar: cabeçalho numerado com a tríade em miniatura, o título e as perguntas do Protagonista. */
+/**
+ * Capítulo de um pilar (receita catalog §13.9): eyebrow com o número e o marker, o título da tríade e as perguntas do
+ * Protagonista como Numbered Editorial List. As superfícies alternam Blue e Sand.
+ */
 function Chapter({
   vertex,
   numeral,
-  ground,
+  surface,
   marker,
   title,
   children,
 }: {
   readonly vertex: TriadVertex;
   readonly numeral: string;
-  readonly ground: Ground;
+  readonly surface: 'blue' | 'sand';
   readonly marker: readonly string[];
   readonly title: Headline;
   readonly children: ReactNode;
 }) {
   const id = CHAPTERS[vertex];
   return (
-    <Scene id={id} titleId={titleOf(id)} ground={ground} chapter>
-      <div className="lx-place-full">
-        <ChapterHead numeral={numeral} marker={marker} focus={vertex} />
+    <section id={id} className="lx-section" data-surface={surface} aria-labelledby={titleOf(id)}>
+      <div className="lx-container">
+        <div className="lx-section-head">
+          <Eyebrow>{[numeral, ...marker].join(' · ')}</Eyebrow>
+          <h2 id={titleOf(id)} className="lx-headline">
+            <HeadlineText headline={title} />
+          </h2>
+        </div>
+        <ol className="lx-numbered">{children}</ol>
       </div>
-      <h2 id={titleOf(id)} className="lx-place-wide lx-display-xl">
-        <HeadlineText headline={title} />
-      </h2>
-      {children}
-    </Scene>
+    </section>
   );
 }
 
-/** Uma pergunta do Protagonista à esquerda e a resposta à direita (a partir do `lg`). */
-function QaRow({
+/** Uma pergunta do Protagonista: número, a pergunta e a resposta (na terceira coluna a partir do `lg`). */
+function QaItem({
+  index,
   question,
   children,
 }: {
+  readonly index: number;
   readonly question: string;
   readonly children: ReactNode;
 }) {
   return (
-    <div className="lx-place-full lx-qa">
+    <li className="lx-numbered__item">
+      <span className="lx-ordinal lx-numbered__number" aria-hidden="true">
+        {ordinal(index)}
+      </span>
       <h3 className="lx-display-m">{question}</h3>
-      <div className="lx-qa__answer">{children}</div>
-    </div>
+      <div className="lx-numbered__text lx-stack">{children}</div>
+    </li>
   );
 }
 
-function AnswerRow({ answer }: { readonly answer: Answer }) {
+function AnswerItem({ index, answer }: { readonly index: number; readonly answer: Answer }) {
   return (
-    <QaRow question={answer.question}>
-      <Paragraphs lines={answer.answer} className="lx-lead" />
-    </QaRow>
+    <QaItem index={index} question={answer.question}>
+      <Paragraphs lines={answer.answer} />
+    </QaItem>
   );
 }
 
 /**
- * As quatro configurações Co-Owner (`01` §8.1, sem a capacidade da Luxtory): cada uma com a proporção do ano desenhada
- * (Alta/Super Alta cheia, Média/Baixa vazada) e os valores em Evidence.
+ * As quatro configurações Co-Owner (`01` §8.1, sem a capacidade da Luxtory) como Panel Comparison: o mesmo painel para
+ * cada uma, com os valores como registrados (Evidence).
  */
-function Configurations() {
+function Configurations({ index }: { readonly index: number }) {
   const { configurations } = freedom;
   const { labels } = configurations;
   return (
-    <div className="lx-place-full lx-qa">
-      <div className="lx-scene__body">
-        <h3 className="lx-display-m">{configurations.title}</h3>
-        <p className="lx-body">{configurations.text}</p>
-        <ul className="lx-legend" aria-hidden="true">
-          <li>
-            <span className="lx-legend__swatch lx-legend__swatch--solid" />
-            {labels.high}
-          </li>
-          <li>
-            <span className="lx-legend__swatch lx-legend__swatch--outline" />
-            {labels.low}
-          </li>
-        </ul>
-      </div>
-      <ul className="lx-qa__answer lx-configs">
+    <QaItem index={index} question={configurations.title}>
+      <p className="lx-body">{configurations.text}</p>
+      <ul className="lx-panels" aria-label={configurations.title}>
         {configurations.rows.map((row) => (
-          <li className="lx-configs__item" key={row.title}>
+          <li className="lx-panels__panel" key={row.title}>
             <h4 className="lx-display-m">
               <span className="lx-nowrap">{row.title}</span>
             </h4>
-            <MeasureBar
-              total={DAYS_IN_YEAR}
-              segments={[
-                { value: daysIn(row.high), fill: 'solid' },
-                { value: daysIn(row.low), fill: 'outline' },
-              ]}
-            />
             <Evidence
               inline
               items={[
@@ -137,132 +116,158 @@ function Configurations() {
           </li>
         ))}
       </ul>
-    </div>
+    </QaItem>
   );
 }
 
-/** Como funciona `/como-funciona` (spec catalog §13.4): Product Aware → Most Aware, PROOF → PUSH `[FW-B2C: §8.1]`. */
+/** Como funciona `/como-funciona` (spec catalog §13.4, receita §13.9): Product Aware → Most Aware, PROOF → PUSH. */
 export async function HowItWorksPage() {
   const cta = catalogCta(await readAvailability());
+  const freedomAnswers = freedom.answers.length;
   return (
     <DiscoverySite current="howItWorks">
-      {/* Abertura: a tríade é a planta da página; o índice leva aos três capítulos. */}
-      <Scene titleId="como-funciona" ground="night" chapter>
-        <div className="lx-place-left lx-scene__body lx-prelude">
-          <h1 id="como-funciona" className="lx-display-2xl">
-            {page.header.title}
-          </h1>
-          <p className="lx-lead">{page.header.text}</p>
+      {/* Abertura tipográfica (Blue) e o índice dos três capítulos. */}
+      <section className="lx-section" data-surface="blue" aria-labelledby="como-funciona">
+        <div className="lx-container lx-columns lx-columns--7-5">
+          <div className="lx-stack">
+            <h1 id="como-funciona" className="lx-statement">
+              {page.header.title}
+            </h1>
+            <p className="lx-subheadline">{page.header.text}</p>
+          </div>
+          <nav aria-label={page.index}>
+            <ol className="lx-numbered lx-numbered--compact">
+              {VERTICES.map((vertex, index) => (
+                <li className="lx-numbered__item" key={vertex}>
+                  <span className="lx-ordinal lx-numbered__number" aria-hidden="true">
+                    {ordinal(index)}
+                  </span>
+                  <a className="lx-link lx-title" href={`#${CHAPTERS[vertex]}`}>
+                    {/* Um só item no link (inline-flex): o espaço entre o nome e a virada não se perde. */}
+                    <span>
+                      <HeadlineText headline={triad[vertex]} />
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
         </div>
-        <div className="lx-place-right lx-prelude__drawing">
-          <TriadDrawing labels={values} />
-        </div>
-        <nav className="lx-place-full" aria-label={page.index}>
-          <ol className="lx-index">
-            {(Object.keys(CHAPTERS) as TriadVertex[]).map((vertex) => (
-              <li className="lx-index__item" key={vertex}>
-                <a className="lx-index__link" href={`#${CHAPTERS[vertex]}`}>
-                  <HeadlineText headline={triad[vertex]} />
-                </a>
+      </section>
+
+      {/* O mecanismo como uma sequência: do lifestyle ao Luxtory Club. */}
+      <section
+        id="mecanismo"
+        className="lx-section"
+        data-surface="sand"
+        aria-labelledby={titleOf('mecanismo')}
+      >
+        <div className="lx-container">
+          <div className="lx-section-head">
+            <h2 id={titleOf('mecanismo')} className="lx-headline">
+              <HeadlineText headline={page.chain.title} />
+            </h2>
+          </div>
+          <ol className="lx-numbered">
+            {page.chain.steps.map((step, index) => (
+              <li className="lx-numbered__item" key={step.title}>
+                <span className="lx-ordinal lx-numbered__number" aria-hidden="true">
+                  {ordinal(index)}
+                </span>
+                <h3 className="lx-display-m">{nb(step.title)}</h3>
+                <p className="lx-body lx-numbered__text">{nb(step.text)}</p>
               </li>
             ))}
           </ol>
-        </nav>
-      </Scene>
-
-      {/* O mecanismo como um eixo: do lifestyle ao Luxtory Club. */}
-      <Scene id="mecanismo" titleId={titleOf('mecanismo')} ground="wash" chapter>
-        <div className="lx-place-aside lx-sticky">
-          <h2 id={titleOf('mecanismo')} className="lx-display-xl">
-            <HeadlineText headline={page.chain.title} />
-          </h2>
         </div>
-        <ol className="lx-place-main lx-axis">
-          {page.chain.steps.map((step) => (
-            <li className="lx-axis__item" key={step.title}>
-              <h3 className="lx-display-m">{nb(step.title)}</h3>
-              <p className="lx-body">{nb(step.text)}</p>
-            </li>
-          ))}
-        </ol>
-      </Scene>
+      </section>
 
       <Chapter
         vertex="patrimony"
         numeral="01"
-        ground="paper"
+        surface="blue"
         marker={patrimony.marker}
         title={patrimony.title}
       >
-        <QaRow question={patrimony.own.question}>
-          <ModalityPairView pair={patrimony.own.pair} level={4} deed />
+        <QaItem index={0} question={patrimony.own.question}>
+          <ModalityComparison pair={patrimony.own.pair} level={4} />
           <p className="lx-body">{patrimony.own.after}</p>
-        </QaRow>
-        {patrimony.answers.map((answer) => (
-          <AnswerRow answer={answer} key={answer.question} />
+        </QaItem>
+        {patrimony.answers.map((answer, index) => (
+          <AnswerItem index={index + 1} answer={answer} key={answer.question} />
         ))}
       </Chapter>
 
       <Chapter
         vertex="freedom"
         numeral="02"
-        ground="wash"
+        surface="sand"
         marker={freedom.marker}
         title={freedom.title}
       >
-        <QaRow question={freedom.use.question}>
-          <ModalityPairView pair={freedom.use.pair} level={4} deed />
+        <QaItem index={0} question={freedom.use.question}>
+          <ModalityComparison pair={freedom.use.pair} level={4} />
           <p className="lx-body">{freedom.use.after}</p>
-        </QaRow>
-        <Configurations />
-        {freedom.answers.map((answer) => (
-          <AnswerRow answer={answer} key={answer.question} />
+        </QaItem>
+        <Configurations index={1} />
+        {freedom.answers.map((answer, index) => (
+          <AnswerItem index={index + 2} answer={answer} key={answer.question} />
         ))}
-        <QaRow question={freedom.management.question}>
-          <ModalityPairView pair={freedom.management.pair} level={4} deed />
-        </QaRow>
-        <QaRow question={freedom.club.question}>
-          <p className="lx-lead">{nb(freedom.club.text)}</p>
-          <ol className="lx-ledger">
+        <QaItem index={freedomAnswers + 2} question={freedom.management.question}>
+          <ModalityComparison pair={freedom.management.pair} level={4} />
+        </QaItem>
+        <QaItem index={freedomAnswers + 3} question={freedom.club.question}>
+          <p className="lx-body">{nb(freedom.club.text)}</p>
+          <ul className="lx-comparison__list">
             {freedom.club.items.map((item) => (
-              <li className="lx-ledger__item" key={item.title}>
-                <h4 className="lx-display-s">{item.title}</h4>
+              <li className="lx-stack" key={item.title}>
+                <h4 className="lx-label">{item.title}</h4>
                 <p className="lx-body">{nb(item.text)}</p>
               </li>
             ))}
-          </ol>
+          </ul>
           <p className="lx-body">{freedom.club.after}</p>
-        </QaRow>
-        <AnswerRow answer={freedom.limits} />
+        </QaItem>
+        <AnswerItem index={freedomAnswers + 4} answer={freedom.limits} />
       </Chapter>
 
       <Chapter
         vertex="belonging"
         numeral="03"
-        ground="paper"
+        surface="blue"
         marker={belonging.marker}
         title={belonging.title}
       >
-        {belonging.answers.map((answer) => (
-          <AnswerRow answer={answer} key={answer.question} />
+        {belonging.answers.map((answer, index) => (
+          <AnswerItem index={index} answer={answer} key={answer.question} />
         ))}
       </Chapter>
 
-      {/* O que mais saber: cada condição numa linha do dossiê. */}
-      <Scene id="condicoes" titleId={titleOf('condicoes')} ground="night" chapter>
-        <div className="lx-place-aside lx-sticky">
-          <h2 id={titleOf('condicoes')} className="lx-display-xl">
-            <HeadlineText headline={page.conditions.title} />
-          </h2>
+      {/* O que mais saber: cada condição numa linha. */}
+      <section
+        id="condicoes"
+        className="lx-section"
+        data-surface="sand"
+        aria-labelledby={titleOf('condicoes')}
+      >
+        <div className="lx-container">
+          <div className="lx-section-head">
+            <h2 id={titleOf('condicoes')} className="lx-headline">
+              <HeadlineText headline={page.conditions.title} />
+            </h2>
+          </div>
+          <ol className="lx-numbered">
+            {page.conditions.items.map((item, index) => (
+              <li className="lx-numbered__item" key={item}>
+                <span className="lx-ordinal lx-numbered__number" aria-hidden="true">
+                  {ordinal(index)}
+                </span>
+                <p className="lx-body lx-numbered__text lx-numbered__text--wide">{nb(item)}</p>
+              </li>
+            ))}
+          </ol>
         </div>
-        <ol className="lx-place-main lx-ledger">
-          {page.conditions.items.map((item) => (
-            <li className="lx-ledger__item" key={item}>
-              <p className="lx-display-s">{nb(item)}</p>
-            </li>
-          ))}
-        </ol>
-      </Scene>
+      </section>
 
       <Qualification
         titleId="para-quem"

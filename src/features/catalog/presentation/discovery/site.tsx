@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
-import { HorizonDrawing, Logo, SiteShell } from '@/design-system/react';
+import { SiteShell } from '@/design-system/react';
 import { discoveryMessages as text } from '../i18n/discovery-pt-br';
 import { discoveryPaths, type DiscoverySection } from './paths';
 
 /**
  * Casca do site público B2C: logo → Home, Coleção e Como funciona; sem CTA no cabeçalho enquanto o formulário
- * de interesse não existe (D-B2C-10); nenhum link para o Admin nem para a jornada Brand Partners (D-LX-01). A gaveta do
- * celular fecha no horizonte da Home (o mesmo desenho do Opening Frame).
+ * de interesse não existe (D-B2C-10); nenhum link para o Admin nem para a jornada Brand Partners (D-LX-01). Core
+ * Design System desde o CP2: na Home, o header fica sobre o Cinematic Hero e o menu abre pelo ícone oficial.
  */
 export function DiscoverySite({
   current,
@@ -21,15 +21,6 @@ export function DiscoverySite({
       labels={text.site}
       overlayHeader={current === 'home'}
       retractableMenu={current === 'home'}
-      menuFooter={
-        current === 'home' ? (
-          <div className="lx-mobile-nav__brand">
-            <Logo ground="night" href={discoveryPaths.home} label={text.site.home} />
-          </div>
-        ) : (
-          <HorizonDrawing />
-        )
-      }
       navItems={[
         {
           href: discoveryPaths.collection,

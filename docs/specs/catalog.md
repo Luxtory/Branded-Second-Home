@@ -478,3 +478,46 @@ gatilho do ícone oficial; Footer `deep`.
 
 Aceite visual no **Checkpoint Visual do CP2 (sem push)**: Home, Como funciona, Coleção, Concept com e sem Edition, menu
 do celular aberto e Admin com "Público no site", a 390 e 1440 px.
+
+### 13.10 Home — Especificação Visual Final do fundador (CP2, 2026-10-06)
+
+> Brief visual da Home no Core Design System; prevalece sobre as linhas da Home da tabela §13.9. Copy: `D-B2C-19`
+> (GATE-COPY-W4, [`b2c.md`](communication/b2c.md) §11). Âncoras (`HOME_SECTIONS`), ordem, dados, CTA por disponibilidade
+> (`D-B2C-16`), CSP e as regras da §13 continuam como estão. Grid de 12 colunas no container de 1.400 px; mobile em
+> uma coluna na ordem abaixo, sem divisores verticais, Owner antes de Co-Owner com o mesmo peso.
+
+| Seção | Superfície | Composição (desktop) | Celular | Mídia |
+|---|---|---|---|---|
+| Hero | fotografia | Composição da W4 aprovada (revisão do fundador): fachada ao entardecer em toda a viewport, scrim sobre toda a imagem (um pouco mais escuro), headline White com a virada em itálico Warm Sand, menor e em duas linhas a partir do `lg`, subtítulo e CTA na mesma linha; header transparente que fica Moroccan Blue sólido depois da rolagem; uma foto, sem controles | foto com o conteúdo embaixo | `luxury-property-facade-hero.jpg` |
+| Renúncia | `blue` | Problem / Triad Comparison em duas colunas: o diagrama tem a altura do bloco de texto; alternativas 01–03 em 4/4/4 entre hairlines; fechamento centrado | copy → tríade → alternativas | Tríade de valor desejado (SVG) |
+| Regra | `deep` | Columns 5/7: copy + Panel Switch (Second Home inicial, radios nativos, região viva); opções, atributos e valores na mesma fonte e tamanho (Newsreader, `type.ordinal`), em uma linha a partir de 1440 px; fechamento centrado | copy → painel → fechamento | — |
+| Possibilidade | `blue` | Text + Diagram 6/6: o Diagrama de solução tem a altura do bloco de texto e não tem os rótulos "Venda Integral", "Aluguel de Temporada" e "Clube de Lazer" (removidos; círculos e traços intactos) + Triad Statement | copy → diagrama → Triad Statement | Diagrama de solução (SVG) |
+| Luxtory | `sand` | Editorial Split 7/5 (imagem \| copy); fechamento nas 12 colunas | imagem → texto → fechamento | Kaizen K09 |
+| Pertencimento | `blue` | Editorial Split 5/7 (copy com Editorial List \| imagem); fechamento | texto → imagem → fechamento | Kaizen K07 |
+| Patrimônio | `white` | intro (≈ 8 colunas) + Owner \| Co-Owner (Editorial Comparison com hairline superior e divisor central); fechamento | intro → Owner → Co-Owner → fechamento | sem imagem |
+| Liberdade | `deep` | Bloco A: Editorial Split 5/7 (imagem \| intro); Bloco B: Numbered Editorial List (Luxchange, Luxplus, Locação de temporada); fechamento | intro → imagem → lista → fechamento | `luxury-property-facade-hero.jpg` |
+| Gestão | `sand` | Editorial Split 7/5 (copy \| imagem) + Owner \| Co-Owner; fechamento | texto → imagem → Owner → Co-Owner → fechamento | Kaizen K05 |
+| PUSH | `deep` + fotografia | A: Editorial Split 6/6 (argumento com as três linhas da tríade \| fotografia); subseção "E para quem é a Luxtory?" (pergunta \| texto corpo); próximo passo centrado. B: fotografia de fechamento com o CTA por disponibilidade (primário Warm Sand, secundário em contorno) e scrim só atrás das ações | argumento → foto → pergunta → texto → próximo passo → foto → CTA | `hero-lifestyle.jpg` · `home-solucao-firepit-family.jpg` |
+| FAQ | `white` | cabeçalho à esquerda; 13 disclosures nativos em ≈ 8–10 colunas, chevron Moroccan Blue | cabeçalho → disclosures | — |
+
+**Fotografias (proveniência).** Do repositório Luxtory2.0: `luxury-property-facade-hero.jpg` (Hero e Liberdade),
+`hero-lifestyle.jpg` (PUSH A) e `home-solucao-firepit-family.jpg` (PUSH B), já em `public/images/home/hero/`. Da
+galeria Kaizen do anteprojeto (Luxtory2.0): K09 (família na piscina), K07 (pavilhão de bem-estar) e K05 (suíte
+preparada), recomprimidas sem redimensionar em `public/images/home/kaizen/`, sem legenda sobre a foto (revisão do
+fundador). Todas provisórias: autorizadas para o site como referência visual, sem autorização definitiva de produção
+registrada. Nenhuma significa Edition, oferta ou prova de benefício (REQ-022).
+
+**Contraste — exceção registrada (decisão do fundador, 2026-10-06).** Os eyebrows sobre Moroccan Blue da Home
+(Renúncia, Possibilidade, Pertencimento) são Warm Sand (`lx-eyebrow--accent`) e medem 4,32:1 a 12 px, abaixo dos
+4,5:1 do WCAG 2.2 AA. O gate de axe do E2E tolera só a regra `color-contrast` nesses elementos
+(`tests/e2e/support/ui.ts`); todo o resto continua exigido. Sobre Deep o eyebrow é Warm Sand dentro do AA (5,57:1);
+sobre Warm Sand, Dark Moroccan Blue (5,57:1).
+
+**Revisão visual do fundador (2026-10-06, aprovada).** Hero na composição da W4; diagramas com a altura do texto;
+painel da Regra numa só tipografia; um tamanho por tipo de texto (fechamento: parágrafo `lx-subheadline` e destaque
+`lx-headline`) e fechamentos na mesma largura (`layout.container-narrow`); "o lifestyle com o qual você se identifica."
+maior; copy nova em Pertencimento, Patrimônio, Liberdade e no PUSH (`D-B2C-19`). O carrossel do Hero volta sozinho
+com duas ou mais fotos adequadas.
+
+**Demais páginas.** Como funciona, Coleção, Concept e 404 seguem as receitas da §13.9 no Core. No Como funciona, o
+desenho da proporção do ano das configurações Co-Owner sai; os valores continuam em Evidence, painel a painel.

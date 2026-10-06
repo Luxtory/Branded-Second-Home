@@ -10,6 +10,51 @@
   [data-lx="core"] .lx-container--narrow {
     max-width: calc(var(--lx-layout-measure) + 2 * var(--lx-layout-margin));
   }
+
+  /* Site root (the public shell's [data-lx] element): a column whose main grows, so the footer closes even a short
+   * page (404) at the bottom of the viewport. */
+  [data-lx="core"]:has(> main) {
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+  }
+  [data-lx="core"] > main {
+    flex: 1 0 auto;
+  }
+
+  /* Stack — the vertical flow of a column (eyebrow, headline, paragraphs) at one rhythm. */
+  [data-lx="core"] .lx-stack {
+    display: grid;
+    align-content: start;
+    gap: var(--lx-space-6);
+  }
+
+  /* Columns — the founder's 12-column splits inside the container: 6/6 by default, 7/5 and 5/7 when the visual mass
+   * asks for asymmetry. One column on phones and tablets, in DOM order. */
+  [data-lx="core"] .lx-columns {
+    display: grid;
+    gap: var(--lx-space-12) var(--lx-layout-gutter);
+    align-items: center;
+  }
+  [data-lx="core"] .lx-columns > * {
+    min-width: 0;
+  }
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-columns {
+      grid-template-columns: repeat(var(--lx-layout-columns-lg), minmax(0, 1fr));
+    }
+    [data-lx="core"] .lx-columns > * {
+      grid-column: span 6;
+    }
+    [data-lx="core"] .lx-columns--7-5 > :first-child,
+    [data-lx="core"] .lx-columns--5-7 > :last-child {
+      grid-column: span 7;
+    }
+    [data-lx="core"] .lx-columns--7-5 > :last-child,
+    [data-lx="core"] .lx-columns--5-7 > :first-child {
+      grid-column: span 5;
+    }
+  }
 }
 
 @layer lx.components {
@@ -230,6 +275,21 @@
     height: 100%;
     object-fit: cover;
     object-position: var(--lx-crop-x, 50%) var(--lx-crop-y, 50%);
+  }
+
+  /* Caption on a photograph — a small label on its own local scrim (e.g. "Imagem conceitual"), never a card. */
+  [data-lx="core"] .lx-media__caption {
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-end: 0;
+    z-index: var(--lx-z-raised);
+    padding: var(--lx-space-2) var(--lx-space-4);
+    background-color: color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-max-alpha) * 100%), transparent);
+    color: var(--lx-palette-pure-white);
+    font-size: var(--lx-type-eyebrow);
+    font-weight: var(--lx-weight-medium);
+    letter-spacing: var(--lx-tracking-body);
+    line-height: var(--lx-leading-tight);
   }
 
   /* Crop — art direction per image without inline styles (the production CSP blocks style attributes): the focus of

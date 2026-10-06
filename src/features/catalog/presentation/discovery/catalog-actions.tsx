@@ -14,17 +14,19 @@ const collectionHref = {
  * Próximo passo por disponibilidade (D-B2C-13, D-B2C-16; spec catalog §13.2). Com Edition, o CTA leva à primeira
  * oferta da Coleção; só com Concepts, aos Home Concepts; sem Concept ou com estado desconhecido, nenhum CTA de
  * catálogo — a falta de dados nunca vira "não há". `from` é a página que compõe: no Como funciona, o caminho para ele
- * não se repete.
+ * não se repete. `cinematic`: sobre a fotografia do fechamento da Home — ações de 56px, a secundária em contorno.
  */
 export function CatalogActions({
   cta,
   next,
   from,
+  cinematic = false,
 }: {
   readonly cta: CatalogCta;
   /** Frase do próximo passo para cada estado; ausente = nenhuma frase. */
   readonly next: Readonly<Partial<Record<CatalogCta, string>>>;
   readonly from: 'home' | 'howItWorks';
+  readonly cinematic?: boolean;
 }) {
   const sentence = next[cta];
   const catalog =
@@ -39,13 +41,15 @@ export function CatalogActions({
     <>
       {sentence === undefined ? null : <p className="lx-lead">{sentence}</p>}
       {catalog === null && !howItWorks ? null : (
-        <div className="lx-actions-stack">
+        <div className={cinematic ? 'lx-hero__actions' : 'lx-actions-stack'}>
           {catalog === null ? null : (
-            <ActionLink primary href={catalog.href} label={catalog.label} />
+            <ActionLink primary large={cinematic} href={catalog.href} label={catalog.label} />
           )}
           {howItWorks ? (
             <ActionLink
               primary={catalog === null}
+              outline={cinematic}
+              large={cinematic}
               href={discoveryPaths.howItWorks}
               label={actions.howItWorks}
             />

@@ -232,7 +232,7 @@
     color: var(--lx-color-fg);
   }
   [data-lx="core"] .lx-disclosure__icon {
-    color: var(--lx-color-accent);
+    color: var(--lx-color-marker);
     transition: transform var(--lx-duration-moderate) var(--lx-ease-editorial);
   }
   [data-lx="core"] .lx-disclosure__body {

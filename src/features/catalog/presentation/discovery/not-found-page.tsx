@@ -1,25 +1,25 @@
-import { Scene } from '@/design-system/react';
 import { discoveryMessages as text } from '../i18n/discovery-pt-br';
 import { HeadlineText } from './headline';
 import { ActionLink } from './parts';
 import { discoveryPaths } from './paths';
 import { DiscoverySite } from './site';
 
-/** 404 dentro do site público: Concept inexistente, não público (spec catalog §13.1) ou endereço que mudou. */
+/**
+ * 404 dentro do site público (receita catalog §13.9: White, Statement/Pause com o link de volta): Concept inexistente,
+ * não público (spec catalog §13.1) ou endereço que mudou.
+ */
 export function DiscoveryNotFoundPage() {
   return (
     <DiscoverySite current="none">
-      <Scene titleId="nao-encontrada" ground="paper">
-        <div className="lx-col-content lx-scene__body">
-          <h1 id="nao-encontrada" className="lx-display-l">
+      <section className="lx-section" data-surface="white" aria-labelledby="nao-encontrada">
+        <div className="lx-container lx-pause lx-pause--start">
+          <h1 id="nao-encontrada" className="lx-headline">
             <HeadlineText headline={text.notFound.title} />
           </h1>
-          <p className="lx-lead">{text.notFound.text}</p>
-          <div className="lx-scene__actions">
-            <ActionLink primary href={discoveryPaths.collection} label={text.actions.collection} />
-          </div>
+          <p className="lx-subheadline">{text.notFound.text}</p>
+          <ActionLink primary href={discoveryPaths.collection} label={text.actions.collection} />
         </div>
-      </Scene>
+      </section>
     </DiscoverySite>
   );
 }

@@ -105,6 +105,8 @@
             <li><a class="lx-link lx-link--standalone" href="#pattern-triad-statement">Triad Statement</a></li>
             <li><a class="lx-link lx-link--standalone" href="#pattern-editorial-comparison">Editorial Comparison</a></li>
             <li><a class="lx-link lx-link--standalone" href="#pattern-panel-comparison">Panel Comparison</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#pattern-panel-switch">Panel Switch</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#pattern-editorial-list">Editorial List</a></li>
             <li><a class="lx-link lx-link--standalone" href="#pattern-numbered-list">Numbered Editorial List</a></li>
             <li><a class="lx-link lx-link--standalone" href="#pattern-split-text-media">Editorial Split</a></li>
             <li><a class="lx-link lx-link--standalone" href="#pattern-text-diagram">Text + Diagram</a></li>
@@ -383,6 +385,55 @@
           <article class="lx-panels__panel" data-surface="deep"><p class="lx-eyebrow">Owner</p><h3 class="lx-title">Gestão conforme os serviços contratados</h3><p class="lx-compact">A gestão pode ser estruturada conforme os serviços contratados e as necessidades da sua Second Home.</p><ul class="lx-panels__list"><li class="lx-compact">Manutenção</li><li class="lx-compact">Fornecedores</li></ul><p class="lx-compact lx-panels__closing">Menos tempo administrando.</p></article>
           <article class="lx-panels__panel" data-surface="deep"><p class="lx-eyebrow">Co-Owner</p><h3 class="lx-title">Gestão coordenada entre proprietários</h3><p class="lx-compact">Como a Second Home pertence a mais de um proprietário, sua administração e manutenção funcionam de forma coordenada para preservar o ativo e a experiência de todos.</p><ul class="lx-panels__list"><li class="lx-compact">Manutenção</li><li class="lx-compact">Fornecedores</li></ul><p class="lx-compact lx-panels__closing">Mais tempo vivendo.</p></article>
         </div>
+      </div>
+    </section>
+
+    <!-- Panel Switch (CP2) — um painel interativo: opções de texto sobre hairline (radios nativos), linhas ATRIBUTO ——— VALOR; dentro de Columns 5/7. -->
+    <section id="pattern-panel-switch" class="lx-section" data-surface="deep" aria-labelledby="t-panel-switch">
+      <div class="lx-container">
+        <div class="lx-columns lx-columns--5-7">
+          <div class="lx-stack">
+            <p class="lx-eyebrow">Panel Switch · Columns 5/7</p>
+            <h2 id="t-panel-switch" class="lx-headline">Um painel, três alternativas.</h2>
+            <p class="lx-body">As opções são radios nativos: as setas trocam a escolha, o foco fica visível e o resultado é anunciado por região viva educada. A escolha não depende só da cor: sublinhado Warm Sand e peso.</p>
+          </div>
+          <div class="lx-panel-switch" data-lab-switch>
+            <fieldset class="lx-panel-switch__options">
+              <legend class="lx-visually-hidden">Alternativas (exemplo)</legend>
+              <label class="lx-panel-switch__option"><input type="radio" name="lab-switch" value="a" data-lab-values="Positivo|Talvez|Parcial" checked><span class="lx-nowrap">Alternativa A</span></label>
+              <label class="lx-panel-switch__option"><input type="radio" name="lab-switch" value="b" data-lab-values="Negativo|Talvez|Positivo"><span class="lx-nowrap">Alternativa B</span></label>
+              <label class="lx-panel-switch__option"><input type="radio" name="lab-switch" value="c" data-lab-values="Proporcional|Talvez|Parcial"><span class="lx-nowrap">Alternativa C</span></label>
+            </fieldset>
+            <div aria-live="polite" aria-atomic="true">
+              <dl class="lx-panel-switch__rows">
+                <div class="lx-panel-switch__row"><dt class="lx-panel-switch__attribute">Atributo 1</dt><dd class="lx-panel-switch__value" data-lab-value>Positivo</dd></div>
+                <div class="lx-panel-switch__row"><dt class="lx-panel-switch__attribute">Atributo 2</dt><dd class="lx-panel-switch__value" data-lab-value>Talvez</dd></div>
+                <div class="lx-panel-switch__row"><dt class="lx-panel-switch__attribute">Atributo 3</dt><dd class="lx-panel-switch__value" data-lab-value>Parcial</dd></div>
+              </dl>
+            </div>
+            <p class="lx-body lx-panel-switch__caption">Legenda com <strong>destaque um</strong> e <strong>destaque dois</strong>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Editorial List (CP2) — palavras em ritmo vertical entre hairlines, sem bullets; dentro de um Editorial Split 5/7. -->
+    <section id="pattern-editorial-list" class="lx-section-split" data-surface="blue" aria-labelledby="t-editorial-list">
+      <div class="lx-split lx-split--wide-media">
+        <div class="lx-split__text">
+          <div class="lx-split__inner">
+            <p class="lx-eyebrow">Editorial List · Split 5/7</p>
+            <h2 id="t-editorial-list" class="lx-headline">Um universo em cinco palavras.</h2>
+            <ul class="lx-editorial-list">
+              <li>Valores.</li>
+              <li>Estética.</li>
+              <li>Cultura.</li>
+              <li>Experiências.</li>
+              <li>Uma forma de viver.</li>
+            </ul>
+          </div>
+        </div>
+        <figure class="lx-media lx-split__media"><img class="lx-crop-x-50 lx-crop-y-65" src="/images/home/kaizen/kaizen-k07.jpg" alt="Imagem conceitual de duas pessoas meditando em um pavilhão de madeira." width="1376" height="768" loading="lazy"><figcaption class="lx-media__caption">Kaizen Residence · Imagem conceitual</figcaption></figure>
       </div>
     </section>
 

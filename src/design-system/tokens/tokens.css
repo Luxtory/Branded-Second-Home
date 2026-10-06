@@ -286,7 +286,7 @@
   [data-surface="sand"] {
     --lx-color-bg: var(--lx-palette-warm-sand);
     --lx-color-surface: var(--lx-palette-pure-white);
-    --lx-color-headline: var(--lx-palette-moroccan-blue);
+    --lx-color-headline: var(--lx-palette-dark-moroccan-blue);
     --lx-color-fg: var(--lx-palette-dark-moroccan-blue);
     --lx-color-fg-muted: var(--lx-palette-dark-moroccan-blue);
     --lx-color-accent: var(--lx-palette-dark-moroccan-blue);
@@ -320,7 +320,7 @@
     --lx-color-fg-muted: color-mix(in srgb, var(--lx-palette-pure-white) 80%, transparent);
     --lx-color-accent: var(--lx-palette-warm-sand);
     --lx-color-marker: color-mix(in srgb, var(--lx-palette-pure-white) 80%, transparent);
-    --lx-color-rule: color-mix(in srgb, var(--lx-palette-pure-white) 20%, transparent);
+    --lx-color-rule: color-mix(in srgb, var(--lx-palette-warm-sand) 40%, transparent);
     --lx-color-rule-strong: var(--lx-palette-warm-sand);
     --lx-color-focus: var(--lx-palette-warm-sand);
     --lx-color-action-bg: var(--lx-palette-warm-sand);
@@ -348,8 +348,8 @@
     --lx-color-fg: var(--lx-palette-pure-white);
     --lx-color-fg-muted: color-mix(in srgb, var(--lx-palette-pure-white) 80%, transparent);
     --lx-color-accent: var(--lx-palette-warm-sand);
-    --lx-color-marker: color-mix(in srgb, var(--lx-palette-pure-white) 80%, transparent);
-    --lx-color-rule: color-mix(in srgb, var(--lx-palette-pure-white) 20%, transparent);
+    --lx-color-marker: var(--lx-palette-warm-sand);
+    --lx-color-rule: color-mix(in srgb, var(--lx-palette-warm-sand) 40%, transparent);
     --lx-color-rule-strong: var(--lx-palette-warm-sand);
     --lx-color-focus: var(--lx-palette-warm-sand);
     --lx-color-action-bg: var(--lx-palette-warm-sand);

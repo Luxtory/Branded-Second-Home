@@ -493,3 +493,38 @@ Grupos e tokens: `ground.*` (`paper`, `wash`, `night`), `text.*`, `measure.*`, `
 `marker.css`, `sequence.css`, `pair.css`, `blocks.css`, `drawings.css` e as regras legadas dos componentes que o
 Core reexpressa. React: `Scene`, `TriadDrawing`, `HorizonDrawing`, `TypographicFrame` e o `SiteShell` com `data-ground`. A lista final é conferida no CP5
 pelo teste de zero consumidores.
+
+### 13.10 CP2 — Wave 4: refinamentos do Core pelo primeiro consumidor (2026-10-06)
+
+> O site público (`SiteShell` + `SiteHeader`) é o primeiro consumidor do flag `data-lx="core"` (contrato
+> `APPROVED_FLAG_CONSUMERS`). Os refinamentos abaixo vêm da Especificação Visual Final da Home do fundador
+> ([`catalog.md` §13.10](catalog.md)) e são do Core — servem a qualquer página, não só à Home.
+
+**Tratamentos por superfície (regras globais da especificação, dentro do AA).** Headline sobre Sand = Dark Moroccan
+Blue (5,57:1). O eyebrow usa o papel `marker`, agora na matriz de contraste como texto (4,5:1): White 80% em Blue
+(Warm Sand mediria 4,32:1), Warm Sand em Deep, Dark Moroccan Blue em Sand, Moroccan Blue em White. Hairlines (`rule`) em
+Blue e Deep = Warm Sand com opacidade 0,4. Chevron dos disclosures no papel `marker`.
+
+| Peça | Classe | Uso |
+|---|---|---|
+| Columns | `lx-columns` (`--7-5`, `--5-7`; padrão 6/6) | splits do grid de 12 colunas dentro do container; uma coluna até `lg` |
+| Stack | `lx-stack` | fluxo vertical de uma coluna (eyebrow, headline, parágrafos) |
+| Section split | `lx-section-split` | seção que abre com um Editorial Split full-bleed e continua no container |
+| Panel Switch | `lx-panel-switch` | um painel interativo: opções de texto sobre hairline (radios nativos), linhas ATRIBUTO ——— VALOR; ativo = sublinhado Warm Sand + semibold |
+| Editorial List | `lx-editorial-list` | palavras em ritmo vertical entre hairlines, sem bullets |
+| Cinematic Hero | `lx-hero` (`--closing`), `lx-hero__title`, `__index`, `__progress`, `__step` | headline White com virada Warm Sand (só no Hero); no celular, fotografia → conteúdo; controles só com duas ou mais fotos; `--closing` = CTA final sobre fotografia |
+| Triad Comparison | `lx-triad-comparison__copy`, `__alternatives` | 7/5; alternativas numeradas entre hairlines (superior, verticais, inferior) |
+| Editorial Comparison | `lx-comparison--divided` | Owner \| Co-Owner: hairline superior e divisor central; empilhado no celular |
+| Editorial Split | `lx-split--wide-media`; `--media-start` reordena a partir do `lg` | 7/12 para a fotografia; texto → imagem no celular com a imagem à esquerda no desktop |
+| Text + Diagram | `lx-diagram--even` | 6/6 |
+| Statement / Pause | `lx-pause--start` | abertura tipográfica alinhada ao início, sob o header sólido |
+| Numbered List | `lx-numbered--compact`, `lx-numbered__text--wide` | índice de links; linha sem título |
+| FAQ | `lx-faq--start` | alinhado ao cabeçalho |
+| Media | `lx-media__caption` | legenda curta sobre a foto, com scrim local (ex.: "Imagem conceitual") |
+| Ícones | `chevron-left`, `chevron-right`, `pause`, `play` | controles do carrossel e disclosures |
+
+Diagrama de solução: os rótulos "Venda Integral", "Aluguel de Temporada" e "Clube de Lazer" foram removidos do SVG
+(decisão do fundador, 2026-10-06); círculos e traços intactos, assinatura do contrato atualizada. Home: eyebrow
+`lx-eyebrow--accent` (Warm Sand) sobre Moroccan Blue com exceção de contraste registrada (catalog §13.10); o Hero
+volta à composição `lx-home-hero` da W4 com um scrim sobre toda a fotografia. A `Collection` (React) passa a gerar
+os cards tipográficos do Core em Sibling Blocks; `MobileNav` aceita `surface` (Core) além de `ground` (legado).

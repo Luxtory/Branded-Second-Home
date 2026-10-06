@@ -58,12 +58,26 @@ test.describe('Discovery público — gate de UI (ADR-0009)', () => {
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('link', { name: 'Coleção' })).toBeVisible();
     await expect(dialog.getByRole('link', { name: 'Como funciona' })).toBeVisible();
+    // A captura espera a entrada da gaveta terminar (sem animação a meio).
+    const opened = () =>
+      dialog.evaluate((node) => Promise.all(node.getAnimations().map((a) => a.finished)));
     if (process.env.UI_CAPTURE_DIR) {
+      await opened();
       await page.screenshot({ path: `${process.env.UI_CAPTURE_DIR}/w4-menu-390.png` });
     }
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
     await expect(button).toBeFocused();
+    // Checkpoint Visual (390 e 1440 px): na Home o menu abre pelo ícone também no desktop.
+    if (process.env.UI_CAPTURE_DIR) {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await button.click();
+      await expect(dialog).toBeVisible();
+      await opened();
+      await page.screenshot({ path: `${process.env.UI_CAPTURE_DIR}/w4-menu-1440.png` });
+      await page.keyboard.press('Escape');
+      await expect(dialog).toBeHidden();
+    }
     expect(errors).toEqual([]);
   });
 });
@@ -119,7 +133,13 @@ test.describe('Discovery público — conteúdo', () => {
     const invite = hero.getByRole('link');
     await expect(invite).toHaveCount(1);
     await expect(invite).toHaveAttribute('href', `#${HOME_SECTIONS[1]}`);
+    // Carrossel só com duas ou mais fotos (spec catalog §13.10): então anterior, próxima e pausa; com uma, nenhum.
+    const slides = await hero.locator('.lx-home-hero__slide').count();
     const controls = hero.getByRole('button');
+    if (slides < 2) {
+      await expect(controls).toHaveCount(0);
+      return;
+    }
     await expect(controls).toHaveCount(3);
     await expect(hero.getByRole('button', { name: 'Imagem anterior' })).toBeVisible();
     await expect(
@@ -135,10 +155,16 @@ test.describe('Discovery público — conteúdo', () => {
     const faq = page.locator(`section#${HOME_SECTIONS.at(-1)}`);
     const questions = faq.locator('summary');
     await expect(questions).toHaveCount(discoveryMessages.home.faq.items.length + 1);
-    const timeshare = faq.locator('details', { hasText: 'A Luxtory é timeshare?' });
-    await expect(timeshare.getByText('Você não compra semanas de hospedagem')).toBeHidden();
+    // A resposta vem da copy aplicada (D-B2C-19): a última frase do "A Luxtory é timeshare?".
+    const question = 'A Luxtory é timeshare?';
+    const lastLine =
+      discoveryMessages.home.faq.items.find((item) => item.question === question)?.answer.at(-1) ??
+      '';
+    expect(lastLine).not.toBe('');
+    const timeshare = faq.locator('details', { hasText: question });
+    await expect(timeshare.getByText(lastLine)).toBeHidden();
     await timeshare.locator('summary').click();
-    await expect(timeshare.getByText('Você não compra semanas de hospedagem')).toBeVisible();
+    await expect(timeshare.getByText(lastLine)).toBeVisible();
     const answers = (await faq.textContent()) ?? '';
     expect(hasForbiddenTerm(answers)).toBe(false);
     await questions.last().click();
@@ -191,19 +217,19 @@ test.describe('Discovery público — conteúdo', () => {
   }) => {
     for (const path of [pathOf('home'), pathOf('howItWorks')]) {
       await page.goto(path);
-      const pairs = page
-        .locator('.lx-pair')
-        .filter({ has: page.getByRole('heading', { name: 'Owner', exact: true }) });
+      // Core: Editorial Comparison dividida (spec design-system §13.10); o nome da modalidade é o título ou o eyebrow.
+      const pairs = page.locator('[data-pair="modality"]');
       expect(await pairs.count(), path).toBeGreaterThan(0);
       for (const pair of await pairs.all()) {
-        const items = pair.locator('.lx-pair__item');
+        const items = pair.locator('.lx-comparison__item');
         await expect(items).toHaveCount(2);
         const owner = items.nth(0);
         const coOwner = items.nth(1);
         const shape = (side: Locator) =>
           side.evaluate((node) => [...node.children].map((child) => child.tagName));
-        await expect(owner.getByRole('heading')).toHaveText('Owner');
-        await expect(coOwner.getByRole('heading')).toHaveText('Co-Owner');
+        const name = (side: Locator) => side.locator(':scope > :first-child').textContent();
+        expect(await name(owner), path).toBe('Owner');
+        expect(await name(coOwner), path).toBe('Co-Owner');
         expect(await shape(owner), path).toEqual(await shape(coOwner));
       }
     }
