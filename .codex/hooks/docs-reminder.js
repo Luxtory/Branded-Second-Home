@@ -12,10 +12,10 @@
  * runs as ESM, where `require` does not exist.
  */
 
-let input = "";
-process.stdin.on("data", (chunk) => (input += chunk));
+let input = '';
+process.stdin.on('data', (chunk) => (input += chunk));
 
-process.stdin.on("end", () => {
+process.stdin.on('end', () => {
   let toolUse = {};
 
   try {
@@ -24,16 +24,13 @@ process.stdin.on("end", () => {
     process.exit(0);
   }
 
-  const filePath =
-    toolUse?.tool_input?.path ||
-    toolUse?.tool_input?.file_path ||
-    "";
+  const filePath = toolUse?.tool_input?.path || toolUse?.tool_input?.file_path || '';
 
   // A non-string path (unexpected input) cannot be checked below: nothing to remind.
-  if (typeof filePath !== "string" || !filePath) process.exit(0);
+  if (typeof filePath !== 'string' || !filePath) process.exit(0);
 
   // Skip docs changes themselves to avoid loops
-  if (filePath.includes("/docs/") || filePath.startsWith("docs/")) {
+  if (filePath.includes('/docs/') || filePath.startsWith('docs/')) {
     process.exit(0);
   }
 
@@ -58,7 +55,7 @@ process.stdin.on("end", () => {
 
   if (IGNORED_PATTERNS.some((p) => p.test(filePath))) process.exit(0);
 
-  const fileName = filePath.split("/").pop();
+  const fileName = filePath.split('/').pop();
 
   const reminder = `
 ---
