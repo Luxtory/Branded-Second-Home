@@ -1,0 +1,29 @@
+/* Core base (docs/specs/design-system.md §13.3): reading defaults, links, focus and headings inside the generation
+ * flag. Everything here starts with [data-lx="core"], so pages without the flag keep the legacy look. */
+@layer lx.base {
+  [data-lx="core"],
+  [data-lx="core"] body {
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-type-body);
+    line-height: var(--lx-leading-reading);
+  }
+  [data-lx="core"] {
+    scroll-padding-top: var(--lx-layout-bar-height);
+  }
+  [data-lx="core"] :is(h1, h2, h3, h4, h5, h6) {
+    line-height: var(--lx-leading-heading);
+    text-wrap: balance;
+  }
+  [data-lx="core"] :is(p, li, dd) {
+    text-wrap: pretty;
+  }
+  [data-lx="core"] a {
+    color: var(--lx-color-link);
+    text-decoration-thickness: var(--lx-border-hairline);
+    text-underline-offset: 0.25em;
+  }
+  [data-lx="core"] :focus-visible {
+    outline: var(--lx-focus-width) solid var(--lx-color-focus);
+    outline-offset: var(--lx-focus-ring-offset);
+  }
+}

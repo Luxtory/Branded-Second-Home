@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Fails when a visual decision is hardcoded outside tokens.css: color literals, font-family,
-// durations, easings, z-index, or @media widths that are not breakpoint tokens.
+// durations, easings, z-index, border-radius, box-shadow lengths, or @media widths that are not breakpoint tokens.
+// The CSS *property* max-width (containers, measure) is allowed; only @media (max-width: …) is refused.
 // Width media queries are mobile-first (ADR-0009): only min-width. The base style serves the phone and each
 // breakpoint only adds; a max-width query would open a second styling path and regressions at the cuts. An
 // exception is a deliberate Design System decision (spec + ADR), never a workaround.
@@ -25,6 +26,16 @@ const RULES = [
   { id: 'duration', test: (prop, value) => /^(transition|animation)/i.test(prop) && /(^|[\s,])(?!0m?s\b)\d*\.?\d+m?s\b/i.test(value) },
   { id: 'easing', test: (prop, value) => /\b(cubic-bezier|steps)\(|(^|[\s,])(ease|ease-in|ease-out|ease-in-out)($|[\s,])/i.test(value) },
   { id: 'z-index', test: (prop, value) => /^z-index$/i.test(prop) && !/^(var\(--lx-z-|auto$|0$|-1$|calc\(var\(--lx-z-)/.test(value) },
+  // Core (§13.3): radius is a system decision — tokens only; 0 and 50% (a geometric circle) stay local.
+  {
+    id: 'radius',
+    test: (prop, value) => /^border(-[a-z]+)*-radius$/i.test(prop) && !/^(var\(--lx-radius-[a-z0-9-]+\)|0|50%|inherit)$/.test(value),
+  },
+  // Shadows come from tokens; an inset ring may be built only from zeros and tokens (no length literal).
+  {
+    id: 'shadow',
+    test: (prop, value) => /^box-shadow$/i.test(prop) && value !== 'none' && /(^|[\s,(])-?\d*\.?\d+(px|rem|em)\b/.test(value.replace(/var\([^)]*\)/g, '')),
+  },
 ];
 
 const blank = (m) => m.replace(/[^\n]/g, ' ');

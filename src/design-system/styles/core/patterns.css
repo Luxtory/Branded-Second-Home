@@ -1,0 +1,474 @@
+/* Core patterns (docs/specs/design-system.md §13.6): compositions, not components. A page picks only the patterns that
+ * serve its function. Official patterns defined by the founder + the complements the Wave 4 consumes. Mobile-first:
+ * the base serves the phone in DOM order; each breakpoint only adds. */
+@layer lx.components {
+  /* Section and section head — rhythm (64 → 144px), index + hairline + eyebrow, then the headline. */
+  [data-lx="core"] .lx-section {
+    padding-block: var(--lx-space-section);
+  }
+  [data-lx="core"] .lx-section-head {
+    display: grid;
+    gap: var(--lx-space-6);
+    max-width: var(--lx-layout-measure);
+    margin-bottom: var(--lx-space-12);
+  }
+  [data-lx="core"] .lx-section-head--center {
+    justify-items: center;
+    margin-inline: auto;
+    text-align: center;
+  }
+  [data-lx="core"] .lx-section-head__mark {
+    display: flex;
+    align-items: baseline;
+    gap: var(--lx-space-4);
+  }
+  [data-lx="core"] .lx-section-head__rule {
+    display: none;
+    flex: 1;
+    align-self: center;
+    min-width: var(--lx-space-8);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  @media (min-width: 30rem) {
+    [data-lx="core"] .lx-section-head__rule { display: block; }
+  }
+  [data-lx="core"] .lx-section-head__text {
+    display: grid;
+    gap: var(--lx-space-4);
+  }
+  [data-lx="core"] .lx-section-closing {
+    max-width: var(--lx-layout-measure);
+    margin: var(--lx-space-12) auto 0;
+    text-align: center;
+  }
+
+  /* Cinematic Hero — the photograph is the protagonist: full-bleed, content low in the composition, header over the
+   * media, discreet CTA and controls. The scrim is local: only behind the copy and the controls (and a thin band under
+   * the header), never a dark layer over the whole photograph. Each image sets its crop with the lx-crop-* classes. */
+  [data-lx="core"] .lx-hero {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    align-content: end;
+    min-height: 100svh;
+    overflow: hidden;
+    background-color: var(--lx-color-bg);
+  }
+  [data-lx="core"] .lx-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: var(--lx-z-raised);
+    height: calc(var(--lx-layout-bar-height) * 2);
+    background-image: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-min-alpha) * 100%), transparent),
+      transparent
+    );
+    pointer-events: none;
+  }
+  [data-lx="core"] .lx-hero__slides {
+    position: absolute;
+    inset: 0;
+    z-index: var(--lx-z-base);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  [data-lx="core"] .lx-hero__slide {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    transition: opacity var(--lx-duration-cinematic) var(--lx-ease-editorial);
+  }
+  [data-lx="core"] .lx-hero__slide[data-active] {
+    opacity: 1;
+  }
+  [data-lx="core"] .lx-hero__image {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+    object-position: var(--lx-crop-x, 50%) var(--lx-crop-y, 50%);
+  }
+  [data-lx="core"] .lx-hero__content {
+    position: relative;
+    z-index: var(--lx-z-raised);
+    display: grid;
+    gap: var(--lx-space-8);
+    padding-block: calc(var(--lx-layout-bar-height) + var(--lx-space-16)) var(--lx-space-12);
+  }
+  [data-lx="core"] .lx-hero__copy {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    gap: var(--lx-space-6);
+    max-width: var(--lx-layout-split-text-wide);
+  }
+  /* Local scrim: a feathered plate behind the copy only (solid under the text, fading outside it). */
+  [data-lx="core"] .lx-hero__copy::before {
+    content: "";
+    position: absolute;
+    inset: calc(-1 * var(--lx-space-32)) calc(-1 * var(--lx-space-48)) calc(-1 * var(--lx-space-16));
+    z-index: -1;
+    background-color: color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-max-alpha) * 100%), transparent);
+    mask-image:
+      linear-gradient(to right, transparent, currentColor var(--lx-space-32), currentColor calc(100% - var(--lx-space-32)), transparent),
+      linear-gradient(to bottom, transparent, currentColor var(--lx-space-24), currentColor calc(100% - var(--lx-space-12)), transparent);
+    mask-composite: intersect;
+    pointer-events: none;
+  }
+  [data-lx="core"] .lx-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--lx-space-4) var(--lx-space-8);
+  }
+  [data-lx="core"] .lx-hero__controls {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    gap: var(--lx-space-1);
+    padding-inline: var(--lx-space-3) var(--lx-space-1);
+    background-color: color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-max-alpha) * 100%), transparent);
+    color: var(--lx-color-fg);
+  }
+  [data-lx="core"] .lx-hero__counter {
+    min-width: 5ch;
+    font-size: var(--lx-type-label);
+    font-variant-numeric: tabular-nums;
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-hero__content {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      padding-bottom: var(--lx-space-16);
+    }
+    [data-lx="core"] .lx-hero__controls {
+      justify-self: end;
+    }
+  }
+
+  /* Problem / Triad Comparison — one composition: copy + the value triad on top, three equivalent alternatives below. */
+  [data-lx="core"] .lx-triad-comparison__top {
+    display: grid;
+    gap: var(--lx-space-12);
+    align-items: center;
+  }
+  [data-lx="core"] .lx-triad-comparison__diagram {
+    justify-self: center;
+    width: min(100%, 28rem);
+    margin: 0;
+  }
+  [data-lx="core"] .lx-triad-comparison__alternatives {
+    display: grid;
+    gap: var(--lx-space-8);
+    margin-top: var(--lx-space-16);
+  }
+  [data-lx="core"] :is(.lx-triad-comparison__alternative, .lx-siblings__item, .lx-comparison__item) {
+    display: grid;
+    align-content: start;
+    gap: var(--lx-space-3);
+    padding-top: var(--lx-space-6);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-triad-comparison__alternatives {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: var(--lx-layout-gutter);
+    }
+  }
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-triad-comparison__top {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: calc(var(--lx-layout-gutter) * 2);
+    }
+  }
+
+  /* Triad Statement — 01 Patrimônio · 02 Liberdade · 03 Pertencimento between dividers, then the large statement. */
+  [data-lx="core"] .lx-triad-statement__cells {
+    display: grid;
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  }
+  [data-lx="core"] .lx-triad-statement__cell {
+    display: flex;
+    align-items: baseline;
+    gap: var(--lx-space-4);
+    padding-block: var(--lx-space-6);
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-triad-statement__word {
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-type-ordinal);
+    line-height: var(--lx-leading-heading);
+    color: var(--lx-color-headline);
+  }
+  [data-lx="core"] .lx-triad-statement__statement {
+    margin-top: var(--lx-space-16);
+    text-align: center;
+  }
+  [data-lx="core"] .lx-triad-statement__closing {
+    margin: var(--lx-space-6) auto 0;
+    max-width: var(--lx-layout-measure);
+    text-align: center;
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-triad-statement__cells {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    [data-lx="core"] .lx-triad-statement__cell {
+      flex-direction: column;
+      gap: var(--lx-space-3);
+      padding: var(--lx-space-8) var(--lx-space-6);
+      border-bottom: 0;
+    }
+    [data-lx="core"] .lx-triad-statement__cell + .lx-triad-statement__cell {
+      border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+  }
+
+  /* Editorial Comparison — open columns, no filled boxes: breathing room and hairlines. */
+  [data-lx="core"] .lx-comparison {
+    display: grid;
+    gap: var(--lx-space-12);
+  }
+  [data-lx="core"] .lx-comparison__list {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  [data-lx="core"] .lx-comparison__list > li {
+    padding-block: var(--lx-space-3);
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-comparison {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: calc(var(--lx-layout-gutter) * 2);
+    }
+  }
+
+  /* Panel Comparison — the dense version: sibling panels with the same geometry and hierarchy (rows shared by subgrid
+   * from md, so eyebrow, title, description, list and closing line up across panels). */
+  [data-lx="core"] .lx-panels {
+    display: grid;
+    gap: var(--lx-space-6);
+  }
+  [data-lx="core"] .lx-panels__panel {
+    display: grid;
+    align-content: start;
+    gap: var(--lx-space-4);
+    padding: var(--lx-space-8);
+    border: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-panels__list {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  [data-lx="core"] .lx-panels__list > li {
+    padding-block: var(--lx-space-2);
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-panels__closing {
+    padding-top: var(--lx-space-4);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-panels {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(5, auto);
+    }
+    [data-lx="core"] .lx-panels__panel {
+      grid-row: span 5;
+      grid-template-rows: subgrid;
+      gap: var(--lx-space-4);
+    }
+  }
+
+  /* Numbered Editorial List / Disclosure — number, title, description, divider; affordance when interactive. */
+  [data-lx="core"] .lx-numbered {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-numbered__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--lx-space-2) var(--lx-space-6);
+    align-items: baseline;
+    padding-block: var(--lx-space-6);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-numbered__number {
+    min-width: 2ch;
+  }
+  [data-lx="core"] .lx-numbered__text {
+    grid-column: 2;
+    max-width: var(--lx-layout-measure);
+  }
+  [data-lx="core"] .lx-numbered__item:has(> .lx-numbered__details) {
+    display: block;
+    padding-block: 0;
+  }
+  [data-lx="core"] .lx-numbered__summary {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: var(--lx-space-6);
+    align-items: baseline;
+    min-height: var(--lx-target-control);
+    padding-block: var(--lx-space-6);
+    cursor: pointer;
+    list-style: none;
+  }
+  [data-lx="core"] .lx-numbered__summary::-webkit-details-marker {
+    display: none;
+  }
+  [data-lx="core"] .lx-numbered__icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    align-self: center;
+    color: var(--lx-color-accent);
+    transform: rotate(90deg);
+    transition: transform var(--lx-duration-moderate) var(--lx-ease-editorial);
+  }
+  [data-lx="core"] .lx-numbered__details[open] .lx-numbered__icon {
+    transform: rotate(-90deg);
+  }
+  [data-lx="core"] .lx-numbered__details > .lx-numbered__text {
+    padding: 0 0 var(--lx-space-6);
+  }
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-numbered__item {
+      grid-template-columns: minmax(4rem, 1fr) minmax(0, 4fr) minmax(0, 6fr);
+    }
+    [data-lx="core"] .lx-numbered__text {
+      grid-column: 3;
+    }
+    [data-lx="core"] .lx-numbered__summary {
+      grid-template-columns: minmax(4rem, 1fr) minmax(0, 10fr) auto;
+    }
+    [data-lx="core"] .lx-numbered__details > .lx-numbered__text {
+      margin-inline-start: calc(100% / 11);
+    }
+  }
+
+  /* Editorial Split — text/media and media/text, full-bleed; the photograph fills its whole half. 50/50 is the
+   * reference; --wide-text gives 58/42 to a long headline. Without media: a single centred column, never a gap. */
+  [data-lx="core"] .lx-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  [data-lx="core"] .lx-split__text {
+    display: grid;
+    align-content: center;
+    padding: calc(var(--lx-space-section) * 2 / 3) var(--lx-layout-margin);
+  }
+  [data-lx="core"] .lx-split__inner {
+    display: grid;
+    gap: var(--lx-space-6);
+    width: 100%;
+    max-width: var(--lx-layout-split-text);
+    margin-inline: auto;
+  }
+  [data-lx="core"] .lx-split--wide-text .lx-split__inner {
+    max-width: var(--lx-layout-split-text-wide);
+  }
+  [data-lx="core"] .lx-split__media {
+    aspect-ratio: var(--lx-ratio-media-sm);
+  }
+  [data-lx="core"] .lx-split:not(:has(> .lx-split__media)) .lx-split__inner {
+    max-width: var(--lx-layout-measure);
+    justify-items: center;
+    text-align: center;
+  }
+  @media (min-width: 30rem) {
+    [data-lx="core"] .lx-split__media { aspect-ratio: var(--lx-ratio-media-md); }
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-split__media { aspect-ratio: var(--lx-ratio-media-lg); }
+  }
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-split:has(> .lx-split__media) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    [data-lx="core"] .lx-split--wide-text:has(> .lx-split__media) {
+      grid-template-columns: minmax(0, 58fr) minmax(0, 42fr);
+    }
+    [data-lx="core"] .lx-split--wide-text.lx-split--media-start:has(> .lx-split__media) {
+      grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
+    }
+    [data-lx="core"] .lx-split__media {
+      aspect-ratio: auto;
+      min-height: var(--lx-layout-split-media-min);
+    }
+    [data-lx="core"] .lx-split:has(> .lx-split__media) .lx-split__inner {
+      margin-inline: 0;
+    }
+  }
+
+  /* Text + Diagram — copy beside an original diagram (assets in public/diagrams/core, geometry preserved). */
+  [data-lx="core"] .lx-diagram {
+    display: grid;
+    gap: var(--lx-space-12);
+    align-items: center;
+  }
+  [data-lx="core"] .lx-diagram__figure {
+    justify-self: center;
+    width: min(100%, 36rem);
+    margin: 0;
+  }
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-diagram {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      column-gap: calc(var(--lx-layout-gutter) * 2);
+    }
+  }
+
+  /* Statement / Pause — a centred editorial pause; --opening is the typographic opening of a page without media. */
+  [data-lx="core"] .lx-pause {
+    display: grid;
+    justify-items: center;
+    gap: var(--lx-space-6);
+    text-align: center;
+  }
+  [data-lx="core"] .lx-pause > * {
+    max-width: var(--lx-layout-measure);
+  }
+  [data-lx="core"] .lx-pause > :is(.lx-statement, .lx-headline) {
+    max-width: none;
+  }
+  [data-lx="core"] .lx-pause--opening {
+    justify-items: start;
+    text-align: start;
+    padding-top: calc(var(--lx-layout-bar-height) + var(--lx-space-section) / 2);
+  }
+
+  /* FAQ — White surface, reading width, native disclosures. */
+  [data-lx="core"] .lx-faq {
+    width: 100%;
+    max-width: var(--lx-layout-faq);
+    margin-inline: auto;
+  }
+
+  /* Sibling Blocks — equal units: same geometry, type and spacing; no shadow, no ornament. --pair = 2 × 2 from md. */
+  [data-lx="core"] .lx-siblings {
+    display: grid;
+    gap: var(--lx-space-8) var(--lx-layout-gutter);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-siblings {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    }
+    [data-lx="core"] .lx-siblings--pair {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}

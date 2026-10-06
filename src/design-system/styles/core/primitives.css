@@ -1,0 +1,267 @@
+/* Core primitives (docs/specs/design-system.md §13.4): the existing lx-* classes, re-expressed inside the generation
+ * flag. Behaviour, semantics and accessibility stay; only the expression changes. Colours come from the surface. */
+@layer lx.components {
+  /* Button — uppercase utility label, 48px (large 56px), 2px corners, no shadow. One primary action per block. */
+  [data-lx="core"] .lx-button {
+    min-height: var(--lx-target-control);
+    padding: var(--lx-space-3) var(--lx-space-6);
+    border: var(--lx-border-outline) solid transparent;
+    border-radius: var(--lx-radius-hairline);
+    background-color: transparent;
+    color: var(--lx-color-fg);
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-type-button);
+    font-weight: var(--lx-weight-medium);
+    letter-spacing: var(--lx-tracking-button);
+    line-height: var(--lx-leading-tight);
+    text-transform: uppercase;
+    transition:
+      background-color var(--lx-duration-moderate) var(--lx-ease-editorial),
+      border-color var(--lx-duration-moderate) var(--lx-ease-editorial),
+      color var(--lx-duration-moderate) var(--lx-ease-editorial);
+  }
+  [data-lx="core"] .lx-button--primary {
+    background-color: var(--lx-color-action-bg);
+    border-color: var(--lx-color-action-bg);
+    color: var(--lx-color-action-fg);
+  }
+  [data-lx="core"] .lx-button--primary:hover {
+    background-color: var(--lx-color-action-bg-hover);
+    border-color: var(--lx-color-action-bg-hover);
+    color: var(--lx-color-action-fg-hover);
+  }
+  [data-lx="core"] .lx-button--secondary {
+    border-color: var(--lx-color-outline);
+    color: var(--lx-color-outline-fg);
+  }
+  [data-lx="core"] .lx-button--secondary:hover {
+    background-color: var(--lx-color-action-bg);
+    border-color: var(--lx-color-action-bg);
+    color: var(--lx-color-action-fg);
+  }
+  [data-lx="core"] .lx-button--destructive {
+    border-color: var(--lx-color-error);
+    color: var(--lx-color-error);
+  }
+  [data-lx="core"] .lx-button--destructive:hover {
+    background-color: var(--lx-color-surface);
+  }
+  [data-lx="core"] .lx-button--quiet {
+    justify-self: start;
+    justify-content: flex-start;
+    min-width: var(--lx-target-min);
+    min-height: var(--lx-target-min);
+    padding-inline: 0;
+    border-color: transparent;
+    color: var(--lx-color-link);
+    font-size: var(--lx-type-label);
+    letter-spacing: var(--lx-tracking-body);
+    text-transform: none;
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--lx-border-hairline);
+    text-underline-offset: 0.3em;
+  }
+  [data-lx="core"] .lx-button--quiet:hover {
+    background-color: transparent;
+    text-decoration-thickness: var(--lx-focus-width);
+  }
+  [data-lx="core"] .lx-button--large {
+    min-height: var(--lx-target-hero);
+    padding-inline: var(--lx-space-8);
+    font-size: var(--lx-type-button-large);
+  }
+  [data-lx="core"] .lx-button:disabled,
+  [data-lx="core"] .lx-button[aria-disabled="true"] {
+    opacity: var(--lx-opacity-disabled);
+  }
+
+  /* Link — always underlined (identifiable without colour); the line thickens on hover. */
+  [data-lx="core"] .lx-link {
+    color: var(--lx-color-link);
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--lx-border-hairline);
+    text-underline-offset: 0.25em;
+    transition: text-decoration-thickness var(--lx-duration-quick) var(--lx-ease-editorial);
+  }
+  [data-lx="core"] .lx-link:hover {
+    text-decoration-thickness: var(--lx-focus-width);
+  }
+  [data-lx="core"] .lx-link--standalone {
+    min-width: var(--lx-target-min);
+    min-height: var(--lx-target-min);
+    font-size: var(--lx-type-label);
+    font-weight: var(--lx-weight-medium);
+  }
+
+  /* Icon button — 48 × 48 target; the accessible name comes from hidden text or aria-label. */
+  [data-lx="core"] .lx-icon-button {
+    width: var(--lx-target-control);
+    height: var(--lx-target-control);
+    border: var(--lx-border-hairline) solid transparent;
+    border-radius: var(--lx-radius-hairline);
+    color: var(--lx-color-fg);
+  }
+  [data-lx="core"] .lx-icon-button:hover {
+    border-color: var(--lx-color-rule-strong);
+  }
+
+  /* Logo — official kit through manifest keys, always <img>. Warm Sand on Blue/Deep, Moroccan Blue on light. */
+  [data-lx="core"] .lx-logo {
+    --lx-logo-height: 1.75rem;
+  }
+  [data-lx="core"] .lx-logo--vertical {
+    --lx-logo-height: 4.5rem;
+  }
+
+  /* Form — rows stack from the top; a form never spreads its fields to fill a taller neighbour. */
+  [data-lx="core"] .lx-form {
+    align-content: start;
+  }
+
+  /* Field — visible label above, hint, error with icon + text; native controls 48px, text ≥ 16px, border ≥ 3:1. */
+  [data-lx="core"] .lx-field {
+    gap: var(--lx-space-2);
+  }
+  [data-lx="core"] .lx-field > .lx-label,
+  [data-lx="core"] .lx-choice-group > legend {
+    color: var(--lx-color-fg);
+    font-size: var(--lx-type-label);
+    font-weight: var(--lx-weight-medium);
+    letter-spacing: var(--lx-tracking-body);
+  }
+  [data-lx="core"] .lx-label__tag {
+    border-radius: var(--lx-radius-hairline);
+    font-size: var(--lx-type-eyebrow);
+    color: var(--lx-color-fg);
+  }
+  [data-lx="core"] .lx-hint {
+    font-size: var(--lx-type-compact);
+    line-height: var(--lx-leading-compact);
+    color: var(--lx-color-fg-muted);
+  }
+  [data-lx="core"] .lx-error {
+    font-size: var(--lx-type-compact);
+    font-weight: var(--lx-weight-medium);
+    color: var(--lx-color-error);
+  }
+  [data-lx="core"] :is(.lx-input, .lx-textarea, .lx-select) {
+    min-height: var(--lx-target-control);
+    padding: var(--lx-space-3) var(--lx-space-4);
+    border: var(--lx-border-hairline) solid var(--lx-color-field-border);
+    border-radius: var(--lx-radius-hairline);
+    background-color: var(--lx-color-field-bg);
+    color: var(--lx-color-field-fg);
+    font-size: var(--lx-type-body);
+    transition: box-shadow var(--lx-duration-quick) var(--lx-ease-editorial);
+  }
+  [data-lx="core"] .lx-select {
+    padding-inline-end: var(--lx-space-12);
+  }
+  [data-lx="core"] :is(.lx-input, .lx-textarea, .lx-select):hover {
+    box-shadow: inset 0 0 0 var(--lx-border-hairline) var(--lx-color-field-border);
+  }
+  [data-lx="core"] :is(.lx-input, .lx-textarea, .lx-select)[aria-invalid="true"] {
+    border-color: var(--lx-color-error);
+    box-shadow: inset 0 0 0 var(--lx-border-hairline) var(--lx-color-error);
+  }
+  [data-lx="core"] :is(.lx-input, .lx-textarea, .lx-select):disabled {
+    opacity: var(--lx-opacity-disabled);
+    box-shadow: none;
+  }
+  [data-lx="core"] :is(.lx-input, .lx-textarea)::placeholder {
+    color: var(--lx-color-fg-muted);
+  }
+
+  /* Radio choice — rectangular, 48px, whole card is the target; checked = native mark + doubled border. */
+  [data-lx="core"] .lx-choice {
+    min-height: var(--lx-target-control);
+    padding: var(--lx-space-3) var(--lx-space-4);
+    border: var(--lx-border-hairline) solid var(--lx-color-field-border);
+    border-radius: var(--lx-radius-hairline);
+    background-color: var(--lx-color-field-bg);
+    color: var(--lx-color-field-fg);
+  }
+  [data-lx="core"] .lx-choice:has(> input:checked) {
+    background-color: var(--lx-color-field-bg);
+    box-shadow: inset 0 0 0 var(--lx-border-hairline) var(--lx-color-field-border);
+  }
+  [data-lx="core"] .lx-choice:has(> input:focus-visible) {
+    outline: var(--lx-focus-width) solid var(--lx-color-focus);
+    outline-offset: var(--lx-focus-ring-offset);
+  }
+  [data-lx="core"] .lx-choice__desc {
+    font-size: var(--lx-type-compact);
+    line-height: var(--lx-leading-compact);
+  }
+
+  /* Form message — semantic bar + icon + title (never colour alone); role="status" or "alert" in the markup. */
+  [data-lx="core"] .lx-message {
+    border-inline-start: var(--lx-focus-width) solid var(--lx-message-accent);
+    background-color: var(--lx-color-surface);
+    color: var(--lx-color-fg);
+    max-width: var(--lx-layout-measure);
+  }
+  [data-lx="core"] .lx-message--success { --lx-message-accent: var(--lx-color-success); }
+  [data-lx="core"] .lx-message--warning { --lx-message-accent: var(--lx-color-warning); }
+  [data-lx="core"] .lx-message--error { --lx-message-accent: var(--lx-color-error); }
+  [data-lx="core"] .lx-message__body {
+    font-size: var(--lx-type-compact);
+    line-height: var(--lx-leading-compact);
+  }
+
+  /* States — static skeleton (no shimmer), empty and success. */
+  [data-lx="core"] :is(.lx-empty, .lx-success) {
+    gap: var(--lx-space-4);
+    padding-block: var(--lx-space-8);
+    border-top-color: var(--lx-color-rule);
+  }
+
+  /* Disclosure — native <details>; the question in Newsreader under a hairline; the arrow turns when open. */
+  [data-lx="core"] .lx-disclosure {
+    border-bottom-color: var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-disclosure__item {
+    border-top-color: var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-disclosure__summary {
+    min-height: var(--lx-target-control);
+    padding-block: var(--lx-space-6);
+    font-size: var(--lx-type-title);
+    line-height: var(--lx-leading-title);
+    letter-spacing: var(--lx-tracking-display);
+    color: var(--lx-color-fg);
+  }
+  [data-lx="core"] .lx-disclosure__icon {
+    color: var(--lx-color-accent);
+    transition: transform var(--lx-duration-moderate) var(--lx-ease-editorial);
+  }
+  [data-lx="core"] .lx-disclosure__body {
+    max-width: var(--lx-layout-measure);
+    padding-bottom: var(--lx-space-6);
+  }
+
+  /* Evidence — attribute list (dl): label in utility type, value tabular; a plain hairline (no dimension ticks). */
+  [data-lx="core"] .lx-evidence__item {
+    border-top-color: var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-evidence__item::before,
+  [data-lx="core"] .lx-evidence__item::after {
+    content: none;
+  }
+  [data-lx="core"] .lx-evidence__label {
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-type-compact);
+    font-weight: var(--lx-weight-medium);
+    line-height: var(--lx-leading-tight);
+    letter-spacing: var(--lx-tracking-body);
+    text-transform: none;
+    color: var(--lx-color-fg-muted);
+  }
+  [data-lx="core"] .lx-evidence__value {
+    font-size: var(--lx-type-subheadline);
+    font-weight: var(--lx-weight-regular);
+  }
+  [data-lx="core"] .lx-evidence--inline .lx-evidence__value {
+    font-size: var(--lx-type-body);
+  }
+}

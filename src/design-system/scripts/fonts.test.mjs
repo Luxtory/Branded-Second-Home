@@ -34,3 +34,9 @@ test('preloaded (critical) fonts: at most 2 files and 100 KB', () => {
   assert.ok(critical.length <= manifest.budget.preloadFiles, `${critical.length} preload files`);
   assert.ok(bytes <= manifest.budget.preloadBytes, `preload ${bytes} > ${manifest.budget.preloadBytes}`);
 });
+
+// Core (docs/specs/design-system.md §13.1): the only visual inheritance is the three approved families — no new family.
+test('exactly the three approved families, in their voices', () => {
+  const families = [...new Set(manifest.files.map((f) => `${f.family}:${f.voice}`))].sort();
+  assert.deepEqual(families, ['Courier Prime:story', 'Hanken Grotesk:utility', 'Newsreader:display']);
+});

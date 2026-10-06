@@ -30,6 +30,21 @@ test('accepts token usage, font definitions and neutral values', () => {
   assert.deepEqual(rules('/* #FFF */ a{fill:currentColor}'), []);
 });
 
+test('Core: radius and shadow are tokens; 0, 50% and token-built inset rings stay allowed', () => {
+  assert.deepEqual(rules('a{border-radius:6px}'), ['radius']);
+  assert.deepEqual(rules('a{border-top-left-radius:0.375rem}'), ['radius']);
+  assert.deepEqual(rules('a{box-shadow:0 4px 12px var(--lx-color-rule)}'), ['shadow']);
+  assert.deepEqual(rules('a{border-radius:var(--lx-radius-hairline);box-shadow:var(--lx-shadow-overlay)}'), []);
+  assert.deepEqual(rules('a{border-radius:50%;box-shadow:inset 0 0 0 var(--lx-border-hairline) var(--lx-color-fg)}'), []);
+  assert.deepEqual(rules('a{border-radius:0;box-shadow:none}'), []);
+});
+
+test('the max-width property is allowed; only the max-width media query is refused', () => {
+  assert.deepEqual(rules('a{max-width:45rem}'), []);
+  assert.deepEqual(rules('a{max-width:calc(var(--lx-layout-measure) + 2rem)}'), []);
+  assert.deepEqual(rules('@media (max-width: 48rem){a{max-width:45rem}}'), ['media-max-width']);
+});
+
 test('extracts CSS from <style> and style="" in HTML', () => {
   const css = cssFromHtml('<style>a{color:red}</style><p style="color:#fff"></p>');
   assert.deepEqual(scanCss(css).map((v) => v.rule).sort(), ['color-hex', 'color-named']);
