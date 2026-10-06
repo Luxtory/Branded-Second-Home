@@ -379,7 +379,7 @@ export async function HomePage() {
 
       {/* 06 — PUSH: A) argumento (texto | fotografia) sobre Deep; B) o CTA cinematográfico sobre a fotografia de fechamento. */}
       <section id={PUSH} aria-labelledby={titleOf(PUSH)}>
-        {/* A: texto à esquerda, fotografia à direita (6/6); o texto de decisão fecha abaixo. */}
+        {/* A: texto à esquerda, fotografia à direita (6/6); depois "E para quem é a Luxtory?" e o próximo passo. */}
         <div className="lx-section-split" data-surface="deep">
           <div className="lx-split">
             <div className="lx-split__text">
@@ -412,8 +412,16 @@ export async function HomePage() {
               crop="lx-crop-x-80"
             />
           </div>
-          <div className="lx-container lx-section-closing lx-stack">
-            <Paragraphs lines={push.forWhom} className="lx-subheadline" />
+          {/* Subseção: a pergunta à esquerda, a resposta em texto corpo à direita. */}
+          <div className="lx-container">
+            <div className="lx-columns">
+              <h3 className="lx-headline">{push.forWhomTitle}</h3>
+              <div className="lx-stack">
+                <Paragraphs lines={push.forWhom} />
+              </div>
+            </div>
+          </div>
+          <div className="lx-container lx-section-closing">
             <p className="lx-subheadline">{nb(push.next)}</p>
           </div>
         </div>

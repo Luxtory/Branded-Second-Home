@@ -117,7 +117,9 @@ test('only the approved shells enable the Core flag (the public site shell since
 // Two distinct originals from Luxtory2.0/src/assets (§13.6): only font, canonical paint and contrast were adapted.
 const DIAGRAMS = [
   ['triade-valor-desejado.svg', 'bcf3b1f84e2aa87a39ae7bd7035c216cc353d5dc755d156c4c087afc0f901e10'],
-  ['diagrama-solucao-luxtory.svg', 'ce864d4ce38b5f0f3acfc518bf68fdb8b3f3da21142487fab906c3012edcd5c0'],
+  // 2026-10-06 (fundador): sem os rótulos Venda Integral, Aluguel de Temporada e Clube de Lazer; círculos e traços
+  // intactos (a assinatura sem os textos não mudou).
+  ['diagrama-solucao-luxtory.svg', '97f82e30dc80c097bb5248118f5176ac1db7e62d8d5840c3ef00ed12cd9d1727'],
 ];
 
 function geometrySignature(svg) {

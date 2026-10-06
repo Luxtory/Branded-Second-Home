@@ -381,6 +381,7 @@ export const discoveryMessages = {
         'Mais possibilidades para viver outros lugares e experiências.',
         'E uma estrutura criada para reduzir os atritos de ter uma Second Home.',
       ],
+      forWhomTitle: 'E para quem é a Luxtory?',
       forWhom: [
         'A Luxtory é para quem espera mais da forma como vive seu lazer.',
         'Para quem não quer escolher entre construir patrimônio, preservar liberdade e pertencer a lugares que representem quem é.',
