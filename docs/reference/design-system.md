@@ -527,3 +527,18 @@ Complementares consumidos pela W4: `lx-diagram` (Text + Diagram, `/diagrams/core
 - **Auth:** `div.lx-focused[data-surface=blue]` > `main.lx-focused__panel[data-surface=deep]`; título `lx-display-m`.
 - **Admin:** `div.lx-app` > `header.lx-app__bar[data-surface=blue]` + `main.lx-app__main[data-surface=white]`.
 - **Club:** consumirá o mesmo Core quando uma wave real exigir.
+
+### Site público no Core (CP2, 2026-10-06)
+
+- O `SiteShell` liga o flag (`div[data-lx=core]`): header e menu em `blue`, rodapé em `deep`; na Home o header fica
+  sobre o Cinematic Hero e o `SiteHeader` o torna sólido depois da rolagem.
+- Splits do grid de 12 colunas: `div.lx-columns.lx-columns--5-7` (ou `--7-5`; padrão 6/6) com dois filhos; cada coluna
+  de texto é um `lx-stack`.
+- Seção que abre com foto em metade: `section.lx-section-split[data-surface]` > `div.lx-split` (+ `--wide-media`,
+  `--wide-text`, `--media-start`) > `figure.lx-media.lx-split__media` + `div.lx-split__text > div.lx-split__inner`; o
+  que vem depois vai num `lx-container`.
+- Painel interativo de alternativas: `div.lx-panel-switch` > `fieldset.lx-panel-switch__options` (legend oculta;
+  `label.lx-panel-switch__option > input[type=radio]`) + região viva com `dl.lx-panel-switch__rows` +
+  `p.lx-panel-switch__caption`.
+- Owner | Co-Owner: `div.lx-comparison.lx-comparison--divided` > dois `div.lx-comparison__item` com a mesma estrutura.
+- Eyebrow: `p.lx-eyebrow` — a cor vem do papel `marker` da superfície; nunca forçar Warm Sand em Blue.

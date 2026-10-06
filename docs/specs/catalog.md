@@ -478,3 +478,47 @@ gatilho do ícone oficial; Footer `deep`.
 
 Aceite visual no **Checkpoint Visual do CP2 (sem push)**: Home, Como funciona, Coleção, Concept com e sem Edition, menu
 do celular aberto e Admin com "Público no site", a 390 e 1440 px.
+
+### 13.10 Home — Especificação Visual Final do fundador (CP2, 2026-10-06)
+
+> Brief visual da Home no Core Design System; prevalece sobre as linhas da Home da tabela §13.9. Copy: `D-B2C-19`
+> (GATE-COPY-W4, [`b2c.md`](communication/b2c.md) §11). Âncoras (`HOME_SECTIONS`), ordem, dados, CTA por disponibilidade
+> (`D-B2C-16`), CSP e as regras da §13 continuam como estão. Grid de 12 colunas no container de 1.400 px; mobile em
+> uma coluna na ordem abaixo, sem divisores verticais, Owner antes de Co-Owner com o mesmo peso.
+
+| Seção | Superfície | Composição (desktop) | Celular | Mídia |
+|---|---|---|---|---|
+| Hero | fotografia | Cinematic Hero: foto em toda a viewport, conteúdo no canto inferior esquerdo (colunas 1–8); headline White com a virada em itálico Warm Sand (só no Hero); CTA Warm Sand de 56 px; header transparente que fica Moroccan Blue sólido depois da rolagem; scrim só atrás do texto | foto → conteúdo → CTA | `hero-lifestyle.jpg` |
+| Renúncia | `blue` | Problem / Triad Comparison 7/5; alternativas 01–03 em 4/4/4 entre hairlines (superior, verticais, inferior); fechamento nas 12 colunas | copy → tríade → alternativas | Tríade de valor desejado (SVG) |
+| Regra | `deep` | Columns 5/7: copy + Panel Switch (Second Home inicial, radios nativos, região viva; linhas ATRIBUTO ——— VALOR); fechamento nas 12 colunas | copy → painel → fechamento | — |
+| Possibilidade | `blue` | Text + Diagram 6/6 (Diagrama de solução; "Venda Integral", "Aluguel de Temporada" e "Clube de Lazer" atenuados, geometria preservada) + Triad Statement | copy → diagrama → Triad Statement | Diagrama de solução (SVG) |
+| Luxtory | `sand` | Editorial Split 7/5 (imagem \| copy); fechamento nas 12 colunas | imagem → texto → fechamento | Kaizen K09 |
+| Pertencimento | `blue` | Editorial Split 5/7 (copy com Editorial List \| imagem); fechamento | texto → imagem → fechamento | Kaizen K07 |
+| Patrimônio | `white` | intro (≈ 8 colunas) + Owner \| Co-Owner (Editorial Comparison com hairline superior e divisor central); fechamento | intro → Owner → Co-Owner → fechamento | sem imagem |
+| Liberdade | `deep` | Bloco A: Editorial Split 5/7 (imagem \| intro); Bloco B: Numbered Editorial List (Luxchange, Luxplus, Locação de temporada); fechamento | intro → imagem → lista → fechamento | `luxury-property-facade-hero.jpg` |
+| Gestão | `sand` | Editorial Split 7/5 (copy \| imagem) + Owner \| Co-Owner; fechamento | texto → imagem → Owner → Co-Owner → fechamento | Kaizen K05 |
+| PUSH | `deep` + fotografia | A: argumento centrado, tríade em três colunas iguais e texto de decisão; B: fotografia de fechamento com o CTA por disponibilidade (primário Warm Sand, secundário em contorno) e scrim só atrás das ações | argumento → tríade → texto → foto → CTA | `home-solucao-firepit-family.jpg` |
+| FAQ | `white` | cabeçalho à esquerda; 13 disclosures nativos em ≈ 8–10 colunas, chevron Moroccan Blue | cabeçalho → disclosures | — |
+
+**Fotografias (proveniência).** Do repositório Luxtory2.0: `hero-lifestyle.jpg`, `home-solucao-firepit-family.jpg` e
+`luxury-property-facade-hero.jpg` (já em `public/images/home/hero/`). Da galeria Kaizen do anteprojeto (Luxtory2.0):
+K09 (família na piscina), K07 (pavilhão de bem-estar) e K05 (suíte preparada), recomprimidas sem redimensionar em
+`public/images/home/kaizen/`. As do Kaizen são imagens conceituais e levam a legenda "Kaizen Residence · Imagem
+conceitual" — nunca Edition, oferta ou prova de benefício (REQ-022); as demais são atmosfera (alt vazio). Escolha por
+seção: o assunto de cada foto responde ao texto (pessoas e arquitetura no Hero; identidade de lifestyle no
+Pertencimento; outro destino na Liberdade; casa preparada antes da chegada na Gestão; pessoas importantes juntas ao fim
+do dia no PUSH).
+
+**Ajustes que prevalecem sobre a especificação (governança: WCAG 2.2 AA verificado por teste).** Eyebrow Warm Sand
+sobre Moroccan Blue mede 4,32:1 (abaixo de 4,5:1 a 12 px): em Blue o eyebrow fica White 80%; em Deep é Warm Sand
+(5,57:1). Eyebrow Moroccan Blue sobre Warm Sand também mede 4,32:1: fica Dark Moroccan Blue (opção da própria
+especificação para Sand). No celular, o Hero e o PUSH B empilham fotografia e conteúdo para o texto não cobrir rostos.
+
+**Pontos para o Checkpoint Visual do CP2.** (1) Carrossel do Hero: entre as fotos disponíveis, só `hero-lifestyle`
+mantém as pessoas fora da área do texto; com a `home-solucao-firepit-family` como segundo slide, a headline cobre os
+rostos. O Hero usa uma foto; o carrossel e os controles (anterior, índice, progresso, total, próximo, pausa) aparecem
+sozinhos com duas ou mais fotos adequadas. (2) Nomenclatura: a copy aplicada usa "Residence" em trechos da Home (ver
+`D-B2C-19`).
+
+**Demais páginas.** Como funciona, Coleção, Concept e 404 seguem as receitas da §13.9 no Core. No Como funciona, o
+desenho da proporção do ano das configurações Co-Owner sai; os valores continuam em Evidence, painel a painel.
