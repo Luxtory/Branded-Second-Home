@@ -36,3 +36,11 @@
 @import url("./components/collection.css");
 @import url("./components/credit.css");
 @import url("./components/logo.css");
+/* Core Design System (docs/specs/design-system.md §13): last, behind the data-lx="core" generation flag. */
+@import url("./core/surfaces.css");
+@import url("./core/base.css");
+@import url("./core/typography.css");
+@import url("./core/primitives.css");
+@import url("./core/components.css");
+@import url("./core/patterns.css");
+@import url("./core/motion.css");

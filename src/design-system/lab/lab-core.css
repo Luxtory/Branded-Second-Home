@@ -1,0 +1,81 @@
+/* Lab do Core — só apresentação do próprio Lab (grades de amostras e notas). Tokens apenas; nada aqui é API do DS. */
+@layer lx.utilities {
+  [data-lx="core"] .lab-core-index {
+    display: grid;
+    gap: var(--lx-space-2) var(--lx-layout-gutter);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lab-core-index { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lab-core-index { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  [data-lx="core"] .lab-core-grid {
+    display: grid;
+    gap: var(--lx-space-6);
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lab-core-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
+  }
+  [data-lx="core"] .lab-core-tile {
+    display: grid;
+    align-content: start;
+    gap: var(--lx-space-3);
+    padding: var(--lx-space-6);
+    border: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lab-core-swatch {
+    display: grid;
+    align-content: end;
+    min-height: calc(var(--lx-space-24) + var(--lx-space-8));
+    padding: var(--lx-space-4);
+    border: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lab-core-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--lx-space-4);
+  }
+  [data-lx="core"] .lab-core-specimen {
+    display: grid;
+    gap: var(--lx-space-2);
+    padding-block: var(--lx-space-6);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lab-core-stack {
+    display: grid;
+    gap: var(--lx-space-8);
+  }
+  [data-lx="core"] .lab-core-pair {
+    display: grid;
+    align-items: start;
+    gap: var(--lx-space-8);
+  }
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lab-core-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  [data-lx="core"] .lab-core-panel {
+    padding: var(--lx-space-8) var(--lx-layout-margin);
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lab-core-panel { padding: var(--lx-space-8); }
+  }
+  [data-lx="core"] .lab-core-note {
+    max-width: var(--lx-layout-measure);
+    font-size: var(--lx-type-compact);
+    line-height: var(--lx-leading-compact);
+    color: var(--lx-color-fg-muted);
+  }
+  [data-lx="core"] .lab-core-icon {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  [data-lx="core"] .lab-icon-sprite {
+    display: none;
+  }
+}

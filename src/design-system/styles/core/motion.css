@@ -1,0 +1,31 @@
+/* Core motion (docs/specs/design-system.md §13.3): one short fade-up as progressive enhancement (content stays visible
+ * without JS), the hero crossfade, and nothing at all under reduced motion — no animation, no transform. */
+@layer lx.components {
+  [data-lx="core"][data-lx-js] [data-reveal] {
+    transition:
+      opacity var(--lx-duration-slow) var(--lx-ease-editorial),
+      transform var(--lx-duration-slow) var(--lx-ease-editorial);
+  }
+  [data-lx="core"][data-lx-js] [data-reveal]:not([data-revealed]) {
+    opacity: 0;
+    transform: translateY(var(--lx-space-2));
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-lx="core"] [data-reveal],
+    [data-lx="core"][data-lx-js] [data-reveal]:not([data-revealed]) {
+      opacity: 1;
+      transform: none;
+    }
+    [data-lx="core"] :is(.lx-button, .lx-button:active, .lx-link__icon, .lx-button__icon, .lx-mobile-nav) {
+      transform: none;
+    }
+  }
+  [data-lx="core"][data-motion="reduce"] [data-reveal],
+  [data-lx="core"][data-motion="reduce"][data-lx-js] [data-reveal]:not([data-revealed]) {
+    opacity: 1;
+    transform: none;
+  }
+  [data-lx="core"][data-motion="reduce"] :is(.lx-button, .lx-button:active, .lx-link__icon, .lx-button__icon, .lx-mobile-nav) {
+    transform: none;
+  }
+}

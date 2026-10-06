@@ -94,6 +94,9 @@ a entrada `open_exercise` em `vercel.json` e no registro de jobs, e o port de al
 pacote novo nem entrada de CHANGELOG. Nenhum arquivo em comum. Todas as outras waves são sequenciais porque
 compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.json` ou `CHANGELOG.md`.
 
+> **2026-10-06:** a W4 é executada como **CP2** do [Core Design System Luxtory](#core-design-system-luxtory--cp1cp5-2026-10-06)
+> (CP1 Core + Lab → GATE-COPY-W4 → CP2 = W4); Auth e Admin migram depois (CP3, CP4) e não bloqueiam a W4.
+
 ### Wave 0 — Fundação
 
 - **Goal**: base executável e verificável, sem nenhuma regra de negócio.
@@ -1186,6 +1189,83 @@ Commit Conventional por onda, push em `claude/busy-edison-h75ufo`.
 
 - O W0 (scaffold Next.js, CI, `## Commands`) é pré-requisito dos wrappers React do DS, não destas ondas.
 - Pendência externa: kit oficial de logos (commit aditivo em `src/design-system/brand/logo/`).
+
+## Core Design System Luxtory — CP1…CP5 (2026-10-06)
+
+> Fonte: [`docs/specs/design-system.md` §13](../specs/design-system.md) (plano FINAL aprovado pelo fundador em
+> 2026-10-06). Missão: entregar corretamente a **W4 — Discovery público** (= CP2) sobre um único Core Design System;
+> Auth e Admin vêm depois e não bloqueiam a W4. Base: `main@10a3a2b`.
+
+| Checkpoint | Deliverable | Depends on | Parallel with | Status |
+|------------|-------------|------------|---------------|--------|
+| CP1 | Core DS + Lab: foundations, primitives, estados, patterns oficiais, diagramas, contratos; nenhuma página migrada | — | — | 🟡 |
+| GATE-COPY-W4 | Fonte autorizada da copy da W4 (Framework → `b2c.md`/registro → fundador) | CP1 | — | ⬜ |
+| CP2 = W4 | Core aplicado às superfícies da W4 (`/`, `/como-funciona`, `/colecao`, `/colecao/[conceptId]`, shell, 404) | CP1, GATE-COPY-W4 | — | ⬜ |
+| CP3 | Auth no Core (`/entrar`, `/entrar/mfa`, estados focados) | CP2 | — | ⬜ |
+| CP4 | Admin no Core ("folha de papel inteligente", 16 rotas) | CP3 | — | ⬜ |
+| CP5 | Consolidação: Core default, legado sem consumidores, docs sincronizados | CP4 | — | ⬜ |
+
+Todos sequenciais: compartilham `tokens.json`, `styles/index.css` e a spec do DS. Cada checkpoint = branch/worktree e PR
+próprios, nascidos da `main` com o anterior mergeado (nunca CP1 + CP2 numa branch longa).
+
+### CP1 — Core Design System + Lab
+
+- **Goal**: construir o sistema-mãe que sustenta a W4 e a expansão futura, sem migrar páginas do produto.
+- **Scope**: `src/design-system/` (tokens, `styles/core/`, scripts de teste, Lab `core*.html`), `public/diagrams/core/`,
+  `tests/e2e/lab-core.spec.ts`, docs (spec do DS §13, reference, `catalog.md` §13.9, este plano, CHANGELOG).
+- **Depends on / parallel with**: `main@10a3a2b`; sequencial.
+- **Acceptance criteria**: `npm run test:ds` verde (paleta de 5 valores, 3 famílias, matriz papel × superfície, hardcodes,
+  contexto sem foundations, regras do Core só sob o flag, nenhum shell do produto com o flag, assinatura dos diagramas);
+  `npx playwright test tests/e2e/lab-core.spec.ts` verde (axe 0 a 390/1440, overflow 0 de 320 a 1920, teclado, dialog,
+  carrossel pausável, reduced motion, alvos ≥ 44 px, contraste do hero nos pixels); superfícies da W4 idênticas ao
+  baseline; lint, typecheck e build verdes; Preview privado → STOP → aprovação → PR/CI → merge.
+- **Goal command**: `/goal npm run test:ds && npm run lint && npm run typecheck && npx playwright test tests/e2e/lab-core.spec.ts --no-deps exit 0, stop after 4 tries`
+
+### GATE-COPY-W4
+
+- **Goal**: definir a fonte autorizada da copy da W4 antes do CP2; o CP1 não depende desta decisão.
+- **Acceptance criteria**: todo delta candidato (inclusive de branches antigas, que não são fonte canônica) confrontado
+  com `framework-b2c.md` → `b2c.md`/registro de decisões → instruções explícitas do fundador; sem cherry-pick automático
+  de i18n; versões materiais concorrentes apresentadas em diff ao fundador → decisão registrada.
+- **Goal command**: `/goal o registro de b2c.md contém a decisão do fundador sobre a copy da W4, stop after 1 try`
+
+### CP2 — Wave 4 · Discovery público
+
+- **Goal**: aplicar o Core aprovado às superfícies existentes da W4 e encerrar a W4.
+- **Scope**: `catalog/presentation` (discovery), shell público, receitas de `catalog.md` §13.9. Domínio, queries, RLS,
+  publicação, disponibilidade, Coleção, SSR, CSP, `PUBLIC_SITE`, nomenclatura, copy autorizada e regras de CTA intactos.
+  Critério de aceite da W4 falhando é corrigido minimamente conforme canônicos/specs/decisões; decisão nova → STOP.
+- **Sequência**: `main` com CP1 → GATE-COPY-W4 → implementação local → **CP2-A Checkpoint Visual sem push** (Home, Como
+  funciona, Coleção, Concept com e sem Edition, menu do celular aberto, Admin com "Público no site", a 390 e 1440 px) →
+  aprovação → **CP2-B** DS gates, unitários, E2E da W4, axe, overflow, `npm run verify && npm run test:e2e && npm run
+  trace -- --expect REQ-100,REQ-101`, WebKit smoke (`PLAYWRIGHT_WEBKIT=1`, aceite da §13.6) → PR draft + CI verde → STOP →
+  autorização → merge → gates pós-merge verdes → NOTES/roadmap → W4 concluída.
+- **Acceptance criteria**: todos os critérios de `catalog.md` §13.6 e do roadmap da W4. Falha herdada é provada
+  preexistente e reportada à parte; se for exigida pelo gate de fechamento (ex.: formato do hook até o merge do #29),
+  é resolvida separadamente antes de declarar a W4 concluída.
+- **Goal command**: `/goal npm run verify && npm run test:e2e && npm run trace -- --expect REQ-100,REQ-101 exit 0, stop after 4 tries`
+
+### CP3 — Auth
+
+- **Goal**: Auth no mesmo Core (canvas `blue`, painel `deep`), sem novo DS. Baseline de Auth imediatamente antes.
+- **Acceptance criteria**: login + MFA a 390 px com toque; E2E `auth`/`admin-access`; axe e overflow por rota; WebKit smoke.
+- **Goal command**: `/goal npx playwright test tests/e2e/admin-access.spec.ts tests/e2e/app-shell.spec.ts exit 0, stop after 3 tries`
+
+### CP4 — Admin
+
+- **Goal**: Admin no Core como "folha de papel inteligente", preservando toda a funcionalidade. Baseline das 16 rotas
+  imediatamente antes.
+- **Acceptance criteria**: smoke visual das 16 rotas; responsivo; axe; estados principais (vazio, aviso, sucesso, erro,
+  destrutivo); fluxos críticos por módulo (Brand Partner: criar, exposição, encerramento; Concept: versão, aprovação,
+  autorização e revogação de investor; Edition e Residence: criar e detalhar); zero mudança de domínio ou dados.
+- **Goal command**: `/goal npx playwright test tests/e2e/catalog-admin.spec.ts tests/e2e/admin-access.spec.ts tests/e2e/app-shell.spec.ts exit 0, stop after 3 tries`
+
+### CP5 — Consolidação global
+
+- **Goal**: Core default; zero consumidores do DS superseded (`design-system.md` §13.9); flag e aliases temporários
+  removidos quando permitido; imports antigos eliminados; docs sincronizados.
+- **Acceptance criteria**: gate integral + regressão integral.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0, stop after 3 tries`
 
 ---
 

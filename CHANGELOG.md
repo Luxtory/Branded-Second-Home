@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Core Design System Luxtory (CP1, `docs/specs/design-system.md` §13): superfícies `white`/`wash`/`sand`/`blue`/`deep`
+  (`data-surface`), papéis de tipo `type.*`, ritmo, layout, motion e foco como tokens; primitives e componentes
+  reexpressos e patterns oficiais (Cinematic Hero, Problem/Triad Comparison, Triad Statement, Editorial e Panel
+  Comparison, Numbered Editorial List, Editorial Split) atrás do flag `data-lx="core"` — nenhuma página do produto o
+  liga ainda; diagramas originais adaptados em `public/diagrams/core/`; Lab do Core (Public, Auth, Admin) e contratos
+  de teste (matriz papel × superfície, radius/sombra, contexto sem foundations, flag, assinatura dos diagramas).
 - Design System Luxtory (LUXURY + STORY): tokens DTCG (`src/design-system/tokens/tokens.json`), grounds
   paper/wash/night, three free OFL fonts (Newsreader, Hanken Grotesk, Courier Prime), CSS components `lx-*` for R1
   (Scene, Scene Marker, Frame, Sequence, Evidence, Button, Link, Field, Choice Group, Message, States, Header,

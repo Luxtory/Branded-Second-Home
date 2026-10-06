@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 // Enforces WCAG 2.2 AA contrast for every semantic pair declared in tokens.json ($extensions["lx.contrast"]),
 // on every ground, plus white text over the minimum scrim on a worst-case (white) image pixel.
+// Core (docs/specs/design-system.md §13.3): the full matrix semantic role × surface ($extensions["lx.contrast.surface"]),
+// with roles that a surface does not permit listed in `notPermitted` (e.g. error states on sand).
 // Usage: node src/design-system/scripts/check-contrast.mjs
 import { fileURLToPath } from 'node:url';
-import { GROUNDS, groundColor, loadTokens, resolveValue } from './lib/tokens.mjs';
+import { GROUNDS, groundColor, loadTokens, resolveValue, SURFACES, surfaceColor } from './lib/tokens.mjs';
 
 export const MIN_TEXT = 4.5;
 export const MIN_UI = 3;
+/** Large text (≥ 24 px regular): display roles such as headline and accent numerals. */
+export const MIN_LARGE = 3;
 
 function parseHex(hex) {
   const match = /^#([0-9a-f]{6})$/i.exec(hex);
@@ -56,8 +60,26 @@ export function runContrast(tokens = loadTokens()) {
   return results;
 }
 
+/** Core matrix: every permitted (role, background-role) pair on every surface. */
+export function runSurfaceContrast(tokens = loadTokens()) {
+  const rules = tokens.$extensions['lx.contrast.surface'];
+  const notPermitted = rules.notPermitted ?? {};
+  const results = [];
+  for (const surface of SURFACES) {
+    const blocked = new Set(notPermitted[surface] ?? []);
+    for (const [kind, min] of [['text', MIN_TEXT], ['large', MIN_LARGE], ['ui', MIN_UI]]) {
+      for (const [fg, bg] of rules[kind]) {
+        if (blocked.has(fg) || blocked.has(bg)) continue;
+        const ratio = contrast(surfaceColor(tokens, surface, fg), surfaceColor(tokens, surface, bg));
+        results.push({ check: `surface ${surface}: ${fg} on ${bg}`, kind, min, ratio, pass: ratio >= min });
+      }
+    }
+  }
+  return results;
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const results = runContrast();
+  const results = [...runContrast(), ...runSurfaceContrast()];
   for (const r of results) {
     console.log(`${r.pass ? 'PASS' : 'FAIL'}  ${r.ratio.toFixed(2).padStart(5)} ≥ ${r.min}  ${r.check}`);
   }

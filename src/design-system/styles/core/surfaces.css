@@ -1,0 +1,13 @@
+/* Core surfaces (docs/specs/design-system.md §13.3). [data-surface] re-scopes the semantic colors (tokens.css) and
+ * paints itself. The legacy uses [data-ground], never [data-surface], so this file needs no generation flag. */
+@layer lx.base {
+  [data-surface] {
+    background-color: var(--lx-color-bg);
+    color: var(--lx-color-fg);
+    accent-color: var(--lx-color-action-bg);
+  }
+  [data-surface="blue"],
+  [data-surface="deep"] {
+    color-scheme: dark;
+  }
+}
