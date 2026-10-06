@@ -6,6 +6,14 @@
   [data-lx="core"] .lx-section {
     padding-block: var(--lx-space-section);
   }
+  /* Section that opens with a full-bleed Editorial Split: no top padding (the split touches the previous section),
+   * the blocks after the split keep the section rhythm. */
+  [data-lx="core"] .lx-section-split {
+    padding-bottom: var(--lx-space-section);
+  }
+  [data-lx="core"] .lx-section-split > .lx-split + * {
+    margin-top: calc(var(--lx-space-section) * 2 / 3);
+  }
   [data-lx="core"] .lx-section-head {
     display: grid;
     gap: var(--lx-space-6);
@@ -38,8 +46,14 @@
   }
   [data-lx="core"] .lx-section-closing {
     max-width: var(--lx-layout-measure);
-    margin: var(--lx-space-12) auto 0;
+    margin: max(var(--lx-space-12), calc(var(--lx-space-section) / 2)) auto 0;
     text-align: center;
+  }
+  [data-lx="core"] .lx-section-closing p {
+    text-wrap: balance;
+  }
+  [data-lx="core"] .lx-section-closing :is(.lx-actions-stack, .lx-hero__actions) {
+    justify-content: center;
   }
 
   /* Cinematic Hero — the photograph is the protagonist: full-bleed, content low in the composition, header over the
@@ -49,8 +63,7 @@
     position: relative;
     isolation: isolate;
     display: grid;
-    align-content: end;
-    min-height: 100svh;
+    align-content: start;
     overflow: hidden;
     background-color: var(--lx-color-bg);
   }
@@ -67,13 +80,24 @@
     );
     pointer-events: none;
   }
+  /* Phones: the photograph keeps its subject in view above the copy (no text over faces), then fades into the
+   * surface; from md the photograph fills the viewport behind the content. */
   [data-lx="core"] .lx-hero__slides {
-    position: absolute;
-    inset: 0;
+    position: relative;
     z-index: var(--lx-z-base);
+    height: 62svh;
+    min-height: var(--lx-layout-split-media-min);
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+  [data-lx="core"] .lx-hero__slides::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: var(--lx-space-24);
+    background-image: linear-gradient(to top, var(--lx-color-bg), transparent);
+    pointer-events: none;
   }
   [data-lx="core"] .lx-hero__slide {
     position: absolute;
@@ -97,26 +121,32 @@
     z-index: var(--lx-z-raised);
     display: grid;
     gap: var(--lx-space-8);
-    padding-block: calc(var(--lx-layout-bar-height) + var(--lx-space-16)) var(--lx-space-12);
+    padding-block: var(--lx-space-4) var(--lx-space-12);
   }
   [data-lx="core"] .lx-hero__copy {
     position: relative;
     isolation: isolate;
     display: grid;
+    justify-items: start;
     gap: var(--lx-space-6);
-    max-width: var(--lx-layout-split-text-wide);
+    max-width: calc(var(--lx-layout-container) * 8 / var(--lx-layout-columns-lg));
   }
-  /* Local scrim: a feathered plate behind the copy only (solid under the text, fading outside it). */
+  /* Hero headline only (not a foundation): White, with the copy's editorial turn in Newsreader italic Warm Sand. */
+  [data-lx="core"] .lx-hero .lx-hero__title {
+    color: var(--lx-color-fg);
+  }
+  [data-lx="core"] .lx-hero .lx-hero__title em {
+    color: var(--lx-color-accent);
+  }
+  /* Local scrim (md+): a plate of Dark Moroccan Blue under the whole copy box, feathered outside it by a blur — dense
+   * under every glyph, dissolving before the photograph's subject; never a uniform layer over the image. */
   [data-lx="core"] .lx-hero__copy::before {
-    content: "";
+    content: none;
     position: absolute;
-    inset: calc(-1 * var(--lx-space-32)) calc(-1 * var(--lx-space-48)) calc(-1 * var(--lx-space-16));
+    inset: calc(-1 * var(--lx-space-24));
     z-index: -1;
     background-color: color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-max-alpha) * 100%), transparent);
-    mask-image:
-      linear-gradient(to right, transparent, currentColor var(--lx-space-32), currentColor calc(100% - var(--lx-space-32)), transparent),
-      linear-gradient(to bottom, transparent, currentColor var(--lx-space-24), currentColor calc(100% - var(--lx-space-12)), transparent);
-    mask-composite: intersect;
+    filter: blur(var(--lx-space-12));
     pointer-events: none;
   }
   [data-lx="core"] .lx-hero__actions {
@@ -139,11 +169,64 @@
     font-size: var(--lx-type-label);
     font-variant-numeric: tabular-nums;
   }
+  /* Controls in reading order: previous · current index · progress · total · next · play/pause. White + Warm Sand. */
+  [data-lx="core"] .lx-hero__index {
+    font-size: var(--lx-type-label);
+    font-weight: var(--lx-weight-medium);
+    font-variant-numeric: tabular-nums;
+  }
+  [data-lx="core"] .lx-hero__index--current {
+    color: var(--lx-color-accent);
+  }
+  [data-lx="core"] .lx-hero__progress {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lx-space-1);
+    margin-inline: var(--lx-space-2);
+  }
+  [data-lx="core"] .lx-hero__step {
+    width: var(--lx-space-8);
+    border-top: var(--lx-border-outline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-hero__step[data-active] {
+    border-top-width: var(--lx-focus-width);
+    border-top-color: var(--lx-color-accent);
+  }
+  /* Closing variant — the final cinematic CTA: the same photograph grammar, shorter, no header band, no controls. */
   @media (min-width: 48rem) {
+    [data-lx="core"] .lx-hero--closing {
+      min-height: 85svh;
+    }
+  }
+  [data-lx="core"] .lx-hero--closing::before {
+    content: none;
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-hero--closing .lx-hero__content {
+      padding-top: var(--lx-space-section);
+    }
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-hero {
+      align-content: end;
+      min-height: 100svh;
+    }
+    [data-lx="core"] .lx-hero__slides {
+      position: absolute;
+      inset: 0;
+      height: auto;
+      min-height: 0;
+    }
+    [data-lx="core"] .lx-hero__slides::after {
+      content: none;
+    }
     [data-lx="core"] .lx-hero__content {
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: end;
-      padding-bottom: var(--lx-space-16);
+      padding-block: calc(var(--lx-layout-bar-height) + var(--lx-space-16)) var(--lx-space-16);
+    }
+    [data-lx="core"] .lx-hero__copy::before {
+      content: "";
     }
     [data-lx="core"] .lx-hero__controls {
       justify-self: end;
@@ -161,12 +244,30 @@
     width: min(100%, 28rem);
     margin: 0;
   }
+  [data-lx="core"] .lx-triad-comparison__copy {
+    display: grid;
+    gap: var(--lx-space-6);
+  }
+  [data-lx="core"] .lx-triad-comparison__copy > .lx-body {
+    max-width: var(--lx-layout-split-text-wide);
+  }
   [data-lx="core"] .lx-triad-comparison__alternatives {
     display: grid;
-    gap: var(--lx-space-8);
-    margin-top: var(--lx-space-16);
+    margin: var(--lx-space-16) 0 0;
+    padding: 0;
+    list-style: none;
+    border-block: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
   }
-  [data-lx="core"] :is(.lx-triad-comparison__alternative, .lx-siblings__item, .lx-comparison__item) {
+  [data-lx="core"] .lx-triad-comparison__alternative {
+    display: grid;
+    align-content: start;
+    gap: var(--lx-space-3);
+    padding-block: var(--lx-space-8);
+  }
+  [data-lx="core"] .lx-triad-comparison__alternative + .lx-triad-comparison__alternative {
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] :is(.lx-siblings__item, .lx-comparison__item) {
     display: grid;
     align-content: start;
     gap: var(--lx-space-3);
@@ -176,19 +277,37 @@
   @media (min-width: 48rem) {
     [data-lx="core"] .lx-triad-comparison__alternatives {
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      column-gap: var(--lx-layout-gutter);
+    }
+    [data-lx="core"] .lx-triad-comparison__alternative {
+      padding-inline: var(--lx-layout-gutter);
+    }
+    [data-lx="core"] .lx-triad-comparison__alternative:first-child {
+      padding-inline-start: 0;
+    }
+    [data-lx="core"] .lx-triad-comparison__alternative:last-child {
+      padding-inline-end: 0;
+    }
+    [data-lx="core"] .lx-triad-comparison__alternative + .lx-triad-comparison__alternative {
+      border-top: 0;
+      border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
     }
   }
   @media (min-width: 64rem) {
     [data-lx="core"] .lx-triad-comparison__top {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
       column-gap: calc(var(--lx-layout-gutter) * 2);
     }
   }
 
   /* Triad Statement — 01 Patrimônio · 02 Liberdade · 03 Pertencimento between dividers, then the large statement. */
+  [data-lx="core"] * + .lx-triad-statement {
+    margin-top: var(--lx-space-16);
+  }
   [data-lx="core"] .lx-triad-statement__cells {
     display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
     border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
   }
   [data-lx="core"] .lx-triad-statement__cell {
@@ -203,6 +322,9 @@
     font-size: var(--lx-type-ordinal);
     line-height: var(--lx-leading-heading);
     color: var(--lx-color-headline);
+  }
+  [data-lx="core"] .lx-triad-statement--lines .lx-triad-statement__word {
+    color: var(--lx-color-fg);
   }
   [data-lx="core"] .lx-triad-statement__statement {
     margin-top: var(--lx-space-16);
@@ -222,6 +344,9 @@
       gap: var(--lx-space-3);
       padding: var(--lx-space-8) var(--lx-space-6);
       border-bottom: 0;
+    }
+    [data-lx="core"] .lx-triad-statement__cell:first-child {
+      padding-inline-start: 0;
     }
     [data-lx="core"] .lx-triad-statement__cell + .lx-triad-statement__cell {
       border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
@@ -243,10 +368,31 @@
     padding-block: var(--lx-space-3);
     border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
   }
+  [data-lx="core"] .lx-comparison--divided .lx-comparison__item {
+    gap: var(--lx-space-4);
+    padding-top: var(--lx-space-8);
+    border-top-color: var(--lx-color-rule);
+  }
   @media (min-width: 48rem) {
     [data-lx="core"] .lx-comparison {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       column-gap: calc(var(--lx-layout-gutter) * 2);
+    }
+    [data-lx="core"] .lx-comparison--divided {
+      column-gap: 0;
+      border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+    [data-lx="core"] .lx-comparison--divided .lx-comparison__item {
+      padding-inline-end: calc(var(--lx-layout-gutter) * 2);
+      border-top: 0;
+    }
+    [data-lx="core"] .lx-comparison--divided .lx-comparison__item + .lx-comparison__item {
+      padding-inline: calc(var(--lx-layout-gutter) * 2) 0;
+      border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+    /* Inside a numbered row the row's own hairline already opens the pair. */
+    [data-lx="core"] .lx-numbered__text > .lx-comparison--divided:first-child {
+      border-top: 0;
     }
   }
 
@@ -308,8 +454,26 @@
     min-width: 2ch;
   }
   [data-lx="core"] .lx-numbered__text {
-    grid-column: 2;
+    grid-column: 1 / -1;
     max-width: var(--lx-layout-measure);
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-numbered__text {
+      grid-column: 2;
+    }
+  }
+  [data-lx="core"] .lx-numbered__text--wide {
+    grid-column: 2;
+  }
+  /* --compact: number + a single line (an index of links); the text column never splits off. */
+  [data-lx="core"] .lx-numbered--compact .lx-numbered__item {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding-block: var(--lx-space-4);
+  }
+  [data-lx="core"] .lx-numbered--compact .lx-numbered__item > a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--lx-target-min);
   }
   [data-lx="core"] .lx-numbered__item:has(> .lx-numbered__details) {
     display: block;
@@ -348,6 +512,9 @@
     }
     [data-lx="core"] .lx-numbered__text {
       grid-column: 3;
+    }
+    [data-lx="core"] .lx-numbered__text--wide {
+      grid-column: 2 / -1;
     }
     [data-lx="core"] .lx-numbered__summary {
       grid-template-columns: minmax(4rem, 1fr) minmax(0, 10fr) auto;
@@ -399,8 +566,12 @@
     [data-lx="core"] .lx-split--wide-text:has(> .lx-split__media) {
       grid-template-columns: minmax(0, 58fr) minmax(0, 42fr);
     }
-    [data-lx="core"] .lx-split--wide-text.lx-split--media-start:has(> .lx-split__media) {
+    [data-lx="core"] .lx-split--wide-text.lx-split--media-start:has(> .lx-split__media),
+    [data-lx="core"] .lx-split--wide-media:has(> .lx-split__media) {
       grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
+    }
+    [data-lx="core"] .lx-split--wide-media.lx-split--media-start:has(> .lx-split__media) {
+      grid-template-columns: minmax(0, 58fr) minmax(0, 42fr);
     }
     [data-lx="core"] .lx-split__media {
       aspect-ratio: auto;
@@ -408,6 +579,11 @@
     }
     [data-lx="core"] .lx-split:has(> .lx-split__media) .lx-split__inner {
       margin-inline: 0;
+    }
+    /* --media-start puts the photograph on the start side from lg whatever the DOM order, so a split can read
+     * text → image on phones and still show the image first on desktop. */
+    [data-lx="core"] .lx-split--media-start > .lx-split__media {
+      order: -1;
     }
   }
 
@@ -427,6 +603,9 @@
       grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
       column-gap: calc(var(--lx-layout-gutter) * 2);
     }
+    [data-lx="core"] .lx-diagram--even {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   /* Statement / Pause — a centred editorial pause; --opening is the typographic opening of a page without media. */
@@ -442,6 +621,11 @@
   [data-lx="core"] .lx-pause > :is(.lx-statement, .lx-headline) {
     max-width: none;
   }
+  /* --start: the same pause aligned to the start — the typographic opening of a page under a solid header. */
+  [data-lx="core"] .lx-pause--start {
+    justify-items: start;
+    text-align: start;
+  }
   [data-lx="core"] .lx-pause--opening {
     justify-items: start;
     text-align: start;
@@ -454,6 +638,131 @@
     max-width: var(--lx-layout-faq);
     margin-inline: auto;
   }
+  [data-lx="core"] .lx-faq--start {
+    margin-inline: 0;
+  }
+
+  /* Panel Switch — one interactive panel: the alternatives as a row of text options on a hairline (native radios:
+   * arrows move, focus is visible, the result is announced by the component), then rows ATTRIBUTE ——— VALUE. The
+   * chosen option = Warm Sand underline + semibold + full colour, never colour alone. Framed from md; open on phones. */
+  [data-lx="core"] .lx-panel-switch {
+    display: grid;
+    gap: var(--lx-space-8);
+  }
+  [data-lx="core"] .lx-panel-switch__options {
+    display: flex;
+    flex-wrap: wrap;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-panel-switch__option {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--lx-target-control);
+    padding-inline: var(--lx-space-3);
+    margin-bottom: calc(-1 * var(--lx-border-hairline));
+    border-bottom: var(--lx-border-outline) solid transparent;
+    color: var(--lx-color-fg-muted);
+    font-size: var(--lx-type-label);
+    font-weight: var(--lx-weight-medium);
+    letter-spacing: var(--lx-tracking-body);
+    cursor: pointer;
+    transition: border-color var(--lx-duration-moderate) var(--lx-ease-editorial);
+  }
+  [data-lx="core"] .lx-panel-switch__option:first-of-type {
+    padding-inline-start: 0;
+  }
+  [data-lx="core"] .lx-panel-switch__option > input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  [data-lx="core"] .lx-panel-switch__option:has(> input:checked) {
+    border-bottom-color: var(--lx-color-accent);
+    color: var(--lx-color-fg);
+    font-weight: var(--lx-weight-semibold);
+  }
+  [data-lx="core"] .lx-panel-switch__option:has(> input:focus-visible) {
+    outline: var(--lx-focus-width) solid var(--lx-color-focus);
+    outline-offset: var(--lx-focus-ring-offset);
+  }
+  [data-lx="core"] .lx-panel-switch__rows {
+    display: grid;
+    margin: 0;
+  }
+  [data-lx="core"] .lx-panel-switch__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--lx-space-2) var(--lx-space-3);
+    padding-block: var(--lx-space-4);
+  }
+  [data-lx="core"] .lx-panel-switch__row::before {
+    content: "";
+    order: 1;
+    flex: 1 1 var(--lx-space-6);
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-panel-switch__attribute {
+    order: 0;
+    font-size: var(--lx-type-label);
+    font-weight: var(--lx-weight-medium);
+    letter-spacing: var(--lx-tracking-eyebrow);
+    line-height: var(--lx-leading-tight);
+    text-transform: uppercase;
+    color: var(--lx-color-fg);
+  }
+  [data-lx="core"] .lx-panel-switch__value {
+    order: 2;
+    margin: 0 0 0 auto;
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-type-ordinal);
+    line-height: var(--lx-leading-heading);
+    text-align: end;
+    color: var(--lx-color-accent);
+  }
+  [data-lx="core"] .lx-panel-switch__caption {
+    max-width: var(--lx-layout-measure);
+    padding-top: var(--lx-space-6);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-panel-switch__caption strong {
+    color: var(--lx-color-accent);
+    font-weight: var(--lx-weight-semibold);
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-panel-switch {
+      padding: var(--lx-space-8) var(--lx-space-12) var(--lx-space-12);
+      border: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+    [data-lx="core"] .lx-panel-switch__option {
+      padding-inline: var(--lx-space-6);
+    }
+  }
+
+  /* Editorial List — words in vertical rhythm between hairlines, no bullets: Newsreader in the headline role. */
+  [data-lx="core"] .lx-editorial-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-editorial-list > li {
+    padding-block: var(--lx-space-3);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-type-ordinal);
+    line-height: var(--lx-leading-heading);
+    color: var(--lx-color-headline);
+  }
 
   /* Sibling Blocks — equal units: same geometry, type and spacing; no shadow, no ornament. --pair = 2 × 2 from md. */
   [data-lx="core"] .lx-siblings {
@@ -465,7 +774,7 @@
   }
   @media (min-width: 48rem) {
     [data-lx="core"] .lx-siblings {
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
     }
     [data-lx="core"] .lx-siblings--pair {
       grid-template-columns: repeat(2, minmax(0, 1fr));

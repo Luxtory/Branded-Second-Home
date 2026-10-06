@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Logo, logoUrl } from './logo';
 import { MobileNav } from './mobile-nav';
+import { SiteHeader } from './site-header';
 
 export interface SiteNavItem {
   readonly href: string;
@@ -42,6 +43,11 @@ function NavList({
   );
 }
 
+/**
+ * Casca do site público — primeiro consumidor do Core Design System (CP2, docs/specs/design-system.md §13): a raiz
+ * `data-lx="core"` liga a geração nova; header e menu em `blue`, rodapé em `deep`. O header sobre a mídia
+ * (`overlayHeader`) é transparente sobre o Cinematic Hero e fica sólido depois da rolagem.
+ */
 export function SiteShell({
   homeHref,
   labels,
@@ -60,22 +66,13 @@ export function SiteShell({
   readonly children: ReactNode;
 }) {
   return (
-    <>
+    <div data-lx="core">
       <a className="lx-skip-link" href={`#${MAIN_ID}`}>
         {labels.skipLink}
       </a>
-      <header
-        className={[
-          'lx-header',
-          overlayHeader ? 'lx-header--overlay' : '',
-          retractableMenu ? 'lx-header--retractable' : '',
-        ]
-          .filter(Boolean)
-          .join(' ')}
-        data-ground={overlayHeader ? 'night' : 'paper'}
-      >
+      <SiteHeader overlay={overlayHeader} retractable={retractableMenu}>
         <div className="lx-container lx-header__inner">
-          <Logo ground={overlayHeader ? 'night' : 'paper'} href={homeHref} label={labels.home} />
+          <Logo ground="night" href={homeHref} label={labels.home} />
 
           {retractableMenu ? null : (
             <nav className="lx-header__nav" aria-label={labels.nav}>
@@ -86,6 +83,7 @@ export function SiteShell({
           <div className="lx-header__actions">
             <MobileNav
               ground="night"
+              surface="blue"
               mainId={MAIN_ID}
               mode={retractableMenu ? 'retractable' : 'mobile'}
               labels={{
@@ -120,11 +118,11 @@ export function SiteShell({
             />
           </div>
         </div>
-      </header>
+      </SiteHeader>
       <main id={MAIN_ID} tabIndex={-1}>
         {children}
       </main>
-      <footer className="lx-footer" data-ground="night">
+      <footer className="lx-footer" data-surface="deep">
         <div className="lx-container lx-grid">
           <div className="lx-col-rail">
             <Logo ground="night" href={homeHref} label={labels.home} />
@@ -134,6 +132,6 @@ export function SiteShell({
           </nav>
         </div>
       </footer>
-    </>
+    </div>
   );
 }

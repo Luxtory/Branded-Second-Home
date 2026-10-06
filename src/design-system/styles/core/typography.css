@@ -85,6 +85,8 @@
     letter-spacing: var(--lx-tracking-body);
     line-height: var(--lx-leading-tight);
   }
+  /* Eyebrow in the surface's marker role: Warm Sand on Deep, Dark Moroccan Blue on Sand, Moroccan Blue on White; on
+   * Blue it stays White 80% because Warm Sand there is 4.32:1 (below 4.5:1 at 12px). */
   [data-lx="core"] .lx-eyebrow {
     font-family: var(--lx-font-utility);
     font-size: var(--lx-type-eyebrow);
@@ -92,7 +94,7 @@
     letter-spacing: var(--lx-tracking-eyebrow);
     line-height: var(--lx-leading-tight);
     text-transform: uppercase;
-    color: var(--lx-color-fg-muted);
+    color: var(--lx-color-marker);
   }
   /* Technical metadata only (ids, codes, timestamps) — never decoration, never on public pages. */
   [data-lx="core"] .lx-meta {

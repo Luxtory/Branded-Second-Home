@@ -21,8 +21,11 @@ export function MobileNav({
   footer,
   trigger,
   mode = 'mobile',
+  surface,
 }: {
   readonly ground: Ground;
+  /** Superfície do Core (`data-surface`); sem ela, o fundo legado (`data-ground`). */
+  readonly surface?: 'blue' | 'deep';
   readonly mainId: string;
   readonly labels: MobileNavLabels;
   readonly buttonClassName: string;
@@ -69,7 +72,8 @@ export function MobileNav({
         ref={dialog}
         id={dialogId}
         className="lx-mobile-nav"
-        data-ground={ground}
+        data-ground={surface === undefined ? ground : undefined}
+        data-surface={surface}
         data-mode={mode}
         aria-label={labels.menu}
         onClose={() => setOpen(false)}

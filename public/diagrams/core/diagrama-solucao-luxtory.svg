@@ -83,13 +83,13 @@
            x="4244.6096"
            y="508.82064"
            id="tspan32"><tspan
-             style="fill:#ffffff;stroke:none"
+             style="fill:#ffffff;fill-opacity:0.32;stroke:none"
              id="tspan31">VENDA 
 </tspan></tspan><tspan
            x="4227.5447"
            y="536.00228"
            id="tspan34"><tspan
-             style="fill:#ffffff;stroke:none"
+             style="fill:#ffffff;fill-opacity:0.32;stroke:none"
              id="tspan33">INTEGRAL</tspan></tspan></text>
       <g
          id="g50"
@@ -204,12 +204,12 @@
            x="4224.7553"
            y="508.82064"
            id="tspan36"><tspan
-             style="fill:#ffffff;stroke:none"
+             style="fill:#ffffff;fill-opacity:0.32;stroke:none"
              id="tspan35">ALUGUEL DE </tspan></tspan><tspan
            x="4225.5235"
            y="536.00228"
            id="tspan38"><tspan
-             style="fill:#ffffff;stroke:none"
+             style="fill:#ffffff;fill-opacity:0.32;stroke:none"
              id="tspan37">TEMPORADA
 </tspan></tspan><tspan
            x="4223.0762"
@@ -264,12 +264,12 @@
            x="4225.6175"
            y="508.82064"
            id="tspan54"><tspan
-             style="fill:#ffffff;stroke:none"
+             style="fill:#ffffff;fill-opacity:0.32;stroke:none"
              id="tspan53">CLUBE DE </tspan></tspan><tspan
            x="4248.5764"
            y="536.00228"
            id="tspan56"><tspan
-             style="fill:#ffffff;stroke:none"
+             style="fill:#ffffff;fill-opacity:0.32;stroke:none"
              id="tspan55">LAZER</tspan></tspan></text>
       <g
          clip-path="url(#clip0-87)"

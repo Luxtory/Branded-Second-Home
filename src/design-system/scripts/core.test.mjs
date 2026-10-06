@@ -92,7 +92,11 @@ test('styles/index.css imports every Core file, after all legacy files', () => {
 
 // Checkpoint gate (§13.2): CP1 enables the flag in no product shell. CP2 adds the public shell here, CP3 the focused
 // layout, CP4 the app shell; CP5 makes the Core the default.
-const APPROVED_FLAG_CONSUMERS = [];
+// CP2 (Wave 4): the public site shell is the first consumer; its client header marks the Core root as JS-enabled.
+const APPROVED_FLAG_CONSUMERS = [
+  'src/design-system/react/site-shell.tsx',
+  'src/design-system/react/site-header.tsx',
+];
 
 function sourceFiles(dir) {
   return readdirSync(dir).flatMap((name) => {
@@ -102,7 +106,7 @@ function sourceFiles(dir) {
   });
 }
 
-test('only the approved shells enable the Core flag (none in CP1)', () => {
+test('only the approved shells enable the Core flag (the public site shell since CP2)', () => {
   const consumers = [join(ROOT, 'src', 'features'), join(ROOT, 'src', 'app'), join(DS_ROOT, 'react')]
     .flatMap(sourceFiles)
     .filter((path) => /data-lx|dataLx|'data-lx'/.test(readFileSync(path, 'utf8')))
@@ -180,6 +184,7 @@ test('the Core Lab demonstrates the official patterns, the W4 complements, the s
     'pattern-cinematic-hero', 'pattern-triad-comparison', 'pattern-triad-statement', 'pattern-editorial-comparison',
     'pattern-panel-comparison', 'pattern-numbered-list', 'pattern-split-text-media', 'pattern-split-media-text',
     'pattern-split-no-media', 'pattern-text-diagram', 'pattern-pause', 'pattern-faq', 'pattern-siblings',
+    'pattern-panel-switch', 'pattern-editorial-list',
     'context-public',
   ];
   for (const id of required) assert.ok(html.includes(` id="${id}"`), id);
@@ -196,7 +201,8 @@ const NEW_CORE_BLOCKS = [
   'lx-statement', 'lx-headline', 'lx-ordinal', 'lx-title', 'lx-closing', 'lx-subheadline', 'lx-eyebrow', 'lx-meta',
   'lx-compact', 'lx-section', 'lx-section-head', 'lx-section-closing', 'lx-hero', 'lx-split', 'lx-diagram', 'lx-pause',
   'lx-faq', 'lx-siblings', 'lx-comparison', 'lx-panels', 'lx-numbered', 'lx-media', 'lx-triad-comparison',
-  'lx-triad-statement',
+  'lx-triad-statement', 'lx-columns', 'lx-stack', 'lx-panel-switch',
+  'lx-editorial-list', 'lx-section-split',
 ];
 
 function legacyCss() {
