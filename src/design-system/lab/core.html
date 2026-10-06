@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="pt-BR" data-lx="core">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Luxtory — Lab: Core Design System</title>
+  <meta name="description" content="Lab do Core Design System Luxtory: foundations, primitives, estados, patterns oficiais e contextos.">
+  <link rel="preload" href="../fonts/newsreader/newsreader-opsz72-roman-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../fonts/hanken-grotesk/hanken-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../styles/index.css">
+  <link rel="stylesheet" href="lab-core.css">
+  <script src="core.js" defer></script>
+</head>
+<body data-surface="white">
+  <!-- Lab do Core Design System (docs/specs/design-system.md §13). Conteúdo de demonstração, nunca fonte de copy:
+       os textos de exemplo vêm da copy já publicada na main; a copy da W4 é decidida no GATE-COPY-W4. -->
+  <svg class="lab-icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M3 12h17M14 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M12 3L22 20H2L12 3z"/><path d="M12 10v5M12 17.5v.5"/></g></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="miter"/></symbol>
+  </svg>
+
+  <a class="lx-skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="lx-header lx-header--overlay lx-header--retractable" data-surface="blue" data-lab-header>
+    <div class="lx-container lx-header__inner">
+      <a class="lx-logo" href="#conteudo" aria-label="Luxtory — início do Lab do Core"><picture><source media="(min-width: 22.5rem)" srcset="../brand/logo/Logo-Luxtory-Warm-Sand-Horizontal.svg" width="1474" height="230"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Icone.png.svg" alt="" width="370" height="324"></picture></a>
+      <div class="lx-header__actions">
+        <button class="lx-icon-button lx-header__menu-button" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="menu-core" data-lab-menu-open>
+          <img class="lx-menu-trigger__mark" src="../brand/logo/Logo-Luxtory-Warm-Sand-Icone.png.svg" alt="" width="370" height="324">
+          <span class="lx-visually-hidden">Abrir menu</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <dialog class="lx-mobile-nav" id="menu-core" data-surface="blue" aria-label="Menu">
+    <div class="lx-mobile-nav__top">
+      <a class="lx-logo" href="#conteudo" aria-label="Luxtory — início do Lab do Core"><picture><source media="(min-width: 22.5rem)" srcset="../brand/logo/Logo-Luxtory-Warm-Sand-Horizontal.svg" width="1474" height="230"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Icone.png.svg" alt="" width="370" height="324"></picture></a>
+      <button class="lx-icon-button" type="button" data-lab-menu-close>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg>
+        <span class="lx-visually-hidden">Fechar menu</span>
+      </button>
+    </div>
+    <nav class="lx-mobile-nav__body" aria-label="Seções do Lab do Core">
+      <ul class="lx-mobile-nav__list">
+        <li><a class="lx-mobile-nav__link" href="#lab" aria-current="page">Lab do Core</a></li>
+        <li><a class="lx-mobile-nav__link" href="#foundations">Foundations</a></li>
+        <li><a class="lx-mobile-nav__link" href="#primitives">Primitives</a></li>
+        <li><a class="lx-mobile-nav__link" href="#pattern-triad-comparison">Patterns</a></li>
+        <li><a class="lx-mobile-nav__link" href="core-auth.html">Contexto Auth</a></li>
+        <li><a class="lx-mobile-nav__link" href="core-admin.html">Contexto Admin</a></li>
+      </ul>
+    </nav>
+    <div class="lx-mobile-nav__footer">
+      <p class="lx-small">Lab interno. Conteúdo de demonstração.</p>
+    </div>
+  </dialog>
+
+  <main id="conteudo" tabindex="-1">
+    <!-- Cinematic Hero: fotografia protagonista, conteúdo baixo, header sobre a mídia, scrim só local. -->
+    <section id="pattern-cinematic-hero" class="lx-hero" data-surface="blue" aria-labelledby="hero-title" aria-roledescription="carrossel" data-lab-carousel>
+      <ul class="lx-hero__slides" aria-hidden="true">
+        <li class="lx-hero__slide" data-active><img class="lx-hero__image lx-crop-x-65" src="/images/home/hero/luxury-property-facade-hero.jpg" alt="" width="1672" height="941"></li>
+        <li class="lx-hero__slide"><img class="lx-hero__image lx-crop-x-80 lx-crop-lg-x-65" src="/images/home/hero/hero-lifestyle.jpg" alt="" width="1344" height="768" loading="lazy"></li>
+        <li class="lx-hero__slide"><img class="lx-hero__image lx-crop-x-50 lx-crop-y-35" src="/images/home/hero/home-solucao-firepit-family.jpg" alt="" width="1376" height="768" loading="lazy"></li>
+      </ul>
+      <div class="lx-container lx-hero__content">
+        <div class="lx-hero__copy" data-lab-hero-copy>
+          <h1 id="hero-title" class="lx-headline">Seja protagonista de histórias <em>com quem ama,</em> em lugares com os quais se identifica.</h1>
+          <p class="lx-subheadline">Uma nova forma de viver seu lazer com mais valor.</p>
+          <div class="lx-hero__actions">
+            <a class="lx-button lx-button--primary lx-button--large" href="#pattern-triad-comparison">Descubra uma nova forma de viver</a>
+          </div>
+        </div>
+        <div class="lx-hero__controls" role="group" aria-label="Controles do carrossel">
+          <span class="lx-hero__counter" aria-hidden="true" data-lab-counter>01 / 03</span>
+          <button class="lx-icon-button" type="button" aria-label="Imagem anterior" data-lab-prev><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-prev"/></svg></button>
+          <button class="lx-icon-button" type="button" aria-label="Pausar carrossel" aria-pressed="false" data-lab-toggle><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-pause"/></svg></button>
+          <button class="lx-icon-button" type="button" aria-label="Próxima imagem" data-lab-next><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-next"/></svg></button>
+        </div>
+      </div>
+    </section>
+
+    <section id="lab" class="lx-section" data-surface="white" aria-labelledby="t-lab">
+      <div class="lx-container lx-container--content lab-core-stack">
+        <div class="lx-section-head">
+          <p class="lx-eyebrow">Lab interno · Core Design System</p>
+          <h2 id="t-lab" class="lx-headline">Um sistema para toda a Luxtory. <em>Primeiro, a Wave&nbsp;4.</em></h2>
+          <p class="lx-subheadline">Foundations, primitives, estados, os patterns oficiais e os três contextos com consumidores reais. Nenhuma página do produto usa este Core antes da sua migração aprovada.</p>
+        </div>
+        <nav aria-label="Índice do Lab do Core">
+          <ul class="lab-core-index">
+            <li><a class="lx-link lx-link--standalone" href="#foundations">Foundations</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#primitives">Primitives</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#states">Estados</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#pattern-cinematic-hero">Cinematic Hero</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#pattern-triad-comparison">Problem / Triad Comparison</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#pattern-triad-statement">Triad Statement</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#pattern-editorial-comparison">Editorial Comparison</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#pattern-panel-comparison">Panel Comparison</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#pattern-numbered-list">Numbered Editorial List</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#pattern-split-text-media">Editorial Split</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#pattern-text-diagram">Text + Diagram</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#pattern-pause">Statement / Pause</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#pattern-siblings">Sibling Blocks</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#pattern-faq">FAQ</a></li>
+            <li><a class="lx-link lx-link--standalone" href="#context-public">Contexto Public</a></li>
+            <li><a class="lx-link lx-link--standalone" href="core-auth.html">Contexto Auth</a></li>
+            <li><a class="lx-link lx-link--standalone" href="core-admin.html">Contexto Admin</a></li>
+          </ul>
+        </nav>
+      </div>
+    </section>
+
+    <section id="foundations" class="lx-section" data-surface="wash" aria-labelledby="t-foundations">
+      <div class="lx-container lx-container--content lab-core-stack">
+        <div class="lx-section-head" data-reveal>
+          <div class="lx-section-head__mark"><span class="lx-ordinal" aria-hidden="true">01</span><span class="lx-section-head__rule" aria-hidden="true"></span><p class="lx-eyebrow">Foundations</p></div>
+          <h2 id="t-foundations" class="lx-headline">Cinco cores. <em>Cinco superfícies.</em></h2>
+          <p class="lx-body">A paleta de marca é exatamente a mesma; cores funcionais (erro, sucesso, aviso) não são cores de marca. Cada superfície define os mesmos papéis semânticos, testados em matriz.</p>
+        </div>
+
+        <h3 class="lx-title">Paleta de marca</h3>
+        <ul class="lab-core-grid" aria-label="Paleta de marca">
+          <li class="lab-core-swatch" data-surface="blue"><p class="lx-label">Moroccan Blue</p><p class="lx-small">#0F4E67</p></li>
+          <li class="lab-core-swatch" data-surface="deep"><p class="lx-label">Dark Moroccan Blue</p><p class="lx-small">#003D52</p></li>
+          <li class="lab-core-swatch" data-surface="sand"><p class="lx-label">Warm Sand</p><p class="lx-small">#CDAD8E</p></li>
+          <li class="lab-core-swatch" data-surface="white"><p class="lx-label">Pure White</p><p class="lx-small">#FFFFFF</p></li>
+          <li class="lab-core-swatch" data-surface="wash"><p class="lx-label">Sand Wash (derivado)</p><p class="lx-small">#F7F2ED</p></li>
+        </ul>
+        <p class="lab-core-note">Dark Warm Sand (#9E8567) aparece como acento e indicador (≥ 3:1) sobre superfícies claras; nunca como fundo de texto Moroccan Blue.</p>
+
+        <h3 class="lx-title">Superfícies e papéis</h3>
+        <div class="lab-core-grid">
+          <div class="lab-core-tile" data-surface="blue"><p class="lx-eyebrow">blue</p><p class="lx-ordinal">Headline</p><p class="lx-body">Corpo em Pure White.</p><p class="lx-small">Secundário em White 80%.</p><a class="lx-link lx-link--standalone" href="#foundations">Link</a><button class="lx-button lx-button--primary" type="button">Ação</button></div>
+          <div class="lab-core-tile" data-surface="deep"><p class="lx-eyebrow">deep</p><p class="lx-ordinal">Headline</p><p class="lx-body">Corpo em Pure White.</p><p class="lx-small">Secundário em White 80%.</p><a class="lx-link lx-link--standalone" href="#foundations">Link</a><button class="lx-button lx-button--primary" type="button">Ação</button></div>
+          <div class="lab-core-tile" data-surface="sand"><p class="lx-eyebrow">sand</p><p class="lx-ordinal">Headline</p><p class="lx-body">Corpo em Dark Blue 100%.</p><p class="lx-small">Sem estados nem formulários.</p><a class="lx-link lx-link--standalone" href="#foundations">Link</a><button class="lx-button lx-button--primary" type="button">Ação</button></div>
+          <div class="lab-core-tile" data-surface="white"><p class="lx-eyebrow">white</p><p class="lx-ordinal">Headline</p><p class="lx-body">Corpo em Dark Blue.</p><p class="lx-small">Secundário em Moroccan Blue.</p><a class="lx-link lx-link--standalone" href="#foundations">Link</a><button class="lx-button lx-button--primary" type="button">Ação</button></div>
+          <div class="lab-core-tile" data-surface="wash"><p class="lx-eyebrow">wash</p><p class="lx-ordinal">Headline</p><p class="lx-body">Corpo em Dark Blue.</p><p class="lx-small">Canvas operacional.</p><a class="lx-link lx-link--standalone" href="#foundations">Link</a><button class="lx-button lx-button--primary" type="button">Ação</button></div>
+        </div>
+
+        <h3 class="lx-title">Tipografia — três famílias, papéis do Core</h3>
+        <div>
+          <div class="lab-core-specimen"><p class="lx-eyebrow">statement · Newsreader</p><p class="lx-statement">Você pode ter <em>os três.</em></p></div>
+          <div class="lab-core-specimen"><p class="lx-eyebrow">headline (hero = H2) · Newsreader</p><p class="lx-headline">As alternativas mudam. <em>A renúncia continua.</em></p></div>
+          <div class="lab-core-specimen"><p class="lx-eyebrow">ordinal · Newsreader</p><p class="lx-ordinal">01 02 03</p></div>
+          <div class="lab-core-specimen"><p class="lx-eyebrow">title · Newsreader</p><p class="lx-title">Duas formas de possuir</p></div>
+          <div class="lab-core-specimen"><p class="lx-eyebrow">closing · Newsreader</p><p class="lx-closing">Menos tempo administrando. Mais tempo vivendo.</p></div>
+          <div class="lab-core-specimen"><p class="lx-eyebrow">subheadline · Hanken Grotesk</p><p class="lx-subheadline">Uma nova forma de viver seu lazer com mais valor.</p></div>
+          <div class="lab-core-specimen"><p class="lx-eyebrow">body · Hanken Grotesk</p><p class="lx-body">No mercado de lazer, tudo gira em torno de três valores: patrimônio, liberdade e pertencimento.</p></div>
+          <div class="lab-core-specimen"><p class="lx-eyebrow">compact · Hanken Grotesk</p><p class="lx-compact">Listas, cards e descrições curtas.</p></div>
+          <div class="lab-core-specimen"><p class="lx-eyebrow">meta · Courier Prime (só produto: ids, códigos, horários)</p><p class="lx-meta">EDN-2026-0001 · 06/10/2026 14:32</p></div>
+        </div>
+
+        <h3 class="lx-title">Forma, ritmo e movimento</h3>
+        <ul class="lab-core-grid" aria-label="Regras de forma, ritmo e movimento">
+          <li class="lab-core-tile"><p class="lx-label">Cantos</p><p class="lx-small">0 em superfícies e mídia; 2 px em controles; pill só em indicadores.</p></li>
+          <li class="lab-core-tile"><p class="lx-label">Sombra</p><p class="lx-small">Só em dialog e drawer. Sem glass, glow ou grain.</p></li>
+          <li class="lab-core-tile"><p class="lx-label">Ritmo</p><p class="lx-small">Seções de 64 a 144 px; medida de texto até 45rem.</p></li>
+          <li class="lab-core-tile"><p class="lx-label">Movimento</p><p class="lx-small">Fade-up único e curto; com movimento reduzido, nada se move.</p></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="primitives" class="lx-section" data-surface="white" aria-labelledby="t-primitives">
+      <div class="lx-container lx-container--content lab-core-stack">
+        <div class="lx-section-head" data-reveal>
+          <div class="lx-section-head__mark"><span class="lx-ordinal" aria-hidden="true">02</span><span class="lx-section-head__rule" aria-hidden="true"></span><p class="lx-eyebrow">Primitives</p></div>
+          <h2 id="t-primitives" class="lx-headline">As mesmas classes. <em>Nova expressão.</em></h2>
+        </div>
+
+        <h3 class="lx-title">Botões e links</h3>
+        <div class="lab-core-row">
+          <button class="lx-button lx-button--primary" type="button">Principal</button>
+          <button class="lx-button lx-button--secondary" type="button">Secundário</button>
+          <button class="lx-button lx-button--quiet" type="button">Discreto</button>
+          <button class="lx-button lx-button--destructive" type="button">Encerrar</button>
+          <button class="lx-button lx-button--primary" type="button" disabled>Indisponível</button>
+          <button class="lx-button lx-button--primary" type="button" aria-busy="true">Salvando</button>
+        </div>
+        <div class="lab-core-panel lab-core-row" data-surface="blue">
+          <a class="lx-button lx-button--primary lx-button--large" href="#primitives">Conheça os Residence Concepts</a>
+          <button class="lx-button lx-button--secondary" type="button">Secundário</button>
+          <a class="lx-link lx-link--standalone" href="#primitives">Como funciona <svg class="lx-link__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
+          <button class="lx-icon-button" type="button" aria-label="Próxima imagem"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-next"/></svg></button>
+        </div>
+        <p class="lx-body">Um link no meio do texto é <a href="#primitives">sempre sublinhado</a>, identificável sem depender da cor.</p>
+
+        <h3 class="lx-title">Campos (exemplos genéricos, sem envio)</h3>
+        <div class="lab-core-pair">
+          <form class="lx-form" aria-label="Formulário de demonstração sobre White" data-lab-form>
+            <div class="lx-field">
+              <label class="lx-label" for="d-nome">Nome</label>
+              <input class="lx-input" id="d-nome" name="nome" type="text" autocomplete="name">
+            </div>
+            <div class="lx-field">
+              <label class="lx-label" for="d-email">E-mail</label>
+              <input class="lx-input" id="d-email" name="email" type="email" autocomplete="email" aria-describedby="d-email-erro" aria-invalid="true" value="nome@">
+              <p class="lx-error" id="d-email-erro"><svg class="lx-error__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>Informe um e-mail completo, como nome@exemplo.com.</p>
+            </div>
+            <div class="lx-field">
+              <label class="lx-label" for="d-regiao">Região</label>
+              <div class="lx-select-wrap"><select class="lx-select" id="d-regiao" name="regiao"><option>Serra</option><option>Litoral</option></select></div>
+              <p class="lx-hint" id="d-regiao-dica">Exemplo de dica associada ao campo.</p>
+            </div>
+            <fieldset class="lx-choice-group">
+              <legend>Escolha (exemplo)</legend>
+              <div class="lx-choice-group__options">
+                <label class="lx-choice"><input type="radio" name="d-escolha" checked><span class="lx-choice__title">Primeira opção</span><span class="lx-choice__desc">Mesmo peso visual que a outra.</span></label>
+                <label class="lx-choice"><input type="radio" name="d-escolha"><span class="lx-choice__title">Segunda opção</span><span class="lx-choice__desc">Mesmo peso visual que a outra.</span></label>
+              </div>
+            </fieldset>
+            <div class="lx-field">
+              <label class="lx-label" for="d-obs">Observação</label>
+              <textarea class="lx-textarea" id="d-obs" name="obs"></textarea>
+            </div>
+            <div class="lx-field">
+              <label class="lx-label" for="d-bloqueado">Campo indisponível</label>
+              <input class="lx-input" id="d-bloqueado" type="text" value="Somente leitura" disabled>
+            </div>
+            <div class="lx-form__actions">
+              <button class="lx-button lx-button--primary" type="button">Continuar</button>
+              <button class="lx-button lx-button--secondary" type="button">Voltar</button>
+            </div>
+          </form>
+          <form class="lx-form lab-core-panel" data-surface="deep" aria-label="Formulário de demonstração sobre Deep" data-lab-form>
+            <div class="lx-field">
+              <label class="lx-label" for="e-email">E-mail</label>
+              <input class="lx-input" id="e-email" type="email" autocomplete="email" aria-describedby="e-email-dica">
+              <p class="lx-hint" id="e-email-dica">Superfície escura: borda Warm Sand, texto Pure White.</p>
+            </div>
+            <div class="lx-field">
+              <label class="lx-label" for="e-codigo">Código</label>
+              <input class="lx-input" id="e-codigo" type="text" inputmode="numeric" aria-describedby="e-codigo-erro" aria-invalid="true" value="12">
+              <p class="lx-error" id="e-codigo-erro"><svg class="lx-error__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>O código tem 6 dígitos.</p>
+            </div>
+            <div class="lx-form__actions">
+              <button class="lx-button lx-button--primary" type="button">Entrar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section id="states" class="lx-section" data-surface="wash" aria-labelledby="t-states">
+      <div class="lx-container lx-container--content lab-core-stack">
+        <div class="lx-section-head" data-reveal>
+          <div class="lx-section-head__mark"><span class="lx-ordinal" aria-hidden="true">03</span><span class="lx-section-head__rule" aria-hidden="true"></span><p class="lx-eyebrow">Estados</p></div>
+          <h2 id="t-states" class="lx-headline">Estado = semântica + <em>ícone e texto.</em></h2>
+          <p class="lx-body">Erro, sucesso e aviso são cores funcionais (não de marca), sempre com ícone, título e ARIA. Nunca só cor.</p>
+        </div>
+        <div class="lab-core-pair">
+          <div class="lab-core-stack">
+            <div class="lx-message lx-message--success" role="status"><svg class="lx-message__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-check"/></svg><p class="lx-message__title">Versão aprovada</p><p class="lx-message__body">Exemplo de confirmação logo abaixo do cabeçalho.</p></div>
+            <div class="lx-message lx-message--warning" role="status"><svg class="lx-message__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg><p class="lx-message__title">Nada publicado ainda</p><p class="lx-message__body">Exemplo de aviso com o texto na cor do corpo.</p></div>
+            <div class="lx-message lx-message--error" role="status"><svg class="lx-message__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg><p class="lx-message__title">Não foi possível salvar</p><p class="lx-message__body">Exemplo de erro com causa funcional clara.</p></div>
+          </div>
+          <div class="lab-core-stack lab-core-panel" data-surface="blue">
+            <div class="lx-message lx-message--success" role="status"><svg class="lx-message__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-check"/></svg><p class="lx-message__title">Sucesso sobre Blue</p><p class="lx-message__body">Ícone e texto em Pure White.</p></div>
+            <div class="lx-message lx-message--warning" role="status"><svg class="lx-message__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg><p class="lx-message__title">Aviso sobre Blue</p><p class="lx-message__body">Indicador em Warm Sand.</p></div>
+            <div class="lx-message lx-message--error" role="status"><svg class="lx-message__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg><p class="lx-message__title">Erro sobre Blue</p><p class="lx-message__body">Valor de erro para superfícies escuras.</p></div>
+          </div>
+        </div>
+        <div class="lab-core-pair">
+          <div aria-busy="true" aria-label="Carregando (exemplo)" role="region">
+            <span class="lx-skeleton lx-skeleton--text" aria-hidden="true"></span>
+            <span class="lx-skeleton lx-skeleton--text" aria-hidden="true"></span>
+            <span class="lx-skeleton lx-skeleton--frame" aria-hidden="true"></span>
+          </div>
+          <div class="lx-empty"><p class="lx-title">Nenhum registro ainda</p><p class="lx-body">Exemplo de estado vazio: diz o que falta e o próximo passo.</p><button class="lx-button lx-button--secondary" type="button">Criar o primeiro</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Problem / Triad Comparison — uma única composição: copy + tríade acima, três alternativas equivalentes abaixo. -->
+    <section id="pattern-triad-comparison" class="lx-section lx-triad-comparison" data-surface="blue" aria-labelledby="t-triad-comparison">
+      <div class="lx-container lx-container--content">
+        <div class="lx-triad-comparison__top">
+          <div class="lx-section-head" data-reveal>
+            <div class="lx-section-head__mark"><span class="lx-ordinal" aria-hidden="true">04</span><span class="lx-section-head__rule" aria-hidden="true"></span><p class="lx-eyebrow">A cada escolha, uma renúncia</p></div>
+            <h2 id="t-triad-comparison" class="lx-headline">As alternativas mudam. <em>A renúncia continua.</em></h2>
+            <div class="lx-section-head__text">
+              <p class="lx-body">No mercado de lazer, tudo gira em torno de três valores: patrimônio, liberdade e pertencimento.</p>
+              <p class="lx-body">Você quer os três, mas as alternativas ainda costumam fazer você abrir mão de uma parte importante para ter as outras.</p>
+            </div>
+          </div>
+          <figure class="lx-triad-comparison__diagram">
+            <img src="/diagrams/core/triade-valor-desejado.svg" alt="Diagrama da tríade de valor: Patrimônio. Liberdade. Pertencimento." width="723" height="640">
+          </figure>
+        </div>
+        <ol class="lx-triad-comparison__alternatives" aria-label="As alternativas">
+          <li class="lx-triad-comparison__alternative"><h3 class="lx-title">Second Home</h3><p class="lx-compact">Entrega patrimônio e pertencimento, mas limita a liberdade a um destino, e responsabilidades de gestão e manutenção do imóvel.</p></li>
+          <li class="lx-triad-comparison__alternative"><h3 class="lx-title">Hospedagem</h3><p class="lx-compact">A locação de temporada ou hoteleira oferece liberdade, mas dificilmente pertencimento e certamente não constrói patrimônio.</p></li>
+          <li class="lx-triad-comparison__alternative"><h3 class="lx-title">Copropriedade</h3><p class="lx-compact">Entrega patrimônio com eficiência, mas dificilmente liberdade e pertencimento na mesma experiência.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Statement / Pause (complementar consumido pela W4). -->
+    <section id="pattern-pause" class="lx-section" data-surface="sand" aria-labelledby="t-pause">
+      <div class="lx-container lx-container--content lx-pause">
+        <p class="lx-eyebrow">Quando abrir mão vira regra</p>
+        <h2 id="t-pause" class="lx-headline">Abrir mão de alguma coisa passou a parecer normal.</h2>
+        <p class="lx-closing">Por que deveria abrir mão de algo que também importa para você?</p>
+        <p class="lx-body">Talvez o problema não esteja no que você deseja. Talvez esteja na forma como o mercado escolheu entregar.</p>
+      </div>
+    </section>
+
+    <!-- Text + Diagram (complementar): o Diagrama de solução Luxtory, distinto da tríade. -->
+    <section id="pattern-text-diagram" class="lx-section" data-surface="blue" aria-labelledby="t-diagram">
+      <div class="lx-container lx-container--content lx-diagram">
+        <div class="lx-section-head" data-reveal>
+          <div class="lx-section-head__mark"><span class="lx-ordinal" aria-hidden="true">05</span><span class="lx-section-head__rule" aria-hidden="true"></span><p class="lx-eyebrow">Uma outra possibilidade</p></div>
+          <h2 id="t-diagram" class="lx-headline">E se você <em>não precisasse escolher?</em></h2>
+          <div class="lx-section-head__text">
+            <p class="lx-body">Imagine ter um lugar que represente quem você é.</p>
+            <p class="lx-body">Onde possa fazer o que ama, com quem ama.</p>
+          </div>
+        </div>
+        <figure class="lx-diagram__figure">
+          <img src="/diagrams/core/diagrama-solucao-luxtory.svg" alt="Diagrama de solução Luxtory: integração de Patrimônio, Liberdade e Pertencimento." width="630" height="707">
+        </figure>
+      </div>
+    </section>
+
+    <!-- Triad Statement — 01 Patrimônio · 02 Liberdade · 03 Pertencimento, divisores, grande statement, sem cards. -->
+    <section id="pattern-triad-statement" class="lx-section" data-surface="blue" aria-labelledby="t-statement">
+      <div class="lx-container lx-container--content">
+        <h2 id="t-statement" class="lx-visually-hidden">A tríade completa</h2>
+        <ol class="lx-triad-statement__cells" aria-label="Os três valores">
+          <li class="lx-triad-statement__cell"><span class="lx-ordinal" aria-hidden="true">01</span><span class="lx-triad-statement__word">Patrimônio</span></li>
+          <li class="lx-triad-statement__cell"><span class="lx-ordinal" aria-hidden="true">02</span><span class="lx-triad-statement__word">Liberdade</span></li>
+          <li class="lx-triad-statement__cell"><span class="lx-ordinal" aria-hidden="true">03</span><span class="lx-triad-statement__word">Pertencimento</span></li>
+        </ol>
+        <p class="lx-statement lx-triad-statement__statement"><em>Você pode ter os três.</em></p>
+        <p class="lx-closing lx-triad-statement__closing">Essa é a nossa lógica.</p>
+      </div>
+    </section>
+
+    <!-- Editorial Comparison — colunas abertas, sem caixas preenchidas, mesma estrutura (REQ-103). -->
+    <section id="pattern-editorial-comparison" class="lx-section" data-surface="sand" aria-labelledby="t-editorial-comparison">
+      <div class="lx-container lx-container--content">
+        <div class="lx-section-head" data-reveal>
+          <div class="lx-section-head__mark"><span class="lx-ordinal" aria-hidden="true">06</span><span class="lx-section-head__rule" aria-hidden="true"></span><p class="lx-eyebrow">Patrimônio</p></div>
+          <h2 id="t-editorial-comparison" class="lx-headline">Um lugar que representa você&nbsp;— <em>e também é seu.</em></h2>
+          <p class="lx-body">E pode fazer isso de duas formas.</p>
+        </div>
+        <div class="lx-comparison">
+          <article class="lx-comparison__item"><p class="lx-eyebrow">Owner</p><h3 class="lx-title">A Second Home inteira é sua.</h3><ul class="lx-comparison__list"><li class="lx-compact">Você possui integralmente o imóvel.</li></ul></article>
+          <article class="lx-comparison__item"><p class="lx-eyebrow">Co-Owner</p><h3 class="lx-title">Você é acionista da SPE proprietária do imóvel.</h3><ul class="lx-comparison__list"><li class="lx-compact">Ação com Direito de Uso.</li></ul></article>
+        </div>
+        <p class="lx-closing lx-section-closing">Duas formas de possuir. Mas partem do mesmo princípio: patrimônio real.</p>
+      </div>
+    </section>
+
+    <!-- Editorial Split text/media — a fotografia preenche toda a sua metade. -->
+    <section id="pattern-split-text-media" class="lx-split" data-surface="blue" aria-labelledby="t-split-a">
+      <div class="lx-split__text">
+        <div class="lx-split__inner">
+          <div class="lx-section-head__mark"><span class="lx-ordinal" aria-hidden="true">07</span><span class="lx-section-head__rule" aria-hidden="true"></span><p class="lx-eyebrow">Pertencimento</p></div>
+          <h2 id="t-split-a" class="lx-headline">Um lugar para chamar de seu. <em>Mais possibilidades para viver.</em></h2>
+          <p class="lx-body">Sua Second Home pode ser o lugar onde você se sente em casa. Mas não precisa ser o único lugar onde você vive suas histórias.</p>
+        </div>
+      </div>
+      <figure class="lx-split__media lx-media"><img class="lx-crop-x-80 lx-crop-y-65" src="/images/home/hero/hero-lifestyle.jpg" alt="Família sorrindo numa piscina com borda infinita voltada para o mar, ao pôr do sol." width="1344" height="768" loading="lazy"></figure>
+    </section>
+
+    <!-- Panel Comparison — versão densa: painéis irmãos Deep sobre Sand, mesma geometria (subgrid). -->
+    <section id="pattern-panel-comparison" class="lx-section" data-surface="sand" aria-labelledby="t-panels">
+      <div class="lx-container lx-container--content">
+        <div class="lx-section-head" data-reveal>
+          <div class="lx-section-head__mark"><span class="lx-ordinal" aria-hidden="true">08</span><span class="lx-section-head__rule" aria-hidden="true"></span><p class="lx-eyebrow">Gestão</p></div>
+          <h2 id="t-panels" class="lx-headline">Aproveite mais. <em>Administre menos.</em></h2>
+        </div>
+        <div class="lx-panels">
+          <article class="lx-panels__panel" data-surface="deep"><p class="lx-eyebrow">Owner</p><h3 class="lx-title">Gestão conforme os serviços contratados</h3><p class="lx-compact">A gestão pode ser estruturada conforme os serviços contratados e as necessidades da sua Second Home.</p><ul class="lx-panels__list"><li class="lx-compact">Manutenção</li><li class="lx-compact">Fornecedores</li></ul><p class="lx-compact lx-panels__closing">Menos tempo administrando.</p></article>
+          <article class="lx-panels__panel" data-surface="deep"><p class="lx-eyebrow">Co-Owner</p><h3 class="lx-title">Gestão coordenada entre proprietários</h3><p class="lx-compact">Como a Second Home pertence a mais de um proprietário, sua administração e manutenção funcionam de forma coordenada para preservar o ativo e a experiência de todos.</p><ul class="lx-panels__list"><li class="lx-compact">Manutenção</li><li class="lx-compact">Fornecedores</li></ul><p class="lx-compact lx-panels__closing">Mais tempo vivendo.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Numbered Editorial List / Disclosure — número, título, descrição, divisor; affordance quando interativa. -->
+    <section id="pattern-numbered-list" class="lx-section" data-surface="blue" aria-labelledby="t-numbered">
+      <div class="lx-container lx-container--content">
+        <div class="lx-section-head" data-reveal>
+          <div class="lx-section-head__mark"><span class="lx-ordinal" aria-hidden="true">09</span><span class="lx-section-head__rule" aria-hidden="true"></span><p class="lx-eyebrow">Liberdade</p></div>
+          <h2 id="t-numbered" class="lx-headline">Liberdade <em>para viver.</em></h2>
+        </div>
+        <ol class="lx-numbered" aria-label="Mecanismos (lista)">
+          <li class="lx-numbered__item"><span class="lx-ordinal lx-numbered__number" aria-hidden="true">01</span><h3 class="lx-title lx-numbered__title">Luxchange</h3><p class="lx-compact lx-numbered__text">Pode continuar em um universo parecido com o seu. Ou experimentar um conceito completamente diferente.</p></li>
+          <li class="lx-numbered__item"><span class="lx-ordinal lx-numbered__number" aria-hidden="true">02</span><h3 class="lx-title lx-numbered__title">Luxplus</h3><p class="lx-compact lx-numbered__text">O Luxplus permite adquirir noites adicionais disponíveis no inventário da Luxtory.</p></li>
+          <li class="lx-numbered__item"><span class="lx-ordinal lx-numbered__number" aria-hidden="true">03</span><h3 class="lx-title lx-numbered__title">Locação de temporada</h3><p class="lx-compact lx-numbered__text">Você continua no controle da decisão.</p></li>
+        </ol>
+        <h3 class="lx-eyebrow lab-core-specimen">Variante com disclosure</h3>
+        <ol class="lx-numbered" aria-label="Mecanismos (disclosure)">
+          <li class="lx-numbered__item"><details class="lx-numbered__details"><summary class="lx-numbered__summary"><span class="lx-ordinal" aria-hidden="true">01</span><span class="lx-title">Luxchange</span><svg class="lx-numbered__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></summary><p class="lx-compact lx-numbered__text">Pode continuar em um universo parecido com o seu. Ou experimentar um conceito completamente diferente.</p></details></li>
+          <li class="lx-numbered__item"><details class="lx-numbered__details"><summary class="lx-numbered__summary"><span class="lx-ordinal" aria-hidden="true">02</span><span class="lx-title">Luxplus</span><svg class="lx-numbered__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></summary><p class="lx-compact lx-numbered__text">O Luxplus permite adquirir noites adicionais disponíveis no inventário da Luxtory.</p></details></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Editorial Split media/text, 58/42 para headline longa. -->
+    <section id="pattern-split-media-text" class="lx-split lx-split--media-start lx-split--wide-text" data-surface="deep" aria-labelledby="t-split-b">
+      <figure class="lx-split__media lx-media"><img class="lx-crop-x-65" src="/images/home/hero/luxury-property-facade-hero.jpg" alt="Casa de pedra com piscina de borda infinita iluminada, diante do mar ao entardecer." width="1672" height="941" loading="lazy"></figure>
+      <div class="lx-split__text">
+        <div class="lx-split__inner">
+          <p class="lx-eyebrow">Editorial Split · media/text · 58/42</p>
+          <h2 id="t-split-b" class="lx-headline">Ter um lugar seu não significa <em>ficar preso a ele.</em></h2>
+          <p class="lx-body">Mídia à esquerda e texto à direita, com a coluna de texto mais larga quando a headline é longa.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Editorial Split sem mídia: uma coluna centrada, nunca espaço vazio. -->
+    <section id="pattern-split-no-media" class="lx-split" data-surface="white" aria-labelledby="t-split-c">
+      <div class="lx-split__text">
+        <div class="lx-split__inner">
+          <p class="lx-eyebrow">Editorial Split · sem mídia</p>
+          <h2 id="t-split-c" class="lx-headline">Sem fotografia adequada, <em>uma coluna.</em></h2>
+          <p class="lx-body">Nenhuma metade é reservada para uma imagem que não existe: a composição vira uma coluna de leitura.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sibling Blocks (complementar) — quatro promessas, 2 × 2. -->
+    <section id="pattern-siblings" class="lx-section" data-surface="blue" aria-labelledby="t-siblings">
+      <div class="lx-container lx-container--content">
+        <div class="lx-section-head" data-reveal>
+          <div class="lx-section-head__mark"><span class="lx-ordinal" aria-hidden="true">10</span><span class="lx-section-head__rule" aria-hidden="true"></span><p class="lx-eyebrow">Sibling Blocks</p></div>
+          <h2 id="t-siblings" class="lx-headline">Unidades equivalentes, <em>mesmo peso.</em></h2>
+        </div>
+        <ul class="lx-siblings lx-siblings--pair" aria-label="Promessas">
+          <li class="lx-siblings__item"><p class="lx-title">Um lugar que representa você.</p></li>
+          <li class="lx-siblings__item"><p class="lx-title">Um patrimônio que é realmente seu.</p></li>
+          <li class="lx-siblings__item"><p class="lx-title">Mais possibilidades para viver outros lugares e experiências.</p></li>
+          <li class="lx-siblings__item"><p class="lx-title">E uma estrutura criada para reduzir os atritos de ter uma Second Home.</p></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- FAQ — White, medida de leitura, disclosures nativos. -->
+    <section id="pattern-faq" class="lx-section" data-surface="white" aria-labelledby="t-faq">
+      <div class="lx-container">
+        <div class="lx-faq">
+          <div class="lx-section-head">
+            <p class="lx-eyebrow">O essencial antes de continuar</p>
+            <h2 id="t-faq" class="lx-headline">Ficou alguma dúvida?</h2>
+          </div>
+          <div class="lx-disclosure">
+            <details class="lx-disclosure__item">
+              <summary class="lx-disclosure__summary">O que é a Luxtory?<svg class="lx-disclosure__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></summary>
+              <div class="lx-disclosure__body"><p class="lx-body">A Luxtory cria Branded Second Homes inspiradas em diferentes lifestyles e conectadas ao Luxtory Club.</p><p class="lx-body">Cada Second Home é estruturada para reunir patrimônio, liberdade e pertencimento em uma mesma proposta.</p></div>
+            </details>
+            <details class="lx-disclosure__item">
+              <summary class="lx-disclosure__summary">O que é uma Branded Second Home?<svg class="lx-disclosure__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></summary>
+              <div class="lx-disclosure__body"><p class="lx-body">É uma Second Home criada a partir de um lifestyle e do universo de uma Brand Partner.</p></div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contexto Public: o shell desta página + cards tipográficos da Coleção (P-1, sem fotografia oficial). -->
+    <section id="context-public" class="lx-section" data-surface="sand" aria-labelledby="t-context">
+      <div class="lx-container lx-container--content lab-core-stack">
+        <div class="lx-section-head">
+          <p class="lx-eyebrow">Contextos</p>
+          <h2 id="t-context" class="lx-headline">Um Core, <em>três contextos.</em></h2>
+          <p class="lx-body">Public é esta página: header sobre a mídia, menu em drawer, faixas Blue e Sand, White para leitura densa e footer Deep. Auth e Admin usam os mesmos tokens e primitives.</p>
+        </div>
+        <ul class="lx-siblings" aria-label="Cards da Coleção (exemplo)">
+          <li><article class="lx-collection-card" data-surface="deep"><span class="lx-collection-card__index" aria-hidden="true">01</span><p class="lx-eyebrow">Serra · Litoral</p><h3 class="lx-collection-card__title"><a class="lx-collection-card__link" href="#context-public">Residence Concept com Edition</a></h3><p class="lx-collection-card__cue" aria-hidden="true">Conhecer</p></article></li>
+          <li><article class="lx-collection-card" data-surface="deep"><span class="lx-collection-card__index" aria-hidden="true">02</span><h3 class="lx-collection-card__title"><a class="lx-collection-card__link" href="#context-public">Residence Concept ainda sem Edition</a></h3><p class="lx-collection-card__cue" aria-hidden="true">Conhecer</p></article></li>
+        </ul>
+        <div class="lab-core-row">
+          <a class="lx-button lx-button--primary" href="core-auth.html">Abrir o contexto Auth</a>
+          <a class="lx-button lx-button--secondary" href="core-admin.html">Abrir o contexto Admin</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="lx-footer" data-surface="deep">
+    <div class="lx-container lx-grid">
+      <div class="lx-col-rail">
+        <a class="lx-logo" href="#conteudo" aria-label="Luxtory — início do Lab do Core"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Horizontal.svg" alt="" width="1474" height="230"></a>
+      </div>
+      <nav class="lx-col-content" aria-label="Rodapé do Lab do Core">
+        <ul class="lx-footer__nav-list">
+          <li><a class="lx-footer__link" href="core-auth.html">Contexto Auth</a></li>
+          <li><a class="lx-footer__link" href="core-admin.html">Contexto Admin</a></li>
+          <li><a class="lx-footer__link" href="index.html">Lab legado (DS anterior)</a></li>
+        </ul>
+        <p class="lx-footer__legal">Lab interno do Core Design System. Conteúdo de demonstração; não é página do produto.</p>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

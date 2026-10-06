@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR" data-lx="core">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Luxtory — Lab do Core: contexto Auth</title>
+  <link rel="preload" href="../fonts/newsreader/newsreader-opsz72-roman-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../fonts/hanken-grotesk/hanken-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../styles/index.css">
+  <link rel="stylesheet" href="lab-core.css">
+  <script src="core.js" defer></script>
+</head>
+<body data-surface="blue">
+  <!-- Contexto Auth do Core (docs/specs/design-system.md §13.7): marca forte, baixa distração, máxima clareza.
+       Canvas Blue + um painel Deep com hairline, sem sombra. Mesma marcação do FocusedLayout (React). -->
+  <svg class="lab-icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <symbol id="i-alert" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M12 3L22 20H2L12 3z"/><path d="M12 10v5M12 17.5v.5"/></g></symbol>
+  </svg>
+  <div class="lx-focused" data-surface="blue" data-expression="product">
+    <main class="lx-focused__panel" id="conteudo" data-surface="deep">
+      <span class="lx-logo"><picture><source media="(min-width: 22.5rem)" srcset="../brand/logo/Logo-Luxtory-Warm-Sand-Horizontal.svg" width="1474" height="230"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Icone.png.svg" alt="Luxtory" width="370" height="324"></picture></span>
+      <div class="lx-focused__body">
+        <h1 class="lx-display-m">Entrar na Luxtory</h1>
+        <p class="lx-lead">Acesso da equipe Luxtory. Enviaremos um código de uso único para o seu e-mail.</p>
+        <form class="lx-form" novalidate aria-label="Entrar (demonstração)" data-lab-form>
+          <div class="lx-field">
+            <label class="lx-label" for="auth-email">E-mail</label>
+            <p class="lx-hint" id="auth-email-hint">Use o e-mail cadastrado pela Luxtory.</p>
+            <input class="lx-input" id="auth-email" name="email" type="email" autocomplete="email" aria-describedby="auth-email-hint auth-email-error" aria-invalid="true" value="equipe@">
+            <p class="lx-error" id="auth-email-error"><svg class="lx-error__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>Informe um e-mail completo, como nome@luxtory.com.</p>
+          </div>
+          <div class="lx-field">
+            <label class="lx-label" for="auth-code">Código</label>
+            <p class="lx-hint" id="auth-code-hint">Seis dígitos enviados para o seu e-mail.</p>
+            <input class="lx-input" id="auth-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" aria-describedby="auth-code-hint">
+          </div>
+          <div class="lx-form__actions">
+            <button class="lx-button lx-button--primary" type="button">Entrar</button>
+            <button class="lx-button lx-button--quiet" type="button">Reenviar código</button>
+          </div>
+        </form>
+        <p class="lx-small"><a class="lx-link" href="core.html#context-public">Voltar ao Lab do Core</a> · <a class="lx-link" href="core-admin.html">Contexto Admin</a></p>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
