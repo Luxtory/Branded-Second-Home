@@ -182,7 +182,7 @@ test('the Core Lab demonstrates the official patterns, the W4 complements, the s
     'pattern-split-no-media', 'pattern-text-diagram', 'pattern-pause', 'pattern-faq', 'pattern-siblings',
     'context-public',
   ];
-  for (const id of required) assert.match(html, new RegExp(`\\sid="${id}"`), id);
+  for (const id of required) assert.ok(html.includes(` id="${id}"`), id);
   assert.match(html, /href="core-auth\.html"/);
   assert.match(html, /href="core-admin\.html"/);
   assert.match(read('core-auth.html'), /class="lx-focused"/);
@@ -208,9 +208,11 @@ function legacyCss() {
 }
 
 test('new Core blocks never collide with a legacy class name', () => {
-  const legacy = legacyCss();
-  const collisions = NEW_CORE_BLOCKS.filter((block) => new RegExp(`\\.${block}(?![a-z0-9-])`).test(legacy));
-  assert.deepEqual(collisions, []);
+  // Every class token defined by the legacy CSS, reduced to its block (no element/modifier); fixed regex only.
+  const legacyBlocks = new Set(
+    [...legacyCss().matchAll(/\.(lx-[a-z0-9-]+)/g)].map((match) => match[1].replace(/(__|--).*$/, '')),
+  );
+  assert.deepEqual(NEW_CORE_BLOCKS.filter((block) => legacyBlocks.has(block)), []);
 });
 
 // The production CSP (style-src with nonce) blocks style attributes: the Core Lab must work without them, so what it
