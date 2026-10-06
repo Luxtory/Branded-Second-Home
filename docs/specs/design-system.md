@@ -523,6 +523,8 @@ Blue e Deep = Warm Sand com opacidade 0,4. Chevron dos disclosures no papel `mar
 | Media | `lx-media__caption` | legenda curta sobre a foto, com scrim local (ex.: "Imagem conceitual") |
 | Ícones | `chevron-left`, `chevron-right`, `pause`, `play` | controles do carrossel e disclosures |
 
-Diagrama de solução: os rótulos "Venda Integral", "Aluguel de Temporada" e "Clube de Lazer" ficam atenuados
-(`fill-opacity`), sem esconder conteúdo e com a assinatura de geometria intacta. A `Collection` (React) passa a gerar
+Diagrama de solução: os rótulos "Venda Integral", "Aluguel de Temporada" e "Clube de Lazer" foram removidos do SVG
+(decisão do fundador, 2026-10-06); círculos e traços intactos, assinatura do contrato atualizada. Home: eyebrow
+`lx-eyebrow--accent` (Warm Sand) sobre Moroccan Blue com exceção de contraste registrada (catalog §13.10); o Hero
+volta à composição `lx-home-hero` da W4 com um scrim sobre toda a fotografia. A `Collection` (React) passa a gerar
 os cards tipográficos do Core em Sibling Blocks; `MobileNav` aceita `surface` (Core) além de `ground` (legado).
