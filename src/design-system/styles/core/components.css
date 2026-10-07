@@ -304,6 +304,15 @@
   [data-lx="core"] .lx-crop-y-50 { --lx-crop-y: 50%; }
   [data-lx="core"] .lx-crop-y-65 { --lx-crop-y: 65%; }
   [data-lx="core"] .lx-crop-y-80 { --lx-crop-y: 80%; }
+  /* md variant: a tablet hero puts the copy over the photograph, so the subject may need another focus than on phones
+   * (where the copy sits below the photograph). Declared before lg so the lg variant still wins from 64rem. */
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-crop-md-x-20 { --lx-crop-x: 20%; }
+    [data-lx="core"] .lx-crop-md-x-35 { --lx-crop-x: 35%; }
+    [data-lx="core"] .lx-crop-md-x-50 { --lx-crop-x: 50%; }
+    [data-lx="core"] .lx-crop-md-x-65 { --lx-crop-x: 65%; }
+    [data-lx="core"] .lx-crop-md-x-80 { --lx-crop-x: 80%; }
+  }
   @media (min-width: 64rem) {
     [data-lx="core"] .lx-crop-lg-x-20 { --lx-crop-x: 20%; }
     [data-lx="core"] .lx-crop-lg-x-35 { --lx-crop-x: 35%; }

@@ -146,6 +146,7 @@
     --lx-ratio-media-lg: 3 / 2;
     --lx-scrim-color: var(--lx-palette-dark-moroccan-blue);
     --lx-scrim-min-alpha: 0.68;
+    --lx-scrim-display-alpha: 0.8;
     --lx-scrim-max-alpha: 0.84;
     --lx-grain-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
     --lx-grain-size: 120px;

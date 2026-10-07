@@ -57,6 +57,13 @@ export function runContrast(tokens = loadTokens()) {
   const worstPixel = composite(scrimColor, white, tokens.scrim['min-alpha'].$value);
   const ratio = contrast(white, worstPixel);
   results.push({ check: 'scrim: white text over min scrim on white pixel', kind: 'text', min: MIN_TEXT, ratio, pass: ratio >= MIN_TEXT });
+  // Uniform scrim (lx-hero--uniform): Warm Sand display text over the display scrim on a worst-case (white) pixel.
+  const sand = resolveValue(tokens, tokens.palette['warm-sand'].$value);
+  // The browser stores the alpha in 8 bits (0.79 renders as 201/255 = 0.788): check the value as rendered.
+  const displayAlpha = Math.round(tokens.scrim['display-alpha'].$value * 255) / 255;
+  const displayPixel = composite(scrimColor, white, displayAlpha);
+  const displayRatio = contrast(sand, displayPixel);
+  results.push({ check: 'scrim: Warm Sand display text over display scrim on white pixel', kind: 'large', min: MIN_LARGE, ratio: displayRatio, pass: displayRatio >= MIN_LARGE });
   return results;
 }
 
