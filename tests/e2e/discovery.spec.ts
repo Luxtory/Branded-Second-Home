@@ -4,7 +4,12 @@ import { HOME_SECTIONS } from '../../src/features/catalog/presentation/discovery
 import { discoveryMessages } from '../../src/features/catalog/presentation/i18n/discovery-pt-br';
 import { signIn, STAFF_EMAIL } from './support/auth';
 import { readSeed } from './support/discovery';
-import { captureForReview, collectConsoleErrors, expectResponsive } from './support/ui';
+import {
+  captureForReview,
+  collectConsoleErrors,
+  expectResponsive,
+  worstContrastUnder,
+} from './support/ui';
 
 // Discovery público B2C (docs/specs/catalog.md §13): Home, Como funciona, Coleção e Concept, lidos como `anon`, sobre o
 // catálogo semeado por catalog.seed.ts (estado "há Edition publicada"; os outros estados do CTA são provados em
@@ -79,6 +84,59 @@ test.describe('Discovery público — gate de UI (ADR-0009)', () => {
       await expect(dialog).toBeHidden();
     }
     expect(errors).toEqual([]);
+  });
+});
+
+test.describe('Discovery público — Como funciona: header da Home e scrim uniforme', () => {
+  test('o Como funciona usa o header da Home: o menu abre pelo ícone oficial, também no desktop', async ({
+    page,
+  }) => {
+    const errors = collectConsoleErrors(page);
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+      await page.goto('/como-funciona');
+      await expect(page.locator('header .lx-header__link')).toHaveCount(0);
+      const button = page.getByRole('button', { name: 'Abrir menu' });
+      await button.click();
+      const dialog = page.getByRole('dialog', { name: 'Menu' });
+      await expect(dialog.getByRole('link', { name: 'Como funciona' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
+      await page.keyboard.press('Escape');
+      await expect(dialog).toBeHidden();
+      await expect(button).toBeFocused();
+    }
+    expect(errors).toEqual([]);
+  });
+
+  test('[WCAG 1.4.3] Hero e CTA final com scrim uniforme: contraste medido nos pixels a 768 e 1440 px', async ({
+    page,
+  }) => {
+    test.slow();
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    // Headline Warm Sand (texto grande) ≥ 3:1; texto branco ≥ 4,5:1 (D-B2C-20, scrim.display-alpha).
+    const targets = [
+      ['#inicio h1', 3],
+      ['#inicio .lx-subheadline', 4.5],
+      ['#proximo-passo h2', 3],
+      ['#proximo-passo .lx-subheadline', 4.5],
+    ] as const;
+    for (const width of [768, 1440]) {
+      await page.setViewportSize({ width, height: width === 768 ? 1024 : 900 });
+      await page.goto('/como-funciona', { waitUntil: 'networkidle' });
+      await page.evaluate(async () => {
+        // A foto do CTA é lazy: carregar e decodificar todas antes de medir.
+        for (const image of document.images) {
+          image.loading = 'eager';
+          await image.decode().catch(() => undefined);
+        }
+      });
+      for (const [selector, min] of targets) {
+        const worst = await worstContrastUnder(page, selector);
+        expect(worst, `${selector} a ${width}px`).toBeGreaterThanOrEqual(min);
+      }
+    }
   });
 });
 
@@ -262,6 +320,49 @@ test.describe('Discovery público — conteúdo', () => {
       );
       await expect(page.getByRole('link', { name: 'Conheça os Home Concepts' })).toHaveCount(0);
     }
+  });
+
+  test('[REQ-103] [D-B2C-16] Como funciona: capítulos no Hero, condições sempre visíveis e fechamento por disponibilidade', async ({
+    page,
+  }) => {
+    // Especificação Visual e Copy do fundador (D-B2C-20, spec catalog §13.11).
+    const { howItWorks } = discoveryMessages;
+    await page.goto(pathOf('howItWorks'));
+    const hero = page.locator('section#inicio');
+    await expect(hero.getByRole('heading', { level: 1 })).toHaveText(howItWorks.hero.title);
+    await expect(hero.getByRole('link', { name: howItWorks.hero.anchor })).toHaveAttribute(
+      'href',
+      '#conexao',
+    );
+    const chapters = hero
+      .getByRole('navigation', { name: howItWorks.hero.chapters })
+      .getByRole('link');
+    await expect(chapters).toHaveCount(3);
+    for (const [index, id] of ['patrimonio', 'liberdade', 'pertencimento'].entries()) {
+      await expect(chapters.nth(index)).toHaveAttribute('href', `#${id}`);
+      await expect(page.locator(`main > section#${id}`)).toHaveCount(1);
+    }
+    await chapters.nth(1).focus();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/#liberdade$/);
+
+    // As condições fazem parte da prova: todas visíveis, nenhuma dentro de um disclosure.
+    const conditions = page.locator('section#condicoes');
+    await expect(conditions.locator('details')).toHaveCount(0);
+    await expect(conditions.getByRole('listitem')).toHaveCount(howItWorks.conditions.items.length);
+    for (const item of howItWorks.conditions.items) await expect(conditions).toContainText(item);
+
+    // As quatro configurações Co-Owner com a mesma geometria; as duas listas do PUSH com o mesmo peso.
+    await expect(page.locator('.lx-figures__item')).toHaveCount(4);
+    const fit = page.locator('section#para-quem .lx-comparison__item');
+    await expect(fit).toHaveCount(2);
+    await expect(fit.nth(0).getByRole('listitem')).toHaveCount(howItWorks.fit.fits.length);
+    await expect(fit.nth(1).getByRole('listitem')).toHaveCount(howItWorks.fit.notFits.length);
+
+    // Com Edition publicada: o apoio e o CTA da primeira oferta, sobre a fotografia de fechamento.
+    const next = page.locator('section#proximo-passo');
+    await expect(next).toContainText(howItWorks.next.text);
+    await expect(next.getByRole('link', { name: EDITIONS_CTA })).toBeVisible();
   });
 
   test('[TECH-100] CSP com nonce nas páginas públicas e no Admin; nenhum link para o Admin nem para Brand Partners', async ({

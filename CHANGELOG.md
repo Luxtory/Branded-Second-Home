@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Como funciona (`/como-funciona`) na Especificação Visual e Copy do fundador: Hero fotográfico com o índice dos três
+  capítulos, a jornada do lifestyle ao Luxtory Club, Patrimônio, Liberdade (com as quatro configurações Co-Owner),
+  Gestão, Luxtory Club e Pertencimento respondendo às perguntas do leitor com Owner e Co-Owner no mesmo peso, condições
+  sempre visíveis, "Faz sentido para a sua vida?" e o CTA por disponibilidade sobre a fotografia de fechamento
+  (`D-B2C-20`); o mesmo header da Home; scrim uniforme no Hero e no CTA final (`lx-hero--uniform`, token
+  `scrim.display-alpha`); complementos do Core com esse consumidor (Answer Rows, Figures, índice de capítulos do Hero).
 - Wave 4 — Discovery público no Core Design System (CP2): Home conforme a Especificação Visual Final do fundador
   (Cinematic Hero, Problem/Triad Comparison, Panel Switch das alternativas, Text + Diagram e Triad Statement, Editorial
   Splits com imagens conceituais do Kaizen, Owner | Co-Owner com o mesmo peso, PUSH com o CTA por disponibilidade sobre
