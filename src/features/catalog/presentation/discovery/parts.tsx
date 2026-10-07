@@ -152,3 +152,30 @@ export function ModalityComparison({
     </div>
   );
 }
+
+/** Fotografia estrutural de um Editorial Split: preenche a sua metade; recorte por classes (a CSP bloqueia `style`). */
+export function SplitPhoto({
+  src,
+  width,
+  height,
+  alt,
+  crop,
+  caption,
+}: {
+  readonly src: string;
+  readonly width: number;
+  readonly height: number;
+  readonly alt: string;
+  readonly crop: string;
+  readonly caption?: string;
+}) {
+  return (
+    <figure className="lx-media lx-split__media">
+      {/* eslint-disable-next-line @next/next/no-img-element -- Next/Image injects an inline style blocked by the strict CSP. */}
+      <img className={crop} src={src} alt={alt} width={width} height={height} loading="lazy" />
+      {caption === undefined ? null : (
+        <figcaption className="lx-media__caption">{caption}</figcaption>
+      )}
+    </figure>
+  );
+}

@@ -204,7 +204,7 @@ const NEW_CORE_BLOCKS = [
   'lx-compact', 'lx-section', 'lx-section-head', 'lx-section-closing', 'lx-hero', 'lx-split', 'lx-diagram', 'lx-pause',
   'lx-faq', 'lx-siblings', 'lx-comparison', 'lx-panels', 'lx-numbered', 'lx-media', 'lx-triad-comparison',
   'lx-triad-statement', 'lx-columns', 'lx-stack', 'lx-panel-switch',
-  'lx-editorial-list', 'lx-section-split',
+  'lx-editorial-list', 'lx-section-split', 'lx-answers', 'lx-figures',
 ];
 
 function legacyCss() {

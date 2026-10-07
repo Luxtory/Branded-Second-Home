@@ -114,3 +114,55 @@ export async function captureForReview(page: Page, name: string) {
   }
   if (original !== null) await page.setViewportSize(original);
 }
+
+/**
+ * Menor contraste entre a cor do texto e cada pixel do fundo real sob a caixa do elemento: o texto fica transparente
+ * só durante a captura (CSSOM, que a CSP do app permite) e a conta roda na própria página (canvas).
+ */
+export async function worstContrastUnder(page: Page, selector: string): Promise<number> {
+  const locator = page.locator(selector).first();
+  await locator.scrollIntoViewIfNeeded();
+  const color = await locator.evaluate((element) => getComputedStyle(element).color);
+  const setTextColor = (transparent: boolean) =>
+    locator.evaluate((element, hide) => {
+      for (const node of [element, ...element.querySelectorAll('*')] as HTMLElement[]) {
+        if (hide) node.style.setProperty('color', 'transparent', 'important');
+        else node.style.removeProperty('color');
+      }
+    }, transparent);
+  await setTextColor(true);
+  const box = await locator.boundingBox();
+  if (box === null) throw new Error(`no box for ${selector}`);
+  const png = await page.screenshot({ clip: box });
+  await setTextColor(false);
+  return page.evaluate(
+    async ({ data, textColor }) => {
+      const image = new Image();
+      image.src = `data:image/png;base64,${data}`;
+      await image.decode();
+      const canvas = document.createElement('canvas');
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const context = canvas.getContext('2d');
+      if (context === null) throw new Error('no 2d context');
+      context.drawImage(image, 0, 0);
+      const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      const channel = (value: number) => {
+        const c = value / 255;
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      };
+      const luminance = (r: number, g: number, b: number) =>
+        0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+      const [tr = 0, tg = 0, tb = 0] = (textColor.match(/\d+/g) ?? []).map(Number);
+      const text = luminance(tr, tg, tb);
+      let worst = Infinity;
+      for (let i = 0; i < pixels.length; i += 4) {
+        const background = luminance(pixels[i] ?? 0, pixels[i + 1] ?? 0, pixels[i + 2] ?? 0);
+        const [hi, lo] = text > background ? [text, background] : [background, text];
+        worst = Math.min(worst, (hi + 0.05) / (lo + 0.05));
+      }
+      return worst;
+    },
+    { data: png.toString('base64'), textColor: color },
+  );
+}

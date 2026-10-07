@@ -816,4 +816,260 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
+
+  /* Como funciona (revisão do fundador, 2026-10-06) — the complements its specification asks for, on the Core grid. */
+
+  /* Hero chapter index — the page's chapters as one row of links under the copy (stacked on phones): number + name
+   * between hairlines, no boxes. Each link is a ≥ 44px target. */
+  [data-lx="core"] .lx-hero__chapters {
+    justify-self: stretch;
+    margin-top: var(--lx-space-4);
+  }
+  [data-lx="core"] .lx-hero__chapters > ol {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-hero__chapter {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--lx-space-4);
+    min-height: var(--lx-target-min);
+    padding-block: var(--lx-space-4);
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+    color: var(--lx-color-fg);
+    text-decoration: none;
+  }
+  [data-lx="core"] .lx-hero__chapter-number {
+    font-size: var(--lx-type-label);
+    font-weight: var(--lx-weight-medium);
+    font-variant-numeric: lining-nums tabular-nums;
+    color: var(--lx-color-marker);
+  }
+  [data-lx="core"] .lx-hero__chapter-name {
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-type-title);
+    line-height: var(--lx-leading-title);
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-decoration-thickness: var(--lx-border-hairline);
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color var(--lx-duration-quick) var(--lx-ease-editorial);
+  }
+  [data-lx="core"] .lx-hero__chapter:hover .lx-hero__chapter-name {
+    text-decoration-color: currentColor;
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-hero__chapters > ol {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    [data-lx="core"] .lx-hero__chapter {
+      grid-template-columns: minmax(0, 1fr);
+      align-content: start;
+      gap: var(--lx-space-2);
+      height: 100%;
+      padding: var(--lx-space-4) var(--lx-space-6) 0;
+      border-bottom: 0;
+    }
+    [data-lx="core"] .lx-hero__chapters li:first-child .lx-hero__chapter {
+      padding-inline-start: 0;
+    }
+    [data-lx="core"] .lx-hero__chapters li + li {
+      border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+  }
+
+  /* Uniform scrim (opt-in, founder's directive for the Como funciona composition, 2026-10-07) — one Dark Moroccan Blue
+   * layer over 100% of the photograph instead of the local plate and the header band; the default Cinematic Hero (Lab,
+   * Home closing) keeps its local scrim. Level = `scrim.display-alpha` (0.80), the lowest uniform opacity under which a
+   * Warm Sand headline keeps 3:1 even over a white pixel as rendered (alpha in 8 bits); measured per photograph on
+   * /como-funciona (Hero and final CTA: every overlaid text, number, logo and menu mark passes at 390/768/1024/1440 at
+   * this level and not below it). A photograph that measures lower may override `--lx-hero-scrim-alpha`. */
+  [data-lx="core"] .lx-hero--uniform {
+    --lx-hero-scrim-alpha: var(--lx-scrim-display-alpha);
+  }
+  [data-lx="core"] .lx-hero--uniform::before,
+  [data-lx="core"] .lx-hero--uniform .lx-hero__copy::before {
+    content: none;
+  }
+  [data-lx="core"] .lx-hero--uniform .lx-hero__slide::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: color-mix(
+      in srgb,
+      var(--lx-scrim-color) calc(var(--lx-hero-scrim-alpha) * 100%),
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  /* Answer Rows — the reader's question (or a moment's label) on the start column, the answer on the rest (4/8 from
+   * lg, so an Owner | Co-Owner pair keeps its blocks within three lines), one hairline between rows; __full spans the
+   * whole row (figures under a question). The same axis runs through the page: every answer starts on one column. */
+  [data-lx="core"] .lx-answers {
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-answers__row {
+    display: grid;
+    gap: var(--lx-space-6) var(--lx-layout-gutter);
+    align-items: start;
+    padding-block: var(--lx-space-12);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-answers__row > * {
+    min-width: 0;
+  }
+  [data-lx="core"] .lx-answers__content {
+    display: grid;
+    align-content: start;
+    gap: var(--lx-space-6);
+  }
+  /* --phases: each moment of a sequence opens with the strong rule, so the moment reads above its numbered steps. */
+  [data-lx="core"] .lx-answers--phases > .lx-answers__row {
+    border-top-color: var(--lx-color-rule-strong);
+  }
+  /* The reader's question: utility type in medium weight, distinct from the leads that share its size. */
+  [data-lx="core"] .lx-answers__label.lx-subheadline {
+    font-weight: var(--lx-weight-medium);
+  }
+  /* A list that opens the answer starts flush: the row's hairline already opens it. */
+  [data-lx="core"] .lx-answers__content > .lx-numbered:first-child {
+    border-bottom: 0;
+  }
+  [data-lx="core"] .lx-answers__content > .lx-numbered:first-child > .lx-numbered__item:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+  [data-lx="core"] .lx-answers__content > .lx-numbered:first-child > .lx-numbered__item:last-child {
+    padding-bottom: 0;
+  }
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-answers__row {
+      grid-template-columns: repeat(var(--lx-layout-columns-lg), minmax(0, 1fr));
+      row-gap: var(--lx-space-12);
+    }
+    [data-lx="core"] .lx-answers__label {
+      grid-column: span 4;
+      padding-inline-end: var(--lx-layout-gutter);
+    }
+    [data-lx="core"] .lx-answers__content {
+      grid-column: span 8;
+    }
+    [data-lx="core"] .lx-answers__full {
+      grid-column: 1 / -1;
+    }
+    [data-lx="core"] .lx-answers__content > .lx-comparison--divided:first-child {
+      border-top: 0;
+    }
+    [data-lx="core"] .lx-answers__content > .lx-comparison--divided:first-child > .lx-comparison__item {
+      padding-top: 0;
+    }
+  }
+
+  /* A modality-specific condition inside a numbered item (e.g. "Co-Owner" under Luxchange): label + text under a
+   * hairline, tighter than the item's own rhythm. */
+  [data-lx="core"] .lx-numbered__note {
+    display: grid;
+    gap: var(--lx-space-2);
+    padding-top: var(--lx-space-4);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  /* Figures — comparable sets of figures with the same geometry (the Co-Owner configurations): open columns between
+   * hairlines, the figures in Newsreader. One per row on phones, 2 × 2 from md, four across from lg; never a priced
+   * plan (no boxes, no highlight). */
+  [data-lx="core"] .lx-figures {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  }
+  [data-lx="core"] .lx-figures__item {
+    display: grid;
+    align-content: start;
+    gap: var(--lx-space-6);
+    padding-block: var(--lx-space-8);
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-figures__data {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--lx-space-6) var(--lx-layout-gutter);
+    margin: 0;
+  }
+  [data-lx="core"] .lx-figures__data > div {
+    display: grid;
+    align-content: start;
+    gap: var(--lx-space-1);
+  }
+  [data-lx="core"] .lx-figures__data dt {
+    font-size: var(--lx-type-label);
+    font-weight: var(--lx-weight-medium);
+    line-height: var(--lx-leading-tight);
+  }
+  [data-lx="core"] .lx-figures__data dd {
+    margin: 0;
+    font-size: var(--lx-type-body);
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  [data-lx="core"] .lx-figures__data .lx-figures__value {
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-type-ordinal);
+    line-height: var(--lx-leading-heading);
+    color: var(--lx-color-headline);
+  }
+  /* The figure that answers the section's question leads (e.g. the annual use under "Quanto tempo posso usar?"). */
+  [data-lx="core"] .lx-figures__data .lx-figures__value--primary {
+    font-size: var(--lx-type-headline);
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-figures {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    [data-lx="core"] .lx-figures__item {
+      padding-inline: var(--lx-space-8);
+    }
+    [data-lx="core"] .lx-figures__item:nth-child(odd) {
+      padding-inline-start: 0;
+    }
+    [data-lx="core"] .lx-figures__item:nth-child(even) {
+      padding-inline-end: 0;
+      border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+  }
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-figures {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+    [data-lx="core"] .lx-figures__item {
+      padding-inline: var(--lx-space-6);
+      border-bottom: 0;
+    }
+    [data-lx="core"] .lx-figures__item:nth-child(odd) {
+      padding-inline-start: var(--lx-space-6);
+    }
+    [data-lx="core"] .lx-figures__item:first-child {
+      padding-inline-start: 0;
+    }
+    [data-lx="core"] .lx-figures__item:last-child {
+      padding-inline-end: 0;
+    }
+    [data-lx="core"] .lx-figures__item + .lx-figures__item {
+      border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+    [data-lx="core"] .lx-figures__data {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    /* The season limits read as one group under the two main figures. */
+    [data-lx="core"] .lx-figures__data > div:nth-child(3) {
+      padding-top: var(--lx-space-6);
+      border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+  }
 }

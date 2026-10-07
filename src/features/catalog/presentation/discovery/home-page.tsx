@@ -5,7 +5,7 @@ import { CatalogActions } from './catalog-actions';
 import { HeadlineText } from './headline';
 import { HomeHero } from './home-hero';
 import { nb } from './no-break';
-import { Eyebrow, ModalityComparison, ordinal, Paragraphs } from './parts';
+import { Eyebrow, ModalityComparison, ordinal, Paragraphs, SplitPhoto } from './parts';
 import { discoveryPaths, HOME_SECTIONS } from './paths';
 import { readAvailability } from './read';
 import { RulePanel } from './rule-panel';
@@ -31,33 +31,6 @@ const [
 
 /** O título nomeia a seção; a seção leva a âncora. */
 const titleOf = (section: string) => `${section}-titulo`;
-
-/** Fotografia estrutural de um Editorial Split: preenche a sua metade; recorte por classes (a CSP bloqueia `style`). */
-function SplitPhoto({
-  src,
-  width,
-  height,
-  alt,
-  crop,
-  caption,
-}: {
-  readonly src: string;
-  readonly width: number;
-  readonly height: number;
-  readonly alt: string;
-  readonly crop: string;
-  readonly caption?: string;
-}) {
-  return (
-    <figure className="lx-media lx-split__media">
-      {/* eslint-disable-next-line @next/next/no-img-element -- Next/Image injects an inline style blocked by the strict CSP. */}
-      <img className={crop} src={src} alt={alt} width={width} height={height} loading="lazy" />
-      {caption === undefined ? null : (
-        <figcaption className="lx-media__caption">{caption}</figcaption>
-      )}
-    </figure>
-  );
-}
 
 /**
  * Home `/` (spec catalog §13.10 — Especificação Visual Final do fundador sobre o Core Design System): a copy do

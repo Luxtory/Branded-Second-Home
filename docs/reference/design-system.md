@@ -519,6 +519,7 @@ Complementares consumidos pela W4: `lx-diagram` (Text + Diagram, `/diagrams/core
 ### Mídia e recorte
 
 - `lx-crop-x-{20,35,50,65,80}` e `lx-crop-y-{…}` definem o foco da foto; `lx-crop-lg-*` muda a partir de `lg`.
+  `lx-crop-md-x-*` muda a partir de `md` (antes do `lg`): num hero de tablet o texto fica sobre a foto.
 - Nunca `style` inline (a CSP de produção bloqueia) e nunca foto pequena num grande vazio: sem mídia adequada, outro
   pattern.
 
@@ -542,3 +543,15 @@ Complementares consumidos pela W4: `lx-diagram` (Text + Diagram, `/diagrams/core
   `p.lx-panel-switch__caption`.
 - Owner | Co-Owner: `div.lx-comparison.lx-comparison--divided` > dois `div.lx-comparison__item` com a mesma estrutura.
 - Eyebrow: `p.lx-eyebrow` — a cor vem do papel `marker` da superfície; nunca forçar Warm Sand em Blue.
+- Perguntas do leitor com a resposta ao lado (Como funciona): `div.lx-answers` > `div.lx-answers__row` >
+  `h3.lx-answers__label` (pergunta em `lx-subheadline` ou rótulo em `lx-eyebrow`) + `div.lx-answers__content`;
+  `div.lx-answers__full` para um bloco na largura inteira da linha.
+- Números comparáveis (configurações Co-Owner): `ul.lx-figures` > `li.lx-figures__item` > título + `dl.lx-figures__data`
+  com `div > dt + dd` (`dd.lx-figures__value` para o número principal).
+- Índice de capítulos no Hero: `nav.lx-hero__chapters[aria-label]` > `ol` > `li` > `a.lx-hero__chapter` com
+  `span.lx-hero__chapter-number[aria-hidden]` + `span.lx-hero__chapter-name`.
+- Scrim uniforme (opt-in, só onde o fundador decidiu): `section.lx-hero.lx-hero--uniform` — uma camada sobre 100% da
+  foto em `scrim.display-alpha`; uma foto que medir menos pode sobrescrever `--lx-hero-scrim-alpha`. Sem o modificador,
+  o Cinematic Hero mantém o scrim local.
+- Momentos de uma sequência: `div.lx-answers.lx-answers--phases`; número que responde à pergunta:
+  `dd.lx-figures__value.lx-figures__value--primary`.

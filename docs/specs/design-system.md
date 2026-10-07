@@ -528,3 +528,21 @@ Diagrama de solução: os rótulos "Venda Integral", "Aluguel de Temporada" e "C
 `lx-eyebrow--accent` (Warm Sand) sobre Moroccan Blue com exceção de contraste registrada (catalog §13.10); o Hero
 volta à composição `lx-home-hero` da W4 com um scrim sobre toda a fotografia. A `Collection` (React) passa a gerar
 os cards tipográficos do Core em Sibling Blocks; `MobileNav` aceita `surface` (Core) além de `ground` (legado).
+
+**Como funciona (2026-10-06).** Complementos do Core com o Como funciona como consumidor (catalog §13.11), só tokens e
+atrás do flag: **Answer Rows** `div.lx-answers` > `div.lx-answers__row` > `h3.lx-answers__label` +
+`div.lx-answers__content` (+ `div.lx-answers__full` na largura da linha) — a pergunta do leitor ou o rótulo de um
+momento à esquerda, a resposta à direita (4/8 a partir do `lg`, para que um par Owner | Co-Owner fique em até três
+linhas), uma hairline entre linhas; **Figures** `ul.lx-figures` > `li.lx-figures__item` > `dl.lx-figures__data`
+(`dd.lx-figures__value` em Newsreader) — conjuntos comparáveis com a mesma geometria, 1 → 2 × 2 → 4 colunas, nunca
+aparência de plano; **índice de capítulos do Hero** `nav.lx-hero__chapters` > `ol` > `a.lx-hero__chapter`
+(`__chapter-number` no papel `marker`, `__chapter-name` em Newsreader), alvos ≥ 44 px; **nota de modalidade**
+`div.lx-numbered__note` dentro de um item numerado; recortes `lx-crop-md-x-*` (a partir de `md`, antes do `lg`); ícone
+`arrow-down`. Refinamentos aprovados pelo fundador (2026-10-07): `lx-answers--phases` (cada momento abre com a
+hairline forte); a pergunta do leitor (`lx-answers__label.lx-subheadline`) em Hanken `weight.medium`, o mesmo peso de
+labels e botões, para se distinguir dos leads do mesmo tamanho; `lx-figures__value--primary` (o número que responde à
+pergunta, em `type.headline`). **Scrim uniforme (opt-in)** `lx-hero--uniform`: uma camada Dark Moroccan Blue sobre
+100% da foto, sem a placa local nem a faixa do header, na opacidade `--lx-hero-scrim-alpha` = token novo
+`scrim.display-alpha` 0,80 — o nível em que um headline Warm Sand mantém 3:1 até sobre um pixel branco, com o alfa em
+8 bits como o navegador o renderiza (0,79 vira 0,788 e cai para 2,998:1; verificado por `check-contrast`). É decisão do fundador para a composição do Como funciona e prevalece, só nela, sobre a regra
+"scrim só localizado"; o Cinematic Hero padrão (Lab, fechamento da Home) continua com o scrim local.

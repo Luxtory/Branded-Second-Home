@@ -1,5 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
-import { collectConsoleErrors, expectResponsive } from './support/ui';
+import { expect, test } from '@playwright/test';
+import { collectConsoleErrors, expectResponsive, worstContrastUnder } from './support/ui';
 
 // Lab do Core Design System (docs/specs/design-system.md §13.8): axe 0 a 390 e 1440 px, sem overflow de 320 a 1920 px,
 // teclado e dialog, carrossel pausável, movimento reduzido, alvos ≥ 44 px e contraste do hero medido nos pixels.
@@ -146,49 +146,6 @@ test('[WCAG 2.3.3] movimento reduzido: sem autoplay, sem animação, sem transfo
   });
   expect(state).toEqual({ running: 0, hidden: 0, moved: 0 });
 });
-
-/** Menor contraste entre a cor do texto e cada pixel do fundo real sob a caixa do texto (texto oculto na captura). */
-async function worstContrastUnder(page: Page, selector: string): Promise<number> {
-  const locator = page.locator(selector);
-  const color = await locator.evaluate((element) => getComputedStyle(element).color);
-  await locator.evaluate((element) => element.setAttribute('data-lab-measure', ''));
-  await page.addStyleTag({
-    content: '[data-lab-measure], [data-lab-measure] * { color: transparent !important; }',
-  });
-  const box = await locator.boundingBox();
-  if (box === null) throw new Error(`no box for ${selector}`);
-  const png = await page.screenshot({ clip: box });
-  return page.evaluate(
-    async ({ data, textColor }) => {
-      const image = new Image();
-      image.src = `data:image/png;base64,${data}`;
-      await image.decode();
-      const canvas = document.createElement('canvas');
-      canvas.width = image.width;
-      canvas.height = image.height;
-      const context = canvas.getContext('2d');
-      if (context === null) throw new Error('no 2d context');
-      context.drawImage(image, 0, 0);
-      const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
-      const channel = (value: number) => {
-        const c = value / 255;
-        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-      };
-      const luminance = (r: number, g: number, b: number) =>
-        0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
-      const [tr = 0, tg = 0, tb = 0] = (textColor.match(/\d+/g) ?? []).map(Number);
-      const text = luminance(tr, tg, tb);
-      let worst = Infinity;
-      for (let i = 0; i < pixels.length; i += 4) {
-        const background = luminance(pixels[i] ?? 0, pixels[i + 1] ?? 0, pixels[i + 2] ?? 0);
-        const [hi, lo] = text > background ? [text, background] : [background, text];
-        worst = Math.min(worst, (hi + 0.05) / (lo + 0.05));
-      }
-      return worst;
-    },
-    { data: png.toString('base64'), textColor: color },
-  );
-}
 
 test('[WCAG 1.4.3] Cinematic Hero: contraste medido nos pixels reais, em cada imagem, a 390 e 1440 px', async ({
   page,

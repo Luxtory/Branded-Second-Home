@@ -521,3 +521,60 @@ com duas ou mais fotos adequadas.
 
 **Demais páginas.** Como funciona, Coleção, Concept e 404 seguem as receitas da §13.9 no Core. No Como funciona, o
 desenho da proporção do ano das configurações Co-Owner sai; os valores continuam em Evidence, painel a painel.
+
+### 13.11 Como funciona — Especificação Visual e Copy do fundador (2026-10-06)
+
+> Brief de página de `/como-funciona` sobre o Core Design System; prevalece sobre as linhas do Como funciona da tabela
+> §13.9 e sobre a frase do Como funciona em "Demais páginas" da §13.10. Copy: `D-B2C-20`
+> ([`b2c.md`](communication/b2c.md) §11). Dados, SSR, CSP, RLS, CTA por disponibilidade (`D-B2C-16`) e as regras da §13
+> continuam como estão; nenhum produto ou regra de negócio muda.
+
+**Brief.** Protagonista: quem avalia se uma Second Home Luxtory faz sentido para a sua vida, como Owner ou Co-Owner
+(`[FW-B2C: §5]`). Consciência Product Aware → Most Aware; 5Ps predominantes PROOF → PUSH (`[FW-B2C: §8]`), sem
+reabrir PROBLEM nem PROMISE da Home; estado afetivo SEEKING, com redução de insegurança; tom sofisticado, claro,
+seguro, humano e conversacional; a Luxtory é Mentor. Resultado mental esperado: "agora eu entendo como funciona, o
+que é meu, como uso, quais são as regras, e consigo decidir se isso combina comigo". Função: extensão da Home — o
+Hero continua a Home sem reiniciar a jornada. Fatos: L1–L9 e os IDs citados no i18n de cada bloco; nenhum preço, taxa,
+disponibilidade, garantia ou regra nova.
+
+| Seção | Superfície | Composição (desktop) | Celular | Mídia |
+|---|---|---|---|---|
+| Hero | fotografia (`blue` no celular) | Cinematic Hero `lx-hero lx-hero--uniform` (scrim uniforme `scrim.display-alpha` 0,80 sobre 100% da foto); o mesmo header da Home (sobre a foto, menu pelo ícone oficial); headline Warm Sand, subtítulo, âncora "Entenda a jornada" e índice dos três capítulos (`lx-hero__chapters`), embaixo à esquerda | foto → headline → subtítulo → âncora → capítulos | `hero-lifestyle.jpg` (no `md`, recorte sem pessoas sob o texto) |
+| Como tudo se conecta + jornada | `sand` | Editorial Split 6/6 (texto \| imagem); jornada em Answer Rows `--phases`: cada momento abre com a hairline forte, rótulo à esquerda, três etapas numeradas (01–09, título `display-s`) à direita | texto → imagem → jornada | Kaizen K07 |
+| Patrimônio | `blue` | Split 6/6 (imagem \| texto); Answer Rows 4/8: "O que exatamente é meu?" (Owner \| Co-Owner), "Isso é timeshare?" e "Existe garantia…?" com "Não." em destaque; fechamento | imagem → intro → Owner → Co-Owner → dúvidas | `luxury-property-facade-hero.jpg` |
+| Liberdade | `sand` | Split 6/6 (texto \| imagem); uso (Owner \| Co-Owner, fechamento em corpo), "No Co-Owner, quanto tempo posso usar?" com as quatro configurações em Figures (mesma geometria, 4 colunas; "Uso anual" em destaque, nome da configuração como rótulo) e legenda em corpo; "E quando eu não estiver usando?" | intro → imagem → uso → configurações empilhadas → não uso | `problema-imovel.jpg` (outro destino: mar e palmeiras, recorte à direita) |
+| Gestão | `sand` | Split 6/6 (imagem \| texto); "Quem cuida da Second Home?" (Owner \| Co-Owner); fechamento | imagem → texto → Owner → Co-Owner → fechamento | Kaizen K05 (recorte na cama preparada) |
+| Luxtory Club | `sand` | cabeçalho com a pergunta; Luxchange, Luxplus, Locação em Numbered Editorial List; nota (corpo) e statement | Luxchange → Luxplus → Locação | — |
+| Pertencimento | `blue` | Split 6/6 (imagem \| texto); "O que faz…ser diferente?" (texto + Owner \| Co-Owner), "E meus convidados?"; fechamento | imagem → intro → diferença → convidados | Kaizen K09 |
+| Condições | `white` | Numbered Editorial List 01–05, sempre visível (sem disclosure) | título → 01–05 | — |
+| Faz sentido | `sand` | Editorial Comparison: as duas listas com o mesmo peso, sem ícones de certo/errado | faz sentido → pode não fazer | — |
+| CTA | fotografia | `lx-hero--closing lx-hero--uniform` (scrim uniforme 0,80): headline, apoio e CTA por disponibilidade | foto → headline → apoio → CTA | `home-solucao-firepit-family.jpg` |
+
+**CTA por disponibilidade (`D-B2C-16`).** Com Home Edition publicada, "Conheça as Home Editions"; só com Concepts,
+"Conheça os Home Concepts"; o apoio ("…descubra quais Home Concepts e Home Editions já fazem parte da Coleção") só
+aparece com um desses dois CTAs. Sem Concept publicado, a frase "Os primeiros Home Concepts ainda não foram
+publicados." e nenhum CTA; com leitura indisponível, nem frase nem CTA — nunca um CTA falso.
+
+**Fotografias.** As seis fotos provisórias da §13.10 e, na Liberdade, `problema-imovel.jpg` do Luxtory2.0 (casa de
+praia ao entardecer, sem pessoas), autorizada pelo fundador em 2026-10-07 como asset provisório para comunicar outro
+destino; copiada sem alteração em `public/images/como-funciona/`. Nenhuma foto se repete na página. Nenhuma foto
+significa Edition, oferta ou prova de benefício (REQ-022).
+
+**Scrim uniforme (decisão do fundador, 2026-10-07).** Hero e CTA final usam um scrim Dark Moroccan Blue uniforme sobre
+100% da fotografia (`lx-hero--uniform`), com a menor opacidade em que tudo o que fica sobre a foto passa a 390, 768,
+1024 e 1440 px. Mínimo medido por fotografia nos pixels reais: Hero — headline Warm Sand 0,79, subtítulo 0,68, âncora
+0,63, nomes dos capítulos 0,60, números 0,73, logo 0,77, marca do menu 0,76; CTA — headline 0,79, apoio 0,68. Como o
+navegador guarda o alfa em 8 bits (0,79 vira 0,788 e o headline cai para 2,998:1 no render), as duas fotos ficam em
+0,80 (`scrim.display-alpha`, o nível em que o Warm Sand mantém 3:1 até sobre um pixel branco); as cores da copy não
+mudam.
+
+**Core.** Complementos com consumidor real (design-system §13.10): Answer Rows (`lx-answers`, `--phases`; perguntas
+em Hanken medium), Figures (`lx-figures`, `__value--primary`), índice de capítulos do Hero (`lx-hero__chapters`),
+nota de modalidade numa lista (`lx-numbered__note`), recortes `lx-crop-md-x-*` e o scrim uniforme opt-in
+(`lx-hero--uniform`, token `scrim.display-alpha`); o Cinematic Hero padrão (Lab, fechamento da Home) não muda. Sobre
+`sand`, o eyebrow segue o papel `marker` do Core (Dark Moroccan Blue, 5,57:1): Moroccan Blue a 12 px mede 4,32:1.
+
+**Aceite.** E2E `discovery.spec.ts` (gate de UI com axe a 390/1440 e sem overflow 320–1920; REQ-103 nos pares
+Owner | Co-Owner; D-B2C-16; teste da página: capítulos, condições visíveis, Figures, listas do PUSH e fechamento;
+header da Home com `aria-current` no menu; contraste do Hero e do CTA medido nos pixels a 768 e 1440) e Checkpoint
+Visual sem push a 390/768/1024/1440.
