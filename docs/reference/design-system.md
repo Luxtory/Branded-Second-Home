@@ -555,3 +555,18 @@ Complementares consumidos pela W4: `lx-diagram` (Text + Diagram, `/diagrams/core
   o Cinematic Hero mantém o scrim local.
 - Momentos de uma sequência: `div.lx-answers.lx-answers--phases`; número que responde à pergunta:
   `dd.lx-figures__value.lx-figures__value--primary`.
+- Coleção — busca GET no servidor: `form.lx-discovery[role=search][data-surface=white]` > `div.lx-discovery__search`
+  (`input.lx-discovery__input` + `button.lx-discovery__submit`) + `div.lx-discovery__facets` > `details.lx-facet` >
+  `summary.lx-facet__summary` (`span.__label` + `span.__value`) + `div.lx-facet__panel` (fieldsets `lx-facet__options`
+  com `label.lx-check > input + span`, `div.lx-facet__range`, `p.lx-facet__note`, botão "Aplicar"). No celular, o botão
+  `div.lx-discovery__mobile > button.lx-discovery__open` abre `dialog.lx-filters` (formulário próprio, fora da busca;
+  grupos com título em `section.lx-filters__group > h3.lx-eyebrow.lx-filters__heading`). Barra fixa (lg+):
+  `form.lx-discovery--compact` > `div.lx-discovery__search` + `div.lx-discovery__tools` (facetas com
+  `span.lx-facet__count`, `a.lx-discovery__count`, envio); a dica visível é `span.lx-discovery__placeholder` com
+  `__placeholder-long`/`__placeholder-short` sobre `input[placeholder=" "]`.
+- Card de Home Concept: `ul.lx-concept-grid[aria-label] > li > article.lx-concept-card` — mídia (`figure.lx-media` com
+  `srcset` ou `div.lx-concept-card__media--type[data-surface=blue][aria-hidden] > span.__word`) + `div.__body` (eyebrow,
+  `h3.lx-display-m.__title > a.__link`, `p.__meta`, `p.__facts`, `ul.__editions > li.__edition`, `span.__cta[aria-hidden]`).
+  Destaque: `lx-concept-card--featured`. Grupos: `section.lx-concept-group > div.__head` + a lista.
+- Filtros ativos: `ul.lx-chips > li > a.lx-chip[aria-label="Remover filtro: …"]`; ordenação: `nav.lx-sort` com
+  `a.lx-sort__option[aria-current=true]`; jornada em passos: `ol.lx-steps > li.lx-steps__item`.

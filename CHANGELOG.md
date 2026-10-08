@@ -13,6 +13,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Coleção final (`/colecao`, Wave 4.1, Fase C; `D-B2C-21`): Hero tipográfico com a busca como protagonista, facetas
+  Lifestyle · Localização · Estilo · Pessoas · Faixa de valor (Owner ou Co-Owner com o mesmo peso, depois De/Até) e mais
+  filtros; resultados em dois grupos — com e ainda sem Home Edition, ou, com Localização, na região e "outros que
+  combinam"; um card por Home Concept com as Home Editions dentro e o valor de referência por base; destaque editorial;
+  filtros em tela cheia no celular; barra de busca fixa no desktop; URL compartilhável; estados sem resultado, vazio e
+  indisponível.
+- Coleção — dados e Admin (Wave 4.1, Fase B; spec catalog §13.12): vocabulários controlados de lifestyle e estilo
+  arquitetônico; classificação (lifestyle 1–3, estilo 1–2), resumo, pessoas, suítes e área na versão do Concept; capa
+  oficial com envio, pré-visualização, aprovação e retirada — master sanitizado e larguras WebP sem metadados no
+  Supabase Storage privado, só metadados no banco (ADR-0015) — entregue pelo próprio domínio só quando aprovada; curadoria (posição e destaque editorial); valores de referência da Edition por
+  base — Owner (a Second Home inteira) e Co-Owner (uma Ação), com vigência e encerramento. A página pública da Coleção
+  ainda não usa esses dados (Fase C).
 - Como funciona (`/como-funciona`) na Especificação Visual e Copy do fundador: Hero fotográfico com o índice dos três
   capítulos, a jornada do lifestyle ao Luxtory Club, Patrimônio, Liberdade (com as quatro configurações Co-Owner),
   Gestão, Luxtory Club e Pertencimento respondendo às perguntas do leitor com Owner e Co-Owner no mesmo peso, condições

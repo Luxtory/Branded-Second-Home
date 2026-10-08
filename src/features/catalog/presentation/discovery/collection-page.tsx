@@ -1,130 +1,510 @@
-import { Collection, ConceptCredit } from '@/design-system/react';
-import { groupCollection, type PublicConceptCard } from '../../application/public-views';
-import { postgresPublicCatalogReader as reader } from '../../infrastructure/postgres-public-catalog-reader';
-import { discoveryMessages as text } from '../i18n/discovery-pt-br';
-import { nb } from './no-break';
-import { ActionLink, ModalityText } from './parts';
+import type { ReactNode } from 'react';
+import { redirect } from 'next/navigation';
+import { Icon } from '@/design-system/react';
+import {
+  collectionFacets,
+  discoverCollection,
+  type CollectionFacets,
+  type CollectionGroups,
+} from '../../application/collection-discovery';
+import {
+  activeFilters,
+  collectionSearchParams,
+  COLLECTION_PARAMS,
+  COLLECTION_SORTS,
+  EMPTY_COLLECTION_QUERY,
+  parseCollectionQuery,
+  type CollectionQuery,
+  type SearchParams,
+} from '../../application/collection-query';
+import type { PublicCollectionEntry } from '../../application/collection-views';
+import { postgresPublicCollectionReader as reader } from '../../infrastructure/postgres-public-collection-reader';
+import { discoveryMessages } from '../i18n/discovery-pt-br';
+import { ConceptCard } from './collection-card';
+import { FiltersDialog, FiltersTrigger, StickyDiscovery } from './collection-client';
+import {
+  activeChips,
+  collectionHref,
+  DISCOVERY_ANCHOR,
+  JOURNEY_ANCHOR,
+  RESULTS_ANCHOR,
+} from './collection-labels';
+import {
+  DiscoveryForm,
+  GuestsFields,
+  hasMoreFilters,
+  LifestyleFields,
+  MoreFields,
+  RegionFields,
+  StyleFields,
+  ValueFields,
+} from './collection-search';
+import { ActionLink, ordinal } from './parts';
 import { discoveryPaths } from './paths';
 import { readPublicCatalog } from './read';
 import { DiscoverySite } from './site';
-import { StatusNote } from './status';
 
-const { collection, actions } = text;
+/**
+ * Coleção `/colecao` (spec catalog §13.12, D-B2C-21): discovery curatorial — Hero tipográfico com a busca como
+ * protagonista, resultados em dois grupos (com e ainda sem Home Edition; com Localização, na região e "outros que
+ * combinam"), a cadeia do Concept à Second Home e o fechamento. Busca, filtros e ordem no servidor; URL compartilhável.
+ */
+const text = discoveryMessages.collection;
+const FORM_ID = DISCOVERY_ANCHOR;
+const DIALOG_ID = 'filtros';
+/** As primeiras imagens da página carregam já; as demais, ao se aproximar da tela. */
+const EAGER_IMAGES = 2;
 
-const howItWorksLink = <ActionLink href={discoveryPaths.howItWorks} label={actions.howItWorks} />;
+/** A busca como a URL a escreveria; parâmetro vazio, repetido ou fora de ordem → redireciona para a forma estável. */
+function canonicalRedirect(params: SearchParams, query: CollectionQuery): string | null {
+  const received = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    for (const item of typeof value === 'string' ? [value] : (value ?? []))
+      received.append(key, item);
+  }
+  const canonical = collectionSearchParams(query);
+  return received.toString() === canonical.toString() ? null : collectionHref(query, null);
+}
 
-/** Abaixo do nome: a marca e, quando houver, cada Edition (região · modalidade), uma por linha. */
-function CardDetails({ card }: { readonly card: PublicConceptCard }) {
+function ConceptList({
+  label,
+  entries,
+  featuredId,
+  eager,
+}: {
+  readonly label: string;
+  readonly entries: readonly PublicCollectionEntry[];
+  readonly featuredId: string | null;
+  readonly eager: number;
+}) {
+  return (
+    <ul className="lx-concept-grid" aria-label={label}>
+      {entries.map((entry, index) => (
+        <li key={entry.id}>
+          <ConceptCard entry={entry} featured={entry.id === featuredId} eager={index < eager} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function Group({
+  id,
+  title,
+  lead,
+  label,
+  entries,
+  featuredId,
+  eager,
+}: {
+  readonly id: string;
+  readonly title: string;
+  readonly lead: string;
+  readonly label: string;
+  readonly entries: readonly PublicCollectionEntry[];
+  readonly featuredId: string | null;
+  readonly eager: number;
+}) {
+  if (entries.length === 0) return null;
+  return (
+    <section className="lx-concept-group" id={id} aria-labelledby={`${id}-titulo`}>
+      <div className="lx-concept-group__head">
+        <h3 className="lx-display-s" id={`${id}-titulo`}>
+          {title}
+        </h3>
+        <p className="lx-body">{lead}</p>
+      </div>
+      <ConceptList label={label} entries={entries} featuredId={featuredId} eager={eager} />
+    </section>
+  );
+}
+
+/** Os dois grupos: sem região, com e ainda sem Home Edition; com região, nela e "outros que combinam" (REQ-020/022). */
+function Groups({
+  groups,
+  featuredId,
+}: {
+  readonly groups: CollectionGroups;
+  readonly featuredId: string | null;
+}) {
+  const g = text.groups;
+  const first = groups.kind === 'catalog' ? groups.withEdition : groups.inRegion;
+  const eagerSecond = Math.max(0, EAGER_IMAGES - first.length);
+  if (groups.kind === 'region') {
+    return (
+      <>
+        <Group
+          id={discoveryPaths.editionsAnchor}
+          title={g.inRegion.title(groups.region)}
+          lead={g.inRegion.text}
+          label={g.inRegion.listLabel(groups.region)}
+          entries={groups.inRegion}
+          featuredId={featuredId}
+          eager={EAGER_IMAGES}
+        />
+        <Group
+          id={discoveryPaths.conceptsAnchor}
+          title={g.others.title}
+          lead={g.others.text(groups.region)}
+          label={g.others.listLabel}
+          entries={groups.others}
+          featuredId={featuredId}
+          eager={eagerSecond}
+        />
+      </>
+    );
+  }
   return (
     <>
-      <ConceptCredit lead={collection.credit} brandName={card.brandName} />
-      {card.editions.length === 0 ? null : (
-        <ul className="lx-comparison__list" aria-label={collection.editionsLabel}>
-          {card.editions.map((edition) => (
-            <li className="lx-compact" key={edition.id}>
-              {edition.region} · <ModalityText value={edition.modality} />
-            </li>
-          ))}
-        </ul>
-      )}
+      <Group
+        id={discoveryPaths.editionsAnchor}
+        title={g.editions.title}
+        lead={g.editions.text}
+        label={g.editions.listLabel}
+        entries={groups.withEdition}
+        featuredId={featuredId}
+        eager={EAGER_IMAGES}
+      />
+      <Group
+        id={discoveryPaths.conceptsAnchor}
+        title={g.concepts.title}
+        lead={g.concepts.text}
+        label={g.concepts.listLabel}
+        entries={groups.withoutEdition}
+        featuredId={featuredId}
+        eager={eagerSecond}
+      />
     </>
   );
 }
 
-/** As regiões das Editions, sem repetição (metadado real); sem Edition, sem eyebrow. */
-const regionsOf = (card: PublicConceptCard) => [
-  ...new Set(card.editions.map((edition) => edition.region)),
-];
+function SortLinks({ query }: { readonly query: CollectionQuery }) {
+  return (
+    <nav className="lx-sort" aria-label={text.results.sortLabel}>
+      <span>{text.results.sortLabel}</span>
+      {COLLECTION_SORTS.map((sort) => (
+        <a
+          key={sort}
+          className="lx-link lx-sort__option"
+          href={collectionHref({ ...query, sort })}
+          aria-current={query.sort === sort ? 'true' : undefined}
+        >
+          {query.sort === sort ? <Icon name="check" className="lx-link__icon" /> : null}
+          {text.results.sorts[sort]}
+        </a>
+      ))}
+    </nav>
+  );
+}
 
-/**
- * Um grupo da Coleção; grupo vazio não aparece (spec catalog §13.4). Com Edition, dois Concepts por linha (`feature`);
- * sem Edition, a sequência compacta.
- */
-function Group({
+const clearHrefOf = (query: CollectionQuery) =>
+  collectionHref({ ...EMPTY_COLLECTION_QUERY, sort: query.sort });
+
+/** Cabeçalho dos resultados: título, filtros ativos removíveis, contagem (só no status) e ordenação. */
+function ResultsHead({
+  query,
+  facets,
+  filtered,
+  total,
+}: {
+  readonly query: CollectionQuery;
+  readonly facets: CollectionFacets;
+  readonly filtered: boolean;
+  readonly total: number;
+}) {
+  const r = text.results;
+  const chips = activeChips(query, facets);
+  const basis = query.value === null ? null : text.facets.bases[query.value.basis].title;
+  return (
+    <div className="lx-results-head">
+      {filtered ? null : <p className="lx-eyebrow">{r.eyebrow}</p>}
+      <h2 className="lx-headline" id={`${RESULTS_ANCHOR}-titulo`}>
+        {filtered ? r.filteredTitle : r.title}
+      </h2>
+      {chips.length === 0 ? null : (
+        <ul className="lx-chips">
+          {chips.map((chip) => (
+            <li key={chip.key}>
+              <a className="lx-chip" href={chip.href} aria-label={r.remove(chip.label)}>
+                {chip.label}
+                <Icon name="close" className="lx-link__icon" />
+              </a>
+            </li>
+          ))}
+          <li>
+            <a className="lx-link" href={clearHrefOf(query)}>
+              {r.clear}
+            </a>
+          </li>
+        </ul>
+      )}
+      <p className="lx-body" role="status">
+        {filtered ? r.count(total) : null}
+        {basis === null ? null : ` ${text.facets.valueNote(basis)}`}
+      </p>
+      <SortLinks query={query} />
+    </div>
+  );
+}
+
+/** Grupo do diálogo com o nome que a faceta tem no desktop ("Faixa de valor", "Mais filtros"): paridade de rótulos. */
+function DialogGroup({
   id,
-  surface,
-  copy,
-  cards,
-  variant,
+  title,
+  children,
 }: {
   readonly id: string;
-  readonly surface: 'sand' | 'white';
-  readonly copy: { readonly title: string; readonly text: string; readonly listLabel: string };
-  readonly cards: readonly PublicConceptCard[];
-  readonly variant: 'feature' | 'compact';
+  readonly title: string;
+  readonly children: ReactNode;
 }) {
-  if (cards.length === 0) return null;
   return (
-    <section className="lx-section" data-surface={surface} aria-labelledby={id}>
-      <div className="lx-container">
-        <div className="lx-section-head">
-          <h2 id={id} className="lx-headline">
-            {copy.title}
-          </h2>
-          <p className="lx-subheadline">{nb(copy.text)}</p>
+    <section className="lx-filters__group" aria-labelledby={id}>
+      <h3 className="lx-eyebrow lx-filters__heading" id={id}>
+        {title}
+      </h3>
+      {children}
+    </section>
+  );
+}
+
+/** Diálogo dos filtros do celular: os mesmos campos, num formulário próprio (sem formulário aninhado). */
+function MobileFilters({
+  query,
+  facets,
+}: {
+  readonly query: CollectionQuery;
+  readonly facets: CollectionFacets;
+}) {
+  const fields = { prefix: DIALOG_ID, query, facets } as const;
+  return (
+    <FiltersDialog
+      id={DIALOG_ID}
+      title={text.search.dialogTitle}
+      closeLabel={text.search.close}
+      action={`${discoveryPaths.collection}#${RESULTS_ANCHOR}`}
+      hidden={
+        <>
+          {query.text === '' ? null : (
+            <input type="hidden" name={COLLECTION_PARAMS.text} value={query.text} />
+          )}
+          {query.sort === 'curadoria' ? null : (
+            <input type="hidden" name={COLLECTION_PARAMS.sort} value={query.sort} />
+          )}
+        </>
+      }
+      footer={
+        <>
+          <a className="lx-button lx-button--secondary" href={clearHrefOf(query)}>
+            {text.search.clear}
+          </a>
+          <button className="lx-button lx-button--primary" type="submit">
+            {text.search.showResults}
+          </button>
+        </>
+      }
+    >
+      {facets.lifestyles.length > 0 ? <LifestyleFields {...fields} /> : null}
+      {facets.regions.length > 0 ? <RegionFields {...fields} /> : null}
+      {facets.styles.length > 0 ? <StyleFields {...fields} /> : null}
+      {facets.guests.length > 0 ? <GuestsFields {...fields} /> : null}
+      {facets.values.length > 0 ? (
+        <DialogGroup id={`${DIALOG_ID}-valor`} title={text.facets.value}>
+          <ValueFields {...fields} />
+        </DialogGroup>
+      ) : null}
+      {hasMoreFilters(facets) ? (
+        <DialogGroup id={`${DIALOG_ID}-mais`} title={text.search.more}>
+          <MoreFields {...fields} />
+        </DialogGroup>
+      ) : null}
+    </FiltersDialog>
+  );
+}
+
+const hasFacets = (facets: CollectionFacets) =>
+  facets.lifestyles.length > 0 ||
+  facets.regions.length > 0 ||
+  facets.styles.length > 0 ||
+  facets.guests.length > 0 ||
+  facets.values.length > 0 ||
+  hasMoreFilters(facets);
+
+function Hero({ bar }: { readonly bar: ReactNode }) {
+  const h = text.hero;
+  return (
+    <section className="lx-section" data-surface="blue" aria-labelledby="colecao">
+      <div className="lx-container lx-stack">
+        <div className="lx-pause lx-pause--start">
+          <p className="lx-eyebrow">{h.eyebrow}</p>
+          <h1 id="colecao" className="lx-headline">
+            {h.title}
+          </h1>
+          <p className="lx-subheadline">{h.text}</p>
         </div>
-        <Collection
-          label={copy.listLabel}
-          variant={variant}
-          items={cards.map((card) => ({
-            id: card.id,
-            href: discoveryPaths.concept(card.id),
-            title: card.title,
-            marker: regionsOf(card),
-            details: <CardDetails card={card} />,
-            cue: actions.viewConcept,
-          }))}
-        />
+        {bar}
+        <p className="lx-discovery-hint">
+          <span>{h.explanation}</span>
+          <ActionLink href={`#${JOURNEY_ANCHOR}`} label={h.howItWorks} icon="arrow-down" />
+        </p>
       </div>
     </section>
   );
 }
 
-/**
- * Coleção `/colecao` (spec catalog §13.4, receita §13.9): Discovery de produto, não marketplace. Primeiro os Concepts
- * com Edition (há oferta), depois os sem Edition — nenhum Concept nos dois grupos (REQ-022). Ordem de registro dentro
- * de cada grupo.
- */
-export async function CollectionPage() {
-  const result = await readPublicCatalog((tx) => reader.collection(tx));
-  const groups = result.status === 'ok' ? groupCollection(result.value) : null;
-  const status =
-    result.status === 'unavailable'
-      ? collection.unavailable
-      : result.value.length === 0
-        ? collection.empty
-        : null;
+function Journey() {
+  const j = text.journey;
+  return (
+    <section
+      className="lx-section"
+      id={JOURNEY_ANCHOR}
+      data-surface="sand"
+      aria-labelledby={`${JOURNEY_ANCHOR}-titulo`}
+    >
+      <div className="lx-container lx-stack">
+        <div className="lx-section-head">
+          <p className="lx-eyebrow">{j.eyebrow}</p>
+          <h2 className="lx-headline" id={`${JOURNEY_ANCHOR}-titulo`}>
+            {j.title}
+          </h2>
+        </div>
+        <ol className="lx-steps">
+          {j.steps.map((step, index) => (
+            <li className="lx-steps__item" key={step.title}>
+              <span className="lx-ordinal" aria-hidden="true">
+                {ordinal(index)}
+              </span>
+              <h3 className="lx-display-s">{step.title}</h3>
+              <p className="lx-body">{step.text}</p>
+            </li>
+          ))}
+        </ol>
+        <p>
+          <ActionLink href={discoveryPaths.howItWorks} label={j.more} />
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function Closing({ refine }: { readonly refine: boolean }) {
+  const c = text.closing;
+  return (
+    <section className="lx-section" data-surface="blue" aria-labelledby="fecho">
+      <div className="lx-container lx-section-closing lx-pause">
+        <h2 className="lx-headline" id="fecho">
+          {c.title}
+        </h2>
+        <div className="lx-actions-stack">
+          {refine ? (
+            <ActionLink href={`#${FORM_ID}`} label={c.refine} primary icon="arrow-up" />
+          ) : null}
+          <ActionLink
+            href={discoveryPaths.howItWorks}
+            label={c.howItWorks}
+            outline={refine}
+            primary={!refine}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Estado honesto sem resultados para mostrar: catálogo vazio ou leitura indisponível (nunca "não há catálogo"). */
+function StatusBlock({ message }: { readonly message: string }) {
+  return (
+    <section
+      className="lx-section lx-results"
+      id={RESULTS_ANCHOR}
+      data-surface="white"
+      aria-label={message}
+    >
+      <div className="lx-container">
+        <div className="lx-empty">
+          <p className="lx-lead">{message}</p>
+          <ActionLink href={`#${JOURNEY_ANCHOR}`} label={text.hero.howItWorks} icon="arrow-down" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export async function CollectionPage({ searchParams }: { readonly searchParams: SearchParams }) {
+  const query = parseCollectionQuery(searchParams);
+  const target = canonicalRedirect(searchParams, query);
+  if (target !== null) redirect(target);
+  const result = await readPublicCatalog((tx) => reader.entries(tx));
+  if (result.status === 'unavailable' || result.value.length === 0) {
+    const message = result.status === 'unavailable' ? text.unavailable : text.empty;
+    return (
+      <DiscoverySite current="collection">
+        <Hero bar={null} />
+        <StatusBlock message={message} />
+        <Journey />
+        <Closing refine={false} />
+      </DiscoverySite>
+    );
+  }
+  const entries = result.value;
+  const facets = collectionFacets(entries);
+  const discovery = discoverCollection(entries, query);
+  const filterCount = activeFilters(query).filter((filter) => filter.kind !== 'text').length;
+  const withFacets = hasFacets(facets);
   return (
     <DiscoverySite current="collection">
-      <section className="lx-section" data-surface="blue" aria-labelledby="colecao">
-        <div className="lx-container">
-          <div className="lx-pause lx-pause--start">
-            <h1 id="colecao" className="lx-statement">
-              {collection.header.title}
-            </h1>
-            <p className="lx-subheadline">{nb(collection.header.text)}</p>
-            {status === null ? null : <StatusNote message={status} action={howItWorksLink} />}
-          </div>
+      <Hero
+        bar={
+          <DiscoveryForm
+            id={FORM_ID}
+            variant="hero"
+            query={query}
+            facets={facets}
+            mobile={
+              withFacets ? (
+                <FiltersTrigger dialogId={DIALOG_ID} label={text.search.filters(filterCount)} />
+              ) : null
+            }
+          />
+        }
+      />
+      {withFacets ? <MobileFilters query={query} facets={facets} /> : null}
+      <StickyDiscovery watchId={FORM_ID}>
+        <DiscoveryForm
+          id={`${FORM_ID}-compacta`}
+          variant="compact"
+          query={query}
+          facets={facets}
+          filterCount={filterCount}
+        />
+      </StickyDiscovery>
+      <section
+        className="lx-section lx-results"
+        id={RESULTS_ANCHOR}
+        data-surface="white"
+        aria-labelledby={`${RESULTS_ANCHOR}-titulo`}
+      >
+        <div className="lx-container lx-stack">
+          <ResultsHead
+            query={query}
+            facets={facets}
+            filtered={discovery.filtered}
+            total={discovery.total}
+          />
+          {discovery.total === 0 ? (
+            <div className="lx-empty">
+              <p className="lx-lead">{text.results.noResults}</p>
+              <p className="lx-body">{text.results.noResultsText}</p>
+              <a className="lx-button lx-button--secondary" href={clearHrefOf(query)}>
+                {text.results.clear}
+              </a>
+            </div>
+          ) : (
+            <Groups groups={discovery.groups} featuredId={discovery.featuredId} />
+          )}
         </div>
       </section>
-      {groups === null ? null : (
-        <>
-          <Group
-            id={discoveryPaths.editionsAnchor}
-            surface="sand"
-            copy={collection.editions}
-            cards={groups.withEditions}
-            variant="feature"
-          />
-          <Group
-            id={discoveryPaths.conceptsAnchor}
-            surface="white"
-            copy={collection.concepts}
-            cards={groups.withoutEditions}
-            variant="compact"
-          />
-        </>
-      )}
+      <Journey />
+      <Closing refine />
     </DiscoverySite>
   );
 }

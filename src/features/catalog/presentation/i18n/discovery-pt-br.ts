@@ -832,25 +832,164 @@ export const discoveryMessages = {
   },
 
   collection: {
-    // PROOF → PUSH; Discovery de produto, não marketplace. BR-001, BR-002, BR-004, REQ-022.
-    header: {
-      title: 'Coleção',
-      text: 'Cada Home Concept traduz o universo de uma marca numa casa. Cada Home Edition é o lançamento de um Concept numa região, com condições próprias — e é por ela que existe oferta.',
+    // Coleção curatorial (spec catalog §13.12, D-B2C-21): PROOF → PUSH; Discovery de produto, não marketplace. Um card por
+    // Home Concept (REQ-022); sem Edition, sem oferta nem valor (REQ-020); Owner e Co-Owner com o mesmo peso (REQ-103);
+    // nunca valor por dia (REQ-100).
+    hero: {
+      eyebrow: 'Coleção',
+      title: 'As suas próximas histórias começam antes mesmo de a casa existir.',
+      text: 'Explore Home Concepts criados a partir de diferentes lifestyles — e descubra quais Home Editions já foram lançadas na região que você deseja.',
+      explanation: 'Home Concept é a ideia. Home Edition é o lançamento dessa ideia em uma região.',
+      howItWorks: 'Entenda como funciona',
     },
-    editions: {
-      title: 'Home Editions',
-      text: 'Concepts com lançamento: a região e a modalidade de cada Edition.',
-      listLabel: 'Home Concepts com Home Edition',
+    search: {
+      label: 'Buscar na Coleção',
+      // A barra fixa do desktop é outro landmark de busca: nome próprio (axe landmark-unique).
+      compactLabel: 'Refinar a busca na Coleção',
+      placeholder: 'Busque por lifestyle, destino, Home Concept ou Brand Partner',
+      // Onde a frase longa seria cortada (celular, tablet, barra fixa) — decisão do fundador, 2026-10-07.
+      placeholderShort: 'Lifestyle, destino, Concept ou marca',
+      submit: 'Explorar a Coleção',
+      apply: 'Aplicar',
+      more: 'Mais filtros',
+      filters: (count: number) => (count === 0 ? 'Filtros' : `Filtros (${count})`),
+      dialogTitle: 'Filtros',
+      close: 'Fechar',
+      showResults: 'Ver resultados',
+      clear: 'Limpar',
     },
-    concepts: {
-      title: 'Home Concepts',
-      text: 'Concepts ainda sem Home Edition — por enquanto, sem oferta comercial.',
-      listLabel: 'Home Concepts sem Home Edition',
+    facets: {
+      lifestyle: 'Lifestyle',
+      region: 'Localização',
+      style: 'Estilo',
+      guests: 'Pessoas',
+      value: 'Faixa de valor',
+      valueShort: 'Valor',
+      suites: 'Suítes',
+      area: 'Área (m²)',
+      modality: 'Modalidade disponível',
+      withEdition: 'Só com Home Edition',
+      brand: 'Brand Partner',
+      all: 'Todos',
+      allRegions: 'Todas',
+      anyGuests: 'Qualquer',
+      atLeastGuests: (n: number) => `Para pelo menos ${n}`,
+      anySuites: 'Qualquer',
+      atLeastSuites: (n: number) => `Pelo menos ${n}`,
+      areaFrom: 'De',
+      areaTo: 'Até',
+      anyModality: 'Qualquer',
+      anyBrand: 'Todas',
+      chooseBasis: 'Escolha a modalidade',
+      valueStep1: '1. Valor de referência de',
+      valueStep2: '2. Faixa (R$)',
+      valueFrom: 'De',
+      valueTo: 'Até',
+      valueSuggestion: (min: string, max: string) =>
+        min === max ? `Valor publicado: ${min}` : `Valores publicados: de ${min} a ${max}`,
+      bases: {
+        owner: { title: 'Owner', text: 'a Second Home inteira' },
+        acao: { title: 'Co-Owner', text: 'uma Ação da SPE proprietária' },
+      },
+      modalities: { owner: 'Owner', co_owner: 'Co-Owner' },
+      moreActive: (n: number) => (n === 1 ? '1 ativo' : `${n} ativos`),
+      /** Barra fixa: escolhas ativas ao lado do rótulo da faceta. */
+      activeCount: (n: number) => `(${n})`,
+      rangeBetween: (min: string, max: string) => `${min} a ${max}`,
+      rangeFrom: (min: string) => `a partir de ${min}`,
+      rangeUpTo: (max: string) => `até ${max}`,
+      suitesChip: (n: number) => `Suítes: pelo menos ${n}`,
+      areaChip: (min: string, max: string) => `Área: ${min}–${max} m²`,
+      quoted: (value: string) => `“${value}”`,
+      valueNote: (basis: string) =>
+        `Considera só Concepts com Home Edition e valor vigente para ${basis}.`,
     },
-    credit: 'A partir do universo de',
-    editionsLabel: 'Home Editions deste Concept',
-    empty: 'Ainda não há Home Concepts publicados.',
-    unavailable: 'Não foi possível carregar a Coleção agora. Tente de novo em instantes.',
+    results: {
+      eyebrow: 'Curadoria Luxtory',
+      title: 'Encontre uma Second Home que tenha a ver com você.',
+      filteredTitle: 'Resultados da sua busca',
+      clear: 'Limpar filtros',
+      remove: (label: string) => `Remover filtro: ${label}`,
+      count: (n: number) =>
+        n === 0
+          ? 'Nenhum Home Concept encontrado.'
+          : n === 1
+            ? '1 Home Concept encontrado.'
+            : `${n} Home Concepts encontrados.`,
+      sortLabel: 'Ordenar',
+      sorts: { curadoria: 'Curadoria Luxtory', recentes: 'Mais recentes' },
+      noResults: 'Nenhum Home Concept combina com todas essas escolhas.',
+      noResultsText: 'Tire um filtro ou limpe a busca para ver mais Concepts.',
+    },
+    groups: {
+      editions: {
+        title: 'Com Home Edition',
+        text: 'Já lançados — com região, modalidade e condições definidas.',
+        listLabel: 'Home Concepts com Home Edition',
+      },
+      concepts: {
+        title: 'Ainda sem Home Edition',
+        text: 'Por enquanto, sem oferta comercial. O interesse por um Concept pode ajudar a indicar onde um novo lançamento faz sentido.',
+        listLabel: 'Home Concepts sem Home Edition',
+      },
+      inRegion: {
+        title: (region: string) => `Com Home Edition em ${region}`,
+        text: 'Já lançados nesta região — com modalidade e condições definidas.',
+        listLabel: (region: string) => `Home Concepts com Home Edition em ${region}`,
+      },
+      others: {
+        title: 'Outros Home Concepts que combinam com suas escolhas',
+        text: (region: string) =>
+          `Ainda sem Home Edition em ${region}. O interesse por um Concept pode indicar onde um novo lançamento faz sentido.`,
+        listLabel: 'Outros Home Concepts que combinam com suas escolhas',
+      },
+    },
+    card: {
+      featured: 'Em destaque',
+      credit: 'A partir do universo de',
+      guests: (n: number) => `Até ${n} pessoas`,
+      suites: (n: number) => (n === 1 ? '1 suíte' : `${n} suítes`),
+      area: (n: number) => `${n.toLocaleString('pt-BR')} m²`,
+      editionsLabel: 'Home Editions deste Concept',
+      owner: 'Owner',
+      acao: 'Co-Owner · Ação',
+      ownerFrom: (amount: string) => `Owner · a partir de ${amount}`,
+      acaoFrom: (amount: string) => `Co-Owner · Ação a partir de ${amount}`,
+      none: 'Ainda sem Home Edition — por enquanto, sem oferta comercial.',
+      cta: 'Conheça o Concept',
+    },
+    journey: {
+      eyebrow: 'Do Concept à Second Home',
+      title: 'Como um Home Concept chega à sua Second Home',
+      steps: [
+        { title: 'Escolha o Home Concept', text: 'O lifestyle e a casa que combinam com você.' },
+        {
+          title: 'Escolha onde gostaria de vivê-lo',
+          text: 'O interesse mostra à Luxtory onde há demanda.',
+        },
+        {
+          title: 'A Home Edition ganha forma',
+          text: 'Com demanda e viabilidade, a Luxtory estrutura o lançamento com região, modalidade e condições próprias.',
+        },
+        {
+          title: 'Escolha como possuir',
+          text: 'Owner: a Second Home inteira. Co-Owner: uma Ação da SPE proprietária, com Direito de Uso.',
+        },
+        {
+          title: 'O Design & Build transforma o Concept em casa',
+          text: 'Arquitetura, interiores, engenharia e obra. Construída do zero e fiel ao Concept.',
+        },
+        { title: 'Viva sua Second Home', text: 'O lugar onde suas próximas histórias começam.' },
+      ],
+      more: 'Entenda como funciona',
+    },
+    closing: {
+      title: 'Encontre o lugar onde suas próximas histórias podem começar.',
+      refine: 'Refinar a busca',
+      howItWorks: 'Entenda como funciona',
+    },
+    empty: 'Os primeiros Home Concepts ainda não foram publicados.',
+    unavailable: 'A Coleção não pôde ser carregada agora.',
   },
 
   concept: {

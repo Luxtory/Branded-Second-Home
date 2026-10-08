@@ -205,6 +205,10 @@ const NEW_CORE_BLOCKS = [
   'lx-faq', 'lx-siblings', 'lx-comparison', 'lx-panels', 'lx-numbered', 'lx-media', 'lx-triad-comparison',
   'lx-triad-statement', 'lx-columns', 'lx-stack', 'lx-panel-switch',
   'lx-editorial-list', 'lx-section-split', 'lx-answers', 'lx-figures',
+  // Coleção (spec catalog §13.12).
+  'lx-discovery', 'lx-discovery-hint', 'lx-discovery-sticky', 'lx-facet', 'lx-check', 'lx-results-head', 'lx-chips',
+  'lx-chip', 'lx-sort', 'lx-concept-group', 'lx-concept-grid', 'lx-concept-card', 'lx-steps', 'lx-filters',
+  'lx-results',
 ];
 
 function legacyCss() {

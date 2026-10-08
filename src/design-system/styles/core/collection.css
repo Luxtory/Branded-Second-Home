@@ -1,0 +1,714 @@
+/* Coleção (spec catalog §13.12, CP-Coleção) — consumer-driven complements of the Core for the curated discovery:
+ * Discovery bar (one GET form; native <details> facets, no JS needed), active-filter chips and sort, Concept cards with
+ * their Home Editions inside, the journey steps and the full-screen filters dialog on phones. Tokens only. */
+@layer lx.components {
+  /* ── Discovery bar ─────────────────────────────────────────────────────────────────────────────────────────── */
+  /* White controls inside the blue Hero: native checkboxes and radios follow the white surface, not the dark one. */
+  [data-lx="core"] :is(.lx-discovery, .lx-discovery-sticky, .lx-filters) {
+    color-scheme: light;
+  }
+  [data-lx="core"] .lx-discovery {
+    display: grid;
+    min-width: 0;
+    border: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+    background-color: var(--lx-color-bg);
+    color: var(--lx-color-fg);
+  }
+  /* The search and its submit sit inside the white bar: the button never reads as loose text on the blue Hero. */
+  [data-lx="core"] .lx-discovery__search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--lx-space-2);
+    padding: var(--lx-space-2);
+  }
+  [data-lx="core"] .lx-discovery__input {
+    min-width: 0;
+    min-height: var(--lx-target-hero);
+    padding-inline: var(--lx-space-4);
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: var(--lx-type-body);
+  }
+  /* Visible hint over an empty field (the native placeholder cannot change with the width): the long sentence only
+   * where it fits, the short one where it would be cut — same size, wrapping instead of truncating. */
+  [data-lx="core"] .lx-discovery__field {
+    position: relative;
+    display: grid;
+    min-width: 0;
+  }
+  [data-lx="core"] .lx-discovery__placeholder {
+    position: absolute;
+    inset-block: 0;
+    inset-inline: var(--lx-space-4);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    color: var(--lx-color-fg-muted);
+    font-size: var(--lx-type-body);
+    line-height: var(--lx-leading-compact);
+    pointer-events: none;
+  }
+  [data-lx="core"] .lx-discovery__input:not(:placeholder-shown) + .lx-discovery__placeholder {
+    display: none;
+  }
+  [data-lx="core"] .lx-discovery__placeholder-long {
+    display: none;
+  }
+  [data-lx="core"] .lx-discovery__count {
+    display: inline-flex;
+    align-items: center;
+    padding-inline: var(--lx-space-4);
+    font-size: var(--lx-type-label);
+    font-weight: var(--lx-weight-medium);
+    white-space: nowrap;
+  }
+  /* Phone: an unmistakable full-width submit with its label — never an icon-only square (checkpoint A, item 4). */
+  [data-lx="core"] .lx-discovery__submit {
+    justify-content: center;
+    width: 100%;
+    min-height: var(--lx-target-control);
+    border-radius: 0;
+  }
+  [data-lx="core"] .lx-discovery__facets {
+    display: none;
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  }
+  [data-lx="core"] .lx-discovery__mobile {
+    display: grid;
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  }
+  /* Without JS the dialog cannot open: the facets (native <details>) stay available at every width. */
+  [data-lx="core"]:not([data-lx-js]) .lx-discovery__facets {
+    display: grid;
+  }
+  [data-lx="core"]:not([data-lx-js]) .lx-discovery__mobile {
+    display: none;
+  }
+  [data-lx="core"] .lx-discovery__open {
+    min-height: var(--lx-target-control);
+    padding-inline: var(--lx-space-6);
+    border: 0;
+    background-color: transparent;
+    color: var(--lx-color-fg);
+    font: inherit;
+    font-size: var(--lx-type-label);
+    font-weight: var(--lx-weight-medium);
+    text-align: start;
+    cursor: pointer;
+  }
+
+  /* Explanation under the bar: the two terms in one line and the path to the journey. */
+  [data-lx="core"] .lx-discovery-hint {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lx-space-2) var(--lx-space-6);
+    align-items: baseline;
+    margin: 0;
+    font-size: var(--lx-type-body);
+    line-height: var(--lx-leading-body);
+  }
+
+  /* ── Facet: label (type.label) over the current value (type.body); the value wraps, never truncates. ────── */
+  [data-lx="core"] .lx-facet {
+    position: relative;
+    min-width: 0;
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-facet__summary {
+    display: grid;
+    gap: var(--lx-space-1);
+    align-content: center;
+    min-height: var(--lx-target-hero);
+    padding: var(--lx-space-3) var(--lx-space-6);
+    border-block-end: var(--lx-border-strong) solid transparent;
+    list-style: none;
+    cursor: pointer;
+  }
+  [data-lx="core"] .lx-facet__summary::-webkit-details-marker {
+    display: none;
+  }
+  [data-lx="core"] .lx-facet[open] > .lx-facet__summary {
+    border-block-end-color: var(--lx-color-action-bg);
+  }
+  [data-lx="core"] .lx-facet__label {
+    color: var(--lx-color-marker);
+    font-size: var(--lx-type-label);
+    font-weight: var(--lx-weight-medium);
+    letter-spacing: var(--lx-tracking-label);
+    line-height: var(--lx-leading-tight);
+  }
+  [data-lx="core"] .lx-facet__value {
+    font-size: var(--lx-type-body);
+    line-height: var(--lx-leading-compact);
+    overflow-wrap: anywhere;
+  }
+  [data-lx="core"] .lx-facet[data-active] .lx-facet__value {
+    font-weight: var(--lx-weight-semibold);
+  }
+  [data-lx="core"] .lx-facet__panel {
+    display: grid;
+    gap: var(--lx-space-6);
+    padding: var(--lx-space-6);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-facet__options {
+    display: grid;
+    gap: var(--lx-space-1);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  [data-lx="core"] .lx-facet__options > legend {
+    margin-bottom: var(--lx-space-3);
+    padding: 0;
+    font-size: var(--lx-type-label);
+    font-weight: var(--lx-weight-medium);
+  }
+  [data-lx="core"] .lx-facet__note {
+    margin: 0;
+    color: var(--lx-color-fg-muted);
+    font-size: var(--lx-type-compact);
+    line-height: var(--lx-leading-compact);
+  }
+  [data-lx="core"] .lx-facet__range {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--lx-space-4);
+  }
+  [data-lx="core"] .lx-facet__range label {
+    display: grid;
+    gap: var(--lx-space-2);
+    min-width: 0;
+    font-size: var(--lx-type-label);
+    font-weight: var(--lx-weight-medium);
+  }
+  [data-lx="core"] .lx-facet__range input {
+    width: 100%;
+    min-width: 0;
+    min-height: var(--lx-target-control);
+    padding-inline: var(--lx-space-3);
+    border: var(--lx-border-hairline) solid var(--lx-color-field-border);
+    border-radius: 0;
+    background-color: var(--lx-color-field-bg);
+    color: var(--lx-color-field-fg);
+    font: inherit;
+    font-size: var(--lx-type-body);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* A choice row (checkbox or radio) with a 44px target; an optional second line under the label. */
+  [data-lx="core"] .lx-check {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--lx-space-3);
+    align-items: start;
+    padding-block: var(--lx-space-2);
+    min-height: var(--lx-target-min);
+    font-size: var(--lx-type-body);
+    line-height: var(--lx-leading-compact);
+    cursor: pointer;
+  }
+  [data-lx="core"] .lx-check > input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0.125rem 0 0;
+    accent-color: var(--lx-color-action-bg);
+  }
+  [data-lx="core"] .lx-check__note {
+    display: block;
+    color: var(--lx-color-fg-muted);
+    font-size: var(--lx-type-compact);
+  }
+
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-discovery__search {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+    [data-lx="core"] .lx-discovery__submit {
+      width: auto;
+      min-height: var(--lx-target-hero);
+    }
+    [data-lx="core"] .lx-discovery__facets {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    [data-lx="core"] .lx-discovery__mobile {
+      display: none;
+    }
+    [data-lx="core"] .lx-facet {
+      border-inline-end: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+    /* Every facet fills the row (the panel is out of flow here): the open indicator sits on the row's base line. */
+    [data-lx="core"] .lx-facet > .lx-facet__summary {
+      box-sizing: border-box;
+      height: 100%;
+      align-content: start;
+    }
+    /* Popover under its facet; the last ones open towards the start so they never leave the page. */
+    [data-lx="core"] .lx-facet__panel {
+      position: absolute;
+      inset-block-start: 100%;
+      inset-inline-start: calc(var(--lx-border-hairline) * -1);
+      z-index: var(--lx-z-overlay);
+      width: max(100%, 22rem);
+      max-height: 70vh;
+      overflow: auto;
+      border: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+      background-color: var(--lx-color-bg);
+      box-shadow: var(--lx-shadow-overlay);
+    }
+    [data-lx="core"] .lx-facet--end .lx-facet__panel {
+      inset-inline-start: auto;
+      inset-inline-end: calc(var(--lx-border-hairline) * -1);
+    }
+  }
+
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-discovery:not(.lx-discovery--compact) .lx-discovery__placeholder-long {
+      display: inline;
+    }
+    [data-lx="core"] .lx-discovery:not(.lx-discovery--compact) .lx-discovery__placeholder-short {
+      display: none;
+    }
+    [data-lx="core"] .lx-discovery__facets {
+      grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    }
+    [data-lx="core"] .lx-facet {
+      border-bottom: 0;
+    }
+  }
+
+  /* Compact bar fixed to the top edge while scrolling (lg+, shown by script once the hero bar leaves the screen); fixed
+   * so it never shifts the layout. Anchored results keep clear of it. */
+  [data-lx="core"] .lx-discovery-sticky {
+    display: none;
+  }
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-discovery-sticky {
+      display: block;
+      position: fixed;
+      inset-block-start: 0;
+      inset-inline: 0;
+      z-index: var(--lx-z-sticky);
+      border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+      background-color: var(--lx-color-bg);
+    }
+    [data-lx="core"] .lx-discovery-sticky[hidden] {
+      display: none;
+    }
+    /* The compact bar wraps by itself: the search keeps room for its short hint on one line; the facets, "Filtros (n)"
+     * and the submit are one group beside it when everything fits, on a second row when not. The 1px gap over the rule
+     * color draws the hairline between them — vertical in one row, horizontal in two — never at an outer edge. */
+    [data-lx="core"] .lx-discovery--compact {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--lx-border-hairline);
+      border: 0;
+      background-color: var(--lx-color-rule);
+    }
+    [data-lx="core"] .lx-discovery--compact .lx-discovery__search {
+      flex: 1 1 22rem;
+      grid-template-columns: minmax(0, 1fr);
+      background-color: var(--lx-color-bg);
+    }
+    [data-lx="core"] .lx-discovery__tools {
+      display: flex;
+      flex: 1 1 auto;
+      align-items: center;
+      background-color: var(--lx-color-bg);
+    }
+    [data-lx="core"] .lx-discovery--compact .lx-discovery__facets {
+      display: flex;
+      flex: 1 1 auto;
+      align-self: stretch;
+      border-top: 0;
+    }
+    [data-lx="core"] .lx-discovery--compact .lx-facet {
+      flex: 1 1 auto;
+    }
+    /* Compact facet: the label on one line (never broken inside a word) and, when active, its count. */
+    [data-lx="core"] .lx-discovery--compact .lx-facet__summary {
+      grid-auto-flow: column;
+      gap: var(--lx-space-1);
+      justify-content: start;
+      align-items: center;
+      align-content: center;
+      min-height: var(--lx-target-control);
+      padding: var(--lx-space-2) var(--lx-space-3);
+      white-space: nowrap;
+    }
+    [data-lx="core"] .lx-discovery--compact .lx-facet[data-active] .lx-facet__label,
+    [data-lx="core"] .lx-facet__count {
+      color: var(--lx-color-fg);
+      font-size: var(--lx-type-label);
+      font-weight: var(--lx-weight-semibold);
+    }
+    [data-lx="core"] .lx-discovery--compact .lx-discovery__input {
+      min-height: var(--lx-target-control);
+    }
+    /* The submit and the count keep their one-line size; only the facets give way. */
+    [data-lx="core"] .lx-discovery--compact .lx-discovery__submit {
+      flex: none;
+      min-height: var(--lx-target-control);
+      margin: var(--lx-space-2);
+    }
+    [data-lx="core"] .lx-discovery__tools > .lx-discovery__count {
+      flex: none;
+    }
+    /* Anchored results keep clear of the bar in its tallest (two-row) form. */
+    [data-lx="core"] .lx-results {
+      scroll-margin-top: calc(
+        var(--lx-target-control) * 2 + var(--lx-space-2) * 3 + var(--lx-space-8)
+      );
+    }
+  }
+
+  /* ── Results head: status, active filters as removable chips, sort. ───────────────────────────────────── */
+  [data-lx="core"] .lx-results-head {
+    display: grid;
+    gap: var(--lx-space-4);
+    max-width: var(--lx-layout-measure);
+  }
+  [data-lx="core"] .lx-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lx-space-3);
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  [data-lx="core"] .lx-chip {
+    display: inline-flex;
+    gap: var(--lx-space-2);
+    align-items: center;
+    min-height: var(--lx-target-min);
+    padding-inline: var(--lx-space-4);
+    border: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+    color: var(--lx-color-fg);
+    font-size: var(--lx-type-compact);
+    text-decoration: none;
+  }
+  [data-lx="core"] .lx-chip:hover {
+    border-color: var(--lx-color-action-bg);
+  }
+  [data-lx="core"] .lx-sort {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lx-space-2) var(--lx-space-6);
+    align-items: center;
+    margin: 0;
+    font-size: var(--lx-type-label);
+  }
+  [data-lx="core"] .lx-sort__option {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--lx-target-min);
+    color: var(--lx-color-fg);
+    font-weight: var(--lx-weight-medium);
+    text-underline-offset: 0.25em;
+  }
+  /* The current order: check icon + strong rule + weight — never colour alone. */
+  [data-lx="core"] .lx-sort__option[aria-current] {
+    gap: var(--lx-space-2);
+    border-block-end: var(--lx-border-strong) solid var(--lx-color-action-bg);
+    font-weight: var(--lx-weight-semibold);
+    text-decoration: none;
+  }
+
+  /* ── Group of Concepts ("Com Home Edition" / "Ainda sem Home Edition"). ─────────────────────────────── */
+  [data-lx="core"] .lx-concept-group {
+    display: grid;
+    gap: var(--lx-space-8);
+  }
+  [data-lx="core"] :is(.lx-results-head, .lx-concept-group) + .lx-concept-group {
+    margin-top: var(--lx-space-12);
+  }
+  [data-lx="core"] .lx-concept-group__head {
+    display: grid;
+    gap: var(--lx-space-2);
+    padding-top: var(--lx-space-6);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  }
+  [data-lx="core"] .lx-concept-group__head > * {
+    max-width: var(--lx-layout-measure);
+  }
+
+  /* ── Concept grid: uniform (4/12 · 6/12 · 12/12); the featured Concept spans the 12 columns. ─────────── */
+  [data-lx="core"] .lx-concept-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--lx-space-12) var(--lx-layout-gutter);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  [data-lx="core"] .lx-concept-grid > li {
+    display: flex;
+    min-width: 0;
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-concept-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      row-gap: var(--lx-space-16);
+    }
+    [data-lx="core"] .lx-concept-grid > li:has(> .lx-concept-card--featured) {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-concept-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  /* ── Concept card: the Concept is the unit; its Editions inside; the whole card is the target. ─────────── */
+  [data-lx="core"] .lx-concept-card {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--lx-space-6);
+    min-width: 0;
+  }
+  [data-lx="core"] .lx-concept-card:has(.lx-concept-card__link:focus-visible) {
+    outline: var(--lx-focus-width) solid var(--lx-color-focus);
+    outline-offset: var(--lx-focus-ring-offset);
+  }
+  /* Phone 4:3 keeps discovery visual without a long Coleção; 4:5 from md (checkpoint A, item 8). */
+  [data-lx="core"] .lx-concept-card__media {
+    aspect-ratio: var(--lx-ratio-media-md);
+  }
+  [data-lx="core"] .lx-concept-card__media--type {
+    display: grid;
+    align-content: end;
+    padding: var(--lx-space-8);
+    background-color: var(--lx-color-bg);
+  }
+  [data-lx="core"] .lx-concept-card__word {
+    color: var(--lx-color-headline);
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-type-headline);
+    font-weight: var(--lx-weight-display);
+    line-height: var(--lx-leading-heading);
+    overflow-wrap: anywhere;
+  }
+  [data-lx="core"] .lx-concept-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--lx-space-3);
+  }
+  [data-lx="core"] .lx-concept-card__title {
+    margin: 0;
+  }
+  [data-lx="core"] .lx-concept-card__link {
+    color: inherit;
+    text-decoration: none;
+  }
+  [data-lx="core"] .lx-concept-card__link:focus-visible {
+    outline: none;
+  }
+  [data-lx="core"] .lx-concept-card__link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: var(--lx-z-raised);
+  }
+  [data-lx="core"] .lx-concept-card__meta,
+  [data-lx="core"] .lx-concept-card__facts {
+    margin: 0;
+    font-size: var(--lx-type-compact);
+    line-height: var(--lx-leading-compact);
+  }
+  [data-lx="core"] .lx-concept-card__facts {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Each Edition is a plain editorial block: the region, then one line per basis; a hairline between Editions. */
+  [data-lx="core"] .lx-concept-card__editions {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+    list-style: none;
+  }
+  [data-lx="core"] .lx-concept-card__edition {
+    display: grid;
+    gap: var(--lx-space-1);
+    padding-block: var(--lx-space-3);
+    font-size: var(--lx-type-compact);
+    line-height: var(--lx-leading-compact);
+    font-variant-numeric: tabular-nums;
+  }
+  [data-lx="core"] .lx-concept-card__edition + .lx-concept-card__edition {
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-concept-card__region {
+    font-size: var(--lx-type-body);
+    font-weight: var(--lx-weight-medium);
+  }
+  [data-lx="core"] .lx-concept-card__none {
+    margin: 0;
+    padding-block: var(--lx-space-3);
+    border-block: var(--lx-border-hairline) solid var(--lx-color-rule);
+    font-size: var(--lx-type-compact);
+    line-height: var(--lx-leading-compact);
+  }
+  /* The cue sits at the foot of every card, aligned across the row (checkpoint A, item 6). */
+  [data-lx="core"] .lx-concept-card__cta {
+    display: inline-flex;
+    gap: var(--lx-space-2);
+    align-items: center;
+    align-self: flex-start;
+    margin-top: auto;
+    padding-top: var(--lx-space-2);
+    font-size: var(--lx-type-label);
+    font-weight: var(--lx-weight-medium);
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-concept-card__media {
+      aspect-ratio: var(--lx-ratio-detail);
+    }
+    [data-lx="core"] .lx-concept-card--featured .lx-concept-card__media {
+      aspect-ratio: var(--lx-ratio-media-lg);
+    }
+  }
+  /* Featured Concept: an Editorial Split across the 12 columns (image 3:2 + text). */
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-concept-card--featured {
+      display: grid;
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: var(--lx-layout-gutter);
+      align-items: center;
+    }
+    [data-lx="core"] .lx-concept-card--featured .lx-concept-card__body {
+      padding-inline-start: var(--lx-layout-gutter);
+    }
+    [data-lx="core"] .lx-concept-card--featured .lx-concept-card__title {
+      font-size: var(--lx-type-headline);
+    }
+  }
+
+  /* ── Journey: six steps on hairlines (3 · 2 · 1 columns). ───────────────────────────────────────────── */
+  [data-lx="core"] .lx-steps {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    margin: 0;
+    padding: 0;
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+    list-style: none;
+  }
+  [data-lx="core"] .lx-steps__item {
+    display: grid;
+    align-content: start;
+    gap: var(--lx-space-3);
+    padding-block: var(--lx-space-6);
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    [data-lx="core"] .lx-steps__item {
+      padding: var(--lx-space-8) var(--lx-space-8) var(--lx-space-8) 0;
+    }
+    [data-lx="core"] .lx-steps__item:nth-child(even) {
+      padding-inline-start: var(--lx-space-8);
+      border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+  }
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-steps {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    [data-lx="core"] .lx-steps__item:nth-child(even) {
+      padding-inline-start: 0;
+      border-inline-start: 0;
+    }
+    [data-lx="core"] .lx-steps__item:not(:nth-child(3n + 1)) {
+      padding-inline-start: var(--lx-space-8);
+      border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+  }
+
+  /* ── Filters dialog (phones): full screen, the actions pinned at the bottom. ──────────────────────────── */
+  [data-lx="core"] .lx-filters {
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background-color: var(--lx-color-bg);
+    color: var(--lx-color-fg);
+  }
+  [data-lx="core"] .lx-filters[open] {
+    display: grid;
+  }
+  /* The dialog's own form lays out its three bands (bar · scrolling body · pinned actions). */
+  [data-lx="core"] .lx-filters__form {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    min-height: 0;
+  }
+  [data-lx="core"] .lx-filters__bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: var(--lx-layout-bar-height);
+    padding-inline: var(--lx-layout-margin);
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-filters__title {
+    margin: 0;
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-type-ordinal);
+    font-weight: var(--lx-weight-display);
+  }
+  [data-lx="core"] .lx-filters__close {
+    min-height: var(--lx-target-min);
+    border: 0;
+    background-color: transparent;
+    color: var(--lx-color-fg);
+    font: inherit;
+    font-size: var(--lx-type-label);
+    font-weight: var(--lx-weight-medium);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  [data-lx="core"] .lx-filters__body {
+    display: grid;
+    align-content: start;
+    gap: var(--lx-space-8);
+    overflow: auto;
+    padding: var(--lx-space-6) var(--lx-layout-margin);
+  }
+  /* "Faixa de valor" and "Mais filtros" keep their desktop name in the dialog, over a hairline. */
+  [data-lx="core"] .lx-filters__group {
+    display: grid;
+    gap: var(--lx-space-8);
+    padding-top: var(--lx-space-6);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-filters__heading {
+    margin: 0;
+  }
+  [data-lx="core"] .lx-filters__foot {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--lx-space-4);
+    padding: var(--lx-space-4) var(--lx-layout-margin);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-filters__foot > * {
+    justify-content: center;
+  }
+}

@@ -546,3 +546,27 @@ pergunta, em `type.headline`). **Scrim uniforme (opt-in)** `lx-hero--uniform`: u
 `scrim.display-alpha` 0,80 — o nível em que um headline Warm Sand mantém 3:1 até sobre um pixel branco, com o alfa em
 8 bits como o navegador o renderiza (0,79 vira 0,788 e cai para 2,998:1; verificado por `check-contrast`). É decisão do fundador para a composição do Como funciona e prevalece, só nela, sobre a regra
 "scrim só localizado"; o Cinematic Hero padrão (Lab, fechamento da Home) continua com o scrim local.
+
+**Coleção (2026-10-07).** Complementos do Core com a `/colecao` final como consumidora (catalog §13.12, `D-B2C-21`),
+num arquivo próprio `styles/core/collection.css`, só tokens e atrás do flag: **Discovery** `form.lx-discovery[role=search]`
+(busca `__search` > `__input` + `__submit`, sempre dentro da barra branca; no celular o envio ocupa a largura com o rótulo
+"Explorar a Coleção", ≥ 48 px) com **Facets** `__facets` > `details.lx-facet` (`__summary` = `__label` em `type.label` +
+`__value` em `type.body`, que quebra linha e nunca é cortado; `__panel` em popover a partir do `md`, `--end` para os
+últimos) e escolhas `label.lx-check` (alvo ≥ 44 px, `__note` opcional); sem JS (`[data-lx-js]` ausente) as facetas valem
+em qualquer largura. **Barra fixa** `div.lx-discovery-sticky` + `form.lx-discovery--compact` (lg+, fixa no topo só quando
+a barra do Hero sai da tela; nome de landmark próprio): `div.lx-discovery__search` + `div.lx-discovery__tools` (facetas
+só com o rótulo numa linha + `span.lx-facet__count` quando ativa, `a.lx-discovery__count` "Filtros (n)", envio) — flex
+que quebra sozinho: o grupo ao lado da busca quando cabe, numa segunda linha quando não; o `gap` de 1 px sobre
+`color.rule` desenha o fio entre eles. A dica da busca é `span.lx-discovery__placeholder` (longa só no Hero a partir do
+`lg`, curta no resto; mesma fonte, nunca cortada). **Resultados** `div.lx-results-head`, `ul.lx-chips` >
+`a.lx-chip` (filtro ativo removível), `nav.lx-sort` > `a.lx-sort__option[aria-current]`, grupos
+`section.lx-concept-group` > `__head`. **Concept Card** `ul.lx-concept-grid` > `li` > `article.lx-concept-card`
+(`--featured` = Editorial Split nas 12 colunas a partir do `lg`) > `figure.lx-media.lx-concept-card__media` (4:3 no
+celular, 4:5 a partir do `md`, 3:2 no destaque; recorte `lx-crop-*`) ou o quadro tipográfico
+`div.__media--type[data-surface=blue]` > `span.__word` (lifestyle principal ou título, decorativo) + `div.__body`
+(`__title` > `a.__link` que torna o card inteiro o alvo, `__meta`, `__facts`, `ul.__editions` > `li.__edition` com
+`__region` e uma linha por base, hairline entre Editions, `__none`, `__cta` no pé, alinhado na linha). **Steps**
+`ol.lx-steps` > `li.lx-steps__item` (3 · 2 · 1 colunas, hairlines). **Filtros no celular** `dialog.lx-filters` >
+`form.__form` (`__bar` · `__body` com rolagem · `__foot` fixo; "Faixa de valor" e "Mais filtros" em
+`section.__group` > `h3.lx-eyebrow.__heading`, o mesmo nome do desktop). Controles nativos dentro da barra, da barra fixa e do
+diálogo seguem a superfície branca (`color-scheme: light`). Ícone novo `arrow-up` ("Refinar a busca ↑").
