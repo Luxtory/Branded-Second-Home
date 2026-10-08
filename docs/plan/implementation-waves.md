@@ -61,6 +61,7 @@
 | 3C | Framework B2C como fonte canônica da comunicação B2C (ADR-0012) | docs + catalog (domain) | — | 3B | — | R1 | ✅ |
 | 3D | Framework Brand Partners como fonte canônica da comunicação Brand Partners (ADR-0013) | docs + catalog (domain) | — | 3C | — | R1 | ✅ |
 | 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3, 3C | — | R1 | ✅ (CP2, #32, `ba1dc8d`) |
+| 4.1 | Coleção: discovery curatorial (dados, Admin, mídia, filtros, página final) | catalog | complementa REQ-020, REQ-022 | 4 | — | R1 | 🟡 Fase C |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ |
 | 6 | Interesse — formulário público | ownership | — | 4, 5 | — | R1 | ⛔ P-3 |
 | 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ |
@@ -513,6 +514,19 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 - **Checkpoints**: (1) Checkpoint Visual — Home, Como funciona, Coleção, Concept com e sem Edition, menu do celular
   aberto e Admin com "Público no site", a 390 e 1440 px, sem push → aprovação de copy, narrativa, hierarquia, layout e
   estética; (2) gates, E2E, trace e PR draft com CI verde, parado antes do merge.
+
+### Wave 4.1 — Coleção: discovery curatorial (2026-10-07)
+
+- **Goal**: a `/colecao` final como discovery curatorial (spec `catalog.md` §13.12, `D-B2C-21`), sem fase visual
+  intermediária: os checkpoints convergem para uma única experiência.
+- **IDs**: REQ-020, REQ-022, REQ-100, REQ-103 (complementa a W4). **TECH**: TECH-002, TECH-033, TECH-100.
+- **Fases (sequenciais)**: **A** brief + contrato mínimo + mockups → checkpoint do fundador · **B** migrations
+  reversíveis (vocabulários, classificações e atributos da versão do Concept, `concept_media`, `concept_curation`,
+  `edition_reference_value`), OpenAPI do Admin antes dos handlers, Admin, leitura pública (`anon`), mídia (storage
+  privado + rota do domínio + STRIDE) e funções de busca/filtro; a página pública não muda → checkpoint com seed ·
+  **C** página final, estados, responsividade, acessibilidade e E2E → Checkpoint Visual → PR → CI → merge → deploy.
+- **Depends on / parallel with**: W4 (✅); sequencial; não toca Auth, Admin de outros módulos nem Club.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-020,REQ-022,REQ-100,REQ-103 exits 0, stop after 3 tries`
 
 ### Wave 5 — Interesse (núcleo)
 

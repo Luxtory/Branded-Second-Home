@@ -586,6 +586,404 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
+  /admin/catalog-terms:
+    post:
+      tags: [admin, catalog]
+      summary: Registra um termo de vocabulário controlado da Coleção (spec catalog §13.12)
+      description: |
+        Operação `create_catalog_term`: um termo de `lifestyle` ou `architectural_style`, ativo. O `slug` (usado nas URLs
+        da Coleção) é derivado do rótulo e nunca muda; rótulo ou slug já existentes no mesmo vocabulário → 409. Sem
+        tagging livre: só termos registrados classificam uma versão de Concept.
+        Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
+        com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
+        pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
+        mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: createCatalogTerm
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CatalogTermRequest'
+      responses:
+        '201':
+          description: Termo registrado
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogTerm'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/catalog-terms/{id}:
+    post:
+      tags: [admin, catalog]
+      summary: Renomeia, desativa ou reativa um termo de vocabulário
+      description: |
+        Operação `update_catalog_term`: grava o rótulo e o estado ativo do termo. O `slug` e o vocabulário não mudam;
+        termo nunca é apagado. Desativado, o termo sai da Coleção pública e não classifica versões novas; as versões que
+        já o usam não mudam. Rótulo já usado por outro termo do mesmo vocabulário → 409; termo inexistente → 404.
+        Mesma entrada e mesmas garantias de `POST /admin/catalog-terms`.
+      operationId: updateCatalogTerm
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CatalogTermUpdateRequest'
+      responses:
+        '200':
+          description: Termo atualizado
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogTerm'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/concepts/{id}/cover:
+    post:
+      tags: [admin, catalog]
+      summary: Envia a capa de um Concept, pendente de aprovação (spec catalog §13.12)
+      description: |
+        Operação `upload_concept_cover`: imagem em base64 (até 3 MiB) cujo conteúdo decodificado é JPEG, PNG ou WebP,
+        até 40 megapixels, com pelo menos 720 × 520 px (o maior quadro da Coleção em 1×). O servidor corrige a orientação,
+        remove todo metadado (EXIF, localização, câmera, autoria) e grava no Supabase Storage privado um master WebP
+        sanitizado (até 4096 px no lado maior) e as larguras de exibição (480, 800, 1200 e 1600 px, sem ampliar); o
+        arquivo cru não é guardado. O banco guarda só referências e metadados (ADR-0015). Nasce `pending`: só a capa
+        aprovada aparece na Coleção. Texto alternativo obrigatório; crédito opcional (metadado editorial no banco); foco
+        (`crop_x`/`crop_y`) nos passos das classes `lx-crop-*`. Conteúdo que não é imagem aceita, acima dos limites ou
+        pequeno demais → 400; Concept inexistente → 404; marca com encerramento eficaz → 409.
+        Mesma entrada e mesmas garantias de `POST /admin/catalog-terms`.
+      operationId: uploadConceptCover
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConceptCoverRequest'
+      responses:
+        '201':
+          description: Capa recebida, pendente de aprovação
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConceptMedia'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/concept-media/{id}/approve:
+    post:
+      tags: [admin, catalog]
+      summary: Aprova uma capa pendente; a capa aprovada anterior do Concept é retirada
+      description: |
+        Operação `approve_concept_media`: `pending` → `approved`, com quem aprovou. Um Concept tem uma capa vigente: a
+        aprovada anterior, se houver, passa a `withdrawn` na mesma operação (base "Substituída por nova capa"). Capa que
+        não está pendente → 409; inexistente → 404. Mesma entrada e mesmas garantias de `POST /admin/catalog-terms`.
+      operationId: approveConceptMedia
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+      responses:
+        '200':
+          description: Capa aprovada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConceptMedia'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/concept-media/{id}/withdraw:
+    post:
+      tags: [admin, catalog]
+      summary: Retira uma capa (pendente ou aprovada), com base
+      description: |
+        Operação `withdraw_concept_media`: `pending` ou `approved` → `withdrawn`, uma única vez, com a base registrada. A
+        capa sai da Coleção na próxima requisição; sem capa, o Concept deixa de ser destaque (`featured` volta a falso
+        na mesma operação). Capa já retirada → 409; inexistente → 404. Mesma entrada e mesmas garantias de
+        `POST /admin/catalog-terms`.
+      operationId: withdrawConceptMedia
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConceptMediaWithdrawalRequest'
+      responses:
+        '200':
+          description: Capa retirada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConceptMedia'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/concepts/{id}/curation:
+    post:
+      tags: [admin, catalog]
+      summary: Define a posição na curadoria e o destaque editorial de um Concept
+      description: |
+        Operação `set_concept_curation`: `rank` (ordem "Curadoria Luxtory"; nulo = depois dos posicionados, na ordem de
+        registro) e `featured` (destaque editorial explícito). No máximo um Concept em destaque: marcar um novo tira o
+        destaque do anterior na mesma operação. Destaque exige capa aprovada → senão 409. Concept inexistente → 404.
+        Mesma entrada e mesmas garantias de `POST /admin/catalog-terms`.
+      operationId: setConceptCuration
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConceptCurationRequest'
+      responses:
+        '200':
+          description: Curadoria gravada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConceptCuration'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/editions/{id}/reference-values:
+    post:
+      tags: [admin, catalog]
+      summary: Registra um valor de referência da Edition (BR-031, TECH-033)
+      description: |
+        Operação `register_edition_reference_value`: valor registrado pela Luxtory, nunca calculado (BR-031, REQ-094),
+        em unidades menores (`bigint`) + moeda (TECH-033), numa base compatível com a modalidade da Edition — `owner` (a
+        Second Home inteira) ou `acao` (uma Ação Co-Owner; nunca por dia, REQ-100). Vigente a partir de `valid_from`
+        (ausente = agora; informado, no futuro). Um valor em aberto da mesma Edition e base que começou antes é encerrado
+        em `valid_from` na mesma operação; qualquer outra sobreposição de vigência → 409. Base incompatível com a
+        modalidade → 409; Edition inexistente → 404. Mesma entrada e mesmas garantias de `POST /admin/catalog-terms`.
+      operationId: registerEditionReferenceValue
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditionReferenceValueRequest'
+      responses:
+        '201':
+          description: Valor de referência registrado
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditionReferenceValue'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/edition-reference-values/{id}/end:
+    post:
+      tags: [admin, catalog]
+      summary: Encerra agora a vigência de um valor de referência
+      description: |
+        Operação `end_edition_reference_value`: grava `valid_until` = agora, uma única vez. O valor deixa a Coleção na
+        próxima requisição; o histórico nunca é reescrito. Valor já encerrado ou que ainda não começou → 409 (para trocar
+        um valor futuro, registre outro); inexistente → 404. Mesma entrada e mesmas garantias de
+        `POST /admin/catalog-terms`.
+      operationId: endEditionReferenceValue
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+      responses:
+        '200':
+          description: Vigência encerrada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditionReferenceValue'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
   /api/jobs/{job}:
     servers:
       - url: /
@@ -621,6 +1019,65 @@ paths:
                 $ref: '#/components/schemas/JobResult'
         '401':
           $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /media/concept-covers/{id}/{width}:
+    servers:
+      - url: /
+        description: Mesma origem da aplicação; mídia pública fica fora de `/v1` (ADR-0015)
+    get:
+      tags: [catalog]
+      summary: Entrega a capa aprovada de um Concept público (spec catalog §13.12)
+      description: |
+        Leitura pública como `anon` (ADR-0014): só capa `approved` de Concept público — qualquer outra (pendente,
+        retirada, de Concept não público ou inexistente) → 404, sem distinguir o motivo; o master nunca é entregue. WebP
+        reencodado pelo servidor, sem metadados, lido do Supabase Storage privado (ADR-0015). O conteúdo de um id e largura
+        nunca muda (`ETag` forte); `Cache-Control: no-cache` revalida a cada uso, para a retirada valer na próxima
+        requisição (ADR-0014 §8) — `If-None-Match` igual → 304 sem corpo, só com a consulta ao banco. Mesmo portão de
+        publicação das páginas públicas (ADR-0014 §6). Storage indisponível → 503.
+      operationId: getConceptCover
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/ResourceId'
+        - name: width
+          in: path
+          required: true
+          description: 'Uma das larguras de exibição da capa (`renditions` com papel `display`), para o `srcset`.'
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1600
+        - name: If-None-Match
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Imagem WebP
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            ETag:
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+                enum: ['public, no-cache']
+          content:
+            image/webp:
+              schema:
+                type: string
+                contentMediaType: image/webp
+        '304':
+          description: A cópia do cliente continua válida
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -1014,7 +1471,10 @@ components:
           type: string
           format: date-time
     ConceptVersionRequest:
-      description: Concept novo (com `brand_partner_id` e `title`) ou versão nova (com `concept_id`).
+      description: |
+        Concept novo (com `brand_partner_id` e `title`) ou versão nova (com `concept_id`). Resumo, pessoas, suítes, área e
+        classificações (lifestyle 1–3, estilo 1–2, de vocabulário controlado ativo) são opcionais e gravados com a versão,
+        imutáveis como a especificação (BR-013); termo inexistente → 404, desativado → 409 (spec catalog §13.12).
       oneOf:
         - type: object
           additionalProperties: false
@@ -1035,6 +1495,18 @@ components:
               type: string
               minLength: 1
               maxLength: 20000
+            summary:
+              $ref: '#/components/schemas/ConceptSummary'
+            guests_max:
+              $ref: '#/components/schemas/GuestsMax'
+            suites:
+              $ref: '#/components/schemas/Suites'
+            built_area_m2:
+              $ref: '#/components/schemas/BuiltAreaM2'
+            lifestyle_ids:
+              $ref: '#/components/schemas/LifestyleIds'
+            architectural_style_ids:
+              $ref: '#/components/schemas/ArchitecturalStyleIds'
         - type: object
           additionalProperties: false
           required: [concept_id, essential_elements, preservation_premises, specification]
@@ -1050,6 +1522,18 @@ components:
               type: string
               minLength: 1
               maxLength: 20000
+            summary:
+              $ref: '#/components/schemas/ConceptSummary'
+            guests_max:
+              $ref: '#/components/schemas/GuestsMax'
+            suites:
+              $ref: '#/components/schemas/Suites'
+            built_area_m2:
+              $ref: '#/components/schemas/BuiltAreaM2'
+            lifestyle_ids:
+              $ref: '#/components/schemas/LifestyleIds'
+            architectural_style_ids:
+              $ref: '#/components/schemas/ArchitecturalStyleIds'
     ConceptVersionApprovalRequest:
       type: object
       additionalProperties: false
@@ -1078,6 +1562,12 @@ components:
         - essential_elements
         - preservation_premises
         - specification
+        - summary
+        - guests_max
+        - suites
+        - built_area_m2
+        - lifestyle_ids
+        - architectural_style_ids
         - approval_refs
         - approved_at
         - approved_by_user_id
@@ -1113,6 +1603,24 @@ components:
             type: string
         specification:
           type: string
+        summary:
+          type: [string, 'null']
+        guests_max:
+          type: [integer, 'null']
+        suites:
+          type: [integer, 'null']
+        built_area_m2:
+          type: [integer, 'null']
+        lifestyle_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        architectural_style_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
         approval_refs:
           type: [array, 'null']
           items:
@@ -1321,6 +1829,319 @@ components:
         operation_id:
           type: string
           format: uuid
+    EmptyRequest:
+      type: object
+      additionalProperties: false
+      description: Corpo vazio — o objeto vem do caminho.
+    CatalogTermKind:
+      type: string
+      enum: [lifestyle, architectural_style]
+      description: Vocabulário controlado da Coleção (spec catalog §13.12).
+    CatalogTermLabel:
+      type: string
+      minLength: 1
+      maxLength: 80
+    CatalogTermRequest:
+      type: object
+      additionalProperties: false
+      required: [kind, label]
+      properties:
+        kind:
+          $ref: '#/components/schemas/CatalogTermKind'
+        label:
+          $ref: '#/components/schemas/CatalogTermLabel'
+    CatalogTermUpdateRequest:
+      type: object
+      additionalProperties: false
+      required: [label, active]
+      properties:
+        label:
+          $ref: '#/components/schemas/CatalogTermLabel'
+        active:
+          type: boolean
+    CatalogTerm:
+      type: object
+      additionalProperties: false
+      required: [id, kind, slug, label, active, operation_id, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          $ref: '#/components/schemas/CatalogTermKind'
+        slug:
+          type: string
+          pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'
+          description: Derivado do rótulo no registro; imutável (URLs da Coleção).
+        label:
+          type: string
+        active:
+          type: boolean
+        operation_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+    ConceptSummary:
+      type: string
+      minLength: 1
+      maxLength: 160
+      description: Resumo do card da Coleção.
+    GuestsMax:
+      type: integer
+      minimum: 1
+      maximum: 100
+      description: Pessoas que a casa acomoda, no máximo.
+    Suites:
+      type: integer
+      minimum: 1
+      maximum: 50
+    BuiltAreaM2:
+      type: integer
+      minimum: 1
+      maximum: 100000
+      description: Área construída, em m².
+    LifestyleIds:
+      type: array
+      maxItems: 3
+      uniqueItems: true
+      description: Termos ativos de `lifestyle`, em ordem; o primeiro é o principal (mostrado no card).
+      items:
+        type: string
+        format: uuid
+    ArchitecturalStyleIds:
+      type: array
+      maxItems: 2
+      uniqueItems: true
+      description: Termos ativos de `architectural_style`, em ordem; o primeiro é o principal.
+      items:
+        type: string
+        format: uuid
+    CropStep:
+      type: integer
+      enum: [20, 35, 50, 65, 80]
+      description: Foco da imagem em %, nos passos das classes `lx-crop-*` do Core Design System.
+    ConceptCoverRequest:
+      type: object
+      additionalProperties: false
+      required: [image, alt, crop_x, crop_y]
+      properties:
+        image:
+          type: string
+          format: byte
+          minLength: 4
+          maxLength: 4194304
+          description: JPEG, PNG ou WebP (pelo conteúdo) em base64, até 3 MiB decodificado e 40 MP, com pelo menos 720 × 520 px.
+        alt:
+          type: string
+          minLength: 1
+          maxLength: 300
+          description: Texto alternativo — o que a imagem mostra.
+        credit:
+          type: string
+          minLength: 1
+          maxLength: 200
+        crop_x:
+          $ref: '#/components/schemas/CropStep'
+        crop_y:
+          $ref: '#/components/schemas/CropStep'
+    ConceptMediaWithdrawalRequest:
+      type: object
+      additionalProperties: false
+      required: [withdrawal_basis]
+      properties:
+        withdrawal_basis:
+          type: string
+          minLength: 1
+          maxLength: 255
+    ConceptMediaRendition:
+      type: object
+      additionalProperties: false
+      required: [role, width, height]
+      description: Versão guardada no Storage — `master` sanitizado (nunca público) ou uma largura de exibição.
+      properties:
+        role:
+          type: string
+          enum: [master, display]
+        width:
+          type: integer
+          minimum: 1
+        height:
+          type: integer
+          minimum: 1
+    ConceptMedia:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - concept_id
+        - state
+        - alt
+        - credit
+        - crop_x
+        - crop_y
+        - source_sha256
+        - renditions
+        - approved_at
+        - approved_by_user_id
+        - approved_role
+        - withdrawn_at
+        - withdrawal_basis
+        - operation_id
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        concept_id:
+          type: string
+          format: uuid
+        state:
+          type: string
+          enum: [pending, approved, withdrawn]
+          description: Só `approved` aparece na Coleção.
+        alt:
+          type: string
+        credit:
+          type: [string, 'null']
+        crop_x:
+          $ref: '#/components/schemas/CropStep'
+        crop_y:
+          $ref: '#/components/schemas/CropStep'
+        source_sha256:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+          description: SHA-256 do arquivo enviado (rastreio; o arquivo original não é guardado).
+        renditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConceptMediaRendition'
+        approved_at:
+          type: [string, 'null']
+          format: date-time
+        approved_by_user_id:
+          type: [string, 'null']
+          format: uuid
+        approved_role:
+          type: [string, 'null']
+          enum: [admin, null]
+        withdrawn_at:
+          type: [string, 'null']
+          format: date-time
+        withdrawal_basis:
+          type: [string, 'null']
+        operation_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+    ConceptCurationRequest:
+      type: object
+      additionalProperties: false
+      required: [rank, featured]
+      properties:
+        rank:
+          type: [integer, 'null']
+          minimum: 1
+          maximum: 999
+          description: Posição na ordem "Curadoria Luxtory" (menor primeiro); nulo = sem posição.
+        featured:
+          type: boolean
+          description: Destaque editorial explícito (no máximo um Concept; exige capa aprovada).
+    ConceptCuration:
+      type: object
+      additionalProperties: false
+      required: [concept_id, rank, featured, operation_id, updated_at]
+      properties:
+        concept_id:
+          type: string
+          format: uuid
+        rank:
+          type: [integer, 'null']
+        featured:
+          type: boolean
+        operation_id:
+          type: string
+          format: uuid
+        updated_at:
+          type: string
+          format: date-time
+    ReferenceValueBasis:
+      type: string
+      enum: [owner, acao]
+      description: |
+        `owner` = a Second Home inteira (modalidade Owner); `acao` = uma Ação Co-Owner (modalidade Co-Owner). Mesmo
+        peso (REQ-103); nunca valor por dia (REQ-100).
+    EditionReferenceValueRequest:
+      type: object
+      additionalProperties: false
+      required: [basis, amount_minor, currency]
+      properties:
+        basis:
+          $ref: '#/components/schemas/ReferenceValueBasis'
+        amount_minor:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 1000000000000000
+          description: Valor em unidades menores da moeda (centavos), TECH-033.
+        currency:
+          type: string
+          enum: [BRL]
+        valid_from:
+          type: string
+          format: date-time
+          description: Início da vigência, no futuro; ausente = agora.
+    EditionReferenceValue:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - edition_id
+        - basis
+        - amount_minor
+        - currency
+        - valid_from
+        - valid_until
+        - registered_by_user_id
+        - registered_role
+        - operation_id
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        edition_id:
+          type: string
+          format: uuid
+        basis:
+          $ref: '#/components/schemas/ReferenceValueBasis'
+        amount_minor:
+          type: integer
+          format: int64
+        currency:
+          type: string
+          enum: [BRL]
+        valid_from:
+          type: string
+          format: date-time
+        valid_until:
+          type: [string, 'null']
+          format: date-time
+        registered_by_user_id:
+          type: string
+          format: uuid
+        registered_role:
+          type: string
+          enum: [admin]
+        operation_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
     Error:
       type: object
       required: [code, message]

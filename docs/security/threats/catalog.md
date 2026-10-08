@@ -162,3 +162,76 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
   no instante do encerramento (aceito).
 - Enquanto a Data API estiver desligada, o risco C-W4-3 depende de configuração do console do Supabase (aceito com a
   verificação no runbook).
+
+## Wave 4.1 — Coleção: vocabulários, capa, curadoria e valores de referência (2026-10-07)
+
+- **Status**: Draft (Fase B, revisado no checkpoint B com a mídia no Storage; revisar no fechamento da Wave 4.1)
+- **Scope**: 8 operações novas do Admin (`create/update_catalog_term`, `upload_concept_cover`,
+  `approve/withdraw_concept_media`, `set_concept_curation`, `register/end_edition_reference_value`), upload de imagem
+  pelo Admin, Supabase Storage privado (binários), rota pública `GET /media/concept-covers/{id}/{width}`, leitura `anon`
+  das tabelas novas
+- **Linked spec / ADR**: `docs/specs/catalog.md` §13.12 · ADR-0014 · ADR-0015
+
+### Superfície nova
+
+| Component | S | T | R | I | D | E | Notes |
+|---|---|---|---|---|---|---|---|
+| Upload da capa (Server Action e `POST /v1/admin/concepts/{id}/cover`) | — | C-41-1 | C-003 | C-41-2 | C-41-3 | C-002 | só staff Admin com MFA, mesma entrada das outras operações |
+| Supabase Storage (bucket privado, chave secreta no servidor) | C-41-7 | C-41-7 | — | C-41-7 | — | C-41-7 | só o servidor lê e grava |
+| Rota pública da capa | — | — | — | C-41-4 | C-41-5 | — | leitura `anon`, mesmo portão das páginas públicas |
+| Papel `anon` nas tabelas novas | — | — | — | C-41-4 | — | C-W4-2 | grants por coluna, RLS, predicado `catalog_term_is_public` |
+| Valores de referência | — | C-41-6 | C-003 | — | — | — | só inserção; um único encerramento |
+
+### C-41-1 [HIGH] Tampering — Arquivo malicioso no decodificador de imagem
+
+- **Mitigação**: só staff com papel Admin e AAL2 envia (C-002); tamanho ≤ 3 MiB validado antes do command (Server Action
+  e schema); o formato vem do conteúdo decodificado (JPEG, PNG ou WebP), nunca da extensão nem do MIME declarado;
+  `sharp` com `limitInputPixels` (40 MP), lado máximo de 12 000 px e `failOn: 'error'`; o arquivo é sempre reencodado
+  em WebP e o cru nunca é guardado nem servido. Falha de decodificação vira `ERR_VALIDATION`, sem nada gravado. `sharp`
+  fixado e auditado (`npm audit` sem vulnerabilidade de produção em 2026-10-07).
+
+### C-41-2 [MEDIUM] Information disclosure — Metadados da foto (local, câmera, autoria) publicados
+
+- **Mitigação**: a orientação do EXIF é aplicada antes do reencode; nenhuma saída — master ou largura de exibição — leva
+  EXIF, XMP ou ICC (o `sharp` só copia quando pedido). Crédito e autoria ficam como metadado editorial no banco. Testes
+  `db` provam WebP sem EXIF a partir de um JPEG com EXIF e com orientação 6. Só o SHA-256 do arquivo recebido fica.
+
+### C-41-3 [LOW] Denial of service — Uploads grandes ou repetidos
+
+- **Mitigação**: corpo da Server Action limitado a 4 MB (`serverActions.bodySizeLimit`), abaixo dos 4,5 MB da Vercel;
+  base64 da API limitado ao equivalente a 3 MiB; operação só de staff com MFA e idempotente; processamento e gravação no
+  Storage antes de qualquer trava do banco; chaves por conteúdo (reenvio não duplica objetos).
+
+### C-41-4 [HIGH] Information disclosure — Capa pendente/retirada, master, valor futuro ou dado interno chegando ao site
+
+- **Mitigação**: RLS para `anon`: mídia só `approved` de Concept público; versões só com papel `display` (o master
+  nunca); valores só vigentes (`valid_from ≤ now()` e sem fim vencido) de Edition pública; termos só ativos e em uso por
+  Concept público. Colunas de aprovação, retirada, autoria, operação, `active`, `sha256` e `source_sha256` fora dos
+  grants. O bucket é privado e nenhuma URL do Storage chega ao navegador: a rota decide pela RLS e só então lê o objeto.
+  Tudo que não é público responde 404 sem motivo. Testes `db` como `anon` cobrem cada caso.
+
+### C-41-5 [LOW] Denial of service — Imagens servidas pelo servidor a cada requisição
+
+- **Mitigação**: `ETag` forte por id e largura, `Cache-Control: public, no-cache` — a revalidação (304) só consulta o
+  banco, sem tocar no Storage; proteção de borda da Vercel; portão fechado em Production até o go-live. Revisar CDN no
+  go-live (ADR-0015).
+
+### C-41-6 [MEDIUM] Tampering — Reescrever o valor que já foi exibido
+
+- **Mitigação**: tabela só de inserção; gatilho permite um único encerramento e barra sobreposição de vigências por série
+  (Edition + base + moeda); o command recusa início no passado (`ERR_VALIDATION`) e só encerra "agora"; auditoria
+  antes/depois de cada mudança. Valores em `bigint` + moeda, sem ponto flutuante (TECH-033).
+
+### C-41-7 [HIGH] Spoofing/Elevation — Vazamento ou abuso da chave secreta do Storage
+
+- **Mitigação**: `SUPABASE_SECRET_KEY` só no servidor, só em Production (Sensitive na Vercel), validada no formato
+  `sb_secret_…` (a `service_role` legada é recusada) e enviada só no cabeçalho `apikey` às rotas do Storage; nunca em
+  log nem em mensagem de erro (só operação e status). Preview recusa o Storage como recusa o banco (ADR-0007); o adaptador
+  local é recusado na Vercel. Só chaves geradas pelo command (`concept-media/<sha256>.webp`) chegam ao Storage — caminho
+  vindo de fora é recusado antes de qualquer acesso (sem path traversal). Rotação da chave no runbook.
+
+### Residual risk
+
+- A retirada da capa vale na próxima requisição; uma cópia já baixada no navegador continua com o visitante (aceito).
+- A curadoria (posição e destaque) é mutável por desenho; o histórico fica no `audit_log` (aceito).
+- Objetos sem referência podem sobrar no bucket privado depois de uma transação desfeita (aceito; limpeza futura).

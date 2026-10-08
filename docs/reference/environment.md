@@ -28,9 +28,12 @@ Regras:
 | `NEXT_PUBLIC_SUPABASE_URL` | Vercel — **só Production** enquanto a D3 estiver adiada ([ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md), [ADR-0008](../adr/0008-autenticacao-e-autorizacao-administrativa.md)) | Supabase Auth, só no servidor (`identity`): URL `https://` do projeto; ausente → telas e API de Auth indisponíveis (o build não depende dela) | W2 |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Vercel — **só Production** (idem) | Supabase Auth (chave pública), só no servidor; precisa ter o formato `sb_publishable_…` — a `anon` legada e chaves secretas são recusadas | W2 |
 | `AUTH_MODE` | local e CI | `supabase` ou `test`; `test` é recusado quando `VERCEL_ENV` existe (ADR-0005). Ausente = `supabase`; nunca configurar na Vercel | W2 |
+| `MEDIA_STORAGE` | local e CI | `supabase` ou `local`; `local` (diretório) é recusado quando `VERCEL_ENV` existe ([ADR-0015](../adr/0015-midia-do-catalogo-metadados-e-storage.md)). Ausente = Supabase Storage; nunca configurar na Vercel | 4.1 |
+| `MEDIA_LOCAL_DIR` | local e CI | diretório absoluto dos objetos de mídia com `MEDIA_STORAGE=local` (o servidor do E2E usa um diretório temporário) | 4.1 |
+| `MEDIA_BUCKET` | Vercel — **só Production** | nome do bucket **privado** do Supabase Storage com os binários da mídia do catálogo (master sanitizado e larguras de exibição; ADR-0015); ausente → envio e entrega de capa indisponíveis (503) | 4.1 |
 | `UPSTASH_REDIS_REST_URL` | Vercel (Sensitive) | rate limit | W5 |
 | `UPSTASH_REDIS_REST_TOKEN` | Vercel (Sensitive) | rate limit | W5 |
-| `SUPABASE_SECRET_KEY` | Vercel (Sensitive, só servidor) | Admin API do Supabase Auth (convites) | W7 |
+| `SUPABASE_SECRET_KEY` | Vercel (Sensitive, só servidor) | Admin API do Supabase Auth (convites, W7) e, desde a Wave 4.1, o Supabase Storage privado da mídia do catálogo (cabeçalho `apikey`, ADR-0015); só no formato `sb_secret_…` — a `service_role` legada é recusada; **só Production** | W7 (antecipada na 4.1) |
 | `PII_ENCRYPTION_KEYRING` | Vercel (Sensitive, só servidor) | cifra AES-256-GCM de CPF/CNPJ, com `key_id` (ADR-0002) | W7 |
 | `PII_ENCRYPTION_ACTIVE_KEY_ID` | Vercel (Sensitive, só servidor) | chave ativa para novas cifras | W7 |
 | `PII_HMAC_KEY` | Vercel (Sensitive, só servidor) | HMAC de busca, segredo separado (TECH-100) | W7 |
