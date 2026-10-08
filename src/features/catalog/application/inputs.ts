@@ -1,5 +1,13 @@
 import { z } from 'zod';
 import { EDITION_MODALITIES } from '../domain/catalog';
+import {
+  CATALOG_TERM_KINDS,
+  CROP_STEPS,
+  MAX_TERMS_PER_KIND,
+  REFERENCE_VALUE_BASES,
+  REFERENCE_VALUE_CURRENCIES,
+  termSlug,
+} from '../domain/collection';
 import { FORBIDDEN_TERM, hasForbiddenTerm } from '../domain/terminology';
 import { isIanaTimeZone } from '../domain/time-zone';
 
@@ -15,11 +23,26 @@ const LIST_ITEM_MAX = 500;
 const LIST_MAX_ITEMS = 50;
 const APPROVAL_REFS_MAX = 20;
 const TIME_ZONE_MAX = 64;
+const SUMMARY_MAX = 160;
+const GUESTS_MAX = 100;
+const SUITES_MAX = 50;
+const BUILT_AREA_MAX_M2 = 100_000;
+const TERM_LABEL_MAX = 80;
+const ALT_MAX = 300;
+const CREDIT_MAX = 200;
+const RANK_MAX = 999;
+/** Arquivo de imagem até 3 MiB, em base64 (4 caracteres a cada 3 bytes): cabe no limite de corpo da Vercel. */
+export const COVER_MAX_BYTES = 3 * 1024 * 1024;
+const COVER_BASE64_MAX = Math.ceil(COVER_MAX_BYTES / 3) * 4;
+/** Maior valor de referência aceito, em unidades menores (abaixo do inteiro exato do JSON). */
+export const MAX_AMOUNT_MINOR = 1_000_000_000_000_000;
 
 /** Mensagem de validação quando o valor não é um fuso IANA conhecido. */
 export const INVALID_TIME_ZONE = 'invalid_time_zone';
 export const DUPLICATE_ITEM = 'duplicate_item';
 export const END_BEFORE_START = 'end_before_start';
+/** Rótulo sem nenhuma letra ou número (não gera slug). */
+export const INVALID_TERM_LABEL = 'invalid_term_label';
 
 const text = (max: number) =>
   z
@@ -32,6 +55,12 @@ const text = (max: number) =>
 const textList = z.array(text(LIST_ITEM_MAX)).min(1).max(LIST_MAX_ITEMS);
 const instant = z.iso.datetime({ offset: true });
 const id = z.uuid();
+const count = (max: number) => z.int().min(1).max(max);
+const termIds = (max: number) =>
+  z
+    .array(id)
+    .max(max)
+    .refine((ids) => new Set(ids).size === ids.length, DUPLICATE_ITEM);
 
 export const registerBrandPartnerInput = z.strictObject({
   brand_name: text(NAME_MAX),
@@ -53,6 +82,12 @@ const versionContent = {
   essential_elements: textList,
   preservation_premises: textList,
   specification: text(LONG_TEXT_MAX),
+  summary: text(SUMMARY_MAX).optional(),
+  guests_max: count(GUESTS_MAX).optional(),
+  suites: count(SUITES_MAX).optional(),
+  built_area_m2: count(BUILT_AREA_MAX_M2).optional(),
+  lifestyle_ids: termIds(MAX_TERMS_PER_KIND.lifestyle).optional(),
+  architectural_style_ids: termIds(MAX_TERMS_PER_KIND.architectural_style).optional(),
 };
 
 /** Concept novo: Brand Partner + título, com a versão 1. */
@@ -110,6 +145,56 @@ export const registerResidenceInput = z.strictObject({
   investor_authorization_id: id.optional(),
 });
 
+const termLabel = text(TERM_LABEL_MAX).refine(
+  (label) => termSlug(label).length > 0,
+  INVALID_TERM_LABEL,
+);
+
+export const createCatalogTermInput = z.strictObject({
+  kind: z.enum(CATALOG_TERM_KINDS),
+  label: termLabel,
+});
+
+export const updateCatalogTermInput = z.strictObject({
+  catalog_term_id: id,
+  label: termLabel,
+  active: z.boolean(),
+});
+
+const cropStep = z.literal(CROP_STEPS);
+
+export const uploadConceptCoverInput = z.strictObject({
+  concept_id: id,
+  image: z.base64().min(4).max(COVER_BASE64_MAX),
+  alt: text(ALT_MAX),
+  credit: text(CREDIT_MAX).optional(),
+  crop_x: cropStep,
+  crop_y: cropStep,
+});
+
+export const approveConceptMediaInput = z.strictObject({ concept_media_id: id });
+
+export const withdrawConceptMediaInput = z.strictObject({
+  concept_media_id: id,
+  withdrawal_basis: text(REF_MAX),
+});
+
+export const setConceptCurationInput = z.strictObject({
+  concept_id: id,
+  rank: count(RANK_MAX).nullable(),
+  featured: z.boolean(),
+});
+
+export const registerEditionReferenceValueInput = z.strictObject({
+  edition_id: id,
+  basis: z.enum(REFERENCE_VALUE_BASES),
+  amount_minor: z.int().min(1).max(MAX_AMOUNT_MINOR),
+  currency: z.enum(REFERENCE_VALUE_CURRENCIES),
+  valid_from: instant.optional(),
+});
+
+export const endEditionReferenceValueInput = z.strictObject({ edition_reference_value_id: id });
+
 export type RegisterBrandPartnerInput = z.infer<typeof registerBrandPartnerInput>;
 export type AuthorizeBrandExposureInput = z.infer<typeof authorizeBrandExposureInput>;
 export type TerminateBrandPartnerInput = z.infer<typeof terminateBrandPartnerInput>;
@@ -119,3 +204,11 @@ export type RegisterInvestorAuthorizationInput = z.infer<typeof registerInvestor
 export type RevokeInvestorAuthorizationInput = z.infer<typeof revokeInvestorAuthorizationInput>;
 export type CreateEditionInput = z.infer<typeof createEditionInput>;
 export type RegisterResidenceInput = z.infer<typeof registerResidenceInput>;
+export type CreateCatalogTermInput = z.infer<typeof createCatalogTermInput>;
+export type UpdateCatalogTermInput = z.infer<typeof updateCatalogTermInput>;
+export type UploadConceptCoverInput = z.infer<typeof uploadConceptCoverInput>;
+export type ApproveConceptMediaInput = z.infer<typeof approveConceptMediaInput>;
+export type WithdrawConceptMediaInput = z.infer<typeof withdrawConceptMediaInput>;
+export type SetConceptCurationInput = z.infer<typeof setConceptCurationInput>;
+export type RegisterEditionReferenceValueInput = z.infer<typeof registerEditionReferenceValueInput>;
+export type EndEditionReferenceValueInput = z.infer<typeof endEditionReferenceValueInput>;

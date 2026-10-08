@@ -14,11 +14,16 @@ const envShape = {
   AUTH_MODE: z.enum(['supabase', 'test']).optional(),
   // Portão do site público (W4, ADR-0014): em Production, as páginas públicas só abrem com `open` (go-live).
   PUBLIC_SITE: z.literal('open').optional(),
+  // Mídia do catálogo (ADR-0015). Ausente = Supabase Storage. `local` (diretório) só local e na CI: recusado na Vercel.
+  MEDIA_STORAGE: z.enum(['supabase', 'local']).optional(),
 };
 
 const envSchema = z.object(envShape).superRefine((env, context) => {
   if (env.AUTH_MODE === 'test' && env.VERCEL_ENV !== undefined) {
     context.addIssue({ code: 'custom', path: ['AUTH_MODE'], message: 'test auth on Vercel' });
+  }
+  if (env.MEDIA_STORAGE === 'local' && env.VERCEL_ENV !== undefined) {
+    context.addIssue({ code: 'custom', path: ['MEDIA_STORAGE'], message: 'local media on Vercel' });
   }
 });
 
@@ -61,6 +66,11 @@ const runtimeSchema = z.object({
   // Supabase Auth, só no servidor (W2, ADR-0008). Só a chave publicável: `anon` legada e chaves secretas são recusadas.
   NEXT_PUBLIC_SUPABASE_URL: z.url({ protocol: /^https$/ }),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().regex(/^sb_publishable_[A-Za-z0-9_-]+$/),
+  // Supabase Storage privado da mídia do catálogo, só no servidor (Wave 4.1, ADR-0015): chave secreta `sb_secret_…`.
+  SUPABASE_SECRET_KEY: z.string().regex(/^sb_secret_[A-Za-z0-9_-]+$/),
+  MEDIA_BUCKET: z.string().regex(/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/),
+  // `MEDIA_STORAGE=local`: diretório absoluto dos objetos (local e CI).
+  MEDIA_LOCAL_DIR: z.string().regex(/^\//),
 });
 
 export type RuntimeConfig = z.infer<typeof runtimeSchema>;

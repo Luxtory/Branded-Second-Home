@@ -25,6 +25,13 @@ import {
   TextList,
 } from './catalog-page';
 import { readCatalog } from './catalog-read';
+import {
+  CoverSection,
+  CurationSection,
+  termOptions,
+  VersionCollection,
+  versionCollectionValues,
+} from './collection-pages';
 import { ApprovalForm, ConceptForm, VersionForm } from './concept-forms';
 import { CATALOG_ROLE } from './handlers';
 import { messages } from './i18n/pt-br';
@@ -81,9 +88,16 @@ function conceptActions(detail: ConceptDetail, now: Date): ReactElement | undefi
   );
 }
 
-function VersionContent({ version }: { readonly version: ConceptVersion }) {
+function VersionContent({
+  version,
+  detail,
+}: {
+  readonly version: ConceptVersion;
+  readonly detail: ConceptDetail;
+}) {
   return (
     <>
+      <VersionCollection version={version} terms={detail.terms} />
       <ContentGroup label={text.essentialLabel}>
         <TextList items={version.essentialElements} />
       </ContentGroup>
@@ -171,13 +185,15 @@ export async function ConceptPage({
           <Empty message={text.currentEmpty} />
         ) : (
           <>
-            <VersionContent version={current} />
+            <VersionContent version={current} detail={detail} />
             <ContentGroup label={text.approvalRefsLabel}>
               <TextList items={current.approval?.approvalRefs ?? []} />
             </ContentGroup>
           </>
         )}
       </Section>
+      <CoverSection detail={detail} inUse={inUse} />
+      <CurationSection detail={detail} inUse={inUse} />
       <Section id="concept-versions" title={text.versionsTitle}>
         <RecordList label={text.versionsTitle} items={versionItems(detail, inUse)} />
       </Section>
@@ -215,10 +231,13 @@ export async function NewConceptPage({ brandPartnerId }: { readonly brandPartner
   const gate = await adminRoleGate(CATALOG_ROLE);
   if (gate.kind === 'blocked') return gate.page;
   if (!isRecordId(brandPartnerId)) return <CatalogNotFound session={gate.session} />;
-  const detail = await readCatalog(
+  const { detail, terms } = await readCatalog(
     gate.session,
     { type: 'brand_partner', id: brandPartnerId },
-    (tx) => postgresCatalogReader.brandPartner(tx, brandPartnerId),
+    async (tx) => ({
+      detail: await postgresCatalogReader.brandPartner(tx, brandPartnerId),
+      terms: await postgresCatalogReader.terms(tx),
+    }),
   );
   if (detail === null) return <CatalogNotFound session={gate.session} />;
   const page = messages.newConcept;
@@ -230,7 +249,11 @@ export async function NewConceptPage({ brandPartnerId }: { readonly brandPartner
         context={{ href: paths.brandPartner(brandPartnerId), label: detail.partner.brandName }}
       />
       {isBrandInUse(detail.partner, systemClock.now()) ? (
-        <ConceptForm brandPartnerId={brandPartnerId} idempotencyKey={randomUUID()} />
+        <ConceptForm
+          brandPartnerId={brandPartnerId}
+          idempotencyKey={randomUUID()}
+          terms={termOptions(terms)}
+        />
       ) : (
         <Notice tone="warning" title={page.blocked} />
       )}
@@ -271,12 +294,18 @@ export async function NewVersionPage({ id }: { readonly id: string }) {
           essential_elements: latest.essentialElements.join('\n'),
           preservation_premises: latest.preservationPremises.join('\n'),
           specification: latest.specification,
+          ...versionCollectionValues(latest),
         };
   return (
     <CatalogPage session={session}>
       <ConceptActionHeader detail={detail} title={page.title} lead={page.lead} />
       {isBrandInUse(detail.partner, systemClock.now()) ? (
-        <VersionForm conceptId={id} idempotencyKey={randomUUID()} initial={initial} />
+        <VersionForm
+          conceptId={id}
+          idempotencyKey={randomUUID()}
+          initial={initial}
+          terms={termOptions(detail.terms)}
+        />
       ) : (
         <Notice tone="warning" title={text.blockedNotice} />
       )}
@@ -305,7 +334,7 @@ export async function ApprovalPage({
     <CatalogPage session={session}>
       <ConceptActionHeader detail={detail} title={page.title(version.version)} lead={page.lead} />
       <Section id="approval-content" title={text.versionTitle(version.version)}>
-        <VersionContent version={version} />
+        <VersionContent version={version} detail={detail} />
       </Section>
       <Section id="approval-form" title={page.sectionTitle}>
         {approvable ? (

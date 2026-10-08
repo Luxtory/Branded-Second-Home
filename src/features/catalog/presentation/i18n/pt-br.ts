@@ -102,6 +102,13 @@ export const messages = {
       invalid_time_zone: 'Escolha um fuso horário da lista.',
       duplicate_item: 'Há referências repetidas.',
       end_before_start: 'O fim da vigência precisa ser depois do início.',
+      invalid_term_label: 'Use ao menos uma letra ou um número.',
+      duplicate_term: 'Escolha cada termo uma vez só.',
+      file_too_large: 'O arquivo passa de 3 MB. Exporte a imagem em tamanho menor.',
+      invalid_image:
+        'Use um arquivo JPEG, PNG ou WebP de verdade, com pelo menos 720 × 520 px e até 40 megapixels.',
+      invalid_amount: 'Digite o valor em reais, por exemplo 4.800.000 ou 4.800.000,00.',
+      not_in_future: 'Escolha um instante no futuro, ou deixe vazio para começar agora.',
     },
     rejections: {
       invalid: 'Revise os campos indicados.',
@@ -302,6 +309,10 @@ export const messages = {
     exposure: 'Autorização de exposição registrada.',
     approved: 'Versão aprovada.',
     revoked: 'Autorização revogada.',
+    saved: 'Alterações salvas.',
+    cover_approved: 'Capa aprovada. Ela aparece na Coleção na próxima requisição.',
+    withdrawn: 'Retirada registrada.',
+    ended: 'Vigência encerrada.',
   },
   notFound: {
     title: 'Registro não encontrado',

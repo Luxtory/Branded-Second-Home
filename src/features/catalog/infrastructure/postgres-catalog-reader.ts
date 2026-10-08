@@ -9,9 +9,13 @@ import type {
 import type { BrandPartner, Concept, ConceptVersion } from '../domain/catalog';
 import {
   toBrandPartner,
+  toCatalogTerm,
   toConcept,
+  toConceptCuration,
+  toConceptMedia,
   toConceptVersion,
   toEdition,
+  toEditionReferenceValue,
   toInvestorAuthorization,
   toResidence,
 } from './rows';
@@ -46,7 +50,50 @@ async function conceptVersions(tx: Tx, conceptId: string): Promise<ConceptVersio
     .where('concept_id', '=', conceptId)
     .orderBy('version', 'desc')
     .execute();
-  return rows.map(toConceptVersion);
+  const terms = await tx
+    .selectFrom('app.concept_version_term as t')
+    .innerJoin('app.concept_version as v', 'v.id', 't.concept_version_id')
+    .select(['t.concept_version_id', 't.term_id', 't.kind', 't.position'])
+    .where('v.concept_id', '=', conceptId)
+    .execute();
+  return rows.map((row) =>
+    toConceptVersion(
+      row,
+      terms.filter((term) => term.concept_version_id === row.id),
+    ),
+  );
+}
+
+async function allTerms(tx: Tx) {
+  const rows = await tx
+    .selectFrom('app.catalog_term')
+    .selectAll()
+    .orderBy('kind')
+    .orderBy('label')
+    .execute();
+  return rows.map(toCatalogTerm);
+}
+
+async function conceptMediaList(tx: Tx, conceptId: string) {
+  const rows = await tx
+    .selectFrom('app.concept_media')
+    .selectAll()
+    .where('concept_id', '=', conceptId)
+    .orderBy('created_at', 'desc')
+    .execute();
+  const files = await tx
+    .selectFrom('app.concept_media_file as f')
+    .innerJoin('app.concept_media as m', 'm.id', 'f.media_id')
+    .select(['f.media_id', 'f.role', 'f.width', 'f.height'])
+    .where('m.concept_id', '=', conceptId)
+    .orderBy('f.width')
+    .execute();
+  return rows.map((row) =>
+    toConceptMedia(
+      row,
+      files.filter((file) => file.media_id === row.id),
+    ),
+  );
 }
 
 async function investorAuthorizations(tx: Tx, conceptId: string) {
@@ -147,6 +194,14 @@ export const postgresCatalogReader: CatalogReader<Tx> = {
         residenceCount: count(row.residence_count),
       })),
       investorAuthorizations: await investorAuthorizations(tx, id),
+      media: await conceptMediaList(tx, id),
+      curation: await tx
+        .selectFrom('app.concept_curation')
+        .selectAll()
+        .where('concept_id', '=', id)
+        .executeTakeFirst()
+        .then((row) => (row === undefined ? null : toConceptCuration(row))),
+      terms: await allTerms(tx),
     };
   },
 
@@ -179,6 +234,15 @@ export const postgresCatalogReader: CatalogReader<Tx> = {
         conceptVersion: residence.version,
       })),
       investorAuthorizations: await investorAuthorizations(tx, concept.id),
+      referenceValues: (
+        await tx
+          .selectFrom('app.edition_reference_value')
+          .selectAll()
+          .where('edition_id', '=', id)
+          .orderBy('valid_from', 'desc')
+          .orderBy('basis')
+          .execute()
+      ).map(toEditionReferenceValue),
     };
   },
 
@@ -223,12 +287,40 @@ export const postgresCatalogReader: CatalogReader<Tx> = {
             .executeTakeFirst();
     return {
       residence,
-      conceptVersion: toConceptVersion(versionRow),
+      conceptVersion: toConceptVersion(
+        versionRow,
+        await tx
+          .selectFrom('app.concept_version_term')
+          .select(['term_id', 'kind', 'position'])
+          .where('concept_version_id', '=', versionRow.id)
+          .execute(),
+      ),
       edition: toEdition(editionRow),
       concept,
       partner,
       investorAuthorization:
         authorizationRow === undefined ? null : toInvestorAuthorization(authorizationRow),
     };
+  },
+
+  terms: allTerms,
+
+  async mediaPreview(tx, mediaId) {
+    const row = await tx
+      .selectFrom('app.concept_media_file')
+      .select(['content_type', 'storage_key', 'width', 'height'])
+      .where('media_id', '=', mediaId)
+      .where('role', '=', 'display')
+      .orderBy('width')
+      .limit(1)
+      .executeTakeFirst();
+    return row === undefined
+      ? null
+      : {
+          contentType: row.content_type,
+          storageKey: row.storage_key,
+          width: row.width,
+          height: row.height,
+        };
   },
 };

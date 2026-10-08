@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import sharp from 'sharp';
 import { signIn, STAFF_EMAIL, VISITOR_EMAIL } from './support/auth';
 import { captureForReview, collectConsoleErrors, expectResponsive } from './support/ui';
 
@@ -206,6 +207,144 @@ test.describe('celular (390 px, toque)', () => {
     await gate('19-nova-versao');
     await page.getByRole('button', { name: 'Registrar versão' }).tap();
     await expect(page.getByRole('link', { name: 'Versão 2' })).toBeVisible();
+  });
+
+  test('[REQ-020] [REQ-100] [REQ-103] Coleção no Admin a 390 px com toque: vocabulário, classificação, capa, curadoria e valor de referência; cada tela sem overflow e com axe 0', async ({
+    page,
+  }) => {
+    test.setTimeout(FLOW_TIMEOUT_MS);
+    const consoleErrors = collectConsoleErrors(page);
+    const heading = page.getByRole('heading', { level: 1 });
+    const status = page.getByRole('status');
+    const gate = async (name: string) => {
+      await expectResponsive(page, consoleErrors);
+      await captureForReview(page, name);
+    };
+    await signIn(page, STAFF_EMAIL);
+    await expect(page).toHaveURL(/\/admin$/);
+
+    // Vocabulário controlado: termos únicos deste teste (banco compartilhado).
+    await openCatalog(page);
+    await page.getByRole('link', { name: 'Vocabulários da Coleção' }).tap();
+    await expect(heading).toHaveText('Vocabulários da Coleção');
+    await gate('20-vocabularios');
+    const lifestyle = unique('Silêncio');
+    const style = unique('Pedra seca');
+    for (const [kind, label] of [
+      [/^Lifestyle/, lifestyle],
+      [/^Estilo arquitetônico/, style],
+    ] as const) {
+      await page.getByRole('radio', { name: kind }).check();
+      await page.getByLabel('Rótulo').fill(label);
+      await page.getByRole('button', { name: 'Registrar termo' }).tap();
+      await expect(status).toContainText('Registro concluído.');
+      await expect(page.getByRole('link', { name: label })).toBeVisible();
+    }
+
+    // Concept com classificação e atributos (spec catalog §13.12).
+    const brand = unique('Maison Coleção');
+    await page.goto('/admin/catalogo/brand-partners/nova');
+    await page.getByLabel('Nome da marca').fill(brand);
+    await page.getByRole('button', { name: 'Registrar Brand Partner' }).tap();
+    await expect(heading).toHaveText(brand);
+    await page.getByRole('link', { name: 'Registrar Concept' }).tap();
+    await page.getByLabel('Nome do Concept').fill('Casa do Silêncio');
+    await page.getByLabel('Elementos essenciais').fill('Pátio de pedra seca');
+    await page.getByLabel('Premissas de preservação').fill('Materiais regionais');
+    await page.getByLabel('Especificação').fill('Especificação para implantação replicável.');
+    await page
+      .getByRole('group', { name: 'Lifestyle' })
+      .getByLabel('Principal')
+      .selectOption({ label: lifestyle });
+    await page
+      .getByRole('group', { name: 'Estilo arquitetônico' })
+      .getByLabel('Principal')
+      .selectOption({ label: style });
+    await page.getByLabel('Pessoas (no máximo)').fill('10');
+    await page.getByLabel('Suítes').fill('5');
+    await page.getByLabel('Área construída (m²)').fill('520');
+    await gate('21-registrar-concept-colecao');
+    await page.getByRole('button', { name: 'Registrar Concept' }).tap();
+    await expect(heading).toHaveText('Casa do Silêncio');
+    await page.getByRole('link', { name: 'Versão 1' }).tap();
+    await page.getByLabel('Aprovações registradas').fill('Ata de aprovação 2026-10');
+    await page.getByRole('button', { name: 'Aprovar versão 1' }).tap();
+    // A versão vigente mostra a classificação e os atributos da Coleção.
+    await expect(page.getByText(`${lifestyle} · ${style}`).first()).toBeVisible();
+    await expect(page.getByText('Até 10 pessoas · 5 suítes · 520 m²').first()).toBeVisible();
+
+    // Capa: arquivo pequeno é recusado no campo; o válido nasce pendente e é aprovado (ADR-0015).
+    await page.getByRole('link', { name: 'Enviar capa' }).tap();
+    await expect(heading).toHaveText('Enviar capa');
+    await gate('22-enviar-capa');
+    const image = async (width: number, height: number) => ({
+      name: 'capa.jpg',
+      mimeType: 'image/jpeg',
+      buffer: await sharp({
+        create: { width, height, channels: 3, background: { r: 15, g: 78, b: 103 } },
+      })
+        .jpeg()
+        .toBuffer(),
+    });
+    const alt = 'Imagem de teste do E2E — um campo de cor, nenhuma casa';
+    await page.getByLabel('Arquivo da imagem').setInputFiles(await image(700, 500));
+    await page.getByLabel('Texto alternativo').fill(alt);
+    await page.getByRole('button', { name: 'Enviar para aprovação' }).tap();
+    await expect(page.getByText(/pelo menos 720 × 520 px e até 40 megapixels/)).toBeVisible();
+    await page.getByLabel('Arquivo da imagem').setInputFiles(await image(1600, 1200));
+    await page.getByRole('button', { name: 'Enviar para aprovação' }).tap();
+    await expect(heading).toHaveText('Capa do Concept');
+    await expect(status).toContainText('Registro concluído.');
+    await expect(page.getByRole('img', { name: alt })).toBeVisible();
+    await gate('23-capa-pendente');
+    await page.getByRole('button', { name: 'Aprovar capa' }).tap();
+    await expect(status).toContainText('Capa aprovada.');
+
+    // Curadoria: destaque explícito, com capa aprovada.
+    await page.getByRole('link', { name: 'Casa do Silêncio', exact: true }).tap();
+    await page.getByRole('link', { name: 'Editar curadoria' }).tap();
+    await expect(heading).toHaveText('Curadoria');
+    await gate('24-curadoria');
+    await page.getByLabel('Posição na curadoria').fill('2');
+    await page.getByRole('radio', { name: 'Em destaque', exact: true }).check();
+    await page.getByRole('button', { name: 'Salvar curadoria' }).tap();
+    await expect(status).toContainText('Alterações salvas.');
+    await expect(page.getByText('Em destaque', { exact: true })).toBeVisible();
+
+    // Edition e valor de referência na base da Ação (Co-Owner), nunca por dia (REQ-100).
+    await page.getByRole('link', { name: 'Registrar Edition' }).tap();
+    await page.getByLabel('Região').fill('Serra da Mantiqueira');
+    await page.getByRole('radio', { name: /Owner e Co-Owner/ }).check();
+    await page.getByLabel('Condições comerciais').fill('Condições registradas pela Luxtory.');
+    await page.getByRole('button', { name: 'Registrar Edition' }).tap();
+    await expect(heading).toHaveText('Casa do Silêncio — Serra da Mantiqueira');
+    await page.getByRole('link', { name: 'Registrar valor de referência' }).tap();
+    await expect(heading).toHaveText('Registrar valor de referência');
+    await gate('25-valor-de-referencia');
+    await page.getByRole('radio', { name: 'Co-Owner · uma Ação' }).check();
+    await page.getByLabel('Valor (R$)').fill('seiscentos mil');
+    await page.getByRole('button', { name: 'Registrar valor' }).tap();
+    await expect(page.getByText(/Digite o valor em reais/)).toBeVisible();
+    await page.getByLabel('Valor (R$)').fill('620.000');
+    await page.getByRole('button', { name: 'Registrar valor' }).tap();
+    await expect(status).toContainText('Registro concluído.');
+    const value = page.getByRole('link', { name: /Co-Owner · uma Ação — R\$\s620\.000/ });
+    await expect(value).toBeVisible();
+    await gate('26-edition-com-valor');
+    await value.tap();
+    await expect(heading).toHaveText('Encerrar valor de referência');
+    await page.getByRole('button', { name: 'Encerrar agora' }).tap();
+    await expect(status).toContainText('Vigência encerrada.');
+    await expect(page.getByText('Encerrado', { exact: true })).toBeVisible();
+
+    // Retirada da capa tira o destaque na mesma operação.
+    await page.getByRole('link', { name: 'Casa do Silêncio', exact: true }).tap();
+    await page.getByRole('link', { name: alt }).first().tap();
+    await page.getByLabel('Motivo da retirada').fill('Nova sessão de fotos');
+    await page.getByRole('button', { name: 'Retirar capa' }).tap();
+    await expect(status).toContainText('Retirada registrada.');
+    await page.getByRole('link', { name: 'Casa do Silêncio', exact: true }).tap();
+    await expect(page.getByText('Sem destaque', { exact: true })).toBeVisible();
   });
 });
 

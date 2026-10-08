@@ -1,10 +1,6 @@
 'use server';
 
-import { randomUUID } from 'node:crypto';
-import { redirect } from 'next/navigation';
-import type { ZodType } from 'zod';
-import { executeAdminCommand, type AdminCommand } from '@/features/identity';
-import type { JsonValue } from '@/features/platform';
+// Server Actions dos formulários do catálogo (ADR-0010 §6); o apoio comum fica em `action-support.ts`.
 import {
   approveConceptVersionInput,
   authorizeBrandExposureInput,
@@ -17,65 +13,19 @@ import {
   revokeInvestorAuthorizationInput,
   terminateBrandPartnerInput,
 } from '../application/inputs';
-import { fieldErrorsFrom, rejectionFor, type FieldErrorCode, type FormState } from './form-state';
+import {
+  field,
+  integer,
+  lines,
+  NO_INVESTOR,
+  orderedChoices,
+  present,
+  submit,
+  valuesOf,
+} from './action-support';
+import type { FieldErrorCode, FormState } from './form-state';
 import { catalogCommand, catalogHandlers } from './handlers';
 import { paths } from './paths';
-
-/**
- * Server Actions dos formulários do catálogo: mesma entrada da API (ADR-0010 §6). O schema do command valida antes só
- * para mostrar o erro no campo; a decisão é do command, que revalida tudo na transação.
- */
-const field = (form: FormData, name: string): string => {
-  const value = form.get(name);
-  return typeof value === 'string' ? value : '';
-};
-
-/** Campo vazio = ausente (obrigatório → "Preencha este campo"; opcional → não enviado). */
-const present = (value: string): string | undefined => (value.trim() === '' ? undefined : value);
-
-const valuesOf = (form: FormData, names: readonly string[]) =>
-  Object.fromEntries(names.map((name) => [name, field(form, name)]));
-
-/** Campo de várias linhas → lista (uma entrada por linha, sem linhas vazias). */
-const lines = (value: string): string[] =>
-  value
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line !== '');
-
-/** "Sem Investor" é escolha explícita; a opção vazia não foi escolhida. */
-const NO_INVESTOR = 'none';
-
-interface Submission<I, R extends JsonValue> {
-  readonly command: AdminCommand<I, R>;
-  readonly schema: ZodType<I>;
-  readonly input: Record<string, unknown>;
-  readonly values: Record<string, string>;
-  readonly success: (result: R) => string;
-  /** Erros que só a tela conhece (ex.: escolha obrigatória que o command trata como opcional). */
-  readonly extraErrors?: Readonly<Record<string, FieldErrorCode>>;
-}
-
-async function submit<I, R extends JsonValue>(
-  state: FormState,
-  { command, schema, input, values, success, extraErrors = {} }: Submission<I, R>,
-): Promise<FormState> {
-  const parsed = schema.safeParse(input);
-  const fieldErrors = { ...(parsed.success ? {} : fieldErrorsFrom(parsed.error)), ...extraErrors };
-  if (Object.keys(fieldErrors).length > 0) {
-    return { key: state.key, values, fieldErrors, rejection: 'invalid' };
-  }
-  const outcome = await executeAdminCommand(command, input, state.key);
-  if (outcome === 'unavailable')
-    return { key: state.key, values, fieldErrors: {}, rejection: 'unavailable' };
-  if (outcome.status === 'unauthenticated') redirect('/entrar');
-  if (outcome.status === 'rejected') {
-    // Recusa gravada consome a chave (replay repetiria a recusa): o próximo envio leva uma nova.
-    const key = outcome.operationId === null ? state.key : randomUUID();
-    return { key, values, fieldErrors: {}, rejection: rejectionFor(outcome.code) };
-  }
-  redirect(success(outcome.result));
-}
 
 export async function registerBrandPartnerAction(
   state: FormState,
@@ -126,13 +76,49 @@ export async function authorizeBrandExposureAction(
   });
 }
 
-const VERSION_FIELDS = ['essential_elements', 'preservation_premises', 'specification'] as const;
+/** Seleções de termo por vocabulário (spec catalog §13.12): lifestyle 1–3, estilo 1–2. */
+const TERM_SLOTS = { lifestyle: 3, architectural_style: 2 } as const;
+
+const VERSION_FIELDS = [
+  'essential_elements',
+  'preservation_premises',
+  'specification',
+  'summary',
+  'guests_max',
+  'suites',
+  'built_area_m2',
+  'lifestyle_1',
+  'lifestyle_2',
+  'lifestyle_3',
+  'architectural_style_1',
+  'architectural_style_2',
+] as const;
 
 const versionContent = (form: FormData) => ({
   essential_elements: lines(field(form, 'essential_elements')),
   preservation_premises: lines(field(form, 'preservation_premises')),
   specification: field(form, 'specification'),
+  summary: present(field(form, 'summary')),
+  guests_max: integer(field(form, 'guests_max')),
+  suites: integer(field(form, 'suites')),
+  built_area_m2: integer(field(form, 'built_area_m2')),
+  lifestyle_ids: orderedChoices(form, 'lifestyle', TERM_SLOTS.lifestyle),
+  architectural_style_ids: orderedChoices(
+    form,
+    'architectural_style',
+    TERM_SLOTS.architectural_style,
+  ),
 });
+
+/** O mesmo termo em duas posições: erro no grupo, antes do command (que só veria "duplicado"). */
+function repeatedTerms(form: FormData): Record<string, FieldErrorCode> {
+  const errors: Record<string, FieldErrorCode> = {};
+  for (const [kind, slots] of Object.entries(TERM_SLOTS)) {
+    const chosen = orderedChoices(form, kind, slots);
+    if (new Set(chosen).size !== chosen.length) errors[`${kind}_ids`] = 'duplicate_term';
+  }
+  return errors;
+}
 
 export async function registerConceptAction(state: FormState, form: FormData): Promise<FormState> {
   return submit(state, {
@@ -145,6 +131,7 @@ export async function registerConceptAction(state: FormState, form: FormData): P
     },
     values: valuesOf(form, ['title', ...VERSION_FIELDS]),
     success: (result) => paths.concept(result.concept_id, 'registered'),
+    extraErrors: repeatedTerms(form),
   });
 }
 
@@ -155,6 +142,7 @@ export async function createVersionAction(state: FormState, form: FormData): Pro
     input: { concept_id: field(form, 'concept_id'), ...versionContent(form) },
     values: valuesOf(form, [...VERSION_FIELDS]),
     success: (result) => paths.concept(result.concept_id, 'registered'),
+    extraErrors: repeatedTerms(form),
   });
 }
 

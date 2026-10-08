@@ -20,6 +20,7 @@ Production da Vercel**, nunca em Preview ou Development.
 |---|---|---|
 | `CRON_SECRET` | Vercel, Production, **Sensitive** | ao menos 32 caracteres aleatórios do gerenciador de senhas; a Vercel o envia como `Authorization: Bearer` ao chamar os crons |
 | `DATABASE_URL` | Vercel, Production, **Sensitive** | passo 5 abaixo |
+| `SUPABASE_SECRET_KEY` | Vercel, **só Production**, **Sensitive** — nunca `NEXT_PUBLIC_*` | Supabase → Settings → API Keys → chave secreta `sb_secret_…` (a `service_role` legada é recusada pela validação) |
 
 ## Preparar a W1 em produção
 
@@ -133,11 +134,34 @@ Nenhuma ação antes do merge. **Não crie `PUBLIC_SITE`**: sem ela, as páginas
 **Go-live do site público** (depois da revisão jurídica `P-LX-03`, de D1 e da D5c): criar `PUBLIC_SITE=open` só em
 Production e fazer um novo deploy.
 
+## Preparar a Wave 4.1 em produção (mídia da Coleção)
+
+Antes do deploy que habilitar capas reais ([ADR-0015](../adr/0015-midia-do-catalogo-metadados-e-storage.md)). Nenhum
+valor de segredo entra em código, migration, log, issue ou artifact.
+
+1. Supabase → Storage → **New bucket**, nome `catalog-media` (ou outro), **Public bucket desligado**. Não criar
+   políticas de Storage para `anon` nem `authenticated`: só o servidor lê e grava, com a chave secreta.
+2. Vercel → Environment Variables, **só Production**: `SUPABASE_SECRET_KEY` (Sensitive) e `MEDIA_BUCKET` = o nome do
+   bucket. Nunca em Preview/Development, nunca com prefixo `NEXT_PUBLIC_`. Não criar `MEDIA_STORAGE` nem
+   `MEDIA_LOCAL_DIR` na Vercel (o adaptador local é recusado quando `VERCEL_ENV` existe).
+3. Deploy (CI). Conferir:
+   - o bucket continua **privado** (Storage → bucket → sem "Public"); `GET https://<projeto>.supabase.co/storage/v1/object/public/<bucket>/…`
+     responde erro, nunca o arquivo;
+   - a única superfície pública de entrega é `GET /media/concept-covers/{id}/{largura}` do próprio domínio, e só para a
+     capa aprovada de Concept público (o resto é 404);
+   - no Admin, enviar uma capa de teste, aprovar, ver no site e retirar — a rota passa a 404 na próxima requisição.
+4. **Falha segura sem as variáveis:** sem `SUPABASE_SECRET_KEY` ou `MEDIA_BUCKET`, o envio de capa e a rota da imagem
+   ficam indisponíveis (`ConfigurationMissingError` → 503), sem gravar nada; o código nunca cria bucket nem muda a
+   visibilidade dele. O resto da Coleção (cards com o quadro tipográfico) continua no ar.
+
 ## Rotacionar segredos
 
 - `CRON_SECRET`: gere outro valor, atualize na Vercel (Production) e refaça o deploy (passo 6).
 - Senha do `luxtory_app`: repita os passos 3, 5 e 6. A senha antiga deixa de valer quando o `ALTER ROLE` roda; até o
   novo deploy, o job `outbox` responde erro e os eventos esperam pendentes (nada se perde).
+
+- `SUPABASE_SECRET_KEY`: crie uma chave secreta nova no Supabase, troque na Vercel (Production), refaça o deploy e só
+  então revogue a antiga.
 
 ## Quando algo falha
 

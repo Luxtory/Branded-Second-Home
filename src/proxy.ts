@@ -32,6 +32,10 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Toda página HTML, mais a API do Admin (renovação de sessão). Fora: JSON público e jobs (`/v1`, `/api`), assets do
-  // Next, favicon, logos (`/brand`, com CSP própria mais restrita) e o Lab interno (`/lab`).
-  matcher: ['/((?!api|v1|_next/static|_next/image|favicon.ico|brand|lab).*)', '/v1/admin/:path*'],
+  // Next, favicon, logos (`/brand`, com CSP própria mais restrita), o Lab interno (`/lab`) e as imagens públicas do
+  // catálogo (`/media/`, ADR-0015).
+  matcher: [
+    '/((?!api|v1|_next/static|_next/image|favicon.ico|brand|lab|media/).*)',
+    '/v1/admin/:path*',
+  ],
 };

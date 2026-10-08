@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Icon } from '@/design-system/react';
+import { Icon, type IconName } from '@/design-system/react';
 import type { EditionModality } from '../../domain/catalog';
 import { discoveryMessages as text, type ModalityPair } from '../i18n/discovery-pt-br';
 import { nb } from './no-break';
@@ -48,12 +48,15 @@ export function ActionLink({
   primary = false,
   outline = false,
   large = false,
+  icon = 'arrow-right',
 }: {
   readonly href: string;
   readonly label: string;
   readonly primary?: boolean;
   readonly outline?: boolean;
   readonly large?: boolean;
+  /** Direção da ação: para frente (padrão) ou dentro da página (`arrow-down`, `arrow-up`). */
+  readonly icon?: IconName;
 }) {
   const button = primary || outline;
   const className = button
@@ -68,7 +71,7 @@ export function ActionLink({
   return (
     <a className={className} href={href}>
       {label}
-      <Icon name="arrow-right" className={button ? 'lx-button__icon' : 'lx-link__icon'} />
+      <Icon name={icon} className={button ? 'lx-button__icon' : 'lx-link__icon'} />
     </a>
   );
 }

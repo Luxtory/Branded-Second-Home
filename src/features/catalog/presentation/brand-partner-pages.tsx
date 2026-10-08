@@ -10,6 +10,7 @@ import { BrandPartnerForm } from './brand-partner-form';
 import { readCatalog } from './catalog-read';
 import { CatalogNotFound, CatalogPage, isRecordId, KeyValues, StatusNotice } from './catalog-page';
 import { CATALOG_ROLE } from './handlers';
+import { collectionMessages } from './i18n/collection-pt-br';
 import { messages } from './i18n/pt-br';
 import { Instant } from './instant';
 import { Notice } from './notice';
@@ -65,9 +66,14 @@ export async function BrandPartnersPage() {
         title={page.title}
         lead={page.lead}
         actions={
-          <a className="lx-button lx-button--primary" href={paths.newBrandPartner}>
-            {page.register}
-          </a>
+          <>
+            <a className="lx-button lx-button--primary" href={paths.newBrandPartner}>
+              {page.register}
+            </a>
+            <a className="lx-button lx-button--secondary" href={paths.vocabulary()}>
+              {collectionMessages.vocabulary.link}
+            </a>
+          </>
         }
       />
       <section className="lx-page-section" aria-labelledby="catalog-partners">

@@ -217,7 +217,7 @@ describe('catálogo — leitura pública como anon', () => {
     ).rejects.toThrow();
   });
 
-  it('[TECH-052] anon só executa os dois predicados públicos (além de validação pura e funções de gatilho)', async () => {
+  it('[TECH-052] anon só executa os predicados públicos (além de validação pura e funções de gatilho)', async () => {
     const { rows } = await database.pool.query<{ proname: string }>(
       `SELECT p.proname
          FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
@@ -228,6 +228,8 @@ describe('catálogo — leitura pública como anon', () => {
     );
     expect(rows.map((row) => row.proname)).toEqual([
       'brand_partner_is_public',
+      // Coleção (spec catalog §13.12): termo público = ativo e em uso por Concept público.
+      'catalog_term_is_public',
       'concept_is_public',
       'is_text_list',
     ]);

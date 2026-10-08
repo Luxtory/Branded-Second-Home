@@ -1,7 +1,12 @@
 import type { ZodError } from 'zod';
 import type { ErrorCode } from '@/features/platform';
 import { FORBIDDEN_TERM } from '../domain/terminology';
-import { DUPLICATE_ITEM, END_BEFORE_START, INVALID_TIME_ZONE } from '../application/inputs';
+import {
+  DUPLICATE_ITEM,
+  END_BEFORE_START,
+  INVALID_TERM_LABEL,
+  INVALID_TIME_ZONE,
+} from '../application/inputs';
 
 /** Estado dos formulários do catálogo (Server Action ↔ componente). Textos só pelo i18n. */
 export type FieldErrorCode =
@@ -11,7 +16,13 @@ export type FieldErrorCode =
   | 'forbidden_term'
   | 'invalid_time_zone'
   | 'duplicate_item'
-  | 'end_before_start';
+  | 'end_before_start'
+  | 'invalid_term_label'
+  | 'duplicate_term'
+  | 'file_too_large'
+  | 'invalid_image'
+  | 'invalid_amount'
+  | 'not_in_future';
 
 export type FormRejection =
   'invalid' | 'state' | 'not_found' | 'permission' | 'conflict' | 'unavailable' | 'unexpected';
@@ -36,6 +47,7 @@ const CUSTOM: ReadonlySet<string> = new Set([
   INVALID_TIME_ZONE,
   DUPLICATE_ITEM,
   END_BEFORE_START,
+  INVALID_TERM_LABEL,
 ]);
 
 type Issue = ZodError['issues'][number];

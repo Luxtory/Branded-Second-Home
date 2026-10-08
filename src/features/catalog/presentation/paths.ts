@@ -1,5 +1,15 @@
 /** Rotas das telas do catálogo no Admin (`docs/specs/catalog.md` §5). */
-export const STATUS_KEYS = ['registered', 'terminated', 'exposure', 'approved', 'revoked'] as const;
+export const STATUS_KEYS = [
+  'registered',
+  'terminated',
+  'exposure',
+  'approved',
+  'revoked',
+  'saved',
+  'cover_approved',
+  'withdrawn',
+  'ended',
+] as const;
 export type StatusKey = (typeof STATUS_KEYS)[number];
 
 const withStatus = (path: string, status?: StatusKey) =>
@@ -27,6 +37,16 @@ export const paths = {
   edition: (id: string, status?: StatusKey) => withStatus(`${ROOT}/editions/${id}`, status),
   newResidence: (editionId: string) => `${ROOT}/editions/${editionId}/residences/nova`,
   residence: (id: string, status?: StatusKey) => withStatus(`${ROOT}/residences/${id}`, status),
+  // Coleção (spec catalog §13.12).
+  vocabulary: (status?: StatusKey) => withStatus(`${ROOT}/vocabularios`, status),
+  term: (id: string) => `${ROOT}/vocabularios/${id}`,
+  newCover: (conceptId: string) => `${ROOT}/concepts/${conceptId}/capas/nova`,
+  media: (conceptId: string, mediaId: string, status?: StatusKey) =>
+    withStatus(`${ROOT}/concepts/${conceptId}/capas/${mediaId}`, status),
+  curation: (conceptId: string) => `${ROOT}/concepts/${conceptId}/curadoria`,
+  newReferenceValue: (editionId: string) => `${ROOT}/editions/${editionId}/valores/novo`,
+  referenceValueEnd: (editionId: string, valueId: string) =>
+    `${ROOT}/editions/${editionId}/valores/${valueId}/encerramento`,
 } as const;
 
 export function statusKey(value: string | string[] | undefined): StatusKey | null {

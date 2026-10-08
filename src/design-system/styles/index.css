@@ -43,4 +43,5 @@
 @import url("./core/primitives.css");
 @import url("./core/components.css");
 @import url("./core/patterns.css");
+@import url("./core/collection.css");
 @import url("./core/motion.css");

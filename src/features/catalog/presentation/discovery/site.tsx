@@ -21,7 +21,7 @@ export function DiscoverySite({
       homeHref={discoveryPaths.home}
       labels={text.site}
       overlayHeader={current === 'home' || current === 'howItWorks'}
-      retractableMenu={current === 'home' || current === 'howItWorks'}
+      retractableMenu={current === 'home' || current === 'howItWorks' || current === 'collection'}
       navItems={[
         {
           href: discoveryPaths.collection,

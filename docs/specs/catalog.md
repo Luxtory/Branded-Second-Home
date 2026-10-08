@@ -66,6 +66,14 @@ AAL2 com papel Admin, origem igual ao host (TECH-100) e o schema `Error` (TECH-0
 | `revoke_investor_authorization` | `POST /v1/admin/investor-authorizations/{id}/revoke` | 200 |
 | `create_edition` | `POST /v1/admin/editions` | 201 |
 | `register_residence` | `POST /v1/admin/residences` | 201 |
+| `create_catalog_term` | `POST /v1/admin/catalog-terms` (Coleção, §13.12) | 201 |
+| `update_catalog_term` | `POST /v1/admin/catalog-terms/{id}` | 200 |
+| `upload_concept_cover` | `POST /v1/admin/concepts/{id}/cover` | 201 |
+| `approve_concept_media` | `POST /v1/admin/concept-media/{id}/approve` | 200 |
+| `withdraw_concept_media` | `POST /v1/admin/concept-media/{id}/withdraw` | 200 |
+| `set_concept_curation` | `POST /v1/admin/concepts/{id}/curation` | 200 |
+| `register_edition_reference_value` | `POST /v1/admin/editions/{id}/reference-values` | 201 |
+| `end_edition_reference_value` | `POST /v1/admin/edition-reference-values/{id}/end` | 200 |
 
 Recusas: corpo inválido → 400 `ERR_VALIDATION` (inclui texto com termo vedado, §5 "Terminologia"); objeto referenciado
 inexistente → 404 `ERR_NOT_FOUND`; estado que não permite a operação → 409 `ERR_STATE_TRANSITION`; sem papel Admin ou
@@ -578,3 +586,185 @@ nota de modalidade numa lista (`lx-numbered__note`), recortes `lx-crop-md-x-*` e
 Owner | Co-Owner; D-B2C-16; teste da página: capítulos, condições visíveis, Figures, listas do PUSH e fechamento;
 header da Home com `aria-current` no menu; contraste do Hero e do CTA medido nos pixels a 768 e 1440) e Checkpoint
 Visual sem push a 390/768/1024/1440.
+
+### 13.12 Coleção — discovery curatorial (Fase A, 2026-10-07)
+
+> Brief UX/copy e contrato mínimo de dados da nova `/colecao`, aprovados em conceito pelo fundador (`D-B2C-21`).
+> Prevalece sobre as linhas da Coleção da §13.4 e da §13.9 quando a Fase C entrar. Fora deste brief, as regras da §13
+> continuam: SSR, CSP, RLS (`anon`), CTA por disponibilidade (`D-B2C-16`), âncoras `#home-editions`/`#home-concepts`.
+
+**Brief.** Protagonista: quem quer descobrir qual forma de viver e qual Home Concept combinam com ele. Pergunta central:
+"Como eu quero viver — e quais Home Concepts combinam comigo?". Product Aware → Most Aware, PROOF → PUSH; sem reabrir
+PROBLEM/PROMISE da Home. Ordem: descoberta → comparação → compreensão → escolha. Resultado mental: "não estou vendo uma
+lista de imóveis; estou descobrindo qual forma de viver e qual Home Concept combinam comigo".
+
+| # | Seção | Superfície | Função |
+|---|---|---|---|
+| 01 | Hero + Discovery | `blue` (tipográfico) | headline, subtítulo, barra de discovery como protagonista da primeira dobra; "Home Concept é a ideia. Home Edition é o lançamento dessa ideia em uma região." + "Entenda como funciona ↓" (para a 03) |
+| 02 | Destaques / Resultados | `white` | sem filtro: curadoria; com filtro: resultados. Dois grupos: Com Home Edition (`#home-editions`) e Ainda sem Home Edition (`#home-concepts`) |
+| 03 | Como um Home Concept chega à sua Second Home | `sand` | a cadeia canônica em seis passos (REQ-024/025, BR-030/031, BR-052/071, BR-053, BR-300/301) |
+| 04 | Fechamento | `blue` | "Refinar a busca ↑" + "Entenda como funciona" |
+
+Header: o mesmo da Home (logo + menu pelo ícone), sólido. Hero tipográfico nesta versão, por falta de fotografia de
+atmosfera adequada (todas as autorizadas mostram uma casa e seriam lidas como um Concept); uma fotografia de atmosfera
+autorizada e não vinculável a um Concept pode substituí-lo depois, sem mudar a arquitetura da página.
+
+**Card — a unidade é o Home Concept.** Um card por Concept, nunca duplicado por ter várias Editions. Identidade:
+imagem oficial (ou o fallback tipográfico do Core), lifestyle · estilo principais, título (Newsreader), "A partir do
+universo de X" (só com exposição autorizada, BR-015), fatos ("Até 10 pessoas · 5 suítes · 500 m²", só os que
+existem). Dentro dele, **Home Editions**: um bloco editorial por Edition — a região; depois uma linha por base que a
+modalidade oferece, "Owner · a partir de R$ X" (a Second Home inteira) e "Co-Owner · Ação a partir de R$ Y" (sem valor
+vigente, só "Owner" ou "Co-Owner · Ação"); hairline entre Editions quando houver mais de uma; nunca valor por dia
+(REQ-100); mesmo peso (REQ-103). Sem Edition: "Ainda sem Home Edition — por enquanto, sem oferta comercial." e
+nenhum valor (REQ-020/022). Dado ausente: a linha some (nunca "—" nem "sob consulta"). CTA: "Conheça o Concept →"; o
+card inteiro é o alvo (link do título), foco visível; no desktop o CTA fica no pé do card, alinhado entre os cards da
+mesma linha, sem truncar conteúdo nem criar caixa. Grade uniforme (4/12 · 6/12 · 12/12; imagem 4:5 a partir do `md`,
+4:3 no celular). **Sem capa**, o Frame tipográfico do Core mostra o lifestyle principal do Concept (rótulo do
+vocabulário, Newsreader) — ou, sem lifestyle, o título —, decorativo (`aria-hidden`) e sem nenhum outro texto. Só com
+**destaque editorial explícito** e capa aprovada, o Concept em destaque abre o seu grupo como Editorial Split nas 12
+colunas (imagem 3:2 + texto; no celular, um card como os outros com o eyebrow "Em destaque") — a largura toda evita uma
+coluna vazia ao lado; um Concept sem capa nunca é destaque.
+
+**Discovery.** Formulário GET renderizado no servidor (sem JS também funciona; URL compartilhável). Filtros
+principais: Lifestyle (múltiplo) · Localização (regiões das Editions) · Estilo (múltiplo) · Pessoas ("para pelo menos
+N", com os valores reais) · Faixa de valor em duas etapas — 1) Owner (a Second Home inteira) ou Co-Owner (uma Ação),
+com o mesmo peso; 2) De / Até, sugeridos pelos valores vigentes publicados; aplicada, a interface diz "Considera só
+Concepts com Home Edition e valor vigente para Owner/Co-Owner". Busca livre: Concept, lifestyle, destino, estilo e
+Brand Partner autorizada. Mais filtros: suítes (mínimo), área (m²), modalidade disponível, só com Home Edition, Brand
+Partner. **Localização não elimina Concepts sem Edition na região**: com uma região escolhida, a página mostra "Com
+Home Edition em [região]" e depois "Outros Home Concepts que combinam com suas escolhas" (os que atendem aos demais
+filtros e ainda não têm Edition naquela região: "Ainda sem Home Edition em [região]. O interesse por um Concept pode
+indicar onde um novo lançamento faz sentido."). A Faixa de valor continua restrita a Concepts com Home Edition e valor
+vigente na base escolhida; com região, o primeiro grupo exige essa Edition na região. Ordenação: Curadoria Luxtory
+(padrão) · Mais recentes. Cada filtro só aparece com 2+ valores reais; opções
+sem resultado não aparecem; sem nenhum filtro útil, a barra mostra só a busca; com o catálogo vazio, a barra não
+aparece. Desktop: a barra fica fixa e compacta
+sob o header ao rolar, numa linha (o rótulo "Faixa de valor" vira "Valor"), com chips dos filtros ativos e "Limpar
+filtros". Celular: busca + "Filtros (n)" + ordenação;
+filtros num `<dialog>` em tela cheia com "Ver resultados"/"Limpar" fixos. A busca do celular tem um botão de envio
+inequívoco em largura total ("Explorar a Coleção", 48 px), nunca um quadrado só com ícone. "Filtros (n)" fixo no
+rodapé depois da barra é P2: só entra se for simples e não conflitar com a viewport, o navegador ou o CTA. Desktop: os
+cinco filtros usam a tipografia e as alturas do Core (rótulo `type.label`, valor `type.body`, alvo ≥ 48 px); o valor
+quebra linha, nunca é reduzido nem truncado. Contagens só no status `aria-live` e no botão do celular, nunca como headline.
+
+**Copy.**
+- 01 — eyebrow "Coleção"; H1 "As suas próximas histórias começam antes mesmo de a casa existir."; subtítulo "Explore
+  Home Concepts criados a partir de diferentes lifestyles — e descubra quais Home Editions já foram lançadas na região
+  que você deseja."; busca "Busque por lifestyle, destino, Home Concept ou Brand Partner"; botão "Explorar a Coleção";
+  "Mais filtros"; explicação "Home Concept é a ideia. Home Edition é o lançamento dessa ideia em uma região." +
+  "Entenda como funciona ↓" (âncora para a 03).
+- 02 — sem filtro: eyebrow "Curadoria Luxtory", H2 "Encontre uma Second Home que tenha a ver com você."; com filtro:
+  H2 "Resultados da sua busca". Grupos: "Com Home Edition" ("Já lançados — com região, modalidade e condições
+  definidas.") e "Ainda sem Home Edition" ("Por enquanto, sem oferta comercial. O interesse por um Concept pode ajudar a
+  indicar onde um novo lançamento faz sentido.").
+- 03 — "Como um Home Concept chega à sua Second Home": 01 Escolha o Home Concept — o lifestyle e a casa que combinam
+  com você. · 02 Escolha onde gostaria de vivê-lo — o interesse mostra à Luxtory onde há demanda. · 03 A Home Edition ganha
+  forma — com demanda e viabilidade, a Luxtory estrutura o lançamento com região, modalidade e condições próprias. · 04
+  Escolha como possuir — Owner: a Second Home inteira. Co-Owner: uma Ação da SPE proprietária, com Direito de Uso. · 05
+  O Design & Build transforma o Concept em casa — arquitetura, interiores, engenharia e obra; construída do zero e fiel
+  ao Concept. · 06 Viva sua Second Home. + "Entenda como funciona". Nunca "Home Edition ou Design & Build".
+- 04 — "Encontre o lugar onde suas próximas histórias podem começar." + "Refinar a busca ↑" + "Entenda como funciona".
+- Estados — sem resultado: "Nenhum Home Concept combina com todas essas escolhas." + "Limpar filtros"; catálogo vazio:
+  "Os primeiros Home Concepts ainda não foram publicados." (a 03 e o fechamento continuam); leitura indisponível: "A
+  Coleção não pôde ser carregada agora." sem afirmar que não há catálogo.
+
+**Contrato mínimo de dados (para liberar a Fase B).** Escritas só pelo servidor, por commands com `operation_id` e
+auditoria (TECH-002); leitura pública como `anon` com colunas e linhas mínimas (ADR-0014).
+
+1. **Vocabulários controlados** `lifestyle` e `architectural_style` (`id`, `slug` único e imutável, `label`, `active`).
+   Geridos no Admin: criar, renomear o rótulo, desativar (nunca apagar um valor em uso). Sem tagging livre.
+2. **Classificações da versão do Concept**, múltiplas e ordenadas (a 1ª é a principal, mostrada no card): lifestyle
+   1–3, estilo 1–2 — um Concept costuma traduzir mais de um aspecto de um lifestyle (ex.: wellness e natureza) e, às
+   vezes, uma linguagem arquitetônica híbrida; os limites impedem que vire tagging. Gravadas com a versão (imutáveis
+   como a especificação, BR-013/021).
+3. **Atributos da versão do Concept** (colunas novas, opcionais): `summary` (≤ 160), `guests_max`, `suites`,
+   `built_area_m2` (inteiros positivos). Versões antigas ficam sem eles; o dado ausente esconde a linha e o filtro.
+4. **Mídia do Concept** (`concept_media`): zero ou uma capa pública vigente por Concept, com ciclo próprio — `alt`
+   (obrigatório), `credit` (metadado editorial, nunca EXIF), foco (`crop_x`/`crop_y` nos passos das classes
+   `lx-crop-*`), estado pendente → aprovada → retirada; só a aprovada é pública; uma capa nova aprovada substitui a
+   vigente e retirar a capa tira o destaque. A capa não é exigida para publicar o Concept (sem capa: fallback tipográfico
+   do Core, nunca destaque). **PostgreSQL = metadados e estado; Supabase Storage privado = binários** (ADR-0015, decisão
+   final do checkpoint B): o banco guarda a referência de cada versão (`storage_key`), dimensões, MIME, tamanho e
+   SHA-256; o Storage guarda um master sanitizado (até 4096 px) e as larguras de exibição (480/800/1200/1600, sem
+   ampliar). Entrega por uma rota do próprio domínio, só para mídia aprovada de Concept público, sem mudar a CSP; upload
+   no Admin com MFA, conteúdo real JPEG/PNG/WebP, até 3 MiB e 40 MP, mínimo 720 × 520 px (o maior quadro da Coleção em
+   1×), orientação corrigida e reencode sem metadados. STRIDE em `docs/security/threats/catalog.md`.
+5. **Curadoria** (`concept_curation`, mutável e auditada): `rank` (ordem "Curadoria Luxtory") separado de `featured`
+   (destaque editorial explícito, no máximo um Concept por vez; só vale com capa aprovada).
+6. **Valor de referência da Edition, versionado** (`edition_reference_value`, só inserção): `edition_id`, `basis`
+   (`owner` = a Second Home inteira, `acao` = uma Ação Co-Owner; compatível com a modalidade da Edition), `amount_minor`
+   (`bigint`) + `currency` (TECH-033), `valid_from`, `valid_until` opcional; sem vigências sobrepostas por série
+   (Edition + base + moeda). No Admin: início agora ou no futuro, nunca retroativo; um valor futuro não encerra o atual
+   antes da sua data de início — na entrada em vigor do novo, o anterior termina; "Encerrar" vale a partir de agora;
+   nada histórico é sobrescrito. Backfill técnico, se um dia for preciso, não é funcionalidade do Admin.
+   Vigente = `valid_from ≤ agora` e sem fim vencido. Registrado pela Luxtory, nunca calculado (BR-031, REQ-094). Nada
+   de valor para Concept sem Edition.
+7. **Leitura pública**: `anon` passa a ler os vocabulários ativos em uso, as classificações e atributos da versão
+   vigente, a capa aprovada e os valores vigentes. Busca, filtros e ordenação rodam no servidor sobre a leitura pública
+   (camada `application`, funções puras testáveis) — o catálogo é curado (dezenas de Concepts); se crescer para
+   milhares, passam a SQL sem mudar a interface.
+8. **Admin**: contratos no `openapi.yaml` no início da Fase B (vocabulários, classificações e atributos na criação da
+   versão, mídia, curadoria, valores de referência), antes de qualquer handler.
+
+**Fase B — entregue (2026-10-07; checkpoint B aprovado com ajustes, já aplicados).** Contratos no `openapi.yaml` antes dos handlers; cinco
+migrations reversíveis (`catalog_term` + atributos e classificações da versão; `concept_media` + `concept_media_file`;
+`concept_curation`; `edition_reference_value`; leitura `anon`). Regras gravadas no banco, além dos commands: só rótulo e
+estado ativo do termo mudam; classificação só com termo ativo e versão não aprovada; ciclo da capa
+pendente → aprovada → retirada com zero ou uma capa aprovada por Concept; no máximo um destaque e só com capa aprovada;
+valor de referência sem vigências sobrepostas por série e com um único encerramento; slug único por vocabulário,
+imutável e nunca reutilizado (o termo desativado continua dono dele). Recusas próprias: conteúdo que não é JPEG, PNG ou
+WebP, acima de 40 MP ou menor que 720 × 520 px, ou valor que começaria no passado → `ERR_VALIDATION` dentro do command
+(ADR-0015); base
+incompatível com a modalidade, destaque sem capa, termo desativado → `ERR_STATE_TRANSITION`. Aprovar uma capa nova retira
+a anterior ("Substituída por nova capa"); retirar a capa tira o destaque; registrar um valor encerra o vigente em aberto da
+mesma base no início do novo. Telas do Admin: Vocabulários da Coleção (lista, registro, renomear/desativar); Coleção na
+versão (lifestyle 1–3 e estilo 1–2 por seleção, resumo, pessoas, suítes, área — pré-preenchidos da versão mais recente);
+Capa (envio, pré-visualização `data:`, aprovação, retirada com motivo); Curadoria; Valores de referência na Edition
+(registro, encerramento). Leitura pública: `PublicCollectionReader` e as funções puras `parseCollectionQuery`,
+`discoverCollection` e `collectionFacets`, que a Fase C usa sem mudar. Parâmetros da URL da Coleção (estáveis): `q`,
+`lifestyle` e `estilo` (slugs, repetíveis), `regiao`, `pessoas`, `base` (`owner` | `co-owner`), `valor-de` e
+`valor-ate` (reais inteiros), `suites`, `area-de`, `area-ate`, `modalidade` (`owner` | `co-owner`), `com-edition=1`,
+`marca` (id da Brand Partner) e `ordem` (`curadoria` | `recentes`); valor inválido é ignorado. A página pública não mudou.
+
+**Fase C — implementada (2026-10-07, aguardando o Checkpoint Visual final).** `/colecao` sobre a leitura pública e as
+funções da Fase B, no Core (`styles/core/collection.css`; design-system §13.10, "Coleção"). Header da Home (logo + menu
+pelo ícone), sólido. Busca: formulário GET no servidor; parâmetro vazio, repetido ou fora de ordem redireciona para a URL
+estável (os chips, a ordenação e "Limpar filtros" usam a mesma forma). Facetas em `<details>` nativos, cada uma com
+"Aplicar" — sem JS funcionam em qualquer largura; com JS, o celular abre os mesmos campos num `<dialog>` em tela cheia
+("Filtros (n)", "Ver resultados" e "Limpar" fixos). "Mais filtros" mostra só a contagem de filtros avançados ativos.
+Ordenação como links ("Curadoria Luxtory" · "Mais recentes") no cabeçalho dos resultados, em todas as larguras — um campo
+só, sem duplicar a ordem na linha do celular. Barra fixa do desktop (lg+), que aparece só depois que a barra do Hero sai
+da tela: a busca e um grupo com as facetas ("Valor" no lugar de "Faixa de valor"; só o rótulo numa linha e, quando
+ativa, a quantidade — "Lifestyle (2)"), "Filtros (n)" (leva aos chips) e "Explorar a Coleção"; o grupo fica ao lado da
+busca quando cabe e numa segunda linha quando não (a busca guarda espaço para a dica curta numa linha). Os chips dos
+filtros ativos e "Limpar filtros" ficam no cabeçalho dos resultados (na barra, cortariam). Estados:
+sem resultado (frase + "Limpar filtros"), catálogo vazio e leitura indisponível (sem a barra; a jornada e o fechamento
+continuam; o fechamento sem "Refinar a busca"). Âncoras `#home-editions`/`#home-concepts` preservadas (também nos
+grupos de Localização). O botão "Filtros (n)" fixo no rodapé do celular (P2) não entrou: o botão do Hero já mostra a
+contagem e a barra não conflita com a viewport.
+
+**Checkpoint Visual final — decisões do fundador (2026-10-07), aplicadas.** (1) Chips só no cabeçalho dos resultados; a
+barra fixa mantém os controles e "Filtros (n)". (2) Ordenação como dois links no cabeçalho dos resultados em todas as
+larguras: a opção atual tem `aria-current`, ícone de check, peso semibold e fio inferior (não depende só de cor); foco
+visível do Core; a URL guarda `ordem`. (3) Dica da busca responsiva, sem reduzir a fonte: "Busque por lifestyle,
+destino, Home Concept ou Brand Partner" no Hero a partir de lg; "Lifestyle, destino, Concept ou marca" no celular, no
+tablet e na barra fixa (onde a longa seria cortada). (4) Sem "Filtros" fixo no rodapé do celular. Mídia — elegibilidade
+por quadro: toda capa aprovada (≥ 720 × 520) serve ao card; o destaque editorial (≈ 720 × 480 a 1440, 3:2) em DPR 2 pede
+uma largura de exibição ≥ 1440 × 960 px, derivada das dimensões guardadas e sem ampliar (`supportsFeatured`): a curadoria
+recusa destacar capa menor (`ERR_STATE_TRANSITION`), aprovar capa menor tira o destaque, e a leitura só abre o destaque
+com capa elegível; o Admin mostra "Uso na Coleção" na capa e o motivo na curadoria. Ajustes da validação: no diálogo do
+celular, "Faixa de valor" e "Mais filtros" aparecem como títulos de grupo (o mesmo nome do desktop); num card com várias
+Editions, as que atendem à região/modalidade/faixa de valor da busca vêm primeiro.
+
+**Fases.** A — este brief, o contrato e os mockups (checkpoint). B — migrations reversíveis, Admin, leitura pública,
+mídia e as funções de busca/filtro, com testes unitários e de banco; a página pública não muda (checkpoint com dados
+semeados). C — a `/colecao` final, responsiva, com estados, acessibilidade e E2E (busca, filtros, valor em duas etapas,
+estados, âncoras da Home, REQ-020/022/100/103); Checkpoint Visual → PR → CI → merge → deploy → smoke. Insumos da
+Luxtory: termos dos vocabulários, capas oficiais (P-1), valores de referência e curadoria.
+
+**Mockups e dados.** O rótulo "Mockup — conteúdo, imagens e valores de exemplo" existe só no artifact de revisão e
+nunca entra na página; nenhum dado fictício dos mockups vira seed de produção (os seeds de E2E e de desenvolvimento são
+de teste e nunca rodam contra produção).
+
+**Fora do escopo.** Design & Build como caminho alternativo à Edition e estimativa de valor de Concept sem Edition (exigem
+nova versão do `02`); amenidades (sem vocabulário); formulário de interesse (W6, ⛔ P-3).

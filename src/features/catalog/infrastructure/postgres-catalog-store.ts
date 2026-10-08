@@ -1,5 +1,6 @@
 import type { DatabaseTransaction } from '@/features/platform';
 import type { CatalogStore } from '../application/ports';
+import { postgresCollectionStore } from './postgres-collection-store';
 import {
   toBrandPartner,
   toConcept,
@@ -8,12 +9,27 @@ import {
   toInvestorAuthorization,
 } from './rows';
 
+type Tx = DatabaseTransaction;
+
+/** Classificações da versão (ordem pela posição; o mapeador separa por vocabulário). */
+function versionTerms(tx: Tx, versionId: string) {
+  return tx
+    .selectFrom('app.concept_version_term')
+    .select(['term_id', 'kind', 'position'])
+    .where('concept_version_id', '=', versionId)
+    .orderBy('kind')
+    .orderBy('position')
+    .execute();
+}
+
 /**
  * Persistência do catálogo como `luxtory_app`, na transação do command (ADR-0006; RLS só para o papel). Travas
  * (ADR-0010 §8): `share` → `FOR SHARE` (verificar um uso; vários ao mesmo tempo); `exclusive` → `FOR NO KEY UPDATE`
  * (mudar o estado ou serializar versões sem bloquear as FKs que referenciam a linha).
  */
 export const postgresCatalogStore: CatalogStore<DatabaseTransaction> = {
+  ...postgresCollectionStore,
+
   async brandPartner(tx, id, lock) {
     let query = tx.selectFrom('app.brand_partner').selectAll().where('id', '=', id);
     query = lock === 'share' ? query.forShare() : query.forNoKeyUpdate();
@@ -36,7 +52,7 @@ export const postgresCatalogStore: CatalogStore<DatabaseTransaction> = {
       .selectAll()
       .where('id', '=', id)
       .executeTakeFirst();
-    return row === undefined ? null : toConceptVersion(row);
+    return row === undefined ? null : toConceptVersion(row, await versionTerms(tx, row.id));
   },
 
   async latestVersionNumber(tx, conceptId) {
@@ -57,7 +73,7 @@ export const postgresCatalogStore: CatalogStore<DatabaseTransaction> = {
       .orderBy('version', 'desc')
       .limit(1)
       .executeTakeFirst();
-    return row === undefined ? null : toConceptVersion(row);
+    return row === undefined ? null : toConceptVersion(row, await versionTerms(tx, row.id));
   },
 
   async edition(tx, id) {
@@ -137,10 +153,34 @@ export const postgresCatalogStore: CatalogStore<DatabaseTransaction> = {
         essential_elements: [...version.essentialElements],
         preservation_premises: [...version.preservationPremises],
         specification: version.specification,
+        summary: version.attributes.summary,
+        guests_max: version.attributes.guestsMax,
+        suites: version.attributes.suites,
+        built_area_m2: version.attributes.builtAreaM2,
         state: version.state,
         operation_id: version.operationId,
         created_at: version.createdAt,
       })
+      .execute();
+    const terms = [
+      ...version.lifestyleIds.map((termId, index) => ({ termId, index, kind: 'lifestyle' })),
+      ...version.architecturalStyleIds.map((termId, index) => ({
+        termId,
+        index,
+        kind: 'architectural_style',
+      })),
+    ];
+    if (terms.length === 0) return;
+    await tx
+      .insertInto('app.concept_version_term')
+      .values(
+        terms.map(({ termId, index, kind }) => ({
+          concept_version_id: version.id,
+          term_id: termId,
+          kind,
+          position: index + 1,
+        })),
+      )
       .execute();
   },
 
@@ -158,7 +198,7 @@ export const postgresCatalogStore: CatalogStore<DatabaseTransaction> = {
       .where('id', '=', id)
       .returningAll()
       .executeTakeFirstOrThrow();
-    return toConceptVersion(row);
+    return toConceptVersion(row, await versionTerms(tx, row.id));
   },
 
   async insertInvestorAuthorization(tx, authorization) {

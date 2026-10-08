@@ -80,7 +80,13 @@ export function TextField({
   state,
   multiline = false,
   maxLength,
-}: FieldProps & { readonly multiline?: boolean; readonly maxLength: number }) {
+  inputMode,
+}: FieldProps & {
+  readonly multiline?: boolean;
+  readonly maxLength: number;
+  /** Teclado do celular para números (`numeric`) ou valores com vírgula (`decimal`). */
+  readonly inputMode?: 'numeric' | 'decimal';
+}) {
   const id = `${form}-${name}`;
   const error = state.fieldErrors[name];
   const common = {
@@ -103,7 +109,13 @@ export function TextField({
       {multiline ? (
         <textarea className="lx-textarea" rows={6} {...common} />
       ) : (
-        <input className="lx-input" type="text" autoComplete="off" {...common} />
+        <input
+          className="lx-input"
+          type="text"
+          autoComplete="off"
+          inputMode={inputMode}
+          {...common}
+        />
       )}
       <FieldError id={id} code={error} />
     </div>
@@ -164,12 +176,16 @@ export function ChoiceField({
   );
 }
 
-/** Seleção nativa (`lx-select`): opções vindas dos dados, nenhuma pré-escolhida (TECH-001). */
+/**
+ * Seleção nativa (`lx-select`): opções vindas dos dados, nenhuma pré-escolhida (TECH-001). Opcional: a opção vazia
+ * (`placeholder`) é uma escolha válida.
+ */
 export function SelectField({
   form,
   name,
   label,
   hint,
+  optional,
   state,
   placeholder,
   options,
@@ -178,7 +194,7 @@ export function SelectField({
   const error = state.fieldErrors[name];
   return (
     <div className="lx-field">
-      <Label id={id} label={label} />
+      <Label id={id} label={label} optional={optional} />
       {hint === undefined ? null : (
         <p className="lx-hint" id={`${id}-hint`}>
           {hint}
@@ -190,11 +206,11 @@ export function SelectField({
           id={id}
           name={name}
           defaultValue={state.values[name] ?? ''}
-          required
+          required={optional !== true}
           aria-invalid={error === undefined ? undefined : true}
           aria-describedby={describedBy(id, hint !== undefined, error !== undefined)}
         >
-          <option value="" disabled>
+          <option value="" disabled={optional !== true}>
             {placeholder}
           </option>
           {options.map((option) => (
@@ -207,6 +223,53 @@ export function SelectField({
       <FieldError id={id} code={error} />
     </div>
   );
+}
+
+/** Arquivo (`lx-input` nativo): o envio vai pela Server Action como `multipart`; nada é lido no navegador. */
+export function FileField({
+  form,
+  name,
+  label,
+  hint,
+  state,
+  accept,
+}: FieldProps & { readonly accept: string }) {
+  const id = `${form}-${name}`;
+  const error = state.fieldErrors[name];
+  return (
+    <div className="lx-field">
+      <Label id={id} label={label} />
+      {hint === undefined ? null : (
+        <p className="lx-hint" id={`${id}-hint`}>
+          {hint}
+        </p>
+      )}
+      <input
+        className="lx-input"
+        id={id}
+        name={name}
+        type="file"
+        accept={accept}
+        required
+        aria-invalid={error === undefined ? undefined : true}
+        aria-describedby={describedBy(id, hint !== undefined, error !== undefined)}
+      />
+      <FieldError id={id} code={error} />
+    </div>
+  );
+}
+
+/** Erro de um grupo de campos (ex.: termos repetidos), fora de qualquer controle. */
+export function GroupError({
+  id,
+  state,
+  name,
+}: {
+  readonly id: string;
+  readonly state: FormState;
+  readonly name: string;
+}) {
+  return <FieldError id={id} code={state.fieldErrors[name]} />;
 }
 
 /** Instante local digitado no dispositivo → ISO 8601 com deslocamento (o navegador conhece o próprio fuso). */

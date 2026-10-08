@@ -7,6 +7,7 @@ import {
   createVersionAction,
   registerConceptAction,
 } from './actions';
+import { VersionCollectionFields, type TermOptions } from './collection-forms';
 import { FormActions, FormAlert, TextField } from './fields';
 import { initialFormState, type FormState } from './form-state';
 import { messages } from './i18n/pt-br';
@@ -60,9 +61,11 @@ function VersionContent({ form, state }: { readonly form: string; readonly state
 export function ConceptForm({
   brandPartnerId,
   idempotencyKey,
+  terms,
 }: {
   readonly brandPartnerId: string;
   readonly idempotencyKey: string;
+  readonly terms: TermOptions;
 }) {
   const [state, action] = useActionState(registerConceptAction, initialFormState(idempotencyKey));
   return (
@@ -79,6 +82,7 @@ export function ConceptForm({
         state={state}
       />
       <VersionContent form="concept" state={state} />
+      <VersionCollectionFields form="concept" state={state} terms={terms} />
       <FormActions
         submit={messages.newConcept.submit}
         cancelHref={paths.brandPartner(brandPartnerId)}
@@ -92,10 +96,12 @@ export function VersionForm({
   conceptId,
   idempotencyKey,
   initial,
+  terms,
 }: {
   readonly conceptId: string;
   readonly idempotencyKey: string;
   readonly initial: Readonly<Record<string, string>>;
+  readonly terms: TermOptions;
 }) {
   const [state, action] = useActionState(
     createVersionAction,
@@ -106,6 +112,7 @@ export function VersionForm({
       <FormAlert state={state} />
       <input type="hidden" name="concept_id" value={conceptId} />
       <VersionContent form="version" state={state} />
+      <VersionCollectionFields form="version" state={state} terms={terms} />
       <FormActions submit={messages.newVersion.submit} cancelHref={paths.concept(conceptId)} />
     </form>
   );

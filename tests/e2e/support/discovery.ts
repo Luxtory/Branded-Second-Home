@@ -22,6 +22,11 @@ export interface CatalogSeed {
   readonly coOwnerOnly: SeededConcept;
   /** Não públicos: marca sem exposição (BR-015), encerramento eficaz (BR-021), sem versão aprovada (REQ-096). */
   readonly hidden: readonly SeededConcept[];
+  /** Coleção (spec catalog §13.12): capa aprovada e pendente de Casa Alpendre. */
+  readonly collection: {
+    readonly approvedCoverId: string;
+    readonly pendingCoverId: string;
+  };
 }
 
 export function readSeed(): CatalogSeed {

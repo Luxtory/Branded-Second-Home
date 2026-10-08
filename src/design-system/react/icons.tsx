@@ -7,6 +7,7 @@ export const ICON_PATHS = {
   check: ['M4 12.5l5 5L20 6.5'],
   'arrow-right': ['M3 12h17M14 6l6 6-6 6'],
   'arrow-down': ['M12 3v17M6 14l6 6 6-6'],
+  'arrow-up': ['M12 21V4M6 10l6-6 6 6'],
   'chevron-left': ['M15 5l-7 7 7 7'],
   'chevron-right': ['M9 5l7 7-7 7'],
   pause: ['M8 5v14M16 5v14'],
