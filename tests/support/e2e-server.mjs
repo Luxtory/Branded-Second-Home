@@ -2,6 +2,9 @@
 // com autenticação de teste (`AUTH_MODE=test`, nunca na Vercel). Uso: node tests/support/e2e-server.mjs <porta>.
 import { spawn } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { migrateUp } from '../../scripts/lib/dbmate.mjs';
 import { applySupabaseCompat, createDatabase, withClient } from '../../scripts/lib/pg.mjs';
 import { startPostgresProcess } from '../../scripts/lib/postgres-process.mjs';
@@ -68,6 +71,9 @@ try {
       COMMAND_MAX_ATTEMPTS: '3',
       COMMAND_LOCK_TIMEOUT_MS: '5000',
       OUTBOX_BATCH_SIZE: '100',
+      // Mídia do catálogo em diretório local descartável (ADR-0015; `local` é recusado na Vercel).
+      MEDIA_STORAGE: 'local',
+      MEDIA_LOCAL_DIR: mkdtempSync(join(tmpdir(), 'luxtory-e2e-media-')),
       // Vazio = ausente para a aplicação, e impede que um arquivo `.env*` local o defina.
       VERCEL_ENV: '',
     },

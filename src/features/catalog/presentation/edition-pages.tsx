@@ -17,6 +17,7 @@ import {
   StatusNotice,
 } from './catalog-page';
 import { readCatalog } from './catalog-read';
+import { ReferenceValuesSection } from './collection-pages';
 import { CATALOG_ROLE } from './handlers';
 import { messages } from './i18n/pt-br';
 import { Instant } from './instant';
@@ -55,7 +56,8 @@ export async function EditionPage({
   if ('page' in loaded) return loaded.page;
   const { session, detail } = loaded;
   const { edition, concept } = detail;
-  const allowed = canRegister(detail, systemClock.now());
+  const now = systemClock.now();
+  const allowed = canRegister(detail, now);
   return (
     <CatalogPage session={session}>
       <PageHeader
@@ -75,6 +77,7 @@ export async function EditionPage({
       <Section id="edition-conditions" title={text.conditionsTitle}>
         <p className="lx-body">{edition.commercialConditions}</p>
       </Section>
+      <ReferenceValuesSection detail={detail} now={now} inUse={isBrandInUse(detail.partner, now)} />
       <Section id="edition-residences" title={text.residencesTitle}>
         {detail.residences.length === 0 ? (
           <Empty message={text.residencesEmpty} />

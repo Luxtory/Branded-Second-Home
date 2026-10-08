@@ -6,8 +6,9 @@ import {
 } from '@/features/identity/infrastructure/auth/test-auth-gateway';
 import { createCatalogRoutes } from '@/features/catalog/presentation/api-routes';
 import { withRoute, type Database } from '@/features/platform';
-import { CONTENT } from '../../../support/catalog-fixtures';
+import { CONTENT, testImage } from '../../../support/catalog-fixtures';
 import { captureLogger } from '../../../support/capture-logger';
+import { memoryMediaStorage } from '../../../support/media-storage';
 import { responseValidator, schemaValidator } from '../../../support/openapi';
 import { appDatabase } from '../../../support/platform-fixtures';
 import { createTestDatabase, type TestDatabase } from '../../../support/test-database';
@@ -19,6 +20,7 @@ const STAFF = '00000000-0000-4000-8000-0000000000f1';
 const SUPER_ONLY = '00000000-0000-4000-8000-0000000000f2';
 const source = { AUTH_MODE: 'test', COMMAND_MAX_ATTEMPTS: '3', COMMAND_LOCK_TIMEOUT_MS: '5000' };
 const validError = schemaValidator('Error');
+const media = memoryMediaStorage();
 
 type Routes = ReturnType<typeof createCatalogRoutes>;
 type RouteName = keyof Routes;
@@ -51,7 +53,7 @@ describe('POST /v1/admin/* do catálogo (TECH-050, TECH-100, contrato OpenAPI)',
     body: unknown,
     options: { id?: string; headers?: Record<string, string>; key?: string } = {},
   ) {
-    const routes = createCatalogRoutes({ source, clock, database: () => db, afterCommit });
+    const routes = createCatalogRoutes({ source, clock, database: () => db, afterCommit, media });
     const { logger } = captureLogger();
     const request = new Request(`${ORIGIN}/v1/admin/x`, {
       method: 'POST',
@@ -182,6 +184,98 @@ describe('POST /v1/admin/* do catálogo (TECH-050, TECH-100, contrato OpenAPI)',
     );
     expect(rows).toEqual([{ role: 'admin', ref: 'staff_role:' }]);
     expect(afterCommit).toHaveBeenCalled();
+  });
+
+  it('[REQ-020] [REQ-103] as operações da Coleção pela API respondem conforme o OpenAPI (spec catalog §13.12)', async () => {
+    const term = await created('createCatalogTerm', '/admin/catalog-terms', {
+      kind: 'lifestyle',
+      label: 'Natureza',
+    });
+    expect(term).toMatchObject({ slug: 'natureza', active: true });
+    const style = await created('createCatalogTerm', '/admin/catalog-terms', {
+      kind: 'architectural_style',
+      label: 'Contemporâneo',
+    });
+    await created(
+      'updateCatalogTerm',
+      '/admin/catalog-terms/{id}',
+      { label: 'Contemporâneo brasileiro', active: true },
+      style.id,
+      200,
+    );
+    const partner = await created('registerBrandPartner', '/admin/brand-partners', {
+      brand_name: 'Maison Coleção',
+    });
+    const version = await created('createConceptVersion', '/admin/concept-versions', {
+      brand_partner_id: partner.id,
+      title: 'Casa Coleção',
+      ...CONTENT,
+      summary: 'Uma casa para longas temporadas.',
+      guests_max: 8,
+      suites: 4,
+      built_area_m2: 420,
+      lifestyle_ids: [term.id],
+      architectural_style_ids: [style.id],
+    });
+    expect(version).toMatchObject({ lifestyle_ids: [term.id], guests_max: 8 });
+    await created(
+      'approveConceptVersion',
+      '/admin/concept-versions/{id}/approve',
+      { approval_refs: ['Ata'] },
+      version.id,
+      200,
+    );
+    const media = await created(
+      'uploadConceptCover',
+      '/admin/concepts/{id}/cover',
+      { image: await testImage(), alt: 'Fachada', credit: 'Estúdio Luz', crop_x: 65, crop_y: 50 },
+      version.concept_id,
+    );
+    expect(media).toMatchObject({ state: 'pending', credit: 'Estúdio Luz' });
+    await created('approveConceptMedia', '/admin/concept-media/{id}/approve', {}, media.id, 200);
+    const curation = await created(
+      'setConceptCuration',
+      '/admin/concepts/{id}/curation',
+      { rank: 1, featured: true },
+      version.concept_id,
+      200,
+    );
+    expect(curation).toMatchObject({ rank: 1, featured: true });
+    const edition = await created('createEdition', '/admin/editions', {
+      concept_id: version.concept_id,
+      region: 'Trancoso, BA',
+      modality: 'owner_and_co_owner',
+      commercial_conditions: 'Condições.',
+    });
+    const value = await created(
+      'registerEditionReferenceValue',
+      '/admin/editions/{id}/reference-values',
+      { basis: 'acao', amount_minor: 600_000_000, currency: 'BRL' },
+      edition.id,
+    );
+    expect(value).toMatchObject({ basis: 'acao', amount_minor: 600_000_000, valid_until: null });
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    await created(
+      'endEditionReferenceValue',
+      '/admin/edition-reference-values/{id}/end',
+      {},
+      value.id,
+      200,
+    );
+    await created(
+      'withdrawConceptMedia',
+      '/admin/concept-media/{id}/withdraw',
+      { withdrawal_basis: 'Nova sessão de fotos' },
+      media.id,
+      200,
+    );
+    const invalidImage = await call(
+      'uploadConceptCover',
+      { image: Buffer.from('texto').toString('base64'), alt: 'x', crop_x: 50, crop_y: 50 },
+      { id: version.concept_id },
+    );
+    expect(invalidImage.status).toBe(400);
+    await expect(invalidImage.json()).resolves.toMatchObject({ code: 'ERR_VALIDATION' });
   });
 
   it('[TECH-056] erros no schema Error: id malformado → 400, inexistente → 404, estado → 409; replay marcado', async () => {
