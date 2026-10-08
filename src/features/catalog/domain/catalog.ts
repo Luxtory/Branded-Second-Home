@@ -42,6 +42,13 @@ export interface ConceptVersionApproval {
   readonly approvalOperationId: string;
 }
 
+export interface ConceptVersionAttributes {
+  readonly summary: string | null;
+  readonly guestsMax: number | null;
+  readonly suites: number | null;
+  readonly builtAreaM2: number | null;
+}
+
 export interface ConceptVersion {
   readonly id: string;
   readonly conceptId: string;
@@ -49,6 +56,11 @@ export interface ConceptVersion {
   readonly essentialElements: readonly string[];
   readonly preservationPremises: readonly string[];
   readonly specification: string;
+  /** Atributos da Coleção (spec §13.12): opcionais, gravados com a versão e imutáveis como o resto do conteúdo. */
+  readonly attributes: ConceptVersionAttributes;
+  /** Ids dos termos de `lifestyle` (até 3) e `architectural_style` (até 2), em ordem; o primeiro é o principal. */
+  readonly lifestyleIds: readonly string[];
+  readonly architecturalStyleIds: readonly string[];
   readonly state: ConceptVersionState;
   readonly approval: ConceptVersionApproval | null;
   readonly operationId: string;

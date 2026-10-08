@@ -6,6 +6,12 @@ import type {
   InvestorAuthorization,
   Residence,
 } from '../domain/catalog';
+import type {
+  CatalogTerm,
+  ConceptCuration,
+  ConceptMedia,
+  EditionReferenceValue,
+} from '../domain/collection';
 
 /** Visões das telas do Admin (leitura; nenhuma decisão de negócio sai daqui — o command revalida tudo). */
 export interface BrandPartnerSummary {
@@ -41,6 +47,11 @@ export interface ConceptDetail {
   readonly versions: readonly ConceptVersion[];
   readonly editions: readonly EditionSummary[];
   readonly investorAuthorizations: readonly InvestorAuthorization[];
+  /** Capas do Concept, da mais recente para a mais antiga (spec §13.12). */
+  readonly media: readonly ConceptMedia[];
+  readonly curation: ConceptCuration | null;
+  /** Todos os termos dos vocabulários: rótulos das classificações e opções (ativas) da versão nova. */
+  readonly terms: readonly CatalogTerm[];
 }
 
 export interface ResidenceSummary {
@@ -55,6 +66,8 @@ export interface EditionDetail {
   readonly currentVersion: ConceptVersion | null;
   readonly residences: readonly ResidenceSummary[];
   readonly investorAuthorizations: readonly InvestorAuthorization[];
+  /** Valores de referência de todas as bases, do mais recente para o mais antigo (spec §13.12). */
+  readonly referenceValues: readonly EditionReferenceValue[];
 }
 
 export interface ResidenceDetail {
@@ -66,6 +79,14 @@ export interface ResidenceDetail {
   readonly investorAuthorization: InvestorAuthorization | null;
 }
 
+/** Menor largura de exibição de uma capa (qualquer estado), para a pré-visualização do Admin; o objeto fica no Storage. */
+export interface MediaPreview {
+  readonly contentType: string;
+  readonly storageKey: string;
+  readonly width: number;
+  readonly height: number;
+}
+
 /** Leituras do Admin sobre o catálogo, numa transação que também grava o `admin_read` (TECH-092). */
 export interface CatalogReader<Db> {
   brandPartners(db: Db): Promise<readonly BrandPartnerSummary[]>;
@@ -73,4 +94,6 @@ export interface CatalogReader<Db> {
   concept(db: Db, id: string): Promise<ConceptDetail | null>;
   edition(db: Db, id: string): Promise<EditionDetail | null>;
   residence(db: Db, id: string): Promise<ResidenceDetail | null>;
+  terms(db: Db): Promise<readonly CatalogTerm[]>;
+  mediaPreview(db: Db, mediaId: string): Promise<MediaPreview | null>;
 }

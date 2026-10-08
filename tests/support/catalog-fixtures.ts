@@ -1,9 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import type pg from 'pg';
+import sharp from 'sharp';
 import { expect, vi } from 'vitest';
 import { createCatalogHandlers } from '@/features/catalog/application/handlers';
 import type { EditionModality } from '@/features/catalog/domain/catalog';
+import type { CatalogTermKind, ReferenceValueBasis } from '@/features/catalog/domain/collection';
 import { postgresCatalogStore } from '@/features/catalog/infrastructure/postgres-catalog-store';
+import { sharpCoverProcessor } from '@/features/catalog/infrastructure/sharp-cover-processor';
+import { memoryMediaStorage } from './media-storage';
 import {
   commandRegistry,
   createPostgresCommandStore,
@@ -32,6 +36,45 @@ export const CONTENT = {
   specification: 'Especificação para implantação replicável e apresentação comercial.',
 } as const;
 
+export interface TestImageOptions {
+  readonly width?: number;
+  readonly height?: number;
+  readonly format?: 'jpeg' | 'png' | 'webp' | 'gif';
+  /** Orientação EXIF (6 = girar 90°): a imagem fica "deitada" nos pixels, em pé para quem respeita o EXIF. */
+  readonly orientation?: number;
+  /** Grava EXIF (autor, direitos, local) para provar que o reencode remove os metadados. */
+  readonly exif?: boolean;
+}
+
+const DEFAULT_IMAGE = { width: 1600, height: 1200 } as const;
+
+/** Imagem de teste gerada pelo `sharp` (nenhum binário no repositório), em base64. */
+export async function testImage(options: TestImageOptions = {}): Promise<string> {
+  const { width = DEFAULT_IMAGE.width, height = DEFAULT_IMAGE.height, format = 'jpeg' } = options;
+  let image = sharp({
+    create: { width, height, channels: 3, background: { r: 15, g: 78, b: 103 } },
+  });
+  if (options.exif === true) {
+    image = image.withExif({
+      IFD0: { Artist: 'Fotógrafa da casa', Copyright: 'Luxtory', ImageDescription: 'Trancoso, BA' },
+    });
+  }
+  if (options.orientation !== undefined)
+    image = image.withMetadata({ orientation: options.orientation });
+  const encoded =
+    format === 'png'
+      ? image.png()
+      : format === 'webp'
+        ? image.webp()
+        : format === 'gif'
+          ? image.gif()
+          : image.jpeg();
+  return (await encoded.toBuffer()).toString('base64');
+}
+
+let defaultImage: Promise<string> | null = null;
+const coverImage = () => (defaultImage ??= testImage());
+
 /** Relógio controlável (TECH-110): o instante do command é o do `Clock`, nunca o do banco. */
 export function controlledClock(start: Date) {
   let current = start;
@@ -47,7 +90,12 @@ export function controlledClock(start: Date) {
 }
 
 /** Executor real (PostgreSQL, idempotência, auditoria) com o registro de produção e os handlers do catálogo. */
-export function catalogHarness(db: Database, clock: { now(): Date }, lockTimeoutMs = 5_000) {
+export function catalogHarness(
+  db: Database,
+  clock: { now(): Date },
+  lockTimeoutMs = 5_000,
+  media = memoryMediaStorage(),
+) {
   const executor = createCommandExecutor({
     store: createPostgresCommandStore(db),
     guard: allowAll,
@@ -58,6 +106,8 @@ export function catalogHarness(db: Database, clock: { now(): Date }, lockTimeout
   });
   const handlers = createCatalogHandlers<DatabaseTransaction>({
     store: postgresCatalogStore,
+    images: sharpCoverProcessor,
+    media,
     newId: randomUUID,
   });
 
@@ -123,6 +173,30 @@ export function catalogHarness(db: Database, clock: { now(): Date }, lockTimeout
           ? {}
           : { investor_authorization_id: investorAuthorizationId }),
       }),
+    term: (kind: CatalogTermKind, label: string) => ok(handlers.createCatalogTerm, { kind, label }),
+    cover: async (conceptId: string, image?: string) =>
+      ok(handlers.uploadConceptCover, {
+        concept_id: conceptId,
+        image: image ?? (await coverImage()),
+        alt: 'Fachada em pedra ao entardecer',
+        crop_x: 50,
+        crop_y: 35,
+      }),
+    approveCover: (mediaId: string) =>
+      ok(handlers.approveConceptMedia, { concept_media_id: mediaId }),
+    referenceValue: (
+      editionId: string,
+      basis: ReferenceValueBasis,
+      amountMinor: number,
+      validFrom?: Date,
+    ) =>
+      ok(handlers.registerEditionReferenceValue, {
+        edition_id: editionId,
+        basis,
+        amount_minor: amountMinor,
+        currency: 'BRL',
+        ...(validFrom === undefined ? {} : { valid_from: validFrom.toISOString() }),
+      }),
     /** Brand Partner → Concept (versão 1 aprovada) → Edition. */
     async approvedEdition(modality: EditionModality = 'owner_and_co_owner') {
       const partner = await build.brandPartner();
@@ -133,7 +207,7 @@ export function catalogHarness(db: Database, clock: { now(): Date }, lockTimeout
     },
   };
 
-  return { executor, handlers, run, ok, build };
+  return { executor, handlers, run, ok, build, media };
 }
 
 export function expectRejected(outcome: CommandOutcome<unknown>, code: ErrorCode): void {

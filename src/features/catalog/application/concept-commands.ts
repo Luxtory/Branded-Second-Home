@@ -1,5 +1,6 @@
-import type { AuditRecord, CommandHandler } from '@/features/platform';
+import { CommandRejection, type AuditRecord, type CommandHandler } from '@/features/platform';
 import { canApprove, type Concept, type ConceptVersion } from '../domain/catalog';
+import type { CatalogTermKind } from '../domain/collection';
 import {
   type CatalogDependencies,
   found,
@@ -15,10 +16,7 @@ import {
 } from './inputs';
 import { conceptResult, conceptVersionResult, type ConceptVersionResult } from './results';
 
-type VersionContent = Pick<
-  CreateConceptVersionInput,
-  'essential_elements' | 'preservation_premises' | 'specification'
->;
+type VersionContent = Omit<CreateConceptVersionInput, 'brand_partner_id' | 'title' | 'concept_id'>;
 
 function newVersion(
   id: string,
@@ -35,6 +33,14 @@ function newVersion(
     essentialElements: content.essential_elements,
     preservationPremises: content.preservation_premises,
     specification: content.specification,
+    attributes: {
+      summary: content.summary ?? null,
+      guestsMax: content.guests_max ?? null,
+      suites: content.suites ?? null,
+      builtAreaM2: content.built_area_m2 ?? null,
+    },
+    lifestyleIds: content.lifestyle_ids ?? [],
+    architecturalStyleIds: content.architectural_style_ids ?? [],
     state: 'not_approved',
     approval: null,
     operationId,
@@ -48,6 +54,32 @@ const versionAudit = (version: ConceptVersion, concept: Concept): AuditRecord =>
   before: null,
   after: conceptVersionResult(version, concept),
 });
+
+/**
+ * Classificações da versão (spec §13.12): cada id é um termo do vocabulário da posição (senão `ERR_NOT_FOUND`) e ativo
+ * (senão `ERR_STATE_TRANSITION`). A trava `share` impede a desativação concorrente até o commit.
+ */
+async function requireActiveTerms<Tx>(
+  deps: CatalogDependencies<Tx>,
+  tx: Tx,
+  content: VersionContent,
+): Promise<void> {
+  const wanted: readonly (readonly [string, CatalogTermKind])[] = [
+    ...(content.lifestyle_ids ?? []).map((id) => [id, 'lifestyle'] as const),
+    ...(content.architectural_style_ids ?? []).map((id) => [id, 'architectural_style'] as const),
+  ];
+  if (wanted.length === 0) return;
+  const terms = await deps.store.catalogTerms(
+    tx,
+    wanted.map(([id]) => id),
+    'share',
+  );
+  for (const [id, kind] of wanted) {
+    const term = terms.find((candidate) => candidate.id === id && candidate.kind === kind);
+    if (term === undefined) throw new CommandRejection('ERR_NOT_FOUND');
+    requireState(term.active);
+  }
+}
 
 /**
  * `create_concept_version` (BR-013, BR-014): sem `concept_id`, registra o Concept com a versão 1; com `concept_id`, a
@@ -83,6 +115,7 @@ export function createConceptVersionHandler<Tx>(
           after: conceptResult(concept),
         });
       }
+      await requireActiveTerms(deps, tx, input);
       const version = newVersion(deps.newId(), concept.id, number, input, operationId, now);
       await deps.store.insertConceptVersion(tx, version);
       audit(versionAudit(version, concept));

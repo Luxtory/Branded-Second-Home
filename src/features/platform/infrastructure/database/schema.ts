@@ -70,6 +70,16 @@ export interface AppBrandPartner {
   termination_registered_at: Timestamp | null;
 }
 
+export interface AppCatalogTerm {
+  active: boolean;
+  created_at: Timestamp;
+  id: string;
+  kind: string;
+  label: string;
+  operation_id: string;
+  slug: string;
+}
+
 export interface AppConcept {
   brand_partner_id: string;
   created_at: Timestamp;
@@ -78,21 +88,71 @@ export interface AppConcept {
   title: string;
 }
 
+export interface AppConceptCuration {
+  concept_id: string;
+  featured: boolean;
+  operation_id: string;
+  rank: number | null;
+  updated_at: Timestamp;
+}
+
+export interface AppConceptMedia {
+  alt: string;
+  approval_operation_id: string | null;
+  approved_at: Timestamp | null;
+  approved_by_user_id: string | null;
+  approved_role: string | null;
+  concept_id: string;
+  created_at: Timestamp;
+  credit: string | null;
+  crop_x: number;
+  crop_y: number;
+  id: string;
+  operation_id: string;
+  source_sha256: string;
+  state: string;
+  withdrawal_basis: string | null;
+  withdrawal_operation_id: string | null;
+  withdrawn_at: Timestamp | null;
+}
+
+export interface AppConceptMediaFile {
+  byte_size: number;
+  content_type: string;
+  height: number;
+  media_id: string;
+  role: string;
+  sha256: string;
+  storage_key: string;
+  width: number;
+}
+
 export interface AppConceptVersion {
   approval_operation_id: string | null;
   approval_refs: string[] | null;
   approved_at: Timestamp | null;
   approved_by_user_id: string | null;
   approved_role: string | null;
+  built_area_m2: number | null;
   concept_id: string;
   created_at: Timestamp;
   essential_elements: string[];
+  guests_max: number | null;
   id: string;
   operation_id: string;
   preservation_premises: string[];
   specification: string;
   state: string;
+  suites: number | null;
+  summary: string | null;
   version: number;
+}
+
+export interface AppConceptVersionTerm {
+  concept_version_id: string;
+  kind: string;
+  position: number;
+  term_id: string;
 }
 
 export interface AppEdition {
@@ -103,6 +163,20 @@ export interface AppEdition {
   modality: string;
   operation_id: string;
   region: string;
+}
+
+export interface AppEditionReferenceValue {
+  amount_minor: Int8;
+  basis: string;
+  created_at: Timestamp;
+  currency: string;
+  edition_id: string;
+  id: string;
+  operation_id: string;
+  registered_by_user_id: string;
+  registered_role: string;
+  valid_from: Timestamp;
+  valid_until: Timestamp | null;
 }
 
 export interface AppIdempotencyRecord {
@@ -199,9 +273,15 @@ export interface DB {
   'app.audit_log': AppAuditLog;
   'app.authorization_grant': AppAuthorizationGrant;
   'app.brand_partner': AppBrandPartner;
+  'app.catalog_term': AppCatalogTerm;
   'app.concept': AppConcept;
+  'app.concept_curation': AppConceptCuration;
+  'app.concept_media': AppConceptMedia;
+  'app.concept_media_file': AppConceptMediaFile;
   'app.concept_version': AppConceptVersion;
+  'app.concept_version_term': AppConceptVersionTerm;
   'app.edition': AppEdition;
+  'app.edition_reference_value': AppEditionReferenceValue;
   'app.idempotency_record': AppIdempotencyRecord;
   'app.investor_authorization': AppInvestorAuthorization;
   'app.notification': AppNotification;

@@ -111,6 +111,15 @@ export const NON_CRITICAL_OPERATIONS: readonly CommandSpec[] = [
   nonCritical('revoke_investor_authorization', 'catalog'),
   nonCritical('create_edition', 'catalog'),
   nonCritical('register_residence', 'catalog'),
+  // Coleção (Wave 4.1, spec catalog §13.12): vocabulários, capa, curadoria e valores de referência.
+  nonCritical('create_catalog_term', 'catalog'),
+  nonCritical('update_catalog_term', 'catalog'),
+  nonCritical('upload_concept_cover', 'catalog'),
+  nonCritical('approve_concept_media', 'catalog'),
+  nonCritical('withdraw_concept_media', 'catalog'),
+  nonCritical('set_concept_curation', 'catalog'),
+  nonCritical('register_edition_reference_value', 'catalog'),
+  nonCritical('end_edition_reference_value', 'catalog'),
 ];
 
 export class CommandRegistryError extends Error {
