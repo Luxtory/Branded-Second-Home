@@ -31,8 +31,8 @@ conflict, 01 prevails (BR-380, REQ-104).
 | Doc | Path | Defines | IDs |
 |---|---|---|---|
 | 01 — Business Model & Business Rules v10.1 | `docs/specs/canonical/01-business-model-business-rules.md` | what the business is; structural rules | 188 `BR-xxx` |
-| 02 — Product Spec v4.1 | `docs/specs/canonical/02-product-spec.md` | functional behavior, invariants, product decisions | 63 `REQ-xxx` · 6 `INV-n` · 11 `PD-xxx` |
-| 03 — Technical Spec v3.13 | `docs/specs/canonical/03-technical-spec.md` | how to build: data model, locks, ledgers, API, QA | 49 `TECH-xxx` · `ADR-001…008` |
+| 02 — Product Spec v4.2 | `docs/specs/canonical/02-product-spec.md` | functional behavior, invariants, product decisions | 65 `REQ-xxx` · 6 `INV-n` · 11 `PD-xxx` |
+| 03 — Technical Spec v3.14 | `docs/specs/canonical/03-technical-spec.md` | how to build: data model, locks, ledgers, API, QA | 51 `TECH-xxx` · `ADR-001…008` |
 
 - **Never edit them.** Changes only via a new version issued by Luxtory, followed by impact
   analysis and traceability update.
@@ -47,7 +47,7 @@ conflict, 01 prevails (BR-380, REQ-104).
 - **Guardrails** = 03 §13 — read before every wave. **Terminology** = 02 §1: a Co-Owner holds an
   **Ação** with **Direito de Uso**; never "cota" (or derivatives) and never "diária(s)" for
   Co-Owner (REQ-100); no promise of guaranteed return, appreciation, liquidity or income (REQ-101).
-- **Gate:** 63/63 REQ · 11/11 PD · 6/6 INV covered by tests (03 §12).
+- **Gate:** 65/65 REQ · 11/11 PD · 6/6 INV covered by tests (03 §12).
 
 ## Instance constraints (Luxtory)
 
@@ -125,8 +125,8 @@ page:
   objection answers by ID, page map and register — is `b2c.md`; cross-journey guardrails in `luxtory.md` §4.
 - **Brand Partners:** the canonical source is `docs/specs/communication/framework-brand-partners.md` — the Luxtory
   Brand Partners Framework, frozen (verbatim, sha256-pinned). Its application — canonical limits L1–L10, objection
-  answers by ID, page map and register — is `brand-partners.md`. Pages and CTA wait for a Brand Partners surface in
-  the 02 (`P-BP-01`).
+  answers by ID, page map and register — is `brand-partners.md`. `P-BP-01` is resolved by 02 v4.2 (REQ-028);
+  the BP1 functional contract is in `docs/specs/catalog.md` §14. The planned portal remains outside BP1 (REQ-029).
 - Mentor, personality and tone come from each journey's Framework; `luxtory.md` keeps only cross-journey guardrails
   (§4), facts (§5) and naming (§6). The generic `framework-mestre.md` is superseded and applies to no journey.
 - Facts come only from 01/02/03, cited by ID; only **approved** decisions are used; hypotheses and pending items are

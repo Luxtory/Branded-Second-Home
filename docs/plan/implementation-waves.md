@@ -4,9 +4,10 @@
 > Derivado com `/waves`. O plano original do template foi preservado verbatim no
 > [Anexo A](#anexo-a--plano-do-template-concluído).
 >
-> Specs-fonte do plano Luxtory: canônicos `01` v10.1 → `02` v4.1 → `03` v3.13 (`docs/specs/canonical/`,
+> Specs-fonte do plano Luxtory: canônicos `01` v10.1 → `02` v4.2 → `03` v3.14 (`docs/specs/canonical/`,
 > congelados). Plano W0–W30 aprovado em 2026-09-25 e revisado com evidência no mesmo dia (achados F1–F20, ver
 > "Registro da revisão"). As seções **Design System (DS)** (concluída) e **Anexo A** abaixo permanecem inalteradas.
+> Repriorização aprovada pelo fundador em BP0 (2026-10-09): [catalog §14](../specs/catalog.md#14-discovery-público-b2b-brand-partners-bp1).
 
 ## Plano Luxtory — W0…W30
 
@@ -26,8 +27,18 @@
 
 ### Regras de execução
 
+- **Prioridade vigente (BP0, 2026-10-09):** W4.1 concluída; restante do B2C deliberadamente pausado, incluindo
+  W5–W30 e migrações de UI CP3–CP5. BP0 → BP1 é o caminho até prospecção. BP2 é capacidade planejada com critérios
+  de entrada, sem antecipar W7/W8. A pausa não remove requisitos nem altera as dependências históricas abaixo.
+  REQ-028 pertence à BP1; REQ-029 à BP2. Total atual: 65 REQ · 11 PD · 6 INV · 51 TECH.
+- **Exceção documental BP0 autorizada:** contratos em `02`/`03`, `catalog` §14, aplicação de comunicação e
+  roadmap; sincronização mínima da governança/índice e dos ponteiros vigentes. Sem alterar `01`/Frameworks ou
+  código. Gates documentais e, no checkpoint final solicitado pelo fundador, uma execução de `npm run verify`,
+  sem E2E. Parar **antes de commit/push**; a regra de PR/CI/merge abaixo vale quando a entrega prosseguir.
+  BP0 não declara REQ-028/029 implementados.
 - Ordem de releases (`CLAUDE.md`): R1 → R2 → R3 → R4. Uma wave só começa depois da última wave do release
-  anterior, salvo paralelismo marcado. W0–W2 são a base do R1, com a W2B (fundação de UI de produto) antes da W3.
+  anterior, salvo paralelismo marcado e a prioridade BP aprovada acima. W0–W2 são a base do R1, com a W2B
+  (fundação de UI de produto) antes da W3.
 - 1 wave = 1 branch `feat/w<n>-<slug>` = 1 PR (draft → CI verde → squash, Conventional Commits).
 - **Dona** de um ID = a wave que entrega o comportamento decisivo e o teste nomeado. Waves posteriores só
   acrescentam casos à mesma suíte.
@@ -61,7 +72,10 @@
 | 3C | Framework B2C como fonte canônica da comunicação B2C (ADR-0012) | docs + catalog (domain) | — | 3B | — | R1 | ✅ |
 | 3D | Framework Brand Partners como fonte canônica da comunicação Brand Partners (ADR-0013) | docs + catalog (domain) | — | 3C | — | R1 | ✅ |
 | 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3, 3C | — | R1 | ✅ (CP2, #32, `ba1dc8d`) |
-| 4.1 | Coleção: discovery curatorial (dados, Admin, mídia, filtros, página final) | catalog | complementa REQ-020, REQ-022 | 4 | — | R1 | 🟡 Fase C |
+| 4.1 | Coleção: discovery curatorial (dados, Admin, mídia, filtros, página final) | catalog | complementa REQ-020, REQ-022 | 4 | — | R1 | ✅ (#36, `3c26d60`; Production confirmada pelo fundador) |
+| BP0 | Product Gate, contratos públicos e portal planejado | docs | — (especifica REQ-028/029) | 4.1 | — | B2B | 🟡 Checkpoint documental; sem commit/push |
+| BP1 | Home + Como funciona + formulário Resend, QA e publicação | catalog, platform (Core DS) | REQ-028 | BP0 | — | B2B | ⬜ implementação não iniciada |
+| BP2 | Portal autenticado read-only com dados reais da própria parceria | identity, catalog, ownership | REQ-029 | BP0, critérios de entrada; representação/fatos canônicos de W7/W8 | — | B2B | ⛔ critérios de entrada ainda não satisfeitos |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ |
 | 6 | Interesse — formulário público | ownership | — | 4, 5 | — | R1 | ⛔ P-3 |
 | 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ |
@@ -89,7 +103,11 @@
 | 29 | Conformidade e parceiros | catalog | REQ-021, REQ-038, REQ-091 | 27 | — | R4 | ⬜ |
 | 30 | Hardening e gate final | platform | REQ-097 | 28, 29 | — | R4 | ⬜ |
 
-Paralelismo: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
+**Status B2C:** todas as linhas W5–W30 estão pausadas por decisão de prioridade; seus símbolos anteriores
+registram a prontidão técnica, não autorização para executar. CP3–CP5 também aguardam retomada explícita.
+Referências históricas em W3B/W3D/W4 a `P-BP-01` bloqueada descrevem aquelas entregas; a resolução vigente é BP0.
+
+Paralelismo na retomada do B2C: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
 canal do AsyncAPI, telas e `CHANGELOG.md`, e o STRIDE do beacon. A W10 toca migrations de `calendar`/`inventory`,
 a entrada `open_exercise` em `vercel.json` e no registro de jobs, e o port de alerta; não tem tela, endpoint,
 pacote novo nem entrada de CHANGELOG. Nenhum arquivo em comum. Todas as outras waves são sequenciais porque
@@ -517,6 +535,7 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 
 ### Wave 4.1 — Coleção: discovery curatorial (2026-10-07)
 
+- **Status:** concluída em `main` (#36, `3c26d60`); Production confirmada pelo fundador na repriorização BP0.
 - **Goal**: a `/colecao` final como discovery curatorial (spec `catalog.md` §13.12, `D-B2C-21`), sem fase visual
   intermediária: os checkpoints convergem para uma única experiência.
 - **IDs**: REQ-020, REQ-022, REQ-100, REQ-103 (complementa a W4). **TECH**: TECH-002, TECH-033, TECH-100.
@@ -527,6 +546,70 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   **C** página final, estados, responsividade, acessibilidade e E2E → Checkpoint Visual → PR → CI → merge → deploy.
 - **Depends on / parallel with**: W4 (✅); sequencial; não toca Auth, Admin de outros módulos nem Club.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-020,REQ-022,REQ-100,REQ-103 exits 0, stop after 3 tries`
+
+### BP0 — Product Gate + contratos (2026-10-09)
+
+- **Goal:** tornar BP1 implementável sem decisões materiais inventadas e registrar BP2 como evolução planejada.
+- **Scope:** `02` v4.2 (REQ-028/029), `03` v3.14 (TECH-057/058),
+  `docs/specs/communication/brand-partners.md`, `docs/specs/catalog.md` §14 e este roadmap; sincronização mínima
+  de `AGENTS.md`, `CLAUDE.md`, `docs/specs/README.md` e ponteiros vigentes em `communication.md`. Sem novo ADR.
+  REQ-028 resolve `P-BP-01`; `P-BP-02` permanece aberta e não bloqueia BP1.
+- **Depends on / parallel with:** W4.1; sequencial. Escopo e execução documental autorizados pelo fundador.
+- **Acceptance criteria:** rotas/CTA, briefs, campos, submissão, privacidade, envio/abuso/idempotência/falhas,
+  fronteiras do portal e sua entrada definidos; rastreabilidade atualizada; `01` e Framework inalterados;
+  nenhum código, migration, dependência ou contrato executável alterado.
+- **Gate documental:** `git diff --check`; testes existentes de comunicação e rastreabilidade, mais o teste do
+  registro que lê `03`; conferência de links/IDs/contagens e integridade dos arquivos protegidos; uma execução
+  final de `npm run verify`, sem E2E (instrução do fundador no checkpoint final).
+  `npm run trace -- --gate` é alvo global do produto, não aceite de BP0.
+- **Checkpoint:** revisar diff e divergências, parar antes de commit/push. BP1 não começa nesta execução.
+
+### BP1 — Brand Partners Public MVP
+
+- **Goal:** Luxtory apta a prospectar com `/brand-partner`, `/brand-partner/como-funciona` e formulário funcional
+  na Home. **IDs (dona):** REQ-028. **TECH:** TECH-057, TECH-056, TECH-100, TECH-110.
+- **Contrato/briefs:** [catalog §14](../specs/catalog.md#14-discovery-público-b2b-brand-partners-bp1); D-BP-13.
+- **Scope (slices/files):**
+  - OpenAPI em `docs/api/openapi.yaml` antes do handler; `POST /v1/brand-partner-contacts`, público, sem conta.
+  - Rotas/layout B2B em `src/app`; apresentação/i18n, use case, port de envio e adapter Resend em `catalog`;
+    rate limit distribuído/configuração e códigos de erro em `platform`; reuso do `SiteShell` e Core DS.
+  - Validação server-side, honeypot, limite por origem/global via Upstash, secrets server-side, PII fora dos logs,
+    idempotência do provedor, sucesso só com aceite e falha controlada. Sem persistência do contato, outbox ou CRM.
+  - `src/proxy.ts`: restringir exclusão de prefixo `brand` aos assets reais de branding; `/brand-partner/**`
+    passa pelo proxy e recebe CSP/nonce. Preservar CSP dos logos, com teste específico. Correção somente na BP1.
+  - Configuração de ambientes e envio no runbook `docs/how-to/operacao.md`; dependências Upstash pelo fluxo normal;
+    testes unitários/contrato/E2E, responsividade, acessibilidade e SEO. Sem migrations ou refatoração B2C.
+- **Sequência:** OpenAPI + testes → endpoint/proteção/envio → formulário e páginas → Checkpoint Visual → gates
+  → publicação por CI → smoke real. Preparação de configuração e revisão de comunicação podem avançar em paralelo.
+- **Depends on / parallel with:** BP0; sequencial. P-LX-03 não bloqueia implementação técnica; é gate de
+  comunicação antes do go-live das afirmações abrangidas. W7/W8, portal e `P-BP-02` não bloqueiam BP1.
+- **Acceptance criteria:** `catalog` §14.7; só os cinco campos aprovados, CTA com destino funcional, navegação B2B,
+  validação/abuso/falhas/retry testados, nenhum payload nos logs, nenhum contato no banco/Redis/browser;
+  axe 0 a 390/1440 px, sem overflow 320–1920 px, fluxo por teclado/touch, CSP nas duas páginas, SEO próprio.
+- **Gates de go-live:** caixa/remetente/credenciais, limites técnicos, acesso e retenção definidos operacionalmente,
+  validação jurídica aplicável, copy/visual aprovados, P-LX-03 e smoke com dados sintéticos recebidos na caixa real.
+  Privacidade: propósito do REQ-028, sem consentimento de marketing inventado; Preview com destino de teste.
+- **Goal command:** `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-028,TECH-057 exits 0, stop after 3 tries`
+- **Checkpoints:** visual antes de push; depois PR draft/CI verde antes de merge; publicação e smoke conforme
+  autorização da BP1. REQ-029 não pode ser declarado implementado por esses gates.
+
+### BP2 — Portal Brand Partner (evolução planejada)
+
+- **Goal:** representantes autorizados acompanham dados reais da própria parceria; primeiro recorte autenticado,
+  read-only: vendas/aquisições atribuíveis à marca e Concepts/Editions relevantes.
+- **IDs (dona):** REQ-029. **TECH:** TECH-050, TECH-052, TECH-058, TECH-100.
+- **Entrada obrigatória:** Brand Partner real/necessidade concreta; evento canônico de venda; fonte verificável;
+  atribuição à marca; campos visíveis; representação usuário → party → marca; autorização/revogação; isolamento
+  A × B especificado e testável por autorização/RLS. Contrato conceitual em REQ-029/TECH-058.
+- **Dependências:** estruturas canônicas de W7 e fonte de aquisições de W8 no domínio atual; não antecipar essas
+  waves por causa de BP1, nem duplicar suas entidades. Escopo executivo derivado dos processos/dados reais quando
+  todos os critérios forem atendidos; sem rota, migration, permissões ou integração comercial inventadas agora.
+- **Acceptance criteria futura:** fonte indisponível ≠ zero vendas; guard + RLS da própria marca comprovados,
+  revogação e campos permitidos, sem papéis de staff para parceiros nem acesso decorrente do formulário.
+- **Fora do recorte:** métricas financeiras, royalties, settlement e novos indicadores sem autorização/fonte.
+  W19 só passa a dependência se um requisito financeiro real exigir.
+- **Checkpoint:** confirmar os oito critérios antes de autorizar implementação; não existe Goal command de
+  execução antecipada. Isolamento implementado/testado é gate de disponibilização, não código exigido na BP0.
 
 ### Wave 5 — Interesse (núcleo)
 
@@ -988,9 +1071,12 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 - **Depends on / parallel with**: W28, W29 e D2; sequencial (última).
 - **Acceptance criteria**: `[TECH-092] commits concorrentes → um selo por evento e cadeia válida` · `[REQ-097] todo
   evento listado sai pelo outbox, sem duplicata; Titular sem Membership recebe os de calendário` · conciliação sem
-  divergência · migrations up/down · `npm run trace -- --gate` = 63/63 REQ · 11/11 PD · 6/6 INV · 13/13 EC · 12/12
+  divergência · migrations up/down · `npm run trace -- --gate` = 65/65 REQ · 11/11 PD · 6/6 INV · 13/13 EC · 12/12
   CONC.
-- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0, npm run trace -- --expect REQ-097 exits 0, and npm run trace -- --gate reports 63/63 REQ, 11/11 PD, 6/6 INV, 13/13 edge cases and 12/12 concurrency pairs, stop after 5 tries`
+- **Gate global após BP0:** a aprovação integral também depende das entregas BP1/REQ-028 e BP2/REQ-029.
+  Enquanto BP2 estiver condicionada, o gate global permanece incompleto; não antecipar o portal para satisfazê-lo.
+  Esse gate não bloqueia o marco de prospecção BP1.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0, npm run trace -- --expect REQ-097 exits 0, and npm run trace -- --gate reports 65/65 REQ, 11/11 PD, 6/6 INV, 13/13 edge cases and 12/12 concurrency pairs, stop after 5 tries`
 
 ### Matriz de cobertura (uma wave dona por ID)
 
@@ -1000,6 +1086,8 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 | W2 | REQ-014 | — | — |
 | W3 | REQ-020, REQ-027 | — | — |
 | W4 | REQ-100, REQ-101 | — | — |
+| BP1 | REQ-028 | — | — |
+| BP2 (planejada) | REQ-029 | — | — |
 | W5 | REQ-023 | — | — |
 | W8 | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026 | PD-003 | — |
 | W9 | — | PD-011 | — |
@@ -1025,7 +1113,8 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 | W29 | REQ-021, REQ-038, REQ-091 | — | — |
 | W30 | REQ-097 | — | — |
 
-**Total: 63/63 REQ · 11/11 PD · 6/6 INV.** W0, W6 e W7 não são donas de REQ; justificam-se por TECH-010/011/100/110,
+**Total planejado: 65/65 REQ · 11/11 PD · 6/6 INV.** BP0 só especifica; BP1/BP2 ainda não entregam cobertura de software.
+W0, W6 e W7 não são donas de REQ; justificam-se por TECH-010/011/100/110,
 pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 
 - **Complementos** (acrescentam casos à suíte da dona): REQ-022, REQ-024 e REQ-025 em W5, W6 e W10 · REQ-027 em W8 e
@@ -1055,7 +1144,7 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 | P-7 | Antecedência do aviso de expiração próxima de Créditos (REQ-097) | só esse aviso (W17) | não emitido até a definição (TECH-001); o gate o registra como bloqueado |
 | P-8 | Regras de exposição de marca por Brand Partner (BR-015) | nenhuma wave | exposição e `ConceptCredit` só com autorização registrada |
 | P-9 | SMTP próprio (D4) — **resolvida em 2026-09-27**: SMTP customizado do Supabase Auth com Resend | go-live do login de Titulares (W7) | SMTP padrão do Supabase só envia a membros da org; notificações dentro do app. Resolvida: o login por código envia pelo Resend (credencial só no Supabase, nunca no repositório) |
-| P-10 | Banco Upstash Redis + envs (`NOTES.md`) | go-live das escritas públicas (W5, W6) | sem Redis a escrita pública é recusada; testes com fake |
+| P-10 | Banco Upstash Redis + envs (`NOTES.md`) | go-live das escritas públicas (W5, W6) e do formulário BP1 | sem Redis a escrita pública/envio é recusada; testes com fake |
 | P-11 | **Lacuna normativa**: o `02` exige cancelamento de Request aceita, Direct, Luxplus e locação pela política (PD-006, PD-009, REQ-082), mas a tabela fechada do TECH-051 só tem `cancel_own_use_booking` | cancelamento pelo usuário nesses mecanismos (W18, W22–W25) | nenhum command criado; avaliação só no domínio; no-show e exceção seguem pelos commands existentes; exige nova versão do `03` (D6) |
 
 ### Riscos
