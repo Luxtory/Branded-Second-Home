@@ -9,6 +9,7 @@ leitura pública (Discovery), a W8 a configuração da Residence, a trava da est
 Edition, e a W29 a conformidade (REQ-021, BR-020). Decisões: [ADR-0010](../adr/0010-catalogo-versoes-e-mutacoes-do-admin.md).
 A leitura pública da W4 (Discovery B2C) está na [§13](#13-discovery-público-b2c-w4); decisões técnicas em
 [ADR-0014](../adr/0014-discovery-publico-leitura-anonima-csp-e-publicacao.md).
+A entrega pública B2B Brand Partners (BP1) está na [§14](#14-discovery-público-b2b-brand-partners-bp1).
 
 ## 1. Goal
 
@@ -768,3 +769,163 @@ de teste e nunca rodam contra produção).
 
 **Fora do escopo.** Design & Build como caminho alternativo à Edition e estimativa de valor de Concept sem Edition (exigem
 nova versão do `02`); amenidades (sem vocabulário); formulário de interesse (W6, ⛔ P-3).
+
+## 14. Discovery público B2B Brand Partners (BP1)
+
+Contrato BP0 aprovado pelo fundador (2026-10-09); BP1 não implementada. Comportamento e limites:
+[`02` REQ-028](canonical/02-product-spec.md#61-jornada-brand-partners); arquitetura:
+[`03` TECH-057](canonical/03-technical-spec.md#61-brand-partners-público-e-fronteira-do-portal).
+Comunicação: [aplicação Brand Partners](communication/brand-partners.md), D-BP-11/12/13 e L1–L10;
+narrativa: [Framework congelado](communication/framework-brand-partners.md) §12; forma:
+[Core DS §15](../reference/design-system.md#15-core-design-system--uso-cp1-2026-10-06).
+O portal permanece exclusivamente nos contratos futuros REQ-029/TECH-058 e na BP2 do
+[roadmap](../plan/implementation-waves.md); não integra esta seção nem condiciona BP1.
+
+### 14.1 Jornada, navegação e publicação
+
+| Rota | Conteúdo | Destino do CTA do REQ-028 |
+|---|---|---|
+| `/brand-partner` | Home + formulário | `#conversa` |
+| `/brand-partner/como-funciona` | Processo, papéis e governança | `/brand-partner#conversa` |
+
+`SiteShell` com `homeHref`/navegação B2B próprios, grupo de rotas/layout independente; logo, menu e footer só
+levam a destinos B2B disponíveis. Sem links de Concepts pendente ou portal; não reutilizar CTA por disponibilidade
+do catálogo B2C nem formulário Admin. Se `/Brand-Partner` tiver uso/divulgação, redirect 308 para a Home canônica.
+
+Flag server-side `BRAND_PARTNERS_SITE=open|closed`, independente de `PUBLIC_SITE`: ausente/fechada em produção
+→ páginas e endpoint retornam 404. Publicação exige formulário funcional. Preview não indexável; produção aberta
+com canonical, title, description e metadados sociais por página, sem dados estruturados de prova inexistente.
+As páginas não dependem de consulta ao catálogo nem da quantidade de marcas cadastradas.
+
+### 14.2 Briefs funcionais
+
+Mapa e conscientização: [aplicação §7](communication/brand-partners.md#7-jornada-e-5ps).
+**Home:** aplicar integralmente o Brief Narrativo do Framework §12; PICTURE é o Hero.
+Seções em ordem, com mensagens como intenção (copy final em i18n):
+
+| Seção | Pergunta / mensagem-chave | Fonte | Peso e composição Core |
+|---|---|---|---|
+| PICTURE | “Como nossa marca poderia ser vivida?” / expressão residencial do universo da marca | Framework §8 P1/§12; BR-013/014 | Emoção; headline e frame tipográfico com hierarquia ampla |
+| PROBLEM | “Como expandir sem diluir?” / complexidade e identidade | Framework §8 P2; BR-010/014 | Explicação curta; statement editorial |
+| PROMISE | “Que estrutura permite esse progresso?” / DNA como origem do Concept | Framework §8 P3; BR-013/014 | Emoção + explicação; composição editorial |
+| PROOF | “Como funciona e como se protege?” / mecanismo e governança | Framework §8 P4/§12; aplicação L1–L9 | Evidência + explicação; sequência numerada e blocos; link para Como funciona |
+| PUSH + conversa | “Faz sentido para nossa marca?” / fit e próximo passo | Framework §8 P5; REQ-028; D-BP-13 | CTA e formulário em `white` ou `wash`, nunca estados/formulário sobre `sand` |
+
+**Como funciona:** Brand Partner interessada na oferta, disposição Aberta; Product Aware → Most Aware.
+Objetivo: compreender o processo e avaliar fit. PROOF → PUSH, sem repetir os três primeiros Ps da Home.
+MCR contextual: confiança para avaliar identidade, governança e responsabilidades (Framework §6.1/§12);
+SEEKING, Intelecto + Assertividade e tom institucional do Framework §12. Próximo passo/CTA iguais aos da Home.
+
+| Seção | Pergunta / mensagem-chave | Fonte | Peso e composição Core |
+|---|---|---|---|
+| Abertura + mecanismo | “Qual é o percurso?” / percurso Brand DNA → Concept e demais etapas | Framework §8 P4; REQ-020/022 | Explicação; título e sequência numerada, sem reiniciar PICTURE |
+| Governança | “Como o DNA e os direitos são preservados?” / aprovações e versão vinculada | REQ-021; aplicação L2–L4 | Evidência; blocos editoriais |
+| Papéis, demanda e remuneração | “Quem faz o quê?” / responsabilidades e remuneração contratual | BR-016/030/040/041/350; aplicação L1/L5/L7 | Explicação + evidência; papéis comparáveis |
+| Replicação, continuidade e objeções | “O que condiciona a expansão e a continuidade?” | aplicação L6/L8 e §5 | Evidência; FAQ/padrões Core |
+| PUSH | “Qual é o primeiro passo?” / avaliação de fit | REQ-028; D-BP-12/13 | CTA para formulário da Home; sem duplicá-lo ou criar terceira página |
+
+Dados ausentes não viram prova: usar frames tipográficos; fotografia, marcas, Concepts reais e demais evidências
+exigem autorização e fonte (aplicação L9, P-LX-01/02). Não publicar instrumentos privados. Narrar Concepts não
+equivale à página pendente em P-BP-02. Aceite editorial: limites L1–L10, seis testes/regras do Framework §13/14,
+checklist de `communication.md` §10 e Checkpoint Visual da BP1. P-LX-03 é gate de comunicação antes do go-live
+das afirmações abrangidas, sem bloquear implementação técnica.
+
+### 14.3 Entrada do formulário
+
+`POST /v1/brand-partner-contacts`, público (`security: []`), JSON; `Idempotency-Key` UUID por tentativa lógica.
+Zod no servidor e o mesmo contrato no browser para feedback. Corpo até 32 KiB efetivos, mesmo sem
+`Content-Length`; schema fechado, sem propriedades extras ou anexos. Limites de caracteres em pontos de código
+Unicode após trim. Campos autorizados pelo REQ-028:
+
+| Campo JSON | Rótulo | Validação |
+|---|---|---|
+| `name` | Nome | Obrigatório, 1–120 caracteres |
+| `brand` | Marca | Obrigatório, 1–200 caracteres |
+| `email` | E-mail | Obrigatório, válido, até 254 caracteres, sem CR/LF; não exigir domínio corporativo |
+| `message` | Mensagem | Obrigatório, 1–4.000 caracteres; texto simples, preservando quebras de linha |
+| `website` | Site da marca | Opcional, vazio = ausente; HTTP/HTTPS até 500 caracteres, sem credenciais; nunca acessado pelo servidor |
+| `_trap` | Sem campo de negócio | Honeypot técnico, ausente/vazio; preenchido → recusa sem envio |
+
+Honeypot fora do teclado/árvore acessível, sem interferir no preenchimento assistido. A aplicação não armazena
+o contato em cookie, localStorage, sessionStorage, URL ou analytics. Não acrescentar campos/consentimentos ao REQ-028.
+
+### 14.4 Processamento e respostas
+
+Aplicar TECH-057: publicação/configuração → origem e limite de corpo → schema/honeypot/proteção distribuída →
+envio → resposta. O limitador protege também tentativas rejeitadas; honeypot não produz falso sucesso.
+Origem comparada ao domínio permitido por ambiente, nunca `Host` arbitrário; recusar ausente/indevida e CORS
+permissivo. Limites por origem de rede e global; IP de metadado confiável da plataforma, pseudonimizado por HMAC
+com segredo separado e TTL na chave Redis, sem e-mail como chave. Isso não é anonimização; não logar IP/identificador.
+
+| HTTP | Resultado | Condição |
+|---|---|---|
+| 202 | `{ "status": "accepted" }` | Aceite confirmado pelo Resend, inclusive replay; não comprova entrega na caixa |
+| 400 | `ERR_VALIDATION` | JSON, schema, campos ou chave inválidos |
+| 403 | `ERR_PERMISSION` | Origem indevida/ausente ou honeypot; não revelar a proteção acionada |
+| 404 | `ERR_NOT_FOUND` | Superfície fechada |
+| 409 | `ERR_IDEMPOTENCY_CONFLICT` | Mesma chave, conteúdo diferente na janela do provedor |
+| 413 | `ERR_PAYLOAD_TOO_LARGE` | Corpo acima do limite |
+| 415 | `ERR_UNSUPPORTED_MEDIA_TYPE` | Tipo de conteúdo não aceito |
+| 429 | `ERR_RATE_LIMITED`, `Retry-After` | Limite distribuído excedido |
+| 503 | `ERR_UNAVAILABLE` | Configuração ausente/inválida, limitador indisponível, timeout ou envio sem aceite confirmado |
+| 500 | `ERR_INTERNAL` | Erro inesperado; resposta genérica e log sanitizado |
+
+Erros no schema `Error` existente (`code`, `message` pt-BR/i18n, `correlation_id`); validação de campo pode
+acrescentar somente nomes/códigos, nunca valores. `Cache-Control: no-store`, correlação via `withRoute`.
+BP1 atualiza OpenAPI e códigos/i18n antes do handler; nenhum contrato executável muda em BP0.
+
+### 14.5 Envio, retry e estados
+
+Adapter/port e não persistência seguem TECH-057; proteção em `platform` com bibliotecas Upstash do ADR-0004,
+sem SDK de e-mail obrigatório. Assunto fixo, corpo texto simples e `Reply-To` somente com e-mail validado;
+nenhum HTML fornecido pelo visitante ou URL acessada. Destinos/credenciais não vêm do client.
+
+UUID imprevisível com namespace da aplicação/ambiente no provedor. Retry mantém chave e payload determinístico,
+sem horário/correlação variável no e-mail; conflito não troca chave silenciosamente. Confirmar a janela documentada
+do Resend no runbook da BP1: retries da mesma interação ficam nela; fora dela não há retry automático ou garantia
+de deduplicação. Nova submissão é tentativa explícita. Timeout pode ocorrer após aceite remoto: informar envio
+não confirmado, sem afirmar que não foi enviado; retry usa a mesma chave/conteúdo. Limitação do provedor → 503.
+
+Não repassar input/erros brutos ao logger/`withRoute`. Permitir evento, resultado/código seguro, duração e correlação
+validada; excluir campos, corpo, autenticação, IP, caixa e mensagem/stack contendo payload, conforme TECH-057/100.
+
+Estados: inicial → validação → enviando → aceite confirmado ou erro. Botão “Enviar mensagem” impede concorrência
+na interação; labels, indicação de obrigatório, `aria-describedby`, foco no primeiro erro, resumo acessível e
+região viva. Falha preserva dados/chave só em memória; sucesso limpa campos/encerra tentativa. Feedback segue o
+significado do REQ-028, sem prazo de resposta presumido. Exibir junto ao formulário o propósito literal do REQ-028;
+informação de privacidade, responsáveis, acesso/retenção/descarte sujeitos à validação jurídica antes do go-live.
+
+### 14.6 Configuração e segurança para publicação
+
+BP1 documenta no runbook existente: `RESEND_API_KEY`, `BRAND_PARTNERS_CONTACT_FROM`, `BRAND_PARTNERS_CONTACT_TO`,
+credenciais Upstash, segredo HMAC, domínio permitido e `BRAND_PARTNERS_SITE`. Secrets por TECH-057/100;
+limites por origem/global, janelas, TTLs e timeouts positivos validados, definidos antes do go-live.
+Local/CI usam adapters determinísticos e nunca enviam e-mail real; Preview usa destino de teste, sem credenciais/
+destino de produção; fake recusado em produção. Reavaliar PII no Preview conforme D3 do roadmap, sem banco de
+staging ou infraestrutura antecipada.
+
+STRIDE mínimo, sem novo documento:
+
+| Ameaça | Controle/contrato |
+|---|---|
+| Spoofing | Origem/IP confiáveis (§14.4); e-mail não prova representação (REQ-028) |
+| Tampering | Schema, limites, texto simples e headers de envio controlados (§14.3–5) |
+| Repudiation | Correlação/resultado seguros, sem evento econômico ou auditoria de domínio (TECH-057) |
+| Information disclosure | Dados fora de logs/analytics/storage; secrets server-side; acesso/retenção (TECH-057/100, REQ-028) |
+| Denial of service | Honeypot, corpo/tempo limitados, rate limit distribuído e falha fechada (§14.3–6) |
+| Elevation of privilege | Envio não cria conta, grant, Brand Partner ou vínculo (REQ-028/TECH-057) |
+
+**Proxy — somente na BP1:** restringir a exclusão atual de prefixo `brand` aos assets reais `/brand/logo/...`.
+Páginas `/brand-partner/**` passam pelo proxy com CSP/nonce; preservar CSP própria dos logos. Testar ambas as
+páginas e um asset real. Não incluir API JSON no matcher nem alterar Auth; sem CAPTCHA ou relaxamento de CSP.
+
+### 14.7 Critérios de aceite BP1
+
+| Área | Evidência |
+|---|---|
+| REQ-028/TECH-057 | Rotas/CTA/formulário; validação client/server; rejeição de campos extras e abuso; aceite confirmado; falhas, timeout ambíguo, replay/conflito e janela de retry; nenhuma persistência de contato ou payload/PII nos logs |
+| Apresentação | Navegação B2B; teclado/foco/estados; axe 0 a 390/1440 px; sem overflow 320–1920 px; fluxo principal a 390 px com touch; SEO, CSP/nonce e branding preservados |
+| Publicação | Copy/visual e P-LX-03 para afirmações abrangidas; domínio/remetente, caixa, secrets, proteção, acesso/retenção/privacidade validados; deploy por CI; smoke controlado com dados sintéticos recebidos na caixa corporativa |
+
+Gates e sequência executiva pertencem à BP1 do roadmap. OpenAPI precede o handler; runbook precede go-live.
+Esta seção não autoriza execução de BP1 nem declara cobertura implementada de REQ-028/029.
