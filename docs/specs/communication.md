@@ -99,8 +99,8 @@ arranjo (Framework congelado + aplicação), sem tocar nos demais. Até lá, nad
 - **Jornadas B2C e Brand Partners são separadas:** navegação, CTAs e links de uma nunca levam à outra (`D-LX-01`).
 - **B2C é um único Protagonista:** Owner e Co-Owner são modalidades do mesmo adquirente final (BR-005), com peso
   equivalente (REQ-103).
-- Superfície nova (ex.: páginas e CTA de Brand Partners, que o `02` §2 não prevê) entra no `02` antes do código
-  (`P-BP-01`).
+- Superfície nova entra no `02` antes do código. Brand Partners está autorizada pelo `02` v4.2 §2/REQ-028
+  (`P-BP-01` resolvida); contrato funcional em [`catalog.md` §14](catalog.md#14-discovery-público-b2b-brand-partners-bp1).
 
 ## 7. 5Ps e Design System
 

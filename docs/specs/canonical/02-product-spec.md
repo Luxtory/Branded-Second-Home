@@ -1,6 +1,11 @@
 # 02 — Product Spec — Luxtory Branded Second Home
 
-2026-09-20 · @Someone · Versão 4.1 — final · Base normativa: 01 v10.1 (188 BRs) · PD-001 a PD-011 ratificados
+2026-10-09 · Luxtory (fundador) · Versão 4.2 — final · Base normativa: 01 v10.1 (188 BRs) · PD-001 a PD-011 ratificados
+
+Revisão BP0 autorizada pelo fundador: acrescenta REQ-028 e REQ-029 à v4.1, sem alterar Business Rules,
+PDs ou invariantes. A superfície pública entra na BP1; o portal é capacidade planejada para BP2, condicionada
+aos seus critérios de entrada. Rastreabilidade técnica em `03` v3.14; impacto e aceite em
+[`catalog` §14](../catalog.md#14-discovery-público-b2b-brand-partners-bp1). Total normativo: **65 REQ · 6 INV · 11 PD**.
 
 ## 1. Autoridade, escopo e convenções
 
@@ -39,6 +44,8 @@ Ausência de autorização no `01` **não é lacuna**: o comportamento simplesme
 | Luxtory Club | Luxchange, Luxplus e locação autorizada |
 | Carteira | Créditos Luxchange |
 | Admin | Operação, parâmetros, conformidade e exceções |
+| Brand Partners público (BP1) | Home `/brand-partner`, Como funciona `/brand-partner/como-funciona` e formulário para iniciar conversa com a Luxtory (REQ-028) |
+| Portal Brand Partner (planejado, BP2) | Representantes autorizados consultam informações pertinentes à própria parceria; somente leitura, após os critérios de entrada do REQ-029 |
 
 Existir no modelo de negócio não concede acesso ao software.
 
@@ -130,6 +137,43 @@ Nenhuma jornada, parâmetro ou ação administrativa PODE violá-los. São verif
 **REQ-026 \[BR-070 a BR-073, BR-076, BR-077\]** — Ação, Direito de Uso, reserva e Crédito permanecem objetos distintos. Ações e Direitos de Uso são equivalentes entre os Co-Owners da mesma Residence; administração profissional é obrigatória; despesas seguem a Ação ou regra válida da SPE; adota-se exatamente uma configuração canônica do `01`, imutável por parametrização.
 
 **REQ-027 \[BR-310 a BR-314\]** — O Investor exige autorização registrada, PODE desenvolver antes do adquirente final e comercializar como Owner, Co-Owner ou ambas enquanto a estrutura estiver aberta. Sua margem permanece economicamente própria e o adquirente final segue as mesmas regras Luxtory.
+
+### 6.1. Jornada Brand Partners
+
+**REQ-028 \[BR-010, BR-015, BR-040, BR-041, BR-374\]** — A jornada pública Brand Partners possui Home em
+`/brand-partner` e Como funciona em `/brand-partner/como-funciona`, com navegação B2B própria e sem links para
+a jornada B2C. O CTA **“Explore o potencial residencial da sua marca.”** leva ao formulário da Home
+(`/brand-partner#conversa`). A comunicação segue o Framework Brand Partners, dentro dos limites deste documento
+e do `01`. A página pública de Concepts depende de exposição autorizada e não bloqueia essas duas páginas nem
+o formulário.
+
+O formulário solicita Nome, Marca, E-mail e Mensagem obrigatórios; Site da marca é opcional. Não solicita CNPJ,
+telefone, faturamento, orçamento ou documentos. Envia a solicitação à caixa corporativa da Luxtory, com estados
+acessíveis de validação, envio, sucesso e erro. O sucesso significa aceite do envio pelo provedor, não entrega
+garantida na caixa nem aprovação comercial. Em falha, o visitante pode corrigir ou tentar novamente, sem perder
+os dados da tela; não se afirma sucesso sem aceite.
+
+A submissão inicia conversa ou qualificação estratégica: não constitui parceria, autorização de uso de marca,
+aquisição, promessa de lançamento, criação de conta ou cadastro de Brand Partner. Não cria CRM, histórico de
+contatos ou dashboard de leads na aplicação. O propósito comunicado é: **“Os dados enviados são utilizados para
+responder à solicitação e avaliar uma possível parceria com a Luxtory.”** Não há consentimento de marketing
+presumido nem uso de marketing autorizado por essa submissão. O tratamento pelo serviço de envio e pela caixa
+corporativa permanece sujeito a acesso e retenção definidos operacionalmente antes do go-live e à validação
+jurídica aplicável. Esses parâmetros não impedem a implementação técnica.
+
+**REQ-029 \[BR-010, BR-015, BR-021, BR-022, BR-025\]** — O Portal Brand Partner é capacidade planejada do produto,
+fora da BP1. Permitirá a representantes autenticados e autorizados consultar, somente em leitura, informações
+pertinentes à própria parceria: vendas/aquisições atribuíveis à marca, seus Concepts e Editions relevantes.
+Outros indicadores exigem fonte canônica real e autorização funcional. Não autoriza métricas financeiras,
+royalties ou settlement nesta entrega.
+
+A BP2 só entra em implementação quando existirem: Brand Partner real com necessidade concreta; definição
+canônica do evento de venda/aquisição (unidade, data e estados relevantes); fonte verificável e integrada;
+regra de atribuição à marca; campos visíveis definidos, inclusive eventual exposição necessária de dados do adquirente;
+representação do usuário perante a parte e a Brand Partner; autorização e revogação; e isolamento entre marcas
+especificado de forma testável. Os controles devem ser comprovados antes de disponibilizar o portal.
+Fonte ausente ou indisponível é apresentada como **“dados indisponíveis”**, nunca como “zero vendas”.
+O acesso respeita REQ-014 e os direitos sobreviventes aplicáveis; não decorre do envio do formulário.
 
 ## 7. Direito de Uso, calendário e capacidade
 
@@ -288,28 +332,28 @@ As 188 BRs do `01` v10.1, uma a uma. Serve como mecanismo de auditoria contra om
 | BR-003 | REQ-020 | BR-191 | REQ-053 |
 | BR-004 | REQ-020 | BR-192 | REQ-053, 093, INV-6 |
 | BR-005 | REQ-010 | BR-193 | REQ-053, 093 |
-| BR-010 | REQ-021 | BR-194 | REQ-053, 093 |
+| BR-010 | REQ-021, 028, 029 | BR-194 | REQ-053, 093 |
 | BR-011 | REQ-021 | BR-195 | REQ-053, 093 |
 | BR-012 | `01-only` | BR-196 | REQ-053, 093 |
 | BR-013 | REQ-021 | BR-200 | REQ-060 |
 | BR-014 | REQ-021 | BR-201 | REQ-060 |
-| BR-015 | REQ-021 | BR-202 | REQ-060 |
+| BR-015 | REQ-021, 028, 029 | BR-202 | REQ-060 |
 | BR-016 | REQ-094 | BR-203 | REQ-060 |
 | BR-017 | REQ-021 | BR-210 | REQ-061 |
 | BR-018 | REQ-021 | BR-211 | REQ-061 |
 | BR-019 | REQ-021 | BR-212 | REQ-064 |
 | BR-020 | REQ-021 | BR-213 | REQ-064 |
-| BR-021 | REQ-021 | BR-214 | REQ-064 |
-| BR-022 | REQ-021 | BR-220 | REQ-061, 065 |
+| BR-021 | REQ-021, 029 | BR-214 | REQ-064 |
+| BR-022 | REQ-021, 029 | BR-220 | REQ-061, 065 |
 | BR-023 | `01-only` | BR-221 | REQ-065 |
 | BR-024 | REQ-021 | BR-230 | REQ-062, 065 |
-| BR-025 | REQ-021 | BR-231 | REQ-062, 065 |
+| BR-025 | REQ-021, 029 | BR-231 | REQ-062, 065 |
 | BR-030 | REQ-022 | BR-232 | REQ-062, 065, 095 |
 | BR-031 | REQ-022 | BR-240 | REQ-070, 066 |
 | BR-032 | REQ-022 | BR-241 | REQ-070 |
 | BR-033 | REQ-022 | BR-242 | REQ-070 |
-| BR-040 | REQ-023 | BR-243 | REQ-070 |
-| BR-041 | REQ-023 | BR-244 | REQ-070 |
+| BR-040 | REQ-023, 028 | BR-243 | REQ-070 |
+| BR-041 | REQ-023, 028 | BR-244 | REQ-070 |
 | BR-042 | REQ-023, 014 | BR-245 | REQ-070 |
 | BR-043 | REQ-023, 014 | BR-250 | REQ-071, 041 |
 | BR-050 | REQ-024 | BR-251 | REQ-071 |
@@ -365,7 +409,7 @@ As 188 BRs do `01` v10.1, uma a uma. Serve como mecanismo de auditoria contra om
 | BR-141 | REQ-050 | BR-360 | REQ-094, 095 |
 | BR-142 | REQ-050 | BR-361 | REQ-094, 095 |
 | BR-143 | REQ-050, 095 | BR-373 | REQ-100 |
-| BR-144 | REQ-050 | BR-374 | REQ-101 |
+| BR-144 | REQ-050 | BR-374 | REQ-101, 028 |
 | BR-145 | REQ-050 | BR-375 | REQ-102, 015 |
 | BR-146 | REQ-051, 011 | BR-376 | REQ-103 |
 | BR-147 | REQ-050, 034 | BR-380 | REQ-104 |
@@ -397,3 +441,8 @@ O documento está completo, rastreável às 188 BRs, sem conteúdo técnico, sem
 **Pré-requisito de operação, não de implementação.** Pelo PD-009, nenhuma operação de Request aceita, Direct, Luxplus ou locação confirma antes de existir política vigente e versionada para o mecanismo. O produto pode ser construído sem elas; não pode ser operado. Publicar essas políticas é tarefa comercial, anterior ao lançamento e independente do `03`.
 
 **Sequência:** congelar o `02` nesta versão e abrir o `03 — Technical Spec` a partir dela. O `03` implementa REQ, INV e PD sem rediscuti-los; escolhas de persistência, meio de pagamento, concorrência e auditoria técnica são dele.
+
+**Recorte BP0/BP1/BP2 (2026-10-09):** REQ-028 está definido para implementação na BP1. REQ-029 registra a
+evolução planejada e não está pronto para implementação antes dos critérios de entrada. BP0 é documental;
+não declara nenhum dos dois requisitos entregue em software. O restante do B2C permanece deliberadamente
+pausado no roadmap, sem remover seu escopo normativo.

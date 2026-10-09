@@ -1,7 +1,12 @@
 # 03 — Technical Spec — Luxtory Branded Second Home
 
-2026-09-21 · **Versão 3.13 — FINAL** · Base normativa: `01` v10.1 final · `02` v4.1 final  
-Cobertura: **63 REQ · 6 INV · 11 PD**
+2026-10-09 · **Versão 3.14 — FINAL** · Base normativa: `01` v10.1 final · `02` v4.2 final
+
+Cobertura normativa: **65 REQ · 6 INV · 11 PD**
+
+Revisão BP0 autorizada pelo fundador: TECH-057 implementa o contrato do REQ-028; TECH-058 delimita a evolução
+planejada do REQ-029. Demais regras da v3.13 preservadas. Impacto e aceite em
+[`catalog` §14](../catalog.md#14-discovery-público-b2b-brand-partners-bp1); BP0 não entrega código nem migrations.
 
 ## 1. Autoridade
 
@@ -497,6 +502,50 @@ Créditos → `ERR_CREDITS_INSUFFICIENT`.
 
 ---
 
+### 6.1. Brand Partners público e fronteira do portal
+
+**TECH-057 — Contato público Brand Partners (REQ-028, BP1).** `POST /v1/brand-partner-contacts`, sem login,
+recebe os campos autorizados em REQ-028. Contrato OpenAPI antes do handler. Rotas Next delegam ao módulo
+`catalog`; validação server-side com schema fechado e limites de corpo/campos; honeypot; verificação de origem;
+rate limit distribuído por origem de rede e global via Upstash. Falha do limitador recusa o envio.
+
+Um port de envio em `catalog` tem adapter server-side para a API HTTP do Resend. Destinatário e remetente são
+configuração do servidor; o e-mail validado do visitante é apenas `Reply-To`. Credenciais em secrets por ambiente,
+nunca no client. Segredos da aplicação não são presumidos a partir do SMTP do Supabase Auth. Timeout, limites
+e configuração operacional pertencem ao runbook; o contrato detalhado está em `catalog` §14.
+
+`Idempotency-Key` é obrigatório: mesma tentativa e conteúdo preservam chave e payload enviado ao provedor;
+conteúdo diferente com a mesma chave resulta em conflito dentro da janela garantida pelo Resend. O adapter usa
+a idempotência do provedor, sem prometer deduplicação ilimitada ou entrega exatamente uma vez. Timeout não é
+sucesso nem prova de que o provedor não aceitou; retry preserva a chave dentro daquela janela.
+
+Sucesso só após aceite confirmado do provedor. Indisponibilidade de configuração, proteção ou envio retorna
+erro controlado, sem fallback silencioso, fila ou sucesso simulado. Logs contêm somente metadados operacionais
+seguros, sem payload, PII, segredos ou resposta bruta do provedor. Nenhum contato é persistido no PostgreSQL,
+Redis, logs ou armazenamento do browser; Redis guarda apenas contadores técnicos com expiração e identificadores
+pseudonimizados. Dados do formulário permanecem apenas na memória da interação e no tratamento necessário pelo
+provedor e pela caixa corporativa, com acesso/retenção definidos antes do go-live.
+
+Não há migration, CRM, `interest`, `brand_partner`, conta, `operation` ou outbox criado por essa submissão.
+É envio sem mutação econômica/estado crítico; TECH-054 e as notificações do TECH-091 não se aplicam a esse fluxo.
+Não altera o registro fechado de TECH-051. As páginas `/brand-partner` e `/brand-partner/como-funciona` recebem
+CSP/nonce pelo proxy; a exclusão atual de prefixos `brand` deve ser restringida aos assets reais de branding na
+BP1. Não há correção de código na BP0.
+
+**TECH-058 — Portal Brand Partner planejado (REQ-029, BP2).** Reutiliza Supabase Auth e a cadeia
+`user → party_delegation → party → authorization_grant` com escopo da Brand Partner, vigência e revogação.
+O vínculo explícito entre parte e marca e as permissões de leitura serão concretizados a partir do contrato da
+BP2; não há tabela paralela de identidade nem papel Admin para parceiros. Guard autoriza e RLS restringe os
+objetos da própria marca, inclusive em consultas diretas; campos retornados são explicitamente permitidos.
+
+Leituras usam interfaces públicas dos módulos donos de catálogo e aquisições, sobre fatos canônicos verificáveis,
+sem tabela paralela de vendas ou integração presumida. W7 é a dependência planejada de representação; W8 é a
+dependência de formalização no domínio atual, sujeita à definição funcional do evento de venda e da atribuição.
+Nenhuma delas é antecipada por BP0/BP1. Especificação testável de isolamento é critério de entrada; comprovação
+por testes de autorização/RLS, incluindo revogação, marca A × B, usuário sem vínculo, delegação expirada,
+manipulação de IDs, consulta direta e colunas não permitidas, é gate de disponibilização da BP2.
+Domínio de e-mail não estabelece representação; preço de referência e aprovação comercial não são venda.
+
 ## 7. Fluxos críticos
 
 Todos seguem TECH-053/054.
@@ -747,7 +796,12 @@ Auditoria: commits concorrentes → exatamente um seal por evento, cadeia válid
 
 Sorteio: vetor fixo reproduz exatamente `fy-v1`.
 
-**Gate:** 63/63 REQ cobertos · 11/11 PD cobertos · 6/6 INV protegidos/testados · migrations esperadas · reconciliação sem drift.
+**Gate global do produto:** 65/65 REQ cobertos · 11/11 PD cobertos · 6/6 INV protegidos/testados · migrations esperadas · reconciliação sem drift.
+
+Esse é o alvo global de implementação, não uma declaração de testes já aprovados. BP0 usa somente gates
+documentais; BP1 comprova REQ-028/TECH-057; REQ-029/TECH-058 só recebe evidência de implementação na BP2.
+Critérios do envio incluem validação, abuso, falhas, idempotência, ausência de PII nos logs e sucesso apenas
+após aceite. Os critérios de isolamento do portal não são satisfeitos por testes do catálogo público.
 
 ---
 
@@ -799,6 +853,8 @@ Números sem prefixo = `TECH-xxx`.
 | 025 | §3.1, 020 | 070 | 031–033, 083, §7 |
 | 026 | §3.1, 020, 026 | 071 | 023, 063, §7 |
 | 027 | §3.1, 051, 083 | 072 | 023, §7 |
+| 028 | 057, 100 |  |  |
+| 029 | 050, 052, 058 |  |  |
 | 030 | 026, 041 | 073 | 023 |
 | 031 | 027, 042 | 080 | 022, 043, 060 |
 | 032 | 042, 093 | 081 | §7 |
@@ -832,7 +888,7 @@ Números sem prefixo = `TECH-xxx`.
 |  |  | PD-010 | §7 Exceção |
 |  |  | PD-011 | 002, 092, 093 |
 
-**Cobertura: 63/63 REQ · 6/6 INV · 11/11 PD.**
+**Rastreabilidade normativa: 65/65 REQ · 6/6 INV · 11/11 PD.** Não equivale à cobertura executada de testes.
 
 ---
 
@@ -848,17 +904,26 @@ Gestão detalhada de obra/Design & Build não é requisito do `02`.
 
 Nova funcionalidade entra primeiro no `02`.
 
+**Recorte BP1:** portal, CRM, histórico de contatos, automação comercial e dados financeiros de parceiros não
+integram a entrega pública. O portal do REQ-029 é evolução planejada, com implementação condicionada; sua
+existência no roadmap não autoriza construir login específico, dashboard vazio, vendas fictícias ou RLS antecipada.
+
 ---
 
 ## 16. Prontidão
 
 **READY FOR DEVELOPMENT.**
 
-`01 v10.1 + 02 v4.1 + 03 v3.13` definem o escopo atual sem exigir invenção material de regra de negócio, produto ou arquitetura.
+`01 v10.1 + 02 v4.2 + 03 v3.14` definem o escopo atual; BP1 pode ser implementada pelo contrato do TECH-057.
+BP2 permanece condicionada ao REQ-029/TECH-058, sem prontidão de implementação presumida.
 
 Pré-requisitos de operação, não de desenvolvimento:
 
 políticas comerciais vigentes · parâmetros necessários publicados · PRL aplicável · PSP contratado.
+
+Para BP1: remetente/destinatário e secrets de envio/proteção configurados; acesso e retenção das mensagens
+definidos operacionalmente e sujeitos à validação jurídica aplicável; revisão da comunicação em P-LX-03 antes
+do go-live das afirmações abrangidas. P-LX-03 não bloqueia a implementação técnica da BP1.
 
 Mudança normativa no `01/02` exige análise de impacto e atualização da rastreabilidade.
 

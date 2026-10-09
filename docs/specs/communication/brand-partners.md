@@ -9,8 +9,9 @@
 
 ## 1. Escopo e precedência
 
-- Jornada Brand Partners. Protagonista: `[FW-BP: §3]`. O `02` ainda não prevê superfície pública nem CTA para Brand
-  Partners (`02` §2): páginas e CTA dependem de `P-BP-01`.
+- Jornada Brand Partners. Protagonista: `[FW-BP: §3]`. `02` v4.2 §2 e REQ-028 autorizam a superfície pública,
+  o CTA e o formulário da BP1; `P-BP-01` resolvida na BP0 (2026-10-09). Briefs e contrato em
+  [`catalog` §14](../catalog.md#14-discovery-público-b2b-brand-partners-bp1). REQ-029 registra o portal planejado para BP2, fora da BP1.
 - A jornada Brand Partners não leva à jornada B2C (`D-LX-01`).
 - O Posicionamento do Framework é o da marca, com o público de referência B2C; o Protagonista desta jornada é a Brand
   Partner `[FW-BP: §2, §14]`.
@@ -34,7 +35,7 @@ guardrails de [`luxtory.md`](luxtory.md) §4.
 | L7 | divisão de papéis; quem estrutura, desenvolve e comercializa `[FW-BP: §5, §8 P4]` | BR-040, BR-041, BR-300, BR-303 | a Brand Partner gera demanda com seus canais e audiência; a Luxtory qualifica, estrutura e converte; a Luxtory **pode** coordenar integralmente o Design & Build — não é promessa |
 | L8 | continuidade; "e se a parceria terminar?" `[FW-BP: §5, §12]` | BR-021, BR-022, BR-023 | o encerramento impede novos Concepts, Editions e usos da marca depois da eficácia (salvo contrato); não extingue automaticamente os direitos das Residences já contratadas, vendidas ou em construção; transição em contrato |
 | L9 | evidências: documentos canônicos, instrumentos contratuais, dados de demanda `[FW-BP: §8 P4]` | BR-015, BR-016 | são fontes de fatos, não material de página: termos, valores e documentos de parceria não são publicados; marca ou nome de Brand Partner só com autorização de exposição registrada; prova externa inexistente não é afirmada (`P-LX-01`) |
-| L10 | CTA e destino: conversa ou qualificação estratégica `[FW-BP: §8 P5, §12]` | `02` §2 | o `02` não prevê essa superfície: o CTA não aparece até ela entrar no `02` (`D-BP-12`, `P-BP-01`) |
+| L10 | CTA e destino: conversa ou qualificação estratégica `[FW-BP: §8 P5, §12]` | REQ-028 | CTA → formulário `/brand-partner#conversa`; submissão não pressupõe parceria, conta ou autorização de marca. Destino entra funcionalmente na BP1 (`D-BP-12`, `D-BP-13`) |
 
 ## 3. Posicionamento — fatos ancorados
 
@@ -86,15 +87,22 @@ Protagonista `[FW-BP: §8.1, §13]`:
 
 | Página | Função | Schwartz (entrada → saída) | 5Ps | CTA → destino |
 |---|---|---|---|---|
-| Home | a mais abrangente; segue estritamente o Brief Narrativo `[FW-BP: §12]` | Unaware → Product Aware | arco completo; PICTURE = Hero | "Explore o potencial residencial da sua marca." (`D-BP-12`) |
-| Como funciona | aprofunda, em detalhe, como a parceria funciona: Brand DNA → Concept, governança, papéis, remuneração (sem valores), replicação e continuidade | Product Aware → Most Aware | PROOF → PUSH | "Explore o potencial residencial da sua marca." (`D-BP-12`) |
-| Concepts | demonstra o método em Concepts com exposição de marca autorizada, separada da Coleção B2C `[F: BR-015]` (`P-BP-02`) | Product Aware → Most Aware | PROOF → PUSH | "Explore o potencial residencial da sua marca." (`D-BP-12`) |
+| Home — `/brand-partner` | a mais abrangente; segue estritamente o Brief Narrativo `[FW-BP: §12]` | Unaware → Product Aware | arco completo; PICTURE = Hero | "Explore o potencial residencial da sua marca." → `#conversa` (`D-BP-12`, `D-BP-13`) |
+| Como funciona — `/brand-partner/como-funciona` | aprofunda, em detalhe, como a parceria funciona: Brand DNA → Concept, governança, papéis, remuneração (sem valores), replicação e continuidade | Product Aware → Most Aware | PROOF → PUSH | "Explore o potencial residencial da sua marca." → `/brand-partner#conversa` (`D-BP-12`, `D-BP-13`) |
+| Concepts — posterior à BP1 | demonstra o método em Concepts com exposição de marca autorizada, separada da Coleção B2C `[F: BR-015]` (`P-BP-02`) | Product Aware → Most Aware | PROOF → PUSH | "Explore o potencial residencial da sua marca." → formulário, quando a página estiver autorizada (`D-BP-12`, `D-BP-13`) |
 
 - **Disposição para mudança:** "Aberta" como referência-base `[FW-BP: §3.1]`; a ambivalência é tratada pelas
   objeções (§5) no PROOF e no PUSH `[FW-BP: §7.1, §8.1]`.
 - **Prova:** a prova necessária é a do `[FW-BP: §12]`, com os limites L1–L10.
 - **Qualificação do PUSH:** a lista base é `[FW-BP: §8 P5]`. Complemento factual: imóvel existente não entra no
   modelo `[F: BR-054]`.
+- **Entrega BP1 (`D-BP-13`):** Home + Como funciona + formulário próprio; sem página/link de Concepts pendente,
+  link para portal indisponível ou conversão por `mailto`. Rotas canônicas em minúsculas, sem `/para-marcas`.
+  Não publicar CTA sem o formulário funcional. Falha transitória do envio tem estado acessível, sem falso sucesso.
+- **Formulário:** campos, propósito e significado da submissão vêm do REQ-028; comportamento e estados em
+  `catalog` §14. A copy não acrescenta qualificação, promessa comercial ou consentimento de marketing.
+- **Revisão jurídica:** `P-LX-03` é gate de comunicação antes do go-live das afirmações sujeitas à revisão;
+  não bloqueia a implementação técnica da BP1. Não presumir sua conclusão a partir da aprovação de BP0.
 
 ## 8. Tom e expressão
 
@@ -123,6 +131,7 @@ utilizado é Retraimento, sem exceção como padrão `[FW-BP: §10.2]`.
 | D-BP-10 | CTA "Conversar com a Luxtory", sem destino até `P-BP-01` | substituída em 2026-10-01 → `D-BP-12` | `02` §2; REQ-014 |
 | D-BP-11 | Mapa de páginas (§7): as mesmas páginas do mapa anterior; Home a mais abrangente, seguindo estritamente o Framework; "Como funciona" aprofunda a parceria em detalhe; Concepts demonstra o método | aprovada em 2026-10-01 (fundador: mesmo critério adotado no B2C) | `[FW-BP: §7, §8.1, §12, §13]` |
 | D-BP-12 | CTA "Explore o potencial residencial da sua marca." → qualificação estratégica, sem pressupor parceria; não aparece enquanto a superfície não existir no `02` | aprovada em 2026-10-01 (fundador: mesmo critério adotado no B2C) | `[FW-BP: §8 P5, §12]`; `02` §2; TECH-001; `P-BP-01` |
+| D-BP-13 | BP1 = Home `/brand-partner` + `/brand-partner/como-funciona` + formulário na Home; CTA → `/brand-partner#conversa`; campos e propósito do REQ-028; Concepts não bloqueia o MVP; portal planejado somente em BP2 | aprovada pelo fundador na BP0, 2026-10-09; complementa D-BP-11/D-BP-12 sem mudar o Framework | REQ-028, REQ-029, TECH-057, TECH-058; `P-BP-01`, `P-BP-02` |
 
 | ID | Hipótese | Como validar | Status |
 |---|---|---|---|
@@ -137,5 +146,5 @@ utilizado é Retraimento, sem exceção como padrão `[FW-BP: §10.2]`.
 
 | ID | Pendência | Bloqueia |
 |---|---|---|
-| P-BP-01 | Superfície pública e CTA para Brand Partners: entram no `02` antes do código — destino do CTA "Explore o potencial residencial da sua marca." (conversa ou qualificação estratégica), eventual formulário e tratamento dos dados | páginas da jornada Brand Partners e o CTA |
-| P-BP-02 | Concepts com exposição de marca autorizada e regras de exposição por Brand Partner (P-8 do roadmap) | página Concepts da jornada |
+| P-BP-01 | **Resolvida na BP0, 2026-10-09:** `02` v4.2 §2/REQ-028 autoriza superfície, CTA → formulário, campos, significado da submissão e tratamento dos dados; TECH-057 e `catalog` §14 definem a execução | nenhum bloqueio normativo restante para BP1; implementação, operação e comunicação ainda passam pelos próprios gates |
+| P-BP-02 | **Aberta:** Concepts com exposição de marca autorizada e regras de exposição por Brand Partner (P-8 do roadmap) | somente a página pública Concepts; não bloqueia Home + Como funciona + formulário nem equivale à wave BP2 do portal |
