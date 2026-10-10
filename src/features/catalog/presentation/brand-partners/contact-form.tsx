@@ -1,6 +1,7 @@
 'use client';
 
 import { useId, useRef, useState, type FormEvent } from 'react';
+import { flushSync } from 'react-dom';
 import { Icon } from '@/design-system/react/icons';
 import {
   parseBrandPartnerContact,
@@ -8,15 +9,20 @@ import {
   type ContactFieldIssue,
 } from '../../application/brand-partner-contact';
 import { CONTACT_FIELDS, type ContactField } from '../../domain/brand-partner-contact';
-import { brandPartnersMessages } from '../i18n/brand-partners-pt-br';
+import type { BrandPartnersMessages } from '../i18n/brand-partners-pt-br';
 
-const text = brandPartnersMessages.form;
-const { submit, success } = brandPartnersMessages.home.conversation;
 const ENDPOINT = '/v1/brand-partner-contacts';
+
+/** Só os textos do formulário chegam ao navegador (props do componente de servidor), não a copy das páginas. */
+export interface ContactFormText {
+  readonly form: BrandPartnersMessages['form'];
+  readonly submit: string;
+  readonly success: string;
+}
 
 type Values = Record<ContactField, string>;
 type FieldErrors = Partial<Record<ContactField, ContactFieldCode>>;
-type Outcome = keyof typeof text.outcomes;
+type Outcome = keyof BrandPartnersMessages['form']['outcomes'];
 
 type Status =
   | { readonly kind: 'idle' }
@@ -50,7 +56,11 @@ function outcomeFor(status: number): Outcome {
   return 'unconfirmed';
 }
 
-function messageFor(field: ContactField, code: ContactFieldCode): string {
+function messageFor(
+  text: ContactFormText['form'],
+  field: ContactField,
+  code: ContactFieldCode,
+): string {
   if (code === 'invalid' && (field === 'email' || field === 'website'))
     return text.fieldInvalid[field];
   return text.fields[code];
@@ -87,7 +97,11 @@ function serverIssues(body: unknown): readonly ContactFieldIssue[] {
  * acessível e região viva. Os dados e a `Idempotency-Key` ficam só na memória desta interação — nunca em URL, cookie
  * ou storage: falha preserva ambos (retry com a mesma chave e o mesmo conteúdo); sucesso limpa e encerra a tentativa.
  */
-export function BrandPartnerContactForm() {
+export function BrandPartnerContactForm({
+  text: { form: text, submit, success },
+}: {
+  readonly text: ContactFormText;
+}) {
   const id = useId();
   const fieldId = (field: ContactField) => `${id}-${field}`;
   const [values, setValues] = useState<Values>(EMPTY);
@@ -103,23 +117,25 @@ export function BrandPartnerContactForm() {
     if (first !== undefined) document.getElementById(fieldId(first))?.focus();
   };
 
+  // O foco só vai ao campo depois que `aria-invalid` e a mensagem de erro já estão no DOM.
   const showIssues = (issues: readonly ContactFieldIssue[]) => {
     const fieldErrors = toErrors(issues);
-    setErrors(fieldErrors);
-    setStatus({ kind: 'invalid' });
+    flushSync(() => {
+      setErrors(fieldErrors);
+      setStatus({ kind: 'invalid' });
+    });
     focusFirst(fieldErrors);
   };
 
   const send = async (payload: string) => {
-    if (attempt.current?.payload !== payload) {
-      attempt.current = { key: crypto.randomUUID(), payload };
-    }
-    const { key } = attempt.current;
     let response: Response;
     try {
+      if (attempt.current?.payload !== payload) {
+        attempt.current = { key: crypto.randomUUID(), payload };
+      }
       response = await fetch(ENDPOINT, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', 'idempotency-key': key },
+        headers: { 'content-type': 'application/json', 'idempotency-key': attempt.current.key },
         body: payload,
         cache: 'no-store',
         credentials: 'same-origin',
@@ -167,6 +183,9 @@ export function BrandPartnerContactForm() {
     setStatus({ kind: 'sending' });
     try {
       await send(JSON.stringify(body));
+    } catch {
+      // Qualquer falha inesperada do navegador também é "envio não confirmado", nunca um estado preso.
+      setStatus({ kind: 'failed', outcome: 'unconfirmed' });
     } finally {
       sending.current = false;
     }
@@ -232,7 +251,7 @@ export function BrandPartnerContactForm() {
             {code === undefined ? null : (
               <p className="lx-error" id={`${control}-error`}>
                 <Icon name="alert" className="lx-error__icon" />
-                {messageFor(field.name, code)}
+                {messageFor(text, field.name, code)}
               </p>
             )}
           </div>

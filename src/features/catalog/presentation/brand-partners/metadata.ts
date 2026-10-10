@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { loadEnv } from '@/features/platform';
-import { messages as platformMessages } from '@/features/platform/presentation/i18n/pt-br';
 import { brandPartnersMessages as text } from '../i18n/brand-partners-pt-br';
 import { brandPartnersPaths } from './paths';
 
@@ -23,7 +22,7 @@ export function brandPartnersMetadata(page: Page): Metadata {
       title,
       description,
       url,
-      siteName: platformMessages.site.name,
+      siteName: text.metadata.siteName,
       locale: 'pt_BR',
       type: 'website',
     },

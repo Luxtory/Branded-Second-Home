@@ -159,7 +159,8 @@ export interface ContactSubmissionDependencies {
   readonly emailText: ContactEmailText;
 }
 
-const idempotencyKeySchema = z.uuid();
+// Formato 8-4-4-4-12 hexadecimal, como o `format: uuid` do OpenAPI (o navegador gera v4 com `crypto.randomUUID`).
+const idempotencyKeySchema = z.guid();
 
 /**
  * Submissão do contato (REQ-028): chave UUID e schema fechado → honeypot (recusa sem envio, sem falso sucesso) →

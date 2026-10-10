@@ -32,6 +32,7 @@ export const brandPartnersMessages = {
 
   // Títulos a partir da navegação aprovada; descrições = trechos verbatim da copy de cada página (sem prova nem claim).
   metadata: {
+    siteName: 'Luxtory',
     home: {
       title: 'Brand Partners — Luxtory',
       description: 'Imagine sua comunidade se sentindo em casa no universo da sua marca.',

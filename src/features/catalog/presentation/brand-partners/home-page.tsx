@@ -221,7 +221,9 @@ export function BrandPartnersHomePage() {
             </h2>
             <Paragraphs lines={conversation.intro} />
           </div>
-          <BrandPartnerContactForm />
+          <BrandPartnerContactForm
+            text={{ form: text.form, submit: conversation.submit, success: conversation.success }}
+          />
           <div className="lx-stack">
             <p className="lx-body">{conversation.purpose}</p>
             <p className="lx-body">{conversation.meaning}</p>

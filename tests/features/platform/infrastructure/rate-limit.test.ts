@@ -4,7 +4,10 @@ import {
   retryAfterSeconds,
 } from '@/features/platform/application/rate-limit';
 import { createMemoryRateLimiter } from '@/features/platform/infrastructure/rate-limit/memory-rate-limiter';
-import { pseudonymizeNetwork } from '@/features/platform/infrastructure/rate-limit/network-key';
+import {
+  networkOf,
+  pseudonymizeNetwork,
+} from '@/features/platform/infrastructure/rate-limit/network-key';
 import { createUpstashRateLimiter } from '@/features/platform/infrastructure/rate-limit/upstash-rate-limiter';
 
 const POLICIES = {
@@ -56,6 +59,24 @@ describe('pseudonimização da origem de rede (catalog §14.4)', () => {
     expect(key).toBe(pseudonymizeNetwork('203.0.113.7', 's'.repeat(32)));
     expect(key).not.toBe(pseudonymizeNetwork('203.0.113.7', 't'.repeat(32)));
     expect(key).not.toContain('203.0.113.7');
+  });
+
+  it('[TECH-057] IPv6 conta pelo /64: girar o endereço dentro do prefixo não abre outra cota', () => {
+    const secret = 's'.repeat(32);
+    const first = pseudonymizeNetwork('2001:db8:abcd:12::1', secret);
+
+    expect(pseudonymizeNetwork('2001:db8:abcd:12:ffff:ffff:ffff:fffe', secret)).toBe(first);
+    expect(pseudonymizeNetwork('2001:0DB8:ABCD:0012:0:0:0:9', secret)).toBe(first);
+    expect(pseudonymizeNetwork('2001:db8:abcd:13::1', secret)).not.toBe(first);
+    expect(networkOf('2001:db8:abcd:12::1')).toBe('2001:db8:abcd:12::/64');
+    expect(networkOf('fe80::1%eth0')).toBe('fe80:0:0:0::/64');
+  });
+
+  it('[TECH-057] IPv4 mapeado em IPv6 é a mesma origem do IPv4; a origem local passa como está', () => {
+    expect(networkOf('::ffff:203.0.113.7')).toBe('203.0.113.7');
+    expect(networkOf('::FFFF:cb00:7107')).toBe('203.0.113.7');
+    expect(networkOf('203.0.113.7')).toBe('203.0.113.7');
+    expect(networkOf('local')).toBe('local');
   });
 });
 
