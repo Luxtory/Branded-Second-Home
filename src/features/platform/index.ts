@@ -73,4 +73,24 @@ export {
   idempotencyKey,
 } from './presentation/commands';
 export { unavailableKeys } from './presentation/unavailable';
-export { isPublicSiteOpen } from './presentation/public-site';
+export { isBrandPartnersSiteOpen, isPublicSiteOpen } from './presentation/public-site';
+
+// BP1 — escritas públicas sem conta (TECH-057): limitador distribuído (ADR-0004) e borda HTTP.
+export {
+  RateLimiterUnavailableError,
+  type RateLimitDecision,
+  type RateLimiter,
+  type RateLimitPolicies,
+  type RateLimitPolicy,
+} from './application/rate-limit';
+export { createUpstashRateLimiter } from './infrastructure/rate-limit/upstash-rate-limiter';
+export { createMemoryRateLimiter } from './infrastructure/rate-limit/memory-rate-limiter';
+export { pseudonymizeNetwork } from './infrastructure/rate-limit/network-key';
+export {
+  BODY_NOT_TEXT,
+  BODY_TOO_LARGE,
+  hasAllowedOrigin,
+  isJsonRequest,
+  readBoundedText,
+  trustedClientAddress,
+} from './presentation/public-request';

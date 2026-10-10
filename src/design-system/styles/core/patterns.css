@@ -1072,4 +1072,116 @@
       border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
     }
   }
+
+  /* Brand Partners (BP1, spec catalog §14; Especificação Visual FINAL do fundador, 2026-10-10) — generic complements
+   * the B2B pages consume where no Core pattern fit; no B2B palette, scale or component library. */
+
+  /* Typographic Hero — the Cinematic Hero without photography (no authorized asset): the same grammar — content low
+   * and to the start, the photograph's place kept as negative space — on a solid surface under the solid header. */
+  [data-lx="core"] .lx-hero--typographic {
+    align-content: end;
+    min-height: calc(100svh - var(--lx-layout-bar-height));
+  }
+  [data-lx="core"] .lx-hero--typographic::before,
+  [data-lx="core"] .lx-hero--typographic .lx-hero__copy::before {
+    content: none;
+  }
+  [data-lx="core"] .lx-hero--typographic .lx-hero__content {
+    padding-block: var(--lx-space-section);
+  }
+
+  /* Stack pause — one extra beat before an item of a column (the closing line of a passage), same type role. */
+  [data-lx="core"] .lx-stack > .lx-stack__pause {
+    margin-top: var(--lx-space-6);
+  }
+  /* Editorial column — about eight of the twelve columns, aligned to the container start (never a centred ad). */
+  [data-lx="core"] .lx-stack--editorial {
+    max-width: var(--lx-layout-container-narrow);
+  }
+
+  /* Sibling Blocks --trio — three equal units side by side from lg (4/4/4); stacked, in order, below. */
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-siblings--trio {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  /* Section note — a limit or condition that closes a composition: full width under it, a hairline above, body size
+   * (never fine print). */
+  [data-lx="core"] .lx-section-note {
+    margin-top: var(--lx-space-16);
+    padding-top: var(--lx-space-6);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  /* Columns --aside — 5/7 whose start column continues after the main one (e.g. a form's purpose under its intro):
+   * DOM and phone order head → main → aside; from lg the aside returns under the head. */
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-columns--aside {
+      grid-template-rows: auto 1fr;
+      align-items: start;
+    }
+    [data-lx="core"] .lx-columns--aside > :nth-child(1) {
+      grid-column: 1 / span 5;
+      grid-row: 1;
+    }
+    [data-lx="core"] .lx-columns--aside > :nth-child(2) {
+      grid-column: 6 / span 7;
+      grid-row: 1 / span 2;
+    }
+    [data-lx="core"] .lx-columns--aside > :nth-child(3) {
+      grid-column: 1 / span 5;
+      grid-row: 2;
+    }
+  }
+
+  /* Anchor Index — the page's sections as in-page links: a list between hairlines on phones (each a 44px target),
+   * one editorial line with middle dots from md. No pills, no tabs. */
+  [data-lx="core"] .lx-anchors > ul {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-anchors li {
+    border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-anchors a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--lx-target-min);
+    padding-block: var(--lx-space-2);
+    color: var(--lx-color-fg);
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-type-title);
+    line-height: var(--lx-leading-title);
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--lx-border-hairline);
+    text-underline-offset: 0.25em;
+    transition: text-decoration-thickness var(--lx-duration-quick) var(--lx-ease-editorial);
+  }
+  [data-lx="core"] .lx-anchors a:hover {
+    text-decoration-thickness: var(--lx-focus-width);
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-anchors > ul {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      column-gap: var(--lx-space-3);
+      padding-block: var(--lx-space-2);
+      border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+    [data-lx="core"] .lx-anchors li {
+      display: flex;
+      align-items: center;
+      gap: var(--lx-space-3);
+      border-bottom: 0;
+    }
+    [data-lx="core"] .lx-anchors li + li::before {
+      content: "·";
+      color: var(--lx-color-marker);
+    }
+  }
 }

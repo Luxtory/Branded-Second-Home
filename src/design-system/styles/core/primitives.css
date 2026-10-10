@@ -113,9 +113,13 @@
     --lx-logo-height: 4.5rem;
   }
 
-  /* Form — rows stack from the top; a form never spreads its fields to fill a taller neighbour. */
+  /* Form — rows stack from the top; a form never spreads its fields to fill a taller neighbour. A control brought into
+   * view by focus or by an error-summary link stops below the sticky header (WCAG 2.4.11). */
   [data-lx="core"] .lx-form {
     align-content: start;
+  }
+  [data-lx="core"] .lx-form :is(.lx-input, .lx-textarea, .lx-select) {
+    scroll-margin-top: calc(var(--lx-layout-bar-height) + var(--lx-space-8));
   }
 
   /* Field — visible label above, hint, error with icon + text; native controls 48px, text ≥ 16px, border ≥ 3:1. */

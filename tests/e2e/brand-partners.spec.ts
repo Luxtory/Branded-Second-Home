@@ -1,0 +1,507 @@
+import { randomUUID } from 'node:crypto';
+import { expect, test, type Page, type Route } from '@playwright/test';
+import { hasForbiddenTerm } from '../../src/features/catalog/domain/terminology';
+import { brandPartnersMessages as text } from '../../src/features/catalog/presentation/i18n/brand-partners-pt-br';
+import {
+  BRAND_PARTNERS_HOME_SECTIONS,
+  BRAND_PARTNERS_HOW_SECTIONS,
+} from '../../src/features/catalog/presentation/brand-partners/paths';
+import { captureForReview, collectConsoleErrors, expectResponsive } from './support/ui';
+
+// Jornada pública Brand Partners (REQ-028, TECH-057; spec catalog §14). O servidor de E2E usa o envio e o limitador
+// determinísticos (tests/support/e2e-server.mjs): nenhum e-mail real. Falhas do servidor são simuladas por
+// interceptação; o servidor real responde aos envios bem-sucedidos.
+
+const HOME = '/brand-partner';
+const HOW = '/brand-partner/como-funciona';
+const ENDPOINT = '/v1/brand-partner-contacts';
+const CTA = 'Explore o potencial residencial da sua marca.';
+const { conversation } = text.home;
+
+const CONTACT = {
+  name: 'Pessoa de Teste',
+  brand: 'Marca Fictícia E2E',
+  email: 'pessoa.teste@exemplo.test',
+  message: 'Primeira linha da mensagem.\nSegunda linha.',
+  website: 'https://marca-ficticia.test',
+};
+
+/** O objeto sem a chave `key` (texto que não aparece na página carregada). */
+const without = <T extends object>(value: T, key: keyof T) =>
+  Object.fromEntries(Object.entries(value).filter(([name]) => name !== key));
+
+/** Todos os textos de um nó do i18n, sem a marcação de destaque (`**`). */
+function strings(value: unknown): string[] {
+  if (typeof value === 'string') return [value.replaceAll('**', '')];
+  if (Array.isArray(value)) return value.flatMap(strings);
+  if (typeof value === 'object' && value !== null) return Object.values(value).flatMap(strings);
+  return [];
+}
+
+const normalized = (value: string) => value.replace(/\s+/g, ' ').trim();
+
+async function mainText(page: Page) {
+  return normalized((await page.locator('main').textContent()) ?? '');
+}
+
+type Field = keyof typeof text.form.labels;
+
+/** Campo do formulário pelo rótulo (o "Site da marca" traz "(opcional)" no nome acessível). */
+const field = (page: Page, name: Field) =>
+  page
+    .locator('#conversa form')
+    .getByRole('textbox', { name: text.form.labels[name], exact: name !== 'website' });
+
+async function fillContact(page: Page, values: Partial<typeof CONTACT> = CONTACT) {
+  for (const [name, value] of Object.entries(values)) await field(page, name as Field).fill(value);
+}
+
+const submitButton = (page: Page) => page.getByRole('button', { name: conversation.submit });
+
+/** Registra a chave e o corpo de cada envio; `respond` decide a resposta (padrão: segue para o servidor real). */
+async function interceptContacts(
+  page: Page,
+  respond: (route: Route, call: number) => Promise<void> = (route) => route.continue(),
+) {
+  const sent: { key: string; body: string }[] = [];
+  await page.route(`**${ENDPOINT}`, async (route) => {
+    const request = route.request();
+    sent.push({ key: request.headers()['idempotency-key'] ?? '', body: request.postData() ?? '' });
+    await respond(route, sent.length);
+  });
+  return sent;
+}
+
+const errorBody = (code: string) =>
+  JSON.stringify({ code, message: 'erro simulado', correlation_id: 'e2e-correlation' });
+
+test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
+  for (const [name, path] of [
+    ['home', HOME],
+    ['how', HOW],
+  ] as const) {
+    test(`[REQ-028] ${name}: axe 0 a 390 e 1440 px, sem overflow de 320 a 1920 px, console limpo, CSP com nonce`, async ({
+      page,
+    }) => {
+      test.slow();
+      const errors = collectConsoleErrors(page);
+      const response = await page.goto(path);
+      expect(response?.status()).toBe(200);
+      expect(response?.headers()['content-security-policy']).toMatch(/script-src 'self' 'nonce-/);
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      await expectResponsive(page, errors);
+      await captureForReview(page, `bp1-${name}`);
+    });
+  }
+});
+
+test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalog §14.1–14.2)', () => {
+  test('[REQ-028] Home: copy congelada verbatim, seções PICTURE → PUSH na ordem, sem imagem nem termo vedado', async ({
+    page,
+  }) => {
+    await page.goto(HOME);
+    const ids = await page
+      .locator('main > section')
+      .evaluateAll((nodes) => nodes.map((node) => node.id));
+    expect(ids).toEqual([...BRAND_PARTNERS_HOME_SECTIONS]);
+    const content = await mainText(page);
+    // A mensagem de sucesso só aparece depois do aceite.
+    for (const line of strings({ ...text.home, conversation: without(conversation, 'success') })) {
+      expect(content, line).toContain(normalized(line));
+    }
+    expect(hasForbiddenTerm(content)).toBe(false);
+    await expect(page.locator('main img')).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(text.home.hero.title);
+  });
+
+  test('[REQ-028] Como funciona: copy verbatim, índice com âncoras reais, Owner e Co-Owner com o mesmo peso', async ({
+    page,
+  }) => {
+    await page.goto(HOW);
+    const ids = await page
+      .locator('main > section')
+      .evaluateAll((nodes) => nodes.map((node) => node.id));
+    expect(ids).toEqual([...BRAND_PARTNERS_HOW_SECTIONS]);
+    const content = await mainText(page);
+    // `indexLabel` é o nome acessível do índice, não texto visível.
+    const opening = without(text.howItWorks.opening, 'indexLabel');
+    for (const line of strings({ ...text.howItWorks, opening })) {
+      expect(content, line).toContain(normalized(line));
+    }
+    expect(hasForbiddenTerm(content)).toBe(false);
+    const index = page.getByRole('navigation', { name: text.howItWorks.opening.indexLabel });
+    const anchors = await index
+      .getByRole('link')
+      .evaluateAll((links) => links.map((link) => link.getAttribute('href') ?? ''));
+    expect(anchors).toEqual(BRAND_PARTNERS_HOW_SECTIONS.slice(1).map((id) => `#${id}`));
+    for (const anchor of anchors) await expect(page.locator(anchor)).toHaveCount(1);
+    const sides = page.locator('[data-pair="modality"] .lx-comparison__item');
+    await expect(sides).toHaveCount(2);
+    const fonts = await sides
+      .locator('h4')
+      .evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).fontSize));
+    expect(new Set(fonts).size).toBe(1);
+  });
+
+  test('[REQ-028] CTAs: Hero → PROBLEM; "Explore…" → formulário da Home nas duas páginas', async ({
+    page,
+  }) => {
+    await page.goto(HOME);
+    await expect(page.locator('#inicio a.lx-button')).toHaveAttribute('href', '#expansao');
+    await expect(page.getByRole('link', { name: CTA })).toHaveAttribute('href', '#conversa');
+    await page.getByRole('link', { name: CTA }).click();
+    await expect(page.getByRole('heading', { name: conversation.title })).toBeInViewport();
+    await expect(page.getByRole('link', { name: text.home.realization.link })).toHaveAttribute(
+      'href',
+      HOW,
+    );
+
+    await page.goto(HOW);
+    await page.getByRole('link', { name: CTA }).click();
+    await expect(page).toHaveURL(new RegExp(`${HOME}#conversa$`));
+    await expect(page.getByRole('heading', { name: conversation.title })).toBeInViewport();
+  });
+
+  test('[REQ-028] navegação B2B própria: header, menu e rodapé só levam a destinos Brand Partners', async ({
+    page,
+  }) => {
+    for (const path of [HOME, HOW]) {
+      await page.goto(path);
+      const hrefs = await page
+        .locator('a[href]')
+        .evaluateAll((links) => links.map((link) => link.getAttribute('href') ?? ''));
+      for (const href of hrefs) {
+        expect(href.startsWith('#') || href.startsWith(HOME), href).toBe(true);
+      }
+      const nav = page.getByRole('navigation', { name: text.site.nav }).first();
+      for (const label of [text.site.brandPartners, text.site.howItWorks, text.site.contact]) {
+        await expect(nav.getByRole('link', { name: label, exact: true })).toBeAttached();
+      }
+    }
+  });
+
+  test('[REQ-028] SEO: title, description, canonical e metadados sociais; Preview/local não indexáveis', async ({
+    page,
+  }) => {
+    for (const [path, meta] of [
+      [HOME, text.metadata.home],
+      [HOW, text.metadata.howItWorks],
+    ] as const) {
+      await page.goto(path);
+      await expect(page).toHaveTitle(meta.title);
+      await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+        'content',
+        meta.description,
+      );
+      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+        'href',
+        new RegExp(`${path}$`),
+      );
+      await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+        'content',
+        meta.title,
+      );
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+      await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(0);
+    }
+  });
+
+  test('[TECH-057] CSP: páginas com nonce pelo proxy; o asset real do logo mantém a CSP própria', async ({
+    request,
+  }) => {
+    for (const path of [HOME, HOW]) {
+      const response = await request.get(path);
+      expect(response.headers()['content-security-policy']).toContain("'nonce-");
+    }
+    const logo = await request.get('/brand/logo/horizontal/warm-sand');
+    expect(logo.status()).toBe(200);
+    expect(logo.headers()['content-security-policy']).toBe(
+      "default-src 'none'; style-src 'unsafe-inline'",
+    );
+  });
+
+  test('menu do celular (MobileNav Core): Contato fecha o menu e leva ao formulário; Esc devolve o foco', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const errors = collectConsoleErrors(page);
+    await page.goto(HOME);
+    const button = page.getByRole('button', { name: text.site.openMenu });
+    await button.click();
+    const dialog = page.getByRole('dialog', { name: text.site.menu });
+    await expect(
+      dialog.getByRole('link', { name: text.site.brandPartners, exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
+    if (process.env.UI_CAPTURE_DIR) {
+      await dialog.evaluate((node) => Promise.all(node.getAnimations().map((a) => a.finished)));
+      await page.screenshot({ path: `${process.env.UI_CAPTURE_DIR}/bp1-menu-390.png` });
+    }
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(button).toBeFocused();
+
+    await button.click();
+    await dialog.getByRole('link', { name: text.site.contact }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole('heading', { name: conversation.title })).toBeInViewport();
+    expect(errors).toEqual([]);
+  });
+});
+
+test.describe('Brand Partners — formulário (REQ-028, TECH-057, catalog §14.3–14.5)', () => {
+  test('[REQ-028] validação acessível: resumo, foco no primeiro erro, aria-invalid e aria-describedby; sem envio', async ({
+    page,
+  }) => {
+    const sent = await interceptContacts(page);
+    await page.goto(`${HOME}#conversa`);
+    await submitButton(page).click();
+
+    const summary = page.getByRole('alert').filter({ hasText: text.form.errorSummary });
+    await expect(summary).toBeVisible();
+    for (const label of ['name', 'brand', 'email', 'message'] as const) {
+      await expect(summary.getByRole('link', { name: text.form.labels[label] })).toBeVisible();
+    }
+    const name = field(page, 'name');
+    await expect(name).toBeFocused();
+    // O campo focado não fica sob o header fixo (WCAG 2.4.11).
+    const header = await page.locator('header').boundingBox();
+    const focused = await name.boundingBox();
+    expect(focused?.y ?? 0).toBeGreaterThanOrEqual((header?.y ?? 0) + (header?.height ?? 0));
+    await expect(name).toHaveAttribute('aria-invalid', 'true');
+    await expect(name).toHaveAccessibleDescription(text.form.fields.required);
+    await expect(field(page, 'website')).not.toHaveAttribute('aria-invalid', 'true');
+
+    await fillContact(page, { ...CONTACT, email: 'sem-arroba', website: 'marca.test' });
+    await submitButton(page).click();
+    await expect(field(page, 'email')).toBeFocused();
+    await expect(field(page, 'email')).toHaveAccessibleDescription(text.form.fieldInvalid.email);
+    await expect(field(page, 'website')).toHaveAccessibleDescription(
+      text.form.fieldInvalid.website,
+    );
+    if (process.env.UI_CAPTURE_DIR) {
+      await page.screenshot({ path: `${process.env.UI_CAPTURE_DIR}/bp1-form-validation-1280.png` });
+    }
+    expect(sent).toHaveLength(0);
+  });
+
+  test('[TECH-057] só pelo teclado: Tab percorre os cinco campos e o botão (o honeypot fica fora); Enter envia', async ({
+    page,
+  }) => {
+    await page.goto(`${HOME}#conversa`);
+    await field(page, 'name').focus();
+    await page.keyboard.type(CONTACT.name);
+    for (const name of ['brand', 'email', 'message', 'website'] as const) {
+      await page.keyboard.press('Tab');
+      await expect(field(page, name)).toBeFocused();
+      await page.keyboard.type(CONTACT[name]);
+    }
+    await page.keyboard.press('Tab');
+    await expect(submitButton(page)).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.getByText(conversation.success)).toBeVisible();
+  });
+
+  test('[TECH-057] envio não confirmado (503): dados preservados; retry com a mesma chave e o mesmo conteúdo', async ({
+    page,
+  }) => {
+    const sent = await interceptContacts(page, (route, call) =>
+      call === 1
+        ? route.fulfill({
+            status: 503,
+            contentType: 'application/json',
+            body: errorBody('ERR_UNAVAILABLE'),
+          })
+        : route.continue(),
+    );
+    await page.goto(`${HOME}#conversa`);
+    await fillContact(page);
+    await submitButton(page).click();
+
+    await expect(page.getByText(text.form.outcomes.unconfirmed)).toBeVisible();
+    await expect(field(page, 'message')).toHaveValue(CONTACT.message);
+    if (process.env.UI_CAPTURE_DIR) {
+      await page.getByText(text.form.outcomes.unconfirmed).scrollIntoViewIfNeeded();
+      await page.screenshot({ path: `${process.env.UI_CAPTURE_DIR}/bp1-form-error-1280.png` });
+    }
+    await submitButton(page).click();
+    await expect(page.getByText(conversation.success)).toBeVisible();
+    expect(sent).toHaveLength(2);
+    expect(sent[1]?.key).toBe(sent[0]?.key);
+    expect(sent[1]?.body).toBe(sent[0]?.body);
+  });
+
+  test('[TECH-057] falha de rede também não é sucesso; conteúdo alterado depois da falha = nova tentativa', async ({
+    page,
+  }) => {
+    const sent = await interceptContacts(page, (route, call) =>
+      call === 1 ? route.abort('failed') : route.continue(),
+    );
+    await page.goto(`${HOME}#conversa`);
+    await fillContact(page);
+    await submitButton(page).click();
+    await expect(page.getByText(text.form.outcomes.unconfirmed)).toBeVisible();
+
+    await field(page, 'message').fill('Mensagem revisada.');
+    await submitButton(page).click();
+    await expect(page.getByText(conversation.success)).toBeVisible();
+    expect(sent[1]?.key).not.toBe(sent[0]?.key);
+  });
+
+  test('[TECH-057] 429 e 409: mensagens próprias; o conflito não troca a chave sozinho', async ({
+    page,
+  }) => {
+    const sent = await interceptContacts(page, (route, call) => {
+      if (call === 1) {
+        return route.fulfill({
+          status: 429,
+          headers: { 'retry-after': '30' },
+          contentType: 'application/json',
+          body: errorBody('ERR_RATE_LIMITED'),
+        });
+      }
+      if (call === 2) {
+        return route.fulfill({
+          status: 409,
+          contentType: 'application/json',
+          body: errorBody('ERR_IDEMPOTENCY_CONFLICT'),
+        });
+      }
+      return route.continue();
+    });
+    await page.goto(`${HOME}#conversa`);
+    await fillContact(page);
+    await submitButton(page).click();
+    await expect(page.getByText(text.form.outcomes.rateLimited)).toBeVisible();
+    await submitButton(page).click();
+    await expect(page.getByText(text.form.outcomes.conflict)).toBeVisible();
+    expect(sent).toHaveLength(2);
+    expect(sent[1]?.key).toBe(sent[0]?.key);
+
+    await submitButton(page).click();
+    await expect(page.getByText(conversation.success)).toBeVisible();
+    expect(sent[2]?.key).not.toBe(sent[1]?.key);
+  });
+
+  test('[TECH-057] o botão impede envio concorrente enquanto a tentativa está em curso', async ({
+    page,
+  }) => {
+    let release: () => void = () => undefined;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const sent = await interceptContacts(page, async (route) => {
+      await held;
+      await route.continue();
+    });
+    await page.goto(`${HOME}#conversa`);
+    await fillContact(page);
+    await submitButton(page).click();
+    await expect(submitButton(page)).toHaveAttribute('aria-disabled', 'true');
+    await expect(page.getByText(text.form.sending)).toBeVisible();
+    // `aria-disabled` faz o Playwright tratar o botão como desabilitado; os cliques forçados provam a guarda.
+    await submitButton(page).click({ force: true });
+    await page.keyboard.press('Enter');
+    release();
+    await expect(page.getByText(conversation.success)).toBeVisible();
+    expect(sent).toHaveLength(1);
+  });
+});
+
+test.describe('Brand Partners — formulário no celular com toque (ADR-0009)', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+  test('[REQ-028] fluxo principal a 390 px com toque: aceite confirmado, campos limpos, nada em URL ou storage', async ({
+    page,
+  }) => {
+    const errors = collectConsoleErrors(page);
+    const sent = await interceptContacts(page);
+    await page.goto(`${HOME}#conversa`);
+    await expect(page.getByRole('textbox')).toHaveCount(5);
+    await fillContact(page);
+    await submitButton(page).tap();
+
+    await expect(page.getByText(conversation.success)).toBeVisible();
+    for (const name of Object.keys(text.form.labels) as Field[]) {
+      await expect(field(page, name)).toHaveValue('');
+    }
+    expect(sent).toHaveLength(1);
+    expect(sent[0]?.key).toMatch(/^[0-9a-f-]{36}$/);
+    expect(JSON.parse(sent[0]?.body ?? '{}')).toEqual(CONTACT);
+    expect(new URL(page.url()).search).toBe('');
+    const stored = await page.evaluate(() => ({
+      local: localStorage.length,
+      session: sessionStorage.length,
+      cookie: document.cookie,
+    }));
+    expect(stored).toEqual({ local: 0, session: 0, cookie: '' });
+    if (process.env.UI_CAPTURE_DIR) {
+      await page.getByText(conversation.success).scrollIntoViewIfNeeded();
+      await page.screenshot({ path: `${process.env.UI_CAPTURE_DIR}/bp1-form-success-390.png` });
+    }
+    expect(errors).toEqual([]);
+  });
+});
+
+test.describe('Brand Partners — endpoint público (TECH-057)', () => {
+  const key = () => randomUUID();
+
+  test('[TECH-057] origem ausente ou de outro domínio = 403; a própria origem = 202 no-store, sem CORS', async ({
+    request,
+    baseURL,
+  }) => {
+    const data = { ...CONTACT };
+    const withoutOrigin = await request.post(ENDPOINT, {
+      headers: { 'idempotency-key': key() },
+      data,
+    });
+    expect(withoutOrigin.status()).toBe(403);
+    const foreign = await request.post(ENDPOINT, {
+      headers: { 'idempotency-key': key(), origin: 'https://evil.test' },
+      data,
+    });
+    expect(foreign.status()).toBe(403);
+    expect(foreign.headers()['access-control-allow-origin']).toBeUndefined();
+
+    const accepted = await request.post(ENDPOINT, {
+      headers: { 'idempotency-key': key(), origin: baseURL ?? '' },
+      data,
+    });
+    expect(accepted.status()).toBe(202);
+    expect(await accepted.json()).toEqual({ status: 'accepted' });
+    expect(accepted.headers()['cache-control']).toBe('no-store');
+    expect(accepted.headers()['access-control-allow-origin']).toBeUndefined();
+  });
+
+  test('[TECH-057] campo extra = 400; honeypot = 403; mesma chave com outro conteúdo = 409', async ({
+    request,
+    baseURL,
+  }) => {
+    const headers = (idempotency: string) => ({
+      'idempotency-key': idempotency,
+      origin: baseURL ?? '',
+    });
+    const extra = await request.post(ENDPOINT, {
+      headers: headers(key()),
+      data: { ...CONTACT, cnpj: '1' },
+    });
+    expect(extra.status()).toBe(400);
+    const trapped = await request.post(ENDPOINT, {
+      headers: headers(key()),
+      data: { ...CONTACT, _trap: 'x' },
+    });
+    expect(trapped.status()).toBe(403);
+
+    const reused = key();
+    expect(
+      (await request.post(ENDPOINT, { headers: headers(reused), data: CONTACT })).status(),
+    ).toBe(202);
+    expect(
+      (await request.post(ENDPOINT, { headers: headers(reused), data: CONTACT })).status(),
+    ).toBe(202);
+    const changed = await request.post(ENDPOINT, {
+      headers: headers(reused),
+      data: { ...CONTACT, message: 'Outra mensagem.' },
+    });
+    expect(changed.status()).toBe(409);
+  });
+});

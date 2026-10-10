@@ -132,6 +132,7 @@ utilizado é Retraimento, sem exceção como padrão `[FW-BP: §10.2]`.
 | D-BP-11 | Mapa de páginas (§7): as mesmas páginas do mapa anterior; Home a mais abrangente, seguindo estritamente o Framework; "Como funciona" aprofunda a parceria em detalhe; Concepts demonstra o método | aprovada em 2026-10-01 (fundador: mesmo critério adotado no B2C) | `[FW-BP: §7, §8.1, §12, §13]` |
 | D-BP-12 | CTA "Explore o potencial residencial da sua marca." → qualificação estratégica, sem pressupor parceria; não aparece enquanto a superfície não existir no `02` | aprovada em 2026-10-01 (fundador: mesmo critério adotado no B2C) | `[FW-BP: §8 P5, §12]`; `02` §2; TECH-001; `P-BP-01` |
 | D-BP-13 | BP1 = Home `/brand-partner` + `/brand-partner/como-funciona` + formulário na Home; CTA → `/brand-partner#conversa`; campos e propósito do REQ-028; Concepts não bloqueia o MVP; portal planejado somente em BP2 | aprovada pelo fundador na BP0, 2026-10-09; complementa D-BP-11/D-BP-12 sem mudar o Framework | REQ-028, REQ-029, TECH-057, TECH-058; `P-BP-01`, `P-BP-02` |
+| D-BP-14 | Copy + Especificação Visual FINAL da BP1 (Home H1–H9: PICTURE → PROBLEM → PROMISE → PROOF → PUSH; Como funciona C1–C6: PROOF → PUSH), verbatim em `catalog/presentation/i18n/brand-partners-pt-br.ts`; sem fotografia B2B autorizada → fallback tipográfico | aprovada e congelada pelo fundador, 2026-10-10; executa D-BP-11/12/13 sem mudar o Framework | REQ-028; `catalog` §14.8; `P-LX-03` segue como gate de go-live |
 
 | ID | Hipótese | Como validar | Status |
 |---|---|---|---|

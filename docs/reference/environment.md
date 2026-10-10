@@ -31,8 +31,18 @@ Regras:
 | `MEDIA_STORAGE` | local e CI | `supabase` ou `local`; `local` (diretório) é recusado quando `VERCEL_ENV` existe ([ADR-0015](../adr/0015-midia-do-catalogo-metadados-e-storage.md)). Ausente = Supabase Storage; nunca configurar na Vercel | 4.1 |
 | `MEDIA_LOCAL_DIR` | local e CI | diretório absoluto dos objetos de mídia com `MEDIA_STORAGE=local` (o servidor do E2E usa um diretório temporário) | 4.1 |
 | `MEDIA_BUCKET` | Vercel — **só Production** | nome do bucket **privado** do Supabase Storage com os binários da mídia do catálogo (master sanitizado e larguras de exibição; ADR-0015); ausente → envio e entrega de capa indisponíveis (503) | 4.1 |
-| `UPSTASH_REDIS_REST_URL` | Vercel (Sensitive) | rate limit | W5 |
-| `UPSTASH_REDIS_REST_TOKEN` | Vercel (Sensitive) | rate limit | W5 |
+| `UPSTASH_REDIS_REST_URL` | Vercel (Sensitive) — Production e Preview com bancos Upstash **distintos** | rate limit (`platform`); desde a BP1, o limitador do contato Brand Partners (`https://`) | W5 (antecipada na BP1) |
+| `UPSTASH_REDIS_REST_TOKEN` | Vercel (Sensitive) — Production e Preview, cada um com o token do próprio banco | rate limit | W5 (antecipada na BP1) |
+| `BRAND_PARTNERS_SITE` | Vercel — Production (Preview só se for preciso fechar) | portão da jornada Brand Partners, independente de `PUBLIC_SITE`: `open` ou `closed`; ausente = fechada em Production e aberta fora dela; fechada → páginas e endpoint 404 (spec `catalog` §14.1) | BP1 |
+| `BRAND_PARTNERS_CONTACT_MODE` | local e CI | `fake` = envio e limitador determinísticos em memória (nenhum e-mail real, nenhum Upstash); recusado quando `VERCEL_ENV` existe, inclusive em Preview. Ausente = Resend + Upstash reais; nunca configurar na Vercel | BP1 |
+| `RESEND_API_KEY` | Vercel (Sensitive, só servidor) — Production e Preview com chaves distintas | envio do contato Brand Partners pela API HTTP do Resend; formato `re_…` (TECH-057) | BP1 |
+| `BRAND_PARTNERS_CONTACT_FROM` | Vercel — Production e Preview | remetente verificado no Resend (`email@dominio` ou `Nome <email@dominio>`) | BP1 |
+| `BRAND_PARTNERS_CONTACT_TO` | Vercel — Production (caixa corporativa) e Preview (caixa **de teste**) | destinatário do contato; nunca vem do client | BP1 |
+| `BRAND_PARTNERS_CONTACT_HMAC_SECRET` | Vercel (Sensitive, só servidor) — Production e Preview com valores distintos | segredo próprio (≥ 32 caracteres) do HMAC que pseudonimiza a origem de rede nas chaves do limitador | BP1 |
+| `BRAND_PARTNERS_ALLOWED_ORIGINS` | Vercel — Production e Preview (e o servidor do E2E) | origens exatas aceitas no `Origin` do contato, separadas por vírgula, na forma canônica (`https://host`, sem barra final) | BP1 |
+| `BRAND_PARTNERS_CONTACT_NETWORK_LIMIT` · `BRAND_PARTNERS_CONTACT_NETWORK_WINDOW_SECONDS` | Vercel — Production e Preview | tentativas por origem de rede por janela (inteiros positivos; valores no runbook, TECH-001) | BP1 |
+| `BRAND_PARTNERS_CONTACT_GLOBAL_LIMIT` · `BRAND_PARTNERS_CONTACT_GLOBAL_WINDOW_SECONDS` | Vercel — Production e Preview | tentativas totais da superfície por janela (idem) | BP1 |
+| `BRAND_PARTNERS_CONTACT_SEND_TIMEOUT_MS` · `BRAND_PARTNERS_CONTACT_LIMITER_TIMEOUT_MS` | Vercel — Production e Preview | prazo do envio ao Resend e do limitador; sem resposta no prazo → 503 (idem) | BP1 |
 | `SUPABASE_SECRET_KEY` | Vercel (Sensitive, só servidor) | Admin API do Supabase Auth (convites, W7) e, desde a Wave 4.1, o Supabase Storage privado da mídia do catálogo (cabeçalho `apikey`, ADR-0015); só no formato `sb_secret_…` — a `service_role` legada é recusada; **só Production** | W7 (antecipada na 4.1) |
 | `PII_ENCRYPTION_KEYRING` | Vercel (Sensitive, só servidor) | cifra AES-256-GCM de CPF/CNPJ, com `key_id` (ADR-0002) | W7 |
 | `PII_ENCRYPTION_ACTIVE_KEY_ID` | Vercel (Sensitive, só servidor) | chave ativa para novas cifras | W7 |
