@@ -285,7 +285,7 @@ test.describe('Brand Partners — formulário (REQ-028, TECH-057, catalog §14.3
     expect(sent).toHaveLength(0);
   });
 
-  test('[TECH-057] só pelo teclado: Tab percorre os cinco campos e o botão (o honeypot fica fora); Enter envia sem perder o foco', async ({
+  test('[TECH-057] só pelo teclado: Tab percorre os cinco campos e o botão (o honeypot fica fora); Enter envia e o foco termina no botão', async ({
     page,
   }) => {
     await page.goto(`${HOME}#conversa`);
@@ -300,16 +300,16 @@ test.describe('Brand Partners — formulário (REQ-028, TECH-057, catalog §14.3
     await expect(submitButton(page)).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page.getByText(conversation.success)).toBeVisible();
-    // O botão fica desabilitado durante o envio; o foco volta a ele quando o envio termina.
+    // Envio pelo botão: desabilitado durante o envio, ele recebe o foco de volta quando o envio termina.
     await expect(submitButton(page)).toBeFocused();
 
-    // Enviado pelo Enter num campo, o foco fica nesse campo (somente leitura durante o envio), nunca no documento.
+    // Envio pelo Enter num campo: o foco também termina no botão.
     await fillContact(page);
     const accepted = page.waitForResponse((r) => r.url().endsWith(ENDPOINT) && r.status() === 202);
     await field(page, 'website').press('Enter');
     await accepted;
     await expect(field(page, 'website')).toHaveValue('');
-    await expect(field(page, 'website')).toBeFocused();
+    await expect(submitButton(page)).toBeFocused();
   });
 
   test('[TECH-057] envio não confirmado (503): dados preservados; retry com a mesma chave e o mesmo conteúdo', async ({
@@ -334,6 +334,7 @@ test.describe('Brand Partners — formulário (REQ-028, TECH-057, catalog §14.3
       await expect(field(page, name as Field)).toBeEditable();
     }
     await expect(submitButton(page)).toBeEnabled();
+    await expect(submitButton(page)).toBeFocused();
     if (process.env.UI_CAPTURE_DIR) {
       await page.getByText(text.form.outcomes.unconfirmed).scrollIntoViewIfNeeded();
       await page.screenshot({ path: `${process.env.UI_CAPTURE_DIR}/bp1-form-error-1280.png` });
@@ -430,6 +431,8 @@ test.describe('Brand Partners — formulário (REQ-028, TECH-057, catalog §14.3
       await expect(field(page, name)).toBeEditable();
     }
     await expect(submitButton(page)).toBeEnabled();
+    // O envio terminou com o foco num campo (Enter durante o envio); ainda assim o foco termina no botão.
+    await expect(submitButton(page)).toBeFocused();
     expect(sent).toHaveLength(1);
     expect(JSON.parse(sent[0]?.body ?? '{}')).toEqual(CONTACT);
   });

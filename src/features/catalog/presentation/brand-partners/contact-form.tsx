@@ -196,13 +196,15 @@ export function BrandPartnerContactForm({
   const isSending = status.kind === 'sending';
 
   // Durante o envio os campos ficam somente leitura e o botão desabilitado: o resultado vale para o conteúdo enviado.
-  // Desabilitar o botão tira o foco dele; ao fim do envio, o foco volta ao botão se ficou perdido no documento.
+  // Ao fim do envio (aceite ou falha), o foco volta ao botão, tenha o envio partido dele ou do Enter num campo; erros
+  // de campo do servidor seguem levando o foco ao primeiro campo inválido.
   const wasSending = useRef(false);
   useEffect(() => {
-    const lost = document.activeElement === null || document.activeElement === document.body;
-    if (wasSending.current && !isSending && lost) submitButton.current?.focus();
-    wasSending.current = isSending;
-  }, [isSending]);
+    if (wasSending.current && (status.kind === 'success' || status.kind === 'failed')) {
+      submitButton.current?.focus();
+    }
+    wasSending.current = status.kind === 'sending';
+  }, [status.kind]);
 
   return (
     <form className="lx-form" noValidate method="post" onSubmit={(event) => void onSubmit(event)}>
