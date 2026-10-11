@@ -285,7 +285,7 @@ test.describe('Brand Partners — formulário (REQ-028, TECH-057, catalog §14.3
     expect(sent).toHaveLength(0);
   });
 
-  test('[TECH-057] só pelo teclado: Tab percorre os cinco campos e o botão (o honeypot fica fora); Enter envia', async ({
+  test('[TECH-057] só pelo teclado: Tab percorre os cinco campos e o botão (o honeypot fica fora); Enter envia sem perder o foco', async ({
     page,
   }) => {
     await page.goto(`${HOME}#conversa`);
@@ -302,6 +302,14 @@ test.describe('Brand Partners — formulário (REQ-028, TECH-057, catalog §14.3
     await expect(page.getByText(conversation.success)).toBeVisible();
     // O botão fica desabilitado durante o envio; o foco volta a ele quando o envio termina.
     await expect(submitButton(page)).toBeFocused();
+
+    // Enviado pelo Enter num campo, o foco fica nesse campo (somente leitura durante o envio), nunca no documento.
+    await fillContact(page);
+    const accepted = page.waitForResponse((r) => r.url().endsWith(ENDPOINT) && r.status() === 202);
+    await field(page, 'website').press('Enter');
+    await accepted;
+    await expect(field(page, 'website')).toHaveValue('');
+    await expect(field(page, 'website')).toBeFocused();
   });
 
   test('[TECH-057] envio não confirmado (503): dados preservados; retry com a mesma chave e o mesmo conteúdo', async ({
