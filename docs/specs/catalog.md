@@ -940,7 +940,7 @@ marcadores de bloco) não são renderizados.
 
 | Tema | Decisão de implementação |
 |---|---|
-| Rotas | Grupo `src/app/(brand-partners)` com layout próprio (portão `BRAND_PARTNERS_SITE`); páginas em `catalog/presentation/brand-partners/`. `/Brand-Partner` sem uso/divulgação conhecido → sem redirect (§14.1 o condiciona ao uso) |
+| Rotas | Grupo `src/app/(brand-partners)` com layout próprio; portão `BRAND_PARTNERS_SITE` no layout, em cada página e no `generateMetadata` (o Next renderiza layout, página e metadados em paralelo: fechado, o 404 não leva copy, props nem metadados da BP1 — E2E pelo corpo bruto); páginas em `catalog/presentation/brand-partners/`. `/Brand-Partner` sem uso/divulgação conhecido → sem redirect (§14.1 o condiciona ao uso) |
 | Shell | `SiteShell` do Core com navegação B2B (Brand Partners · Como funciona · Contato → `/brand-partner#conversa`), header sólido, `MobileNav` Core; o menu passa a fechar ao ativar um link (âncora na própria página) |
 | Imagem | Nenhum asset B2B autorizado: Hero tipográfico (fallback aprovado) e nenhuma seção com fotografia; nenhuma imagem B2C reutilizada |
 | Core | Complementos genéricos em `styles/core/` (spec `design-system` §13 e uso em `docs/reference/design-system.md` §15): `lx-hero--typographic`, `lx-stack__pause`, `lx-stack--editorial`, `lx-siblings--trio`, `lx-section-note`, `lx-columns--aside`, `lx-anchors`; `strong` semibold em `lx-body`/`lx-subheadline` |
@@ -949,7 +949,7 @@ marcadores de bloco) não são renderizados.
 | Limitador | `platform`: `@upstash/ratelimit` 2.2.0 + `@upstash/redis` 1.39.0 (ADR-0004), janela deslizante (TTL pelo PEXPIRE do script), sem analytics/telemetria/cache local; timeout próprio que **recusa** (o da biblioteca deixaria passar). Origem de rede = `x-real-ip` da Vercel, canônica (IPv4; IPv4 mapeado → IPv4; IPv6 reduzido ao /64), HMAC-SHA256 com `BRAND_PARTNERS_CONTACT_HMAC_SECRET`; fora da Vercel, uma origem única `local` |
 | Envio | `catalog`: port `ContactMailer` + adapter HTTP do Resend (sem SDK), `Idempotency-Key` = `luxtory:brand-partner-contact:<ambiente>:<uuid>`, assunto fixo, texto simples determinístico, `reply_to` = e-mail validado. 409 `invalid_idempotent_request` → `ERR_IDEMPOTENCY_CONFLICT`; 409 concorrente, 429, 4xx/5xx, rede e timeout → `ERR_UNAVAILABLE` |
 | Local/CI | `BRAND_PARTNERS_CONTACT_MODE=fake`: envio (idempotência emulada, só impressões digitais SHA-256) e limitador em memória; recusado quando `VERCEL_ENV` existe — Preview sem configuração real falha fechado (503) |
-| Formulário | Cliente com o mesmo schema Zod; chave UUID por tentativa lógica (mesmo conteúdo = mesma chave; conteúdo novo ou conflito = tentativa nova, só por ação explícita); estados acessíveis; nada em URL, cookie ou storage |
+| Formulário | Cliente com o mesmo schema Zod; chave UUID por tentativa lógica (mesmo conteúdo = mesma chave; conteúdo novo ou conflito = tentativa nova, só por ação explícita); durante o envio, campos `readOnly` e botão `disabled` (o resultado vale só para o conteúdo enviado; o foco volta ao botão no fim); estados acessíveis; nada em URL, cookie ou storage |
 | Logs | Uma linha por request: `event`, `stage`, `status`, `duration_ms` e `reason` de conjunto fechado (nomes de chave de configuração, motivo do provedor/limitador, nome do erro); nunca campos, corpo, IP, chave ou resposta do provedor |
 
 Configuração e go-live: [runbook](../how-to/operacao.md#preparar-a-bp1-brand-partners-público) e

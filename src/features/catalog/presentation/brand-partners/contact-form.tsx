@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { flushSync } from 'react-dom';
 import { Icon } from '@/design-system/react/icons';
 import {
@@ -108,6 +108,7 @@ export function BrandPartnerContactForm({
   const [errors, setErrors] = useState<FieldErrors>({});
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const trap = useRef<HTMLInputElement>(null);
+  const submitButton = useRef<HTMLButtonElement>(null);
   const sending = useRef(false);
   // Tentativa lógica: a chave acompanha exatamente o conteúdo enviado. Conteúdo novo = tentativa nova.
   const attempt = useRef<{ readonly key: string; readonly payload: string } | null>(null);
@@ -194,6 +195,17 @@ export function BrandPartnerContactForm({
   const invalid = CONTACT_FIELDS.filter((field) => errors[field] !== undefined);
   const isSending = status.kind === 'sending';
 
+  // Durante o envio os campos ficam somente leitura e o botão desabilitado: o resultado vale para o conteúdo enviado.
+  // Ao fim do envio (aceite ou falha), o foco volta ao botão, tenha o envio partido dele ou do Enter num campo; erros
+  // de campo do servidor seguem levando o foco ao primeiro campo inválido.
+  const wasSending = useRef(false);
+  useEffect(() => {
+    if (wasSending.current && (status.kind === 'success' || status.kind === 'failed')) {
+      submitButton.current?.focus();
+    }
+    wasSending.current = status.kind === 'sending';
+  }, [status.kind]);
+
   return (
     <form className="lx-form" noValidate method="post" onSubmit={(event) => void onSubmit(event)}>
       {status.kind === 'invalid' && invalid.length > 0 ? (
@@ -222,6 +234,7 @@ export function BrandPartnerContactForm({
           value: values[field.name],
           autoComplete: field.autoComplete,
           required: field.optional !== true,
+          readOnly: isSending,
           'aria-invalid': code === undefined ? undefined : (true as const),
           'aria-describedby': describedBy,
           onChange: (event: { target: { value: string } }) => {
@@ -272,9 +285,10 @@ export function BrandPartnerContactForm({
 
       <div className="lx-form__actions">
         <button
+          ref={submitButton}
           className="lx-button lx-button--primary"
           type="submit"
-          aria-disabled={isSending ? true : undefined}
+          disabled={isSending}
         >
           {submit}
         </button>
