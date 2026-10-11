@@ -27,6 +27,9 @@ export const ERROR_STATUS: Readonly<Record<ErrorCode, number>> = {
   ERR_UNAUTHENTICATED: 401,
   ERR_NOT_FOUND: 404,
   ERR_UNAVAILABLE: 503,
+  ERR_PAYLOAD_TOO_LARGE: 413,
+  ERR_UNSUPPORTED_MEDIA_TYPE: 415,
+  ERR_RATE_LIMITED: 429,
 };
 
 /** Resposta no schema `Error` do OpenAPI, com a causa funcional em pt-BR (REQ-098). */

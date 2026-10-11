@@ -21,13 +21,19 @@ export const TECH_056_ERROR_CODES = [
   'ERR_DELINQUENCY_RESTRICTED',
 ] as const;
 
-/** Códigos gerais da plataforma, além do mínimo do TECH-056 (enum `ErrorCode` do OpenAPI). */
+/**
+ * Códigos gerais da plataforma, além do mínimo do TECH-056 (enum `ErrorCode` do OpenAPI). Os três últimos são da borda
+ * HTTP pública do contato Brand Partners (spec catalog §14.4, TECH-057): corpo grande, tipo de conteúdo e limite.
+ */
 export const PLATFORM_ERROR_CODES = [
   'ERR_INTERNAL',
   'ERR_VALIDATION',
   'ERR_UNAUTHENTICATED',
   'ERR_NOT_FOUND',
   'ERR_UNAVAILABLE',
+  'ERR_PAYLOAD_TOO_LARGE',
+  'ERR_UNSUPPORTED_MEDIA_TYPE',
+  'ERR_RATE_LIMITED',
 ] as const;
 
 export const ERROR_CODES = [...TECH_056_ERROR_CODES, ...PLATFORM_ERROR_CODES] as const;

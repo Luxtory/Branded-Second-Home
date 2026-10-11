@@ -772,7 +772,8 @@ nova versão do `02`); amenidades (sem vocabulário); formulário de interesse (
 
 ## 14. Discovery público B2B Brand Partners (BP1)
 
-Contrato BP0 aprovado pelo fundador (2026-10-09); BP1 não implementada. Comportamento e limites:
+Contrato BP0 aprovado pelo fundador (2026-10-09); BP1 não implementada na BP0 — implementação registrada em §14.8.
+Comportamento e limites:
 [`02` REQ-028](canonical/02-product-spec.md#61-jornada-brand-partners); arquitetura:
 [`03` TECH-057](canonical/03-technical-spec.md#61-brand-partners-público-e-fronteira-do-portal).
 Comunicação: [aplicação Brand Partners](communication/brand-partners.md), D-BP-11/12/13 e L1–L10;
@@ -929,3 +930,28 @@ páginas e um asset real. Não incluir API JSON no matcher nem alterar Auth; sem
 
 Gates e sequência executiva pertencem à BP1 do roadmap. OpenAPI precede o handler; runbook precede go-live.
 Esta seção não autoriza execução de BP1 nem declara cobertura implementada de REQ-028/029.
+
+### 14.8 Implementação BP1 (2026-10-10)
+
+Executa §14.1–14.7 e a **Copy + Especificação Visual FINAL** do fundador (congelada em 2026-10-10, `D-BP-14`), sem
+redefinir REQ-028/TECH-057. Copy verbatim em
+`src/features/catalog/presentation/i18n/brand-partners-pt-br.ts`; identificadores internos (H1–H9, C1–C6, funções 5P,
+marcadores de bloco) não são renderizados.
+
+| Tema | Decisão de implementação |
+|---|---|
+| Rotas | Grupo `src/app/(brand-partners)` com layout próprio (portão `BRAND_PARTNERS_SITE`); páginas em `catalog/presentation/brand-partners/`. `/Brand-Partner` sem uso/divulgação conhecido → sem redirect (§14.1 o condiciona ao uso) |
+| Shell | `SiteShell` do Core com navegação B2B (Brand Partners · Como funciona · Contato → `/brand-partner#conversa`), header sólido, `MobileNav` Core; o menu passa a fechar ao ativar um link (âncora na própria página) |
+| Imagem | Nenhum asset B2B autorizado: Hero tipográfico (fallback aprovado) e nenhuma seção com fotografia; nenhuma imagem B2C reutilizada |
+| Core | Complementos genéricos em `styles/core/` (spec `design-system` §13 e uso em `docs/reference/design-system.md` §15): `lx-hero--typographic`, `lx-stack__pause`, `lx-stack--editorial`, `lx-siblings--trio`, `lx-section-note`, `lx-columns--aside`, `lx-anchors`; `strong` semibold em `lx-body`/`lx-subheadline` |
+| SEO | `generateMetadata` por página: title/description da copy aprovada, canonical relativo (base da plataforma), Open Graph/Twitter sem imagem; `noindex, nofollow` fora de Production; sem dados estruturados |
+| Endpoint | `POST /v1/brand-partner-contacts` (OpenAPI `createBrandPartnerContact`); ordem: portão/configuração → `Origin` exata (`BRAND_PARTNERS_ALLOWED_ORIGINS`) → JSON UTF-8 (415) → corpo ≤ 32 KiB contado em stream (413) → limitador → JSON/schema/chave (400) → honeypot (403) → Resend. Novos códigos `ERR_PAYLOAD_TOO_LARGE`, `ERR_UNSUPPORTED_MEDIA_TYPE`, `ERR_RATE_LIMITED` |
+| Limitador | `platform`: `@upstash/ratelimit` 2.2.0 + `@upstash/redis` 1.39.0 (ADR-0004), janela deslizante (TTL pelo PEXPIRE do script), sem analytics/telemetria/cache local; timeout próprio que **recusa** (o da biblioteca deixaria passar). Origem de rede = `x-real-ip` da Vercel, canônica (IPv4; IPv4 mapeado → IPv4; IPv6 reduzido ao /64), HMAC-SHA256 com `BRAND_PARTNERS_CONTACT_HMAC_SECRET`; fora da Vercel, uma origem única `local` |
+| Envio | `catalog`: port `ContactMailer` + adapter HTTP do Resend (sem SDK), `Idempotency-Key` = `luxtory:brand-partner-contact:<ambiente>:<uuid>`, assunto fixo, texto simples determinístico, `reply_to` = e-mail validado. 409 `invalid_idempotent_request` → `ERR_IDEMPOTENCY_CONFLICT`; 409 concorrente, 429, 4xx/5xx, rede e timeout → `ERR_UNAVAILABLE` |
+| Local/CI | `BRAND_PARTNERS_CONTACT_MODE=fake`: envio (idempotência emulada, só impressões digitais SHA-256) e limitador em memória; recusado quando `VERCEL_ENV` existe — Preview sem configuração real falha fechado (503) |
+| Formulário | Cliente com o mesmo schema Zod; chave UUID por tentativa lógica (mesmo conteúdo = mesma chave; conteúdo novo ou conflito = tentativa nova, só por ação explícita); estados acessíveis; nada em URL, cookie ou storage |
+| Logs | Uma linha por request: `event`, `stage`, `status`, `duration_ms` e `reason` de conjunto fechado (nomes de chave de configuração, motivo do provedor/limitador, nome do erro); nunca campos, corpo, IP, chave ou resposta do provedor |
+
+Configuração e go-live: [runbook](../how-to/operacao.md#preparar-a-bp1-brand-partners-público) e
+[catálogo de ambiente](../reference/environment.md). **Pendência externa:** Resend (domínio/remetente e caixa de
+teste) + Upstash do Preview, configurados pelo fundador diretamente no ambiente.

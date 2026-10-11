@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Brand Partners público (BP1, REQ-028, TECH-057; spec catalog §14): `/brand-partner` (PICTURE → PROBLEM → PROMISE →
+  PROOF → PUSH) e `/brand-partner/como-funciona` (PROOF → PUSH) com a Copy + Especificação Visual FINAL do fundador
+  (`D-BP-14`), navegação B2B própria, Hero tipográfico (sem fotografia B2B autorizada) e o formulário "Vamos começar
+  pela sua marca." — Nome, Marca, E-mail, Mensagem e Site da marca (opcional), estados acessíveis, sucesso só com o
+  aceite confirmado do provedor. `POST /v1/brand-partner-contacts`: origem exata, corpo ≤ 32 KiB, schema fechado,
+  honeypot, limite distribuído por origem de rede e global (Upstash, falha fechada), envio pelo Resend com
+  `Idempotency-Key`, nenhuma persistência do contato e nenhum dado pessoal nos logs. Portão `BRAND_PARTNERS_SITE`,
+  independente de `PUBLIC_SITE` (fechado em Production até o go-live); Preview não indexável.
+
 - Coleção final (`/colecao`, Wave 4.1, Fase C; `D-B2C-21`): Hero tipográfico com a busca como protagonista, facetas
   Lifestyle · Localização · Estilo · Pessoas · Faixa de valor (Owner ou Co-Owner com o mesmo peso, depois De/Até) e mais
   filtros; resultados em dois grupos — com e ainda sem Home Edition, ou, com Localização, na região e "outros que
@@ -76,6 +85,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   exercido; checagem de terminologia nos textos registrados.
 
 ### Changed
+- Proxy (CSP/nonce): a exclusão do prefixo `brand` vale só para os arquivos do kit de logos (`/brand/logo/`); as
+  páginas `/brand-partner/**` recebem a CSP com nonce.
+- Menu do site (`MobileNav` do Core): ativar um link fecha o menu antes de navegar.
 - ...
 - Cadastro do segundo fator (`/entrar/mfa`) guiado em três passos: aplicativo autenticador (links oficiais), QR Code
   com chave manual opcional e botão "Copiar chave", e o código de 6 dígitos do aplicativo — diferente do código do

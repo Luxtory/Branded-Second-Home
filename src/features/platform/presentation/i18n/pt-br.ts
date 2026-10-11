@@ -43,5 +43,8 @@ export const messages = {
     ERR_UNAUTHENTICATED: 'É necessário autenticar-se para esta operação.',
     ERR_NOT_FOUND: 'O recurso solicitado não foi encontrado.',
     ERR_UNAVAILABLE: 'A operação está indisponível no momento. Tente novamente em instantes.',
+    ERR_PAYLOAD_TOO_LARGE: 'O conteúdo enviado passa do tamanho permitido.',
+    ERR_UNSUPPORTED_MEDIA_TYPE: 'O formato do conteúdo enviado não é aceito.',
+    ERR_RATE_LIMITED: 'Muitas tentativas em pouco tempo. Tente novamente mais tarde.',
   },
 } as const;

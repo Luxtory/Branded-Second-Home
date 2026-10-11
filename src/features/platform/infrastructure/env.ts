@@ -16,6 +16,12 @@ const envShape = {
   PUBLIC_SITE: z.literal('open').optional(),
   // Mídia do catálogo (ADR-0015). Ausente = Supabase Storage. `local` (diretório) só local e na CI: recusado na Vercel.
   MEDIA_STORAGE: z.enum(['supabase', 'local']).optional(),
+  // Portão da jornada Brand Partners (BP1, spec catalog §14.1), independente de `PUBLIC_SITE`: em Production só abre
+  // com `open`; `closed` fecha em qualquer ambiente.
+  BRAND_PARTNERS_SITE: z.enum(['open', 'closed']).optional(),
+  // Contato Brand Partners (spec catalog §14.6). Ausente = Resend + Upstash reais. `fake` (envio e limitador
+  // determinísticos em memória) só local e na CI: recusado na Vercel, inclusive em Preview.
+  BRAND_PARTNERS_CONTACT_MODE: z.literal('fake').optional(),
 };
 
 const envSchema = z.object(envShape).superRefine((env, context) => {
@@ -24,6 +30,13 @@ const envSchema = z.object(envShape).superRefine((env, context) => {
   }
   if (env.MEDIA_STORAGE === 'local' && env.VERCEL_ENV !== undefined) {
     context.addIssue({ code: 'custom', path: ['MEDIA_STORAGE'], message: 'local media on Vercel' });
+  }
+  if (env.BRAND_PARTNERS_CONTACT_MODE === 'fake' && env.VERCEL_ENV !== undefined) {
+    context.addIssue({
+      code: 'custom',
+      path: ['BRAND_PARTNERS_CONTACT_MODE'],
+      message: 'fake contact delivery on Vercel',
+    });
   }
 });
 
@@ -53,6 +66,31 @@ export function loadEnv(source: EnvSource = process.env): Env {
 
 const positiveInteger = z.coerce.number().int().positive();
 
+/** Endereço de e-mail simples, sem CR/LF nem espaços (remetente/destinatário configurados no servidor). */
+const mailbox = z.email().max(254);
+/** `Nome <email>` ou só o e-mail: o formato do campo `from` do provedor, sem CR/LF. */
+const sender = z.union([
+  mailbox,
+  z
+    .string()
+    .max(320)
+    .regex(/^[^\r\n<>]{1,200} <[^\s<>@]+@[^\s<>@]+>$/),
+]);
+/** Lista de origens exatas (`https://host[:porta]`), separadas por vírgula; cada uma já na forma canônica. */
+const origins = z
+  .string()
+  .transform((value) => value.split(',').map((item) => item.trim()))
+  .pipe(
+    z
+      .array(
+        z.url({ protocol: /^https?$/ }).refine((value) => {
+          const url = new URL(value);
+          return url.origin === value;
+        }),
+      )
+      .min(1),
+  );
+
 /**
  * Configuração de runtime (W1). Os valores pertencem ao runbook `docs/how-to/operacao.md` (TECH-001): nenhum tem
  * default, e cada função lê só as chaves de que depende.
@@ -71,6 +109,22 @@ const runtimeSchema = z.object({
   MEDIA_BUCKET: z.string().regex(/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/),
   // `MEDIA_STORAGE=local`: diretório absoluto dos objetos (local e CI).
   MEDIA_LOCAL_DIR: z.string().regex(/^\//),
+  // Contato Brand Partners (BP1, spec catalog §14.6; valores no runbook, nenhum default — TECH-001). Secrets só no
+  // servidor; Preview usa credenciais e caixa de teste próprias, nunca as de Production.
+  RESEND_API_KEY: z.string().regex(/^re_[A-Za-z0-9_-]+$/),
+  BRAND_PARTNERS_CONTACT_FROM: sender,
+  BRAND_PARTNERS_CONTACT_TO: mailbox,
+  UPSTASH_REDIS_REST_URL: z.url({ protocol: /^https$/ }),
+  UPSTASH_REDIS_REST_TOKEN: z.string().regex(/^\S{20,}$/),
+  // Segredo do HMAC que pseudonimiza a origem de rede nas chaves do limitador; separado de qualquer outro segredo.
+  BRAND_PARTNERS_CONTACT_HMAC_SECRET: z.string().min(32),
+  BRAND_PARTNERS_ALLOWED_ORIGINS: origins,
+  BRAND_PARTNERS_CONTACT_NETWORK_LIMIT: positiveInteger,
+  BRAND_PARTNERS_CONTACT_NETWORK_WINDOW_SECONDS: positiveInteger,
+  BRAND_PARTNERS_CONTACT_GLOBAL_LIMIT: positiveInteger,
+  BRAND_PARTNERS_CONTACT_GLOBAL_WINDOW_SECONDS: positiveInteger,
+  BRAND_PARTNERS_CONTACT_SEND_TIMEOUT_MS: positiveInteger,
+  BRAND_PARTNERS_CONTACT_LIMITER_TIMEOUT_MS: positiveInteger,
 });
 
 export type RuntimeConfig = z.infer<typeof runtimeSchema>;

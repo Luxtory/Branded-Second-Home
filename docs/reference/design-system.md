@@ -570,3 +570,21 @@ Complementares consumidos pela W4: `lx-diagram` (Text + Diagram, `/diagrams/core
   Destaque: `lx-concept-card--featured`. Grupos: `section.lx-concept-group > div.__head` + a lista.
 - Filtros ativos: `ul.lx-chips > li > a.lx-chip[aria-label="Remover filtro: …"]`; ordenação: `nav.lx-sort` com
   `a.lx-sort__option[aria-current=true]`; jornada em passos: `ol.lx-steps > li.lx-steps__item`.
+
+### Brand Partners no Core (BP1, 2026-10-10)
+
+Mesmo Core, sem paleta, escala ou biblioteca B2B (spec `catalog` §14.8). Complementos genéricos que a BP1 consome:
+
+- Hero sem fotografia autorizada: `section.lx-hero.lx-hero--typographic[data-surface=deep]` > `div.lx-container.lx-hero__content`
+  > `div.lx-hero__copy` — a mesma gramática do Cinematic Hero (conteúdo baixo à esquerda, o lugar da foto como espaço
+  negativo), sem `lx-hero__slides`, sem scrim, sob o header sólido.
+- Uma batida a mais antes do fechamento de uma passagem: `p.lx-stack__pause` dentro de um `lx-stack` (mesmo papel de
+  tipo). Coluna editorial de ~8 das 12 colunas, alinhada ao início: `div.lx-stack.lx-stack--editorial`.
+- Três unidades iguais lado a lado a partir do `lg` (4/4/4): `ol.lx-siblings.lx-siblings--trio` > `li.lx-siblings__item`.
+- Limite ou condição que fecha uma composição, em largura ampla e tamanho de corpo: `div.lx-section-note > p.lx-body`.
+- Split 5/7 cuja coluna inicial continua depois da principal (ex.: introdução | formulário, finalidade abaixo da
+  introdução): `div.lx-columns.lx-columns--aside` com três filhos — ordem do DOM e do celular cabeça → principal → aside.
+- Índice da página como âncoras: `nav.lx-anchors[aria-label] > ul > li > a[href="#…"]` — lista entre hairlines no celular
+  (alvos de 44 px), uma linha editorial com pontos médios a partir do `md`.
+- Termo destacado pela copy dentro do texto corrido: `strong` em `lx-body`/`lx-subheadline` (semibold).
+- `MobileNav`: ativar um link do menu fecha o diálogo antes de navegar (âncora na própria página).

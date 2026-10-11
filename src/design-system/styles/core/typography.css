@@ -72,6 +72,10 @@
     line-height: var(--lx-leading-reading);
     max-width: var(--lx-layout-measure);
   }
+  /* A term the copy marks inside running text (e.g. Home Concept): semibold, the heaviest utility weight loaded. */
+  [data-lx="core"] :is(.lx-body, .lx-subheadline) strong {
+    font-weight: var(--lx-weight-semibold);
+  }
   [data-lx="core"] :is(.lx-compact, .lx-small) {
     font-size: var(--lx-type-compact);
     line-height: var(--lx-leading-compact);

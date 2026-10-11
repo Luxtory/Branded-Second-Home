@@ -30,6 +30,10 @@ tags:
       Catálogo (REQ-020, REQ-027; `docs/specs/catalog.md`, ADR-0010): Brand Partner, Concept e versões, Edition,
       Residence e autorização do Investor. Operações não críticas do REQ-095 com o papel Admin exercido (AAL2),
       `operation` e `audit_log`.
+  - name: brand-partners
+    description: |
+      Jornada pública Brand Partners (REQ-028, TECH-057; `docs/specs/catalog.md` §14): contato para iniciar uma conversa
+      com a Luxtory. Sem conta, sem persistência do contato e sem CRM; não cria Brand Partner, grant nem vínculo.
 
 paths:
   /health:
@@ -984,6 +988,171 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
+  /brand-partner-contacts:
+    post:
+      tags: [brand-partners]
+      summary: Envia a mensagem do formulário Brand Partners à caixa corporativa (REQ-028)
+      description: |
+        Público e sem conta (TECH-057, spec `catalog` §14.3–14.6). Ordem: publicação (`BRAND_PARTNERS_SITE`) e
+        configuração → `Origin` exata de um domínio permitido do ambiente (nunca o `Host` do request) → tipo de
+        conteúdo e corpo de até 32 KiB efetivos, com ou sem `Content-Length` → limite distribuído por origem de rede e
+        global (conta também as tentativas recusadas depois) → schema fechado, `Idempotency-Key` e honeypot → envio pelo
+        provedor → resposta. Sem CORS: nenhuma resposta traz `Access-Control-Allow-Origin`.
+
+        **Sucesso só com aceite confirmado do provedor** (Resend): `202` não comprova entrega na caixa, leitura,
+        aprovação nem prazo de resposta, e a submissão não constitui parceria nem cria conta, Brand Partner ou vínculo.
+        Falha de configuração, do limitador, do provedor ou timeout é `503` — um timeout não afirma que nada foi
+        enviado. Repetir com a mesma `Idempotency-Key` e o mesmo conteúdo dentro da janela do provedor (24 h,
+        runbook) devolve `202` sem novo envio; conteúdo diferente com a mesma chave é `409`. Fora da janela não há
+        garantia de deduplicação. Nada do contato é persistido (banco, Redis, logs, cookies, storage do browser ou URL).
+      operationId: createBrandPartnerContact
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/ContactIdempotencyKey'
+        - name: Origin
+          in: header
+          required: true
+          description: |
+            Origem do formulário (enviada pelo navegador). Comparada exatamente aos domínios permitidos do ambiente
+            (`BRAND_PARTNERS_ALLOWED_ORIGINS`); ausente, `null` ou diferente → `403`.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: |
+          JSON (`application/json`, UTF-8) de até 32 KiB. Limites em pontos de código Unicode depois de remover os
+          espaços das pontas; texto simples, sem HTML interpretado. Nenhum campo além dos listados é aceito.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BrandPartnerContactRequest'
+      responses:
+        '202':
+          description: Envio aceito pelo provedor (inclusive repetição da mesma tentativa)
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandPartnerContactAccepted'
+        '400':
+          description: |
+            `ERR_VALIDATION`: JSON inválido, schema fechado violado, campo fora do limite ou `Idempotency-Key` ausente ou
+            fora do formato UUID. `fields` traz só nomes e códigos dos campos, nunca valores.
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandPartnerContactValidationError'
+        '403':
+          description: |
+            `ERR_PERMISSION`: `Origin` ausente ou não permitida, ou envio recusado pela proteção. A resposta não diz
+            qual proteção recusou.
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: '`ERR_NOT_FOUND`: superfície Brand Partners fechada neste ambiente (`BRAND_PARTNERS_SITE`).'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: |
+            `ERR_IDEMPOTENCY_CONFLICT`: a mesma `Idempotency-Key` já foi usada com outro conteúdo dentro da janela do
+            provedor. Uma nova submissão é uma tentativa explícita, com outra chave.
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: '`ERR_PAYLOAD_TOO_LARGE`: corpo acima de 32 KiB.'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: '`ERR_UNSUPPORTED_MEDIA_TYPE`: o corpo não é `application/json`.'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: '`ERR_RATE_LIMITED`: limite por origem de rede ou global excedido.'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+            retry-after:
+              description: Segundos até a próxima tentativa poder ser aceita.
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: '`ERR_INTERNAL`: erro inesperado; resposta genérica e log sanitizado.'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: |
+            `ERR_UNAVAILABLE`: configuração ausente ou inválida (TECH-001), limitador indisponível, timeout ou envio sem
+            aceite confirmado do provedor (inclusive limitação do provedor). Não afirma que nada foi enviado: repetir
+            com a mesma `Idempotency-Key` e o mesmo conteúdo.
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /api/jobs/{job}:
     servers:
       - url: /
@@ -1129,6 +1298,17 @@ components:
         type: string
         pattern: '^[!-~]{1,255}$'
 
+    ContactIdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: |
+        UUID imprevisível gerado pelo navegador por tentativa lógica (TECH-057). Retry da mesma tentativa mantém a chave e
+        o conteúdo; o servidor a repassa ao provedor com o namespace da aplicação e do ambiente.
+      schema:
+        type: string
+        format: uuid
+
     ResourceId:
       name: id
       in: path
@@ -1143,6 +1323,11 @@ components:
       description: Id de correlação do request (o recebido, se válido, ou um UUID gerado).
       schema:
         type: string
+    NoStore:
+      description: Nenhuma resposta do contato Brand Partners é armazenada em cache.
+      schema:
+        type: string
+        enum: [no-store]
     IdempotencyReplayed:
       description: '`true` quando a resposta é a repetição gravada de uma chave já usada (ADR-006 do `03`).'
       schema:
@@ -1274,6 +1459,77 @@ components:
         - ERR_UNAUTHENTICATED
         - ERR_NOT_FOUND
         - ERR_UNAVAILABLE
+        - ERR_PAYLOAD_TOO_LARGE
+        - ERR_UNSUPPORTED_MEDIA_TYPE
+        - ERR_RATE_LIMITED
+
+    BrandPartnerContactRequest:
+      type: object
+      description: |
+        Campos autorizados pelo REQ-028 (spec `catalog` §14.3). Sem CNPJ, telefone, faturamento, orçamento, documentos,
+        anexos ou consentimentos. `_trap` é o honeypot técnico: ausente ou vazio; preenchido → `403` sem envio.
+      additionalProperties: false
+      required: [name, brand, email, message]
+      properties:
+        name:
+          type: string
+          description: Nome — 1 a 120 caracteres.
+          minLength: 1
+          maxLength: 120
+        brand:
+          type: string
+          description: Marca — 1 a 200 caracteres.
+          minLength: 1
+          maxLength: 200
+        email:
+          type: string
+          description: |
+            E-mail — válido, até 254 caracteres, sem CR/LF; não exige domínio corporativo. Usado só como `Reply-To`.
+          format: email
+          maxLength: 254
+        message:
+          type: string
+          description: Mensagem — 1 a 4.000 caracteres, texto simples com quebras de linha preservadas.
+          minLength: 1
+          maxLength: 4000
+        website:
+          type: string
+          description: |
+            Site da marca — opcional; vazio = ausente. URL `http`/`https` de até 500 caracteres, sem credenciais. O
+            servidor nunca acessa o endereço.
+          maxLength: 500
+        _trap:
+          type: string
+          description: Honeypot técnico, sem campo de negócio.
+
+    BrandPartnerContactAccepted:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [accepted]
+
+    BrandPartnerContactValidationError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          properties:
+            fields:
+              type: array
+              description: Campos recusados — só nome e código, nunca o valor enviado.
+              items:
+                type: object
+                additionalProperties: false
+                required: [field, code]
+                properties:
+                  field:
+                    type: string
+                    enum: [name, brand, email, message, website]
+                  code:
+                    type: string
+                    enum: [required, too_long, invalid]
 
     JobResult:
       type: object

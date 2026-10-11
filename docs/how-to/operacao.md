@@ -154,6 +154,52 @@ valor de segredo entra em código, migration, log, issue ou artifact.
    ficam indisponíveis (`ConfigurationMissingError` → 503), sem gravar nada; o código nunca cria bucket nem muda a
    visibilidade dele. O resto da Coleção (cards com o quadro tipográfico) continua no ar.
 
+## Preparar a BP1 (Brand Partners público)
+
+Contrato: spec `catalog` §14 (TECH-057). Nenhum valor de segredo entra em código, issue, PR, log ou chat — o fundador
+configura direto na Vercel. **Sem a configuração, o envio falha fechado (503) em qualquer ambiente**; nada é simulado.
+
+**Preview (revisão antes do go-live)** — exceção da BP1 à regra "segredos só em Production" (spec `catalog` §14.6):
+credenciais e caixa **de teste**, nunca as de Production.
+
+1. Resend: domínio/remetente verificado e uma chave de API própria do Preview (permissão só de envio).
+2. Upstash: um banco Redis próprio do Preview (não o de Production).
+3. Vercel → Environment Variables, **só Preview**: `RESEND_API_KEY` (Sensitive), `BRAND_PARTNERS_CONTACT_FROM`,
+   `BRAND_PARTNERS_CONTACT_TO` (caixa de teste), `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` (Sensitive),
+   `BRAND_PARTNERS_CONTACT_HMAC_SECRET` (Sensitive, ≥ 32 caracteres aleatórios), `BRAND_PARTNERS_ALLOWED_ORIGINS` (a URL
+   estável do branch na Vercel, `https://…`, sem barra final) e os seis limites/prazos abaixo. Nunca criar
+   `BRAND_PARTNERS_CONTACT_MODE` na Vercel (o adaptador determinístico é recusado lá).
+4. Redeploy do Preview e smoke com dados sintéticos: o e-mail chega à caixa de teste; repetir o mesmo envio (retry)
+   não duplica; origem estranha → 403.
+
+**Valores de operação (TECH-001)** — definidos pela operação antes do go-live; o código não tem default:
+
+| Chave | Valor | Efeito |
+|---|---|---|
+| `BRAND_PARTNERS_CONTACT_NETWORK_LIMIT` / `…_NETWORK_WINDOW_SECONDS` | a definir | tentativas por origem de rede na janela; excedido → 429 com `Retry-After` |
+| `BRAND_PARTNERS_CONTACT_GLOBAL_LIMIT` / `…_GLOBAL_WINDOW_SECONDS` | a definir | tentativas totais da superfície na janela |
+| `BRAND_PARTNERS_CONTACT_SEND_TIMEOUT_MS` | a definir | prazo do Resend; timeout → 503 "envio não confirmado" (pode ter sido aceito; o retry usa a mesma chave) |
+| `BRAND_PARTNERS_CONTACT_LIMITER_TIMEOUT_MS` | a definir | prazo do Upstash; sem resposta → 503 (falha fechada) |
+| TTL das chaves no Redis | derivado da janela | o script da janela deslizante expira cada chave (`PEXPIRE`) em ~2 × janela + 1 s |
+
+**Janela de idempotência do Resend:** 24 h por chave (documentação do Resend). Dentro dela, o retry da mesma
+tentativa (mesma `Idempotency-Key` e mesmo conteúdo) devolve o aceite original sem novo envio; a mesma chave com outro
+conteúdo é recusada (`409 invalid_idempotent_request` → `ERR_IDEMPOTENCY_CONFLICT`); chave em uso por outro request
+(`409 concurrent_idempotent_requests`), limitação (429) e erros do provedor → 503. Fora da janela não há retry
+automático nem garantia de deduplicação; a chave no provedor é `luxtory:brand-partner-contact:<VERCEL_ENV>:<uuid>`.
+
+**Go-live em Production** (depois de copy/visual aprovados, `P-LX-03`, acesso/retenção/privacidade validados):
+
+1. Production: as mesmas variáveis com a caixa corporativa, chave e banco Upstash de Production e
+   `BRAND_PARTNERS_ALLOWED_ORIGINS` com o(s) domínio(s) públicos.
+2. `BRAND_PARTNERS_SITE=open` só em Production; deploy pela CI.
+3. Smoke controlado com dados sintéticos recebidos na caixa corporativa; conferir `/brand-partner` e
+   `/brand-partner/como-funciona` com `Content-Security-Policy` com `nonce-` e indexáveis (`robots` sem `noindex`).
+
+**Logs:** uma linha `brand partner contact` por request com `stage`, `status`, `duration_ms` e `reason` (chaves de
+configuração ausentes, motivo do provedor ou do limitador) — nunca campos, corpo, IP, chave ou resposta do provedor.
+503 com `stage: configuration` nomeia as chaves a corrigir.
+
 ## Rotacionar segredos
 
 - `CRON_SECRET`: gere outro valor, atualize na Vercel (Production) e refaça o deploy (passo 6).
@@ -162,6 +208,9 @@ valor de segredo entra em código, migration, log, issue ou artifact.
 
 - `SUPABASE_SECRET_KEY`: crie uma chave secreta nova no Supabase, troque na Vercel (Production), refaça o deploy e só
   então revogue a antiga.
+- `RESEND_API_KEY` e `UPSTASH_REDIS_REST_TOKEN` (BP1): crie a credencial nova, troque na Vercel (no ambiente certo),
+  refaça o deploy e só então revogue a antiga. `BRAND_PARTNERS_CONTACT_HMAC_SECRET`: trocar só reinicia as contagens
+  do limitador (chaves novas no Redis; as antigas expiram sozinhas).
 
 ## Quando algo falha
 

@@ -74,6 +74,16 @@ try {
       // Mídia do catálogo em diretório local descartável (ADR-0015; `local` é recusado na Vercel).
       MEDIA_STORAGE: 'local',
       MEDIA_LOCAL_DIR: mkdtempSync(join(tmpdir(), 'luxtory-e2e-media-')),
+      // Contato Brand Partners (spec catalog §14.6): envio e limitador determinísticos em memória — nenhum e-mail real,
+      // nenhum Upstash. Origem permitida = o próprio servidor do E2E; limites folgados (o 429 é provado nos testes da
+      // rota e na interface por interceptação).
+      BRAND_PARTNERS_CONTACT_MODE: 'fake',
+      BRAND_PARTNERS_CONTACT_HMAC_SECRET: randomBytes(32).toString('base64url'),
+      BRAND_PARTNERS_ALLOWED_ORIGINS: `http://127.0.0.1:${port}`,
+      BRAND_PARTNERS_CONTACT_NETWORK_LIMIT: '200',
+      BRAND_PARTNERS_CONTACT_NETWORK_WINDOW_SECONDS: '60',
+      BRAND_PARTNERS_CONTACT_GLOBAL_LIMIT: '500',
+      BRAND_PARTNERS_CONTACT_GLOBAL_WINDOW_SECONDS: '60',
       // Vazio = ausente para a aplicação, e impede que um arquivo `.env*` local o defina.
       VERCEL_ENV: '',
     },

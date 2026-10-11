@@ -8,3 +8,13 @@ export function isPublicSiteOpen(source?: EnvSource): boolean {
   const env = source === undefined ? loadEnv() : loadEnv(source);
   return env.VERCEL_ENV !== 'production' || env.PUBLIC_SITE === 'open';
 }
+
+/**
+ * Portão da jornada Brand Partners (BP1, spec catalog §14.1), independente de `PUBLIC_SITE`: `closed` fecha em qualquer
+ * ambiente; ausente, só Production fica fechada (go-live com `open`). Fechado, páginas e endpoint respondem 404.
+ */
+export function isBrandPartnersSiteOpen(source?: EnvSource): boolean {
+  const env = source === undefined ? loadEnv() : loadEnv(source);
+  if (env.BRAND_PARTNERS_SITE !== undefined) return env.BRAND_PARTNERS_SITE === 'open';
+  return env.VERCEL_ENV !== 'production';
+}

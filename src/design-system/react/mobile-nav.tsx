@@ -39,6 +39,18 @@ export function MobileNav({
   const dialogId = useId();
   const [open, setOpen] = useState(false);
 
+  // Um link ativado no menu fecha o diálogo antes de navegar: uma âncora da própria página (ex.: Contato →
+  // `#conversa`) não deixa o menu aberto sobre o destino.
+  useEffect(() => {
+    const element = dialog.current;
+    if (element === null) return;
+    const onClick = (event: MouseEvent) => {
+      if (event.target instanceof Element && event.target.closest('a[href]') !== null) element.close();
+    };
+    element.addEventListener('click', onClick);
+    return () => element.removeEventListener('click', onClick);
+  }, []);
+
   useEffect(() => {
     if (mode === 'retractable') return;
     const lg = getComputedStyle(document.documentElement).getPropertyValue('--lx-breakpoint-lg');
