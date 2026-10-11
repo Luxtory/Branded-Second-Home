@@ -6,6 +6,7 @@ import {
   BRAND_PARTNERS_HOME_SECTIONS,
   BRAND_PARTNERS_HOW_SECTIONS,
 } from '../../src/features/catalog/presentation/brand-partners/paths';
+import { messages as platformText } from '../../src/features/platform/presentation/i18n/pt-br';
 import { captureForReview, collectConsoleErrors, expectResponsive } from './support/ui';
 
 // Jornada pública Brand Partners (REQ-028, TECH-057; spec catalog §14). O servidor de E2E usa o envio e o limitador
@@ -299,6 +300,8 @@ test.describe('Brand Partners — formulário (REQ-028, TECH-057, catalog §14.3
     await expect(submitButton(page)).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page.getByText(conversation.success)).toBeVisible();
+    // O botão fica desabilitado durante o envio; o foco volta a ele quando o envio termina.
+    await expect(submitButton(page)).toBeFocused();
   });
 
   test('[TECH-057] envio não confirmado (503): dados preservados; retry com a mesma chave e o mesmo conteúdo', async ({
@@ -318,7 +321,11 @@ test.describe('Brand Partners — formulário (REQ-028, TECH-057, catalog §14.3
     await submitButton(page).click();
 
     await expect(page.getByText(text.form.outcomes.unconfirmed)).toBeVisible();
-    await expect(field(page, 'message')).toHaveValue(CONTACT.message);
+    for (const [name, value] of Object.entries(CONTACT)) {
+      await expect(field(page, name as Field)).toHaveValue(value);
+      await expect(field(page, name as Field)).toBeEditable();
+    }
+    await expect(submitButton(page)).toBeEnabled();
     if (process.env.UI_CAPTURE_DIR) {
       await page.getByText(text.form.outcomes.unconfirmed).scrollIntoViewIfNeeded();
       await page.screenshot({ path: `${process.env.UI_CAPTURE_DIR}/bp1-form-error-1280.png` });
@@ -382,7 +389,7 @@ test.describe('Brand Partners — formulário (REQ-028, TECH-057, catalog §14.3
     expect(sent[2]?.key).not.toBe(sent[1]?.key);
   });
 
-  test('[TECH-057] o botão impede envio concorrente enquanto a tentativa está em curso', async ({
+  test('[TECH-057] envio em curso: campos somente leitura, botão desabilitado, sem envio concorrente; o 202 limpa', async ({
     page,
   }) => {
     let release: () => void = () => undefined;
@@ -396,14 +403,27 @@ test.describe('Brand Partners — formulário (REQ-028, TECH-057, catalog §14.3
     await page.goto(`${HOME}#conversa`);
     await fillContact(page);
     await submitButton(page).click();
-    await expect(submitButton(page)).toHaveAttribute('aria-disabled', 'true');
     await expect(page.getByText(text.form.sending)).toBeVisible();
-    // `aria-disabled` faz o Playwright tratar o botão como desabilitado; os cliques forçados provam a guarda.
+    await expect(submitButton(page)).toBeDisabled();
+    for (const name of Object.keys(CONTACT) as Field[]) {
+      await expect(field(page, name)).not.toBeEditable();
+    }
+    // Digitar durante o envio não altera o conteúdo; nem o clique forçado nem o Enter num campo enviam de novo.
+    await field(page, 'message').focus();
+    await page.keyboard.type(' — alterado durante o envio');
+    await expect(field(page, 'message')).toHaveValue(CONTACT.message);
     await submitButton(page).click({ force: true });
-    await page.keyboard.press('Enter');
+    await field(page, 'name').press('Enter');
+
     release();
     await expect(page.getByText(conversation.success)).toBeVisible();
+    for (const name of Object.keys(CONTACT) as Field[]) {
+      await expect(field(page, name)).toHaveValue('');
+      await expect(field(page, name)).toBeEditable();
+    }
+    await expect(submitButton(page)).toBeEnabled();
     expect(sent).toHaveLength(1);
+    expect(JSON.parse(sent[0]?.body ?? '{}')).toEqual(CONTACT);
   });
 });
 
@@ -503,5 +523,72 @@ test.describe('Brand Partners — endpoint público (TECH-057)', () => {
       data: { ...CONTACT, message: 'Outra mensagem.' },
     });
     expect(changed.status()).toBe(409);
+  });
+});
+
+test.describe('Brand Partners — portão fechado (REQ-028, catalog §14.1)', () => {
+  // Mesmo build servido com BRAND_PARTNERS_SITE=closed (playwright.config.ts → CLOSED_PORT).
+  const CLOSED_SITE = 'http://127.0.0.1:3101';
+
+  // Copy das duas páginas, metadados (title/description/OG/Twitter) e a classe exclusiva do Hero da BP1.
+  const MARKERS = {
+    [HOME]: [
+      text.home.hero.title,
+      text.home.problem.title,
+      text.home.conversation.title,
+      conversation.success,
+      text.metadata.home.title,
+      'lx-hero--typographic',
+    ],
+    [HOW]: [
+      text.howItWorks.opening.title,
+      text.howItWorks.governance.title,
+      text.howItWorks.next.title,
+      text.metadata.howItWorks.title,
+      text.metadata.howItWorks.description,
+      CTA,
+    ],
+  };
+
+  test('[REQ-028] controle: com o portão aberto, os marcadores aparecem no corpo bruto da resposta', async ({
+    request,
+  }) => {
+    for (const [path, markers] of Object.entries(MARKERS)) {
+      const response = await request.get(path);
+      expect(response.status()).toBe(200);
+      const body = await response.text();
+      for (const marker of markers) expect(body, `${path}: ${marker}`).toContain(marker);
+    }
+  });
+
+  test('[REQ-028] fechado: 404 da plataforma sem copy, metadados nem payload da BP1 no corpo bruto', async ({
+    request,
+    page,
+  }) => {
+    for (const [path, markers] of Object.entries(MARKERS)) {
+      const response = await request.get(`${CLOSED_SITE}${path}`);
+      expect(response.status()).toBe(404);
+      const body = await response.text();
+      expect(body).toContain(platformText.notFound.title);
+      for (const marker of markers) expect(body, `${path}: ${marker}`).not.toContain(marker);
+      expect(body).not.toMatch(/rel="canonical"[^>]*brand-partner/);
+    }
+
+    await page.goto(`${CLOSED_SITE}${HOME}`);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(platformText.notFound.title);
+    await expect(page).not.toHaveTitle(text.metadata.home.title);
+    await expect(page.getByText(text.home.hero.title)).toHaveCount(0);
+  });
+
+  test('[TECH-057] fechado: o endpoint segue respondendo 404 no-store, antes de qualquer etapa', async ({
+    request,
+  }) => {
+    const response = await request.post(`${CLOSED_SITE}${ENDPOINT}`, {
+      headers: { 'idempotency-key': randomUUID(), origin: CLOSED_SITE },
+      data: CONTACT,
+    });
+    expect(response.status()).toBe(404);
+    expect((await response.json()).code).toBe('ERR_NOT_FOUND');
+    expect(response.headers()['cache-control']).toBe('no-store');
   });
 });

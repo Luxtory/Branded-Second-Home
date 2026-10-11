@@ -2,6 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 3100;
 const baseURL = `http://127.0.0.1:${PORT}`;
+// Mesmo build com o portão Brand Partners fechado (tests/e2e/brand-partners.spec.ts → CLOSED_SITE).
+const CLOSED_PORT = 3101;
 const SERVER_START_TIMEOUT_MS = 120_000;
 const SERVER_STOP_TIMEOUT_MS = 30_000;
 const IGNORED = '**/activate-ultronpx.mjs';
@@ -43,12 +45,23 @@ export default defineConfig({
         ]
       : []),
   ],
-  webServer: {
-    command: `node tests/support/e2e-server.mjs ${PORT}`,
-    url: `${baseURL}/v1/health`,
-    reuseExistingServer: false,
-    timeout: SERVER_START_TIMEOUT_MS,
-    // SIGTERM para o servidor de E2E parar o `next start` e o PostgreSQL (e apagar a pasta de dados).
-    gracefulShutdown: { signal: 'SIGTERM', timeout: SERVER_STOP_TIMEOUT_MS },
-  },
+  webServer: [
+    {
+      command: `node tests/support/e2e-server.mjs ${PORT}`,
+      url: `${baseURL}/v1/health`,
+      reuseExistingServer: false,
+      timeout: SERVER_START_TIMEOUT_MS,
+      // SIGTERM para o servidor de E2E parar o `next start` e o PostgreSQL (e apagar a pasta de dados).
+      gracefulShutdown: { signal: 'SIGTERM', timeout: SERVER_STOP_TIMEOUT_MS },
+    },
+    {
+      // `BRAND_PARTNERS_SITE=closed`, sem banco: só para provar que o 404 fechado não carrega a BP1 (spec catalog §14.1).
+      command: `npx next start --port ${CLOSED_PORT} --hostname 127.0.0.1`,
+      url: `http://127.0.0.1:${CLOSED_PORT}/favicon.ico`,
+      env: { BRAND_PARTNERS_SITE: 'closed' },
+      reuseExistingServer: false,
+      timeout: SERVER_START_TIMEOUT_MS,
+      gracefulShutdown: { signal: 'SIGTERM', timeout: SERVER_STOP_TIMEOUT_MS },
+    },
+  ],
 });

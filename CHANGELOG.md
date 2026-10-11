@@ -108,10 +108,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ...
 
 ### Fixed
-- ...
+- Brand Partners — formulário "Vamos começar pela sua marca.": durante o envio os campos ficam somente leitura e o
+  botão "Enviar mensagem" desabilitado; um aceite (202) não apaga mais edições feitas enquanto a requisição estava em
+  curso (spec catalog §14.8).
 
 ### Security
-- ...
+- Brand Partners — portão `BRAND_PARTNERS_SITE`: fechado, o 404 de `/brand-partner` e `/brand-partner/como-funciona`
+  não leva mais a copy, as props do formulário nem os metadados (title, description, Open Graph, Twitter) da BP1 no
+  HTML/RSC; o portão passa a valer também nas páginas e no `generateMetadata` (REQ-028, spec catalog §14.1/§14.8).
 
 ---
 
