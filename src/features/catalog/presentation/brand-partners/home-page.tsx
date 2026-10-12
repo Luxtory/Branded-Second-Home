@@ -1,94 +1,220 @@
-import { Icon } from '@/design-system/react';
-import { nb } from '../discovery/no-break';
+import { HeadlineText } from '../discovery/headline';
+import { ActionLink, Eyebrow, ordinal } from '../discovery/parts';
 import { brandPartnersMessages as text } from '../i18n/brand-partners-pt-br';
 import { BrandPartnerContactForm } from './contact-form';
+import { HeroMedia, SplitMedia } from './media';
 import { brandPartnersPaths, BRAND_PARTNERS_HOME_SECTIONS, titleOf } from './paths';
 import { AnswerRows, Paragraphs, Rich } from './rich-text';
 import { BrandPartnersSite } from './site';
 
-const { hero, problem, promise, mechanism, demand, governance, realization, fit, conversation } =
+const { hero, problem, promise, brand, living, mechanism, governance, fit, conversation } =
   text.home;
 
-const [HERO, PROBLEM, PROMISE, MECHANISM, DEMAND, GOVERNANCE, REALIZATION, FIT, CONVERSATION] =
+const [HERO, PROBLEM, PROMISE, BRAND, LIVING, MECHANISM, GOVERNANCE, FIT, CONVERSATION] =
   BRAND_PARTNERS_HOME_SECTIONS;
 
+/** Um grupo de benefícios da marca: o rótulo diz a natureza (possibilidade ou mecanismo), os itens têm o mesmo peso. */
+function BenefitGroup({
+  group,
+  layout,
+}: {
+  readonly group: typeof brand.possibilities | typeof brand.mechanisms;
+  readonly layout: 'pair' | 'trio';
+}) {
+  return (
+    <div className="lx-section-group">
+      <h3 className="lx-eyebrow">{group.label}</h3>
+      <ul className={`lx-siblings lx-siblings--${layout}`}>
+        {group.items.map((item) => (
+          <li className="lx-siblings__item" key={item.title}>
+            <h4 className="lx-display-s">{item.title}</h4>
+            <Paragraphs lines={item.text} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /**
- * Home Brand Partners `/brand-partner` (REQ-028, spec catalog §14.2; Copy + Especificação Visual FINAL do fundador):
- * PICTURE → PROBLEM → PROMISE → PROOF → PUSH sobre o Core. Sem fotografia B2B autorizada, o Hero é o fallback
- * tipográfico aprovado e nenhuma seção depende de imagem; nada aqui é prova, case ou parceria real.
+ * Home Brand Partners `/brand-partner` (REQ-028; BP1.1, spec catalog §14.9, `D-BP-15`): PICTURE → PROBLEM → PROMISE →
+ * Para a sua marca → Para quem vive → mecanismo → governança → PUSH sobre o Core. Fotografia M1–M5 pelo manifesto de
+ * mídia (placeholder estrutural até o ensaio aprovado); nada aqui é prova, case ou parceria real.
  */
 export function BrandPartnersHomePage() {
   return (
     <BrandPartnersSite current="home">
-      {/* H1 — PICTURE: Hero tipográfico em Deep, conteúdo baixo à esquerda; o CTA desce para o PROBLEM. */}
+      {/* PICTURE — Cinematic Hero (M1): o valor para quem vive e para a marca já nos primeiros segundos. */}
       <section
         id={HERO}
-        className="lx-hero lx-hero--typographic"
-        data-surface="deep"
+        className="lx-hero lx-hero--uniform"
+        data-surface="blue"
         aria-labelledby={titleOf(HERO)}
       >
+        <HeroMedia slot="m1" priority />
         <div className="lx-container lx-hero__content">
           <div className="lx-hero__copy">
-            <h1 id={titleOf(HERO)} className="lx-statement">
-              {hero.title}
+            <Eyebrow>{hero.marker}</Eyebrow>
+            <h1 id={titleOf(HERO)} className="lx-headline lx-headline--home-hero">
+              <HeadlineText headline={hero.title} />
             </h1>
-            <p className="lx-subheadline">{hero.lead}</p>
-            <p className="lx-body">{hero.body}</p>
+            <Paragraphs lines={hero.body} />
             <div className="lx-hero__actions">
-              <a className="lx-button lx-button--primary lx-button--large" href={`#${PROBLEM}`}>
-                {hero.action}
-                <Icon name="arrow-right" className="lx-button__icon" />
-              </a>
+              <ActionLink href={`#${PROBLEM}`} label={hero.action} primary icon="arrow-down" />
             </div>
           </div>
         </div>
       </section>
 
-      {/* H2 — PROBLEM: 7/5, a tensão no texto; o espaço negativo à direita é a massa da composição. */}
+      {/* PROBLEM — Blue: a ordem das decisões em comparação editorial; o fechamento nomeia a diferença. */}
       <section
         id={PROBLEM}
         className="lx-section"
-        data-surface="deep"
+        data-surface="blue"
         aria-labelledby={titleOf(PROBLEM)}
       >
-        <div className="lx-container lx-columns lx-columns--7-5">
-          <div className="lx-stack">
+        <div className="lx-container">
+          <div className="lx-section-head">
+            <Eyebrow>{problem.marker}</Eyebrow>
             <h2 id={titleOf(PROBLEM)} className="lx-headline">
-              {problem.title}
+              <HeadlineText headline={problem.title} />
             </h2>
             <Paragraphs lines={problem.paragraphs} />
-            <p className="lx-body lx-stack__pause">{problem.closing}</p>
           </div>
-          <div aria-hidden="true" />
+          <div className="lx-comparison lx-comparison--divided">
+            {problem.sides.map((side) => (
+              <div className="lx-comparison__item" key={side.title}>
+                <p className="lx-eyebrow">{side.label}</p>
+                <h3 className="lx-display-m">{side.title}</h3>
+                <Paragraphs lines={side.text} />
+              </div>
+            ))}
+          </div>
+          <div className="lx-section-closing lx-stack">
+            <p className="lx-subheadline">{problem.closing.lead}</p>
+            <p className="lx-headline">{problem.closing.statement}</p>
+          </div>
         </div>
       </section>
 
-      {/* H3 — PROMISE: 6/6 em Sand; o Body A vira a sequência editorial (sem bullets), à direita. */}
+      {/* PROMISE — Sand, Editorial Split com o texto largo (M3): os códigos da marca orientam cada escolha. */}
       <section
         id={PROMISE}
-        className="lx-section"
+        className="lx-section-split"
         data-surface="sand"
         aria-labelledby={titleOf(PROMISE)}
       >
-        <div className="lx-container lx-columns">
-          <div className="lx-stack">
-            <h2 id={titleOf(PROMISE)} className="lx-headline">
-              {promise.title}
-            </h2>
-            <p className="lx-body">{promise.paragraphs[0]}</p>
-            <p className="lx-body lx-stack__pause">
-              <Rich value={promise.paragraphs[1]} />
-            </p>
+        <div className="lx-split lx-split--wide-text">
+          <div className="lx-split__text">
+            <div className="lx-split__inner">
+              <Eyebrow>{promise.marker}</Eyebrow>
+              <h2 id={titleOf(PROMISE)} className="lx-headline">
+                <HeadlineText headline={promise.title} />
+              </h2>
+              <p className="lx-body">{promise.intro}</p>
+              <ul className="lx-editorial-list">
+                {promise.sequence.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+              <Paragraphs lines={promise.body} />
+            </div>
           </div>
-          <ul className="lx-editorial-list">
-            {promise.sequence.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
+          <SplitMedia slot="m3" />
         </div>
       </section>
 
-      {/* H4 — PROOF · Mecanismo: White, três partes equivalentes (Concept → Edition → Second Home). */}
+      {/* Para a sua marca — Deep: escada da relação, cadeia causal, possibilidades × mecanismos e o limite. */}
+      <section
+        id={BRAND}
+        className="lx-section"
+        data-surface="deep"
+        aria-labelledby={titleOf(BRAND)}
+      >
+        <div className="lx-container">
+          <div className="lx-section-head">
+            <Eyebrow>{brand.marker}</Eyebrow>
+            <h2 id={titleOf(BRAND)} className="lx-headline">
+              <HeadlineText headline={brand.title} />
+            </h2>
+            <p className="lx-subheadline">{brand.intro}</p>
+          </div>
+          <ol className="lx-steps lx-steps--four">
+            {brand.ladder.map((step, index) => (
+              <li className="lx-steps__item" key={step.title}>
+                <span className="lx-ordinal" aria-hidden="true">
+                  {ordinal(index)}
+                </span>
+                <h3 className="lx-display-s">{step.title}</h3>
+                <p className="lx-body">{step.text}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="lx-section-closing lx-stack">
+            <p className="lx-subheadline">{brand.chain.lead}</p>
+            <p className="lx-headline">{brand.chain.statement}</p>
+            <p className="lx-subheadline">{brand.chain.consequence}</p>
+          </div>
+          <BenefitGroup group={brand.possibilities} layout="pair" />
+          <BenefitGroup group={brand.mechanisms} layout="trio" />
+          <div className="lx-section-note lx-stack">
+            <Paragraphs lines={brand.limit} />
+          </div>
+        </div>
+      </section>
+
+      {/* Para quem vive — Blue: M2 no início, depois os três pilares ao lado do diagrama de solução e o fechamento. */}
+      <section
+        id={LIVING}
+        className="lx-section-split"
+        data-surface="blue"
+        aria-labelledby={titleOf(LIVING)}
+      >
+        <div className="lx-split lx-split--media-start lx-split--wide-media">
+          <div className="lx-split__text">
+            <div className="lx-split__inner">
+              <Eyebrow>{living.marker}</Eyebrow>
+              <h2 id={titleOf(LIVING)} className="lx-headline">
+                <HeadlineText headline={living.title} />
+              </h2>
+              <p className="lx-body">{living.intro}</p>
+            </div>
+          </div>
+          <SplitMedia slot="m2" />
+        </div>
+        <div className="lx-container">
+          <div className="lx-diagram lx-diagram--even">
+            <div className="lx-stack">
+              <p className="lx-subheadline">{living.lead}</p>
+              {living.pillars.map((pillar, index) => (
+                <div className="lx-stack" key={pillar.name}>
+                  <p className="lx-eyebrow">
+                    {ordinal(index)} · {pillar.name}
+                  </p>
+                  <h3 className="lx-display-s">{pillar.title}</h3>
+                  <Paragraphs lines={pillar.text} />
+                </div>
+              ))}
+            </div>
+            <figure className="lx-diagram__figure">
+              {/* eslint-disable-next-line @next/next/no-img-element -- the original SVG is served verbatim (geometry preserved, CSP). */}
+              <img
+                src="/diagrams/core/diagrama-solucao-luxtory.svg"
+                alt={text.media.solutionDiagram}
+                width={667}
+                height={748}
+                loading="lazy"
+              />
+            </figure>
+          </div>
+          <div className="lx-section-closing lx-stack">
+            <p className="lx-subheadline">{living.closing.lead}</p>
+            <p className="lx-headline">{living.closing.statement}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Como acontece — White: do Brand DNA à Second Home em seis passos; o link aprofunda no Como funciona. */}
       <section
         id={MECHANISM}
         className="lx-section"
@@ -97,116 +223,89 @@ export function BrandPartnersHomePage() {
       >
         <div className="lx-container">
           <div className="lx-section-head">
+            <Eyebrow>{mechanism.marker}</Eyebrow>
             <h2 id={titleOf(MECHANISM)} className="lx-headline">
-              {mechanism.title}
+              <Rich value={mechanism.title} />
             </h2>
             <p className="lx-subheadline">{mechanism.intro}</p>
           </div>
-          <ol className="lx-siblings lx-siblings--trio">
-            {mechanism.steps.map((step) => (
-              <li className="lx-siblings__item" key={step.title}>
-                <h3 className="lx-title">{step.title}</h3>
-                <p className="lx-body">
-                  <Rich value={step.text} />
-                </p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* H5 — PROOF · Demanda: Blue, 5/7; os dois momentos em sequência e o limite em largura ampla, visível. */}
-      <section
-        id={DEMAND}
-        className="lx-section"
-        data-surface="blue"
-        aria-labelledby={titleOf(DEMAND)}
-      >
-        <div className="lx-container">
-          <div className="lx-columns lx-columns--5-7">
-            <div className="lx-stack">
-              <h2 id={titleOf(DEMAND)} className="lx-headline">
-                {demand.title}
-              </h2>
-              <p className="lx-subheadline">{demand.intro}</p>
-            </div>
-            <ol className="lx-siblings">
-              {demand.moments.map((moment) => (
-                <li className="lx-siblings__item" key={moment.title}>
-                  <h3 className="lx-title">{moment.title}</h3>
-                  <p className="lx-body">{moment.text}</p>
+          <div className="lx-stack">
+            <ol className="lx-numbered">
+              {mechanism.steps.map((step, index) => (
+                <li className="lx-numbered__item" key={step.title}>
+                  <span className="lx-ordinal lx-numbered__number" aria-hidden="true">
+                    {ordinal(index)}
+                  </span>
+                  <h3 className="lx-display-s">
+                    <Rich value={step.title} />
+                  </h3>
+                  <div className="lx-numbered__text lx-stack">
+                    <Paragraphs lines={step.text} />
+                  </div>
                 </li>
               ))}
             </ol>
-          </div>
-          <div className="lx-section-note">
-            <p className="lx-body">{demand.limit}</p>
+            <div>
+              <ActionLink
+                href={`${brandPartnersPaths.howItWorks}#percurso`}
+                label={mechanism.link}
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* H6 — PROOF · Governança e valor: Deep, pergunta | resposta, sempre abertas. */}
+      {/* Governança — Sand: pergunta | resposta, sempre abertas; o link leva à governança em detalhe. */}
       <section
         id={GOVERNANCE}
         className="lx-section"
-        data-surface="deep"
+        data-surface="sand"
         aria-labelledby={titleOf(GOVERNANCE)}
       >
         <div className="lx-container">
           <div className="lx-section-head">
+            <Eyebrow>{governance.marker}</Eyebrow>
             <h2 id={titleOf(GOVERNANCE)} className="lx-headline">
-              {governance.title}
+              <HeadlineText headline={governance.title} />
             </h2>
           </div>
-          <AnswerRows answers={governance.answers} />
+          <div className="lx-stack">
+            <AnswerRows answers={governance.answers} />
+            <div>
+              <ActionLink
+                href={`${brandPartnersPaths.howItWorks}#governanca`}
+                label={governance.link}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* H7 — PROOF · Realização: Sand, 7/5 sem fotografia; o link leva ao Como funciona. */}
+      {/* PUSH — Cinematic de fechamento (M5): fit, o CTA para o formulário e o limite legível. */}
       <section
-        id={REALIZATION}
-        className="lx-section"
-        data-surface="sand"
-        aria-labelledby={titleOf(REALIZATION)}
+        id={FIT}
+        className="lx-hero lx-hero--closing lx-hero--uniform"
+        data-surface="blue"
+        aria-labelledby={titleOf(FIT)}
       >
-        <div className="lx-container lx-columns lx-columns--7-5">
-          <div className="lx-stack">
-            <h2 id={titleOf(REALIZATION)} className="lx-headline">
-              {realization.title}
-            </h2>
-            <h3 className="lx-title">{realization.blocks[0].title}</h3>
-            <p className="lx-body">{nb(realization.blocks[0].text)}</p>
-          </div>
-          <div className="lx-stack">
-            <h3 className="lx-title">{realization.blocks[1].title}</h3>
-            <p className="lx-body">{realization.blocks[1].text}</p>
-            <a className="lx-link lx-link--standalone" href={brandPartnersPaths.howItWorks}>
-              {realization.link}
-              <Icon name="arrow-right" className="lx-link__icon" />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* H8 — PUSH · Fit: Blue, coluna editorial; ação primária da superfície e o limite legível. */}
-      <section id={FIT} className="lx-section" data-surface="blue" aria-labelledby={titleOf(FIT)}>
-        <div className="lx-container">
-          <div className="lx-stack lx-stack--editorial">
+        <HeroMedia slot="m5" />
+        <div className="lx-container lx-hero__content">
+          <div className="lx-hero__copy">
+            <Eyebrow>{fit.marker}</Eyebrow>
             <h2 id={titleOf(FIT)} className="lx-headline">
               {fit.title}
             </h2>
-            <Paragraphs lines={fit.paragraphs} />
-            <div>
-              <a className="lx-button lx-button--primary" href={`#${CONVERSATION}`}>
-                {fit.action}
-              </a>
+            <p className="lx-subheadline">{fit.paragraphs[0]}</p>
+            <Paragraphs lines={fit.paragraphs.slice(1)} />
+            <div className="lx-hero__actions">
+              <ActionLink href={`#${CONVERSATION}`} label={fit.action} primary large />
             </div>
             <p className="lx-body">{fit.limit}</p>
           </div>
         </div>
       </section>
 
-      {/* H9 — PUSH · Conversa: Wash, 5/7; introdução | formulário; finalidade e significado depois do formulário no
+      {/* PUSH · Conversa — Wash, 5/7; introdução | formulário; finalidade e significado depois do formulário no
           celular e sob a introdução a partir do lg. */}
       <section
         id={CONVERSATION}
@@ -216,6 +315,7 @@ export function BrandPartnersHomePage() {
       >
         <div className="lx-container lx-columns lx-columns--aside">
           <div className="lx-stack">
+            <Eyebrow>{conversation.marker}</Eyebrow>
             <h2 id={titleOf(CONVERSATION)} className="lx-headline">
               {conversation.title}
             </h2>

@@ -2,12 +2,18 @@ import { randomUUID } from 'node:crypto';
 import { expect, test, type Page, type Route } from '@playwright/test';
 import { hasForbiddenTerm } from '../../src/features/catalog/domain/terminology';
 import { brandPartnersMessages as text } from '../../src/features/catalog/presentation/i18n/brand-partners-pt-br';
+import { BRAND_PARTNERS_MEDIA } from '../../src/features/catalog/presentation/brand-partners/media-manifest';
 import {
   BRAND_PARTNERS_HOME_SECTIONS,
   BRAND_PARTNERS_HOW_SECTIONS,
 } from '../../src/features/catalog/presentation/brand-partners/paths';
 import { messages as platformText } from '../../src/features/platform/presentation/i18n/pt-br';
-import { captureForReview, collectConsoleErrors, expectResponsive } from './support/ui';
+import {
+  captureForReview,
+  collectConsoleErrors,
+  expectResponsive,
+  worstContrastUnder,
+} from './support/ui';
 
 // Jornada pública Brand Partners (REQ-028, TECH-057; spec catalog §14). O servidor de E2E usa o envio e o limitador
 // determinísticos (tests/support/e2e-server.mjs): nenhum e-mail real. Falhas do servidor são simuladas por
@@ -18,6 +24,27 @@ const HOW = '/brand-partner/como-funciona';
 const ENDPOINT = '/v1/brand-partner-contacts';
 const CTA = 'Explore o potencial residencial da sua marca.';
 const { conversation } = text.home;
+/** H1 da Home: `lead` + a virada em itálico (`turn`). */
+const HERO_TITLE = `${text.home.hero.title.lead}${text.home.hero.title.turn}`;
+/** Lugares de fotografia M1–M5 na ordem do DOM (D5; `D-BP-17`: fotografias provisórias do B2C nesta etapa). */
+const HOME_MEDIA = ['m1', 'm3', 'm2', 'm5'] as const;
+const HOW_MEDIA = ['m4'] as const;
+const DIAGRAM = '/diagrams/core/diagrama-solucao-luxtory.svg';
+
+/** Cada lugar mostra a fotografia do manifesto (nenhum placeholder), decorativa como no B2C. */
+async function expectMedia(page: Page, slots: readonly (keyof typeof BRAND_PARTNERS_MEDIA)[]) {
+  await expect(page.locator('[data-media-placeholder]')).toHaveCount(0);
+  const photos = await page
+    .locator('main img[data-media-slot]')
+    .evaluateAll((nodes) =>
+      nodes.map((node) => [
+        node.getAttribute('data-media-slot'),
+        node.getAttribute('src'),
+        node.getAttribute('alt'),
+      ]),
+    );
+  expect(photos).toEqual(slots.map((slot) => [slot, BRAND_PARTNERS_MEDIA[slot]?.src, '']));
+}
 
 const CONTACT = {
   name: 'Pessoa de Teste',
@@ -94,10 +121,137 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
       await captureForReview(page, `bp1-${name}`);
     });
   }
+
+  test('[ADR-0003] paridade tipográfica B2C → Brand Partners: o mesmo tamanho computado para o mesmo papel a 390, 768 e 1440 px', async ({
+    page,
+  }) => {
+    test.slow();
+    // [papel, página B2C, seletor B2C, página BP, seletor BP] — o B2C é a referência (catalog §14.9).
+    const roles = [
+      ['H1 do Hero da Home', '/', '.lx-home-hero__title', HOME, '#inicio h1'],
+      ['CTA do Hero da Home', '/', '.lx-home-hero__action', HOME, '#inicio .lx-button'],
+      [
+        'CTA sobre o fechamento',
+        '/',
+        '.lx-hero--closing .lx-button',
+        HOME,
+        '#sua-marca .lx-button',
+      ],
+      ['H1 do Hero do Como funciona', '/como-funciona', '.lx-hero h1', HOW, '#abertura h1'],
+      ['índice do Hero', '/como-funciona', '.lx-hero__chapter-name', HOW, '.lx-anchors a'],
+      [
+        'H2',
+        '/como-funciona',
+        'main section:not(.lx-hero) h2.lx-headline',
+        HOW,
+        'main section:not(.lx-hero) h2.lx-headline',
+      ],
+      [
+        'rótulo de fase',
+        '/como-funciona',
+        '.lx-answers--phases .lx-answers__label',
+        HOW,
+        '.lx-answers--phases .lx-answers__label',
+      ],
+      [
+        'pergunta',
+        '/como-funciona',
+        '.lx-answers__label.lx-subheadline',
+        HOW,
+        '.lx-answers__label.lx-subheadline',
+      ],
+      [
+        'Owner | Co-Owner',
+        '/como-funciona',
+        '[data-pair="modality"] .lx-comparison__item > :first-child',
+        HOW,
+        '[data-pair="modality"] .lx-comparison__item > :first-child',
+      ],
+      ['display-m', '/como-funciona', 'main .lx-display-m', HOW, 'main .lx-display-m'],
+      ['display-s', '/como-funciona', 'main .lx-display-s', HOW, 'main .lx-display-s'],
+      [
+        'subheadline',
+        '/como-funciona',
+        'main section:not(.lx-hero) p.lx-subheadline',
+        HOW,
+        'main section:not(.lx-hero) p.lx-subheadline',
+      ],
+      [
+        'corpo',
+        '/como-funciona',
+        'main section:not(.lx-hero) p.lx-body',
+        HOW,
+        'main section:not(.lx-hero) p.lx-body',
+      ],
+      [
+        'eyebrow',
+        '/',
+        'main section:not(.lx-home-hero) .lx-eyebrow',
+        HOME,
+        'main section:not(.lx-hero) .lx-eyebrow',
+      ],
+    ] as const;
+    const typeOf = async (path: string, selector: string) => {
+      await page.goto(path);
+      return page
+        .locator(selector)
+        .first()
+        .evaluate((node) => {
+          const style = getComputedStyle(node);
+          return `${style.fontFamily.split(',')[0]} ${style.fontSize}/${style.lineHeight} ${style.fontWeight}`;
+        });
+    };
+    for (const width of [390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const [role, b2cPath, b2cSelector, bpPath, bpSelector] of roles) {
+        const reference = await typeOf(b2cPath, b2cSelector);
+        expect(await typeOf(bpPath, bpSelector), `${role} a ${width}px`).toBe(reference);
+      }
+    }
+  });
+
+  test('[WCAG 1.4.3] texto sobre as fotografias M1, M5 e M4 com o scrim uniforme: contraste medido nos pixels a 768 e 1440 px', async ({
+    page,
+  }) => {
+    test.slow();
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    // Headline Warm Sand (texto grande) ≥ 3:1; texto branco ≥ 4,5:1 (catalog §14.9, scrim uniforme do Core).
+    const targets = {
+      [HOME]: [
+        ['#inicio h1', 3],
+        ['#inicio .lx-body', 4.5],
+        ['#sua-marca h2', 3],
+        ['#sua-marca .lx-subheadline', 4.5],
+        ['#sua-marca .lx-body', 4.5],
+      ],
+      [HOW]: [
+        ['#abertura h1', 3],
+        ['#abertura .lx-subheadline', 4.5],
+        ['#abertura .lx-anchors a', 4.5],
+      ],
+    } as const;
+    for (const width of [768, 1440]) {
+      await page.setViewportSize({ width, height: width === 768 ? 1024 : 900 });
+      for (const [path, checks] of Object.entries(targets)) {
+        await page.goto(path, { waitUntil: 'networkidle' });
+        await page.evaluate(async () => {
+          // As fotografias fora do Hero são lazy: carregar e decodificar todas antes de medir.
+          for (const image of document.images) {
+            image.loading = 'eager';
+            await image.decode().catch(() => undefined);
+          }
+        });
+        for (const [selector, min] of checks) {
+          const worst = await worstContrastUnder(page, selector);
+          expect(worst, `${selector} a ${width}px`).toBeGreaterThanOrEqual(min);
+        }
+      }
+    }
+  });
 });
 
 test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalog §14.1–14.2)', () => {
-  test('[REQ-028] Home: copy congelada verbatim, seções PICTURE → PUSH na ordem, sem imagem nem termo vedado', async ({
+  test('[REQ-028] Home: copy BP1.1 verbatim, seções na ordem, fotografias M1, M3, M2 e M5 do manifesto e o diagrama', async ({
     page,
   }) => {
     await page.goto(HOME);
@@ -111,8 +265,14 @@ test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalo
       expect(content, line).toContain(normalized(line));
     }
     expect(hasForbiddenTerm(content)).toBe(false);
-    await expect(page.locator('main img')).toHaveCount(0);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(text.home.hero.title);
+    // Fotografias decorativas do manifesto; a única imagem com alt é o diagrama original, com o alt aprovado no B2C.
+    await expectMedia(page, HOME_MEDIA);
+    await expect(page.locator('main img')).toHaveCount(HOME_MEDIA.length + 1);
+    await expect(page.locator(`main img[src="${DIAGRAM}"]`)).toHaveAttribute(
+      'alt',
+      text.media.solutionDiagram,
+    );
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(HERO_TITLE);
   });
 
   test('[REQ-028] Como funciona: copy verbatim, índice com âncoras reais, Owner e Co-Owner com o mesmo peso', async ({
@@ -130,6 +290,8 @@ test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalo
       expect(content, line).toContain(normalized(line));
     }
     expect(hasForbiddenTerm(content)).toBe(false);
+    await expectMedia(page, HOW_MEDIA);
+    await expect(page.locator('main img')).toHaveCount(HOW_MEDIA.length);
     const index = page.getByRole('navigation', { name: text.howItWorks.opening.indexLabel });
     const anchors = await index
       .getByRole('link')
@@ -139,12 +301,12 @@ test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalo
     const sides = page.locator('[data-pair="modality"] .lx-comparison__item');
     await expect(sides).toHaveCount(2);
     const fonts = await sides
-      .locator('h4')
+      .locator('h5')
       .evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).fontSize));
     expect(new Set(fonts).size).toBe(1);
   });
 
-  test('[REQ-028] CTAs: Hero → PROBLEM; "Explore…" → formulário da Home nas duas páginas', async ({
+  test('[REQ-028] CTAs: Hero → PROBLEM; "Explore…" → formulário da Home nas duas páginas; links para o Como funciona', async ({
     page,
   }) => {
     await page.goto(HOME);
@@ -152,9 +314,13 @@ test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalo
     await expect(page.getByRole('link', { name: CTA })).toHaveAttribute('href', '#conversa');
     await page.getByRole('link', { name: CTA }).click();
     await expect(page.getByRole('heading', { name: conversation.title })).toBeInViewport();
-    await expect(page.getByRole('link', { name: text.home.realization.link })).toHaveAttribute(
+    await expect(page.getByRole('link', { name: text.home.mechanism.link })).toHaveAttribute(
       'href',
-      HOW,
+      `${HOW}#percurso`,
+    );
+    await expect(page.getByRole('link', { name: text.home.governance.link })).toHaveAttribute(
+      'href',
+      `${HOW}#governanca`,
     );
 
     await page.goto(HOW);
@@ -178,6 +344,11 @@ test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalo
       for (const label of [text.site.brandPartners, text.site.howItWorks, text.site.contact]) {
         await expect(nav.getByRole('link', { name: label, exact: true })).toBeAttached();
       }
+      // D4: Contato é a ação da navegação (botão secundário), no fim da barra junto da nav.
+      await expect(nav.getByRole('link', { name: text.site.contact, exact: true })).toHaveClass(
+        /lx-button--secondary/,
+      );
+      await expect(page.locator('header.lx-header')).toHaveClass(/lx-header--nav-end/);
     }
   });
 
@@ -541,23 +712,31 @@ test.describe('Brand Partners — portão fechado (REQ-028, catalog §14.1)', ()
   // Mesmo build servido com BRAND_PARTNERS_SITE=closed (playwright.config.ts → CLOSED_PORT).
   const CLOSED_SITE = 'http://127.0.0.1:3101';
 
-  // Copy das duas páginas, metadados (title/description/OG/Twitter) e a classe exclusiva do Hero da BP1.
+  // Copy das duas páginas, metadados (title/description/OG/Twitter) e o marcador exclusivo da BP1.1: o atributo dos
+  // lugares de mídia M1–M5.
   const MARKERS = {
     [HOME]: [
-      text.home.hero.title,
-      text.home.problem.title,
+      text.home.hero.title.lead.trim(),
+      text.home.problem.title.turn,
+      text.home.brand.chain.statement,
+      text.home.living.closing.statement,
       text.home.conversation.title,
       conversation.success,
       text.metadata.home.title,
-      'lx-hero--typographic',
+      text.metadata.home.description,
+      text.home.brand.chain.consequence,
+      'data-media-slot',
     ],
     [HOW]: [
       text.howItWorks.opening.title,
       text.howItWorks.governance.title,
+      ...text.howItWorks.club.limit,
       text.howItWorks.next.title,
       text.metadata.howItWorks.title,
       text.metadata.howItWorks.description,
       CTA,
+      text.howItWorks.path.title,
+      'data-media-slot',
     ],
   };
 
@@ -588,7 +767,7 @@ test.describe('Brand Partners — portão fechado (REQ-028, catalog §14.1)', ()
     await page.goto(`${CLOSED_SITE}${HOME}`);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(platformText.notFound.title);
     await expect(page).not.toHaveTitle(text.metadata.home.title);
-    await expect(page.getByText(text.home.hero.title)).toHaveCount(0);
+    await expect(page.getByText(text.home.hero.title.lead.trim())).toHaveCount(0);
   });
 
   test('[TECH-057] fechado: o endpoint segue respondendo 404 no-store, antes de qualquer etapa', async ({

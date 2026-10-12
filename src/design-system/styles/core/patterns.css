@@ -252,6 +252,17 @@
       font-size: clamp(1.75rem, 2.75vw, 2.5rem);
     }
   }
+  /* A headline de um Cinematic Hero que abre uma Home tem o papel tipográfico do Home Hero acima: a mesma escala
+   * (tamanho e entrelinha), opt-in. A cor e a quebra continuam as do Cinematic Hero. */
+  [data-lx="core"] .lx-hero .lx-headline.lx-headline--home-hero {
+    font-size: clamp(2rem, 9vw, 2.65rem);
+    line-height: 1.02;
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-hero .lx-headline.lx-headline--home-hero {
+      font-size: clamp(1.75rem, 2.75vw, 2.5rem);
+    }
+  }
 
   /* Problem / Triad Comparison — one composition: copy + the value triad on top, three equivalent alternatives below. */
   [data-lx="core"] .lx-triad-comparison__top {
@@ -430,6 +441,20 @@
     /* Inside a numbered row the row's own hairline already opens the pair. */
     [data-lx="core"] .lx-numbered__text > .lx-comparison--divided:first-child {
       border-top: 0;
+    }
+    /* ...and the pair stays stacked there, as on the phone: the text column is already narrow (beside the number from
+     * md, the last of three columns from lg) and, split in two, each side would fall to a few words per line. Same
+     * order, type and weight on both sides. */
+    [data-lx="core"] .lx-numbered__text > .lx-comparison {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    [data-lx="core"] .lx-numbered__text > .lx-comparison--divided {
+      border-top: 0;
+    }
+    [data-lx="core"] .lx-numbered__text > .lx-comparison--divided > .lx-comparison__item {
+      padding-inline: 0;
+      border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+      border-inline-start: 0;
     }
   }
 
@@ -1106,6 +1131,14 @@
     }
   }
 
+  /* Section group — a further composition inside the same section (after a closing, a list or a sequence): half the
+   * section rhythm above, then its label and blocks at one gap (e.g. possibilities, then mechanisms). */
+  [data-lx="core"] .lx-section-group {
+    display: grid;
+    gap: var(--lx-space-8);
+    margin-top: max(var(--lx-space-12), calc(var(--lx-space-section) / 2));
+  }
+
   /* Section note — a limit or condition that closes a composition: full width under it, a hairline above, body size
    * (never fine print). */
   [data-lx="core"] .lx-section-note {
@@ -1179,7 +1212,8 @@
       gap: var(--lx-space-3);
       border-bottom: 0;
     }
-    [data-lx="core"] .lx-anchors li + li::before {
+    /* The separator closes each item but the last: when the line wraps, the dot ends a line, never opens one. */
+    [data-lx="core"] .lx-anchors li:not(:last-child)::after {
       content: "·";
       color: var(--lx-color-marker);
     }

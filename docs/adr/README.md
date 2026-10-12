@@ -23,6 +23,7 @@ described by Michael Nygard. The ADR process itself is established in
 | 0013 | [Framework Brand Partners como fonte canônica da comunicação Brand Partners](0013-framework-brand-partners-fonte-canonica.md) | Accepted |
 | 0014 | [Discovery público: leitura anônima sob RLS, CSP com nonce e portão de publicação](0014-discovery-publico-leitura-anonima-csp-e-publicacao.md) | Accepted |
 | 0015 | [Mídia do catálogo: metadados no PostgreSQL, binários no Supabase Storage, entrega pelo próprio domínio](0015-midia-do-catalogo-metadados-e-storage.md) | Accepted |
+| 0016 | [Nova versão do Framework Brand Partners (Home Concept, Home Edition e Second Home)](0016-framework-brand-partners-versao-2026-10-12.md) | Accepted |
 
 The technical decisions ADR-001…008 of the canonical
 [03 — Technical Spec](../specs/canonical/03-technical-spec.md) also apply, by reference.

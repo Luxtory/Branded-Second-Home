@@ -588,3 +588,26 @@ Mesmo Core, sem paleta, escala ou biblioteca B2B (spec `catalog` §14.8). Comple
   (alvos de 44 px), uma linha editorial com pontos médios a partir do `md`.
 - Termo destacado pela copy dentro do texto corrido: `strong` em `lx-body`/`lx-subheadline` (semibold).
 - `MobileNav`: ativar um link do menu fecha o diálogo antes de navegar (âncora na própria página).
+
+### Brand Partners no Core (BP1.1, 2026-10-12)
+
+Complementos genéricos e opt-in que a BP1.1 consome (spec `catalog` §14.9); o B2C não usa nenhum e não muda:
+
+- Header com a nav no fim da barra, junto das ações: `SiteShell navAlign="end"` (`header.lx-header--nav-end`). Item de
+  navegação que é uma ação de conversão: `{ action: true }` em `navItems` — botão secundário (`lx-button--secondary`)
+  na barra do `lg` em diante, link comum no menu e no rodapé.
+- Ícone oficial no gatilho do menu também fora do modo retrátil: `SiteShell menuTrigger="mark"` (no retrátil, já é o
+  padrão).
+- Sequência de quatro partes numa linha do `lg` em diante (1 → 2 → 4 colunas): `ol.lx-steps.lx-steps--four`.
+- Uma composição a mais dentro da mesma seção (depois de um fechamento, lista ou sequência), com meio ritmo de seção
+  acima: `div.lx-section-group` > rótulo + blocos.
+- Lugar de fotografia ainda em produção: `div.lx-media-placeholder` > `span.lx-media-placeholder__label`, dentro de
+  `figure.lx-media.lx-split__media` ou de `div.lx-hero__slide` (no Hero, o rótulo fica sob o header e acima do scrim).
+  É apoio de revisão, nunca visual final: o go-live exige o ativo aprovado no lugar.
+- Par (`lx-comparison`) dentro do texto de um item numerado (`lx-numbered__text`): fica empilhado em toda largura,
+  como no celular — ao lado do número (`md`) ou na última de três colunas (`lg`), lado a lado cada metade caía a poucas
+  palavras por linha. Mesma ordem, tipo e peso dos dois lados (auditoria de concisão da BP1.1).
+- Limite com mais de um parágrafo: `div.lx-section-note.lx-stack` > `p.lx-body` (um por frase).
+- Headline do Cinematic Hero que abre uma Home: `h1.lx-headline.lx-headline--home-hero` — o papel tipográfico do Home
+  Hero B2C (`lx-home-hero__title`: mesmo tamanho e entrelinha nas três faixas), mantendo a cor e a quebra do Cinematic
+  Hero. Paridade B2C → Brand Partners por papel: o B2C é a referência (spec `catalog` §14.9).

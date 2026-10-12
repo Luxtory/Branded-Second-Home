@@ -196,6 +196,52 @@ automático nem garantia de deduplicação; a chave no provedor é `luxtory:bran
 3. Smoke controlado com dados sintéticos recebidos na caixa corporativa; conferir `/brand-partner` e
    `/brand-partner/como-funciona` com `Content-Security-Policy` com `nonce-` e indexáveis (`robots` sem `noindex`).
 
+### Checklist de go-live da BP1.1 (preparado em 2026-10-12, não aplicado)
+
+Executado pelo fundador na Vercel, com orientação; nada aqui foi configurado. **Antes:** `P-LX-03` concluída (temas
+A–D de [`revisao-juridica-brand-partners.md`](../specs/communication/revisao-juridica-brand-partners.md)), as
+verificações de pré-go-live J-34 (direitos das fotografias provisórias ou substituição) e J-35 (aviso de privacidade
+do formulário, se exigido), autorização de merge do PR da BP1.1 e, **separada**, autorização para abrir o portão. O
+aceite visual final foi dado em 2026-10-12.
+Nunca criar `BRAND_PARTNERS_CONTACT_MODE` na Vercel; não tocar em variáveis fora desta lista.
+
+1. **Merge** (autorização própria): a CI publica em Production com o portão fechado — `/brand-partner` e
+   `/brand-partner/como-funciona` seguem 404, assim como `POST /v1/brand-partner-contacts`.
+2. **Variáveis de Production** (Vercel → Settings → Environment Variables, só o ambiente Production; o código valida o
+   formato e, sem uma delas, o envio falha fechado com 503 `stage: configuration`):
+
+   | Variável | Formato validado | Sensitive |
+   |---|---|---|
+   | `RESEND_API_KEY` | `re_…`; chave própria de Production, só permissão de envio | sim |
+   | `BRAND_PARTNERS_CONTACT_FROM` | `e-mail` ou `Nome <e-mail>`, num domínio verificado no Resend (SPF/DKIM, como `luxtory.club`) | não |
+   | `BRAND_PARTNERS_CONTACT_TO` | um e-mail: a caixa corporativa que recebe as mensagens | não |
+   | `UPSTASH_REDIS_REST_URL` | `https://…` do banco de Production (não o do Preview) | não |
+   | `UPSTASH_REDIS_REST_TOKEN` | ≥ 20 caracteres sem espaço | sim |
+   | `BRAND_PARTNERS_CONTACT_HMAC_SECRET` | ≥ 32 caracteres aleatórios (ex.: `openssl rand -base64 48`), exclusivo | sim |
+   | `BRAND_PARTNERS_ALLOWED_ORIGINS` | origens exatas separadas por vírgula, `https://host` sem barra final: cada domínio público que serve o site (Vercel → Domains) | não |
+   | os seis limites e prazos abaixo | inteiros positivos | não |
+
+   **Limites e prazos — proposta para decisão da operação (TECH-001: o código não tem default):**
+
+   | Chave | Proposta | Racional |
+   |---|---|---|
+   | `BRAND_PARTNERS_CONTACT_NETWORK_LIMIT` / `…_NETWORK_WINDOW_SECONDS` | 5 / 600 | um envio legítimo + retries por origem em 10 min |
+   | `BRAND_PARTNERS_CONTACT_GLOBAL_LIMIT` / `…_GLOBAL_WINDOW_SECONDS` | 60 / 3600 | volume B2B baixo; protege a cota do Resend |
+   | `BRAND_PARTNERS_CONTACT_SEND_TIMEOUT_MS` | 8000 | folga sobre a latência do Resend, abaixo do limite da função |
+   | `BRAND_PARTNERS_CONTACT_LIMITER_TIMEOUT_MS` | 1500 | Upstash REST na mesma região; sem resposta → 503 |
+
+3. **Abrir o portão** (autorização própria): `BRAND_PARTNERS_SITE=open` só em Production e redeploy pela CI.
+4. **Smoke em Production, logo depois:**
+   - `/brand-partner` e `/brand-partner/como-funciona` → 200, `Content-Security-Policy` com `nonce-`, `robots` sem
+     `noindex`, `canonical` próprio; M1–M5 carregam e o header leva só a destinos Brand Partners;
+   - um envio com dados sintéticos (nome e marca de teste, e-mail da própria operação) → 202, "Envio confirmado" e a
+     mensagem "Brand Partners — mensagem pelo site" chega à caixa corporativa;
+   - o mesmo envio repetido (retry) não duplica a mensagem; `POST` com `Origin` de outro domínio → 403;
+   - logs: uma linha `brand partner contact` por request, sem campos do formulário, IP ou chave;
+   - o B2C (`/`, `/como-funciona`) continua igual, sem link para Brand Partners.
+5. **Rollback:** `BRAND_PARTNERS_SITE=closed` (ou remover a variável) e redeploy — páginas e endpoint voltam a 404 sem
+   mudar código; as credenciais podem ficar.
+
 **Logs:** uma linha `brand partner contact` por request com `stage`, `status`, `duration_ms` e `reason` (chaves de
 configuração ausentes, motivo do provedor ou do limitador) — nunca campos, corpo, IP, chave ou resposta do provedor.
 503 com `stage: configuration` nomeia as chaves a corrigir.

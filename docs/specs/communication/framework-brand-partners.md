@@ -58,7 +58,7 @@ Esses campos devem partir da realidade do público.
 **As principais alternativas de lazer tendem a oferecer combinações diferentes de Patrimônio, Liberdade e Pertencimento, frequentemente exigindo trade-offs entre esses valores.**
 
 **Oferta da marca:**  
-**Luxtory Branded Second Home: Residences concebidas a partir do Brand DNA de Brand Partners, estruturadas em Residence Editions nas modalidades Owner e/ou Co-Owner e conectáveis aos mecanismos do Luxtory Club conforme condições aplicáveis.**
+**Luxtory Branded Second Home: Second Homes concebidas a partir do Brand DNA de Brand Partners, estruturadas em Home Editions nas modalidades Owner e/ou Co-Owner e conectáveis aos mecanismos do Luxtory Club conforme condições aplicáveis.**
 
 **Alternativas:**  
 **Hotelaria e resorts; locação de temporada; propriedade tradicional de segunda residência; modelos de co-ownership; clubes de second homes, intercâmbio ou hospitalidade; e manutenção da situação atual.**
@@ -67,14 +67,14 @@ Esses campos devem partir da realidade do público.
 **Integrar Patrimônio, Liberdade e Pertencimento em Branded Second Homes concebidas a partir de estilos de vida e conectadas a um ecossistema complementar de uso, gestão e experiências.**
 
 **Mecanismo:**  
-**Brand Partner → Brand DNA → Residence Concept → Residence Edition → Owner/Co-Owner → Design & Build → Residence → Luxtory Club.**
+**Brand Partner → Brand DNA → Home Concept → Home Edition → Owner/Co-Owner → Design & Build → Second Home → Luxtory Club.**
 
 **Valor percebido:**  
 **Permitir que o Titular combine relação patrimonial, possibilidades de experiência e pertencimento em uma mesma arquitetura de second home.**
 
 ### Declaração de Posicionamento
 
-> Para **pessoas que desejam aproveitar melhor seu lazer e suas conquistas**, que buscam **uma solução capaz de reunir Patrimônio, Liberdade e Pertencimento**, **Luxtory** oferece **Branded Second Homes**, que permitem **possuir um lugar alinhado ao próprio lifestyle e ampliar as possibilidades de vivê-lo** por meio de **Residence Concepts originados do Brand DNA, modalidades Owner/Co-Owner e mecanismos complementares do Luxtory Club**, em contraste com **alternativas que tendem a privilegiar parte desses valores ou exigir maiores trade-offs entre eles**.
+> Para **pessoas que desejam aproveitar melhor seu lazer e suas conquistas**, que buscam **uma solução capaz de reunir Patrimônio, Liberdade e Pertencimento**, **Luxtory** oferece **Branded Second Homes**, que permitem **possuir um lugar alinhado ao próprio lifestyle e ampliar as possibilidades de vivê-lo** por meio de **Home Concepts originados do Brand DNA, modalidades Owner/Co-Owner e mecanismos complementares do Luxtory Club**, em contraste com **alternativas que tendem a privilegiar parte desses valores ou exigir maiores trade-offs entre eles**.
 
 O Posicionamento deve ser:
 
@@ -656,7 +656,7 @@ Pergunta:
 **“Uma expansão mal estruturada pode diluir justamente o Brand Equity que deveria ampliar.”**
 
 **Provas/perspectivas capazes de alterar a interpretação:**  
-**Brand DNA como origem do Residence Concept; preservação dos direitos preexistentes da Brand Partner; uso da marca sujeito aos direitos e aprovações acordados; remuneração contratualmente definida pelo licenciamento de seu uso; proteção dos elementos essenciais do Concept; modelo orientado por demanda; divisão de papéis entre Brand Partner e Luxtory; e replicação condicionada.**
+**Brand DNA como origem do Home Concept; preservação dos direitos preexistentes da Brand Partner; uso da marca sujeito aos direitos e aprovações acordados; remuneração contratualmente definida pelo licenciamento de seu uso; proteção dos elementos essenciais do Concept; modelo orientado por demanda; divisão de papéis entre Brand Partner e Luxtory; e replicação condicionada.**
 
 > **A MCR serve para compreender tensões reais, não para fabricar insegurança.**
 
@@ -842,7 +842,7 @@ Pergunta:
 **Transformar Brand DNA em uma experiência estruturada, governada e comercializável, capaz de gerar nova relação com a comunidade e monetização pelo uso autorizado da marca, validando sua aderência antes de ampliar a oportunidade.**
 
 **Categoria de solução:**  
-**Branded residences / Branded Second Home.**
+**Branded Home / Second Home.**
 
 ### Regra
 
@@ -876,16 +876,16 @@ Pergunta:
 **Parceria com a Luxtory para transformar o Brand DNA da Brand Partner em Branded Second Homes.**
 
 **Mecanismo:**  
-**Brand Partner → Brand DNA → Residence Concept → Residence Edition → Owner/Co-Owner → Design & Build → Residence → Luxtory Club.**
+**Brand Partner → Brand DNA → Home Concept → Home Edition → Owner/Co-Owner → Design & Build → Second Home → Luxtory Club.**
 
 **Diferenciais:**  
-**Brand DNA como origem do Residence Concept; uso autorizado da marca em vez de simples aplicação visual; remuneração da Brand Partner pelo licenciamento conforme termos contratuais; Residence Concept replicável; governança sobre utilização da marca; preservação dos direitos preexistentes; proteção dos elementos essenciais do Concept; modelo predominantemente orientado por demanda; possibilidade de captar interesse antes da Residence Edition; divisão de papéis entre Brand Partner e Luxtory; e replicação condicionada a direitos, estratégia e viabilidade.**
+**Brand DNA como origem do Home Concept; uso autorizado da marca em vez de simples aplicação visual; remuneração da Brand Partner pelo licenciamento conforme termos contratuais; Home Concept replicável; governança sobre utilização da marca; preservação dos direitos preexistentes; proteção dos elementos essenciais do Concept; modelo predominantemente orientado por demanda; possibilidade de captar interesse antes da Home Edition; divisão de papéis entre Brand Partner e Luxtory; e replicação condicionada a direitos, estratégia e viabilidade.**
 
 **Evidências:**  
-**Business Model & Business Rules; Product Spec; Brand DNA; plano estratégico aprovado de utilização da marca; instrumentos de licenciamento e demais contratos aplicáveis; Residence Concept; manifestações de interesse e dados de demanda quando existentes; Residence Editions aprovadas; regras de governança e demais evidências concretas disponíveis em cada parceria.**
+**Business Model & Business Rules; Product Spec; Brand DNA; plano estratégico aprovado de utilização da marca; instrumentos de licenciamento e demais contratos aplicáveis; Home Concept; manifestações de interesse e dados de demanda quando existentes; Home Editions aprovadas; regras de governança e demais evidências concretas disponíveis em cada parceria.**
 
 **Condições/limitações/riscos:**  
-**A Brand Partner licencia o uso autorizado de sua marca e recebe remuneração conforme condições definidas contratualmente; não presumir percentual, royalty, mínimo, receita ou resultado não formalizado; um Residence Concept não implica automaticamente lançamento; replicação depende dos direitos acordados, estratégia, demanda e viabilidade; alterações materiais na utilização da marca exigem aprovação aplicável; responsabilidades específicas dependem dos instrumentos da parceria; e não existem garantias automáticas de vendas, receita, retorno, escala ou replicação.**
+**A Brand Partner licencia o uso autorizado de sua marca e recebe remuneração conforme condições definidas contratualmente; não presumir percentual, royalty, mínimo, receita ou resultado não formalizado; um Home Concept não implica automaticamente lançamento; replicação depende dos direitos acordados, estratégia, demanda e viabilidade; alterações materiais na utilização da marca exigem aprovação aplicável; responsabilidades específicas dependem dos instrumentos da parceria; e não existem garantias automáticas de vendas, receita, retorno, escala ou replicação.**
 
 **Critérios de escolha atendidos:**  
 **Aderência ao Brand DNA; propriedade intelectual; governança; controle da utilização da marca; modelo de monetização; demanda; qualidade; clareza de papéis; capacidade de execução; comercialização; potencial econômico; replicabilidade condicionada; redução de complexidade e confiança.**
@@ -926,7 +926,7 @@ Permitir que o Protagonista decida **se a solução e o Mentor fazem sentido par
 **“Explore o potencial residencial da sua marca.”**
 
 **Destino:**  
-**Conversa ou processo de qualificação estratégica entre Brand Partner e Luxtory para avaliar fit e possíveis próximos passos, sem pressupor automaticamente parceria, Residence Concept ou lançamento.**
+**Conversa ou processo de qualificação estratégica entre Brand Partner e Luxtory para avaliar fit e possíveis próximos passos, sem pressupor automaticamente parceria, Home Concept ou lançamento.**
 
 ### Resultado mental
 
@@ -1108,7 +1108,7 @@ A expressão utilizada em cada contexto é seletiva.
 # 10.1 CONTEXTOS POSITIVOS
 
 **Contexto específico:**  
-**Apresentação de oportunidades de expansão, monetização do Brand Equity, criação de Residence Concepts e novas experiências para a comunidade da Brand Partner.**
+**Apresentação de oportunidades de expansão, monetização do Brand Equity, criação de Home Concepts e novas experiências para a comunidade da Brand Partner.**
 
 **Traço dominante:**  
 **Intelecto.**
@@ -1204,12 +1204,12 @@ O Tom resulta de:
 
 | Elemento | Fazer | Evitar |
 |---|---|---|
-| Vocabulário | **Brand DNA, Brand Equity, lifestyle, comunidade, licenciamento, Residence Concept, expansão, experiência, governança, demanda, valor** | **Corretagem, jargão imobiliário prematuro, “colocar sua logo”, promessa de retorno** |
+| Vocabulário | **Brand DNA, Brand Equity, lifestyle, comunidade, licenciamento, Home Concept, expansão, experiência, governança, demanda, valor** | **Corretagem, jargão imobiliário prematuro, “colocar sua logo”, promessa de retorno** |
 | Headlines | **Curtas, estratégicas e centradas no potencial e valor da marca** | **Clichês de luxo, superlativos e claims absolutos** |
 | Frases | **Claras, objetivas e conceitualmente precisas** | **Complexidade jurídica ou técnica desnecessária na primeira camada** |
 | Argumentação | **Potencial → tensão → nova lógica → mecanismo → monetização/governança → prova** | **Começar por imóvel, percentual ou detalhes contratuais** |
 | Emoção | **Curiosidade, confiança, orgulho e proteção da identidade** | **FOMO, medo artificial de irrelevância ou pressão** |
-| Autoridade | **Brand DNA, Business Rules, governança, licenciamento, Residence Concept, divisão de papéis e evidências reais** | **Autoproclamações e resultados não demonstrados** |
+| Autoridade | **Brand DNA, Business Rules, governança, licenciamento, Home Concept, divisão de papéis e evidências reais** | **Autoproclamações e resultados não demonstrados** |
 | CTAs | **Exploração de fit e próximo passo estratégico** | **Pressão por contrato ou compromisso prematuro** |
 
 ---
@@ -1229,7 +1229,7 @@ A narrativa muda conforme:
 Antes de criar uma página, campanha, anúncio, apresentação, email, roteiro ou outra peça, preencher:
 
 **Objetivo da peça:**  
-**Em uma página institucional ampla para Brand Partners, fazer a Brand Partner reconhecer o potencial de expandir e monetizar seu Brand Equity por meio de uma nova expressão residencial, compreender a lógica Brand DNA → Residence Concept e considerar a Luxtory como Mentor capaz de estruturar essa oportunidade.**
+**Em uma página institucional ampla para Brand Partners, fazer a Brand Partner reconhecer o potencial de expandir e monetizar seu Brand Equity por meio de uma nova expressão residencial, compreender a lógica Brand DNA → Home Concept e considerar a Luxtory como Mentor capaz de estruturar essa oportunidade.**
 
 **Protagonista:**  
 **Brand Partner.**
@@ -1279,7 +1279,7 @@ Antes de criar uma página, campanha, anúncio, apresentação, email, roteiro o
 **Estratégico, sofisticado, preciso, seguro e colaborativo.**
 
 **Prova necessária:**  
-**Brand DNA como origem do Residence Concept; direitos preexistentes preservados; licenciamento do uso autorizado da marca; remuneração definida contratualmente; plano estratégico de utilização da marca sujeito à aprovação; proteção dos elementos essenciais do Concept; modelo orientado por demanda; divisão de papéis Brand Partner/Luxtory; replicação condicionada; Design & Build quando aplicável; e regras de continuidade da parceria.**
+**Brand DNA como origem do Home Concept; direitos preexistentes preservados; licenciamento do uso autorizado da marca; remuneração definida contratualmente; plano estratégico de utilização da marca sujeito à aprovação; proteção dos elementos essenciais do Concept; modelo orientado por demanda; divisão de papéis Brand Partner/Luxtory; replicação condicionada; Design & Build quando aplicável; e regras de continuidade da parceria.**
 
 **Próximo passo:**  
 **Avaliar o fit entre Brand DNA, lifestyle, audiência/comunidade e potencial de expressão residencial.**
@@ -1421,10 +1421,10 @@ Toda comunicação deve:
 **Marca:** **Luxtory**  
 **Categoria:** **Branded Second Home**  
 **Público de referência do Posicionamento:** **Pessoas e famílias com perfil patrimonial compatível que valorizam Patrimônio, Liberdade e Pertencimento**  
-**Oferta:** **Branded Second Homes concebidas a partir do Brand DNA de Brand Partners, estruturadas como Residence Editions Owner e/ou Co-Owner**  
+**Oferta:** **Branded Second Homes concebidas a partir do Brand DNA de Brand Partners, estruturadas como Home Editions Owner e/ou Co-Owner**  
 **Posicionamento:** **Integrar Patrimônio, Liberdade e Pertencimento em uma mesma arquitetura de second home**  
-**Diferencial:** **Residence Concept originado do Brand DNA e conectado a modalidades patrimoniais e ao ecossistema Luxtory**  
-**Mecanismo:** **Brand Partner → Brand DNA → Residence Concept → Residence Edition → Owner/Co-Owner → Design & Build → Residence → Luxtory Club**
+**Diferencial:** **Home Concept originado do Brand DNA e conectado a modalidades patrimoniais e ao ecossistema Luxtory**  
+**Mecanismo:** **Brand Partner → Brand DNA → Home Concept → Home Edition → Owner/Co-Owner → Design & Build → Second Home → Luxtory Club**
 
 ---
 
@@ -1459,7 +1459,7 @@ Toda comunicação deve:
 
 **Solução Desejada:** **Estrutura que preserve Brand DNA, propriedade intelectual, governança e qualidade; possibilite monetização pelo licenciamento; reduza complexidade; valide demanda; e permita execução e eventual replicação**  
 **Critérios de escolha:** **Fit estratégico, identidade, IP, governança, reputação, qualidade, demanda, monetização, clareza de papéis, execução, economia, risco, replicabilidade e confiança**  
-**Categorias consideradas:** **Licensing, brand extension, branded experiences, hospitality, branded residences, desenvolvimento interno e parcerias especializadas**  
+**Categorias consideradas:** **Licensing, brand extension, branded experiences, hospitality, branded Homes, desenvolvimento interno e parcerias especializadas**  
 **Alternativas atuais:** **Desenvolvimento interno; licensing convencional; operadores imobiliários/hospitality; outras extensões; experiências temporárias; ou não expandir**
 
 ---
@@ -1492,8 +1492,8 @@ Toda comunicação deve:
 **Consciência desejada:** **Product Aware na comunicação institucional ampla**  
 **Transição pretendida:** **Unaware → Product Aware**  
 **5Ps necessários:** **Picture → Problem → Promise → Proof → Push na comunicação institucional de arco completo**  
-**Camada de solução apropriada:** **Progresso → Solução Desejada → Categoria → Oferta → Mentor**  
-**Evidências disponíveis:** **Brand DNA; direitos de utilização da marca; licenciamento; remuneração contratualmente definida; governança; Residence Concept; modelo orientado por demanda; divisão de papéis; Residence Editions; instrumentos contratuais e demais evidências concretas**
+**Camada de solução apropriada:** **Progresso → Solução Desejada → Categoria → Oferta → Mentor** 
+**Evidências disponíveis:** **Brand DNA; direitos de utilização da marca; licenciamento; remuneração contratualmente definida; governança; Home Concept; modelo orientado por demanda; divisão de papéis; Home Editions; instrumentos contratuais e demais evidências concretas**
 
 ---
 

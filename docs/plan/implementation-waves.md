@@ -73,8 +73,9 @@
 | 3D | Framework Brand Partners como fonte canônica da comunicação Brand Partners (ADR-0013) | docs + catalog (domain) | — | 3C | — | R1 | ✅ |
 | 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3, 3C | — | R1 | ✅ (CP2, #32, `ba1dc8d`) |
 | 4.1 | Coleção: discovery curatorial (dados, Admin, mídia, filtros, página final) | catalog | complementa REQ-020, REQ-022 | 4 | — | R1 | ✅ (#36, `3c26d60`; Production confirmada pelo fundador) |
-| BP0 | Product Gate, contratos públicos e portal planejado | docs | — (especifica REQ-028/029) | 4.1 | — | B2B | 🟡 Checkpoint documental; sem commit/push |
-| BP1 | Home + Como funciona + formulário Resend, QA e publicação | catalog, platform (Core DS) | REQ-028 | BP0 | — | B2B | ⬜ implementação não iniciada |
+| BP0 | Product Gate, contratos públicos e portal planejado | docs | — (especifica REQ-028/029) | 4.1 | — | B2B | ✅ (#39) |
+| BP1 | Home + Como funciona + formulário Resend, QA e publicação | catalog, platform (Core DS) | REQ-028 | BP0 | — | B2B | ✅ implementada (#40, #41); Production fechada até o go-live |
+| BP1.1 | Brand Partners Communication Upgrade: copy e composição do Decision & Approval Pack, Framework de 2026-10-12 | catalog (presentation), Core DS, docs | — (complementa REQ-028) | BP1 | — | B2B | ✅ implementação concluída em 2026-10-12 (PR #42, portão fechado); publicação depende de P-LX-03 e das verificações externas de pré-go-live |
 | BP2 | Portal autenticado read-only com dados reais da própria parceria | identity, catalog, ownership | REQ-029 | BP0, critérios de entrada; representação/fatos canônicos de W7/W8 | — | B2B | ⛔ critérios de entrada ainda não satisfeitos |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ |
 | 6 | Interesse — formulário público | ownership | — | 4, 5 | — | R1 | ⛔ P-3 |
@@ -592,6 +593,29 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 - **Goal command:** `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-028,TECH-057 exits 0, stop after 3 tries`
 - **Checkpoints:** visual antes de push; depois PR draft/CI verde antes de merge; publicação e smoke conforme
   autorização da BP1. REQ-029 não pode ser declarado implementado por esses gates.
+
+### BP1.1 — Brand Partners Communication Upgrade (2026-10-12)
+
+- **Goal:** a Brand Partner entende cedo o valor bilateral (para quem vive e para a marca), o mecanismo e a
+  governança, com a copy e a composição do Decision & Approval Pack aprovado pelo fundador (D1–D7). **IDs:** nenhum
+  novo; complementa REQ-028 (copy `D-BP-15`, nomenclatura `D-BP-16`, ADR-0016).
+- **Contrato:** [catalog §14.9](../specs/catalog.md#149-bp11--brand-partners-communication-upgrade-2026-10-12).
+- **Scope:** Framework Brand Partners de 2026-10-12 (troca do arquivo, sha256, aplicação); i18n e páginas em
+  `catalog/presentation/brand-partners`; manifesto de mídia com placeholders M1–M5; complementos genéricos do Core
+  (`SiteShell` `navAlign`/`action`/`menuTrigger`, `lx-steps--four`, `lx-media-placeholder`); E2E da BP. Sem mudança de
+  rotas, portão, formulário, endpoint, OpenAPI, Resend, Upstash, B2C ou BP2.
+- **Sequência:** documentos (ADR, aplicação, spec) → copy → Core → páginas → **Checkpoint 1 visual/editorial**
+  (390/768/1440, parar) → **Checkpoint 2 técnico** (gates completos e prova de não vazamento com o portão fechado)
+  → PR e merge só com autorização.
+- **Gates de go-live:** P-LX-03, ensaio M1–M5 aprovado (`P-BP-03`, manifesto sem placeholder) e autorização expressa
+  do fundador. CI verde não autoriza merge nem go-live. Desde 2026-10-12 o manifesto não tem placeholder: M1–M5 usam
+  as fotografias provisórias do B2C (`D-BP-17`), sujeitas ao aceite visual final; merge e abertura do portão são
+  autorizações separadas do fundador (checklist em `docs/how-to/operacao.md`).
+- **Encerramento (2026-10-12): BP1.1 IMPLEMENTATION COMPLETE.** Aprovados pelo fundador: estratégia, arquitetura de
+  informação, copy, Design System, Home, Como funciona, M1–M5 provisórias, responsividade, paridade tipográfica
+  B2C → B2B e aceite visual final; diretriz de comunicação `D-BP-19`. O que falta para publicar é externo ao
+  desenvolvimento (P-LX-03, direitos das fotografias, aviso de privacidade se exigido, configuração de Production,
+  autorizações) e não reabre a wave.
 
 ### BP2 — Portal Brand Partner (evolução planejada)
 

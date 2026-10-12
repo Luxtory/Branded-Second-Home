@@ -89,6 +89,11 @@
   [data-lx="core"] .lx-header .lx-menu-trigger__mark {
     height: 1.75rem;
   }
+  /* Nav at the end (opt-in, `SiteShell navAlign="end"`): from lg the nav sits with the actions at the inline end of the
+   * bar, read as one group with the logo's counterweight, instead of floating in the middle of the bar. */
+  [data-lx="core"] .lx-header--nav-end .lx-header__nav {
+    margin-inline-start: auto;
+  }
 
   /* Menu — native <dialog> as a drawer from the right (full width on phones): focus trapped, Esc closes, focus
    * returns to the trigger. Links in Newsreader; the current page is italic and underlined, never colour alone. */
@@ -275,6 +280,49 @@
     height: 100%;
     object-fit: cover;
     object-position: var(--lx-crop-x, 50%) var(--lx-crop-y, 50%);
+  }
+
+  /* Media placeholder — the structural stand-in for an authorized photograph still in production (spec catalog §14.9):
+   * it fills the media slot (Split media, Cinematic Hero slide) hatched on the surface, with its identification at the
+   * top end. A layout aid for review, never a final visual: go-live requires the approved asset in its place. */
+  [data-lx="core"] .lx-media-placeholder {
+    display: grid;
+    align-content: start;
+    justify-items: end;
+    width: 100%;
+    height: 100%;
+    padding: var(--lx-space-6);
+    border: var(--lx-border-hairline) dashed var(--lx-color-rule-strong);
+    background-color: var(--lx-color-bg);
+    background-image: repeating-linear-gradient(
+      135deg,
+      var(--lx-color-rule) 0 var(--lx-border-hairline),
+      transparent var(--lx-border-hairline) var(--lx-space-6)
+    );
+    color: var(--lx-color-fg);
+  }
+  [data-lx="core"] .lx-media > .lx-media-placeholder {
+    position: absolute;
+    inset: 0;
+  }
+  /* In a Cinematic Hero the hatching stays under the slide's scrim (the copy reads as over a photograph) and only the
+   * identification rises above it, under the header band. */
+  [data-lx="core"] .lx-hero__slide > .lx-media-placeholder {
+    padding-top: calc(var(--lx-layout-bar-height) + var(--lx-space-6));
+  }
+  [data-lx="core"] .lx-hero__slide > .lx-media-placeholder > .lx-media-placeholder__label {
+    position: relative;
+    z-index: var(--lx-z-raised);
+  }
+  [data-lx="core"] .lx-media-placeholder__label {
+    max-width: 20rem;
+    padding: var(--lx-space-2) var(--lx-space-3);
+    border: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+    background-color: var(--lx-color-bg);
+    font-size: var(--lx-type-label);
+    font-weight: var(--lx-weight-medium);
+    letter-spacing: var(--lx-tracking-label);
+    text-align: end;
   }
 
   /* Caption on a photograph — a small label on its own local scrim (e.g. "Imagem conceitual"), never a card. */

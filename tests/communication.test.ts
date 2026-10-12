@@ -46,7 +46,8 @@ const JOURNEYS = [
   {
     mark: 'FW-BP',
     framework: join(DIR, 'framework-brand-partners.md'),
-    sha256: 'b97c8ae37dc911d7fa17d947f7fa5f622c17bd30e913bd672f46bd68ac2364a7',
+    // Versão de 2026-10-12 (fundador; ADR-0016): Home Concept, Home Edition e Second Home no lugar de Residence.
+    sha256: '47ccb4d6160a3b97cab0ef5334d17ca060252affdb9d92512b0473dc04e9ad04',
     application: BRAND_PARTNERS,
     sections: APPLICATION_SECTIONS,
     anchors: ['Explore o potencial residencial da sua marca.', 'Unaware → Product Aware'],

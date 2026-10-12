@@ -13,10 +13,13 @@ const SOLID_AFTER_PX = 12;
 export function SiteHeader({
   overlay,
   retractable,
+  navAtEnd = false,
   children,
 }: {
   readonly overlay: boolean;
   readonly retractable: boolean;
+  /** Nav junto das ações, no fim da barra (`lx-header--nav-end`). */
+  readonly navAtEnd?: boolean;
   readonly children: ReactNode;
 }) {
   const header = useRef<HTMLElement>(null);
@@ -38,6 +41,7 @@ export function SiteHeader({
         'lx-header',
         overlay ? 'lx-header--overlay' : '',
         retractable ? 'lx-header--retractable' : '',
+        navAtEnd ? 'lx-header--nav-end' : '',
       ]
         .filter(Boolean)
         .join(' ')}

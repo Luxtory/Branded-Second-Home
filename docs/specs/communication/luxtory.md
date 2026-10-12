@@ -64,6 +64,8 @@ Só os que as duas jornadas usam; o restante é citado direto na aplicação de 
 - **Site B2C (`D-LX-08`):** a casa é **Second Home**; Residence Concept → **Home Concept**; Residence Edition →
   **Home Edition**. Branded Second Home (categoria), Luxtory Club, Membership e a página **Coleção** continuam. Admin,
   banco, `01/02/03` e instrumentos jurídicos usam os nomes canônicos.
+- **Site Brand Partners (`D-BP-16`):** a mesma nomenclatura, agora no próprio Framework Brand Partners (versão de
+  2026-10-12) `[FW-BP: §2]`; o estágio formal do mecanismo é **Second Home**, e "Home" só aparece como linguagem natural.
 
 ## 7. Registro
 

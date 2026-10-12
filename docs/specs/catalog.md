@@ -772,7 +772,8 @@ nova versão do `02`); amenidades (sem vocabulário); formulário de interesse (
 
 ## 14. Discovery público B2B Brand Partners (BP1)
 
-Contrato BP0 aprovado pelo fundador (2026-10-09); BP1 não implementada na BP0 — implementação registrada em §14.8.
+Contrato BP0 aprovado pelo fundador (2026-10-09); BP1 não implementada na BP0 — implementação registrada em §14.8;
+BP1.1 (comunicação, 2026-10-12) em §14.9.
 Comportamento e limites:
 [`02` REQ-028](canonical/02-product-spec.md#61-jornada-brand-partners); arquitetura:
 [`03` TECH-057](canonical/03-technical-spec.md#61-brand-partners-público-e-fronteira-do-portal).
@@ -955,3 +956,149 @@ marcadores de bloco) não são renderizados.
 Configuração e go-live: [runbook](../how-to/operacao.md#preparar-a-bp1-brand-partners-público) e
 [catálogo de ambiente](../reference/environment.md). **Pendência externa:** Resend (domínio/remetente e caixa de
 teste) + Upstash do Preview, configurados pelo fundador diretamente no ambiente.
+
+### 14.9 BP1.1 — Brand Partners Communication Upgrade (2026-10-12)
+
+Executa o Decision & Approval Pack aprovado pelo fundador em 2026-10-12 (D1–D7) e os dois ajustes editoriais da mesma
+aprovação, sem redefinir REQ-028/TECH-057: copy `D-BP-15`, nomenclatura `D-BP-16`, Framework de 2026-10-12
+([ADR-0016](../adr/0016-framework-brand-partners-versao-2026-10-12.md)). A BP1 (§14.8) fica no Git e no registro
+(`D-BP-14`, substituída). **Não mudam:** rotas, portão `BRAND_PARTNERS_SITE`, contrato e estados do formulário,
+endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
+
+**Copy.** Verbatim em `src/features/catalog/presentation/i18n/brand-partners-pt-br.ts`. Ajustes de 2026-10-12:
+
+- **Valor bilateral no Hero:** para quem se identifica com a marca, viver o lazer com patrimônio, liberdade e
+  pertencimento, em um lugar que expressa sua identidade e seu lifestyle `[FW-BP: §2]` — sem sugerir que todo Titular
+  possui diretamente a Second Home (no Co-Owner, a pessoa possui uma Ação, BR-373); para a marca, transformar o que ela
+  representa em Brand Experience e participar dos momentos que importam na vida das pessoas `[FW-BP: §8 P1]`.
+- **Luxtory Club como modelo previsto:** R3 não está operacional, então Luxtory Club, Membership, Luxchange e Luxplus
+  aparecem sempre como "o modelo prevê"/"quando disponível", com Membership, elegibilidade, disponibilidade, inventário
+  e regras aplicáveis (BR-146, BR-161, BR-190, BR-240). Nenhum texto permite ler que já podem ser usados.
+- **Ajustes do Checkpoint 1 (fundador, 2026-10-12):** a precisão do Hero acima; na escada da marca, "Em uma
+  experiência — A marca é sentida."; "Decisões e remuneração" com seis decisões (alteração de elementos essenciais fica
+  em Governança e replicação em Condições e expansão), sem accordion.
+- **Auditoria de concisão (gate editorial pré-merge, fundador, 2026-10-12):** cada bloco de texto busca até 3 linhas
+  visuais e usa 4 só quando reduzir mais prejudicaria contexto, precisão ou segurança da informação. Medida a 390, 768
+  e 1440 px em todo `p`, `li` e título de item do `<main>` das duas páginas (altura ÷ line-height, fontes carregadas):
+  antes, 25 blocos acima de 4 linhas (até 7); depois, nenhum. Só divisões na fronteira das frases — no i18n, a lista
+  de strings é o bloco dividido, um `<p>` por item —, sem corte de conteúdo, claim, condição ou ressalva. Diff palavra
+  a palavra: 12 pontos de divisão, com pontuação e maiúscula ajustadas e três conexões mínimas ("um universo próprio
+  e uma comunidade… / E com interesse…", "O Home Concept tem especificação suficiente…", "…desses momentos. / E isso
+  pode abrir…"). No Club, cada frase traz "o modelo prevê"/"quando disponível" ou vem depois dessa marca no mesmo
+  bloco, nunca antes (teste de copy). Repetições entre seções ficam (licenciamento × governança; "do zero" no percurso
+  × condições): cada resposta precisa estar correta lida sozinha, inclusive pela âncora.
+  - **Exceções acima de 4 linhas:** nenhuma.
+  - **Mantidos com 4 linhas** (frase única; dividir separaria a definição, a condição ou a paridade do que ela
+    qualifica): Hero, os dois parágrafos do valor bilateral (só a 390); definições — Home Concept (`proposta`;
+    percurso 02) e Home Edition (`como-acontece` 03; percurso 04); condições — "Um Home Concept pode originar…" (768),
+    Design & Build, Pertencimento, Liberdade (Luxtory Club), percurso 07 (Luxtory Club), remuneração, não conformidade,
+    encerramento (duas frases), "E para a marca?", parceiros locais e a introdução do Club; paridade Owner | Co-Owner
+    em Patrimônio (REQ-103); enumerações — introdução de "Para quem vive", cadeia da marca e o critério "querem
+    ampliar…" (768).
+- **Fora da copy:** cross-brand (`H-BP-09`), ativação pela capacidade da Luxtory (BR-121, `H-BP-10`) e monetização
+  opcional (`P-BP-04`).
+
+**Home `/brand-partner`** (PICTURE → PROBLEM → PROMISE → PROOF → PUSH):
+
+| `id` | Função | Composição Core | Mídia |
+|---|---|---|---|
+| `inicio` | PICTURE, valor bilateral | Cinematic Hero `lx-hero--uniform` sob header sobreposto | M1 |
+| `expansao` | PROBLEM | `blue`: `lx-section-head` + `lx-comparison--divided` + `lx-section-closing` | — |
+| `proposta` | PROMISE | `sand`: Editorial Split `lx-split--wide-text` + `lx-editorial-list` | M3 |
+| `para-a-marca` | PROMISE → PROOF, tese da marca | `deep`: escada `lx-steps--four`, cadeia em `lx-section-closing`, possibilidades `lx-siblings--pair`, mecanismos `lx-siblings--trio`, limite `lx-section-note` | — |
+| `para-quem-vive` | PROOF, valor para quem vive | `blue`: Split `--media-start --wide-media` + `lx-diagram--even` (pilares × diagrama de solução) + fechamento | M2 + diagrama |
+| `como-acontece` | PROOF, mecanismo e papéis | `white`: `lx-numbered` 01–06 + link `/brand-partner/como-funciona#percurso` | — |
+| `governanca` | PROOF, risco | `sand`: `lx-answers` + link `/brand-partner/como-funciona#governanca` | — |
+| `sua-marca` | PUSH | Cinematic `lx-hero--closing --uniform`; CTA → `#conversa` | M5 |
+| `conversa` | PUSH, formulário | `wash`: `lx-columns--aside` + formulário de §14.3–14.5 | — |
+
+**Como funciona `/brand-partner/como-funciona`** (PROOF → PUSH): `abertura` (Cinematic `--uniform`, M4, índice
+`lx-anchors` com sete âncoras) → `percurso` (`white`, `lx-answers--phases`: três fases, sete passos `lx-numbered`,
+Owner | Co-Owner com o mesmo peso) → `decisoes-remuneracao` (`sand`, `lx-answers` decisão → quem + licenciamento e
+remuneração) → `governanca` (`blue`, seis perguntas) → `luxtory-club` (`deep`, `lx-numbered` + pergunta da marca +
+limite) → `condicoes-expansao` (`white`, três perguntas) → `para-quem` (`sand`, `lx-comparison--divided`) →
+`proximo-passo` (`blue`, `lx-section-closing`; CTA → `/brand-partner#conversa`).
+
+**Navegação (D4).** Header sobreposto à fotografia nas duas páginas. Do `lg` em diante: nav visível alinhada ao fim
+(Brand Partners, Como funciona) e Contato como ação da navegação (`lx-button--secondary`, → `#conversa`). Abaixo do
+`lg`: o menu Core (`MobileNav`), aberto pelo ícone oficial. Rodapé com os três destinos. Só destinos Brand Partners.
+
+**Mídia (D5, `P-BP-03`).** Manifesto único `brand-partners/media-manifest.ts` (renderizado por `media.tsx`): cada lugar M1–M5 é um ativo aprovado ou `null`.
+Com `null`, a página mostra um placeholder estrutural identificado (`lx-media-placeholder`, rótulo em
+`media.placeholders`), renderizado dentro da página protegida pelo portão — nenhum arquivo público de placeholder. A
+troca pelo ativo aprovado muda só a entrada do manifesto (arquivo em `public/images/brand-partners/`, ≤ 300 KB por
+variante, recorte `lx-crop-*`, contraste medido sob o scrim). **Aceite visual final e go-live exigem o manifesto sem
+nenhum `null`.** No celular, o Cinematic Hero do Core põe a fotografia acima do texto. Com o M1 aprovado, testar o Hero
+com e sem o lead da cena ("Amigos ao redor da mesa…") e recomendar a versão mais forte visualmente.
+
+| Ativo | Função | Cena | Proporção |
+|---|---|---|---|
+| M1 "A mesa posta" | Hero da Home | Mesa longa numa varanda aberta para a paisagem, família e amigos, gesto de receber; sujeito no terço direito, área negativa à esquerda; fim de tarde | 16:9, ≥ 2400 px |
+| M2 "Momentos" | Para quem vive | Um momento por imagem (família descansando ao fim da manhã), interação sem pose | 3:2 (5:4 no celular) |
+| M3 "Códigos" | Promise | Natureza-morta arquitetônica: mesa preparada, soleira para a paisagem, junção de madeira e pedra | 4:5 |
+| M4 "Ateliê" | Abertura do Como funciona | Maquete volumétrica branca, amostras de materiais, croquis, mãos sem rosto | 16:9 |
+| M5 "Fim de tarde" | PUSH | Terraço ao entardecer, conversa calma, casa iluminada ao fundo | 16:9 |
+
+Regras de todos: série única de direção de arte; nenhum logotipo, produto, cor proprietária, residência real ou
+anteprojeto Luxtory; nada que pareça case ou Brand Partner real; proveniência e direitos registrados (imagem sintética
+declarada); stock genérico não é aceito automaticamente. M6 (OG): tipográfico com o logo oficial, 1200 × 630.
+
+**Fotografias provisórias do B2C (`D-BP-17`, fundador, 2026-10-12).** Para o aceite visual da BP1.1, sem esperar o
+ensaio próprio, M1–M5 reutilizam as fotografias que o B2C já publica, nos mesmos caminhos (nenhum arquivo novo em
+`public/`), decorativas (`alt=""`) como no B2C. Proveniência herdada, sem direito ou licença além do registrado:
+repositório Luxtory2.0, "provisórias: autorizadas para o site como referência visual, sem autorização definitiva de
+produção registrada" (§13.10; `problema-imovel.jpg` autorizada como asset provisório em 2026-10-07, §13.11). O ensaio
+próprio (`P-BP-03`) segue aberto e troca só as entradas do manifesto.
+
+| Lugar | Fotografia | Recorte | Leitura do brief |
+|---|---|---|---|
+| M1 Hero da Home | `home/hero/hero-lifestyle.jpg` (1344 × 768) | `x-80`, `md-x-20` (o do Hero do Como funciona B2C) | família reunida ao entardecer, sujeito à direita, área livre à esquerda; sem mesa |
+| M3 Promise | `como-funciona/problema-imovel.jpg` (1024 × 576) | `x-35` | arquitetura, materiais e paisagem; sem natureza-morta |
+| M2 Para quem vive | `home/hero/home-solucao-firepit-family.jpg` (1376 × 768) | `x-65` | um momento em família, sem pose |
+| M5 PUSH | `home/hero/luxury-property-facade-hero.jpg` (1672 × 941) | `x-65`, `lg-x-50` | terraço ao entardecer, casa iluminada; sem pessoas |
+| M4 Como funciona | a mesma de M5 | `x-65`, `lg-x-50` | sem correspondente no B2C para "Ateliê"; a arquitetura ao entardecer |
+
+- **Fora:** as três fotografias Kaizen (K05, K07, K09) vêm do anteprojeto Luxtory, que o brief exclui ("residência
+  real ou anteprojeto Luxtory", "nada que pareça case"). A K05 (suíte, madeira e pedra, soleira para o jardim) seria
+  o melhor M3; só entra por decisão expressa do fundador.
+- **Sinalizações:** resolução abaixo do brief (≥ 2400 px) em todas, como no B2C; M4 repete a fotografia de M5 (páginas
+  diferentes); `luxury-property-facade-hero.jpg` tem 309 KB, acima dos 300 KB do brief para arquivos próprios
+  (reutilizada sem cópia). Sobre o Hero de M1, testados com e sem o lead "Amigos ao redor da mesa…" (a fotografia não
+  mostra mesa): recomendação a decidir pelo fundador, copy inalterada.
+- **Medido (Chromium, 390/768/1024/1440 px):** recorte sem rosto sob o texto no Hero; contraste nos pixels sob o scrim
+  uniforme — headlines Warm Sand ≥ 3,09:1, subtítulos e corpo ≥ 6,52:1, eyebrows (branco 80 %) ≥ 5,08:1, âncoras do
+  índice ≥ 6,84:1 (E2E `[WCAG 1.4.3]` a 768 e 1440 px); axe 0, sem overflow de 320 a 1920 px, nenhuma imagem quebrada;
+  com o portão fechado, nada da BP1.1 no corpo (o atributo `data-media-slot` é marcador da prova).
+
+**Ajustes do aceite visual (fundador, 2026-10-12; `D-BP-18`).** (1) O Hero da Home perde o lead da cena ("Amigos ao
+redor da mesa…"): mais limpo, menos denso no celular, e a fotografia M1 não mostra mesa; os demais textos do Hero não
+mudam. (2) Paridade tipográfica B2C → Brand Partners: para o mesmo papel de texto, o B2C é a referência — sem mudar
+token, escala global nem o B2C, e reutilizando os papéis do Core:
+
+| Papel | B2C (referência) | Antes na BP | Ajuste |
+|---|---|---|---|
+| H1 do Hero da Home | `lx-home-hero__title`: 35,1 / 28 / 39,6 px, entrelinha 1,02 | `lx-headline`: 28 / 36,1 / 48 px | `lx-headline--home-hero` (opt-in do Core com a mesma escala) |
+| CTA do Hero da Home | primário 13 px | primário `large` 16 px | sem `large` |
+| CTA sobre o fechamento fotográfico | `large` 16 px | primário 13 px | `large` |
+| Owner \| Co-Owner (comparação) | `lx-eyebrow` 12 px | `lx-title` 18–20 px | `lx-eyebrow` |
+| Rótulo de fase (`lx-answers--phases`) | `lx-eyebrow` 12 px | `lx-subheadline` 18–23,8 px | `lx-eyebrow` |
+
+Já em paridade (sem mudança): H1 do Hero do Como funciona, H2, `lx-display-m`, `lx-display-s`, pergunta das respostas,
+subheadline, corpo, eyebrow, afirmação do fechamento, lista editorial, índice do Hero (nome do capítulo × âncora) e
+links de ação. O texto de apoio do Hero da Home são dois parágrafos de corpo (o B2C tem um lead único): papel de corpo,
+mantido. A E2E `[ADR-0003]` compara os tamanhos computados B2C × BP por papel a 390, 768 e 1440 px.
+
+**Core (genérico, opt-in, sem efeito no B2C).** `SiteShell`: `navAlign="end"` (`lx-header--nav-end`), item de
+navegação com `action` (botão secundário no header, link no menu e no rodapé) e `menuTrigger="mark"` (ícone oficial
+no gatilho do menu também no modo não retrátil). CSS: `lx-steps--four` (1 → 2 → 4 colunas) e `lx-media-placeholder`.
+Da auditoria de concisão: dentro da coluna de texto de `lx-numbered`, `lx-comparison` fica empilhada em toda largura
+(a 1440 px o par Owner | Co-Owner lado a lado deixava 163 px por lado: 4 e 6 linhas para 45 e 101 caracteres). Uso em [`docs/reference/design-system.md`](../reference/design-system.md) §15.
+
+**Checkpoints.** (1) Visual/editorial antes do merge: Home e Como funciona completas, header/menu e formulário a 390,
+768 e 1440 px, placeholders identificados, nenhuma copy fora do Approval Pack e dos ajustes. (2) Técnico, depois do
+aceite visual: gates completos (DS, unitários, comunicação/terminologia, E2E, acessibilidade, regressão B2C) e prova
+de que, com `BRAND_PARTNERS_SITE` fechado, nada da BP1.1 vaza em HTML, RSC ou metadados. (3) Editorial antes do
+merge: a auditoria de concisão acima. (4) **Encerramento (2026-10-12): implementação concluída** — aceite visual
+final do fundador, diretriz `D-BP-19` (o site é comercial; segurança jurídica por progressive disclosure, sem camada
+jurídica visual). **Go-live:** P-LX-03,
+ativos aprovados (`P-BP-03`) e autorização expressa do fundador; CI verde não autoriza merge nem go-live.

@@ -635,6 +635,18 @@
       padding-inline-start: var(--lx-space-8);
       border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
     }
+    /* --four: a four-part sequence in one row from lg (1 · 2 · 4 columns), e.g. a short progression of relations. */
+    [data-lx="core"] .lx-steps--four {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    [data-lx="core"] .lx-steps--four .lx-steps__item:nth-child(n) {
+      padding-inline-start: var(--lx-space-8);
+      border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+    [data-lx="core"] .lx-steps--four .lx-steps__item:nth-child(4n + 1) {
+      padding-inline-start: 0;
+      border-inline-start: 0;
+    }
   }
 
   /* ── Filters dialog (phones): full screen, the actions pinned at the bottom. ──────────────────────────── */
