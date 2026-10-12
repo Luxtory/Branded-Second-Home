@@ -977,6 +977,24 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
 - **Ajustes do Checkpoint 1 (fundador, 2026-10-12):** a precisão do Hero acima; na escada da marca, "Em uma
   experiência — A marca é sentida."; "Decisões e remuneração" com seis decisões (alteração de elementos essenciais fica
   em Governança e replicação em Condições e expansão), sem accordion.
+- **Auditoria de concisão (gate editorial pré-merge, fundador, 2026-10-12):** cada bloco de texto busca até 3 linhas
+  visuais e usa 4 só quando reduzir mais prejudicaria contexto, precisão ou segurança da informação. Medida a 390, 768
+  e 1440 px em todo `p`, `li` e título de item do `<main>` das duas páginas (altura ÷ line-height, fontes carregadas):
+  antes, 25 blocos acima de 4 linhas (até 7); depois, nenhum. Só divisões na fronteira das frases — no i18n, a lista
+  de strings é o bloco dividido, um `<p>` por item —, sem corte de conteúdo, claim, condição ou ressalva. Diff palavra
+  a palavra: 12 pontos de divisão, com pontuação e maiúscula ajustadas e três conexões mínimas ("um universo próprio
+  e uma comunidade… / E com interesse…", "O Home Concept tem especificação suficiente…", "…desses momentos. / E isso
+  pode abrir…"). No Club, cada frase traz "o modelo prevê"/"quando disponível" ou vem depois dessa marca no mesmo
+  bloco, nunca antes (teste de copy). Repetições entre seções ficam (licenciamento × governança; "do zero" no percurso
+  × condições): cada resposta precisa estar correta lida sozinha, inclusive pela âncora.
+  - **Exceções acima de 4 linhas:** nenhuma.
+  - **Mantidos com 4 linhas** (frase única; dividir separaria a definição, a condição ou a paridade do que ela
+    qualifica): Hero, os dois parágrafos do valor bilateral (só a 390); definições — Home Concept (`proposta`;
+    percurso 02) e Home Edition (`como-acontece` 03; percurso 04); condições — "Um Home Concept pode originar…" (768),
+    Design & Build, Pertencimento, Liberdade (Luxtory Club), percurso 07 (Luxtory Club), remuneração, não conformidade,
+    encerramento (duas frases), "E para a marca?", parceiros locais e a introdução do Club; paridade Owner | Co-Owner
+    em Patrimônio (REQ-103); enumerações — introdução de "Para quem vive", cadeia da marca e o critério "querem
+    ampliar…" (768).
 - **Fora da copy:** cross-brand (`H-BP-09`), ativação pela capacidade da Luxtory (BR-121, `H-BP-10`) e monetização
   opcional (`P-BP-04`).
 
@@ -1005,7 +1023,7 @@ limite) → `condicoes-expansao` (`white`, três perguntas) → `para-quem` (`sa
 (Brand Partners, Como funciona) e Contato como ação da navegação (`lx-button--secondary`, → `#conversa`). Abaixo do
 `lg`: o menu Core (`MobileNav`), aberto pelo ícone oficial. Rodapé com os três destinos. Só destinos Brand Partners.
 
-**Mídia (D5, `P-BP-03`).** Manifesto único `brand-partners/media.ts`: cada lugar M1–M5 é um ativo aprovado ou `null`.
+**Mídia (D5, `P-BP-03`).** Manifesto único `brand-partners/media.tsx`: cada lugar M1–M5 é um ativo aprovado ou `null`.
 Com `null`, a página mostra um placeholder estrutural identificado (`lx-media-placeholder`, rótulo em
 `media.placeholders`), renderizado dentro da página protegida pelo portão — nenhum arquivo público de placeholder. A
 troca pelo ativo aprovado muda só a entrada do manifesto (arquivo em `public/images/brand-partners/`, ≤ 300 KB por
@@ -1028,10 +1046,12 @@ declarada); stock genérico não é aceito automaticamente. M6 (OG): tipográfic
 **Core (genérico, opt-in, sem efeito no B2C).** `SiteShell`: `navAlign="end"` (`lx-header--nav-end`), item de
 navegação com `action` (botão secundário no header, link no menu e no rodapé) e `menuTrigger="mark"` (ícone oficial
 no gatilho do menu também no modo não retrátil). CSS: `lx-steps--four` (1 → 2 → 4 colunas) e `lx-media-placeholder`.
-Uso em [`docs/reference/design-system.md`](../reference/design-system.md) §15.
+Da auditoria de concisão: dentro da coluna de texto de `lx-numbered`, `lx-comparison` fica empilhada em toda largura
+(a 1440 px o par Owner | Co-Owner lado a lado deixava 163 px por lado: 4 e 6 linhas para 45 e 101 caracteres). Uso em [`docs/reference/design-system.md`](../reference/design-system.md) §15.
 
 **Checkpoints.** (1) Visual/editorial antes do merge: Home e Como funciona completas, header/menu e formulário a 390,
 768 e 1440 px, placeholders identificados, nenhuma copy fora do Approval Pack e dos ajustes. (2) Técnico, depois do
 aceite visual: gates completos (DS, unitários, comunicação/terminologia, E2E, acessibilidade, regressão B2C) e prova
-de que, com `BRAND_PARTNERS_SITE` fechado, nada da BP1.1 vaza em HTML, RSC ou metadados. **Go-live:** P-LX-03,
+de que, com `BRAND_PARTNERS_SITE` fechado, nada da BP1.1 vaza em HTML, RSC ou metadados. (3) Editorial antes do
+merge: a auditoria de concisão acima. **Go-live:** P-LX-03,
 ativos aprovados (`P-BP-03`) e autorização expressa do fundador; CI verde não autoriza merge nem go-live.

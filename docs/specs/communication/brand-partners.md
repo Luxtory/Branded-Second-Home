@@ -109,7 +109,9 @@ Protagonista `[FW-BP: §8.1, §13]`:
 - **Entrega BP1.1 (`D-BP-15`):** a mesma Home, o mesmo Como funciona e o mesmo formulário, com a copy e a
   composição do Decision & Approval Pack ([`catalog` §14.9](../catalog.md#149-bp11--brand-partners-communication-upgrade-2026-10-12)).
   Luxtory Club, Luxchange e Luxplus aparecem só como modelo previsto, nunca como disponibilidade atual; cross-brand
-  e BR-121 ficam fora da copy (`H-BP-09`, `H-BP-10`). Fotografia M1–M5 em produção (`P-BP-03`).
+  e BR-121 ficam fora da copy (`H-BP-09`, `H-BP-10`). Fotografia M1–M5 em produção (`P-BP-03`). Gate editorial
+  pré-merge: auditoria de concisão — cada bloco com até 4 linhas visuais a 390, 768 e 1440 px, obtidas só por divisões
+  na fronteira das frases, sem corte de conteúdo, claim, condição ou ressalva (`catalog` §14.9).
 - **Revisão jurídica:** `P-LX-03` é gate de comunicação antes do go-live das afirmações sujeitas à revisão;
   não bloqueia a implementação técnica da BP1. Não presumir sua conclusão a partir da aprovação de BP0.
 

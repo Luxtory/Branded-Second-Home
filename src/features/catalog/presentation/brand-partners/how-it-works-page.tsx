@@ -73,7 +73,7 @@ export function BrandPartnersHowItWorksPage() {
             <h1 id={titleOf(OPENING)} className="lx-headline">
               {opening.title}
             </h1>
-            <p className="lx-subheadline">{opening.body}</p>
+            <Paragraphs lines={opening.body} className="lx-subheadline" />
             <nav className="lx-anchors" aria-label={opening.indexLabel}>
               <ul>
                 {INDEX.map(([anchor, label]) => (
@@ -191,7 +191,7 @@ export function BrandPartnersHowItWorksPage() {
                 </span>
                 <h3 className="lx-display-m">{mechanism.title}</h3>
                 <div className="lx-numbered__text lx-stack">
-                  <p className="lx-body">{nb(mechanism.text)}</p>
+                  <Paragraphs lines={mechanism.text} />
                 </div>
               </li>
             ))}
@@ -201,8 +201,8 @@ export function BrandPartnersHowItWorksPage() {
             <h3 className="lx-subheadline">{club.brand.question}</h3>
             <Paragraphs lines={club.brand.answer} />
           </div>
-          <div className="lx-section-note">
-            <p className="lx-body">{club.limit}</p>
+          <div className="lx-section-note lx-stack">
+            <Paragraphs lines={club.limit} />
           </div>
         </div>
       </section>
@@ -233,7 +233,7 @@ export function BrandPartnersHowItWorksPage() {
             <h2 id={titleOf(FIT)} className="lx-headline">
               <HeadlineText headline={fit.title} />
             </h2>
-            <p className="lx-subheadline">{fit.intro}</p>
+            <Paragraphs lines={fit.intro} className="lx-subheadline" />
           </div>
           <div className="lx-comparison lx-comparison--divided">
             {[fit.yes, fit.no].map((side) => (

@@ -588,7 +588,7 @@ test.describe('Brand Partners — portão fechado (REQ-028, catalog §14.1)', ()
     [HOW]: [
       text.howItWorks.opening.title,
       text.howItWorks.governance.title,
-      text.howItWorks.club.limit,
+      ...text.howItWorks.club.limit,
       text.howItWorks.next.title,
       text.metadata.howItWorks.title,
       text.metadata.howItWorks.description,

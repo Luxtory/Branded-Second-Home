@@ -604,3 +604,7 @@ Complementos genéricos e opt-in que a BP1.1 consome (spec `catalog` §14.9); o 
 - Lugar de fotografia ainda em produção: `div.lx-media-placeholder` > `span.lx-media-placeholder__label`, dentro de
   `figure.lx-media.lx-split__media` ou de `div.lx-hero__slide` (no Hero, o rótulo fica sob o header e acima do scrim).
   É apoio de revisão, nunca visual final: o go-live exige o ativo aprovado no lugar.
+- Par (`lx-comparison`) dentro do texto de um item numerado (`lx-numbered__text`): fica empilhado em toda largura,
+  como no celular — ao lado do número (`md`) ou na última de três colunas (`lg`), lado a lado cada metade caía a poucas
+  palavras por linha. Mesma ordem, tipo e peso dos dois lados (auditoria de concisão da BP1.1).
+- Limite com mais de um parágrafo: `div.lx-section-note.lx-stack` > `p.lx-body` (um por frase).

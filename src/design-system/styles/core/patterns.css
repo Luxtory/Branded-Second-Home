@@ -431,6 +431,20 @@
     [data-lx="core"] .lx-numbered__text > .lx-comparison--divided:first-child {
       border-top: 0;
     }
+    /* ...and the pair stays stacked there, as on the phone: the text column is already narrow (beside the number from
+     * md, the last of three columns from lg) and, split in two, each side would fall to a few words per line. Same
+     * order, type and weight on both sides. */
+    [data-lx="core"] .lx-numbered__text > .lx-comparison {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    [data-lx="core"] .lx-numbered__text > .lx-comparison--divided {
+      border-top: 0;
+    }
+    [data-lx="core"] .lx-numbered__text > .lx-comparison--divided > .lx-comparison__item {
+      padding-inline: 0;
+      border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+      border-inline-start: 0;
+    }
   }
 
   /* Panel Comparison — the dense version: sibling panels with the same geometry and hierarchy (rows shared by subgrid

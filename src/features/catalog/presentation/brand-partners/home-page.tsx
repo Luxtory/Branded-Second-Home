@@ -28,9 +28,7 @@ function BenefitGroup({
         {group.items.map((item) => (
           <li className="lx-siblings__item" key={item.title}>
             <h4 className="lx-display-s">{item.title}</h4>
-            <p className="lx-body">
-              <Rich value={item.text} />
-            </p>
+            <Paragraphs lines={item.text} />
           </li>
         ))}
       </ul>
@@ -95,9 +93,7 @@ export function BrandPartnersHomePage() {
               <div className="lx-comparison__item" key={side.title}>
                 <p className="lx-eyebrow">{side.label}</p>
                 <h3 className="lx-display-m">{side.title}</h3>
-                <p className="lx-body">
-                  <Rich value={side.text} />
-                </p>
+                <Paragraphs lines={side.text} />
               </div>
             ))}
           </div>
@@ -128,9 +124,7 @@ export function BrandPartnersHomePage() {
                   <li key={line}>{line}</li>
                 ))}
               </ul>
-              <p className="lx-body">
-                <Rich value={promise.body} />
-              </p>
+              <Paragraphs lines={promise.body} />
             </div>
           </div>
           <SplitMedia slot="m3" />
@@ -166,11 +160,12 @@ export function BrandPartnersHomePage() {
           <div className="lx-section-closing lx-stack">
             <p className="lx-subheadline">{brand.chain.lead}</p>
             <p className="lx-headline">{brand.chain.statement}</p>
+            <p className="lx-subheadline">{brand.chain.consequence}</p>
           </div>
           <BenefitGroup group={brand.possibilities} layout="pair" />
           <BenefitGroup group={brand.mechanisms} layout="trio" />
-          <div className="lx-section-note">
-            <p className="lx-body">{brand.limit}</p>
+          <div className="lx-section-note lx-stack">
+            <Paragraphs lines={brand.limit} />
           </div>
         </div>
       </section>
@@ -204,9 +199,7 @@ export function BrandPartnersHomePage() {
                     {ordinal(index)} · {pillar.name}
                   </p>
                   <h3 className="lx-display-s">{pillar.title}</h3>
-                  <p className="lx-body">
-                    <Rich value={pillar.text} />
-                  </p>
+                  <Paragraphs lines={pillar.text} />
                 </div>
               ))}
             </div>
@@ -254,9 +247,7 @@ export function BrandPartnersHomePage() {
                     <Rich value={step.title} />
                   </h3>
                   <div className="lx-numbered__text lx-stack">
-                    <p className="lx-body">
-                      <Rich value={step.text} />
-                    </p>
+                    <Paragraphs lines={step.text} />
                   </div>
                 </li>
               ))}
@@ -312,7 +303,7 @@ export function BrandPartnersHomePage() {
               {fit.title}
             </h2>
             <p className="lx-subheadline">{fit.paragraphs[0]}</p>
-            <p className="lx-body">{fit.paragraphs[1]}</p>
+            <Paragraphs lines={fit.paragraphs.slice(1)} />
             <div className="lx-hero__actions">
               <ActionLink href={`#${CONVERSATION}`} label={fit.action} primary />
             </div>
