@@ -5,7 +5,8 @@
 > ancora em IDs canônicos o que ele afirma sobre o modelo, responde às objeções, mapeia as páginas e registra o que o
 > Framework não decide. Contrato: [`../communication.md`](../communication.md). Guardrails de todas as jornadas:
 > [`luxtory.md`](luxtory.md) §4. A versão anterior deste arquivo (preenchimento de 2026-09-29, substituído em
-> 2026-10-01) está no commit `7da1276`.
+> 2026-10-01) está no commit `7da1276`. O Framework vigente é a versão de 2026-10-12
+> ([ADR-0016](../../adr/0016-framework-brand-partners-versao-2026-10-12.md)).
 
 ## 1. Escopo e precedência
 
@@ -13,6 +14,10 @@
   o CTA e o formulário da BP1; `P-BP-01` resolvida na BP0 (2026-10-09). Briefs e contrato em
   [`catalog` §14](../catalog.md#14-discovery-público-b2b-brand-partners-bp1). REQ-029 registra o portal planejado para BP2, fora da BP1.
 - A jornada Brand Partners não leva à jornada B2C (`D-LX-01`).
+- Nomenclatura pública (`D-BP-16`): Home Concept, Home Edition e Second Home, como no Framework; o mecanismo termina
+  sempre em **Second Home** `[FW-BP: §2, §8 P4, §15]`. As âncoras de fato deste arquivo citam os nomes dos BRs
+  (Residence Concept, Residence Edition, Residence), que seguem valendo no Admin, no banco, no código, nos
+  canônicos e nos instrumentos.
 - O Posicionamento do Framework é o da marca, com o público de referência B2C; o Protagonista desta jornada é a Brand
   Partner `[FW-BP: §2, §14]`.
 - Precedência. Fatos: `01 → 02 → 03` `[F: BR-380, REQ-104]`. Comunicação: Framework Brand Partners > este arquivo >
@@ -101,6 +106,10 @@ Protagonista `[FW-BP: §8.1, §13]`:
   Não publicar CTA sem o formulário funcional. Falha transitória do envio tem estado acessível, sem falso sucesso.
 - **Formulário:** campos, propósito e significado da submissão vêm do REQ-028; comportamento e estados em
   `catalog` §14. A copy não acrescenta qualificação, promessa comercial ou consentimento de marketing.
+- **Entrega BP1.1 (`D-BP-15`):** a mesma Home, o mesmo Como funciona e o mesmo formulário, com a copy e a
+  composição do Decision & Approval Pack ([`catalog` §14.9](../catalog.md#149-bp11--brand-partners-communication-upgrade-2026-10-12)).
+  Luxtory Club, Luxchange e Luxplus aparecem só como modelo previsto, nunca como disponibilidade atual; cross-brand
+  e BR-121 ficam fora da copy (`H-BP-09`, `H-BP-10`). Fotografia M1–M5 em produção (`P-BP-03`).
 - **Revisão jurídica:** `P-LX-03` é gate de comunicação antes do go-live das afirmações sujeitas à revisão;
   não bloqueia a implementação técnica da BP1. Não presumir sua conclusão a partir da aprovação de BP0.
 
@@ -132,7 +141,9 @@ utilizado é Retraimento, sem exceção como padrão `[FW-BP: §10.2]`.
 | D-BP-11 | Mapa de páginas (§7): as mesmas páginas do mapa anterior; Home a mais abrangente, seguindo estritamente o Framework; "Como funciona" aprofunda a parceria em detalhe; Concepts demonstra o método | aprovada em 2026-10-01 (fundador: mesmo critério adotado no B2C) | `[FW-BP: §7, §8.1, §12, §13]` |
 | D-BP-12 | CTA "Explore o potencial residencial da sua marca." → qualificação estratégica, sem pressupor parceria; não aparece enquanto a superfície não existir no `02` | aprovada em 2026-10-01 (fundador: mesmo critério adotado no B2C) | `[FW-BP: §8 P5, §12]`; `02` §2; TECH-001; `P-BP-01` |
 | D-BP-13 | BP1 = Home `/brand-partner` + `/brand-partner/como-funciona` + formulário na Home; CTA → `/brand-partner#conversa`; campos e propósito do REQ-028; Concepts não bloqueia o MVP; portal planejado somente em BP2 | aprovada pelo fundador na BP0, 2026-10-09; complementa D-BP-11/D-BP-12 sem mudar o Framework | REQ-028, REQ-029, TECH-057, TECH-058; `P-BP-01`, `P-BP-02` |
-| D-BP-14 | Copy + Especificação Visual FINAL da BP1 (Home H1–H9: PICTURE → PROBLEM → PROMISE → PROOF → PUSH; Como funciona C1–C6: PROOF → PUSH), verbatim em `catalog/presentation/i18n/brand-partners-pt-br.ts`; sem fotografia B2B autorizada → fallback tipográfico | aprovada e congelada pelo fundador, 2026-10-10; executa D-BP-11/12/13 sem mudar o Framework | REQ-028; `catalog` §14.8; `P-LX-03` segue como gate de go-live |
+| D-BP-14 | Copy + Especificação Visual FINAL da BP1 (Home H1–H9: PICTURE → PROBLEM → PROMISE → PROOF → PUSH; Como funciona C1–C6: PROOF → PUSH), verbatim em `catalog/presentation/i18n/brand-partners-pt-br.ts`; sem fotografia B2B autorizada → fallback tipográfico | substituída em 2026-10-12 → `D-BP-15` | REQ-028; `catalog` §14.8; `P-LX-03` segue como gate de go-live |
+| D-BP-15 | Copy + Especificação Visual BP1.1 (Decision & Approval Pack, D1–D6): Home PICTURE → PROBLEM → PROMISE → Para a sua marca → Para quem vive → mecanismo → governança → PUSH → conversa; Como funciona em oito seções; valor bilateral no Hero; Luxtory Club só como modelo previsto; verbatim em `catalog/presentation/i18n/brand-partners-pt-br.ts`; placeholders estruturais M1–M5 até o ensaio aprovado (`P-BP-03`) | aprovada pelo fundador em 2026-10-12; substitui D-BP-14 (copy anterior no Git) | REQ-028; `catalog` §14.9; `P-LX-03` segue como gate de go-live |
+| D-BP-16 | Nomenclatura pública Brand Partners: Home Concept, Home Edition e Second Home; o estágio formal do mecanismo é Second Home, e "Home" só aparece como linguagem natural; nomes canônicos no Admin, no banco, no código, nos canônicos e nos instrumentos | aprovada pelo fundador em 2026-10-12 (D7) | `[FW-BP: §2, §8 P4]`; ADR-0016; `D-LX-08` |
 
 | ID | Hipótese | Como validar | Status |
 |---|---|---|---|
@@ -144,8 +155,12 @@ utilizado é Retraimento, sem exceção como padrão `[FW-BP: §10.2]`.
 | H-BP-06 | Nível de conscientização | conversas com marcas | substituída em 2026-10-01 → `[FW-BP: §7]` |
 | H-BP-07 | Aliados | conversas com marcas | substituída em 2026-10-01 → `[FW-BP: §5]` |
 | H-BP-08 | Mapa de crenças | conversas com marcas | substituída em 2026-10-01 → `[FW-BP: §6]` |
+| H-BP-09 | Descoberta entre marcas pelo Luxchange (cross-brand): os canônicos não segregam o Luxchange por Brand Partner, o que **não** equivale a autorização. Classificação: arquiteturalmente compatível · não comprovada como regra positiva de negócio · dependente de validação antes de comunicação pública | regra positiva nos canônicos, decisão de negócio e análise de privacidade dos Titulares (01 §20; BR-190, BR-192; TECH-061) | aberta; fora da copy pública (D6) |
+| H-BP-10 | Ativação da Brand Partner na capacidade reservada à Luxtory: BR-121 permite à Luxtory destinar essa capacidade (só em Residences Co-Owner) a marketing, promoção e produção institucional ou comercial; a participação da Brand Partner é inferência | decisão de negócio e previsão contratual (BR-010, BR-015, BR-120, BR-121, BR-122; REQ-036) | aberta; fora da copy pública (D6) |
 
 | ID | Pendência | Bloqueia |
 |---|---|---|
 | P-BP-01 | **Resolvida na BP0, 2026-10-09:** `02` v4.2 §2/REQ-028 autoriza superfície, CTA → formulário, campos, significado da submissão e tratamento dos dados; TECH-057 e `catalog` §14 definem a execução | nenhum bloqueio normativo restante para BP1; implementação, operação e comunicação ainda passam pelos próprios gates |
 | P-BP-02 | **Aberta:** Concepts com exposição de marca autorizada e regras de exposição por Brand Partner (P-8 do roadmap) | somente a página pública Concepts; não bloqueia Home + Como funciona + formulário nem equivale à wave BP2 do portal |
+| P-BP-03 | **Aberta:** ensaio fotográfico próprio M1–M5 (e M6 para OG) conforme os briefs do Decision & Approval Pack (`catalog` §14.9); stock genérico não é aceito automaticamente | aceite visual final e go-live da BP1.1; não bloqueia a implementação (placeholders estruturais) |
+| P-BP-04 | **Aberta:** monetização opcional da Brand Partner, decisão de negócio pendente. Até ela, vale a regra pública: o uso autorizado da marca é remunerado conforme contrato (BR-016, BR-350) | qualquer comunicação de monetização opcional; não bloqueia a BP1.1 |
