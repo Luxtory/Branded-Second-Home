@@ -109,7 +109,8 @@ Protagonista `[FW-BP: §8.1, §13]`:
 - **Entrega BP1.1 (`D-BP-15`):** a mesma Home, o mesmo Como funciona e o mesmo formulário, com a copy e a
   composição do Decision & Approval Pack ([`catalog` §14.9](../catalog.md#149-bp11--brand-partners-communication-upgrade-2026-10-12)).
   Luxtory Club, Luxchange e Luxplus aparecem só como modelo previsto, nunca como disponibilidade atual; cross-brand
-  e BR-121 ficam fora da copy (`H-BP-09`, `H-BP-10`). Fotografia M1–M5 em produção (`P-BP-03`). Gate editorial
+  e BR-121 ficam fora da copy (`H-BP-09`, `H-BP-10`). Fotografia M1–M5 em produção (`P-BP-03`); nesta etapa, as
+  fotografias provisórias do B2C (`D-BP-17`). Gate editorial
   pré-merge: auditoria de concisão — cada bloco com até 4 linhas visuais a 390, 768 e 1440 px, obtidas só por divisões
   na fronteira das frases, sem corte de conteúdo, claim, condição ou ressalva (`catalog` §14.9).
 - **Revisão jurídica:** `P-LX-03` é gate de comunicação antes do go-live das afirmações sujeitas à revisão;
@@ -146,6 +147,7 @@ utilizado é Retraimento, sem exceção como padrão `[FW-BP: §10.2]`.
 | D-BP-14 | Copy + Especificação Visual FINAL da BP1 (Home H1–H9: PICTURE → PROBLEM → PROMISE → PROOF → PUSH; Como funciona C1–C6: PROOF → PUSH), verbatim em `catalog/presentation/i18n/brand-partners-pt-br.ts`; sem fotografia B2B autorizada → fallback tipográfico | substituída em 2026-10-12 → `D-BP-15` | REQ-028; `catalog` §14.8; `P-LX-03` segue como gate de go-live |
 | D-BP-15 | Copy + Especificação Visual BP1.1 (Decision & Approval Pack, D1–D6): Home PICTURE → PROBLEM → PROMISE → Para a sua marca → Para quem vive → mecanismo → governança → PUSH → conversa; Como funciona em oito seções; valor bilateral no Hero; Luxtory Club só como modelo previsto; verbatim em `catalog/presentation/i18n/brand-partners-pt-br.ts`; placeholders estruturais M1–M5 até o ensaio aprovado (`P-BP-03`) | aprovada pelo fundador em 2026-10-12; substitui D-BP-14 (copy anterior no Git) | REQ-028; `catalog` §14.9; `P-LX-03` segue como gate de go-live |
 | D-BP-16 | Nomenclatura pública Brand Partners: Home Concept, Home Edition e Second Home; o estágio formal do mecanismo é Second Home, e "Home" só aparece como linguagem natural; nomes canônicos no Admin, no banco, no código, nos canônicos e nos instrumentos | aprovada pelo fundador em 2026-10-12 (D7) | `[FW-BP: §2, §8 P4]`; ADR-0016; `D-LX-08` |
+| D-BP-17 | Mídia da BP1.1 nesta etapa: M1–M5 reutilizam as fotografias provisórias já publicadas pelo B2C (Luxtory2.0), nos mesmos caminhos e decorativas, com a proveniência herdada e sem direito presumido; fora as do anteprojeto Kaizen; imagem sem foto equivalente é sinalizada, não bloqueia | aprovada pelo fundador em 2026-10-12 | `P-BP-03`; `catalog` §14.9 |
 
 | ID | Hipótese | Como validar | Status |
 |---|---|---|---|
@@ -164,5 +166,5 @@ utilizado é Retraimento, sem exceção como padrão `[FW-BP: §10.2]`.
 |---|---|---|
 | P-BP-01 | **Resolvida na BP0, 2026-10-09:** `02` v4.2 §2/REQ-028 autoriza superfície, CTA → formulário, campos, significado da submissão e tratamento dos dados; TECH-057 e `catalog` §14 definem a execução | nenhum bloqueio normativo restante para BP1; implementação, operação e comunicação ainda passam pelos próprios gates |
 | P-BP-02 | **Aberta:** Concepts com exposição de marca autorizada e regras de exposição por Brand Partner (P-8 do roadmap) | somente a página pública Concepts; não bloqueia Home + Como funciona + formulário nem equivale à wave BP2 do portal |
-| P-BP-03 | **Aberta:** ensaio fotográfico próprio M1–M5 (e M6 para OG) conforme os briefs do Decision & Approval Pack (`catalog` §14.9); stock genérico não é aceito automaticamente | aceite visual final e go-live da BP1.1; não bloqueia a implementação (placeholders estruturais) |
+| P-BP-03 | **Aberta:** ensaio fotográfico próprio M1–M5 (e M6 para OG) conforme os briefs do Decision & Approval Pack (`catalog` §14.9); stock genérico não é aceito automaticamente | aceite visual final e go-live da BP1.1; não bloqueia a implementação (placeholders estruturais). Desde 2026-10-12, M1–M5 usam as fotografias provisórias do B2C (`D-BP-17`); o ensaio próprio substitui só o manifesto |
 | P-BP-04 | **Aberta:** monetização opcional da Brand Partner, decisão de negócio pendente. Até ela, vale a regra pública: o uso autorizado da marca é remunerado conforme contrato (BR-016, BR-350) | qualquer comunicação de monetização opcional; não bloqueia a BP1.1 |

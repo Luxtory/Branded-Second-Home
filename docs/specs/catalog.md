@@ -1023,7 +1023,7 @@ limite) → `condicoes-expansao` (`white`, três perguntas) → `para-quem` (`sa
 (Brand Partners, Como funciona) e Contato como ação da navegação (`lx-button--secondary`, → `#conversa`). Abaixo do
 `lg`: o menu Core (`MobileNav`), aberto pelo ícone oficial. Rodapé com os três destinos. Só destinos Brand Partners.
 
-**Mídia (D5, `P-BP-03`).** Manifesto único `brand-partners/media.tsx`: cada lugar M1–M5 é um ativo aprovado ou `null`.
+**Mídia (D5, `P-BP-03`).** Manifesto único `brand-partners/media-manifest.ts` (renderizado por `media.tsx`): cada lugar M1–M5 é um ativo aprovado ou `null`.
 Com `null`, a página mostra um placeholder estrutural identificado (`lx-media-placeholder`, rótulo em
 `media.placeholders`), renderizado dentro da página protegida pelo portão — nenhum arquivo público de placeholder. A
 troca pelo ativo aprovado muda só a entrada do manifesto (arquivo em `public/images/brand-partners/`, ≤ 300 KB por
@@ -1042,6 +1042,33 @@ com e sem o lead da cena ("Amigos ao redor da mesa…") e recomendar a versão m
 Regras de todos: série única de direção de arte; nenhum logotipo, produto, cor proprietária, residência real ou
 anteprojeto Luxtory; nada que pareça case ou Brand Partner real; proveniência e direitos registrados (imagem sintética
 declarada); stock genérico não é aceito automaticamente. M6 (OG): tipográfico com o logo oficial, 1200 × 630.
+
+**Fotografias provisórias do B2C (`D-BP-17`, fundador, 2026-10-12).** Para o aceite visual da BP1.1, sem esperar o
+ensaio próprio, M1–M5 reutilizam as fotografias que o B2C já publica, nos mesmos caminhos (nenhum arquivo novo em
+`public/`), decorativas (`alt=""`) como no B2C. Proveniência herdada, sem direito ou licença além do registrado:
+repositório Luxtory2.0, "provisórias: autorizadas para o site como referência visual, sem autorização definitiva de
+produção registrada" (§13.10; `problema-imovel.jpg` autorizada como asset provisório em 2026-10-07, §13.11). O ensaio
+próprio (`P-BP-03`) segue aberto e troca só as entradas do manifesto.
+
+| Lugar | Fotografia | Recorte | Leitura do brief |
+|---|---|---|---|
+| M1 Hero da Home | `home/hero/hero-lifestyle.jpg` (1344 × 768) | `x-80`, `md-x-20` (o do Hero do Como funciona B2C) | família reunida ao entardecer, sujeito à direita, área livre à esquerda; sem mesa |
+| M3 Promise | `como-funciona/problema-imovel.jpg` (1024 × 576) | `x-35` | arquitetura, materiais e paisagem; sem natureza-morta |
+| M2 Para quem vive | `home/hero/home-solucao-firepit-family.jpg` (1376 × 768) | `x-65` | um momento em família, sem pose |
+| M5 PUSH | `home/hero/luxury-property-facade-hero.jpg` (1672 × 941) | `x-65`, `lg-x-50` | terraço ao entardecer, casa iluminada; sem pessoas |
+| M4 Como funciona | a mesma de M5 | `x-65`, `lg-x-50` | sem correspondente no B2C para "Ateliê"; a arquitetura ao entardecer |
+
+- **Fora:** as três fotografias Kaizen (K05, K07, K09) vêm do anteprojeto Luxtory, que o brief exclui ("residência
+  real ou anteprojeto Luxtory", "nada que pareça case"). A K05 (suíte, madeira e pedra, soleira para o jardim) seria
+  o melhor M3; só entra por decisão expressa do fundador.
+- **Sinalizações:** resolução abaixo do brief (≥ 2400 px) em todas, como no B2C; M4 repete a fotografia de M5 (páginas
+  diferentes); `luxury-property-facade-hero.jpg` tem 309 KB, acima dos 300 KB do brief para arquivos próprios
+  (reutilizada sem cópia). Sobre o Hero de M1, testados com e sem o lead "Amigos ao redor da mesa…" (a fotografia não
+  mostra mesa): recomendação a decidir pelo fundador, copy inalterada.
+- **Medido (Chromium, 390/768/1024/1440 px):** recorte sem rosto sob o texto no Hero; contraste nos pixels sob o scrim
+  uniforme — headlines Warm Sand ≥ 3,09:1, subtítulos e corpo ≥ 6,52:1, eyebrows (branco 80 %) ≥ 5,08:1, âncoras do
+  índice ≥ 6,84:1 (E2E `[WCAG 1.4.3]` a 768 e 1440 px); axe 0, sem overflow de 320 a 1920 px, nenhuma imagem quebrada;
+  com o portão fechado, nada da BP1.1 no corpo (o atributo `data-media-slot` é marcador da prova).
 
 **Core (genérico, opt-in, sem efeito no B2C).** `SiteShell`: `navAlign="end"` (`lx-header--nav-end`), item de
 navegação com `action` (botão secundário no header, link no menu e no rodapé) e `menuTrigger="mark"` (ícone oficial

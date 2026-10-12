@@ -75,7 +75,7 @@
 | 4.1 | Coleção: discovery curatorial (dados, Admin, mídia, filtros, página final) | catalog | complementa REQ-020, REQ-022 | 4 | — | R1 | ✅ (#36, `3c26d60`; Production confirmada pelo fundador) |
 | BP0 | Product Gate, contratos públicos e portal planejado | docs | — (especifica REQ-028/029) | 4.1 | — | B2B | ✅ (#39) |
 | BP1 | Home + Como funciona + formulário Resend, QA e publicação | catalog, platform (Core DS) | REQ-028 | BP0 | — | B2B | ✅ implementada (#40, #41); Production fechada até o go-live |
-| BP1.1 | Brand Partners Communication Upgrade: copy e composição do Decision & Approval Pack, Framework de 2026-10-12 | catalog (presentation), Core DS, docs | — (complementa REQ-028) | BP1 | — | B2B | 🟡 Checkpoint 1 visual/editorial |
+| BP1.1 | Brand Partners Communication Upgrade: copy e composição do Decision & Approval Pack, Framework de 2026-10-12 | catalog (presentation), Core DS, docs | — (complementa REQ-028) | BP1 | — | B2B | 🟡 CP1 e CP2 aprovados; auditoria de concisão; M1–M5 provisórias do B2C (`D-BP-17`); PR draft #42; aceite visual final, P-LX-03 e merge pendentes |
 | BP2 | Portal autenticado read-only com dados reais da própria parceria | identity, catalog, ownership | REQ-029 | BP0, critérios de entrada; representação/fatos canônicos de W7/W8 | — | B2B | ⛔ critérios de entrada ainda não satisfeitos |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ |
 | 6 | Interesse — formulário público | ownership | — | 4, 5 | — | R1 | ⛔ P-3 |
@@ -608,7 +608,9 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   (390/768/1440, parar) → **Checkpoint 2 técnico** (gates completos e prova de não vazamento com o portão fechado)
   → PR e merge só com autorização.
 - **Gates de go-live:** P-LX-03, ensaio M1–M5 aprovado (`P-BP-03`, manifesto sem placeholder) e autorização expressa
-  do fundador. CI verde não autoriza merge nem go-live.
+  do fundador. CI verde não autoriza merge nem go-live. Desde 2026-10-12 o manifesto não tem placeholder: M1–M5 usam
+  as fotografias provisórias do B2C (`D-BP-17`), sujeitas ao aceite visual final; merge e abertura do portão são
+  autorizações separadas do fundador (checklist em `docs/how-to/operacao.md`).
 
 ### BP2 — Portal Brand Partner (evolução planejada)
 

@@ -20,7 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   desktop com Contato como ação; lugares de fotografia M1–M5 com placeholders identificados até o ensaio aprovado.
   Framework Brand Partners na versão de 2026-10-12 (Home Concept, Home Edition, Second Home; ADR-0016). Rotas, portão,
   formulário e endpoint sem mudança; Production segue fechada. Auditoria de concisão antes do merge: blocos de texto
-  com até 4 linhas visuais a 390, 768 e 1440 px, só por divisões em parágrafos (nenhum conteúdo cortado).
+  com até 4 linhas visuais a 390, 768 e 1440 px, só por divisões em parágrafos (nenhum conteúdo cortado). Lugares de
+  fotografia M1–M5 com as fotografias provisórias que o B2C já publica (`D-BP-17`), até o ensaio próprio.
 
 ### Added
 - Brand Partners público (BP1, REQ-028, TECH-057; spec catalog §14): `/brand-partner` (PICTURE → PROBLEM → PROMISE →
