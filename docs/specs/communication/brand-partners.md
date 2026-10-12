@@ -115,6 +115,8 @@ Protagonista `[FW-BP: §8.1, §13]`:
   na fronteira das frases, sem corte de conteúdo, claim, condição ou ressalva (`catalog` §14.9).
 - **Revisão jurídica:** `P-LX-03` é gate de comunicação antes do go-live das afirmações sujeitas à revisão;
   não bloqueia a implementação técnica da BP1. Não presumir sua conclusão a partir da aprovação de BP0.
+  Pacote da BP1.1 para o jurídico (inventário verbatim por tema, perguntas e registro das respostas):
+  [`revisao-juridica-brand-partners.md`](revisao-juridica-brand-partners.md).
 
 ## 8. Tom e expressão
 
