@@ -1106,6 +1106,14 @@
     }
   }
 
+  /* Section group — a further composition inside the same section (after a closing, a list or a sequence): half the
+   * section rhythm above, then its label and blocks at one gap (e.g. possibilities, then mechanisms). */
+  [data-lx="core"] .lx-section-group {
+    display: grid;
+    gap: var(--lx-space-8);
+    margin-top: max(var(--lx-space-12), calc(var(--lx-space-section) / 2));
+  }
+
   /* Section note — a limit or condition that closes a composition: full width under it, a hairline above, body size
    * (never fine print). */
   [data-lx="core"] .lx-section-note {
@@ -1179,7 +1187,8 @@
       gap: var(--lx-space-3);
       border-bottom: 0;
     }
-    [data-lx="core"] .lx-anchors li + li::before {
+    /* The separator closes each item but the last: when the line wraps, the dot ends a line, never opens one. */
+    [data-lx="core"] .lx-anchors li:not(:last-child)::after {
       content: "·";
       color: var(--lx-color-marker);
     }

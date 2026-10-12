@@ -7,6 +7,8 @@ export interface SiteNavItem {
   readonly href: string;
   readonly label: string;
   readonly current: boolean;
+  /** Destino de conversão apresentado como ação (botão secundário) na barra do header; link comum no menu e no rodapé. */
+  readonly action?: boolean;
 }
 
 export interface SiteShellLabels {
@@ -25,16 +27,22 @@ function NavList({
   items,
   listClass,
   linkClass,
+  actionClass = linkClass,
 }: {
   readonly items: readonly SiteNavItem[];
   readonly listClass: string;
   readonly linkClass: string;
+  readonly actionClass?: string;
 }) {
   return (
     <ul className={listClass}>
       {items.map((item) => (
         <li key={item.href}>
-          <a className={linkClass} href={item.href} aria-current={item.current ? 'page' : undefined}>
+          <a
+            className={item.action === true ? actionClass : linkClass}
+            href={item.href}
+            aria-current={item.current ? 'page' : undefined}
+          >
             {item.label}
           </a>
         </li>
@@ -46,7 +54,9 @@ function NavList({
 /**
  * Casca do site público — primeiro consumidor do Core Design System (CP2, docs/specs/design-system.md §13): a raiz
  * `data-lx="core"` liga a geração nova; header e menu em `blue`, rodapé em `deep`. O header sobre a mídia
- * (`overlayHeader`) é transparente sobre o Cinematic Hero e fica sólido depois da rolagem.
+ * (`overlayHeader`) é transparente sobre o Cinematic Hero e fica sólido depois da rolagem. Opt-in: `navAlign="end"`
+ * leva a nav para junto das ações; `menuTrigger="mark"` abre o menu pelo ícone oficial também fora do modo retrátil
+ * (no retrátil, o ícone oficial é o padrão).
  */
 export function SiteShell({
   homeHref,
@@ -55,6 +65,8 @@ export function SiteShell({
   menuFooter,
   overlayHeader = false,
   retractableMenu = false,
+  navAlign = 'center',
+  menuTrigger = retractableMenu ? 'mark' : 'icon',
   children,
 }: {
   readonly homeHref: string;
@@ -63,6 +75,8 @@ export function SiteShell({
   readonly menuFooter?: ReactNode;
   readonly overlayHeader?: boolean;
   readonly retractableMenu?: boolean;
+  readonly navAlign?: 'center' | 'end';
+  readonly menuTrigger?: 'icon' | 'mark';
   readonly children: ReactNode;
 }) {
   return (
@@ -70,13 +84,22 @@ export function SiteShell({
       <a className="lx-skip-link" href={`#${MAIN_ID}`}>
         {labels.skipLink}
       </a>
-      <SiteHeader overlay={overlayHeader} retractable={retractableMenu}>
+      <SiteHeader
+        overlay={overlayHeader}
+        retractable={retractableMenu}
+        navAtEnd={navAlign === 'end'}
+      >
         <div className="lx-container lx-header__inner">
           <Logo ground="night" href={homeHref} label={labels.home} />
 
           {retractableMenu ? null : (
             <nav className="lx-header__nav" aria-label={labels.nav}>
-              <NavList items={navItems} listClass="lx-header__list" linkClass="lx-header__link" />
+              <NavList
+                items={navItems}
+                listClass="lx-header__list"
+                linkClass="lx-header__link"
+                actionClass="lx-button lx-button--secondary"
+              />
             </nav>
           )}
 
@@ -94,7 +117,7 @@ export function SiteShell({
               }}
               buttonClassName="lx-header__menu-button"
               trigger={
-                retractableMenu ? (
+                menuTrigger === 'mark' ? (
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element -- official logo asset is served verbatim; Next/Image would route it through the optimizer and violate the strict CSP contract. */}
                     <img

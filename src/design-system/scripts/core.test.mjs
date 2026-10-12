@@ -209,8 +209,8 @@ const NEW_CORE_BLOCKS = [
   'lx-discovery', 'lx-discovery-hint', 'lx-discovery-sticky', 'lx-facet', 'lx-check', 'lx-results-head', 'lx-chips',
   'lx-chip', 'lx-sort', 'lx-concept-group', 'lx-concept-grid', 'lx-concept-card', 'lx-steps', 'lx-filters',
   'lx-results',
-  // Brand Partners (spec catalog §14).
-  'lx-anchors', 'lx-section-note',
+  // Brand Partners (spec catalog §14, §14.9).
+  'lx-anchors', 'lx-section-note', 'lx-section-group', 'lx-media-placeholder',
 ];
 
 function legacyCss() {
