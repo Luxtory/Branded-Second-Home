@@ -1,24 +1,29 @@
+import { HeadlineText } from '../discovery/headline';
 import { nb } from '../discovery/no-break';
-import { ordinal } from '../discovery/parts';
+import { ActionLink, Eyebrow, ordinal } from '../discovery/parts';
 import { brandPartnersMessages as text } from '../i18n/brand-partners-pt-br';
+import { HeroMedia } from './media';
 import { brandPartnersPaths, BRAND_PARTNERS_HOW_SECTIONS, titleOf } from './paths';
-import { AnswerRows, Paragraphs } from './rich-text';
+import { AnswerRows, Paragraphs, Rich } from './rich-text';
 import { BrandPartnersSite } from './site';
 
-const { opening, path, governance, roles, continuity, next } = text.howItWorks;
+const { opening, path, decisions, governance, club, conditions, fit, next } = text.howItWorks;
 
-const [OPENING, PATH, GOVERNANCE, ROLES, CONTINUITY, NEXT] = BRAND_PARTNERS_HOW_SECTIONS;
+const [OPENING, PATH, DECISIONS, GOVERNANCE, CLUB, CONDITIONS, FIT, NEXT] =
+  BRAND_PARTNERS_HOW_SECTIONS;
 
-/** As cinco expressões do índice da copy → as âncoras reais da página. */
+/** As sete expressões do índice da copy → as âncoras reais da página. */
 const INDEX = [
   [PATH, opening.index.path],
+  [DECISIONS, opening.index.decisions],
   [GOVERNANCE, opening.index.governance],
-  [ROLES, opening.index.roles],
-  [CONTINUITY, opening.index.continuity],
+  [CLUB, opening.index.club],
+  [CONDITIONS, opening.index.conditions],
+  [FIT, opening.index.fit],
   [NEXT, opening.index.next],
 ] as const;
 
-type Step = (typeof path.steps)[number];
+type Step = (typeof path.phases)[number]['steps'][number];
 
 /** Owner e Co-Owner com o mesmo peso (REQ-103): comparação aberta, Owner primeiro no celular. */
 function Modalities({ step }: { readonly step: Step }) {
@@ -28,35 +33,43 @@ function Modalities({ step }: { readonly step: Step }) {
       <div className="lx-comparison lx-comparison--divided" data-pair="modality">
         {[step.modalities.owner, step.modalities.coOwner].map((side) => (
           <div className="lx-comparison__item" key={side.name}>
-            <h4 className="lx-title">
+            <h5 className="lx-title">
               <span className="lx-nowrap">{side.name}</span>
-            </h4>
+            </h5>
             <p className="lx-body">{side.text}</p>
           </div>
         ))}
       </div>
-      <Paragraphs lines={step.after} className="lx-body lx-stack__pause" />
+      <Paragraphs lines={step.after} />
     </>
   );
 }
 
+/** Numeração corrida das sete etapas, através das três fases (01 → 07). */
+const PHASE_OFFSETS = path.phases.map((_, index) =>
+  path.phases.slice(0, index).reduce((total, phase) => total + phase.steps.length, 0),
+);
+
 /**
- * Como funciona Brand Partners `/brand-partner/como-funciona` (REQ-028, spec catalog §14.2): Product Aware, PROOF →
- * PUSH sem reconstruir os três primeiros Ps da Home. Clareza → mecanismo → governança → responsabilidades → condições
- * → decisão; o CTA leva ao formulário da Home, sem duplicá-lo.
+ * Como funciona Brand Partners `/brand-partner/como-funciona` (REQ-028; BP1.1, spec catalog §14.9): Product Aware →
+ * Most Aware, PROOF → PUSH sem reconstruir os três primeiros Ps da Home. Percurso → decisões e remuneração →
+ * governança → Luxtory Club (modelo previsto) → condições → qualificação → próximo passo; o CTA leva ao formulário da
+ * Home, sem duplicá-lo.
  */
 export function BrandPartnersHowItWorksPage() {
   return (
     <BrandPartnersSite current="howItWorks">
-      {/* C1 — Abertura: Deep, coluna editorial; o índice da copy como âncoras reais. */}
+      {/* Abertura — Cinematic Hero (M4) com o índice da página como âncoras reais. */}
       <section
         id={OPENING}
-        className="lx-section"
-        data-surface="deep"
+        className="lx-hero lx-hero--uniform"
+        data-surface="blue"
         aria-labelledby={titleOf(OPENING)}
       >
-        <div className="lx-container">
-          <div className="lx-stack lx-stack--editorial">
+        <HeroMedia slot="m4" priority />
+        <div className="lx-container lx-hero__content">
+          <div className="lx-hero__copy">
+            <Eyebrow>{opening.marker}</Eyebrow>
             <h1 id={titleOf(OPENING)} className="lx-headline">
               {opening.title}
             </h1>
@@ -74,7 +87,7 @@ export function BrandPartnersHowItWorksPage() {
         </div>
       </section>
 
-      {/* C2 — Percurso: White, lista numerada 01 → 06; etapa 04 com Owner | Co-Owner. */}
+      {/* Percurso — White: três fases (rótulo | etapas numeradas 01 → 07); Owner | Co-Owner com o mesmo peso. */}
       <section
         id={PATH}
         className="lx-section"
@@ -83,28 +96,66 @@ export function BrandPartnersHowItWorksPage() {
       >
         <div className="lx-container">
           <div className="lx-section-head">
+            <Eyebrow>{path.marker}</Eyebrow>
             <h2 id={titleOf(PATH)} className="lx-headline">
               {path.title}
             </h2>
           </div>
-          <ol className="lx-numbered">
-            {path.steps.map((step, index) => (
-              <li className="lx-numbered__item" key={step.title}>
-                <span className="lx-ordinal lx-numbered__number" aria-hidden="true">
-                  {ordinal(index)}
-                </span>
-                <h3 className="lx-title">{step.title}</h3>
-                <div className="lx-numbered__text lx-stack">
-                  <Paragraphs lines={step.paragraphs} />
-                  <Modalities step={step} />
+          <div className="lx-answers lx-answers--phases">
+            {path.phases.map((phase, phaseIndex) => (
+              <div className="lx-answers__row" key={phase.name}>
+                <h3 className="lx-answers__label lx-subheadline">{phase.name}</h3>
+                <div className="lx-answers__content">
+                  <ol className="lx-numbered" start={(PHASE_OFFSETS[phaseIndex] ?? 0) + 1}>
+                    {phase.steps.map((step, index) => (
+                      <li className="lx-numbered__item" key={step.title}>
+                        <span className="lx-ordinal lx-numbered__number" aria-hidden="true">
+                          {ordinal((PHASE_OFFSETS[phaseIndex] ?? 0) + index)}
+                        </span>
+                        <h4 className="lx-display-s">
+                          <Rich value={step.title} />
+                        </h4>
+                        <div className="lx-numbered__text lx-stack">
+                          <Paragraphs lines={step.paragraphs} />
+                          <Modalities step={step} />
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
                 </div>
-              </li>
+              </div>
             ))}
-          </ol>
+          </div>
         </div>
       </section>
 
-      {/* C3 — Governança: Blue, pergunta | resposta, abertas (leitura comparativa). */}
+      {/* Decisões e remuneração — Sand: decisão | quem decide; depois licenciamento e remuneração (sem valores). */}
+      <section
+        id={DECISIONS}
+        className="lx-section"
+        data-surface="sand"
+        aria-labelledby={titleOf(DECISIONS)}
+      >
+        <div className="lx-container">
+          <div className="lx-section-head">
+            <Eyebrow>{decisions.marker}</Eyebrow>
+            <h2 id={titleOf(DECISIONS)} className="lx-headline">
+              {decisions.title}
+            </h2>
+          </div>
+          <div className="lx-stack">
+            <AnswerRows
+              answers={decisions.rows.map((row) => ({ question: row.decision, answer: [row.who] }))}
+            />
+            <p className="lx-body">{decisions.responsibilities}</p>
+          </div>
+          <div className="lx-section-group">
+            <AnswerRows answers={decisions.answers} />
+          </div>
+        </div>
+      </section>
+
+      {/* Governança — Blue: as seis perguntas da marca, sempre abertas. */}
       <section
         id={GOVERNANCE}
         className="lx-section"
@@ -113,6 +164,7 @@ export function BrandPartnersHowItWorksPage() {
       >
         <div className="lx-container">
           <div className="lx-section-head">
+            <Eyebrow>{governance.marker}</Eyebrow>
             <h2 id={titleOf(GOVERNANCE)} className="lx-headline">
               {governance.title}
             </h2>
@@ -121,64 +173,96 @@ export function BrandPartnersHowItWorksPage() {
         </div>
       </section>
 
-      {/* C4 — Papéis e remuneração: Sand, Brand Partner | Luxtory com o mesmo peso; remuneração em largura total. */}
-      <section
-        id={ROLES}
-        className="lx-section"
-        data-surface="sand"
-        aria-labelledby={titleOf(ROLES)}
-      >
+      {/* Luxtory Club — Deep: modelo previsto (R3 não operacional), nunca disponibilidade atual; o limite fecha. */}
+      <section id={CLUB} className="lx-section" data-surface="deep" aria-labelledby={titleOf(CLUB)}>
         <div className="lx-container">
           <div className="lx-section-head">
-            <h2 id={titleOf(ROLES)} className="lx-headline">
-              {roles.title}
+            <Eyebrow>{club.marker}</Eyebrow>
+            <h2 id={titleOf(CLUB)} className="lx-headline">
+              {club.title}
             </h2>
+            <p className="lx-subheadline">{nb(club.intro)}</p>
           </div>
-          <div className="lx-stack">
-            <div className="lx-comparison lx-comparison--divided">
-              {roles.sides.map((side) => (
-                <div className="lx-comparison__item" key={side.title}>
-                  <h3 className="lx-title">{side.title}</h3>
-                  <Paragraphs lines={side.paragraphs} />
+          <ol className="lx-numbered">
+            {club.mechanisms.map((mechanism, index) => (
+              <li className="lx-numbered__item" key={mechanism.title}>
+                <span className="lx-ordinal lx-numbered__number" aria-hidden="true">
+                  {ordinal(index)}
+                </span>
+                <h3 className="lx-display-m">{mechanism.title}</h3>
+                <div className="lx-numbered__text lx-stack">
+                  <p className="lx-body">{nb(mechanism.text)}</p>
                 </div>
-              ))}
-            </div>
-            <p className="lx-body">{roles.responsibilities}</p>
-            {/* Remuneração: largura total, sob a hairline da própria linha pergunta | resposta. */}
-            <AnswerRows answers={[roles.remuneration]} />
+              </li>
+            ))}
+          </ol>
+          {/* A pergunta da marca sem linhas próprias: a lista acima e o limite abaixo já trazem as hairlines. */}
+          <div className="lx-section-group">
+            <h3 className="lx-subheadline">{club.brand.question}</h3>
+            <Paragraphs lines={club.brand.answer} />
+          </div>
+          <div className="lx-section-note">
+            <p className="lx-body">{club.limit}</p>
           </div>
         </div>
       </section>
 
-      {/* C5 — Expansão e continuidade: Deep, três respostas; a limitação final fica integrada à resposta. */}
+      {/* Condições e expansão — White: três perguntas; as condições ficam integradas às respostas. */}
       <section
-        id={CONTINUITY}
+        id={CONDITIONS}
         className="lx-section"
-        data-surface="deep"
-        aria-labelledby={titleOf(CONTINUITY)}
+        data-surface="white"
+        aria-labelledby={titleOf(CONDITIONS)}
       >
         <div className="lx-container">
           <div className="lx-section-head">
-            <h2 id={titleOf(CONTINUITY)} className="lx-headline">
-              {continuity.title}
+            <Eyebrow>{conditions.marker}</Eyebrow>
+            <h2 id={titleOf(CONDITIONS)} className="lx-headline">
+              {conditions.title}
             </h2>
           </div>
-          <AnswerRows answers={continuity.answers} />
+          <AnswerRows answers={conditions.answers} />
         </div>
       </section>
 
-      {/* C6 — PUSH final: Deep, fechamento tipográfico; o CTA leva ao formulário da Home. */}
-      <section id={NEXT} className="lx-section" data-surface="deep" aria-labelledby={titleOf(NEXT)}>
+      {/* Para quem faz sentido — Sand: faz sentido | pode não fazer sentido, com o mesmo peso. */}
+      <section id={FIT} className="lx-section" data-surface="sand" aria-labelledby={titleOf(FIT)}>
         <div className="lx-container">
-          <div className="lx-stack lx-stack--editorial">
+          <div className="lx-section-head">
+            <Eyebrow>{fit.marker}</Eyebrow>
+            <h2 id={titleOf(FIT)} className="lx-headline">
+              <HeadlineText headline={fit.title} />
+            </h2>
+            <p className="lx-subheadline">{fit.intro}</p>
+          </div>
+          <div className="lx-comparison lx-comparison--divided">
+            {[fit.yes, fit.no].map((side) => (
+              <div className="lx-comparison__item" key={side.title}>
+                <h3 className="lx-display-s">{side.title}</h3>
+                <ul className="lx-comparison__list">
+                  {side.items.map((item) => (
+                    <li className="lx-body" key={item}>
+                      <Rich value={item} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PUSH final — Blue, pausa centrada; o CTA leva ao formulário da Home. */}
+      <section id={NEXT} className="lx-section" data-surface="blue" aria-labelledby={titleOf(NEXT)}>
+        <div className="lx-container">
+          <div className="lx-pause">
+            <Eyebrow>{next.marker}</Eyebrow>
             <h2 id={titleOf(NEXT)} className="lx-headline">
               {next.title}
             </h2>
             <Paragraphs lines={next.paragraphs} />
-            <div>
-              <a className="lx-button lx-button--primary" href={brandPartnersPaths.conversation}>
-                {next.action}
-              </a>
+            <div className="lx-hero__actions">
+              <ActionLink href={brandPartnersPaths.conversation} label={next.action} primary />
             </div>
             <p className="lx-body">{nb(next.support)}</p>
           </div>

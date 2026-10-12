@@ -18,6 +18,11 @@ const HOW = '/brand-partner/como-funciona';
 const ENDPOINT = '/v1/brand-partner-contacts';
 const CTA = 'Explore o potencial residencial da sua marca.';
 const { conversation } = text.home;
+/** H1 da Home: `lead` + a virada em itálico (`turn`). */
+const HERO_TITLE = `${text.home.hero.title.lead}${text.home.hero.title.turn}`;
+/** Lugares de fotografia em produção (D5, `P-BP-03`), na ordem do DOM: placeholders estruturais até o ensaio. */
+const HOME_MEDIA = ['m1', 'm3', 'm2', 'm5'];
+const HOW_MEDIA = ['m4'];
 
 const CONTACT = {
   name: 'Pessoa de Teste',
@@ -97,7 +102,7 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
 });
 
 test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalog §14.1–14.2)', () => {
-  test('[REQ-028] Home: copy congelada verbatim, seções PICTURE → PUSH na ordem, sem imagem nem termo vedado', async ({
+  test('[REQ-028] Home: copy BP1.1 verbatim, seções na ordem, só o diagrama como imagem, placeholders M1–M5 identificados', async ({
     page,
   }) => {
     await page.goto(HOME);
@@ -111,8 +116,19 @@ test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalo
       expect(content, line).toContain(normalized(line));
     }
     expect(hasForbiddenTerm(content)).toBe(false);
-    await expect(page.locator('main img')).toHaveCount(0);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(text.home.hero.title);
+    // Nenhuma fotografia aprovada ainda: a única imagem é o diagrama original de solução, com o alt aprovado no B2C.
+    await expect(page.locator('main img')).toHaveCount(1);
+    await expect(page.locator('main img')).toHaveAttribute('alt', text.media.solutionDiagram);
+    const slots = await page
+      .locator('[data-media-placeholder]')
+      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-media-placeholder')));
+    expect(slots).toEqual(HOME_MEDIA);
+    for (const slot of HOME_MEDIA) {
+      await expect(
+        page.getByText(text.media.placeholders[slot as keyof typeof text.media.placeholders]),
+      ).toHaveCount(1);
+    }
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(HERO_TITLE);
   });
 
   test('[REQ-028] Como funciona: copy verbatim, índice com âncoras reais, Owner e Co-Owner com o mesmo peso', async ({
@@ -130,6 +146,10 @@ test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalo
       expect(content, line).toContain(normalized(line));
     }
     expect(hasForbiddenTerm(content)).toBe(false);
+    const slots = await page
+      .locator('[data-media-placeholder]')
+      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-media-placeholder')));
+    expect(slots).toEqual(HOW_MEDIA);
     const index = page.getByRole('navigation', { name: text.howItWorks.opening.indexLabel });
     const anchors = await index
       .getByRole('link')
@@ -139,12 +159,12 @@ test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalo
     const sides = page.locator('[data-pair="modality"] .lx-comparison__item');
     await expect(sides).toHaveCount(2);
     const fonts = await sides
-      .locator('h4')
+      .locator('h5')
       .evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).fontSize));
     expect(new Set(fonts).size).toBe(1);
   });
 
-  test('[REQ-028] CTAs: Hero → PROBLEM; "Explore…" → formulário da Home nas duas páginas', async ({
+  test('[REQ-028] CTAs: Hero → PROBLEM; "Explore…" → formulário da Home nas duas páginas; links para o Como funciona', async ({
     page,
   }) => {
     await page.goto(HOME);
@@ -152,9 +172,13 @@ test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalo
     await expect(page.getByRole('link', { name: CTA })).toHaveAttribute('href', '#conversa');
     await page.getByRole('link', { name: CTA }).click();
     await expect(page.getByRole('heading', { name: conversation.title })).toBeInViewport();
-    await expect(page.getByRole('link', { name: text.home.realization.link })).toHaveAttribute(
+    await expect(page.getByRole('link', { name: text.home.mechanism.link })).toHaveAttribute(
       'href',
-      HOW,
+      `${HOW}#percurso`,
+    );
+    await expect(page.getByRole('link', { name: text.home.governance.link })).toHaveAttribute(
+      'href',
+      `${HOW}#governanca`,
     );
 
     await page.goto(HOW);
@@ -178,6 +202,11 @@ test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalo
       for (const label of [text.site.brandPartners, text.site.howItWorks, text.site.contact]) {
         await expect(nav.getByRole('link', { name: label, exact: true })).toBeAttached();
       }
+      // D4: Contato é a ação da navegação (botão secundário), no fim da barra junto da nav.
+      await expect(nav.getByRole('link', { name: text.site.contact, exact: true })).toHaveClass(
+        /lx-button--secondary/,
+      );
+      await expect(page.locator('header.lx-header')).toHaveClass(/lx-header--nav-end/);
     }
   });
 
@@ -541,23 +570,30 @@ test.describe('Brand Partners — portão fechado (REQ-028, catalog §14.1)', ()
   // Mesmo build servido com BRAND_PARTNERS_SITE=closed (playwright.config.ts → CLOSED_PORT).
   const CLOSED_SITE = 'http://127.0.0.1:3101';
 
-  // Copy das duas páginas, metadados (title/description/OG/Twitter) e a classe exclusiva do Hero da BP1.
+  // Copy das duas páginas, metadados (title/description/OG/Twitter) e os marcadores exclusivos da BP1.1: o atributo
+  // dos placeholders de mídia e os rótulos M1–M5.
   const MARKERS = {
     [HOME]: [
-      text.home.hero.title,
-      text.home.problem.title,
+      text.home.hero.title.lead.trim(),
+      text.home.problem.title.turn,
+      text.home.brand.chain.statement,
+      text.home.living.closing.statement,
       text.home.conversation.title,
       conversation.success,
       text.metadata.home.title,
-      'lx-hero--typographic',
+      text.metadata.home.description,
+      'data-media-placeholder',
+      text.media.placeholders.m1,
     ],
     [HOW]: [
       text.howItWorks.opening.title,
       text.howItWorks.governance.title,
+      text.howItWorks.club.limit,
       text.howItWorks.next.title,
       text.metadata.howItWorks.title,
       text.metadata.howItWorks.description,
       CTA,
+      text.media.placeholders.m4,
     ],
   };
 
@@ -588,7 +624,7 @@ test.describe('Brand Partners — portão fechado (REQ-028, catalog §14.1)', ()
     await page.goto(`${CLOSED_SITE}${HOME}`);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(platformText.notFound.title);
     await expect(page).not.toHaveTitle(text.metadata.home.title);
-    await expect(page.getByText(text.home.hero.title)).toHaveCount(0);
+    await expect(page.getByText(text.home.hero.title.lead.trim())).toHaveCount(0);
   });
 
   test('[TECH-057] fechado: o endpoint segue respondendo 404 no-store, antes de qualquer etapa', async ({

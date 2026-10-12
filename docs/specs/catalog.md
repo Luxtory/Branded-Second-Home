@@ -772,7 +772,8 @@ nova versão do `02`); amenidades (sem vocabulário); formulário de interesse (
 
 ## 14. Discovery público B2B Brand Partners (BP1)
 
-Contrato BP0 aprovado pelo fundador (2026-10-09); BP1 não implementada na BP0 — implementação registrada em §14.8.
+Contrato BP0 aprovado pelo fundador (2026-10-09); BP1 não implementada na BP0 — implementação registrada em §14.8;
+BP1.1 (comunicação, 2026-10-12) em §14.9.
 Comportamento e limites:
 [`02` REQ-028](canonical/02-product-spec.md#61-jornada-brand-partners); arquitetura:
 [`03` TECH-057](canonical/03-technical-spec.md#61-brand-partners-público-e-fronteira-do-portal).
@@ -955,3 +956,77 @@ marcadores de bloco) não são renderizados.
 Configuração e go-live: [runbook](../how-to/operacao.md#preparar-a-bp1-brand-partners-público) e
 [catálogo de ambiente](../reference/environment.md). **Pendência externa:** Resend (domínio/remetente e caixa de
 teste) + Upstash do Preview, configurados pelo fundador diretamente no ambiente.
+
+### 14.9 BP1.1 — Brand Partners Communication Upgrade (2026-10-12)
+
+Executa o Decision & Approval Pack aprovado pelo fundador em 2026-10-12 (D1–D7) e os dois ajustes editoriais da mesma
+aprovação, sem redefinir REQ-028/TECH-057: copy `D-BP-15`, nomenclatura `D-BP-16`, Framework de 2026-10-12
+([ADR-0016](../adr/0016-framework-brand-partners-versao-2026-10-12.md)). A BP1 (§14.8) fica no Git e no registro
+(`D-BP-14`, substituída). **Não mudam:** rotas, portão `BRAND_PARTNERS_SITE`, contrato e estados do formulário,
+endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
+
+**Copy.** Verbatim em `src/features/catalog/presentation/i18n/brand-partners-pt-br.ts`. Ajustes de 2026-10-12:
+
+- **Valor bilateral no Hero:** para quem se identifica com a marca, viver e possuir uma segunda casa que expressa sua
+  identidade e seu lifestyle `[FW-BP: §2]`; para a marca, transformar o que ela representa em Brand Experience e
+  participar dos momentos que importam na vida das pessoas `[FW-BP: §8 P1]`.
+- **Luxtory Club como modelo previsto:** R3 não está operacional, então Luxtory Club, Membership, Luxchange e Luxplus
+  aparecem sempre como "o modelo prevê"/"quando disponível", com Membership, elegibilidade, disponibilidade, inventário
+  e regras aplicáveis (BR-146, BR-161, BR-190, BR-240). Nenhum texto permite ler que já podem ser usados.
+- **Fora da copy:** cross-brand (`H-BP-09`), ativação pela capacidade da Luxtory (BR-121, `H-BP-10`) e monetização
+  opcional (`P-BP-04`).
+
+**Home `/brand-partner`** (PICTURE → PROBLEM → PROMISE → PROOF → PUSH):
+
+| `id` | Função | Composição Core | Mídia |
+|---|---|---|---|
+| `inicio` | PICTURE, valor bilateral | Cinematic Hero `lx-hero--uniform` sob header sobreposto | M1 |
+| `expansao` | PROBLEM | `blue`: `lx-section-head` + `lx-comparison--divided` + `lx-section-closing` | — |
+| `proposta` | PROMISE | `sand`: Editorial Split `lx-split--wide-text` + `lx-editorial-list` | M3 |
+| `para-a-marca` | PROMISE → PROOF, tese da marca | `deep`: escada `lx-steps--four`, cadeia em `lx-section-closing`, possibilidades `lx-siblings--pair`, mecanismos `lx-siblings--trio`, limite `lx-section-note` | — |
+| `para-quem-vive` | PROOF, valor para quem vive | `blue`: Split `--media-start --wide-media` + `lx-diagram--even` (pilares × diagrama de solução) + fechamento | M2 + diagrama |
+| `como-acontece` | PROOF, mecanismo e papéis | `white`: `lx-numbered` 01–06 + link `/brand-partner/como-funciona#percurso` | — |
+| `governanca` | PROOF, risco | `sand`: `lx-answers` + link `/brand-partner/como-funciona#governanca` | — |
+| `sua-marca` | PUSH | Cinematic `lx-hero--closing --uniform`; CTA → `#conversa` | M5 |
+| `conversa` | PUSH, formulário | `wash`: `lx-columns--aside` + formulário de §14.3–14.5 | — |
+
+**Como funciona `/brand-partner/como-funciona`** (PROOF → PUSH): `abertura` (Cinematic `--uniform`, M4, índice
+`lx-anchors` com sete âncoras) → `percurso` (`white`, `lx-answers--phases`: três fases, sete passos `lx-numbered`,
+Owner | Co-Owner com o mesmo peso) → `decisoes-remuneracao` (`sand`, `lx-answers` decisão → quem + licenciamento e
+remuneração) → `governanca` (`blue`, seis perguntas) → `luxtory-club` (`deep`, `lx-numbered` + pergunta da marca +
+limite) → `condicoes-expansao` (`white`, três perguntas) → `para-quem` (`sand`, `lx-comparison--divided`) →
+`proximo-passo` (`blue`, `lx-section-closing`; CTA → `/brand-partner#conversa`).
+
+**Navegação (D4).** Header sobreposto à fotografia nas duas páginas. Do `lg` em diante: nav visível alinhada ao fim
+(Brand Partners, Como funciona) e Contato como ação da navegação (`lx-button--secondary`, → `#conversa`). Abaixo do
+`lg`: o menu Core (`MobileNav`), aberto pelo ícone oficial. Rodapé com os três destinos. Só destinos Brand Partners.
+
+**Mídia (D5, `P-BP-03`).** Manifesto único `brand-partners/media.ts`: cada lugar M1–M5 é um ativo aprovado ou `null`.
+Com `null`, a página mostra um placeholder estrutural identificado (`lx-media-placeholder`, rótulo em
+`media.placeholders`), renderizado dentro da página protegida pelo portão — nenhum arquivo público de placeholder. A
+troca pelo ativo aprovado muda só a entrada do manifesto (arquivo em `public/images/brand-partners/`, ≤ 300 KB por
+variante, recorte `lx-crop-*`, contraste medido sob o scrim). **Aceite visual final e go-live exigem o manifesto sem
+nenhum `null`.** No celular, o Cinematic Hero do Core põe a fotografia acima do texto.
+
+| Ativo | Função | Cena | Proporção |
+|---|---|---|---|
+| M1 "A mesa posta" | Hero da Home | Mesa longa numa varanda aberta para a paisagem, família e amigos, gesto de receber; sujeito no terço direito, área negativa à esquerda; fim de tarde | 16:9, ≥ 2400 px |
+| M2 "Momentos" | Para quem vive | Um momento por imagem (família descansando ao fim da manhã), interação sem pose | 3:2 (5:4 no celular) |
+| M3 "Códigos" | Promise | Natureza-morta arquitetônica: mesa preparada, soleira para a paisagem, junção de madeira e pedra | 4:5 |
+| M4 "Ateliê" | Abertura do Como funciona | Maquete volumétrica branca, amostras de materiais, croquis, mãos sem rosto | 16:9 |
+| M5 "Fim de tarde" | PUSH | Terraço ao entardecer, conversa calma, casa iluminada ao fundo | 16:9 |
+
+Regras de todos: série única de direção de arte; nenhum logotipo, produto, cor proprietária, residência real ou
+anteprojeto Luxtory; nada que pareça case ou Brand Partner real; proveniência e direitos registrados (imagem sintética
+declarada); stock genérico não é aceito automaticamente. M6 (OG): tipográfico com o logo oficial, 1200 × 630.
+
+**Core (genérico, opt-in, sem efeito no B2C).** `SiteShell`: `navAlign="end"` (`lx-header--nav-end`), item de
+navegação com `action` (botão secundário no header, link no menu e no rodapé) e `menuTrigger="mark"` (ícone oficial
+no gatilho do menu também no modo não retrátil). CSS: `lx-steps--four` (1 → 2 → 4 colunas) e `lx-media-placeholder`.
+Uso em [`docs/reference/design-system.md`](../reference/design-system.md) §15.
+
+**Checkpoints.** (1) Visual/editorial antes do merge: Home e Como funciona completas, header/menu e formulário a 390,
+768 e 1440 px, placeholders identificados, nenhuma copy fora do Approval Pack e dos ajustes. (2) Técnico, depois do
+aceite visual: gates completos (DS, unitários, comunicação/terminologia, E2E, acessibilidade, regressão B2C) e prova
+de que, com `BRAND_PARTNERS_SITE` fechado, nada da BP1.1 vaza em HTML, RSC ou metadados. **Go-live:** P-LX-03,
+ativos aprovados (`P-BP-03`) e autorização expressa do fundador; CI verde não autoriza merge nem go-live.

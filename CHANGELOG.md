@@ -12,6 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Brand Partners BP1.1 (spec catalog §14.9; `D-BP-15`, `D-BP-16`): `/brand-partner` e `/brand-partner/como-funciona` com
+  a copy do Decision & Approval Pack — valor para quem vive e para a marca já no Hero, "Para a sua marca" (da marca vista
+  à marca vivida) antes de "Para quem vive" (Patrimônio, Liberdade e Pertencimento), mecanismo do Brand DNA à Second
+  Home, governança, Luxtory Club descrito só como modelo previsto, condições e qualificação. Navegação visível no
+  desktop com Contato como ação; lugares de fotografia M1–M5 com placeholders identificados até o ensaio aprovado.
+  Framework Brand Partners na versão de 2026-10-12 (Home Concept, Home Edition, Second Home; ADR-0016). Rotas, portão,
+  formulário e endpoint sem mudança; Production segue fechada.
+
 ### Added
 - Brand Partners público (BP1, REQ-028, TECH-057; spec catalog §14): `/brand-partner` (PICTURE → PROBLEM → PROMISE →
   PROOF → PUSH) e `/brand-partner/como-funciona` (PROOF → PUSH) com a Copy + Especificação Visual FINAL do fundador

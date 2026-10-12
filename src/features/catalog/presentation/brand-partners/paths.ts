@@ -7,26 +7,31 @@ export const brandPartnersPaths = {
   conversation: '/brand-partner#conversa',
 } as const;
 
-/** Seções da Home na ordem da copy (PICTURE → PROBLEM → PROMISE → PROOF → PUSH); o E2E lê a ordem pelos `id`. */
+/**
+ * Seções da Home na ordem da copy BP1.1 (catalog §14.9): PICTURE → PROBLEM → PROMISE → Para a sua marca → Para quem
+ * vive → mecanismo → governança → PUSH; o E2E lê a ordem pelos `id`.
+ */
 export const BRAND_PARTNERS_HOME_SECTIONS = [
   'inicio',
   'expansao',
   'proposta',
-  'mecanismo',
-  'demanda',
+  'para-a-marca',
+  'para-quem-vive',
+  'como-acontece',
   'governanca',
-  'realizacao',
   'sua-marca',
   'conversa',
 ] as const;
 
-/** Seções do Como funciona (PROOF → PUSH); as cinco do índice são as âncoras da copy. */
+/** Seções do Como funciona (PROOF → PUSH); as sete depois da abertura são as âncoras do índice. */
 export const BRAND_PARTNERS_HOW_SECTIONS = [
   'abertura',
   'percurso',
+  'decisoes-remuneracao',
   'governanca',
-  'papeis-remuneracao',
-  'expansao-continuidade',
+  'luxtory-club',
+  'condicoes-expansao',
+  'para-quem',
   'proximo-passo',
 ] as const;
 
