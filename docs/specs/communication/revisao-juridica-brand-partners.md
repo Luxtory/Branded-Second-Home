@@ -7,24 +7,44 @@
 
 ## 1. Como usar
 
-- Cada item `J-nn` recebe uma das respostas: **aprovado**, **ajustar** (com o texto sugerido) ou **remover**.
-- Uma resposta "ajustar" ou "remover" volta ao fluxo de [`communication.md`](../communication.md): o fundador aprova a
-  mudança, ela entra no i18n e no registro (`brand-partners.md`) e a auditoria de concisão (`catalog` §14.9) é refeita.
-- Com todos os itens respondidos e os ajustes aplicados, o `P-LX-03` fica resolvido para a BP1.1 — condição para abrir o
-  portão `BRAND_PARTNERS_SITE` em Production (checklist em [`operacao.md`](../../how-to/operacao.md)).
+**Princípio (`D-BP-19`, fundador, 2026-10-12):** o site Brand Partners é comercial — apresenta a oportunidade, persuade
+a Brand Partner qualificada e a leva a uma conversa com a Luxtory. A página persuade; o FAQ esclarece; o processo
+comercial aprofunda; o contrato formaliza. A segurança jurídica protege essa jornada, não a substitui.
+
+- **Resposta por tema.** Os J-IDs são rastreabilidade, não pareceres independentes: uma resposta para o tema (A–F)
+  vale para todos os seus J-IDs; responder um J-ID isolado só quando o tema não bastar.
+- **O que é `P-LX-03` e o que não é.** O `P-LX-03` canônico ([`luxtory.md`](luxtory.md) §7) cobre, nas páginas
+  Brand Partners, os temas **A–D**; com eles respondidos (e eventuais ajustes aplicados), ele fica resolvido para a
+  BP1.1. Os temas **E–F** são verificações adicionais recomendadas no mesmo envio, sem compor o `P-LX-03`. **J-34** e
+  **J-35** são verificações separadas de pré-go-live (§4).
+- **Quando mudar a copy.** Só se houver risco material, concreto e identificável de uma afirmação ser falsa, enganosa
+  ou incompatível com o modelo canônico — nunca por cautela preventiva. Uma pergunta ainda não respondida não vira
+  ressalva pública por conta própria.
+- **Onde entra um ajuste (progressive disclosure).** (1) a mensagem comercial fica na sua seção; (2) a condição
+  indispensável para a afirmação ser verdadeira entra como ressalva curta junto dela; (3) um esclarecimento relevante,
+  mas secundário, vai para um FAQ objetivo ou nota curta; (4) detalhes societários, contratuais, operacionais,
+  financeiros ou jurídicos ficam no processo comercial, nos documentos da oportunidade e nos instrumentos contratuais.
+  Sem camada jurídica visual: nada de rodapés extensos, letras pequenas, asteriscos sucessivos, modal jurídico ou
+  seção de compliance.
+- **Fora da página por desenho.** Percentuais e remuneração específica, direitos societários completos, obrigações,
+  hipóteses de encerramento, responsabilidades, sublicenciamento e demais condições são definidos e apresentados nos
+  documentos da oportunidade e no processo comercial. A página explica a oportunidade e o modelo, sem reproduzir o
+  contrato — e sem omitir o que torna uma afirmação verdadeira.
+- Um ajuste aprovado segue o fluxo de [`communication.md`](../communication.md): o fundador aprova, ele entra no i18n e
+  no registro (`brand-partners.md`) e a auditoria de concisão (`catalog` §14.9) é refeita.
 - Os textos citados são os do i18n `src/features/catalog/presentation/i18n/brand-partners-pt-br.ts` (o destaque `**`
   da copy foi omitido). Público das páginas: marcas (B2B), mas a página é aberta e indexável — qualquer pessoa a lê.
 
-## 2. Temas do `P-LX-03` que se aplicam às páginas Brand Partners
+## 2. Temas — `P-LX-03` (A–D) e verificações adicionais (E–F)
 
-| Tema | Por que se aplica | Referências para a análise (indicativas) |
-|---|---|---|
-| A. "Licenciamento" e remuneração da marca | as páginas descrevem o uso autorizado e remunerado da marca da Brand Partner (L1) | Lei 9.279/1996 (licença de uso de marca); contrato de parceria |
-| B. Uso de marcas de terceiros e governança | a página fala da marca do leitor e de como ela é usada, aprovada e protegida (L2, L3, L8, L9) | Lei 9.279/1996; instrumentos da parceria |
-| C. Ação de SPE para público indeterminado | a página aberta descreve as modalidades Owner e Co-Owner, inclusive "Ação da SPE proprietária da residência" | Lei 6.385/1976 (valores mobiliários; contratos de investimento coletivo) e regulamentação da CVM; Lei 13.777/2018 (multipropriedade, para afastar a equiparação) |
-| D. Menção comparativa a categorias de alternativas | o PROBLEM contrasta "Quando o produto vem primeiro" × "Quando a marca vem primeiro"; "Para quem vive" cita as alternativas de lazer | Lei 8.078/1990 (CDC, publicidade); Código do CONAR (comparativa) |
-| E. Luxtory Club, Créditos e mecanismos futuros | o R3 não opera: tudo é "modelo previsto"; Créditos descritos como "não são moeda, investimento" | CDC (oferta e publicidade); Lei 6.385/1976 |
-| F. Ausência de garantia de resultado | as ressalvas sobre demanda, vendas, receita, escala e replicação (REQ-101) | CDC arts. 30, 31 e 37 |
+| Tema | Natureza | Por que se aplica | Referências para a análise (indicativas) |
+|---|---|---|---|
+| A. "Licenciamento" e remuneração da marca | `P-LX-03` | as páginas descrevem o uso autorizado e remunerado da marca da Brand Partner (L1) | Lei 9.279/1996 (licença de uso de marca); contrato de parceria |
+| B. Uso de marcas de terceiros e governança | `P-LX-03` | a página fala da marca do leitor e de como ela é usada, aprovada e protegida (L2, L3, L8, L9) | Lei 9.279/1996; instrumentos da parceria |
+| C. Ação de SPE para público indeterminado | `P-LX-03` | a página aberta descreve as modalidades Owner e Co-Owner, inclusive "Ação da SPE proprietária da residência" | Lei 6.385/1976 (valores mobiliários; contratos de investimento coletivo) e regulamentação da CVM; Lei 13.777/2018 (multipropriedade, para afastar a equiparação) |
+| D. Menção comparativa a categorias de alternativas | `P-LX-03` | o PROBLEM contrasta "Quando o produto vem primeiro" × "Quando a marca vem primeiro"; "Para quem vive" cita as alternativas de lazer | Lei 8.078/1990 (CDC, publicidade); Código do CONAR (comparativa) |
+| E. Luxtory Club, Créditos e mecanismos futuros | adicional | o R3 não opera: tudo é "modelo previsto"; Créditos descritos como "não são moeda, investimento" | CDC (oferta e publicidade); Lei 6.385/1976 |
+| F. Ausência de garantia de resultado | adicional | as ressalvas sobre demanda, vendas, receita, escala e replicação (REQ-101) | CDC arts. 30, 31 e 37 |
 
 Nenhuma empresa concorrente é nomeada e nenhuma marca de terceiro aparece nas páginas (só "a sua marca", genérica).
 
@@ -65,14 +85,20 @@ preexistentes das duas partes preservados "conforme o contrato"; nenhuma marca r
 Salvaguarda atual: nenhuma oferta, preço, condição ou rentabilidade nas páginas; direitos "nascem da formalização da
 aquisição"; manifestar interesse "não é aquisição"; a página é dirigida a marcas e o CTA leva só a uma conversa.
 
+**Pergunta central do tema (uma resposta para J-15–J-20).** Considerando o fluxo completo — a página pública B2B, que
+descreve o modelo sem oferta, preço, condição ou rentabilidade; o formulário, que só inicia uma conversa com a marca; e
+a jornada comercial posterior, em que a oportunidade concreta e seus documentos são apresentados —, em que ponto
+desse fluxo existiria oferta, e o que a página precisa (ou não) dizer? A análise não presume que o uso público do termo
+"Ação", ao descrever a modalidade Co-Owner, constitua por si só oferta de valores mobiliários.
+
 | ID | Página · seção | Texto | Pergunta |
 |---|---|---|---|
-| J-15 | Home · Para quem vive (Patrimônio) | "Uma relação patrimonial real." / "Como Owner, a pessoa possui a residência integralmente; como Co-Owner, possui uma Ação da SPE proprietária da residência, com Direito de Uso." | Descrever a Ação da SPE em página aberta, sem oferta, é seguro diante da regulação de valores mobiliários? "Relação patrimonial real" é adequado para o Co-Owner? |
+| J-15 | Home · Para quem vive (Patrimônio) | "Uma relação patrimonial real." / "Como Owner, a pessoa possui a residência integralmente; como Co-Owner, possui uma Ação da SPE proprietária da residência, com Direito de Uso." | Pergunta central do tema C; e: "Relação patrimonial real" descreve com precisão a posição do Co-Owner? |
 | J-16 | Home · Hero | "Para quem se identifica com a sua marca: uma nova forma de viver o lazer com patrimônio, liberdade e pertencimento, em um lugar que expressa sua identidade e seu lifestyle." | "Patrimônio" no Hero pode ser lido como apelo de investimento? |
-| J-17 | Como funciona · Percurso (05) | "A Home Edition apresenta as formas de aquisição autorizadas para sua estrutura." / "Enquanto essa estrutura estiver aberta, pode contemplar Owner, Co-Owner ou ambos." / "Owner — Adquire a propriedade integral da residência." / "Co-Owner — Adquire uma Ação da SPE proprietária da residência, com Direito de Uso conforme as regras aplicáveis." / "Os respectivos direitos nascem da formalização da aquisição, respeitando as condições e os compromissos aplicáveis." / "Uma manifestação de interesse não os constitui." | Como J-15. A expressão "Adquire uma Ação" sem oferta concreta é aceitável? |
-| J-18 | Home · Como acontece (04) | "A Home Edition apresenta as modalidades autorizadas. Os direitos de cada pessoa nascem da formalização da aquisição." | Como J-15. |
-| J-19 | Como funciona · Percurso (07) | "A administração segue o escopo contratado: a gestão pela Luxtory é obrigatória no Co-Owner e opcional para o Owner." | A gestão obrigatória no Co-Owner, dita publicamente, reforça a leitura de contrato de investimento coletivo? |
-| J-20 | Interesse (Home · Como acontece 02; Como funciona · Percurso 03) | "O interesse ajuda a avaliar a oportunidade, mas não é aquisição nem determina um lançamento." / "Manifestar interesse não é adquirir uma residência nem determinar um lançamento." | Redação suficiente para afastar pré-venda ou reserva? |
+| J-17 | Como funciona · Percurso (05) | "A Home Edition apresenta as formas de aquisição autorizadas para sua estrutura." / "Enquanto essa estrutura estiver aberta, pode contemplar Owner, Co-Owner ou ambos." / "Owner — Adquire a propriedade integral da residência." / "Co-Owner — Adquire uma Ação da SPE proprietária da residência, com Direito de Uso conforme as regras aplicáveis." / "Os respectivos direitos nascem da formalização da aquisição, respeitando as condições e os compromissos aplicáveis." / "Uma manifestação de interesse não os constitui." | Pergunta central do tema C. |
+| J-18 | Home · Como acontece (04) | "A Home Edition apresenta as modalidades autorizadas. Os direitos de cada pessoa nascem da formalização da aquisição." | Pergunta central do tema C. |
+| J-19 | Como funciona · Percurso (07) | "A administração segue o escopo contratado: a gestão pela Luxtory é obrigatória no Co-Owner e opcional para o Owner." | Pergunta central do tema C (a gestão obrigatória no Co-Owner entra nessa análise do fluxo). |
+| J-20 | Interesse (Home · Como acontece 02; Como funciona · Percurso 03) | "O interesse ajuda a avaliar a oportunidade, mas não é aquisição nem determina um lançamento." / "Manifestar interesse não é adquirir uma residência nem determinar um lançamento." | Pergunta central do tema C; a redação já afasta pré-venda ou reserva? |
 
 ### D. Menção comparativa a categorias (Código do CONAR; CDC)
 
@@ -108,15 +134,24 @@ bloco (teste de copy); condições de Membership, elegibilidade, disponibilidade
 | J-32 | Como funciona · Condições e expansão | "Cada oportunidade precisa encontrar interesse e condições reais para ser realizada." / "A estrutura ajuda a avaliar essas condições, mas não elimina as incertezas do mercado." / "Demanda, vendas, receita, retorno, escala e replicação não são garantidos." | Confirmar. |
 | J-33 | Home · Para quem faz sentido; Como funciona · Próximo passo; Home · Conversa | "Demanda, escala e resultados financeiros não são garantidos." / "Iniciar a conversa não pressupõe parceria, criação de Home Concept ou lançamento." / "O envio inicia uma conversa. Não formaliza uma parceria nem gera obrigação de avançar." | Confirmar. |
 
-## 4. Itens relacionados que também condicionam o go-live (fora do texto do `P-LX-03`)
+## 4. Verificações de pré-go-live, separadas do `P-LX-03`
+
+Não alteram a página nesta implementação: são requisitos de publicação, verificados antes de abrir o portão.
 
 | ID | Item | Situação | Pergunta |
 |---|---|---|---|
-| J-34 | Fotografias provisórias M1–M5 (`D-BP-17`) | Reutilizam fotos já publicadas no B2C; proveniência registrada em `catalog` §13.10: repositório Luxtory2.0, "provisórias: autorizadas para o site como referência visual, sem autorização definitiva de produção registrada"; duas retratam pessoas (M1 e M2) | Os direitos (autoral e de imagem das pessoas retratadas) cobrem o uso em página pública B2B? Se forem imagens sintéticas, é preciso declarar? |
-| J-35 | Formulário de contato (REQ-028) | Coleta nome, marca, e-mail, site e mensagem; texto ao lado: "Os dados enviados são utilizados para responder à solicitação e avaliar uma possível parceria com a Luxtory." Nenhum dado é guardado no banco; o envio vai por e-mail à caixa corporativa | A informação de finalidade basta para a transparência exigida pela Lei 13.709/2018 (LGPD), ou é preciso um aviso de privacidade com base legal, controlador, retenção e direitos do titular? |
+| J-34 | Fotografias provisórias M1–M5 (`D-BP-17`) | Reutilizam fotos já publicadas no B2C; proveniência registrada em `catalog` §13.10: repositório Luxtory2.0, "provisórias: autorizadas para o site como referência visual, sem autorização definitiva de produção registrada"; duas retratam pessoas (M1 e M2) | Os direitos (autoral e de imagem das pessoas retratadas) cobrem o uso em página pública B2B? Se forem imagens sintéticas, é preciso declarar? Os ativos atuais ficam nesta implementação; a publicação exige a comprovação definitiva dos direitos ou a substituição pelo ensaio próprio (`P-BP-03`) — só o manifesto de mídia muda, a página não é reconstruída. |
+| J-35 | Formulário de contato (REQ-028) | Coleta nome, marca, e-mail, site e mensagem; texto ao lado: "Os dados enviados são utilizados para responder à solicitação e avaliar uma possível parceria com a Luxtory." Nenhum dado é guardado no banco; o envio vai por e-mail à caixa corporativa | A informação de finalidade basta para a transparência exigida pela Lei 13.709/2018 (LGPD)? Caminho previsto, se necessário: um aviso de privacidade curto e apropriado junto do formulário — sem nova seção nem bloco jurídico na landing page. |
 
-## 5. Registro das respostas
+## 5. Registro das respostas (por tema)
 
-| ID | Resposta | Texto ajustado (se houver) | Data | Responsável |
-|---|---|---|---|---|
-| J-01 … J-35 | — | — | — | — |
+| Tema / check | J-IDs | Natureza | Resposta | Ajuste (nível 1–4 de §1, se houver) | Data | Responsável |
+|---|---|---|---|---|---|---|
+| A. Licenciamento e remuneração | J-01–J-05 | `P-LX-03` | — | — | — | — |
+| B. Marcas de terceiros e governança | J-06–J-14 | `P-LX-03` | — | — | — | — |
+| C. Ação de SPE (fluxo completo) | J-15–J-20 | `P-LX-03` | — | — | — | — |
+| D. Comparativa a categorias | J-21–J-23 | `P-LX-03` | — | — | — | — |
+| E. Luxtory Club e Créditos | J-24–J-29 | adicional | — | — | — | — |
+| F. Ausência de garantia | J-30–J-33 | adicional | — | — | — | — |
+| Fotografias provisórias | J-34 | pré-go-live | — | — | — | — |
+| Aviso de privacidade do formulário | J-35 | pré-go-live | — | — | — | — |

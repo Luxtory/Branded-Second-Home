@@ -1098,5 +1098,7 @@ Da auditoria de concisão: dentro da coluna de texto de `lx-numbered`, `lx-compa
 768 e 1440 px, placeholders identificados, nenhuma copy fora do Approval Pack e dos ajustes. (2) Técnico, depois do
 aceite visual: gates completos (DS, unitários, comunicação/terminologia, E2E, acessibilidade, regressão B2C) e prova
 de que, com `BRAND_PARTNERS_SITE` fechado, nada da BP1.1 vaza em HTML, RSC ou metadados. (3) Editorial antes do
-merge: a auditoria de concisão acima. **Go-live:** P-LX-03,
+merge: a auditoria de concisão acima. (4) **Encerramento (2026-10-12): implementação concluída** — aceite visual
+final do fundador, diretriz `D-BP-19` (o site é comercial; segurança jurídica por progressive disclosure, sem camada
+jurídica visual). **Go-live:** P-LX-03,
 ativos aprovados (`P-BP-03`) e autorização expressa do fundador; CI verde não autoriza merge nem go-live.

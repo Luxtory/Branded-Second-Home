@@ -198,8 +198,11 @@ automático nem garantia de deduplicação; a chave no provedor é `luxtory:bran
 
 ### Checklist de go-live da BP1.1 (preparado em 2026-10-12, não aplicado)
 
-Executado pelo fundador na Vercel, com orientação; nada aqui foi configurado. **Antes:** aceite visual final (M1–M5,
-`D-BP-17`), `P-LX-03` concluída, autorização de merge do PR da BP1.1 e, **separada**, autorização para abrir o portão.
+Executado pelo fundador na Vercel, com orientação; nada aqui foi configurado. **Antes:** `P-LX-03` concluída (temas
+A–D de [`revisao-juridica-brand-partners.md`](../specs/communication/revisao-juridica-brand-partners.md)), as
+verificações de pré-go-live J-34 (direitos das fotografias provisórias ou substituição) e J-35 (aviso de privacidade
+do formulário, se exigido), autorização de merge do PR da BP1.1 e, **separada**, autorização para abrir o portão. O
+aceite visual final foi dado em 2026-10-12.
 Nunca criar `BRAND_PARTNERS_CONTACT_MODE` na Vercel; não tocar em variáveis fora desta lista.
 
 1. **Merge** (autorização própria): a CI publica em Production com o portão fechado — `/brand-partner` e
