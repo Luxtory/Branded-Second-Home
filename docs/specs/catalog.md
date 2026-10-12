@@ -1070,6 +1070,24 @@ próprio (`P-BP-03`) segue aberto e troca só as entradas do manifesto.
   índice ≥ 6,84:1 (E2E `[WCAG 1.4.3]` a 768 e 1440 px); axe 0, sem overflow de 320 a 1920 px, nenhuma imagem quebrada;
   com o portão fechado, nada da BP1.1 no corpo (o atributo `data-media-slot` é marcador da prova).
 
+**Ajustes do aceite visual (fundador, 2026-10-12; `D-BP-18`).** (1) O Hero da Home perde o lead da cena ("Amigos ao
+redor da mesa…"): mais limpo, menos denso no celular, e a fotografia M1 não mostra mesa; os demais textos do Hero não
+mudam. (2) Paridade tipográfica B2C → Brand Partners: para o mesmo papel de texto, o B2C é a referência — sem mudar
+token, escala global nem o B2C, e reutilizando os papéis do Core:
+
+| Papel | B2C (referência) | Antes na BP | Ajuste |
+|---|---|---|---|
+| H1 do Hero da Home | `lx-home-hero__title`: 35,1 / 28 / 39,6 px, entrelinha 1,02 | `lx-headline`: 28 / 36,1 / 48 px | `lx-headline--home-hero` (opt-in do Core com a mesma escala) |
+| CTA do Hero da Home | primário 13 px | primário `large` 16 px | sem `large` |
+| CTA sobre o fechamento fotográfico | `large` 16 px | primário 13 px | `large` |
+| Owner \| Co-Owner (comparação) | `lx-eyebrow` 12 px | `lx-title` 18–20 px | `lx-eyebrow` |
+| Rótulo de fase (`lx-answers--phases`) | `lx-eyebrow` 12 px | `lx-subheadline` 18–23,8 px | `lx-eyebrow` |
+
+Já em paridade (sem mudança): H1 do Hero do Como funciona, H2, `lx-display-m`, `lx-display-s`, pergunta das respostas,
+subheadline, corpo, eyebrow, afirmação do fechamento, lista editorial, índice do Hero (nome do capítulo × âncora) e
+links de ação. O texto de apoio do Hero da Home são dois parágrafos de corpo (o B2C tem um lead único): papel de corpo,
+mantido. A E2E `[ADR-0003]` compara os tamanhos computados B2C × BP por papel a 390, 768 e 1440 px.
+
 **Core (genérico, opt-in, sem efeito no B2C).** `SiteShell`: `navAlign="end"` (`lx-header--nav-end`), item de
 navegação com `action` (botão secundário no header, link no menu e no rodapé) e `menuTrigger="mark"` (ícone oficial
 no gatilho do menu também no modo não retrátil). CSS: `lx-steps--four` (1 → 2 → 4 colunas) e `lx-media-placeholder`.

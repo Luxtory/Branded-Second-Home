@@ -608,3 +608,6 @@ Complementos genéricos e opt-in que a BP1.1 consome (spec `catalog` §14.9); o 
   como no celular — ao lado do número (`md`) ou na última de três colunas (`lg`), lado a lado cada metade caía a poucas
   palavras por linha. Mesma ordem, tipo e peso dos dois lados (auditoria de concisão da BP1.1).
 - Limite com mais de um parágrafo: `div.lx-section-note.lx-stack` > `p.lx-body` (um por frase).
+- Headline do Cinematic Hero que abre uma Home: `h1.lx-headline.lx-headline--home-hero` — o papel tipográfico do Home
+  Hero B2C (`lx-home-hero__title`: mesmo tamanho e entrelinha nas três faixas), mantendo a cor e a quebra do Cinematic
+  Hero. Paridade B2C → Brand Partners por papel: o B2C é a referência (spec `catalog` §14.9).

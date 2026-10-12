@@ -252,6 +252,17 @@
       font-size: clamp(1.75rem, 2.75vw, 2.5rem);
     }
   }
+  /* A headline de um Cinematic Hero que abre uma Home tem o papel tipográfico do Home Hero acima: a mesma escala
+   * (tamanho e entrelinha), opt-in. A cor e a quebra continuam as do Cinematic Hero. */
+  [data-lx="core"] .lx-hero .lx-headline.lx-headline--home-hero {
+    font-size: clamp(2rem, 9vw, 2.65rem);
+    line-height: 1.02;
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-hero .lx-headline.lx-headline--home-hero {
+      font-size: clamp(1.75rem, 2.75vw, 2.5rem);
+    }
+  }
 
   /* Problem / Triad Comparison — one composition: copy + the value triad on top, three equivalent alternatives below. */
   [data-lx="core"] .lx-triad-comparison__top {

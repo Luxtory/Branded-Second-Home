@@ -122,6 +122,94 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     });
   }
 
+  test('[ADR-0003] paridade tipográfica B2C → Brand Partners: o mesmo tamanho computado para o mesmo papel a 390, 768 e 1440 px', async ({
+    page,
+  }) => {
+    test.slow();
+    // [papel, página B2C, seletor B2C, página BP, seletor BP] — o B2C é a referência (catalog §14.9).
+    const roles = [
+      ['H1 do Hero da Home', '/', '.lx-home-hero__title', HOME, '#inicio h1'],
+      ['CTA do Hero da Home', '/', '.lx-home-hero__action', HOME, '#inicio .lx-button'],
+      [
+        'CTA sobre o fechamento',
+        '/',
+        '.lx-hero--closing .lx-button',
+        HOME,
+        '#sua-marca .lx-button',
+      ],
+      ['H1 do Hero do Como funciona', '/como-funciona', '.lx-hero h1', HOW, '#abertura h1'],
+      ['índice do Hero', '/como-funciona', '.lx-hero__chapter-name', HOW, '.lx-anchors a'],
+      [
+        'H2',
+        '/como-funciona',
+        'main section:not(.lx-hero) h2.lx-headline',
+        HOW,
+        'main section:not(.lx-hero) h2.lx-headline',
+      ],
+      [
+        'rótulo de fase',
+        '/como-funciona',
+        '.lx-answers--phases .lx-answers__label',
+        HOW,
+        '.lx-answers--phases .lx-answers__label',
+      ],
+      [
+        'pergunta',
+        '/como-funciona',
+        '.lx-answers__label.lx-subheadline',
+        HOW,
+        '.lx-answers__label.lx-subheadline',
+      ],
+      [
+        'Owner | Co-Owner',
+        '/como-funciona',
+        '[data-pair="modality"] .lx-comparison__item > :first-child',
+        HOW,
+        '[data-pair="modality"] .lx-comparison__item > :first-child',
+      ],
+      ['display-m', '/como-funciona', 'main .lx-display-m', HOW, 'main .lx-display-m'],
+      ['display-s', '/como-funciona', 'main .lx-display-s', HOW, 'main .lx-display-s'],
+      [
+        'subheadline',
+        '/como-funciona',
+        'main section:not(.lx-hero) p.lx-subheadline',
+        HOW,
+        'main section:not(.lx-hero) p.lx-subheadline',
+      ],
+      [
+        'corpo',
+        '/como-funciona',
+        'main section:not(.lx-hero) p.lx-body',
+        HOW,
+        'main section:not(.lx-hero) p.lx-body',
+      ],
+      [
+        'eyebrow',
+        '/',
+        'main section:not(.lx-home-hero) .lx-eyebrow',
+        HOME,
+        'main section:not(.lx-hero) .lx-eyebrow',
+      ],
+    ] as const;
+    const typeOf = async (path: string, selector: string) => {
+      await page.goto(path);
+      return page
+        .locator(selector)
+        .first()
+        .evaluate((node) => {
+          const style = getComputedStyle(node);
+          return `${style.fontFamily.split(',')[0]} ${style.fontSize}/${style.lineHeight} ${style.fontWeight}`;
+        });
+    };
+    for (const width of [390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const [role, b2cPath, b2cSelector, bpPath, bpSelector] of roles) {
+        const reference = await typeOf(b2cPath, b2cSelector);
+        expect(await typeOf(bpPath, bpSelector), `${role} a ${width}px`).toBe(reference);
+      }
+    }
+  });
+
   test('[WCAG 1.4.3] texto sobre as fotografias M1, M5 e M4 com o scrim uniforme: contraste medido nos pixels a 768 e 1440 px', async ({
     page,
   }) => {
@@ -131,7 +219,6 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     const targets = {
       [HOME]: [
         ['#inicio h1', 3],
-        ['#inicio .lx-subheadline', 4.5],
         ['#inicio .lx-body', 4.5],
         ['#sua-marca h2', 3],
         ['#sua-marca .lx-subheadline', 4.5],

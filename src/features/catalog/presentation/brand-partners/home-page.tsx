@@ -55,19 +55,12 @@ export function BrandPartnersHomePage() {
         <div className="lx-container lx-hero__content">
           <div className="lx-hero__copy">
             <Eyebrow>{hero.marker}</Eyebrow>
-            <h1 id={titleOf(HERO)} className="lx-headline">
+            <h1 id={titleOf(HERO)} className="lx-headline lx-headline--home-hero">
               <HeadlineText headline={hero.title} />
             </h1>
-            <p className="lx-subheadline">{hero.lead}</p>
             <Paragraphs lines={hero.body} />
             <div className="lx-hero__actions">
-              <ActionLink
-                href={`#${PROBLEM}`}
-                label={hero.action}
-                primary
-                large
-                icon="arrow-down"
-              />
+              <ActionLink href={`#${PROBLEM}`} label={hero.action} primary icon="arrow-down" />
             </div>
           </div>
         </div>
@@ -305,7 +298,7 @@ export function BrandPartnersHomePage() {
             <p className="lx-subheadline">{fit.paragraphs[0]}</p>
             <Paragraphs lines={fit.paragraphs.slice(1)} />
             <div className="lx-hero__actions">
-              <ActionLink href={`#${CONVERSATION}`} label={fit.action} primary />
+              <ActionLink href={`#${CONVERSATION}`} label={fit.action} primary large />
             </div>
             <p className="lx-body">{fit.limit}</p>
           </div>

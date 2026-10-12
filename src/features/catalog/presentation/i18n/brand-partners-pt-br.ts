@@ -73,7 +73,6 @@ export const brandPartnersMessages = {
         lead: 'Imagine sua comunidade se sentindo em casa ',
         turn: 'no universo da sua marca.',
       },
-      lead: 'Amigos ao redor da mesa, a família reunida para descansar, um jeito de viver reconhecível em cada detalhe.',
       // Valor bilateral nos primeiros segundos (ajuste de 2026-10-12): para quem vive e para a marca.
       body: [
         'Para quem se identifica com a sua marca: uma nova forma de viver o lazer com patrimônio, liberdade e pertencimento, em um lugar que expressa sua identidade e seu lifestyle.',

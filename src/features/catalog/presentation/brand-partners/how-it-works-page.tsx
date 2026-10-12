@@ -33,7 +33,7 @@ function Modalities({ step }: { readonly step: Step }) {
       <div className="lx-comparison lx-comparison--divided" data-pair="modality">
         {[step.modalities.owner, step.modalities.coOwner].map((side) => (
           <div className="lx-comparison__item" key={side.name}>
-            <h5 className="lx-title">
+            <h5 className="lx-eyebrow">
               <span className="lx-nowrap">{side.name}</span>
             </h5>
             <p className="lx-body">{side.text}</p>
@@ -104,7 +104,7 @@ export function BrandPartnersHowItWorksPage() {
           <div className="lx-answers lx-answers--phases">
             {path.phases.map((phase, phaseIndex) => (
               <div className="lx-answers__row" key={phase.name}>
-                <h3 className="lx-answers__label lx-subheadline">{phase.name}</h3>
+                <h3 className="lx-answers__label lx-eyebrow">{phase.name}</h3>
                 <div className="lx-answers__content">
                   <ol className="lx-numbered" start={(PHASE_OFFSETS[phaseIndex] ?? 0) + 1}>
                     {phase.steps.map((step, index) => (
