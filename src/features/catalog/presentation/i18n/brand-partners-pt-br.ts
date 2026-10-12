@@ -75,7 +75,7 @@ export const brandPartnersMessages = {
       lead: 'Amigos ao redor da mesa, a família reunida para descansar, um jeito de viver reconhecível em cada detalhe.',
       // Valor bilateral nos primeiros segundos (ajuste de 2026-10-12): para quem vive e para a marca.
       body: [
-        'Para quem se identifica com a sua marca: uma nova forma de viver e possuir uma segunda casa que expressa sua identidade e seu lifestyle.',
+        'Para quem se identifica com a sua marca: uma nova forma de viver o lazer com patrimônio, liberdade e pertencimento, em um lugar que expressa sua identidade e seu lifestyle.',
         'Para a sua marca: uma nova forma de transformar o que ela representa em Brand Experience e de participar dos momentos que importam na vida das pessoas.',
       ],
       action: 'Conheça essa possibilidade',
@@ -127,7 +127,7 @@ export const brandPartnersMessages = {
       ladder: [
         { title: 'Em um anúncio', text: 'A marca é vista.' },
         { title: 'Em um produto', text: 'A marca é usada.' },
-        { title: 'Em uma experiência', text: 'A marca é visitada.' },
+        { title: 'Em uma experiência', text: 'A marca é sentida.' },
         { title: 'Em um lugar', text: 'A marca é vivida.' },
       ],
       chain: {
@@ -395,7 +395,8 @@ export const brandPartnersMessages = {
         },
       ],
     },
-    // PROOF · Decisões e remuneração.
+    // PROOF · Decisões e remuneração: seis decisões (alteração de elementos essenciais fica em Governança e replicação
+    // em Condições e expansão — ajuste do Checkpoint 1, 2026-10-12).
     decisions: {
       marker: 'Decisões e remuneração',
       title: 'Quem decide, quem faz e como a marca participa.',
@@ -407,10 +408,6 @@ export const brandPartnersMessages = {
         {
           decision: 'Traduzir o Brand DNA em Home Concept',
           who: 'Luxtory, identificando os elementos essenciais à identidade da marca.',
-        },
-        {
-          decision: 'Alterar elementos essenciais do Home Concept',
-          who: 'Governança de aprovação entre Luxtory e Brand Partner.',
         },
         {
           decision: 'Gerar interesse',
@@ -428,10 +425,6 @@ export const brandPartnersMessages = {
         {
           decision: 'Coordenar o Design & Build',
           who: 'A Luxtory pode coordenar integralmente, conforme o escopo contratado.',
-        },
-        {
-          decision: 'Replicar em outras regiões',
-          who: 'Conforme direitos acordados, estratégia, demanda e viabilidade, com parceiros locais autorizados pela Luxtory.',
         },
       ],
       responsibilities:

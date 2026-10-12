@@ -967,12 +967,16 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
 
 **Copy.** Verbatim em `src/features/catalog/presentation/i18n/brand-partners-pt-br.ts`. Ajustes de 2026-10-12:
 
-- **Valor bilateral no Hero:** para quem se identifica com a marca, viver e possuir uma segunda casa que expressa sua
-  identidade e seu lifestyle `[FW-BP: §2]`; para a marca, transformar o que ela representa em Brand Experience e
-  participar dos momentos que importam na vida das pessoas `[FW-BP: §8 P1]`.
+- **Valor bilateral no Hero:** para quem se identifica com a marca, viver o lazer com patrimônio, liberdade e
+  pertencimento, em um lugar que expressa sua identidade e seu lifestyle `[FW-BP: §2]` — sem sugerir que todo Titular
+  possui diretamente a Second Home (no Co-Owner, a pessoa possui uma Ação, BR-373); para a marca, transformar o que ela
+  representa em Brand Experience e participar dos momentos que importam na vida das pessoas `[FW-BP: §8 P1]`.
 - **Luxtory Club como modelo previsto:** R3 não está operacional, então Luxtory Club, Membership, Luxchange e Luxplus
   aparecem sempre como "o modelo prevê"/"quando disponível", com Membership, elegibilidade, disponibilidade, inventário
   e regras aplicáveis (BR-146, BR-161, BR-190, BR-240). Nenhum texto permite ler que já podem ser usados.
+- **Ajustes do Checkpoint 1 (fundador, 2026-10-12):** a precisão do Hero acima; na escada da marca, "Em uma
+  experiência — A marca é sentida."; "Decisões e remuneração" com seis decisões (alteração de elementos essenciais fica
+  em Governança e replicação em Condições e expansão), sem accordion.
 - **Fora da copy:** cross-brand (`H-BP-09`), ativação pela capacidade da Luxtory (BR-121, `H-BP-10`) e monetização
   opcional (`P-BP-04`).
 
@@ -1006,7 +1010,8 @@ Com `null`, a página mostra um placeholder estrutural identificado (`lx-media-p
 `media.placeholders`), renderizado dentro da página protegida pelo portão — nenhum arquivo público de placeholder. A
 troca pelo ativo aprovado muda só a entrada do manifesto (arquivo em `public/images/brand-partners/`, ≤ 300 KB por
 variante, recorte `lx-crop-*`, contraste medido sob o scrim). **Aceite visual final e go-live exigem o manifesto sem
-nenhum `null`.** No celular, o Cinematic Hero do Core põe a fotografia acima do texto.
+nenhum `null`.** No celular, o Cinematic Hero do Core põe a fotografia acima do texto. Com o M1 aprovado, testar o Hero
+com e sem o lead da cena ("Amigos ao redor da mesa…") e recomendar a versão mais forte visualmente.
 
 | Ativo | Função | Cena | Proporção |
 |---|---|---|---|
