@@ -36,20 +36,22 @@ function BenefitGroup({
   );
 }
 
-/** Equação de valor (`D-BP-21`): duas premissas de mesmo peso, ligadas por + e =, e o resultado com a ênfase. */
+/**
+ * Fórmula de valor (`D-BP-21`, `D-BP-22`): uma conta de somar — premissa, + premissa, a linha de cálculo e o resultado.
+ * As premissas são heading interno (`lx-display-s`) e o resultado é o statement de fechamento (`lx-headline`); o + e a
+ * linha são desenho. O "=" fica só para leitores de tela: a linha faz o papel dele na tela.
+ */
 function ValueEquation({ equation }: { readonly equation: typeof promise.equation }) {
   const [moment, place] = equation.premises;
   return (
     <div className="lx-equation">
-      <p className="lx-equation__term">{moment}</p>
-      <p className="lx-equation__operator">
-        <span>{equation.plus}</span>
+      <p className="lx-equation__term lx-display-s">{moment}</p>
+      <p className="lx-equation__operator">{equation.plus}</p>
+      <p className="lx-equation__term lx-display-s">{place}</p>
+      <p className="lx-equation__result lx-headline">
+        <span className="lx-visually-hidden">{equation.equals} </span>
+        {equation.result}
       </p>
-      <p className="lx-equation__term">{place}</p>
-      <p className="lx-equation__operator">
-        <span>{equation.equals}</span>
-      </p>
-      <p className="lx-equation__result">{equation.result}</p>
     </div>
   );
 }
@@ -104,7 +106,7 @@ export function BrandPartnersHomePage() {
             {problem.sides.map((side) => (
               <div className="lx-comparison__item" key={side.title}>
                 <p className="lx-eyebrow">{side.label}</p>
-                <h3 className="lx-display-m">{side.title}</h3>
+                <h3 className="lx-display-s">{side.title}</h3>
                 <Paragraphs lines={side.text} />
               </div>
             ))}
@@ -116,27 +118,27 @@ export function BrandPartnersHomePage() {
         </div>
       </section>
 
-      {/* PROMISE — Sand, Editorial Split com o texto largo (M3): a experiência nasce do Brand DNA, em equação de valor
-          (`D-BP-21`); a primeira seção que nomeia Branded Second Home e Home Concept. */}
+      {/* PROMISE — Sand, sem fotografia (`D-BP-22`): o texto à esquerda e a fórmula de valor à direita, como o elemento
+          gráfico da seção; no celular, introdução → fórmula → texto. A primeira seção que nomeia Branded Second Home e
+          Home Concept. */}
       <section
         id={PROMISE}
-        className="lx-section-split"
+        className="lx-section"
         data-surface="sand"
         aria-labelledby={titleOf(PROMISE)}
       >
-        <div className="lx-split lx-split--wide-text">
-          <div className="lx-split__text">
-            <div className="lx-split__inner">
-              <Eyebrow>{promise.marker}</Eyebrow>
-              <h2 id={titleOf(PROMISE)} className="lx-headline">
-                <HeadlineText headline={promise.title} />
-              </h2>
-              <p className="lx-body">{promise.intro}</p>
-              <ValueEquation equation={promise.equation} />
-              <Paragraphs lines={promise.body} />
-            </div>
+        <div className="lx-container lx-columns lx-columns--aside lx-columns--aside-even">
+          <div className="lx-stack">
+            <Eyebrow>{promise.marker}</Eyebrow>
+            <h2 id={titleOf(PROMISE)} className="lx-headline">
+              <HeadlineText headline={promise.title} />
+            </h2>
+            <p className="lx-body">{promise.intro}</p>
           </div>
-          <SplitMedia slot="m3" />
+          <ValueEquation equation={promise.equation} />
+          <div className="lx-stack">
+            <Paragraphs lines={promise.body} />
+          </div>
         </div>
       </section>
 

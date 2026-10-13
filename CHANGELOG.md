@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   o topo no 01 e os pilares ao lado; títulos no papel de headline da superfície (contraste AA). B2C sem mudança.
   Ajustes do fundador (`D-BP-21`): "Uma nova lógica" em equação de valor (momento + identidade = vínculo) e o Luxchange
   na redação do fundador.
+  Hierarquia tipográfica única do B2B (`D-BP-22`): o mesmo papel com a mesma tipografia em todas as seções (headings
+  internos em `display-s`); "Uma nova lógica" sem fotografia, com a fórmula de somar à direita do texto.
 
 ### Added
 - Brand Partners público (BP1, REQ-028, TECH-057; spec catalog §14): `/brand-partner` (PICTURE → PROBLEM → PROMISE →

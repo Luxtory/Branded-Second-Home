@@ -845,53 +845,47 @@
     color: var(--lx-color-headline);
   }
 
-  /* Value Equation — premise + premise = result, read top to bottom at every width. The two premises share one type
-   * role (same weight); + and = are graphic links: the glyph in a hairline circle on the start of a rule that runs to
-   * the end of the column; the result takes the larger display size in the headline role. Never a card. */
+  /* Value Equation — an addition, set as one: premise, + premise, the calculation line and the result. The premises
+   * take the internal heading role (lx-display-s) and the result the closing statement role (lx-headline), from the
+   * markup; this block only draws the sum. The + sits in a gutter beside the second premise, on its first line; the
+   * line is a hairline in the strong rule colour across gutter and column, the result under it in the column of the
+   * premises. No card, box or fill: type, rule and space on the surface. */
   [data-lx="core"] .lx-equation {
     display: grid;
-    gap: var(--lx-space-4);
-    margin-block: var(--lx-space-4);
-  }
-  [data-lx="core"] .lx-equation__term,
-  [data-lx="core"] .lx-equation__result {
-    font-family: var(--lx-font-display);
-    font-weight: var(--lx-weight-display);
-    letter-spacing: var(--lx-tracking-display);
-    line-height: var(--lx-leading-heading);
-    max-width: var(--lx-layout-measure);
-    text-wrap: balance;
+    grid-template-columns: var(--lx-space-8) minmax(0, 1fr);
+    align-items: start;
+    row-gap: var(--lx-space-3);
   }
   [data-lx="core"] .lx-equation__term {
-    font-size: var(--lx-type-section-title);
-    color: var(--lx-color-fg);
+    grid-column: 2;
   }
+  /* The + at the scale of the result, its line box that of a premise line: centred on the second premise's first line. */
   [data-lx="core"] .lx-equation__operator {
-    display: flex;
-    align-items: center;
-    gap: var(--lx-space-4);
-  }
-  [data-lx="core"] .lx-equation__operator > span {
-    display: inline-grid;
-    place-items: center;
-    flex: none;
-    inline-size: var(--lx-space-12);
-    block-size: var(--lx-space-12);
-    border: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
-    border-radius: 50%;
+    grid-column: 1;
+    grid-row: 2;
     font-family: var(--lx-font-display);
-    font-size: var(--lx-type-ordinal);
-    line-height: 1;
+    font-weight: var(--lx-weight-display);
+    font-size: var(--lx-type-headline);
+    line-height: calc(var(--lx-type-section-title) * var(--lx-leading-heading));
     color: var(--lx-color-accent);
   }
-  [data-lx="core"] .lx-equation__operator::after {
-    content: "";
-    flex: 1;
-    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  [data-lx="core"] .lx-equation__operator + .lx-equation__term {
+    grid-row: 2;
   }
   [data-lx="core"] .lx-equation__result {
-    font-size: var(--lx-type-ordinal);
-    color: var(--lx-color-headline);
+    grid-column: 1 / -1;
+    margin-top: var(--lx-space-3);
+    padding-top: var(--lx-space-6);
+    padding-inline-start: var(--lx-space-8);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-equation {
+      grid-template-columns: var(--lx-space-12) minmax(0, 1fr);
+    }
+    [data-lx="core"] .lx-equation__result {
+      padding-inline-start: var(--lx-space-12);
+    }
   }
 
   /* Sibling Blocks — equal units: same geometry, type and spacing; no shadow, no ornament. --pair = 2 × 2 from md. */
@@ -1234,6 +1228,18 @@
     [data-lx="core"] .lx-columns--aside > :nth-child(3) {
       grid-column: 1 / span 5;
       grid-row: 2;
+    }
+    /* --aside-even: the same order on 6/6 — the head and its continuation one stack gap apart on the start column, the
+     * main element centred against both on the end column (e.g. a formula in place of a photograph). */
+    [data-lx="core"] .lx-columns--aside-even {
+      row-gap: var(--lx-space-6);
+    }
+    [data-lx="core"] .lx-columns--aside-even > :nth-child(odd) {
+      grid-column: 1 / span 6;
+    }
+    [data-lx="core"] .lx-columns--aside-even > :nth-child(2) {
+      grid-column: 7 / span 6;
+      align-self: center;
     }
   }
 

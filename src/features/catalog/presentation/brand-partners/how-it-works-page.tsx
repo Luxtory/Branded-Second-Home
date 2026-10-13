@@ -189,7 +189,7 @@ export function BrandPartnersHowItWorksPage() {
                 <span className="lx-ordinal lx-numbered__number" aria-hidden="true">
                   {ordinal(index)}
                 </span>
-                <h3 className="lx-display-m">{mechanism.title}</h3>
+                <h3 className="lx-display-s">{mechanism.title}</h3>
                 <div className="lx-numbered__text lx-stack">
                   <Paragraphs lines={mechanism.text} />
                 </div>
@@ -198,7 +198,7 @@ export function BrandPartnersHowItWorksPage() {
           </ol>
           {/* A pergunta da marca sem linhas próprias: a lista acima e o limite abaixo já trazem as hairlines. */}
           <div className="lx-section-group">
-            <h3 className="lx-subheadline">{club.brand.question}</h3>
+            <h3 className="lx-display-s">{club.brand.question}</h3>
             <Paragraphs lines={club.brand.answer} />
           </div>
           <div className="lx-section-note lx-stack">

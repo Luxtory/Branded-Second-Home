@@ -27,7 +27,8 @@ const { conversation } = text.home;
 /** H1 da Home: `lead` + a virada em itálico (`turn`). */
 const HERO_TITLE = `${text.home.hero.title.lead}${text.home.hero.title.turn}`;
 /** Lugares de fotografia M1–M5 na ordem do DOM (D5; `D-BP-17`: fotografias provisórias do B2C nesta etapa). */
-const HOME_MEDIA = ['m1', 'm3', 'm2', 'm5'] as const;
+// `D-BP-22`: "Uma nova lógica" perdeu a fotografia M3 — a fórmula de valor ocupa o lugar dela.
+const HOME_MEDIA = ['m1', 'm2', 'm5'] as const;
 const HOW_MEDIA = ['m4'] as const;
 const DIAGRAM = '/diagrams/core/diagrama-solucao-luxtory.svg';
 
@@ -126,7 +127,8 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     page,
   }) => {
     test.slow();
-    // [papel, página B2C, seletor B2C, página BP, seletor BP] — o B2C é a referência (catalog §14.9).
+    // [papel, página B2C, seletor B2C, página BP, seletor BP] — o B2C é a referência (catalog §14.9). No B2B, perguntas e
+    // títulos de mecanismo são heading interno (`display-s`, `D-BP-22`): saem as linhas "pergunta" e "display-m".
     const roles = [
       ['H1 do Hero da Home', '/', '.lx-home-hero__title', HOME, '#inicio h1'],
       ['CTA do Hero da Home', '/', '.lx-home-hero__action', HOME, '#inicio .lx-button'],
@@ -154,20 +156,12 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
         '.lx-answers--phases .lx-answers__label',
       ],
       [
-        'pergunta',
-        '/como-funciona',
-        '.lx-answers__label.lx-subheadline',
-        HOW,
-        '.lx-answers__label.lx-subheadline',
-      ],
-      [
         'Owner | Co-Owner',
         '/como-funciona',
         '[data-pair="modality"] .lx-comparison__item > :first-child',
         HOW,
         '[data-pair="modality"] .lx-comparison__item > :first-child',
       ],
-      ['display-m', '/como-funciona', 'main .lx-display-m', HOW, 'main .lx-display-m'],
       ['display-s', '/como-funciona', 'main .lx-display-s', HOW, 'main .lx-display-s'],
       [
         'subheadline',
@@ -292,37 +286,106 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     }
   });
 
-  test('[REQ-028] Uma nova lógica: equação de valor — premissas de mesmo peso, + e = como ligação, resultado com mais ênfase, a 390, 768 e 1440 px', async ({
+  test('[REQ-028] Uma nova lógica: a fórmula de somar no lugar da fotografia — premissa, + premissa, linha de cálculo e resultado, a 390, 768 e 1440 px', async ({
     page,
   }) => {
     const { equation } = text.home.promise;
     for (const width of [390, 768, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(HOME);
-      const parts = await page.locator('#proposta .lx-equation > *').evaluateAll((nodes) =>
-        nodes.map((node) => {
-          const style = getComputedStyle(node);
-          return {
-            role: node.className,
-            text: node.textContent?.trim() ?? '',
-            type: `${style.fontFamily.split(',')[0]} ${style.fontSize} ${style.fontWeight}`,
-            size: Number.parseFloat(style.fontSize),
-          };
-        }),
-      );
-      // A ordem da leitura é a da equação (`D-BP-21`).
-      expect(parts.map(({ role, text: line }) => [role, line])).toEqual([
+      const section = page.locator('#proposta');
+      await expect(section.locator('img, picture, [data-media-slot]')).toHaveCount(0);
+      const formula = await section.locator('.lx-equation').evaluate((node) => {
+        const box = (element: Element | null) => element?.getBoundingClientRect().toJSON();
+        const [first, second] = node.querySelectorAll('.lx-equation__term');
+        const result = node.querySelector('.lx-equation__result');
+        const resultStyle = result ? getComputedStyle(result) : undefined;
+        return {
+          parts: [...node.children].map((child) => [child.classList[0], child.textContent?.trim()]),
+          formula: box(node),
+          first: box(first ?? null),
+          second: box(second ?? null),
+          plus: box(node.querySelector('.lx-equation__operator')),
+          result: box(result),
+          line: resultStyle && Number.parseFloat(resultStyle.borderTopWidth),
+          heading: box(node.closest('section')?.querySelector('h2') ?? null),
+          body: box(node.parentElement?.lastElementChild?.querySelector('p') ?? null),
+        };
+      });
+      // A leitura é a de uma conta de somar (`D-BP-22`): nenhum "=" desenhado — a linha faz esse papel; o "=" fica
+      // só para leitores de tela, no início do resultado.
+      expect(formula.parts).toEqual([
         ['lx-equation__term', equation.premises[0]],
         ['lx-equation__operator', equation.plus],
         ['lx-equation__term', equation.premises[1]],
-        ['lx-equation__operator', equation.equals],
-        ['lx-equation__result', equation.result],
+        ['lx-equation__result', `${equation.equals} ${equation.result}`],
       ]);
-      const [first, , second, , result] = parts;
-      expect(second?.type, `premissas com o mesmo peso a ${width}px`).toBe(first?.type);
-      expect(result?.size, `resultado com mais ênfase a ${width}px`).toBeGreaterThan(
-        first?.size ?? 0,
+      const { first, second, plus, result, heading, body } = formula;
+      expect(plus!.right, `+ antes da segunda premissa a ${width}px`).toBeLessThanOrEqual(
+        second!.left,
       );
+      expect(
+        Math.abs(plus!.top - second!.top),
+        `+ na primeira linha da segunda premissa a ${width}px`,
+      ).toBeLessThan(2);
+      expect(first!.left).toBe(second!.left);
+      expect(formula.line, `linha de cálculo a ${width}px`).toBeGreaterThanOrEqual(1);
+      expect(result!.top).toBeGreaterThan(second!.bottom);
+      expect(result!.width, `linha longa a ${width}px`).toBe(formula.formula!.width);
+      if (width >= 1024) {
+        // Duas colunas: o texto à esquerda, a fórmula à direita.
+        expect(formula.formula!.left).toBeGreaterThan(heading!.right);
+      } else {
+        // Uma coluna: título → introdução → fórmula → texto restante.
+        expect(formula.formula!.top).toBeGreaterThan(heading!.bottom);
+        expect(body!.top).toBeGreaterThan(formula.formula!.bottom);
+      }
+    }
+  });
+
+  test('[ADR-0003] taxonomia tipográfica B2B: o mesmo papel com a mesma tipografia nas duas páginas, a 390, 768 e 1440 px', async ({
+    page,
+  }) => {
+    test.slow();
+    // Papéis editoriais (`D-BP-22`); a exceção aprovada é o H1 do Hero da Home (`D-BP-18`). Eyebrow, ordinal, rótulo
+    // de fase e o desenho da fórmula (+ e linha) têm papéis próprios, fora desta taxonomia.
+    const ROLES = {
+      'Section Headline': 'main :is(h1, h2).lx-headline:not(.lx-headline--home-hero)',
+      'Internal Heading': 'main :is(h3, h4, h5, h6):not(.lx-eyebrow), main .lx-equation__term',
+      'Lead/Subheadline': 'main p.lx-subheadline:not(.lx-section-closing *)',
+      Body: 'main :is(p, li).lx-body',
+      'Closing Lead': 'main .lx-section-closing p.lx-subheadline',
+      'Closing Statement': 'main .lx-section-closing p.lx-headline, main .lx-equation__result',
+    };
+    for (const width of [390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      const found: Record<string, Set<string>> = {};
+      for (const path of [HOME, HOW]) {
+        await page.goto(path);
+        await expect(page.locator('main .lx-display-m, main h3.lx-subheadline')).toHaveCount(0);
+        for (const [role, selector] of Object.entries(ROLES)) {
+          const types = await page.locator(selector).evaluateAll((nodes) =>
+            nodes.map((node) => {
+              const style = getComputedStyle(node);
+              return `${style.fontFamily.split(',')[0]} ${style.fontSize} ${style.fontWeight} ${style.lineHeight}`;
+            }),
+          );
+          for (const type of types) (found[role] ??= new Set()).add(type);
+        }
+      }
+      for (const role of Object.keys(ROLES)) {
+        expect([...(found[role] ?? [])], `${role} a ${width}px`).toHaveLength(1);
+      }
+      // A fórmula na hierarquia da seção: Headline ≥ resultado > premissas > corpo.
+      const [headline, statement, heading, body] = [
+        'Section Headline',
+        'Closing Statement',
+        'Internal Heading',
+        'Body',
+      ].map((role) => Number.parseFloat([...(found[role] ?? [''])][0]!.split(' ').at(-3)!));
+      expect(statement).toBeLessThanOrEqual(headline!);
+      expect(statement).toBeGreaterThan(heading!);
+      expect(heading).toBeGreaterThan(body!);
     }
   });
 

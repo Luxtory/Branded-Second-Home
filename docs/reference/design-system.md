@@ -633,3 +633,11 @@ Opt-in, sem efeito no B2C (spec `catalog` §14.9, `D-BP-20`):
   (Newsreader no tamanho do título de seção, cor do corpo); o sinal fica num círculo de hairline no início de uma régua
   até o fim da coluna; o resultado usa o tamanho do numeral (`type-ordinal`) no papel de headline. Os sinais vêm do i18n
   e são lidos pelo leitor de tela ("mais", "igual").
+  - Desde `D-BP-22`, uma conta de somar: `div.lx-equation` > `p.lx-equation__term.lx-display-s` +
+    `p.lx-equation__operator` (+) + `p.lx-equation__term.lx-display-s` + `p.lx-equation__result.lx-headline` (com
+    `span.lx-visually-hidden` "= " no início). O + fica num gutter (`space-8`; `space-12` do `md`), no tamanho da
+    headline, centrado na primeira linha da segunda premissa; o resultado ocupa a largura inteira com a linha de cálculo
+    (hairline `rule-strong`) no topo e o texto alinhado às premissas. Sem círculos, card, caixa ou fundo.
+- Texto | elemento principal em 6/6 com a mesma ordem do `--aside`: `div.lx-columns.lx-columns--aside.lx-columns--aside-even`
+  com três filhos (cabeça, principal, continuação); do `lg`, a cabeça e a continuação a um gap de pilha na coluna inicial
+  e o principal centrado contra as duas na final.

@@ -1035,14 +1035,29 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
   - **Luxchange:** "O clube permite ao membro converter dias do seu direito de uso em créditos equivalentes para se
     hospedar em outras residências da rede." / "Sua Second Home deixa de estar limitada a um único endereço e passa a
     fazer parte de uma rede de destinos." — redação do fundador, sem reescrita nem ressalva (teste de copy).
-
-**Home `/brand-partner`** (PICTURE → PROBLEM → PROMISE → PROOF → PUSH):
+- **Hierarquia tipográfica e composição (fundador, 2026-10-13; `D-BP-22`), sem mudar copy:**
+  - **Taxonomia única do B2B** (teste E2E por papel a 390, 768 e 1440 px: mesma família, tamanho, peso e entrelinha):
+    Headline de seção = `lx-headline`; heading interno = `lx-display-s` (os lados do Dilema e os mecanismos do Club
+    deixam o `lx-display-m`; as perguntas de Governança, Decisões e Condições e "E para a marca?" deixam o
+    `lx-subheadline`); lead = `lx-subheadline` (introduções de um parágrafo, frases de apoio); corpo = `lx-body`; lead de
+    fechamento = `lx-subheadline`; statement de fechamento = `lx-headline`. Eyebrow, ordinal e rótulo de fase mantêm
+    os papéis próprios; a exceção aprovada é o H1 do Hero da Home (`D-BP-18`). Introduções em mais de um parágrafo
+    (Dilema, Conversa) e os parágrafos que abrem "Uma nova lógica" e "Para quem vive" seguem como corpo, como aprovado.
+  - **Uma nova lógica sem fotografia:** M3 sai da página (o manifesto de mídia continua o mesmo). Do `lg` em diante,
+    6/6: eyebrow, Headline, introdução e corpo à esquerda; à direita, só a fórmula, centrada contra a coluna de texto
+    (`lx-columns--aside lx-columns--aside-even`). No celular, uma coluna: eyebrow → Headline → introdução → fórmula →
+    corpo. A fórmula é uma conta de somar (`lx-equation`): premissa; + premissa; a linha de cálculo (hairline no papel
+    `rule-strong`, de ponta a ponta) no lugar do "="; o resultado. Premissas = heading interno; resultado = statement de
+    fechamento (`lx-headline`, a mesma escala da Headline — a Headline mantém a precedência pela posição e pela virada em
+    itálico); o + no tamanho da Headline, centrado na primeira linha da segunda premissa, na cor de acento. O "=" fica
+    só para leitores de tela. Sem card, caixa, borda ou fundo.
+ (PICTURE → PROBLEM → PROMISE → PROOF → PUSH):
 
 | `id` | Função | Composição Core | Mídia |
 |---|---|---|---|
 | `inicio` | PICTURE, valor bilateral | Cinematic Hero `lx-hero--uniform` sob header sobreposto | M1 |
 | `expansao` | PROBLEM | `blue`: `lx-section-head` + `lx-comparison--divided` + `lx-section-closing` | — |
-| `proposta` | PROMISE | `sand`: Editorial Split `lx-split--wide-text` + `lx-equation` (equação de valor; até `D-BP-21`, `lx-editorial-list`) | M3 |
+| `proposta` | PROMISE | `sand`: `lx-columns--aside lx-columns--aside-even` — texto \| fórmula `lx-equation` (desde `D-BP-22`; antes, Editorial Split `lx-split--wide-text` com M3 e, até `D-BP-21`, `lx-editorial-list`) | — (M3 até `D-BP-22`) |
 | `para-a-marca` | PROMISE → PROOF, tese da marca | `deep`: escada `lx-steps--four`, cadeia em `lx-section-closing`, possibilidades `lx-siblings--pair`, mecanismos `lx-siblings--trio` (o limite `lx-section-note` saiu em `D-BP-20`) | — |
 | `para-quem-vive` | PROOF, valor para quem vive | `blue`: Split `--media-start --wide-media` + frase de abertura + `lx-diagram--reference` (pilares `lx-diagram__item` × diagrama de solução no tamanho da Home B2C; até `D-BP-20`, `lx-diagram--even`) + fechamento | M2 + diagrama |
 | `como-acontece` | PROOF, mecanismo e papéis | `white`: `lx-numbered` 01–06 + link `/brand-partner/como-funciona#percurso` | — |
@@ -1133,7 +1148,8 @@ Da auditoria de concisão: dentro da coluna de texto de `lx-numbered`, `lx-compa
 (a 1440 px o par Owner | Co-Owner lado a lado deixava 163 px por lado: 4 e 6 linhas para 45 e 101 caracteres). Do
 refinamento pós-merge (`D-BP-20`): `SiteShell titleRole="headline"` (`main.lx-titles-headline`: títulos no papel de
 headline da superfície) e `lx-diagram--reference` com `lx-diagram__item` (diagrama no tamanho de referência da Home B2C,
-topo no primeiro bloco) e, de `D-BP-21`, `lx-equation` (equação de valor). Uso em
+topo no primeiro bloco), `lx-equation` (equação de valor; desde `D-BP-22`, uma conta de somar) e
+`lx-columns--aside-even` (o `--aside` em 6/6, com a coluna principal centrada). Uso em
 [`docs/reference/design-system.md`](../reference/design-system.md) §15.
 
 **Checkpoints.** (1) Visual/editorial antes do merge: Home e Como funciona completas, header/menu e formulário a 390,
