@@ -7,7 +7,8 @@ import { brandPartnersPaths, type BrandPartnersSection } from './paths';
  * Casca da jornada Brand Partners (REQ-028, spec catalog §14.1, §14.9): o mesmo `SiteShell` do Core, com logo, menu e
  * rodapé só para destinos B2B — Brand Partners, Como funciona e Contato. Sem Home B2C, Coleção, Concepts, login ou
  * portal. BP1.1 (D4): header sobre a fotografia do Hero; do `lg` em diante, nav visível no fim da barra com Contato
- * como ação; abaixo, o menu Core pelo ícone oficial.
+ * como ação; abaixo, o menu Core pelo ícone oficial. Títulos no papel de headline da superfície, não no do corpo
+ * (`D-BP-20`).
  */
 export function BrandPartnersSite({
   current,
@@ -23,6 +24,7 @@ export function BrandPartnersSite({
       overlayHeader
       navAlign="end"
       menuTrigger="mark"
+      titleRole="headline"
       navItems={[
         {
           href: brandPartnersPaths.home,

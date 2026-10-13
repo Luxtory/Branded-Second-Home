@@ -419,7 +419,7 @@ contextuais só como referência ao Core e expressando função (testado).
 | Disclosure | `lx-disclosure` | `<details>` nativo, pergunta em Newsreader, hairlines, seta que gira; sem caixa nem sombra |
 | Dialog / Drawer | `lx-mobile-nav` | `<dialog>` nativo à direita (largura total no celular), superfície `blue`, links em Newsreader; foco preso, Esc, retorno do foco |
 | Skeleton / Empty / Error | `lx-skeleton`, `lx-empty`, layout focado | estáticos; erro sem detalhe técnico |
-| Tipografia | `lx-statement`, `lx-headline`, `lx-title`, `lx-subheadline`, `lx-closing`, `lx-ordinal`, `lx-eyebrow`, `lx-meta`, `lx-compact`; legado sob o flag: `lx-display-m` → título de página, `lx-display-s` → título de seção, `lx-lead`, `lx-body`, `lx-small`, `lx-label` | §13.3 |
+| Tipografia | `lx-statement`, `lx-headline`, `lx-title`, `lx-subheadline`, `lx-closing`, `lx-ordinal`, `lx-eyebrow`, `lx-meta`, `lx-compact`; legado sob o flag: `lx-display-m` → título de página, `lx-display-s` → título de seção, `lx-lead`, `lx-body`, `lx-small`, `lx-label`; opt-in `main.lx-titles-headline` (`SiteShell titleRole="headline"`): `lx-display-s` e subheadlines em heading no papel de headline da superfície — sobre Blue, abaixo de 24 px, Warm Sand com 10% do branco do corpo (4,69:1) | §13.3 |
 
 Só contrato (sem consumidor; entram com a primeira wave que consumir): Checkbox, Badge, Tabs, Table, Pagination,
 Loading, KPI e Filter.
@@ -517,6 +517,7 @@ Blue e Deep = Warm Sand com opacidade 0,4. Chevron dos disclosures no papel `mar
 | Editorial Comparison | `lx-comparison--divided` | Owner \| Co-Owner: hairline superior e divisor central; empilhado no celular |
 | Editorial Split | `lx-split--wide-media`; `--media-start` reordena a partir do `lg` | 7/12 para a fotografia; texto → imagem no celular com a imagem à esquerda no desktop |
 | Text + Diagram | `lx-diagram--even` | 6/6 |
+| Text + Diagram de referência | `lx-diagram--reference`, `lx-diagram__item` | do `lg` em diante, o diagrama no tamanho renderizado da Home B2C a 1440 px (437 × 490 px, proporção preservada), topo no primeiro bloco, texto na largura restante e itens no ritmo dos Sibling Blocks; empilhado abaixo (Brand Partners, `D-BP-20`) |
 | Statement / Pause | `lx-pause--start` | abertura tipográfica alinhada ao início, sob o header sólido |
 | Numbered List | `lx-numbered--compact`, `lx-numbered__text--wide` | índice de links; linha sem título |
 | FAQ | `lx-faq--start` | alinhado ao cabeçalho |

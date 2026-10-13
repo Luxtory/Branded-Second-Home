@@ -669,6 +669,26 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       align-items: stretch;
     }
+    /* --reference: the diagram at the size it renders on the B2C Home at 1440 (the reference desktop: 437 × 490),
+     * whatever the height of the copy beside it; its top on the first block of copy, which takes the remaining width.
+     * The SVG keeps its intrinsic ratio (667 × 748) — never stretched. Below lg it stacks as any Text + Diagram. */
+    [data-lx="core"] .lx-diagram--reference {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+    }
+    [data-lx="core"] .lx-diagram--reference .lx-diagram__figure {
+      width: auto;
+    }
+    [data-lx="core"] .lx-diagram--reference .lx-diagram__figure > img {
+      display: block;
+      width: auto;
+      height: 30.66rem;
+    }
+    /* Beside it, each block of copy (label, title, text) takes the item rhythm of the Sibling Blocks, so the set reads
+     * at about the diagram's height; the blocks stay one stack gap apart. */
+    [data-lx="core"] .lx-diagram--reference .lx-diagram__item {
+      gap: var(--lx-space-3);
+    }
   }
 
   /* Statement / Pause — a centred editorial pause; --opening is the typographic opening of a page without media. */

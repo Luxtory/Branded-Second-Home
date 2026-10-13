@@ -22,6 +22,8 @@ export interface SiteShellLabels {
 }
 
 const MAIN_ID = 'conteudo';
+/** Opt-in `titleRole="headline"`: the titles below the section headline take the surface's headline role. */
+const TITLES_HEADLINE = 'lx-titles-headline';
 
 function NavList({
   items,
@@ -56,7 +58,8 @@ function NavList({
  * `data-lx="core"` liga a geração nova; header e menu em `blue`, rodapé em `deep`. O header sobre a mídia
  * (`overlayHeader`) é transparente sobre o Cinematic Hero e fica sólido depois da rolagem. Opt-in: `navAlign="end"`
  * leva a nav para junto das ações; `menuTrigger="mark"` abre o menu pelo ícone oficial também fora do modo retrátil
- * (no retrátil, o ícone oficial é o padrão).
+ * (no retrátil, o ícone oficial é o padrão); `titleRole="headline"` dá aos títulos menores do conteúdo o papel de
+ * headline da superfície, em vez da cor do corpo.
  */
 export function SiteShell({
   homeHref,
@@ -67,6 +70,7 @@ export function SiteShell({
   retractableMenu = false,
   navAlign = 'center',
   menuTrigger = retractableMenu ? 'mark' : 'icon',
+  titleRole = 'body',
   children,
 }: {
   readonly homeHref: string;
@@ -77,6 +81,7 @@ export function SiteShell({
   readonly retractableMenu?: boolean;
   readonly navAlign?: 'center' | 'end';
   readonly menuTrigger?: 'icon' | 'mark';
+  readonly titleRole?: 'body' | 'headline';
   readonly children: ReactNode;
 }) {
   return (
@@ -142,7 +147,11 @@ export function SiteShell({
           </div>
         </div>
       </SiteHeader>
-      <main id={MAIN_ID} tabIndex={-1}>
+      <main
+        id={MAIN_ID}
+        tabIndex={-1}
+        {...(titleRole === 'headline' ? { className: TITLES_HEADLINE } : {})}
+      >
         {children}
       </main>
       <footer className="lx-footer" data-surface="deep">

@@ -1,7 +1,8 @@
 /**
  * Jornada pública Brand Partners (REQ-028, spec catalog §14): copy BP1.1 do Decision & Approval Pack aprovado pelo
  * fundador em 2026-10-12 (`D-BP-15`, catalog §14.9), com os dois ajustes da mesma aprovação — valor bilateral no Hero e
- * Luxtory Club só como modelo previsto. Os textos de página são VERBATIM — não reescrever, resumir nem acrescentar
+ * Luxtory Club só como modelo previsto — e com o refinamento comercial pós-merge do fundador de 2026-10-13 (`D-BP-20`:
+ * PROBLEM, PROMISE, Para a sua marca e Luxchange). Os textos de página são VERBATIM — não reescrever, resumir nem acrescentar
  * claim. A auditoria de concisão do gate pré-merge (catalog §14.9) só dividiu blocos em parágrafos, na fronteira das
  * frases: uma lista de strings é um bloco da copy, um `<p>` por item. `**termo**` marca o destaque tipográfico previsto na copy (renderizado como `<strong>`), não é conteúdo.
  * Headlines: `lead` + `turn` (a virada em itálico da copy). Identificadores internos (funções 5P, M1–M5) ficam só nos
@@ -80,55 +81,61 @@ export const brandPartnersMessages = {
       ],
       action: 'Conheça essa possibilidade',
     },
-    // PROBLEM.
+    // PROBLEM — a lacuna nas estratégias de Brand Experience (ajuste pós-merge do fundador, `D-BP-20`): cria a tensão
+    // sem nomear a solução — Branded Second Home, Home Concept e Luxtory só aparecem a partir do PROMISE.
     problem: {
       marker: 'O dilema da expansão',
-      title: { lead: 'Crescer sem perder ', turn: 'o que fez sua marca ser desejada.' },
+      title: {
+        lead: 'Brand Experience cria encontros. ',
+        turn: 'O desafio é fazê-los virar memória.',
+      },
       paragraphs: [
-        'As pessoas escolhem uma marca por algo que reconhecem nela: um olhar, uma atitude, um jeito de viver.',
-        'Expandir pode aprofundar essa relação e abrir novas fontes de valor.',
-        'O risco está na ordem das decisões.',
+        'Eventos, ativações, collabs, varejo e hospitalidade aproximam pessoas da marca — e cada formato tem seu papel.',
+        'Mas as conexões mais profundas não nascem apenas da exposição. Elas se constroem quando a marca participa de momentos que as pessoas realmente valorizam.',
+        'O mercado ainda oferece poucas soluções capazes de criar conexões emocionais e memoráveis entre pessoas e marcas, transformando momentos de lazer em uma vivência significativa.',
       ],
       sides: [
         {
-          label: 'Quando o produto vem primeiro',
-          title: 'A marca entra depois.',
+          label: 'O que já existe',
+          title: 'Experiências que geram impacto.',
           text: [
-            'O empreendimento é concebido antes, e a marca chega como nome, selo ou decoração.',
-            'O nome pode estar presente, mas aquilo que lhe dá sentido pode ficar de fora.',
+            'Elas despertam atenção, desejo e participação.',
+            'Mas, em geral, acontecem por um período limitado e terminam quando aquela experiência acaba.',
           ],
         },
         {
-          label: 'Quando a marca vem primeiro',
-          title: 'A experiência nasce dela.',
+          label: 'O espaço em aberto',
+          title: 'Experiências que criam vínculo.',
           text: [
-            'Os valores, a estética, a cultura e o lifestyle da marca — o seu Brand DNA — orientam o que será criado.',
-            'A residência passa a expressar o universo que a marca construiu.',
+            'Tempo, convivência, descanso, encontros e celebrações criam outro tipo de relação.',
+            'Um contexto em que a marca pode deixar de ser apenas percebida e passar a fazer parte das histórias que as pessoas lembram e compartilham.',
           ],
         },
       ],
       closing: {
-        lead: 'A diferença não está no logotipo aplicado.',
-        statement: 'Está em onde a ideia começa.',
+        lead: 'Não falta mais uma forma de a marca aparecer.',
+        statement: 'Falta um lugar para ela fazer parte da vida.',
       },
     },
-    // PROMISE (M3).
+    // PROMISE (M3) — a resposta à tensão (`D-BP-20`): a primeira seção que nomeia Branded Second Home e Home Concept.
     promise: {
       marker: 'Uma nova lógica',
-      title: { lead: 'A próxima experiência pode nascer ', turn: 'da sua marca.' },
+      title: { lead: 'A melhor experiência do seu público pode nascer ', turn: 'da sua marca.' },
       intro:
-        'Os códigos que tornam sua marca reconhecível podem orientar cada escolha, desde a primeira ideia:',
+        'Quando a experiência nasce do Brand DNA, a marca não entra no final como uma camada estética. Ela orienta desde o início aquilo que as pessoas vão sentir, fazer e lembrar.',
       sequence: [
         'Uma forma de receber.',
-        'Uma relação com a natureza.',
-        'Uma escolha de materiais.',
+        'Uma relação com a paisagem.',
+        'Materiais, rituais e detalhes que carregam identidade.',
       ],
       body: [
-        'No residencial, essa é a proposta de **Branded Second Home**.',
-        'A Luxtory traduz o Brand DNA em um **Home Concept** — o conceito da residência, com seus espaços, experiências e os elementos essenciais à identidade da marca.',
+        'Cada decisão transforma códigos de marca em uma experiência que pode ser vivida, compartilhada e lembrada.',
+        'No universo residencial de lazer, essa lógica ganha forma em uma **Branded Second Home**.',
+        'A Luxtory traduz o Brand DNA em um **Home Concept** — o conceito que orienta espaços, experiências e os elementos essenciais que tornam a identidade da marca reconhecível em cada detalhe.',
       ],
     },
-    // PROMISE → PROOF · Para a sua marca (tese): escada, cadeia causal, possibilidades × mecanismos, limite.
+    // PROMISE → PROOF · Para a sua marca (tese): escada, cadeia causal, possibilidades × mecanismos (a nota de limite
+    // saiu no ajuste pós-merge do fundador, `D-BP-20`, sem substituto).
     brand: {
       marker: 'Para a sua marca',
       title: { lead: 'Da marca vista ', turn: 'à marca vivida.' },
@@ -188,10 +195,6 @@ export const brandPartnersMessages = {
           },
         ],
       },
-      limit: [
-        'O modelo cria as condições; os resultados não são prometidos.',
-        'Demanda, vendas, receita, escala e replicação dependem de cada oportunidade e não são garantidas.',
-      ],
     },
     // PROOF · Para quem vive (M2 + diagrama de solução).
     living: {
@@ -583,9 +586,10 @@ export const brandPartnersMessages = {
         },
         {
           title: 'Luxchange.',
+          // `D-BP-20`: a abertura e o fechamento da seção já enquadram o Club como modelo previsto — sem ressalva aqui.
           text: [
-            'O modelo prevê converter capacidade elegível em Créditos e usá-los em estadias em outras Second Homes da rede.',
-            'Créditos serão uma unidade interna do Club: não são moeda, investimento nem garantia de disponibilidade.',
+            'O clube permite ao membro converter dias elegíveis da sua Second Home em créditos para se hospedar em outras residências da rede.',
+            'Sua Second Home deixa de estar limitada a um único endereço e passa a fazer parte de uma rede de destinos.',
           ],
         },
         {

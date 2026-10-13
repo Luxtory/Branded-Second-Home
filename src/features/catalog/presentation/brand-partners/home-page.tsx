@@ -66,7 +66,8 @@ export function BrandPartnersHomePage() {
         </div>
       </section>
 
-      {/* PROBLEM — Blue: a ordem das decisões em comparação editorial; o fechamento nomeia a diferença. */}
+      {/* PROBLEM — Blue: a lacuna da Brand Experience em duas perspectivas; o fechamento nomeia o que falta, sem ainda
+          nomear a solução (`D-BP-20`). */}
       <section
         id={PROBLEM}
         className="lx-section"
@@ -97,7 +98,8 @@ export function BrandPartnersHomePage() {
         </div>
       </section>
 
-      {/* PROMISE — Sand, Editorial Split com o texto largo (M3): os códigos da marca orientam cada escolha. */}
+      {/* PROMISE — Sand, Editorial Split com o texto largo (M3): a experiência nasce do Brand DNA; a primeira seção
+          que nomeia Branded Second Home e Home Concept. */}
       <section
         id={PROMISE}
         className="lx-section-split"
@@ -124,7 +126,7 @@ export function BrandPartnersHomePage() {
         </div>
       </section>
 
-      {/* Para a sua marca — Deep: escada da relação, cadeia causal, possibilidades × mecanismos e o limite. */}
+      {/* Para a sua marca — Deep: escada da relação, cadeia causal, possibilidades × mecanismos. */}
       <section
         id={BRAND}
         className="lx-section"
@@ -157,13 +159,11 @@ export function BrandPartnersHomePage() {
           </div>
           <BenefitGroup group={brand.possibilities} layout="pair" />
           <BenefitGroup group={brand.mechanisms} layout="trio" />
-          <div className="lx-section-note lx-stack">
-            <Paragraphs lines={brand.limit} />
-          </div>
         </div>
       </section>
 
-      {/* Para quem vive — Blue: M2 no início, depois os três pilares ao lado do diagrama de solução e o fechamento. */}
+      {/* Para quem vive — Blue: M2 no início; a frase de abertura dos pilares; os três pilares ao lado do diagrama de
+          solução no tamanho de referência da Home B2C, com o topo no 01 (`--reference`); e o fechamento. */}
       <section
         id={LIVING}
         className="lx-section-split"
@@ -183,29 +183,31 @@ export function BrandPartnersHomePage() {
           <SplitMedia slot="m2" />
         </div>
         <div className="lx-container">
-          <div className="lx-diagram lx-diagram--even">
-            <div className="lx-stack">
-              <p className="lx-subheadline">{living.lead}</p>
-              {living.pillars.map((pillar, index) => (
-                <div className="lx-stack" key={pillar.name}>
-                  <p className="lx-eyebrow">
-                    {ordinal(index)} · {pillar.name}
-                  </p>
-                  <h3 className="lx-display-s">{pillar.title}</h3>
-                  <Paragraphs lines={pillar.text} />
-                </div>
-              ))}
+          <div className="lx-stack">
+            <p className="lx-subheadline">{living.lead}</p>
+            <div className="lx-diagram lx-diagram--reference">
+              <div className="lx-stack">
+                {living.pillars.map((pillar, index) => (
+                  <div className="lx-stack lx-diagram__item" key={pillar.name}>
+                    <p className="lx-eyebrow">
+                      {ordinal(index)} · {pillar.name}
+                    </p>
+                    <h3 className="lx-display-s">{pillar.title}</h3>
+                    <Paragraphs lines={pillar.text} />
+                  </div>
+                ))}
+              </div>
+              <figure className="lx-diagram__figure">
+                {/* eslint-disable-next-line @next/next/no-img-element -- the original SVG is served verbatim (geometry preserved, CSP). */}
+                <img
+                  src="/diagrams/core/diagrama-solucao-luxtory.svg"
+                  alt={text.media.solutionDiagram}
+                  width={667}
+                  height={748}
+                  loading="lazy"
+                />
+              </figure>
             </div>
-            <figure className="lx-diagram__figure">
-              {/* eslint-disable-next-line @next/next/no-img-element -- the original SVG is served verbatim (geometry preserved, CSP). */}
-              <img
-                src="/diagrams/core/diagrama-solucao-luxtory.svg"
-                alt={text.media.solutionDiagram}
-                width={667}
-                height={748}
-                loading="lazy"
-              />
-            </figure>
           </div>
           <div className="lx-section-closing lx-stack">
             <p className="lx-subheadline">{living.closing.lead}</p>

@@ -248,6 +248,109 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
       }
     }
   });
+
+  test('[ADR-0003] Para quem vive: o diagrama com o tamanho renderizado da Home B2C a 390, 768 e 1440 px; no desktop, o topo no 01 e os pilares ao lado', async ({
+    page,
+  }) => {
+    // A figura desenhada (object-fit: contain no B2C), não a caixa: é o tamanho que se vê (`D-BP-20`).
+    const drawn = async (path: string) => {
+      await page.goto(path);
+      const image = page.locator(`main img[src="${DIAGRAM}"]`);
+      await image.scrollIntoViewIfNeeded();
+      await image.evaluate(async (node: HTMLImageElement) => {
+        node.loading = 'eager';
+        await node.decode();
+      });
+      return image.evaluate((node: HTMLImageElement) => {
+        const box = node.getBoundingClientRect();
+        const ratio = node.naturalWidth / node.naturalHeight;
+        const contain = getComputedStyle(node).objectFit === 'contain';
+        const width = contain ? Math.min(box.width, box.height * ratio) : box.width;
+        const height = contain ? Math.min(box.height, box.width / ratio) : box.height;
+        return { width, height, top: box.top + (box.height - height) / 2, left: box.left, ratio };
+      });
+    };
+    for (const width of [390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      const reference = await drawn('/');
+      const diagram = await drawn(HOME);
+      expect(Math.abs(diagram.width - reference.width), `largura a ${width}px`).toBeLessThan(1);
+      expect(Math.abs(diagram.height - reference.height), `altura a ${width}px`).toBeLessThan(1);
+      // Proporção original do SVG (667 × 748): nunca esticado.
+      expect(Math.abs(diagram.width / diagram.height - diagram.ratio)).toBeLessThan(0.01);
+      if (width < 1024) continue;
+      const pillars = await page
+        .locator('#para-quem-vive .lx-diagram__item')
+        .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().toJSON()));
+      expect(pillars).toHaveLength(3);
+      expect(Math.abs(pillars[0].top - diagram.top), 'topo do diagrama no 01').toBeLessThan(1);
+      for (const pillar of pillars) expect(pillar.right).toBeLessThan(diagram.left);
+      // O conjunto 01–03 com aproximadamente a altura do diagrama.
+      const set = pillars[2].bottom - pillars[0].top;
+      expect(set / diagram.height).toBeGreaterThan(0.9);
+      expect(set / diagram.height).toBeLessThan(1.1);
+    }
+  });
+
+  test('[WCAG 1.4.3] títulos no papel de headline da superfície, nunca na cor do corpo sobre Blue e Deep; contraste AA a 390, 768 e 1440 px', async ({
+    page,
+  }) => {
+    // Texto < 24 px (o peso não é bold) pede 4,5:1; ≥ 24 px é texto grande, 3:1 (`D-BP-20`).
+    for (const width of [390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const path of [HOME, HOW]) {
+        await page.goto(path);
+        const titles = await page
+          .locator('main :is(.lx-display-s, :is(h2, h3, h4, h5, h6).lx-subheadline)')
+          .evaluateAll((nodes) => {
+            const canvas = document.createElement('canvas').getContext('2d', {
+              willReadFrequently: true,
+            }) as CanvasRenderingContext2D;
+            const rgb = (color: string): [number, number, number] => {
+              canvas.clearRect(0, 0, 1, 1);
+              canvas.fillStyle = color;
+              canvas.fillRect(0, 0, 1, 1);
+              const [r = 0, g = 0, b = 0] = canvas.getImageData(0, 0, 1, 1).data;
+              return [r, g, b];
+            };
+            const linear = (value: number) => {
+              const channel = value / 255;
+              return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+            };
+            const luminance = (color: string) => {
+              const [r, g, b] = rgb(color);
+              return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+            };
+            return nodes.map((node) => {
+              const surface = node.closest('[data-surface]') as HTMLElement;
+              const style = getComputedStyle(node);
+              const roles = getComputedStyle(surface);
+              const pair = [luminance(style.color), luminance(roles.backgroundColor)];
+              const [high, low] = [Math.max(...pair), Math.min(...pair)];
+              return {
+                label: `${surface.dataset.surface} · ${node.textContent?.trim().slice(0, 30)}`,
+                surface: surface.dataset.surface,
+                size: Number.parseFloat(style.fontSize),
+                ratio: (high + 0.05) / (low + 0.05),
+                color: rgb(style.color).join(),
+                body: rgb(roles.getPropertyValue('--lx-color-fg')).join(),
+                headline: rgb(roles.getPropertyValue('--lx-color-headline')).join(),
+              };
+            });
+          });
+        expect(titles.length, path).toBeGreaterThan(0);
+        for (const title of titles) {
+          const label = `${title.label} a ${width}px`;
+          expect(title.ratio, label).toBeGreaterThanOrEqual(title.size >= 24 ? 3 : 4.5);
+          if (title.surface === 'blue' || title.surface === 'deep') {
+            expect(title.color, label).not.toBe(title.body);
+          } else {
+            expect(title.color, label).toBe(title.headline);
+          }
+        }
+      }
+    }
+  });
 });
 
 test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalog §14.1–14.2)', () => {

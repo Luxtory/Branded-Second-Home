@@ -997,6 +997,34 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
     ampliar…" (768).
 - **Fora da copy:** cross-brand (`H-BP-09`), ativação pela capacidade da Luxtory (BR-121, `H-BP-10`) e monetização
   opcional (`P-BP-04`).
+- **Refinamento comercial pós-merge (fundador, 2026-10-13; `D-BP-20`).** Copy verbatim do fundador, sem nova ressalva
+  nem linguagem defensiva (`D-BP-19`):
+  - **O dilema da expansão:** o antagonista passa a ser a lacuna da Brand Experience — formatos que aproximam pessoas
+    da marca, poucas soluções que participam do lazer com profundidade para criar conexões emocionais e memoráveis —,
+    nas mesmas duas perspectivas ("O que já existe" × "O espaço em aberto"). A seção não nomeia Branded Second Home,
+    Home Concept nem a Luxtory: Hero → lacuna de mercado → promessa (teste de copy).
+  - **Uma nova lógica:** a resposta à tensão, com a nova headline e a sequência "receber · paisagem · materiais,
+    rituais e detalhes"; a primeira seção que nomeia **Branded Second Home** e **Home Concept**.
+  - **Para a sua marca:** sem a nota de limite ("O modelo cria as condições…"), sem substituto; a ausência de garantia
+    segue no fechamento fotográfico e no Como funciona (J-32, J-33).
+  - **Luxchange:** converter dias elegíveis da Second Home em créditos para se hospedar em outras residências da rede.
+    Sem "créditos equivalentes" — os Créditos vêm do PRL (BR-201) — e sem "dias do Direito de Uso", que é só do
+    Co-Owner (o Club atende Owner e Co-Owner). A abertura e o fechamento da seção já enquadram o Club como modelo
+    previsto; o mecanismo não repete a ressalva (o teste de copy lê a seção como um bloco).
+  - **Concisão (medida a 390, 768 e 1440 px):** a 768 e 1440 px nenhum bloco novo passa de 4 linhas. Exceções a 390 px,
+    frases únicas do texto do fundador (dividir mudaria a copy): "O mercado ainda oferece poucas soluções…" (5 linhas)
+    e "A Luxtory traduz o Brand DNA em um Home Concept…" (5 linhas).
+  - **Composição:** em "Para quem vive", a frase de abertura sobe para cima dos pilares; o diagrama de solução tem, do
+    `lg` em diante, o tamanho renderizado na Home B2C a 1440 px (437 × 490 px, proporção 667 × 748 preservada), o topo
+    alinhado ao 01 · Patrimônio e os três pilares ao lado, no ritmo de item dos Sibling Blocks — a 1440 px, o conjunto
+    01–03 mede 514 px para os 490 px do diagrama. A 390 e 768 px, a mesma leitura empilhada de antes (texto → diagrama,
+    com o tamanho do B2C). Entre 1024 e 1279 px e a 1920 px, o diagrama B2C varia com a altura do texto ao lado (416 a
+    437 px de largura; 360 px a 1920) e o Brand Partners mantém 437 px.
+  - **Cor dos títulos:** títulos abaixo da headline de seção no papel de headline da superfície, nunca na cor do corpo
+    sobre Blue e Deep — Warm Sand sobre Deep (5,57:1); sobre Moroccan Blue, abaixo de 24 px, Warm Sand com 10% do
+    branco do corpo (4,69:1; o Warm Sand puro mede 4,32:1) e, a partir de 1280 px, o `lx-display-s` (24 px, texto
+    grande) no Warm Sand; Moroccan Blue sobre White. Sobre Warm Sand, o Design System já define headline e corpo em
+    Dark Moroccan Blue (o Moroccan Blue sobre Warm Sand mede 4,32:1). Tamanhos inalterados.
 
 **Home `/brand-partner`** (PICTURE → PROBLEM → PROMISE → PROOF → PUSH):
 
@@ -1005,8 +1033,8 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
 | `inicio` | PICTURE, valor bilateral | Cinematic Hero `lx-hero--uniform` sob header sobreposto | M1 |
 | `expansao` | PROBLEM | `blue`: `lx-section-head` + `lx-comparison--divided` + `lx-section-closing` | — |
 | `proposta` | PROMISE | `sand`: Editorial Split `lx-split--wide-text` + `lx-editorial-list` | M3 |
-| `para-a-marca` | PROMISE → PROOF, tese da marca | `deep`: escada `lx-steps--four`, cadeia em `lx-section-closing`, possibilidades `lx-siblings--pair`, mecanismos `lx-siblings--trio`, limite `lx-section-note` | — |
-| `para-quem-vive` | PROOF, valor para quem vive | `blue`: Split `--media-start --wide-media` + `lx-diagram--even` (pilares × diagrama de solução) + fechamento | M2 + diagrama |
+| `para-a-marca` | PROMISE → PROOF, tese da marca | `deep`: escada `lx-steps--four`, cadeia em `lx-section-closing`, possibilidades `lx-siblings--pair`, mecanismos `lx-siblings--trio` (o limite `lx-section-note` saiu em `D-BP-20`) | — |
+| `para-quem-vive` | PROOF, valor para quem vive | `blue`: Split `--media-start --wide-media` + frase de abertura + `lx-diagram--reference` (pilares `lx-diagram__item` × diagrama de solução no tamanho da Home B2C; até `D-BP-20`, `lx-diagram--even`) + fechamento | M2 + diagrama |
 | `como-acontece` | PROOF, mecanismo e papéis | `white`: `lx-numbered` 01–06 + link `/brand-partner/como-funciona#percurso` | — |
 | `governanca` | PROOF, risco | `sand`: `lx-answers` + link `/brand-partner/como-funciona#governanca` | — |
 | `sua-marca` | PUSH | Cinematic `lx-hero--closing --uniform`; CTA → `#conversa` | M5 |
@@ -1092,7 +1120,10 @@ mantido. A E2E `[ADR-0003]` compara os tamanhos computados B2C × BP por papel a
 navegação com `action` (botão secundário no header, link no menu e no rodapé) e `menuTrigger="mark"` (ícone oficial
 no gatilho do menu também no modo não retrátil). CSS: `lx-steps--four` (1 → 2 → 4 colunas) e `lx-media-placeholder`.
 Da auditoria de concisão: dentro da coluna de texto de `lx-numbered`, `lx-comparison` fica empilhada em toda largura
-(a 1440 px o par Owner | Co-Owner lado a lado deixava 163 px por lado: 4 e 6 linhas para 45 e 101 caracteres). Uso em [`docs/reference/design-system.md`](../reference/design-system.md) §15.
+(a 1440 px o par Owner | Co-Owner lado a lado deixava 163 px por lado: 4 e 6 linhas para 45 e 101 caracteres). Do
+refinamento pós-merge (`D-BP-20`): `SiteShell titleRole="headline"` (`main.lx-titles-headline`: títulos no papel de
+headline da superfície) e `lx-diagram--reference` com `lx-diagram__item` (diagrama no tamanho de referência da Home B2C,
+topo no primeiro bloco). Uso em [`docs/reference/design-system.md`](../reference/design-system.md) §15.
 
 **Checkpoints.** (1) Visual/editorial antes do merge: Home e Como funciona completas, header/menu e formulário a 390,
 768 e 1440 px, placeholders identificados, nenhuma copy fora do Approval Pack e dos ajustes. (2) Técnico, depois do
@@ -1100,5 +1131,6 @@ aceite visual: gates completos (DS, unitários, comunicação/terminologia, E2E,
 de que, com `BRAND_PARTNERS_SITE` fechado, nada da BP1.1 vaza em HTML, RSC ou metadados. (3) Editorial antes do
 merge: a auditoria de concisão acima. (4) **Encerramento (2026-10-12): implementação concluída** — aceite visual
 final do fundador, diretriz `D-BP-19` (o site é comercial; segurança jurídica por progressive disclosure, sem camada
-jurídica visual). **Go-live:** P-LX-03,
+jurídica visual). (5) **Refinamento pós-merge (`D-BP-20`, 2026-10-13):** em revisão no Preview, sem merge até o
+aceite visual final do fundador. **Go-live:** P-LX-03,
 ativos aprovados (`P-BP-03`) e autorização expressa do fundador; CI verde não autoriza merge nem go-live.

@@ -611,3 +611,20 @@ Complementos genéricos e opt-in que a BP1.1 consome (spec `catalog` §14.9); o 
 - Headline do Cinematic Hero que abre uma Home: `h1.lx-headline.lx-headline--home-hero` — o papel tipográfico do Home
   Hero B2C (`lx-home-hero__title`: mesmo tamanho e entrelinha nas três faixas), mantendo a cor e a quebra do Cinematic
   Hero. Paridade B2C → Brand Partners por papel: o B2C é a referência (spec `catalog` §14.9).
+
+### Brand Partners no Core (refinamento pós-merge, 2026-10-13)
+
+Opt-in, sem efeito no B2C (spec `catalog` §14.9, `D-BP-20`):
+
+- Títulos no papel de headline: `SiteShell titleRole="headline"` põe `main.lx-titles-headline`. Ali, `lx-display-s` e
+  subheadlines usadas como heading (`h3.lx-subheadline`, inclusive a pergunta de `lx-answers`) saem da cor do corpo
+  para o papel de headline da superfície: Moroccan Blue sobre White/Wash, Dark Moroccan Blue sobre Sand (já igual ao
+  corpo no Design System), Warm Sand sobre Deep. Sobre Blue, abaixo de 24 px, a variação derivada
+  `color-mix(in srgb, headline 90%, fg)` (4,69:1; o Warm Sand puro mede 4,32:1); do `xl` em diante, o `lx-display-s`
+  (24 px, texto grande) volta ao Warm Sand. Tamanhos e o `lx-display-m` (já headline) não mudam; rótulos `lx-eyebrow`
+  seguem o papel `marker`.
+- Diagrama no tamanho de referência: `div.lx-diagram.lx-diagram--reference` > `div.lx-stack` de
+  `div.lx-stack.lx-diagram__item` (rótulo, título, texto) + `figure.lx-diagram__figure`. Do `lg` em diante, a figura
+  tem o tamanho renderizado do diagrama da Home B2C a 1440 px (437 × 490 px), o topo no primeiro item e o texto na
+  largura restante; os itens usam o ritmo dos Sibling Blocks (`space-3`). Abaixo do `lg`, como qualquer Text + Diagram.
+  O `lx-diagram--even` não muda.

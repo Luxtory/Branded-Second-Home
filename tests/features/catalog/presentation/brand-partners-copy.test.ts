@@ -13,10 +13,17 @@ function strings(value: unknown): string[] {
 }
 
 /**
+ * Seções enquadradas como um todo: a abertura e o fechamento da seção do Luxtory Club dizem que o Club é modelo
+ * previsto, e os mecanismos não repetem a ressalva (`D-BP-20`). A seção é lida como um único bloco, em ordem.
+ */
+const SECTION_FRAMED: readonly unknown[] = [text.howItWorks.club];
+
+/**
  * Os blocos de texto de um nó do i18n: uma string sozinha ou uma lista de parágrafos — o mesmo bloco da copy dividido
  * pela auditoria de concisão (catalog §14.9), lido em ordem sob o mesmo título.
  */
 function blocks(value: unknown): string[][] {
+  if (SECTION_FRAMED.includes(value)) return [strings(value)];
   if (typeof value === 'string') return [strings(value)];
   if (Array.isArray(value) && value.every((item) => typeof item === 'string'))
     return [strings(value)];
@@ -27,7 +34,7 @@ function blocks(value: unknown): string[][] {
 
 const PAGES_NODE = { metadata: text.metadata, home: text.home, howItWorks: text.howItWorks };
 const PAGES = strings(PAGES_NODE);
-const CLUB = /Luxtory Club|\bClub\b|Membership|Luxchange|Luxplus/;
+const CLUB = /Luxtory Club|\bClub\b|\b[Cc]lube\b|Membership|Luxchange|Luxplus/;
 // Sem `\b`: em JS ele não reconhece letras acentuadas ("prevê").
 const PLANNED = /prevê|prevista|previsto|quando disponíve(?:l|is)|estiverem disponíveis/i;
 // Rótulos curtos (eyebrow, índice, títulos de etapa) só nomeiam; as frases é que afirmam.
@@ -50,6 +57,25 @@ describe('copy Brand Partners BP1.1 (catalog §14.9)', () => {
 
     expect(mentions.length).toBeGreaterThan(0);
     expect(unframed).toEqual([]);
+  });
+
+  it('[REQ-028] a seção do Luxtory Club abre como modelo previsto antes do primeiro mecanismo (D-BP-20)', () => {
+    const section = strings(text.howItWorks.club);
+    const firstPlanned = section.findIndex((line) => PLANNED.test(line));
+    const firstMechanism = section.findIndex((line) => isSentence(line) && CLUB.test(line));
+
+    expect(firstPlanned).toBeGreaterThanOrEqual(0);
+    expect(firstPlanned).toBeLessThanOrEqual(firstMechanism);
+    expect(PLANNED.test(text.howItWorks.club.limit.join(' '))).toBe(true);
+  });
+
+  it('[REQ-028] Home: o Hero e o PROBLEM criam a tensão sem nomear a solução; Branded Second Home aparece primeiro no PROMISE (D-BP-20)', () => {
+    const solution = /Branded Second Home|Home Concept|Luxtory/;
+    const { hero, problem, promise } = text.home;
+
+    expect(strings({ hero, problem }).filter((line) => solution.test(line))).toEqual([]);
+    expect(strings(promise).some((line) => line.includes('Branded Second Home'))).toBe(true);
+    expect(strings(promise).some((line) => line.includes('Home Concept'))).toBe(true);
   });
 
   it('[REQ-028] cross-brand e capacidade reservada à Luxtory (BR-121) ficam fora da copy pública', () => {

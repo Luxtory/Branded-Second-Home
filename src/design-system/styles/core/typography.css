@@ -34,6 +34,28 @@
     letter-spacing: var(--lx-tracking-display);
     color: var(--lx-color-fg);
   }
+  /* Titles in the headline role — opt-in (`.lx-titles-headline`, SiteShell `titleRole="headline"`): below the section
+   * headline, the titles (section titles and heading-level subheadlines) leave the body colour for the surface's
+   * headline role, so heading and body take different roles: Moroccan Blue on White/Wash, Warm Sand on Deep (5.57:1);
+   * on Sand both roles are already Dark Moroccan Blue. On Blue,
+   * Warm Sand is 4.32:1 — short of 4.5:1 below 24px — so they take Warm Sand with a tenth of the surface's body White
+   * (4.69:1): derived from the palette, never a new colour. Sizes are untouched. */
+  [data-lx="core"] .lx-titles-headline [data-surface] {
+    --lx-color-title: var(--lx-color-headline);
+  }
+  [data-lx="core"] .lx-titles-headline [data-surface="blue"] {
+    --lx-color-title: color-mix(in srgb, var(--lx-color-headline) 90%, var(--lx-color-fg));
+  }
+  [data-lx="core"] .lx-titles-headline .lx-display-s,
+  [data-lx="core"] .lx-titles-headline :is(h2, h3, h4, h5, h6).lx-subheadline {
+    color: var(--lx-color-title, var(--lx-color-headline));
+  }
+  /* From xl the section title reaches 24px — large text, 3:1 — and takes the headline role itself, as the headlines. */
+  @media (min-width: 80rem) {
+    [data-lx="core"] .lx-titles-headline .lx-display-s {
+      color: var(--lx-color-headline);
+    }
+  }
   [data-lx="core"] .lx-ordinal {
     font-size: var(--lx-type-ordinal);
     line-height: 1;
