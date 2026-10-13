@@ -37,20 +37,24 @@ function BenefitGroup({
 }
 
 /**
- * Fórmula de valor (`D-BP-21`, `D-BP-22`): uma conta de somar — premissa, + premissa, a linha de cálculo e o resultado.
- * As premissas são heading interno (`lx-display-s`) e o resultado é o statement de fechamento (`lx-headline`); o + e a
- * linha são desenho. O "=" fica só para leitores de tela: a linha faz o papel dele na tela.
+ * Fórmula de valor (`D-BP-21`–`D-BP-23`): uma conta vertical — premissa, + premissa, a linha de cálculo, = resultado.
+ * As três linhas têm o mesmo papel (heading interno, `lx-display-s`); o resultado se distingue pela operação (a linha
+ * e o =), nunca pelo tamanho. + e = são o mesmo operador gráfico, visível e lido ("mais", "igual").
  */
 function ValueEquation({ equation }: { readonly equation: typeof promise.equation }) {
   const [moment, place] = equation.premises;
   return (
     <div className="lx-equation">
-      <p className="lx-equation__term lx-display-s">{moment}</p>
-      <p className="lx-equation__operator">{equation.plus}</p>
-      <p className="lx-equation__term lx-display-s">{place}</p>
-      <p className="lx-equation__result lx-headline">
-        <span className="lx-visually-hidden">{equation.equals} </span>
-        {equation.result}
+      <p className="lx-equation__term lx-display-s">
+        <span>{moment}</span>
+      </p>
+      <p className="lx-equation__term lx-display-s">
+        <span className="lx-equation__operator">{equation.plus}</span>
+        <span>{place}</span>
+      </p>
+      <p className="lx-equation__term lx-equation__result lx-display-s">
+        <span className="lx-equation__operator">{equation.equals}</span>
+        <span>{equation.result}</span>
       </p>
     </div>
   );
@@ -118,23 +122,23 @@ export function BrandPartnersHomePage() {
         </div>
       </section>
 
-      {/* PROMISE — Sand, sem fotografia (`D-BP-22`): o texto à esquerda e a fórmula de valor à direita, como o elemento
-          gráfico da seção; no celular, introdução → fórmula → texto. A primeira seção que nomeia Branded Second Home e
-          Home Concept. */}
+      {/* PROMISE — Sand, sem fotografia (`D-BP-22`): eyebrow e Headline no topo; o texto corrido à esquerda e a fórmula de
+          valor à direita, com o topo na primeira linha do texto (`D-BP-23`); no celular, introdução → fórmula → texto.
+          A primeira seção que nomeia Branded Second Home e Home Concept. */}
       <section
         id={PROMISE}
         className="lx-section"
         data-surface="sand"
         aria-labelledby={titleOf(PROMISE)}
       >
-        <div className="lx-container lx-columns lx-columns--aside lx-columns--aside-even">
+        <div className="lx-container lx-columns lx-columns--aside-text">
           <div className="lx-stack">
             <Eyebrow>{promise.marker}</Eyebrow>
             <h2 id={titleOf(PROMISE)} className="lx-headline">
               <HeadlineText headline={promise.title} />
             </h2>
-            <p className="lx-body">{promise.intro}</p>
           </div>
+          <p className="lx-body">{promise.intro}</p>
           <ValueEquation equation={promise.equation} />
           <div className="lx-stack">
             <Paragraphs lines={promise.body} />

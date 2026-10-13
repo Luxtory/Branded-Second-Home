@@ -638,6 +638,15 @@ Opt-in, sem efeito no B2C (spec `catalog` §14.9, `D-BP-20`):
     `span.lx-visually-hidden` "= " no início). O + fica num gutter (`space-8`; `space-12` do `md`), no tamanho da
     headline, centrado na primeira linha da segunda premissa; o resultado ocupa a largura inteira com a linha de cálculo
     (hairline `rule-strong`) no topo e o texto alinhado às premissas. Sem círculos, card, caixa ou fundo.
-- Texto | elemento principal em 6/6 com a mesma ordem do `--aside`: `div.lx-columns.lx-columns--aside.lx-columns--aside-even`
-  com três filhos (cabeça, principal, continuação); do `lg`, a cabeça e a continuação a um gap de pilha na coluna inicial
-  e o principal centrado contra as duas na final.
+  - Desde `D-BP-23`, uma conta vertical numa só tipografia: `div.lx-equation` > três `p.lx-equation__term.lx-display-s`,
+    cada um com `span` de texto; a segunda e a terceira abrem com `span.lx-equation__operator` (+ e =, do i18n, lidos
+    pelo leitor de tela) e a terceira também é `.lx-equation__result` (a linha de cálculo no topo). Os operadores usam
+    a fonte utility em peso medium, no tamanho da linha, num gutter (`space-8`; `space-12` do `md`); o texto das três
+    linhas começa num só eixo. Nenhuma linha maior que as outras.
+- Cabeça, texto corrido e o elemento principal ao lado do texto: `div.lx-columns.lx-columns--aside-text` com quatro
+  filhos — cabeça (eyebrow, Headline), o primeiro bloco do texto, o principal e o resto do texto. Do `lg`, a cabeça no topo
+  da coluna inicial, o texto abaixo dela e o principal na coluna final com o topo na primeira linha do texto; no celular,
+  nessa ordem, com um gap a mais em volta do principal. (Substitui o `--aside-even` de `D-BP-22`, que centralizava.)
+- Teto tipográfico: `SiteShell typeCeiling="home-hero"` põe `main.lx-type-ceiling`. A escala do Hero da Home
+  (`--lx-type-home-hero`, a mesma do `h1.lx-headline--home-hero`) limita `lx-headline`, `lx-statement`, `lx-display-*` e
+  `lx-ordinal` com `min()`; os outros papéis já ficam abaixo dela. O Hero não muda.

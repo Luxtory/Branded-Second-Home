@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   na redação do fundador.
   Hierarquia tipográfica única do B2B (`D-BP-22`): o mesmo papel com a mesma tipografia em todas as seções (headings
   internos em `display-s`); "Uma nova lógica" sem fotografia, com a fórmula de somar à direita do texto.
+  Correções do fundador (`D-BP-23`): a fórmula como conta vertical, com as três linhas na mesma tipografia e + e =
+  visíveis, ao lado do texto corrido; o Hero da Home como teto tipográfico de todo o Brand Partners.
 
 ### Added
 - Brand Partners público (BP1, REQ-028, TECH-057; spec catalog §14): `/brand-partner` (PICTURE → PROBLEM → PROMISE →

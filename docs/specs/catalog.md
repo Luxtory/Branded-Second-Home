@@ -1050,14 +1050,30 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
     `rule-strong`, de ponta a ponta) no lugar do "="; o resultado. Premissas = heading interno; resultado = statement de
     fechamento (`lx-headline`, a mesma escala da Headline — a Headline mantém a precedência pela posição e pela virada em
     itálico); o + no tamanho da Headline, centrado na primeira linha da segunda premissa, na cor de acento. O "=" fica
-    só para leitores de tela. Sem card, caixa, borda ou fundo.
+    só para leitores de tela. Sem card, caixa, borda ou fundo. Composição da fórmula e centralização substituídas em
+    `D-BP-23` (abaixo).
+- **Correções do fundador (2026-10-13; `D-BP-23`), sem mudar copy:**
+  - **Fórmula como conta vertical:** "Seu público…" / "+ Um lugar…" / a linha de cálculo / "= Uma conexão…". As três
+    linhas usam o mesmo papel, heading interno (`lx-display-s`): mesma família, tamanho, peso e entrelinha; o resultado
+    se distingue pela linha e pelo =, não pelo tamanho. + e = são o mesmo operador gráfico, visível e lido em voz
+    ("mais", "igual"): fonte utility, peso medium, opacidade total, no tamanho da linha que abrem, num gutter à esquerda;
+    o texto das três linhas começa num só eixo. A linha (hairline `rule-strong`) atravessa a fórmula.
+  - **Alinhamento estrutural:** do `lg` em diante, eyebrow e Headline no topo da coluna inicial; abaixo, o texto
+    corrido ("Quando a experiência nasce…" e os parágrafos seguintes) e, ao lado dele, a fórmula com o topo na primeira
+    linha do texto (`lx-columns--aside-text`, sem centralizar nem deslocar). No celular, a leitura linear:
+    eyebrow → Headline → introdução → fórmula → texto.
+  - **Teto tipográfico do Hero** (opt-in `SiteShell typeCeiling="home-hero"`, sem efeito no B2C): nenhum texto do B2B é
+    maior que a Headline do Hero da Home na mesma largura. Headlines de seção, statements de fechamento e ordinais usam o
+    menor entre a própria escala e a do Hero; os demais papéis já ficam abaixo. Medido: Hero 35,1 / 28 / 39,6 px e
+    maior texto fora do Hero 28 / 28 / 39,6 px a 390 / 768 / 1440 px (antes, 48 px a 1440). Teste E2E de teto e de
+    igualdade da fórmula a 390, 768 e 1440 px.
  (PICTURE → PROBLEM → PROMISE → PROOF → PUSH):
 
 | `id` | Função | Composição Core | Mídia |
 |---|---|---|---|
 | `inicio` | PICTURE, valor bilateral | Cinematic Hero `lx-hero--uniform` sob header sobreposto | M1 |
 | `expansao` | PROBLEM | `blue`: `lx-section-head` + `lx-comparison--divided` + `lx-section-closing` | — |
-| `proposta` | PROMISE | `sand`: `lx-columns--aside lx-columns--aside-even` — texto \| fórmula `lx-equation` (desde `D-BP-22`; antes, Editorial Split `lx-split--wide-text` com M3 e, até `D-BP-21`, `lx-editorial-list`) | — (M3 até `D-BP-22`) |
+| `proposta` | PROMISE | `sand`: `lx-columns--aside-text` — eyebrow e Headline; texto corrido \| fórmula `lx-equation` ao lado dele (desde `D-BP-23`; em `D-BP-22`, `--aside-even` com a fórmula centrada; antes, Editorial Split `lx-split--wide-text` com M3 e, até `D-BP-21`, `lx-editorial-list`) | — (M3 até `D-BP-22`) |
 | `para-a-marca` | PROMISE → PROOF, tese da marca | `deep`: escada `lx-steps--four`, cadeia em `lx-section-closing`, possibilidades `lx-siblings--pair`, mecanismos `lx-siblings--trio` (o limite `lx-section-note` saiu em `D-BP-20`) | — |
 | `para-quem-vive` | PROOF, valor para quem vive | `blue`: Split `--media-start --wide-media` + frase de abertura + `lx-diagram--reference` (pilares `lx-diagram__item` × diagrama de solução no tamanho da Home B2C; até `D-BP-20`, `lx-diagram--even`) + fechamento | M2 + diagrama |
 | `como-acontece` | PROOF, mecanismo e papéis | `white`: `lx-numbered` 01–06 + link `/brand-partner/como-funciona#percurso` | — |
@@ -1148,8 +1164,10 @@ Da auditoria de concisão: dentro da coluna de texto de `lx-numbered`, `lx-compa
 (a 1440 px o par Owner | Co-Owner lado a lado deixava 163 px por lado: 4 e 6 linhas para 45 e 101 caracteres). Do
 refinamento pós-merge (`D-BP-20`): `SiteShell titleRole="headline"` (`main.lx-titles-headline`: títulos no papel de
 headline da superfície) e `lx-diagram--reference` com `lx-diagram__item` (diagrama no tamanho de referência da Home B2C,
-topo no primeiro bloco), `lx-equation` (equação de valor; desde `D-BP-22`, uma conta de somar) e
-`lx-columns--aside-even` (o `--aside` em 6/6, com a coluna principal centrada). Uso em
+topo no primeiro bloco), `lx-equation` (equação de valor; desde `D-BP-23`, uma conta vertical numa só tipografia),
+`lx-columns--aside-text` (cabeça no topo; texto corrido e, ao lado dele, o elemento principal; substitui o
+`--aside-even` de `D-BP-22`) e `SiteShell typeCeiling="home-hero"` (`main.lx-type-ceiling`: o Hero da Home como teto
+tipográfico; a escala do Hero numa só propriedade, `--lx-type-home-hero`). Uso em
 [`docs/reference/design-system.md`](../reference/design-system.md) §15.
 
 **Checkpoints.** (1) Visual/editorial antes do merge: Home e Como funciona completas, header/menu e formulário a 390,

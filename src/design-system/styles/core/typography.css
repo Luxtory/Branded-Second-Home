@@ -56,6 +56,21 @@
       color: var(--lx-color-headline);
     }
   }
+  /* Type ceiling — opt-in (`.lx-type-ceiling`, SiteShell `typeCeiling="home-hero"`): the Home Hero headline is the
+   * largest text of the site at every width (--lx-type-home-hero, patterns.css). The roles whose scale can outgrow it
+   * take the smaller of the two; every other role already sits below it. The hero itself is unchanged. */
+  [data-lx="core"] .lx-type-ceiling :is(.lx-statement, .lx-display-2xl) {
+    font-size: min(var(--lx-type-statement), var(--lx-type-home-hero));
+  }
+  [data-lx="core"] .lx-type-ceiling :is(.lx-headline:not(.lx-headline--home-hero), .lx-display-xl, .lx-display-l) {
+    font-size: min(var(--lx-type-headline), var(--lx-type-home-hero));
+  }
+  [data-lx="core"] .lx-type-ceiling .lx-display-m {
+    font-size: min(var(--lx-type-page-title), var(--lx-type-home-hero));
+  }
+  [data-lx="core"] .lx-type-ceiling .lx-ordinal {
+    font-size: min(var(--lx-type-ordinal), var(--lx-type-home-hero));
+  }
   [data-lx="core"] .lx-ordinal {
     font-size: var(--lx-type-ordinal);
     line-height: 1;

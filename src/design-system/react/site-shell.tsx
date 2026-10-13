@@ -24,6 +24,8 @@ export interface SiteShellLabels {
 const MAIN_ID = 'conteudo';
 /** Opt-in `titleRole="headline"`: the titles below the section headline take the surface's headline role. */
 const TITLES_HEADLINE = 'lx-titles-headline';
+/** Opt-in `typeCeiling="home-hero"`: no text of the content outgrows the Home Hero headline. */
+const TYPE_CEILING = 'lx-type-ceiling';
 
 function NavList({
   items,
@@ -59,7 +61,7 @@ function NavList({
  * (`overlayHeader`) é transparente sobre o Cinematic Hero e fica sólido depois da rolagem. Opt-in: `navAlign="end"`
  * leva a nav para junto das ações; `menuTrigger="mark"` abre o menu pelo ícone oficial também fora do modo retrátil
  * (no retrátil, o ícone oficial é o padrão); `titleRole="headline"` dá aos títulos menores do conteúdo o papel de
- * headline da superfície, em vez da cor do corpo.
+ * headline da superfície, em vez da cor do corpo; `typeCeiling="home-hero"` faz do Hero da Home o teto tipográfico.
  */
 export function SiteShell({
   homeHref,
@@ -71,6 +73,7 @@ export function SiteShell({
   navAlign = 'center',
   menuTrigger = retractableMenu ? 'mark' : 'icon',
   titleRole = 'body',
+  typeCeiling = 'none',
   children,
 }: {
   readonly homeHref: string;
@@ -82,8 +85,15 @@ export function SiteShell({
   readonly navAlign?: 'center' | 'end';
   readonly menuTrigger?: 'icon' | 'mark';
   readonly titleRole?: 'body' | 'headline';
+  readonly typeCeiling?: 'none' | 'home-hero';
   readonly children: ReactNode;
 }) {
+  const mainClass = [
+    titleRole === 'headline' ? TITLES_HEADLINE : '',
+    typeCeiling === 'home-hero' ? TYPE_CEILING : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
   return (
     <div data-lx="core">
       <a className="lx-skip-link" href={`#${MAIN_ID}`}>
@@ -150,7 +160,7 @@ export function SiteShell({
       <main
         id={MAIN_ID}
         tabIndex={-1}
-        {...(titleRole === 'headline' ? { className: TITLES_HEADLINE } : {})}
+        {...(mainClass === '' ? {} : { className: mainClass })}
       >
         {children}
       </main>
