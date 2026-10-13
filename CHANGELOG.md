@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Brand Partners (BR-373): o Co-Owner passa a ser descrito como "participação societária na SPE proprietária da
+  residência", com Direito de Uso, nas duas ocorrências públicas.
 - Brand Partners, go-live (`D-BP-24`): o Co-Owner passa a ser descrito como "participação na SPE proprietária da
   residência", com Direito de Uso, nas duas ocorrências públicas; junto ao formulário, a informação de privacidade
   (finalidade exclusiva, conteúdo encaminhado à equipe responsável e não armazenado no banco, sem uso para marketing
