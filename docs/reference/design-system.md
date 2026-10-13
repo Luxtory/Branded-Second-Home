@@ -628,3 +628,8 @@ Opt-in, sem efeito no B2C (spec `catalog` §14.9, `D-BP-20`):
   tem o tamanho renderizado do diagrama da Home B2C a 1440 px (437 × 490 px), o topo no primeiro item e o texto na
   largura restante; os itens usam o ritmo dos Sibling Blocks (`space-3`). Abaixo do `lg`, como qualquer Text + Diagram.
   O `lx-diagram--even` não muda.
+- Equação de valor (`D-BP-21`): `div.lx-equation` > `p.lx-equation__term` + `p.lx-equation__operator > span` (+) +
+  `p.lx-equation__term` + `p.lx-equation__operator > span` (=) + `p.lx-equation__result`. As premissas têm o mesmo papel
+  (Newsreader no tamanho do título de seção, cor do corpo); o sinal fica num círculo de hairline no início de uma régua
+  até o fim da coluna; o resultado usa o tamanho do numeral (`type-ordinal`) no papel de headline. Os sinais vêm do i18n
+  e são lidos pelo leitor de tela ("mais", "igual").

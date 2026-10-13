@@ -36,6 +36,24 @@ function BenefitGroup({
   );
 }
 
+/** Equação de valor (`D-BP-21`): duas premissas de mesmo peso, ligadas por + e =, e o resultado com a ênfase. */
+function ValueEquation({ equation }: { readonly equation: typeof promise.equation }) {
+  const [moment, place] = equation.premises;
+  return (
+    <div className="lx-equation">
+      <p className="lx-equation__term">{moment}</p>
+      <p className="lx-equation__operator">
+        <span>{equation.plus}</span>
+      </p>
+      <p className="lx-equation__term">{place}</p>
+      <p className="lx-equation__operator">
+        <span>{equation.equals}</span>
+      </p>
+      <p className="lx-equation__result">{equation.result}</p>
+    </div>
+  );
+}
+
 /**
  * Home Brand Partners `/brand-partner` (REQ-028; BP1.1, spec catalog §14.9, `D-BP-15`): PICTURE → PROBLEM → PROMISE →
  * Para a sua marca → Para quem vive → mecanismo → governança → PUSH sobre o Core. Fotografia M1–M5 pelo manifesto de
@@ -98,8 +116,8 @@ export function BrandPartnersHomePage() {
         </div>
       </section>
 
-      {/* PROMISE — Sand, Editorial Split com o texto largo (M3): a experiência nasce do Brand DNA; a primeira seção
-          que nomeia Branded Second Home e Home Concept. */}
+      {/* PROMISE — Sand, Editorial Split com o texto largo (M3): a experiência nasce do Brand DNA, em equação de valor
+          (`D-BP-21`); a primeira seção que nomeia Branded Second Home e Home Concept. */}
       <section
         id={PROMISE}
         className="lx-section-split"
@@ -114,11 +132,7 @@ export function BrandPartnersHomePage() {
                 <HeadlineText headline={promise.title} />
               </h2>
               <p className="lx-body">{promise.intro}</p>
-              <ul className="lx-editorial-list">
-                {promise.sequence.map((line) => (
-                  <li key={line}>{line}</li>
-                ))}
-              </ul>
+              <ValueEquation equation={promise.equation} />
               <Paragraphs lines={promise.body} />
             </div>
           </div>

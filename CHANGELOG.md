@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Branded Second Home e Home Concept; "Para a sua marca" sem a nota de limite; no Como funciona, o Luxchange descrito
   como converter dias elegíveis da Second Home em créditos. Diagrama de "Para quem vive" no tamanho da Home B2C, com
   o topo no 01 e os pilares ao lado; títulos no papel de headline da superfície (contraste AA). B2C sem mudança.
+  Ajustes do fundador (`D-BP-21`): "Uma nova lógica" em equação de valor (momento + identidade = vínculo) e o Luxchange
+  na redação do fundador.
 
 ### Added
 - Brand Partners público (BP1, REQ-028, TECH-057; spec catalog §14): `/brand-partner` (PICTURE → PROBLEM → PROMISE →

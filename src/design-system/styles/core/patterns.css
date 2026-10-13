@@ -845,6 +845,55 @@
     color: var(--lx-color-headline);
   }
 
+  /* Value Equation — premise + premise = result, read top to bottom at every width. The two premises share one type
+   * role (same weight); + and = are graphic links: the glyph in a hairline circle on the start of a rule that runs to
+   * the end of the column; the result takes the larger display size in the headline role. Never a card. */
+  [data-lx="core"] .lx-equation {
+    display: grid;
+    gap: var(--lx-space-4);
+    margin-block: var(--lx-space-4);
+  }
+  [data-lx="core"] .lx-equation__term,
+  [data-lx="core"] .lx-equation__result {
+    font-family: var(--lx-font-display);
+    font-weight: var(--lx-weight-display);
+    letter-spacing: var(--lx-tracking-display);
+    line-height: var(--lx-leading-heading);
+    max-width: var(--lx-layout-measure);
+    text-wrap: balance;
+  }
+  [data-lx="core"] .lx-equation__term {
+    font-size: var(--lx-type-section-title);
+    color: var(--lx-color-fg);
+  }
+  [data-lx="core"] .lx-equation__operator {
+    display: flex;
+    align-items: center;
+    gap: var(--lx-space-4);
+  }
+  [data-lx="core"] .lx-equation__operator > span {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    inline-size: var(--lx-space-12);
+    block-size: var(--lx-space-12);
+    border: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+    border-radius: 50%;
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-type-ordinal);
+    line-height: 1;
+    color: var(--lx-color-accent);
+  }
+  [data-lx="core"] .lx-equation__operator::after {
+    content: "";
+    flex: 1;
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  }
+  [data-lx="core"] .lx-equation__result {
+    font-size: var(--lx-type-ordinal);
+    color: var(--lx-color-headline);
+  }
+
   /* Sibling Blocks — equal units: same geometry, type and spacing; no shadow, no ornament. --pair = 2 × 2 from md. */
   [data-lx="core"] .lx-siblings {
     display: grid;

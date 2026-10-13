@@ -78,6 +78,15 @@ describe('copy Brand Partners BP1.1 (catalog §14.9)', () => {
     expect(strings(promise).some((line) => line.includes('Home Concept'))).toBe(true);
   });
 
+  it('[REQ-028] Luxchange na redação determinada pelo fundador, sem ressalva própria (D-BP-21)', () => {
+    const luxchange = text.howItWorks.club.mechanisms.find((item) => item.title === 'Luxchange.');
+
+    expect(luxchange?.text).toEqual([
+      'O clube permite ao membro converter dias do seu direito de uso em créditos equivalentes para se hospedar em outras residências da rede.',
+      'Sua Second Home deixa de estar limitada a um único endereço e passa a fazer parte de uma rede de destinos.',
+    ]);
+  });
+
   it('[REQ-028] cross-brand e capacidade reservada à Luxtory (BR-121) ficam fora da copy pública', () => {
     const outOfScope = /cross-brand|entre marcas|outras marcas|BR-121|capacidade reservada/i;
 

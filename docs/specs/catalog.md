@@ -1010,7 +1010,8 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
   - **Luxchange:** converter dias elegíveis da Second Home em créditos para se hospedar em outras residências da rede.
     Sem "créditos equivalentes" — os Créditos vêm do PRL (BR-201) — e sem "dias do Direito de Uso", que é só do
     Co-Owner (o Club atende Owner e Co-Owner). A abertura e o fechamento da seção já enquadram o Club como modelo
-    previsto; o mecanismo não repete a ressalva (o teste de copy lê a seção como um bloco).
+    previsto; o mecanismo não repete a ressalva (o teste de copy lê a seção como um bloco). Redação substituída em
+    `D-BP-21` (abaixo).
   - **Concisão (medida a 390, 768 e 1440 px):** a 768 e 1440 px nenhum bloco novo passa de 4 linhas. Exceções a 390 px,
     frases únicas do texto do fundador (dividir mudaria a copy): "O mercado ainda oferece poucas soluções…" (5 linhas)
     e "A Luxtory traduz o Brand DNA em um Home Concept…" (5 linhas).
@@ -1025,6 +1026,15 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
     branco do corpo (4,69:1; o Warm Sand puro mede 4,32:1) e, a partir de 1280 px, o `lx-display-s` (24 px, texto
     grande) no Warm Sand; Moroccan Blue sobre White. Sobre Warm Sand, o Design System já define headline e corpo em
     Dark Moroccan Blue (o Moroccan Blue sobre Warm Sand mede 4,32:1). Tamanhos inalterados.
+- **Dois ajustes do fundador (2026-10-13; `D-BP-21`), verbatim, sem tocar no resto:**
+  - **Uma nova lógica:** a sequência conceitual vira equação de valor — "Seu público vivendo momentos extraordinários
+    com quem ama" + "Um lugar que transforma a identidade compartilhada com a sua marca em experiência" = "Uma conexão
+    mais profunda, emocional e duradoura com a sua marca." Premissas no mesmo papel tipográfico; + e = como ligação
+    gráfica (o sinal num círculo de hairline sobre uma régua); o resultado no tamanho display maior e no papel de
+    headline (`lx-equation`). Headline, introdução e corpo da seção inalterados.
+  - **Luxchange:** "O clube permite ao membro converter dias do seu direito de uso em créditos equivalentes para se
+    hospedar em outras residências da rede." / "Sua Second Home deixa de estar limitada a um único endereço e passa a
+    fazer parte de uma rede de destinos." — redação do fundador, sem reescrita nem ressalva (teste de copy).
 
 **Home `/brand-partner`** (PICTURE → PROBLEM → PROMISE → PROOF → PUSH):
 
@@ -1032,7 +1042,7 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
 |---|---|---|---|
 | `inicio` | PICTURE, valor bilateral | Cinematic Hero `lx-hero--uniform` sob header sobreposto | M1 |
 | `expansao` | PROBLEM | `blue`: `lx-section-head` + `lx-comparison--divided` + `lx-section-closing` | — |
-| `proposta` | PROMISE | `sand`: Editorial Split `lx-split--wide-text` + `lx-editorial-list` | M3 |
+| `proposta` | PROMISE | `sand`: Editorial Split `lx-split--wide-text` + `lx-equation` (equação de valor; até `D-BP-21`, `lx-editorial-list`) | M3 |
 | `para-a-marca` | PROMISE → PROOF, tese da marca | `deep`: escada `lx-steps--four`, cadeia em `lx-section-closing`, possibilidades `lx-siblings--pair`, mecanismos `lx-siblings--trio` (o limite `lx-section-note` saiu em `D-BP-20`) | — |
 | `para-quem-vive` | PROOF, valor para quem vive | `blue`: Split `--media-start --wide-media` + frase de abertura + `lx-diagram--reference` (pilares `lx-diagram__item` × diagrama de solução no tamanho da Home B2C; até `D-BP-20`, `lx-diagram--even`) + fechamento | M2 + diagrama |
 | `como-acontece` | PROOF, mecanismo e papéis | `white`: `lx-numbered` 01–06 + link `/brand-partner/como-funciona#percurso` | — |
@@ -1123,7 +1133,8 @@ Da auditoria de concisão: dentro da coluna de texto de `lx-numbered`, `lx-compa
 (a 1440 px o par Owner | Co-Owner lado a lado deixava 163 px por lado: 4 e 6 linhas para 45 e 101 caracteres). Do
 refinamento pós-merge (`D-BP-20`): `SiteShell titleRole="headline"` (`main.lx-titles-headline`: títulos no papel de
 headline da superfície) e `lx-diagram--reference` com `lx-diagram__item` (diagrama no tamanho de referência da Home B2C,
-topo no primeiro bloco). Uso em [`docs/reference/design-system.md`](../reference/design-system.md) §15.
+topo no primeiro bloco) e, de `D-BP-21`, `lx-equation` (equação de valor). Uso em
+[`docs/reference/design-system.md`](../reference/design-system.md) §15.
 
 **Checkpoints.** (1) Visual/editorial antes do merge: Home e Como funciona completas, header/menu e formulário a 390,
 768 e 1440 px, placeholders identificados, nenhuma copy fora do Approval Pack e dos ajustes. (2) Técnico, depois do

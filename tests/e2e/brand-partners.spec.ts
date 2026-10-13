@@ -292,6 +292,40 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     }
   });
 
+  test('[REQ-028] Uma nova lógica: equação de valor — premissas de mesmo peso, + e = como ligação, resultado com mais ênfase, a 390, 768 e 1440 px', async ({
+    page,
+  }) => {
+    const { equation } = text.home.promise;
+    for (const width of [390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(HOME);
+      const parts = await page.locator('#proposta .lx-equation > *').evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const style = getComputedStyle(node);
+          return {
+            role: node.className,
+            text: node.textContent?.trim() ?? '',
+            type: `${style.fontFamily.split(',')[0]} ${style.fontSize} ${style.fontWeight}`,
+            size: Number.parseFloat(style.fontSize),
+          };
+        }),
+      );
+      // A ordem da leitura é a da equação (`D-BP-21`).
+      expect(parts.map(({ role, text: line }) => [role, line])).toEqual([
+        ['lx-equation__term', equation.premises[0]],
+        ['lx-equation__operator', equation.plus],
+        ['lx-equation__term', equation.premises[1]],
+        ['lx-equation__operator', equation.equals],
+        ['lx-equation__result', equation.result],
+      ]);
+      const [first, , second, , result] = parts;
+      expect(second?.type, `premissas com o mesmo peso a ${width}px`).toBe(first?.type);
+      expect(result?.size, `resultado com mais ênfase a ${width}px`).toBeGreaterThan(
+        first?.size ?? 0,
+      );
+    }
+  });
+
   test('[WCAG 1.4.3] títulos no papel de headline da superfície, nunca na cor do corpo sobre Blue e Deep; contraste AA a 390, 768 e 1440 px', async ({
     page,
   }) => {

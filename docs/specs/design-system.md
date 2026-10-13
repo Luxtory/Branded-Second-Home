@@ -517,6 +517,7 @@ Blue e Deep = Warm Sand com opacidade 0,4. Chevron dos disclosures no papel `mar
 | Editorial Comparison | `lx-comparison--divided` | Owner \| Co-Owner: hairline superior e divisor central; empilhado no celular |
 | Editorial Split | `lx-split--wide-media`; `--media-start` reordena a partir do `lg` | 7/12 para a fotografia; texto → imagem no celular com a imagem à esquerda no desktop |
 | Text + Diagram | `lx-diagram--even` | 6/6 |
+| Value Equation | `lx-equation`, `__term`, `__operator`, `__result` | premissa + premissa = resultado, de cima para baixo em toda largura: premissas no mesmo papel display, + e = num círculo de hairline sobre uma régua, resultado no display maior e no papel de headline; nunca card (Brand Partners, `D-BP-21`) |
 | Text + Diagram de referência | `lx-diagram--reference`, `lx-diagram__item` | do `lg` em diante, o diagrama no tamanho renderizado da Home B2C a 1440 px (437 × 490 px, proporção preservada), topo no primeiro bloco, texto na largura restante e itens no ritmo dos Sibling Blocks; empilhado abaixo (Brand Partners, `D-BP-20`) |
 | Statement / Pause | `lx-pause--start` | abertura tipográfica alinhada ao início, sob o header sólido |
 | Numbered List | `lx-numbered--compact`, `lx-numbered__text--wide` | índice de links; linha sem título |

@@ -123,11 +123,16 @@ export const brandPartnersMessages = {
       title: { lead: 'A melhor experiência do seu público pode nascer ', turn: 'da sua marca.' },
       intro:
         'Quando a experiência nasce do Brand DNA, a marca não entra no final como uma camada estética. Ela orienta desde o início aquilo que as pessoas vão sentir, fazer e lembrar.',
-      sequence: [
-        'Uma forma de receber.',
-        'Uma relação com a paisagem.',
-        'Materiais, rituais e detalhes que carregam identidade.',
-      ],
+      // Equação de valor (fundador, `D-BP-21`): momento emocional + identidade compartilhada = vínculo com a marca.
+      equation: {
+        premises: [
+          'Seu público vivendo momentos extraordinários com quem ama',
+          'Um lugar que transforma a identidade compartilhada com a sua marca em experiência',
+        ],
+        plus: '+',
+        equals: '=',
+        result: 'Uma conexão mais profunda, emocional e duradoura com a sua marca.',
+      },
       body: [
         'Cada decisão transforma códigos de marca em uma experiência que pode ser vivida, compartilhada e lembrada.',
         'No universo residencial de lazer, essa lógica ganha forma em uma **Branded Second Home**.',
@@ -586,9 +591,10 @@ export const brandPartnersMessages = {
         },
         {
           title: 'Luxchange.',
-          // `D-BP-20`: a abertura e o fechamento da seção já enquadram o Club como modelo previsto — sem ressalva aqui.
+          // Redação determinada pelo fundador (`D-BP-21`), verbatim; a abertura e o fechamento da seção já enquadram o
+          // Club como modelo previsto — sem ressalva aqui.
           text: [
-            'O clube permite ao membro converter dias elegíveis da sua Second Home em créditos para se hospedar em outras residências da rede.',
+            'O clube permite ao membro converter dias do seu direito de uso em créditos equivalentes para se hospedar em outras residências da rede.',
             'Sua Second Home deixa de estar limitada a um único endereço e passa a fazer parte de uma rede de destinos.',
           ],
         },
