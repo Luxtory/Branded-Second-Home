@@ -623,6 +623,10 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   diagrama de "Para quem vive" no tamanho da Home B2C e títulos no papel de headline
   ([catalog §14.9](../specs/catalog.md#149-bp11--brand-partners-communication-upgrade-2026-10-12)). PR draft próprio,
   parado no Preview até o aceite visual do fundador.
+- **Aceite visual final do refinamento (2026-10-13):** `D-BP-20` a `D-BP-23` aprovados pelo fundador sobre `10c2816`
+  (Home e Como funciona a 390, 768 e 1440 px; detalhe no item 6 dos checkpoints do catalog §14.9), com a CI verde.
+  O PR aguarda a decisão de merge do fundador; o merge publica em Production com o portão fechado, e abrir o portão é
+  autorização separada.
 
 ### BP2 — Portal Brand Partner (evolução planejada)
 

@@ -1177,5 +1177,10 @@ de que, com `BRAND_PARTNERS_SITE` fechado, nada da BP1.1 vaza em HTML, RSC ou me
 merge: a auditoria de concisão acima. (4) **Encerramento (2026-10-12): implementação concluída** — aceite visual
 final do fundador, diretriz `D-BP-19` (o site é comercial; segurança jurídica por progressive disclosure, sem camada
 jurídica visual). (5) **Refinamento pós-merge (`D-BP-20`, 2026-10-13):** em revisão no Preview, sem merge até o
-aceite visual final do fundador. **Go-live:** P-LX-03,
+aceite visual final do fundador. (6) **Aceite visual final do refinamento (2026-10-13, `D-BP-20` a `D-BP-23`, sobre
+`10c2816`):** aprovados pelo fundador a composição final de "Uma nova lógica"; a fórmula com premissas e resultado no
+mesmo papel tipográfico, + e = visíveis e equivalentes, a linha de cálculo, o alinhamento ao início do texto corrido no
+desktop e o comportamento no celular; a padronização tipográfica por papel; o Hero como teto tipográfico do B2B; a
+hierarquia de cores; Home e Como funciona a 390, 768 e 1440 px. Sem novos ajustes visuais, de copy ou de Design
+System; o merge do PR e a abertura do portão seguem autorizações separadas do fundador. **Go-live:** P-LX-03,
 ativos aprovados (`P-BP-03`) e autorização expressa do fundador; CI verde não autoriza merge nem go-live.

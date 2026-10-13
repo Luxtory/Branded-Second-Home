@@ -202,7 +202,8 @@ Executado pelo fundador na Vercel, com orientação; nada aqui foi configurado. 
 A–D de [`revisao-juridica-brand-partners.md`](../specs/communication/revisao-juridica-brand-partners.md)), as
 verificações de pré-go-live J-34 (direitos das fotografias provisórias ou substituição) e J-35 (aviso de privacidade
 do formulário, se exigido), autorização de merge do PR da BP1.1 e, **separada**, autorização para abrir o portão. O
-aceite visual final foi dado em 2026-10-12.
+aceite visual final foi dado em 2026-10-12; o do refinamento pós-merge (`D-BP-20` a `D-BP-23`), em 2026-10-13, sobre
+`10c2816`.
 Nunca criar `BRAND_PARTNERS_CONTACT_MODE` na Vercel; não tocar em variáveis fora desta lista.
 
 1. **Merge** (autorização própria): a CI publica em Production com o portão fechado — `/brand-partner` e
