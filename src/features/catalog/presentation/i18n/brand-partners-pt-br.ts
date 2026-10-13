@@ -213,7 +213,7 @@ export const brandPartnersMessages = {
           name: 'Patrimônio',
           title: 'Uma relação patrimonial real.',
           text: [
-            'Como **Owner**, a pessoa possui a residência integralmente; como **Co-Owner**, possui uma participação na SPE proprietária da residência, com Direito de Uso.',
+            'Como **Owner**, a pessoa possui a residência integralmente; como **Co-Owner**, possui uma participação societária na SPE proprietária da residência, com Direito de Uso.',
           ],
         },
         {
@@ -434,7 +434,7 @@ export const brandPartnersMessages = {
                 },
                 coOwner: {
                   name: 'Co-Owner',
-                  text: 'Adquire uma participação na SPE proprietária da residência, com Direito de Uso conforme as regras aplicáveis.',
+                  text: 'Adquire uma participação societária na SPE proprietária da residência, com Direito de Uso conforme as regras aplicáveis.',
                 },
               },
               after: [
