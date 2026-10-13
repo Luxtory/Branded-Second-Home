@@ -896,6 +896,8 @@ na interação; labels, indicação de obrigatório, `aria-describedby`, foco no
 região viva. Falha preserva dados/chave só em memória; sucesso limpa campos/encerra tentativa. Feedback segue o
 significado do REQ-028, sem prazo de resposta presumido. Exibir junto ao formulário o propósito literal do REQ-028;
 informação de privacidade, responsáveis, acesso/retenção/descarte sujeitos à validação jurídica antes do go-live.
+Resolvido em 2026-10-13 por decisão operacional do fundador (J-35, `D-BP-24`): microcopy junto ao formulário e
+acesso/retenção em [`revisao-juridica-brand-partners.md`](communication/revisao-juridica-brand-partners.md) §6.
 
 ### 14.6 Configuração e segurança para publicação
 
@@ -1117,7 +1119,9 @@ ensaio próprio, M1–M5 reutilizam as fotografias que o B2C já publica, nos me
 `public/`), decorativas (`alt=""`) como no B2C. Proveniência herdada, sem direito ou licença além do registrado:
 repositório Luxtory2.0, "provisórias: autorizadas para o site como referência visual, sem autorização definitiva de
 produção registrada" (§13.10; `problema-imovel.jpg` autorizada como asset provisório em 2026-10-07, §13.11). O ensaio
-próprio (`P-BP-03`) segue aberto e troca só as entradas do manifesto.
+próprio (`P-BP-03`) segue aberto e troca só as entradas do manifesto. Proveniência e autorização (J-34, fundador,
+2026-10-13): as imagens em uso em M1, M2 e M4/M5 foram geradas por IA para uso da Luxtory e estão autorizadas pelo
+fundador para uso comercial público.
 
 | Lugar | Fotografia | Recorte | Leitura do brief |
 |---|---|---|---|

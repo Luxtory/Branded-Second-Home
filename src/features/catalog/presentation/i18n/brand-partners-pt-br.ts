@@ -213,7 +213,7 @@ export const brandPartnersMessages = {
           name: 'Patrimônio',
           title: 'Uma relação patrimonial real.',
           text: [
-            'Como **Owner**, a pessoa possui a residência integralmente; como **Co-Owner**, possui uma Ação da SPE proprietária da residência, com Direito de Uso.',
+            'Como **Owner**, a pessoa possui a residência integralmente; como **Co-Owner**, possui uma participação na SPE proprietária da residência, com Direito de Uso.',
           ],
         },
         {
@@ -345,9 +345,9 @@ export const brandPartnersMessages = {
         'Conte o que torna sua marca reconhecível e o que você imagina para sua próxima fase.',
         'Primeiro, vamos conhecer esse universo. Depois, avaliamos juntos se a proposta da Luxtory faz sentido para vocês.',
       ],
-      // Propósito literal do REQ-028.
+      // Propósito do REQ-028 com a informação de privacidade mínima (J-35, decisão do fundador, 2026-10-13).
       purpose:
-        'Os dados enviados são utilizados para responder à solicitação e avaliar uma possível parceria com a Luxtory.',
+        'Os dados enviados são utilizados exclusivamente para responder à sua solicitação e avaliar uma possível parceria com a Luxtory. O conteúdo é encaminhado à equipe responsável e não é armazenado no banco da plataforma. Não utilizamos esses dados para comunicações de marketing sem autorização.',
       meaning:
         'O envio inicia uma conversa. Não formaliza uma parceria nem gera obrigação de avançar.',
       submit: 'Enviar mensagem',
@@ -434,7 +434,7 @@ export const brandPartnersMessages = {
                 },
                 coOwner: {
                   name: 'Co-Owner',
-                  text: 'Adquire uma Ação da SPE proprietária da residência, com Direito de Uso conforme as regras aplicáveis.',
+                  text: 'Adquire uma participação na SPE proprietária da residência, com Direito de Uso conforme as regras aplicáveis.',
                 },
               },
               after: [

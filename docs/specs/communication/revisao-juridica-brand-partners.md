@@ -93,9 +93,9 @@ desse fluxo existiria oferta, e o que a página precisa (ou não) dizer? A anál
 
 | ID | Página · seção | Texto | Pergunta |
 |---|---|---|---|
-| J-15 | Home · Para quem vive (Patrimônio) | "Uma relação patrimonial real." / "Como Owner, a pessoa possui a residência integralmente; como Co-Owner, possui uma Ação da SPE proprietária da residência, com Direito de Uso." | Pergunta central do tema C; e: "Relação patrimonial real" descreve com precisão a posição do Co-Owner? |
+| J-15 | Home · Para quem vive (Patrimônio) | "Uma relação patrimonial real." / Desde `D-BP-24` (2026-10-13): "Como Owner, a pessoa possui a residência integralmente; como Co-Owner, possui uma participação na SPE proprietária da residência, com Direito de Uso." Antes: "Como Owner, a pessoa possui a residência integralmente; como Co-Owner, possui uma Ação da SPE proprietária da residência, com Direito de Uso." | Pergunta central do tema C; e: "Relação patrimonial real" descreve com precisão a posição do Co-Owner? |
 | J-16 | Home · Hero | "Para quem se identifica com a sua marca: uma nova forma de viver o lazer com patrimônio, liberdade e pertencimento, em um lugar que expressa sua identidade e seu lifestyle." | "Patrimônio" no Hero pode ser lido como apelo de investimento? |
-| J-17 | Como funciona · Percurso (05) | "A Home Edition apresenta as formas de aquisição autorizadas para sua estrutura." / "Enquanto essa estrutura estiver aberta, pode contemplar Owner, Co-Owner ou ambos." / "Owner — Adquire a propriedade integral da residência." / "Co-Owner — Adquire uma Ação da SPE proprietária da residência, com Direito de Uso conforme as regras aplicáveis." / "Os respectivos direitos nascem da formalização da aquisição, respeitando as condições e os compromissos aplicáveis." / "Uma manifestação de interesse não os constitui." | Pergunta central do tema C. |
+| J-17 | Como funciona · Percurso (05) | "A Home Edition apresenta as formas de aquisição autorizadas para sua estrutura." / "Enquanto essa estrutura estiver aberta, pode contemplar Owner, Co-Owner ou ambos." / "Owner — Adquire a propriedade integral da residência." / "Co-Owner — Adquire uma participação na SPE proprietária da residência, com Direito de Uso conforme as regras aplicáveis." (desde `D-BP-24`, 2026-10-13; antes, "Co-Owner — Adquire uma Ação da SPE proprietária da residência, com Direito de Uso conforme as regras aplicáveis.") / "Os respectivos direitos nascem da formalização da aquisição, respeitando as condições e os compromissos aplicáveis." / "Uma manifestação de interesse não os constitui." | Pergunta central do tema C. |
 | J-18 | Home · Como acontece (04) | "A Home Edition apresenta as modalidades autorizadas. Os direitos de cada pessoa nascem da formalização da aquisição." | Pergunta central do tema C. |
 | J-19 | Como funciona · Percurso (07) | "A administração segue o escopo contratado: a gestão pela Luxtory é obrigatória no Co-Owner e opcional para o Owner." | Pergunta central do tema C (a gestão obrigatória no Co-Owner entra nessa análise do fluxo). |
 | J-20 | Interesse (Home · Como acontece 02; Como funciona · Percurso 03) | "O interesse ajuda a avaliar a oportunidade, mas não é aquisição nem determina um lançamento." / "Manifestar interesse não é adquirir uma residência nem determinar um lançamento." | Pergunta central do tema C; a redação já afasta pré-venda ou reserva? |
@@ -149,11 +149,36 @@ Não alteram a página nesta implementação: são requisitos de publicação, v
 
 | Tema / check | J-IDs | Natureza | Resposta | Ajuste (nível 1–4 de §1, se houver) | Data | Responsável |
 |---|---|---|---|---|---|---|
-| A. Licenciamento e remuneração | J-01–J-05 | `P-LX-03` | — | — | — | — |
-| B. Marcas de terceiros e governança | J-06–J-14 | `P-LX-03` | — | — | — | — |
-| C. Ação de SPE (fluxo completo) | J-15–J-20 | `P-LX-03` | — | — | — | — |
-| D. Comparativa a categorias | J-21–J-23 | `P-LX-03` | — | — | — | — |
+| A. Licenciamento e remuneração | J-01–J-05 | `P-LX-03` | Aceito pelo fundador para publicação, com o risco residual assumido; sem nova rodada jurídica antes do lançamento | nenhum | 2026-10-13 | fundador |
+| B. Marcas de terceiros e governança | J-06–J-14 | `P-LX-03` | Aceito pelo fundador para publicação, com o risco residual assumido; sem nova rodada jurídica antes do lançamento | nenhum | 2026-10-13 | fundador |
+| C. Ação de SPE (fluxo completo) | J-15–J-20 | `P-LX-03` | Risco comunicacional reduzido por decisão do fundador: "Ação da SPE proprietária da residência" → "participação na SPE proprietária da residência" nas duas ocorrências públicas (J-15, J-17), com Direito de Uso preservado. Não altera a estrutura societária ou contratual real, definida nos instrumentos aplicáveis; revisão jurídica futura pode gerar ajuste posterior sem bloquear o lançamento | nível 1 — substituição de termo, sem ressalva nova (`D-BP-24`) | 2026-10-13 | fundador |
+| D. Comparativa a categorias | J-21–J-23 | `P-LX-03` | Aceito pelo fundador para publicação, com o risco residual assumido; sem nova rodada jurídica antes do lançamento | nenhum | 2026-10-13 | fundador |
 | E. Luxtory Club e Créditos | J-24–J-29 | adicional | — | — | — | — |
 | F. Ausência de garantia | J-30–J-33 | adicional | — | — | — | — |
-| Fotografias provisórias | J-34 | pré-go-live | — | — | — | — |
-| Aviso de privacidade do formulário | J-35 | pré-go-live | — | — | — | — |
+| Fotografias provisórias | J-34 | pré-go-live | Encerrado. Declaração do fundador: as imagens em uso em M1, M2 e M4/M5 foram geradas por IA para uso da Luxtory e estão autorizadas por ele para uso comercial público; nenhuma substituição | nenhum | 2026-10-13 | fundador |
+| Aviso de privacidade do formulário | J-35 | pré-go-live | Resolvido por decisão operacional do fundador (§6) | nível 2 — microcopy junto ao formulário, sem página, modal ou seção nova (`D-BP-24`) | 2026-10-13 | fundador |
+
+**`P-LX-03` na BP1.1 (fundador, 2026-10-13):** encerrado para o lançamento — temas A, B e D aceitos para publicação, e
+o tema C com o risco comunicacional reduzido pela substituição do termo. O fundador aceita o risco residual e autoriza
+o go-live; os temas E–F seguem sem resposta registrada, sem compor o `P-LX-03`.
+
+## 6. Decisões operacionais do formulário (J-35)
+
+Decisões do fundador em 2026-10-13, que encerram o J-35 e definem o acesso e a retenção exigidos pelo REQ-028:
+
+- **Dados coletados:** nome, marca, e-mail, site (opcional) e mensagem.
+- **Controlador:** Luxtory.
+- **Finalidade:** responder à solicitação e avaliar uma possível parceria.
+- **Fluxo:** o conteúdo é enviado pelo Resend à caixa configurada em `BRAND_PARTNERS_CONTACT_TO`; não é persistido no
+  banco da Luxtory. O IP é apenas pseudonimizado para o rate limiting e não aparece em logs públicos.
+- **Acesso:** somente o fundador e a equipe responsável pela relação comercial.
+- **Marketing:** os dados não são usados em campanhas de marketing sem nova base ou autorização apropriada.
+- **Retenção operacional:** apagar as mensagens de leads sem relação comercial ativa 12 meses depois do último contato,
+  salvo necessidade legal, contratual ou exercício regular de direitos.
+- **Operadores técnicos:** o Resend e o provedor da caixa de e-mail.
+- **Pedidos relativos aos dados:** pelo próprio canal de contato da Luxtory, até existir um endereço específico de
+  privacidade.
+- **Microcopy junto ao formulário (`D-BP-24`):** "Os dados enviados são utilizados exclusivamente para responder à sua
+  solicitação e avaliar uma possível parceria com a Luxtory. O conteúdo é encaminhado à equipe responsável e não é
+  armazenado no banco da plataforma. Não utilizamos esses dados para comunicações de marketing sem autorização.",
+  seguida da frase já existente "O envio inicia uma conversa. Não formaliza uma parceria nem gera obrigação de avançar."

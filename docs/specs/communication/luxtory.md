@@ -84,6 +84,6 @@ Só os que as duas jornadas usam; o restante é citado direto na aplicação de 
 |---|---|---|
 | P-LX-01 | Provas externas — depoimentos, cases, números, prêmios, imprensa: não existem | qualquer uso de prova social ou dado de mercado |
 | P-LX-02 | Fotografia oficial de Concepts e Residences (P-1 do roadmap); até lá, Frame tipográfico | PICTURE com fotografia real |
-| P-LX-03 | Revisão jurídica da comunicação pública (Ação de SPE para público indeterminado, uso de marcas de terceiros, o termo "posse" no B2C, o termo "licenciamento" e a remuneração no Brand Partners, menção comparativa a categorias de alternativas e a empresas concorrentes) | go-live das páginas, não os documentos |
+| P-LX-03 | Revisão jurídica da comunicação pública (Ação de SPE para público indeterminado, uso de marcas de terceiros, o termo "posse" no B2C, o termo "licenciamento" e a remuneração no Brand Partners, menção comparativa a categorias de alternativas e a empresas concorrentes) | go-live das páginas, não os documentos. Brand Partners: encerrada para a BP1.1 em 2026-10-13 por decisão do fundador, com o risco residual aceito (`brand-partners.md` `D-BP-24`) |
 | P-LX-04 | Brand guide oficial: quando chegar, entra pelo protocolo de conflito do contrato | nada até lá |
 | P-LX-05 | Framework B2B (Brand Partners), anunciado pelo fundador em 2026-09-30 | resolvida em 2026-10-01: Framework Brand Partners recebido ([ADR-0013](../../adr/0013-framework-brand-partners-fonte-canonica.md)) |

@@ -201,7 +201,10 @@ automático nem garantia de deduplicação; a chave no provedor é `luxtory:bran
 Executado pelo fundador na Vercel, com orientação; nada aqui foi configurado. **Antes:** `P-LX-03` concluída (temas
 A–D de [`revisao-juridica-brand-partners.md`](../specs/communication/revisao-juridica-brand-partners.md)), as
 verificações de pré-go-live J-34 (direitos das fotografias provisórias ou substituição) e J-35 (aviso de privacidade
-do formulário, se exigido), autorização de merge do PR da BP1.1 e, **separada**, autorização para abrir o portão. O
+do formulário, se exigido), autorização de merge do PR da BP1.1 e, **separada**, autorização para abrir o portão.
+Atendidos em 2026-10-13 por decisão do fundador (`D-BP-24`): `P-LX-03` com o risco residual aceito, J-34 e J-35;
+acesso e retenção da caixa de `BRAND_PARTNERS_CONTACT_TO` (12 meses após o último contato para leads sem relação
+comercial ativa) em [`revisao-juridica-brand-partners.md`](../specs/communication/revisao-juridica-brand-partners.md) §6. O
 aceite visual final foi dado em 2026-10-12; o do refinamento pós-merge (`D-BP-20` a `D-BP-23`), em 2026-10-13, sobre
 `10c2816`.
 Nunca criar `BRAND_PARTNERS_CONTACT_MODE` na Vercel; não tocar em variáveis fora desta lista.
