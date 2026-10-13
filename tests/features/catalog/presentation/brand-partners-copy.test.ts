@@ -87,6 +87,27 @@ describe('copy Brand Partners BP1.1 (catalog §14.9)', () => {
     ]);
   });
 
+  it('[REQ-028] Co-Owner descrito como participação na SPE, com Direito de Uso, nas duas ocorrências públicas (D-BP-24)', () => {
+    const coOwner = PAGES.filter((line) => line.includes('SPE proprietária da residência'));
+
+    expect(PAGES.filter((line) => line.includes('Ação da SPE'))).toEqual([]);
+    expect(coOwner).toHaveLength(2);
+    for (const line of coOwner) {
+      expect(line).toContain('participação na SPE proprietária da residência, com Direito de Uso');
+    }
+  });
+
+  it('[REQ-028] informação de privacidade junto ao formulário, com o significado do envio preservado (J-35, D-BP-24)', () => {
+    const { purpose, meaning } = text.home.conversation;
+
+    expect(purpose).toBe(
+      'Os dados enviados são utilizados exclusivamente para responder à sua solicitação e avaliar uma possível parceria com a Luxtory. O conteúdo é encaminhado à equipe responsável e não é armazenado no banco da plataforma. Não utilizamos esses dados para comunicações de marketing sem autorização.',
+    );
+    expect(meaning).toBe(
+      'O envio inicia uma conversa. Não formaliza uma parceria nem gera obrigação de avançar.',
+    );
+  });
+
   it('[REQ-028] cross-brand e capacidade reservada à Luxtory (BR-121) ficam fora da copy pública', () => {
     const outOfScope = /cross-brand|entre marcas|outras marcas|BR-121|capacidade reservada/i;
 

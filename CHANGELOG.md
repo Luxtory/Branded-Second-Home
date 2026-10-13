@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Brand Partners, go-live (`D-BP-24`): o Co-Owner passa a ser descrito como "participação na SPE proprietária da
+  residência", com Direito de Uso, nas duas ocorrências públicas; junto ao formulário, a informação de privacidade
+  (finalidade exclusiva, conteúdo encaminhado à equipe responsável e não armazenado no banco, sem uso para marketing
+  sem autorização). Demais textos, layout, imagens e B2C sem mudança.
 - Brand Partners BP1.1 (spec catalog §14.9; `D-BP-15`, `D-BP-16`): `/brand-partner` e `/brand-partner/como-funciona` com
   a copy do Decision & Approval Pack — valor para quem vive e para a marca já no Hero, "Para a sua marca" (da marca vista
   à marca vivida) antes de "Para quem vive" (Patrimônio, Liberdade e Pertencimento), mecanismo do Brand DNA à Second
