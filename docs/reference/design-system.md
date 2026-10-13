@@ -611,3 +611,42 @@ Complementos genéricos e opt-in que a BP1.1 consome (spec `catalog` §14.9); o 
 - Headline do Cinematic Hero que abre uma Home: `h1.lx-headline.lx-headline--home-hero` — o papel tipográfico do Home
   Hero B2C (`lx-home-hero__title`: mesmo tamanho e entrelinha nas três faixas), mantendo a cor e a quebra do Cinematic
   Hero. Paridade B2C → Brand Partners por papel: o B2C é a referência (spec `catalog` §14.9).
+
+### Brand Partners no Core (refinamento pós-merge, 2026-10-13)
+
+Opt-in, sem efeito no B2C (spec `catalog` §14.9, `D-BP-20`):
+
+- Títulos no papel de headline: `SiteShell titleRole="headline"` põe `main.lx-titles-headline`. Ali, `lx-display-s` e
+  subheadlines usadas como heading (`h3.lx-subheadline`, inclusive a pergunta de `lx-answers`) saem da cor do corpo
+  para o papel de headline da superfície: Moroccan Blue sobre White/Wash, Dark Moroccan Blue sobre Sand (já igual ao
+  corpo no Design System), Warm Sand sobre Deep. Sobre Blue, abaixo de 24 px, a variação derivada
+  `color-mix(in srgb, headline 90%, fg)` (4,69:1; o Warm Sand puro mede 4,32:1); do `xl` em diante, o `lx-display-s`
+  (24 px, texto grande) volta ao Warm Sand. Tamanhos e o `lx-display-m` (já headline) não mudam; rótulos `lx-eyebrow`
+  seguem o papel `marker`.
+- Diagrama no tamanho de referência: `div.lx-diagram.lx-diagram--reference` > `div.lx-stack` de
+  `div.lx-stack.lx-diagram__item` (rótulo, título, texto) + `figure.lx-diagram__figure`. Do `lg` em diante, a figura
+  tem o tamanho renderizado do diagrama da Home B2C a 1440 px (437 × 490 px), o topo no primeiro item e o texto na
+  largura restante; os itens usam o ritmo dos Sibling Blocks (`space-3`). Abaixo do `lg`, como qualquer Text + Diagram.
+  O `lx-diagram--even` não muda.
+- Equação de valor (`D-BP-21`): `div.lx-equation` > `p.lx-equation__term` + `p.lx-equation__operator > span` (+) +
+  `p.lx-equation__term` + `p.lx-equation__operator > span` (=) + `p.lx-equation__result`. As premissas têm o mesmo papel
+  (Newsreader no tamanho do título de seção, cor do corpo); o sinal fica num círculo de hairline no início de uma régua
+  até o fim da coluna; o resultado usa o tamanho do numeral (`type-ordinal`) no papel de headline. Os sinais vêm do i18n
+  e são lidos pelo leitor de tela ("mais", "igual").
+  - Desde `D-BP-22`, uma conta de somar: `div.lx-equation` > `p.lx-equation__term.lx-display-s` +
+    `p.lx-equation__operator` (+) + `p.lx-equation__term.lx-display-s` + `p.lx-equation__result.lx-headline` (com
+    `span.lx-visually-hidden` "= " no início). O + fica num gutter (`space-8`; `space-12` do `md`), no tamanho da
+    headline, centrado na primeira linha da segunda premissa; o resultado ocupa a largura inteira com a linha de cálculo
+    (hairline `rule-strong`) no topo e o texto alinhado às premissas. Sem círculos, card, caixa ou fundo.
+  - Desde `D-BP-23`, uma conta vertical numa só tipografia: `div.lx-equation` > três `p.lx-equation__term.lx-display-s`,
+    cada um com `span` de texto; a segunda e a terceira abrem com `span.lx-equation__operator` (+ e =, do i18n, lidos
+    pelo leitor de tela) e a terceira também é `.lx-equation__result` (a linha de cálculo no topo). Os operadores usam
+    a fonte utility em peso medium, no tamanho da linha, num gutter (`space-8`; `space-12` do `md`); o texto das três
+    linhas começa num só eixo. Nenhuma linha maior que as outras.
+- Cabeça, texto corrido e o elemento principal ao lado do texto: `div.lx-columns.lx-columns--aside-text` com quatro
+  filhos — cabeça (eyebrow, Headline), o primeiro bloco do texto, o principal e o resto do texto. Do `lg`, a cabeça no topo
+  da coluna inicial, o texto abaixo dela e o principal na coluna final com o topo na primeira linha do texto; no celular,
+  nessa ordem, com um gap a mais em volta do principal. (Substitui o `--aside-even` de `D-BP-22`, que centralizava.)
+- Teto tipográfico: `SiteShell typeCeiling="home-hero"` põe `main.lx-type-ceiling`. A escala do Hero da Home
+  (`--lx-type-home-hero`, a mesma do `h1.lx-headline--home-hero`) limita `lx-headline`, `lx-statement`, `lx-display-*` e
+  `lx-ordinal` com `min()`; os outros papéis já ficam abaixo dela. O Hero não muda.

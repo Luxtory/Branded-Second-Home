@@ -997,16 +997,85 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
     ampliar…" (768).
 - **Fora da copy:** cross-brand (`H-BP-09`), ativação pela capacidade da Luxtory (BR-121, `H-BP-10`) e monetização
   opcional (`P-BP-04`).
-
-**Home `/brand-partner`** (PICTURE → PROBLEM → PROMISE → PROOF → PUSH):
+- **Refinamento comercial pós-merge (fundador, 2026-10-13; `D-BP-20`).** Copy verbatim do fundador, sem nova ressalva
+  nem linguagem defensiva (`D-BP-19`):
+  - **O dilema da expansão:** o antagonista passa a ser a lacuna da Brand Experience — formatos que aproximam pessoas
+    da marca, poucas soluções que participam do lazer com profundidade para criar conexões emocionais e memoráveis —,
+    nas mesmas duas perspectivas ("O que já existe" × "O espaço em aberto"). A seção não nomeia Branded Second Home,
+    Home Concept nem a Luxtory: Hero → lacuna de mercado → promessa (teste de copy).
+  - **Uma nova lógica:** a resposta à tensão, com a nova headline e a sequência "receber · paisagem · materiais,
+    rituais e detalhes"; a primeira seção que nomeia **Branded Second Home** e **Home Concept**.
+  - **Para a sua marca:** sem a nota de limite ("O modelo cria as condições…"), sem substituto; a ausência de garantia
+    segue no fechamento fotográfico e no Como funciona (J-32, J-33).
+  - **Luxchange:** converter dias elegíveis da Second Home em créditos para se hospedar em outras residências da rede.
+    Sem "créditos equivalentes" — os Créditos vêm do PRL (BR-201) — e sem "dias do Direito de Uso", que é só do
+    Co-Owner (o Club atende Owner e Co-Owner). A abertura e o fechamento da seção já enquadram o Club como modelo
+    previsto; o mecanismo não repete a ressalva (o teste de copy lê a seção como um bloco). Redação substituída em
+    `D-BP-21` (abaixo).
+  - **Concisão (medida a 390, 768 e 1440 px):** a 768 e 1440 px nenhum bloco novo passa de 4 linhas. Exceções a 390 px,
+    frases únicas do texto do fundador (dividir mudaria a copy): "O mercado ainda oferece poucas soluções…" (5 linhas)
+    e "A Luxtory traduz o Brand DNA em um Home Concept…" (5 linhas).
+  - **Composição:** em "Para quem vive", a frase de abertura sobe para cima dos pilares; o diagrama de solução tem, do
+    `lg` em diante, o tamanho renderizado na Home B2C a 1440 px (437 × 490 px, proporção 667 × 748 preservada), o topo
+    alinhado ao 01 · Patrimônio e os três pilares ao lado, no ritmo de item dos Sibling Blocks — a 1440 px, o conjunto
+    01–03 mede 514 px para os 490 px do diagrama. A 390 e 768 px, a mesma leitura empilhada de antes (texto → diagrama,
+    com o tamanho do B2C). Entre 1024 e 1279 px e a 1920 px, o diagrama B2C varia com a altura do texto ao lado (416 a
+    437 px de largura; 360 px a 1920) e o Brand Partners mantém 437 px.
+  - **Cor dos títulos:** títulos abaixo da headline de seção no papel de headline da superfície, nunca na cor do corpo
+    sobre Blue e Deep — Warm Sand sobre Deep (5,57:1); sobre Moroccan Blue, abaixo de 24 px, Warm Sand com 10% do
+    branco do corpo (4,69:1; o Warm Sand puro mede 4,32:1) e, a partir de 1280 px, o `lx-display-s` (24 px, texto
+    grande) no Warm Sand; Moroccan Blue sobre White. Sobre Warm Sand, o Design System já define headline e corpo em
+    Dark Moroccan Blue (o Moroccan Blue sobre Warm Sand mede 4,32:1). Tamanhos inalterados.
+- **Dois ajustes do fundador (2026-10-13; `D-BP-21`), verbatim, sem tocar no resto:**
+  - **Uma nova lógica:** a sequência conceitual vira equação de valor — "Seu público vivendo momentos extraordinários
+    com quem ama" + "Um lugar que transforma a identidade compartilhada com a sua marca em experiência" = "Uma conexão
+    mais profunda, emocional e duradoura com a sua marca." Premissas no mesmo papel tipográfico; + e = como ligação
+    gráfica (o sinal num círculo de hairline sobre uma régua); o resultado no tamanho display maior e no papel de
+    headline (`lx-equation`). Headline, introdução e corpo da seção inalterados.
+  - **Luxchange:** "O clube permite ao membro converter dias do seu direito de uso em créditos equivalentes para se
+    hospedar em outras residências da rede." / "Sua Second Home deixa de estar limitada a um único endereço e passa a
+    fazer parte de uma rede de destinos." — redação do fundador, sem reescrita nem ressalva (teste de copy).
+- **Hierarquia tipográfica e composição (fundador, 2026-10-13; `D-BP-22`), sem mudar copy:**
+  - **Taxonomia única do B2B** (teste E2E por papel a 390, 768 e 1440 px: mesma família, tamanho, peso e entrelinha):
+    Headline de seção = `lx-headline`; heading interno = `lx-display-s` (os lados do Dilema e os mecanismos do Club
+    deixam o `lx-display-m`; as perguntas de Governança, Decisões e Condições e "E para a marca?" deixam o
+    `lx-subheadline`); lead = `lx-subheadline` (introduções de um parágrafo, frases de apoio); corpo = `lx-body`; lead de
+    fechamento = `lx-subheadline`; statement de fechamento = `lx-headline`. Eyebrow, ordinal e rótulo de fase mantêm
+    os papéis próprios; a exceção aprovada é o H1 do Hero da Home (`D-BP-18`). Introduções em mais de um parágrafo
+    (Dilema, Conversa) e os parágrafos que abrem "Uma nova lógica" e "Para quem vive" seguem como corpo, como aprovado.
+  - **Uma nova lógica sem fotografia:** M3 sai da página (o manifesto de mídia continua o mesmo). Do `lg` em diante,
+    6/6: eyebrow, Headline, introdução e corpo à esquerda; à direita, só a fórmula, centrada contra a coluna de texto
+    (`lx-columns--aside lx-columns--aside-even`). No celular, uma coluna: eyebrow → Headline → introdução → fórmula →
+    corpo. A fórmula é uma conta de somar (`lx-equation`): premissa; + premissa; a linha de cálculo (hairline no papel
+    `rule-strong`, de ponta a ponta) no lugar do "="; o resultado. Premissas = heading interno; resultado = statement de
+    fechamento (`lx-headline`, a mesma escala da Headline — a Headline mantém a precedência pela posição e pela virada em
+    itálico); o + no tamanho da Headline, centrado na primeira linha da segunda premissa, na cor de acento. O "=" fica
+    só para leitores de tela. Sem card, caixa, borda ou fundo. Composição da fórmula e centralização substituídas em
+    `D-BP-23` (abaixo).
+- **Correções do fundador (2026-10-13; `D-BP-23`), sem mudar copy:**
+  - **Fórmula como conta vertical:** "Seu público…" / "+ Um lugar…" / a linha de cálculo / "= Uma conexão…". As três
+    linhas usam o mesmo papel, heading interno (`lx-display-s`): mesma família, tamanho, peso e entrelinha; o resultado
+    se distingue pela linha e pelo =, não pelo tamanho. + e = são o mesmo operador gráfico, visível e lido em voz
+    ("mais", "igual"): fonte utility, peso medium, opacidade total, no tamanho da linha que abrem, num gutter à esquerda;
+    o texto das três linhas começa num só eixo. A linha (hairline `rule-strong`) atravessa a fórmula.
+  - **Alinhamento estrutural:** do `lg` em diante, eyebrow e Headline no topo da coluna inicial; abaixo, o texto
+    corrido ("Quando a experiência nasce…" e os parágrafos seguintes) e, ao lado dele, a fórmula com o topo na primeira
+    linha do texto (`lx-columns--aside-text`, sem centralizar nem deslocar). No celular, a leitura linear:
+    eyebrow → Headline → introdução → fórmula → texto.
+  - **Teto tipográfico do Hero** (opt-in `SiteShell typeCeiling="home-hero"`, sem efeito no B2C): nenhum texto do B2B é
+    maior que a Headline do Hero da Home na mesma largura. Headlines de seção, statements de fechamento e ordinais usam o
+    menor entre a própria escala e a do Hero; os demais papéis já ficam abaixo. Medido: Hero 35,1 / 28 / 39,6 px e
+    maior texto fora do Hero 28 / 28 / 39,6 px a 390 / 768 / 1440 px (antes, 48 px a 1440). Teste E2E de teto e de
+    igualdade da fórmula a 390, 768 e 1440 px.
+ (PICTURE → PROBLEM → PROMISE → PROOF → PUSH):
 
 | `id` | Função | Composição Core | Mídia |
 |---|---|---|---|
 | `inicio` | PICTURE, valor bilateral | Cinematic Hero `lx-hero--uniform` sob header sobreposto | M1 |
 | `expansao` | PROBLEM | `blue`: `lx-section-head` + `lx-comparison--divided` + `lx-section-closing` | — |
-| `proposta` | PROMISE | `sand`: Editorial Split `lx-split--wide-text` + `lx-editorial-list` | M3 |
-| `para-a-marca` | PROMISE → PROOF, tese da marca | `deep`: escada `lx-steps--four`, cadeia em `lx-section-closing`, possibilidades `lx-siblings--pair`, mecanismos `lx-siblings--trio`, limite `lx-section-note` | — |
-| `para-quem-vive` | PROOF, valor para quem vive | `blue`: Split `--media-start --wide-media` + `lx-diagram--even` (pilares × diagrama de solução) + fechamento | M2 + diagrama |
+| `proposta` | PROMISE | `sand`: `lx-columns--aside-text` — eyebrow e Headline; texto corrido \| fórmula `lx-equation` ao lado dele (desde `D-BP-23`; em `D-BP-22`, `--aside-even` com a fórmula centrada; antes, Editorial Split `lx-split--wide-text` com M3 e, até `D-BP-21`, `lx-editorial-list`) | — (M3 até `D-BP-22`) |
+| `para-a-marca` | PROMISE → PROOF, tese da marca | `deep`: escada `lx-steps--four`, cadeia em `lx-section-closing`, possibilidades `lx-siblings--pair`, mecanismos `lx-siblings--trio` (o limite `lx-section-note` saiu em `D-BP-20`) | — |
+| `para-quem-vive` | PROOF, valor para quem vive | `blue`: Split `--media-start --wide-media` + frase de abertura + `lx-diagram--reference` (pilares `lx-diagram__item` × diagrama de solução no tamanho da Home B2C; até `D-BP-20`, `lx-diagram--even`) + fechamento | M2 + diagrama |
 | `como-acontece` | PROOF, mecanismo e papéis | `white`: `lx-numbered` 01–06 + link `/brand-partner/como-funciona#percurso` | — |
 | `governanca` | PROOF, risco | `sand`: `lx-answers` + link `/brand-partner/como-funciona#governanca` | — |
 | `sua-marca` | PUSH | Cinematic `lx-hero--closing --uniform`; CTA → `#conversa` | M5 |
@@ -1092,7 +1161,14 @@ mantido. A E2E `[ADR-0003]` compara os tamanhos computados B2C × BP por papel a
 navegação com `action` (botão secundário no header, link no menu e no rodapé) e `menuTrigger="mark"` (ícone oficial
 no gatilho do menu também no modo não retrátil). CSS: `lx-steps--four` (1 → 2 → 4 colunas) e `lx-media-placeholder`.
 Da auditoria de concisão: dentro da coluna de texto de `lx-numbered`, `lx-comparison` fica empilhada em toda largura
-(a 1440 px o par Owner | Co-Owner lado a lado deixava 163 px por lado: 4 e 6 linhas para 45 e 101 caracteres). Uso em [`docs/reference/design-system.md`](../reference/design-system.md) §15.
+(a 1440 px o par Owner | Co-Owner lado a lado deixava 163 px por lado: 4 e 6 linhas para 45 e 101 caracteres). Do
+refinamento pós-merge (`D-BP-20`): `SiteShell titleRole="headline"` (`main.lx-titles-headline`: títulos no papel de
+headline da superfície) e `lx-diagram--reference` com `lx-diagram__item` (diagrama no tamanho de referência da Home B2C,
+topo no primeiro bloco), `lx-equation` (equação de valor; desde `D-BP-23`, uma conta vertical numa só tipografia),
+`lx-columns--aside-text` (cabeça no topo; texto corrido e, ao lado dele, o elemento principal; substitui o
+`--aside-even` de `D-BP-22`) e `SiteShell typeCeiling="home-hero"` (`main.lx-type-ceiling`: o Hero da Home como teto
+tipográfico; a escala do Hero numa só propriedade, `--lx-type-home-hero`). Uso em
+[`docs/reference/design-system.md`](../reference/design-system.md) §15.
 
 **Checkpoints.** (1) Visual/editorial antes do merge: Home e Como funciona completas, header/menu e formulário a 390,
 768 e 1440 px, placeholders identificados, nenhuma copy fora do Approval Pack e dos ajustes. (2) Técnico, depois do
@@ -1100,5 +1176,11 @@ aceite visual: gates completos (DS, unitários, comunicação/terminologia, E2E,
 de que, com `BRAND_PARTNERS_SITE` fechado, nada da BP1.1 vaza em HTML, RSC ou metadados. (3) Editorial antes do
 merge: a auditoria de concisão acima. (4) **Encerramento (2026-10-12): implementação concluída** — aceite visual
 final do fundador, diretriz `D-BP-19` (o site é comercial; segurança jurídica por progressive disclosure, sem camada
-jurídica visual). **Go-live:** P-LX-03,
+jurídica visual). (5) **Refinamento pós-merge (`D-BP-20`, 2026-10-13):** em revisão no Preview, sem merge até o
+aceite visual final do fundador. (6) **Aceite visual final do refinamento (2026-10-13, `D-BP-20` a `D-BP-23`, sobre
+`10c2816`):** aprovados pelo fundador a composição final de "Uma nova lógica"; a fórmula com premissas e resultado no
+mesmo papel tipográfico, + e = visíveis e equivalentes, a linha de cálculo, o alinhamento ao início do texto corrido no
+desktop e o comportamento no celular; a padronização tipográfica por papel; o Hero como teto tipográfico do B2B; a
+hierarquia de cores; Home e Como funciona a 390, 768 e 1440 px. Sem novos ajustes visuais, de copy ou de Design
+System; o merge do PR e a abertura do portão seguem autorizações separadas do fundador. **Go-live:** P-LX-03,
 ativos aprovados (`P-BP-03`) e autorização expressa do fundador; CI verde não autoriza merge nem go-live.

@@ -23,6 +23,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   com até 4 linhas visuais a 390, 768 e 1440 px, só por divisões em parágrafos (nenhum conteúdo cortado). Lugares de
   fotografia M1–M5 com as fotografias provisórias que o B2C já publica (`D-BP-17`), até o ensaio próprio. Hero da Home
   sem o lead da cena e a mesma escala tipográfica do B2C para o mesmo papel de texto (`D-BP-18`).
+- Brand Partners, refinamento comercial pós-merge (`D-BP-20`, spec catalog §14.9): na Home, "O dilema da expansão"
+  passa a mostrar a lacuna da Brand Experience sem antecipar a solução, e "Uma nova lógica" é a primeira seção a nomear
+  Branded Second Home e Home Concept; "Para a sua marca" sem a nota de limite; no Como funciona, o Luxchange descrito
+  como converter dias elegíveis da Second Home em créditos. Diagrama de "Para quem vive" no tamanho da Home B2C, com
+  o topo no 01 e os pilares ao lado; títulos no papel de headline da superfície (contraste AA). B2C sem mudança.
+  Ajustes do fundador (`D-BP-21`): "Uma nova lógica" em equação de valor (momento + identidade = vínculo) e o Luxchange
+  na redação do fundador.
+  Hierarquia tipográfica única do B2B (`D-BP-22`): o mesmo papel com a mesma tipografia em todas as seções (headings
+  internos em `display-s`); "Uma nova lógica" sem fotografia, com a fórmula de somar à direita do texto.
+  Correções do fundador (`D-BP-23`): a fórmula como conta vertical, com as três linhas na mesma tipografia e + e =
+  visíveis, ao lado do texto corrido; o Hero da Home como teto tipográfico de todo o Brand Partners.
 
 ### Added
 - Brand Partners público (BP1, REQ-028, TECH-057; spec catalog §14): `/brand-partner` (PICTURE → PROBLEM → PROMISE →

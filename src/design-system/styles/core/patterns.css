@@ -254,14 +254,19 @@
   }
   /* A headline de um Cinematic Hero que abre uma Home tem o papel tipográfico do Home Hero acima: a mesma escala
    * (tamanho e entrelinha), opt-in. A cor e a quebra continuam as do Cinematic Hero. */
-  [data-lx="core"] .lx-hero .lx-headline.lx-headline--home-hero {
-    font-size: clamp(2rem, 9vw, 2.65rem);
-    line-height: 1.02;
+  /* The Home Hero scale as one custom property: the headline above takes it, and the type ceiling (typography.css)
+   * caps every other text of a site at it. */
+  [data-lx="core"] :is(.lx-type-ceiling, .lx-headline--home-hero) {
+    --lx-type-home-hero: clamp(2rem, 9vw, 2.65rem);
   }
   @media (min-width: 48rem) {
-    [data-lx="core"] .lx-hero .lx-headline.lx-headline--home-hero {
-      font-size: clamp(1.75rem, 2.75vw, 2.5rem);
+    [data-lx="core"] :is(.lx-type-ceiling, .lx-headline--home-hero) {
+      --lx-type-home-hero: clamp(1.75rem, 2.75vw, 2.5rem);
     }
+  }
+  [data-lx="core"] .lx-hero .lx-headline.lx-headline--home-hero {
+    font-size: var(--lx-type-home-hero);
+    line-height: 1.02;
   }
 
   /* Problem / Triad Comparison — one composition: copy + the value triad on top, three equivalent alternatives below. */
@@ -669,6 +674,26 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       align-items: stretch;
     }
+    /* --reference: the diagram at the size it renders on the B2C Home at 1440 (the reference desktop: 437 × 490),
+     * whatever the height of the copy beside it; its top on the first block of copy, which takes the remaining width.
+     * The SVG keeps its intrinsic ratio (667 × 748) — never stretched. Below lg it stacks as any Text + Diagram. */
+    [data-lx="core"] .lx-diagram--reference {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+    }
+    [data-lx="core"] .lx-diagram--reference .lx-diagram__figure {
+      width: auto;
+    }
+    [data-lx="core"] .lx-diagram--reference .lx-diagram__figure > img {
+      display: block;
+      width: auto;
+      height: 30.66rem;
+    }
+    /* Beside it, each block of copy (label, title, text) takes the item rhythm of the Sibling Blocks, so the set reads
+     * at about the diagram's height; the blocks stay one stack gap apart. */
+    [data-lx="core"] .lx-diagram--reference .lx-diagram__item {
+      gap: var(--lx-space-3);
+    }
   }
 
   /* Statement / Pause — a centred editorial pause; --opening is the typographic opening of a page without media. */
@@ -823,6 +848,39 @@
     font-size: var(--lx-type-ordinal);
     line-height: var(--lx-leading-heading);
     color: var(--lx-color-headline);
+  }
+
+  /* Value Equation — a vertical sum: premise, + premise, the calculation line, = result. The three lines share one type
+   * role from the markup (lx-display-s): the result stands apart by the operation — the line and the =, never by size.
+   * + and = are the same graphic operator: utility face, medium weight, full opacity, the size of the line they open,
+   * on a start gutter; the text of every line starts on one axis. No card, box or fill. */
+  [data-lx="core"] .lx-equation {
+    --lx-equation-gutter: var(--lx-space-8);
+    display: grid;
+    row-gap: var(--lx-space-3);
+  }
+  [data-lx="core"] .lx-equation__term {
+    display: flex;
+    align-items: baseline;
+    padding-inline-start: var(--lx-equation-gutter);
+  }
+  [data-lx="core"] .lx-equation__operator {
+    flex: none;
+    inline-size: var(--lx-equation-gutter);
+    margin-inline-start: calc(-1 * var(--lx-equation-gutter));
+    font-family: var(--lx-font-utility);
+    font-weight: var(--lx-weight-medium);
+    color: var(--lx-color-accent);
+  }
+  [data-lx="core"] .lx-equation__result {
+    margin-top: var(--lx-space-3);
+    padding-top: var(--lx-space-4);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-equation {
+      --lx-equation-gutter: var(--lx-space-12);
+    }
   }
 
   /* Sibling Blocks — equal units: same geometry, type and spacing; no shadow, no ornament. --pair = 2 × 2 from md. */
@@ -1149,6 +1207,14 @@
 
   /* Columns --aside — 5/7 whose start column continues after the main one (e.g. a form's purpose under its intro):
    * DOM and phone order head → main → aside; from lg the aside returns under the head. */
+  /* Columns --aside-text (below, from lg): one stack gap between the blocks of text; on phones the main element keeps one
+   * more gap on each side, as a composition of its own. */
+  [data-lx="core"] .lx-columns--aside-text {
+    row-gap: var(--lx-space-6);
+  }
+  [data-lx="core"] .lx-columns--aside-text > :nth-child(3) {
+    margin-block: var(--lx-space-6);
+  }
   @media (min-width: 64rem) {
     [data-lx="core"] .lx-columns--aside {
       grid-template-rows: auto 1fr;
@@ -1165,6 +1231,30 @@
     [data-lx="core"] .lx-columns--aside > :nth-child(3) {
       grid-column: 1 / span 5;
       grid-row: 2;
+    }
+    /* --aside-text: head, the first block of running text, the main element and the rest of the text — on phones in that
+     * order; from lg the head on top of the start column, the text under it and the main element beside the text, its
+     * top on the text's first line (structural, no offset). */
+    [data-lx="core"] .lx-columns--aside-text {
+      grid-template-rows: auto auto 1fr;
+      align-items: start;
+    }
+    [data-lx="core"] .lx-columns--aside-text > :nth-child(1) {
+      grid-column: 1 / span 6;
+      grid-row: 1;
+    }
+    [data-lx="core"] .lx-columns--aside-text > :nth-child(2) {
+      grid-column: 1 / span 6;
+      grid-row: 2;
+    }
+    [data-lx="core"] .lx-columns--aside-text > :nth-child(3) {
+      grid-column: 7 / span 6;
+      grid-row: 2 / span 2;
+      margin-block: 0;
+    }
+    [data-lx="core"] .lx-columns--aside-text > :nth-child(4) {
+      grid-column: 1 / span 6;
+      grid-row: 3;
     }
   }
 

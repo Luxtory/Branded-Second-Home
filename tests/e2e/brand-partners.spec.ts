@@ -27,7 +27,8 @@ const { conversation } = text.home;
 /** H1 da Home: `lead` + a virada em itálico (`turn`). */
 const HERO_TITLE = `${text.home.hero.title.lead}${text.home.hero.title.turn}`;
 /** Lugares de fotografia M1–M5 na ordem do DOM (D5; `D-BP-17`: fotografias provisórias do B2C nesta etapa). */
-const HOME_MEDIA = ['m1', 'm3', 'm2', 'm5'] as const;
+// `D-BP-22`: "Uma nova lógica" perdeu a fotografia M3 — a fórmula de valor ocupa o lugar dela.
+const HOME_MEDIA = ['m1', 'm2', 'm5'] as const;
 const HOW_MEDIA = ['m4'] as const;
 const DIAGRAM = '/diagrams/core/diagrama-solucao-luxtory.svg';
 
@@ -126,7 +127,9 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     page,
   }) => {
     test.slow();
-    // [papel, página B2C, seletor B2C, página BP, seletor BP] — o B2C é a referência (catalog §14.9).
+    // [papel, página B2C, seletor B2C, página BP, seletor BP] — o B2C é a referência (catalog §14.9). No B2B, perguntas e
+    // títulos de mecanismo são heading interno (`display-s`, `D-BP-22`): saem as linhas "pergunta" e "display-m". As
+    // Headlines (H1 do Como funciona, H2) seguem o teto do Hero da Home (`D-BP-23`), não a escala do B2C.
     const roles = [
       ['H1 do Hero da Home', '/', '.lx-home-hero__title', HOME, '#inicio h1'],
       ['CTA do Hero da Home', '/', '.lx-home-hero__action', HOME, '#inicio .lx-button'],
@@ -137,15 +140,7 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
         HOME,
         '#sua-marca .lx-button',
       ],
-      ['H1 do Hero do Como funciona', '/como-funciona', '.lx-hero h1', HOW, '#abertura h1'],
       ['índice do Hero', '/como-funciona', '.lx-hero__chapter-name', HOW, '.lx-anchors a'],
-      [
-        'H2',
-        '/como-funciona',
-        'main section:not(.lx-hero) h2.lx-headline',
-        HOW,
-        'main section:not(.lx-hero) h2.lx-headline',
-      ],
       [
         'rótulo de fase',
         '/como-funciona',
@@ -154,20 +149,12 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
         '.lx-answers--phases .lx-answers__label',
       ],
       [
-        'pergunta',
-        '/como-funciona',
-        '.lx-answers__label.lx-subheadline',
-        HOW,
-        '.lx-answers__label.lx-subheadline',
-      ],
-      [
         'Owner | Co-Owner',
         '/como-funciona',
         '[data-pair="modality"] .lx-comparison__item > :first-child',
         HOW,
         '[data-pair="modality"] .lx-comparison__item > :first-child',
       ],
-      ['display-m', '/como-funciona', 'main .lx-display-m', HOW, 'main .lx-display-m'],
       ['display-s', '/como-funciona', 'main .lx-display-s', HOW, 'main .lx-display-s'],
       [
         'subheadline',
@@ -244,6 +231,280 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
         for (const [selector, min] of checks) {
           const worst = await worstContrastUnder(page, selector);
           expect(worst, `${selector} a ${width}px`).toBeGreaterThanOrEqual(min);
+        }
+      }
+    }
+  });
+
+  test('[ADR-0003] Para quem vive: o diagrama com o tamanho renderizado da Home B2C a 390, 768 e 1440 px; no desktop, o topo no 01 e os pilares ao lado', async ({
+    page,
+  }) => {
+    // A figura desenhada (object-fit: contain no B2C), não a caixa: é o tamanho que se vê (`D-BP-20`).
+    const drawn = async (path: string) => {
+      await page.goto(path);
+      const image = page.locator(`main img[src="${DIAGRAM}"]`);
+      await image.scrollIntoViewIfNeeded();
+      await image.evaluate(async (node: HTMLImageElement) => {
+        node.loading = 'eager';
+        await node.decode();
+      });
+      return image.evaluate((node: HTMLImageElement) => {
+        const box = node.getBoundingClientRect();
+        const ratio = node.naturalWidth / node.naturalHeight;
+        const contain = getComputedStyle(node).objectFit === 'contain';
+        const width = contain ? Math.min(box.width, box.height * ratio) : box.width;
+        const height = contain ? Math.min(box.height, box.width / ratio) : box.height;
+        return { width, height, top: box.top + (box.height - height) / 2, left: box.left, ratio };
+      });
+    };
+    for (const width of [390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      const reference = await drawn('/');
+      const diagram = await drawn(HOME);
+      expect(Math.abs(diagram.width - reference.width), `largura a ${width}px`).toBeLessThan(1);
+      expect(Math.abs(diagram.height - reference.height), `altura a ${width}px`).toBeLessThan(1);
+      // Proporção original do SVG (667 × 748): nunca esticado.
+      expect(Math.abs(diagram.width / diagram.height - diagram.ratio)).toBeLessThan(0.01);
+      if (width < 1024) continue;
+      const pillars = await page
+        .locator('#para-quem-vive .lx-diagram__item')
+        .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().toJSON()));
+      expect(pillars).toHaveLength(3);
+      expect(Math.abs(pillars[0].top - diagram.top), 'topo do diagrama no 01').toBeLessThan(1);
+      for (const pillar of pillars) expect(pillar.right).toBeLessThan(diagram.left);
+      // O conjunto 01–03 com aproximadamente a altura do diagrama.
+      const set = pillars[2].bottom - pillars[0].top;
+      expect(set / diagram.height).toBeGreaterThan(0.9);
+      expect(set / diagram.height).toBeLessThan(1.1);
+    }
+  });
+
+  test('[REQ-028] Uma nova lógica: a fórmula como conta vertical — três linhas com a mesma tipografia, + e = visíveis, a linha de cálculo e o topo na primeira linha do texto, a 390, 768 e 1440 px', async ({
+    page,
+  }) => {
+    const { equation } = text.home.promise;
+    for (const width of [390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(HOME);
+      const section = page.locator('#proposta');
+      await expect(section.locator('img, picture, [data-media-slot]')).toHaveCount(0);
+      const formula = await section.locator('.lx-equation').evaluate((node) => {
+        const type = (element: Element) => {
+          const style = getComputedStyle(element);
+          return `${style.fontFamily} ${style.fontSize} ${style.fontWeight} ${style.lineHeight}`;
+        };
+        const look = (element: Element) => {
+          const style = getComputedStyle(element);
+          return `${type(element)} ${style.color} ${style.opacity} ${style.visibility}`;
+        };
+        const lines = [...node.querySelectorAll(':scope > .lx-equation__term')];
+        const operators = [...node.querySelectorAll('.lx-equation__operator')];
+        const texts = lines.map((line) => line.lastElementChild!);
+        const result = node.querySelector('.lx-equation__result')!;
+        const columns = node.parentElement!;
+        return {
+          lines: lines.map((line) => [...line.children].map((child) => child.textContent?.trim())),
+          types: lines.map(type),
+          operators: operators.map(look),
+          operatorBoxes: operators.map((operator) => operator.getBoundingClientRect().toJSON()),
+          textBoxes: texts.map((text) => text.getBoundingClientRect().toJSON()),
+          line: Number.parseFloat(getComputedStyle(result).borderTopWidth),
+          result: result.getBoundingClientRect().toJSON(),
+          formula: node.getBoundingClientRect().toJSON(),
+          intro: columns.children[1]!.getBoundingClientRect().toJSON(),
+          heading: columns.querySelector('h2')!.getBoundingClientRect().toJSON(),
+          body: columns.lastElementChild!.getBoundingClientRect().toJSON(),
+        };
+      });
+      // Premissa, + premissa, = resultado (`D-BP-23`).
+      expect(formula.lines).toEqual([
+        [equation.premises[0]],
+        [equation.plus, equation.premises[1]],
+        [equation.equals, equation.result],
+      ]);
+      // As três linhas com a mesma tipografia: o resultado se distingue pela operação, não pelo tamanho.
+      const [first, second, result] = formula.types;
+      expect(second, `premissa 2 = premissa 1 a ${width}px`).toBe(first);
+      expect(result, `resultado = premissa 1 a ${width}px`).toBe(first);
+      // + e = visíveis, com o mesmo tratamento, à esquerda do texto da linha e na mesma linha de base.
+      const [plus, equals] = formula.operators;
+      expect(equals, `+ e = iguais a ${width}px`).toBe(plus);
+      expect(plus, `operador visível a ${width}px`).toMatch(/ 1 visible$/);
+      formula.operatorBoxes.forEach((box, index) => {
+        const text = formula.textBoxes[index + 1]!;
+        expect(box.right, `operador antes do texto a ${width}px`).toBeLessThanOrEqual(text.left);
+        expect(
+          Math.abs(box.top - text.top),
+          `operador na primeira linha a ${width}px`,
+        ).toBeLessThan(4);
+      });
+      expect(new Set(formula.textBoxes.map((box) => box.left)).size, 'um só eixo de texto').toBe(1);
+      expect(formula.line, `linha de cálculo a ${width}px`).toBeGreaterThanOrEqual(1);
+      expect(formula.result.width, `linha atravessa a fórmula a ${width}px`).toBe(
+        formula.formula.width,
+      );
+      if (width >= 1024) {
+        // O topo da fórmula na primeira linha do texto corrido, ao lado dele (estrutural, sem centralizar).
+        expect(
+          Math.abs(formula.formula.top - formula.intro.top),
+          `topo da fórmula a ${width}px`,
+        ).toBeLessThan(1);
+        expect(formula.formula.left).toBeGreaterThan(formula.intro.right);
+      } else {
+        // Uma coluna: Headline → introdução → fórmula → texto restante.
+        expect(formula.intro.top).toBeGreaterThan(formula.heading.bottom);
+        expect(formula.formula.top).toBeGreaterThan(formula.intro.bottom);
+        expect(formula.body.top).toBeGreaterThan(formula.formula.bottom);
+      }
+    }
+  });
+
+  test('[ADR-0003] taxonomia tipográfica B2B: o mesmo papel com a mesma tipografia nas duas páginas, a 390, 768 e 1440 px', async ({
+    page,
+  }) => {
+    test.slow();
+    // Papéis editoriais (`D-BP-22`); a exceção aprovada é o H1 do Hero da Home (`D-BP-18`). As três linhas da fórmula são
+    // heading interno (`D-BP-23`). Eyebrow, ordinal, rótulo de fase e os operadores + e = têm papéis próprios.
+    const ROLES = {
+      'Section Headline': 'main :is(h1, h2).lx-headline:not(.lx-headline--home-hero)',
+      'Internal Heading': 'main :is(h3, h4, h5, h6):not(.lx-eyebrow), main .lx-equation__term',
+      'Lead/Subheadline': 'main p.lx-subheadline:not(.lx-section-closing *)',
+      Body: 'main :is(p, li).lx-body',
+      'Closing Lead': 'main .lx-section-closing p.lx-subheadline',
+      'Closing Statement': 'main .lx-section-closing p.lx-headline',
+    };
+    for (const width of [390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      const found: Record<string, Set<string>> = {};
+      for (const path of [HOME, HOW]) {
+        await page.goto(path);
+        await expect(page.locator('main .lx-display-m, main h3.lx-subheadline')).toHaveCount(0);
+        for (const [role, selector] of Object.entries(ROLES)) {
+          const types = await page.locator(selector).evaluateAll((nodes) =>
+            nodes.map((node) => {
+              const style = getComputedStyle(node);
+              return `${style.fontFamily.split(',')[0]} ${style.fontSize} ${style.fontWeight} ${style.lineHeight}`;
+            }),
+          );
+          for (const type of types) (found[role] ??= new Set()).add(type);
+        }
+      }
+      for (const role of Object.keys(ROLES)) {
+        expect([...(found[role] ?? [])], `${role} a ${width}px`).toHaveLength(1);
+      }
+    }
+  });
+
+  test('[ADR-0003] teto tipográfico: nenhum texto do B2B maior que a Headline do Hero da Home na mesma largura, a 390, 768 e 1440 px', async ({
+    page,
+  }) => {
+    test.slow();
+    // `D-BP-23`: o Hero da Home é o maior papel do site. Cobre os papéis editoriais, a fórmula e qualquer outro texto.
+    const ROLES = {
+      'Hero Headline': 'main #inicio h1',
+      'Section Headline': 'main :is(h1, h2).lx-headline:not(.lx-headline--home-hero)',
+      'Internal Heading': 'main :is(h3, h4, h5, h6):not(.lx-eyebrow)',
+      Lead: 'main p.lx-subheadline',
+      Body: 'main :is(p, li).lx-body',
+      'Closing Statement': 'main .lx-section-closing p.lx-headline',
+      Fórmula: 'main .lx-equation, main .lx-equation *',
+    };
+    const sizes = (selector: string) =>
+      page
+        .locator(selector)
+        .evaluateAll((nodes) =>
+          nodes.map((node) => Number.parseFloat(getComputedStyle(node).fontSize)),
+        );
+    for (const width of [390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(HOME);
+      const [hero] = await sizes('main #inicio h1.lx-headline--home-hero');
+      expect(hero, `Hero a ${width}px`).toBeGreaterThan(0);
+      const measured: Record<string, number> = {};
+      for (const path of [HOME, HOW]) {
+        await page.goto(path);
+        for (const [role, selector] of Object.entries(ROLES)) {
+          const found = await sizes(selector);
+          measured[role] = (measured[role] ?? 0) + found.length;
+          for (const size of found)
+            expect(size, `${role} em ${path} a ${width}px`).toBeLessThanOrEqual(hero!);
+        }
+        // Qualquer outro texto: todo elemento com texto próprio no <main>.
+        const largest = await page
+          .locator('main')
+          .evaluate((main) =>
+            Math.max(
+              ...[...main.querySelectorAll('*')]
+                .filter((node) =>
+                  [...node.childNodes].some(
+                    (child) => child.nodeType === 3 && child.textContent?.trim(),
+                  ),
+                )
+                .map((node) => Number.parseFloat(getComputedStyle(node).fontSize)),
+            ),
+          );
+        expect(largest, `maior texto em ${path} a ${width}px`).toBeLessThanOrEqual(hero!);
+      }
+      // Cada papel existe em pelo menos uma das duas páginas (o teste não passa por omissão).
+      for (const role of Object.keys(ROLES)) expect(measured[role], role).toBeGreaterThan(0);
+    }
+  });
+
+  test('[WCAG 1.4.3] títulos no papel de headline da superfície, nunca na cor do corpo sobre Blue e Deep; contraste AA a 390, 768 e 1440 px', async ({
+    page,
+  }) => {
+    // Texto < 24 px (o peso não é bold) pede 4,5:1; ≥ 24 px é texto grande, 3:1 (`D-BP-20`).
+    for (const width of [390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const path of [HOME, HOW]) {
+        await page.goto(path);
+        const titles = await page
+          .locator('main :is(.lx-display-s, :is(h2, h3, h4, h5, h6).lx-subheadline)')
+          .evaluateAll((nodes) => {
+            const canvas = document.createElement('canvas').getContext('2d', {
+              willReadFrequently: true,
+            }) as CanvasRenderingContext2D;
+            const rgb = (color: string): [number, number, number] => {
+              canvas.clearRect(0, 0, 1, 1);
+              canvas.fillStyle = color;
+              canvas.fillRect(0, 0, 1, 1);
+              const [r = 0, g = 0, b = 0] = canvas.getImageData(0, 0, 1, 1).data;
+              return [r, g, b];
+            };
+            const linear = (value: number) => {
+              const channel = value / 255;
+              return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+            };
+            const luminance = (color: string) => {
+              const [r, g, b] = rgb(color);
+              return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+            };
+            return nodes.map((node) => {
+              const surface = node.closest('[data-surface]') as HTMLElement;
+              const style = getComputedStyle(node);
+              const roles = getComputedStyle(surface);
+              const pair = [luminance(style.color), luminance(roles.backgroundColor)];
+              const [high, low] = [Math.max(...pair), Math.min(...pair)];
+              return {
+                label: `${surface.dataset.surface} · ${node.textContent?.trim().slice(0, 30)}`,
+                surface: surface.dataset.surface,
+                size: Number.parseFloat(style.fontSize),
+                ratio: (high + 0.05) / (low + 0.05),
+                color: rgb(style.color).join(),
+                body: rgb(roles.getPropertyValue('--lx-color-fg')).join(),
+                headline: rgb(roles.getPropertyValue('--lx-color-headline')).join(),
+              };
+            });
+          });
+        expect(titles.length, path).toBeGreaterThan(0);
+        for (const title of titles) {
+          const label = `${title.label} a ${width}px`;
+          expect(title.ratio, label).toBeGreaterThanOrEqual(title.size >= 24 ? 3 : 4.5);
+          if (title.surface === 'blue' || title.surface === 'deep') {
+            expect(title.color, label).not.toBe(title.body);
+          } else {
+            expect(title.color, label).toBe(title.headline);
+          }
         }
       }
     }

@@ -37,6 +37,30 @@ function BenefitGroup({
 }
 
 /**
+ * Fórmula de valor (`D-BP-21`–`D-BP-23`): uma conta vertical — premissa, + premissa, a linha de cálculo, = resultado.
+ * As três linhas têm o mesmo papel (heading interno, `lx-display-s`); o resultado se distingue pela operação (a linha
+ * e o =), nunca pelo tamanho. + e = são o mesmo operador gráfico, visível e lido ("mais", "igual").
+ */
+function ValueEquation({ equation }: { readonly equation: typeof promise.equation }) {
+  const [moment, place] = equation.premises;
+  return (
+    <div className="lx-equation">
+      <p className="lx-equation__term lx-display-s">
+        <span>{moment}</span>
+      </p>
+      <p className="lx-equation__term lx-display-s">
+        <span className="lx-equation__operator">{equation.plus}</span>
+        <span>{place}</span>
+      </p>
+      <p className="lx-equation__term lx-equation__result lx-display-s">
+        <span className="lx-equation__operator">{equation.equals}</span>
+        <span>{equation.result}</span>
+      </p>
+    </div>
+  );
+}
+
+/**
  * Home Brand Partners `/brand-partner` (REQ-028; BP1.1, spec catalog §14.9, `D-BP-15`): PICTURE → PROBLEM → PROMISE →
  * Para a sua marca → Para quem vive → mecanismo → governança → PUSH sobre o Core. Fotografia M1–M5 pelo manifesto de
  * mídia (placeholder estrutural até o ensaio aprovado); nada aqui é prova, case ou parceria real.
@@ -66,7 +90,8 @@ export function BrandPartnersHomePage() {
         </div>
       </section>
 
-      {/* PROBLEM — Blue: a ordem das decisões em comparação editorial; o fechamento nomeia a diferença. */}
+      {/* PROBLEM — Blue: a lacuna da Brand Experience em duas perspectivas; o fechamento nomeia o que falta, sem ainda
+          nomear a solução (`D-BP-20`). */}
       <section
         id={PROBLEM}
         className="lx-section"
@@ -85,7 +110,7 @@ export function BrandPartnersHomePage() {
             {problem.sides.map((side) => (
               <div className="lx-comparison__item" key={side.title}>
                 <p className="lx-eyebrow">{side.label}</p>
-                <h3 className="lx-display-m">{side.title}</h3>
+                <h3 className="lx-display-s">{side.title}</h3>
                 <Paragraphs lines={side.text} />
               </div>
             ))}
@@ -97,34 +122,31 @@ export function BrandPartnersHomePage() {
         </div>
       </section>
 
-      {/* PROMISE — Sand, Editorial Split com o texto largo (M3): os códigos da marca orientam cada escolha. */}
+      {/* PROMISE — Sand, sem fotografia (`D-BP-22`): eyebrow e Headline no topo; o texto corrido à esquerda e a fórmula de
+          valor à direita, com o topo na primeira linha do texto (`D-BP-23`); no celular, introdução → fórmula → texto.
+          A primeira seção que nomeia Branded Second Home e Home Concept. */}
       <section
         id={PROMISE}
-        className="lx-section-split"
+        className="lx-section"
         data-surface="sand"
         aria-labelledby={titleOf(PROMISE)}
       >
-        <div className="lx-split lx-split--wide-text">
-          <div className="lx-split__text">
-            <div className="lx-split__inner">
-              <Eyebrow>{promise.marker}</Eyebrow>
-              <h2 id={titleOf(PROMISE)} className="lx-headline">
-                <HeadlineText headline={promise.title} />
-              </h2>
-              <p className="lx-body">{promise.intro}</p>
-              <ul className="lx-editorial-list">
-                {promise.sequence.map((line) => (
-                  <li key={line}>{line}</li>
-                ))}
-              </ul>
-              <Paragraphs lines={promise.body} />
-            </div>
+        <div className="lx-container lx-columns lx-columns--aside-text">
+          <div className="lx-stack">
+            <Eyebrow>{promise.marker}</Eyebrow>
+            <h2 id={titleOf(PROMISE)} className="lx-headline">
+              <HeadlineText headline={promise.title} />
+            </h2>
           </div>
-          <SplitMedia slot="m3" />
+          <p className="lx-body">{promise.intro}</p>
+          <ValueEquation equation={promise.equation} />
+          <div className="lx-stack">
+            <Paragraphs lines={promise.body} />
+          </div>
         </div>
       </section>
 
-      {/* Para a sua marca — Deep: escada da relação, cadeia causal, possibilidades × mecanismos e o limite. */}
+      {/* Para a sua marca — Deep: escada da relação, cadeia causal, possibilidades × mecanismos. */}
       <section
         id={BRAND}
         className="lx-section"
@@ -157,13 +179,11 @@ export function BrandPartnersHomePage() {
           </div>
           <BenefitGroup group={brand.possibilities} layout="pair" />
           <BenefitGroup group={brand.mechanisms} layout="trio" />
-          <div className="lx-section-note lx-stack">
-            <Paragraphs lines={brand.limit} />
-          </div>
         </div>
       </section>
 
-      {/* Para quem vive — Blue: M2 no início, depois os três pilares ao lado do diagrama de solução e o fechamento. */}
+      {/* Para quem vive — Blue: M2 no início; a frase de abertura dos pilares; os três pilares ao lado do diagrama de
+          solução no tamanho de referência da Home B2C, com o topo no 01 (`--reference`); e o fechamento. */}
       <section
         id={LIVING}
         className="lx-section-split"
@@ -183,29 +203,31 @@ export function BrandPartnersHomePage() {
           <SplitMedia slot="m2" />
         </div>
         <div className="lx-container">
-          <div className="lx-diagram lx-diagram--even">
-            <div className="lx-stack">
-              <p className="lx-subheadline">{living.lead}</p>
-              {living.pillars.map((pillar, index) => (
-                <div className="lx-stack" key={pillar.name}>
-                  <p className="lx-eyebrow">
-                    {ordinal(index)} · {pillar.name}
-                  </p>
-                  <h3 className="lx-display-s">{pillar.title}</h3>
-                  <Paragraphs lines={pillar.text} />
-                </div>
-              ))}
+          <div className="lx-stack">
+            <p className="lx-subheadline">{living.lead}</p>
+            <div className="lx-diagram lx-diagram--reference">
+              <div className="lx-stack">
+                {living.pillars.map((pillar, index) => (
+                  <div className="lx-stack lx-diagram__item" key={pillar.name}>
+                    <p className="lx-eyebrow">
+                      {ordinal(index)} · {pillar.name}
+                    </p>
+                    <h3 className="lx-display-s">{pillar.title}</h3>
+                    <Paragraphs lines={pillar.text} />
+                  </div>
+                ))}
+              </div>
+              <figure className="lx-diagram__figure">
+                {/* eslint-disable-next-line @next/next/no-img-element -- the original SVG is served verbatim (geometry preserved, CSP). */}
+                <img
+                  src="/diagrams/core/diagrama-solucao-luxtory.svg"
+                  alt={text.media.solutionDiagram}
+                  width={667}
+                  height={748}
+                  loading="lazy"
+                />
+              </figure>
             </div>
-            <figure className="lx-diagram__figure">
-              {/* eslint-disable-next-line @next/next/no-img-element -- the original SVG is served verbatim (geometry preserved, CSP). */}
-              <img
-                src="/diagrams/core/diagrama-solucao-luxtory.svg"
-                alt={text.media.solutionDiagram}
-                width={667}
-                height={748}
-                loading="lazy"
-              />
-            </figure>
           </div>
           <div className="lx-section-closing lx-stack">
             <p className="lx-subheadline">{living.closing.lead}</p>

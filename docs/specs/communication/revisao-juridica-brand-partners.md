@@ -1,7 +1,7 @@
 # Revisão jurídica da comunicação Brand Partners — pacote para o `P-LX-03` (BP1.1)
 
 > Material de trabalho para a revisão jurídica das páginas `/brand-partner` e `/brand-partner/como-funciona`
-> (copy `D-BP-15` com os ajustes `D-BP-18`, spec `catalog` §14.9). **Não é parecer jurídico:** organiza, verbatim, as
+> (copy `D-BP-15` com os ajustes `D-BP-18`, `D-BP-20` e `D-BP-21`, spec `catalog` §14.9). **Não é parecer jurídico:** organiza, verbatim, as
 > frases públicas que caem nos temas do `P-LX-03` ([`luxtory.md`](luxtory.md) §7), com a âncora canônica, a salvaguarda
 > que a copy já tem e a pergunta a responder. Preparado em 2026-10-12; a revisão em si é do advogado da Luxtory.
 
@@ -42,8 +42,8 @@ comercial aprofunda; o contrato formaliza. A segurança jurídica protege essa j
 | A. "Licenciamento" e remuneração da marca | `P-LX-03` | as páginas descrevem o uso autorizado e remunerado da marca da Brand Partner (L1) | Lei 9.279/1996 (licença de uso de marca); contrato de parceria |
 | B. Uso de marcas de terceiros e governança | `P-LX-03` | a página fala da marca do leitor e de como ela é usada, aprovada e protegida (L2, L3, L8, L9) | Lei 9.279/1996; instrumentos da parceria |
 | C. Ação de SPE para público indeterminado | `P-LX-03` | a página aberta descreve as modalidades Owner e Co-Owner, inclusive "Ação da SPE proprietária da residência" | Lei 6.385/1976 (valores mobiliários; contratos de investimento coletivo) e regulamentação da CVM; Lei 13.777/2018 (multipropriedade, para afastar a equiparação) |
-| D. Menção comparativa a categorias de alternativas | `P-LX-03` | o PROBLEM contrasta "Quando o produto vem primeiro" × "Quando a marca vem primeiro"; "Para quem vive" cita as alternativas de lazer | Lei 8.078/1990 (CDC, publicidade); Código do CONAR (comparativa) |
-| E. Luxtory Club, Créditos e mecanismos futuros | adicional | o R3 não opera: tudo é "modelo previsto"; Créditos descritos como "não são moeda, investimento" | CDC (oferta e publicidade); Lei 6.385/1976 |
+| D. Menção comparativa a categorias de alternativas | `P-LX-03` | o PROBLEM cita formatos de Brand Experience (eventos, ativações, collabs, varejo, hospitalidade), afirma que o mercado oferece poucas soluções de conexão emocional e contrasta "Experiências que geram impacto" × "Experiências que criam vínculo" (desde `D-BP-20`; antes, "Quando o produto vem primeiro" × "Quando a marca vem primeiro"); "Para quem vive" cita as alternativas de lazer | Lei 8.078/1990 (CDC, publicidade); Código do CONAR (comparativa) |
+| E. Luxtory Club, Créditos e mecanismos futuros | adicional | o R3 não opera: a seção do Club abre e fecha como "modelo previsto"; o Luxchange descreve converter dias do direito de uso em créditos equivalentes (desde `D-BP-21`, redação do fundador; sem a frase sobre a natureza dos Créditos desde `D-BP-20` — antes, "não são moeda, investimento") | CDC (oferta e publicidade); Lei 6.385/1976 |
 | F. Ausência de garantia de resultado | adicional | as ressalvas sobre demanda, vendas, receita, escala e replicação (REQ-101) | CDC arts. 30, 31 e 37 |
 
 Nenhuma empresa concorrente é nomeada e nenhuma marca de terceiro aparece nas páginas (só "a sua marca", genérica).
@@ -102,25 +102,27 @@ desse fluxo existiria oferta, e o que a página precisa (ou não) dizer? A anál
 
 ### D. Menção comparativa a categorias (Código do CONAR; CDC)
 
-Salvaguarda atual: nenhuma empresa, marca ou empreendimento nomeado; o contraste é entre ordens de decisão, não entre
-concorrentes.
+Salvaguarda atual: nenhuma empresa, marca ou empreendimento nomeado; o contraste é entre tipos de experiência de marca
+(desde `D-BP-20`; antes, entre ordens de decisão), não entre concorrentes, e cada formato citado "tem seu papel".
 
 | ID | Página · seção | Texto | Pergunta |
 |---|---|---|---|
-| J-21 | Home · O dilema da expansão | "Quando o produto vem primeiro — A marca entra depois." / "O empreendimento é concebido antes, e a marca chega como nome, selo ou decoração." / "O nome pode estar presente, mas aquilo que lhe dá sentido pode ficar de fora." | A comparação a uma categoria (empreendimentos com marca aplicada depois), sem nomear ninguém, é publicidade comparativa aceitável? |
+| J-21 | Home · O dilema da expansão | Desde `D-BP-20` (2026-10-13): "Eventos, ativações, collabs, varejo e hospitalidade aproximam pessoas da marca — e cada formato tem seu papel." / "O mercado ainda oferece poucas soluções capazes de criar conexões emocionais e memoráveis entre pessoas e marcas, transformando momentos de lazer em uma vivência significativa." / "O que já existe — Experiências que geram impacto." / "Mas, em geral, acontecem por um período limitado e terminam quando aquela experiência acaba." Antes: "Quando o produto vem primeiro — A marca entra depois." / "O empreendimento é concebido antes, e a marca chega como nome, selo ou decoração." / "O nome pode estar presente, mas aquilo que lhe dá sentido pode ficar de fora." | A menção a categorias de formatos de Brand Experience e a afirmação genérica sobre o mercado, sem nomear ninguém, são publicidade comparativa aceitável? |
 | J-22 | Home · Para quem vive | "A proposta Luxtory reúne em uma mesma arquitetura três valores que as alternativas de lazer tendem a separar." | Comparação genérica a "alternativas de lazer" — adequada? |
 | J-23 | Home · Para quem faz sentido; Como funciona · Para quem faz sentido | "Não se trata de exposição de logotipo." / "buscam apenas a exposição do logotipo;" | Sem ponto previsto; confirmar. |
 
 ### E. Luxtory Club, Créditos e mecanismos futuros (BR-146, BR-161, BR-190, BR-240; R3 não operacional)
 
 Salvaguarda atual: toda frase sobre o Club traz "o modelo prevê"/"quando disponível" ou vem depois dessa marca no mesmo
-bloco (teste de copy); condições de Membership, elegibilidade, disponibilidade, inventário e regras aplicáveis.
+bloco; na seção do Luxtory Club, a abertura e o fechamento enquadram a seção inteira e o Luxchange não repete a
+ressalva (`D-BP-20`) (teste de copy); condições de Membership, elegibilidade, disponibilidade, inventário e regras
+aplicáveis.
 
 | ID | Página · seção | Texto | Pergunta |
 |---|---|---|---|
 | J-24 | Como funciona · Luxtory Club | "O modelo Luxtory prevê o Luxtory Club: uma rede que, quando disponível, amplia as possibilidades de quem vive a Second Home além da própria residência." | Comunicar um mecanismo ainda inexistente, com essa ressalva, é seguro (oferta futura)? |
 | J-25 | Como funciona · Luxtory Club (Membership) | "Prevista como a associação do Titular ao Luxtory Club." / "Será condição para os mecanismos do Club e não altera propriedade, Ação ou Direito de Uso." / "O uso da própria residência não depende dela." | Confirmar. |
-| J-26 | Como funciona · Luxtory Club (Luxchange) | "O modelo prevê converter capacidade elegível em Créditos e usá-los em estadias em outras Second Homes da rede." / "Créditos serão uma unidade interna do Club: não são moeda, investimento nem garantia de disponibilidade." | A ressalva sobre Créditos é suficiente (natureza jurídica, consumidor, regulação financeira)? |
+| J-26 | Como funciona · Luxtory Club (Luxchange) | Desde `D-BP-21` (2026-10-13, redação do fundador): "O clube permite ao membro converter dias do seu direito de uso em créditos equivalentes para se hospedar em outras residências da rede." / "Sua Second Home deixa de estar limitada a um único endereço e passa a fazer parte de uma rede de destinos." Em `D-BP-20`: "O clube permite ao membro converter dias elegíveis da sua Second Home em créditos para se hospedar em outras residências da rede." Antes: "O modelo prevê converter capacidade elegível em Créditos e usá-los em estadias em outras Second Homes da rede." / "Créditos serão uma unidade interna do Club: não são moeda, investimento nem garantia de disponibilidade." | Com a seção enquadrada como modelo previsto (J-24, J-27) e sem frase própria sobre a natureza dos Créditos, a descrição é adequada (natureza jurídica, consumidor, regulação financeira)? |
 | J-27 | Como funciona · Luxtory Club (Luxplus, limite) | "O modelo prevê reservar noites adicionais, quando disponíveis no inventário da Luxtory." / "O Luxtory Club e seus mecanismos fazem parte do modelo previsto." / "Quando disponíveis, dependerão de Membership vigente, elegibilidade, disponibilidade, inventário e regras aplicáveis." | Confirmar. |
 | J-28 | Home · Para quem vive (Liberdade); Home · Como acontece (06); Como funciona · Percurso (07) | "O modelo prevê ainda o Luxtory Club: quando disponível, estadias em outras Second Homes da rede, conforme Membership, elegibilidade, disponibilidade e regras aplicáveis." / "O modelo prevê que ela possa integrar o Luxtory Club, quando disponível e atendidas as condições aplicáveis." / "O modelo prevê que a integração ao Luxtory Club possa fazer parte dessa continuidade, quando disponível e desde que atendidas as condições aplicáveis." / "Ela não é automática." | Como J-24. |
 | J-29 | Como funciona · Luxtory Club ("E para a marca?") | "Quando os mecanismos do Club estiverem disponíveis, a participação de uma residência neles exigirá conformidade com os padrões Luxtory e com o Home Concept." / "A exposição pública da marca, inclusive nos canais do Club, segue o plano estratégico aprovado pela Brand Partner." | Confirmar. |
@@ -129,7 +131,7 @@ bloco (teste de copy); condições de Membership, elegibilidade, disponibilidade
 
 | ID | Página · seção | Texto | Pergunta |
 |---|---|---|---|
-| J-30 | Home · Para a sua marca | "O modelo cria as condições; os resultados não são prometidos." / "Demanda, vendas, receita, escala e replicação dependem de cada oportunidade e não são garantidas." | A ressalva é suficiente e visível (fica numa nota ao fim da seção)? |
+| J-30 | Home · Para a sua marca | Retirado da página em 2026-10-13 (`D-BP-20`, sem substituto): "O modelo cria as condições; os resultados não são prometidos." / "Demanda, vendas, receita, escala e replicação dependem de cada oportunidade e não são garantidas." | Sem texto na página; a ausência de garantia segue em J-32 e J-33. |
 | J-31 | Home · Para a sua marca | "A marca apresenta a possibilidade à sua comunidade, e o interesse pode ser conhecido antes de um lançamento." / "Manifestar interesse não é aquisição." / "Um Home Concept pode originar lançamentos em outras regiões, quando direitos, estratégia, demanda e viabilidade permitirem." | Confirmar. |
 | J-32 | Como funciona · Condições e expansão | "Cada oportunidade precisa encontrar interesse e condições reais para ser realizada." / "A estrutura ajuda a avaliar essas condições, mas não elimina as incertezas do mercado." / "Demanda, vendas, receita, retorno, escala e replicação não são garantidos." | Confirmar. |
 | J-33 | Home · Para quem faz sentido; Como funciona · Próximo passo; Home · Conversa | "Demanda, escala e resultados financeiros não são garantidos." / "Iniciar a conversa não pressupõe parceria, criação de Home Concept ou lançamento." / "O envio inicia uma conversa. Não formaliza uma parceria nem gera obrigação de avançar." | Confirmar. |

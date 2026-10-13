@@ -38,7 +38,7 @@ export function AnswerRows({
     <div className="lx-answers">
       {answers.map(({ question, answer }) => (
         <div className="lx-answers__row" key={question}>
-          <h3 className="lx-answers__label lx-subheadline">{nb(question)}</h3>
+          <h3 className="lx-answers__label lx-display-s">{nb(question)}</h3>
           <div className="lx-answers__content">
             <Paragraphs lines={answer} />
           </div>

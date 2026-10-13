@@ -75,7 +75,7 @@
 | 4.1 | Coleção: discovery curatorial (dados, Admin, mídia, filtros, página final) | catalog | complementa REQ-020, REQ-022 | 4 | — | R1 | ✅ (#36, `3c26d60`; Production confirmada pelo fundador) |
 | BP0 | Product Gate, contratos públicos e portal planejado | docs | — (especifica REQ-028/029) | 4.1 | — | B2B | ✅ (#39) |
 | BP1 | Home + Como funciona + formulário Resend, QA e publicação | catalog, platform (Core DS) | REQ-028 | BP0 | — | B2B | ✅ implementada (#40, #41); Production fechada até o go-live |
-| BP1.1 | Brand Partners Communication Upgrade: copy e composição do Decision & Approval Pack, Framework de 2026-10-12 | catalog (presentation), Core DS, docs | — (complementa REQ-028) | BP1 | — | B2B | ✅ implementação concluída em 2026-10-12 (PR #42, portão fechado); publicação depende de P-LX-03 e das verificações externas de pré-go-live |
+| BP1.1 | Brand Partners Communication Upgrade: copy e composição do Decision & Approval Pack, Framework de 2026-10-12 | catalog (presentation), Core DS, docs | — (complementa REQ-028) | BP1 | — | B2B | ✅ implementação concluída em 2026-10-12 (PR #42, portão fechado); merged em `0f33dcf` (2026-10-13); refinamento pós-merge `D-BP-20` em revisão; publicação depende de P-LX-03 e das verificações externas de pré-go-live |
 | BP2 | Portal autenticado read-only com dados reais da própria parceria | identity, catalog, ownership | REQ-029 | BP0, critérios de entrada; representação/fatos canônicos de W7/W8 | — | B2B | ⛔ critérios de entrada ainda não satisfeitos |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ |
 | 6 | Interesse — formulário público | ownership | — | 4, 5 | — | R1 | ⛔ P-3 |
@@ -616,6 +616,17 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   B2C → B2B e aceite visual final; diretriz de comunicação `D-BP-19`. O que falta para publicar é externo ao
   desenvolvimento (P-LX-03, direitos das fotografias, aviso de privacidade se exigido, configuração de Production,
   autorizações) e não reabre a wave.
+- **Merge (2026-10-13):** PR #42 por squash → `main` @ `0f33dcf`; CI da `main` verde (lint, typecheck, test, e2e,
+  security, migrate, deploy); Production com o B2C sem regressão e o portão fechado (`/brand-partner*` → 404).
+- **Refinamento comercial pós-merge (2026-10-13, `D-BP-20`):** copy e composição visual, sem nova wave funcional —
+  "O dilema da expansão" e "Uma nova lógica" (tensão → resposta), "Para a sua marca" sem a nota de limite, Luxchange,
+  diagrama de "Para quem vive" no tamanho da Home B2C e títulos no papel de headline
+  ([catalog §14.9](../specs/catalog.md#149-bp11--brand-partners-communication-upgrade-2026-10-12)). PR draft próprio,
+  parado no Preview até o aceite visual do fundador.
+- **Aceite visual final do refinamento (2026-10-13):** `D-BP-20` a `D-BP-23` aprovados pelo fundador sobre `10c2816`
+  (Home e Como funciona a 390, 768 e 1440 px; detalhe no item 6 dos checkpoints do catalog §14.9), com a CI verde.
+  O PR aguarda a decisão de merge do fundador; o merge publica em Production com o portão fechado, e abrir o portão é
+  autorização separada.
 
 ### BP2 — Portal Brand Partner (evolução planejada)
 
