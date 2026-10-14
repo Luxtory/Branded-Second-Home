@@ -1076,6 +1076,10 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
   marca em experiência" → "Uma conexão mais profunda e duradoura com sua marca." No desktop, o card fica centrado
   verticalmente em relação ao bloco lateral completo (eyebrow, título, introdução e corpo).
   No celular, permanece a ordem cabeça → introdução → fórmula → corpo. Demais elementos preservados.
+- **Ajuste final do fundador (2026-10-14; `D-BP-26`):** card centrado somente no texto corrido lateral, do início
+  da introdução ("Quando a experiência nasce do Brand DNA…") ao fim do corpo ("A Luxtory traduz o Brand DNA em um
+  Home Concept…"), sem considerar eyebrow e headline. O card ocupa as linhas 2 e 3 da grade com `align-self: center`.
+  Demais elementos de `D-BP-25` aprovados; commit, push e publicação pelo GitHub autorizados.
  (PICTURE → PROBLEM → PROMISE → PROOF → PUSH):
 
 | `id` | Função | Composição Core | Mídia |

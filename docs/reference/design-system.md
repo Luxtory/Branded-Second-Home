@@ -647,11 +647,11 @@ Opt-in, sem efeito no B2C (spec `catalog` §14.9, `D-BP-20`):
     texto Warm Sand em Newsreader itálico, mantendo `lx-display-s`. O + fica em um parágrafo próprio
     (`lx-equation__operator.lx-display-s`, utility medium) entre as premissas; o resultado usa a régua no topo,
     sem =. `lx-columns--aside-text` mantém os quatro filhos e a ordem de leitura: cabeça → introdução → card → corpo.
-    No desktop, o card se centraliza verticalmente no bloco lateral completo (`grid-row: 1 / span 3`,
+    No desktop, desde `D-BP-26`, o card se centraliza verticalmente somente no texto corrido, sem a headline (`grid-row: 2 / span 2`,
     `align-self: center`); as três linhas da grade usam tamanho `auto`.
 - Cabeça, texto corrido e o elemento principal ao lado do texto: `div.lx-columns.lx-columns--aside-text` com quatro
   filhos — cabeça (eyebrow, Headline), o primeiro bloco do texto, o principal e o resto do texto. Do `lg`, a cabeça no topo
-  da coluna inicial, o texto abaixo dela e o principal na coluna final, centrado verticalmente ao texto (`D-BP-25`;
+  da coluna inicial, o texto abaixo dela e o principal na coluna final, centrado verticalmente ao texto corrido (`D-BP-26`; em `D-BP-25`, incluía a headline;
   em `D-BP-23`, o topo ficava na primeira linha). No celular, nessa ordem, com um gap a mais em volta do principal.
   (Substitui o `--aside-even` de `D-BP-22`, que centralizava.)
 - Teto tipográfico: `SiteShell typeCeiling="home-hero"` põe `main.lx-type-ceiling`. A escala do Hero da Home

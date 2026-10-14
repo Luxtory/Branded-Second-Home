@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Brand Partners, alinhamento final (`D-BP-26`): card da fórmula centrado somente nos quatro parágrafos laterais, sem incluir eyebrow e headline.
 - Brand Partners, "Uma nova lógica" (`D-BP-25`): fórmula na redação solicitada, em card de cantos retos com fundo
   Dark Moroccan Blue, texto Warm Sand em itálico, + em linha própria e régua antes do resultado. Card centrado
   verticalmente ao texto lateral; restante da seção e ordem no celular preservados.

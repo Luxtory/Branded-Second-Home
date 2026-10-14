@@ -316,7 +316,6 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
           formula: node.getBoundingClientRect().toJSON(),
           intro: columns.children[1]!.getBoundingClientRect().toJSON(),
           heading: columns.querySelector('h2')!.getBoundingClientRect().toJSON(),
-          textStart: columns.firstElementChild!.getBoundingClientRect().top,
           body: columns.lastElementChild!.getBoundingClientRect().toJSON(),
         };
       });
@@ -336,7 +335,7 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
         expect(
           Math.abs(
             (formula.formula.top + formula.formula.bottom) / 2 -
-              (formula.textStart + formula.body.bottom) / 2,
+              (formula.intro.top + formula.body.bottom) / 2,
           ),
         ).toBeLessThan(1);
         expect(formula.formula.left).toBeGreaterThan(formula.intro.right);
