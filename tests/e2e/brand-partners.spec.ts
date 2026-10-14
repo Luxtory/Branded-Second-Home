@@ -279,83 +279,72 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     }
   });
 
-  test('[REQ-028] Uma nova lógica: a fórmula como conta vertical — três linhas com a mesma tipografia, + e = visíveis, a linha de cálculo e o topo na primeira linha do texto, a 390, 768 e 1440 px', async ({
+  test('[REQ-028] Uma nova lógica: card reto em Deep, fórmula em Warm Sand itálico e centro alinhado ao texto lateral', async ({
     page,
   }) => {
     const { equation } = text.home.promise;
-    for (const width of [390, 768, 1440]) {
+    for (const width of [360, 390, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(HOME);
+      await page.evaluate(() => document.fonts.ready);
       const section = page.locator('#proposta');
       await expect(section.locator('img, picture, [data-media-slot]')).toHaveCount(0);
       const formula = await section.locator('.lx-equation').evaluate((node) => {
-        const type = (element: Element) => {
-          const style = getComputedStyle(element);
-          return `${style.fontFamily} ${style.fontSize} ${style.fontWeight} ${style.lineHeight}`;
-        };
-        const look = (element: Element) => {
-          const style = getComputedStyle(element);
-          return `${type(element)} ${style.color} ${style.opacity} ${style.visibility}`;
-        };
-        const lines = [...node.querySelectorAll(':scope > .lx-equation__term')];
-        const operators = [...node.querySelectorAll('.lx-equation__operator')];
-        const texts = lines.map((line) => line.lastElementChild!);
+        const style = getComputedStyle(node);
+        const terms = [...node.querySelectorAll('.lx-equation__term')];
         const result = node.querySelector('.lx-equation__result')!;
+        const operator = node.querySelector('.lx-equation__operator')!;
         const columns = node.parentElement!;
         return {
-          lines: lines.map((line) => [...line.children].map((child) => child.textContent?.trim())),
-          types: lines.map(type),
-          operators: operators.map(look),
-          operatorBoxes: operators.map((operator) => operator.getBoundingClientRect().toJSON()),
-          textBoxes: texts.map((text) => text.getBoundingClientRect().toJSON()),
+          lines: terms.map((term) => term.textContent?.trim()),
+          styles: terms.map((term) => {
+            const style = getComputedStyle(term);
+            return { color: style.color, italic: style.fontStyle, size: style.fontSize };
+          }),
+          background: style.backgroundColor,
+          corners: [
+            style.borderTopLeftRadius,
+            style.borderTopRightRadius,
+            style.borderBottomLeftRadius,
+            style.borderBottomRightRadius,
+          ],
+          padding: Number.parseFloat(style.paddingInlineStart),
           line: Number.parseFloat(getComputedStyle(result).borderTopWidth),
           result: result.getBoundingClientRect().toJSON(),
+          operator: operator.getBoundingClientRect().toJSON(),
+          plus: operator.textContent,
           formula: node.getBoundingClientRect().toJSON(),
           intro: columns.children[1]!.getBoundingClientRect().toJSON(),
           heading: columns.querySelector('h2')!.getBoundingClientRect().toJSON(),
           body: columns.lastElementChild!.getBoundingClientRect().toJSON(),
         };
       });
-      // Premissa, + premissa, = resultado (`D-BP-23`).
-      expect(formula.lines).toEqual([
-        [equation.premises[0]],
-        [equation.plus, equation.premises[1]],
-        [equation.equals, equation.result],
-      ]);
-      // As três linhas com a mesma tipografia: o resultado se distingue pela operação, não pelo tamanho.
-      const [first, second, result] = formula.types;
-      expect(second, `premissa 2 = premissa 1 a ${width}px`).toBe(first);
-      expect(result, `resultado = premissa 1 a ${width}px`).toBe(first);
-      // + e = visíveis, com o mesmo tratamento, à esquerda do texto da linha e na mesma linha de base.
-      const [plus, equals] = formula.operators;
-      expect(equals, `+ e = iguais a ${width}px`).toBe(plus);
-      expect(plus, `operador visível a ${width}px`).toMatch(/ 1 visible$/);
-      formula.operatorBoxes.forEach((box, index) => {
-        const text = formula.textBoxes[index + 1]!;
-        expect(box.right, `operador antes do texto a ${width}px`).toBeLessThanOrEqual(text.left);
-        expect(
-          Math.abs(box.top - text.top),
-          `operador na primeira linha a ${width}px`,
-        ).toBeLessThan(4);
-      });
-      expect(new Set(formula.textBoxes.map((box) => box.left)).size, 'um só eixo de texto').toBe(1);
-      expect(formula.line, `linha de cálculo a ${width}px`).toBeGreaterThanOrEqual(1);
-      expect(formula.result.width, `linha atravessa a fórmula a ${width}px`).toBe(
-        formula.formula.width,
-      );
+      expect(formula.background).toBe('rgb(0, 61, 82)');
+      expect(formula.corners).toEqual(['0px', '0px', '0px', '0px']);
+      expect(formula.lines).toEqual([...equation.premises, equation.result]);
+      for (const style of formula.styles) {
+        expect(style.color).toBe('rgb(205, 173, 142)');
+        expect(style.italic).toBe('italic');
+        expect(style.size).toBe(formula.styles[0]!.size);
+      }
+      expect(formula.plus).toBe(equation.plus);
+      expect(formula.line).toBeGreaterThanOrEqual(1);
+      expect(formula.result.width).toBeCloseTo(formula.formula.width - formula.padding * 2, 0);
+      expect(formula.operator.top).toBeGreaterThan(formula.formula.top);
       if (width >= 1024) {
-        // O topo da fórmula na primeira linha do texto corrido, ao lado dele (estrutural, sem centralizar).
         expect(
-          Math.abs(formula.formula.top - formula.intro.top),
-          `topo da fórmula a ${width}px`,
+          Math.abs(
+            (formula.formula.top + formula.formula.bottom) / 2 -
+              (formula.intro.top + formula.body.bottom) / 2,
+          ),
         ).toBeLessThan(1);
         expect(formula.formula.left).toBeGreaterThan(formula.intro.right);
       } else {
-        // Uma coluna: Headline → introdução → fórmula → texto restante.
         expect(formula.intro.top).toBeGreaterThan(formula.heading.bottom);
         expect(formula.formula.top).toBeGreaterThan(formula.intro.bottom);
         expect(formula.body.top).toBeGreaterThan(formula.formula.bottom);
       }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
     }
   });
 

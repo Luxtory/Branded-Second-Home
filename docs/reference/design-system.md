@@ -643,10 +643,17 @@ Opt-in, sem efeito no B2C (spec `catalog` §14.9, `D-BP-20`):
     pelo leitor de tela) e a terceira também é `.lx-equation__result` (a linha de cálculo no topo). Os operadores usam
     a fonte utility em peso medium, no tamanho da linha, num gutter (`space-8`; `space-12` do `md`); o texto das três
     linhas começa num só eixo. Nenhuma linha maior que as outras.
+  - Desde `D-BP-25`, `div.lx-equation[data-surface="deep"]` é um card reto, com padding dos tokens de espaço,
+    texto Warm Sand em Newsreader itálico, mantendo `lx-display-s`. O + fica em um parágrafo próprio
+    (`lx-equation__operator.lx-display-s`, utility medium) entre as premissas; o resultado usa a régua no topo,
+    sem =. `lx-columns--aside-text` mantém os quatro filhos e a ordem de leitura: cabeça → introdução → card → corpo.
+    No desktop, desde `D-BP-26`, o card se centraliza verticalmente somente no texto corrido, sem a headline (`grid-row: 2 / span 2`,
+    `align-self: center`); as três linhas da grade usam tamanho `auto`.
 - Cabeça, texto corrido e o elemento principal ao lado do texto: `div.lx-columns.lx-columns--aside-text` com quatro
   filhos — cabeça (eyebrow, Headline), o primeiro bloco do texto, o principal e o resto do texto. Do `lg`, a cabeça no topo
-  da coluna inicial, o texto abaixo dela e o principal na coluna final com o topo na primeira linha do texto; no celular,
-  nessa ordem, com um gap a mais em volta do principal. (Substitui o `--aside-even` de `D-BP-22`, que centralizava.)
+  da coluna inicial, o texto abaixo dela e o principal na coluna final, centrado verticalmente ao texto corrido (`D-BP-26`; em `D-BP-25`, incluía a headline;
+  em `D-BP-23`, o topo ficava na primeira linha). No celular, nessa ordem, com um gap a mais em volta do principal.
+  (Substitui o `--aside-even` de `D-BP-22`, que centralizava.)
 - Teto tipográfico: `SiteShell typeCeiling="home-hero"` põe `main.lx-type-ceiling`. A escala do Hero da Home
   (`--lx-type-home-hero`, a mesma do `h1.lx-headline--home-hero`) limita `lx-headline`, `lx-statement`, `lx-display-*` e
   `lx-ordinal` com `min()`; os outros papéis já ficam abaixo dela. O Hero não muda.

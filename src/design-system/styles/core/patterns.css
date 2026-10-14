@@ -850,36 +850,31 @@
     color: var(--lx-color-headline);
   }
 
-  /* Value Equation — a vertical sum: premise, + premise, the calculation line, = result. The three lines share one type
-   * role from the markup (lx-display-s): the result stands apart by the operation — the line and the =, never by size.
-   * + and = are the same graphic operator: utility face, medium weight, full opacity, the size of the line they open,
-   * on a start gutter; the text of every line starts on one axis. No card, box or fill. */
+  /* Value Equation — square Deep card, Warm Sand italic display text, a standalone + and the calculation rule.
+   * All three phrases keep the section-title scale; the result is separated by the rule, not a larger size. */
   [data-lx="core"] .lx-equation {
-    --lx-equation-gutter: var(--lx-space-8);
     display: grid;
     row-gap: var(--lx-space-3);
+    padding: var(--lx-space-8) var(--lx-space-6);
+    border-radius: 0;
+    text-align: center;
   }
-  [data-lx="core"] .lx-equation__term {
-    display: flex;
-    align-items: baseline;
-    padding-inline-start: var(--lx-equation-gutter);
+  [data-lx="core"] .lx-equation :is(.lx-equation__term, .lx-equation__operator) {
+    color: var(--lx-color-headline);
+    font-style: italic;
   }
   [data-lx="core"] .lx-equation__operator {
-    flex: none;
-    inline-size: var(--lx-equation-gutter);
-    margin-inline-start: calc(-1 * var(--lx-equation-gutter));
     font-family: var(--lx-font-utility);
     font-weight: var(--lx-weight-medium);
-    color: var(--lx-color-accent);
   }
   [data-lx="core"] .lx-equation__result {
     margin-top: var(--lx-space-3);
-    padding-top: var(--lx-space-4);
+    padding-top: var(--lx-space-6);
     border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
   }
   @media (min-width: 48rem) {
     [data-lx="core"] .lx-equation {
-      --lx-equation-gutter: var(--lx-space-12);
+      padding: var(--lx-space-12) var(--lx-space-8);
     }
   }
 
@@ -1207,7 +1202,7 @@
 
   /* Columns --aside — 5/7 whose start column continues after the main one (e.g. a form's purpose under its intro):
    * DOM and phone order head → main → aside; from lg the aside returns under the head. */
-  /* Columns --aside-text (below, from lg): one stack gap between the blocks of text; on phones the main element keeps one
+  /* Columns --aside-text: one stack gap between the blocks of text; on phones the main element keeps one
    * more gap on each side, as a composition of its own. */
   [data-lx="core"] .lx-columns--aside-text {
     row-gap: var(--lx-space-6);
@@ -1232,11 +1227,9 @@
       grid-column: 1 / span 5;
       grid-row: 2;
     }
-    /* --aside-text: head, the first block of running text, the main element and the rest of the text — on phones in that
-     * order; from lg the head on top of the start column, the text under it and the main element beside the text, its
-     * top on the text's first line (structural, no offset). */
+    /* --aside-text: the main element centered against the running text, excluding the heading. */
     [data-lx="core"] .lx-columns--aside-text {
-      grid-template-rows: auto auto 1fr;
+      grid-template-rows: auto auto auto;
       align-items: start;
     }
     [data-lx="core"] .lx-columns--aside-text > :nth-child(1) {
@@ -1246,10 +1239,12 @@
     [data-lx="core"] .lx-columns--aside-text > :nth-child(2) {
       grid-column: 1 / span 6;
       grid-row: 2;
+      align-self: end;
     }
     [data-lx="core"] .lx-columns--aside-text > :nth-child(3) {
       grid-column: 7 / span 6;
       grid-row: 2 / span 2;
+      align-self: center;
       margin-block: 0;
     }
     [data-lx="core"] .lx-columns--aside-text > :nth-child(4) {
