@@ -127,11 +127,10 @@ export const brandPartnersMessages = {
       equation: {
         premises: [
           'Seu público vivendo momentos extraordinários com quem ama',
-          'Um lugar que transforma a identidade compartilhada com a sua marca em experiência',
+          'Um lugar que transforma a identidade da sua marca em experiência',
         ],
         plus: '+',
-        equals: '=',
-        result: 'Uma conexão mais profunda, emocional e duradoura com a sua marca.',
+        result: 'Uma conexão mais profunda e duradoura com sua marca.',
       },
       body: [
         'Cada decisão transforma códigos de marca em uma experiência que pode ser vivida, compartilhada e lembrada.',

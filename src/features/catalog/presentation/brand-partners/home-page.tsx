@@ -37,23 +37,21 @@ function BenefitGroup({
 }
 
 /**
- * Fórmula de valor (`D-BP-21`–`D-BP-23`): uma conta vertical — premissa, + premissa, a linha de cálculo, = resultado.
- * As três linhas têm o mesmo papel (heading interno, `lx-display-s`); o resultado se distingue pela operação (a linha
- * e o =), nunca pelo tamanho. + e = são o mesmo operador gráfico, visível e lido ("mais", "igual").
+ * Fórmula de valor (`D-BP-25`): card Deep com texto Warm Sand em itálico, um + entre as premissas e a régua antes
+ * do resultado. As três frases mantêm a escala de heading interno (`lx-display-s`).
  */
 function ValueEquation({ equation }: { readonly equation: typeof promise.equation }) {
   const [moment, place] = equation.premises;
   return (
-    <div className="lx-equation">
+    <div className="lx-equation" data-surface="deep">
       <p className="lx-equation__term lx-display-s">
         <span>{moment}</span>
       </p>
+      <p className="lx-equation__operator lx-display-s">{equation.plus}</p>
       <p className="lx-equation__term lx-display-s">
-        <span className="lx-equation__operator">{equation.plus}</span>
         <span>{place}</span>
       </p>
       <p className="lx-equation__term lx-equation__result lx-display-s">
-        <span className="lx-equation__operator">{equation.equals}</span>
         <span>{equation.result}</span>
       </p>
     </div>
@@ -122,8 +120,8 @@ export function BrandPartnersHomePage() {
         </div>
       </section>
 
-      {/* PROMISE — Sand, sem fotografia (`D-BP-22`): eyebrow e Headline no topo; o texto corrido à esquerda e a fórmula de
-          valor à direita, com o topo na primeira linha do texto (`D-BP-23`); no celular, introdução → fórmula → texto.
+      {/* PROMISE — Sand, sem fotografia: eyebrow e Headline no topo; texto corrido à esquerda e o card da fórmula
+          centrado verticalmente ao lado dele (`D-BP-25`); no celular, introdução → fórmula → texto.
           A primeira seção que nomeia Branded Second Home e Home Concept. */}
       <section
         id={PROMISE}

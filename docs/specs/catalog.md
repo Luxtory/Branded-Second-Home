@@ -1069,6 +1069,13 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
     menor entre a própria escala e a do Hero; os demais papéis já ficam abaixo. Medido: Hero 35,1 / 28 / 39,6 px e
     maior texto fora do Hero 28 / 28 / 39,6 px a 390 / 768 / 1440 px (antes, 48 px a 1440). Teste E2E de teto e de
     igualdade da fórmula a 390, 768 e 1440 px.
+- **Ajuste pontual do fundador (2026-10-14; `D-BP-25`):** em "Uma nova lógica", a fórmula passa a um card de
+  cantos retos em Dark Moroccan Blue (`deep`), com as três frases em Warm Sand e Newsreader itálico na escala de
+  heading interno (`lx-display-s`). O + ocupa uma linha própria; a régua separa o resultado, sem sinal =.
+  Copy: "Seu público vivendo momentos extraordinários com quem ama" + "Um lugar que transforma a identidade da sua
+  marca em experiência" → "Uma conexão mais profunda e duradoura com sua marca." No desktop, o card fica centrado
+  verticalmente em relação ao bloco lateral completo (eyebrow, título, introdução e corpo).
+  No celular, permanece a ordem cabeça → introdução → fórmula → corpo. Demais elementos preservados.
  (PICTURE → PROBLEM → PROMISE → PROOF → PUSH):
 
 | `id` | Função | Composição Core | Mídia |
