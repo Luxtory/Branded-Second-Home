@@ -56,6 +56,29 @@
   [data-lx="core"] .lx-closings-subtle .lx-section-closing.lx-stack {
     gap: var(--lx-space-4);
   }
+  /* One centred hairline before each B2C closing block, including the triad and cinematic closing copy. */
+  [data-lx="core"] .lx-closings-subtle :is(
+    .lx-section-closing,
+    .lx-triad-statement__statement,
+    .lx-hero--closing .lx-hero__copy > :is(.lx-headline, .lx-subheadline, .lx-lead, .lx-body):first-child
+  ) {
+    position: relative;
+    padding-block-start: var(--lx-space-6);
+  }
+  [data-lx="core"] .lx-closings-subtle :is(
+    .lx-section-closing,
+    .lx-triad-statement__statement,
+    .lx-hero--closing .lx-hero__copy > :is(.lx-headline, .lx-subheadline, .lx-lead, .lx-body):first-child
+  )::before {
+    content: "";
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    width: var(--lx-space-24);
+    max-width: 100%;
+    margin-inline: auto;
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
   /* A closing that is also the container keeps the same text width (its gutters come on top). */
   [data-lx="core"] .lx-container.lx-section-closing {
     max-width: calc(var(--lx-layout-container-narrow) + 2 * var(--lx-layout-margin));

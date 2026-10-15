@@ -550,6 +550,11 @@ Todos os textos dos fechamentos passam a usar `type.page-title` (24–36 px), a 
 Statements sobre Blue usam Warm Sand em toda a escala, agora sempre de texto grande; fotografia mantém branco.
 Substitui somente os tamanhos e a derivação de contraste descritos no parágrafo anterior; o card permanece igual.
 
+**Separação dos fechamentos (`D-B2C-24`, 2026-10-15).** Uma linha fina centralizada antecede cada bloco
+de fechamento editorial, inclusive tríade e texto do Hero final. Usa `border.hairline` (1 px), `color.rule`,
+largura `space-24` (96 px) e distância até o texto `space-6` (24 px), sem repetir a linha entre seus parágrafos.
+É decorativa, restrita ao B2C e não aparece em um Hero final que contenha somente ações.
+
 ### 13.11 Como funciona — Especificação Visual e Copy do fundador (2026-10-06)
 
 > Brief de página de `/como-funciona` sobre o Core Design System; prevalece sobre as linhas do Como funciona da tabela

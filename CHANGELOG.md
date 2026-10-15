@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- B2C (`D-B2C-24`): linha fina centralizada antes de cada bloco de fechamento editorial, com separação discreta.
 - B2C (`D-B2C-23`): fechamentos ampliados para a escala da frase "o lifestyle com o qual você se identifica."
   da Home (24–36 px), mantendo Newsreader itálico.
 - B2C (`D-B2C-22`): card de alternativas com fontes menores e uniformes, três opções lado a lado e seleção em
