@@ -87,6 +87,34 @@
     line-height: var(--lx-leading-support);
     color: var(--lx-color-fg);
   }
+  /* B2C italic closings use the same responsive scale as the Home's lifestyle phrase (D-B2C-23),
+   * with the real Newsreader italic face for both the statement and its supporting lines. */
+  [data-lx="core"] .lx-closings-subtle :is(
+    .lx-section-closing.lx-headline,
+    .lx-section-closing :is(.lx-headline, .lx-subheadline, .lx-closing, .lx-body, .lx-lead),
+    .lx-triad-statement__statement,
+    .lx-triad-statement__closing,
+    .lx-hero--closing :is(.lx-headline, .lx-subheadline, .lx-lead, .lx-body)
+  ) {
+    font-family: var(--lx-font-display);
+    font-weight: var(--lx-weight-display);
+    font-size: var(--lx-type-page-title);
+    font-style: italic;
+    line-height: var(--lx-leading-support);
+  }
+  [data-lx="core"] .lx-closings-subtle :is(
+    .lx-section-closing.lx-headline,
+    .lx-section-closing .lx-headline,
+    .lx-triad-statement__statement,
+    .lx-hero--closing .lx-headline
+  ) {
+    line-height: var(--lx-leading-tight);
+    color: var(--lx-color-headline);
+  }
+  /* The scale starts at 24px, so Warm Sand meets large-text contrast on Blue; photograph overlays use White. */
+  [data-lx="core"] .lx-closings-subtle .lx-hero--closing .lx-headline {
+    color: var(--lx-palette-pure-white);
+  }
   /* Emphasis only where the copy authorises it: Newsreader italic, same size, metrics and colour as the headline. */
   [data-lx="core"] :is(.lx-statement, .lx-headline, .lx-ordinal, .lx-title, .lx-closing) em,
   [data-lx="core"] :is(.lx-display-2xl, .lx-display-xl, .lx-display-l, .lx-display-m, .lx-display-s) em {

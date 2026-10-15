@@ -20,6 +20,7 @@ export function DiscoverySite({
     <SiteShell
       homeHref={discoveryPaths.home}
       labels={text.site}
+      closingStyle="subtle"
       overlayHeader={current === 'home' || current === 'howItWorks'}
       retractableMenu={current === 'home' || current === 'howItWorks' || current === 'collection'}
       navItems={[

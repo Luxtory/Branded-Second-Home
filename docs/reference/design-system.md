@@ -540,7 +540,18 @@ Complementares consumidos pela W4: `lx-diagram` (Text + Diagram, `/diagrams/core
   que vem depois vai num `lx-container`.
 - Painel interativo de alternativas: `div.lx-panel-switch` > `fieldset.lx-panel-switch__options` (legend oculta;
   `label.lx-panel-switch__option > input[type=radio]`) + região viva com `dl.lx-panel-switch__rows` +
-  `p.lx-panel-switch__caption`.
+  `p.lx-panel-switch__caption`. Desde `D-B2C-22`, o painel é um container de tamanho inline; opções, atributos e
+  valores usam `--lx-panel-type`, entre `type.label` e `type.section-title`, reservando os dois gaps antes de calcular
+  a escala. As opções ficam em uma linha, inclusive a 320 px. Seleção = texto e sublinhado Warm Sand + peso 500;
+  radios, foco, região viva e alvo de toque preservados.
+- Fechamentos discretos (`D-B2C-22`): `SiteShell closingStyle="subtle"` põe `main.lx-closings-subtle`, usado somente
+  pelo `DiscoverySite`. Desde `D-B2C-23`, todos os textos dos fechamentos (inclusive tríade e Hero final) usam
+  `type.page-title` (24–36 px), como a frase lifestyle da Home, com a face Newsreader itálica. A escala anterior era
+  `type.section-title` nos statements e `type.body` no apoio. Grupos de parágrafos usam gap `space-4` (16 px).
+  Sobre Blue, statements agora usam Warm Sand em toda a escala (mínimo de 24 px); a derivação anterior para texto
+  pequeno deixa de ser necessária. Texto sobre fotografia em branco. Ações e headlines de abertura não mudam.
+  Desde `D-B2C-24`, cada bloco de fechamento é precedido por uma hairline decorativa centralizada de `space-24`
+  (96 px), em `color.rule`, com `space-6` até o texto; uma linha por bloco, incluindo tríade e Hero com texto.
 - Owner | Co-Owner: `div.lx-comparison.lx-comparison--divided` > dois `div.lx-comparison__item` com a mesma estrutura.
 - Eyebrow: `p.lx-eyebrow` — a cor vem do papel `marker` da superfície; nunca forçar Warm Sand em Blue.
 - Perguntas do leitor com a resposta ao lado (Como funciona): `div.lx-answers` > `div.lx-answers__row` >

@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- B2C (`D-B2C-24`): linha fina centralizada antes de cada bloco de fechamento editorial, com separação discreta.
+- B2C (`D-B2C-23`): fechamentos ampliados para a escala da frase "o lifestyle com o qual você se identifica."
+  da Home (24–36 px), mantendo Newsreader itálico.
+- B2C (`D-B2C-22`): card de alternativas com fontes menores e uniformes, três opções lado a lado e seleção em
+  Warm Sand. Fechamentos editoriais menores e em Newsreader itálico, com proporções e contraste preservados.
 - Brand Partners, alinhamento final (`D-BP-26`): card da fórmula centrado somente nos quatro parágrafos laterais, sem incluir eyebrow e headline.
 - Brand Partners, "Uma nova lógica" (`D-BP-25`): fórmula na redação solicitada, em card de cantos retos com fundo
   Dark Moroccan Blue, texto Warm Sand em itálico, + em linha própria e régua antes do resultado. Card centrado

@@ -26,6 +26,8 @@ const MAIN_ID = 'conteudo';
 const TITLES_HEADLINE = 'lx-titles-headline';
 /** Opt-in `typeCeiling="home-hero"`: no text of the content outgrows the Home Hero headline. */
 const TYPE_CEILING = 'lx-type-ceiling';
+/** Opt-in smaller italic section closings, independent of the journey's headline scale. */
+const SUBTLE_CLOSINGS = 'lx-closings-subtle';
 
 function NavList({
   items,
@@ -74,6 +76,7 @@ export function SiteShell({
   menuTrigger = retractableMenu ? 'mark' : 'icon',
   titleRole = 'body',
   typeCeiling = 'none',
+  closingStyle = 'default',
   children,
 }: {
   readonly homeHref: string;
@@ -86,11 +89,13 @@ export function SiteShell({
   readonly menuTrigger?: 'icon' | 'mark';
   readonly titleRole?: 'body' | 'headline';
   readonly typeCeiling?: 'none' | 'home-hero';
+  readonly closingStyle?: 'default' | 'subtle';
   readonly children: ReactNode;
 }) {
   const mainClass = [
     titleRole === 'headline' ? TITLES_HEADLINE : '',
     typeCeiling === 'home-hero' ? TYPE_CEILING : '',
+    closingStyle === 'subtle' ? SUBTLE_CLOSINGS : '',
   ]
     .filter(Boolean)
     .join(' ');

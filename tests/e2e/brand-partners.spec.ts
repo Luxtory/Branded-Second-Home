@@ -130,6 +130,7 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     // [papel, página B2C, seletor B2C, página BP, seletor BP] — o B2C é a referência (catalog §14.9). No B2B, perguntas e
     // títulos de mecanismo são heading interno (`display-s`, `D-BP-22`): saem as linhas "pergunta" e "display-m". As
     // Headlines (H1 do Como funciona, H2) seguem o teto do Hero da Home (`D-BP-23`), não a escala do B2C.
+    // B2C closings have a separate italic scale (D-B2C-22); compare the shared roles outside those closings.
     const roles = [
       ['H1 do Hero da Home', '/', '.lx-home-hero__title', HOME, '#inicio h1'],
       ['CTA do Hero da Home', '/', '.lx-home-hero__action', HOME, '#inicio .lx-button'],
@@ -159,16 +160,16 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
       [
         'subheadline',
         '/como-funciona',
-        'main section:not(.lx-hero) p.lx-subheadline',
+        'main section:not(.lx-hero) p.lx-subheadline:not(.lx-section-closing, .lx-section-closing *)',
         HOW,
-        'main section:not(.lx-hero) p.lx-subheadline',
+        'main section:not(.lx-hero) p.lx-subheadline:not(.lx-section-closing, .lx-section-closing *)',
       ],
       [
         'corpo',
         '/como-funciona',
-        'main section:not(.lx-hero) p.lx-body',
+        'main section:not(.lx-hero) p.lx-body:not(.lx-section-closing, .lx-section-closing *)',
         HOW,
-        'main section:not(.lx-hero) p.lx-body',
+        'main section:not(.lx-hero) p.lx-body:not(.lx-section-closing, .lx-section-closing *)',
       ],
       [
         'eyebrow',

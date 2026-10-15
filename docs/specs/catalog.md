@@ -531,6 +531,30 @@ com duas ou mais fotos adequadas.
 **Demais páginas.** Como funciona, Coleção, Concept e 404 seguem as receitas da §13.9 no Core. No Como funciona, o
 desenho da proporção do ano das configurações Co-Owner sai; os valores continuam em Evidence, painel a painel.
 
+**Refinamento tipográfico do fundador (2026-10-15, `D-B2C-22`).** O Panel Switch da Regra usa uma escala
+Newsreader compartilhada por opções, atributos e resultados, limitada pelos papéis `type.label` e
+`type.section-title` (14–24 px) e ajustada à largura do próprio painel. Second Home, Hospedagem e Copropriedade
+ficam em uma linha de 320 a 1440 px; a opção selecionada tem texto e sublinhado Warm Sand e peso medium (500),
+com alvo de toque preservado. Legenda em `type.compact`. Copy e resultados de cada alternativa permanecem iguais.
+
+Os fechamentos editoriais da Home, Como funciona e Coleção usam `DiscoverySite` →
+`SiteShell closingStyle="subtle"`: statements em `type.section-title` (20–24 px), apoio em `type.body`
+(16–18 px), todos em Newsreader itálico. Inclui os fechamentos de tríade e o texto do Hero final; botões, links,
+eyebrows e headlines de abertura preservados. Sobre Blue, statements abaixo de 24 px usam a derivação já adotada
+no Core (90% Warm Sand + 10% branco, contraste 4,69:1); em 24 px, Warm Sand. Sobre fotografia, texto branco.
+O opt-in não alcança o B2B. Esta decisão substitui somente a apresentação tipográfica anterior dos fechamentos.
+
+**Revisão após a prévia (`D-B2C-23`, 2026-10-15).** O fundador considerou a escala acima pequena demais.
+Todos os textos dos fechamentos passam a usar `type.page-title` (24–36 px), a mesma escala responsiva da frase
+"o lifestyle com o qual você se identifica." da Home, mantendo Newsreader itálico e as entrelinhas por papel.
+Statements sobre Blue usam Warm Sand em toda a escala, agora sempre de texto grande; fotografia mantém branco.
+Substitui somente os tamanhos e a derivação de contraste descritos no parágrafo anterior; o card permanece igual.
+
+**Separação dos fechamentos (`D-B2C-24`, 2026-10-15).** Uma linha fina centralizada antecede cada bloco
+de fechamento editorial, inclusive tríade e texto do Hero final. Usa `border.hairline` (1 px), `color.rule`,
+largura `space-24` (96 px) e distância até o texto `space-6` (24 px), sem repetir a linha entre seus parágrafos.
+É decorativa, restrita ao B2C e não aparece em um Hero final que contenha somente ações.
+
 ### 13.11 Como funciona — Especificação Visual e Copy do fundador (2026-10-06)
 
 > Brief de página de `/como-funciona` sobre o Core Design System; prevalece sobre as linhas do Como funciona da tabela
