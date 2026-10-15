@@ -87,6 +87,43 @@
     line-height: var(--lx-leading-support);
     color: var(--lx-color-fg);
   }
+  /* Subtle closings — opt-in on the B2C shell. Keep section headlines and other journeys unchanged;
+   * use the real Newsreader italic face for both the statement and its supporting lines. */
+  [data-lx="core"] .lx-closings-subtle [data-surface="blue"] {
+    --lx-color-closing-headline: color-mix(in srgb, var(--lx-color-headline) 90%, var(--lx-color-fg));
+  }
+  [data-lx="core"] .lx-closings-subtle :is(
+    .lx-section-closing.lx-headline,
+    .lx-section-closing :is(.lx-headline, .lx-subheadline, .lx-closing, .lx-body, .lx-lead),
+    .lx-triad-statement__statement,
+    .lx-triad-statement__closing,
+    .lx-hero--closing :is(.lx-headline, .lx-subheadline, .lx-lead, .lx-body)
+  ) {
+    font-family: var(--lx-font-display);
+    font-weight: var(--lx-weight-display);
+    font-size: var(--lx-type-body);
+    font-style: italic;
+    line-height: var(--lx-leading-support);
+  }
+  [data-lx="core"] .lx-closings-subtle :is(
+    .lx-section-closing.lx-headline,
+    .lx-section-closing .lx-headline,
+    .lx-triad-statement__statement,
+    .lx-hero--closing .lx-headline
+  ) {
+    font-size: var(--lx-type-section-title);
+    line-height: var(--lx-leading-tight);
+    color: var(--lx-color-closing-headline, var(--lx-color-headline));
+  }
+  /* The smaller statements need AA text contrast below 24px; photograph overlays always use White. */
+  @media (min-width: 80rem) {
+    [data-lx="core"] .lx-closings-subtle [data-surface="blue"] {
+      --lx-color-closing-headline: var(--lx-color-headline);
+    }
+  }
+  [data-lx="core"] .lx-closings-subtle .lx-hero--closing .lx-headline {
+    color: var(--lx-palette-pure-white);
+  }
   /* Emphasis only where the copy authorises it: Newsreader italic, same size, metrics and colour as the headline. */
   [data-lx="core"] :is(.lx-statement, .lx-headline, .lx-ordinal, .lx-title, .lx-closing) em,
   [data-lx="core"] :is(.lx-display-2xl, .lx-display-xl, .lx-display-l, .lx-display-m, .lx-display-s) em {

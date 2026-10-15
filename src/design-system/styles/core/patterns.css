@@ -53,6 +53,9 @@
     max-width: none;
     text-wrap: balance;
   }
+  [data-lx="core"] .lx-closings-subtle .lx-section-closing.lx-stack {
+    gap: var(--lx-space-4);
+  }
   /* A closing that is also the container keeps the same text width (its gutters come on top). */
   [data-lx="core"] .lx-container.lx-section-closing {
     max-width: calc(var(--lx-layout-container-narrow) + 2 * var(--lx-layout-margin));
@@ -739,15 +742,20 @@
 
   /* Panel Switch — one interactive panel: the alternatives as a row of text options on a hairline (native radios:
    * arrows move, focus is visible, the result is announced by the component), then rows ATTRIBUTE ——— VALUE. The
-   * chosen option = Warm Sand underline + semibold + full colour, never colour alone. Framed from md; open on phones. */
+   * chosen option = Warm Sand text and underline + medium display weight. Framed from md; open on phones. */
   [data-lx="core"] .lx-panel-switch {
+    --lx-panel-gap: var(--lx-space-2);
+    /* The three labels occupy less than 20em combined; reserve both gaps before scaling the shared type. */
+    --lx-panel-type: clamp(var(--lx-type-label), calc((100cqi - 2 * var(--lx-panel-gap)) / 20), var(--lx-type-section-title));
+    container-type: inline-size;
+    min-width: 0;
     display: grid;
     gap: var(--lx-space-8);
   }
   [data-lx="core"] .lx-panel-switch__options {
     display: flex;
-    flex-wrap: wrap;
-    column-gap: var(--lx-space-4);
+    flex-wrap: nowrap;
+    column-gap: var(--lx-panel-gap);
     min-width: 0;
     margin: 0;
     padding: 0;
@@ -763,7 +771,7 @@
     border-bottom: var(--lx-border-outline) solid transparent;
     color: var(--lx-color-fg-muted);
     font-family: var(--lx-font-display);
-    font-size: var(--lx-type-ordinal);
+    font-size: var(--lx-panel-type);
     line-height: var(--lx-leading-heading);
     cursor: pointer;
     transition: border-color var(--lx-duration-moderate) var(--lx-ease-editorial);
@@ -777,9 +785,13 @@
     opacity: 0;
     cursor: pointer;
   }
+  [data-lx="core"] .lx-panel-switch :is(.lx-panel-switch__option, .lx-panel-switch__attribute, .lx-panel-switch__value) {
+    letter-spacing: var(--lx-tracking-display);
+  }
   [data-lx="core"] .lx-panel-switch__option:has(> input:checked) {
     border-bottom-color: var(--lx-color-accent);
-    color: var(--lx-color-fg);
+    color: var(--lx-color-accent);
+    font-weight: var(--lx-weight-display-strong);
   }
   [data-lx="core"] .lx-panel-switch__option:has(> input:focus-visible) {
     outline: var(--lx-focus-width) solid var(--lx-color-focus);
@@ -805,7 +817,7 @@
   [data-lx="core"] .lx-panel-switch__attribute {
     order: 0;
     font-family: var(--lx-font-display);
-    font-size: var(--lx-type-ordinal);
+    font-size: var(--lx-panel-type);
     line-height: var(--lx-leading-heading);
     color: var(--lx-color-fg);
   }
@@ -813,12 +825,13 @@
     order: 2;
     margin: 0 0 0 auto;
     font-family: var(--lx-font-display);
-    font-size: var(--lx-type-ordinal);
+    font-size: var(--lx-panel-type);
     line-height: var(--lx-leading-heading);
     text-align: end;
     color: var(--lx-color-accent);
   }
   [data-lx="core"] .lx-panel-switch__caption {
+    font-size: var(--lx-type-compact);
     max-width: var(--lx-layout-measure);
     padding-top: var(--lx-space-6);
     border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
@@ -829,6 +842,7 @@
   }
   @media (min-width: 48rem) {
     [data-lx="core"] .lx-panel-switch {
+      --lx-panel-gap: var(--lx-space-4);
       padding: var(--lx-space-8) var(--lx-space-6) var(--lx-space-12);
       border: var(--lx-border-hairline) solid var(--lx-color-rule);
     }

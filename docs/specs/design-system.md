@@ -510,7 +510,7 @@ Blue e Deep = Warm Sand com opacidade 0,4. Chevron dos disclosures no papel `mar
 | Columns | `lx-columns` (`--7-5`, `--5-7`; padrão 6/6) | splits do grid de 12 colunas dentro do container; uma coluna até `lg` |
 | Stack | `lx-stack` | fluxo vertical de uma coluna (eyebrow, headline, parágrafos) |
 | Section split | `lx-section-split` | seção que abre com um Editorial Split full-bleed e continua no container |
-| Panel Switch | `lx-panel-switch` | um painel interativo: opções de texto sobre hairline (radios nativos), linhas ATRIBUTO ——— VALOR; ativo = sublinhado Warm Sand + semibold |
+| Panel Switch | `lx-panel-switch` | desde `D-B2C-22`, escala menor compartilhada (14–24 px, container), três opções em uma linha; seleção = texto e sublinhado Warm Sand + peso 500. Apresentação anterior: um painel interativo: opções de texto sobre hairline (radios nativos), linhas ATRIBUTO ——— VALOR; ativo = sublinhado Warm Sand + semibold |
 | Editorial List | `lx-editorial-list` | palavras em ritmo vertical entre hairlines, sem bullets |
 | Cinematic Hero | `lx-hero` (`--closing`), `lx-hero__title`, `__index`, `__progress`, `__step` | headline White com virada Warm Sand (só no Hero); no celular, fotografia → conteúdo; controles só com duas ou mais fotos; `--closing` = CTA final sobre fotografia |
 | Triad Comparison | `lx-triad-comparison__copy`, `__alternatives` | 7/5; alternativas numeradas entre hairlines (superior, verticais, inferior) |
