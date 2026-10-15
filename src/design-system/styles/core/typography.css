@@ -87,11 +87,8 @@
     line-height: var(--lx-leading-support);
     color: var(--lx-color-fg);
   }
-  /* Subtle closings — opt-in on the B2C shell. Keep section headlines and other journeys unchanged;
-   * use the real Newsreader italic face for both the statement and its supporting lines. */
-  [data-lx="core"] .lx-closings-subtle [data-surface="blue"] {
-    --lx-color-closing-headline: color-mix(in srgb, var(--lx-color-headline) 90%, var(--lx-color-fg));
-  }
+  /* B2C italic closings use the same responsive scale as the Home's lifestyle phrase (D-B2C-23),
+   * with the real Newsreader italic face for both the statement and its supporting lines. */
   [data-lx="core"] .lx-closings-subtle :is(
     .lx-section-closing.lx-headline,
     .lx-section-closing :is(.lx-headline, .lx-subheadline, .lx-closing, .lx-body, .lx-lead),
@@ -101,7 +98,7 @@
   ) {
     font-family: var(--lx-font-display);
     font-weight: var(--lx-weight-display);
-    font-size: var(--lx-type-body);
+    font-size: var(--lx-type-page-title);
     font-style: italic;
     line-height: var(--lx-leading-support);
   }
@@ -111,16 +108,10 @@
     .lx-triad-statement__statement,
     .lx-hero--closing .lx-headline
   ) {
-    font-size: var(--lx-type-section-title);
     line-height: var(--lx-leading-tight);
-    color: var(--lx-color-closing-headline, var(--lx-color-headline));
+    color: var(--lx-color-headline);
   }
-  /* The smaller statements need AA text contrast below 24px; photograph overlays always use White. */
-  @media (min-width: 80rem) {
-    [data-lx="core"] .lx-closings-subtle [data-surface="blue"] {
-      --lx-color-closing-headline: var(--lx-color-headline);
-    }
-  }
+  /* The scale starts at 24px, so Warm Sand meets large-text contrast on Blue; photograph overlays use White. */
   [data-lx="core"] .lx-closings-subtle .lx-hero--closing .lx-headline {
     color: var(--lx-palette-pure-white);
   }

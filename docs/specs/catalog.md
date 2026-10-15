@@ -544,6 +544,12 @@ eyebrows e headlines de abertura preservados. Sobre Blue, statements abaixo de 2
 no Core (90% Warm Sand + 10% branco, contraste 4,69:1); em 24 px, Warm Sand. Sobre fotografia, texto branco.
 O opt-in não alcança o B2B. Esta decisão substitui somente a apresentação tipográfica anterior dos fechamentos.
 
+**Revisão após a prévia (`D-B2C-23`, 2026-10-15).** O fundador considerou a escala acima pequena demais.
+Todos os textos dos fechamentos passam a usar `type.page-title` (24–36 px), a mesma escala responsiva da frase
+"o lifestyle com o qual você se identifica." da Home, mantendo Newsreader itálico e as entrelinhas por papel.
+Statements sobre Blue usam Warm Sand em toda a escala, agora sempre de texto grande; fotografia mantém branco.
+Substitui somente os tamanhos e a derivação de contraste descritos no parágrafo anterior; o card permanece igual.
+
 ### 13.11 Como funciona — Especificação Visual e Copy do fundador (2026-10-06)
 
 > Brief de página de `/como-funciona` sobre o Core Design System; prevalece sobre as linhas do Como funciona da tabela

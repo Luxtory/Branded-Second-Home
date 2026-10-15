@@ -52,15 +52,19 @@ test('B2C: alternativas lado a lado, mesma escala dos resultados e seleção War
   }
 });
 
-test('B2C: fechamentos menores e itálicos na Home, Como funciona e Coleção; B2B preservado', async ({
-  page,
-}) => {
+test('B2C: fechamentos itálicos na escala da frase lifestyle; B2B preservado', async ({ page }) => {
   test.slow();
-  for (const width of [390, 1440]) {
+  for (const width of [390, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
+    let referenceSize = 0;
     for (const path of ['/', '/como-funciona', '/colecao']) {
       await page.goto(path);
       await page.evaluate(() => document.fonts.ready);
+      if (path === '/') {
+        referenceSize = await page
+          .getByText(discoveryMessages.home.luxtory.lifestyle, { exact: true })
+          .evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize));
+      }
       const closings = page.locator(
         'main :is(.lx-section-closing.lx-headline, .lx-section-closing :is(.lx-headline, .lx-subheadline, .lx-closing, .lx-body, .lx-lead), .lx-triad-statement__statement, .lx-triad-statement__closing, .lx-hero--closing :is(.lx-headline, .lx-subheadline, .lx-lead, .lx-body))',
       );
@@ -77,9 +81,9 @@ test('B2C: fechamentos menores e itálicos na Home, Como funciona e Coleção; B
       );
       for (const style of styles) {
         expect(style.italic, `${path}: ${style.text}`).toBe('italic');
-        expect(style.size, `${path}: ${style.text}`).toBeLessThanOrEqual(24);
-        expect(style.size).toBeGreaterThanOrEqual(15);
+        expect(style.size, `${path}: ${style.text}`).toBe(referenceSize);
       }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
       const accessibility = await new AxeBuilder({ page })
         .include('main')
         .exclude('.lx-eyebrow--accent')
