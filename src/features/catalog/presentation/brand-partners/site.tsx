@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { aboutMessages } from '../i18n/about-pt-br';
 import { SiteShell } from '@/design-system/react';
 import { brandPartnersMessages as text } from '../i18n/brand-partners-pt-br';
 import { brandPartnersPaths, type BrandPartnersSection } from './paths';
@@ -21,11 +22,11 @@ export function BrandPartnersSite({
     <SiteShell
       homeHref={brandPartnersPaths.home}
       labels={text.site}
-      overlayHeader
+      overlayHeader={current !== 'about'}
       navAlign="end"
       menuTrigger="mark"
-      titleRole="headline"
-      typeCeiling="home-hero"
+      titleRole={current === 'about' ? 'body' : 'headline'}
+      typeCeiling={current === 'about' ? 'none' : 'home-hero'}
       navItems={[
         {
           href: brandPartnersPaths.home,
@@ -36,6 +37,11 @@ export function BrandPartnersSite({
           href: brandPartnersPaths.howItWorks,
           label: text.site.howItWorks,
           current: current === 'howItWorks',
+        },
+        {
+          href: brandPartnersPaths.about,
+          label: aboutMessages.navLabel,
+          current: current === 'about',
         },
         {
           href: brandPartnersPaths.conversation,

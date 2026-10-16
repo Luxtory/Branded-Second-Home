@@ -9,6 +9,17 @@
 > "Registro da revisão"). As seções **Design System (DS)** (concluída) e **Anexo A** abaixo permanecem inalteradas.
 > Repriorização aprovada pelo fundador em BP0 (2026-10-09): [catalog §14](../specs/catalog.md#14-discovery-público-b2b-brand-partners-bp1).
 
+## Página institucional Sobre — solicitação aprovada em 2026-10-15
+
+| Wave | Entrega | Dependência | Execução | Estado |
+|---|---|---|---|---|
+| SOBRE-1 | Corpo/i18n únicos, foto, duas rotas, navegação e metadados | shells B2C/B2B atuais | sequencial | implementada na branch; revisão pendente |
+| SOBRE-2 | Gates, documentação, revisão e PR/Preview | SOBRE-1 | sequencial | pendente |
+
+Spec: [catalog §15](../specs/catalog.md#15-sobre-a-luxtory). Plano detalhado:
+[Sobre a Luxtory](sobre-luxtory.md). Copy e estrutura já aprovadas pelo fundador no pedido; nenhum merge automático.
+Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
+
 ## Plano Luxtory — W0…W30
 
 ### Premissas verificadas (2026-09-25)

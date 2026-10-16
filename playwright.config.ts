@@ -4,6 +4,8 @@ const PORT = 3100;
 const baseURL = `http://127.0.0.1:${PORT}`;
 // Mesmo build com o portão Brand Partners fechado (tests/e2e/brand-partners.spec.ts → CLOSED_SITE).
 const CLOSED_PORT = 3101;
+// B2C fechado em Production, B2B aberto: prova dos portões independentes da página Sobre.
+const CLOSED_PUBLIC_PORT = 3102;
 const SERVER_START_TIMEOUT_MS = 120_000;
 const SERVER_STOP_TIMEOUT_MS = 30_000;
 const IGNORED = '**/activate-ultronpx.mjs';
@@ -46,6 +48,14 @@ export default defineConfig({
       : []),
   ],
   webServer: [
+    {
+      command: `npx next start --port ${CLOSED_PUBLIC_PORT} --hostname 127.0.0.1`,
+      url: `http://127.0.0.1:${CLOSED_PUBLIC_PORT}/favicon.ico`,
+      env: { VERCEL_ENV: 'production', PUBLIC_SITE: '', BRAND_PARTNERS_SITE: 'open' },
+      reuseExistingServer: false,
+      timeout: SERVER_START_TIMEOUT_MS,
+      gracefulShutdown: { signal: 'SIGTERM', timeout: SERVER_STOP_TIMEOUT_MS },
+    },
     {
       command: `node tests/support/e2e-server.mjs ${PORT}`,
       url: `${baseURL}/v1/health`,

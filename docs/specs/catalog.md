@@ -1223,3 +1223,107 @@ desktop e o comportamento no celular; a padronização tipográfica por papel; o
 hierarquia de cores; Home e Como funciona a 390, 768 e 1440 px. Sem novos ajustes visuais, de copy ou de Design
 System; o merge do PR e a abertura do portão seguem autorizações separadas do fundador. **Go-live:** P-LX-03,
 ativos aprovados (`P-BP-03`) e autorização expressa do fundador; CI verde não autoriza merge nem go-live.
+
+
+## 15. Sobre a Luxtory
+
+### 15.1 Contrato e brief aprovado (2026-10-15)
+
+Pedido do fundador: página institucional compartilhada, copy integral e estrutura de cinco seções aprovadas nesta
+sessão. Esta autorização específica inclui as duas entradas e a foto/biografia/declaração do fundador; não reabre
+W5–W30 nem os Frameworks congelados. Aplicação: `D-LX-09`, `D-B2C-25`, `D-BP-27`. IDs preservados: REQ-028,
+REQ-100, REQ-101; BR-013, BR-040, BR-041; TECH-057, TECH-100. Plano: [Sobre](../plan/sobre-luxtory.md).
+
+- **Página e protagonistas:** `/sobre` (potencial Titular) e `/brand-partner/sobre` (Brand Partner), com conteúdo
+  institucional idêntico e casca/contexto da jornada de entrada. Entradas confirmadas em `src/app/(public)/sobre/page.tsx`
+  e `src/app/(brand-partners)/brand-partner/sobre/page.tsx`.
+- **Função / consciência:** visitante que já conhece a Luxtory (Product Aware) deseja conhecer origem e critério do
+  Mentor; sai com compreensão da origem do modelo e convite a aprofundá-lo na própria jornada. Disposição aberta;
+  MCR contextual de confiança no Mentor, interna e cooperação. Desejo/JTBD da jornada permanecem nos respectivos
+  Frameworks (§3–§6). PROOF institucional → PUSH para Como funciona; PICTURE/PROBLEM/PROMISE da Home não são refeitos.
+- **Expressão:** SEEKING principal, CARE secundário na mensagem do fundador; Diligência + Ordem na história e
+  Polidez + Compaixão no convite. Copy já aprovada, sem reescrita ou novos argumentos. Tom contextual humano,
+  claro e sereno dentro dos Frameworks (§9–§14).
+
+| Seção / pergunta mental | Mensagem e fonte | Peso / composição Core |
+|---|---|---|
+| Hero / de onde surgiu? | busca pela tríade, copy aprovada (`D-LX-09`) | explicação e emoção; abertura editorial Blue sem foto, H1, apoio, botão |
+| História / por que esse modelo? | quatro atos, biografia aprovada; Brand DNA e distribuição (BR-013, BR-040, BR-041) | evidência contextual e explicação; leitura sequencial White, Answer Rows, H3 e parágrafos completos; fechamento itálico com hairline |
+| Missão, visão e propósito / o que orienta? | declaração institucional aprovada (`D-LX-09`) | explicação; Sibling Blocks abertos sobre Sand, separação discreta |
+| Fundador / quem sustenta essa visão? | fotografia, citação e assinatura aprovadas (`D-LX-09`) | vínculo e evidência; Deep, imagem e citação em colunas no desktop, empilhadas no celular |
+| Convite / qual o próximo passo? | convite aprovado (`D-LX-09`) | ação proporcional; Blue, fechamento itálico e hairline antes do bloco, CTA |
+
+**Fonte de copy:** somente `src/features/catalog/presentation/i18n/about-pt-br.ts`. Nenhum dado dinâmico,
+preço, case, comunidade existente ou resultado prometido. Biografia e citação são fatos fornecidos/aprovados pelo
+fundador neste pedido, não inferências sobre os canônicos. Não recuperar o antigo clube de imóveis, embarcações e
+carros. Os destaques `**…**` são `<strong>`; parágrafos, palavras, pontuação e ordem permanecem integrais.
+
+### 15.2 Navegação, publicação e metadados
+
+Cada shell ganha Sobre com `aria-current=page` no destino atual (desktop, menu e rodapé). Todos os destinos
+existentes ficam preservados. `AboutContent` recebe obrigatoriamente `journey: 'discovery' | 'brandPartners'`;
+`aboutContext` resolve `/sobre` + `/como-funciona` ou `/brand-partner/sobre` + `/brand-partner/como-funciona`.
+Logo conserva `/` ou `/brand-partner`. Ambos os botões e o link da história levam ao Como funciona correspondente.
+B2B usa header sólido em Sobre; demais páginas mantêm o header atual. Fechamentos sutis habilitados somente no corpo
+Sobre (as páginas existentes não recebem nova apresentação).
+
+Portão de cada jornada preservado no layout **e repetido na nova página e em generateMetadata** para impedir
+render paralelo com conteúdo/metadados fechados. `title`, `description`, OG e Twitter derivam da mesma copy aprovada;
+canonical autorreferente por entrada, como o padrão B2B existente, sem introduzir domínio presumido. Preview/local:
+`noindex,nofollow`; Production só indexável quando o portão da jornada permite a entrada.
+
+### 15.3 Asset e segurança
+
+Original: `Luxtory/Luxtory2.0/public/images/sobre/marcos-rodopiano.png`, referenciado em
+`src/pages/public/Sobre.tsx`. Conteúdo real JPEG, 884 × 990 px. Cópia byte a byte em
+`public/images/about/marcos-rodopiano.jpg`, dimensões explícitas, lazy loading, rosto preservado e alt
+"Marcos Rodopiano, fundador da Luxtory". Nenhuma URL privada ou request ao GitHub em produção.
+
+STRIDE proporcional: novas rotas são apresentação estática pública sob os portões e CSP/nonce atuais; sem entrada
+externa, API, formulário, autenticação, escrita, dependência ou dado sensível novo. Links internos definidos por
+contexto tipado, sem destino vindo do usuário; foto local. Gate fechado verificado em HTML/RSC/metadados.
+
+### 15.4 Aceite
+
+Copy completa, idêntica e na mesma ordem nas duas entradas, com quatro atos e três valores; um único H1 e hierarquia
+H2/H3; fotografia original e proporção reservada; teclado/foco/menu; contraste AA; nenhuma sobreposição, corte ou
+rolagem horizontal. Gate `expectResponsive` e larguras 320, 390, 768, 1024, 1440 px; foto e citação lado a lado no
+desktop e empilhadas no celular. `npm run verify`, E2E e regressão das jornadas existentes. Documentação e CHANGELOG
+no PR, NOTES local atualizado. Entrega em branch/commit/push/PR draft com Preview READY; sem merge automático.
+
+
+### 15.5 Ajustes da revisão visual — paridade, concisão e enquadramento
+
+O fundador autorizou a edição e redução dos textos para blocos preferencialmente de três linhas, no máximo quatro,
+e determinou apresentação idêntica nas duas jornadas (`D-LX-10`). Esta revisão prevalece sobre a exigência inicial
+de copy verbatim e sobre a aplicação do teto/título B2B em Sobre; preserva os fatos biográficos, os quatro atos,
+a tríade, Brand DNA, o racional de distribuição/valor, missão/visão/propósito e a citação original do fundador.
+Copy final continua única no i18n. A versão inicial permanece no histórico Git e nas seções anteriores como baseline.
+
+**Paridade:** o corpo institucional usa a mesma escala Core, cores, largura, quebra de linhas e geometria nas duas
+entradas. O shell Brand Partners desliga `titleRole` e `typeCeiling` **somente** com `current=about`. Cabeçalhos,
+rodapés, destinos e portões continuam próprios da jornada, conforme o contrato inicial; outras páginas não mudam.
+
+**Enquadramento:** eliminar o padding de abertura duplicado. Hero em uma única seção com respiro de `space-8`,
+altura mínima igual à viewport útil após o header sólido e alinhamento vertical central; título, apoio e CTA visíveis
+na primeira tela nas dimensões verificadas, inclusive 1266 × 546 px do print. Em altura insuficiente, o fluxo cresce
+naturalmente, sem altura máxima, clipping, `line-clamp`, reticências ou ocultação de conteúdo. Demais seções também
+contêm todos os seus elementos. Medida do corpo e do apoio do Hero limitada a 40ch; edição de copy em blocos curtos.
+
+**Aceite adicional:** comparar fonte/tamanho/cor/estilo e retângulos de todo o corpo entre B2C e B2B; medir linhas
+renderizadas após carregar fontes (até quatro para títulos, parágrafos e assinatura) em 320, 390, 768, 1024, 1266 e
+1440 px; Hero completo nas viewports 320×640, 390×844, 768×1024, 1024×768, 1266×546 e 1440×900. Gate de UI, foto,
+links, metadados, portões e regressão das páginas existentes continuam obrigatórios. Não usar limites de caracteres
+como substituto de medir a composição real no navegador.
+
+### 15.6 Revisão final — largura da história e publicação
+
+O fundador aprovou o resultado e solicitou que os parágrafos de “A história por trás da Luxtory” preencham a
+coluna disponível, aproveitando o espaço à direita. Somente os parágrafos dos quatro atos deixam de usar o teto
+de 40ch: acompanham a largura da coluna de oito colunas no desktop e o empilhamento natural no mobile. Copy,
+escala e estrutura seguem as aprovadas em §15.5, com máximo de quatro linhas nas larguras verificadas e o mesmo
+corpo nas duas jornadas. Verificar preenchimento da coluna e ausência de overflow de 320 a 1920 px.
+
+A publicação em **produção após os testes** foi explicitamente confirmada pelo fundador nesta rodada. Esta
+autorização sucede a entrega inicial limitada a Preview: commit/push e PR #51 atualizado, CI aprovada, integração
+em `main` e execução do pipeline oficial de migrations/deploy. Não executar deploy local de produção.

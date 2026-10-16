@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+
+- Sobre: parágrafos da história ocupam toda a coluna disponível, com reflow natural no mobile.
+- Sobre: apresentação idêntica no B2C e B2B, edição concisa autorizada para até quatro linhas por bloco e Hero
+  enquadrado na primeira tela, com remoção do espaçamento duplicado e medidas de leitura confortáveis.
 - B2C (`D-B2C-24`): linha fina centralizada antes de cada bloco de fechamento editorial, com separação discreta.
 - B2C (`D-B2C-23`): fechamentos ampliados para a escala da frase "o lifestyle com o qual você se identifica."
   da Home (24–36 px), mantendo Newsreader itálico.
@@ -51,6 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   visíveis, ao lado do texto corrido; o Hero da Home como teto tipográfico de todo o Brand Partners.
 
 ### Added
+- Página institucional Sobre a Luxtory em `/sobre` e `/brand-partner/sobre`, com conteúdo/i18n compartilhados,
+  copy aprovada integral, fotografia original local, navegação e CTAs por jornada, metadados e portões preservados.
 - Brand Partners público (BP1, REQ-028, TECH-057; spec catalog §14): `/brand-partner` (PICTURE → PROBLEM → PROMISE →
   PROOF → PUSH) e `/brand-partner/como-funciona` (PROOF → PUSH) com a Copy + Especificação Visual FINAL do fundador
   (`D-BP-14`), navegação B2B própria, Hero tipográfico (sem fotografia B2B autorizada) e o formulário "Vamos começar

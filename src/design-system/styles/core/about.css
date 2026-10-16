@@ -1,0 +1,46 @@
+/* Institutional page composition (catalog §15). Only the opt-in About body consumes these rules. */
+@layer lx.components {
+  /* One opening rhythm: the solid header already occupies the bar height. Never clip content on short screens. */
+  [data-lx="core"] .lx-about .lx-about__opening {
+    display: grid;
+    align-items: center;
+    min-height: calc(100svh - var(--lx-layout-bar-height));
+    padding-block: var(--lx-space-8);
+  }
+  [data-lx="core"] .lx-about .lx-pause--opening {
+    padding-block-start: 0;
+  }
+  [data-lx="core"] .lx-about .lx-pause--opening .lx-headline {
+    max-width: var(--lx-layout-faq);
+  }
+  [data-lx="core"] .lx-about :is(.lx-body, .lx-pause--opening .lx-subheadline) {
+    max-width: 40ch;
+  }
+  [data-lx="core"] .lx-about .lx-answers__content .lx-body {
+    max-width: none;
+  }
+  [data-lx="core"] .lx-about .lx-about__founder {
+    margin: 0;
+    align-items: center;
+  }
+  [data-lx="core"] .lx-about .lx-about__portrait {
+    max-width: var(--lx-layout-split-text);
+  }
+  [data-lx="core"] .lx-about .lx-about__portrait img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  [data-lx="core"] .lx-about .lx-about__quote {
+    margin: 0;
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-type-page-title);
+    font-weight: var(--lx-weight-display);
+    font-style: italic;
+    line-height: var(--lx-leading-support);
+    color: var(--lx-color-headline);
+  }
+  [data-lx="core"] .lx-about .lx-about__invitation {
+    margin-block-start: 0;
+  }
+}

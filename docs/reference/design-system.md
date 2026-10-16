@@ -668,3 +668,29 @@ Opt-in, sem efeito no B2C (spec `catalog` §14.9, `D-BP-20`):
 - Teto tipográfico: `SiteShell typeCeiling="home-hero"` põe `main.lx-type-ceiling`. A escala do Hero da Home
   (`--lx-type-home-hero`, a mesma do `h1.lx-headline--home-hero`) limita `lx-headline`, `lx-statement`, `lx-display-*` e
   `lx-ordinal` com `min()`; os outros papéis já ficam abaixo dela. O Hero não muda.
+
+
+### Sobre a Luxtory (2026-10-15)
+
+Composição institucional de `catalog` §15: `lx-pause--opening`, `lx-answers`, `lx-siblings--trio`, `lx-columns`
+e `lx-section-closing`. Corpo opt-in `div.lx-about.lx-closings-subtle`: em ambas as jornadas, os fechamentos usam
+Newsreader itálico na escala `type.page-title`, com uma hairline centralizada por bloco, conforme o padrão vigente.
+As regras de `styles/core/about.css` só compõem `.lx-about`: retrato com largura fluida e altura intrínseca
+(884 × 990), citação na escala de página e alinhamento central entre colunas no desktop. Não alteram tokens,
+patterns ou a apresentação das demais páginas. B2B conserva o teto tipográfico no shell; Sobre usa header sólido.
+
+Somente dentro de `lx-type-ceiling`, os fechamentos e a citação Sobre usam `min(type.page-title, type-home-hero)`;
+a 1024 px a escala de página ultrapassaria o teto B2B. B2C conserva a escala original.
+
+
+**Revisão visual de Sobre — contrato vigente (`catalog` §15.5).** Corpo idêntico nas duas jornadas: Sobre desliga os
+opt-ins de título e teto do shell B2B; essa página usa a mesma escala Core do B2C. O cap local descrito acima fica
+supersedido para Sobre, sem alterar a regra das outras páginas B2B. `lx-about__opening` usa o espaço útil da viewport
+após o header, `space-8` e fluxo natural, zerando o padding adicional do `lx-pause--opening`; a leitura de corpo e apoio
+é limitada a 40ch. Nenhum corte, clamp ou redução de fonte para acomodar texto. Copy concisa e paridade de geometria
+verificadas por linhas reais em navegador; capturas substituídas como material da revisão atual.
+
+**Largura da história (`catalog` §15.6).** Os parágrafos de `.lx-about .lx-answers__content` usam toda a coluna
+disponível, sem o teto local de 40ch. A grade Core continua com rótulo 4/12 e conteúdo 8/12 no desktop, empilhada
+abaixo de `lg`; o fluxo acompanha a viewport sem largura fixa. A medida das outras seções de Sobre permanece
+definida pelo contrato de §15.5.
