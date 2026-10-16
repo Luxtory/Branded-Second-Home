@@ -689,3 +689,8 @@ supersedido para Sobre, sem alterar a regra das outras páginas B2B. `lx-about__
 após o header, `space-8` e fluxo natural, zerando o padding adicional do `lx-pause--opening`; a leitura de corpo e apoio
 é limitada a 40ch. Nenhum corte, clamp ou redução de fonte para acomodar texto. Copy concisa e paridade de geometria
 verificadas por linhas reais em navegador; capturas substituídas como material da revisão atual.
+
+**Largura da história (`catalog` §15.6).** Os parágrafos de `.lx-about .lx-answers__content` usam toda a coluna
+disponível, sem o teto local de 40ch. A grade Core continua com rótulo 4/12 e conteúdo 8/12 no desktop, empilhada
+abaixo de `lg`; o fluxo acompanha a viewport sem largura fixa. A medida das outras seções de Sobre permanece
+definida pelo contrato de §15.5.

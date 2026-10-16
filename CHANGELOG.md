@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Sobre: parágrafos da história ocupam toda a coluna disponível, com reflow natural no mobile.
 - Sobre: apresentação idêntica no B2C e B2B, edição concisa autorizada para até quatro linhas por bloco e Hero
   enquadrado na primeira tela, com remoção do espaçamento duplicado e medidas de leitura confortáveis.
 - B2C (`D-B2C-24`): linha fina centralizada antes de cada bloco de fechamento editorial, com separação discreta.

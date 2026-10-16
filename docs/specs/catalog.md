@@ -1315,3 +1315,15 @@ renderizadas após carregar fontes (até quatro para títulos, parágrafos e ass
 1440 px; Hero completo nas viewports 320×640, 390×844, 768×1024, 1024×768, 1266×546 e 1440×900. Gate de UI, foto,
 links, metadados, portões e regressão das páginas existentes continuam obrigatórios. Não usar limites de caracteres
 como substituto de medir a composição real no navegador.
+
+### 15.6 Revisão final — largura da história e publicação
+
+O fundador aprovou o resultado e solicitou que os parágrafos de “A história por trás da Luxtory” preencham a
+coluna disponível, aproveitando o espaço à direita. Somente os parágrafos dos quatro atos deixam de usar o teto
+de 40ch: acompanham a largura da coluna de oito colunas no desktop e o empilhamento natural no mobile. Copy,
+escala e estrutura seguem as aprovadas em §15.5, com máximo de quatro linhas nas larguras verificadas e o mesmo
+corpo nas duas jornadas. Verificar preenchimento da coluna e ausência de overflow de 320 a 1920 px.
+
+A publicação em **produção após os testes** foi explicitamente confirmada pelo fundador nesta rodada. Esta
+autorização sucede a entrega inicial limitada a Preview: commit/push e PR #51 atualizado, CI aprovada, integração
+em `main` e execução do pipeline oficial de migrations/deploy. Não executar deploy local de produção.

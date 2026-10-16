@@ -16,3 +16,7 @@ com até quatro linhas e enquadramento de todas as seções são medidos em 320/
 incluindo o Hero completo na primeira tela de 1266 × 546 px, como no print recebido. Os parágrafos usam
 preferencialmente três linhas; a citação e os fatos do fundador foram preservados na edição autorizada.
 O Preview do PR é a superfície para aprovação visual; nenhuma autorização de merge é inferida dos testes.
+
+Revisão final (`catalog` §15.6): as capturas completas foram atualizadas com os parágrafos da história ocupando
+toda a coluna disponível. Preenchimento e reflow também medidos até 1920 px, sem overflow; no mobile os blocos
+seguem com até quatro linhas. Publicação em produção explicitamente autorizada pelo fundador após os testes.

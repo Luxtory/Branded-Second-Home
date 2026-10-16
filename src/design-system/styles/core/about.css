@@ -16,6 +16,9 @@
   [data-lx="core"] .lx-about :is(.lx-body, .lx-pause--opening .lx-subheadline) {
     max-width: 40ch;
   }
+  [data-lx="core"] .lx-about .lx-answers__content .lx-body {
+    max-width: none;
+  }
   [data-lx="core"] .lx-about .lx-about__founder {
     margin: 0;
     align-items: center;

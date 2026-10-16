@@ -44,4 +44,11 @@ Evidências visuais do build: [390 e 1440 px por jornada](../reviews/sobre/READM
 - [x] Reproduzir diferenças de escala e blocos longos com testes de navegador (RED).
 - [x] Unificar composição, encurtar textos preservando fatos e remover abertura duplicada.
 - [x] Medir paridade e máximo de quatro linhas em seis larguras, incluindo o print 1266 × 546 (GREEN).
-- [ ] Atualizar capturas, executar gates/regressões e publicar no mesmo PR/Preview, sem merge.
+- [x] Atualizar capturas, executar gates/regressões e publicar no mesmo PR/Preview, sem merge.
+
+## Ajuste final e publicação autorizada (catalog §15.6)
+
+A revisão anterior foi aprovada pelo fundador. Ajuste localizado: liberar a largura dos parágrafos dos atos para
+preencher a coluna existente; validar paridade, até quatro linhas e reflow mobile. Atualizar capturas e gates antes
+do commit/push. Produção explicitamente autorizada: concluir a CI do PR #51, integrar em `main` e acompanhar
+migrations/deploy pelo pipeline oficial. O resultado final de CI e deploy fica registrado no PR e no NOTES local.
