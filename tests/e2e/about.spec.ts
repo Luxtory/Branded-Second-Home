@@ -252,3 +252,28 @@ test('[TECH-100] portões: 404 sem copy em HTML/RSC/metadata; jornada independen
     expect((await request.get(`http://127.0.0.1:${port}${open}`)).status()).toBe(200);
   }
 });
+
+test('fluxo a 390 px com toque: Home → Sobre → Como funciona → Home, em cada jornada', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    hasTouch: true,
+    isMobile: true,
+  });
+  const page = await context.newPage();
+  for (const journey of journeys) {
+    await page.goto(`http://127.0.0.1:3100${journey.home}`);
+    await page.getByRole('button', { name: 'Abrir menu' }).tap();
+    await page
+      .getByRole('dialog', { name: 'Menu' })
+      .getByRole('link', { name: text.navLabel, exact: true })
+      .tap();
+    await expect(page).toHaveURL(`http://127.0.0.1:3100${journey.path}`);
+    await page.locator('#sobre').getByRole('link', { name: hero.action }).tap();
+    await expect(page).toHaveURL(`http://127.0.0.1:3100${journey.how}`);
+    await page.locator('.lx-header__inner > .lx-logo').tap();
+    await expect(page).toHaveURL(`http://127.0.0.1:3100${journey.home}`);
+  }
+  await context.close();
+});
