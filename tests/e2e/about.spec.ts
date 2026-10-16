@@ -43,7 +43,7 @@ for (const journey of journeys) {
         '13 empreendimentos de alto padrão',
         'patrimônio, liberdade e pertencimento.',
         '2019',
-        'Branded Second Homes concebidas a partir da identidade de marcas parceiras, reunindo patrimônio, liberdade e pertencimento em uma mesma experiência de lazer.',
+        'Branded Second Homes com identidade de marca, patrimônio, liberdade e pertencimento.',
       ]);
       const image = page.getByRole('img', { name: text.photoAlt });
       await image.scrollIntoViewIfNeeded();
@@ -98,17 +98,6 @@ for (const journey of journeys) {
           expect(style).toMatchObject({ line: '1px', width: '96px', italic: 'italic' });
           expect(style.size).toBeGreaterThanOrEqual(24);
           expect(style.size).toBeLessThanOrEqual(36);
-        }
-        if (journey.name === 'B2B') {
-          const ceiling = await page
-            .locator('h1')
-            .evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize));
-          for (const heading of await page
-            .locator('main :is(h2,h3,.lx-about__quote,.lx-section-closing .lx-subheadline)')
-            .all())
-            expect(
-              await heading.evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize)),
-            ).toBeLessThanOrEqual(ceiling);
         }
       }
       // Full-page screenshots do not trigger native lazy loading below the viewport.

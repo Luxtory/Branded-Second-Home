@@ -1290,3 +1290,28 @@ H2/H3; fotografia original e proporção reservada; teclado/foco/menu; contraste
 rolagem horizontal. Gate `expectResponsive` e larguras 320, 390, 768, 1024, 1440 px; foto e citação lado a lado no
 desktop e empilhadas no celular. `npm run verify`, E2E e regressão das jornadas existentes. Documentação e CHANGELOG
 no PR, NOTES local atualizado. Entrega em branch/commit/push/PR draft com Preview READY; sem merge automático.
+
+
+### 15.5 Ajustes da revisão visual — paridade, concisão e enquadramento
+
+O fundador autorizou a edição e redução dos textos para blocos preferencialmente de três linhas, no máximo quatro,
+e determinou apresentação idêntica nas duas jornadas (`D-LX-10`). Esta revisão prevalece sobre a exigência inicial
+de copy verbatim e sobre a aplicação do teto/título B2B em Sobre; preserva os fatos biográficos, os quatro atos,
+a tríade, Brand DNA, o racional de distribuição/valor, missão/visão/propósito e a citação original do fundador.
+Copy final continua única no i18n. A versão inicial permanece no histórico Git e nas seções anteriores como baseline.
+
+**Paridade:** o corpo institucional usa a mesma escala Core, cores, largura, quebra de linhas e geometria nas duas
+entradas. O shell Brand Partners desliga `titleRole` e `typeCeiling` **somente** com `current=about`. Cabeçalhos,
+rodapés, destinos e portões continuam próprios da jornada, conforme o contrato inicial; outras páginas não mudam.
+
+**Enquadramento:** eliminar o padding de abertura duplicado. Hero em uma única seção com respiro de `space-8`,
+altura mínima igual à viewport útil após o header sólido e alinhamento vertical central; título, apoio e CTA visíveis
+na primeira tela nas dimensões verificadas, inclusive 1266 × 546 px do print. Em altura insuficiente, o fluxo cresce
+naturalmente, sem altura máxima, clipping, `line-clamp`, reticências ou ocultação de conteúdo. Demais seções também
+contêm todos os seus elementos. Medida do corpo e do apoio do Hero limitada a 40ch; edição de copy em blocos curtos.
+
+**Aceite adicional:** comparar fonte/tamanho/cor/estilo e retângulos de todo o corpo entre B2C e B2B; medir linhas
+renderizadas após carregar fontes (até quatro para títulos, parágrafos e assinatura) em 320, 390, 768, 1024, 1266 e
+1440 px; Hero completo nas viewports 320×640, 390×844, 768×1024, 1024×768, 1266×546 e 1440×900. Gate de UI, foto,
+links, metadados, portões e regressão das páginas existentes continuam obrigatórios. Não usar limites de caracteres
+como substituto de medir a composição real no navegador.

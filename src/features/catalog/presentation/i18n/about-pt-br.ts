@@ -1,4 +1,4 @@
-/** Copy institucional aprovada pelo fundador, verbatim (catalog §15; D-LX-09). Única fonte das duas jornadas. */
+/** Copy institucional compartilhada; edição concisa autorizada pelo fundador (catalog §15.5). */
 export const aboutMessages = {
   navLabel: 'Sobre',
   photoAlt: 'Marcos Rodopiano, fundador da Luxtory',
@@ -6,7 +6,7 @@ export const aboutMessages = {
     hero: {
       eyebrow: 'Sobre a Luxtory',
       title: 'A história de quem viveu o mercado por dentro — e decidiu fazer diferente.',
-      lead: 'A Luxtory nasceu de uma busca: reunir patrimônio, liberdade e pertencimento na mesma Second Home. Essa visão ganhou forma ao conectar a identidade de marcas aos estilos de vida das pessoas — criando lugares para viver histórias extraordinárias, com quem se ama.',
+      lead: 'A Luxtory nasceu para unir patrimônio, liberdade e pertencimento em Second Homes com identidade.',
       action: 'Entenda como funciona',
     },
     history: {
@@ -16,29 +16,34 @@ export const aboutMessages = {
         {
           title: 'Ato 1 — A percepção',
           paragraphs: [
-            'Marcos Rodopiano começou como consultor de vendas no mercado imobiliário turístico e subiu até a gerência. De ponta a ponta, conheceu as possibilidades e as limitações desse mercado — especialmente na relação das pessoas com imóveis de lazer: ativos de alto valor, utilizados apenas durante parte do ano.',
+            'Marcos Rodopiano começou como consultor de vendas no mercado imobiliário turístico e chegou à gerência.',
+            'Ali, conheceu um contraste: imóveis de lazer de alto valor, usados apenas durante parte do ano.',
           ],
         },
         {
           title: 'Ato 2 — O padrão',
           paragraphs: [
-            'Atuando na comercialização de mais de **13 empreendimentos de alto padrão**, percebeu que, por trás de motivações individuais distintas, os clientes buscavam três valores: **patrimônio, liberdade e pertencimento.**',
-            'As alternativas disponíveis costumavam privilegiar parte dessa combinação. Ter uma casa, escolher onde viver o lazer e encontrar um lugar com o qual se identificar apareciam como decisões separadas.',
+            'Em mais de **13 empreendimentos de alto padrão**, percebeu a mesma busca dos clientes.',
+            'Eles queriam **patrimônio, liberdade e pertencimento.** As alternativas entregavam só parte dessa combinação.',
+            'Ter uma casa, escolher onde viver o lazer e encontrar um lugar com o qual se identificar eram decisões separadas.',
           ],
         },
         {
           title: 'Ato 3 — A validação',
           paragraphs: [
-            'A partir de **2019**, transformou essa percepção em método. Validou diretamente com os clientes suas dores e seus desejos, amadurecendo uma ideia: patrimônio, liberdade e pertencimento poderiam coexistir em uma mesma proposta de Second Home.',
+            'Em **2019**, passou a validar com os clientes suas dores e desejos, transformando a percepção em método.',
+            'Amadureceu a ideia de reunir patrimônio, liberdade e pertencimento em uma mesma Second Home.',
           ],
         },
         {
           title: 'Ato 4 — A resposta',
           paragraphs: [
-            'Ao aprofundar o papel do pertencimento, Marcos identificou uma conexão: marcas fortes representam valores, identidades e estilos de vida que seu público reconhece como seus.',
-            'Incorporar a experiência de marca ao modelo permitiria transformar essa identificação em algo que pudesse ser vivido. O Brand DNA passaria a orientar a concepção da Second Home — da arquitetura e dos espaços às experiências compartilhadas com quem se ama.',
-            'Essa escolha também ampliaria os caminhos de distribuição. As marcas poderiam aproximar a proposta de públicos com os quais já construíram afinidade e confiança. As pessoas encontrariam lugares mais conectados ao seu estilo de vida; as marcas ganhariam uma nova forma de aprofundar suas relações; e a Luxtory ampliaria o alcance do modelo.',
-            'Dessa combinação nasceu a proposta da Luxtory: **Branded Second Homes concebidas a partir da identidade de marcas parceiras, reunindo patrimônio, liberdade e pertencimento em uma mesma experiência de lazer.**',
+            'Marcos percebeu que marcas fortes expressam valores, identidades e estilos de vida reconhecidos por seu público.',
+            'O Brand DNA poderia traduzir essa afinidade na arquitetura, nos espaços e nas experiências da Second Home.',
+            'Assim, a identidade da marca ganharia um lugar para ser vivida e compartilhada com quem se ama.',
+            'As marcas aproximariam a proposta de públicos com os quais já construíram afinidade e confiança.',
+            'Pessoas ganhariam lugares ligados ao seu lifestyle; marcas, relações mais profundas; a Luxtory, mais alcance.',
+            'Assim nasceu a proposta: **Branded Second Homes com identidade de marca, patrimônio, liberdade e pertencimento.**',
           ],
         },
       ],
@@ -51,15 +56,15 @@ export const aboutMessages = {
       values: [
         {
           title: 'Missão',
-          text: 'Criar Branded Second Homes que expressem a identidade de marcas e estilos de vida, integrando patrimônio, liberdade e pertencimento em uma experiência de lazer com curadoria e gestão.',
+          text: 'Criar Branded Second Homes com identidade de marca, curadoria e gestão, unindo patrimônio, liberdade e pertencimento.',
         },
         {
           title: 'Visão',
-          text: 'Ser referência em Branded Second Homes no Brasil, aproximando marcas e pessoas por meio de lugares que expressem estilos de vida e se tornem parte de suas histórias.',
+          text: 'Ser referência em Branded Second Homes no Brasil, aproximando marcas e pessoas por lugares que expressem seu lifestyle.',
         },
         {
           title: 'Propósito',
-          text: 'Dar mais significado ao lazer e às conquistas das pessoas, criando lugares para viver histórias extraordinárias, com quem amam, e construir um sentimento duradouro de pertencimento.',
+          text: 'Dar mais significado ao lazer e às conquistas, criando histórias com quem se ama e um pertencimento duradouro.',
         },
       ],
     },
@@ -71,7 +76,7 @@ export const aboutMessages = {
     },
     invitation: {
       title: 'Você já sabe do que não quer abrir mão.',
-      lead: 'Conheça como a Luxtory conecta identidade de marca, relação patrimonial e possibilidades de uso em uma Branded Second Home — e descubra como essa proposta pode fazer parte da sua vida.',
+      lead: 'Conheça a união de marca, patrimônio e possibilidades de uso em uma Branded Second Home.',
       action: 'Entenda como funciona',
     },
   },

@@ -10,7 +10,12 @@ export function AboutContent({ journey }: { readonly journey: AboutJourney }) {
   const { howItWorks } = aboutContext(journey);
   return (
     <div className="lx-about lx-closings-subtle">
-      <section id="sobre" className="lx-section" data-surface="blue" aria-labelledby="sobre-titulo">
+      <section
+        id="sobre"
+        className="lx-section lx-about__opening"
+        data-surface="blue"
+        aria-labelledby="sobre-titulo"
+      >
         <div className="lx-container">
           <div className="lx-pause lx-pause--opening">
             <Eyebrow>{hero.eyebrow}</Eyebrow>

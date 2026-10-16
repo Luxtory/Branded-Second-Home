@@ -25,8 +25,8 @@ export function BrandPartnersSite({
       overlayHeader={current !== 'about'}
       navAlign="end"
       menuTrigger="mark"
-      titleRole="headline"
-      typeCeiling="home-hero"
+      titleRole={current === 'about' ? 'body' : 'headline'}
+      typeCeiling={current === 'about' ? 'none' : 'home-hero'}
       navItems={[
         {
           href: brandPartnersPaths.home,

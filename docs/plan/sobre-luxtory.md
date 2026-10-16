@@ -5,12 +5,13 @@
 **Tech Stack:** Next.js App Router, React, TypeScript, Core DS, Vitest e Playwright/axe.
 **Spec:** [catalog §15](../specs/catalog.md#15-sobre-a-luxtory).
 
-## Restrições e foco da revisão
+## Restrições e foco da revisão inicial
 
 Copy, parágrafos, ordem e destaques verbatim; canônicos e Frameworks intactos. Contexto obrigatório
 `discovery | brandPartners`; nunca cruzar jornadas. Foto JPEG original 884 × 990. Canonical por entrada e
 noindex em Preview/local. Com o portão fechado, nada da copy em HTML/RSC/metadados. Header sólido sem foto,
 copy longa sem truncamento em 320 px, fechamentos locais em itálico com filete, teto B2B preservado e menu ativo.
+A revisão visual em `catalog` §15.5, registrada abaixo, autoriza a edição da copy e a mesma escala nas duas entradas.
 
 ## 1. Conteúdo, rotas e integração — sequencial
 
@@ -29,10 +30,18 @@ Produz: `AboutContent({ journey }: { journey: AboutJourney })`, `aboutContext(jo
 
 Arquivos: `tests/e2e/about.spec.ts`, aplicações de comunicação, CHANGELOG e NOTES local.
 
-- [ ] Exercitar copy idêntica, links/estado ativo, foto, teclado/foco, metadata e portões fechados em Playwright.
-- [ ] Gate de UI e larguras exigidas; capturas 390 e 1440 px.
-- [ ] `npm run verify`, E2E e trace; corrigir falhas reais e registrar evidências.
-- [ ] Revisão completa da branch; commit, push e PR draft, sem merge.
-- [ ] Confirmar deployment READY pela Git integration e entregar URLs das duas rotas e PR.
+- [x] Exercitar copy idêntica, links/estado ativo, foto, teclado/foco, metadata e portões fechados em Playwright.
+- [x] Gate de UI e larguras exigidas; capturas 390 e 1440 px.
+- [x] `npm run verify`, E2E e trace; corrigir falhas reais e registrar evidências.
+- [x] Revisão completa da branch; commit, push e PR draft, sem merge.
+- [x] Confirmar deployment READY pela Git integration e entregar URLs das duas rotas e PR.
 
 Evidências visuais do build: [390 e 1440 px por jornada](../reviews/sobre/README.md).
+
+
+## Ajustes da revisão visual (catalog §15.5)
+
+- [x] Reproduzir diferenças de escala e blocos longos com testes de navegador (RED).
+- [x] Unificar composição, encurtar textos preservando fatos e remover abertura duplicada.
+- [x] Medir paridade e máximo de quatro linhas em seis larguras, incluindo o print 1266 × 546 (GREEN).
+- [ ] Atualizar capturas, executar gates/regressões e publicar no mesmo PR/Preview, sem merge.

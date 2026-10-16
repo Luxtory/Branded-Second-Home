@@ -21,13 +21,33 @@ function strings(value: unknown): string[] {
 afterEach(() => vi.unstubAllEnvs());
 
 describe('Sobre a Luxtory — contrato aprovado, catalog §15', () => {
-  it('preserva integralmente os 34 blocos aprovados, incluindo parágrafos, pontuação, ordem e destaques', () => {
-    const blocks = strings(text.content);
-    expect(blocks).toHaveLength(34);
-    // SHA-256 calculado diretamente do pedido aprovado, antes da implementação (sem duplicar a copy).
-    expect(createHash('sha256').update(blocks.join('\n')).digest('hex')).toBe(
-      'adb1ea43fc98fbfb746fe2b15c83209b810b86ab20423352d9fba60a3b3c3e39',
+  it('preserva fatos, racional do modelo e citação na edição concisa autorizada', () => {
+    const history = strings(text.content.history).join(' ').replaceAll('**', '');
+    for (const fact of [
+      'Marcos Rodopiano',
+      '13 empreendimentos de alto padrão',
+      '2019',
+      'patrimônio',
+      'liberdade',
+      'pertencimento',
+      'Brand DNA',
+      'arquitetura',
+      'experiências',
+      'confiança',
+    ])
+      expect(history).toContain(fact);
+    expect(text.content.history.acts[3].paragraphs.at(-1)).toMatch(
+      /proposta.*Branded Second Homes/,
     );
+    expect(text.content.founder.quote).toBe(
+      '“Criei a Luxtory para agregar mais valor ao lazer e transformar momentos em ricas histórias de vida.”',
+    );
+    expect(text.content.history.acts).toHaveLength(4);
+    expect(text.content.purpose.values.map((value) => value.title)).toEqual([
+      'Missão',
+      'Visão',
+      'Propósito',
+    ]);
   });
 
   it('renderiza o mesmo corpo com um H1 e todos os destaques nas duas jornadas', () => {
