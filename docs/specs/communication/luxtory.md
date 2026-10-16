@@ -79,6 +79,7 @@ Só os que as duas jornadas usam; o restante é citado direto na aplicação de 
 | D-LX-06 | Nomenclatura pública: termos canônicos + "Coleção" (§6) | aprovada em 2026-09-29 | `02` §1; DS spec §11 (open question 5) |
 | D-LX-07 | Contraste com convenções, nunca com concorrentes nomeados | substituída em 2026-10-01 → `[FW-B2C: §2, §5]` · `[FW-BP: §5, §15]` | Mestre §4 (Vilão); REQ-100 |
 | D-LX-08 | Nomenclatura pública do site B2C (§6), complementando `D-LX-06`: Second Home, Home Concept e Home Edition no lugar de Residence, Residence Concept e Residence Edition; nomes canônicos no Admin, no banco, nos canônicos e nos instrumentos | aprovada em 2026-10-01 (fundador) | `01` §1, §2; BR-001, BR-004 |
+| D-LX-09 | Sobre a Luxtory compartilhado entre as jornadas, com copy integral, cinco seções, biografia e citação fornecidas/aprovadas pelo fundador; foto original de `Luxtory2.0/public/images/sobre/marcos-rodopiano.png`, preservada como JPEG local. Cada entrada mantém shell, links e portão próprios; não retoma o posicionamento antigo. Fonte única no i18n, brief em `catalog` §15 | aprovada no pedido em 2026-10-15; entrega em PR/Preview, sem merge automático | pedido do fundador; BR-013, BR-040, BR-041; REQ-028 |
 
 | ID | Pendência | Bloqueia |
 |---|---|---|

@@ -1,6 +1,7 @@
 /** Rotas da jornada Brand Partners (REQ-028, spec catalog §14.1) — nenhuma leva à jornada B2C. */
 export const brandPartnersPaths = {
   home: '/brand-partner',
+  about: '/brand-partner/sobre',
   howItWorks: '/brand-partner/como-funciona',
   /** Âncora do formulário na Home: destino do CTA do REQ-028. */
   conversationAnchor: 'conversa',
@@ -35,7 +36,7 @@ export const BRAND_PARTNERS_HOW_SECTIONS = [
   'proximo-passo',
 ] as const;
 
-export type BrandPartnersSection = 'home' | 'howItWorks';
+export type BrandPartnersSection = 'home' | 'howItWorks' | 'about';
 
 /** O título nomeia a seção; a seção leva a âncora. */
 export const titleOf = (section: string) => `${section}-titulo`;

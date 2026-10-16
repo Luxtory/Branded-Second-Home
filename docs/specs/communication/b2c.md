@@ -93,6 +93,7 @@ Protagonista `[FW-B2C: §8.1, §13]`:
 | Coleção | as Second Homes: Concepts e suas Editions | Product Aware → Most Aware | PROOF → PUSH | "Ver o Concept" |
 | Concept, com Edition e oferta quando existirem (REQ-022) | a Residence específica | Most Aware | PUSH + prova necessária | "Manifestar interesse", só quando o formulário existir (`D-B2C-10`, `P-B2C-01`) |
 | Interesse | registrar o interesse | Most Aware → ação | PUSH | enviar → confirmação |
+| Sobre — `/sobre` | origem do Mentor e racional do modelo, copy institucional compartilhada (`D-LX-09`, `D-B2C-25`; `catalog` §15) | Product Aware → compreensão do Mentor | PROOF institucional → PUSH | "Entenda como funciona" → `/como-funciona` |
 
 - **Disposição para mudança:** "Aberto" em todas as páginas, como contexto-base `[FW-B2C: §3.1]`; a ambivalência é
   tratada pelas objeções (§5) no PROOF e no PUSH `[FW-B2C: §7.1]`.
@@ -139,6 +140,7 @@ externas (`P-LX-01`) e fotografia oficial (`P-LX-02`) ainda não existem.
 | D-B2C-22 | Refinamento tipográfico solicitado pelo fundador: em "Quando abrir mão vira regra", opções Second Home, Hospedagem e Copropriedade sempre lado a lado; opções, atributos e resultados na mesma escala Newsreader menor, ajustada à largura do painel; opção selecionada em Warm Sand, com sublinhado e peso medium. Todos os fechamentos editoriais do B2C menores e em Newsreader itálico, proporcionais às seções; ações, copy e B2B preservados | solicitada pelo fundador em 2026-10-15; complementa `D-B2C-19`, `D-B2C-20` e `D-B2C-21` somente na apresentação | `catalog.md` §13.10–§13.12; ADR-0003 |
 | D-B2C-23 | Após analisar a prévia, o fundador considerou os fechamentos pequenos demais: todos passam a usar o tamanho responsivo da frase "o lifestyle com o qual você se identifica." da Home (`type.page-title`, 24–36 px), mantendo Newsreader itálico e a proporção das seções. Card de alternativas e B2B preservados | solicitada pelo fundador em 2026-10-15; substitui somente a escala dos fechamentos de `D-B2C-22` | `catalog.md` §13.10–§13.12; ADR-0003 |
 | D-B2C-24 | Sempre antes de cada bloco de fechamento editorial do B2C, uma linha fina centralizada separa levemente o texto anterior: uma linha por bloco, inclusive tríade e Hero final quando há texto, preservando a escala e o itálico de `D-B2C-23` | solicitada pelo fundador em 2026-10-15 | `catalog.md` §13.10–§13.12; ADR-0003 |
+| D-B2C-25 | Página Sobre aprovada pelo fundador: conteúdo institucional único e integral, shell e links da própria jornada, item Sobre na navegação; portões preservados; fechamentos sutis locais à página; foto original do fundador | aprovada no pedido em 2026-10-15; implementação em PR/Preview, sem merge automático | `D-LX-09`; `catalog` §15 |
 
 | ID | Hipótese | Como validar | Status |
 |---|---|---|---|

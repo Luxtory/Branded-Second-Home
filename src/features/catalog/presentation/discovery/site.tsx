@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { aboutMessages } from '../i18n/about-pt-br';
 import { SiteShell } from '@/design-system/react';
 import { discoveryMessages as text } from '../i18n/discovery-pt-br';
 import { discoveryPaths, type DiscoverySection } from './paths';
@@ -33,6 +34,11 @@ export function DiscoverySite({
           href: discoveryPaths.howItWorks,
           label: text.site.howItWorks,
           current: current === 'howItWorks',
+        },
+        {
+          href: discoveryPaths.about,
+          label: aboutMessages.navLabel,
+          current: current === 'about',
         },
       ]}
     >

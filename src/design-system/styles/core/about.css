@@ -1,0 +1,35 @@
+/* Institutional page composition (catalog §15). Only the opt-in About body consumes these rules. */
+@layer lx.components {
+  [data-lx="core"] .lx-about .lx-about__founder {
+    margin: 0;
+    align-items: center;
+  }
+  [data-lx="core"] .lx-about .lx-about__portrait {
+    max-width: var(--lx-layout-split-text);
+  }
+  [data-lx="core"] .lx-about .lx-about__portrait img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  [data-lx="core"] .lx-about .lx-about__quote {
+    margin: 0;
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-type-page-title);
+    font-weight: var(--lx-weight-display);
+    font-style: italic;
+    line-height: var(--lx-leading-support);
+    color: var(--lx-color-headline);
+  }
+  /* Preserve the journey ceiling when the page-title scale overtakes it at intermediate widths. */
+  [data-lx="core"] .lx-type-ceiling .lx-about :is(
+    .lx-section-closing .lx-headline,
+    .lx-section-closing .lx-subheadline,
+    .lx-about__quote
+  ) {
+    font-size: min(var(--lx-type-page-title), var(--lx-type-home-hero));
+  }
+  [data-lx="core"] .lx-about .lx-about__invitation {
+    margin-block-start: 0;
+  }
+}
