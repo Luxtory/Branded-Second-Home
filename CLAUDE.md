@@ -30,9 +30,9 @@ conflict, 01 prevails (BR-380, REQ-104).
 
 | Doc | Path | Defines | IDs |
 |---|---|---|---|
-| 01 — Business Model & Business Rules v10.1 | `docs/specs/canonical/01-business-model-business-rules.md` | what the business is; structural rules | 188 `BR-xxx` |
-| 02 — Product Spec v4.2 | `docs/specs/canonical/02-product-spec.md` | functional behavior, invariants, product decisions | 65 `REQ-xxx` · 6 `INV-n` · 11 `PD-xxx` |
-| 03 — Technical Spec v3.14 | `docs/specs/canonical/03-technical-spec.md` | how to build: data model, locks, ledgers, API, QA | 51 `TECH-xxx` · `ADR-001…008` |
+| 01 — Business Model & Business Rules v10.2 | `docs/specs/canonical/01-business-model-business-rules.md` | what the business is; structural rules | 192 `BR-xxx` |
+| 02 — Product Spec v4.3 | `docs/specs/canonical/02-product-spec.md` | functional behavior, invariants, product decisions | 65 `REQ-xxx` · 6 `INV-n` · 11 `PD-xxx` |
+| 03 — Technical Spec v3.15 | `docs/specs/canonical/03-technical-spec.md` | how to build: data model, locks, ledgers, API, QA | 51 `TECH-xxx` · `ADR-001…008` |
 
 - **Never edit them.** Changes only via a new version issued by Luxtory, followed by impact
   analysis and traceability update.
@@ -47,6 +47,15 @@ conflict, 01 prevails (BR-380, REQ-104).
 - **Guardrails** = 03 §13 — read before every wave. **Terminology** = 02 §1: a Co-Owner holds an
   **Ação** with **Direito de Uso**; never "cota" (or derivatives) and never "diária(s)" for
   Co-Owner (REQ-100); no promise of guaranteed return, appreciation, liquidity or income (REQ-101).
+- **Ontology** (01 §1–§4 and BR-377, 02 §1, 03 §3): **Home Concept → Home Edition → Second Home**, in every layer —
+  canonicals, specs, ADRs, DB, code, APIs, Admin, tests and both journeys' communication. Technical names:
+  `home_concept`/`home_edition`/`second_home` (DB, contracts), `HomeConcept`/`HomeEdition`/`SecondHome` (code); derived
+  names follow (`second_home_id`, `second_home_date`, `register_second_home`…). A Home Edition is a specific, replicable
+  configuration of a Second Home: it has **no** location, modality, ownership structure or commercial conditions (they
+  belong to each Second Home) and, once published, its material definition never changes (a material change is a new
+  Home Edition). The commercial interest always starts from a Home Edition (`home_edition_id`, `desired_location`).
+  Never Residence, residência or residencial to name or frame the product; "identidade da marca", never "Brand DNA";
+  "imóvel de lazer" only descriptively and "casa" only as narrative language.
 - **Gate:** 65/65 REQ · 11/11 PD · 6/6 INV covered by tests (03 §12).
 
 ## Instance constraints (Luxtory)
@@ -59,6 +68,12 @@ conflict, 01 prevails (BR-380, REQ-104).
   **Exception authorized by the founder (2026-09-30, extended to Brand Partners on 2026-10-01):** communication that
   diverges from its journey's Framework (B2C or Brand Partners) is replaced, not extended; the trail stays in the
   registers of `docs/specs/communication/` and in Git (ADR-0012, ADR-0013).
+  **Exception authorized by the founder (2026-10-19), exclusively for the ontology correction (W4.2):** active files
+  and folders may be renamed (`home-concept`, `home-edition`, `second-home`, with `git mv`), and active content that
+  carries the previous ontology is replaced, not extended — Residence Concept → Home Concept; Residence Edition → Home
+  Edition; Residence as product or entity → Second Home; Brand DNA → identidade da marca; the approved derivatives.
+  Preserved: applied migrations, past CHANGELOG entries, dated or superseded decisions and records, Git history, and
+  justified legal or external references (versioned allowlist of the terminology test).
 - **`docs/plan/implementation-waves.md`**: when deriving the Luxtory plan with `/waves`, keep the
   current content verbatim at the end of the file as "Anexo A — plano do template (concluído)".
 - **Platform and cost:** [ADR-0002](docs/adr/0002-plataforma-e-adaptacoes-economicas.md) —
@@ -70,7 +85,8 @@ conflict, 01 prevails (BR-380, REQ-104).
     Design System in place: `docs/specs/design-system.md` (official logo kit received 2026-09-25 —
     `src/design-system/brand/logo/manifest.json`; official photography and a Pure White logo still pending);
   - contact/qualification fields of the interest form are not enumerated in REQ-025 → await
-    Luxtory's definition;
+    Luxtory's definition; **defined by 02 v4.3 (2026-10-19):** REQ-022 sets name, phone and e-mail plus a structured
+    pre-qualification; their design and implementation belong to W6;
   - commercial policies (PD-009), unset parameters and PRL are **operation** prerequisites
     (03 §16), not development blockers.
 - **Release order:** R1 public site (Discovery + Interesse) → R2 own use (calendar, Direito de
@@ -265,6 +281,11 @@ always keep it updated:**
 - ❌ Floating point for money or Créditos — money is `bigint` minor units + currency, Créditos
   are exact `numeric` (TECH-033)
 - ❌ "cota" or "diária(s)" for Co-Owner, or any promise of guaranteed return (REQ-100, REQ-101)
+- ❌ Residence, residência, residencial or "Brand DNA" naming or framing the product, or bare `concept`/`edition`
+  identifiers for the domain entities (BR-377) — use Home Concept, Home Edition, Second Home and identidade da marca
+- ❌ Location, modality, ownership structure or commercial conditions on a Home Edition, a silent material change to a
+  published Home Edition, or a projected average investment shown as price, offer or individual value (BR-031,
+  BR-034, BR-036)
 
 ## Conventions
 
@@ -305,8 +326,15 @@ always keep it updated:**
 - **Spec**: feature document (`docs/specs/<feature>.md`)
 - **Threat model**: STRIDE document in `docs/security/threats/<feature>.md`
 - **Luxtory business terms**: 01 §2 (canonical concepts) and 02 §1 (mandatory terminology).
-  03 identifiers: Ação = `stake`, Titular's link to a Residence = `holding`,
-  Data-Residence = `residence_date`, Créditos em Garantia = `held`
+  03 identifiers: Ação = `stake`, Titular's link to a Second Home = `holding`,
+  Data da Second Home = `second_home_date`, Créditos em Garantia = `held`
+- **Home Concept** (`home_concept`): replicable conceptual and identity system built by Luxtory from the Brand
+  Partner's identidade da marca and lifestyle; versioned (`home_concept_version`)
+- **Home Edition** (`home_edition`): specific, replicable configuration of a Second Home derived from a Home Concept;
+  no location, modality, ownership structure or commercial conditions; may carry one current projected average
+  investment (`home_edition_projected_investment`)
+- **Second Home** (`second_home`): specific instance of a Home Edition for a concrete location; holds modality,
+  ownership structure, Co-Owner configuration, commercial conditions, timezone, conformity and operational state
 
 ## Checklist before starting a task
 
