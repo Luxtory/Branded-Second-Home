@@ -165,6 +165,24 @@ describe('interesse — registro em PostgreSQL real (W5)', () => {
     expect(rows[0]?.n).toBe(0);
   });
 
+  it('[REQ-024] interesse Owner não constitui aquisição: com Edition Owner, só interest e a chave pública mudam', async () => {
+    const { conceptId, editions } = await publicConcept('owner');
+    const before = await tableCounts(database.pool);
+
+    const response = await post({
+      concept_id: conceptId,
+      edition_id: editions[0]?.id,
+      modality: 'owner',
+      region: 'Serra',
+    });
+
+    expect(response.status).toBe(201);
+    expect(changed(before, await tableCounts(database.pool)).sort()).toEqual([
+      'app.interest',
+      'app.public_idempotency_key',
+    ]);
+  });
+
   it('[REQ-022] interesse sem Edition é aceito; com Edition, só a modalidade oferecida', async () => {
     const { conceptId, editions } = await publicConcept('owner', 'owner_and_co_owner');
     const [ownerOnly, both] = editions;

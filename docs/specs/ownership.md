@@ -169,17 +169,18 @@ grava o `admin_read` (TECH-092, ADR-0010 §7; objeto `interest`, `*`).
 
 ## 6. Acceptance criteria
 
-- [ ] `[REQ-023]` origem e `partner_ref` registrados como metadados, sem prerrogativa: o registro altera só `interest`
+- [x] `[REQ-023]` origem e `partner_ref` registrados como metadados, sem prerrogativa: o registro altera só `interest`
       e a chave de idempotência pública; não cria Brand Partner, grant, vínculo nem ordem.
-- [ ] `[REQ-025]` `approx_days` nunca vira Ação nem Direito de Uso: nenhuma tabela de direitos, calendário, inventário,
+- [x] `[REQ-025]` `approx_days` nunca vira Ação nem Direito de Uso: nenhuma tabela de direitos, calendário, inventário,
       booking, Créditos ou economia é alterada; obrigatório para `co_owner`, recusado para `owner`.
-- [ ] `[REQ-022]` interesse sem Edition é aceito; com Edition, a modalidade precisa ser oferecida (F2a).
-- [ ] `[TECH-100]` excesso de requisições → `429` sem efeito; limitador indisponível → `503` sem efeito; `origin`,
+- [x] `[REQ-022]` interesse sem Edition é aceito; com Edition, a modalidade precisa ser oferecida (F2a).
+- [x] `[REQ-024]` interesse Owner não constitui aquisição: só `interest` e a chave pública mudam.
+- [x] `[TECH-100]` excesso de requisições → `429` sem efeito; limitador indisponível → `503` sem efeito; `origin`,
       `partner_ref` e região nunca em logs ou mensagens de erro.
-- [ ] `[TECH-056]` replay com a mesma chave e o mesmo conteúdo; conflito com conteúdo diferente; concorrência com a
+- [x] `[TECH-056]` replay com a mesma chave e o mesmo conteúdo; conflito com conteúdo diferente; concorrência com a
       mesma chave → exatamente um interesse.
-- [ ] `[TECH-092]` a leitura do Admin grava `admin_read`.
-- [ ] Contrato OpenAPI `createInterest`; `npm run trace -- --expect REQ-023`.
+- [x] `[TECH-092]` a leitura do Admin grava `admin_read`.
+- [x] Contrato OpenAPI `createInterest`; `npm run trace -- --expect REQ-023`.
 
 (Suíte da W5: `tests/features/ownership/`, `tests/migrations/ownership.db.test.ts` e
 `tests/e2e/interest.spec.ts`.)
