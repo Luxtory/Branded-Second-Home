@@ -97,7 +97,7 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 | BP1 | Home + Como funciona + formulário Resend, QA e publicação | catalog, platform (Core DS) | REQ-028 | BP0 | — | B2B | ✅ implementada (#40, #41); Production fechada até o go-live → go-live autorizado em 2026-10-13 (`D-BP-24`, #44 `0a9356a`); `/brand-partner*` em Production |
 | BP1.1 | Brand Partners Communication Upgrade: copy e composição do Decision & Approval Pack, Framework de 2026-10-12 | catalog (presentation), Core DS, docs | — (complementa REQ-028) | BP1 | — | B2B | ✅ implementação concluída em 2026-10-12 (PR #42, portão fechado); merged em `0f33dcf` (2026-10-13); refinamento pós-merge `D-BP-20` em revisão; publicação depende de P-LX-03 e das verificações externas de pré-go-live → refinamento `D-BP-20`–`D-BP-23` merged (#43 `7a864fa`); go-live por `D-BP-24` (#44, 2026-10-13); ajustes #45, #49 e #50 |
 | BP2 | Portal autenticado read-only com dados reais da própria parceria | identity, catalog, ownership | REQ-029 | BP0, critérios de entrada; representação/fatos canônicos de W7/W8 | — | B2B | ⛔ critérios de entrada ainda não satisfeitos |
-| 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ próxima executável (retomada de 2026-10-19) |
+| 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ próxima executável (retomada de 2026-10-19) → ✅ (#54, `1fa6f01`, 2026-10-19; escrita fechada em Production) |
 | 6 | Interesse — formulário público | ownership | — | 4, 5 | — | R1 | ⛔ P-3 |
 | 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ |
 | 8 | Formalização e calendário civil | ownership, calendar | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003 | 3, 7 | — | R2 | ⬜ |
@@ -708,6 +708,13 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
     leitura administrativa.
   - Endpoint fechado (fail-closed) em Production até os pré-requisitos operacionais, inclusive a D2; ativação só no
     checkpoint do fundador.
+- **Encerramento (2026-10-19): ✅.** PR #54, squash merge `1fa6f01`, aprovado pelo fundador (substitui o #53, fechado
+  como superseded só por três falsos positivos do gitleaks no histórico; scanner inalterado, sem reescrita de
+  histórico). CI de `main` run 39281940925: lint, typecheck, test, e2e, security, migrate e deploy verdes; migrations
+  `20261019034107_platform_public_idempotency_key` e `20261019034110_ownership_interest` aplicadas; Production em
+  `1fa6f01`. Smoke seguro: páginas B2C e Brand Partners 200; `POST /v1/interests` → 404, porque `INTEREST_WRITES`
+  continua **fechado** e nenhuma variável `INTEREST_*` foi criada; nenhum interesse gravado. A coleta produtiva segue
+  dependente da D2 e de decisão própria do fundador. A W6 segue ⛔ P-3.
 
 ### Wave 6 — Interesse: formulário público ⛔ P-3
 
