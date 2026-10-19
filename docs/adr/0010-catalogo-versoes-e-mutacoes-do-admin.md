@@ -112,3 +112,12 @@ progressivo. Rejeitada em favor de Server Actions sobre a mesma entrada.
 - `docs/specs/catalog.md`, `docs/specs/admin.md`, `docs/plan/implementation-waves.md` → Wave 3
 - `01`: BR-010, BR-013…015, BR-021…025, BR-310…314. `02`: REQ-020, REQ-027, REQ-095, REQ-096, REQ-100, REQ-101.
   `03`: §3.1, TECH-051…054, TECH-056, TECH-092.
+
+## Atualização W4.2 (2026-10-19)
+
+Superseded em parte pelo [ADR-0019](0019-ontologia-home-concept-home-edition-second-home.md): os objetos passam a
+Home Concept (`home_concept`, `home_concept_version`), Home Edition (`home_edition`) e Second Home (`second_home`);
+`register_residence` passa a `register_second_home` e exige Home Edition publicada; a Home Edition deixa de ter região,
+modalidade e condições comerciais e ganha publicação com definição material imutável. As decisões 1, 3–7, 9–11 e a
+ordem de travas (§8, agora `brand_partner` → `investor_authorization`, com os mesmos modos) continuam valendo com os
+nomes novos.

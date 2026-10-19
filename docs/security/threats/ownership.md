@@ -168,3 +168,18 @@ flowchart LR
 - OWASP ASVS — https://owasp.org/asvs/
 - Microsoft STRIDE — https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool
 - `03`: TECH-056, TECH-092, TECH-100, ADR-006; `02`: REQ-022–REQ-025; `01`: BR-015, BR-040–BR-043, BR-060.
+
+## W4.2 — Interesse a partir da Home Edition (2026-10-19)
+
+- **Scope**: `home_edition_id` obrigatório, sem `concept_id`; `region` → `desired_location`; sai a F2a. Superfície
+  pública inalterada (mesmo endpoint, portão, limitador e idempotência); escrita segue fechada em Production.
+- **Linked spec / ADR**: `docs/specs/ownership.md` §13 · ADR-0019
+
+| Ameaça | Mudança |
+|---|---|
+| T-404 Enumeração | O alvo passa a ser a Home Edition: rascunho, retirada, de Home Concept não público ou inexistente respondem o mesmo `404`. |
+| T-403 Texto pessoal | `desired_location` herda as regras de `region`: nunca em logs, erros, métricas ou respostas. |
+| T-402 Interesse como direito | Inalterado: `home_edition_id` não cria vínculo com Second Home, Ação ou Direito de Uso. |
+| Abuso F2a | Sai: a Home Edition não tem modalidade (BR-032); qualquer modalidade desejada é aceita. |
+
+Nenhuma ameaça nova: sem campo novo de visitante, sem contato e sem dado pessoal (W6).

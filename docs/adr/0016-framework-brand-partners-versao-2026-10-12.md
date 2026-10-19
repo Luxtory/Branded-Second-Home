@@ -72,3 +72,11 @@ inconsistência interna: o mecanismo do §2 terminava em "→ Home →", e o §8
 - [ADR-0013](0013-framework-brand-partners-fonte-canonica.md), [ADR-0011](0011-camada-de-comunicacao-publica.md)
 - Aplicação: [`brand-partners.md`](../specs/communication/brand-partners.md); base: [`luxtory.md`](../specs/communication/luxtory.md) §6
 - Spec: [`catalog` §14.9](../specs/catalog.md#149-bp11--brand-partners-communication-upgrade-2026-10-12)
+
+## Atualização 2026-10-19
+
+A decisão 2 ("atualização editorial, não renomeação do domínio") foi superada pelo
+[ADR-0019](0019-ontologia-home-concept-home-edition-second-home.md) e por `D-LX-11`: Home Concept, Home Edition e
+Second Home passam a ser os nomes canônicos também no Admin, no banco, no código e nos `01/02/03`. A versão
+terminológica do Framework Brand Partners de 2026-10-19 está registrada no
+[ADR-0013](0013-framework-brand-partners-fonte-canonica.md) ("Versões do Framework").

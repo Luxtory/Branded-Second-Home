@@ -89,3 +89,9 @@ a `/graphql/v1`; `pg_graphql` não está instalado; nenhum papel de API tem `USA
 - [ADR-0004](0004-toolchain-bibliotecas-e-pipeline.md), [ADR-0006](0006-acesso-a-dados.md),
   [ADR-0007](0007-ambientes-pre-lancamento-sem-staging.md), [ADR-0010](0010-catalogo-versoes-e-mutacoes-do-admin.md),
   [ADR-0012](0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md)
+
+## Atualização W4.2 (2026-10-19)
+
+Mesma leitura anônima sob RLS para a página da Home Edition (`/colecao/[homeConceptId]/home-editions/[homeEditionId]`):
+a Home Edition é pública só `published` e com Home Concept público; o predicado passa a `home_concept_is_public`
+([ADR-0019](0019-ontologia-home-concept-home-edition-second-home.md); spec `catalog` §17.7).

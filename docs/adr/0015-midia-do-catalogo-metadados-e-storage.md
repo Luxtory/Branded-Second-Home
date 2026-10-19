@@ -80,3 +80,10 @@ limita o corpo da requisição a 4,5 MB; os testes rodam em PostgreSQL real embu
 - [ADR-0002](0002-plataforma-e-adaptacoes-economicas.md), [ADR-0005](0005-testes-com-postgresql-real-sem-docker.md),
   [ADR-0007](0007-ambientes-pre-lancamento-sem-staging.md), [ADR-0010](0010-catalogo-versoes-e-mutacoes-do-admin.md),
   [ADR-0014](0014-discovery-publico-leitura-anonima-csp-e-publicacao.md)
+
+## Atualização W4.2 (2026-10-19)
+
+A mesma decisão vale para a mídia da Home Edition (imagens, renders e plantas; `home_edition_media`,
+`home_edition_media_file`, chaves `home-edition-media/<sha256>.webp`, rota `/media/home-edition-media/{id}/{width}`).
+A capa do Home Concept passa a `home_concept_media` (chaves `home-concept-media/…`, rota
+`/media/home-concept-covers/…`) ([ADR-0019](0019-ontologia-home-concept-home-edition-second-home.md)).

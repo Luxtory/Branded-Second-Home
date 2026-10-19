@@ -238,3 +238,69 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 - A retirada da capa vale na próxima requisição; uma cópia já baixada no navegador continua com o visitante (aceito).
 - A curadoria (posição e destaque) é mutável por desenho; o histórico fica no `audit_log` (aceito).
 - Objetos sem referência podem sobrar no bucket privado depois de uma transação desfeita (aceito; limpeza futura).
+
+## Wave 4.2 — Ontologia Home Concept → Home Edition → Second Home (2026-10-19)
+
+- **Status**: Draft (Fase B da W4.2; revisar no fechamento da wave)
+- **Scope**: renomeação do schema e do código do catálogo; Home Edition com definição material imutável, publicação,
+  retirada e correção editorial; mídia da Home Edition (imagens, renders, plantas) com rota pública
+  `GET /media/home-edition-media/{id}/{width}`; média projetada de investimento; página pública
+  `/colecao/[homeConceptId]/home-editions/[homeEditionId]`; `register_second_home` só de Home Edition publicada
+- **Linked spec / ADR**: `docs/specs/catalog.md` §17 · ADR-0019 · ADR-0014 · ADR-0015 · `docs/plan/w4-2-ontologia.md`
+
+### Superfície nova ou alterada
+
+| Component | S | T | R | I | D | E | Notes |
+|---|---|---|---|---|---|---|---|
+| Commands da Home Edition (criar, publicar, retirar, corrigir, mídia, média projetada) | — | C-42-2, C-42-3 | C-003 | — | C-006 | C-002 | mesma entrada das outras operações do catálogo |
+| Página pública da Home Edition e rota de mídia | — | — | — | C-42-1, C-42-4, C-42-5 | C-41-5 | — | leitura `anon` sob RLS, mesmo portão |
+| Upload da mídia da Home Edition | — | C-41-1 | C-003 | C-41-2 | C-41-3 | C-002 | mesmo pipeline da capa |
+| Migrations de renomeação | — | C-42-6 | — | C-42-6 | — | — | dependency map, precondições fail-closed |
+
+### C-42-1 [HIGH] Information disclosure — Rascunho, Home Edition retirada, mídia pendente ou média futura no site
+
+- **Vector**: leitura pública que ignore o estado de publicação, o estado da mídia ou a vigência da média.
+- **Mitigação**: visibilidade só pela RLS — Home Edition `published` e Home Concept público; mídia `approved` de Home
+  Edition pública; média vigente agora de Home Edition pública; master nunca público; grants de `anon` só nas colunas
+  da §17.7 (sem dados de publicação, de quem registrou nem de retirada). Testes `db` como `anon` para cada estado.
+
+### C-42-2 [MEDIUM] Tampering — Alteração material silenciosa de Home Edition publicada (BR-036)
+
+- **Vector**: update direto, command novo ou Server Action que mude tipologia, área, suítes, capacidade, programa ou o
+  Home Concept de uma Home Edition já apresentada.
+- **Mitigação**: gatilho `home_edition_transition` recusa qualquer mudança da definição material e do vínculo em
+  qualquer caminho (inclusive o dono da tabela); `UPDATE` de `luxtory_app` concedido só nas colunas de estado e nas
+  editoriais; nenhum command de edição material. Teste `db` por coluna material.
+
+### C-42-3 [MEDIUM] Tampering / Repudiation — Correção editorial usada para mudar o produto
+
+- **Vector**: reescrever a descrição para descrever outra configuração.
+- **Mitigação**: correção editorial só de nome e descrição, com base obrigatória, `operation` e `audit_log` com antes e
+  depois; checagem lexical; só staff Admin com MFA. **Residual**: o software não interpreta semântica de texto — a
+  revisão humana é o controle (como a aprovação de versão, C-007).
+
+### C-42-4 [MEDIUM] Information disclosure / misrepresentation — Média projetada lida como preço ou oferta
+
+- **Vector**: valor exibido sem contexto, por modalidade ou como valor individual (REQ-100, REQ-101, BR-034).
+- **Mitigação**: o dado não tem modalidade, base nem Ação; a página e a Coleção sempre exibem o rótulo "Média projetada
+  de investimento" e a explicação obrigatória da §17.4; testes de copy e E2E verificam a presença da explicação junto do
+  valor; checagem de terminologia sobre o texto renderizado.
+
+### C-42-5 [LOW] Information disclosure — Enumeração de Home Editions por URL
+
+- **Mitigação**: inexistente, rascunho, retirada, de Home Concept não público ou de outro Home Concept → o mesmo 404 da
+  plataforma, sem distinguir o motivo; ids são UUIDs aleatórios.
+
+### C-42-6 [MEDIUM] Tampering / Information disclosure — Migration de renomeação com dano silencioso
+
+- **Vector**: função SQL/PL/pgSQL com corpo apontando para nome antigo (falha só na execução), policy pública perdida,
+  grant de `anon` que sobrevive numa coluna nova, perda de dado por `DROP` sem verificação.
+- **Mitigação**: dependency map extraído do banco real; `CREATE OR REPLACE` de toda função citada na mesma migration;
+  precondições fail-closed antes de qualquer `DROP`; nenhum `CASCADE`; `npm run db:check` (up → down → up), testes de
+  banco das policies, grants e gatilhos com os nomes novos e teste das precondições.
+
+### Residual risk
+
+- Semântica dos textos editoriais (C-42-3) depende de revisão humana.
+- Janela curta entre `migrate` e deploy em que o app anterior não lê o catálogo renomeado (sem dados em Production;
+  ADR-0019).
