@@ -8,13 +8,15 @@
 > congelados). Plano W0–W30 aprovado em 2026-09-25 e revisado com evidência no mesmo dia (achados F1–F20, ver
 > "Registro da revisão"). As seções **Design System (DS)** (concluída) e **Anexo A** abaixo permanecem inalteradas.
 > Repriorização aprovada pelo fundador em BP0 (2026-10-09): [catalog §14](../specs/catalog.md#14-discovery-público-b2b-brand-partners-bp1).
+> Retomada do B2C autorizada pelo fundador em 2026-10-19, a partir da W5 (ver "Regras de execução"); a decisão BP0
+> permanece registrada como histórico.
 
 ## Página institucional Sobre — solicitação aprovada em 2026-10-15
 
 | Wave | Entrega | Dependência | Execução | Estado |
 |---|---|---|---|---|
-| SOBRE-1 | Corpo/i18n únicos, foto, duas rotas, navegação e metadados | shells B2C/B2B atuais | sequencial | implementada na branch; revisão pendente |
-| SOBRE-2 | Gates, documentação, revisão e PR/Preview | SOBRE-1 | sequencial | pendente |
+| SOBRE-1 | Corpo/i18n únicos, foto, duas rotas, navegação e metadados | shells B2C/B2B atuais | sequencial | implementada na branch; revisão pendente → ✅ merged no PR #51 (`a9e6c07`, 2026-10-16) |
+| SOBRE-2 | Gates, documentação, revisão e PR/Preview | SOBRE-1 | sequencial | pendente → ✅ PR #51 com CI de `main` verde (run 38853317489, inclusive migrate e deploy); `/sobre` e `/brand-partner/sobre` em Production |
 
 Spec: [catalog §15](../specs/catalog.md#15-sobre-a-luxtory). Plano detalhado:
 [Sobre a Luxtory](sobre-luxtory.md). Copy e estrutura já aprovadas pelo fundador no pedido; nenhum merge automático.
@@ -41,7 +43,14 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 - **Prioridade vigente (BP0, 2026-10-09):** W4.1 concluída; restante do B2C deliberadamente pausado, incluindo
   W5–W30 e migrações de UI CP3–CP5. BP0 → BP1 é o caminho até prospecção. BP2 é capacidade planejada com critérios
   de entrada, sem antecipar W7/W8. A pausa não remove requisitos nem altera as dependências históricas abaixo.
-  REQ-028 pertence à BP1; REQ-029 à BP2. Total atual: 65 REQ · 11 PD · 6 INV · 51 TECH.
+  REQ-028 pertence à BP1; REQ-029 à BP2. Total atual: 65 REQ · 11 PD · 6 INV · 51 TECH. **Pausa encerrada em
+  2026-10-19** (item seguinte); este registro permanece como histórico da decisão BP0.
+- **Retomada do B2C (fundador, 2026-10-19):** a sequência B2C volta a executar a partir da primeira wave funcional
+  executável, a **W5**. Uma wave por vez: 1 wave = 1 escopo = 1 branch = 1 PR = 1 ciclo completo de verificação, com
+  parada e apresentação do resultado ao fundador antes da wave seguinte; merge e ativação em Production só no
+  checkpoint final do fundador. A W6 continua ⛔ P-3 (decisão de produto a resolver com o fundador antes do formulário
+  público). CP3–CP5 seguem ⬜ e não são dependência da W5. BP2 segue ⛔ pelos critérios de entrada. A retomada não
+  altera `01`/`02`/`03` nem os Frameworks.
 - **Exceção documental BP0 autorizada:** contratos em `02`/`03`, `catalog` §14, aplicação de comunicação e
   roadmap; sincronização mínima da governança/índice e dos ponteiros vigentes. Sem alterar `01`/Frameworks ou
   código. Gates documentais e, no checkpoint final solicitado pelo fundador, uma execução de `npm run verify`,
@@ -85,10 +94,10 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 | 4 | Discovery público + componentes React do DS | catalog | REQ-100, REQ-101 | 3, 3C | — | R1 | ✅ (CP2, #32, `ba1dc8d`) |
 | 4.1 | Coleção: discovery curatorial (dados, Admin, mídia, filtros, página final) | catalog | complementa REQ-020, REQ-022 | 4 | — | R1 | ✅ (#36, `3c26d60`; Production confirmada pelo fundador) |
 | BP0 | Product Gate, contratos públicos e portal planejado | docs | — (especifica REQ-028/029) | 4.1 | — | B2B | ✅ (#39) |
-| BP1 | Home + Como funciona + formulário Resend, QA e publicação | catalog, platform (Core DS) | REQ-028 | BP0 | — | B2B | ✅ implementada (#40, #41); Production fechada até o go-live |
-| BP1.1 | Brand Partners Communication Upgrade: copy e composição do Decision & Approval Pack, Framework de 2026-10-12 | catalog (presentation), Core DS, docs | — (complementa REQ-028) | BP1 | — | B2B | ✅ implementação concluída em 2026-10-12 (PR #42, portão fechado); merged em `0f33dcf` (2026-10-13); refinamento pós-merge `D-BP-20` em revisão; publicação depende de P-LX-03 e das verificações externas de pré-go-live |
+| BP1 | Home + Como funciona + formulário Resend, QA e publicação | catalog, platform (Core DS) | REQ-028 | BP0 | — | B2B | ✅ implementada (#40, #41); Production fechada até o go-live → go-live autorizado em 2026-10-13 (`D-BP-24`, #44 `0a9356a`); `/brand-partner*` em Production |
+| BP1.1 | Brand Partners Communication Upgrade: copy e composição do Decision & Approval Pack, Framework de 2026-10-12 | catalog (presentation), Core DS, docs | — (complementa REQ-028) | BP1 | — | B2B | ✅ implementação concluída em 2026-10-12 (PR #42, portão fechado); merged em `0f33dcf` (2026-10-13); refinamento pós-merge `D-BP-20` em revisão; publicação depende de P-LX-03 e das verificações externas de pré-go-live → refinamento `D-BP-20`–`D-BP-23` merged (#43 `7a864fa`); go-live por `D-BP-24` (#44, 2026-10-13); ajustes #45, #49 e #50 |
 | BP2 | Portal autenticado read-only com dados reais da própria parceria | identity, catalog, ownership | REQ-029 | BP0, critérios de entrada; representação/fatos canônicos de W7/W8 | — | B2B | ⛔ critérios de entrada ainda não satisfeitos |
-| 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ |
+| 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ próxima executável (retomada de 2026-10-19) |
 | 6 | Interesse — formulário público | ownership | — | 4, 5 | — | R1 | ⛔ P-3 |
 | 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ |
 | 8 | Formalização e calendário civil | ownership, calendar | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003 | 3, 7 | — | R2 | ⬜ |
@@ -118,6 +127,9 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 **Status B2C:** todas as linhas W5–W30 estão pausadas por decisão de prioridade; seus símbolos anteriores
 registram a prontidão técnica, não autorização para executar. CP3–CP5 também aguardam retomada explícita.
 Referências históricas em W3B/W3D/W4 a `P-BP-01` bloqueada descrevem aquelas entregas; a resolução vigente é BP0.
+**Atualização 2026-10-19:** pausa encerrada pelo fundador; o B2C retoma em sequência a partir da W5. Os símbolos das
+linhas W5–W30 voltam a indicar o estado de execução conforme as dependências (W6 ⛔ P-3); CP3–CP5 seguem aguardando
+e não bloqueiam a W5.
 
 Paralelismo na retomada do B2C: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
 canal do AsyncAPI, telas e `CHANGELOG.md`, e o STRIDE do beacon. A W10 toca migrations de `calendar`/`inventory`,
@@ -638,6 +650,10 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   (Home e Como funciona a 390, 768 e 1440 px; detalhe no item 6 dos checkpoints do catalog §14.9), com a CI verde.
   O PR aguarda a decisão de merge do fundador; o merge publica em Production com o portão fechado, e abrir o portão é
   autorização separada.
+- **Go-live (2026-10-13):** refinamento `D-BP-20`–`D-BP-23` merged (#43, `7a864fa`); go-live autorizado pelo fundador
+  (`D-BP-24`: `P-LX-03` com risco residual aceito, J-34 e J-35) e merged (#44, `0a9356a`); ajustes posteriores #45
+  (`fd9755d`), #49 (`D-BP-25`/`D-BP-26`, `70fae67`) e #50 (`bb4a1a0`). Production serve `/brand-partner` e
+  `/brand-partner/como-funciona` (verificado em 2026-10-18).
 
 ### BP2 — Portal Brand Partner (evolução planejada)
 
@@ -666,12 +682,32 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
     Co-Owner (inteiro positivo, sem teto presumido), origem e parceiro autorizado opcional.
   - `POST /v1/interests` público: Idempotency-Key, validação Zod, limite de requisições (port + adapter Upstash;
     sem Redis a escrita é recusada).
-  - Lista Admin agrupada por Concept, região e modalidade (BR-062). STRIDE `interest`.
+  - Lista Admin agrupada por Concept → região → modalidade e, dentro de `co_owner`, pelos valores exatos de
+    `approx_days`, sem faixas nem algoritmo comercial (BR-062: Concept, região e necessidade aproximada de uso;
+    modalidade acrescentada por este plano). STRIDE `interest`.
 - **Depends on / parallel with**: W3; sequencial.
 - **Acceptance criteria**: `[REQ-023] origem e parceiro registrados sem prerrogativa` · `[REQ-025] approx_days nunca
   vira Ação nem Direito de Uso` · `[REQ-022] interesse sem Edition é aceito` · `[TECH-100] excesso de requisições →
   429 sem efeito` · contrato OpenAPI.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-023 exits 0, stop after 4 tries`
+- **Revisão aprovada pelo fundador (2026-10-19)** — prevalece sobre o texto acima onde diferir:
+  - `origin` e `partner_ref`: metadados textuais opcionais, com limite técnico na spec, sem enum, sem FK para
+    `brand_partner` e sem entidade de parceiro; declarados e não confiáveis — nunca concedem acesso, autorização,
+    representação, comissão, titularidade da demanda ou atribuição comercial, nem alimentam a atribuição da BP2. Um
+    modelo canônico futuro de parceiros evolui por migration própria.
+  - Com Edition informada, a modalidade precisa estar entre as que a Edition oferece (senão `ERR_VALIDATION`); sem
+    Edition, o interesse no Concept segue aceito (REQ-022, BR-030). `approx_days`: obrigatório para `co_owner`,
+    inteiro positivo, sem teto; nulo para `owner`; só preferência comercial (REQ-025, BR-060, BR-065).
+  - Interesse não é mutação econômica nem de estado crítico (TECH-002): não passa pelo pipeline de commands críticos
+    (`operation`, `audit_log` de command, `idempotency_record`, `CRITICAL_COMMANDS` e `app.actor_role` inalterados).
+    TECH-056 continua: `POST` + `Idempotency-Key`, resolvido atomicamente no PostgreSQL (replay, conflito e uma única
+    linha sob concorrência). Redis só limita requisições; ausente ou com falha, a escrita é recusada antes do banco.
+  - Rate limit pelo `RateLimiter`/Upstash/`pseudonymizeNetwork`/`trustedClientAddress` existentes, com namespace
+    próprio; segredo HMAC novo só se o threat model demonstrar necessidade. `origin`, `partner_ref` e região nunca
+    entram em logs nem em mensagens de erro. A leitura Admin segue as regras de autorização/RLS e de auditoria de
+    leitura administrativa.
+  - Endpoint fechado (fail-closed) em Production até os pré-requisitos operacionais, inclusive a D2; ativação só no
+    checkpoint do fundador.
 
 ### Wave 6 — Interesse: formulário público ⛔ P-3
 
@@ -1213,7 +1249,7 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 | # | Decisão | Recomendação | Status |
 |---|---|---|---|
 | D1 | Vercel Pro antes do go-live público do R1 (termos de uso comercial; cron por minuto) | sim | aberta |
-| D2 | Supabase Pro (backup diário, sem pausa) antes de dados reais; PITR no go-live econômico (ADR-0002). Pré-requisito da W30 | sim, no go-live do R1 | aberta |
+| D2 | Supabase Pro (backup diário, sem pausa) antes de dados reais; PITR no go-live econômico (ADR-0002). Pré-requisito da W30 | sim, no go-live do R1 | aberta — 2026-10-19: não bloqueia o desenvolvimento da W5, mas bloqueia a coleta produtiva de interesses (fundador) |
 | D3 | Segundo projeto Supabase Free como staging (Previews + validação de migrations na CI) | criar antes da W1 | **adiada** em 2026-09-26 (opção A: sem staging; Previews sem credencial do banco; reavaliar antes de dados reais, PII, 1ª transação econômica ou go-live — [ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md)); **reavaliada** em 2026-09-26 na W2 (PII do 1º staff em `auth.users`): mantida sem staging; nova reavaliação antes de PII de clientes, 1ª transação econômica ou go-live público |
 | D4 | Provedor SMTP para login e notificações | escolher antes do go-live do R2 | **resolvida** em 2026-09-27: **Resend** (SMTP customizado do Supabase Auth, remetente `acesso@luxtory.club`, domínio com SPF/DKIM; credencial exclusiva da plataforma só no Supabase) |
 | D5a | `NOTES.md` já existia → atualizado no lugar, sem recriar | — | adotada em 2026-09-25 |

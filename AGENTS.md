@@ -105,6 +105,10 @@ Source of truth for every user-facing UI (**LUXTORY = LUXURY + STORY**). Read be
   terminology, tokens sync, Lab).
 - Never hardcode color/font/duration/easing/z-index; never recolor or redraw the logo. Logos: official kit in
   `src/design-system/brand/logo/` — reference files via `manifest.json` keys, always as `<img>` (never inline SVG).
+- **Mobile-first with functional parity on every surface** ([ADR-0009](docs/adr/0009-superficies-de-produto-mobile-first.md)):
+  every function reachable and completable from 320 px; width media queries only `min-width` (no `max-width`);
+  no unintended horizontal overflow of the document. Exceptions only as an explicit product decision recorded in
+  the feature spec. Product surfaces compose `lx-app-*` / `lx-page-header`; components are consumer-driven.
 
 ## Communication (public pages)
 
@@ -181,6 +185,11 @@ always keep it updated:**
   numbered waves with explicit dependencies, each classified as sequential or
   parallelizable (parallel waves can run as subagents in isolated worktrees).
   The NOTES.md roadmap table mirrors this plan.
+- **Subagents (Luxtory).** Parallelize only for a real time gain on independent tasks — never for simple or strongly
+  sequential work. The main agent owns architecture, integration and commits, and exclusively edits migrations,
+  `openapi.yaml`/`asyncapi.yaml`, the command registry, `package.json`, `vercel.json` and `CHANGELOG.md`. Never
+  parallelize edits to the same files; parallel implementation only with non-overlapping ownership in isolated
+  worktrees. During implementation prefer targeted tests; full gates at checkpoints and at wave close.
 - **API-First.** REST contracts in `docs/api/openapi.yaml`, async/event
   contracts in `docs/api/asyncapi.yaml`. Update the contract BEFORE touching
   any handler.
@@ -312,7 +321,8 @@ always keep it updated:**
    validation, rate limiting, and DB-level access control.
 7. Which canonical IDs (BR/REQ/INV/PD/TECH) does this implement? Cite them in the spec,
    tests and commits.
-8. Does it touch UI? Use the Design System (`docs/reference/design-system.md`) — tokens and `lx-*` classes only.
+8. Does it touch UI? Use the Design System (`docs/reference/design-system.md`) — tokens and `lx-*` classes only —
+   and design mobile-first with functional parity (ADR-0009); new screens use the shared responsive E2E helper.
 9. Is it a public page? Follow `docs/specs/communication.md`: find the page in the Protagonist's journey map,
    write the page brief in the wave spec, cite facts by ID and use only approved decisions.
 
@@ -334,5 +344,8 @@ Before marking a PR as ready for review:
 - [ ] CHANGELOG.md updated (if user-facing)
 - [ ] Threat model updated (if attack surface changed)
 - [ ] Diátaxis docs updated (if it affects public usage of the feature)
+- [ ] UI (if changed): mobile-first with functional parity (ADR-0009) — axe 0 at 390 and 1440 px, no unintended
+      horizontal overflow from 320 to 1920 px, main flow run at 390 px with touch; any mobile exception recorded
+      as a product decision in the spec
 - [ ] Public page (if changed): page brief in the wave spec and the checklist of `docs/specs/communication.md` met
 - [ ] Migration rollback tested (if any migration was added)
