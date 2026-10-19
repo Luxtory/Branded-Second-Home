@@ -84,6 +84,8 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 ### C-006 [LOW] Denial of service — Volume de `POST` autenticados
 
 - **Mitigação**: só staff AAL2 alcança; limites de tamanho em toda entrada. Rate limit chega com o port da W5 (P-10).
+  (W5, 2026-10-19: o port foi aplicado só à escrita pública de interesse, conforme o plano; as rotas do Admin seguem
+  sem limitador da aplicação — ver risco residual.)
 
 ## 7. Abuse cases
 
@@ -93,7 +95,8 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 
 ## 8. Residual risk
 
-- Sem rate limit nas rotas do Admin até a W5 (aceito: superfície só de staff AAL2).
+- Sem rate limit nas rotas do Admin até a W5 (aceito: superfície só de staff AAL2). Mantido depois da W5: o limitador
+  da aplicação cobre só a escrita pública de interesse; reavaliar na W30 (aceito pela Engenharia, 2026-10-19).
 - Checagem de terminologia é lexical (aceito: gate editorial humano).
 - Encerramento sem exceção para bases sobreviventes (limitação temporária, ADR-0010 §4).
 
