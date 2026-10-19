@@ -62,7 +62,7 @@ Esses campos devem partir da realidade do público.
 **As principais alternativas disponíveis tendem a entregar apenas parte dessa tríade ou obrigar o Protagonista a renunciar significativamente a um dos três valores para obter os demais.**
 
 **Oferta da marca:**\
-**Luxtory Branded Second Home: Residences concebidas a partir do Brand DNA de Brand Partners, estruturadas em Residence Editions nas modalidades Owner e/ou Co-Owner e conectadas ao Luxtory Club conforme elegibilidade e regras aplicáveis.**
+**Luxtory Branded Second Home: Second Homes concebidas a partir da identidade de Brand Partners, desenvolvidas a partir de Home Editions, adquiridas como Owner ou Co-Owner e conectadas ao Luxtory Club conforme elegibilidade e regras aplicáveis.**
 
 **Alternativas:**\
 **Hotéis e resorts; locação de temporada; aquisição convencional de segunda residência; modelos de co-ownership; outros clubes de second homes, intercâmbio ou hospitalidade; e manutenção da situação atual.**
@@ -84,7 +84,7 @@ Isso significa **presença da tríade**, não maximização ilimitada de cada pi
 
 **Mecanismo:**
 
-> **Identificação com um lifestyle → Brand Partner → Brand DNA → Residence Concept → Residence Edition → Owner/Co-Owner → Design & Build → Residence → Luxtory Club**
+> **Identificação com um lifestyle → Brand Partner → identidade da marca → Home Concept → Home Edition → Owner/Co-Owner → Design & Build → Second Home → Luxtory Club**
 
 A arquitetura materializa a tríade:
 
@@ -92,8 +92,8 @@ A arquitetura materializa a tríade:
 
 Por meio de uma relação patrimonial real com a Second Home:
 
-- **Owner:** propriedade integral da Residence;
-- **Co-Owner:** participação societária na SPE proprietária da Residence associada ao Direito de Uso.
+- **Owner:** propriedade integral da Second Home;
+- **Co-Owner:** participação societária na SPE proprietária da Second Home associada ao Direito de Uso.
 
 O patrimônio imobiliário possui valor econômico, pode ser posteriormente alienado e está sujeito à dinâmica de valorização ou desvalorização do mercado.
 
@@ -109,7 +109,7 @@ Por meio de mecanismos que ampliam possibilidades de utilização e reduzem part
 - Luxchange;
 - Luxplus;
 - mecanismos autorizados de monetização quando elegíveis;
-- possibilidade de viver experiências em outras Residences conforme regras, disponibilidade e elegibilidade.
+- possibilidade de viver experiências em outras Second Homes conforme regras, disponibilidade e elegibilidade.
 
 > **Liberdade significa ampliar possibilidades e reduzir atritos — não ausência de regras nem disponibilidade irrestrita.**
 
@@ -123,10 +123,10 @@ Por meio de:
 
 - lifestyle;
 - Brand Partner;
-- Brand DNA;
-- Residence Concept;
+- identidade da marca;
+- Home Concept;
 - arquitetura e design;
-- Residence;
+- Second Home;
 - experiências;
 - convivência com Aliados;
 - e, progressivamente, relações entre pessoas com afinidades semelhantes dentro do ecossistema Luxtory.
@@ -632,7 +632,7 @@ Pertencimento, vínculo, proximidade, experiências compartilhadas e autoaceita�
 
 ## 5. Most Aware
 
-> **“Entendo a Luxtory, a Residence Edition, a modalidade e seus mecanismos e preciso decidir se fazem sentido para mim.”**
+> **“Entendo a Luxtory, a Home Edition, a modalidade e seus mecanismos e preciso decidir se fazem sentido para mim.”**
 
 **Nível atual da Home institucional:**\
 **Unaware.**
@@ -788,7 +788,7 @@ Demonstrar como a Luxtory materializa a tríade.
 
 **Mecanismo:**
 
-> **Identificação com Lifestyle → Brand Partner → Brand DNA → Residence Concept → Residence Edition → Owner/Co-Owner → Design & Build → Residence → Luxtory Club**
+> **Identificação com Lifestyle → Brand Partner → identidade da marca → Home Concept → Home Edition → Owner/Co-Owner → Design & Build → Second Home → Luxtory Club**
 
 ---
 
@@ -796,14 +796,14 @@ Demonstrar como a Luxtory materializa a tríade.
 
 ### Owner
 
-- propriedade integral da Residence;
+- propriedade integral da Second Home;
 - posse patrimonial direta;
 - possibilidade futura de alienação;
 - exposição à dinâmica de valorização ou desvalorização imobiliária.
 
 ### Co-Owner
 
-- participação societária na SPE proprietária da Residence;
+- participação societária na SPE proprietária da Second Home;
 - Ação + Direito de Uso;
 - participação patrimonial real;
 - possibilidade de transferência conforme regras aplicáveis.
@@ -822,7 +822,7 @@ Serviços e administração aplicáveis reduzem atritos operacionais, administra
 
 ### Luxchange
 
-Amplia possibilidades de experiências em outras Residences conforme:
+Amplia possibilidades de experiências em outras Second Homes conforme:
 
 - elegibilidade;
 - disponibilidade;
@@ -850,15 +850,15 @@ Origina o universo com o qual o Protagonista se identifica.
 
 Representa cultural e simbolicamente esse universo.
 
-### Brand DNA
+### Identidade da marca
 
 Traduz identidade, valores, estética e experiências.
 
-### Residence Concept
+### Home Concept
 
-Transforma esse DNA em arquitetura, interiores, paisagismo, amenidades e forma de viver.
+Transforma essa identidade em arquitetura, interiores, paisagismo, amenidades e forma de viver.
 
-### Residence
+### Second Home
 
 Materializa:
 
@@ -903,7 +903,7 @@ Permitir que o Protagonista determine se a combinação oferecida faz sentido pa
 - quem valoriza patrimônio;
 - quem deseja ampliar possibilidades de experiência;
 - quem valoriza pertencimento;
-- quem se identifica com um Residence Concept;
+- quem se identifica com um Home Concept;
 - quem deseja compartilhar experiências com Aliados;
 - quem entende e aceita as regras da modalidade escolhida.
 
@@ -917,14 +917,14 @@ Permitir que o Protagonista determine se a combinação oferecida faz sentido pa
 - quem não percebe valor em lifestyle, propriedade ou pertencimento.
 
 **Próximo passo:**\
-**Conhecer Residence Concepts e Residence Editions compatíveis com seu lifestyle e perfil de uso.**
+**Conhecer Home Concepts e Home Editions compatíveis com seu lifestyle e perfil de uso.**
 
 **CTA:**\
-**“Conheça as Residence Editions.”**
+**“Conheça as Home Editions.”**
 
 ### Resultado mental
 
-> **“Patrimônio, Liberdade e Pertencimento importam para mim. Quero descobrir qual Residence faz sentido para minha vida.”**
+> **“Patrimônio, Liberdade e Pertencimento importam para mim. Quero descobrir qual Second Home faz sentido para minha vida.”**
 
 ---
 
@@ -971,8 +971,8 @@ Demonstrar:
 - Pertencimento;
 - Owner;
 - Co-Owner;
-- Brand DNA;
-- Residence Concept;
+- Identidade da marca;
+- Home Concept;
 - Gestão;
 - Luxchange;
 - Luxplus;
@@ -1143,12 +1143,12 @@ O Tom resulta de:
 
 | Elemento         | Fazer                                                                                               | Evitar                                                                               |
 | ---------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| **Vocabulário**  | **Patrimônio, liberdade, pertencimento, lifestyle, experiências, Residence, Aliados e propriedade** | **Ostentação, jargão desnecessário e confusão entre patrimônio e retorno garantido** |
+| **Vocabulário**  | **Patrimônio, liberdade, pertencimento, lifestyle, experiências, Second Home, Aliados e propriedade** | **Ostentação, jargão desnecessário e confusão entre patrimônio e retorno garantido** |
 | **Headlines**    | **Curtas, aspiracionais e centradas em uma ideia**                                                  | **Superlativos vazios ou claims impossíveis**                                        |
 | **Frases**       | **Claras, elegantes e diretas**                                                                     | **Texto excessivamente técnico**                                                     |
 | **Argumentação** | **Desejo → conflito → nova lógica → mecanismo → prova**                                             | **Superioridade sem demonstração**                                                   |
 | **Emoção**       | **A definida para o contexto**                                                                      | **Manipulação emocional artificial**                                                 |
-| **Autoridade**   | **Mecanismo, arquitetura, Brand Partners, Residence Concepts e regras reais**                       | **Autoproclamação**                                                                  |
+| **Autoridade**   | **Mecanismo, arquitetura, Brand Partners, Home Concepts e regras reais**                       | **Autoproclamação**                                                                  |
 | **CTAs**         | **Convite ao próximo passo coerente**                                                               | **Pressão ou falsa escassez**                                                        |
 
 ---
@@ -1226,18 +1226,18 @@ O Tom resulta de:
 
 - lifestyle;
 - Brand Partner;
-- Brand DNA;
-- Residence Concept;
+- identidade da marca;
+- Home Concept;
 - Design & Build;
-- Residence;
+- Second Home;
 - Aliados;
 - Luxtory Club.
 
 **Próximo passo:**\
-**Explorar Residence Concepts ou Residence Editions compatíveis.**
+**Explorar Home Concepts ou Home Editions compatíveis.**
 
 **CTA:**\
-**“Conheça as Residence Editions.”**
+**“Conheça as Home Editions.”**
 
 ---
 
@@ -1372,7 +1372,7 @@ Toda comunicação deve:
 **Oferta:** **Branded Second Homes Owner/Co-Owner conectadas ao Luxtory Club.**\
 **Posicionamento:** **Branded Second Home que elimina a necessidade estrutural de escolher entre Patrimônio, Liberdade e Pertencimento ao integrar os três em uma mesma arquitetura.**\
 **Diferencial:** **Posse + possibilidades + pertencimento.**\
-**Mecanismo:** **Lifestyle → Brand Partner → Brand DNA → Residence Concept → Residence Edition → Owner/Co-Owner → Design & Build → Residence → Luxtory Club.**
+**Mecanismo:** **Lifestyle → Brand Partner → identidade da marca → Home Concept → Home Edition → Owner/Co-Owner → Design & Build → Second Home → Luxtory Club.**
 
 ---
 
@@ -1441,7 +1441,7 @@ Toda comunicação deve:
 **Transição pretendida:** **Unaware → Product Aware.**\
 **5Ps necessários:** **Picture → Problem → Promise → Proof → Push.**\
 **Camada de solução apropriada:** **Progresso → Tríade → Categoria → Luxtory.**\
-**Evidências disponíveis:** **Owner/Co-Owner, Brand Partners, Brand DNA, Residence Concepts, Residence Editions, Design & Build, Gestão, Luxchange, Luxplus e Luxtory Club.**
+**Evidências disponíveis:** **Owner/Co-Owner, Brand Partners, identidade da marca, Home Concepts, Home Editions, Design & Build, Gestão, Luxchange, Luxplus e Luxtory Club.**
 
 ---
 
@@ -1453,7 +1453,7 @@ Toda comunicação deve:
 **Sistema afetivo principal:** **Selecionado conforme 5P + consciência + Job/MCR + contexto.**\
 **Sistema secundário:** **Quando necessário.**\
 **Tom:** **Derivado da combinação contextual.**\
-**CTA:** **“Conheça as Residence Editions.”**
+**CTA:** **“Conheça as Home Editions.”**
 
 ---
 
@@ -1564,13 +1564,13 @@ Home:
 > Gestão / Luxchange / Luxplus / mecanismos aplicáveis
 >
 > **PERTENCIMENTO → IDENTIFICAÇÃO + LUGAR + PESSOAS**\
-> Lifestyle / Brand Partner / Brand DNA / Residence Concept / Residence / Aliados / Club
+> Lifestyle / Brand Partner / identidade da marca / Home Concept / Second Home / Aliados / Club
 
 ↓
 
 ### PUSH
 
-> **“Essa combinação faz sentido para mim. Quero conhecer uma Residence.”**
+> **“Essa combinação faz sentido para mim. Quero conhecer uma Second Home.”**
 
 ↓
 
@@ -1615,7 +1615,7 @@ Home:
 
 ---
 
-> **Patrimônio = Posse:** propriedade integral no Owner ou participação patrimonial na SPE proprietária da Residence no Co-Owner.\
+> **Patrimônio = Posse:** propriedade integral no Owner ou participação patrimonial na SPE proprietária da Second Home no Co-Owner.\
 > **Liberdade = Possibilidades:** Gestão, Luxchange, Luxplus e demais mecanismos aplicáveis ampliam formas de viver e utilizar a second home.\
-> **Pertencimento = Identificação + Lugar + Pessoas:** lifestyle, Brand DNA, Residence Concept, Residence, Aliados e evolução do Luxtory Club.\
+> **Pertencimento = Identificação + Lugar + Pessoas:** lifestyle, identidade da marca, Home Concept, Second Home, Aliados e evolução do Luxtory Club.\
 > **Luxtory = Branded Second Home concebida para eliminar a necessidade estrutural de abrir mão de um desses valores, garantindo a presença de Patrimônio + Liberdade + Pertencimento em uma mesma arquitetura.**

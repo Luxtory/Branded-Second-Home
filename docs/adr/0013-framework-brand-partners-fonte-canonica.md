@@ -96,3 +96,20 @@ O modelo de negócio não muda: `01 → 02 → 03` prevalecem em fatos (BR-380, 
 - Contrato: [`docs/specs/communication.md`](../specs/communication.md)
 - Canônicos: `01` §1, §3, §5, §37 (BR-010…BR-025, BR-040…BR-043, BR-350, BR-374, BR-380) · `02` §1, §2, §16 · `03` §13
 - [`docs/plan/implementation-waves.md`](../plan/implementation-waves.md) → Wave 3D
+
+## Versões do Framework
+
+- **2026-10-12 (fundador, D7 da BP1.1):** Home Concept, Home Edition e Second Home no lugar de Residence — registrada
+  no [ADR-0016](0016-framework-brand-partners-versao-2026-10-12.md); sha256 `47ccb4d6…dc04e9ad04`.
+- **2026-10-19 (fundador, `D-LX-11`; `brand-partners.md` `D-BP-28`):** versão terminológica, sem mudança de estratégia
+  narrativa, JTBD, pilares, tom, estrutura ou destino do CTA. Por decisão ontológica superveniente (`01` v10.2, BR-377),
+  Brand DNA → identidade da marca, de forma contextual (42 ocorrências, com concordância ajustada, p. ex. "Como nossa
+  identidade será preservada?"); "residencial" reescrito em 9 linhas (extensão da marca em Second Homes); "Concept"
+  isolado → Home Concept (4); a oferta do §2 e o resumo do §15 passam a "Second Homes concebidas a partir da identidade
+  de Brand Partners, desenvolvidas a partir de Home Editions, adquiridas como Owner ou Co-Owner…" (a Home Edition não
+  tem modalidade). O CTA passa a **"Explore o potencial da sua marca em Second Homes."** (§8 P5, §12, §15).
+  "Segunda residência" no §2 permanece: nomeia a alternativa convencional, não o produto Luxtory (BR-377, exceção para
+  objeto externo). "Possibilidade de captar interesse antes da Home Edition" (§8 P4) é lida pelo limite L5 da
+  aplicação: a manifestação de interesse comercial parte de uma Home Edition (BR-030). sha256
+  `e42812f1b3c2c8634cb77eb178d265f6653a01a4a01dc2f97a0addee6793a84d` (antes `47ccb4d6…dc04e9ad04`), fixado em
+  `tests/communication.test.ts`.

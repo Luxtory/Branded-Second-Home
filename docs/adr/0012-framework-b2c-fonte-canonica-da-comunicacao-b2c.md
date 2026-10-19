@@ -90,3 +90,12 @@ A restrição permanece: a comunicação não redefine o modelo de negócio. Os 
 - **2026-10-01 (fundador, `D-B2C-17`):** no §2, a lista de alternativas passa a dizer "outros clubes de second homes,
   intercâmbio ou hospitalidade" — a Luxtory se apresenta como clube de Branded Second Homes. Única alteração; sha256
   `bf1a7f74f8cc2faf02236eeec17864ae5920b31248ca60fb12acec2177c5f6f3` (antes `7b0ec6c1…dab5577`).
+- **2026-10-19 (fundador, `D-LX-11`; `b2c.md` `D-B2C-27`):** versão terminológica, sem mudança de estratégia
+  narrativa, Desejo, JTBD, pilares, tom ou CTA. Por decisão ontológica superveniente (`01` v10.2, BR-377), Residence
+  Concept → Home Concept, Residence Edition → Home Edition e Residence → Second Home (44 ocorrências); Brand DNA →
+  identidade da marca, de forma contextual (11 ocorrências, mais "esse DNA" → "essa identidade" no §5); a oferta do §2
+  passa a "Second Homes concebidas a partir da identidade de Brand Partners, desenvolvidas a partir de Home Editions,
+  adquiridas como Owner ou Co-Owner…" (a Home Edition não tem modalidade). "Segunda residência" no §2 permanece: nomeia
+  a alternativa convencional, não o produto Luxtory (BR-377, exceção para objeto externo). A âncora do mapa de páginas
+  passa a "Conheça as Home Editions.". sha256 `78c09cd6069d8a7dfe314e4d4126124f5e8d423a1098a4b16d297fea28e616ba` (antes
+  `bf1a7f74…77c5f6f3`), fixado em `tests/communication.test.ts`.

@@ -37,20 +37,22 @@ const JOURNEYS = [
   {
     mark: 'FW-B2C',
     framework: join(DIR, 'framework-b2c.md'),
-    // Versão de 2026-10-01 (fundador; D-B2C-17): "outros clubes de second homes" no §2.
-    sha256: 'bf1a7f74f8cc2faf02236eeec17864ae5920b31248ca60fb12acec2177c5f6f3',
+    // Versão terminológica de 2026-10-19 (fundador; D-LX-11): Home Concept, Home Edition, Second Home e identidade da
+    // marca, sobre a versão de 2026-10-01 (D-B2C-17).
+    sha256: '78c09cd6069d8a7dfe314e4d4126124f5e8d423a1098a4b16d297fea28e616ba',
     application: B2C,
     sections: [...APPLICATION_SECTIONS, 'Variações por modalidade'],
-    anchors: ['Conheça as Residence Editions.', 'Unaware → Product Aware'],
+    anchors: ['Conheça as Home Editions.', 'Unaware → Product Aware'],
   },
   {
     mark: 'FW-BP',
     framework: join(DIR, 'framework-brand-partners.md'),
-    // Versão de 2026-10-12 (fundador; ADR-0016): Home Concept, Home Edition e Second Home no lugar de Residence.
-    sha256: '47ccb4d6160a3b97cab0ef5334d17ca060252affdb9d92512b0473dc04e9ad04',
+    // Versão terminológica de 2026-10-19 (fundador; D-LX-11): identidade da marca e Second Homes, sobre a versão de
+    // 2026-10-12 (ADR-0016).
+    sha256: 'e42812f1b3c2c8634cb77eb178d265f6653a01a4a01dc2f97a0addee6793a84d',
     application: BRAND_PARTNERS,
     sections: APPLICATION_SECTIONS,
-    anchors: ['Explore o potencial residencial da sua marca.', 'Unaware → Product Aware'],
+    anchors: ['Explore o potencial da sua marca em Second Homes.', 'Unaware → Product Aware'],
   },
 ];
 
