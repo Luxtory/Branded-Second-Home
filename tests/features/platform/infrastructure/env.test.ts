@@ -81,3 +81,22 @@ describe('AUTH_MODE e Auth (W2, ADR-0005 §7, ADR-0008)', () => {
     expect(() => loadEnv({ AUTH_MODE: 'outro' })).toThrow(EnvValidationError);
   });
 });
+
+describe('escrita pública de interesse (W5, spec ownership §5)', () => {
+  it('[TECH-100] INTEREST_LIMITER_MODE=fake só fora da Vercel; com VERCEL_ENV falha nomeando a chave', () => {
+    expect(loadEnv({ INTEREST_LIMITER_MODE: 'fake' })).toEqual({ INTEREST_LIMITER_MODE: 'fake' });
+    expect(() => loadEnv({ INTEREST_LIMITER_MODE: 'fake', VERCEL_ENV: 'preview' })).toThrow(
+      /INTEREST_LIMITER_MODE/,
+    );
+    expect(() => loadEnv({ INTEREST_WRITES: 'talvez' })).toThrow(EnvValidationError);
+  });
+
+  it('[TECH-001] limites e prazo do interesse sem default: ausentes nomeiam as chaves', () => {
+    expect(() =>
+      loadRuntimeConfig(['INTEREST_NETWORK_LIMIT', 'INTEREST_LIMITER_TIMEOUT_MS'], {}),
+    ).toThrow(/INTEREST_NETWORK_LIMIT, INTEREST_LIMITER_TIMEOUT_MS/);
+    expect(loadRuntimeConfig(['INTEREST_GLOBAL_LIMIT'], { INTEREST_GLOBAL_LIMIT: '60' })).toEqual({
+      INTEREST_GLOBAL_LIMIT: 60,
+    });
+  });
+});

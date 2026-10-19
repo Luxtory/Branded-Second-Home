@@ -21,3 +21,27 @@ export function violatedConstraint(error: unknown): string | null {
     ? field(error, 'constraint')
     : null;
 }
+
+// Banco inalcançável ou recusando conexões: classe 08 (connection exception), desligamento ou partida (57P01–57P03),
+// excesso de conexões (53300) e falhas de rede do driver no Node.
+const CONNECTION_EXCEPTION_CLASS = '08';
+const UNAVAILABLE_STATES: readonly string[] = ['57P01', '57P02', '57P03', '53300'];
+const NETWORK_ERRORS: readonly string[] = [
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'ETIMEDOUT',
+  'ENOTFOUND',
+  'EAI_AGAIN',
+  'EHOSTUNREACH',
+];
+
+/** O banco não pôde atender (rede, desligamento, conexões esgotadas): a escrita falha fechada com `503`. */
+export function isDatabaseUnavailable(error: unknown): boolean {
+  const code = field(error, 'code');
+  if (code === null) return false;
+  return (
+    code.startsWith(CONNECTION_EXCEPTION_CLASS) ||
+    UNAVAILABLE_STATES.includes(code) ||
+    NETWORK_ERRORS.includes(code)
+  );
+}
