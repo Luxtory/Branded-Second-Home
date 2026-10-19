@@ -16,7 +16,8 @@ Design System Lab e o harness de testes com PostgreSQL real (TECH-110).
 ## 2. Non-goals
 
 - Nenhuma regra de negócio, tabela, command ou job (a partir da W1).
-- Autenticação e autorização (W2). Rate limit (W5).
+- Autenticação e autorização (W2). Rate limit (W5). **W5 (2026-10-19)**: o limitador da BP1 é reutilizado pela escrita
+  pública de interesse; a idempotência pública não crítica entra no `platform` (seção W5 abaixo, ADR-0017).
 - Página pública e CSP (W4). Preload de fontes (W4, ADR-0004).
 
 ## 3. Users / actors
@@ -254,3 +255,21 @@ explícito que nomeia a chave; nenhum default.
 
 - ADRs: 0004, 0005, 0006, 0007. `03`: TECH-001, TECH-002, TECH-011, TECH-051, TECH-052, TECH-053, TECH-054,
   TECH-056, TECH-090, TECH-091, TECH-092, ADR-005, ADR-006. `02`: REQ-015, REQ-098, PD-011.
+
+## W5 — idempotência pública não crítica e borda das escritas públicas (2026-10-19)
+
+Contrato em [ADR-0017](../adr/0017-idempotencia-de-mutacoes-publicas-nao-criticas.md); consumidor: spec
+[`ownership`](ownership.md) §5.
+
+- **`app.public_idempotency_key`** (`surface`, chave UUID em minúsculas, `request_hash`, `created_at`): só inserção,
+  RLS só para `luxtory_app`, sem dado do visitante. `isPublicIdempotencyKey`, `publicAttempt` (hash canônico pela mesma
+  canonicalização do `requestHash` da W1, agora exposta como `canonicalHash`) e `priorAttempt` em `application/`;
+  `findPublicAttempt` e `claimPublicAttempt` (reserva na transação do efeito, `ON CONFLICT DO NOTHING`) em
+  `infrastructure/idempotency/`. Fora do pipeline de commands críticos: `operation`, `audit_log` de command,
+  `idempotency_record`, registro de commands e `app.actor_role` inalterados.
+- **Rate limit**: `pseudonymizeNetwork(endereço, segredo, superfície?)` ganha a separação de domínio opcional — sem
+  superfície, o valor da BP1 não muda. O interesse usa o mesmo segredo e o mesmo Upstash, com namespace próprio.
+- **Portão** `isInterestWriteOpen` (`PUBLIC_SITE` + `INTEREST_WRITES`) e chaves `INTEREST_*` em `env.ts`
+  ([catálogo de ambiente](../reference/environment.md)).
+- **Banco indisponível**: `isDatabaseUnavailable` classifica falha de conexão (SQLSTATE classe 08, 57P01–57P03, 53300 e
+  erros de rede do driver) para a borda responder `503` em vez de erro interno.

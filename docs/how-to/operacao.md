@@ -250,6 +250,38 @@ Nunca criar `BRAND_PARTNERS_CONTACT_MODE` na Vercel; não tocar em variáveis fo
 configuração ausentes, motivo do provedor ou do limitador) — nunca campos, corpo, IP, chave ou resposta do provedor.
 503 com `stage: configuration` nomeia as chaves a corrigir.
 
+## Preparar a W5 em produção (interesse)
+
+Registro público de interesse (`POST /v1/interests`, spec [`ownership`](../specs/ownership.md) §5, ADR-0017) e visão
+agrupada em `/admin/interesses`. **Nada aqui foi configurado**: cada passo é decisão e ação do fundador, depois do
+checkpoint final da W5. O merge publica o endpoint **fechado** em Production (`INTEREST_WRITES` ausente → `404`); as
+migrations `public_idempotency_key` e `interest` são aplicadas pelo job `migrate`.
+
+**Pré-requisitos antes de abrir a coleta produtiva:**
+
+1. **D2** (plano do Supabase com backup diário e sem pausa) resolvida — interesse é dado real de demanda. Enquanto
+   isso, a coleta produtiva fica fechada (decisão do fundador de 2026-10-19).
+2. **Variáveis de Production** (Vercel → Settings → Environment Variables, só Production; o código valida o formato e,
+   sem uma delas, a escrita falha fechada com `503`, nomeando só a chave no log):
+
+   | Variável | Formato validado | Sensitive |
+   |---|---|---|
+   | `INTEREST_NETWORK_LIMIT` / `INTEREST_NETWORK_WINDOW_SECONDS` | inteiros positivos (tentativas por origem de rede por janela, em segundos) | não |
+   | `INTEREST_GLOBAL_LIMIT` / `INTEREST_GLOBAL_WINDOW_SECONDS` | inteiros positivos (tentativas totais por janela) | não |
+   | `INTEREST_LIMITER_TIMEOUT_MS` | inteiro positivo (prazo do Upstash; sem resposta → `503`) | não |
+
+   Reaproveitadas, já existentes desde a BP1: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` (banco de
+   Production) e `BRAND_PARTNERS_CONTACT_HMAC_SECRET` (o interesse usa domínio próprio no HMAC; nenhum segredo novo).
+   Os valores dos limites são decisão da operação (TECH-001: o código não tem default). Nunca criar
+   `INTEREST_LIMITER_MODE` na Vercel.
+3. **Abrir** (autorização própria do fundador): `INTEREST_WRITES=open` só em Production e redeploy pela CI. Exige o site
+   público aberto (`PUBLIC_SITE=open`).
+4. **Smoke em Production, logo depois** (dados sintéticos identificáveis, depois tratados como teste): `POST
+   /v1/interests` num Concept publicado → `201`; a mesma chave → `201` com `idempotency-replayed: true`; Concept não
+   publicado → `404`; `/admin/interesses` mostra o agrupamento; logs sem campos, IP ou chave.
+
+**Fechar de novo**: `INTEREST_WRITES=closed` e redeploy — o endpoint volta a `404` sem perder registros.
+
 ## Rotacionar segredos
 
 - `CRON_SECRET`: gere outro valor, atualize na Vercel (Production) e refaça o deploy (passo 6).

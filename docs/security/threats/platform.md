@@ -119,7 +119,8 @@ Repúdio não se aplica à W0: não há mutation. A trilha de auditoria chega na
 ### T-005 [LOW] Denial of service — probes e Lab
 
 - **Mitigation**: respostas estáticas e baratas, `cache-control: no-store` só nos probes; proteção de borda da Vercel.
-  Rate limit de escrita chega na W5.
+  Rate limit de escrita chega na W5. (W5, 2026-10-19: aplicado à escrita pública de interesse — STRIDE
+  [`ownership`](ownership.md); probes e Lab seguem sem limitador da aplicação, com a proteção de borda da Vercel.)
 
 ## 7. Abuse cases
 
@@ -192,7 +193,8 @@ Repúdio não se aplica à W0: não há mutation. A trilha de auditoria chega na
 ### T-105 [LOW] Denial of service — contenção de locks e varreduras
 
 - **Mitigation**: `lock_timeout` local e tentativas limitadas (runbook); varredura com `FOR UPDATE SKIP LOCKED`, um
-  evento por transação e lote limitado; rate limit de escrita na W5.
+  evento por transação e lote limitado; rate limit de escrita na W5. (W5: só a escrita pública de interesse recebeu o
+  limitador; os commands críticos seguem atrás do guard e do `lock_timeout`.)
 
 ### Abuse cases (W1)
 

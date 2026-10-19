@@ -88,6 +88,12 @@ export interface MediaPreview {
 }
 
 /** Leituras do Admin sobre o catálogo, numa transação que também grava o `admin_read` (TECH-092). */
+/** Identificação de um Concept para outras telas do Admin (W5, visão de interesses): título e marca. */
+export interface ConceptLabel {
+  readonly title: string;
+  readonly brandName: string;
+}
+
 export interface CatalogReader<Db> {
   brandPartners(db: Db): Promise<readonly BrandPartnerSummary[]>;
   brandPartner(db: Db, id: string): Promise<BrandPartnerDetail | null>;

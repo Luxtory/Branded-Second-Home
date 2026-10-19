@@ -84,6 +84,13 @@ try {
       BRAND_PARTNERS_CONTACT_NETWORK_WINDOW_SECONDS: '60',
       BRAND_PARTNERS_CONTACT_GLOBAL_LIMIT: '500',
       BRAND_PARTNERS_CONTACT_GLOBAL_WINDOW_SECONDS: '60',
+      // Interesse (spec ownership §5): limitador determinístico em memória (nenhum Upstash) e limites folgados — o 429
+      // é provado nos testes da rota. O segredo da pseudonimização é o mesmo da BP1, com domínio próprio.
+      INTEREST_LIMITER_MODE: 'fake',
+      INTEREST_NETWORK_LIMIT: '200',
+      INTEREST_NETWORK_WINDOW_SECONDS: '60',
+      INTEREST_GLOBAL_LIMIT: '500',
+      INTEREST_GLOBAL_WINDOW_SECONDS: '60',
       // Vazio = ausente para a aplicação, e impede que um arquivo `.env*` local o defina.
       VERCEL_ENV: '',
     },

@@ -1327,3 +1327,16 @@ corpo nas duas jornadas. Verificar preenchimento da coluna e ausência de overfl
 A publicação em **produção após os testes** foi explicitamente confirmada pelo fundador nesta rodada. Esta
 autorização sucede a entrega inicial limitada a Preview: commit/push e PR #51 atualizado, CI aprovada, integração
 em `main` e execução do pipeline oficial de migrations/deploy. Não executar deploy local de produção.
+
+## 16. Consultas servidas a outros módulos (W5)
+
+A W5 abre a superfície pública do módulo (`src/features/catalog/index.ts`, TECH-011) para o `ownership`, sem que ele leia
+as tabelas do catálogo (spec [`ownership`](ownership.md) §5):
+
+- `findPublicConceptOffer(conceptId)`: Concept publicado e as modalidades das Editions publicadas, lidos como `anon`
+  sob a mesma RLS do Discovery (§13.2, ADR-0014) — não publicado ou inexistente → `null`.
+- `readConceptLabels(tx, ids)`: título e marca dos Concepts, como `luxtory_app` dentro da transação da leitura do Admin
+  (ADR-0010 §7), para a visão de interesses.
+
+Nenhuma regra de visibilidade é repetida fora da RLS; nenhuma escrita do catálogo muda.
+

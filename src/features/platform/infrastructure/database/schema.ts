@@ -190,6 +190,18 @@ export interface AppIdempotencyRecord {
   scope: string;
 }
 
+export interface AppInterest {
+  approx_days: number | null;
+  concept_id: string;
+  created_at: Timestamp;
+  edition_id: string | null;
+  id: string;
+  modality: string;
+  origin: string | null;
+  partner_ref: string | null;
+  region: string;
+}
+
 export interface AppInvestorAuthorization {
   concept_id: string;
   created_at: Timestamp;
@@ -247,6 +259,13 @@ export interface AppOutboxReceipt {
   received_at: Timestamp;
 }
 
+export interface AppPublicIdempotencyKey {
+  created_at: Timestamp;
+  idempotency_key: string;
+  request_hash: string;
+  surface: string;
+}
+
 export interface AppResidence {
   commercially_approved_at: Timestamp;
   concept_id: string;
@@ -283,11 +302,13 @@ export interface DB {
   'app.edition': AppEdition;
   'app.edition_reference_value': AppEditionReferenceValue;
   'app.idempotency_record': AppIdempotencyRecord;
+  'app.interest': AppInterest;
   'app.investor_authorization': AppInvestorAuthorization;
   'app.notification': AppNotification;
   'app.operation': AppOperation;
   'app.outbox': AppOutbox;
   'app.outbox_receipt': AppOutboxReceipt;
+  'app.public_idempotency_key': AppPublicIdempotencyKey;
   'app.residence': AppResidence;
   'app.staff_role': AppStaffRole;
 }

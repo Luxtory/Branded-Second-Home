@@ -39,6 +39,15 @@ export interface PublicAvailability {
   readonly editions: boolean;
 }
 
+/**
+ * Oferta pública de um Concept para quem registra interesse (W5, spec ownership §5): só o Concept publicado e as
+ * modalidades das Editions publicadas — a visibilidade é a da RLS (`anon`), como no Discovery.
+ */
+export interface PublicConceptOffer {
+  readonly conceptId: string;
+  readonly editions: readonly { readonly id: string; readonly modality: EditionModality }[];
+}
+
 /** Leitura pública, dentro de uma transação como `anon` (ADR-0014). */
 export interface PublicCatalogReader<Db> {
   collection(db: Db): Promise<readonly PublicConceptCard[]>;

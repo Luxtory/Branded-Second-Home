@@ -14,12 +14,16 @@ function canonical(value: unknown): unknown {
  * → `ERR_IDEMPOTENCY_CONFLICT`.
  */
 export function requestHash(command: string, actor: Actor, input: unknown): string {
-  const payload = {
+  return canonicalHash({
     command,
     acting_party_id: actor.kind === 'user' ? actor.actingPartyId : null,
     role: actorRole(actor),
     input,
-  };
+  });
+}
+
+/** SHA-256 (hex) do JSON canônico — chaves ordenadas — de `payload`. */
+export function canonicalHash(payload: unknown): string {
   return createHash('sha256')
     .update(JSON.stringify(canonical(payload)))
     .digest('hex');

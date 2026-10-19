@@ -22,6 +22,11 @@ const envShape = {
   // Contato Brand Partners (spec catalog §14.6). Ausente = Resend + Upstash reais. `fake` (envio e limitador
   // determinísticos em memória) só local e na CI: recusado na Vercel, inclusive em Preview.
   BRAND_PARTNERS_CONTACT_MODE: z.literal('fake').optional(),
+  // Escrita pública de interesse (W5, spec ownership §5): `closed` fecha em qualquer ambiente; ausente, só Production
+  // fica fechada (ativação com `open`, depois dos pré-requisitos operacionais). Depende também de `PUBLIC_SITE`.
+  INTEREST_WRITES: z.enum(['open', 'closed']).optional(),
+  // Limitador do interesse. Ausente = Upstash real. `fake` (contadores em memória) só local e na CI: recusado na Vercel.
+  INTEREST_LIMITER_MODE: z.literal('fake').optional(),
 };
 
 const envSchema = z.object(envShape).superRefine((env, context) => {
@@ -36,6 +41,13 @@ const envSchema = z.object(envShape).superRefine((env, context) => {
       code: 'custom',
       path: ['BRAND_PARTNERS_CONTACT_MODE'],
       message: 'fake contact delivery on Vercel',
+    });
+  }
+  if (env.INTEREST_LIMITER_MODE === 'fake' && env.VERCEL_ENV !== undefined) {
+    context.addIssue({
+      code: 'custom',
+      path: ['INTEREST_LIMITER_MODE'],
+      message: 'fake interest limiter on Vercel',
     });
   }
 });
@@ -125,6 +137,13 @@ const runtimeSchema = z.object({
   BRAND_PARTNERS_CONTACT_GLOBAL_WINDOW_SECONDS: positiveInteger,
   BRAND_PARTNERS_CONTACT_SEND_TIMEOUT_MS: positiveInteger,
   BRAND_PARTNERS_CONTACT_LIMITER_TIMEOUT_MS: positiveInteger,
+  // Escrita pública de interesse (W5, spec ownership §5; valores no runbook, nenhum default — TECH-001). Reutiliza o
+  // Upstash e o segredo de pseudonimização acima, com namespace e domínio próprios (STRIDE ownership T-407).
+  INTEREST_NETWORK_LIMIT: positiveInteger,
+  INTEREST_NETWORK_WINDOW_SECONDS: positiveInteger,
+  INTEREST_GLOBAL_LIMIT: positiveInteger,
+  INTEREST_GLOBAL_WINDOW_SECONDS: positiveInteger,
+  INTEREST_LIMITER_TIMEOUT_MS: positiveInteger,
 });
 
 export type RuntimeConfig = z.infer<typeof runtimeSchema>;

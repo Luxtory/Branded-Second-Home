@@ -55,6 +55,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   visíveis, ao lado do texto corrido; o Hero da Home como teto tipográfico de todo o Brand Partners.
 
 ### Added
+- Interesse (W5, spec `ownership`): `POST /v1/interests` registra a manifestação de interesse num Concept publicado —
+  com ou sem Edition, como Owner ou Co-Owner, com a região e, em Co-Owner, a necessidade aproximada de dias —, sem conta,
+  com `Idempotency-Key`, rate limit distribuído e falha fechada. Interesse não constitui aquisição e nunca cria Ação,
+  Direito de Uso ou prerrogativa (REQ-023, REQ-025). Fechado em Production até a ativação pelo fundador.
+- Admin: visão "Interesses" (`/admin/interesses`) agrupada por Concept, região e modalidade, com os dias exatos
+  informados em Co-Owner (BR-062), e leitura auditada.
 - Página institucional Sobre a Luxtory em `/sobre` e `/brand-partner/sobre`, com conteúdo/i18n compartilhados,
   copy aprovada integral, fotografia original local, navegação e CTAs por jornada, metadados e portões preservados.
 - Brand Partners público (BP1, REQ-028, TECH-057; spec catalog §14): `/brand-partner` (PICTURE → PROBLEM → PROMISE →
