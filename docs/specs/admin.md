@@ -30,6 +30,7 @@ Uma área `/admin` que só abre para staff autenticado com MFA (TECH-050) e que 
 
 - Como membro do staff, quero ver que entrei no Admin, com os papéis que posso exercer, e poder sair.
 - W3: como Admin, quero chegar ao Catálogo pela navegação e pelo início do Admin.
+- W5: como Admin, quero chegar à visão de Interesses pela navegação e pelo início do Admin.
 
 ## 5. Contracts
 
@@ -38,6 +39,8 @@ Uma área `/admin` que só abre para staff autenticado com MFA (TECH-050) e que 
 - Nenhuma. `/admin` é tela; o acesso é resolvido pelo módulo `identity` (API pública do slice).
 - W3: as operações e telas do Catálogo estão na spec [`catalog`](catalog.md). O `admin` só compõe o shell: item
   "Catálogo" (só para quem tem o papel Admin ativo) e o atalho no início.
+- W5: a visão de Interesses está na spec [`ownership`](ownership.md) §5. O `admin` acrescenta o item "Interesses"
+  (`/admin/interesses`, só com o papel Admin ativo) e o atalho no início, com a mesma regra do Catálogo.
 
 ### Events (if any)
 

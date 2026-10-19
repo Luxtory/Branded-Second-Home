@@ -34,6 +34,10 @@ tags:
     description: |
       Jornada pública Brand Partners (REQ-028, TECH-057; `docs/specs/catalog.md` §14): contato para iniciar uma conversa
       com a Luxtory. Sem conta, sem persistência do contato e sem CRM; não cria Brand Partner, grant nem vínculo.
+  - name: ownership
+    description: |
+      Manifestação de interesse (REQ-022–REQ-025; `docs/specs/ownership.md`, ADR-0017): registro público, sem conta,
+      dos campos canônicos do `interest`. Nunca cria Ação, Direito de Uso, prerrogativa nem efeito econômico.
 
 paths:
   /health:
@@ -1153,6 +1157,169 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /interests:
+    post:
+      tags: [ownership]
+      summary: Registra uma manifestação de interesse num Concept publicado (REQ-022–REQ-025)
+      description: |
+        Público e sem conta (spec `ownership` §5). Ordem: publicação (`PUBLIC_SITE` e `INTEREST_WRITES`) e
+        configuração → `Origin` do mesmo host → tipo de conteúdo e corpo de até 8 KiB efetivos → limite distribuído por
+        origem de rede e global (conta também as tentativas recusadas depois) → schema fechado e `Idempotency-Key` →
+        chave já usada (replay ou conflito) → Concept e Edition publicados → registro atômico → resposta. Sem CORS:
+        nenhuma resposta traz `Access-Control-Allow-Origin`.
+
+        O interesse é preferência comercial: **não constitui aquisição** (REQ-024) e **nunca cria Ação, Direito de Uso**
+        ou prerrogativa (REQ-025); `origin` e `partner_ref` são metadados declarados, sem efeito (REQ-023). Repetir com a
+        mesma `Idempotency-Key` e o mesmo conteúdo devolve `201` com `idempotency-replayed: true`, sem novo registro;
+        conteúdo diferente com a mesma chave é `409`. Recusas não consomem a chave (ADR-0017).
+      operationId: createInterest
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/PublicIdempotencyKey'
+        - name: Origin
+          in: header
+          required: true
+          description: Origem do request (enviada pelo navegador); precisa ser do mesmo host. Ausente ou diferente → `403`.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: |
+          JSON (`application/json`, UTF-8) de até 8 KiB. Textos sem espaços nas pontas e com espaços internos reduzidos a
+          um; limites em pontos de código Unicode; controles recusados. Nenhum campo além dos listados é aceito.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InterestRequest'
+      responses:
+        '201':
+          description: Interesse registrado (inclusive repetição da mesma tentativa)
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InterestRegistered'
+        '400':
+          description: |
+            `ERR_VALIDATION`: JSON inválido, schema fechado violado, campo fora do limite, `Idempotency-Key` ausente ou
+            fora do formato UUID, `approx_days` ausente para Co-Owner ou informado para Owner, ou modalidade que a
+            Edition não oferece. `fields` traz só nomes e códigos dos campos, nunca valores.
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InterestValidationError'
+        '403':
+          description: '`ERR_PERMISSION`: `Origin` ausente ou de outro host.'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: |
+            `ERR_NOT_FOUND`: escrita de interesse fechada neste ambiente (`PUBLIC_SITE`, `INTEREST_WRITES`), ou Concept ou
+            Edition não publicados, inexistentes ou de outro Concept (as causas respondem igual).
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: |
+            `ERR_IDEMPOTENCY_CONFLICT`: a mesma `Idempotency-Key` já registrou outro conteúdo. Uma nova manifestação é
+            uma tentativa explícita, com outra chave.
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: '`ERR_PAYLOAD_TOO_LARGE`: corpo acima de 8 KiB.'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: '`ERR_UNSUPPORTED_MEDIA_TYPE`: o corpo não é `application/json`.'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: '`ERR_RATE_LIMITED`: limite por origem de rede ou global excedido; nada é registrado.'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+            retry-after:
+              description: Segundos até a próxima tentativa poder ser aceita.
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: '`ERR_INTERNAL`: erro inesperado; resposta genérica e log sanitizado.'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: |
+            `ERR_UNAVAILABLE`: configuração ausente ou inválida (TECH-001), limitador indisponível ou sem resposta no
+            prazo, ou banco indisponível; nada é registrado. Repetir com a mesma `Idempotency-Key` e o mesmo conteúdo.
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /api/jobs/{job}:
     servers:
       - url: /
@@ -1309,6 +1476,17 @@ components:
         type: string
         format: uuid
 
+    PublicIdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: |
+        UUID imprevisível gerado pelo cliente por tentativa lógica (TECH-056, ADR-0017). Sem conta, o escopo é a
+        superfície: retry da mesma tentativa mantém a chave e o conteúdo; conteúdo diferente → `ERR_IDEMPOTENCY_CONFLICT`.
+      schema:
+        type: string
+        format: uuid
+
     ResourceId:
       name: id
       in: path
@@ -1324,7 +1502,7 @@ components:
       schema:
         type: string
     NoStore:
-      description: Nenhuma resposta do contato Brand Partners é armazenada em cache.
+      description: Nenhuma resposta do contato Brand Partners nem do registro de interesse é armazenada em cache.
       schema:
         type: string
         enum: [no-store]
@@ -1530,6 +1708,80 @@ components:
                   code:
                     type: string
                     enum: [required, too_long, invalid]
+
+    InterestModality:
+      type: string
+      enum: [owner, co_owner]
+      description: Modalidade do interesse (BR-032); com Edition, precisa estar entre as que ela oferece.
+
+    InterestRequest:
+      type: object
+      description: |
+        Campos canônicos do `interest` (`03` §3.1; spec `ownership` §5.1). Sem dado de contato (W6, `P-3`). `origin` e
+        `partner_ref` são metadados declarados e não confiáveis: nunca concedem acesso, autorização, representação,
+        comissão ou atribuição comercial.
+      additionalProperties: false
+      required: [concept_id, modality, region]
+      properties:
+        concept_id:
+          type: string
+          format: uuid
+          description: Concept publicado (REQ-022, BR-030).
+        edition_id:
+          type: [string, 'null']
+          format: uuid
+          description: Edition publicada do mesmo Concept — opcional; ausente ou `null` = interesse no Concept.
+        modality:
+          $ref: '#/components/schemas/InterestModality'
+        region:
+          type: string
+          description: Região de interesse em texto livre — 1 a 200 caracteres.
+          minLength: 1
+          maxLength: 200
+        approx_days:
+          type: [integer, 'null']
+          description: |
+            Necessidade aproximada de dias — obrigatória para `co_owner` (inteiro positivo, sem teto de negócio; limite de
+            representação de 32 bits) e ausente ou `null` para `owner`. Preferência comercial, nunca direito (REQ-025).
+          minimum: 1
+          maximum: 2147483647
+        origin:
+          type: [string, 'null']
+          description: Origem declarada da manifestação — opcional, até 200 caracteres; vazio = ausente (REQ-023).
+          maxLength: 200
+        partner_ref:
+          type: [string, 'null']
+          description: Referência declarada de parceiro/atribuição — opcional, até 200 caracteres; vazio = ausente.
+          maxLength: 200
+
+    InterestRegistered:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [registered]
+
+    InterestValidationError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          properties:
+            fields:
+              type: array
+              description: Campos recusados — só nome e código, nunca o valor enviado.
+              items:
+                type: object
+                additionalProperties: false
+                required: [field, code]
+                properties:
+                  field:
+                    type: string
+                    enum: [concept_id, edition_id, modality, region, approx_days, origin, partner_ref]
+                  code:
+                    type: string
+                    enum: [required, too_long, invalid, not_allowed]
 
     JobResult:
       type: object

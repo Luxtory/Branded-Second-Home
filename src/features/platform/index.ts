@@ -73,7 +73,11 @@ export {
   idempotencyKey,
 } from './presentation/commands';
 export { unavailableKeys } from './presentation/unavailable';
-export { isBrandPartnersSiteOpen, isPublicSiteOpen } from './presentation/public-site';
+export {
+  isBrandPartnersSiteOpen,
+  isInterestWriteOpen,
+  isPublicSiteOpen,
+} from './presentation/public-site';
 
 // BP1 — escritas públicas sem conta (TECH-057): limitador distribuído (ADR-0004) e borda HTTP.
 export {
@@ -94,3 +98,19 @@ export {
   readBoundedText,
   trustedClientAddress,
 } from './presentation/public-request';
+
+// W5 — idempotência de mutações públicas não críticas (ADR-0017), fora do pipeline de commands críticos.
+export {
+  isPublicIdempotencyKey,
+  priorAttempt,
+  publicAttempt,
+  type PriorAttempt,
+  type PublicAttempt,
+  type PublicAttemptClaim,
+} from './application/public-idempotency';
+export {
+  claimPublicAttempt,
+  findPublicAttempt,
+  PublicIdempotencyError,
+} from './infrastructure/idempotency/public-idempotency';
+export { isDatabaseUnavailable, violatedConstraint } from './infrastructure/database/errors';

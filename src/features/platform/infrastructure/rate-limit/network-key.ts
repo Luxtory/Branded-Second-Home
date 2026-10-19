@@ -40,8 +40,12 @@ export function networkOf(address: string): string {
 
 /**
  * Identificador da origem de rede para as chaves do limitador (spec catalog §14.4): HMAC-SHA256 da origem canônica
- * com um segredo próprio. É pseudonimização, não anonimização — o valor nunca vai para logs.
+ * com um segredo próprio. É pseudonimização, não anonimização — o valor nunca vai para logs. `surface` separa o domínio
+ * (STRIDE ownership T-407): com o mesmo segredo, o mesmo endereço gera pseudônimos sem relação entre superfícies; sem
+ * ela, o valor é o da BP1.
  */
-export function pseudonymizeNetwork(address: string, secret: string): string {
-  return createHmac('sha256', secret).update(networkOf(address)).digest('base64url');
+export function pseudonymizeNetwork(address: string, secret: string, surface?: string): string {
+  const network = networkOf(address);
+  const input = surface === undefined ? network : `${surface}\n${network}`;
+  return createHmac('sha256', secret).update(input).digest('base64url');
 }

@@ -13,6 +13,7 @@ export const messages = {
   nav: {
     home: 'Início',
     catalog: 'Catálogo',
+    interests: 'Interesses',
   },
   home: {
     title: 'Administração',
@@ -29,6 +30,10 @@ export const messages = {
       catalog: {
         includesLabel: 'Inclui',
         includes: 'Brand Partners, Concepts, Editions e Residences',
+      },
+      interests: {
+        includesLabel: 'Inclui',
+        includes: 'Manifestações de interesse por Concept, região e modalidade',
       },
     },
   },

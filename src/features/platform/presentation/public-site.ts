@@ -18,3 +18,14 @@ export function isBrandPartnersSiteOpen(source?: EnvSource): boolean {
   if (env.BRAND_PARTNERS_SITE !== undefined) return env.BRAND_PARTNERS_SITE === 'open';
   return env.VERCEL_ENV !== 'production';
 }
+
+/**
+ * Escrita pública de interesse (W5, spec ownership §5): exige o site público aberto e `INTEREST_WRITES` — `closed` fecha
+ * em qualquer ambiente; ausente, só Production fica fechada (ativação com `open`). Fechada, o endpoint responde 404.
+ */
+export function isInterestWriteOpen(source?: EnvSource): boolean {
+  const env = source === undefined ? loadEnv() : loadEnv(source);
+  if (env.VERCEL_ENV === 'production' && env.PUBLIC_SITE !== 'open') return false;
+  if (env.INTEREST_WRITES !== undefined) return env.INTEREST_WRITES === 'open';
+  return env.VERCEL_ENV !== 'production';
+}

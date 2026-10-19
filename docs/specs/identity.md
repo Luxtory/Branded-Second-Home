@@ -18,7 +18,8 @@ acesso ao software (`02` §2).
 - `party`, `party_delegation`, holding e o caminho do Titular no guard (W7/W8): até lá esse caminho **nega**.
 - Telas de grants e listas do Admin (W3 em diante); revogação de grant por API.
 - Configuração do SMTP (decisão D4, P-9 — resolvida em 2026-09-27 com o Resend, feita no Supabase Auth, fora do
-  código); rate limit (W5); selo da auditoria (W30).
+  código); rate limit (W5); selo da auditoria (W30). (W5, 2026-10-19: o limitador da aplicação foi aplicado só à escrita
+  pública de interesse; login e Admin seguem com os limites do Supabase Auth — reavaliar na W7, login de Titulares.)
 - Atribuição de papel de staff por tela: só pela função de operação do runbook (sem tela, plano → Wave 2).
 
 ## 3. Users / actors

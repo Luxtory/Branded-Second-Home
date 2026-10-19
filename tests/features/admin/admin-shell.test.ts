@@ -6,8 +6,17 @@ describe('seções do Admin (ADR-0008, ADR-0009)', () => {
     const ids = (roles: Parameters<typeof availableSections>[0]) =>
       availableSections(roles).map((section) => section.id);
 
-    expect(ids(['admin'])).toEqual(['home', 'catalog']);
-    expect(ids(['admin', 'super_admin'])).toEqual(['home', 'catalog']);
+    expect(ids(['admin'])).toEqual(['home', 'catalog', 'interests']);
+    expect(ids(['admin', 'super_admin'])).toEqual(['home', 'catalog', 'interests']);
     expect(ids(['super_admin'])).toEqual(['home']);
+  });
+
+  it('[TECH-050] Interesses (W5) segue a mesma regra: só com o papel Admin exercido', () => {
+    const interests = availableSections(['admin']).find((section) => section.id === 'interests');
+
+    expect(interests).toMatchObject({ href: '/admin/interesses', role: 'admin' });
+    expect(availableSections(['super_admin']).some((section) => section.id === 'interests')).toBe(
+      false,
+    );
   });
 });
