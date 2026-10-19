@@ -7,16 +7,18 @@ import { messages } from './i18n/pt-br';
 /** Início do Admin (`02` §2): resumo da sessão e os módulos disponíveis — nenhum dado presumido (TECH-001). */
 function AdminHome({ roles }: { readonly roles: readonly StaffRole[] }) {
   const text = messages.home;
-  const modules: RecordListItem[] = availableSections(roles)
-    .filter((section) => section.id !== 'home')
-    .map((section) => ({
-      id: section.id,
-      href: section.href,
-      title: section.label,
-      attributes: [
-        { label: text.modules.catalog.includesLabel, value: text.modules.catalog.includes },
-      ],
-    }));
+  const modules: RecordListItem[] = availableSections(roles).flatMap((section) => {
+    if (section.id === 'home') return [];
+    const entry = text.modules[section.id];
+    return [
+      {
+        id: section.id,
+        href: section.href,
+        title: section.label,
+        attributes: [{ label: entry.includesLabel, value: entry.includes }],
+      },
+    ];
+  });
   return (
     <AdminShell roles={roles} current="home">
       <div className="lx-container">
