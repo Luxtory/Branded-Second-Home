@@ -277,10 +277,31 @@ migrations `public_idempotency_key` e `interest` são aplicadas pelo job `migrat
 3. **Abrir** (autorização própria do fundador): `INTEREST_WRITES=open` só em Production e redeploy pela CI. Exige o site
    público aberto (`PUBLIC_SITE=open`).
 4. **Smoke em Production, logo depois** (dados sintéticos identificáveis, depois tratados como teste): `POST
-   /v1/interests` num Concept publicado → `201`; a mesma chave → `201` com `idempotency-replayed: true`; Concept não
-   publicado → `404`; `/admin/interesses` mostra o agrupamento; logs sem campos, IP ou chave.
+   /v1/interests` numa Home Edition publicada → `201`; a mesma chave → `201` com `idempotency-replayed: true`; Home
+   Edition em preparação ou fora do público → `404`; `/admin/interesses` mostra o agrupamento; logs sem campos, IP ou
+   chave. (Desde a W4.2, o interesse parte da Home Edition — spec `ownership` §13.)
 
 **Fechar de novo**: `INTEREST_WRITES=closed` e redeploy — o endpoint volta a `404` sem perder registros.
+
+## Preparar a W4.2 em produção (ontologia Home Concept → Home Edition → Second Home)
+
+Spec [`catalog`](../specs/catalog.md) §17, [`ownership`](../specs/ownership.md) §13, ADR-0019; dependency map e
+estratégia por objeto em [`w4-2-ontologia.md`](../plan/w4-2-ontologia.md). **Nada aqui foi aplicado**: Production
+continua fechada para a W4.2 até a aprovação explícita do fundador depois do PR, da CI e da revisão. Nenhuma variável
+nova.
+
+1. **Antes do merge (só leitura):** contar as linhas de `app.concept_version` com atributo físico, `app.edition`,
+   `app.edition_reference_value`, `app.concept_media_file` e `app.interest` sem Edition. As migrations da W4.2 têm
+   precondições fail-closed: com dado inesperado, o job `migrate` aborta sem aplicar a migration (nada é descartado em
+   silêncio).
+2. **Merge → `migrate` → `deploy`** pela CI (nunca localmente). As 7 migrations `20261019210001`…`20261019210007`
+   renomeiam por `ALTER … RENAME` e só recriam o que foi substituído (média projetada, mídia da Home Edition).
+3. **Depois (só leitura):** as 7 versões em `dbmate.schema_migrations`; `app.home_concept`, `app.home_concept_version`,
+   `app.home_edition`, `app.home_edition_projected_investment`, `app.home_edition_media`, `app.second_home` com RLS
+   ligada e as mesmas contagens de antes; `/admin/catalogo` abre sem erro; o site público continua no estado do portão
+   (`PUBLIC_SITE`).
+4. **Não publicar Home Edition de teste em Production.** A primeira Home Edition real segue o ciclo do Admin:
+   preparação → finalização → publicação.
 
 ## Rotacionar segredos
 

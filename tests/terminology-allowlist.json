@@ -191,8 +191,18 @@
   },
   {
     "path": "docs/how-to/operacao.md",
+    "excerpt": "1. **Antes do merge (só leitura):** contar as linhas de `app.concept_version` com atributo físico",
+    "reason": "Runbook da W4.2: antes do merge, Production ainda tem o schema anterior; a contagem só de leitura usa os nomes antigos."
+  },
+  {
+    "path": "docs/how-to/operacao.md",
     "excerpt": "`app.concept`, `app.concept_version`, `app.investor_authorization`, `app.edition` e `app.r",
     "reason": "Runbook datado do go-live da W3."
+  },
+  {
+    "path": "docs/how-to/operacao.md",
+    "excerpt": "`app.edition_reference_value`, `app.concept_media_file` e `app.interest` sem Edition.",
+    "reason": "Runbook da W4.2: antes do merge, Production ainda tem o schema anterior; a contagem só de leitura usa os nomes antigos."
   },
   {
     "path": "docs/plan/implementation-waves.md",

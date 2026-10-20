@@ -1432,7 +1432,8 @@ Commands:
   duas toca a definição material; Second Homes já registradas não mudam (BR-025).
 - **Correção editorial.** `correct_home_edition_editorial`: muda `name` e/ou `description` de uma Home Edition
   finalizada (em `draft`, a edição da preparação cobre isso), com base obrigatória e `audit_log` com antes e depois.
-  Não altera o produto.
+  Não altera o produto. Nos snapshots de auditoria da Home Edition, o nome vai como `home_edition_name`: a chave
+  `name` é sempre redigida como possível dado pessoal (TECH-092).
 - **Mídia.** `upload_home_edition_media` → `approve_home_edition_media` → `withdraw_home_edition_media` (gestão de
   mídia, BR-036): imagens, renders e plantas, várias aprovadas ao mesmo tempo, em qualquer estado material; enviar e
   aprovar exigem marca em uso (retirar vale sempre). Mesmo pipeline e limites da capa (ADR-0015).
@@ -1535,8 +1536,9 @@ Mesmo papel e portão da §13.2/§13.3. Visibilidade só pela RLS:
   `home_concept_id`, `name`,
   `description`, `typology`, `spatial_configuration`, `projected_area_m2`, `suites`, `guests_max`, `rooms`,
   `amenities`, `characteristics`, `created_at`. Em preparação ou fora do público, nunca é pública.
-- Mídia pública = aprovada, de Home Edition pública: `id`, `home_edition_id`, `kind`, `alt`, `credit`, foco; arquivos só
-  de exibição.
+- Mídia pública = aprovada, de Home Edition pública: `id`, `home_edition_id`, `kind`, `alt`, `credit`, foco e
+  `approved_at` (ordem de exibição: imagens, renders e plantas, cada tipo na ordem de aprovação); arquivos só de
+  exibição.
 - Média projetada pública = vigente agora, de Home Edition pública: `id`, `home_edition_id`, `amount_minor`, `currency`,
   `valid_from`, `valid_until`.
 - Disponibilidade (`D-B2C-16`): "há Home Edition publicada" passa a significar `visibility = public` e Home Concept
