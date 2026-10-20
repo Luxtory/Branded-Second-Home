@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import type { ZodType } from 'zod';
 import { executeAdminCommand, type AdminCommand } from '@/features/identity';
 import type { JsonValue } from '@/features/platform';
+import { COVER_MAX_BYTES } from '../application/inputs';
 import { fieldErrorsFrom, rejectionFor, type FieldErrorCode, type FormState } from './form-state';
 
 /**
@@ -41,6 +42,31 @@ export function orderedChoices(form: FormData, prefix: string, count: number): s
   return Array.from({ length: count }, (_, index) => field(form, `${prefix}_${index + 1}`)).filter(
     (value) => value !== '',
   );
+}
+
+/** Arquivo do formulário → base64 do command; vazio ou acima de 3 MiB vira erro de campo antes do envio. */
+export async function imageField(form: FormData): Promise<{
+  readonly image: string | undefined;
+  readonly error: FieldErrorCode | null;
+}> {
+  const file = form.get('image');
+  if (!(file instanceof File) || file.size === 0) return { image: undefined, error: 'required' };
+  if (file.size > COVER_MAX_BYTES) return { image: undefined, error: 'file_too_large' };
+  return { image: Buffer.from(await file.arrayBuffer()).toString('base64'), error: null };
+}
+
+/**
+ * Recusa `ERR_VALIDATION` do command sem erro de campo (algo que só o command valida): o erro vai para o campo que a
+ * causou, para a tela dizer o quê corrigir.
+ */
+export function attributeValidation(
+  state: FormState,
+  name: string,
+  code: FieldErrorCode,
+): FormState {
+  return state.rejection === 'invalid' && Object.keys(state.fieldErrors).length === 0
+    ? { ...state, fieldErrors: { [name]: code } }
+    : state;
 }
 
 /** "Sem Investor" é escolha explícita; a opção vazia não foi escolhida. */

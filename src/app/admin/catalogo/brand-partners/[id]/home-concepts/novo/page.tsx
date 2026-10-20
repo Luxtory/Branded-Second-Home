@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
-import { NewConceptPage } from '@/features/catalog/presentation/concept-pages';
+import { NewHomeConceptPage } from '@/features/catalog/presentation/home-concept-pages';
 import { messages } from '@/features/catalog/presentation/i18n/pt-br';
 
 export const metadata: Metadata = {
-  title: messages.metadata.newConcept,
+  title: messages.metadata.newHomeConcept,
   robots: { index: false, follow: false },
 };
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <NewConceptPage brandPartnerId={id} />;
+  return <NewHomeConceptPage brandPartnerId={id} />;
 }

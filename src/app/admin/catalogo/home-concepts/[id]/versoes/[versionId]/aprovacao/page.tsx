@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { ApprovalPage } from '@/features/catalog/presentation/concept-pages';
+import { ApprovalPage } from '@/features/catalog/presentation/home-concept-pages';
 import { messages } from '@/features/catalog/presentation/i18n/pt-br';
 
 export const metadata: Metadata = {

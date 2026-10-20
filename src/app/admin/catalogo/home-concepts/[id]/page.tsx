@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { ConceptPage } from '@/features/catalog/presentation/concept-pages';
+import { HomeConceptPage } from '@/features/catalog/presentation/home-concept-pages';
 import { messages } from '@/features/catalog/presentation/i18n/pt-br';
 import { statusKey } from '@/features/catalog/presentation/paths';
 
 export const metadata: Metadata = {
-  title: messages.metadata.concept,
+  title: messages.metadata.homeConcept,
   robots: { index: false, follow: false },
 };
 
@@ -16,5 +16,5 @@ export default async function Page({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  return <ConceptPage id={id} status={statusKey(query.status)} />;
+  return <HomeConceptPage id={id} status={statusKey(query.status)} />;
 }

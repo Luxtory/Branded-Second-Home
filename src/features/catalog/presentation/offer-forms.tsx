@@ -2,13 +2,11 @@
 
 import { useActionState } from 'react';
 import {
-  createEditionAction,
   registerAuthorizationAction,
-  registerResidenceAction,
+  registerSecondHomeAction,
   revokeAuthorizationAction,
 } from './actions';
 import {
-  ChoiceField,
   DateTimeField,
   FormActions,
   FormAlert,
@@ -20,73 +18,15 @@ import { initialFormState } from './form-state';
 import { messages } from './i18n/pt-br';
 import { paths } from './paths';
 
-const NAME_MAX = 200;
 const REF_MAX = 255;
 const LABEL_MAX = 120;
-const LONG_MAX = 20_000;
 
-/** Edition de um Concept aprovado (`create_edition`, BR-031, BR-032). */
-export function EditionForm({
-  conceptId,
-  idempotencyKey,
-}: {
-  readonly conceptId: string;
-  readonly idempotencyKey: string;
-}) {
-  const [state, action] = useActionState(createEditionAction, initialFormState(idempotencyKey));
-  const text = messages.newEdition;
-  const modality = messages.modality;
-  return (
-    <form className="lx-form" action={action} noValidate>
-      <FormAlert state={state} />
-      <input type="hidden" name="concept_id" value={conceptId} />
-      <TextField
-        form="edition"
-        name="region"
-        label={text.regionLabel}
-        publicTag={messages.form.publicTag}
-        hint={text.regionHint}
-        maxLength={NAME_MAX}
-        state={state}
-      />
-      <ChoiceField
-        form="edition"
-        name="modality"
-        label={text.modalityLegend}
-        publicTag={messages.form.publicTag}
-        hint={text.modalityHint}
-        state={state}
-        options={[
-          { value: 'owner', label: modality.owner, description: text.ownerDesc },
-          { value: 'co_owner', label: modality.co_owner, description: text.coOwnerDesc },
-          {
-            value: 'owner_and_co_owner',
-            label: modality.owner_and_co_owner,
-            description: text.bothDesc,
-          },
-        ]}
-      />
-      <TextField
-        form="edition"
-        name="commercial_conditions"
-        label={text.conditionsLabel}
-        publicTag={messages.form.publicTag}
-        hint={text.conditionsHint}
-        multiline
-        maxLength={LONG_MAX}
-        state={state}
-      />
-      <FormActions submit={text.submit} cancelHref={paths.concept(conceptId)} />
-    </form>
-  );
-}
-
-/** Autorização de Investor para o Concept (`register_investor_authorization`, BR-310). */
+/** Autorização de Investor para o Home Concept (`register_investor_authorization`, BR-310). */
 export function AuthorizationForm({
-  conceptId,
+  homeConceptId,
   idempotencyKey,
 }: {
-  readonly conceptId: string;
+  readonly homeConceptId: string;
   readonly idempotencyKey: string;
 }) {
   const [state, action] = useActionState(
@@ -97,7 +37,7 @@ export function AuthorizationForm({
   return (
     <form className="lx-form" action={action} noValidate>
       <FormAlert state={state} />
-      <input type="hidden" name="concept_id" value={conceptId} />
+      <input type="hidden" name="home_concept_id" value={homeConceptId} />
       <TextField
         form="authorization"
         name="instrument_ref"
@@ -115,18 +55,18 @@ export function AuthorizationForm({
         optional
         state={state}
       />
-      <FormActions submit={text.submit} cancelHref={paths.concept(conceptId)} />
+      <FormActions submit={text.submit} cancelHref={paths.homeConcept(homeConceptId)} />
     </form>
   );
 }
 
 /** Revogação de uma autorização de Investor (irreversível: ação destrutiva discreta). */
 export function RevocationForm({
-  conceptId,
+  homeConceptId,
   authorizationId,
   idempotencyKey,
 }: {
-  readonly conceptId: string;
+  readonly homeConceptId: string;
   readonly authorizationId: string;
   readonly idempotencyKey: string;
 }) {
@@ -147,31 +87,38 @@ export function RevocationForm({
         maxLength={REF_MAX}
         state={state}
       />
-      <FormActions submit={text.submit} cancelHref={paths.concept(conceptId)} tone="destructive" />
+      <FormActions
+        submit={text.submit}
+        cancelHref={paths.homeConcept(homeConceptId)}
+        tone="destructive"
+      />
     </form>
   );
 }
 
-/** Registro da Residence = aprovação comercial (`register_residence`, BR-025, REQ-027). */
-export function ResidenceForm({
-  editionId,
+/** Registro da Second Home = aprovação comercial (`register_second_home`, BR-025, REQ-027). */
+export function SecondHomeForm({
+  homeEditionId,
   idempotencyKey,
   timeZones,
   authorizations,
 }: {
-  readonly editionId: string;
+  readonly homeEditionId: string;
   readonly idempotencyKey: string;
   readonly timeZones: readonly string[];
   readonly authorizations: readonly Option[];
 }) {
-  const [state, action] = useActionState(registerResidenceAction, initialFormState(idempotencyKey));
-  const text = messages.newResidence;
+  const [state, action] = useActionState(
+    registerSecondHomeAction,
+    initialFormState(idempotencyKey),
+  );
+  const text = messages.newSecondHome;
   return (
     <form className="lx-form" action={action} noValidate>
       <FormAlert state={state} />
-      <input type="hidden" name="edition_id" value={editionId} />
+      <input type="hidden" name="home_edition_id" value={homeEditionId} />
       <TextField
-        form="residence"
+        form="second_home"
         name="label"
         label={text.labelLabel}
         hint={text.labelHint}
@@ -179,7 +126,7 @@ export function ResidenceForm({
         state={state}
       />
       <SelectField
-        form="residence"
+        form="second_home"
         name="timezone"
         label={text.timezoneLabel}
         hint={text.timezoneHint}
@@ -188,7 +135,7 @@ export function ResidenceForm({
         state={state}
       />
       <SelectField
-        form="residence"
+        form="second_home"
         name="investor_authorization_id"
         label={text.investorLabel}
         hint={text.investorHint}
@@ -196,7 +143,7 @@ export function ResidenceForm({
         options={[{ value: 'none', label: text.noInvestor }, ...authorizations]}
         state={state}
       />
-      <FormActions submit={text.submit} cancelHref={paths.edition(editionId)} />
+      <FormActions submit={text.submit} cancelHref={paths.homeEdition(homeEditionId)} />
     </form>
   );
 }

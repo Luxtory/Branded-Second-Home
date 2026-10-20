@@ -6,6 +6,7 @@ import {
   END_BEFORE_START,
   INVALID_TERM_LABEL,
   INVALID_TIME_ZONE,
+  NOTHING_TO_CORRECT,
 } from '../application/inputs';
 
 /** Estado dos formulários do catálogo (Server Action ↔ componente). Textos só pelo i18n. */
@@ -22,7 +23,8 @@ export type FieldErrorCode =
   | 'file_too_large'
   | 'invalid_image'
   | 'invalid_amount'
-  | 'not_in_future';
+  | 'not_in_future'
+  | 'nothing_to_correct';
 
 export type FormRejection =
   'invalid' | 'state' | 'not_found' | 'permission' | 'conflict' | 'unavailable' | 'unexpected';
@@ -48,6 +50,7 @@ const CUSTOM: ReadonlySet<string> = new Set([
   DUPLICATE_ITEM,
   END_BEFORE_START,
   INVALID_TERM_LABEL,
+  NOTHING_TO_CORRECT,
 ]);
 
 type Issue = ZodError['issues'][number];

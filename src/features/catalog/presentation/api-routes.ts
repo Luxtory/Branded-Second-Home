@@ -61,31 +61,63 @@ export function createCatalogRoutes({
     registerBrandPartner: route(handlers.registerBrandPartner, HTTP_CREATED),
     authorizeBrandExposure: route(handlers.authorizeBrandExposure, HTTP_OK, 'brand_partner_id'),
     terminateBrandPartner: route(handlers.terminateBrandPartner, HTTP_OK, 'brand_partner_id'),
-    createConceptVersion: route(handlers.createConceptVersion, HTTP_CREATED),
-    approveConceptVersion: route(handlers.approveConceptVersion, HTTP_OK, 'concept_version_id'),
+    createHomeConceptVersion: route(handlers.createHomeConceptVersion, HTTP_CREATED),
+    approveHomeConceptVersion: route(
+      handlers.approveHomeConceptVersion,
+      HTTP_OK,
+      'home_concept_version_id',
+    ),
     registerInvestorAuthorization: route(handlers.registerInvestorAuthorization, HTTP_CREATED),
     revokeInvestorAuthorization: route(
       handlers.revokeInvestorAuthorization,
       HTTP_OK,
       'investor_authorization_id',
     ),
-    createEdition: route(handlers.createEdition, HTTP_CREATED),
-    registerResidence: route(handlers.registerResidence, HTTP_CREATED),
+    createHomeEdition: route(handlers.createHomeEdition, HTTP_CREATED),
+    updateHomeEditionDraft: route(handlers.updateHomeEditionDraft, HTTP_OK, 'home_edition_id'),
+    finalizeHomeEdition: route(handlers.finalizeHomeEdition, HTTP_OK, 'home_edition_id'),
+    publishHomeEdition: route(handlers.publishHomeEdition, HTTP_OK, 'home_edition_id'),
+    withdrawHomeEdition: route(handlers.withdrawHomeEdition, HTTP_OK, 'home_edition_id'),
+    correctHomeEditionEditorial: route(
+      handlers.correctHomeEditionEditorial,
+      HTTP_OK,
+      'home_edition_id',
+    ),
+    uploadHomeEditionMedia: route(handlers.uploadHomeEditionMedia, HTTP_CREATED, 'home_edition_id'),
+    approveHomeEditionMedia: route(
+      handlers.approveHomeEditionMedia,
+      HTTP_OK,
+      'home_edition_media_id',
+    ),
+    withdrawHomeEditionMedia: route(
+      handlers.withdrawHomeEditionMedia,
+      HTTP_OK,
+      'home_edition_media_id',
+    ),
+    registerSecondHome: route(handlers.registerSecondHome, HTTP_CREATED),
     createCatalogTerm: route(handlers.createCatalogTerm, HTTP_CREATED),
     updateCatalogTerm: route(handlers.updateCatalogTerm, HTTP_OK, 'catalog_term_id'),
-    uploadConceptCover: route(handlers.uploadConceptCover, HTTP_CREATED, 'concept_id'),
-    approveConceptMedia: route(handlers.approveConceptMedia, HTTP_OK, 'concept_media_id'),
-    withdrawConceptMedia: route(handlers.withdrawConceptMedia, HTTP_OK, 'concept_media_id'),
-    setConceptCuration: route(handlers.setConceptCuration, HTTP_OK, 'concept_id'),
-    registerEditionReferenceValue: route(
-      handlers.registerEditionReferenceValue,
-      HTTP_CREATED,
-      'edition_id',
-    ),
-    endEditionReferenceValue: route(
-      handlers.endEditionReferenceValue,
+    uploadHomeConceptCover: route(handlers.uploadHomeConceptCover, HTTP_CREATED, 'home_concept_id'),
+    approveHomeConceptMedia: route(
+      handlers.approveHomeConceptMedia,
       HTTP_OK,
-      'edition_reference_value_id',
+      'home_concept_media_id',
+    ),
+    withdrawHomeConceptMedia: route(
+      handlers.withdrawHomeConceptMedia,
+      HTTP_OK,
+      'home_concept_media_id',
+    ),
+    setHomeConceptCuration: route(handlers.setHomeConceptCuration, HTTP_OK, 'home_concept_id'),
+    registerHomeEditionProjectedInvestment: route(
+      handlers.registerHomeEditionProjectedInvestment,
+      HTTP_CREATED,
+      'home_edition_id',
+    ),
+    endHomeEditionProjectedInvestment: route(
+      handlers.endHomeEditionProjectedInvestment,
+      HTTP_OK,
+      'home_edition_projected_investment_id',
     ),
   };
 }
@@ -95,17 +127,29 @@ const routes = createCatalogRoutes();
 export const registerBrandPartner = withRoute(routes.registerBrandPartner);
 export const authorizeBrandExposure = withRoute(routes.authorizeBrandExposure);
 export const terminateBrandPartner = withRoute(routes.terminateBrandPartner);
-export const createConceptVersion = withRoute(routes.createConceptVersion);
-export const approveConceptVersion = withRoute(routes.approveConceptVersion);
+export const createHomeConceptVersion = withRoute(routes.createHomeConceptVersion);
+export const approveHomeConceptVersion = withRoute(routes.approveHomeConceptVersion);
 export const registerInvestorAuthorization = withRoute(routes.registerInvestorAuthorization);
 export const revokeInvestorAuthorization = withRoute(routes.revokeInvestorAuthorization);
-export const createEdition = withRoute(routes.createEdition);
-export const registerResidence = withRoute(routes.registerResidence);
+export const createHomeEdition = withRoute(routes.createHomeEdition);
+export const updateHomeEditionDraft = withRoute(routes.updateHomeEditionDraft);
+export const finalizeHomeEdition = withRoute(routes.finalizeHomeEdition);
+export const publishHomeEdition = withRoute(routes.publishHomeEdition);
+export const withdrawHomeEdition = withRoute(routes.withdrawHomeEdition);
+export const correctHomeEditionEditorial = withRoute(routes.correctHomeEditionEditorial);
+export const uploadHomeEditionMedia = withRoute(routes.uploadHomeEditionMedia);
+export const approveHomeEditionMedia = withRoute(routes.approveHomeEditionMedia);
+export const withdrawHomeEditionMedia = withRoute(routes.withdrawHomeEditionMedia);
+export const registerSecondHome = withRoute(routes.registerSecondHome);
 export const createCatalogTerm = withRoute(routes.createCatalogTerm);
 export const updateCatalogTerm = withRoute(routes.updateCatalogTerm);
-export const uploadConceptCover = withRoute(routes.uploadConceptCover);
-export const approveConceptMedia = withRoute(routes.approveConceptMedia);
-export const withdrawConceptMedia = withRoute(routes.withdrawConceptMedia);
-export const setConceptCuration = withRoute(routes.setConceptCuration);
-export const registerEditionReferenceValue = withRoute(routes.registerEditionReferenceValue);
-export const endEditionReferenceValue = withRoute(routes.endEditionReferenceValue);
+export const uploadHomeConceptCover = withRoute(routes.uploadHomeConceptCover);
+export const approveHomeConceptMedia = withRoute(routes.approveHomeConceptMedia);
+export const withdrawHomeConceptMedia = withRoute(routes.withdrawHomeConceptMedia);
+export const setHomeConceptCuration = withRoute(routes.setHomeConceptCuration);
+export const registerHomeEditionProjectedInvestment = withRoute(
+  routes.registerHomeEditionProjectedInvestment,
+);
+export const endHomeEditionProjectedInvestment = withRoute(
+  routes.endHomeEditionProjectedInvestment,
+);

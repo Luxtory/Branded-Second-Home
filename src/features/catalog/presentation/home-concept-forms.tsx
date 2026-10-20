@@ -5,7 +5,7 @@ import {
   approveVersionAction,
   authorizeBrandExposureAction,
   createVersionAction,
-  registerConceptAction,
+  registerHomeConceptAction,
 } from './actions';
 import { VersionCollectionFields, type TermOptions } from './collection-forms';
 import { FormActions, FormAlert, TextField } from './fields';
@@ -57,8 +57,8 @@ function VersionContent({ form, state }: { readonly form: string; readonly state
   );
 }
 
-/** Concept novo com a versão 1 (`create_concept_version`). */
-export function ConceptForm({
+/** Home Concept novo com a versão 1 (`create_home_concept_version`). */
+export function HomeConceptForm({
   brandPartnerId,
   idempotencyKey,
   terms,
@@ -67,13 +67,16 @@ export function ConceptForm({
   readonly idempotencyKey: string;
   readonly terms: TermOptions;
 }) {
-  const [state, action] = useActionState(registerConceptAction, initialFormState(idempotencyKey));
+  const [state, action] = useActionState(
+    registerHomeConceptAction,
+    initialFormState(idempotencyKey),
+  );
   return (
     <form className="lx-form" action={action} noValidate>
       <FormAlert state={state} />
       <input type="hidden" name="brand_partner_id" value={brandPartnerId} />
       <TextField
-        form="concept"
+        form="home_concept"
         name="title"
         label={fields.titleLabel}
         publicTag={messages.form.publicTag}
@@ -81,10 +84,10 @@ export function ConceptForm({
         maxLength={NAME_MAX}
         state={state}
       />
-      <VersionContent form="concept" state={state} />
-      <VersionCollectionFields form="concept" state={state} terms={terms} />
+      <VersionContent form="home_concept" state={state} />
+      <VersionCollectionFields form="home_concept" state={state} terms={terms} />
       <FormActions
-        submit={messages.newConcept.submit}
+        submit={messages.newHomeConcept.submit}
         cancelHref={paths.brandPartner(brandPartnerId)}
       />
     </form>
@@ -93,12 +96,12 @@ export function ConceptForm({
 
 /** Versão nova, pré-preenchida com o conteúdo da versão mais recente. */
 export function VersionForm({
-  conceptId,
+  homeConceptId,
   idempotencyKey,
   initial,
   terms,
 }: {
-  readonly conceptId: string;
+  readonly homeConceptId: string;
   readonly idempotencyKey: string;
   readonly initial: Readonly<Record<string, string>>;
   readonly terms: TermOptions;
@@ -110,22 +113,25 @@ export function VersionForm({
   return (
     <form className="lx-form" action={action} noValidate>
       <FormAlert state={state} />
-      <input type="hidden" name="concept_id" value={conceptId} />
+      <input type="hidden" name="home_concept_id" value={homeConceptId} />
       <VersionContent form="version" state={state} />
       <VersionCollectionFields form="version" state={state} terms={terms} />
-      <FormActions submit={messages.newVersion.submit} cancelHref={paths.concept(conceptId)} />
+      <FormActions
+        submit={messages.newVersion.submit}
+        cancelHref={paths.homeConcept(homeConceptId)}
+      />
     </form>
   );
 }
 
-/** Aprovação de uma versão (`approve_concept_version`): as referências das aprovações registradas. */
+/** Aprovação de uma versão (`approve_home_concept_version`): as referências das aprovações registradas. */
 export function ApprovalForm({
-  conceptId,
+  homeConceptId,
   versionId,
   version,
   idempotencyKey,
 }: {
-  readonly conceptId: string;
+  readonly homeConceptId: string;
   readonly versionId: string;
   readonly version: number;
   readonly idempotencyKey: string;
@@ -135,7 +141,7 @@ export function ApprovalForm({
   return (
     <form className="lx-form" action={action} noValidate>
       <FormAlert state={state} />
-      <input type="hidden" name="concept_version_id" value={versionId} />
+      <input type="hidden" name="home_concept_version_id" value={versionId} />
       <TextField
         form="approval"
         name="approval_refs"
@@ -145,7 +151,7 @@ export function ApprovalForm({
         maxLength={REFS_MAX}
         state={state}
       />
-      <FormActions submit={text.submit(version)} cancelHref={paths.concept(conceptId)} />
+      <FormActions submit={text.submit(version)} cancelHref={paths.homeConcept(homeConceptId)} />
     </form>
   );
 }

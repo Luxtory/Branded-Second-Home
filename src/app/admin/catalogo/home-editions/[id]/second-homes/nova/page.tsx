@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
-import { NewResidencePage } from '@/features/catalog/presentation/edition-pages';
+import { NewSecondHomePage } from '@/features/catalog/presentation/home-edition-pages';
 import { messages } from '@/features/catalog/presentation/i18n/pt-br';
 
 export const metadata: Metadata = {
-  title: messages.metadata.newResidence,
+  title: messages.metadata.newSecondHome,
   robots: { index: false, follow: false },
 };
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <NewResidencePage id={id} />;
+  return <NewSecondHomePage id={id} />;
 }

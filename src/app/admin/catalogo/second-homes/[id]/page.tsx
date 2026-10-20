@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { ResidencePage } from '@/features/catalog/presentation/edition-pages';
+import { SecondHomePage } from '@/features/catalog/presentation/home-edition-pages';
 import { messages } from '@/features/catalog/presentation/i18n/pt-br';
 import { statusKey } from '@/features/catalog/presentation/paths';
 
 export const metadata: Metadata = {
-  title: messages.metadata.residence,
+  title: messages.metadata.secondHome,
   robots: { index: false, follow: false },
 };
 
@@ -16,5 +16,5 @@ export default async function Page({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  return <ResidencePage id={id} status={statusKey(query.status)} />;
+  return <SecondHomePage id={id} status={statusKey(query.status)} />;
 }

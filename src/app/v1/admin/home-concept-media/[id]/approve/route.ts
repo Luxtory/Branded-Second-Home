@@ -1,2 +1,2 @@
-// POST /v1/admin/concept-media/{id}/approve — contrato `approveConceptMedia` em docs/api/openapi.yaml.
-export { approveConceptMedia as POST } from '@/features/catalog/presentation/api-routes';
+// POST /v1/admin/home-concept-media/{id}/approve — contrato `approveHomeConceptMedia` em docs/api/openapi.yaml.
+export { approveHomeConceptMedia as POST } from '@/features/catalog/presentation/api-routes';

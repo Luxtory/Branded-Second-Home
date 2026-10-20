@@ -1,2 +1,2 @@
-// POST /v1/admin/concept-versions — contrato `createConceptVersion` em docs/api/openapi.yaml.
-export { createConceptVersion as POST } from '@/features/catalog/presentation/api-routes';
+// POST /v1/admin/home-concept-versions — contrato `createHomeConceptVersion` em docs/api/openapi.yaml.
+export { createHomeConceptVersion as POST } from '@/features/catalog/presentation/api-routes';

@@ -1,2 +1,2 @@
-// POST /v1/admin/editions/{id}/reference-values — contrato `registerEditionReferenceValue` em docs/api/openapi.yaml.
-export { registerEditionReferenceValue as POST } from '@/features/catalog/presentation/api-routes';
+// POST /v1/admin/home-editions/{id}/projected-investments — contrato `registerHomeEditionProjectedInvestment` em docs/api/openapi.yaml.
+export { registerHomeEditionProjectedInvestment as POST } from '@/features/catalog/presentation/api-routes';
