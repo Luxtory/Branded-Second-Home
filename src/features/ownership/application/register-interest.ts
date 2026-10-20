@@ -6,7 +6,6 @@ import {
   codePointLength,
   INTEREST_MODALITIES,
   INTEREST_TEXT_MAX,
-  isModalityOffered,
   normalizeText,
   type Interest,
 } from '../domain/interest';
@@ -16,10 +15,9 @@ import type { InterestStore, InterestTargets } from './ports';
 export const INTEREST_SURFACE = 'interest';
 
 export const INTEREST_FIELDS = [
-  'concept_id',
-  'edition_id',
+  'home_edition_id',
   'modality',
-  'region',
+  'desired_location',
   'approx_days',
   'origin',
   'partner_ref',
@@ -61,10 +59,9 @@ const id = z.guid('invalid').transform((value) => value.toLowerCase());
 
 /** Contrato do corpo (spec ownership §5.1, OpenAPI `InterestRequest`): fechado — campo extra é recusado. */
 export const interestSchema = z.strictObject({
-  concept_id: id,
-  edition_id: id.nullish(),
+  home_edition_id: id,
   modality: z.enum(INTEREST_MODALITIES, 'invalid'),
-  region: requiredText,
+  desired_location: requiredText,
   approx_days: z
     .number('invalid')
     .int('invalid')
@@ -125,10 +122,9 @@ export function parseInterest(values: unknown): InterestParse {
   return {
     ok: true,
     interest: {
-      conceptId: data.concept_id,
-      editionId: data.edition_id ?? null,
+      homeEditionId: data.home_edition_id,
       modality: data.modality,
-      region: data.region,
+      desiredLocation: data.desired_location,
       approxDays,
       origin: data.origin ?? null,
       partnerRef: data.partner_ref ?? null,
@@ -149,15 +145,11 @@ export interface RegisterInterestDependencies {
   readonly newId: () => string;
 }
 
-const MODALITY_NOT_OFFERED: InterestRegistration = {
-  status: 'invalid',
-  issues: [{ field: 'modality', code: 'not_allowed' }],
-};
-
 /**
- * Registro do interesse (REQ-022–REQ-025, spec ownership §5): chave UUID e schema fechado → chave já usada (repetição
- * ou conflito, sem reavaliar o alvo) → Concept e Edition publicados, modalidade oferecida → gravação atômica com a
- * chave. Recusas não consomem a chave (ADR-0017). Nunca cria Ação, Direito de Uso nem prerrogativa.
+ * Registro do interesse (REQ-022–REQ-025, spec ownership §5, §13): chave UUID e schema fechado → chave já usada
+ * (repetição ou conflito, sem reavaliar o alvo) → Home Edition pública → gravação atômica com a chave. Qualquer
+ * modalidade desejada é aceita: a Home Edition não restringe modalidade (BR-032). Recusas não consomem a chave
+ * (ADR-0017). Nunca cria Ação, Direito de Uso nem prerrogativa.
  */
 export async function registerInterest(
   body: unknown,
@@ -175,19 +167,13 @@ export async function registerInterest(
   if (prior === 'replayed') return { status: 'registered', replayed: true };
   if (prior === 'conflict') return { status: 'conflict' };
 
-  const target = await targets.find(interest.conceptId);
-  if (target === null) return { status: 'not_found' };
-  if (interest.editionId !== null) {
-    const edition = target.editions.find((candidate) => candidate.id === interest.editionId);
-    if (edition === undefined) return { status: 'not_found' };
-    if (!isModalityOffered(edition.modality, interest.modality)) return MODALITY_NOT_OFFERED;
-  }
+  // Home Edition em preparação, fora do público ou inexistente → mesma resposta (`02` §15, item 15).
+  if ((await targets.find(interest.homeEditionId)) === null) return { status: 'not_found' };
 
   const written = await store.register(
     { ...interest, id: newId(), createdAt: clock.now() },
     attempt,
   );
   if (written === 'conflict') return { status: 'conflict' };
-  if (written === 'modality_not_offered') return MODALITY_NOT_OFFERED;
   return { status: 'registered', replayed: written === 'replayed' };
 }

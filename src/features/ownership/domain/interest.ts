@@ -1,13 +1,10 @@
 /**
- * Manifestação de interesse (`03` §3.1; spec ownership): preferência comercial registrada antes de qualquer oferta ou
- * formalização. Nunca constitui aquisição (REQ-024, BR-050) nem cria Ação, Direito de Uso ou prerrogativa (REQ-023,
+ * Manifestação de interesse (`03` v3.15 §3.1; spec ownership §13): preferência comercial registrada a partir de uma Home
+ * Edition, antes de qualquer estruturação ou formalização. Nunca constitui aquisição (REQ-024, BR-050) nem cria Ação, Direito de Uso ou prerrogativa (REQ-023,
  * REQ-025, BR-060, BR-065) — só a formalização (W8) cria Ação e Direito de Uso.
  */
 export const INTEREST_MODALITIES = ['owner', 'co_owner'] as const;
 export type InterestModality = (typeof INTEREST_MODALITIES)[number];
-
-/** Modalidades em que uma Edition é oferecida (BR-032), como o catálogo as registra. */
-export type OfferedModality = InterestModality | 'owner_and_co_owner';
 
 /** Limite técnico dos textos livres, em pontos de código, depois da normalização (TECH-100; não é regra de negócio). */
 export const INTEREST_TEXT_MAX = 200;
@@ -19,21 +16,17 @@ export const APPROX_DAYS_MAX = 2_147_483_647;
 export const INTEREST_BODY_MAX_BYTES = 8 * 1024;
 
 export interface Interest {
-  readonly conceptId: string;
-  /** Opcional: interesse no Concept antes ou fora de uma Edition (REQ-022, BR-030). */
-  readonly editionId: string | null;
+  /** A Home Edition da manifestação (BR-030); o Home Concept vem dela. */
+  readonly homeEditionId: string;
+  /** Modalidade desejada: a Home Edition não restringe modalidade (BR-032). */
   readonly modality: InterestModality;
-  readonly region: string;
+  /** Localização pretendida (BR-030) — não é a localização concreta de uma Second Home. */
+  readonly desiredLocation: string;
   /** Só Co-Owner, e obrigatório para Co-Owner: preferência comercial, jamais direito adquirido (REQ-025, BR-060). */
   readonly approxDays: number | null;
   /** Metadados declarados e não confiáveis (REQ-023): nunca concedem acesso, autorização ou atribuição comercial. */
   readonly origin: string | null;
   readonly partnerRef: string | null;
-}
-
-/** Com Edition, a modalidade do interesse precisa estar entre as que ela oferece (BR-032; F2a). */
-export function isModalityOffered(offered: OfferedModality, modality: InterestModality): boolean {
-  return offered === 'owner_and_co_owner' || offered === modality;
 }
 
 /** F2b: `approx_days` é obrigatório para Co-Owner e ausente para Owner (REQ-025). */

@@ -29,11 +29,12 @@ export const messages = {
     modules: {
       catalog: {
         includesLabel: 'Inclui',
-        includes: 'Brand Partners, Concepts, Editions e Residences',
+        includes: 'Brand Partners, Home Concepts, Home Editions e Second Homes',
       },
       interests: {
         includesLabel: 'Inclui',
-        includes: 'Manifestações de interesse por Concept, região e modalidade',
+        includes:
+          'Manifestações de interesse por Home Edition, localização pretendida e modalidade',
       },
     },
   },

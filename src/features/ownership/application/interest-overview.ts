@@ -2,8 +2,8 @@ import type { InterestModality } from '../domain/interest';
 import type { InterestCount } from './ports';
 
 /**
- * Visão agrupada do Admin (spec ownership §5, BR-062): Concept → região → modalidade e, dentro de `co_owner`, os valores
- * exatos de `approx_days` com a contagem de cada um. Não destrutiva: nenhuma faixa, bucket, ranking ou algoritmo — a
+ * Visão agrupada do Admin (spec ownership §5, BR-062): Home Edition → localização pretendida → modalidade e, dentro de
+ * `co_owner`, os valores exatos de `approx_days` com a contagem de cada um. Não destrutiva: nenhuma faixa, bucket, ranking ou algoritmo — a
  * Luxtory agrupa (BR-062–BR-064); o software só apresenta o que foi registrado. A ordem é só de leitura.
  */
 export interface DaysCount {
@@ -18,18 +18,19 @@ export interface ModalityGroup {
   readonly approxDays: readonly DaysCount[];
 }
 
-export interface RegionGroup {
-  readonly region: string;
+export interface LocationGroup {
+  /** Localização pretendida, como registrada (já normalizada); nenhuma taxonomia. */
+  readonly desiredLocation: string;
   readonly total: number;
   readonly modalities: readonly ModalityGroup[];
 }
 
-export interface ConceptGroup<L> {
-  readonly conceptId: string;
-  /** Título e marca vindos do catálogo; `null` se indisponível (nada é presumido). */
+export interface HomeEditionGroup<L> {
+  readonly homeEditionId: string;
+  /** Nome da Home Edition, título do Home Concept e marca vindos do catálogo; `null` se indisponível. */
   readonly label: L | null;
   readonly total: number;
-  readonly regions: readonly RegionGroup[];
+  readonly locations: readonly LocationGroup[];
 }
 
 const MODALITY_ORDER: readonly InterestModality[] = ['owner', 'co_owner'];
@@ -54,26 +55,45 @@ function modalityGroup(modality: InterestModality, rows: readonly InterestCount[
   return { modality, total: sum(rows), approxDays: modality === 'co_owner' ? approxDays : [] };
 }
 
-function regionGroup(region: string, rows: readonly InterestCount[]): RegionGroup {
+function locationGroup(desiredLocation: string, rows: readonly InterestCount[]): LocationGroup {
   const byModality = groupBy(rows, (row) => row.modality);
   const modalities = MODALITY_ORDER.flatMap((modality) => {
     const group = byModality.get(modality);
     return group === undefined ? [] : [modalityGroup(modality, group)];
   });
-  return { region, total: sum(rows), modalities };
+  return { desiredLocation, total: sum(rows), modalities };
 }
 
-/** Agrupa as contagens; Concepts pelo título (sem título, pelo id), regiões em ordem alfabética, dias crescentes. */
-export function groupInterests<L extends { readonly title: string }>(
+/**
+ * Agrupa as contagens; Home Editions pelo título do Home Concept e depois pelo nome (sem rótulo, pelo id), localizações
+ * em ordem alfabética, dias crescentes.
+ */
+export function groupInterests<
+  L extends { readonly homeConceptTitle: string; readonly homeEditionName: string },
+>(
   counts: readonly InterestCount[],
   labels: ReadonlyMap<string, L>,
-): readonly ConceptGroup<L>[] {
-  const concepts = [...groupBy(counts, (row) => row.conceptId)].map(([conceptId, rows]) => {
-    const regions = [...groupBy(rows, (row) => row.region)]
-      .map(([region, regionRows]) => regionGroup(region, regionRows))
-      .sort((a, b) => COLLATOR.compare(a.region, b.region));
-    return { conceptId, label: labels.get(conceptId) ?? null, total: sum(rows), regions };
+): readonly HomeEditionGroup<L>[] {
+  const homeEditions = [...groupBy(counts, (row) => row.homeEditionId)].map(
+    ([homeEditionId, rows]) => {
+      const locations = [...groupBy(rows, (row) => row.desiredLocation)]
+        .map(([desiredLocation, locationRows]) => locationGroup(desiredLocation, locationRows))
+        .sort((a, b) => COLLATOR.compare(a.desiredLocation, b.desiredLocation));
+      return {
+        homeEditionId,
+        label: labels.get(homeEditionId) ?? null,
+        total: sum(rows),
+        locations,
+      };
+    },
+  );
+  const sortKeys = (group: HomeEditionGroup<L>) =>
+    group.label === null
+      ? [group.homeEditionId, '']
+      : [group.label.homeConceptTitle, group.label.homeEditionName];
+  return homeEditions.sort((a, b) => {
+    const [titleA = '', nameA = ''] = sortKeys(a);
+    const [titleB = '', nameB = ''] = sortKeys(b);
+    return COLLATOR.compare(titleA, titleB) || COLLATOR.compare(nameA, nameB);
   });
-  const sortKey = (group: ConceptGroup<L>) => group.label?.title ?? group.conceptId;
-  return concepts.sort((a, b) => COLLATOR.compare(sortKey(a), sortKey(b)));
 }

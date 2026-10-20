@@ -5,12 +5,13 @@ export const messages = {
   },
   overview: {
     title: 'Interesses',
-    lead: 'Manifestações registradas, agrupadas por Concept, região e modalidade. Interesse é preferência comercial: não constitui aquisição nem cria Ação ou Direito de Uso.',
+    lead: 'Manifestações registradas, agrupadas por Home Edition, localização pretendida e modalidade. Interesse é preferência comercial: não constitui aquisição nem cria Ação ou Direito de Uso.',
     empty: 'Nenhum interesse registrado até agora.',
-    conceptUnavailable: 'Concept sem identificação disponível no catálogo',
+    homeEditionUnavailable: 'Home Edition sem identificação disponível no catálogo',
+    homeConceptLabel: 'Home Concept',
     brandLabel: 'Marca',
     totalLabel: 'Interesses',
-    regionsLabel: 'Regiões com interesse em',
+    locationsLabel: 'Localizações pretendidas com interesse em',
     modalities: {
       owner: 'Owner',
       co_owner: 'Co-Owner',

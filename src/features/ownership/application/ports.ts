@@ -1,15 +1,15 @@
 import type { PriorAttempt, PublicAttempt } from '@/features/platform';
-import type { Interest, InterestModality, OfferedModality } from '../domain/interest';
+import type { Interest, InterestModality } from '../domain/interest';
 
-/** Concept publicado e as modalidades das suas Editions publicadas (consulta pública do módulo `catalog`). */
+/** Home Edition pública e o seu Home Concept (consulta pública do módulo `catalog`). */
 export interface InterestTarget {
-  readonly conceptId: string;
-  readonly editions: readonly { readonly id: string; readonly modality: OfferedModality }[];
+  readonly homeEditionId: string;
+  readonly homeConceptId: string;
 }
 
-/** Resolve o alvo público do interesse; Concept não publicado ou inexistente → `null` (ADR-0014). */
+/** Resolve o alvo público do interesse; Home Edition fora do público ou inexistente → `null` (ADR-0014). */
 export interface InterestTargets {
-  find(conceptId: string): Promise<InterestTarget | null>;
+  find(homeEditionId: string): Promise<InterestTarget | null>;
 }
 
 export interface NewInterest extends Interest {
@@ -17,8 +17,7 @@ export interface NewInterest extends Interest {
   readonly createdAt: Date;
 }
 
-/** `modality_not_offered`: o gatilho do banco recusou a modalidade (a Edition mudou depois da checagem pública). */
-export type InterestWrite = 'registered' | PriorAttempt | 'modality_not_offered';
+export type InterestWrite = 'registered' | PriorAttempt;
 
 /** Persistência do interesse com a idempotência pública (ADR-0017); implementação PostgreSQL em `infrastructure/`. */
 export interface InterestStore {
@@ -28,10 +27,10 @@ export interface InterestStore {
   register(interest: NewInterest, attempt: PublicAttempt): Promise<InterestWrite>;
 }
 
-/** Contagem de interesses por Concept, região, modalidade e valor exato de `approx_days` (BR-062). */
+/** Contagem de interesses por Home Edition, localização pretendida, modalidade e `approx_days` exato (BR-062). */
 export interface InterestCount {
-  readonly conceptId: string;
-  readonly region: string;
+  readonly homeEditionId: string;
+  readonly desiredLocation: string;
   readonly modality: InterestModality;
   readonly approxDays: number | null;
   readonly count: number;

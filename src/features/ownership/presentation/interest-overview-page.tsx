@@ -1,7 +1,7 @@
 import { Evidence, PageHeader, RecordList, type RecordAttribute } from '@/design-system/react';
 import { AdminShell, adminRoleGate } from '@/features/admin';
-import type { ConceptLabel } from '@/features/catalog';
-import type { ConceptGroup, RegionGroup } from '../application/interest-overview';
+import type { HomeEditionLabel } from '@/features/catalog';
+import type { HomeEditionGroup, LocationGroup } from '../application/interest-overview';
 import { daysLabel, interestCount, messages } from './i18n/pt-br';
 import { readInterestOverview } from './interest-overview-read';
 
@@ -10,9 +10,12 @@ const INTEREST_ROLE = 'admin';
 
 const text = messages.overview;
 
-/** Uma região: total por modalidade e, em Co-Owner, cada valor exato de dias informado com a sua contagem (BR-062). */
-function regionAttributes(region: RegionGroup): RecordAttribute[] {
-  return region.modalities.flatMap((group) => [
+/**
+ * Uma localização pretendida: total por modalidade e, em Co-Owner, cada valor exato de dias informado com a sua
+ * contagem (BR-062).
+ */
+function locationAttributes(location: LocationGroup): RecordAttribute[] {
+  return location.modalities.flatMap((group) => [
     { label: text.modalities[group.modality], value: interestCount(group.total) },
     ...group.approxDays.map((item) => ({
       label: daysLabel(text.modalities.co_owner, item.days),
@@ -21,9 +24,9 @@ function regionAttributes(region: RegionGroup): RecordAttribute[] {
   ]);
 }
 
-function ConceptSection({ group }: { readonly group: ConceptGroup<ConceptLabel> }) {
-  const title = group.label?.title ?? text.conceptUnavailable;
-  const headingId = `interest-concept-${group.conceptId}`;
+function HomeEditionSection({ group }: { readonly group: HomeEditionGroup<HomeEditionLabel> }) {
+  const title = group.label?.homeEditionName ?? text.homeEditionUnavailable;
+  const headingId = `interest-home-edition-${group.homeEditionId}`;
   return (
     <section className="lx-page-section" aria-labelledby={headingId}>
       <h2 className="lx-display-s" id={headingId}>
@@ -32,16 +35,17 @@ function ConceptSection({ group }: { readonly group: ConceptGroup<ConceptLabel> 
       <Evidence
         inline
         items={[
+          { label: text.homeConceptLabel, value: group.label?.homeConceptTitle },
           { label: text.brandLabel, value: group.label?.brandName },
           { label: text.totalLabel, value: interestCount(group.total) },
         ]}
       />
       <RecordList
-        label={`${text.regionsLabel} ${title}`}
-        items={group.regions.map((region) => ({
-          id: region.region,
-          title: region.region,
-          attributes: regionAttributes(region),
+        label={`${text.locationsLabel} ${title}`}
+        items={group.locations.map((location) => ({
+          id: location.desiredLocation,
+          title: location.desiredLocation,
+          attributes: locationAttributes(location),
         }))}
       />
     </section>
@@ -67,7 +71,7 @@ export async function InterestOverviewPage() {
           <>
             <p className="lx-body">{text.daysNote}</p>
             {groups.map((group) => (
-              <ConceptSection key={group.conceptId} group={group} />
+              <HomeEditionSection key={group.homeEditionId} group={group} />
             ))}
           </>
         )}
