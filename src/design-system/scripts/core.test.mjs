@@ -211,6 +211,7 @@ const NEW_CORE_BLOCKS = [
   'lx-results',
   // Home Concept e Home Edition (spec catalog §17.8).
   'lx-home-edition-grid', 'lx-home-edition-card', 'lx-home-edition-opening', 'lx-home-edition-gallery',
+  'lx-home-edition-lists',
   // Brand Partners (spec catalog §14, §14.9).
   'lx-anchors', 'lx-section-note', 'lx-section-group', 'lx-media-placeholder',
 ];

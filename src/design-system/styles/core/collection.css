@@ -621,6 +621,11 @@
   [data-lx="core"] .lx-home-edition-opening__media {
     aspect-ratio: var(--lx-ratio-media-md);
   }
+  /* Rooms, amenities and characteristics: one column on phones, side by side from lg (only the registered ones). */
+  [data-lx="core"] .lx-home-edition-lists {
+    display: grid;
+    gap: var(--lx-space-12) var(--lx-layout-gutter);
+  }
   [data-lx="core"] .lx-home-edition-gallery {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -651,7 +656,8 @@
     }
   }
   @media (min-width: 64rem) {
-    [data-lx="core"] .lx-home-edition-gallery {
+    [data-lx="core"] .lx-home-edition-gallery,
+    [data-lx="core"] .lx-home-edition-lists {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }

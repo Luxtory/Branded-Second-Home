@@ -118,9 +118,11 @@ function Configuration({ homeEdition }: { readonly homeEdition: PublicHomeEditio
           <h3 className="lx-display-s">{c.spaces}</h3>
           <Registered value={homeEdition.spatialConfiguration} />
         </div>
-        <RegisteredList title={c.rooms} items={homeEdition.rooms} />
-        <RegisteredList title={c.amenities} items={homeEdition.amenities} />
-        <RegisteredList title={c.characteristics} items={homeEdition.characteristics} />
+        <div className="lx-home-edition-lists">
+          <RegisteredList title={c.rooms} items={homeEdition.rooms} />
+          <RegisteredList title={c.amenities} items={homeEdition.amenities} />
+          <RegisteredList title={c.characteristics} items={homeEdition.characteristics} />
+        </div>
       </div>
     </section>
   );

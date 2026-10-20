@@ -586,7 +586,8 @@ Complementares consumidos pela W4: `lx-diagram` (Text + Diagram, `/diagrams/core
   `__cta`), sem destaque; o link leva à página da Home Edition.
 - Página da Home Edition: abertura `lx-columns--5-7` com `figure.lx-media.lx-home-edition-opening__media` (imagem
   principal; sem ela, abertura tipográfica); galeria `ul.lx-home-edition-gallery > li.__item > figure.lx-media.__media`
-  (plantas com `__media--plan`, inteiras, `object-fit: contain`) e `p.__credit`.
+  (plantas com `__media--plan`, inteiras, `object-fit: contain`) e `p.__credit`; ambientes, amenidades e
+  características em `div.lx-home-edition-lists` (uma coluna no celular, três a partir do `lg`).
 - Filtros ativos: `ul.lx-chips > li > a.lx-chip[aria-label="Remover filtro: …"]`; ordenação: `nav.lx-sort` com
   `a.lx-sort__option[aria-current=true]`; jornada em passos: `ol.lx-steps > li.lx-steps__item`.
 
