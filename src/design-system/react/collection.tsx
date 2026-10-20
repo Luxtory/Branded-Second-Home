@@ -4,9 +4,9 @@ export interface CollectionItem {
   readonly id: string;
   readonly href: string;
   readonly title: string;
-  /** Regiões reais das Editions (eyebrow do card); vazio = sem eyebrow. */
+  /** Regiões reais das Home Editions (eyebrow do card); vazio = sem eyebrow. */
   readonly marker: readonly string[];
-  /** Slot abaixo do título (ex.: `ConceptCredit` e os dados do card); ausente = nada. */
+  /** Slot abaixo do título (ex.: `HomeConceptCredit` e os dados do card); ausente = nada. */
   readonly details?: ReactNode;
   /** Texto do convite ao fim do card (i18n do slice). Visual: o card inteiro já é o link do título. */
   readonly cue?: string;
@@ -15,7 +15,7 @@ export interface CollectionItem {
 /**
  * Coleção no Core (docs/specs/design-system.md §13.5, receita catalog §13.9): Sibling Blocks de cards tipográficos —
  * sem fotografia oficial (P-1), cada card é uma placa Deep com o número da sequência (decorativo), as regiões, o nome e
- * os dados. Um só link por card: o título, estendido ao card inteiro. `feature` (Concepts com Edition): dois por linha;
+ * os dados. Um só link por card: o título, estendido ao card inteiro. `feature` (Home Concepts com Home Edition): dois por linha;
  * `compact`: tantos quantos couberem. `label` nomeia a lista.
  */
 export function Collection({

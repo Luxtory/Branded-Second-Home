@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
-import { ConceptPage } from '@/features/catalog/presentation/discovery/concept-page';
-import { conceptMetadata } from '@/features/catalog/presentation/discovery/metadata';
+import { HomeConceptPage } from '@/features/catalog/presentation/discovery/home-concept-page';
+import { homeConceptMetadata } from '@/features/catalog/presentation/discovery/metadata';
 
 interface Props {
-  readonly params: Promise<{ conceptId: string }>;
+  readonly params: Promise<{ homeConceptId: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  return conceptMetadata((await params).conceptId);
+  return homeConceptMetadata((await params).homeConceptId);
 }
 
 export default async function Page({ params }: Props) {
-  return <ConceptPage conceptId={(await params).conceptId} />;
+  return <HomeConceptPage homeConceptId={(await params).homeConceptId} />;
 }

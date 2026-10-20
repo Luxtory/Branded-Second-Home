@@ -48,18 +48,17 @@ const values = {
 const modality = {
   owner: 'Owner',
   co_owner: 'Co-Owner',
-  /** Edition aberta às duas modalidades (BR-032), com o mesmo peso. */
-  join: ' ou ',
 };
 
 const actions = {
   // D-B2C-13, D-B2C-16: o CTA de catálogo depende do que está publicado.
-  editions: 'Conheça as Home Editions',
-  concepts: 'Conheça os Home Concepts',
+  homeEditions: 'Conheça as Home Editions',
+  homeConcepts: 'Conheça os Home Concepts',
   howItWorks: 'Entenda como funciona',
   collection: 'Ver a Coleção',
-  otherConcepts: 'Conheça outros Concepts',
-  viewConcept: 'Ver o Concept',
+  otherHomeConcepts: 'Conheça outros Home Concepts',
+  viewHomeConcept: 'Ver o Home Concept',
+  viewHomeEdition: 'Ver a Home Edition',
 };
 
 /** PUSH `[FW-B2C: §8 P5]`: a lista base é a mesma em todas as páginas; complementos factuais por página (b2c.md §8). */
@@ -87,13 +86,14 @@ const qualification = {
   ],
   /** Próximo passo por disponibilidade (D-B2C-16); `unknown` nunca diz que não há catálogo. */
   next: {
-    editions:
-      'O próximo passo é conhecer as Home Editions: os lançamentos com oferta, por região e modalidade.',
-    concepts: 'Ainda não há uma Home Edition lançada. Os Home Concepts já podem ser conhecidos.',
+    homeEditions:
+      'O próximo passo é conhecer as Home Editions: configurações de Second Home criadas a partir de cada Home Concept.',
+    homeConcepts:
+      'Ainda não há uma Home Edition publicada. Os Home Concepts já podem ser conhecidos.',
     none: 'Os primeiros Home Concepts ainda não foram publicados. Enquanto isso, veja em detalhe como tudo funciona.',
     unknown: 'Veja em detalhe como tudo funciona.',
   },
-  /** No Como funciona: sem Concept, a frase não manda para a própria página; desconhecido, nenhuma frase. */
+  /** No Como funciona: sem Home Concept, a frase não manda para a própria página; desconhecido, nenhuma frase. */
   nextHowItWorks: {
     none: 'Os primeiros Home Concepts ainda não foram publicados.',
   },
@@ -119,17 +119,18 @@ export const discoveryMessages = {
 
   home: {
     // Fotografias da Home (docs/specs/catalog.md §13.10): as do Kaizen são imagens conceituais identificadas — nunca
-    // Edition, oferta ou prova de benefício; as demais são atmosfera, decorativas (alt vazio no componente).
+    // Home Edition, oferta ou prova de benefício; as demais são atmosfera, decorativas (alt vazio no componente). O
+    // anteprojeto é nomeado só "Kaizen": Residence não nomeia produto Luxtory (BR-377, D-LX-11).
     media: {
       kaizen: {
-        alt: 'Imagem conceitual de pessoas junto à piscina e à fachada do Kaizen Residence.',
-        caption: 'Kaizen Residence · Imagem conceitual',
+        alt: 'Imagem conceitual de pessoas junto à piscina e à fachada do Kaizen.',
+        caption: 'Kaizen · Imagem conceitual',
       },
       kaizenWellness: {
-        alt: 'Imagem conceitual de duas pessoas meditando em um pavilhão de madeira do Kaizen Residence.',
+        alt: 'Imagem conceitual de duas pessoas meditando em um pavilhão de madeira do Kaizen.',
       },
       kaizenSuite: {
-        alt: 'Imagem conceitual de uma suíte do Kaizen Residence preparada, com a cama arrumada e o jardim ao lado.',
+        alt: 'Imagem conceitual de uma suíte do Kaizen preparada, com a cama arrumada e o jardim ao lado.',
       },
       solutionDiagram:
         'Diagrama original de solução: Patrimônio, Liberdade e Pertencimento integrados, com Luxtory no encontro das três dimensões.',
@@ -257,7 +258,7 @@ export const discoveryMessages = {
       triad: 'Patrimônio. Liberdade. Pertencimento.',
     },
     belonging: {
-      marker: 'Branded Residences',
+      marker: 'Branded Second Homes',
       title: 'Primeiro, encontre um lifestyle que faça parte da sua identidade.',
       brands: [
         'Existem marcas com as quais você se identifica não apenas pelo que elas vendem.',
@@ -266,7 +267,7 @@ export const discoveryMessages = {
       universe: ['Valores.', 'Estética.', 'Cultura.', 'Experiências.', 'Um estilo de vida.'],
       place: 'Na Luxtory, esse universo se transforma no seu lugar.',
       text: [
-        'O Brand DNA inspira seu conceito, arquitetura, interiores, paisagismo, amenidades e experiências.',
+        'A identidade da marca inspira seu conceito, arquitetura, interiores, paisagismo, amenidades e experiências.',
         'E tudo isso ganha ainda mais significado quando é vivido com sua família, seus amigos e as pessoas que importam para você.',
       ],
       arrival: 'Tudo para que, quando você chegue, não pense apenas:',
@@ -318,13 +319,13 @@ export const discoveryMessages = {
         {
           title: 'Luxchange — intercâmbio da rede',
           text: [
-            'No Luxchange, você escolhe períodos da sua residência para converter em créditos equivalentes e diversificar estadias em outros imóveis da rede.',
+            'No Luxchange, você escolhe períodos da sua Second Home para converter em créditos equivalentes e diversificar estadias em outros imóveis da rede.',
           ],
         },
         {
           title: 'Luxplus — reservas extras',
           text: [
-            'O Luxplus dá acesso a estadias adicionais quando os dias da sua residência e os créditos do Luxchange não bastarem.',
+            'O Luxplus dá acesso a estadias adicionais quando os dias da sua Second Home e os créditos do Luxchange não bastarem.',
           ],
         },
         {
@@ -345,7 +346,7 @@ export const discoveryMessages = {
       title: { lead: 'Aproveite mais. ', turn: 'Administre menos.' } satisfies Headline,
       intro:
         'Ter uma casa de lazer costuma trazer junto manutenção, fornecedores, preparação, imprevistos e uma lista de coisas para resolver.',
-      text: 'A Luxtory coordena os serviços de gestão e manutenção aplicáveis a cada Residence para reduzir boa parte desses atritos.',
+      text: 'A Luxtory coordena os serviços de gestão e manutenção aplicáveis a cada Second Home para reduzir boa parte desses atritos.',
       pair: {
         owner: [
           'A gestão pode ser estruturada conforme os serviços contratados e as necessidades da sua Second Home.',
@@ -392,34 +393,34 @@ export const discoveryMessages = {
           question: 'O que é a Luxtory?',
           answer: [
             'A Luxtory cria Branded Second Homes inspiradas em diferentes lifestyles e conectadas ao Luxtory Club.',
-            'Cada Residence é estruturada para reunir patrimônio, liberdade e pertencimento em uma mesma proposta.',
+            'Cada Second Home é estruturada para reunir patrimônio, liberdade e pertencimento em uma mesma proposta.',
           ],
         },
         {
           question: 'O que é uma Branded Second Home?',
           answer: [
             'É uma Second Home criada a partir de um lifestyle e do universo de uma Brand Partner.',
-            'Seu Brand DNA inspira o Residence Concept e ajuda a orientar arquitetura, interiores, paisagismo, amenidades e experiências.',
+            'A identidade da marca inspira o Home Concept e ajuda a orientar arquitetura, interiores, paisagismo, amenidades e experiências.',
           ],
         },
         {
           question: 'O que é uma Brand Partner?',
           answer: [
             'É uma marca que representa um universo de lifestyle com o qual determinadas pessoas se identificam.',
-            'Seus valores, sua estética, sua cultura e sua forma de viver servem como inspiração para o conceito da Residence.',
+            'Seus valores, sua estética, sua cultura e sua forma de viver servem como inspiração para o Home Concept.',
           ],
         },
         {
-          question: 'O que é uma Residence Edition?',
+          question: 'O que é uma Home Edition?',
           answer: [
-            'É a forma como uma determinada Residence é estruturada e oferecida.',
-            'Ela define, entre outros pontos, a modalidade de propriedade disponível e as condições aplicáveis àquela oportunidade.',
+            'É uma configuração específica e replicável de Second Home, criada a partir de um Home Concept: tipologia, espaços, área, suítes, capacidade e características próprias.',
+            'A localização, a modalidade e as condições pertencem a cada Second Home estruturada a partir dela.',
           ],
         },
         {
           question: 'Qual é a diferença entre Owner e Co-Owner?',
           answer: [
-            'No Owner, você possui integralmente a Residence.',
+            'No Owner, você possui integralmente a Second Home.',
             'Você adquire uma Ação da SPE, a empresa proprietária do imóvel, com Direito de Uso correspondente à sua participação.',
           ],
         },
@@ -433,7 +434,7 @@ export const discoveryMessages = {
           ],
         },
         {
-          question: 'Vou ficar preso à minha Residence?',
+          question: 'Vou ficar preso à minha Second Home?',
           answer: [
             'Não.',
             'Sua Second Home é o ponto de partida, mas, com Membership vigente, mecanismos como Luxchange e Luxplus podem ampliar suas possibilidades de viver outras Second Homes e períodos adicionais, sempre de acordo com disponibilidade e regras aplicáveis.',
@@ -459,10 +460,10 @@ export const discoveryMessages = {
           ],
         },
         {
-          question: 'Quem cuida da Residence?',
+          question: 'Quem cuida da Second Home?',
           answer: [
-            'A Luxtory coordena os serviços de gestão e manutenção previstos para cada Residence.',
-            'O escopo varia conforme a Residence Edition, a modalidade e os serviços aplicáveis.',
+            'A Luxtory coordena os serviços de gestão e manutenção previstos para cada Second Home.',
+            'O escopo varia conforme a Second Home, a modalidade e os serviços aplicáveis.',
             'No Owner, a administração integral pela Luxtory é opcional, assim como a Taxa de Administração. As despesas da Second Home são suas.',
             'No Co-Owner, a administração profissional é obrigatória, com Taxa de Administração. As despesas da Second Home são rateadas entre os Co-Owners.',
           ],
@@ -525,10 +526,10 @@ export const discoveryMessages = {
               },
               {
                 title: 'Brand Partner',
-                text: 'A marca que representa esse universo e participa da construção da identidade do Concept.',
+                text: 'A marca que representa esse universo e participa da construção da identidade do Home Concept.',
               },
               {
-                title: 'Brand DNA',
+                title: 'Identidade da marca',
                 text: 'Valores, estética, cultura e experiências que orientam o projeto.',
               },
             ],
@@ -542,7 +543,7 @@ export const discoveryMessages = {
               },
               {
                 title: 'Home Edition',
-                text: 'O lançamento de um Home Concept em uma região, com modalidade e condições próprias.',
+                text: 'Uma configuração específica e replicável de Second Home, criada a partir do Home Concept.',
               },
               {
                 title: 'Owner ou Co-Owner',
@@ -555,11 +556,11 @@ export const discoveryMessages = {
             steps: [
               {
                 title: 'Design & Build',
-                text: 'Arquitetura, interiores, engenharia e obra transformam o Concept em uma casa real.',
+                text: 'Arquitetura, interiores, engenharia e obra transformam o Home Concept em uma casa real.',
               },
               {
                 title: 'Second Home',
-                text: 'Construída do zero e fiel aos elementos essenciais do Concept.',
+                text: 'Construída do zero e fiel aos elementos essenciais do Home Concept.',
               },
               {
                 title: 'Luxtory Club',
@@ -763,12 +764,12 @@ export const discoveryMessages = {
       difference: {
         question: 'O que faz uma Second Home Luxtory ser diferente?',
         text: [
-          'Na Luxtory, a casa começa pelo lifestyle e pelo Brand DNA.',
+          'Na Luxtory, a casa começa pelo lifestyle e pela identidade da marca.',
           'Eles orientam o Home Concept: arquitetura, interiores, paisagismo, amenidades e experiências.',
           'Cada Second Home é construída do zero e preserva os elementos essenciais dessa identidade.',
         ],
         pair: {
-          owner: ['Você pode personalizar aquilo que não descaracteriza o Concept.'],
+          owner: ['Você pode personalizar aquilo que não descaracteriza o Home Concept.'],
           coOwner: [
             'A casa mantém uma identidade comum para preservar a experiência de todos os Co-Owners.',
           ],
@@ -789,7 +790,7 @@ export const discoveryMessages = {
       // BR-004, BR-031, BR-054, BR-143, BR-373, BR-374. Sempre visíveis (sem disclosure): fazem parte da prova.
       title: 'O que preciso saber antes de decidir?',
       items: [
-        'Toda oferta comercial acontece por uma Home Edition, com condições próprias registradas pela Luxtory.',
+        'Toda oferta comercial está vinculada a uma Home Edition; localização, modalidade e condições são definidas para cada Second Home.',
         'Valores de Membership, taxas e planos dependem das condições aplicáveis e não são fixados nesta página.',
         'No Co-Owner, sua posição patrimonial é uma Ação da SPE proprietária acompanhada de Direito de Uso.',
         'Toda Second Home é construída do zero. Reforma ou adaptação de imóvel existente não faz parte do modelo atual.',
@@ -824,7 +825,7 @@ export const discoveryMessages = {
       ],
     },
     next: {
-      // PUSH final: fecha o Hero sem repeti-lo. O apoio só aparece com o CTA de catálogo (D-B2C-16): sem Concept
+      // PUSH final: fecha o Hero sem repeti-lo. O apoio só aparece com o CTA de catálogo (D-B2C-16): sem Home Concept
       // publicado, a frase de `qualification.nextHowItWorks`; com estado desconhecido, nenhuma (nunca um CTA falso).
       title: 'Suas próximas histórias começam pela escolha que faz sentido para você.',
       text: 'Se patrimônio, liberdade e pertencimento fazem sentido juntos para você, descubra quais Home Concepts e Home Editions já fazem parte da Coleção.',
@@ -832,23 +833,25 @@ export const discoveryMessages = {
   },
 
   collection: {
-    // Coleção curatorial (spec catalog §13.12, D-B2C-21): PROOF → PUSH; Discovery de produto, não marketplace. Um card por
-    // Home Concept (REQ-022); sem Edition, sem oferta nem valor (REQ-020); Owner e Co-Owner com o mesmo peso (REQ-103);
-    // nunca valor por dia (REQ-100).
+    // Coleção curatorial (spec catalog §13.12, §17.8; D-B2C-21, D-B2C-27): PROOF → PUSH; Discovery de produto, não
+    // marketplace. Um card por Home Concept (REQ-022), com as Home Editions publicadas dentro; a Home Edition não tem
+    // localização, modalidade nem condições (BR-031, BR-032); a média projetada nunca é preço nem valor por modalidade,
+    // por Ação ou por dia (BR-034, REQ-100).
     hero: {
       eyebrow: 'Coleção',
       title: 'As suas próximas histórias começam antes mesmo de a casa existir.',
-      text: 'Explore Home Concepts criados a partir de diferentes lifestyles — e descubra quais Home Editions já foram lançadas na região que você deseja.',
-      explanation: 'Home Concept é a ideia. Home Edition é o lançamento dessa ideia em uma região.',
+      text: 'Explore Home Concepts criados a partir de diferentes lifestyles — e conheça as Home Editions criadas a partir deles.',
+      explanation:
+        'Home Concept é a ideia. Home Edition é uma configuração de Second Home criada a partir dela.',
       howItWorks: 'Entenda como funciona',
     },
     search: {
       label: 'Buscar na Coleção',
       // A barra fixa do desktop é outro landmark de busca: nome próprio (axe landmark-unique).
       compactLabel: 'Refinar a busca na Coleção',
-      placeholder: 'Busque por lifestyle, destino, Home Concept ou Brand Partner',
+      placeholder: 'Busque por lifestyle, Home Concept, Home Edition ou Brand Partner',
       // Onde a frase longa seria cortada (celular, tablet, barra fixa) — decisão do fundador, 2026-10-07.
-      placeholderShort: 'Lifestyle, destino, Concept ou marca',
+      placeholderShort: 'Lifestyle, Home Concept ou marca',
       submit: 'Explorar a Coleção',
       apply: 'Aplicar',
       more: 'Mais filtros',
@@ -860,49 +863,39 @@ export const discoveryMessages = {
     },
     facets: {
       lifestyle: 'Lifestyle',
-      region: 'Localização',
       style: 'Estilo',
       guests: 'Pessoas',
-      value: 'Faixa de valor',
-      valueShort: 'Valor',
+      // Microcopy provisória do filtro (spec §17.8): decidida no checkpoint visual da W4.2.
+      value: 'Média projetada',
+      valueShort: 'Média projetada',
       suites: 'Suítes',
       area: 'Área (m²)',
-      modality: 'Modalidade disponível',
-      withEdition: 'Só com Home Edition',
+      withHomeEdition: 'Só com Home Edition',
       brand: 'Brand Partner',
       all: 'Todos',
-      allRegions: 'Todas',
       anyGuests: 'Qualquer',
       atLeastGuests: (n: number) => `Para pelo menos ${n}`,
       anySuites: 'Qualquer',
       atLeastSuites: (n: number) => `Pelo menos ${n}`,
       areaFrom: 'De',
       areaTo: 'Até',
-      anyModality: 'Qualquer',
       anyBrand: 'Todas',
-      chooseBasis: 'Escolha a modalidade',
-      valueStep1: '1. Valor de referência de',
-      valueStep2: '2. Faixa (R$)',
+      anyValue: 'Qualquer',
       valueFrom: 'De',
       valueTo: 'Até',
-      valueSuggestion: (min: string, max: string) =>
-        min === max ? `Valor publicado: ${min}` : `Valores publicados: de ${min} a ${max}`,
-      bases: {
-        owner: { title: 'Owner', text: 'a Second Home inteira' },
-        acao: { title: 'Co-Owner', text: 'uma Ação da SPE proprietária' },
-      },
-      modalities: { owner: 'Owner', co_owner: 'Co-Owner' },
+      valueLegend: 'Média projetada de investimento (R$)',
+      valueSuggestion: (min: string, max: string) => `Médias publicadas: de ${min} a ${max}`,
       moreActive: (n: number) => (n === 1 ? '1 ativo' : `${n} ativos`),
       /** Barra fixa: escolhas ativas ao lado do rótulo da faceta. */
       activeCount: (n: number) => `(${n})`,
       rangeBetween: (min: string, max: string) => `${min} a ${max}`,
       rangeFrom: (min: string) => `a partir de ${min}`,
       rangeUpTo: (max: string) => `até ${max}`,
+      valueChip: (span: string) => `Média projetada: ${span}`,
       suitesChip: (n: number) => `Suítes: pelo menos ${n}`,
       areaChip: (min: string, max: string) => `Área: ${min}–${max} m²`,
       quoted: (value: string) => `“${value}”`,
-      valueNote: (basis: string) =>
-        `Considera só Concepts com Home Edition e valor vigente para ${basis}.`,
+      valueNote: 'Considera só Home Editions com média projetada vigente.',
     },
     results: {
       eyebrow: 'Curadoria Luxtory',
@@ -919,29 +912,16 @@ export const discoveryMessages = {
       sortLabel: 'Ordenar',
       sorts: { curadoria: 'Curadoria Luxtory', recentes: 'Mais recentes' },
       noResults: 'Nenhum Home Concept combina com todas essas escolhas.',
-      noResultsText: 'Tire um filtro ou limpe a busca para ver mais Concepts.',
+      noResultsText: 'Tire um filtro ou limpe a busca para ver mais Home Concepts.',
     },
     groups: {
-      editions: {
+      homeEditions: {
         title: 'Com Home Edition',
-        text: 'Já lançados — com região, modalidade e condições definidas.',
         listLabel: 'Home Concepts com Home Edition',
       },
-      concepts: {
+      homeConcepts: {
         title: 'Ainda sem Home Edition',
-        text: 'Por enquanto, sem oferta comercial. O interesse por um Concept pode ajudar a indicar onde um novo lançamento faz sentido.',
         listLabel: 'Home Concepts sem Home Edition',
-      },
-      inRegion: {
-        title: (region: string) => `Com Home Edition em ${region}`,
-        text: 'Já lançados nesta região — com modalidade e condições definidas.',
-        listLabel: (region: string) => `Home Concepts com Home Edition em ${region}`,
-      },
-      others: {
-        title: 'Outros Home Concepts que combinam com suas escolhas',
-        text: (region: string) =>
-          `Ainda sem Home Edition em ${region}. O interesse por um Concept pode indicar onde um novo lançamento faz sentido.`,
-        listLabel: 'Outros Home Concepts que combinam com suas escolhas',
       },
     },
     card: {
@@ -950,34 +930,34 @@ export const discoveryMessages = {
       guests: (n: number) => `Até ${n} pessoas`,
       suites: (n: number) => (n === 1 ? '1 suíte' : `${n} suítes`),
       area: (n: number) => `${n.toLocaleString('pt-BR')} m²`,
-      editionsLabel: 'Home Editions deste Concept',
-      owner: 'Owner',
-      acao: 'Co-Owner · Ação',
-      ownerFrom: (amount: string) => `Owner · a partir de ${amount}`,
-      acaoFrom: (amount: string) => `Co-Owner · Ação a partir de ${amount}`,
-      none: 'Ainda sem Home Edition — por enquanto, sem oferta comercial.',
-      cta: 'Conheça o Concept',
+      homeEditionsLabel: 'Home Editions deste Home Concept',
+      projectedInvestment: (amount: string) => `Média projetada ${amount}`,
+      none: 'As Home Editions deste Home Concept ainda não foram publicadas.',
+      cta: 'Conheça o Home Concept',
     },
+    /** A explicação obrigatória da média projetada (BR-034, spec §17.4), uma vez, abaixo dos cards que a mostram. */
+    projectedNote:
+      'Média projetada de investimento: referência aproximada da ordem de grandeza do investimento total projetado para materializar uma Second Home daquela Home Edition. O investimento efetivo varia conforme localização, escopo, fornecedores, momento, modalidade e configuração. Não é preço, proposta, condição comercial nem valor individual de Owner ou Co-Owner.',
     journey: {
-      eyebrow: 'Do Concept à Second Home',
+      eyebrow: 'Do Home Concept à Second Home',
       title: 'Como um Home Concept chega à sua Second Home',
       steps: [
         { title: 'Escolha o Home Concept', text: 'O lifestyle e a casa que combinam com você.' },
         {
-          title: 'Escolha onde gostaria de vivê-lo',
-          text: 'O interesse mostra à Luxtory onde há demanda.',
+          title: 'Conheça as Home Editions',
+          text: 'Configurações de Second Home criadas a partir do Home Concept.',
         },
         {
-          title: 'A Home Edition ganha forma',
-          text: 'Com demanda e viabilidade, a Luxtory estrutura o lançamento com região, modalidade e condições próprias.',
+          title: 'Manifeste interesse numa Home Edition',
+          text: 'Com a localização pretendida e a modalidade desejada. Owner: a Second Home inteira. Co-Owner: uma Ação da SPE proprietária, com Direito de Uso.',
         },
         {
-          title: 'Escolha como possuir',
-          text: 'Owner: a Second Home inteira. Co-Owner: uma Ação da SPE proprietária, com Direito de Uso.',
+          title: 'A Luxtory estrutura a Second Home',
+          text: 'Com localização concreta, modalidade, estrutura e condições próprias.',
         },
         {
-          title: 'O Design & Build transforma o Concept em casa',
-          text: 'Arquitetura, interiores, engenharia e obra. Construída do zero e fiel ao Concept.',
+          title: 'O Design & Build dá forma à Second Home',
+          text: 'Arquitetura, interiores, engenharia e obra. Construída do zero, fiel ao Home Concept e à configuração da Home Edition.',
         },
         { title: 'Viva sua Second Home', text: 'O lugar onde suas próximas histórias começam.' },
       ],
@@ -992,26 +972,64 @@ export const discoveryMessages = {
     unavailable: 'A Coleção não pôde ser carregada agora.',
   },
 
-  concept: {
-    // Most Aware: PUSH + prova necessária. BR-004, BR-013, BR-014, BR-017, BR-019, BR-031, BR-300, BR-301, REQ-022.
+  homeConcept: {
+    // Most Aware: PUSH + prova necessária (spec §17.8). BR-013, BR-014, BR-017, BR-019, BR-031, BR-034, BR-300, BR-301,
+    // REQ-022.
     credit: 'A partir do universo de',
-    residence: { title: 'O que este Concept propõe' },
+    secondHome: { title: 'O Home Concept' },
     faithful: {
-      title: { lead: 'Construída do zero, ', turn: 'fiel ao Concept.' } satisfies Headline,
+      title: { lead: 'Construída do zero, ', turn: 'fiel ao Home Concept.' } satisfies Headline,
       text: [
         'Toda Second Home nasce de um Home Concept aprovado e é construída do zero, preservando os elementos essenciais que definem a sua identidade.',
-        'O Owner pode personalizar o que não é essencial; a Second Home Co-Owner é padronizada. A Luxtory pode coordenar todo o Design & Build — arquitetura, interiores, engenharia e obra —, sempre preservando o Concept.',
+        'O Owner pode personalizar o que não é essencial; a Second Home Co-Owner é padronizada. A Luxtory pode coordenar todo o Design & Build — arquitetura, interiores, engenharia e obra —, sempre preservando o Home Concept.',
       ],
     },
-    offer: {
+    homeEditions: {
       title: 'Home Editions',
-      lead: 'Uma Home Edition é o lançamento deste Concept numa região, com condições comerciais próprias.',
-      modality: 'Modalidade',
-      conditions: 'Condições comerciais',
-      // Sem Edition, sem oferta (BR-004, REQ-022).
-      none: 'Este Concept ainda não tem uma Home Edition. Por isso, ainda não há oferta comercial.',
+      lead: 'Configurações de Second Home criadas a partir deste Home Concept.',
+      none: 'As Home Editions deste Home Concept ainda não foram publicadas.',
     },
     unavailable: 'Não foi possível carregar este Home Concept agora. Tente de novo em instantes.',
+  },
+
+  homeEdition: {
+    // Página da Home Edition (spec §17.8, D-B2C-27): Most Aware, PUSH + prova necessária, sem formulário até a W6
+    // (D-B2C-10). Só o registrado; sem localização, disponibilidade, prazo, preço, valor por modalidade ou por Ação,
+    // número de Second Homes, configuração Co-Owner nem Investor (BR-031, BR-032, BR-034, L10).
+    eyebrow: 'Home Edition',
+    breadcrumb: 'Caminho',
+    credit: 'A partir do Home Concept',
+    brandCredit: 'do universo de',
+    presentation: 'A Home Edition',
+    configuration: {
+      title: 'Configuração',
+      typology: 'Tipologia',
+      area: 'Área projetada',
+      suites: 'Suítes',
+      guests: 'Capacidade',
+      guestsValue: (n: number) => `Até ${n} pessoas`,
+      spaces: 'Configuração dos espaços',
+      rooms: 'Ambientes',
+      amenities: 'Amenidades',
+      characteristics: 'Características',
+    },
+    gallery: { title: 'Galeria', plans: 'Plantas' },
+    projected: {
+      title: 'Média projetada de investimento',
+      text: [
+        'Referência aproximada da ordem de grandeza do investimento total projetado para materializar uma Second Home desta Home Edition.',
+        'O investimento efetivo varia conforme localização, escopo, fornecedores, momento, modalidade e configuração. Não é preço, proposta, condição comercial nem valor individual de Owner ou Co-Owner.',
+      ],
+    },
+    toSecondHome: {
+      title: { lead: 'Da Home Edition ', turn: 'à sua Second Home.' } satisfies Headline,
+      text: [
+        'A Home Edition não tem localização. Cada Second Home criada a partir dela é estruturada para uma localização concreta, com modalidade, estrutura e condições próprias.',
+        'Owner: a Second Home inteira. Co-Owner: uma Ação da SPE proprietária, com Direito de Uso.',
+        'Construída do zero, fiel ao Home Concept e à configuração da Home Edition.',
+      ],
+    },
+    unavailable: 'Não foi possível carregar esta Home Edition agora. Tente de novo em instantes.',
   },
 
   notFound: {
@@ -1034,7 +1052,9 @@ export const discoveryMessages = {
       title: 'Coleção — Luxtory',
       description: 'Home Concepts e Home Editions da Luxtory.',
     },
-    conceptSuffix: ' — Luxtory',
+    homeConceptSuffix: ' — Luxtory',
+    homeEdition: (homeEdition: string, homeConcept: string) =>
+      `${homeEdition} · ${homeConcept} — Luxtory`,
     notFound: 'Página não encontrada — Luxtory',
   },
 } as const;

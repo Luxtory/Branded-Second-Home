@@ -7,7 +7,7 @@ export { Logo, logoUrl, type Ground } from './logo';
 export { PageHeader, type PageContext } from './page-header';
 export { RecordList, type RecordAttribute, type RecordListItem } from './record-list';
 export { Collection, type CollectionItem } from './collection';
-export { ConceptCredit } from './concept-credit';
+export { HomeConceptCredit } from './home-concept-credit';
 export { Evidence, type EvidenceItem } from './evidence';
 export { MobileNav, type MobileNavLabels } from './mobile-nav';
 export { Scene, type SceneVariant } from './scene';

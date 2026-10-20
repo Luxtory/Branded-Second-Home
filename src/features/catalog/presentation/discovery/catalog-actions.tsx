@@ -6,13 +6,13 @@ import { discoveryPaths } from './paths';
 const { actions } = text;
 
 const collectionHref = {
-  editions: `${discoveryPaths.collection}#${discoveryPaths.editionsAnchor}`,
-  concepts: `${discoveryPaths.collection}#${discoveryPaths.conceptsAnchor}`,
+  homeEditions: `${discoveryPaths.collection}#${discoveryPaths.homeEditionsAnchor}`,
+  homeConcepts: `${discoveryPaths.collection}#${discoveryPaths.homeConceptsAnchor}`,
 };
 
 /**
- * Próximo passo por disponibilidade (D-B2C-13, D-B2C-16; spec catalog §13.2). Com Edition, o CTA leva à primeira
- * oferta da Coleção; só com Concepts, aos Home Concepts; sem Concept ou com estado desconhecido, nenhum CTA de
+ * Próximo passo por disponibilidade (D-B2C-13, D-B2C-16; spec catalog §13.2). Com Home Edition, o CTA leva à primeira
+ * oferta da Coleção; só com Home Concepts, aos Home Concepts; sem Home Concept ou com estado desconhecido, nenhum CTA de
  * catálogo — a falta de dados nunca vira "não há". `from` é a página que compõe: no Como funciona, o caminho para ele
  * não se repete. `cinematic`: sobre a fotografia do fechamento da Home — ações de 56px, a secundária em contorno.
  */
@@ -30,10 +30,10 @@ export function CatalogActions({
 }) {
   const sentence = next[cta];
   const catalog =
-    cta === 'editions'
-      ? { href: collectionHref.editions, label: actions.editions }
-      : cta === 'concepts'
-        ? { href: collectionHref.concepts, label: actions.concepts }
+    cta === 'homeEditions'
+      ? { href: collectionHref.homeEditions, label: actions.homeEditions }
+      : cta === 'homeConcepts'
+        ? { href: collectionHref.homeConcepts, label: actions.homeConcepts }
         : null;
   const howItWorks = from === 'home';
   if (sentence === undefined && catalog === null && !howItWorks) return null;

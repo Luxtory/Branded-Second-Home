@@ -4,15 +4,15 @@ import { discoveryMessages } from '../i18n/discovery-pt-br';
 import {
   cardEyebrow,
   coverSrcSet,
-  editionLines,
   factsLine,
   fallbackWord,
+  projectedLine,
 } from './collection-labels';
 import { discoveryPaths } from './paths';
 
 /**
- * Card da Coleção (spec catalog §13.12): a unidade é o Home Concept, nunca duplicado; as Home Editions vêm dentro, uma
- * por bloco. O card inteiro é o alvo (link do título). Sem capa, o quadro tipográfico do Core com o lifestyle
+ * Card da Coleção (spec catalog §13.12, §17.8): a unidade é o Home Concept, nunca duplicado; as Home Editions publicadas
+ * vêm dentro, uma por bloco (nome, fatos, média projetada). O card inteiro é o alvo (link do título → Home Concept). Sem capa, o quadro tipográfico do Core com o lifestyle
  * principal (ou o título), decorativo. Destaque só explícito e com capa: Editorial Split nas 12 colunas.
  */
 const text = discoveryMessages.collection.card;
@@ -34,11 +34,11 @@ function Media({
   if (cover === null) {
     return (
       <div
-        className="lx-concept-card__media lx-concept-card__media--type"
+        className="lx-home-concept-card__media lx-home-concept-card__media--type"
         data-surface="blue"
         aria-hidden="true"
       >
-        <span className="lx-concept-card__word">{fallbackWord(entry)}</span>
+        <span className="lx-home-concept-card__word">{fallbackWord(entry)}</span>
       </div>
     );
   }
@@ -46,7 +46,7 @@ function Media({
   const largest = cover.widths[cover.widths.length - 1];
   return (
     <figure
-      className={`lx-media lx-concept-card__media lx-crop-x-${cover.cropX} lx-crop-y-${cover.cropY}`}
+      className={`lx-media lx-home-concept-card__media lx-crop-x-${cover.cropX} lx-crop-y-${cover.cropY}`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- capa servida pelo próprio domínio (ADR-0015); Next/Image injeta estilo inline barrado pela CSP. */}
       <img
@@ -63,7 +63,7 @@ function Media({
   );
 }
 
-export function ConceptCard({
+export function HomeConceptCard({
   entry,
   featured,
   eager,
@@ -73,37 +73,43 @@ export function ConceptCard({
   readonly eager: boolean;
 }) {
   const eyebrow = cardEyebrow(entry);
-  const facts = factsLine(entry);
   return (
-    <article className={featured ? 'lx-concept-card lx-concept-card--featured' : 'lx-concept-card'}>
+    <article
+      className={
+        featured ? 'lx-home-concept-card lx-home-concept-card--featured' : 'lx-home-concept-card'
+      }
+    >
       <Media entry={entry} featured={featured} eager={eager} />
-      <div className="lx-concept-card__body">
+      <div className="lx-home-concept-card__body">
         {featured ? <p className="lx-eyebrow">{text.featured}</p> : null}
         {eyebrow === null ? null : <p className="lx-eyebrow">{eyebrow}</p>}
-        <h3 className="lx-display-m lx-concept-card__title">
-          <a className="lx-concept-card__link" href={discoveryPaths.concept(entry.id)}>
+        <h3 className="lx-display-m lx-home-concept-card__title">
+          <a className="lx-home-concept-card__link" href={discoveryPaths.homeConcept(entry.id)}>
             {entry.title}
           </a>
         </h3>
-        <p className="lx-concept-card__meta">
+        <p className="lx-home-concept-card__meta">
           {text.credit} {entry.brandName}
         </p>
-        {facts === null ? null : <p className="lx-concept-card__facts">{facts}</p>}
-        {entry.editions.length === 0 ? (
-          <p className="lx-concept-card__none">{text.none}</p>
+        {entry.homeEditions.length === 0 ? (
+          <p className="lx-home-concept-card__none">{text.none}</p>
         ) : (
-          <ul className="lx-concept-card__editions" aria-label={text.editionsLabel}>
-            {entry.editions.map((edition) => (
-              <li className="lx-concept-card__edition" key={edition.id}>
-                <span className="lx-concept-card__region">{edition.region}</span>
-                {editionLines(edition).map((line) => (
-                  <span key={line}>{line}</span>
-                ))}
-              </li>
-            ))}
+          <ul className="lx-home-concept-card__home-editions" aria-label={text.homeEditionsLabel}>
+            {entry.homeEditions.map((homeEdition) => {
+              const projected = projectedLine(homeEdition);
+              return (
+                <li className="lx-home-concept-card__home-edition" key={homeEdition.id}>
+                  <span className="lx-home-concept-card__home-edition-name">
+                    {homeEdition.name}
+                  </span>
+                  <span>{factsLine(homeEdition)}</span>
+                  {projected === null ? null : <span>{projected}</span>}
+                </li>
+              );
+            })}
           </ul>
         )}
-        <span className="lx-concept-card__cta" aria-hidden="true">
+        <span className="lx-home-concept-card__cta" aria-hidden="true">
           {text.cta}
           <Icon name="arrow-right" className="lx-link__icon" />
         </span>

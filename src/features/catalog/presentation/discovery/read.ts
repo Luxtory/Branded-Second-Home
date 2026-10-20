@@ -37,7 +37,7 @@ export async function readPublicCatalog<T>(
 
 /**
  * Disponibilidade para o CTA da Home e do Como funciona (D-B2C-16). As duas páginas não dependem do catálogo: qualquer
- * falha de leitura vira estado desconhecido (`null`) com log estruturado — nunca "sem Edition" nem "sem Concept"
+ * falha de leitura vira estado desconhecido (`null`) com log estruturado — nunca "sem Home Edition" nem "sem Home Concept"
  * (ADR-0014 §5).
  */
 export async function readAvailability(): Promise<PublicAvailability | null> {

@@ -421,7 +421,7 @@
     color: var(--lx-color-fg);
   }
 
-  /* Concept credit — Brand Partner slot, only with authorization; the partner mark is never recoloured. */
+  /* Home Concept credit — Brand Partner slot, only with authorization; the partner mark is never recoloured. */
   [data-lx="core"] .lx-credit {
     font-size: var(--lx-type-compact);
     color: var(--lx-color-fg-muted);

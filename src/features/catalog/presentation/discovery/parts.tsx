@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { Icon, type IconName } from '@/design-system/react';
-import type { EditionModality } from '../../domain/catalog';
 import { discoveryMessages as text, type ModalityPair } from '../i18n/discovery-pt-br';
 import { nb } from './no-break';
 
@@ -73,20 +72,6 @@ export function ActionLink({
       {label}
       <Icon name={icon} className={button ? 'lx-button__icon' : 'lx-link__icon'} />
     </a>
-  );
-}
-
-/** Modalidade da Edition; aberta às duas, Owner e Co-Owner com o mesmo peso (BR-032, REQ-103). */
-export function ModalityText({ value }: { readonly value: EditionModality }) {
-  const coOwner = <span className="lx-nowrap">{text.modality.co_owner}</span>;
-  if (value === 'owner') return text.modality.owner;
-  if (value === 'co_owner') return coOwner;
-  return (
-    <>
-      {text.modality.owner}
-      {text.modality.join}
-      {coOwner}
-    </>
   );
 }
 

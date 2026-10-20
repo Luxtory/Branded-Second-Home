@@ -23,7 +23,7 @@ test('the Lab preloads exactly the critical fonts of the manifest', () => {
 });
 
 test('the three R1 reference compositions exist', () => {
-  for (const id of ['composicao-opening', 'composicao-concept', 'composicao-interesse']) {
+  for (const id of ['composicao-opening', 'composicao-home-concept', 'composicao-interesse']) {
     assert.match(html, new RegExp(`id="${id}"`), id);
   }
 });

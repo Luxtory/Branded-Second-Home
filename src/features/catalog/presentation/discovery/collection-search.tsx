@@ -8,7 +8,7 @@ import { facetSummaries, RESULTS_ANCHOR } from './collection-labels';
 import { discoveryPaths } from './paths';
 
 /**
- * Discovery da Coleção (spec catalog §13.12): um formulário GET renderizado no servidor — funciona sem JS e gera uma
+ * Discovery da Coleção (spec catalog §13.12, §17.8): um formulário GET renderizado no servidor — funciona sem JS e gera uma
  * URL compartilhável. As facetas são `<details>` nativos; cada painel tem o seu "Aplicar". O celular usa os mesmos
  * campos num diálogo (formulário próprio, ver `collection-client.tsx`).
  */
@@ -132,20 +132,6 @@ function RadioFields({
   );
 }
 
-export function RegionFields({ prefix, query, facets, hideLegend = false }: FieldsProps) {
-  return (
-    <RadioFields
-      prefix={prefix}
-      legend={text.facets.region}
-      hideLegend={hideLegend}
-      name={P.region}
-      current={facets.regions.find((region) => region === query.region) ?? ''}
-      any={text.facets.allRegions}
-      options={facets.regions.map((region) => ({ value: region, label: region }))}
-    />
-  );
-}
-
 export function GuestsFields({ prefix, query, facets, hideLegend = false }: FieldsProps) {
   return (
     <RadioFields
@@ -163,12 +149,9 @@ export function GuestsFields({ prefix, query, facets, hideLegend = false }: Fiel
   );
 }
 
-const URL_BASIS = { owner: 'owner', acao: 'co-owner' } as const;
-
 /**
- * Faixa de valor em duas etapas (checkpoint A): 1) a base — Owner (a Second Home inteira) ou Co-Owner (uma Ação), com o
- * mesmo peso (REQ-103); 2) De/Até em reais, sugeridos pelos valores vigentes publicados. Só Concepts com Home Edition e
- * valor vigente na base entram (REQ-020).
+ * Média projetada de investimento (BR-034, spec §17.8): De/Até em reais, numa etapa só, sobre a média vigente das Home
+ * Editions publicadas — sem modalidade nem base. A sugestão mostra a menor e a maior média publicadas.
  */
 export function ValueFields({ prefix, query, facets, hideLegend = false }: FieldsProps) {
   const f = text.facets;
@@ -178,33 +161,7 @@ export function ValueFields({ prefix, query, facets, hideLegend = false }: Field
   return (
     <>
       <fieldset className="lx-facet__options">
-        <Legend hidden={false}>{f.valueStep1}</Legend>
-        {(['owner', 'acao'] as const)
-          .filter((basis) => facets.values.some((facet) => facet.basis === basis))
-          .map((basis) => {
-            const facet = facets.values.find((candidate) => candidate.basis === basis);
-            return (
-              <Check
-                key={basis}
-                id={`${prefix}-base-${basis}`}
-                type="radio"
-                name={P.basis}
-                value={URL_BASIS[basis]}
-                checked={range?.basis === basis}
-              >
-                {f.bases[basis].title}
-                <span className="lx-check__note">
-                  {f.bases[basis].text}
-                  {facet === undefined
-                    ? null
-                    : ` · ${f.valueSuggestion(formatMoney(facet.min, CURRENCY), formatMoney(facet.max, CURRENCY))}`}
-                </span>
-              </Check>
-            );
-          })}
-      </fieldset>
-      <fieldset className="lx-facet__options">
-        <Legend hidden={hideLegend}>{f.valueStep2}</Legend>
+        <Legend hidden={hideLegend}>{f.valueLegend}</Legend>
         <div className="lx-facet__range">
           <label htmlFor={`${prefix}-value-from`}>
             {f.valueFrom}
@@ -228,18 +185,20 @@ export function ValueFields({ prefix, query, facets, hideLegend = false }: Field
           </label>
         </div>
       </fieldset>
-      <p className="lx-facet__note">
-        {f.valueNote(
-          range === null
-            ? `${f.bases.owner.title}/${f.bases.acao.title}`
-            : f.bases[range.basis].title,
-        )}
-      </p>
+      {facets.value === null ? null : (
+        <p className="lx-facet__note">
+          {f.valueSuggestion(
+            formatMoney(facets.value.min, CURRENCY),
+            formatMoney(facets.value.max, CURRENCY),
+          )}
+        </p>
+      )}
+      <p className="lx-facet__note">{f.valueNote}</p>
     </>
   );
 }
 
-/** "Mais filtros": suítes, área, modalidade disponível, só com Home Edition, Brand Partner — só os que existem. */
+/** "Mais filtros": suítes, área, só com Home Edition, Brand Partner — só os que existem. */
 export function MoreFields({ prefix, query, facets }: FieldsProps) {
   const f = text.facets;
   return (
@@ -284,29 +243,15 @@ export function MoreFields({ prefix, query, facets }: FieldsProps) {
           </div>
         </fieldset>
       )}
-      {facets.modalities.length === 0 ? null : (
-        <RadioFields
-          prefix={prefix}
-          legend={f.modality}
-          hideLegend={false}
-          name={P.modality}
-          current={query.modality === 'co_owner' ? 'co-owner' : (query.modality ?? '')}
-          any={f.anyModality}
-          options={facets.modalities.map((modality) => ({
-            value: modality === 'co_owner' ? 'co-owner' : 'owner',
-            label: f.modalities[modality],
-          }))}
-        />
-      )}
-      {facets.withEdition ? (
+      {facets.withHomeEdition ? (
         <Check
-          id={`${prefix}-with-edition`}
+          id={`${prefix}-with-home-edition`}
           type="checkbox"
-          name={P.withEdition}
+          name={P.withHomeEdition}
           value="1"
-          checked={query.withEdition}
+          checked={query.withHomeEdition}
         >
-          {f.withEdition}
+          {f.withHomeEdition}
         </Check>
       ) : null}
       {facets.brands.length === 0 ? null : (
@@ -329,8 +274,7 @@ function advancedCount(query: CollectionQuery): number {
   return [
     query.suites !== null,
     query.areaMin !== null || query.areaMax !== null,
-    query.modality !== null,
-    query.withEdition,
+    query.withHomeEdition,
     query.brand !== null,
   ].filter(Boolean).length;
 }
@@ -339,8 +283,7 @@ function advancedCount(query: CollectionQuery): number {
 export const hasMoreFilters = (facets: CollectionFacets) =>
   facets.suites.length > 0 ||
   facets.area !== null ||
-  facets.modalities.length > 0 ||
-  facets.withEdition ||
+  facets.withHomeEdition ||
   facets.brands.length > 0;
 
 /**
@@ -422,22 +365,6 @@ function Facets({
       ),
     });
   }
-  if (facets.regions.length > 0) {
-    items.push({
-      key: 'region',
-      node: (end) => (
-        <Facet
-          label={f.region}
-          value={summary.region}
-          count={one(query.region !== null)}
-          compact={compact}
-          end={end}
-        >
-          <RegionFields {...fields} />
-        </Facet>
-      ),
-    });
-  }
   if (facets.styles.length > 0) {
     items.push({
       key: 'style',
@@ -470,7 +397,7 @@ function Facets({
       ),
     });
   }
-  if (facets.values.length > 0) {
+  if (facets.value !== null) {
     items.push({
       key: 'value',
       node: (end) => (

@@ -1,12 +1,14 @@
-/** Rotas do Discovery público (docs/specs/catalog.md §13.1). Âncoras dos dois grupos da Coleção (§13.4). */
+/** Rotas do Discovery público (docs/specs/catalog.md §13.1, §17.8). Âncoras dos dois grupos da Coleção (§13.4). */
 export const discoveryPaths = {
   home: '/',
   about: '/sobre',
   howItWorks: '/como-funciona',
   collection: '/colecao',
-  concept: (conceptId: string) => `/colecao/${conceptId}`,
-  editionsAnchor: 'home-editions',
-  conceptsAnchor: 'home-concepts',
+  homeConcept: (homeConceptId: string) => `/colecao/${homeConceptId}`,
+  homeEdition: (homeConceptId: string, homeEditionId: string) =>
+    `/colecao/${homeConceptId}/home-editions/${homeEditionId}`,
+  homeEditionsAnchor: 'home-editions',
+  homeConceptsAnchor: 'home-concepts',
 } as const;
 
 /**

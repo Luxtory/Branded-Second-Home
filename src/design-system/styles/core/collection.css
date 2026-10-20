@@ -1,6 +1,6 @@
-/* Coleção (spec catalog §13.12, CP-Coleção) — consumer-driven complements of the Core for the curated discovery:
- * Discovery bar (one GET form; native <details> facets, no JS needed), active-filter chips and sort, Concept cards with
- * their Home Editions inside, the journey steps and the full-screen filters dialog on phones. Tokens only. */
+/* Coleção (spec catalog §13.12, §17.8, CP-Coleção) — consumer-driven complements of the Core for the curated discovery:
+ * Discovery bar (one GET form; native <details> facets, no JS needed), active-filter chips and sort, Home Concept cards
+ * with their Home Editions inside, the journey steps and the full-screen filters dialog on phones. Tokens only. */
 @layer lx.components {
   /* ── Discovery bar ─────────────────────────────────────────────────────────────────────────────────────────── */
   /* White controls inside the blue Hero: native checkboxes and radios follow the white surface, not the dark one. */
@@ -420,26 +420,28 @@
     text-decoration: none;
   }
 
-  /* ── Group of Concepts ("Com Home Edition" / "Ainda sem Home Edition"). ─────────────────────────────── */
-  [data-lx="core"] .lx-concept-group {
+  /* ── Group of Home Concepts ("Com Home Edition" / "Ainda sem Home Edition"). ─────────────────────────────── */
+  [data-lx="core"] .lx-home-concept-group {
     display: grid;
     gap: var(--lx-space-8);
   }
-  [data-lx="core"] :is(.lx-results-head, .lx-concept-group) + .lx-concept-group {
+  [data-lx="core"] :is(.lx-results-head, .lx-home-concept-group) + .lx-home-concept-group {
     margin-top: var(--lx-space-12);
   }
-  [data-lx="core"] .lx-concept-group__head {
+  [data-lx="core"] .lx-home-concept-group__head {
     display: grid;
     gap: var(--lx-space-2);
     padding-top: var(--lx-space-6);
     border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
   }
-  [data-lx="core"] .lx-concept-group__head > * {
+  [data-lx="core"] .lx-home-concept-group__head > * {
     max-width: var(--lx-layout-measure);
   }
 
-  /* ── Concept grid: uniform (4/12 · 6/12 · 12/12); the featured Concept spans the 12 columns. ─────────── */
-  [data-lx="core"] .lx-concept-grid {
+  /* ── Home Concept grid: uniform (4/12 · 6/12 · 12/12); the featured Home Concept spans the 12 columns. The Home
+   * Edition grid (Home Concept page) is the same grid, without a featured card. ─────────────────────────────── */
+  [data-lx="core"] .lx-home-concept-grid,
+  [data-lx="core"] .lx-home-edition-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--lx-space-12) var(--lx-layout-gutter);
@@ -447,27 +449,32 @@
     padding: 0;
     list-style: none;
   }
-  [data-lx="core"] .lx-concept-grid > li {
+  [data-lx="core"] .lx-home-concept-grid > li,
+  [data-lx="core"] .lx-home-edition-grid > li {
     display: flex;
     min-width: 0;
   }
   @media (min-width: 48rem) {
-    [data-lx="core"] .lx-concept-grid {
+    [data-lx="core"] .lx-home-concept-grid,
+    [data-lx="core"] .lx-home-edition-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       row-gap: var(--lx-space-16);
     }
-    [data-lx="core"] .lx-concept-grid > li:has(> .lx-concept-card--featured) {
+    [data-lx="core"] .lx-home-concept-grid > li:has(> .lx-home-concept-card--featured) {
       grid-column: 1 / -1;
     }
   }
   @media (min-width: 64rem) {
-    [data-lx="core"] .lx-concept-grid {
+    [data-lx="core"] .lx-home-concept-grid,
+    [data-lx="core"] .lx-home-edition-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 
-  /* ── Concept card: the Concept is the unit; its Editions inside; the whole card is the target. ─────────── */
-  [data-lx="core"] .lx-concept-card {
+  /* ── Home Concept card: the Home Concept is the unit; its Home Editions inside; the whole card is the target. The
+   * Home Edition card (Home Concept page) shares the same card: media, name, facts, projected investment, cue. ── */
+  [data-lx="core"] .lx-home-concept-card,
+  [data-lx="core"] .lx-home-edition-card {
     position: relative;
     display: flex;
     flex: 1;
@@ -475,21 +482,25 @@
     gap: var(--lx-space-6);
     min-width: 0;
   }
-  [data-lx="core"] .lx-concept-card:has(.lx-concept-card__link:focus-visible) {
+  [data-lx="core"] .lx-home-concept-card:has(.lx-home-concept-card__link:focus-visible),
+  [data-lx="core"] .lx-home-edition-card:has(.lx-home-edition-card__link:focus-visible) {
     outline: var(--lx-focus-width) solid var(--lx-color-focus);
     outline-offset: var(--lx-focus-ring-offset);
   }
   /* Phone 4:3 keeps discovery visual without a long Coleção; 4:5 from md (checkpoint A, item 8). */
-  [data-lx="core"] .lx-concept-card__media {
+  [data-lx="core"] .lx-home-concept-card__media,
+  [data-lx="core"] .lx-home-edition-card__media {
     aspect-ratio: var(--lx-ratio-media-md);
   }
-  [data-lx="core"] .lx-concept-card__media--type {
+  [data-lx="core"] .lx-home-concept-card__media--type,
+  [data-lx="core"] .lx-home-edition-card__media--type {
     display: grid;
     align-content: end;
     padding: var(--lx-space-8);
     background-color: var(--lx-color-bg);
   }
-  [data-lx="core"] .lx-concept-card__word {
+  [data-lx="core"] .lx-home-concept-card__word,
+  [data-lx="core"] .lx-home-edition-card__word {
     color: var(--lx-color-headline);
     font-family: var(--lx-font-display);
     font-size: var(--lx-type-headline);
@@ -497,46 +508,54 @@
     line-height: var(--lx-leading-heading);
     overflow-wrap: anywhere;
   }
-  [data-lx="core"] .lx-concept-card__body {
+  [data-lx="core"] .lx-home-concept-card__body,
+  [data-lx="core"] .lx-home-edition-card__body {
     display: flex;
     flex: 1;
     flex-direction: column;
     gap: var(--lx-space-3);
   }
-  [data-lx="core"] .lx-concept-card__title {
+  [data-lx="core"] .lx-home-concept-card__title,
+  [data-lx="core"] .lx-home-edition-card__title {
     margin: 0;
   }
-  [data-lx="core"] .lx-concept-card__link {
+  [data-lx="core"] .lx-home-concept-card__link,
+  [data-lx="core"] .lx-home-edition-card__link {
     color: inherit;
     text-decoration: none;
   }
-  [data-lx="core"] .lx-concept-card__link:focus-visible {
+  [data-lx="core"] .lx-home-concept-card__link:focus-visible,
+  [data-lx="core"] .lx-home-edition-card__link:focus-visible {
     outline: none;
   }
-  [data-lx="core"] .lx-concept-card__link::after {
+  [data-lx="core"] .lx-home-concept-card__link::after,
+  [data-lx="core"] .lx-home-edition-card__link::after {
     content: "";
     position: absolute;
     inset: 0;
     z-index: var(--lx-z-raised);
   }
-  [data-lx="core"] .lx-concept-card__meta,
-  [data-lx="core"] .lx-concept-card__facts {
+  [data-lx="core"] .lx-home-concept-card__meta,
+  [data-lx="core"] .lx-home-concept-card__facts,
+  [data-lx="core"] .lx-home-edition-card__facts {
     margin: 0;
     font-size: var(--lx-type-compact);
     line-height: var(--lx-leading-compact);
   }
-  [data-lx="core"] .lx-concept-card__facts {
+  [data-lx="core"] .lx-home-concept-card__facts,
+  [data-lx="core"] .lx-home-edition-card__facts {
     font-variant-numeric: tabular-nums;
   }
-  /* Each Edition is a plain editorial block: the region, then one line per basis; a hairline between Editions. */
-  [data-lx="core"] .lx-concept-card__editions {
+  /* Each Home Edition is a plain editorial block: its name, then its facts and projected investment; a hairline
+   * between Home Editions. */
+  [data-lx="core"] .lx-home-concept-card__home-editions {
     display: grid;
     margin: 0;
     padding: 0;
     border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
     list-style: none;
   }
-  [data-lx="core"] .lx-concept-card__edition {
+  [data-lx="core"] .lx-home-concept-card__home-edition {
     display: grid;
     gap: var(--lx-space-1);
     padding-block: var(--lx-space-3);
@@ -544,14 +563,14 @@
     line-height: var(--lx-leading-compact);
     font-variant-numeric: tabular-nums;
   }
-  [data-lx="core"] .lx-concept-card__edition + .lx-concept-card__edition {
+  [data-lx="core"] .lx-home-concept-card__home-edition + .lx-home-concept-card__home-edition {
     border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
   }
-  [data-lx="core"] .lx-concept-card__region {
+  [data-lx="core"] .lx-home-concept-card__home-edition-name {
     font-size: var(--lx-type-body);
     font-weight: var(--lx-weight-medium);
   }
-  [data-lx="core"] .lx-concept-card__none {
+  [data-lx="core"] .lx-home-concept-card__none {
     margin: 0;
     padding-block: var(--lx-space-3);
     border-block: var(--lx-border-hairline) solid var(--lx-color-rule);
@@ -559,7 +578,8 @@
     line-height: var(--lx-leading-compact);
   }
   /* The cue sits at the foot of every card, aligned across the row (checkpoint A, item 6). */
-  [data-lx="core"] .lx-concept-card__cta {
+  [data-lx="core"] .lx-home-concept-card__cta,
+  [data-lx="core"] .lx-home-edition-card__cta {
     display: inline-flex;
     gap: var(--lx-space-2);
     align-items: center;
@@ -572,26 +592,67 @@
     text-underline-offset: 0.25em;
   }
   @media (min-width: 48rem) {
-    [data-lx="core"] .lx-concept-card__media {
+    [data-lx="core"] .lx-home-concept-card__media,
+    [data-lx="core"] .lx-home-edition-card__media {
       aspect-ratio: var(--lx-ratio-detail);
     }
-    [data-lx="core"] .lx-concept-card--featured .lx-concept-card__media {
+    [data-lx="core"] .lx-home-concept-card--featured .lx-home-concept-card__media {
       aspect-ratio: var(--lx-ratio-media-lg);
     }
   }
-  /* Featured Concept: an Editorial Split across the 12 columns (image 3:2 + text). */
+  /* Featured Home Concept: an Editorial Split across the 12 columns (image 3:2 + text). */
   @media (min-width: 64rem) {
-    [data-lx="core"] .lx-concept-card--featured {
+    [data-lx="core"] .lx-home-concept-card--featured {
       display: grid;
       grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
       gap: var(--lx-layout-gutter);
       align-items: center;
     }
-    [data-lx="core"] .lx-concept-card--featured .lx-concept-card__body {
+    [data-lx="core"] .lx-home-concept-card--featured .lx-home-concept-card__body {
       padding-inline-start: var(--lx-layout-gutter);
     }
-    [data-lx="core"] .lx-concept-card--featured .lx-concept-card__title {
+    [data-lx="core"] .lx-home-concept-card--featured .lx-home-concept-card__title {
       font-size: var(--lx-type-headline);
+    }
+  }
+
+  /* ── Home Edition page (spec catalog §17.8): main image in the opening, gallery of images and renders, floor plans
+   * whole (never cropped) on a quiet ground. ─────────────────────────────────────────────────────────────────── */
+  [data-lx="core"] .lx-home-edition-opening__media {
+    aspect-ratio: var(--lx-ratio-media-md);
+  }
+  [data-lx="core"] .lx-home-edition-gallery {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--lx-space-8) var(--lx-layout-gutter);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  [data-lx="core"] .lx-home-edition-gallery__item {
+    display: grid;
+    gap: var(--lx-space-2);
+    margin: 0;
+  }
+  [data-lx="core"] .lx-home-edition-gallery__media {
+    aspect-ratio: var(--lx-ratio-media-md);
+  }
+  [data-lx="core"] .lx-home-edition-gallery__media--plan > img {
+    object-fit: contain;
+  }
+  [data-lx="core"] .lx-home-edition-gallery__credit {
+    margin: 0;
+    font-size: var(--lx-type-compact);
+    line-height: var(--lx-leading-compact);
+  }
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-home-edition-gallery {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-home-edition-gallery {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 

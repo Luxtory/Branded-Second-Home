@@ -20,7 +20,7 @@ import {
 import type { PublicCollectionEntry } from '../../application/collection-views';
 import { postgresPublicCollectionReader as reader } from '../../infrastructure/postgres-public-collection-reader';
 import { discoveryMessages } from '../i18n/discovery-pt-br';
-import { ConceptCard } from './collection-card';
+import { HomeConceptCard } from './collection-card';
 import { FiltersDialog, FiltersTrigger, StickyDiscovery } from './collection-client';
 import {
   activeChips,
@@ -35,7 +35,6 @@ import {
   hasMoreFilters,
   LifestyleFields,
   MoreFields,
-  RegionFields,
   StyleFields,
   ValueFields,
 } from './collection-search';
@@ -45,9 +44,9 @@ import { readPublicCatalog } from './read';
 import { DiscoverySite } from './site';
 
 /**
- * Coleção `/colecao` (spec catalog §13.12, D-B2C-21): discovery curatorial — Hero tipográfico com a busca como
- * protagonista, resultados em dois grupos (com e ainda sem Home Edition; com Localização, na região e "outros que
- * combinam"), a cadeia do Concept à Second Home e o fechamento. Busca, filtros e ordem no servidor; URL compartilhável.
+ * Coleção `/colecao` (spec catalog §13.12, §17.8; D-B2C-21, D-B2C-27): discovery curatorial — Hero tipográfico com a
+ * busca como protagonista, resultados em dois grupos (com e ainda sem Home Edition), a cadeia do Home Concept à Second
+ * Home e o fechamento. Busca, filtros e ordem no servidor; URL compartilhável.
  */
 const text = discoveryMessages.collection;
 const FORM_ID = DISCOVERY_ANCHOR;
@@ -66,7 +65,7 @@ function canonicalRedirect(params: SearchParams, query: CollectionQuery): string
   return received.toString() === canonical.toString() ? null : collectionHref(query, null);
 }
 
-function ConceptList({
+function HomeConceptList({
   label,
   entries,
   featuredId,
@@ -78,10 +77,10 @@ function ConceptList({
   readonly eager: number;
 }) {
   return (
-    <ul className="lx-concept-grid" aria-label={label}>
+    <ul className="lx-home-concept-grid" aria-label={label}>
       {entries.map((entry, index) => (
         <li key={entry.id}>
-          <ConceptCard entry={entry} featured={entry.id === featuredId} eager={index < eager} />
+          <HomeConceptCard entry={entry} featured={entry.id === featuredId} eager={index < eager} />
         </li>
       ))}
     </ul>
@@ -91,7 +90,6 @@ function ConceptList({
 function Group({
   id,
   title,
-  lead,
   label,
   entries,
   featuredId,
@@ -99,7 +97,6 @@ function Group({
 }: {
   readonly id: string;
   readonly title: string;
-  readonly lead: string;
   readonly label: string;
   readonly entries: readonly PublicCollectionEntry[];
   readonly featuredId: string | null;
@@ -107,19 +104,18 @@ function Group({
 }) {
   if (entries.length === 0) return null;
   return (
-    <section className="lx-concept-group" id={id} aria-labelledby={`${id}-titulo`}>
-      <div className="lx-concept-group__head">
+    <section className="lx-home-concept-group" id={id} aria-labelledby={`${id}-titulo`}>
+      <div className="lx-home-concept-group__head">
         <h3 className="lx-display-s" id={`${id}-titulo`}>
           {title}
         </h3>
-        <p className="lx-body">{lead}</p>
       </div>
-      <ConceptList label={label} entries={entries} featuredId={featuredId} eager={eager} />
+      <HomeConceptList label={label} entries={entries} featuredId={featuredId} eager={eager} />
     </section>
   );
 }
 
-/** Os dois grupos: sem região, com e ainda sem Home Edition; com região, nela e "outros que combinam" (REQ-020/022). */
+/** Os dois grupos: com e ainda sem Home Edition publicada (REQ-020, REQ-022). */
 function Groups({
   groups,
   featuredId,
@@ -128,55 +124,34 @@ function Groups({
   readonly featuredId: string | null;
 }) {
   const g = text.groups;
-  const first = groups.kind === 'catalog' ? groups.withEdition : groups.inRegion;
-  const eagerSecond = Math.max(0, EAGER_IMAGES - first.length);
-  if (groups.kind === 'region') {
-    return (
-      <>
-        <Group
-          id={discoveryPaths.editionsAnchor}
-          title={g.inRegion.title(groups.region)}
-          lead={g.inRegion.text}
-          label={g.inRegion.listLabel(groups.region)}
-          entries={groups.inRegion}
-          featuredId={featuredId}
-          eager={EAGER_IMAGES}
-        />
-        <Group
-          id={discoveryPaths.conceptsAnchor}
-          title={g.others.title}
-          lead={g.others.text(groups.region)}
-          label={g.others.listLabel}
-          entries={groups.others}
-          featuredId={featuredId}
-          eager={eagerSecond}
-        />
-      </>
-    );
-  }
+  const eagerSecond = Math.max(0, EAGER_IMAGES - groups.withHomeEdition.length);
   return (
     <>
       <Group
-        id={discoveryPaths.editionsAnchor}
-        title={g.editions.title}
-        lead={g.editions.text}
-        label={g.editions.listLabel}
-        entries={groups.withEdition}
+        id={discoveryPaths.homeEditionsAnchor}
+        title={g.homeEditions.title}
+        label={g.homeEditions.listLabel}
+        entries={groups.withHomeEdition}
         featuredId={featuredId}
         eager={EAGER_IMAGES}
       />
       <Group
-        id={discoveryPaths.conceptsAnchor}
-        title={g.concepts.title}
-        lead={g.concepts.text}
-        label={g.concepts.listLabel}
-        entries={groups.withoutEdition}
+        id={discoveryPaths.homeConceptsAnchor}
+        title={g.homeConcepts.title}
+        label={g.homeConcepts.listLabel}
+        entries={groups.withoutHomeEdition}
         featuredId={featuredId}
         eager={eagerSecond}
       />
     </>
   );
 }
+
+/** Algum card mostra uma média projetada? Então a explicação obrigatória acompanha (BR-034, spec §17.4). */
+const showsProjectedInvestment = (groups: CollectionGroups) =>
+  groups.withHomeEdition.some((entry) =>
+    entry.homeEditions.some((homeEdition) => homeEdition.projectedInvestment !== null),
+  );
 
 function SortLinks({ query }: { readonly query: CollectionQuery }) {
   return (
@@ -214,7 +189,6 @@ function ResultsHead({
 }) {
   const r = text.results;
   const chips = activeChips(query, facets);
-  const basis = query.value === null ? null : text.facets.bases[query.value.basis].title;
   return (
     <div className="lx-results-head">
       {filtered ? null : <p className="lx-eyebrow">{r.eyebrow}</p>}
@@ -240,14 +214,14 @@ function ResultsHead({
       )}
       <p className="lx-body" role="status">
         {filtered ? r.count(total) : null}
-        {basis === null ? null : ` ${text.facets.valueNote(basis)}`}
+        {query.value === null ? null : ` ${text.facets.valueNote}`}
       </p>
       <SortLinks query={query} />
     </div>
   );
 }
 
-/** Grupo do diálogo com o nome que a faceta tem no desktop ("Faixa de valor", "Mais filtros"): paridade de rótulos. */
+/** Grupo do diálogo com o nome que a faceta tem no desktop ("Média projetada", "Mais filtros"): paridade de rótulos. */
 function DialogGroup({
   id,
   title,
@@ -304,14 +278,13 @@ function MobileFilters({
       }
     >
       {facets.lifestyles.length > 0 ? <LifestyleFields {...fields} /> : null}
-      {facets.regions.length > 0 ? <RegionFields {...fields} /> : null}
       {facets.styles.length > 0 ? <StyleFields {...fields} /> : null}
       {facets.guests.length > 0 ? <GuestsFields {...fields} /> : null}
-      {facets.values.length > 0 ? (
+      {facets.value === null ? null : (
         <DialogGroup id={`${DIALOG_ID}-valor`} title={text.facets.value}>
           <ValueFields {...fields} />
         </DialogGroup>
-      ) : null}
+      )}
       {hasMoreFilters(facets) ? (
         <DialogGroup id={`${DIALOG_ID}-mais`} title={text.search.more}>
           <MoreFields {...fields} />
@@ -323,10 +296,9 @@ function MobileFilters({
 
 const hasFacets = (facets: CollectionFacets) =>
   facets.lifestyles.length > 0 ||
-  facets.regions.length > 0 ||
   facets.styles.length > 0 ||
   facets.guests.length > 0 ||
-  facets.values.length > 0 ||
+  facets.value !== null ||
   hasMoreFilters(facets);
 
 function Hero({ bar }: { readonly bar: ReactNode }) {
@@ -499,7 +471,12 @@ export async function CollectionPage({ searchParams }: { readonly searchParams: 
               </a>
             </div>
           ) : (
-            <Groups groups={discovery.groups} featuredId={discovery.featuredId} />
+            <>
+              <Groups groups={discovery.groups} featuredId={discovery.featuredId} />
+              {showsProjectedInvestment(discovery.groups) ? (
+                <p className="lx-small">{text.projectedNote}</p>
+              ) : null}
+            </>
           )}
         </div>
       </section>

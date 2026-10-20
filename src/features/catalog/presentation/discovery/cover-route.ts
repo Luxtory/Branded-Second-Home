@@ -11,14 +11,15 @@ import {
   type RouteContext,
 } from '@/features/platform';
 import type { MediaStorage } from '../../application/ports';
-import { DISPLAY_WIDTHS } from '../../domain/collection';
+import { DISPLAY_WIDTHS, type MediaOwner } from '../../domain/collection';
 import { MediaStorageError, runtimeMediaStorage } from '../../infrastructure/media-storage';
 import { postgresPublicCollectionReader } from '../../infrastructure/postgres-public-collection-reader';
 
 /**
- * GET /media/concept-covers/{id}/{width} (OpenAPI `getConceptCover`, ADR-0015): uma largura de exibição da capa
- * aprovada de Concept público. A visibilidade vem da RLS (`anon`); o objeto, do Storage privado. Qualquer outra →
- * 404 sem motivo. O conteúdo de um id e largura nunca muda (ETag forte); `no-cache` faz o navegador revalidar a cada
+ * GET /media/home-concept-covers/{id}/{width} (OpenAPI `getHomeConceptCover`, ADR-0015) e
+ * GET /media/home-edition-media/{id}/{width} (`getHomeEditionMedia`, spec catalog §17.7): uma largura de exibição da
+ * capa aprovada de Home Concept público ou da mídia aprovada de Home Edition pública. A visibilidade vem da RLS
+ * (`anon`); o objeto, do Storage privado. Qualquer outra → 404 sem motivo. O conteúdo de um id e largura nunca muda (ETag forte); `no-cache` faz o navegador revalidar a cada
  * uso — a revalidação só consulta o banco — e a retirada vale na próxima requisição (ADR-0014 §8).
  */
 const CACHE_CONTROL = 'public, no-cache';
@@ -31,6 +32,8 @@ export interface CoverRouteParams {
 }
 
 export interface CoverRouteDependencies {
+  /** Dono da mídia: capa do Home Concept (padrão) ou mídia da Home Edition. */
+  readonly owner?: MediaOwner;
   readonly database?: () => Database;
   readonly storage?: MediaStorage;
   readonly isOpen?: () => boolean;
@@ -55,11 +58,14 @@ function matches(header: string | null, etag: string): boolean {
 const UNAVAILABLE = Symbol('unavailable');
 
 export function createCoverRoute({
+  owner = 'homeConcept',
   database = getDatabase,
   storage = runtimeMediaStorage,
   isOpen = isPublicSiteOpen,
 }: CoverRouteDependencies = {}) {
   const reader = postgresPublicCollectionReader;
+  const renditionOf =
+    owner === 'homeConcept' ? reader.coverRendition : reader.homeEditionMediaRendition;
 
   /** Configuração ausente, serviço recusado no ambiente ou Storage fora → indisponível (TECH-001). */
   async function guarded<T>(
@@ -92,7 +98,7 @@ export function createCoverRoute({
     if (!isOpen() || !mediaId.safeParse(params.id).success || width === null) {
       return errorResponse('ERR_NOT_FOUND', correlationId);
     }
-    const read = (tx: DatabaseTransaction) => reader.coverRendition(tx, params.id, width);
+    const read = (tx: DatabaseTransaction) => renditionOf(tx, params.id, width);
     const rendition = await guarded(log, () => withPublicRead(database(), read));
     if (rendition === UNAVAILABLE) return errorResponse('ERR_UNAVAILABLE', correlationId);
     if (rendition === null) return errorResponse('ERR_NOT_FOUND', correlationId);
@@ -114,4 +120,5 @@ export function createCoverRoute({
   };
 }
 
-export const getConceptCover = withRoute(createCoverRoute());
+export const getHomeConceptCover = withRoute(createCoverRoute());
+export const getHomeEditionMedia = withRoute(createCoverRoute({ owner: 'homeEdition' }));
