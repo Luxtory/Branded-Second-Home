@@ -1589,8 +1589,10 @@ comerciais por Edition.
   Owner/Ação e "sem oferta comercial".
 - Grupos: "Com Home Edition" (`#home-editions`) e "Ainda sem Home Edition" (`#home-concepts`), sem os subtítulos que
   falavam de região, modalidade, condições e de interesse no Concept.
-- Filtros: Lifestyle · Estilo · Pessoas · Média projetada (De/Até, uma etapa, sobre a média vigente das Home Editions;
-  aplicada, a interface diz "Considera só Home Editions com média projetada vigente") · Suítes · Área · Só com Home
+- Filtros: Lifestyle · Estilo · Pessoas · **Investimento projetado** (rótulo aprovado no checkpoint visual de
+  2026-10-20; por dentro, "Média projetada de investimento (R$)" e De/Até, uma etapa, sobre a média vigente das Home
+  Editions; chip "Investimento projetado: …"; aplicada, a interface diz "Considera só Home Editions com média projetada
+  vigente") · Suítes · Área · Só com Home
   Edition · Brand Partner. Saem Localização, modalidade disponível e a base da faixa de valor, e os grupos por região.
   Pessoas, Suítes e Área passam a valer pelas Home Editions publicadas do Home Concept. Parâmetros da URL: saem
   `regiao`, `base` e `modalidade`; `com-edition` passa a `com-home-edition`; os demais continuam.
@@ -1610,8 +1612,13 @@ Home no lugar de Residence, "Brand DNA" → identidade da marca); estrutura, lay
 
 Copy vigente com as substituições de `D-BP-28` e `D-LX-11`: CTA "Explore o potencial da sua marca em Second Homes.";
 "identidade da marca" no lugar de "Brand DNA"; Second Home(s) no lugar de residência(s) quando nomeia o produto
-(inclusive em `D-BP-21` e `D-BP-24`). A página Sobre segue a mesma regra. Nenhuma outra afirmação, estrutura ou layout
-muda.
+(inclusive em `D-BP-21` e `D-BP-24`). A página Sobre segue a mesma regra. Complemento do checkpoint de 2026-10-20
+(`D-BP-28`): o mecanismo ("Como acontece") e o Percurso seguem identidade da marca → Home Concept → **criar a Home
+Edition** → **apresentar e validar a demanda** sobre ela (localização pretendida e Owner ou Co-Owner indicados pelo
+interessado; manifestação não é aquisição) → **estruturar cada Second Home** (localização concreta, modalidade,
+estrutura patrimonial, condições) → Design & Build → operação; nenhuma copy atribui modalidade à Home Edition; "DNA" não
+nomeia a identidade da marca. Regressões em `tests/communication-ontology.test.ts`. Nenhuma outra afirmação, estrutura
+ou layout muda.
 
 ### 17.10 Consultas a outros módulos (substitui a §16)
 

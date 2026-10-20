@@ -129,7 +129,10 @@ describe('Coleção — rótulos', () => {
       activeChips(query, facets).map((chip) => [chip.label.replace(/\s/g, ' '), chip.href]),
     ).toEqual([
       ['Natureza', '/colecao?valor-de=6000000&valor-ate=10000000#resultados'],
-      ['Média projetada: R$ 6.000.000 a R$ 10.000.000', '/colecao?lifestyle=natureza#resultados'],
+      [
+        'Investimento projetado: R$ 6.000.000 a R$ 10.000.000',
+        '/colecao?lifestyle=natureza#resultados',
+      ],
     ]);
     expect(collectionHref(parseCollectionQuery({}), null)).toBe('/colecao');
   });

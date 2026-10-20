@@ -421,7 +421,7 @@ export const discoveryMessages = {
           question: 'Qual é a diferença entre Owner e Co-Owner?',
           answer: [
             'No Owner, você possui integralmente a Second Home.',
-            'Você adquire uma Ação da SPE, a empresa proprietária do imóvel, com Direito de Uso correspondente à sua participação.',
+            'No Co-Owner, você adquire uma Ação da SPE proprietária da Second Home, com Direito de Uso correspondente à sua participação.',
           ],
         },
         {
@@ -865,9 +865,9 @@ export const discoveryMessages = {
       lifestyle: 'Lifestyle',
       style: 'Estilo',
       guests: 'Pessoas',
-      // Microcopy provisória do filtro (spec §17.8): decidida no checkpoint visual da W4.2.
-      value: 'Média projetada',
-      valueShort: 'Média projetada',
+      // Rótulo do filtro aprovado no checkpoint visual da W4.2 (2026-10-20); por dentro, o nome canônico (BR-034).
+      value: 'Investimento projetado',
+      valueShort: 'Investimento projetado',
       suites: 'Suítes',
       area: 'Área (m²)',
       withHomeEdition: 'Só com Home Edition',
@@ -891,7 +891,7 @@ export const discoveryMessages = {
       rangeBetween: (min: string, max: string) => `${min} a ${max}`,
       rangeFrom: (min: string) => `a partir de ${min}`,
       rangeUpTo: (max: string) => `até ${max}`,
-      valueChip: (span: string) => `Média projetada: ${span}`,
+      valueChip: (span: string) => `Investimento projetado: ${span}`,
       suitesChip: (n: number) => `Suítes: pelo menos ${n}`,
       areaChip: (min: string, max: string) => `Área: ${min}–${max} m²`,
       quoted: (value: string) => `“${value}”`,

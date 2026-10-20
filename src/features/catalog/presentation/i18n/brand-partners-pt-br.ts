@@ -185,16 +185,16 @@ export const brandPartnersMessages = {
             ],
           },
           {
-            title: 'Interesse antes do lançamento',
+            title: 'Demanda antes da estruturação',
             text: [
-              'A marca apresenta a possibilidade à sua comunidade, e o interesse pode ser conhecido antes de um lançamento.',
+              'A marca apresenta a Home Edition à sua comunidade, e o interesse pode ser conhecido antes de estruturar cada Second Home.',
               'Manifestar interesse não é aquisição.',
             ],
           },
           {
             title: 'Expansão quando fizer sentido',
             text: [
-              'Um Home Concept pode originar lançamentos em outras regiões, quando direitos, estratégia, demanda e viabilidade permitirem.',
+              'Um Home Concept pode originar novas Home Editions e Second Homes em outras localizações, quando direitos, estratégia, demanda e viabilidade permitirem.',
             ],
           },
         ],
@@ -251,23 +251,24 @@ export const brandPartnersMessages = {
           ],
         },
         {
-          title: 'Ouvir a comunidade.',
+          title: 'Criar a Home Edition.',
           text: [
-            'A marca apresenta a possibilidade principalmente por seus próprios canais.',
-            'A Luxtory conversa com os interessados e organiza os próximos passos.',
-            'O interesse ajuda a avaliar a oportunidade, mas não é aquisição nem determina um lançamento.',
+            'A Luxtory transforma o Home Concept em uma **Home Edition**: uma configuração específica e replicável de Second Home.',
           ],
         },
         {
-          title: 'Lançar uma Home Edition.',
+          title: 'Apresentar e validar a demanda.',
           text: [
-            'Quando identifica a oportunidade e decide lançar, a Luxtory cria a **Home Edition**: uma configuração específica e replicável de Second Home, derivada do Home Concept. Cada Second Home é estruturada para uma localização concreta, com condições comerciais próprias.',
+            'A marca apresenta a Home Edition principalmente por seus próprios canais.',
+            'A Luxtory conversa com os interessados, que indicam onde gostariam de ter aquela Home Edition e se seu interesse é Owner ou Co-Owner.',
+            'A manifestação ajuda a avaliar a oportunidade, mas não constitui aquisição.',
           ],
         },
         {
-          title: 'Owner ou Co-Owner.',
+          title: 'Estruturar cada Second Home.',
           text: [
-            'Cada Second Home é oferecida nas modalidades autorizadas pela Luxtory. Os direitos de cada pessoa nascem da formalização da aquisição.',
+            'Quando demanda e viabilidade justificam avançar, a Luxtory estrutura uma Second Home para uma localização concreta, definindo sua modalidade, estrutura patrimonial e condições comerciais.',
+            'Os direitos de cada pessoa nascem da formalização da aquisição.',
           ],
         },
         {
@@ -402,29 +403,28 @@ export const brandPartnersMessages = {
           ],
         },
         {
-          name: 'Interesse e lançamento',
+          name: 'Home Edition e demanda',
           steps: [
-            {
-              title: 'Ouvir antes de lançar.',
-              paragraphs: [
-                'Sua audiência pode ajudar a revelar o interesse pela experiência antes de um lançamento.',
-                'A marca apresenta a possibilidade por seus canais.',
-                'A Luxtory conversa com os interessados, entende o que procuram e estrutura os próximos passos.',
-                'Manifestar interesse não é adquirir uma Second Home nem determinar um lançamento.',
-              ],
-            },
             {
               title: 'Nasce uma Home Edition.',
               paragraphs: [
-                'Quando identifica a oportunidade e decide lançar, a Luxtory cria uma **Home Edition** vinculada ao Home Concept: uma configuração específica e replicável de Second Home.',
-                'Toda oferta comercial está vinculada a uma Home Edition; localização e condições comerciais são definidas para cada Second Home.',
+                'A Luxtory transforma o Home Concept em uma **Home Edition**: uma configuração específica e replicável de Second Home, vinculada a ele.',
+                'Toda oferta comercial está vinculada a uma Home Edition; localização, modalidade e condições comerciais são definidas para cada Second Home.',
               ],
             },
             {
-              title: 'Owner e Co-Owner.',
+              title: 'Apresentar e validar a demanda.',
               paragraphs: [
-                'A Home Edition apresenta as formas de aquisição autorizadas para sua estrutura.',
-                'Enquanto essa estrutura estiver aberta, pode contemplar Owner, Co-Owner ou ambos.',
+                'A marca apresenta a Home Edition principalmente por seus próprios canais.',
+                'A Luxtory conversa com os interessados, que indicam onde gostariam de ter aquela Home Edition e se seu interesse é Owner ou Co-Owner.',
+                'A manifestação ajuda a avaliar a oportunidade, mas não constitui aquisição.',
+              ],
+            },
+            {
+              title: 'Estruturar cada Second Home.',
+              paragraphs: [
+                'Quando demanda e viabilidade justificam avançar, a Luxtory estrutura uma Second Home para uma localização concreta, definindo sua modalidade, estrutura patrimonial e condições comerciais.',
+                'Enquanto essa estrutura estiver aberta, a Second Home pode contemplar Owner, Co-Owner ou ambos.',
               ],
               modalities: {
                 owner: {
@@ -482,16 +482,16 @@ export const brandPartnersMessages = {
           who: 'Luxtory, identificando os elementos essenciais à identidade da marca.',
         },
         {
-          decision: 'Gerar interesse',
-          who: 'Principalmente a Brand Partner, por seus canais e sua audiência.',
-        },
-        {
-          decision: 'Qualificar, estruturar e converter a demanda',
+          decision: 'Criar a Home Edition a partir do Home Concept',
           who: 'Luxtory.',
         },
         {
+          decision: 'Apresentar a Home Edition e gerar interesse',
+          who: 'Principalmente a Brand Partner, por seus canais e sua audiência.',
+        },
+        {
           decision:
-            'Criar a Home Edition e estruturar cada Second Home, com localização e condições comerciais',
+            'Qualificar a demanda e estruturar cada Second Home, com localização, modalidade, estrutura patrimonial e condições comerciais',
           who: 'Luxtory.',
         },
         {
@@ -534,7 +534,7 @@ export const brandPartnersMessages = {
         {
           question: 'Precisamos abrir mão do que já é nosso?',
           answer: [
-            'A marca, seu DNA e os ativos intelectuais que sua empresa já possui continuam sendo seus.',
+            'A marca, sua identidade e os ativos intelectuais que sua empresa já possui continuam sendo seus.',
             'O contrato preserva os direitos de propriedade intelectual preexistentes de ambas as partes.',
           ],
         },

@@ -150,10 +150,11 @@ export function GuestsFields({ prefix, query, facets, hideLegend = false }: Fiel
 }
 
 /**
- * Média projetada de investimento (BR-034, spec §17.8): De/Até em reais, numa etapa só, sobre a média vigente das Home
- * Editions publicadas — sem modalidade nem base. A sugestão mostra a menor e a maior média publicadas.
+ * Faceta "Investimento projetado" (BR-034, spec §17.8): De/Até em reais, numa etapa só, sobre a média projetada de
+ * investimento vigente das Home Editions publicadas — sem modalidade nem base. Por dentro, sempre visível, o nome
+ * canônico ("Média projetada de investimento (R$)"); a sugestão mostra a menor e a maior média publicadas.
  */
-export function ValueFields({ prefix, query, facets, hideLegend = false }: FieldsProps) {
+export function ValueFields({ prefix, query, facets }: FieldsProps) {
   const f = text.facets;
   const range = query.value;
   const reaisValue = (minor: bigint | null | undefined) =>
@@ -161,7 +162,7 @@ export function ValueFields({ prefix, query, facets, hideLegend = false }: Field
   return (
     <>
       <fieldset className="lx-facet__options">
-        <Legend hidden={hideLegend}>{f.valueLegend}</Legend>
+        <Legend hidden={false}>{f.valueLegend}</Legend>
         <div className="lx-facet__range">
           <label htmlFor={`${prefix}-value-from`}>
             {f.valueFrom}
