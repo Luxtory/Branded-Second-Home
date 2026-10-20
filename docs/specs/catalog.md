@@ -1613,12 +1613,13 @@ Home no lugar de Residence, "Brand DNA" → identidade da marca); estrutura, lay
 Copy vigente com as substituições de `D-BP-28` e `D-LX-11`: CTA "Explore o potencial da sua marca em Second Homes.";
 "identidade da marca" no lugar de "Brand DNA"; Second Home(s) no lugar de residência(s) quando nomeia o produto
 (inclusive em `D-BP-21` e `D-BP-24`). A página Sobre segue a mesma regra. Complemento do checkpoint de 2026-10-20
-(`D-BP-28`): o mecanismo ("Como acontece") e o Percurso seguem identidade da marca → Home Concept → **criar a Home
-Edition** → **apresentar e validar a demanda** sobre ela (localização pretendida e Owner ou Co-Owner indicados pelo
-interessado; manifestação não é aquisição) → **estruturar cada Second Home** (localização concreta, modalidade,
-estrutura patrimonial, condições) → Design & Build → operação; nenhuma copy atribui modalidade à Home Edition; "DNA" não
-nomeia a identidade da marca. Regressões em `tests/communication-ontology.test.ts`. Nenhuma outra afirmação, estrutura
-ou layout muda.
+(`D-BP-28`): o mecanismo ("Como acontece") e o Percurso seguem identidade da marca → Home Concept → **descobrir e
+validar o Home Concept** (Pesquisa de Descoberta & Validação com o público da marca, antes da Home Edition; não é
+interesse comercial nem aquisição — BR-030) → **criar a Home Edition** → **apresentar a Home Edition e captar
+interesse** (localização pretendida e Owner ou Co-Owner indicados pelo interessado; manifestação não é aquisição) →
+**estruturar cada Second Home** (localização concreta, modalidade, estrutura patrimonial, condições) → Design & Build →
+operação; nenhuma copy atribui modalidade à Home Edition; "DNA" não nomeia a identidade da marca. Regressões em
+`tests/communication-ontology.test.ts`, também sobre os Frameworks. Nenhuma outra afirmação, estrutura ou layout muda.
 
 ### 17.10 Consultas a outros módulos (substitui a §16)
 

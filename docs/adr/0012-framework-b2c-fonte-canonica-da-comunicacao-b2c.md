@@ -99,3 +99,10 @@ A restrição permanece: a comunicação não redefine o modelo de negócio. Os 
   a alternativa convencional, não o produto Luxtory (BR-377, exceção para objeto externo). A âncora do mapa de páginas
   passa a "Conheça as Home Editions.". sha256 `78c09cd6069d8a7dfe314e4d4126124f5e8d423a1098a4b16d297fea28e616ba` (antes
   `bf1a7f74…77c5f6f3`), fixado em `tests/communication.test.ts`.
+- **2026-10-20 (fundador, checkpoint da W4.2; `b2c.md` `D-B2C-27`):** só o mecanismo, nas três ocorrências (§2, §8 P4 e
+  §15): "Home Concept → Home Edition → Owner/Co-Owner → Design & Build → Second Home" passa a "Home Concept → Home
+  Edition → manifestação de interesse → estruturação da Second Home → aquisição e formalização → Design & Build →
+  operação da Second Home → Luxtory Club" (`01` v10.2 §1, BR-030 a BR-032: Owner/Co-Owner é modalidade desejada no
+  interesse e definitiva na Second Home, nunca nó da Home Edition). Estratégia, Desejo, JTBD, pilares, tom e CTA
+  inalterados. sha256 `2f43c67e3b537b3db8ecf103c5f1e58a30c194c370ca9083d84a5795308c450d` (antes `78c09cd6…a28e616ba`),
+  fixado em `tests/communication.test.ts`.

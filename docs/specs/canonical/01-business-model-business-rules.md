@@ -2,7 +2,7 @@
 
 2026-10-19 · @Someone · Versão 10.2 — Status: final
 
-Revisão M0 (fundador): ontologia Home Concept → Home Edition → Second Home; localização concreta, modalidade definitiva, estrutura patrimonial e condições comerciais pertencem à Second Home.
+Revisão M0 (fundador): ontologia Home Concept → Home Edition → Second Home; localização concreta, modalidade definitiva, estrutura patrimonial e condições comerciais pertencem à Second Home. BR-030 distingue a Pesquisa de Descoberta & Validação do Home Concept, antes da Home Edition, da manifestação de interesse comercial, que parte de uma Home Edition.
 
 ## Finalidade
 
@@ -101,7 +101,7 @@ A Brand Partner permanece titular de sua marca, da identidade da marca e dos dem
 
 A Home Edition apresenta uma configuração específica e replicável de Second Home, derivada de um Home Concept e sem localização. A manifestação de interesse comercial parte de uma Home Edition e declara a localização pretendida e a modalidade desejada. Localização concreta, modalidade definitiva, estrutura patrimonial e condições comerciais pertencem à Second Home estruturada.
 
-**BR-030** — Toda manifestação de interesse comercial DEVE referir-se a uma Home Edition e declarar a localização pretendida e a modalidade desejada. Captação de demanda por um Home Concept sem Home Edition, se vier a existir, constitui mecanismo próprio e NÃO é manifestação de interesse comercial.
+**BR-030** — Toda manifestação de interesse comercial DEVE referir-se a uma Home Edition e declarar a localização pretendida e a modalidade desejada. A Pesquisa de Descoberta & Validação de um Home Concept, realizada antes de sua transformação em Home Edition, constitui mecanismo próprio de Product Discovery e NÃO é manifestação de interesse comercial, NÃO gera aquisição nem direito.
 
 **BR-031** — A Luxtory concebe e registra Home Editions, cada uma vinculada de forma permanente ao Home Concept do qual deriva, com características próprias — entre outras, nome, descrição, tipologia, configuração dos espaços, área projetada, suítes, capacidade, ambientes, amenidades, imagens, renders e plantas. A Home Edition NÃO possui localização, modalidade, estrutura patrimonial nem condições comerciais definitivas.
 

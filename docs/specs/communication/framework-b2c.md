@@ -84,7 +84,7 @@ Isso significa **presença da tríade**, não maximização ilimitada de cada pi
 
 **Mecanismo:**
 
-> **Identificação com um lifestyle → Brand Partner → identidade da marca → Home Concept → Home Edition → Owner/Co-Owner → Design & Build → Second Home → Luxtory Club**
+> **Identificação com um lifestyle → Brand Partner → identidade da marca → Home Concept → Home Edition → manifestação de interesse → estruturação da Second Home → aquisição e formalização → Design & Build → operação da Second Home → Luxtory Club**
 
 A arquitetura materializa a tríade:
 
@@ -788,7 +788,7 @@ Demonstrar como a Luxtory materializa a tríade.
 
 **Mecanismo:**
 
-> **Identificação com Lifestyle → Brand Partner → identidade da marca → Home Concept → Home Edition → Owner/Co-Owner → Design & Build → Second Home → Luxtory Club**
+> **Identificação com Lifestyle → Brand Partner → identidade da marca → Home Concept → Home Edition → manifestação de interesse → estruturação da Second Home → aquisição e formalização → Design & Build → operação da Second Home → Luxtory Club**
 
 ---
 
@@ -1372,7 +1372,7 @@ Toda comunicação deve:
 **Oferta:** **Branded Second Homes Owner/Co-Owner conectadas ao Luxtory Club.**\
 **Posicionamento:** **Branded Second Home que elimina a necessidade estrutural de escolher entre Patrimônio, Liberdade e Pertencimento ao integrar os três em uma mesma arquitetura.**\
 **Diferencial:** **Posse + possibilidades + pertencimento.**\
-**Mecanismo:** **Lifestyle → Brand Partner → identidade da marca → Home Concept → Home Edition → Owner/Co-Owner → Design & Build → Second Home → Luxtory Club.**
+**Mecanismo:** **Lifestyle → Brand Partner → identidade da marca → Home Concept → Home Edition → manifestação de interesse → estruturação da Second Home → aquisição e formalização → Design & Build → operação da Second Home → Luxtory Club.**
 
 ---
 

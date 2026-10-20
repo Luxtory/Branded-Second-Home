@@ -113,3 +113,15 @@ O modelo de negócio não muda: `01 → 02 → 03` prevalecem em fatos (BR-380, 
   aplicação: a manifestação de interesse comercial parte de uma Home Edition (BR-030). sha256
   `e42812f1b3c2c8634cb77eb178d265f6653a01a4a01dc2f97a0addee6793a84d` (antes `47ccb4d6…dc04e9ad04`), fixado em
   `tests/communication.test.ts`.
+- **2026-10-20 (fundador, checkpoint da W4.2; `brand-partners.md` `D-BP-28`):** distingue os dois mecanismos de
+  validação (`01` v10.2 BR-030). O mecanismo, nas três ocorrências (§2, §8 P4 e §15), passa a "Brand Partner →
+  identidade da marca → Home Concept → Pesquisa de Descoberta & Validação → Home Edition → manifestação de interesse e
+  pré-qualificação → estruturação da Second Home → aquisição e formalização → Design & Build → operação da Second Home
+  → Luxtory Club". No §8 P4, "possibilidade de captar interesse antes da Home Edition" passa a "possibilidade de validar
+  a aderência e as hipóteses do Home Concept com o público da marca antes de consolidá-lo em uma Home Edition (Pesquisa
+  de Descoberta & Validação, que não é manifestação de interesse comercial); apresentação da Home Edition e captação da
+  manifestação de interesse comercial depois dela" — substitui a leitura pelo limite L5 registrada acima. No §15, o
+  Diferencial liga o Home Concept às modalidades patrimoniais "por meio das Second Homes estruturadas a partir de suas
+  Home Editions" (BR-032). Estratégia, JTBD, pilares, tom, estrutura e CTA inalterados. sha256
+  `8323c4d137d51907c12f7804775adc19dca7c4f11d75f8edfeda27404447918e` (antes `e42812f1…8a84d`), fixado em
+  `tests/communication.test.ts`.

@@ -67,7 +67,7 @@ Esses campos devem partir da realidade do público.
 **Integrar Patrimônio, Liberdade e Pertencimento em Branded Second Homes concebidas a partir de estilos de vida e conectadas a um ecossistema complementar de uso, gestão e experiências.**
 
 **Mecanismo:**  
-**Brand Partner → identidade da marca → Home Concept → Home Edition → Owner/Co-Owner → Design & Build → Second Home → Luxtory Club.**
+**Brand Partner → identidade da marca → Home Concept → Pesquisa de Descoberta & Validação → Home Edition → manifestação de interesse e pré-qualificação → estruturação da Second Home → aquisição e formalização → Design & Build → operação da Second Home → Luxtory Club.**
 
 **Valor percebido:**  
 **Permitir que o Titular combine relação patrimonial, possibilidades de experiência e pertencimento em uma mesma arquitetura de second home.**
@@ -876,10 +876,10 @@ Pergunta:
 **Parceria com a Luxtory para transformar a identidade da Brand Partner em Branded Second Homes.**
 
 **Mecanismo:**  
-**Brand Partner → identidade da marca → Home Concept → Home Edition → Owner/Co-Owner → Design & Build → Second Home → Luxtory Club.**
+**Brand Partner → identidade da marca → Home Concept → Pesquisa de Descoberta & Validação → Home Edition → manifestação de interesse e pré-qualificação → estruturação da Second Home → aquisição e formalização → Design & Build → operação da Second Home → Luxtory Club.**
 
 **Diferenciais:**  
-**Identidade da marca como origem do Home Concept; uso autorizado da marca em vez de simples aplicação visual; remuneração da Brand Partner pelo licenciamento conforme termos contratuais; Home Concept replicável; governança sobre utilização da marca; preservação dos direitos preexistentes; proteção dos elementos essenciais do Home Concept; modelo predominantemente orientado por demanda; possibilidade de captar interesse antes da Home Edition; divisão de papéis entre Brand Partner e Luxtory; e replicação condicionada a direitos, estratégia e viabilidade.**
+**Identidade da marca como origem do Home Concept; uso autorizado da marca em vez de simples aplicação visual; remuneração da Brand Partner pelo licenciamento conforme termos contratuais; Home Concept replicável; governança sobre utilização da marca; preservação dos direitos preexistentes; proteção dos elementos essenciais do Home Concept; modelo predominantemente orientado por demanda; possibilidade de validar a aderência e as hipóteses do Home Concept com o público da marca antes de consolidá-lo em uma Home Edition (Pesquisa de Descoberta & Validação, que não é manifestação de interesse comercial); apresentação da Home Edition e captação da manifestação de interesse comercial depois dela; divisão de papéis entre Brand Partner e Luxtory; e replicação condicionada a direitos, estratégia e viabilidade.**
 
 **Evidências:**  
 **Business Model & Business Rules; Product Spec; identidade da marca; plano estratégico aprovado de utilização da marca; instrumentos de licenciamento e demais contratos aplicáveis; Home Concept; manifestações de interesse e dados de demanda quando existentes; Home Editions aprovadas; regras de governança e demais evidências concretas disponíveis em cada parceria.**
@@ -1423,8 +1423,8 @@ Toda comunicação deve:
 **Público de referência do Posicionamento:** **Pessoas e famílias com perfil patrimonial compatível que valorizam Patrimônio, Liberdade e Pertencimento**  
 **Oferta:** **Branded Second Homes concebidas a partir da identidade de Brand Partners, desenvolvidas a partir de Home Editions e adquiridas como Owner ou Co-Owner**  
 **Posicionamento:** **Integrar Patrimônio, Liberdade e Pertencimento em uma mesma arquitetura de second home**  
-**Diferencial:** **Home Concept originado da identidade da marca e conectado a modalidades patrimoniais e ao ecossistema Luxtory**  
-**Mecanismo:** **Brand Partner → identidade da marca → Home Concept → Home Edition → Owner/Co-Owner → Design & Build → Second Home → Luxtory Club**
+**Diferencial:** **Home Concept originado da identidade da marca e conectado, por meio das Second Homes estruturadas a partir de suas Home Editions, a modalidades patrimoniais e ao ecossistema Luxtory**  
+**Mecanismo:** **Brand Partner → identidade da marca → Home Concept → Pesquisa de Descoberta & Validação → Home Edition → manifestação de interesse e pré-qualificação → estruturação da Second Home → aquisição e formalização → Design & Build → operação da Second Home → Luxtory Club**
 
 ---
 
