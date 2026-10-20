@@ -7,7 +7,8 @@ Cobertura normativa: **65 REQ · 6 INV · 11 PD**
 Revisão M0 autorizada pelo fundador: aplica a ontologia Home Concept → Home Edition → Second Home do `01` v10.2 e
 do `02` v4.3 — §3.1 e §3.2 revistos, identificadores renomeados, `home_edition_projected_investment`,
 `interest_contact` e `interest_qualification` acrescentados e guardrail da BR-377 no §13. Demais regras da v3.14
-preservadas.
+preservadas. Correção da W4.2 (fundador, 2026-10-19): ciclo material da Home Edition (`draft` → `finalized`)
+separado da visibilidade pública; Second Home só de Home Edition finalizada.
 
 Revisão BP0 autorizada pelo fundador: TECH-057 implementa o contrato do REQ-028; TECH-058 delimita a evolução
 planejada do REQ-029. Demais regras da v3.13 preservadas. Impacto e aceite em
@@ -61,9 +62,9 @@ Cada módulo altera seu próprio estado; coordenação ocorre por interfaces de 
 | `membership_plan_version` | vigência, preço, benefícios, descontos e condições autorizadas |
 | `brand_partner` | encerramento, direitos sobreviventes e restrições de marca |
 | `home_concept_version` | elementos essenciais, premissas, especificação conceitual, lifestyle e estilo arquitetônico, `approval_refs`, versão e estado; sem atributos físicos |
-| `home_edition` | `home_concept_id` imutável; nome, descrição, tipologia, configuração dos espaços, área projetada, suítes, capacidade, ambientes, amenidades, características e mídia (imagens, renders, plantas); estado de publicação; depois de publicada, definição material imutável (alteração material = nova Home Edition; sem tabela de versão); sem localização, modalidade, estrutura ou condições comerciais |
+| `home_edition` | `home_concept_id` imutável; nome, descrição, tipologia, configuração dos espaços, área projetada, suítes, capacidade, ambientes, amenidades, características e mídia (imagens, renders, plantas); estado material `draft` → `finalized` (em `draft` a definição material é editável; depois de finalizada, imutável — alteração material = nova Home Edition; sem tabela de versão) e visibilidade pública separada `hidden`/`public` (só Home Edition finalizada é publicável; retirar do público não reabre a definição material); sem localização, modalidade, estrutura ou condições comerciais |
 | `home_edition_projected_investment` | referência vigente da ordem de grandeza do investimento total projetado para materializar uma Second Home da Home Edition; histórico temporal (vigência); unidades menores + moeda; registro da Luxtory; sem modalidade, configuração, participação, Ação ou valor individual; nunca preço nem condição |
-| `second_home` | Home Edition específica, versão imutável do Home Concept, localização concreta, timezone, modalidade e estrutura definitivas com lock, configuração Co-Owner, condições comerciais, conformidade e estado operacional (estruturação, Design & Build, operação) |
+| `second_home` | Home Edition específica e materialmente finalizada, versão imutável do Home Concept, localização concreta, timezone, modalidade e estrutura definitivas com lock, configuração Co-Owner, condições comerciais, conformidade e estado operacional (estruturação, Design & Build, operação) |
 | `second_home_administration` | Second Home, prestador/base, caráter profissional, escopo e vigência |
 | `spe` | uma SPE por Second Home Co-Owner |
 | `stake` | Ação permanente; participação igual conforme configuração |
