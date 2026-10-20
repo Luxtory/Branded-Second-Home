@@ -546,8 +546,8 @@ export const discoveryMessages = {
                 text: 'Uma configuração específica e replicável de Second Home, criada a partir do Home Concept.',
               },
               {
-                title: 'Owner ou Co-Owner',
-                text: 'A forma como você estabelece sua relação patrimonial com a Second Home.',
+                title: 'Interesse e estruturação',
+                text: 'Você manifesta interesse numa Home Edition, indicando a localização pretendida e a modalidade desejada. A Luxtory estrutura a Second Home e, com a aquisição formalizada, o Design & Build pode começar.',
               },
             ],
           },
@@ -556,11 +556,11 @@ export const discoveryMessages = {
             steps: [
               {
                 title: 'Design & Build',
-                text: 'Arquitetura, interiores, engenharia e obra transformam o Home Concept em uma casa real.',
+                text: 'Arquitetura, interiores, engenharia e obra dão forma física à Second Home estruturada a partir da Home Edition, preservando o Home Concept.',
               },
               {
                 title: 'Second Home',
-                text: 'Construída do zero e fiel aos elementos essenciais do Home Concept.',
+                text: 'O imóvel de lazer concreto desenvolvido a partir da Home Edition, construído do zero e fiel aos elementos essenciais do Home Concept.',
               },
               {
                 title: 'Luxtory Club',

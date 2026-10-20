@@ -1607,6 +1607,10 @@ comerciais por Edition.
 
 **Home e Como funciona:** só as mudanças de `D-B2C-27` (nomes completos, "Branded Second Homes" no eyebrow, Second
 Home no lugar de Residence, "Brand DNA" → identidade da marca); estrutura, layout e demais afirmações não mudam.
+Complemento de 2026-10-20 (`D-B2C-27`): na jornada do Como funciona, o terceiro passo do Conceito é "Interesse e
+estruturação" (interesse numa Home Edition com localização pretendida e modalidade desejada → a Luxtory estrutura a
+Second Home → com a aquisição formalizada, o Design & Build pode começar), no lugar de "Owner ou Co-Owner"; Design &
+Build e Second Home são descritos a partir da Home Edition, preservando o Home Concept. Fases e grade 3 × 3 mantidas.
 
 ### 17.9 Brand Partners e Sobre
 

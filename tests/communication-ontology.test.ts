@@ -125,6 +125,26 @@ describe('comunicação — ontologia da W4.2 na copy vigente (regressões semâ
     ).toBe(true);
   });
 
+  it('[BR-030] [BR-032] [D-B2C-27] B2C Como funciona: a jornada passa da Home Edition ao interesse e à estruturação, nunca direto à modalidade', () => {
+    const journey = b2c.howItWorks.connection.journey.phases.flatMap((phase) =>
+      phase.steps.map((step) => step.title),
+    );
+    expect(
+      ascending(
+        order(journey, [
+          'Home Concept',
+          'Home Edition',
+          'Interesse e estruturação',
+          'Design & Build',
+          'Second Home',
+        ]),
+      ),
+    ).toBe(true);
+    // A sequência Home Edition → Owner ou Co-Owner não volta; as modalidades seguem explicadas nas seções próprias.
+    expect(journey[journey.indexOf('Home Edition') + 1]).toBe('Interesse e estruturação');
+    expect(journey).not.toContain('Owner ou Co-Owner');
+  });
+
   it('[BR-030] nenhuma copy vigente põe a manifestação de interesse antes da Home Edition', () => {
     expect(ALL.filter((text) => INTEREST_BEFORE_EDITION.test(text))).toEqual([]);
     for (const title of [

@@ -1,7 +1,10 @@
 # 0016. Nova versão do Framework Brand Partners (Home Concept, Home Edition e Second Home)
 
 - **Date**: 2026-10-12
-- **Status**: Accepted
+- **Status**: Accepted — o estágio formal do mecanismo registrado abaixo é histórico: substituído pelas versões de
+  2026-10-19 e 2026-10-20 do Framework, registradas no [ADR-0013](0013-framework-brand-partners-fonte-canonica.md)
+  (a Home Edition precede a manifestação de interesse e a estruturação da Second Home; Owner/Co-Owner não é nó da
+  Home Edition)
 - **Deciders**: Luxtory (fundador), Engenharia
 - **Tags**: communication, documentation
 
