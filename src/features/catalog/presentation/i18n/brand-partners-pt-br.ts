@@ -251,13 +251,20 @@ export const brandPartnersMessages = {
           ],
         },
         {
+          title: 'Descobrir e validar o Home Concept.',
+          text: [
+            'Antes de criar a Home Edition, a Luxtory testa o Home Concept com uma pequena parte do público da marca: aderência, compreensão, desejo e percepção de valor.',
+            'É pesquisa de descoberta, não manifestação de interesse comercial nem aquisição. O resultado orienta se o Home Concept segue, é refinado ou não avança.',
+          ],
+        },
+        {
           title: 'Criar a Home Edition.',
           text: [
             'A Luxtory transforma o Home Concept em uma **Home Edition**: uma configuração específica e replicável de Second Home.',
           ],
         },
         {
-          title: 'Apresentar e validar a demanda.',
+          title: 'Apresentar a Home Edition e captar interesse.',
           text: [
             'A marca apresenta a Home Edition principalmente por seus próprios canais.',
             'A Luxtory conversa com os interessados, que indicam onde gostariam de ter aquela Home Edition e se seu interesse é Owner ou Co-Owner.',
@@ -400,6 +407,14 @@ export const brandPartnersMessages = {
                 'O uso da marca segue um plano estratégico previamente aprovado pela Brand Partner.',
               ],
             },
+            {
+              title: 'Descobrir e validar o Home Concept.',
+              paragraphs: [
+                'Antes de consolidá-lo em uma Home Edition, a Luxtory testa o Home Concept com uma pequena amostra do público da marca, com perguntas quantitativas e conversas qualitativas.',
+                'A pesquisa avalia aderência, compreensão, desejo, percepção de valor e as hipóteses da proposta.',
+                'Não é manifestação de interesse comercial nem aquisição: o resultado orienta se o Home Concept segue para uma Home Edition, é refinado ou não avança.',
+              ],
+            },
           ],
         },
         {
@@ -413,7 +428,7 @@ export const brandPartnersMessages = {
               ],
             },
             {
-              title: 'Apresentar e validar a demanda.',
+              title: 'Apresentar a Home Edition e captar interesse.',
               paragraphs: [
                 'A marca apresenta a Home Edition principalmente por seus próprios canais.',
                 'A Luxtory conversa com os interessados, que indicam onde gostariam de ter aquela Home Edition e se seu interesse é Owner ou Co-Owner.',
