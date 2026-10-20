@@ -50,10 +50,11 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
   2026-10-19** (item seguinte); este registro permanece como histórico da decisão BP0.
 - **Retomada do B2C (fundador, 2026-10-19):** a sequência B2C volta a executar a partir da primeira wave funcional
   executável, a **W5**. Uma wave por vez: 1 wave = 1 escopo = 1 branch = 1 PR = 1 ciclo completo de verificação, com
-  parada e apresentação do resultado ao fundador antes da wave seguinte; merge e ativação em Production só no
-  checkpoint final do fundador. A W6 continua ⛔ P-3 (decisão de produto a resolver com o fundador antes do formulário
-  público). CP3–CP5 seguem ⬜ e não são dependência da W5. BP2 segue ⛔ pelos critérios de entrada. A retomada não
-  altera `01`/`02`/`03` nem os Frameworks.
+  parada e apresentação do resultado ao fundador antes da wave seguinte; merge e ativação em Production só no checkpoint
+  final do fundador. A W6 continua ⛔ P-3 (decisão de produto a resolver com o fundador antes do formulário público) —
+  **histórico / posteriormente superado** pela decisão do fundador de 2026-10-19 (noite) e pelo `02` v4.3 (REQ-022);
+  estado vigente no Roadmap e no Status B2C (2026-10-20). CP3–CP5 seguem ⬜ e não são dependência da W5. BP2 segue ⛔
+  pelos critérios de entrada. A retomada não altera `01`/`02`/`03` nem os Frameworks.
 - **Exceção documental BP0 autorizada:** contratos em `02`/`03`, `catalog` §14, aplicação de comunicação e
   roadmap; sincronização mínima da governança/índice e dos ponteiros vigentes. Sem alterar `01`/Frameworks ou
   código. Gates documentais e, no checkpoint final solicitado pelo fundador, uma execução de `npm run verify`,
@@ -101,8 +102,8 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 | BP1.1 | Brand Partners Communication Upgrade: copy e composição do Decision & Approval Pack, Framework de 2026-10-12 | catalog (presentation), Core DS, docs | — (complementa REQ-028) | BP1 | — | B2B | ✅ implementação concluída em 2026-10-12 (PR #42, portão fechado); merged em `0f33dcf` (2026-10-13); refinamento pós-merge `D-BP-20` em revisão; publicação depende de P-LX-03 e das verificações externas de pré-go-live → refinamento `D-BP-20`–`D-BP-23` merged (#43 `7a864fa`); go-live por `D-BP-24` (#44, 2026-10-13); ajustes #45, #49 e #50 |
 | BP2 | Portal autenticado read-only com dados reais da própria parceria | identity, catalog, ownership | REQ-029 | BP0, critérios de entrada; representação/fatos canônicos de W7/W8 | — | B2B | ⛔ critérios de entrada ainda não satisfeitos |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ próxima executável (retomada de 2026-10-19) → ✅ (#54, `1fa6f01`, 2026-10-19; escrita fechada em Production) |
-| 4.2 | Ontologia Home Concept → Home Edition → Second Home + correção estrutural do catálogo e do interest | catalog, ownership, admin, design-system, docs | REQ-020, REQ-021, REQ-022, REQ-100 | 4.1, 5 | — | R1 | 🔄 em execução (`feat/w4-2-ontologia-home-edition`, 2026-10-19) |
-| 6 | Interesse — formulário público | ownership | — | 4, 5, 4.2 | — | R1 | ⛔ P-3 → ⬜ após a W4.2: P-3 definida pelo `02` v4.3 (REQ-022); reconstruída sobre a `main` corrigida |
+| 4.2 | Ontologia Home Concept → Home Edition → Second Home + correção estrutural do catálogo e do interest | catalog, ownership, admin, design-system, docs | REQ-020, REQ-021, REQ-022, REQ-100 | 4.1, 5 | — | R1 | ✅ concluída (#56, squash `7ac1af8`, 2026-10-20; 7 migrations aplicadas; Production validada) |
+| 6 | Interesse — formulário público | ownership | — | 4, 5, 4.2 | — | R1 | ⬜ próxima executável — P-3 resolvida pelo `02` v4.3 (REQ-022); W4.2 ✅; reconstruída a partir da nova `main` (ver Wave 6 → Status) |
 | 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ |
 | 8 | Formalização e calendário civil | ownership, calendar | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003 | 3, 7 | — | R2 | ⬜ |
 | 9 | Sorteio auditável | ownership | PD-011 | 8 | 10 | R2 | ⬜ |
@@ -132,10 +133,12 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 registram a prontidão técnica, não autorização para executar. CP3–CP5 também aguardam retomada explícita.
 Referências históricas em W3B/W3D/W4 a `P-BP-01` bloqueada descrevem aquelas entregas; a resolução vigente é BP0.
 **Atualização 2026-10-19:** pausa encerrada pelo fundador; o B2C retoma em sequência a partir da W5. Os símbolos das
-linhas W5–W30 voltam a indicar o estado de execução conforme as dependências (W6 ⛔ P-3); CP3–CP5 seguem aguardando
-e não bloqueiam a W5.
+linhas W5–W30 voltam a indicar o estado de execução conforme as dependências (W6 ⛔ P-3 — **histórico / posteriormente
+superado** pela atualização seguinte e pelo `02` v4.3); CP3–CP5 seguem aguardando e não bloqueiam a W5.
 **Atualização 2026-10-19 (noite):** correção ontológica aprovada pelo fundador — a W4.2 entra antes da W6, que deixa
 de depender da P-3 (definida pelo `02` v4.3) e passa a depender da W4.2.
+**Atualização 2026-10-20:** W4.2 ✅ (PR #56, `7ac1af8`); a dependência da W6 está satisfeita e a W6 passa a ser a
+próxima wave funcional executável, reconstruída a partir da `main` corrigida.
 
 Paralelismo na retomada do B2C: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
 canal do AsyncAPI, telas e `CHANGELOG.md`, e o STRIDE do beacon. A W10 toca migrations de `calendar`/`inventory`,
@@ -720,14 +723,15 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   `20261019034107_platform_public_idempotency_key` e `20261019034110_ownership_interest` aplicadas; Production em
   `1fa6f01`. Smoke seguro: páginas B2C e Brand Partners 200; `POST /v1/interests` → 404, porque `INTEREST_WRITES`
   continua **fechado** e nenhuma variável `INTEREST_*` foi criada; nenhum interesse gravado. A coleta produtiva segue
-  dependente da D2 e de decisão própria do fundador. A W6 segue ⛔ P-3.
+  dependente da D2 e de decisão própria do fundador. A W6 segue ⛔ P-3 (**histórico / posteriormente superado**: P-3
+  resolvida pelo `02` v4.3, REQ-022; a W6 é a próxima executável desde a W4.2 ✅).
 
 ### Wave 4.2 — Ontologia Home Concept → Home Edition → Second Home + correção estrutural do catálogo (2026-10-19)
 
-- **Status:** em execução na branch `feat/w4-2-ontologia-home-edition` (worktree própria a partir de `origin/main`
-  `89eb638`). Uma wave = uma branch = um PR = um ciclo; sem deploy intermediário. Production fica fechada para esta
-  wave até implementação, gates, PR, CI, revisão e aprovação explícita do fundador; nenhuma migration é aplicada em
-  Production durante o desenvolvimento.
+- **Status:** ✅ concluída em 2026-10-20 — PR #56, squash `7ac1af8` (ver Encerramento). Executada na branch
+  `feat/w4-2-ontologia-home-edition` (worktree própria a partir de `origin/main` `89eb638`): uma wave = uma branch = um
+  PR = um ciclo, sem deploy intermediário; Production ficou fechada para esta wave até a aprovação explícita do
+  fundador, e nenhuma migration foi aplicada em Production durante o desenvolvimento.
 - **Goal**: remover a ontologia anterior de todas as camadas ativas e corrigir o modelo da Home Edition, o catálogo e
   a estrutura preexistente do `interest` conforme `01` v10.2 / `02` v4.3 / `03` v3.15.
 - **IDs**: REQ-020, REQ-021, REQ-022, REQ-024, REQ-025, REQ-100 (complementa REQ-023 da W5); BR-030 a BR-036, BR-377.
@@ -766,8 +770,20 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   página da Home Edition responsiva com axe 0 a 390 e 1440 px · `npm run db:check` (up → down → up) ·
   `npm run trace -- --gate`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-020,REQ-021,REQ-022,REQ-100 exits 0 and npx vitest run tests/terminology.test.ts exits 0, stop after 5 tries`
+- **Encerramento (2026-10-20): ✅.** PR #56, squash merge `7ac1af8` (head aprovado `000d693`), aprovado pelo fundador.
+  CI de `main` run 39509801566: lint, typecheck, test, e2e, security, migrate e deploy verdes; migrations
+  `20261019210001`…`20261019210007` aplicadas, sem precondição fail-closed disparada; deploy de Production verde em
+  `7ac1af8`. Verificação pós-deploy só de leitura: estruturas `home_concept`, `home_concept_version`, `home_edition`,
+  `home_edition_projected_investment`, `home_edition_media` e `second_home` com RLS; `POST /v1/interests` → 404
+  (escrita de interesse continua fechada); nenhuma Home Edition real publicada. Dependência da W6 satisfeita.
 
-### Wave 6 — Interesse: formulário público ⛔ P-3
+### Wave 6 — Interesse: formulário público
+
+- **Status (2026-10-20):** ⬜ próxima executável. A P-3 está resolvida pelo `02` v4.3 (REQ-022) e a dependência da W4.2
+  está satisfeita (✅ #56, `7ac1af8`). A W6 é reconstruída a partir da nova `main`; a branch antiga
+  `feat/w6-interesse-formulario` @ `9e41101` é só referência histórica — sem rebase nem cherry-pick integral. O
+  cabeçalho "⛔ P-3" e o texto original abaixo (Goal, Scope e Depends com P-3) são **histórico / posteriormente
+  superado**: prevalece a Revisão de 2026-10-19.
 
 - **Goal**: publicar o formulário (composição do Lab) com os campos e o consentimento definidos pela Luxtory.
 - **IDs**: complementa REQ-022, REQ-024, REQ-025, REQ-100, REQ-101.
@@ -1289,7 +1305,7 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 |---|---|---|---|
 | P-1 | Fotografia oficial e logo Pure White | nenhuma wave | Frame tipográfico e Warm Sand sobre scrim; assets chegam como commit aditivo |
 | P-2 | PSP não contratado | go-live de W21–W25 | port + fake determinístico (TECH-081); fake recusado em produção |
-| P-3 | Campos de contato e qualificação do interesse + base LGPD, consentimento e aviso de privacidade (REQ-025) | **W6** e o go-live do R1-Interesse | W5 grava só os campos canônicos |
+| P-3 | Campos de contato e qualificação do interesse + base LGPD, consentimento e aviso de privacidade (REQ-025) — **resolvida em 2026-10-19** pelo `02` v4.3 (REQ-022) | **W6** e o go-live do R1-Interesse (**histórico / posteriormente superado**) | W5 grava só os campos canônicos |
 | P-4 | Políticas comerciais (PD-009) | operação de W22–W25 | políticas de teste; sem política → `ERR_POLICY_MISSING` (REQ-082) |
 | P-5 | PRL por data; conteúdo de `guest_rules`; descontos Luxplus; taxas e comissões de locação; planos de Membership e seus benefícios (prioridade por plano sem mecânica no `02`/`03`) | operação de W14, W15 e W16–W25 | ausência → `ERR_PARAMETER_MISSING`/`ERR_PRL_MISSING`; zero nunca presumido. Os valores iniciais do TECH-030 **não** são pendência: são publicados pelo runbook |
 | P-6 | Dados do convidado (REQ-092) e do locatário (`rental_contract`) | parte da W14 e da W25 | só a indicação e a versão aceita, ou a referência do canal, sem dado pessoal |
@@ -1310,7 +1326,7 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
    real, mas login e pooler reais só em staging (D3).
 4. **Pendências travam releases, não o desenvolvimento**: P-3 segura o R1-Interesse; P-9 o R2; PSP, políticas e PRL
    a operação do R3; P-11 impede cancelar pelo usuário os mecanismos do Club até a nova versão do `03`. (P-9 resolvida
-   em 2026-09-27 com a D4.)
+   em 2026-09-27 com a D4; P-3 resolvida em 2026-10-19 pelo `02` v4.3, REQ-022.)
 5. **Concorrência no R3**: risco de PRs grandes e testes instáveis. Mitigação: Request em duas waves, tags CONC,
    barreiras determinísticas, retentativa com a mesma chave, relógio injetável e fechamento na W26.
 
