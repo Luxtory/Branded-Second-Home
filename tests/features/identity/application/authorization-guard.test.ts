@@ -164,7 +164,7 @@ describe('guard de parceiros por authorization_grant (REQ-014)', () => {
   it.each([
     ['sem grant', []],
     ['grant de outro command', [grant({ commands: ['other_operation'] })]],
-    ['grant de outro escopo', [grant({ scope: { type: 'concept', id: 'concept-2' } })]],
+    ['grant de outro escopo', [grant({ scope: { type: 'home_concept', id: 'home-concept-2' } })]],
     ['grant ainda não vigente', [grant({ validFrom: new Date('2026-09-20T00:00:00.000Z') })]],
     ['grant vencido', [grant({ validUntil: new Date('2026-09-15T00:00:00.000Z') })]],
     ['grant revogado', [grant({ revokedAt: new Date('2026-09-10T00:00:00.000Z') })]],

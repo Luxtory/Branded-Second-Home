@@ -8,7 +8,8 @@ import {
   withoutFilter,
 } from '@/features/catalog/application/collection-query';
 
-// Busca da Coleção pela URL (docs/specs/catalog.md §13.12): leniente — valor inválido é ignorado, nunca erro.
+// Busca da Coleção pela URL (docs/specs/catalog.md §13.12, §17.8): leniente — valor inválido é ignorado, nunca erro.
+// Sem localização nem modalidade: a Home Edition não tem nenhuma das duas (BR-031, BR-032).
 const BRAND = '00000000-0000-4000-8000-0000000000b1';
 
 describe('Coleção — parâmetros da busca', () => {
@@ -17,9 +18,8 @@ describe('Coleção — parâmetros da busca', () => {
     expect(query).toMatchObject({
       text: '',
       lifestyles: [],
-      region: null,
       value: null,
-      withEdition: false,
+      withHomeEdition: false,
       sort: 'curadoria',
     });
     expect(isFiltered(query)).toBe(false);
@@ -31,16 +31,13 @@ describe('Coleção — parâmetros da busca', () => {
       q: '  casa   do  mar ',
       lifestyle: ['natureza', 'bem-estar', 'natureza'],
       estilo: 'contemporaneo',
-      regiao: 'Trancoso, BA',
       pessoas: '8',
-      base: 'co-owner',
       'valor-de': '1.500.000',
       'valor-ate': '3000000',
       suites: '4',
       'area-de': '300',
       'area-ate': '600',
-      modalidade: 'owner',
-      'com-edition': '1',
+      'com-home-edition': '1',
       marca: BRAND,
       ordem: 'recentes',
     });
@@ -48,14 +45,12 @@ describe('Coleção — parâmetros da busca', () => {
       text: 'casa do mar',
       lifestyles: ['natureza', 'bem-estar'],
       styles: ['contemporaneo'],
-      region: 'Trancoso, BA',
       guests: 8,
-      value: { basis: 'acao', min: 150_000_000n, max: 300_000_000n },
+      value: { min: 150_000_000n, max: 300_000_000n },
       suites: 4,
       areaMin: 300,
       areaMax: 600,
-      modality: 'owner',
-      withEdition: true,
+      withHomeEdition: true,
       brand: BRAND,
       sort: 'recentes',
     });
@@ -63,26 +58,29 @@ describe('Coleção — parâmetros da busca', () => {
   });
 
   it('[TECH-033] valor em reais inteiros vira unidades menores sem ponto flutuante; De/Até invertidos são trocados', () => {
-    expect(
-      parseCollectionQuery({ base: 'owner', 'valor-de': '9000000', 'valor-ate': '4800000' }).value,
-    ).toEqual({ basis: 'owner', min: 480_000_000n, max: 900_000_000n });
-    expect(parseCollectionQuery({ base: 'owner', 'valor-de': '4,8' }).value).toEqual({
-      basis: 'owner',
-      min: null,
-      max: null,
+    expect(parseCollectionQuery({ 'valor-de': '9000000', 'valor-ate': '4800000' }).value).toEqual({
+      min: 480_000_000n,
+      max: 900_000_000n,
     });
+    expect(parseCollectionQuery({ 'valor-ate': '4800000' }).value).toEqual({
+      min: null,
+      max: 480_000_000n,
+    });
+    expect(parseCollectionQuery({ 'valor-de': '4,8' }).value).toBeNull();
   });
 
-  it('valor inválido é ignorado: base desconhecida, números fora do intervalo, slug inválido, marca que não é uuid', () => {
+  it('valor inválido é ignorado: parâmetros que não existem mais, números fora do formato, slug inválido, marca que não é uuid', () => {
     const query = parseCollectionQuery({
-      base: 'mensal',
-      'valor-de': '100',
+      regiao: 'Trancoso, BA',
+      base: 'owner',
+      modalidade: 'co-owner',
+      'valor-de': 'cem',
       pessoas: '0',
       suites: 'muitas',
       lifestyle: ['<script>', 'Natureza'],
       marca: 'maison',
       ordem: 'preco',
-      'com-edition': 'sim',
+      'com-home-edition': 'sim',
     });
     expect(query).toMatchObject({
       value: null,
@@ -91,7 +89,7 @@ describe('Coleção — parâmetros da busca', () => {
       lifestyles: [],
       brand: null,
       sort: 'curadoria',
-      withEdition: false,
+      withHomeEdition: false,
     });
   });
 
@@ -111,16 +109,13 @@ describe('Coleção — URL estável da busca', () => {
       q: 'casa do mar',
       lifestyle: ['natureza', 'bem-estar'],
       estilo: 'contemporaneo',
-      regiao: 'Trancoso, BA',
       pessoas: '8',
-      base: 'co-owner',
       'valor-de': '1500000',
       'valor-ate': '3000000',
       suites: '4',
       'area-de': '300',
       'area-ate': '600',
-      modalidade: 'owner',
-      'com-edition': '1',
+      'com-home-edition': '1',
       marca: BRAND,
       ordem: 'recentes',
     };
@@ -134,8 +129,7 @@ describe('Coleção — URL estável da busca', () => {
     const query = parseCollectionQuery({
       q: 'mar',
       lifestyle: ['natureza', 'mar'],
-      regiao: 'Trancoso, BA',
-      base: 'owner',
+      'valor-ate': '3000000',
       ordem: 'recentes',
     });
     const filters = activeFilters(query);
@@ -143,7 +137,6 @@ describe('Coleção — URL estável da busca', () => {
       'text',
       'lifestyle',
       'lifestyle',
-      'region',
       'value',
     ]);
     const withoutMar = withoutFilter(query, { kind: 'lifestyle', slug: 'mar' });

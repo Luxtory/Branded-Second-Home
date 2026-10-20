@@ -28,7 +28,7 @@ describe('matcher do proxy (ADR-0014, BP1 — spec catalog §14.6)', () => {
     for (const page of ['/', '/como-funciona', '/colecao']) expect(matches(page)).toBe(true);
     for (const asset of [
       '/lab',
-      '/media/concept-covers/x/640',
+      '/media/home-concept-covers/x/640',
       '/_next/static/chunk.js',
       '/favicon.ico',
     ]) {

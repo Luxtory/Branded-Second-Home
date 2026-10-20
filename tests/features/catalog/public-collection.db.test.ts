@@ -48,44 +48,51 @@ describe('Coleção — leitura pública como anon', () => {
     });
   }
 
-  /** Brand Partner com exposição autorizada → Concept aprovado, com classificação e atributos. */
-  async function publicConcept(extra: Record<string, unknown> = {}) {
+  /** Brand Partner com exposição autorizada → Home Concept aprovado, com classificação e resumo. */
+  async function publicHomeConcept(extra: Record<string, unknown> = {}) {
     const { build, ok, handlers } = harness;
     const partner = await build.brandPartner('Maison Atlântica');
     await ok(handlers.authorizeBrandExposure, {
       brand_partner_id: partner.id,
       exposure_authorization_ref: 'Plano estratégico de uso da marca — anexo II',
     });
-    const version = await ok(handlers.createConceptVersion, {
+    const version = await ok(handlers.createHomeConceptVersion, {
       brand_partner_id: partner.id,
       title: 'Casa do Mar',
       ...CONTENT,
       ...extra,
     });
     await build.approve(version.id);
-    return { partner, conceptId: version.concept_id };
+    return { partner, homeConceptId: version.home_concept_id };
   }
 
-  it('[REQ-020] [REQ-022] [BR-015] monta o Concept público com termos ativos, atributos vigentes, capa aprovada, curadoria e valores vigentes', async () => {
+  /** Home Edition finalizada e publicada (só ela é pública, BR-036). */
+  async function publishedHomeEdition(
+    homeConceptId: string,
+    content: Record<string, unknown> = {},
+  ) {
+    const { build } = harness;
+    const created = await build.homeEdition(homeConceptId, content);
+    await build.finalize(created.id);
+    return build.publish(created.id);
+  }
+
+  it('[REQ-020] [REQ-022] [BR-015] monta o Home Concept público com termos ativos, resumo vigente, capa aprovada, curadoria e as Home Editions publicadas', async () => {
     const { build, ok, handlers } = harness;
     const natureza = await build.term('lifestyle', 'Natureza');
     const neve = await build.term('lifestyle', 'Neve');
     const pedra = await build.term('architectural_style', 'Pedra e madeira');
     await build.term('lifestyle', 'Sem uso');
-    const { conceptId } = await publicConcept({
+    const { homeConceptId } = await publicHomeConcept({
       summary: 'Versão 1',
       lifestyle_ids: [neve.id, natureza.id],
       architectural_style_ids: [pedra.id],
-      guests_max: 6,
     });
-    // Versão 2 aprovada: os atributos vigentes são os dela.
-    const v2 = await ok(handlers.createConceptVersion, {
-      concept_id: conceptId,
+    // Versão 2 aprovada: o resumo vigente é o dela.
+    const v2 = await ok(handlers.createHomeConceptVersion, {
+      home_concept_id: homeConceptId,
       ...CONTENT,
       summary: 'Pátio, mar e pedra local.',
-      guests_max: 10,
-      suites: 5,
-      built_area_m2: 500,
       lifestyle_ids: [neve.id, natureza.id],
       architectural_style_ids: [pedra.id],
     });
@@ -96,33 +103,45 @@ describe('Coleção — leitura pública como anon', () => {
       active: false,
     });
 
-    const cover = await build.approveCover((await build.cover(conceptId)).id);
-    await build.cover(conceptId); // pendente: não aparece
-    await ok(handlers.setConceptCuration, { concept_id: conceptId, rank: 3, featured: true });
+    const cover = await build.approveCover((await build.cover(homeConceptId)).id);
+    await build.cover(homeConceptId); // pendente: não aparece
+    await ok(handlers.setHomeConceptCuration, {
+      home_concept_id: homeConceptId,
+      rank: 3,
+      featured: true,
+    });
 
-    const owner = await build.edition(conceptId, 'owner_and_co_owner');
-    await build.referenceValue(owner.id, 'acao', 6_000_000 * REAIS);
-    await build.referenceValue(owner.id, 'owner', 48_000_000 * REAIS);
-    // Editions na ordem de registro: a segunda é registrada um minuto depois.
+    const varanda = await publishedHomeEdition(homeConceptId, { name: 'Edição Varanda' });
+    await build.projectedInvestment(varanda.id, 48_000_000 * REAIS);
+    const image = await build.homeEditionMedia(varanda.id, 'image');
+    await build.approveHomeEditionMedia(image.id);
+    const plan = await build.homeEditionMedia(varanda.id, 'floor_plan');
+    await build.approveHomeEditionMedia(plan.id);
+    // Home Editions na ordem de registro: a segunda é registrada um minuto depois; média só futura.
     clock.advance(60_000);
-    const future = await build.edition(conceptId, 'owner');
-    await build.referenceValue(future.id, 'owner', 1 * REAIS, new Date(Date.now() + 10 * DAY));
+    const serra = await publishedHomeEdition(homeConceptId, { name: 'Edição Serra', suites: 3 });
+    await build.projectedInvestment(serra.id, 1 * REAIS, new Date(Date.now() + 10 * DAY));
+    // Em preparação: nunca pública.
+    await build.homeEdition(homeConceptId, { name: 'Edição em preparação' });
 
-    // Concept sem exposição autorizada: nada dele é público.
-    const hidden = await build.approvedEdition();
-    await build.approveCover((await build.cover(hidden.conceptId)).id);
+    // Home Concept sem exposição autorizada: nada dele é público.
+    const hidden = await build.finalizedHomeEdition();
+    await build.publish(hidden.homeEdition.id);
+    await build.approveCover((await build.cover(hidden.homeConceptId)).id);
 
+    const facts = {
+      typology: 'Casa térrea com pátio central',
+      guestsMax: 10,
+      projectedAreaM2: 420,
+    };
     expect(await entries()).toEqual([
       {
-        id: conceptId,
+        id: homeConceptId,
         title: 'Casa do Mar',
         brandPartnerId: expect.any(String),
         brandName: 'Maison Atlântica',
         createdAt: start,
         summary: 'Pátio, mar e pedra local.',
-        guestsMax: 10,
-        suites: 5,
-        builtAreaM2: 500,
         lifestyles: [{ slug: 'natureza', label: 'Natureza' }],
         styles: [{ slug: 'pedra-e-madeira', label: 'Pedra e madeira' }],
         cover: {
@@ -140,56 +159,67 @@ describe('Coleção — leitura pública como anon', () => {
         },
         rank: 3,
         featured: true,
-        editions: [
+        homeEditions: [
           {
-            id: owner.id,
-            region: 'Litoral norte de São Paulo',
-            modality: 'owner_and_co_owner',
-            values: [
-              { basis: 'owner', amountMinor: 4_800_000_000n, currency: 'BRL' },
-              { basis: 'acao', amountMinor: 600_000_000n, currency: 'BRL' },
-            ],
+            id: varanda.id,
+            name: 'Edição Varanda',
+            ...facts,
+            suites: 4,
+            projectedInvestment: { amountMinor: 4_800_000_000n, currency: 'BRL' },
+            // A imagem principal é a imagem aprovada, nunca a planta.
+            cover: expect.objectContaining({ mediaId: image.id }),
+            createdAt: start,
           },
-          { id: future.id, region: 'Litoral norte de São Paulo', modality: 'owner', values: [] },
+          {
+            id: serra.id,
+            name: 'Edição Serra',
+            ...facts,
+            suites: 3,
+            projectedInvestment: null,
+            cover: null,
+            createdAt: new Date(start.getTime() + 60_000),
+          },
         ],
       },
     ]);
   });
 
-  it('[REQ-100] valor encerrado deixa a leitura pública na próxima requisição; o histórico continua no banco', async () => {
+  it('[REQ-100] média encerrada deixa a leitura pública na próxima requisição; o histórico continua no banco', async () => {
     const { build } = harness;
-    const { conceptId } = await publicConcept();
-    const edition = await build.edition(conceptId, 'owner');
-    const value = await build.referenceValue(edition.id, 'owner', 4_800_000 * REAIS);
-    const values = async () => (await entries())[0]?.editions[0]?.values ?? [];
-    expect(await values()).toHaveLength(1);
+    const { homeConceptId } = await publicHomeConcept();
+    const homeEdition = await publishedHomeEdition(homeConceptId);
+    const value = await build.projectedInvestment(homeEdition.id, 4_800_000 * REAIS);
+    const current = async () => (await entries())[0]?.homeEditions[0]?.projectedInvestment;
+    expect(await current()).toEqual({ amountMinor: 480_000_000n, currency: 'BRL' });
     harness = catalogHarness(db, controlledClock(new Date(start.getTime() + HOUR / 2)));
-    await harness.ok(harness.handlers.endEditionReferenceValue, {
-      edition_reference_value_id: value.id,
+    await harness.ok(harness.handlers.endHomeEditionProjectedInvestment, {
+      home_edition_projected_investment_id: value.id,
     });
-    expect(await values()).toEqual([]);
+    expect(await current()).toBeNull();
     const { rows } = await database.pool.query<{ n: number }>(
-      'SELECT count(*)::int AS n FROM app.edition_reference_value',
+      'SELECT count(*)::int AS n FROM app.home_edition_projected_investment',
     );
     expect(rows).toEqual([{ n: 1 }]);
   });
 
   it('[ADR-0014] menor privilégio: dados de aprovação, retirada, autoria e operação não são legíveis por anon', async () => {
-    await publicConcept();
-    await expectDenied('SELECT approved_by_user_id FROM app.concept_media');
-    await expectDenied('SELECT withdrawal_basis FROM app.concept_media');
-    await expectDenied('SELECT source_sha256 FROM app.concept_media');
-    await expectDenied('SELECT registered_by_user_id FROM app.edition_reference_value');
+    await publicHomeConcept();
+    await expectDenied('SELECT approved_by_user_id FROM app.home_concept_media');
+    await expectDenied('SELECT withdrawal_basis FROM app.home_concept_media');
+    await expectDenied('SELECT source_sha256 FROM app.home_concept_media');
+    await expectDenied('SELECT registered_by_user_id FROM app.home_edition_projected_investment');
+    await expectDenied('SELECT approved_by_user_id FROM app.home_edition_media');
+    await expectDenied('SELECT withdrawal_basis FROM app.home_edition_media');
     await expectDenied('SELECT operation_id FROM app.catalog_term');
     await expectDenied('SELECT active FROM app.catalog_term');
-    await expectDenied('SELECT operation_id FROM app.concept_curation');
+    await expectDenied('SELECT operation_id FROM app.home_concept_curation');
   });
 
-  it('[ADR-0015] versões: só as larguras de exibição da capa aprovada de Concept público; o master nunca', async () => {
+  it('[ADR-0015] versões: só as larguras de exibição da capa aprovada de Home Concept público; o master nunca', async () => {
     const { build, ok, handlers } = harness;
-    const { conceptId } = await publicConcept();
-    const pending = await build.cover(conceptId);
-    const approved = await build.approveCover((await build.cover(conceptId)).id);
+    const { homeConceptId } = await publicHomeConcept();
+    const pending = await build.cover(homeConceptId);
+    const approved = await build.approveCover((await build.cover(homeConceptId)).id);
     const rendition = (id: string, width: number) =>
       read((tx) => reader.coverRendition(tx, id, width));
     expect(await rendition(pending.id, 1600)).toBeNull();
@@ -198,26 +228,30 @@ describe('Coleção — leitura pública como anon', () => {
     expect(harness.media.objects.has(largest?.storageKey ?? '')).toBe(true);
     // O master (1600 px aqui, mesma largura) só existe com papel `master`, invisível para anon.
     const roles = await read((tx) =>
-      sql<{ role: string }>`SELECT DISTINCT role FROM app.concept_media_file`.execute(tx),
+      sql<{ role: string }>`SELECT DISTINCT role FROM app.home_concept_media_file`.execute(tx),
     );
     expect(roles.rows).toEqual([{ role: 'display' }]);
-    await ok(handlers.withdrawConceptMedia, {
-      concept_media_id: approved.id,
+    await ok(handlers.withdrawHomeConceptMedia, {
+      home_concept_media_id: approved.id,
       withdrawal_basis: 'Direito de imagem encerrado',
     });
     expect(await rendition(approved.id, 1600)).toBeNull();
   });
 
-  it('[REQ-022] capa é opcional: Concept sem capa é público, com o quadro tipográfico, e nunca destaque', async () => {
+  it('[REQ-022] capa é opcional: Home Concept sem capa é público, com o quadro tipográfico, e nunca destaque', async () => {
     const { handlers, run } = harness;
-    const { conceptId } = await publicConcept();
-    expect(await entries()).toMatchObject([{ id: conceptId, cover: null, featured: false }]);
+    const { homeConceptId } = await publicHomeConcept();
+    expect(await entries()).toMatchObject([{ id: homeConceptId, cover: null, featured: false }]);
     expect(
-      await run(handlers.setConceptCuration, { concept_id: conceptId, rank: 1, featured: true }),
+      await run(handlers.setHomeConceptCuration, {
+        home_concept_id: homeConceptId,
+        rank: 1,
+        featured: true,
+      }),
     ).toMatchObject({ status: 'rejected', code: 'ERR_STATE_TRANSITION' });
   });
 
-  describe('GET /media/concept-covers/{id}/{width}', () => {
+  describe('GET /media/home-concept-covers/{id}/{width}', () => {
     async function get(
       id: string,
       width: string,
@@ -229,16 +263,20 @@ describe('Coleção — leitura pública como anon', () => {
         isOpen: () => options.open ?? true,
       });
       const { logger } = captureLogger();
-      const request = new Request(`http://127.0.0.1:3100/media/concept-covers/${id}/${width}`, {
-        headers: options.ifNoneMatch === undefined ? {} : { 'if-none-match': options.ifNoneMatch },
-      });
+      const request = new Request(
+        `http://127.0.0.1:3100/media/home-concept-covers/${id}/${width}`,
+        {
+          headers:
+            options.ifNoneMatch === undefined ? {} : { 'if-none-match': options.ifNoneMatch },
+        },
+      );
       return withRoute(route, logger)(request, { params: Promise.resolve({ id, width }) });
     }
 
     it('entrega WebP com ETag forte e no-cache; If-None-Match → 304; retirada → 404 na próxima requisição', async () => {
       const { build, ok, handlers } = harness;
-      const { conceptId } = await publicConcept();
-      const media = await build.approveCover((await build.cover(conceptId)).id);
+      const { homeConceptId } = await publicHomeConcept();
+      const media = await build.approveCover((await build.cover(homeConceptId)).id);
 
       const response = await get(media.id, '800');
       expect(response.status).toBe(200);
@@ -253,8 +291,8 @@ describe('Coleção — leitura pública como anon', () => {
       expect(revalidated.status).toBe(304);
       expect(await revalidated.text()).toBe('');
 
-      await ok(handlers.withdrawConceptMedia, {
-        concept_media_id: media.id,
+      await ok(handlers.withdrawHomeConceptMedia, {
+        home_concept_media_id: media.id,
         withdrawal_basis: 'Direito de imagem encerrado',
       });
       const gone = await get(media.id, '800', { ifNoneMatch: etag ?? '' });
@@ -262,13 +300,13 @@ describe('Coleção — leitura pública como anon', () => {
       expect(validError(await gone.json())).toBe(true);
     });
 
-    it('404 sem motivo: pendente, id ou largura inválidos, Concept não público e portão fechado', async () => {
+    it('404 sem motivo: pendente, id ou largura inválidos, Home Concept não público e portão fechado', async () => {
       const { build } = harness;
-      const { conceptId } = await publicConcept();
-      const pending = await build.cover(conceptId);
-      const approved = await build.approveCover((await build.cover(conceptId)).id);
-      const hidden = await build.approvedEdition();
-      const hiddenCover = await build.approveCover((await build.cover(hidden.conceptId)).id);
+      const { homeConceptId } = await publicHomeConcept();
+      const pending = await build.cover(homeConceptId);
+      const approved = await build.approveCover((await build.cover(homeConceptId)).id);
+      const hidden = await build.finalizedHomeEdition();
+      const hiddenCover = await build.approveCover((await build.cover(hidden.homeConceptId)).id);
       for (const [id, width, open] of [
         [pending.id, '800', true],
         ['nao-e-uuid', '800', true],
@@ -283,6 +321,47 @@ describe('Coleção — leitura pública como anon', () => {
         expect(response.status, `${id} ${width} ${open}`).toBe(404);
         expect(validError(await response.json())).toBe(true);
       }
+    });
+  });
+
+  describe('GET /media/home-edition-media/{id}/{width}', () => {
+    async function get(id: string, width: string) {
+      const route = createCoverRoute({
+        owner: 'homeEdition',
+        database: () => db,
+        storage: harness.media,
+        isOpen: () => true,
+      });
+      const { logger } = captureLogger();
+      const request = new Request(`http://127.0.0.1:3100/media/home-edition-media/${id}/${width}`);
+      return withRoute(route, logger)(request, { params: Promise.resolve({ id, width }) });
+    }
+
+    it('[BR-036] só mídia aprovada de Home Edition publicada; retirar a Home Edition do público → 404 na próxima requisição', async () => {
+      const { build, ok, handlers } = harness;
+      const { homeConceptId } = await publicHomeConcept();
+      const homeEdition = await publishedHomeEdition(homeConceptId);
+      const approved = await build.homeEditionMedia(homeEdition.id);
+      await build.approveHomeEditionMedia(approved.id);
+      const pending = await build.homeEditionMedia(homeEdition.id, 'render');
+      const draft = await build.homeEdition(homeConceptId, { name: 'Em preparação' });
+      const draftMedia = await build.homeEditionMedia(draft.id);
+      await build.approveHomeEditionMedia(draftMedia.id);
+
+      const response = await get(approved.id, '800');
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toBe('image/webp');
+      // A capa do Home Concept não é servida por esta rota, nem a mídia da Home Edition pela rota da capa.
+      for (const id of [pending.id, draftMedia.id]) {
+        expect((await get(id, '800')).status).toBe(404);
+      }
+      await ok(handlers.withdrawHomeEdition, {
+        home_edition_id: homeEdition.id,
+        withdrawal_basis: 'Revisão',
+      });
+      const gone = await get(approved.id, '800');
+      expect(gone.status).toBe(404);
+      expect(validError(await gone.json())).toBe(true);
     });
   });
 });

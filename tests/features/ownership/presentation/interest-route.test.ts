@@ -20,7 +20,8 @@ const PATH = '/interests';
 const HOST = 'luxtory.test';
 const ORIGIN = `https://${HOST}`;
 const ATTEMPT_ID = '0f8b8a4e-3c1d-4f6a-9b2e-7d5c4b3a2f10';
-const CONCEPT = '6a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d';
+const HOME_CONCEPT = '6a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d';
+const HOME_EDITION = '66666666-7777-4888-9999-aaaaaaaaaaaa';
 
 const ENV = {
   INTEREST_LIMITER_MODE: 'fake',
@@ -38,15 +39,15 @@ function omit(env: Readonly<Record<string, string>>, key: string): Record<string
 
 // Valores sensíveis de propósito: nenhum deles pode aparecer em log ou resposta.
 const INTEREST = {
-  concept_id: CONCEPT,
+  home_edition_id: HOME_EDITION,
   modality: 'co_owner',
-  region: 'Rua Sigilosa 123, Ana Sigilosa',
+  desired_location: 'Rua Sigilosa 123, Ana Sigilosa',
   approx_days: 21,
   origin: 'telefone 11 99999-0000',
   partner_ref: 'Parceiro Confidencial',
 };
 
-const TARGET: InterestTarget = { conceptId: CONCEPT, editions: [] };
+const TARGET: InterestTarget = { homeEditionId: HOME_EDITION, homeConceptId: HOME_CONCEPT };
 
 interface SetupOptions {
   readonly env?: Readonly<Record<string, string>>;
@@ -161,7 +162,7 @@ describe('POST /v1/interests — registro (REQ-022–REQ-025)', () => {
     await expectError(await call(), 409, 'ERR_IDEMPOTENCY_CONFLICT');
   });
 
-  it('[REQ-022] Concept não publicado → 404, sem gravar', async () => {
+  it('[REQ-022] Home Edition não pública → 404, sem gravar', async () => {
     const { call, store } = setup({ target: null });
 
     await expectError(await call(), 404, 'ERR_NOT_FOUND');
@@ -172,11 +173,11 @@ describe('POST /v1/interests — registro (REQ-022–REQ-025)', () => {
 describe('POST /v1/interests — validação sem eco (TECH-100)', () => {
   it('[TECH-100] 400 com nome e código dos campos, nunca os valores', async () => {
     const { call, logged } = setup();
-    const body = JSON.stringify({ ...INTEREST, modality: 'owner', region: '' });
+    const body = JSON.stringify({ ...INTEREST, modality: 'owner', desired_location: '' });
 
     const error = await expectError(await call({ body }), 400, 'ERR_VALIDATION');
 
-    expect(error).toMatchObject({ fields: [{ field: 'region', code: 'required' }] });
+    expect(error).toMatchObject({ fields: [{ field: 'desired_location', code: 'required' }] });
     expect(JSON.stringify(error)).not.toContain('telefone');
     expect(logged()).not.toContain('telefone');
   });
@@ -201,7 +202,7 @@ describe('POST /v1/interests — validação sem eco (TECH-100)', () => {
   it('JSON inválido ou UTF-8 inválido → 400; tipo errado → 415; corpo grande → 413', async () => {
     const { call, store } = setup();
 
-    await expectError(await call({ body: '{"concept_id":' }), 400, 'ERR_VALIDATION');
+    await expectError(await call({ body: '{"home_edition_id":' }), 400, 'ERR_VALIDATION');
     await expectError(await call({ body: new Uint8Array([0xff, 0xfe]) }), 400, 'ERR_VALIDATION');
     await expectError(
       await call({ headers: { 'content-type': 'text/plain' } }),
@@ -209,7 +210,7 @@ describe('POST /v1/interests — validação sem eco (TECH-100)', () => {
       'ERR_UNSUPPORTED_MEDIA_TYPE',
     );
     await expectError(
-      await call({ body: JSON.stringify({ ...INTEREST, region: 'x'.repeat(9000) }) }),
+      await call({ body: JSON.stringify({ ...INTEREST, desired_location: 'x'.repeat(9000) }) }),
       413,
       'ERR_PAYLOAD_TOO_LARGE',
     );
@@ -359,7 +360,7 @@ describe('POST /v1/interests — abuso e falha fechada (TECH-100)', () => {
     expect(entries()).toContainEqual(
       expect.objectContaining({ event: 'interest_registration', stage: 'registered', status: 201 }),
     );
-    for (const secret of ['Sigilosa', 'telefone', 'Confidencial', ATTEMPT_ID, CONCEPT]) {
+    for (const secret of ['Sigilosa', 'telefone', 'Confidencial', ATTEMPT_ID, HOME_EDITION]) {
       expect(logged()).not.toContain(secret);
     }
   });

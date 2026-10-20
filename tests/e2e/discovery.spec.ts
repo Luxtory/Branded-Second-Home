@@ -11,15 +11,24 @@ import {
   worstContrastUnder,
 } from './support/ui';
 
-// Discovery público B2C (docs/specs/catalog.md §13): Home, Como funciona, Coleção e Concept, lidos como `anon`, sobre o
-// catálogo semeado por catalog.seed.ts (estado "há Edition publicada"; os outros estados do CTA são provados em
+// Discovery público B2C (docs/specs/catalog.md §13, §17.8): Home, Como funciona, Coleção, Home Concept e Home Edition,
+// lidos como `anon`, sobre o catálogo semeado por catalog.seed.ts (estado "há Home Edition publicada"; os outros estados
+// do CTA são provados em
 // tests/features/catalog/presentation/catalog-actions.test.tsx). Gate de UI do ADR-0009 em toda página.
 
 // Preço por dia ou por noite no texto renderizado (REQ-100), além da guarda canônica de terminologia.
 const PRICE_PER_DAY = /R\$\s?[\d.,]+\s*(\/|por)\s*(dia|noite)\b/i;
 
 // O seed é lido dentro dos testes: o arquivo só existe depois do projeto `seed`.
-const PAGE_NAMES = ['home', 'howItWorks', 'collection', 'withEdition', 'withoutEdition'] as const;
+const PAGE_NAMES = [
+  'home',
+  'howItWorks',
+  'collection',
+  'withHomeEdition',
+  'withoutHomeEdition',
+  'homeEdition',
+  'homeEditionWithoutMedia',
+] as const;
 type PageName = (typeof PAGE_NAMES)[number];
 
 function pathOf(name: PageName): string {
@@ -28,15 +37,17 @@ function pathOf(name: PageName): string {
     home: '/',
     howItWorks: '/como-funciona',
     collection: '/colecao',
-    withEdition: `/colecao/${seed.withEdition.id}`,
-    withoutEdition: `/colecao/${seed.withoutEdition.id}`,
+    withHomeEdition: `/colecao/${seed.withHomeEdition.id}`,
+    withoutHomeEdition: `/colecao/${seed.withoutHomeEdition.id}`,
+    homeEdition: `/colecao/${seed.withHomeEdition.id}/home-editions/${seed.withHomeEdition.homeEdition.id}`,
+    homeEditionWithoutMedia: `/colecao/${seed.secondBrand.id}/home-editions/${seed.secondBrand.homeEdition.id}`,
   };
   return paths[name];
 }
 
 // textContent: inclui as respostas fechadas do FAQ.
 const visibleText = async (page: Page) => (await page.locator('body').textContent()) ?? '';
-const EDITIONS_CTA = 'Conheça as Home Editions';
+const HOME_EDITIONS_CTA = 'Conheça as Home Editions';
 
 test.describe('Discovery público — gate de UI (ADR-0009)', () => {
   for (const name of PAGE_NAMES) {
@@ -143,21 +154,32 @@ test.describe('Discovery público — Como funciona: header da Home e scrim unif
 test.describe('Discovery público — jornada a 390 px com toque', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
-  test('Home → Home Editions → Concept → Como funciona → Home Editions', async ({ page }) => {
+  test('Home → Home Editions → Home Concept → Home Edition → Como funciona → Home Editions', async ({
+    page,
+  }) => {
     const seed = readSeed();
     const errors = collectConsoleErrors(page);
     await page.goto('/');
-    await page.getByRole('link', { name: EDITIONS_CTA }).tap();
+    await page.getByRole('link', { name: HOME_EDITIONS_CTA }).tap();
     await expect(page).toHaveURL(/\/colecao#home-editions$/);
     await page
       .getByRole('list', { name: 'Home Concepts com Home Edition' })
-      .getByRole('link', { name: seed.withEdition.title })
+      .getByRole('link', { name: seed.withHomeEdition.title })
       .tap();
-    await expect(page).toHaveURL(new RegExp(`/colecao/${seed.withEdition.id}$`));
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(seed.withEdition.title);
+    await expect(page).toHaveURL(new RegExp(`/colecao/${seed.withHomeEdition.id}$`));
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(seed.withHomeEdition.title);
+    await page.getByRole('link', { name: seed.withHomeEdition.homeEdition.name }).tap();
+    await expect(page).toHaveURL(
+      new RegExp(
+        `/colecao/${seed.withHomeEdition.id}/home-editions/${seed.withHomeEdition.homeEdition.id}$`,
+      ),
+    );
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      seed.withHomeEdition.homeEdition.name,
+    );
     await page.getByRole('link', { name: 'Entenda como funciona' }).tap();
     await expect(page).toHaveURL(/\/como-funciona$/);
-    await page.getByRole('link', { name: EDITIONS_CTA }).tap();
+    await page.getByRole('link', { name: HOME_EDITIONS_CTA }).tap();
     await expect(page).toHaveURL(/\/colecao#home-editions$/);
     expect(errors).toEqual([]);
   });
@@ -232,42 +254,91 @@ test.describe('Discovery público — conteúdo', () => {
     );
   });
 
-  test('[REQ-022] Concept sem Edition: só no grupo Home Concepts e sem oferta; com Edition, região, modalidade e condições como registradas', async ({
+  test('[REQ-022] [BR-031] Home Concept sem Home Edition publicada: só no grupo dele; com Home Edition, o card leva à página dela, sem localização, modalidade nem condições', async ({
     page,
   }) => {
     const seed = readSeed();
     await page.goto(pathOf('collection'));
-    const withEditions = page.getByRole('list', {
+    const withHomeEditions = page.getByRole('list', {
       name: 'Home Concepts com Home Edition',
     });
-    const withoutEditions = page.getByRole('list', {
+    const withoutHomeEditions = page.getByRole('list', {
       name: 'Home Concepts sem Home Edition',
     });
-    await expect(withEditions.getByRole('link', { name: seed.withEdition.title })).toBeVisible();
-    await expect(withEditions.getByRole('link', { name: seed.coOwnerOnly.title })).toBeVisible();
     await expect(
-      withoutEditions.getByRole('link', { name: seed.withoutEdition.title }),
+      withHomeEditions.getByRole('link', { name: seed.withHomeEdition.title }),
     ).toBeVisible();
-    // Nenhum Concept nos dois grupos.
-    await expect(withoutEditions.getByRole('link', { name: seed.withEdition.title })).toHaveCount(
-      0,
-    );
-    await expect(withEditions.getByRole('link', { name: seed.withoutEdition.title })).toHaveCount(
-      0,
-    );
+    await expect(
+      withHomeEditions.getByRole('link', { name: seed.secondBrand.title }),
+    ).toBeVisible();
+    // Finalizada fora do site não conta como publicada (BR-036).
+    await expect(
+      withoutHomeEditions.getByRole('link', { name: seed.withoutHomeEdition.title }),
+    ).toBeVisible();
+    // Nenhum Home Concept nos dois grupos; Home Edition em preparação nunca aparece.
+    await expect(
+      withoutHomeEditions.getByRole('link', { name: seed.withHomeEdition.title }),
+    ).toHaveCount(0);
+    await expect(
+      withHomeEditions.getByRole('link', { name: seed.withoutHomeEdition.title }),
+    ).toHaveCount(0);
+    await expect(page.getByText(seed.withHomeEdition.draftHomeEdition.name)).toHaveCount(0);
+    await expect(page.getByText(seed.withHomeEdition.homeEdition.name)).toBeVisible();
+    await expect(page.getByText(/Média projetada\sR\$\s4\.800\.000/)).toBeVisible();
+    await expect(page.getByText(discoveryMessages.collection.projectedNote)).toBeVisible();
 
-    await page.goto(pathOf('withoutEdition'));
-    await expect(page.getByText(discoveryMessages.concept.offer.none)).toBeVisible();
-    await expect(page.getByText('Condições comerciais', { exact: true })).toHaveCount(0);
-    await expect(page.getByText('Modalidade', { exact: true })).toHaveCount(0);
+    await page.goto(pathOf('withoutHomeEdition'));
+    await expect(page.getByText(discoveryMessages.homeConcept.homeEditions.none)).toBeVisible();
+    await expect(page.getByText(seed.withoutHomeEdition.hiddenHomeEdition.name)).toHaveCount(0);
 
-    await page.goto(pathOf('withEdition'));
-    await expect(page.getByRole('heading', { name: seed.withEdition.region })).toBeVisible();
-    await expect(page.getByText('Owner ou Co-Owner', { exact: true })).toBeVisible();
-    await expect(page.getByText('Cronograma de obra, forma de pagamento')).toBeVisible();
-    await expect(page.locator('.lx-credit__name')).toHaveText(seed.withEdition.brandName);
+    await page.goto(pathOf('withHomeEdition'));
+    await expect(page.locator('.lx-credit__name')).toHaveText(seed.withHomeEdition.brandName);
+    await expect(
+      page.getByRole('link', { name: seed.withHomeEdition.homeEdition.name }),
+    ).toHaveAttribute('href', pathOf('homeEdition'));
+    await expect(page.getByText(seed.withHomeEdition.draftHomeEdition.name)).toHaveCount(0);
+    for (const removed of ['Condições comerciais', 'Modalidade', 'Região', 'Localização']) {
+      await expect(page.getByText(removed, { exact: true })).toHaveCount(0);
+    }
     // "Manifestar interesse" só existe com o formulário (W6; D-B2C-10).
     await expect(page.getByText('Manifestar interesse')).toHaveCount(0);
+  });
+
+  test('[REQ-022] [BR-031] [BR-034] página da Home Edition: definição, galeria e plantas, média projetada com a explicação; sem formulário', async ({
+    page,
+  }) => {
+    const seed = readSeed();
+    const { homeEdition: copy } = discoveryMessages;
+    await page.goto(pathOf('homeEdition'));
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      seed.withHomeEdition.homeEdition.name,
+    );
+    await expect(page.getByRole('navigation', { name: copy.breadcrumb })).toContainText(
+      seed.withHomeEdition.title,
+    );
+    await expect(page.getByText('Casa térrea com pátio central').first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: copy.gallery.title })).toBeVisible();
+    await expect(page.getByRole('heading', { name: copy.gallery.plans })).toBeVisible();
+    await expect(page.getByRole('heading', { name: copy.projected.title })).toBeVisible();
+    for (const line of copy.projected.text) await expect(page.getByText(line)).toBeVisible();
+    await expect(page.locator('form')).toHaveCount(0);
+    expect(await page.title()).toContain(seed.withHomeEdition.homeEdition.name);
+
+    // Sem média nem mídia: a página continua, sem os blocos (nada é presumido).
+    await page.goto(pathOf('homeEditionWithoutMedia'));
+    await expect(page.getByRole('heading', { name: copy.projected.title })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: copy.gallery.title })).toHaveCount(0);
+
+    // Em preparação, finalizada fora do site, de outro Home Concept ou id inválido → 404.
+    for (const path of [
+      `/colecao/${seed.withHomeEdition.id}/home-editions/${seed.withHomeEdition.draftHomeEdition.id}`,
+      `/colecao/${seed.withoutHomeEdition.id}/home-editions/${seed.withoutHomeEdition.hiddenHomeEdition.id}`,
+      `/colecao/${seed.secondBrand.id}/home-editions/${seed.withHomeEdition.homeEdition.id}`,
+      `/colecao/${seed.withHomeEdition.id}/home-editions/nao-e-um-id`,
+    ]) {
+      const response = await page.goto(path);
+      expect(response?.status(), path).toBe(404);
+    }
   });
 
   test('[REQ-103] Owner e Co-Owner com a mesma estrutura onde aparecem juntos', async ({
@@ -293,15 +364,15 @@ test.describe('Discovery público — conteúdo', () => {
     }
   });
 
-  test('[BR-015] [BR-021] Concept sem exposição, com encerramento eficaz ou sem versão aprovada não aparece e responde 404', async ({
+  test('[BR-015] [BR-021] Home Concept sem exposição, com encerramento eficaz ou sem versão aprovada não aparece e responde 404', async ({
     page,
   }) => {
     const seed = readSeed();
     await page.goto(pathOf('collection'));
-    for (const concept of seed.hidden) {
-      await expect(page.getByText(concept.title)).toHaveCount(0);
-      const response = await page.goto(`/colecao/${concept.id}`);
-      expect(response?.status(), concept.title).toBe(404);
+    for (const homeConcept of seed.hidden) {
+      await expect(page.getByText(homeConcept.title)).toHaveCount(0);
+      const response = await page.goto(`/colecao/${homeConcept.id}`);
+      expect(response?.status(), homeConcept.title).toBe(404);
       await expect(page.getByRole('heading', { level: 1 })).toContainText('não está aqui');
       await page.goto(pathOf('collection'));
     }
@@ -309,12 +380,12 @@ test.describe('Discovery público — conteúdo', () => {
     expect(invalid?.status()).toBe(404);
   });
 
-  test('[D-B2C-16] com Edition publicada, a Home e o Como funciona levam à primeira oferta da Coleção', async ({
+  test('[D-B2C-16] [D-B2C-27] com Home Edition publicada, a Home e o Como funciona levam ao primeiro grupo da Coleção', async ({
     page,
   }) => {
     for (const path of ['/', '/como-funciona']) {
       await page.goto(path);
-      await expect(page.getByRole('link', { name: EDITIONS_CTA }), path).toHaveAttribute(
+      await expect(page.getByRole('link', { name: HOME_EDITIONS_CTA }), path).toHaveAttribute(
         'href',
         '/colecao#home-editions',
       );
@@ -359,10 +430,10 @@ test.describe('Discovery público — conteúdo', () => {
     await expect(fit.nth(0).getByRole('listitem')).toHaveCount(howItWorks.fit.fits.length);
     await expect(fit.nth(1).getByRole('listitem')).toHaveCount(howItWorks.fit.notFits.length);
 
-    // Com Edition publicada: o apoio e o CTA da primeira oferta, sobre a fotografia de fechamento.
+    // Com Home Edition publicada: o apoio e o CTA do primeiro grupo, sobre a fotografia de fechamento.
     const next = page.locator('section#proximo-passo');
     await expect(next).toContainText(howItWorks.next.text);
-    await expect(next.getByRole('link', { name: EDITIONS_CTA })).toBeVisible();
+    await expect(next.getByRole('link', { name: HOME_EDITIONS_CTA })).toBeVisible();
   });
 
   test('[TECH-100] CSP com nonce nas páginas públicas e no Admin; nenhum link para o Admin nem para Brand Partners', async ({
@@ -397,25 +468,29 @@ test.describe('Admin — conteúdo público identificado (spec catalog §13.5)',
     await expect(page).toHaveURL(/\/admin$/);
 
     const errors = collectConsoleErrors(page);
-    await page.goto(`/admin/catalogo/concepts/${seed.withoutEdition.id}/editions/nova`);
-    for (const label of ['Região', 'Condições comerciais']) {
+    await page.goto(
+      `/admin/catalogo/home-concepts/${seed.withoutHomeEdition.id}/home-editions/nova`,
+    );
+    for (const label of ['Nome da Home Edition', 'Tipologia', 'Configuração dos espaços']) {
       await expect(page.getByLabel(label)).toBeVisible();
       await expect(page.locator('label', { hasText: label })).toContainText('Público no site');
     }
-    await expect(page.locator('legend', { hasText: 'Modalidade' })).toContainText(
-      'Público no site',
-    );
+    for (const removed of ['Região', 'Condições comerciais', 'Modalidade']) {
+      await expect(page.getByLabel(removed, { exact: true })).toHaveCount(0);
+    }
     await expect(
-      page.getByText('Ao registrar, a região e a modalidade passam a aparecer'),
+      page.getByText(
+        'A Home Edition não tem localização, modalidade, estrutura patrimonial nem condições comerciais',
+      ),
     ).toBeVisible();
     await expectResponsive(page, errors);
-    await captureForReview(page, 'w4-admin-edition');
+    await captureForReview(page, 'w4-admin-home-edition');
 
     await page.goto(
-      `/admin/catalogo/brand-partners/${seed.withEdition.brandPartnerId}/concepts/novo`,
+      `/admin/catalogo/brand-partners/${seed.withHomeEdition.brandPartnerId}/home-concepts/novo`,
     );
-    await expect(page.getByLabel('Nome do Concept')).toBeVisible();
+    await expect(page.getByLabel('Nome do Home Concept')).toBeVisible();
     await expect(page.getByText('Uso interno: não aparece no site.').first()).toBeVisible();
-    await captureForReview(page, 'w4-admin-concept');
+    await captureForReview(page, 'w4-admin-home-concept');
   });
 });

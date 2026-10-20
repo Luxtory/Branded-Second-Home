@@ -3,8 +3,7 @@ import type pg from 'pg';
 import sharp from 'sharp';
 import { expect, vi } from 'vitest';
 import { createCatalogHandlers } from '@/features/catalog/application/handlers';
-import type { EditionModality } from '@/features/catalog/domain/catalog';
-import type { CatalogTermKind, ReferenceValueBasis } from '@/features/catalog/domain/collection';
+import type { CatalogTermKind, HomeEditionMediaKind } from '@/features/catalog/domain/collection';
 import { postgresCatalogStore } from '@/features/catalog/infrastructure/postgres-catalog-store';
 import { sharpCoverProcessor } from '@/features/catalog/infrastructure/sharp-cover-processor';
 import { memoryMediaStorage } from './media-storage';
@@ -33,7 +32,22 @@ export const CATALOG_STAFF: Actor = {
 export const CONTENT = {
   essential_elements: ['Pátio central com espelho d’água', 'Fachada em pedra local'],
   preservation_premises: ['Materiais de origem regional', 'Proporção do pátio preservada'],
-  specification: 'Especificação para implantação replicável e apresentação comercial.',
+  specification:
+    'Especificação para Home Editions fiéis e replicáveis e para a apresentação do Home Concept.',
+} as const;
+
+/** Definição material e textos de uma Home Edition (BR-031), sem localização, modalidade nem condições. */
+export const HOME_EDITION_CONTENT = {
+  name: 'Casa do Pátio — Edição Mar',
+  description: 'Uma casa térrea organizada em torno do pátio central.',
+  typology: 'Casa térrea com pátio central',
+  spatial_configuration: 'Estar, jantar e cozinha integrados ao pátio; suítes em ala reservada.',
+  projected_area_m2: 420,
+  suites: 4,
+  guests_max: 10,
+  rooms: ['Estar', 'Jantar', 'Cozinha gourmet'],
+  amenities: ['Piscina', 'Spa'],
+  characteristics: ['Pátio com espelho d’água'],
 } as const;
 
 export interface TestImageOptions {
@@ -137,36 +151,54 @@ export function catalogHarness(
   const build = {
     brandPartner: (name = `Maison ${randomUUID().slice(0, 8)}`) =>
       ok(handlers.registerBrandPartner, { brand_name: name }),
-    concept: (brandPartnerId: string) =>
-      ok(handlers.createConceptVersion, {
+    homeConcept: (brandPartnerId: string) =>
+      ok(handlers.createHomeConceptVersion, {
         brand_partner_id: brandPartnerId,
         title: 'Casa do Pátio',
         ...CONTENT,
       }),
-    version: (conceptId: string) =>
-      ok(handlers.createConceptVersion, { concept_id: conceptId, ...CONTENT }),
+    version: (homeConceptId: string) =>
+      ok(handlers.createHomeConceptVersion, { home_concept_id: homeConceptId, ...CONTENT }),
     approve: (versionId: string) =>
-      ok(handlers.approveConceptVersion, {
-        concept_version_id: versionId,
+      ok(handlers.approveHomeConceptVersion, {
+        home_concept_version_id: versionId,
         approval_refs: ['Plano estratégico aprovado — ata 2026-09'],
       }),
-    edition: (conceptId: string, modality: EditionModality = 'owner_and_co_owner') =>
-      ok(handlers.createEdition, {
-        concept_id: conceptId,
-        region: 'Litoral norte de São Paulo',
-        modality,
-        commercial_conditions: 'Condições comerciais registradas pela Luxtory.',
+    homeEdition: (homeConceptId: string, content: Record<string, unknown> = {}) =>
+      ok(handlers.createHomeEdition, {
+        home_concept_id: homeConceptId,
+        ...HOME_EDITION_CONTENT,
+        ...content,
       }),
-    authorization: (conceptId: string, validFrom: Date, validUntil?: Date) =>
+    finalize: (homeEditionId: string) =>
+      ok(handlers.finalizeHomeEdition, { home_edition_id: homeEditionId }),
+    publish: (homeEditionId: string) =>
+      ok(handlers.publishHomeEdition, { home_edition_id: homeEditionId }),
+    homeEditionMedia: async (
+      homeEditionId: string,
+      kind: HomeEditionMediaKind = 'image',
+      image?: string,
+    ) =>
+      ok(handlers.uploadHomeEditionMedia, {
+        home_edition_id: homeEditionId,
+        kind,
+        image: image ?? (await coverImage()),
+        alt: 'Pátio central ao entardecer',
+        crop_x: 50,
+        crop_y: 50,
+      }),
+    approveHomeEditionMedia: (mediaId: string) =>
+      ok(handlers.approveHomeEditionMedia, { home_edition_media_id: mediaId }),
+    authorization: (homeConceptId: string, validFrom: Date, validUntil?: Date) =>
       ok(handlers.registerInvestorAuthorization, {
-        concept_id: conceptId,
+        home_concept_id: homeConceptId,
         instrument_ref: `Instrumento ${randomUUID().slice(0, 8)}`,
         valid_from: validFrom.toISOString(),
         ...(validUntil === undefined ? {} : { valid_until: validUntil.toISOString() }),
       }),
-    residence: (editionId: string, investorAuthorizationId?: string) =>
-      ok(handlers.registerResidence, {
-        edition_id: editionId,
+    secondHome: (homeEditionId: string, investorAuthorizationId?: string) =>
+      ok(handlers.registerSecondHome, {
+        home_edition_id: homeEditionId,
         label: 'Unidade 01',
         timezone: 'America/Sao_Paulo',
         ...(investorAuthorizationId === undefined
@@ -174,36 +206,36 @@ export function catalogHarness(
           : { investor_authorization_id: investorAuthorizationId }),
       }),
     term: (kind: CatalogTermKind, label: string) => ok(handlers.createCatalogTerm, { kind, label }),
-    cover: async (conceptId: string, image?: string) =>
-      ok(handlers.uploadConceptCover, {
-        concept_id: conceptId,
+    cover: async (homeConceptId: string, image?: string) =>
+      ok(handlers.uploadHomeConceptCover, {
+        home_concept_id: homeConceptId,
         image: image ?? (await coverImage()),
         alt: 'Fachada em pedra ao entardecer',
         crop_x: 50,
         crop_y: 35,
       }),
     approveCover: (mediaId: string) =>
-      ok(handlers.approveConceptMedia, { concept_media_id: mediaId }),
-    referenceValue: (
-      editionId: string,
-      basis: ReferenceValueBasis,
-      amountMinor: number,
-      validFrom?: Date,
-    ) =>
-      ok(handlers.registerEditionReferenceValue, {
-        edition_id: editionId,
-        basis,
+      ok(handlers.approveHomeConceptMedia, { home_concept_media_id: mediaId }),
+    projectedInvestment: (homeEditionId: string, amountMinor: number, validFrom?: Date) =>
+      ok(handlers.registerHomeEditionProjectedInvestment, {
+        home_edition_id: homeEditionId,
         amount_minor: amountMinor,
         currency: 'BRL',
         ...(validFrom === undefined ? {} : { valid_from: validFrom.toISOString() }),
       }),
-    /** Brand Partner → Concept (versão 1 aprovada) → Edition. */
-    async approvedEdition(modality: EditionModality = 'owner_and_co_owner') {
+    /** Brand Partner → Home Concept (versão 1 aprovada) → Home Edition em preparação. */
+    async approvedHomeEdition(content: Record<string, unknown> = {}) {
       const partner = await build.brandPartner();
-      const version = await build.concept(partner.id);
+      const version = await build.homeConcept(partner.id);
       const approved = await build.approve(version.id);
-      const edition = await build.edition(version.concept_id, modality);
-      return { partner, version: approved, conceptId: version.concept_id, edition };
+      const homeEdition = await build.homeEdition(version.home_concept_id, content);
+      return { partner, version: approved, homeConceptId: version.home_concept_id, homeEdition };
+    },
+    /** Como `approvedHomeEdition`, com a definição material finalizada (pode originar Second Home). */
+    async finalizedHomeEdition(content: Record<string, unknown> = {}) {
+      const built = await build.approvedHomeEdition(content);
+      const homeEdition = await build.finalize(built.homeEdition.id);
+      return { ...built, homeEdition };
     },
   };
 
@@ -217,11 +249,11 @@ export function expectRejected(outcome: CommandOutcome<unknown>, code: ErrorCode
 /** `operation` gravada pelo dono (fora do executor), para inserir linhas direto e provar os gatilhos do banco. */
 export async function ownerOperation(
   admin: pg.Pool,
-  command = 'register_residence',
+  command = 'register_second_home',
 ): Promise<string> {
   const id = randomUUID();
   await admin.query(
-    `INSERT INTO app.operation (id, command, actor_user_id, acting_party_id, role, residence_id, idempotency_key,
+    `INSERT INTO app.operation (id, command, actor_user_id, acting_party_id, role, second_home_id, idempotency_key,
                                 correlation_id, authorization_ref, state, created_at, updated_at)
      VALUES ($1, $2, NULL, NULL, 'system', NULL, $3, $3, 'runbook:test', 'committed', now(), now())`,
     [id, command, `test:${id}`],

@@ -49,7 +49,7 @@ describe('CSP e portão do site público (ADR-0014)', () => {
       '/entrar/mfa',
       '/admin',
       '/admin/catalogo',
-      '/v1/admin/editions',
+      '/v1/admin/home-editions',
     ]) {
       expect(isSessionPath(path), path).toBe(true);
     }

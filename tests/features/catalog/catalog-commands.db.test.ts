@@ -8,6 +8,7 @@ import {
   controlledClock,
   count,
   expectRejected,
+  HOME_EDITION_CONTENT,
   ownerOperation,
 } from '../../support/catalog-fixtures';
 import { appDatabase, waitForLockWaiter } from '../../support/platform-fixtures';
@@ -52,13 +53,13 @@ describe('catálogo — commands, constraints e concorrência', () => {
     };
   }
 
-  describe('[REQ-096] versões do Concept', () => {
+  describe('[REQ-096] versões do Home Concept', () => {
     it('[REQ-096] versões nascem "Não aprovado", numeradas 1, 2, 3; a aprovação grava referências, quem aprovou e o papel', async () => {
       const { build, handlers, run } = harness;
       const partner = await build.brandPartner();
-      const v1 = await build.concept(partner.id);
-      const v2 = await build.version(v1.concept_id);
-      const v3 = await build.version(v1.concept_id);
+      const v1 = await build.homeConcept(partner.id);
+      const v2 = await build.version(v1.home_concept_id);
+      const v3 = await build.version(v1.home_concept_id);
 
       expect([v1, v2, v3].map((v) => [v.version, v.state])).toEqual([
         [1, 'not_approved'],
@@ -66,7 +67,10 @@ describe('catálogo — commands, constraints e concorrência', () => {
         [3, 'not_approved'],
       ]);
       expectRejected(
-        await run(handlers.approveConceptVersion, { concept_version_id: v1.id, approval_refs: [] }),
+        await run(handlers.approveHomeConceptVersion, {
+          home_concept_version_id: v1.id,
+          approval_refs: [],
+        }),
         'ERR_VALIDATION',
       );
       const approved = await build.approve(v2.id);
@@ -83,63 +87,67 @@ describe('catálogo — commands, constraints e concorrência', () => {
     it('[REQ-096] versão já aprovada, igual ou menor que a vigente não é aprovada', async () => {
       const { build, handlers, run } = harness;
       const partner = await build.brandPartner();
-      const v1 = await build.concept(partner.id);
-      const v2 = await build.version(v1.concept_id);
+      const v1 = await build.homeConcept(partner.id);
+      const v2 = await build.version(v1.home_concept_id);
       await build.approve(v2.id);
       const approve = (id: string) =>
-        run(handlers.approveConceptVersion, { concept_version_id: id, approval_refs: ['Ata'] });
+        run(handlers.approveHomeConceptVersion, {
+          home_concept_version_id: id,
+          approval_refs: ['Ata'],
+        });
 
       expectRejected(await approve(v2.id), 'ERR_STATE_TRANSITION');
       expectRejected(await approve(v1.id), 'ERR_STATE_TRANSITION');
       expectRejected(await approve(randomUUID()), 'ERR_NOT_FOUND');
-      const v3 = await build.version(v1.concept_id);
+      const v3 = await build.version(v1.home_concept_id);
       await expect(build.approve(v3.id)).resolves.toMatchObject({ state: 'approved', version: 3 });
     });
 
     it('[REQ-096] versão aprovada é imutável: luxtory_app sem privilégio no conteúdo; dono barrado pelo gatilho', async () => {
       const { build } = harness;
       const partner = await build.brandPartner();
-      const version = await build.concept(partner.id);
+      const version = await build.homeConcept(partner.id);
       await build.approve(version.id);
 
       await expect(
         db
-          .updateTable('app.concept_version')
+          .updateTable('app.home_concept_version')
           .set({ specification: 'Outra' })
           .where('id', '=', version.id)
           .execute(),
       ).rejects.toThrow(/permission denied/);
       await expect(
         database.pool.query(
-          `UPDATE app.concept_version SET specification = 'Outra' WHERE id = $1`,
+          `UPDATE app.home_concept_version SET specification = 'Outra' WHERE id = $1`,
           [version.id],
         ),
       ).rejects.toThrow(/only the approval of a not approved version/);
       await expect(
-        database.pool.query(`UPDATE app.concept_version SET state = 'not_approved' WHERE id = $1`, [
-          version.id,
-        ]),
+        database.pool.query(
+          `UPDATE app.home_concept_version SET state = 'not_approved' WHERE id = $1`,
+          [version.id],
+        ),
       ).rejects.toThrow(/only the approval of a not approved version/);
     });
 
-    it('[REQ-096] aprovação que espera outra aprovação do mesmo Concept relê a vigente e é recusada se ficou menor', async () => {
+    it('[REQ-096] aprovação que espera outra aprovação do mesmo Home Concept relê a vigente e é recusada se ficou menor', async () => {
       const { build, handlers, run } = harness;
       const partner = await build.brandPartner();
-      const v1 = await build.concept(partner.id);
-      const v2 = await build.version(v1.concept_id);
-      const v3 = await build.version(v1.concept_id);
-      const op = await ownerOperation(database.pool, 'approve_concept_version');
+      const v1 = await build.homeConcept(partner.id);
+      const v2 = await build.version(v1.home_concept_id);
+      const v3 = await build.version(v1.home_concept_id);
+      const op = await ownerOperation(database.pool, 'approve_home_concept_version');
       // A outra sessão trava a Brand Partner e aprova a versão 3 antes de liberar.
       const other = await holdInOwnerTransaction(
         [
           'SELECT id FROM app.brand_partner WHERE id = $1 FOR NO KEY UPDATE',
-          `UPDATE app.concept_version SET state = 'approved', approval_refs = ARRAY['Ata'], approved_at = now(),
+          `UPDATE app.home_concept_version SET state = 'approved', approval_refs = ARRAY['Ata'], approved_at = now(),
              approved_by_user_id = $2, approved_role = 'admin', approval_operation_id = $3 WHERE id = $1`,
         ],
         [[partner.id], [v3.id, randomUUID(), op]],
       );
-      const waiting = run(handlers.approveConceptVersion, {
-        concept_version_id: v2.id,
+      const waiting = run(handlers.approveHomeConceptVersion, {
+        home_concept_version_id: v2.id,
         approval_refs: ['Ata'],
       });
       await waitForLockWaiter(database.pool);
@@ -149,66 +157,83 @@ describe('catálogo — commands, constraints e concorrência', () => {
     });
   });
 
-  describe('[REQ-020] Concept, Edition e Residence', () => {
-    it('[REQ-020] Edition — o único caminho para a Residence — exige Concept com versão aprovada', async () => {
+  describe('[REQ-020] Home Concept, Home Edition e Second Home', () => {
+    it('[REQ-020] Home Edition — o único caminho para a Second Home — exige Home Concept com versão aprovada', async () => {
       const { build, handlers, run } = harness;
       const partner = await build.brandPartner();
-      const version = await build.concept(partner.id);
-      const edition = {
-        concept_id: version.concept_id,
-        region: 'Serra da Mantiqueira',
-        modality: 'owner',
-        commercial_conditions: 'Condições registradas.',
+      const version = await build.homeConcept(partner.id);
+      const homeEdition = {
+        home_concept_id: version.home_concept_id,
+        ...HOME_EDITION_CONTENT,
       };
 
-      expectRejected(await run(handlers.createEdition, edition), 'ERR_STATE_TRANSITION');
-      expect(await count(database.pool, 'edition')).toBe(0);
+      expectRejected(await run(handlers.createHomeEdition, homeEdition), 'ERR_STATE_TRANSITION');
+      expect(await count(database.pool, 'home_edition')).toBe(0);
       await build.approve(version.id);
-      await expect(harness.ok(handlers.createEdition, edition)).resolves.toMatchObject({
-        concept_id: version.concept_id,
-        modality: 'owner',
+      await expect(harness.ok(handlers.createHomeEdition, homeEdition)).resolves.toMatchObject({
+        home_concept_id: version.home_concept_id,
+        name: HOME_EDITION_CONTENT.name,
+        material_state: 'draft',
+        visibility: 'hidden',
       });
     });
 
-    it('[REQ-020] Residence sem Concept aprovado é recusada pelo banco, mesmo fora do command', async () => {
+    it('[REQ-020] Second Home sem Home Concept aprovado é recusada pelo banco, mesmo fora do command', async () => {
       const { build } = harness;
-      const { edition, conceptId } = await build.approvedEdition();
-      const draft = await build.version(conceptId);
+      const { homeEdition, homeConceptId } = await build.finalizedHomeEdition();
+      const draft = await build.version(homeConceptId);
 
       await expect(
         database.pool.query(
-          `INSERT INTO app.residence (id, edition_id, concept_id, concept_version_id, commercially_approved_at, label,
+          `INSERT INTO app.second_home (id, home_edition_id, home_concept_id, home_concept_version_id, commercially_approved_at, label,
                                       timezone, operation_id)
            VALUES ($1, $2, $3, $4, now(), 'Unidade', 'America/Sao_Paulo', $5)`,
-          [randomUUID(), edition.id, conceptId, draft.id, await ownerOperation(database.pool)],
+          [
+            randomUUID(),
+            homeEdition.id,
+            homeConceptId,
+            draft.id,
+            await ownerOperation(database.pool),
+          ],
         ),
       ).rejects.toThrow(/is not the current approved version/);
     });
 
-    it('[REQ-020] objetos distintos vinculados pelo banco: Edition, versão e autorização do mesmo Concept; oferta só na Edition', async () => {
+    it('[REQ-020] [BR-031] objetos distintos vinculados pelo banco: Home Edition, versão e autorização do mesmo Home Concept; nenhuma condição comercial no catálogo', async () => {
       const { build } = harness;
-      const a = await build.approvedEdition();
-      const b = await build.approvedEdition();
-      const insertResidence = async (editionId: string, conceptId: string, versionId: string) =>
+      const a = await build.finalizedHomeEdition();
+      const b = await build.finalizedHomeEdition();
+      const insertSecondHome = async (
+        homeEditionId: string,
+        homeConceptId: string,
+        versionId: string,
+      ) =>
         database.pool.query(
-          `INSERT INTO app.residence (id, edition_id, concept_id, concept_version_id, commercially_approved_at, label,
+          `INSERT INTO app.second_home (id, home_edition_id, home_concept_id, home_concept_version_id, commercially_approved_at, label,
                                       timezone, operation_id)
            VALUES ($1, $2, $3, $4, now(), 'Unidade', 'America/Sao_Paulo', $5)`,
-          [randomUUID(), editionId, conceptId, versionId, await ownerOperation(database.pool)],
+          [
+            randomUUID(),
+            homeEditionId,
+            homeConceptId,
+            versionId,
+            await ownerOperation(database.pool),
+          ],
         );
 
       // Versão de outro Concept: o gatilho BEFORE INSERT já recusa (a FK composta é a segunda barreira).
-      await expect(insertResidence(a.edition.id, a.conceptId, b.version.id)).rejects.toThrow(
-        /is not the current approved version/,
+      await expect(
+        insertSecondHome(a.homeEdition.id, a.homeConceptId, b.version.id),
+      ).rejects.toThrow(/is not the current approved version/);
+      await expect(
+        insertSecondHome(b.homeEdition.id, a.homeConceptId, a.version.id),
+      ).rejects.toThrow(/second_home_home_edition_fk/);
+      const { rows } = await database.pool.query<{ column_name: string }>(
+        `SELECT column_name FROM information_schema.columns
+         WHERE table_schema = 'app' AND table_name = 'home_edition'
+           AND column_name IN ('region', 'modality', 'commercial_conditions', 'location')`,
       );
-      await expect(insertResidence(b.edition.id, a.conceptId, a.version.id)).rejects.toThrow(
-        /residence_edition_fk/,
-      );
-      const { rows } = await database.pool.query<{ table_name: string }>(
-        `SELECT table_name FROM information_schema.columns
-         WHERE table_schema = 'app' AND column_name = 'commercial_conditions'`,
-      );
-      expect(rows.map((row) => row.table_name)).toEqual(['edition']);
+      expect(rows).toEqual([]);
     });
 
     it('[REQ-020] referência inexistente → ERR_NOT_FOUND, sem gravar nada', async () => {
@@ -216,11 +241,11 @@ describe('catálogo — commands, constraints e concorrência', () => {
       const missing = randomUUID();
 
       expectRejected(
-        await run(handlers.createConceptVersion, { concept_id: missing, ...CONTENT }),
+        await run(handlers.createHomeConceptVersion, { home_concept_id: missing, ...CONTENT }),
         'ERR_NOT_FOUND',
       );
       expectRejected(
-        await run(handlers.createConceptVersion, {
+        await run(handlers.createHomeConceptVersion, {
           brand_partner_id: missing,
           title: 'Casa',
           ...CONTENT,
@@ -228,69 +253,67 @@ describe('catálogo — commands, constraints e concorrência', () => {
         'ERR_NOT_FOUND',
       );
       expectRejected(
-        await run(handlers.createEdition, {
-          concept_id: missing,
-          region: 'Região',
-          modality: 'co_owner',
-          commercial_conditions: 'Condições.',
+        await run(handlers.createHomeEdition, {
+          home_concept_id: missing,
+          ...HOME_EDITION_CONTENT,
         }),
         'ERR_NOT_FOUND',
       );
       expectRejected(
-        await run(handlers.registerResidence, {
-          edition_id: missing,
+        await run(handlers.registerSecondHome, {
+          home_edition_id: missing,
           label: 'Unidade',
           timezone: 'America/Sao_Paulo',
         }),
         'ERR_NOT_FOUND',
       );
-      expect(await count(database.pool, 'residence')).toBe(0);
+      expect(await count(database.pool, 'second_home')).toBe(0);
     });
   });
 
-  describe('[REQ-027] Residence de Investor', () => {
-    it('[REQ-027] sem autorização válida a Residence é recusada: inexistente, revogada, antes ou depois da vigência, de outro Concept', async () => {
+  describe('[REQ-027] Second Home de Investor', () => {
+    it('[REQ-027] sem autorização válida a Second Home é recusada: inexistente, revogada, antes ou depois da vigência, de outro Concept', async () => {
       const { build, handlers, run } = harness;
-      const { edition, conceptId } = await build.approvedEdition();
-      const other = await build.approvedEdition();
-      const residence = (authorizationId: string) =>
-        run(handlers.registerResidence, {
-          edition_id: edition.id,
+      const { homeEdition, homeConceptId } = await build.finalizedHomeEdition();
+      const other = await build.finalizedHomeEdition();
+      const secondHome = (authorizationId: string) =>
+        run(handlers.registerSecondHome, {
+          home_edition_id: homeEdition.id,
           label: 'Unidade',
           timezone: 'America/Sao_Paulo',
           investor_authorization_id: authorizationId,
         });
-      const future = await build.authorization(conceptId, new Date(START.getTime() + HOUR));
+      const future = await build.authorization(homeConceptId, new Date(START.getTime() + HOUR));
       const expired = await build.authorization(
-        conceptId,
+        homeConceptId,
         new Date(START.getTime() - 2 * HOUR),
         START,
       );
-      const foreign = await build.authorization(other.conceptId, START);
-      const revoked = await build.authorization(conceptId, START);
+      const foreign = await build.authorization(other.homeConceptId, START);
+      const revoked = await build.authorization(homeConceptId, START);
       await harness.ok(handlers.revokeInvestorAuthorization, {
         investor_authorization_id: revoked.id,
         revocation_basis: 'Distrato 2026-09',
       });
 
-      expectRejected(await residence(randomUUID()), 'ERR_NOT_FOUND');
+      expectRejected(await secondHome(randomUUID()), 'ERR_NOT_FOUND');
       for (const authorization of [future, expired, foreign, revoked]) {
-        expectRejected(await residence(authorization.id), 'ERR_STATE_TRANSITION');
+        expectRejected(await secondHome(authorization.id), 'ERR_STATE_TRANSITION');
       }
-      expect(await count(database.pool, 'residence')).toBe(0);
+      expect(await count(database.pool, 'second_home')).toBe(0);
     });
 
-    it('[REQ-027] com autorização válida, a Residence existe sem adquirente numa Edition Owner, Co-Owner ou ambas', async () => {
+    it('[REQ-027] com autorização válida, a Second Home existe sem adquirente; a Home Edition não restringe modalidade', async () => {
       const { build } = harness;
-      for (const modality of ['owner', 'co_owner', 'owner_and_co_owner'] as const) {
-        const { edition, conceptId } = await build.approvedEdition(modality);
+      for (const name of ['Edição A', 'Edição B', 'Edição C']) {
+        const { homeEdition, homeConceptId } = await build.finalizedHomeEdition({ name });
         const authorization = await build.authorization(
-          conceptId,
+          homeConceptId,
           new Date(START.getTime() - HOUR),
           new Date(START.getTime() + HOUR),
         );
-        await expect(build.residence(edition.id, authorization.id)).resolves.toMatchObject({
-          edition_id: edition.id,
+        await expect(build.secondHome(homeEdition.id, authorization.id)).resolves.toMatchObject({
+          home_edition_id: homeEdition.id,
           investor_authorization_id: authorization.id,
         });
       }
@@ -299,28 +322,28 @@ describe('catálogo — commands, constraints e concorrência', () => {
         `SELECT to_regclass('app.holding')::text AS holding`,
       );
       expect(rows[0]?.holding).toBeNull();
-      expect(await count(database.pool, 'residence')).toBe(3);
+      expect(await count(database.pool, 'second_home')).toBe(3);
     });
 
-    it('[REQ-027] o banco recusa Residence com autorização revogada ou de outro Concept, mesmo fora do command', async () => {
+    it('[REQ-027] o banco recusa Second Home com autorização revogada ou de outro Concept, mesmo fora do command', async () => {
       const { build, handlers } = harness;
-      const a = await build.approvedEdition();
-      const b = await build.approvedEdition();
-      const revoked = await build.authorization(a.conceptId, START);
+      const a = await build.finalizedHomeEdition();
+      const b = await build.finalizedHomeEdition();
+      const revoked = await build.authorization(a.homeConceptId, START);
       await harness.ok(handlers.revokeInvestorAuthorization, {
         investor_authorization_id: revoked.id,
         revocation_basis: 'Distrato',
       });
-      const foreign = await build.authorization(b.conceptId, START);
+      const foreign = await build.authorization(b.homeConceptId, START);
       const insert = async (authorizationId: string) =>
         database.pool.query(
-          `INSERT INTO app.residence (id, edition_id, concept_id, concept_version_id, commercially_approved_at, label,
+          `INSERT INTO app.second_home (id, home_edition_id, home_concept_id, home_concept_version_id, commercially_approved_at, label,
                                       timezone, investor_authorization_id, operation_id)
            VALUES ($1, $2, $3, $4, $5, 'Unidade', 'America/Sao_Paulo', $6, $7)`,
           [
             randomUUID(),
-            a.edition.id,
-            a.conceptId,
+            a.homeEdition.id,
+            a.homeConceptId,
             a.version.id,
             START,
             authorizationId,
@@ -329,13 +352,13 @@ describe('catálogo — commands, constraints e concorrência', () => {
         );
 
       await expect(insert(revoked.id)).rejects.toThrow(/investor authorization .* is not valid/);
-      await expect(insert(foreign.id)).rejects.toThrow(/residence_investor_authorization_fk/);
+      await expect(insert(foreign.id)).rejects.toThrow(/second_home_investor_authorization_fk/);
     });
 
     it('[REQ-027] revogação concorrente: o registro espera a revogação comitar e é recusado', async () => {
       const { build, handlers, run } = harness;
-      const { edition, conceptId } = await build.approvedEdition();
-      const authorization = await build.authorization(conceptId, START);
+      const { homeEdition, homeConceptId } = await build.finalizedHomeEdition();
+      const authorization = await build.authorization(homeConceptId, START);
       const other = await holdInOwnerTransaction(
         [
           `UPDATE app.investor_authorization SET revoked_at = now(), revocation_basis = 'Distrato'
@@ -343,8 +366,8 @@ describe('catálogo — commands, constraints e concorrência', () => {
         ],
         [[authorization.id]],
       );
-      const waiting = run(handlers.registerResidence, {
-        edition_id: edition.id,
+      const waiting = run(handlers.registerSecondHome, {
+        home_edition_id: homeEdition.id,
         label: 'Unidade',
         timezone: 'America/Sao_Paulo',
         investor_authorization_id: authorization.id,
@@ -353,14 +376,14 @@ describe('catálogo — commands, constraints e concorrência', () => {
       await other.release();
 
       expectRejected(await waiting, 'ERR_STATE_TRANSITION');
-      expect(await count(database.pool, 'residence')).toBe(0);
+      expect(await count(database.pool, 'second_home')).toBe(0);
     });
 
-    it('[REQ-027] revogação é única e não muda Residences já registradas', async () => {
+    it('[REQ-027] revogação é única e não muda Second Homes já registradas', async () => {
       const { build, handlers, run } = harness;
-      const { edition, conceptId } = await build.approvedEdition();
-      const authorization = await build.authorization(conceptId, START);
-      const residence = await build.residence(edition.id, authorization.id);
+      const { homeEdition, homeConceptId } = await build.finalizedHomeEdition();
+      const authorization = await build.authorization(homeConceptId, START);
+      const secondHome = await build.secondHome(homeEdition.id, authorization.id);
       const revoke = () =>
         run(handlers.revokeInvestorAuthorization, {
           investor_authorization_id: authorization.id,
@@ -370,8 +393,8 @@ describe('catálogo — commands, constraints e concorrência', () => {
       expect(await revoke()).toMatchObject({ status: 'committed' });
       expectRejected(await revoke(), 'ERR_STATE_TRANSITION');
       const { rows } = await database.pool.query(
-        'SELECT investor_authorization_id FROM app.residence WHERE id = $1',
-        [residence.id],
+        'SELECT investor_authorization_id FROM app.second_home WHERE id = $1',
+        [secondHome.id],
       );
       expect(rows[0]?.investor_authorization_id).toBe(authorization.id);
     });
@@ -380,89 +403,95 @@ describe('catálogo — commands, constraints e concorrência', () => {
   describe('[BR-025] versão fixada na aprovação comercial', () => {
     it('[BR-025] o registro fixa a versão vigente e o instante da aprovação comercial', async () => {
       const { build } = harness;
-      const { edition, conceptId } = await build.approvedEdition();
-      const v2 = await build.version(conceptId);
+      const { homeEdition, homeConceptId } = await build.finalizedHomeEdition();
+      const v2 = await build.version(homeConceptId);
       await build.approve(v2.id);
-      await build.version(conceptId); // versão 3 ainda não aprovada: não conta
+      await build.version(homeConceptId); // versão 3 ainda não aprovada: não conta
       clock.advance(HOUR);
 
-      const residence = await build.residence(edition.id);
-      expect(residence).toMatchObject({
-        concept_version_id: v2.id,
-        concept_version: 2,
+      const secondHome = await build.secondHome(homeEdition.id);
+      expect(secondHome).toMatchObject({
+        home_concept_version_id: v2.id,
+        home_concept_version: 2,
         commercially_approved_at: new Date(START.getTime() + HOUR).toISOString(),
       });
     });
 
-    it('[BR-025] versão aprovada depois não altera a Residence existente; a próxima fixa a nova', async () => {
+    it('[BR-025] versão aprovada depois não altera a Second Home existente; a próxima fixa a nova', async () => {
       const { build } = harness;
-      const { edition, conceptId, version } = await build.approvedEdition();
-      const first = await build.residence(edition.id);
-      const v2 = await build.version(conceptId);
+      const { homeEdition, homeConceptId, version } = await build.finalizedHomeEdition();
+      const first = await build.secondHome(homeEdition.id);
+      const v2 = await build.version(homeConceptId);
       await build.approve(v2.id);
-      const second = await build.residence(edition.id);
+      const second = await build.secondHome(homeEdition.id);
 
-      const { rows } = await database.pool.query<{ concept_version_id: string }>(
-        'SELECT concept_version_id FROM app.residence WHERE id = $1',
+      const { rows } = await database.pool.query<{ home_concept_version_id: string }>(
+        'SELECT home_concept_version_id FROM app.second_home WHERE id = $1',
         [first.id],
       );
-      expect(rows[0]?.concept_version_id).toBe(version.id);
-      expect(second.concept_version_id).toBe(v2.id);
+      expect(rows[0]?.home_concept_version_id).toBe(version.id);
+      expect(second.home_concept_version_id).toBe(v2.id);
     });
 
     it('[BR-025] o banco recusa trocar a versão fixada: luxtory_app sem privilégio; dono barrado pelo gatilho', async () => {
       const { build } = harness;
-      const { edition, conceptId } = await build.approvedEdition();
-      const residence = await build.residence(edition.id);
-      const v2 = await build.version(conceptId);
+      const { homeEdition, homeConceptId } = await build.finalizedHomeEdition();
+      const secondHome = await build.secondHome(homeEdition.id);
+      const v2 = await build.version(homeConceptId);
       await build.approve(v2.id);
 
       await expect(
         db
-          .updateTable('app.residence')
-          .set({ concept_version_id: v2.id })
-          .where('id', '=', residence.id)
+          .updateTable('app.second_home')
+          .set({ home_concept_version_id: v2.id })
+          .where('id', '=', secondHome.id)
           .execute(),
       ).rejects.toThrow(/permission denied/);
       await expect(
-        database.pool.query('UPDATE app.residence SET concept_version_id = $1 WHERE id = $2', [
-          v2.id,
-          residence.id,
-        ]),
-      ).rejects.toThrow(/UPDATE on app.residence is not allowed/);
+        database.pool.query(
+          'UPDATE app.second_home SET home_concept_version_id = $1 WHERE id = $2',
+          [v2.id, secondHome.id],
+        ),
+      ).rejects.toThrow(/UPDATE on app.second_home is not allowed/);
     });
 
-    it('[BR-025] o banco recusa Residence que fixe uma versão aprovada que já não é a vigente', async () => {
+    it('[BR-025] o banco recusa Second Home que fixe uma versão aprovada que já não é a vigente', async () => {
       const { build } = harness;
-      const { edition, conceptId, version } = await build.approvedEdition();
-      const v2 = await build.version(conceptId);
+      const { homeEdition, homeConceptId, version } = await build.finalizedHomeEdition();
+      const v2 = await build.version(homeConceptId);
       await build.approve(v2.id);
 
       await expect(
         database.pool.query(
-          `INSERT INTO app.residence (id, edition_id, concept_id, concept_version_id, commercially_approved_at, label,
+          `INSERT INTO app.second_home (id, home_edition_id, home_concept_id, home_concept_version_id, commercially_approved_at, label,
                                       timezone, operation_id)
            VALUES ($1, $2, $3, $4, now(), 'Unidade', 'America/Sao_Paulo', $5)`,
-          [randomUUID(), edition.id, conceptId, version.id, await ownerOperation(database.pool)],
+          [
+            randomUUID(),
+            homeEdition.id,
+            homeConceptId,
+            version.id,
+            await ownerOperation(database.pool),
+          ],
         ),
       ).rejects.toThrow(/is not the current approved version/);
     });
 
-    it('[BR-025] aprovação concorrente: a Residence espera e fixa a versão vigente no seu commit', async () => {
+    it('[BR-025] aprovação concorrente: a Second Home espera e fixa a versão vigente no seu commit', async () => {
       const { build, handlers, run } = harness;
-      const { edition, conceptId, partner } = await build.approvedEdition();
-      const v2 = await build.version(conceptId);
-      const op = await ownerOperation(database.pool, 'approve_concept_version');
+      const { homeEdition, homeConceptId, partner } = await build.finalizedHomeEdition();
+      const v2 = await build.version(homeConceptId);
+      const op = await ownerOperation(database.pool, 'approve_home_concept_version');
       const other = await holdInOwnerTransaction(
         [
           'SELECT id FROM app.brand_partner WHERE id = $1 FOR NO KEY UPDATE',
-          `UPDATE app.concept_version SET state = 'approved', approval_refs = ARRAY['Ata'], approved_at = now(),
+          `UPDATE app.home_concept_version SET state = 'approved', approval_refs = ARRAY['Ata'], approved_at = now(),
              approved_by_user_id = $2, approved_role = 'admin', approval_operation_id = $3 WHERE id = $1`,
         ],
         [[partner.id], [v2.id, randomUUID(), op]],
       );
-      const waiting = run(handlers.registerResidence, {
-        edition_id: edition.id,
+      const waiting = run(handlers.registerSecondHome, {
+        home_edition_id: homeEdition.id,
         label: 'Unidade',
         timezone: 'America/Sao_Paulo',
       });
@@ -471,7 +500,7 @@ describe('catálogo — commands, constraints e concorrência', () => {
 
       expect(await waiting).toMatchObject({
         status: 'committed',
-        result: { concept_version_id: v2.id, concept_version: 2 },
+        result: { home_concept_version_id: v2.id, home_concept_version: 2 },
       });
     });
   });
@@ -487,42 +516,44 @@ describe('catálogo — commands, constraints e concorrência', () => {
 
     it('[BR-021] depois da eficácia, todo novo uso da marca é recusado e nada é gravado', async () => {
       const { build, handlers, run } = harness;
-      const { partner, conceptId, edition } = await build.approvedEdition();
-      const draft = await build.version(conceptId);
-      const authorization = await build.authorization(conceptId, START);
+      const { partner, homeConceptId, homeEdition } = await build.finalizedHomeEdition();
+      const draft = await build.version(homeConceptId);
+      const authorization = await build.authorization(homeConceptId, START);
       expect(await terminate(partner.id, new Date(START.getTime() - HOUR))).toMatchObject({
         status: 'committed',
       });
       const before = await Promise.all(
-        ['concept', 'concept_version', 'edition', 'investor_authorization', 'residence'].map((t) =>
-          count(database.pool, t),
-        ),
+        [
+          'home_concept',
+          'home_concept_version',
+          'home_edition',
+          'investor_authorization',
+          'second_home',
+        ].map((t) => count(database.pool, t)),
       );
 
       const attempts = [
-        run(handlers.createConceptVersion, {
+        run(handlers.createHomeConceptVersion, {
           brand_partner_id: partner.id,
           title: 'Nova',
           ...CONTENT,
         }),
-        run(handlers.createConceptVersion, { concept_id: conceptId, ...CONTENT }),
-        run(handlers.approveConceptVersion, {
-          concept_version_id: draft.id,
+        run(handlers.createHomeConceptVersion, { home_concept_id: homeConceptId, ...CONTENT }),
+        run(handlers.approveHomeConceptVersion, {
+          home_concept_version_id: draft.id,
           approval_refs: ['Ata'],
         }),
-        run(handlers.createEdition, {
-          concept_id: conceptId,
-          region: 'Região',
-          modality: 'owner',
-          commercial_conditions: 'Condições.',
+        run(handlers.createHomeEdition, {
+          home_concept_id: homeConceptId,
+          ...HOME_EDITION_CONTENT,
         }),
         run(handlers.registerInvestorAuthorization, {
-          concept_id: conceptId,
+          home_concept_id: homeConceptId,
           instrument_ref: 'Instrumento',
           valid_from: START.toISOString(),
         }),
-        run(handlers.registerResidence, {
-          edition_id: edition.id,
+        run(handlers.registerSecondHome, {
+          home_edition_id: homeEdition.id,
           label: 'Unidade',
           timezone: 'America/Sao_Paulo',
           investor_authorization_id: authorization.id,
@@ -536,28 +567,30 @@ describe('catálogo — commands, constraints e concorrência', () => {
         expectRejected(outcome, 'ERR_STATE_TRANSITION');
       }
       const after = await Promise.all(
-        ['concept', 'concept_version', 'edition', 'investor_authorization', 'residence'].map((t) =>
-          count(database.pool, t),
-        ),
+        [
+          'home_concept',
+          'home_concept_version',
+          'home_edition',
+          'investor_authorization',
+          'second_home',
+        ].map((t) => count(database.pool, t)),
       );
       expect(after).toEqual(before);
     });
 
     it('[BR-021] eficácia futura: novos usos seguem permitidos até ela e são recusados a partir dela', async () => {
       const { build, handlers, run } = harness;
-      const { partner, conceptId } = await build.approvedEdition();
+      const { partner, homeConceptId } = await build.finalizedHomeEdition();
       await terminate(partner.id, new Date(START.getTime() + HOUR));
-      const edition = () =>
-        run(handlers.createEdition, {
-          concept_id: conceptId,
-          region: 'Região',
-          modality: 'co_owner',
-          commercial_conditions: 'Condições.',
+      const homeEdition = () =>
+        run(handlers.createHomeEdition, {
+          home_concept_id: homeConceptId,
+          ...HOME_EDITION_CONTENT,
         });
 
-      expect(await edition()).toMatchObject({ status: 'committed' });
+      expect(await homeEdition()).toMatchObject({ status: 'committed' });
       clock.set(new Date(START.getTime() + HOUR));
-      expectRejected(await edition(), 'ERR_STATE_TRANSITION');
+      expectRejected(await homeEdition(), 'ERR_STATE_TRANSITION');
     });
 
     it('[BR-021] o encerramento não apaga a autorização de exposição nem muda o que existe; é registrado uma vez', async () => {
@@ -566,10 +599,11 @@ describe('catálogo — commands, constraints e concorrência', () => {
         brand_name: 'Maison Exposta',
         exposure_authorization_ref: 'Autorização de exposição 2026-09',
       });
-      const version = await build.concept(partner.id);
+      const version = await build.homeConcept(partner.id);
       await build.approve(version.id);
-      const edition = await build.edition(version.concept_id);
-      const residence = await build.residence(edition.id);
+      const homeEdition = await build.homeEdition(version.home_concept_id);
+      await build.finalize(homeEdition.id);
+      const secondHome = await build.secondHome(homeEdition.id);
 
       expect(await terminate(partner.id, START)).toMatchObject({
         status: 'committed',
@@ -581,11 +615,11 @@ describe('catálogo — commands, constraints e concorrência', () => {
       });
       expectRejected(await terminate(partner.id, START), 'ERR_STATE_TRANSITION');
       const { rows } = await database.pool.query(
-        `SELECT (SELECT count(*)::int FROM app.residence WHERE id = $1) AS residences,
-                (SELECT state FROM app.concept_version WHERE id = $2) AS state`,
-        [residence.id, version.id],
+        `SELECT (SELECT count(*)::int FROM app.second_home WHERE id = $1) AS second_homes,
+                (SELECT state FROM app.home_concept_version WHERE id = $2) AS state`,
+        [secondHome.id, version.id],
       );
-      expect(rows[0]).toEqual({ residences: 1, state: 'approved' });
+      expect(rows[0]).toEqual({ second_homes: 1, state: 'approved' });
       await expect(
         database.pool.query(
           `UPDATE app.brand_partner SET exposure_authorization_ref = NULL, exposure_authorized_at = NULL
@@ -601,9 +635,9 @@ describe('catálogo — commands, constraints e concorrência', () => {
       ).rejects.toThrow(/single exposure authorization and a single termination/);
     });
 
-    it('[BR-021] encerramento concorrente: a Edition nova espera o encerramento comitar e é recusada', async () => {
+    it('[BR-021] encerramento concorrente: a Home Edition nova espera o encerramento comitar e é recusada', async () => {
       const { build, handlers, run } = harness;
-      const { partner, conceptId } = await build.approvedEdition();
+      const { partner, homeConceptId } = await build.finalizedHomeEdition();
       const other = await holdInOwnerTransaction(
         [
           `UPDATE app.brand_partner SET terminated_effective_at = $2, termination_basis = 'Aditivo',
@@ -611,17 +645,213 @@ describe('catálogo — commands, constraints e concorrência', () => {
         ],
         [[partner.id, new Date(START.getTime() - HOUR)]],
       );
-      const waiting = run(handlers.createEdition, {
-        concept_id: conceptId,
-        region: 'Região',
-        modality: 'owner',
-        commercial_conditions: 'Condições.',
+      const waiting = run(handlers.createHomeEdition, {
+        home_concept_id: homeConceptId,
+        ...HOME_EDITION_CONTENT,
       });
       await waitForLockWaiter(database.pool);
       await other.release();
 
       expectRejected(await waiting, 'ERR_STATE_TRANSITION');
-      expect(await count(database.pool, 'edition')).toBe(1);
+      expect(await count(database.pool, 'home_edition')).toBe(1);
+    });
+  });
+
+  describe('[BR-036] Home Edition: preparação, finalização material e visibilidade pública', () => {
+    const editionColumns = (id: string) =>
+      database.pool
+        .query(
+          `SELECT material_state, visibility, withdrawal_basis, name, description, typology, suites, finalized_at
+           FROM app.home_edition WHERE id = $1`,
+          [id],
+        )
+        .then(({ rows }) => rows[0]);
+
+    it('[BR-036] em preparação a definição material é editável; a finalização acontece uma vez e congela o material', async () => {
+      const { build, handlers, run, ok } = harness;
+      const { homeEdition } = await build.approvedHomeEdition();
+      const changed = { ...HOME_EDITION_CONTENT, typology: 'Casa em dois pavimentos', suites: 5 };
+
+      await expect(
+        ok(handlers.updateHomeEditionDraft, { home_edition_id: homeEdition.id, ...changed }),
+      ).resolves.toMatchObject({
+        typology: 'Casa em dois pavimentos',
+        suites: 5,
+        material_state: 'draft',
+      });
+      // Em preparação: não publica, não corrige texto editorial, não origina Second Home.
+      expectRejected(
+        await run(handlers.publishHomeEdition, { home_edition_id: homeEdition.id }),
+        'ERR_STATE_TRANSITION',
+      );
+      expectRejected(
+        await run(handlers.correctHomeEditionEditorial, {
+          home_edition_id: homeEdition.id,
+          name: 'Outro nome',
+          correction_basis: 'Ajuste',
+        }),
+        'ERR_STATE_TRANSITION',
+      );
+      expectRejected(
+        await run(handlers.registerSecondHome, {
+          home_edition_id: homeEdition.id,
+          label: 'Unidade',
+          timezone: 'America/Sao_Paulo',
+        }),
+        'ERR_STATE_TRANSITION',
+      );
+
+      clock.advance(HOUR);
+      await expect(build.finalize(homeEdition.id)).resolves.toMatchObject({
+        material_state: 'finalized',
+        visibility: 'hidden',
+        finalized_at: new Date(START.getTime() + HOUR).toISOString(),
+      });
+      expectRejected(
+        await run(handlers.finalizeHomeEdition, { home_edition_id: homeEdition.id }),
+        'ERR_STATE_TRANSITION',
+      );
+      expectRejected(
+        await run(handlers.updateHomeEditionDraft, { home_edition_id: homeEdition.id, ...changed }),
+        'ERR_STATE_TRANSITION',
+      );
+      // Finalizada e ainda fora do site: já origina Second Home (a visibilidade não é condição).
+      await expect(build.secondHome(homeEdition.id)).resolves.toMatchObject({
+        home_edition_id: homeEdition.id,
+      });
+    });
+
+    it('[BR-036] publicar exige a finalização; retirar do público volta a fora do site sem reabrir a definição material', async () => {
+      const { build, handlers, run, ok } = harness;
+      const { homeEdition } = await build.finalizedHomeEdition();
+
+      await expect(build.publish(homeEdition.id)).resolves.toMatchObject({ visibility: 'public' });
+      expectRejected(
+        await run(handlers.publishHomeEdition, { home_edition_id: homeEdition.id }),
+        'ERR_STATE_TRANSITION',
+      );
+      await expect(
+        ok(handlers.withdrawHomeEdition, {
+          home_edition_id: homeEdition.id,
+          withdrawal_basis: 'Revisão das imagens',
+        }),
+      ).resolves.toMatchObject({
+        visibility: 'hidden',
+        material_state: 'finalized',
+        withdrawal_basis: 'Revisão das imagens',
+      });
+      expectRejected(
+        await run(handlers.withdrawHomeEdition, {
+          home_edition_id: homeEdition.id,
+          withdrawal_basis: 'De novo',
+        }),
+        'ERR_STATE_TRANSITION',
+      );
+      expectRejected(
+        await run(handlers.updateHomeEditionDraft, {
+          home_edition_id: homeEdition.id,
+          ...HOME_EDITION_CONTENT,
+        }),
+        'ERR_STATE_TRANSITION',
+      );
+      // Pode ser publicada de novo; a base da retirada anterior sai com a publicação.
+      await expect(build.publish(homeEdition.id)).resolves.toMatchObject({
+        visibility: 'public',
+        withdrawal_basis: null,
+      });
+    });
+
+    it('[BR-036] correção editorial muda só nome e descrição de Home Edition finalizada, com base e auditoria', async () => {
+      const { build, handlers, ok, run } = harness;
+      const { homeEdition } = await build.finalizedHomeEdition();
+
+      await expect(
+        ok(handlers.correctHomeEditionEditorial, {
+          home_edition_id: homeEdition.id,
+          name: 'Casa do Pátio — Edição Maré',
+          correction_basis: 'Ajuste de nome',
+        }),
+      ).resolves.toMatchObject({
+        name: 'Casa do Pátio — Edição Maré',
+        description: HOME_EDITION_CONTENT.description,
+        typology: HOME_EDITION_CONTENT.typology,
+      });
+      expectRejected(
+        await run(handlers.correctHomeEditionEditorial, {
+          home_edition_id: homeEdition.id,
+          name: 'Casa do Pátio — Edição Maré',
+          correction_basis: 'Sem mudança',
+        }),
+        'ERR_VALIDATION',
+      );
+      const { rows } = await database.pool.query<{
+        before: { home_edition_name: string };
+        after: { home_edition_name: string; correction_basis: string };
+      }>(
+        `SELECT a.before, a.after FROM app.audit_log a JOIN app.operation o ON o.id = a.operation_id
+         WHERE o.command = 'correct_home_edition_editorial'`,
+      );
+      expect(rows).toHaveLength(1);
+      // `name` é chave redigida na auditoria (dado pessoal); o nome de produto vai como `home_edition_name`.
+      expect(rows[0]?.before.home_edition_name).toBe(HOME_EDITION_CONTENT.name);
+      expect(rows[0]?.after).toMatchObject({
+        home_edition_name: 'Casa do Pátio — Edição Maré',
+        correction_basis: 'Ajuste de nome',
+      });
+    });
+
+    it('[BR-036] o banco congela a definição material finalizada em qualquer caminho de escrita; identidade nunca muda', async () => {
+      const { build } = harness;
+      const { homeEdition, homeConceptId: otherConcept } = await build.finalizedHomeEdition();
+      const draft = await build.approvedHomeEdition();
+
+      await expect(
+        database.pool.query(`UPDATE app.home_edition SET suites = 9 WHERE id = $1`, [
+          homeEdition.id,
+        ]),
+      ).rejects.toThrow(/home_edition_material_immutable|material/);
+      await expect(
+        database.pool.query(`UPDATE app.home_edition SET home_concept_id = $2 WHERE id = $1`, [
+          draft.homeEdition.id,
+          otherConcept,
+        ]),
+      ).rejects.toThrow(/home_edition_identity|identity/);
+      expect(await editionColumns(homeEdition.id)).toMatchObject({
+        suites: HOME_EDITION_CONTENT.suites,
+        material_state: 'finalized',
+      });
+    });
+
+    it('[BR-021] encerrada a marca, nada se expõe nem se finaliza; retirar do público continua valendo', async () => {
+      const { build, handlers, run } = harness;
+      const exposed = await build.finalizedHomeEdition();
+      await build.publish(exposed.homeEdition.id);
+      const draft = await build.homeEdition(exposed.homeConceptId, {
+        name: 'Edição em preparação',
+      });
+      await harness.run(harness.handlers.terminateBrandPartner, {
+        brand_partner_id: exposed.partner.id,
+        terminated_effective_at: new Date(START.getTime() - HOUR).toISOString(),
+        termination_basis: 'Aditivo',
+      });
+
+      expectRejected(
+        await run(handlers.finalizeHomeEdition, { home_edition_id: draft.id }),
+        'ERR_STATE_TRANSITION',
+      );
+      expectRejected(
+        await run(handlers.updateHomeEditionDraft, {
+          home_edition_id: draft.id,
+          ...HOME_EDITION_CONTENT,
+        }),
+        'ERR_STATE_TRANSITION',
+      );
+      await expect(
+        harness.ok(handlers.withdrawHomeEdition, {
+          home_edition_id: exposed.homeEdition.id,
+          withdrawal_basis: 'Encerramento da parceria',
+        }),
+      ).resolves.toMatchObject({ visibility: 'hidden' });
     });
   });
 
@@ -629,7 +859,7 @@ describe('catálogo — commands, constraints e concorrência', () => {
     it('[REQ-015] [TECH-092] cada operação comitada grava operation e audit_log com antes/depois e o papel exercido', async () => {
       const { build } = harness;
       const partner = await build.brandPartner();
-      const version = await build.concept(partner.id);
+      const version = await build.homeConcept(partner.id);
       await build.approve(version.id);
 
       const { rows } = await database.pool.query<{
@@ -652,24 +882,24 @@ describe('catálogo — commands, constraints e concorrência', () => {
           has_before: false,
         },
         {
-          command: 'create_concept_version',
+          command: 'create_home_concept_version',
           state: 'committed',
           role: 'admin',
-          object_type: 'concept',
+          object_type: 'home_concept',
           has_before: false,
         },
         {
-          command: 'create_concept_version',
+          command: 'create_home_concept_version',
           state: 'committed',
           role: 'admin',
-          object_type: 'concept_version',
+          object_type: 'home_concept_version',
           has_before: false,
         },
         {
-          command: 'approve_concept_version',
+          command: 'approve_home_concept_version',
           state: 'committed',
           role: 'admin',
-          object_type: 'concept_version',
+          object_type: 'home_concept_version',
           has_before: true,
         },
       ]);

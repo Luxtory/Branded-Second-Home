@@ -30,12 +30,17 @@ const clock = { now: () => NOW };
 const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
 /** Operação de parceiro só de teste: age sobre um Concept (escopo) e audita. */
-const partnerHandler: CommandHandler<{ concept: string }, { ok: true }, DatabaseTransaction> = {
+const partnerHandler: CommandHandler<{ homeConcept: string }, { ok: true }, DatabaseTransaction> = {
   command: PARTNER_OPERATION.name,
-  input: z.strictObject({ concept: z.string() }),
-  scope: (input) => ({ type: 'concept', id: input.concept }),
+  input: z.strictObject({ homeConcept: z.string() }),
+  scope: (input) => ({ type: 'home_concept', id: input.homeConcept }),
   execute({ audit }) {
-    audit({ objectType: 'concept', objectId: 'concept-1', before: null, after: { touched: true } });
+    audit({
+      objectType: 'home_concept',
+      objectId: 'home-concept-1',
+      before: null,
+      after: { touched: true },
+    });
     return Promise.resolve({ ok: true });
   },
 };
@@ -54,7 +59,7 @@ async function seedGrant(
   await database.pool.query(
     `INSERT INTO app.authorization_grant (id, grantee_party_id, commands, scope_type, scope_id, valid_from,
        valid_until, basis, granted_by_user_id, granted_role, operation_id, created_at)
-     VALUES ($1, $2, $3::text[], 'concept', $4, $5, $6, 'instrumento', $7, 'admin', $8, now())`,
+     VALUES ($1, $2, $3::text[], 'home_concept', $4, $5, $6, 'instrumento', $7, 'admin', $8, now())`,
     [
       id,
       PARTY,
@@ -87,7 +92,7 @@ describe('guard com PostgreSQL real e pipeline de commands (REQ-014, TECH-050/05
     await database.drop();
   });
 
-  const execute = (session: VerifiedSession, key: string, concept: string = SCOPE.id) =>
+  const execute = (session: VerifiedSession, key: string, homeConcept: string = SCOPE.id) =>
     createCommandExecutor({
       store: createPostgresCommandStore(db),
       guard: createAuthorizationGuard({
@@ -104,7 +109,7 @@ describe('guard com PostgreSQL real e pipeline de commands (REQ-014, TECH-050/05
       actor: { kind: 'user', userId: PARTNER_USER, actingPartyId: PARTY, role: 'grantee' },
       idempotencyKey: key,
       correlationId: 'corr-grantee',
-      input: { concept },
+      input: { homeConcept },
     });
 
   const partner: VerifiedSession = { userId: PARTNER_USER, assurance: 'aal1' };
@@ -132,7 +137,9 @@ describe('guard com PostgreSQL real e pipeline de commands (REQ-014, TECH-050/05
     await seedGrant(database, '00000000-0000-4000-8000-00000000d012', {
       commands: '{other_operation}',
     });
-    await seedGrant(database, '00000000-0000-4000-8000-00000000d013', { scopeId: 'concept-2' });
+    await seedGrant(database, '00000000-0000-4000-8000-00000000d013', {
+      scopeId: 'home-concept-2',
+    });
 
     await expect(execute(partner, 'k-invalid')).resolves.toMatchObject({ code: 'ERR_PERMISSION' });
   });
@@ -154,7 +161,7 @@ describe('guard com PostgreSQL real e pipeline de commands (REQ-014, TECH-050/05
         audit_ref: `authorization_grant:${grantId}`,
       },
     ]);
-    await expect(execute(partner, 'k-other-scope', 'concept-3')).resolves.toMatchObject({
+    await expect(execute(partner, 'k-other-scope', 'home-concept-3')).resolves.toMatchObject({
       code: 'ERR_PERMISSION',
     });
   });

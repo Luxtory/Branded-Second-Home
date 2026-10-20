@@ -1,0 +1,792 @@
+[
+  {
+    "path": "CLAUDE.md",
+    "excerpt": "- ❌ Residence, residência, residencial or \"Brand DNA\" naming or framing the product, or ba",
+    "reason": "Texto da própria regra (BR-377)."
+  },
+  {
+    "path": "CLAUDE.md",
+    "excerpt": "Edition; Residence as product or entity → Second Home; Brand DNA → identidade da marca; th",
+    "reason": "Texto da própria regra (BR-377)."
+  },
+  {
+    "path": "CLAUDE.md",
+    "excerpt": "Never Residence, residência or residencial to name or frame the product; \"identidade da ma",
+    "reason": "Texto da própria regra (BR-377)."
+  },
+  {
+    "path": "CLAUDE.md",
+    "excerpt": "carries the previous ontology is replaced, not extended — Residence Concept → Home Concept",
+    "reason": "Texto da própria regra (BR-377)."
+  },
+  {
+    "path": "docs/adr/0010-catalogo-versoes-e-mutacoes-do-admin.md",
+    "excerpt": "- W8: trava da estrutura, alteração de modalidade e configuração da Residence (novas colun",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0010-catalogo-versoes-e-mutacoes-do-admin.md",
+    "excerpt": "- a Residence fica presa à versão do Concept \"vigente na data de sua aprovação comercial\" ",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0010-catalogo-versoes-e-mutacoes-do-admin.md",
+    "excerpt": "1. **Concept com versões.** `concept` guarda a identidade (Brand Partner, título); `concep",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0010-catalogo-versoes-e-mutacoes-do-admin.md",
+    "excerpt": "2. **Aprovação comercial = `register_residence`.** O registro da Residence é o evento que ",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0010-catalogo-versoes-e-mutacoes-do-admin.md",
+    "excerpt": "`brand_partner`, `concept_version`, `edition` e `residence` com regras mínimas; faltam dec",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0010-catalogo-versoes-e-mutacoes-do-admin.md",
+    "excerpt": "`register_residence` passa a `register_second_home` e exige Home Edition publicada; a Home",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0010-catalogo-versoes-e-mutacoes-do-admin.md",
+    "excerpt": "ao lado do campo; sem fuso, recusa. A API exige ISO 8601 com deslocamento. O fuso da Resid",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0010-catalogo-versoes-e-mutacoes-do-admin.md",
+    "excerpt": "autorização válida no instante do registro, a Residence é recusada (REQ-027). A W7 acresce",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0010-catalogo-versoes-e-mutacoes-do-admin.md",
+    "excerpt": "recusado: Concept, versão, aprovação, Edition, autorização de Investor, Residence e autori",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0010-catalogo-versoes-e-mutacoes-do-admin.md",
+    "excerpt": "única com base. Sem dado pessoal. A Residence referencia a autorização por `investor_autho",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md",
+    "excerpt": "Concept → Home Concept, Residence Edition → Home Edition e Residence → Second Home (44 oco",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md",
+    "excerpt": "adquiridas como Owner ou Co-Owner…\" (a Home Edition não tem modalidade). \"Segunda residênc",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0012-framework-b2c-fonte-canonica-da-comunicacao-b2c.md",
+    "excerpt": "narrativa, Desejo, JTBD, pilares, tom ou CTA. Por decisão ontológica superveniente (`01` v",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0013-framework-brand-partners-fonte-canonica.md",
+    "excerpt": "\"Segunda residência\" no §2 permanece: nomeia a alternativa convencional, não o produto Lux",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0013-framework-brand-partners-fonte-canonica.md",
+    "excerpt": "- **2026-10-12 (fundador, D7 da BP1.1):** Home Concept, Home Edition e Second Home no luga",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0013-framework-brand-partners-fonte-canonica.md",
+    "excerpt": "- CTA (\"Explore o potencial residencial da sua marca.\").",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0013-framework-brand-partners-fonte-canonica.md",
+    "excerpt": "- O texto do CTA (\"Explore o potencial residencial da sua marca.\") e o destino (conversa o",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0013-framework-brand-partners-fonte-canonica.md",
+    "excerpt": "Brand DNA → identidade da marca, de forma contextual (42 ocorrências, com concordância aju",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0013-framework-brand-partners-fonte-canonica.md",
+    "excerpt": "identidade será preservada?\"); \"residencial\" reescrito em 9 linhas (extensão da marca em S",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0014-discovery-publico-leitura-anonima-csp-e-publicacao.md",
+    "excerpt": "`preservation_premises`, dados de aprovação, Residences, Investor e o resto de `app` ficam",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0014-discovery-publico-leitura-anonima-csp-e-publicacao.md",
+    "excerpt": "consultassem diretamente (`concept` ↔ `concept_version`) entrariam em recursão. A consulta",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0015-midia-do-catalogo-metadados-e-storage.md",
+    "excerpt": "4. **Chave por conteúdo e ordem.** `concept-media/<sha256>.webp`: o command grava os objet",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0016-framework-brand-partners-versao-2026-10-12.md",
+    "excerpt": "**Brand Partner → Brand DNA → Home Concept → Home Edition → Owner/Co-Owner → Design & Buil",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0016-framework-brand-partners-versao-2026-10-12.md",
+    "excerpt": "- **Usar o arquivo do fundador só como insumo, mantendo Residence no canônico.** Duas nome",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0016-framework-brand-partners-versao-2026-10-12.md",
+    "excerpt": "- 19 trocam só nomenclatura: Residence Concept → Home Concept, Residence Edition → Home Ed",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0016-framework-brand-partners-versao-2026-10-12.md",
+    "excerpt": "Residence), como no `D-LX-08`. As âncoras de fato da aplicação citam os nomes dos BRs.",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0016-framework-brand-partners-versao-2026-10-12.md",
+    "excerpt": "`01/02/03` e instrumentos jurídicos continuam com os nomes canônicos (Residence Concept, R",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0019-ontologia-home-concept-home-edition-second-home.md",
+    "excerpt": "- **Reaproveitar `edition_reference_value` sem a base.** O valor de referência era por mod",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0019-ontologia-home-concept-home-edition-second-home.md",
+    "excerpt": "6. **Interesse a partir da Home Edition.** `interest.home_edition_id` passa a obrigatório;",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0019-ontologia-home-concept-home-edition-second-home.md",
+    "excerpt": "Até a v10.1 do `01`, o catálogo tinha Residence Concept, Residence Edition e Residence. A ",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0019-ontologia-home-concept-home-edition-second-home.md",
+    "excerpt": "`edition_id` opcional). Para o público, a W4 traduzia os nomes (`D-LX-08`: Home Concept, H",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0019-ontologia-home-concept-home-edition-second-home.md",
+    "excerpt": "`edition_reference_value`, que tinha base por modalidade (Owner/Ação). A média tem uma ref",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0019-ontologia-home-concept-home-edition-second-home.md",
+    "excerpt": "`edition` isolados para essas entidades. `D-LX-08` (tradução pública) é substituída por `D",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/adr/0019-ontologia-home-concept-home-edition-second-home.md",
+    "excerpt": "`region`, `modality`, `commercial_conditions`; `edition_reference_value` por modalidade; `",
+    "reason": "ADR: registro datado da decisão; cita os nomes anteriores para descrever a mudança."
+  },
+  {
+    "path": "docs/how-to/operacao.md",
+    "excerpt": "`app.concept`, `app.concept_version`, `app.investor_authorization`, `app.edition` e `app.r",
+    "reason": "Runbook datado do go-live da W3."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "- **Acceptance criteria**: `[REQ-020] Residence sem Concept aprovado é recusada; oferta só",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "- **Goal**: vincular corretamente Brand Partner, Concept (com versões), Edition e Residenc",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "- BR-025: `register_residence` é o evento de aprovação comercial — grava o instante e fixa",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "- Coleção em dois grupos sem repetição: Residence Editions (Concepts com Edition) primeiro",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "- Migrations: `brand_partner`; `concept_version` (elementos essenciais, especificação para",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "2. REQ-027 passa da W8 para a W3: a autorização do Investor condiciona o cadastro da Resid",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "Edition, autorização de Investor, Residence, exposição). Direitos sobreviventes não modela",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "Residence Editions\" (primeira oferta da Coleção); só Concepts → \"Conheça os Residence Conc",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "Residence existente` · `[BR-021] Brand Partner encerrada bloqueia Concept e Edition novos`",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "`ConceptCredit` só com autorização; metadata. Sem endpoint novo; o botão de interesse entr",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "`[REQ-027] Residence de Investor sem autorização registrada é recusada; com autorização, e",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "`edition_reference_value`), OpenAPI do Admin antes dos handlers, Admin, leitura pública (`",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "obrigatório e `desired_location`, sem `concept_id` e sem validação de modalidade contra a ",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "vigência e revogação; a Residence referencia `investor_authorization_id`; a **W7** acresce",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "| P-8 | Regras de exposição de marca por Brand Partner (BR-015) | nenhuma wave | exposição",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/implementation-waves.md",
+    "excerpt": "· `[REQ-022] interest.home_edition_id obrigatório, desired_location, sem concept_id; Home ",
+    "reason": "Plano: waves concluídas e o escopo da W4.2 citam os nomes anteriores."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "- **Denylist explícita:** `Residence Concept(s)`, `Residence Edition(s)`, `Residence(s)` c",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "- recriar só em substituição real (`edition_reference_value` → `home_edition_projected_inv",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "`concept_brand_partner_idx`, `concept_version_approved_idx`, `concept_version_term_term_id",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "`concept_version`, `edition_reference_value`, `register_residence`, `ConceptVersion`, `Pub",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "`interest_modality_offered` sai.",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "`lx-concept-`, `/v1/admin/concepts`, `conceptId`). Nenhuma regex genérica sobre `concept` ",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "`residence_investor_authorization_idx` → renomeados; `edition_reference_value_edition_idx`",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "`residencial(is)`, `Brand DNA`, `Branded Residences` e os identificadores antigos da §4 (n",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "`visibility = 'public'`; as policies de `edition_reference_value` saem com a tabela.",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "abortam se houver linhas, em vez de inventar valor. O `down` da 5 recria `edition_referenc",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "jurídicas ou externas justificadas (por exemplo, \"segunda residência\" como alternativa con",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| 5 | `catalog_home_edition_projected_investment` | `DROP TABLE edition_reference_value` (",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| 7 | `ownership_interest_home_edition` | `ALTER`: sai F2a e a FK composta; `edition_id` →",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `/v1/admin/concept-versions…`, `/concepts/{id}/…`, `/concept-media/…`, `/editions…`, `/e",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `ConceptCredit`, `lx-concept-*`, `lx-edition__head`, `lx-edition__region` | `HomeConcept",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `Edition`, `EditionModality`, `OfferedModality`, `isModalityOffered`, `basesForModality`",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `Residence` | `SecondHome` |",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `concept_curation_guard()` | PL/pgSQL | `app.concept_media`, `concept_id` | `home_concep",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `concept_is_public(uuid)` | SQL, `SECURITY DEFINER` | `app.concept`, `app.concept_versio",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `concept_media`, `concept_media_file` (`storage_key` `concept-media/…`) | `concept_curat",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `concept_version_term_guard()` | PL/pgSQL | `app.concept_version` | `home_concept_versio",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `concept_version_term` | `concept_version_term_pkey`, `_concept_version_id_fkey`, `_posi",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `concept_version_term` | policy pública (subconsulta), `catalog_term_is_public()` | não ",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `concept_version_transition()` | PL/pgSQL | mensagem | `home_concept_version_transition`",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `concept_version` (+ `guests_max`, `suites`, `built_area_m2`) | FK de `concept_version_t",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `concept_version` | `concept_version_pkey`, `_concept_id_fkey`, `_concept_key` (alvo da ",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `concept` | FK de `concept_version`, `concept_media`, `concept_curation`, `edition`, `in",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `edition_reference_value_guard()` | PL/pgSQL | a própria tabela | removida com a tabela ",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `edition_reference_value` | 9 — saem com a tabela |",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `edition_reference_value` | gatilho e função próprios, policies, grants | não | substitu",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `edition` (`region`, `modality`, `commercial_conditions`) | FK composta de `residence` e",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `findPublicConceptOffer`, `readConceptLabels` | `findPublicHomeEdition`, `readHomeEditio",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `interest_modality_offered()` | PL/pgSQL | `app.edition` (F2a) | removida |",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `interest` (`concept_id`, `edition_id` opcional, `region`) | `interest_modality_offered(",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `investor_authorization.concept_id` | FK composta de `residence`; `residence_require_bas",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `operation.residence_id` | `operation_transition()`, `record_operator_change()` (corpo P",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `operation_transition()` | PL/pgSQL | `residence_id` | corpo novo |",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `record_operator_change(…)` | PL/pgSQL | `residence_id` | corpo novo |",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| `residence_require_basis()` | PL/pgSQL | `app.concept_version`, `app.investor_authorizat",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/plan/w4-2-ontologia.md",
+    "excerpt": "| commands `create_concept_version`, `approve_concept_version`, `upload_concept_cover`, `a",
+    "reason": "Dependency map da W4.2: lista os nomes anteriores que a ontologia substitui."
+  },
+  {
+    "path": "docs/security/threats/ownership.md",
+    "excerpt": "- **Scope**: `home_edition_id` obrigatório, sem `concept_id`; `region` → `desired_location",
+    "reason": "Threat model: descrição da mudança da W4.2."
+  },
+  {
+    "path": "docs/specs/canonical/01-business-model-business-rules.md",
+    "excerpt": "**BR-377** — O produto de lazer da Luxtory é denominado Second Home; os conceitos de que d",
+    "reason": "Texto da própria regra (BR-377)."
+  },
+  {
+    "path": "docs/specs/canonical/02-product-spec.md",
+    "excerpt": "O produto é a **Second Home**; os conceitos de que deriva são **Home Concept** e **Home Ed",
+    "reason": "Texto da própria regra (BR-377)."
+  },
+  {
+    "path": "docs/specs/catalog.md",
+    "excerpt": "\"identidade da marca\" no lugar de \"Brand DNA\"; Second Home(s) no lugar de residência(s) qu",
+    "reason": "Spec: seção anterior superada pela W4.2 ou descrição da própria mudança."
+  },
+  {
+    "path": "docs/specs/catalog.md",
+    "excerpt": "- [ ] `[REQ-020]` Second Home fixa Home Edition e versão vigente (BR-025), como o `registe",
+    "reason": "Spec: seção anterior superada pela W4.2 ou descrição da própria mudança."
+  },
+  {
+    "path": "docs/specs/catalog.md",
+    "excerpt": "6. **Valor de referência da Home Edition, versionado** (`edition_reference_value`, só inse",
+    "reason": "Spec: seção anterior superada pela W4.2 ou descrição da própria mudança."
+  },
+  {
+    "path": "docs/specs/catalog.md",
+    "excerpt": "Home no lugar de Residence, \"Brand DNA\" → identidade da marca); estrutura, layout e demais",
+    "reason": "Spec: seção anterior superada pela W4.2 ou descrição da própria mudança."
+  },
+  {
+    "path": "docs/specs/catalog.md",
+    "excerpt": "Os endpoints antigos (`/concept-versions`, `/concepts/{id}/…`, `/concept-media/…`, `/editi",
+    "reason": "Spec: seção anterior superada pela W4.2 ou descrição da própria mudança."
+  },
+  {
+    "path": "docs/specs/catalog.md",
+    "excerpt": "`home_concept_curation`; `edition_reference_value`; leitura `anon`). Regras gravadas no ba",
+    "reason": "Spec: seção anterior superada pela W4.2 ou descrição da própria mudança."
+  },
+  {
+    "path": "docs/specs/catalog.md",
+    "excerpt": "`register_residence` passa a `register_second_home` (mesmo evento de aprovação comercial, ",
+    "reason": "Spec: seção anterior superada pela W4.2 ou descrição da própria mudança."
+  },
+  {
+    "path": "docs/specs/catalog.md",
+    "excerpt": "passa a recusar também o enquadramento do produto como moradia (`Residence`, residência, r",
+    "reason": "Spec: seção anterior superada pela W4.2 ou descrição da própria mudança."
+  },
+  {
+    "path": "docs/specs/catalog.md",
+    "excerpt": "| `home_concept_version` | `home_concept_id`, `version`, `essential_elements[]`, `preserva",
+    "reason": "Spec: seção anterior superada pela W4.2 ou descrição da própria mudança."
+  },
+  {
+    "path": "docs/specs/communication/b2c.md",
+    "excerpt": "| D-B2C-13 | CTA da Home e do \"Como funciona\": \"Conheça as Residence Editions.\" → Coleção,",
+    "reason": "Registro de decisão datado ou superado, ou o texto da regra (D-LX-11, D-B2C-27, D-BP-28)."
+  },
+  {
+    "path": "docs/specs/communication/b2c.md",
+    "excerpt": "| D-B2C-16 | CTA da Home e do \"Como funciona\" por disponibilidade, complementando `D-B2C-1",
+    "reason": "Registro de decisão datado ou superado, ou o texto da regra (D-LX-11, D-B2C-27, D-BP-28)."
+  },
+  {
+    "path": "docs/specs/communication/b2c.md",
+    "excerpt": "| D-B2C-19 | GATE-COPY-W4 (Core Design System, CP2): a copy da Home é a da \"Especificação ",
+    "reason": "Registro de decisão datado ou superado, ou o texto da regra (D-LX-11, D-B2C-27, D-BP-28)."
+  },
+  {
+    "path": "docs/specs/communication/b2c.md",
+    "excerpt": "| D-B2C-27 | Ontologia aplicada à jornada B2C (`D-LX-11`): nomes completos em todas as pág",
+    "reason": "Registro de decisão datado ou superado, ou o texto da regra (D-LX-11, D-B2C-27, D-BP-28)."
+  },
+  {
+    "path": "docs/specs/communication/brand-partners.md",
+    "excerpt": "canônicos, Admin, banco, código e instrumentos —, e \"identidade da marca\" substitui \"Brand",
+    "reason": "Registro de decisão datado ou superado, ou o texto da regra (D-LX-11, D-B2C-27, D-BP-28)."
+  },
+  {
+    "path": "docs/specs/communication/brand-partners.md",
+    "excerpt": "| D-BP-12 | CTA \"Explore o potencial residencial da sua marca.\" → qualificação estratégica",
+    "reason": "Registro de decisão datado ou superado, ou o texto da regra (D-LX-11, D-B2C-27, D-BP-28)."
+  },
+  {
+    "path": "docs/specs/communication/brand-partners.md",
+    "excerpt": "| D-BP-21 | Dois ajustes do fundador sobre `D-BP-20`, verbatim: em \"Uma nova lógica\", a se",
+    "reason": "Registro de decisão datado ou superado, ou o texto da regra (D-LX-11, D-B2C-27, D-BP-28)."
+  },
+  {
+    "path": "docs/specs/communication/brand-partners.md",
+    "excerpt": "| D-BP-24 | Go-live da BP1.1 por decisão do fundador: (1) Co-Owner descrito como \"particip",
+    "reason": "Registro de decisão datado ou superado, ou o texto da regra (D-LX-11, D-B2C-27, D-BP-28)."
+  },
+  {
+    "path": "docs/specs/communication/brand-partners.md",
+    "excerpt": "| D-BP-26 | Ajuste final do fundador sobre `D-BP-25`: centralizar verticalmente o card da ",
+    "reason": "Registro de decisão datado ou superado, ou o texto da regra (D-LX-11, D-B2C-27, D-BP-28)."
+  },
+  {
+    "path": "docs/specs/communication/brand-partners.md",
+    "excerpt": "| D-BP-28 | Ontologia aplicada à jornada Brand Partners (`D-LX-11`): CTA \"Explore o potenc",
+    "reason": "Registro de decisão datado ou superado, ou o texto da regra (D-LX-11, D-B2C-27, D-BP-28)."
+  },
+  {
+    "path": "docs/specs/communication/framework-b2c.md",
+    "excerpt": "**Hotéis e resorts; locação de temporada; aquisição convencional de segunda residência; mo",
+    "reason": "Exceção da BR-377: \"segunda residência\" nomeia a alternativa convencional, não o produto Luxtory."
+  },
+  {
+    "path": "docs/specs/communication/framework-brand-partners.md",
+    "excerpt": "**Hotelaria e resorts; locação de temporada; propriedade tradicional de segunda residência",
+    "reason": "Exceção da BR-377: \"segunda residência\" nomeia a alternativa convencional, não o produto Luxtory."
+  },
+  {
+    "path": "docs/specs/communication/luxtory.md",
+    "excerpt": "da marca\" substitui \"Brand DNA\"; o estágio formal do mecanismo é **Second Home**, e \"Home\"",
+    "reason": "Registro de decisão datado ou superado, ou o texto da regra (D-LX-11, D-B2C-27, D-BP-28)."
+  },
+  {
+    "path": "docs/specs/communication/luxtory.md",
+    "excerpt": "| D-LX-08 | Nomenclatura pública do site B2C (§6), complementando `D-LX-06`: Second Home, ",
+    "reason": "Registro de decisão datado ou superado, ou o texto da regra (D-LX-11, D-B2C-27, D-BP-28)."
+  },
+  {
+    "path": "docs/specs/communication/luxtory.md",
+    "excerpt": "| D-LX-11 | Ontologia única Home Concept → Home Edition → Second Home (§6) em todas as cam",
+    "reason": "Registro de decisão datado ou superado, ou o texto da regra (D-LX-11, D-B2C-27, D-BP-28)."
+  },
+  {
+    "path": "docs/specs/communication/luxtory.md",
+    "excerpt": "| denominar ou enquadrar o produto como moradia — Residence, residência, residencial ou eq",
+    "reason": "Registro de decisão datado ou superado, ou o texto da regra (D-LX-11, D-B2C-27, D-BP-28)."
+  },
+  {
+    "path": "docs/specs/communication/revisao-juridica-brand-partners.md",
+    "excerpt": "| C. Ação de SPE (fluxo completo) | J-15–J-20 | `P-LX-03` | Risco comunicacional reduzido ",
+    "reason": "Pacote jurídico datado da BP1.1: inventário verbatim da copy da época."
+  },
+  {
+    "path": "docs/specs/communication/revisao-juridica-brand-partners.md",
+    "excerpt": "| C. Ação de SPE para público indeterminado | `P-LX-03` | a página aberta descreve as moda",
+    "reason": "Pacote jurídico datado da BP1.1: inventário verbatim da copy da época."
+  },
+  {
+    "path": "docs/specs/communication/revisao-juridica-brand-partners.md",
+    "excerpt": "| J-01 | Como funciona · Decisões e remuneração | \"Como funciona o licenciamento?\" / \"A Br",
+    "reason": "Pacote jurídico datado da BP1.1: inventário verbatim da copy da época."
+  },
+  {
+    "path": "docs/specs/communication/revisao-juridica-brand-partners.md",
+    "excerpt": "| J-07 | Home · Governança | \"Sim. A marca, o Brand DNA e os ativos intelectuais que a emp",
+    "reason": "Pacote jurídico datado da BP1.1: inventário verbatim da copy da época."
+  },
+  {
+    "path": "docs/specs/communication/revisao-juridica-brand-partners.md",
+    "excerpt": "| J-08 | Home · Governança | \"O Home Concept identifica os elementos essenciais.\" / \"Perso",
+    "reason": "Pacote jurídico datado da BP1.1: inventário verbatim da copy da época."
+  },
+  {
+    "path": "docs/specs/communication/revisao-juridica-brand-partners.md",
+    "excerpt": "| J-09 | Home · Governança | \"Ficam impedidos novos Home Concepts, Home Editions e usos da",
+    "reason": "Pacote jurídico datado da BP1.1: inventário verbatim da copy da época."
+  },
+  {
+    "path": "docs/specs/communication/revisao-juridica-brand-partners.md",
+    "excerpt": "| J-13 | Como funciona · Governança | \"O contrato define como encerrar a relação e tratar ",
+    "reason": "Pacote jurídico datado da BP1.1: inventário verbatim da copy da época."
+  },
+  {
+    "path": "docs/specs/communication/revisao-juridica-brand-partners.md",
+    "excerpt": "| J-15 | Home · Para quem vive (Patrimônio) | \"Uma relação patrimonial real.\" / Desde o aj",
+    "reason": "Pacote jurídico datado da BP1.1: inventário verbatim da copy da época."
+  },
+  {
+    "path": "docs/specs/communication/revisao-juridica-brand-partners.md",
+    "excerpt": "| J-17 | Como funciona · Percurso (05) | \"A Home Edition apresenta as formas de aquisição ",
+    "reason": "Pacote jurídico datado da BP1.1: inventário verbatim da copy da época."
+  },
+  {
+    "path": "docs/specs/communication/revisao-juridica-brand-partners.md",
+    "excerpt": "| J-20 | Interesse (Home · Como acontece 02; Como funciona · Percurso 03) | \"O interesse a",
+    "reason": "Pacote jurídico datado da BP1.1: inventário verbatim da copy da época."
+  },
+  {
+    "path": "docs/specs/communication/revisao-juridica-brand-partners.md",
+    "excerpt": "| J-24 | Como funciona · Luxtory Club | \"O modelo Luxtory prevê o Luxtory Club: uma rede q",
+    "reason": "Pacote jurídico datado da BP1.1: inventário verbatim da copy da época."
+  },
+  {
+    "path": "docs/specs/communication/revisao-juridica-brand-partners.md",
+    "excerpt": "| J-25 | Como funciona · Luxtory Club (Membership) | \"Prevista como a associação do Titula",
+    "reason": "Pacote jurídico datado da BP1.1: inventário verbatim da copy da época."
+  },
+  {
+    "path": "docs/specs/communication/revisao-juridica-brand-partners.md",
+    "excerpt": "| J-26 | Como funciona · Luxtory Club (Luxchange) | Desde `D-BP-21` (2026-10-13, redação d",
+    "reason": "Pacote jurídico datado da BP1.1: inventário verbatim da copy da época."
+  },
+  {
+    "path": "docs/specs/communication/revisao-juridica-brand-partners.md",
+    "excerpt": "| J-29 | Como funciona · Luxtory Club (\"E para a marca?\") | \"Quando os mecanismos do Club ",
+    "reason": "Pacote jurídico datado da BP1.1: inventário verbatim da copy da época."
+  },
+  {
+    "path": "docs/specs/ownership.md",
+    "excerpt": "- Sai a F2a (gatilho `interest_modality_offered` e a recusa `modality: not_allowed`): a Ho",
+    "reason": "Spec: seção anterior superada pela W4.2 ou descrição da própria mudança."
+  },
+  {
+    "path": "docs/specs/ownership.md",
+    "excerpt": "- [x] `[REQ-022]` a manifestação exige uma Home Edition publicada (W4.2: sem `concept_id`,",
+    "reason": "Spec: seção anterior superada pela W4.2 ou descrição da própria mudança."
+  },
+  {
+    "path": "docs/specs/ownership.md",
+    "excerpt": "- `home_edition_id` obrigatório; `concept_id` sai (o Home Concept é o da Home Edition); ne",
+    "reason": "Spec: seção anterior superada pela W4.2 ou descrição da própria mudança."
+  },
+  {
+    "path": "src/features/catalog/domain/terminology.ts",
+    "excerpt": "* BR-377 (`02` v4.3 REQ-100): o produto não é denominado nem enquadrado como moradia — nad",
+    "reason": "Texto da própria regra (BR-377)."
+  },
+  {
+    "path": "src/features/catalog/domain/terminology.ts",
+    "excerpt": "* ou residencial. Vale para os campos de produto (Home Concept, Home Edition); nome de mar",
+    "reason": "Texto da própria regra (BR-377)."
+  },
+  {
+    "path": "src/features/catalog/domain/terminology.ts",
+    "excerpt": "/(?<![\\p{L}\\p{N}])(residences?|resid[eê]ncias?|residencia(?:l|is))(?![\\p{L}\\p{N}])/iu;",
+    "reason": "Texto da própria regra (BR-377)."
+  },
+  {
+    "path": "src/features/catalog/presentation/i18n/discovery-pt-br.ts",
+    "excerpt": "// anteprojeto é nomeado só \"Kaizen\": Residence não nomeia produto Luxtory (BR-377, D-LX-1",
+    "reason": "Texto da própria regra (BR-377)."
+  },
+  {
+    "path": "tests/features/catalog/application/inputs.test.ts",
+    "excerpt": "for (const value of ['Residence Mar', 'Casa residencial', 'Uma residência de lazer']) {",
+    "reason": "Teste que prova a ausência ou a recusa do nome anterior."
+  },
+  {
+    "path": "tests/features/catalog/domain/collection.test.ts",
+    "excerpt": "expect(MEDIA_OBJECT_KEY.test(`concept-media/${sha}.webp`)).toBe(false);",
+    "reason": "Teste que prova a ausência ou a recusa do nome anterior."
+  },
+  {
+    "path": "tests/features/ownership/domain/interest.test.ts",
+    "excerpt": "expect(interest).not.toHaveProperty('isModalityOffered');",
+    "reason": "Teste que prova a ausência ou a recusa do nome anterior."
+  },
+  {
+    "path": "tests/features/ownership/interest.db.test.ts",
+    "excerpt": "AND column_name IN ('home_edition_id', 'home_concept_id', 'concept_id', 'region')`,",
+    "reason": "Teste que prova a ausência ou a recusa do nome anterior."
+  },
+  {
+    "path": "tests/migrations/home-edition.db.test.ts",
+    "excerpt": "/** `operation` no schema anterior à W4.2 (`residence_id`). */",
+    "reason": "Teste de rollback: insere no schema anterior à W4.2 para provar as precondições."
+  },
+  {
+    "path": "tests/migrations/home-edition.db.test.ts",
+    "excerpt": "WHERE table_schema = 'app' AND table_name = 'interest' AND column_name = 'concept_id'`,",
+    "reason": "Teste de rollback: insere no schema anterior à W4.2 para provar as precondições."
+  },
+  {
+    "path": "tests/migrations/home-edition.db.test.ts",
+    "excerpt": "`INSERT INTO app.concept_version (id, concept_id, version, essential_elements, preservatio",
+    "reason": "Teste de rollback: insere no schema anterior à W4.2 para provar as precondições."
+  },
+  {
+    "path": "tests/migrations/home-edition.db.test.ts",
+    "excerpt": "`INSERT INTO app.edition (id, concept_id, region, modality, commercial_conditions, operati",
+    "reason": "Teste de rollback: insere no schema anterior à W4.2 para provar as precondições."
+  },
+  {
+    "path": "tests/migrations/home-edition.db.test.ts",
+    "excerpt": "`INSERT INTO app.interest (id, concept_id, edition_id, modality, region, approx_days, crea",
+    "reason": "Teste de rollback: insere no schema anterior à W4.2 para provar as precondições."
+  },
+  {
+    "path": "tests/migrations/home-edition.db.test.ts",
+    "excerpt": "`INSERT INTO app.operation (id, command, actor_user_id, acting_party_id, role, residence_i",
+    "reason": "Teste de rollback: insere no schema anterior à W4.2 para provar as precondições."
+  },
+  {
+    "path": "tests/migrations/home-edition.db.test.ts",
+    "excerpt": "expect(await exists(database, 'app.concept_version')).toBe(true);",
+    "reason": "Teste de rollback: insere no schema anterior à W4.2 para provar as precondições."
+  },
+  {
+    "path": "tests/migrations/home-edition.db.test.ts",
+    "excerpt": "expect(columns).not.toContain('concept_id');",
+    "reason": "Teste de rollback: insere no schema anterior à W4.2 para provar as precondições."
+  },
+  {
+    "path": "tests/migrations/home-edition.db.test.ts",
+    "excerpt": "it('[REQ-022] o interesse exige Home Edition e não tem concept_id nem region', async () =>",
+    "reason": "Teste de rollback: insere no schema anterior à W4.2 para provar as precondições."
+  },
+  {
+    "path": "tests/migrations/ownership.db.test.ts",
+    "excerpt": "`SELECT count(*)::int AS n FROM pg_proc WHERE proname = 'interest_modality_offered'`,",
+    "reason": "Teste que prova a ausência ou a recusa do nome anterior."
+  }
+]

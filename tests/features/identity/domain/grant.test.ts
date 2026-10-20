@@ -25,11 +25,11 @@ describe('authorization_grant — vigência, command e escopo (REQ-014)', () => 
 
     expect(grantCovers(subject, PARTNER_OPERATION.name, SCOPE, inside)).toBe(true);
     expect(grantCovers(subject, 'other_operation', SCOPE, inside)).toBe(false);
-    expect(grantCovers(subject, PARTNER_OPERATION.name, { type: 'concept', id: 'x' }, inside)).toBe(
-      false,
-    );
     expect(
-      grantCovers(subject, PARTNER_OPERATION.name, { type: 'edition', id: SCOPE.id }, inside),
+      grantCovers(subject, PARTNER_OPERATION.name, { type: 'home_concept', id: 'x' }, inside),
+    ).toBe(false);
+    expect(
+      grantCovers(subject, PARTNER_OPERATION.name, { type: 'home_edition', id: SCOPE.id }, inside),
     ).toBe(false);
   });
 });

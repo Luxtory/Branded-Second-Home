@@ -16,7 +16,7 @@ import {
 } from '@/features/platform';
 
 // Armazenamento dos binários da mídia (ADR-0015): o banco guarda só referência e metadados.
-const KEY = mediaObjectKey('a'.repeat(64));
+const KEY = mediaObjectKey('homeConcept', 'a'.repeat(64));
 const BYTES = new Uint8Array([1, 2, 3]);
 const SUPABASE = {
   url: 'https://projeto.supabase.co',

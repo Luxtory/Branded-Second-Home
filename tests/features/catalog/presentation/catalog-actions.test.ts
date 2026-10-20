@@ -5,7 +5,7 @@ import { catalogCta, type CatalogCta } from '@/features/catalog/application/publ
 import { CatalogActions } from '@/features/catalog/presentation/discovery/catalog-actions';
 import { discoveryMessages } from '@/features/catalog/presentation/i18n/discovery-pt-br';
 
-// CTA por disponibilidade (D-B2C-13, D-B2C-16; docs/specs/catalog.md §13.2). O E2E roda com Edition publicada; aqui,
+// CTA por disponibilidade (D-B2C-13, D-B2C-16; docs/specs/catalog.md §13.2). O E2E roda com Home Edition publicada; aqui,
 // os quatro estados, na Home e no Como funciona.
 const { qualification } = discoveryMessages;
 
@@ -14,8 +14,8 @@ function render(cta: CatalogCta, from: 'home' | 'howItWorks') {
     from === 'home'
       ? qualification.next
       : {
-          editions: qualification.next.editions,
-          concepts: qualification.next.concepts,
+          homeEditions: qualification.next.homeEditions,
+          homeConcepts: qualification.next.homeConcepts,
           none: qualification.nextHowItWorks.none,
         };
   return renderToStaticMarkup(createElement(CatalogActions, { cta, next, from }));
@@ -29,9 +29,9 @@ const links = (html: string) =>
   }));
 
 describe('CTA do Discovery por disponibilidade', () => {
-  it('[REQ-022] com Edition publicada, o CTA leva à primeira oferta da Coleção', () => {
-    expect(catalogCta({ concepts: true, editions: true })).toBe('editions');
-    expect(links(render('editions', 'home'))).toEqual([
+  it('[REQ-022] com Home Edition publicada, o CTA leva ao primeiro grupo da Coleção', () => {
+    expect(catalogCta({ homeConcepts: true, homeEditions: true })).toBe('homeEditions');
+    expect(links(render('homeEditions', 'home'))).toEqual([
       {
         primary: true,
         href: '/colecao#home-editions',
@@ -39,7 +39,7 @@ describe('CTA do Discovery por disponibilidade', () => {
       },
       { primary: false, href: '/como-funciona', label: 'Entenda como funciona' },
     ]);
-    expect(links(render('editions', 'howItWorks'))).toEqual([
+    expect(links(render('homeEditions', 'howItWorks'))).toEqual([
       {
         primary: true,
         href: '/colecao#home-editions',
@@ -48,18 +48,18 @@ describe('CTA do Discovery por disponibilidade', () => {
     ]);
   });
 
-  it('[REQ-022] só com Concepts sem Edition, o CTA é "Conheça os Home Concepts"', () => {
-    expect(catalogCta({ concepts: true, editions: false })).toBe('concepts');
-    expect(links(render('concepts', 'home'))[0]).toEqual({
+  it('[REQ-022] só com Home Concepts sem Home Edition, o CTA é "Conheça os Home Concepts"', () => {
+    expect(catalogCta({ homeConcepts: true, homeEditions: false })).toBe('homeConcepts');
+    expect(links(render('homeConcepts', 'home'))[0]).toEqual({
       primary: true,
       href: '/colecao#home-concepts',
       label: 'Conheça os Home Concepts',
     });
-    expect(render('concepts', 'home')).toContain(qualification.next.concepts);
+    expect(render('homeConcepts', 'home')).toContain(qualification.next.homeConcepts);
   });
 
   it('[REQ-022] sem Concept publicado, nenhum caminho para uma Coleção vazia', () => {
-    expect(catalogCta({ concepts: false, editions: false })).toBe('none');
+    expect(catalogCta({ homeConcepts: false, homeEditions: false })).toBe('none');
     expect(links(render('none', 'home'))).toEqual([
       { primary: true, href: '/como-funciona', label: 'Entenda como funciona' },
     ]);

@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import {
-  basesForModality,
   canApproveMedia,
   canWithdrawMedia,
   isCurrentValue,
+  MEDIA_OBJECT_KEY,
+  mediaObjectKey,
   supportsFeatured,
   periodsOverlap,
   sameLabel,
   termSlug,
 } from '@/features/catalog/domain/collection';
 
-// Coleção (docs/specs/catalog.md §13.12): regras puras de vocabulário, capa e valor de referência.
+// Coleção (docs/specs/catalog.md §13.12, §17): regras puras de vocabulário, mídia e média projetada de investimento.
 const at = (iso: string) => new Date(iso);
 
 describe('Coleção — domínio', () => {
@@ -22,13 +23,15 @@ describe('Coleção — domínio', () => {
     expect(sameLabel('Natureza', 'NATUREZA')).toBe(true);
   });
 
-  it('[BR-032] [REQ-103] bases do valor pela modalidade: Owner → a Second Home, Co-Owner → a Ação, ambas lado a lado', () => {
-    expect(basesForModality('owner')).toEqual(['owner']);
-    expect(basesForModality('co_owner')).toEqual(['acao']);
-    expect(basesForModality('owner_and_co_owner')).toEqual(['owner', 'acao']);
+  it('[BR-034] chave do objeto de mídia por dono: capa do Home Concept ou mídia da Home Edition, sempre WebP pelo SHA-256', () => {
+    const sha = 'b'.repeat(64);
+    expect(mediaObjectKey('homeConcept', sha)).toBe(`home-concept-media/${sha}.webp`);
+    expect(mediaObjectKey('homeEdition', sha)).toBe(`home-edition-media/${sha}.webp`);
+    expect(MEDIA_OBJECT_KEY.test(`home-edition-media/${sha}.webp`)).toBe(true);
+    expect(MEDIA_OBJECT_KEY.test(`concept-media/${sha}.webp`)).toBe(false);
   });
 
-  it('[BR-031] vigência semiaberta: começa no início, termina antes do fim; fim nulo = em aberto', () => {
+  it('[BR-034] vigência semiaberta: começa no início, termina antes do fim; fim nulo = em aberto', () => {
     const value = { validFrom: at('2026-10-01T00:00:00Z'), validUntil: at('2026-11-01T00:00:00Z') };
     expect(isCurrentValue(value, at('2026-09-30T23:59:59Z'))).toBe(false);
     expect(isCurrentValue(value, at('2026-10-01T00:00:00Z'))).toBe(true);
@@ -36,7 +39,7 @@ describe('Coleção — domínio', () => {
     expect(isCurrentValue({ ...value, validUntil: null }, at('2030-01-01T00:00:00Z'))).toBe(true);
   });
 
-  it('[BR-031] vigências encostadas não se sobrepõem; em aberto se sobrepõe a qualquer posterior', () => {
+  it('[BR-034] vigências encostadas não se sobrepõem; em aberto se sobrepõe a qualquer posterior', () => {
     const october = {
       validFrom: at('2026-10-01T00:00:00Z'),
       validUntil: at('2026-11-01T00:00:00Z'),

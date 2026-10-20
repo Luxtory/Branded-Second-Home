@@ -5,11 +5,11 @@ import { createTestDatabase, type TestDatabase } from '../support/test-database'
 // Tabelas do catálogo (ADR-0010 §7, TECH-052): RLS só para o papel de aplicação, sem DELETE nem TRUNCATE.
 const TABLES = [
   'brand_partner',
-  'concept',
-  'concept_version',
+  'home_concept',
+  'home_concept_version',
   'investor_authorization',
-  'edition',
-  'residence',
+  'home_edition',
+  'second_home',
 ] as const;
 
 describe('catálogo: RLS, privilégios e histórico (TECH-052)', () => {
@@ -83,7 +83,7 @@ describe('catálogo: RLS, privilégios e histórico (TECH-052)', () => {
         ],
       },
       {
-        table_name: 'concept_version',
+        table_name: 'home_concept_version',
         columns: [
           'approval_operation_id',
           'approval_refs',
@@ -91,6 +91,30 @@ describe('catálogo: RLS, privilégios e histórico (TECH-052)', () => {
           'approved_by_user_id',
           'approved_role',
           'state',
+        ],
+      },
+      {
+        // Preparação (definição material e textos), finalização e visibilidade; o gatilho congela o material depois da
+        // finalização e a identidade sempre (spec catalog §17.3, BR-036).
+        table_name: 'home_edition',
+        columns: [
+          'amenities',
+          'characteristics',
+          'description',
+          'finalization_operation_id',
+          'finalized_at',
+          'finalized_by_user_id',
+          'finalized_role',
+          'guests_max',
+          'material_state',
+          'name',
+          'projected_area_m2',
+          'rooms',
+          'spatial_configuration',
+          'suites',
+          'typology',
+          'visibility',
+          'withdrawal_basis',
         ],
       },
       { table_name: 'investor_authorization', columns: ['revocation_basis', 'revoked_at'] },

@@ -19,7 +19,7 @@ describe('códigos de erro (TECH-056)', () => {
   });
 
   it('[TECH-056] constraint vira código pelo prefixo do nome; outras não são recusa funcional', () => {
-    expect(rejectionForConstraint('occupancy_residence_date_key')).toBe('ERR_BOOKING_CONFLICT');
+    expect(rejectionForConstraint('occupancy_second_home_date_key')).toBe('ERR_BOOKING_CONFLICT');
     expect(rejectionForConstraint('custody_pair_check')).toBe('ERR_CAPACITY_UNAVAILABLE');
     expect(rejectionForConstraint('balance_non_negative')).toBe('ERR_USE_RIGHT_BALANCE');
     expect(rejectionForConstraint('credits_lot_balance')).toBe('ERR_CREDITS_INSUFFICIENT');

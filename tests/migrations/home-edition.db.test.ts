@@ -318,6 +318,7 @@ describe('W4.2: Second Home, média projetada e interesse no banco', () => {
     const columns = rows.map((row: { column_name: string }) => row.column_name);
     expect(columns).toContain('desired_location');
     expect(columns).not.toContain('concept_id');
+    expect(columns).not.toContain('home_concept_id');
     expect(columns).not.toContain('region');
   });
 });

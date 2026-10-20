@@ -10,7 +10,7 @@ const TECH_053_ORDER = [
   'rental_offer',
   'membership',
   'stake',
-  'residence_date',
+  'second_home_date',
   'balance_and_custody',
   'credit_lot',
   'payment',
@@ -34,7 +34,7 @@ describe('LockSequence (TECH-053)', () => {
     expect(locks.claim('stake', ['c', 'a', 'b', 'a'])).toEqual(['a', 'b', 'c']);
   });
 
-  it('[TECH-053] chaves compostas comparam campo a campo (residence_id, stay_date)', () => {
+  it('[TECH-053] chaves compostas comparam campo a campo (second_home_id, stay_date)', () => {
     const locks = new LockSequence();
     const keys = [
       ['r2', '2027-01-01'],
@@ -42,7 +42,7 @@ describe('LockSequence (TECH-053)', () => {
       ['r1', '2027-01-01'],
     ] as const;
 
-    expect(locks.claim('residence_date', keys)).toEqual([
+    expect(locks.claim('second_home_date', keys)).toEqual([
       ['r1', '2027-01-01'],
       ['r1', '2027-01-02'],
       ['r2', '2027-01-01'],

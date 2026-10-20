@@ -9,11 +9,12 @@ import {
   type SearchParams,
 } from '@/features/catalog/application/collection-query';
 import type {
-  PublicCollectionEdition,
   PublicCollectionEntry,
+  PublicCollectionHomeEdition,
 } from '@/features/catalog/application/collection-views';
 
-// Descoberta da Coleção (docs/specs/catalog.md §13.12, D-B2C-21): funções puras sobre a leitura pública.
+// Descoberta da Coleção (docs/specs/catalog.md §13.12, §17.8; D-B2C-21, D-B2C-27): funções puras sobre a leitura
+// pública. Pessoas, suítes, área e média projetada são atributos da Home Edition (BR-031, BR-034).
 const MILLION_REAIS = 100_000_000n;
 const natureza = { slug: 'natureza', label: 'Natureza' };
 const bemEstar = { slug: 'bem-estar', label: 'Bem-estar' };
@@ -28,20 +29,21 @@ const cover = {
   widths: [{ width: 1600, height: 1200 }],
 } as const;
 
-function edition(
-  region: string,
-  modality: PublicCollectionEdition['modality'],
-  values: Partial<Record<'owner' | 'acao', bigint>> = {},
-): PublicCollectionEdition {
+function homeEdition(
+  name: string,
+  facts: { guests: number; suites: number; area: number },
+  investment: bigint | null = null,
+): PublicCollectionHomeEdition {
   return {
-    id: `${region}-${modality}`,
-    region,
-    modality,
-    values: Object.entries(values).map(([basis, amountMinor]) => ({
-      basis: basis as 'owner' | 'acao',
-      amountMinor,
-      currency: 'BRL',
-    })),
+    id: `home-edition-${name}`,
+    name,
+    typology: 'Casa térrea',
+    guestsMax: facts.guests,
+    suites: facts.suites,
+    projectedAreaM2: facts.area,
+    projectedInvestment: investment === null ? null : { amountMinor: investment, currency: 'BRL' },
+    cover: null,
+    createdAt: new Date(Date.UTC(2026, 9, 1)),
   };
 }
 
@@ -52,158 +54,119 @@ function entry(
 ): PublicCollectionEntry {
   sequence += 1;
   return {
-    id: `concept-${title}`,
+    id: `home-concept-${title}`,
     title,
     brandPartnerId: 'brand-a',
     brandName: 'Maison Atlântica',
     createdAt: new Date(Date.UTC(2026, 8, sequence)),
     summary: null,
-    guestsMax: null,
-    suites: null,
-    builtAreaM2: null,
     lifestyles: [],
     styles: [],
     cover: null,
     rank: null,
     featured: false,
-    editions: [],
+    homeEditions: [],
     ...overrides,
   };
 }
 
 const query = (params: SearchParams = {}) => parseCollectionQuery(params);
 const titles = (entries: readonly PublicCollectionEntry[]) => entries.map((item) => item.title);
+const all = (result: ReturnType<typeof discoverCollection>) =>
+  titles([...result.groups.withHomeEdition, ...result.groups.withoutHomeEdition]);
 
 const MAR = entry('Casa do Mar', {
   lifestyles: [natureza, bemEstar],
   styles: [contemporaneo],
-  guestsMax: 10,
-  suites: 5,
-  builtAreaM2: 500,
-  editions: [
-    edition('Trancoso, BA', 'owner_and_co_owner', {
-      owner: 48n * MILLION_REAIS,
-      acao: 6n * MILLION_REAIS,
-    }),
+  homeEditions: [
+    homeEdition('Edição Varanda', { guests: 10, suites: 5, area: 500 }, 48n * MILLION_REAIS),
   ],
 });
 const SERRA = entry('Casa da Serra', {
   lifestyles: [bemEstar],
-  guestsMax: 6,
-  suites: 3,
-  builtAreaM2: 320,
   brandPartnerId: 'brand-b',
   brandName: 'Atelier Serra',
-  editions: [edition('Campos do Jordão, SP', 'owner', { owner: 22n * MILLION_REAIS })],
+  homeEditions: [
+    homeEdition('Edição Lareira', { guests: 6, suites: 3, area: 320 }, 22n * MILLION_REAIS),
+  ],
 });
-const PATIO = entry('Casa do Pátio', { lifestyles: [natureza], guestsMax: 8 });
+const PATIO = entry('Casa do Pátio', { lifestyles: [natureza] });
 const CATALOG = [MAR, SERRA, PATIO];
 
 describe('Coleção — descoberta', () => {
-  it('[REQ-022] sem filtro: um card por Concept, em dois grupos — com Home Edition e ainda sem Home Edition', () => {
+  it('[REQ-022] sem filtro: um card por Home Concept, em dois grupos — com Home Edition e ainda sem Home Edition', () => {
     const result = discoverCollection(CATALOG, query());
     expect(result.filtered).toBe(false);
-    expect(result.groups).toEqual({
-      kind: 'catalog',
-      withEdition: [MAR, SERRA],
-      withoutEdition: [PATIO],
-    });
+    expect(result.groups).toEqual({ withHomeEdition: [MAR, SERRA], withoutHomeEdition: [PATIO] });
     expect(result.total).toBe(3);
   });
 
-  it('busca livre por Concept, lifestyle, estilo, destino e Brand Partner, sem acento e sem diferenciar maiúsculas', () => {
-    const search = (q: string) => {
-      const { groups } = discoverCollection(CATALOG, query({ q }));
-      return groups.kind === 'catalog'
-        ? titles([...groups.withEdition, ...groups.withoutEdition])
-        : [];
-    };
+  it('busca livre por Home Concept, lifestyle, estilo, Home Edition e Brand Partner, sem acento e sem diferenciar maiúsculas', () => {
+    const search = (q: string) => all(discoverCollection(CATALOG, query({ q })));
     expect(search('patio')).toEqual(['Casa do Pátio']);
     expect(search('NATUREZA')).toEqual(['Casa do Mar', 'Casa do Pátio']);
     expect(search('contemporaneo')).toEqual(['Casa do Mar']);
-    expect(search('campos jordao')).toEqual(['Casa da Serra']);
+    expect(search('lareira')).toEqual(['Casa da Serra']);
     expect(search('atelier')).toEqual(['Casa da Serra']);
-    expect(search('casa natureza trancoso')).toEqual(['Casa do Mar']);
+    expect(search('casa natureza varanda')).toEqual(['Casa do Mar']);
     expect(normalizeText(' São PAULO ')).toBe('sao paulo');
   });
 
-  it('[REQ-020] [REQ-022] Localização não elimina Concepts sem Edition na região: dois grupos, sem repetir Concept', () => {
-    const result = discoverCollection(CATALOG, query({ regiao: 'trancoso, ba' }));
-    expect(result.groups).toEqual({
-      kind: 'region',
-      region: 'trancoso, ba',
-      inRegion: [MAR],
-      others: [SERRA, PATIO],
-    });
-    // Com lifestyle: os "outros" também respeitam as demais escolhas.
-    const withLifestyle = discoverCollection(
+  it('[REQ-020] [BR-034] média projetada (De/Até, uma etapa, sem modalidade): só Home Concepts com Home Edition e média vigente na faixa', () => {
+    const range = discoverCollection(
       CATALOG,
-      query({ regiao: 'Trancoso, BA', lifestyle: 'natureza' }),
+      query({ 'valor-de': '20000000', 'valor-ate': '30000000' }),
     );
-    expect(withLifestyle.groups).toMatchObject({ inRegion: [MAR], others: [PATIO] });
+    expect(range.groups).toEqual({ withHomeEdition: [SERRA], withoutHomeEdition: [] });
+    const upTo = discoverCollection(CATALOG, query({ 'valor-ate': '50000000' }));
+    expect(upTo.groups).toEqual({ withHomeEdition: [MAR, SERRA], withoutHomeEdition: [] });
+    // A Home Edition sem média vigente fica fora de qualquer faixa ativa.
+    const noValue = entry('Sem média', {
+      homeEditions: [homeEdition('Edição Pátio', { guests: 8, suites: 4, area: 400 })],
+    });
+    expect(discoverCollection([noValue], query({ 'valor-de': '1' })).total).toBe(0);
   });
 
-  it('[REQ-020] [REQ-100] [REQ-103] faixa de valor: só Concepts com Edition e valor vigente na base escolhida, Owner e Co-Owner com o mesmo peso', () => {
-    const owner = discoverCollection(
-      CATALOG,
-      query({ base: 'owner', 'valor-de': '20000000', 'valor-ate': '30000000' }),
+  it('[REQ-022] card com várias Home Editions: as que atendem à busca vêm primeiro, sem mudar o resto', () => {
+    const grande = homeEdition(
+      'Edição Grande',
+      { guests: 12, suites: 6, area: 600 },
+      7n * MILLION_REAIS,
     );
-    expect(owner.groups).toEqual({ kind: 'catalog', withEdition: [SERRA], withoutEdition: [] });
-
-    const coOwner = discoverCollection(CATALOG, query({ base: 'co-owner' }));
-    expect(coOwner.groups).toEqual({ kind: 'catalog', withEdition: [MAR], withoutEdition: [] });
-
-    // Com região, o primeiro grupo exige a Edition na região com o valor; os "outros" precisam de valor em outra região.
-    const inRegion = discoverCollection(
-      CATALOG,
-      query({ regiao: 'Trancoso, BA', base: 'owner', 'valor-ate': '30000000' }),
+    const compacta = homeEdition(
+      'Edição Compacta',
+      { guests: 6, suites: 3, area: 280 },
+      95n * (MILLION_REAIS / 100n),
     );
-    expect(inRegion.groups).toMatchObject({ inRegion: [], others: [SERRA] });
-  });
+    const two = entry('Casa Dupla', { homeEditions: [grande, compacta] });
+    const namesOf = (result: ReturnType<typeof discoverCollection>) =>
+      result.groups.withHomeEdition.flatMap((item) => item.homeEditions.map((e) => e.name));
 
-  it('[REQ-022] card com várias Editions: as que atendem à região e à faixa de valor vêm primeiro, sem mudar o resto', () => {
-    const bahia = edition('Litoral Sul da Bahia', 'owner_and_co_owner', {
-      owner: 7n * MILLION_REAIS,
-      acao: 11n * (MILLION_REAIS / 10n),
-    });
-    const norte = edition('Litoral Norte de São Paulo', 'co_owner', {
-      acao: 95n * (MILLION_REAIS / 100n),
-    });
-    const two = entry('Casa Dupla', { editions: [bahia, norte] });
-    const editionsOf = (result: ReturnType<typeof discoverCollection>) =>
-      (result.groups.kind === 'region'
-        ? result.groups.inRegion
-        : result.groups.withEdition
-      ).flatMap((item) => item.editions.map((e) => e.region));
-
-    expect(editionsOf(discoverCollection([two], query()))).toEqual([
-      'Litoral Sul da Bahia',
-      'Litoral Norte de São Paulo',
+    expect(namesOf(discoverCollection([two], query()))).toEqual([
+      'Edição Grande',
+      'Edição Compacta',
     ]);
-    expect(
-      editionsOf(discoverCollection([two], query({ regiao: 'Litoral Norte de São Paulo' }))),
-    ).toEqual(['Litoral Norte de São Paulo', 'Litoral Sul da Bahia']);
-    expect(
-      editionsOf(discoverCollection([two], query({ base: 'co-owner', 'valor-ate': '1000000' }))),
-    ).toEqual(['Litoral Norte de São Paulo', 'Litoral Sul da Bahia']);
+    expect(namesOf(discoverCollection([two], query({ 'valor-ate': '1000000' })))).toEqual([
+      'Edição Compacta',
+      'Edição Grande',
+    ]);
+    expect(namesOf(discoverCollection([two], query({ pessoas: '10' })))).toEqual([
+      'Edição Grande',
+      'Edição Compacta',
+    ]);
   });
 
-  it('modalidade disponível: uma Edition Owner e Co-Owner atende às duas; "só com Home Edition" esconde os sem Edition', () => {
-    const coOwner = discoverCollection(CATALOG, query({ modalidade: 'co-owner' }));
-    expect(coOwner.groups).toMatchObject({ withEdition: [MAR], withoutEdition: [] });
-    const owner = discoverCollection(CATALOG, query({ modalidade: 'owner' }));
-    expect(owner.groups).toMatchObject({ withEdition: [MAR, SERRA] });
-    const onlyEditions = discoverCollection(CATALOG, query({ 'com-edition': '1' }));
-    expect(onlyEditions.groups).toMatchObject({ withEdition: [MAR, SERRA], withoutEdition: [] });
+  it('"só com Home Edition" esconde os Home Concepts ainda sem Home Edition', () => {
+    const only = discoverCollection(CATALOG, query({ 'com-home-edition': '1' }));
+    expect(only.groups).toEqual({ withHomeEdition: [MAR, SERRA], withoutHomeEdition: [] });
   });
 
-  it('pessoas, suítes e área: o dado ausente não passa num filtro ativo', () => {
+  it('[BR-031] pessoas, suítes e área valem pelas Home Editions publicadas: Home Concept sem Home Edition não passa num filtro ativo', () => {
     const atLeastEight = discoverCollection(CATALOG, query({ pessoas: '8' }));
-    expect(atLeastEight.groups).toMatchObject({ withEdition: [MAR], withoutEdition: [PATIO] });
-    const suites = discoverCollection(CATALOG, query({ suites: '4' }));
-    expect(suites.total).toBe(1);
+    expect(atLeastEight.groups).toEqual({ withHomeEdition: [MAR], withoutHomeEdition: [] });
+    expect(discoverCollection(CATALOG, query({ suites: '4' })).total).toBe(1);
     const area = discoverCollection(CATALOG, query({ 'area-de': '300', 'area-ate': '400' }));
-    expect(area.groups).toMatchObject({ withEdition: [SERRA], withoutEdition: [] });
+    expect(area.groups).toEqual({ withHomeEdition: [SERRA], withoutHomeEdition: [] });
     expect(
       discoverCollection(CATALOG, query({ marca: '00000000-0000-4000-8000-000000000000' })).total,
     ).toBe(0);
@@ -216,20 +179,15 @@ describe('Coleção — descoberta', () => {
       entry('C', { rank: 1 }),
       entry('D', { rank: null }),
     ];
-    const curated = discoverCollection(ranked, query()).groups;
-    expect(curated.kind === 'catalog' && titles(curated.withoutEdition)).toEqual([
+    expect(titles(discoverCollection(ranked, query()).groups.withoutHomeEdition)).toEqual([
       'C',
       'B',
       'A',
       'D',
     ]);
-    const recent = discoverCollection(ranked, query({ ordem: 'recentes' })).groups;
-    expect(recent.kind === 'catalog' && titles(recent.withoutEdition)).toEqual([
-      'D',
-      'C',
-      'B',
-      'A',
-    ]);
+    expect(
+      titles(discoverCollection(ranked, query({ ordem: 'recentes' })).groups.withoutHomeEdition),
+    ).toEqual(['D', 'C', 'B', 'A']);
   });
 
   it('destaque editorial: só explícito, com capa, sem filtro e na curadoria; abre o seu grupo', () => {
@@ -237,10 +195,7 @@ describe('Coleção — descoberta', () => {
     const catalog = [...CATALOG, featured];
     const result = discoverCollection(catalog, query());
     expect(result.featuredId).toBe(featured.id);
-    expect(result.groups.kind === 'catalog' && titles(result.groups.withoutEdition)).toEqual([
-      'Destaque',
-      'Casa do Pátio',
-    ]);
+    expect(titles(result.groups.withoutHomeEdition)).toEqual(['Destaque', 'Casa do Pátio']);
     expect(discoverCollection(catalog, query({ q: 'casa' })).featuredId).toBeNull();
     expect(discoverCollection(catalog, query({ ordem: 'recentes' })).featuredId).toBeNull();
     const withoutCover = entry('Sem capa', { featured: true });
@@ -259,37 +214,33 @@ describe('Coleção — descoberta', () => {
     expect(discoverCollection([smallCover], query()).featuredId).toBeNull();
   });
 
-  it('facetas: só valores reais, cada filtro só com 2+ opções; faixa de valor com o menor e o maior vigente por base', () => {
+  it('facetas: só valores reais das Home Editions, cada filtro só com 2+ opções; média projetada com a menor e a maior vigente', () => {
     const facets = collectionFacets(CATALOG);
     expect(facets.lifestyles).toEqual([bemEstar, natureza]);
     expect(facets.styles).toEqual([]);
-    expect(facets.regions).toEqual(['Campos do Jordão, SP', 'Trancoso, BA']);
-    expect(facets.guests).toEqual([6, 8, 10]);
-    expect(facets.values).toEqual([
-      { basis: 'owner', min: 22n * MILLION_REAIS, max: 48n * MILLION_REAIS },
-      { basis: 'acao', min: 6n * MILLION_REAIS, max: 6n * MILLION_REAIS },
-    ]);
+    expect(facets.guests).toEqual([6, 10]);
+    expect(facets.value).toEqual({ min: 22n * MILLION_REAIS, max: 48n * MILLION_REAIS });
     expect(facets.suites).toEqual([3, 5]);
     expect(facets.area).toEqual({ min: 320, max: 500 });
-    expect(facets.modalities).toEqual(['owner', 'co_owner']);
     expect(facets.brands).toEqual(
       [
         { id: 'brand-a', name: 'Maison Atlântica' },
         { id: 'brand-b', name: 'Atelier Serra' },
       ].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')),
     );
-    expect(facets.withEdition).toBe(true);
+    expect(facets.withHomeEdition).toBe(true);
+    expect(facets).not.toHaveProperty('regions');
+    expect(facets).not.toHaveProperty('modalities');
 
-    const single = collectionFacets([PATIO]);
-    expect(single).toMatchObject({
+    expect(collectionFacets([PATIO])).toMatchObject({
       lifestyles: [],
-      regions: [],
       guests: [],
-      values: [],
+      value: null,
       area: null,
-      modalities: [],
       brands: [],
-      withEdition: false,
+      withHomeEdition: false,
     });
+    // Uma só média publicada não é escolha.
+    expect(collectionFacets([MAR, PATIO]).value).toBeNull();
   });
 });

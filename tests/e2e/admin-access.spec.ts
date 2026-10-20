@@ -121,7 +121,7 @@ test('[REQ-014] Admin logado chama a API pelo navegador: sessão aceita, e na W2
       body: JSON.stringify({
         grantee_party_id: '00000000-0000-4000-8000-0000000000c1',
         commands: ['formalize_acquisition'],
-        scope: { type: 'concept', id: 'concept-1' },
+        scope: { type: 'home_concept', id: 'home-concept-1' },
         valid_from: '2026-09-01T00:00:00Z',
         valid_until: '2026-10-01T00:00:00Z',
         basis: 'Instrumento de teste',

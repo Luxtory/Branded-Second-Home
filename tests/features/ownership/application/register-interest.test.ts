@@ -13,23 +13,16 @@ import {
 import type { PublicAttempt } from '@/features/platform';
 
 const ATTEMPT_ID = '0f8b8a4e-3c1d-4f6a-9b2e-7d5c4b3a2f10';
-const CONCEPT = '6a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d';
-const EDITION_OWNER = '11111111-2222-4333-8444-555555555555';
-const EDITION_BOTH = '66666666-7777-4888-9999-aaaaaaaaaaaa';
+const HOME_CONCEPT = '6a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d';
+const HOME_EDITION = '66666666-7777-4888-9999-aaaaaaaaaaaa';
 const NOW = new Date('2026-10-19T12:00:00.000Z');
 
-const TARGET: InterestTarget = {
-  conceptId: CONCEPT,
-  editions: [
-    { id: EDITION_OWNER, modality: 'owner' },
-    { id: EDITION_BOTH, modality: 'owner_and_co_owner' },
-  ],
-};
+const TARGET: InterestTarget = { homeEditionId: HOME_EDITION, homeConceptId: HOME_CONCEPT };
 
 const CO_OWNER = {
-  concept_id: CONCEPT,
+  home_edition_id: HOME_EDITION,
   modality: 'co_owner',
-  region: 'Litoral norte de SP',
+  desired_location: 'Litoral norte de SP',
   approx_days: 21,
 };
 
@@ -54,7 +47,7 @@ function deps(
   return { store, targets, clock: { now: () => NOW }, newId: () => 'new-interest-id' };
 }
 
-describe('registro de interesse — use case (spec ownership §5)', () => {
+describe('registro de interesse — use case (spec ownership §5, §13)', () => {
   it('[REQ-023] registra origem e partner_ref como metadados normalizados, com a chave e o instante', async () => {
     const { store, written } = fakeStore();
 
@@ -69,10 +62,9 @@ describe('registro de interesse — use case (spec ownership §5)', () => {
     expect(written[0]?.interest).toEqual({
       id: 'new-interest-id',
       createdAt: NOW,
-      conceptId: CONCEPT,
-      editionId: null,
+      homeEditionId: HOME_EDITION,
       modality: 'co_owner',
-      region: 'Litoral norte de SP',
+      desiredLocation: 'Litoral norte de SP',
       approxDays: 21,
       origin: 'Instagram da marca',
       partnerRef: 'Parceiro local XPTO',
@@ -81,45 +73,39 @@ describe('registro de interesse — use case (spec ownership §5)', () => {
     expect(written[0]?.attempt.surface).toBe('interest');
   });
 
-  it('[REQ-022] interesse no Concept sem Edition é aceito', async () => {
-    const { store } = fakeStore();
-    const owner = { concept_id: CONCEPT, modality: 'owner', region: 'Serra' };
-
-    expect(await registerInterest(owner, ATTEMPT_ID, deps(store))).toEqual({
-      status: 'registered',
-      replayed: false,
-    });
+  it('[REQ-022] [BR-030] [BR-032] qualquer modalidade desejada numa Home Edition pública: a Home Edition não restringe modalidade', async () => {
+    for (const body of [
+      CO_OWNER,
+      { home_edition_id: HOME_EDITION, modality: 'owner', desired_location: 'Serra' },
+    ]) {
+      const { store, written } = fakeStore();
+      expect(await registerInterest(body, ATTEMPT_ID, deps(store))).toEqual({
+        status: 'registered',
+        replayed: false,
+      });
+      expect(written[0]?.interest.homeEditionId).toBe(HOME_EDITION);
+    }
   });
 
-  it('[REQ-022] Edition que não oferece a modalidade → not_allowed sem gravar (F2a)', async () => {
-    const { store, written } = fakeStore();
-
-    const result = await registerInterest(
-      { ...CO_OWNER, edition_id: EDITION_OWNER },
-      ATTEMPT_ID,
-      deps(store),
-    );
-
-    expect(result).toEqual({
-      status: 'invalid',
-      issues: [{ field: 'modality', code: 'not_allowed' }],
+  it('[REQ-022] [BR-030] a Home Edition é obrigatória; Home Concept sem Home Edition não é manifestação de interesse', () => {
+    expect(parseInterest({ modality: 'owner', desired_location: 'Serra' })).toEqual({
+      ok: false,
+      issues: [{ field: 'home_edition_id', code: 'required' }],
     });
-    expect(written).toHaveLength(0);
-  });
-
-  it('[REQ-022] Edition que oferece as duas modalidades aceita Co-Owner', async () => {
-    const { store, written } = fakeStore();
-
-    await registerInterest({ ...CO_OWNER, edition_id: EDITION_BOTH }, ATTEMPT_ID, deps(store));
-
-    expect(written[0]?.interest.editionId).toBe(EDITION_BOTH);
+    expect(
+      parseInterest({
+        home_concept_id: HOME_CONCEPT,
+        modality: 'owner',
+        desired_location: 'Serra',
+      }),
+    ).toEqual({ ok: false, issues: [{ field: 'home_edition_id', code: 'required' }] });
   });
 
   it('[REQ-025] approx_days ausente para Co-Owner é required; informado para Owner é not_allowed (F2b)', () => {
     const withoutDays = {
-      concept_id: CO_OWNER.concept_id,
+      home_edition_id: CO_OWNER.home_edition_id,
       modality: CO_OWNER.modality,
-      region: CO_OWNER.region,
+      desired_location: CO_OWNER.desired_location,
     };
 
     expect(parseInterest(withoutDays)).toEqual({
@@ -149,9 +135,9 @@ describe('registro de interesse — use case (spec ownership §5)', () => {
 
   it('[TECH-100] schema fechado, campos na ordem do contrato e nunca o valor enviado', () => {
     const result = parseInterest({
-      concept_id: 'não-é-uuid',
+      home_edition_id: 'não-é-uuid',
       modality: 'investor',
-      region: '   ',
+      desired_location: '   ',
       origin: 'x'.repeat(201),
       partner_ref: 'linha\nquebrada',
     });
@@ -159,29 +145,32 @@ describe('registro de interesse — use case (spec ownership §5)', () => {
     expect(result).toEqual({
       ok: false,
       issues: [
-        { field: 'concept_id', code: 'invalid' },
+        { field: 'home_edition_id', code: 'invalid' },
         { field: 'modality', code: 'invalid' },
-        { field: 'region', code: 'required' },
+        { field: 'desired_location', code: 'required' },
         { field: 'origin', code: 'too_long' },
         { field: 'partner_ref', code: 'invalid' },
       ],
     });
     expect(JSON.stringify(result)).not.toContain('quebrada');
     expect(parseInterest({ ...CO_OWNER, extra: true })).toEqual({ ok: false, issues: [] });
+    expect(parseInterest({ ...CO_OWNER, region: 'Serra' })).toEqual({ ok: false, issues: [] });
     expect(parseInterest([CO_OWNER])).toEqual({ ok: false, issues: [] });
     expect(parseInterest({})).toMatchObject({
       issues: [
-        { field: 'concept_id', code: 'required' },
+        { field: 'home_edition_id', code: 'required' },
         { field: 'modality', code: 'required' },
-        { field: 'region', code: 'required' },
+        { field: 'desired_location', code: 'required' },
       ],
     });
   });
 
   it('textos: até 200 pontos de código; origem/partner_ref vazios ou nulos = ausentes', () => {
-    expect(parseInterest({ ...CO_OWNER, region: '😀'.repeat(200) })).toMatchObject({ ok: true });
-    expect(parseInterest({ ...CO_OWNER, region: 'a'.repeat(201) })).toMatchObject({
-      issues: [{ field: 'region', code: 'too_long' }],
+    expect(parseInterest({ ...CO_OWNER, desired_location: '😀'.repeat(200) })).toMatchObject({
+      ok: true,
+    });
+    expect(parseInterest({ ...CO_OWNER, desired_location: 'a'.repeat(201) })).toMatchObject({
+      issues: [{ field: 'desired_location', code: 'too_long' }],
     });
     expect(parseInterest({ ...CO_OWNER, origin: '   ', partner_ref: null })).toMatchObject({
       ok: true,
@@ -235,28 +224,14 @@ describe('registro de interesse — use case (spec ownership §5)', () => {
     });
   });
 
-  it('[REQ-022] gatilho do banco recusou a modalidade (Edition mudou) → not_allowed', async () => {
-    const { store } = fakeStore({
-      register: vi.fn(() => Promise.resolve('modality_not_offered' as const)),
-    });
-
-    expect(
-      await registerInterest({ ...CO_OWNER, edition_id: EDITION_BOTH }, ATTEMPT_ID, deps(store)),
-    ).toEqual({ status: 'invalid', issues: [{ field: 'modality', code: 'not_allowed' }] });
-  });
-
-  it('[REQ-022] Concept não publicado ou Edition de outro Concept → not_found sem gravar', async () => {
+  it('[REQ-022] Home Edition em preparação, fora do público ou inexistente → not_found sem gravar (02 §15, item 15)', async () => {
     const hidden = fakeStore();
-    expect(await registerInterest(CO_OWNER, ATTEMPT_ID, deps(hidden.store, null))).toEqual({
+    const hiddenDeps = deps(hidden.store, null);
+    expect(await registerInterest(CO_OWNER, ATTEMPT_ID, hiddenDeps)).toEqual({
       status: 'not_found',
     });
-
-    const foreign = fakeStore();
-    const otherEdition = { ...CO_OWNER, edition_id: 'bbbbbbbb-cccc-4ddd-8eee-ffffffffffff' };
-    expect(await registerInterest(otherEdition, ATTEMPT_ID, deps(foreign.store))).toEqual({
-      status: 'not_found',
-    });
-    expect([...hidden.written, ...foreign.written]).toHaveLength(0);
+    expect(hiddenDeps.targets.find).toHaveBeenCalledWith(HOME_EDITION);
+    expect(hidden.written).toHaveLength(0);
   });
 
   it('[TECH-056] mesmo conteúdo lógico gera o mesmo hash (ids em maiúsculas, espaços extras)', async () => {
@@ -265,7 +240,11 @@ describe('registro de interesse — use case (spec ownership §5)', () => {
 
     await registerInterest(CO_OWNER, ATTEMPT_ID, deps(first.store));
     await registerInterest(
-      { ...CO_OWNER, concept_id: CONCEPT.toUpperCase(), region: '  Litoral  norte de SP ' },
+      {
+        ...CO_OWNER,
+        home_edition_id: HOME_EDITION.toUpperCase(),
+        desired_location: '  Litoral  norte de SP ',
+      },
       ATTEMPT_ID,
       deps(second.store),
     );
