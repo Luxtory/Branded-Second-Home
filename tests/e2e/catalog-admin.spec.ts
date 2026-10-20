@@ -368,7 +368,9 @@ test.describe('celular (390 px, toque)', () => {
     await gate('26-enviar-midia-home-edition');
     await page.getByRole('radio', { name: /^Planta/ }).check();
     await page.getByLabel('Arquivo da imagem').setInputFiles(await image(1600, 1200));
-    await page.getByLabel('Texto alternativo').fill('Planta de teste do E2E — um campo de cor');
+    await page
+      .getByRole('textbox', { name: /^Texto alternativo/ })
+      .fill('Planta de teste do E2E — um campo de cor');
     await page.getByRole('button', { name: 'Enviar para aprovação' }).tap();
     await expect(heading).toHaveText('Planta da Home Edition');
     await page.getByRole('button', { name: 'Aprovar mídia' }).tap();
