@@ -1,5 +1,5 @@
 import type { AuditRecord, CommandHandler } from '@/features/platform';
-import type { Concept } from '../domain/catalog';
+import type { HomeConcept } from '../domain/catalog';
 import {
   canApproveMedia,
   canWithdrawMedia,
@@ -7,8 +7,9 @@ import {
   mediaObjectKey,
   SUPERSEDED_COVER_BASIS,
   supportsFeatured,
-  type ConceptCuration,
-  type ConceptMedia,
+  type HomeConceptCuration,
+  type MediaOwner,
+  type HomeConceptMedia,
 } from '../domain/collection';
 import {
   type CatalogDependencies,
@@ -20,31 +21,32 @@ import {
   validated,
 } from './command-support';
 import {
-  approveConceptMediaInput,
-  setConceptCurationInput,
-  uploadConceptCoverInput,
-  withdrawConceptMediaInput,
-  type ApproveConceptMediaInput,
-  type SetConceptCurationInput,
-  type UploadConceptCoverInput,
-  type WithdrawConceptMediaInput,
+  approveHomeConceptMediaInput,
+  setHomeConceptCurationInput,
+  uploadHomeConceptCoverInput,
+  withdrawHomeConceptMediaInput,
+  type ApproveHomeConceptMediaInput,
+  type SetHomeConceptCurationInput,
+  type UploadHomeConceptCoverInput,
+  type WithdrawHomeConceptMediaInput,
 } from './inputs';
 import type { ProcessedRendition, StoredRendition } from './ports';
 import {
-  conceptCurationResult,
-  conceptMediaResult,
-  type ConceptCurationResult,
-  type ConceptMediaResult,
+  homeConceptCurationResult,
+  homeConceptMediaResult,
+  type HomeConceptCurationResult,
+  type HomeConceptMediaResult,
 } from './results';
 
 /** Grava as versões no Storage antes do registro: chave por conteúdo, então repetir (nova tentativa) é inofensivo. */
-async function storeRenditions<Tx>(
+export async function storeRenditions<Tx>(
   deps: CatalogDependencies<Tx>,
   renditions: readonly ProcessedRendition[],
+  owner: MediaOwner,
 ): Promise<StoredRendition[]> {
   return Promise.all(
     renditions.map(async ({ bytes, ...rendition }) => {
-      const storageKey = mediaObjectKey(rendition.sha256);
+      const storageKey = mediaObjectKey(owner, rendition.sha256);
       await deps.media.put(storageKey, bytes, rendition.contentType);
       return { ...rendition, byteSize: bytes.byteLength, storageKey };
     }),
@@ -52,24 +54,24 @@ async function storeRenditions<Tx>(
 }
 
 /**
- * `upload_concept_cover` (spec catalog §13.12, ADR-0015): reencoda a imagem e grava os binários no Storage antes de
+ * `upload_home_concept_cover` (spec catalog §13.12, ADR-0015): reencoda a imagem e grava os binários no Storage antes de
  * qualquer trava; o banco registra a capa pendente com as referências e os metadados de cada versão. Só para marca em
  * uso (BR-021); a capa não aparece até ser aprovada.
  */
-export function uploadConceptCoverHandler<Tx>(
+export function uploadHomeConceptCoverHandler<Tx>(
   deps: CatalogDependencies<Tx>,
-): CommandHandler<UploadConceptCoverInput, ConceptMediaResult, Tx> {
+): CommandHandler<UploadHomeConceptCoverInput, HomeConceptMediaResult, Tx> {
   return {
-    command: 'upload_concept_cover',
-    input: uploadConceptCoverInput,
+    command: 'upload_home_concept_cover',
+    input: uploadHomeConceptCoverInput,
     async execute({ input, operationId, now, tx, audit }) {
-      const concept = found(await deps.store.concept(tx, input.concept_id));
+      const homeConcept = found(await deps.store.homeConcept(tx, input.home_concept_id));
       const image = validated(await deps.images.process(input.image));
-      const renditions = await storeRenditions(deps, image.renditions);
-      await lockBrandInUse(deps.store, tx, concept.brandPartnerId, 'share', now);
-      const media: ConceptMedia = {
+      const renditions = await storeRenditions(deps, image.renditions, 'homeConcept');
+      await lockBrandInUse(deps.store, tx, homeConcept.brandPartnerId, 'share', now);
+      const media: HomeConceptMedia = {
         id: deps.newId(),
-        conceptId: concept.id,
+        homeConceptId: homeConcept.id,
         state: 'pending',
         alt: input.alt,
         credit: input.credit ?? null,
@@ -82,135 +84,141 @@ export function uploadConceptCoverHandler<Tx>(
         operationId,
         createdAt: now,
       };
-      await deps.store.insertConceptMedia(tx, media, renditions);
-      const result = conceptMediaResult(media);
-      audit({ objectType: 'concept_media', objectId: media.id, before: null, after: result });
+      await deps.store.insertHomeConceptMedia(tx, media, renditions);
+      const result = homeConceptMediaResult(media);
+      audit({ objectType: 'home_concept_media', objectId: media.id, before: null, after: result });
       return result;
     },
   };
 }
 
-/** Mídia e Concept, com a Brand Partner travada (exclusiva) e a mídia relida depois da trava. */
+/** Mídia e Home Concept, com a Brand Partner travada (exclusiva) e a mídia relida depois da trava. */
 async function lockedMedia<Tx>(
   deps: CatalogDependencies<Tx>,
   tx: Tx,
   mediaId: string,
-  lock: (concept: Concept) => Promise<unknown>,
-): Promise<{ readonly media: ConceptMedia; readonly concept: Concept }> {
-  const initial = found(await deps.store.conceptMedia(tx, mediaId));
-  const concept = found(await deps.store.concept(tx, initial.conceptId));
-  await lock(concept);
+  lock: (homeConcept: HomeConcept) => Promise<unknown>,
+): Promise<{ readonly media: HomeConceptMedia; readonly homeConcept: HomeConcept }> {
+  const initial = found(await deps.store.homeConceptMedia(tx, mediaId));
+  const homeConcept = found(await deps.store.homeConcept(tx, initial.homeConceptId));
+  await lock(homeConcept);
   // Relida depois da trava: outra aprovação ou retirada pode ter terminado enquanto esperávamos.
-  return { media: found(await deps.store.conceptMedia(tx, mediaId)), concept };
+  return { media: found(await deps.store.homeConceptMedia(tx, mediaId)), homeConcept };
 }
 
 /**
- * `approve_concept_media`: pendente → aprovada. Um Concept tem uma capa vigente: a aprovada anterior é retirada na mesma
+ * `approve_home_concept_media`: pendente → aprovada. Um Home Concept tem uma capa vigente: a aprovada anterior é retirada na mesma
  * operação, antes da nova (índice único do banco). Aprovar expõe a marca: exige marca em uso (BR-021).
  */
-export function approveConceptMediaHandler<Tx>(
+export function approveHomeConceptMediaHandler<Tx>(
   deps: CatalogDependencies<Tx>,
-): CommandHandler<ApproveConceptMediaInput, ConceptMediaResult, Tx> {
+): CommandHandler<ApproveHomeConceptMediaInput, HomeConceptMediaResult, Tx> {
   return {
-    command: 'approve_concept_media',
-    input: approveConceptMediaInput,
+    command: 'approve_home_concept_media',
+    input: approveHomeConceptMediaInput,
     async execute({ input, actor, operationId, now, tx, audit }) {
-      const staff = staffActor(actor, 'approve_concept_media');
-      const { media, concept } = await lockedMedia(deps, tx, input.concept_media_id, (target) =>
-        lockBrandInUse(deps.store, tx, target.brandPartnerId, 'exclusive', now),
+      const staff = staffActor(actor, 'approve_home_concept_media');
+      const { media, homeConcept } = await lockedMedia(
+        deps,
+        tx,
+        input.home_concept_media_id,
+        (target) => lockBrandInUse(deps.store, tx, target.brandPartnerId, 'exclusive', now),
       );
       requireState(canApproveMedia(media));
-      const previous = await deps.store.currentCover(tx, concept.id);
+      const previous = await deps.store.currentCover(tx, homeConcept.id);
       if (previous !== null) {
-        const withdrawn = await deps.store.withdrawConceptMedia(tx, previous.id, {
+        const withdrawn = await deps.store.withdrawHomeConceptMedia(tx, previous.id, {
           at: now,
           basis: SUPERSEDED_COVER_BASIS,
           operationId,
         });
         audit({
-          objectType: 'concept_media',
+          objectType: 'home_concept_media',
           objectId: previous.id,
-          before: conceptMediaResult(previous),
-          after: conceptMediaResult(withdrawn),
+          before: homeConceptMediaResult(previous),
+          after: homeConceptMediaResult(withdrawn),
         });
       }
-      const approved = await deps.store.approveConceptMedia(tx, media.id, {
+      const approved = await deps.store.approveHomeConceptMedia(tx, media.id, {
         at: now,
         byUserId: staff.userId,
         role: staff.role,
         operationId,
       });
-      const result = conceptMediaResult(approved);
+      const result = homeConceptMediaResult(approved);
       audit({
-        objectType: 'concept_media',
+        objectType: 'home_concept_media',
         objectId: media.id,
-        before: conceptMediaResult(media),
+        before: homeConceptMediaResult(media),
         after: result,
       });
       // A capa nova pode servir ao card sem sustentar o destaque: nunca promovida além da qualidade que suporta.
       if (!supportsFeatured(displayRenditions(approved))) {
-        await unfeature(deps, tx, concept.id, { operationId, now, audit });
+        await unfeature(deps, tx, homeConcept.id, { operationId, now, audit });
       }
       return result;
     },
   };
 }
 
-/** Tira o destaque do Concept, se houver, com auditoria (retirada da capa ou capa nova sem resolução de destaque). */
+/** Tira o destaque do Home Concept, se houver, com auditoria (retirada da capa ou capa nova sem resolução de destaque). */
 async function unfeature<Tx>(
   deps: CatalogDependencies<Tx>,
   tx: Tx,
-  conceptId: string,
+  homeConceptId: string,
   context: {
     readonly operationId: string;
     readonly now: Date;
     readonly audit: (record: AuditRecord) => void;
   },
 ): Promise<void> {
-  const curation = await deps.store.conceptCuration(tx, conceptId);
+  const curation = await deps.store.homeConceptCuration(tx, homeConceptId);
   if (curation?.featured !== true) return;
-  const unfeatured: ConceptCuration = {
+  const unfeatured: HomeConceptCuration = {
     ...curation,
     featured: false,
     operationId: context.operationId,
     updatedAt: context.now,
   };
-  await deps.store.saveConceptCuration(tx, unfeatured);
+  await deps.store.saveHomeConceptCuration(tx, unfeatured);
   context.audit({
-    objectType: 'concept_curation',
-    objectId: conceptId,
-    before: conceptCurationResult(curation),
-    after: conceptCurationResult(unfeatured),
+    objectType: 'home_concept_curation',
+    objectId: homeConceptId,
+    before: homeConceptCurationResult(curation),
+    after: homeConceptCurationResult(unfeatured),
   });
 }
 
 /**
- * `withdraw_concept_media`: pendente ou aprovada → retirada, com base. Vale mesmo com a marca encerrada (reduz a
- * exposição). Sem capa vigente, o Concept deixa de ser destaque na mesma operação.
+ * `withdraw_home_concept_media`: pendente ou aprovada → retirada, com base. Vale mesmo com a marca encerrada (reduz a
+ * exposição). Sem capa vigente, o Home Concept deixa de ser destaque na mesma operação.
  */
-export function withdrawConceptMediaHandler<Tx>(
+export function withdrawHomeConceptMediaHandler<Tx>(
   deps: CatalogDependencies<Tx>,
-): CommandHandler<WithdrawConceptMediaInput, ConceptMediaResult, Tx> {
+): CommandHandler<WithdrawHomeConceptMediaInput, HomeConceptMediaResult, Tx> {
   return {
-    command: 'withdraw_concept_media',
-    input: withdrawConceptMediaInput,
+    command: 'withdraw_home_concept_media',
+    input: withdrawHomeConceptMediaInput,
     async execute({ input, operationId, now, tx, audit }) {
-      const { media, concept } = await lockedMedia(deps, tx, input.concept_media_id, (target) =>
-        lockBrand(deps.store, tx, target.brandPartnerId),
+      const { media, homeConcept } = await lockedMedia(
+        deps,
+        tx,
+        input.home_concept_media_id,
+        (target) => lockBrand(deps.store, tx, target.brandPartnerId),
       );
       requireState(canWithdrawMedia(media));
-      const withdrawn = await deps.store.withdrawConceptMedia(tx, media.id, {
+      const withdrawn = await deps.store.withdrawHomeConceptMedia(tx, media.id, {
         at: now,
         basis: input.withdrawal_basis,
         operationId,
       });
       if (media.state === 'approved')
-        await unfeature(deps, tx, concept.id, { operationId, now, audit });
-      const result = conceptMediaResult(withdrawn);
+        await unfeature(deps, tx, homeConcept.id, { operationId, now, audit });
+      const result = homeConceptMediaResult(withdrawn);
       audit({
-        objectType: 'concept_media',
+        objectType: 'home_concept_media',
         objectId: media.id,
-        before: conceptMediaResult(media),
+        before: homeConceptMediaResult(media),
         after: result,
       });
       return result;
@@ -219,49 +227,49 @@ export function withdrawConceptMediaHandler<Tx>(
 }
 
 /**
- * `set_concept_curation`: posição na curadoria e destaque editorial explícito. Destaque exige capa aprovada; marcar um
+ * `set_home_concept_curation`: posição na curadoria e destaque editorial explícito. Destaque exige capa aprovada; marcar um
  * novo tira o destaque do anterior na mesma operação (no máximo um), serializado pela trava do destaque.
  */
-export function setConceptCurationHandler<Tx>(
+export function setHomeConceptCurationHandler<Tx>(
   deps: CatalogDependencies<Tx>,
-): CommandHandler<SetConceptCurationInput, ConceptCurationResult, Tx> {
+): CommandHandler<SetHomeConceptCurationInput, HomeConceptCurationResult, Tx> {
   return {
-    command: 'set_concept_curation',
-    input: setConceptCurationInput,
+    command: 'set_home_concept_curation',
+    input: setHomeConceptCurationInput,
     async execute({ input, operationId, now, tx, audit }) {
-      const concept = found(await deps.store.concept(tx, input.concept_id));
-      await lockBrandInUse(deps.store, tx, concept.brandPartnerId, 'exclusive', now);
+      const homeConcept = found(await deps.store.homeConcept(tx, input.home_concept_id));
+      await lockBrandInUse(deps.store, tx, homeConcept.brandPartnerId, 'exclusive', now);
       if (input.featured) {
         // Destaque só com capa aprovada que sustente o quadro de destaque em DPR 2 (spec §13.12).
-        const cover = await deps.store.currentCover(tx, concept.id);
+        const cover = await deps.store.currentCover(tx, homeConcept.id);
         requireState(cover !== null && supportsFeatured(displayRenditions(cover)));
         await deps.store.lockFeaturedSlot(tx);
         const previous = await deps.store.featuredCuration(tx);
-        if (previous !== null && previous.conceptId !== concept.id) {
+        if (previous !== null && previous.homeConceptId !== homeConcept.id) {
           const unfeatured = { ...previous, featured: false, operationId, updatedAt: now };
-          await deps.store.saveConceptCuration(tx, unfeatured);
+          await deps.store.saveHomeConceptCuration(tx, unfeatured);
           audit({
-            objectType: 'concept_curation',
-            objectId: previous.conceptId,
-            before: conceptCurationResult(previous),
-            after: conceptCurationResult(unfeatured),
+            objectType: 'home_concept_curation',
+            objectId: previous.homeConceptId,
+            before: homeConceptCurationResult(previous),
+            after: homeConceptCurationResult(unfeatured),
           });
         }
       }
-      const before = await deps.store.conceptCuration(tx, concept.id);
-      const curation: ConceptCuration = {
-        conceptId: concept.id,
+      const before = await deps.store.homeConceptCuration(tx, homeConcept.id);
+      const curation: HomeConceptCuration = {
+        homeConceptId: homeConcept.id,
         rank: input.rank,
         featured: input.featured,
         operationId,
         updatedAt: now,
       };
-      await deps.store.saveConceptCuration(tx, curation);
-      const result = conceptCurationResult(curation);
+      await deps.store.saveHomeConceptCuration(tx, curation);
+      const result = homeConceptCurationResult(curation);
       audit({
-        objectType: 'concept_curation',
-        objectId: concept.id,
-        before: before === null ? null : conceptCurationResult(before),
+        objectType: 'home_concept_curation',
+        objectId: homeConcept.id,
+        before: before === null ? null : homeConceptCurationResult(before),
         after: result,
       });
       return result;

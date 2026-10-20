@@ -1,5 +1,5 @@
 /**
- * Fusos IANA conhecidos do runtime (TECH-040): a Residence exige um deles e nenhum é presumido (TECH-001). A lista vem
+ * Fusos IANA conhecidos do runtime (TECH-040): a Second Home exige um deles e nenhum é presumido (TECH-001). A lista vem
  * do próprio runtime, nunca de uma lista escrita à mão.
  */
 let cached: readonly string[] | null = null;

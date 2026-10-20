@@ -1,22 +1,40 @@
 import type { DatabaseTransaction } from '@/features/platform';
 import type { CatalogStore } from '../application/ports';
+import type { HomeEditionEditorial, HomeEditionMaterial } from '../domain/catalog';
 import { postgresCollectionStore } from './postgres-collection-store';
+import { postgresHomeEditionMediaStore } from './postgres-home-edition-media-store';
 import {
   toBrandPartner,
-  toConcept,
-  toConceptVersion,
-  toEdition,
+  toHomeConcept,
+  toHomeConceptVersion,
+  toHomeEdition,
   toInvestorAuthorization,
 } from './rows';
 
 type Tx = DatabaseTransaction;
 
+/** Definição material e textos editoriais da Home Edition (BR-031), nas colunas da tabela. */
+function materialColumns(content: HomeEditionMaterial & HomeEditionEditorial) {
+  return {
+    name: content.name,
+    description: content.description,
+    typology: content.typology,
+    spatial_configuration: content.spatialConfiguration,
+    projected_area_m2: content.projectedAreaM2,
+    suites: content.suites,
+    guests_max: content.guestsMax,
+    rooms: content.rooms === null ? null : [...content.rooms],
+    amenities: content.amenities === null ? null : [...content.amenities],
+    characteristics: content.characteristics === null ? null : [...content.characteristics],
+  };
+}
+
 /** Classificações da versão (ordem pela posição; o mapeador separa por vocabulário). */
 function versionTerms(tx: Tx, versionId: string) {
   return tx
-    .selectFrom('app.concept_version_term')
+    .selectFrom('app.home_concept_version_term')
     .select(['term_id', 'kind', 'position'])
-    .where('concept_version_id', '=', versionId)
+    .where('home_concept_version_id', '=', versionId)
     .orderBy('kind')
     .orderBy('position')
     .execute();
@@ -29,6 +47,7 @@ function versionTerms(tx: Tx, versionId: string) {
  */
 export const postgresCatalogStore: CatalogStore<DatabaseTransaction> = {
   ...postgresCollectionStore,
+  ...postgresHomeEditionMediaStore,
 
   async brandPartner(tx, id, lock) {
     let query = tx.selectFrom('app.brand_partner').selectAll().where('id', '=', id);
@@ -37,52 +56,51 @@ export const postgresCatalogStore: CatalogStore<DatabaseTransaction> = {
     return row === undefined ? null : toBrandPartner(row);
   },
 
-  async concept(tx, id) {
+  async homeConcept(tx, id) {
     const row = await tx
-      .selectFrom('app.concept')
+      .selectFrom('app.home_concept')
       .selectAll()
       .where('id', '=', id)
       .executeTakeFirst();
-    return row === undefined ? null : toConcept(row);
+    return row === undefined ? null : toHomeConcept(row);
   },
 
-  async conceptVersion(tx, id) {
+  async homeConceptVersion(tx, id) {
     const row = await tx
-      .selectFrom('app.concept_version')
+      .selectFrom('app.home_concept_version')
       .selectAll()
       .where('id', '=', id)
       .executeTakeFirst();
-    return row === undefined ? null : toConceptVersion(row, await versionTerms(tx, row.id));
+    return row === undefined ? null : toHomeConceptVersion(row, await versionTerms(tx, row.id));
   },
 
-  async latestVersionNumber(tx, conceptId) {
+  async latestVersionNumber(tx, homeConceptId) {
     const row = await tx
-      .selectFrom('app.concept_version')
+      .selectFrom('app.home_concept_version')
       .select((eb) => eb.fn.max('version').as('latest'))
-      .where('concept_id', '=', conceptId)
+      .where('home_concept_id', '=', homeConceptId)
       .executeTakeFirst();
     return row?.latest ?? null;
   },
 
-  async currentApprovedVersion(tx, conceptId) {
+  async currentApprovedVersion(tx, homeConceptId) {
     const row = await tx
-      .selectFrom('app.concept_version')
+      .selectFrom('app.home_concept_version')
       .selectAll()
-      .where('concept_id', '=', conceptId)
+      .where('home_concept_id', '=', homeConceptId)
       .where('state', '=', 'approved')
       .orderBy('version', 'desc')
       .limit(1)
       .executeTakeFirst();
-    return row === undefined ? null : toConceptVersion(row, await versionTerms(tx, row.id));
+    return row === undefined ? null : toHomeConceptVersion(row, await versionTerms(tx, row.id));
   },
 
-  async edition(tx, id) {
-    const row = await tx
-      .selectFrom('app.edition')
-      .selectAll()
-      .where('id', '=', id)
-      .executeTakeFirst();
-    return row === undefined ? null : toEdition(row);
+  async homeEdition(tx, id, lock) {
+    let query = tx.selectFrom('app.home_edition').selectAll().where('id', '=', id);
+    if (lock === 'share') query = query.forShare();
+    if (lock === 'exclusive') query = query.forNoKeyUpdate();
+    const row = await query.executeTakeFirst();
+    return row === undefined ? null : toHomeEdition(row);
   },
 
   async investorAuthorization(tx, id, lock) {
@@ -130,33 +148,30 @@ export const postgresCatalogStore: CatalogStore<DatabaseTransaction> = {
     return toBrandPartner(row);
   },
 
-  async insertConcept(tx, concept) {
+  async insertHomeConcept(tx, homeConcept) {
     await tx
-      .insertInto('app.concept')
+      .insertInto('app.home_concept')
       .values({
-        id: concept.id,
-        brand_partner_id: concept.brandPartnerId,
-        title: concept.title,
-        operation_id: concept.operationId,
-        created_at: concept.createdAt,
+        id: homeConcept.id,
+        brand_partner_id: homeConcept.brandPartnerId,
+        title: homeConcept.title,
+        operation_id: homeConcept.operationId,
+        created_at: homeConcept.createdAt,
       })
       .execute();
   },
 
-  async insertConceptVersion(tx, version) {
+  async insertHomeConceptVersion(tx, version) {
     await tx
-      .insertInto('app.concept_version')
+      .insertInto('app.home_concept_version')
       .values({
         id: version.id,
-        concept_id: version.conceptId,
+        home_concept_id: version.homeConceptId,
         version: version.version,
         essential_elements: [...version.essentialElements],
         preservation_premises: [...version.preservationPremises],
         specification: version.specification,
         summary: version.attributes.summary,
-        guests_max: version.attributes.guestsMax,
-        suites: version.attributes.suites,
-        built_area_m2: version.attributes.builtAreaM2,
         state: version.state,
         operation_id: version.operationId,
         created_at: version.createdAt,
@@ -172,10 +187,10 @@ export const postgresCatalogStore: CatalogStore<DatabaseTransaction> = {
     ];
     if (terms.length === 0) return;
     await tx
-      .insertInto('app.concept_version_term')
+      .insertInto('app.home_concept_version_term')
       .values(
         terms.map(({ termId, index, kind }) => ({
-          concept_version_id: version.id,
+          home_concept_version_id: version.id,
           term_id: termId,
           kind,
           position: index + 1,
@@ -184,9 +199,9 @@ export const postgresCatalogStore: CatalogStore<DatabaseTransaction> = {
       .execute();
   },
 
-  async approveConceptVersion(tx, id, approval) {
+  async approveHomeConceptVersion(tx, id, approval) {
     const row = await tx
-      .updateTable('app.concept_version')
+      .updateTable('app.home_concept_version')
       .set({
         state: 'approved',
         approval_refs: [...approval.approvalRefs],
@@ -198,7 +213,7 @@ export const postgresCatalogStore: CatalogStore<DatabaseTransaction> = {
       .where('id', '=', id)
       .returningAll()
       .executeTakeFirstOrThrow();
-    return toConceptVersion(row, await versionTerms(tx, row.id));
+    return toHomeConceptVersion(row, await versionTerms(tx, row.id));
   },
 
   async insertInvestorAuthorization(tx, authorization) {
@@ -206,7 +221,7 @@ export const postgresCatalogStore: CatalogStore<DatabaseTransaction> = {
       .insertInto('app.investor_authorization')
       .values({
         id: authorization.id,
-        concept_id: authorization.conceptId,
+        home_concept_id: authorization.homeConceptId,
         instrument_ref: authorization.instrumentRef,
         valid_from: authorization.validFrom,
         valid_until: authorization.validUntil,
@@ -228,34 +243,80 @@ export const postgresCatalogStore: CatalogStore<DatabaseTransaction> = {
     return toInvestorAuthorization(row);
   },
 
-  async insertEdition(tx, edition) {
+  async insertHomeEdition(tx, homeEdition) {
     await tx
-      .insertInto('app.edition')
+      .insertInto('app.home_edition')
       .values({
-        id: edition.id,
-        concept_id: edition.conceptId,
-        region: edition.region,
-        modality: edition.modality,
-        commercial_conditions: edition.commercialConditions,
-        operation_id: edition.operationId,
-        created_at: edition.createdAt,
+        id: homeEdition.id,
+        home_concept_id: homeEdition.homeConceptId,
+        ...materialColumns(homeEdition),
+        material_state: homeEdition.materialState,
+        visibility: homeEdition.visibility,
+        operation_id: homeEdition.operationId,
+        created_at: homeEdition.createdAt,
       })
       .execute();
   },
 
-  async insertResidence(tx, residence) {
+  async updateHomeEditionDraft(tx, id, content) {
+    const row = await tx
+      .updateTable('app.home_edition')
+      .set(materialColumns(content))
+      .where('id', '=', id)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    return toHomeEdition(row);
+  },
+
+  async finalizeHomeEdition(tx, id, finalization) {
+    const row = await tx
+      .updateTable('app.home_edition')
+      .set({
+        material_state: 'finalized',
+        finalized_at: finalization.at,
+        finalized_by_user_id: finalization.byUserId,
+        finalized_role: finalization.role,
+        finalization_operation_id: finalization.operationId,
+      })
+      .where('id', '=', id)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    return toHomeEdition(row);
+  },
+
+  async setHomeEditionVisibility(tx, id, change) {
+    const row = await tx
+      .updateTable('app.home_edition')
+      .set({ visibility: change.visibility, withdrawal_basis: change.withdrawalBasis })
+      .where('id', '=', id)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    return toHomeEdition(row);
+  },
+
+  async correctHomeEditionEditorial(tx, id, editorial) {
+    const row = await tx
+      .updateTable('app.home_edition')
+      .set({ name: editorial.name, description: editorial.description })
+      .where('id', '=', id)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    return toHomeEdition(row);
+  },
+
+  async insertSecondHome(tx, secondHome) {
     await tx
-      .insertInto('app.residence')
+      .insertInto('app.second_home')
       .values({
-        id: residence.id,
-        edition_id: residence.editionId,
-        concept_id: residence.conceptId,
-        concept_version_id: residence.conceptVersionId,
-        commercially_approved_at: residence.commerciallyApprovedAt,
-        label: residence.label,
-        timezone: residence.timezone,
-        investor_authorization_id: residence.investorAuthorizationId,
-        operation_id: residence.operationId,
+        id: secondHome.id,
+        home_edition_id: secondHome.homeEditionId,
+        home_concept_id: secondHome.homeConceptId,
+        home_concept_version_id: secondHome.homeConceptVersionId,
+        commercially_approved_at: secondHome.commerciallyApprovedAt,
+        label: secondHome.label,
+        timezone: secondHome.timezone,
+        investor_authorization_id: secondHome.investorAuthorizationId,
+        operation_id: secondHome.operationId,
       })
       .execute();
   },

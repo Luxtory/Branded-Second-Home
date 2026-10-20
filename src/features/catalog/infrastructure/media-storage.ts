@@ -29,7 +29,7 @@ export class MediaStorageError extends Error {
   }
 }
 
-/** Só chaves geradas pelo command (`concept-media/<sha256>.webp`): nunca um caminho vindo de fora. */
+/** Só chaves geradas pelo command (`home-concept-media/<sha256>.webp`): nunca um caminho vindo de fora. */
 function assertKey(key: string): void {
   if (!MEDIA_OBJECT_KEY.test(key)) throw new Error('Invalid media object key');
 }

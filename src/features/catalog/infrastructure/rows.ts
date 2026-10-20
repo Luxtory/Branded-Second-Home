@@ -2,26 +2,28 @@ import type { Selectable } from 'kysely';
 import type { DatabaseTables } from '@/features/platform';
 import type {
   BrandPartner,
-  Concept,
-  ConceptVersion,
-  ConceptVersionState,
-  Edition,
-  EditionModality,
+  HomeConcept,
+  HomeConceptVersion,
+  HomeConceptVersionState,
+  HomeEdition,
+  HomeEditionMaterialState,
+  HomeEditionVisibility,
   InvestorAuthorization,
-  Residence,
+  SecondHome,
   StaffRoleName,
 } from '../domain/catalog';
 import type {
   CatalogTerm,
   CatalogTermKind,
-  ConceptCuration,
-  ConceptMedia,
+  HomeConceptCuration,
+  HomeConceptMedia,
   CropStep,
-  EditionReferenceValue,
+  HomeEditionMedia,
+  HomeEditionMediaKind,
+  HomeEditionProjectedInvestment,
   MediaRendition,
   MediaState,
-  ReferenceValueBasis,
-  ReferenceValueCurrency,
+  ProjectedInvestmentCurrency,
 } from '../domain/collection';
 
 /** Linhas do schema `app` → objetos do domínio. Os CHECKs do banco garantem os valores dos enums. */
@@ -41,7 +43,7 @@ export function toBrandPartner(row: Row<'app.brand_partner'>): BrandPartner {
   };
 }
 
-export function toConcept(row: Row<'app.concept'>): Concept {
+export function toHomeConcept(row: Row<'app.home_concept'>): HomeConcept {
   return {
     id: row.id,
     brandPartnerId: row.brand_partner_id,
@@ -52,7 +54,10 @@ export function toConcept(row: Row<'app.concept'>): Concept {
 }
 
 /** Classificações da versão, na ordem da posição. */
-export type VersionTermRow = Pick<Row<'app.concept_version_term'>, 'term_id' | 'kind' | 'position'>;
+export type VersionTermRow = Pick<
+  Row<'app.home_concept_version_term'>,
+  'term_id' | 'kind' | 'position'
+>;
 
 const termIdsOf = (terms: readonly VersionTermRow[], kind: CatalogTermKind) =>
   terms
@@ -60,16 +65,16 @@ const termIdsOf = (terms: readonly VersionTermRow[], kind: CatalogTermKind) =>
     .sort((a, b) => a.position - b.position)
     .map((term) => term.term_id);
 
-export function toConceptVersion(
-  row: Row<'app.concept_version'>,
+export function toHomeConceptVersion(
+  row: Row<'app.home_concept_version'>,
   terms: readonly VersionTermRow[],
-): ConceptVersion {
+): HomeConceptVersion {
   const refs = row.approval_refs;
   const at = row.approved_at;
   const by = row.approved_by_user_id;
   const role = row.approved_role;
   const operation = row.approval_operation_id;
-  // O CHECK `concept_version_approval_check` garante que os campos da aprovação vêm todos ou nenhum.
+  // O CHECK `home_concept_version_approval_check` garante que os campos da aprovação vêm todos ou nenhum.
   const approval =
     refs !== null && at !== null && by !== null && role !== null && operation !== null
       ? {
@@ -82,20 +87,17 @@ export function toConceptVersion(
       : null;
   return {
     id: row.id,
-    conceptId: row.concept_id,
+    homeConceptId: row.home_concept_id,
     version: row.version,
     essentialElements: row.essential_elements,
     preservationPremises: row.preservation_premises,
     specification: row.specification,
     attributes: {
       summary: row.summary,
-      guestsMax: row.guests_max,
-      suites: row.suites,
-      builtAreaM2: row.built_area_m2,
     },
     lifestyleIds: termIdsOf(terms, 'lifestyle'),
     architecturalStyleIds: termIdsOf(terms, 'architectural_style'),
-    state: row.state as ConceptVersionState,
+    state: row.state as HomeConceptVersionState,
     approval,
     operationId: row.operation_id,
     createdAt: row.created_at,
@@ -107,7 +109,7 @@ export function toInvestorAuthorization(
 ): InvestorAuthorization {
   return {
     id: row.id,
-    conceptId: row.concept_id,
+    homeConceptId: row.home_concept_id,
     instrumentRef: row.instrument_ref,
     validFrom: row.valid_from,
     validUntil: row.valid_until,
@@ -120,24 +122,43 @@ export function toInvestorAuthorization(
   };
 }
 
-export function toEdition(row: Row<'app.edition'>): Edition {
+export function toHomeEdition(row: Row<'app.home_edition'>): HomeEdition {
+  const at = row.finalized_at;
+  const by = row.finalized_by_user_id;
+  const role = row.finalized_role;
+  const operation = row.finalization_operation_id;
+  // O CHECK `home_edition_finalization_check` garante que os campos da finalização vêm todos ou nenhum.
   return {
     id: row.id,
-    conceptId: row.concept_id,
-    region: row.region,
-    modality: row.modality as EditionModality,
-    commercialConditions: row.commercial_conditions,
+    homeConceptId: row.home_concept_id,
+    name: row.name,
+    description: row.description,
+    typology: row.typology,
+    spatialConfiguration: row.spatial_configuration,
+    projectedAreaM2: row.projected_area_m2,
+    suites: row.suites,
+    guestsMax: row.guests_max,
+    rooms: row.rooms,
+    amenities: row.amenities,
+    characteristics: row.characteristics,
+    materialState: row.material_state as HomeEditionMaterialState,
+    finalization:
+      at !== null && by !== null && role !== null && operation !== null
+        ? { at, byUserId: by, role: role as StaffRoleName, operationId: operation }
+        : null,
+    visibility: row.visibility as HomeEditionVisibility,
+    withdrawalBasis: row.withdrawal_basis,
     operationId: row.operation_id,
     createdAt: row.created_at,
   };
 }
 
-export function toResidence(row: Row<'app.residence'>): Residence {
+export function toSecondHome(row: Row<'app.second_home'>): SecondHome {
   return {
     id: row.id,
-    editionId: row.edition_id,
-    conceptId: row.concept_id,
-    conceptVersionId: row.concept_version_id,
+    homeEditionId: row.home_edition_id,
+    homeConceptId: row.home_concept_id,
+    homeConceptVersionId: row.home_concept_version_id,
     commerciallyApprovedAt: row.commercially_approved_at,
     label: row.label,
     timezone: row.timezone,
@@ -158,12 +179,33 @@ export function toCatalogTerm(row: Row<'app.catalog_term'>): CatalogTerm {
   };
 }
 
-export type MediaFileRow = Pick<Row<'app.concept_media_file'>, 'role' | 'width' | 'height'>;
+export type MediaFileRow = Pick<Row<'app.home_concept_media_file'>, 'role' | 'width' | 'height'>;
 
-export function toConceptMedia(
-  row: Row<'app.concept_media'>,
+/** Colunas comuns da capa do Home Concept e da mídia da Home Edition (mesmo ciclo, ADR-0015). */
+type MediaRow = Omit<Row<'app.home_concept_media'>, 'home_concept_id'>;
+
+export function toHomeConceptMedia(
+  row: Row<'app.home_concept_media'>,
   files: readonly MediaFileRow[],
-): ConceptMedia {
+): HomeConceptMedia {
+  return { ...toMedia(row, files), homeConceptId: row.home_concept_id };
+}
+
+export function toHomeEditionMedia(
+  row: Row<'app.home_edition_media'>,
+  files: readonly MediaFileRow[],
+): HomeEditionMedia {
+  return {
+    ...toMedia(row, files),
+    homeEditionId: row.home_edition_id,
+    kind: row.kind as HomeEditionMediaKind,
+  };
+}
+
+function toMedia(
+  row: MediaRow,
+  files: readonly MediaFileRow[],
+): Omit<HomeConceptMedia, 'homeConceptId'> {
   const approvedAt = row.approved_at;
   const approvedBy = row.approved_by_user_id;
   const approvedRole = row.approved_role;
@@ -171,10 +213,9 @@ export function toConceptMedia(
   const withdrawnAt = row.withdrawn_at;
   const withdrawalBasis = row.withdrawal_basis;
   const withdrawalOperation = row.withdrawal_operation_id;
-  // Os CHECKs `concept_media_approval_check` e `concept_media_withdrawal_check` garantem todos ou nenhum.
+  // Os CHECKs `*_media_approval_check` e `*_media_withdrawal_check` garantem todos ou nenhum.
   return {
     id: row.id,
-    conceptId: row.concept_id,
     state: row.state as MediaState,
     alt: row.alt,
     credit: row.credit,
@@ -207,9 +248,9 @@ export function toConceptMedia(
   };
 }
 
-export function toConceptCuration(row: Row<'app.concept_curation'>): ConceptCuration {
+export function toHomeConceptCuration(row: Row<'app.home_concept_curation'>): HomeConceptCuration {
   return {
-    conceptId: row.concept_id,
+    homeConceptId: row.home_concept_id,
     rank: row.rank,
     featured: row.featured,
     operationId: row.operation_id,
@@ -217,16 +258,15 @@ export function toConceptCuration(row: Row<'app.concept_curation'>): ConceptCura
   };
 }
 
-export function toEditionReferenceValue(
-  row: Row<'app.edition_reference_value'>,
-): EditionReferenceValue {
+export function toHomeEditionProjectedInvestment(
+  row: Row<'app.home_edition_projected_investment'>,
+): HomeEditionProjectedInvestment {
   return {
     id: row.id,
-    editionId: row.edition_id,
-    basis: row.basis as ReferenceValueBasis,
+    homeEditionId: row.home_edition_id,
     // `bigint` chega como texto do driver; nunca passa por ponto flutuante (TECH-033).
     amountMinor: BigInt(row.amount_minor),
-    currency: row.currency as ReferenceValueCurrency,
+    currency: row.currency as ProjectedInvestmentCurrency,
     validFrom: row.valid_from,
     validUntil: row.valid_until,
     registeredByUserId: row.registered_by_user_id,

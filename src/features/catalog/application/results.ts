@@ -1,16 +1,17 @@
 import type {
   BrandPartner,
-  Concept,
-  ConceptVersion,
-  Edition,
+  HomeConcept,
+  HomeConceptVersion,
+  HomeEdition,
   InvestorAuthorization,
-  Residence,
+  SecondHome,
 } from '../domain/catalog';
 import type {
   CatalogTerm,
-  ConceptCuration,
-  ConceptMedia,
-  EditionReferenceValue,
+  HomeConceptCuration,
+  HomeConceptMedia,
+  HomeEditionMedia,
+  HomeEditionProjectedInvestment,
 } from '../domain/collection';
 
 /** Respostas das operações do catálogo (schemas do OpenAPI) — também o "depois" do `audit_log`. */
@@ -30,31 +31,28 @@ export function brandPartnerResult(partner: BrandPartner) {
   };
 }
 
-export function conceptResult(concept: Concept) {
+export function homeConceptResult(homeConcept: HomeConcept) {
   return {
-    id: concept.id,
-    brand_partner_id: concept.brandPartnerId,
-    title: concept.title,
-    operation_id: concept.operationId,
-    created_at: concept.createdAt.toISOString(),
+    id: homeConcept.id,
+    brand_partner_id: homeConcept.brandPartnerId,
+    title: homeConcept.title,
+    operation_id: homeConcept.operationId,
+    created_at: homeConcept.createdAt.toISOString(),
   };
 }
 
-export function conceptVersionResult(version: ConceptVersion, concept: Concept) {
+export function homeConceptVersionResult(version: HomeConceptVersion, homeConcept: HomeConcept) {
   return {
     id: version.id,
-    concept_id: version.conceptId,
-    brand_partner_id: concept.brandPartnerId,
-    title: concept.title,
+    home_concept_id: version.homeConceptId,
+    brand_partner_id: homeConcept.brandPartnerId,
+    title: homeConcept.title,
     version: version.version,
     state: version.state,
     essential_elements: [...version.essentialElements],
     preservation_premises: [...version.preservationPremises],
     specification: version.specification,
     summary: version.attributes.summary,
-    guests_max: version.attributes.guestsMax,
-    suites: version.attributes.suites,
-    built_area_m2: version.attributes.builtAreaM2,
     lifestyle_ids: [...version.lifestyleIds],
     architectural_style_ids: [...version.architecturalStyleIds],
     approval_refs: version.approval === null ? null : [...version.approval.approvalRefs],
@@ -69,7 +67,7 @@ export function conceptVersionResult(version: ConceptVersion, concept: Concept) 
 export function investorAuthorizationResult(authorization: InvestorAuthorization) {
   return {
     id: authorization.id,
-    concept_id: authorization.conceptId,
+    home_concept_id: authorization.homeConceptId,
     instrument_ref: authorization.instrumentRef,
     valid_from: authorization.validFrom.toISOString(),
     valid_until: iso(authorization.validUntil),
@@ -82,30 +80,45 @@ export function investorAuthorizationResult(authorization: InvestorAuthorization
   };
 }
 
-export function editionResult(edition: Edition) {
+const list = (items: readonly string[] | null) => (items === null ? null : [...items]);
+
+export function homeEditionResult(homeEdition: HomeEdition) {
   return {
-    id: edition.id,
-    concept_id: edition.conceptId,
-    region: edition.region,
-    modality: edition.modality,
-    commercial_conditions: edition.commercialConditions,
-    operation_id: edition.operationId,
-    created_at: edition.createdAt.toISOString(),
+    id: homeEdition.id,
+    home_concept_id: homeEdition.homeConceptId,
+    name: homeEdition.name,
+    description: homeEdition.description,
+    typology: homeEdition.typology,
+    spatial_configuration: homeEdition.spatialConfiguration,
+    projected_area_m2: homeEdition.projectedAreaM2,
+    suites: homeEdition.suites,
+    guests_max: homeEdition.guestsMax,
+    rooms: list(homeEdition.rooms),
+    amenities: list(homeEdition.amenities),
+    characteristics: list(homeEdition.characteristics),
+    material_state: homeEdition.materialState,
+    finalized_at: iso(homeEdition.finalization?.at ?? null),
+    finalized_by_user_id: homeEdition.finalization?.byUserId ?? null,
+    finalized_role: homeEdition.finalization?.role ?? null,
+    visibility: homeEdition.visibility,
+    withdrawal_basis: homeEdition.withdrawalBasis,
+    operation_id: homeEdition.operationId,
+    created_at: homeEdition.createdAt.toISOString(),
   };
 }
 
-export function residenceResult(residence: Residence, conceptVersion: number) {
+export function secondHomeResult(secondHome: SecondHome, homeConceptVersion: number) {
   return {
-    id: residence.id,
-    edition_id: residence.editionId,
-    concept_id: residence.conceptId,
-    concept_version_id: residence.conceptVersionId,
-    concept_version: conceptVersion,
-    commercially_approved_at: residence.commerciallyApprovedAt.toISOString(),
-    label: residence.label,
-    timezone: residence.timezone,
-    investor_authorization_id: residence.investorAuthorizationId,
-    operation_id: residence.operationId,
+    id: secondHome.id,
+    home_edition_id: secondHome.homeEditionId,
+    home_concept_id: secondHome.homeConceptId,
+    home_concept_version_id: secondHome.homeConceptVersionId,
+    home_concept_version: homeConceptVersion,
+    commercially_approved_at: secondHome.commerciallyApprovedAt.toISOString(),
+    label: secondHome.label,
+    timezone: secondHome.timezone,
+    investor_authorization_id: secondHome.investorAuthorizationId,
+    operation_id: secondHome.operationId,
   };
 }
 
@@ -121,10 +134,9 @@ export function catalogTermResult(term: CatalogTerm) {
   };
 }
 
-export function conceptMediaResult(media: ConceptMedia) {
+/** Campos comuns da capa do Home Concept e da mídia da Home Edition (mesmo ciclo, ADR-0015). */
+function mediaFields(media: Omit<HomeConceptMedia, 'id' | 'homeConceptId'>) {
   return {
-    id: media.id,
-    concept_id: media.conceptId,
     state: media.state,
     alt: media.alt,
     credit: media.credit,
@@ -142,9 +154,22 @@ export function conceptMediaResult(media: ConceptMedia) {
   };
 }
 
-export function conceptCurationResult(curation: ConceptCuration) {
+export function homeConceptMediaResult(media: HomeConceptMedia) {
+  return { id: media.id, home_concept_id: media.homeConceptId, ...mediaFields(media) };
+}
+
+export function homeEditionMediaResult(media: HomeEditionMedia) {
   return {
-    concept_id: curation.conceptId,
+    id: media.id,
+    home_edition_id: media.homeEditionId,
+    kind: media.kind,
+    ...mediaFields(media),
+  };
+}
+
+export function homeConceptCurationResult(curation: HomeConceptCuration) {
+  return {
+    home_concept_id: curation.homeConceptId,
     rank: curation.rank,
     featured: curation.featured,
     operation_id: curation.operationId,
@@ -153,11 +178,10 @@ export function conceptCurationResult(curation: ConceptCuration) {
 }
 
 /** `amount_minor` cabe no inteiro exato do JSON: o input limita a `MAX_AMOUNT_MINOR` (TECH-033). */
-export function editionReferenceValueResult(value: EditionReferenceValue) {
+export function homeEditionProjectedInvestmentResult(value: HomeEditionProjectedInvestment) {
   return {
     id: value.id,
-    edition_id: value.editionId,
-    basis: value.basis,
+    home_edition_id: value.homeEditionId,
     amount_minor: Number(value.amountMinor),
     currency: value.currency,
     valid_from: value.validFrom.toISOString(),
@@ -170,11 +194,14 @@ export function editionReferenceValueResult(value: EditionReferenceValue) {
 }
 
 export type BrandPartnerResult = ReturnType<typeof brandPartnerResult>;
-export type ConceptVersionResult = ReturnType<typeof conceptVersionResult>;
+export type HomeConceptVersionResult = ReturnType<typeof homeConceptVersionResult>;
 export type InvestorAuthorizationResult = ReturnType<typeof investorAuthorizationResult>;
-export type EditionResult = ReturnType<typeof editionResult>;
-export type ResidenceResult = ReturnType<typeof residenceResult>;
+export type HomeEditionResult = ReturnType<typeof homeEditionResult>;
+export type SecondHomeResult = ReturnType<typeof secondHomeResult>;
 export type CatalogTermResult = ReturnType<typeof catalogTermResult>;
-export type ConceptMediaResult = ReturnType<typeof conceptMediaResult>;
-export type ConceptCurationResult = ReturnType<typeof conceptCurationResult>;
-export type EditionReferenceValueResult = ReturnType<typeof editionReferenceValueResult>;
+export type HomeConceptMediaResult = ReturnType<typeof homeConceptMediaResult>;
+export type HomeEditionMediaResult = ReturnType<typeof homeEditionMediaResult>;
+export type HomeConceptCurationResult = ReturnType<typeof homeConceptCurationResult>;
+export type HomeEditionProjectedInvestmentResult = ReturnType<
+  typeof homeEditionProjectedInvestmentResult
+>;

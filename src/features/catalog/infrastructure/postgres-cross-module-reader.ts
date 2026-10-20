@@ -1,7 +1,6 @@
 import type { DatabaseTransaction } from '@/features/platform';
-import type { PublicConceptOffer } from '../application/public-views';
-import type { ConceptLabel } from '../application/views';
-import type { EditionModality } from '../domain/catalog';
+import type { PublicHomeEditionTarget } from '../application/public-views';
+import type { HomeEditionLabel } from '../application/views';
 
 /**
  * Consultas do catálogo servidas a outros módulos pela superfície pública (`index.ts`, TECH-011): nenhum outro slice lê
@@ -9,45 +8,46 @@ import type { EditionModality } from '../domain/catalog';
  */
 type Tx = DatabaseTransaction;
 
-// O CHECK do banco garante o valor do enum.
-const modality = (value: string) => value as EditionModality;
-
 /**
- * Oferta pública do Concept, dentro de `withPublicRead` (como `anon`): a RLS só entrega o Concept publicado e as Editions
- * dele (ADR-0014) — nenhuma regra de visibilidade repetida aqui. Não publicado ou inexistente → `null`.
+ * Home Edition pública, dentro de `withPublicRead` (como `anon`): a RLS só entrega Home Edition visível de Home Concept
+ * público (ADR-0014) — nenhuma regra de visibilidade repetida aqui. Em preparação, fora do público ou inexistente → `null`.
  */
-export async function readPublicConceptOffer(
+export async function readPublicHomeEditionTarget(
   tx: Tx,
-  conceptId: string,
-): Promise<PublicConceptOffer | null> {
-  const concept = await tx
-    .selectFrom('app.concept')
-    .select('id')
-    .where('id', '=', conceptId)
+  homeEditionId: string,
+): Promise<PublicHomeEditionTarget | null> {
+  const row = await tx
+    .selectFrom('app.home_edition')
+    .select(['id', 'home_concept_id'])
+    .where('id', '=', homeEditionId)
     .executeTakeFirst();
-  if (concept === undefined) return null;
-  const editions = await tx
-    .selectFrom('app.edition')
-    .select(['id', 'modality'])
-    .where('concept_id', '=', conceptId)
-    .execute();
-  return {
-    conceptId: concept.id,
-    editions: editions.map((edition) => ({ id: edition.id, modality: modality(edition.modality) })),
-  };
+  return row === undefined ? null : { homeEditionId: row.id, homeConceptId: row.home_concept_id };
 }
 
-/** Título e marca dos Concepts pedidos, lidos como `luxtory_app` na transação da leitura do Admin (ADR-0010 §7). */
-export async function readConceptLabels(
+/**
+ * Nome da Home Edition, título do Home Concept e marca, lidos como `luxtory_app` na transação da leitura do Admin
+ * (ADR-0010 §7).
+ */
+export async function readHomeEditionLabels(
   tx: Tx,
-  conceptIds: readonly string[],
-): Promise<ReadonlyMap<string, ConceptLabel>> {
-  if (conceptIds.length === 0) return new Map();
+  homeEditionIds: readonly string[],
+): Promise<ReadonlyMap<string, HomeEditionLabel>> {
+  if (homeEditionIds.length === 0) return new Map();
   const rows = await tx
-    .selectFrom('app.concept as concept')
-    .innerJoin('app.brand_partner as partner', 'partner.id', 'concept.brand_partner_id')
-    .select(['concept.id', 'concept.title', 'partner.brand_name'])
-    .where('concept.id', 'in', [...conceptIds])
+    .selectFrom('app.home_edition as home_edition')
+    .innerJoin(
+      'app.home_concept as home_concept',
+      'home_concept.id',
+      'home_edition.home_concept_id',
+    )
+    .innerJoin('app.brand_partner as partner', 'partner.id', 'home_concept.brand_partner_id')
+    .select(['home_edition.id', 'home_edition.name', 'home_concept.title', 'partner.brand_name'])
+    .where('home_edition.id', 'in', [...homeEditionIds])
     .execute();
-  return new Map(rows.map((row) => [row.id, { title: row.title, brandName: row.brand_name }]));
+  return new Map(
+    rows.map((row) => [
+      row.id,
+      { homeEditionName: row.name, homeConceptTitle: row.title, brandName: row.brand_name },
+    ]),
+  );
 }

@@ -80,7 +80,7 @@ export interface AppCatalogTerm {
   slug: string;
 }
 
-export interface AppConcept {
+export interface AppHomeConcept {
   brand_partner_id: string;
   created_at: Timestamp;
   id: string;
@@ -88,25 +88,25 @@ export interface AppConcept {
   title: string;
 }
 
-export interface AppConceptCuration {
-  concept_id: string;
+export interface AppHomeConceptCuration {
   featured: boolean;
+  home_concept_id: string;
   operation_id: string;
   rank: number | null;
   updated_at: Timestamp;
 }
 
-export interface AppConceptMedia {
+export interface AppHomeConceptMedia {
   alt: string;
   approval_operation_id: string | null;
   approved_at: Timestamp | null;
   approved_by_user_id: string | null;
   approved_role: string | null;
-  concept_id: string;
   created_at: Timestamp;
   credit: string | null;
   crop_x: number;
   crop_y: number;
+  home_concept_id: string;
   id: string;
   operation_id: string;
   source_sha256: string;
@@ -116,7 +116,7 @@ export interface AppConceptMedia {
   withdrawn_at: Timestamp | null;
 }
 
-export interface AppConceptMediaFile {
+export interface AppHomeConceptMediaFile {
   byte_size: number;
   content_type: string;
   height: number;
@@ -127,50 +127,92 @@ export interface AppConceptMediaFile {
   width: number;
 }
 
-export interface AppConceptVersion {
+export interface AppHomeConceptVersion {
   approval_operation_id: string | null;
   approval_refs: string[] | null;
   approved_at: Timestamp | null;
   approved_by_user_id: string | null;
   approved_role: string | null;
-  built_area_m2: number | null;
-  concept_id: string;
   created_at: Timestamp;
   essential_elements: string[];
-  guests_max: number | null;
+  home_concept_id: string;
   id: string;
   operation_id: string;
   preservation_premises: string[];
   specification: string;
   state: string;
-  suites: number | null;
   summary: string | null;
   version: number;
 }
 
-export interface AppConceptVersionTerm {
-  concept_version_id: string;
+export interface AppHomeConceptVersionTerm {
+  home_concept_version_id: string;
   kind: string;
   position: number;
   term_id: string;
 }
 
-export interface AppEdition {
-  commercial_conditions: string;
-  concept_id: string;
+export interface AppHomeEdition {
+  amenities: string[] | null;
+  characteristics: string[] | null;
   created_at: Timestamp;
+  description: string;
+  finalization_operation_id: string | null;
+  finalized_at: Timestamp | null;
+  finalized_by_user_id: string | null;
+  finalized_role: string | null;
+  guests_max: number;
+  home_concept_id: string;
   id: string;
-  modality: string;
+  material_state: string;
+  name: string;
   operation_id: string;
-  region: string;
+  projected_area_m2: number;
+  rooms: string[] | null;
+  spatial_configuration: string;
+  suites: number;
+  typology: string;
+  visibility: string;
+  withdrawal_basis: string | null;
 }
 
-export interface AppEditionReferenceValue {
+export interface AppHomeEditionMedia {
+  alt: string;
+  approval_operation_id: string | null;
+  approved_at: Timestamp | null;
+  approved_by_user_id: string | null;
+  approved_role: string | null;
+  created_at: Timestamp;
+  credit: string | null;
+  crop_x: number;
+  crop_y: number;
+  home_edition_id: string;
+  id: string;
+  kind: string;
+  operation_id: string;
+  source_sha256: string;
+  state: string;
+  withdrawal_basis: string | null;
+  withdrawal_operation_id: string | null;
+  withdrawn_at: Timestamp | null;
+}
+
+export interface AppHomeEditionMediaFile {
+  byte_size: number;
+  content_type: string;
+  height: number;
+  media_id: string;
+  role: string;
+  sha256: string;
+  storage_key: string;
+  width: number;
+}
+
+export interface AppHomeEditionProjectedInvestment {
   amount_minor: Int8;
-  basis: string;
   created_at: Timestamp;
   currency: string;
-  edition_id: string;
+  home_edition_id: string;
   id: string;
   operation_id: string;
   registered_by_user_id: string;
@@ -192,19 +234,18 @@ export interface AppIdempotencyRecord {
 
 export interface AppInterest {
   approx_days: number | null;
-  concept_id: string;
   created_at: Timestamp;
-  edition_id: string | null;
+  desired_location: string;
+  home_edition_id: string;
   id: string;
   modality: string;
   origin: string | null;
   partner_ref: string | null;
-  region: string;
 }
 
 export interface AppInvestorAuthorization {
-  concept_id: string;
   created_at: Timestamp;
+  home_concept_id: string;
   id: string;
   instrument_ref: string;
   operation_id: string;
@@ -235,8 +276,8 @@ export interface AppOperation {
   created_at: Timestamp;
   id: string;
   idempotency_key: string;
-  residence_id: string | null;
   role: string;
+  second_home_id: string | null;
   state: string;
   updated_at: Timestamp;
 }
@@ -266,11 +307,11 @@ export interface AppPublicIdempotencyKey {
   surface: string;
 }
 
-export interface AppResidence {
+export interface AppSecondHome {
   commercially_approved_at: Timestamp;
-  concept_id: string;
-  concept_version_id: string;
-  edition_id: string;
+  home_concept_id: string;
+  home_concept_version_id: string;
+  home_edition_id: string;
   id: string;
   investor_authorization_id: string | null;
   label: string;
@@ -293,14 +334,16 @@ export interface DB {
   'app.authorization_grant': AppAuthorizationGrant;
   'app.brand_partner': AppBrandPartner;
   'app.catalog_term': AppCatalogTerm;
-  'app.concept': AppConcept;
-  'app.concept_curation': AppConceptCuration;
-  'app.concept_media': AppConceptMedia;
-  'app.concept_media_file': AppConceptMediaFile;
-  'app.concept_version': AppConceptVersion;
-  'app.concept_version_term': AppConceptVersionTerm;
-  'app.edition': AppEdition;
-  'app.edition_reference_value': AppEditionReferenceValue;
+  'app.home_concept': AppHomeConcept;
+  'app.home_concept_curation': AppHomeConceptCuration;
+  'app.home_concept_media': AppHomeConceptMedia;
+  'app.home_concept_media_file': AppHomeConceptMediaFile;
+  'app.home_concept_version': AppHomeConceptVersion;
+  'app.home_concept_version_term': AppHomeConceptVersionTerm;
+  'app.home_edition': AppHomeEdition;
+  'app.home_edition_media': AppHomeEditionMedia;
+  'app.home_edition_media_file': AppHomeEditionMediaFile;
+  'app.home_edition_projected_investment': AppHomeEditionProjectedInvestment;
   'app.idempotency_record': AppIdempotencyRecord;
   'app.interest': AppInterest;
   'app.investor_authorization': AppInvestorAuthorization;
@@ -309,6 +352,6 @@ export interface DB {
   'app.outbox': AppOutbox;
   'app.outbox_receipt': AppOutboxReceipt;
   'app.public_idempotency_key': AppPublicIdempotencyKey;
-  'app.residence': AppResidence;
+  'app.second_home': AppSecondHome;
   'app.staff_role': AppStaffRole;
 }

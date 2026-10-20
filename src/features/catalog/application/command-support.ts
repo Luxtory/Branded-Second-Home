@@ -35,7 +35,7 @@ export function validated<T>(value: T | null): T {
   return value;
 }
 
-/** Objeto exigido pelo estado (ex.: a versão vigente do Concept) ausente → `ERR_STATE_TRANSITION`. */
+/** Objeto exigido pelo estado (ex.: a versão vigente do Home Concept) ausente → `ERR_STATE_TRANSITION`. */
 export function presentInState<T>(value: T | null): T {
   if (value === null) throw new CommandRejection('ERR_STATE_TRANSITION');
   return value;

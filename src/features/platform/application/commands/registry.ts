@@ -101,25 +101,34 @@ const nonCritical = (name: string, module: Module): CommandSpec => ({
 
 export const NON_CRITICAL_OPERATIONS: readonly CommandSpec[] = [
   nonCritical('grant_authorization', 'identity'),
-  // Catálogo (W3, REQ-095; docs/specs/catalog.md): o Admin opera Concepts, Editions e Residences.
+  // Catálogo (W3, W4.2; REQ-095; docs/specs/catalog.md §5, §17): o Admin opera Home Concepts, Home Editions e Second
+  // Homes.
   nonCritical('register_brand_partner', 'catalog'),
   nonCritical('authorize_brand_exposure', 'catalog'),
   nonCritical('terminate_brand_partner', 'catalog'),
-  nonCritical('create_concept_version', 'catalog'),
-  nonCritical('approve_concept_version', 'catalog'),
+  nonCritical('create_home_concept_version', 'catalog'),
+  nonCritical('approve_home_concept_version', 'catalog'),
   nonCritical('register_investor_authorization', 'catalog'),
   nonCritical('revoke_investor_authorization', 'catalog'),
-  nonCritical('create_edition', 'catalog'),
-  nonCritical('register_residence', 'catalog'),
-  // Coleção (Wave 4.1, spec catalog §13.12): vocabulários, capa, curadoria e valores de referência.
+  nonCritical('create_home_edition', 'catalog'),
+  nonCritical('update_home_edition_draft', 'catalog'),
+  nonCritical('finalize_home_edition', 'catalog'),
+  nonCritical('publish_home_edition', 'catalog'),
+  nonCritical('withdraw_home_edition', 'catalog'),
+  nonCritical('correct_home_edition_editorial', 'catalog'),
+  nonCritical('upload_home_edition_media', 'catalog'),
+  nonCritical('approve_home_edition_media', 'catalog'),
+  nonCritical('withdraw_home_edition_media', 'catalog'),
+  nonCritical('register_second_home', 'catalog'),
+  // Coleção (Wave 4.1, spec catalog §13.12; média projetada na W4.2): vocabulários, capa, curadoria e média projetada.
   nonCritical('create_catalog_term', 'catalog'),
   nonCritical('update_catalog_term', 'catalog'),
-  nonCritical('upload_concept_cover', 'catalog'),
-  nonCritical('approve_concept_media', 'catalog'),
-  nonCritical('withdraw_concept_media', 'catalog'),
-  nonCritical('set_concept_curation', 'catalog'),
-  nonCritical('register_edition_reference_value', 'catalog'),
-  nonCritical('end_edition_reference_value', 'catalog'),
+  nonCritical('upload_home_concept_cover', 'catalog'),
+  nonCritical('approve_home_concept_media', 'catalog'),
+  nonCritical('withdraw_home_concept_media', 'catalog'),
+  nonCritical('set_home_concept_curation', 'catalog'),
+  nonCritical('register_home_edition_projected_investment', 'catalog'),
+  nonCritical('end_home_edition_projected_investment', 'catalog'),
 ];
 
 export class CommandRegistryError extends Error {
