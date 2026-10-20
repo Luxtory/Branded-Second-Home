@@ -1,8 +1,9 @@
-import type { EditionModality, StaffRoleName } from './catalog';
+import type { StaffRoleName } from './catalog';
 
 /**
- * Objetos da Coleção (spec catalog §13.12, D-B2C-21): vocabulários controlados, capa do Concept, curadoria e valor de
- * referência da Edition. Nenhum dado pessoal; nenhum valor calculado pelo software (BR-031, ADR-001 do `03`).
+ * Objetos da Coleção e da Home Edition (spec catalog §13.12, §17): vocabulários controlados, capa do Home Concept,
+ * curadoria, mídia da Home Edition e média projetada de investimento. Nenhum dado pessoal; nenhum valor calculado pelo
+ * software (BR-031, BR-034, ADR-001 do `03`).
  */
 
 export const CATALOG_TERM_KINDS = ['lifestyle', 'architectural_style'] as const;
@@ -98,12 +99,20 @@ export function supportsFeatured(
 }
 
 /** As larguras de exibição de uma capa (o master nunca é exibido). */
-export const displayRenditions = (media: Pick<ConceptMedia, 'renditions'>) =>
+export const displayRenditions = (media: Pick<HomeConceptMedia, 'renditions'>) =>
   media.renditions.filter((rendition) => rendition.role === 'display');
 
 /** Chave do objeto no Storage, decidida pelo conteúdo (SHA-256 dos bytes guardados). */
-export const mediaObjectKey = (sha256: string): string => `concept-media/${sha256}.webp`;
-export const MEDIA_OBJECT_KEY = /^concept-media\/[0-9a-f]{64}\.webp$/;
+export const MEDIA_PREFIXES = {
+  homeConcept: 'home-concept-media',
+  homeEdition: 'home-edition-media',
+} as const;
+/** De quem é a mídia: a capa do Home Concept ou a mídia da Home Edition (prefixos fixados no banco). */
+export type MediaOwner = keyof typeof MEDIA_PREFIXES;
+
+export const mediaObjectKey = (owner: MediaOwner, sha256: string): string =>
+  `${MEDIA_PREFIXES[owner]}/${sha256}.webp`;
+export const MEDIA_OBJECT_KEY = /^(home-concept-media|home-edition-media)\/[0-9a-f]{64}\.webp$/;
 
 /** Larguras de exibição para uma imagem de `width` px: os passos menores e a própria largura até 1600 — nunca ampliar. */
 export function displayWidths(width: number): number[] {
@@ -125,9 +134,9 @@ export interface MediaWithdrawal {
   readonly operationId: string;
 }
 
-export interface ConceptMedia {
+export interface HomeConceptMedia {
   readonly id: string;
-  readonly conceptId: string;
+  readonly homeConceptId: string;
   readonly state: MediaState;
   readonly alt: string;
   readonly credit: string | null;
@@ -141,46 +150,49 @@ export interface ConceptMedia {
   readonly createdAt: Date;
 }
 
+export const HOME_EDITION_MEDIA_KINDS = ['image', 'render', 'floor_plan'] as const;
+/** Imagem, render ou planta da Home Edition (BR-031). */
+export type HomeEditionMediaKind = (typeof HOME_EDITION_MEDIA_KINDS)[number];
+
+/** Mídia da Home Edition: mesmo ciclo e armazenamento da capa, várias aprovadas ao mesmo tempo (spec §17.3). */
+export interface HomeEditionMedia extends Omit<HomeConceptMedia, 'homeConceptId'> {
+  readonly homeEditionId: string;
+  readonly kind: HomeEditionMediaKind;
+}
+
 /** Base gravada quando a aprovação de uma capa nova retira a anterior. */
 export const SUPERSEDED_COVER_BASIS = 'Substituída por nova capa';
 
-export const canApproveMedia = (media: Pick<ConceptMedia, 'state'>): boolean =>
+export const canApproveMedia = (media: Pick<HomeConceptMedia, 'state'>): boolean =>
   media.state === 'pending';
 
-export const canWithdrawMedia = (media: Pick<ConceptMedia, 'state'>): boolean =>
+export const canWithdrawMedia = (media: Pick<HomeConceptMedia, 'state'>): boolean =>
   media.state !== 'withdrawn';
 
-export interface ConceptCuration {
-  readonly conceptId: string;
+export interface HomeConceptCuration {
+  readonly homeConceptId: string;
   /** Ordem "Curadoria Luxtory" (menor primeiro); `null` = depois dos posicionados, na ordem de registro. */
   readonly rank: number | null;
-  /** Destaque editorial explícito: no máximo um Concept, e só com capa aprovada. */
+  /** Destaque editorial explícito: no máximo um Home Concept, e só com capa aprovada. */
   readonly featured: boolean;
   readonly operationId: string;
   readonly updatedAt: Date;
 }
 
-export const REFERENCE_VALUE_BASES = ['owner', 'acao'] as const;
-/** `owner` = a Second Home inteira; `acao` = uma Ação Co-Owner (REQ-103: mesmo peso; REQ-100: nunca por dia). */
-export type ReferenceValueBasis = (typeof REFERENCE_VALUE_BASES)[number];
+export const PROJECTED_INVESTMENT_CURRENCIES = ['BRL'] as const;
+export type ProjectedInvestmentCurrency = (typeof PROJECTED_INVESTMENT_CURRENCIES)[number];
 
-export const REFERENCE_VALUE_CURRENCIES = ['BRL'] as const;
-export type ReferenceValueCurrency = (typeof REFERENCE_VALUE_CURRENCIES)[number];
-
-/** Série de valores: Edition + base + moeda — as vigências de uma série nunca se sobrepõem. */
-export interface ReferenceValueSeries {
-  readonly editionId: string;
-  readonly basis: ReferenceValueBasis;
-  readonly currency: ReferenceValueCurrency;
-}
-
-export interface EditionReferenceValue {
+/**
+ * Média projetada de investimento (BR-034): ordem de grandeza do investimento total projetado para materializar uma
+ * Second Home da Home Edition. Uma vigente por Home Edition — sem modalidade, base, configuração ou Ação; nunca preço
+ * nem condição; nenhum valor individual é derivado dela.
+ */
+export interface HomeEditionProjectedInvestment {
   readonly id: string;
-  readonly editionId: string;
-  readonly basis: ReferenceValueBasis;
+  readonly homeEditionId: string;
   /** Unidades menores da moeda (TECH-033). */
   readonly amountMinor: bigint;
-  readonly currency: ReferenceValueCurrency;
+  readonly currency: ProjectedInvestmentCurrency;
   readonly validFrom: Date;
   readonly validUntil: Date | null;
   readonly registeredByUserId: string;
@@ -189,18 +201,7 @@ export interface EditionReferenceValue {
   readonly createdAt: Date;
 }
 
-const MODALITY_BASES: Readonly<Record<EditionModality, readonly ReferenceValueBasis[]>> = {
-  owner: ['owner'],
-  co_owner: ['acao'],
-  owner_and_co_owner: ['owner', 'acao'],
-};
-
-/** Bases que a modalidade da Edition oferece (BR-032): Owner → a Second Home; Co-Owner → a Ação. */
-export function basesForModality(modality: EditionModality): readonly ReferenceValueBasis[] {
-  return MODALITY_BASES[modality];
-}
-
-type Period = Pick<EditionReferenceValue, 'validFrom' | 'validUntil'>;
+type Period = Pick<HomeEditionProjectedInvestment, 'validFrom' | 'validUntil'>;
 
 /** Vigente = começou e não terminou (`[valid_from, valid_until)`). */
 export function isCurrentValue(value: Period, at: Date): boolean {

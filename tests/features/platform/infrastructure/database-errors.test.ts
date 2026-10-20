@@ -24,8 +24,8 @@ describe('classificação de erros do banco', () => {
   });
 
   it('constraint violada só em erro de integridade (classe 23)', () => {
-    expect(violatedConstraint(pgError('23514', 'interest_modality_offered'))).toBe(
-      'interest_modality_offered',
+    expect(violatedConstraint(pgError('23514', 'home_edition_projected_investment_overlap'))).toBe(
+      'home_edition_projected_investment_overlap',
     );
     expect(violatedConstraint(pgError('08006', 'qualquer'))).toBeNull();
   });

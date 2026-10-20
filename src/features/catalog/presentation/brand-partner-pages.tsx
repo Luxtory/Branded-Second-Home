@@ -3,7 +3,7 @@ import type { ReactElement } from 'react';
 import { PageHeader, RecordList, type RecordAttribute } from '@/design-system/react';
 import { adminRoleGate } from '@/features/admin';
 import { systemClock } from '@/features/platform';
-import type { BrandPartnerSummary, ConceptSummary } from '../application/views';
+import type { BrandPartnerSummary, HomeConceptSummary } from '../application/views';
 import { isBrandInUse, type BrandPartner } from '../domain/catalog';
 import { postgresCatalogReader } from '../infrastructure/postgres-catalog-reader';
 import { BrandPartnerForm } from './brand-partner-form';
@@ -15,7 +15,7 @@ import { messages } from './i18n/pt-br';
 import { Instant } from './instant';
 import { Notice } from './notice';
 import { paths, type StatusKey } from './paths';
-import { ExposureForm } from './concept-forms';
+import { ExposureForm } from './home-concept-forms';
 import { TerminationForm } from './termination-form';
 
 const text = messages.brandPartner;
@@ -29,7 +29,7 @@ function stateValue(partner: Pick<BrandPartner, 'terminatedEffectiveAt'>, now: D
 function summaryAttributes(partner: BrandPartnerSummary, now: Date): RecordAttribute[] {
   return [
     { label: text.stateLabel, value: stateValue(partner, now) },
-    { label: text.conceptsLabel, value: partner.conceptCount },
+    { label: text.homeConceptsLabel, value: partner.homeConceptCount },
     {
       label: text.exposureLabel,
       value: partner.exposureAuthorizedAt === null ? text.exposureMissing : text.exposureAuthorized,
@@ -37,17 +37,17 @@ function summaryAttributes(partner: BrandPartnerSummary, now: Date): RecordAttri
   ];
 }
 
-function conceptAttributes(concept: ConceptSummary): RecordAttribute[] {
+function homeConceptAttributes(homeConcept: HomeConceptSummary): RecordAttribute[] {
   return [
     {
-      label: text.conceptStateLabel,
+      label: text.homeConceptStateLabel,
       value:
-        concept.currentVersion === null
-          ? text.conceptNotApproved
-          : text.conceptApproved(concept.currentVersion),
+        homeConcept.currentVersion === null
+          ? text.homeConceptNotApproved
+          : text.homeConceptApproved(homeConcept.currentVersion),
     },
-    { label: text.versionsLabel, value: concept.versionCount },
-    { label: text.editionsLabel, value: concept.editionCount },
+    { label: text.versionsLabel, value: homeConcept.versionCount },
+    { label: text.homeEditionsLabel, value: homeConcept.homeEditionCount },
   ];
 }
 
@@ -122,8 +122,12 @@ function partnerActions(partner: BrandPartner, now: Date): ReactElement | undefi
   const inUse = isBrandInUse(partner, now);
   const links = [
     inUse ? (
-      <a key="concept" className="lx-button lx-button--primary" href={paths.newConcept(partner.id)}>
-        {text.registerConcept}
+      <a
+        key="home_concept"
+        className="lx-button lx-button--primary"
+        href={paths.newHomeConcept(partner.id)}
+      >
+        {text.registerHomeConcept}
       </a>
     ) : null,
     inUse && partner.exposureAuthorizedAt === null ? (
@@ -191,7 +195,7 @@ function TerminationNotice({
   );
 }
 
-/** `/admin/catalogo/brand-partners/[id]`: situação da parceria e seus Concepts. */
+/** `/admin/catalogo/brand-partners/[id]`: situação da parceria e seus Home Concepts. */
 export async function BrandPartnerPage({
   id,
   status,
@@ -206,7 +210,7 @@ export async function BrandPartnerPage({
     postgresCatalogReader.brandPartner(tx, id),
   );
   if (detail === null) return <CatalogNotFound session={gate.session} />;
-  const { partner, concepts } = detail;
+  const { partner, homeConcepts } = detail;
   const now = systemClock.now();
   return (
     <CatalogPage session={gate.session}>
@@ -224,22 +228,22 @@ export async function BrandPartnerPage({
         <TerminationNotice partner={partner} now={now} />
         <PartnerSummary partner={partner} />
       </section>
-      <section className="lx-page-section" aria-labelledby="partner-concepts">
-        <h2 className="lx-display-s" id="partner-concepts">
-          {text.conceptsTitle}
+      <section className="lx-page-section" aria-labelledby="partner-home-concepts">
+        <h2 className="lx-display-s" id="partner-home-concepts">
+          {text.homeConceptsTitle}
         </h2>
-        {concepts.length === 0 ? (
+        {homeConcepts.length === 0 ? (
           <div className="lx-empty">
-            <p className="lx-body">{text.conceptsEmpty}</p>
+            <p className="lx-body">{text.homeConceptsEmpty}</p>
           </div>
         ) : (
           <RecordList
-            label={text.conceptsTitle}
-            items={concepts.map((concept) => ({
-              id: concept.id,
-              href: paths.concept(concept.id),
-              title: concept.title,
-              attributes: conceptAttributes(concept),
+            label={text.homeConceptsTitle}
+            items={homeConcepts.map((homeConcept) => ({
+              id: homeConcept.id,
+              href: paths.homeConcept(homeConcept.id),
+              title: homeConcept.title,
+              attributes: homeConceptAttributes(homeConcept),
             }))}
           />
         )}

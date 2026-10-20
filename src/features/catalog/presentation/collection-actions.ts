@@ -2,18 +2,25 @@
 
 // Server Actions do Admin da Coleção (spec catalog §13.12): mesma entrada da API (ADR-0010 §6).
 import {
-  approveConceptMediaInput,
-  COVER_MAX_BYTES,
+  approveHomeConceptMediaInput,
   createCatalogTermInput,
-  endEditionReferenceValueInput,
+  endHomeEditionProjectedInvestmentInput,
   MAX_AMOUNT_MINOR,
-  registerEditionReferenceValueInput,
-  setConceptCurationInput,
+  registerHomeEditionProjectedInvestmentInput,
+  setHomeConceptCurationInput,
   updateCatalogTermInput,
-  uploadConceptCoverInput,
-  withdrawConceptMediaInput,
+  uploadHomeConceptCoverInput,
+  withdrawHomeConceptMediaInput,
 } from '../application/inputs';
-import { field, integer, present, submit, valuesOf } from './action-support';
+import {
+  attributeValidation,
+  field,
+  imageField,
+  integer,
+  present,
+  submit,
+  valuesOf,
+} from './action-support';
 import type { FieldErrorCode, FormState } from './form-state';
 import { catalogCommand, catalogHandlers } from './handlers';
 import { reaisToMinor } from './money';
@@ -24,16 +31,6 @@ const YES = 'yes';
 const NO = 'no';
 const choice = (value: string): boolean | undefined =>
   value === YES ? true : value === NO ? false : undefined;
-
-/**
- * Recusa `ERR_VALIDATION` do command sem erro de campo (algo que só o command valida): o erro vai para o campo que a
- * causou, para a tela dizer o quê corrigir.
- */
-function attributeValidation(state: FormState, name: string, code: FieldErrorCode): FormState {
-  return state.rejection === 'invalid' && Object.keys(state.fieldErrors).length === 0
-    ? { ...state, fieldErrors: { [name]: code } }
-    : state;
-}
 
 export async function createCatalogTermAction(
   state: FormState,
@@ -65,28 +62,17 @@ export async function updateCatalogTermAction(
   });
 }
 
-/** Arquivo do formulário → base64 do command; vazio ou acima de 3 MiB vira erro de campo antes do envio. */
-async function imageField(form: FormData): Promise<{
-  readonly image: string | undefined;
-  readonly error: FieldErrorCode | null;
-}> {
-  const file = form.get('image');
-  if (!(file instanceof File) || file.size === 0) return { image: undefined, error: 'required' };
-  if (file.size > COVER_MAX_BYTES) return { image: undefined, error: 'file_too_large' };
-  return { image: Buffer.from(await file.arrayBuffer()).toString('base64'), error: null };
-}
-
-export async function uploadConceptCoverAction(
+export async function uploadHomeConceptCoverAction(
   state: FormState,
   form: FormData,
 ): Promise<FormState> {
-  const conceptId = field(form, 'concept_id');
+  const homeConceptId = field(form, 'home_concept_id');
   const { image, error } = await imageField(form);
   const result = await submit(state, {
-    command: catalogCommand(catalogHandlers.uploadConceptCover),
-    schema: uploadConceptCoverInput,
+    command: catalogCommand(catalogHandlers.uploadHomeConceptCover),
+    schema: uploadHomeConceptCoverInput,
     input: {
-      concept_id: conceptId,
+      home_concept_id: homeConceptId,
       image,
       alt: field(form, 'alt'),
       credit: present(field(form, 'credit')),
@@ -94,56 +80,56 @@ export async function uploadConceptCoverAction(
       crop_y: integer(field(form, 'crop_y')),
     },
     values: valuesOf(form, ['alt', 'credit', 'crop_x', 'crop_y']),
-    success: (media) => paths.media(conceptId, media.id, 'registered'),
+    success: (media) => paths.media(homeConceptId, media.id, 'registered'),
     extraErrors: error === null ? {} : { image: error },
   });
   return attributeValidation(result, 'image', 'invalid_image');
 }
 
-export async function approveConceptMediaAction(
+export async function approveHomeConceptMediaAction(
   state: FormState,
   form: FormData,
 ): Promise<FormState> {
   return submit(state, {
-    command: catalogCommand(catalogHandlers.approveConceptMedia),
-    schema: approveConceptMediaInput,
-    input: { concept_media_id: field(form, 'concept_media_id') },
+    command: catalogCommand(catalogHandlers.approveHomeConceptMedia),
+    schema: approveHomeConceptMediaInput,
+    input: { home_concept_media_id: field(form, 'home_concept_media_id') },
     values: {},
-    success: (media) => paths.media(media.concept_id, media.id, 'cover_approved'),
+    success: (media) => paths.media(media.home_concept_id, media.id, 'cover_approved'),
   });
 }
 
-export async function withdrawConceptMediaAction(
+export async function withdrawHomeConceptMediaAction(
   state: FormState,
   form: FormData,
 ): Promise<FormState> {
   return submit(state, {
-    command: catalogCommand(catalogHandlers.withdrawConceptMedia),
-    schema: withdrawConceptMediaInput,
+    command: catalogCommand(catalogHandlers.withdrawHomeConceptMedia),
+    schema: withdrawHomeConceptMediaInput,
     input: {
-      concept_media_id: field(form, 'concept_media_id'),
+      home_concept_media_id: field(form, 'home_concept_media_id'),
       withdrawal_basis: field(form, 'withdrawal_basis'),
     },
     values: valuesOf(form, ['withdrawal_basis']),
-    success: (media) => paths.media(media.concept_id, media.id, 'withdrawn'),
+    success: (media) => paths.media(media.home_concept_id, media.id, 'withdrawn'),
   });
 }
 
-export async function setConceptCurationAction(
+export async function setHomeConceptCurationAction(
   state: FormState,
   form: FormData,
 ): Promise<FormState> {
   const rank = integer(field(form, 'rank'));
   return submit(state, {
-    command: catalogCommand(catalogHandlers.setConceptCuration),
-    schema: setConceptCurationInput,
+    command: catalogCommand(catalogHandlers.setHomeConceptCuration),
+    schema: setHomeConceptCurationInput,
     input: {
-      concept_id: field(form, 'concept_id'),
+      home_concept_id: field(form, 'home_concept_id'),
       rank: rank ?? null,
       featured: choice(field(form, 'featured')),
     },
     values: valuesOf(form, ['rank', 'featured']),
-    success: (curation) => paths.concept(curation.concept_id, 'saved'),
+    success: (curation) => paths.homeConcept(curation.home_concept_id, 'saved'),
   });
 }
 
@@ -161,39 +147,40 @@ function amountField(form: FormData): {
   return { amount: Number(minor), error: null };
 }
 
-export async function registerReferenceValueAction(
+export async function registerProjectedInvestmentAction(
   state: FormState,
   form: FormData,
 ): Promise<FormState> {
-  const editionId = field(form, 'edition_id');
+  const homeEditionId = field(form, 'home_edition_id');
   const { amount, error } = amountField(form);
   const result = await submit(state, {
-    command: catalogCommand(catalogHandlers.registerEditionReferenceValue),
-    schema: registerEditionReferenceValueInput,
+    command: catalogCommand(catalogHandlers.registerHomeEditionProjectedInvestment),
+    schema: registerHomeEditionProjectedInvestmentInput,
     input: {
-      edition_id: editionId,
-      basis: present(field(form, 'basis')),
+      home_edition_id: homeEditionId,
       amount_minor: amount,
       currency: 'BRL',
       valid_from: present(field(form, 'valid_from')),
     },
-    values: valuesOf(form, ['basis', 'amount', 'valid_from_local']),
-    success: () => paths.edition(editionId, 'registered'),
+    values: valuesOf(form, ['amount', 'valid_from_local']),
+    success: () => paths.homeEdition(homeEditionId, 'registered'),
     extraErrors: error === null ? {} : { amount: error },
   });
   // A única validação que só o command faz aqui: início no passado.
   return attributeValidation(result, 'valid_from', 'not_in_future');
 }
 
-export async function endReferenceValueAction(
+export async function endProjectedInvestmentAction(
   state: FormState,
   form: FormData,
 ): Promise<FormState> {
   return submit(state, {
-    command: catalogCommand(catalogHandlers.endEditionReferenceValue),
-    schema: endEditionReferenceValueInput,
-    input: { edition_reference_value_id: field(form, 'edition_reference_value_id') },
+    command: catalogCommand(catalogHandlers.endHomeEditionProjectedInvestment),
+    schema: endHomeEditionProjectedInvestmentInput,
+    input: {
+      home_edition_projected_investment_id: field(form, 'home_edition_projected_investment_id'),
+    },
     values: {},
-    success: (value) => paths.edition(value.edition_id, 'ended'),
+    success: (investment) => paths.homeEdition(investment.home_edition_id, 'ended'),
   });
 }

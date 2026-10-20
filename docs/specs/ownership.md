@@ -7,28 +7,30 @@
 > [ADR-0010](../adr/0010-catalogo-versoes-e-mutacoes-do-admin.md) §7, [ADR-0006](../adr/0006-acesso-a-dados.md)
 > Threat model: [`docs/security/threats/ownership.md`](../security/threats/ownership.md)
 > Plano: [W5 em `implementation-waves.md`](../plan/implementation-waves.md#wave-5--interesse-núcleo), com a revisão
-> aprovada pelo fundador em 2026-10-19.
+> aprovada pelo fundador em 2026-10-19; correção estrutural da W4.2 na [§13](#13-w42--interesse-a-partir-da-home-edition).
 
 Módulo `ownership` do TECH-011. A W5 entrega só a manifestação de interesse; formalização, Ação, holding e Direito de
-Uso chegam nas W8 em diante. Esta spec cita os canônicos (`01` v10.1, `02` v4.2, `03` v3.14) e não os parafraseia.
+Uso chegam nas W8 em diante. Esta spec cita os canônicos (`01` v10.2, `02` v4.3, `03` v3.15) e não os parafraseia.
 
 ## 1. Goal
 
-Registrar a manifestação de interesse com os campos canônicos do `03` §3.1 (`interest`) — Concept, Edition opcional,
-modalidade, região, `approx_days` e origem — sem gerar direito, prerrogativa nem efeito econômico, e dar ao Admin a
-visão agrupada que orienta a Luxtory (BR-062).
+Registrar a manifestação de interesse com os campos canônicos do `03` §3.1 (`interest`) — Home Edition (obrigatória;
+o Home Concept vem dela), modalidade desejada, localização pretendida (`desired_location`), `approx_days` só para
+Co-Owner e origem — sem gerar direito, prerrogativa nem efeito econômico, e dar ao Admin a visão agrupada que orienta
+a Luxtory (BR-062).
 
 - **Dona**: REQ-023 (origem e parceiro registrados sem prerrogativa).
-- **Complementa**: REQ-022 (interesse antes da Edition), REQ-024 (interesse Owner não é aquisição), REQ-025 (dias são
-  preferência; só a formalização cria Ação e Direito de Uso).
+- **Complementa**: REQ-022 (a manifestação parte de uma Home Edition publicada), REQ-024 (interesse Owner não é
+  aquisição), REQ-025 (dias são preferência; só a formalização cria Ação e Direito de Uso).
 - **TECH**: TECH-001, TECH-056 (`POST` + `Idempotency-Key`), TECH-100 (validação, rate limit, PII fora dos logs, CSRF),
   TECH-092 (auditoria da leitura administrativa).
 - **BR**: BR-030, BR-032, BR-040–BR-043, BR-050, BR-060, BR-062, BR-065.
 
 ## 2. Non-goals
 
-- Formulário público, campos de contato e qualificação, consentimento e aviso de privacidade: W6, bloqueada por `P-3`.
-  A W5 grava só os campos canônicos — nenhum dado de contato.
+- Formulário público, `interest_contact` (nome, telefone, e-mail), `interest_qualification`, HMAC de PII, Aviso de
+  Privacidade e Budget Fit: W6 (`02` v4.3 REQ-022; `03` v3.15 §3.1). Aqui ficam só os campos canônicos do `interest` —
+  nenhum dado de contato.
 - Formalização, Ação (`stake`), `holding`, Direito de Uso, calendário, reserva, Créditos ou qualquer efeito econômico.
 - Entidade de parceiro, autorização de parceiro local (BR-042/043) ou atribuição comercial à Brand Partner (BP2,
   REQ-029). `origin` e `partner_ref` são metadados declarados e nunca alimentam essas capacidades.
@@ -46,10 +48,11 @@ visão agrupada que orienta a Luxtory (BR-062).
 
 ## 4. User stories
 
-- Como visitante, quero manifestar interesse num Concept publicado — com ou sem Edition — como Owner ou Co-Owner,
-  informando a região e, como Co-Owner, a necessidade aproximada de dias, sem que isso me conceda qualquer direito.
-- Como Admin, quero ver os interesses agrupados por Concept, região e modalidade, com os dias aproximados exatos
-  informados pelos Co-Owners, para que a Luxtory avalie composições (BR-062–BR-064).
+- Como visitante, quero manifestar interesse numa Home Edition publicada, como Owner ou Co-Owner, informando a
+  localização pretendida e, como Co-Owner, a necessidade aproximada de dias, sem que isso me conceda qualquer direito.
+- Como Admin, quero ver os interesses agrupados por Home Edition (com o seu Home Concept), localização pretendida e
+  modalidade, com os dias aproximados exatos informados pelos Co-Owners, para que a Luxtory avalie composições
+  (BR-062–BR-064).
 
 ## 5. Contracts
 
@@ -74,11 +77,13 @@ Ordem de processamento (cada etapa recusa antes da seguinte; nenhuma recusa ante
 7. **Validação** — JSON, schema fechado (§5.1) e `Idempotency-Key` UUID. Inválido → `400` com `fields` (nome e código,
    nunca o valor).
 8. **Idempotência** (ADR-0017) — chave já usada: mesmo conteúdo validado → replay (`201` + `idempotency-replayed:
-   true`); conteúdo diferente → `409 ERR_IDEMPOTENCY_CONFLICT`. O replay não reavalia o Concept.
-9. **Alvo público** — Concept visível no Discovery (leitura como `anon` sob RLS, ADR-0014: Brand Partner com exposição
-   autorizada e não encerrada + versão aprovada — BR-015, BR-021, REQ-096). Edition, se informada, visível e do mesmo
-   Concept. Senão → `404 ERR_NOT_FOUND` (inexistente e não publicado respondem igual). Modalidade não oferecida pela
-   Edition → `400` (`modality: not_allowed`).
+   true`); conteúdo diferente → `409 ERR_IDEMPOTENCY_CONFLICT`. O replay não reavalia a Home Edition.
+9. **Alvo público** — Home Edition publicada e visível no Discovery (leitura como `anon` sob RLS, ADR-0014: Home
+   Edition com `visibility = 'public'` — o que exige definição material finalizada — de Home Concept público: Brand
+   Partner com exposição autorizada e não encerrada + versão aprovada; BR-015, BR-021, BR-030, REQ-096). Senão →
+   `404 ERR_NOT_FOUND` (inexistente, em preparação, fora do público e de Home Concept não público respondem igual;
+   `02` §15, item 15). A Home Edition não restringe modalidade (BR-032): não há validação
+   de modalidade contra ela.
 10. **Escrita atômica** — numa transação: reserva da chave (`app.public_idempotency_key`) + inserção em `app.interest`.
     Corrida com a mesma chave → uma única linha; a outra tentativa vira replay ou conflito.
 11. **Resposta** — `201 { "status": "registered" }`, sem identificador interno.
@@ -86,9 +91,9 @@ Ordem de processamento (cada etapa recusa antes da seguinte; nenhuma recusa ante
 | HTTP | Código | Condição |
 |---|---|---|
 | 201 | — | Interesse registrado, ou replay da mesma tentativa (`idempotency-replayed: true`) |
-| 400 | `ERR_VALIDATION` | JSON/schema/campo/chave inválidos; F2a/F2b violadas (`fields` só com nome e código) |
+| 400 | `ERR_VALIDATION` | JSON/schema/campo/chave inválidos; F2b violada (`fields` só com nome e código) |
 | 403 | `ERR_PERMISSION` | `Origin` ausente ou de outro host |
-| 404 | `ERR_NOT_FOUND` | Escrita fechada neste ambiente; Concept ou Edition não publicados, inexistentes ou de outro Concept |
+| 404 | `ERR_NOT_FOUND` | Escrita fechada neste ambiente; Home Edition fora do público ou inexistente |
 | 409 | `ERR_IDEMPOTENCY_CONFLICT` | Mesma chave com outro conteúdo |
 | 413 | `ERR_PAYLOAD_TOO_LARGE` | Corpo acima de 8 KiB |
 | 415 | `ERR_UNSUPPORTED_MEDIA_TYPE` | Corpo não é `application/json` |
@@ -104,16 +109,14 @@ regra de negócio.
 
 | Campo | Regra | Base |
 |---|---|---|
-| `concept_id` | uuid, obrigatório | BR-030, `03` §3.1 |
-| `edition_id` | uuid, opcional (ausente ou `null` = interesse no Concept) | REQ-022, BR-030 |
-| `modality` | `owner` ou `co_owner`, obrigatório; com Edition, entre as modalidades que ela oferece (F2a) | BR-032 |
-| `region` | texto obrigatório, 1–200 | REQ-024, REQ-025 |
+| `home_edition_id` | uuid, obrigatório — a Home Edition publicada da página; o Home Concept vem dela | REQ-022, BR-030, `03` §3.1 |
+| `modality` | `owner` ou `co_owner`, obrigatório (modalidade desejada) | BR-030, BR-032 |
+| `desired_location` | texto obrigatório, 1–200 — localização pretendida | REQ-022, REQ-024, REQ-025, BR-030 |
 | `approx_days` | `co_owner`: obrigatório, inteiro positivo, sem teto de negócio (limite de representação: inteiro de 32 bits); `owner`: ausente ou `null` (F2b) | REQ-025, BR-060 |
 | `origin` | texto opcional, até 200; vazio = ausente | REQ-023, BR-040–BR-043 |
 | `partner_ref` | texto opcional, até 200; vazio = ausente | REQ-023, BR-042 |
 
-Códigos de campo: `required`, `too_long`, `invalid`, `not_allowed` (`approx_days` para Owner; modalidade que a Edition
-não oferece).
+Códigos de campo: `required`, `too_long`, `invalid`, `not_allowed` (`approx_days` para Owner).
 
 `origin` e `partner_ref` (decisão do fundador, 2026-10-19): metadados textuais declarados pelo cliente e **não
 confiáveis**. Sem enum, sem FK para `brand_partner` e sem entidade de parceiro. Nunca concedem acesso, autorização,
@@ -131,10 +134,9 @@ Nenhum. O registro de interesse não publica evento no outbox (`docs/api/asyncap
 | Coluna | Regra |
 |---|---|
 | `id` | uuid gerado no servidor |
-| `concept_id` | FK `app.concept` |
-| `edition_id` | opcional; FK composta (`edition_id`, `concept_id`) → `app.edition (id, concept_id)` |
-| `modality` | `owner` ou `co_owner` |
-| `region`, `origin`, `partner_ref` | texto já normalizado; `region` 1–200, os outros nulos ou 1–200 |
+| `home_edition_id` | obrigatório; FK `app.home_edition` (o Home Concept é o da Home Edition, sem coluna própria) |
+| `modality` | `owner` ou `co_owner` (desejada) |
+| `desired_location`, `origin`, `partner_ref` | texto já normalizado; `desired_location` 1–200, os outros nulos ou 1–200 |
 | `approx_days` | `integer > 0`; não nulo **se e somente se** `modality = 'co_owner'` |
 | `created_at` | instante do `Clock` da aplicação (TECH-110) |
 
@@ -145,7 +147,6 @@ Invariantes:
   interesse. Só a formalização (W8) cria Ação e Direito de Uso.
 - **Sem prerrogativa** (REQ-023): `origin` e `partner_ref` não entram em nenhuma regra, ordenação, autorização ou
   agrupamento.
-- **F2a no banco**: gatilho `interest_modality_offered` recusa, na inserção, modalidade que a Edition não oferece.
 - **Imutável**: `UPDATE`, `DELETE` e `TRUNCATE` recusados.
 - **Acesso**: RLS ligada, política só para `luxtory_app` (ADR-0010 §7); `anon` e `authenticated` não leem nem gravam.
   Fora do PostgREST (Data API desligada, ADR-0006).
@@ -159,11 +160,13 @@ dado do visitante além do hash.
 `/admin/interesses`, papel Admin exercido (`adminRoleGate('admin')`). Leitura como `luxtory_app` na mesma transação que
 grava o `admin_read` (TECH-092, ADR-0010 §7; objeto `interest`, `*`).
 
-- Agrupamento não destrutivo: **Concept → região → modalidade** e, dentro de `co_owner`, os **valores exatos de
-  `approx_days`** com a contagem de cada valor (BR-062: Concept, região e necessidade aproximada de uso; modalidade
-  pedida pelo plano). Sem faixas, buckets ou algoritmo. `owner` não tem `approx_days`.
-- Região agrupada pelo texto registrado (já normalizado); nenhuma taxonomia de regiões.
-- Concept identificado pelo título e pela marca (consulta pública do módulo `catalog`, sem acesso às tabelas dele).
+- Agrupamento não destrutivo: **Home Edition (com o seu Home Concept) → localização pretendida → modalidade** e,
+  dentro de `co_owner`, os **valores exatos de `approx_days`** com a contagem de cada valor (BR-062: Home Edition,
+  localização pretendida e necessidade aproximada de uso; modalidade pedida pelo plano). Sem faixas, buckets ou
+  algoritmo. `owner` não tem `approx_days`.
+- Localização pretendida agrupada pelo texto registrado (já normalizado); nenhuma taxonomia de localizações.
+- Home Edition identificada pelo nome, pelo título do Home Concept e pela marca (consulta do módulo `catalog`, sem
+  acesso às tabelas dele).
 - A visão não mostra registros individuais, `origin` nem `partner_ref` (nenhum uso definido na W5).
 - Estado vazio explícito; nenhum valor presumido (TECH-001).
 
@@ -173,10 +176,10 @@ grava o `admin_read` (TECH-092, ADR-0010 §7; objeto `interest`, `*`).
       e a chave de idempotência pública; não cria Brand Partner, grant, vínculo nem ordem.
 - [x] `[REQ-025]` `approx_days` nunca vira Ação nem Direito de Uso: nenhuma tabela de direitos, calendário, inventário,
       booking, Créditos ou economia é alterada; obrigatório para `co_owner`, recusado para `owner`.
-- [x] `[REQ-022]` interesse sem Edition é aceito; com Edition, a modalidade precisa ser oferecida (F2a).
+- [x] `[REQ-022]` a manifestação exige uma Home Edition publicada (W4.2: sem `concept_id`, sem F2a; ver §13).
 - [x] `[REQ-024]` interesse Owner não constitui aquisição: só `interest` e a chave pública mudam.
 - [x] `[TECH-100]` excesso de requisições → `429` sem efeito; limitador indisponível → `503` sem efeito; `origin`,
-      `partner_ref` e região nunca em logs ou mensagens de erro.
+      `partner_ref` e localização pretendida nunca em logs ou mensagens de erro.
 - [x] `[TECH-056]` replay com a mesma chave e o mesmo conteúdo; conflito com conteúdo diferente; concorrência com a
       mesma chave → exatamente um interesse.
 - [x] `[TECH-092]` a leitura do Admin grava `admin_read`.
@@ -187,17 +190,16 @@ grava o `admin_read` (TECH-092, ADR-0010 §7; objeto `interest`, `*`).
 
 ## 7. Edge cases
 
-- Concept sem Edition → aceito (REQ-022). Edition de outro Concept → `404`.
-- Edition `owner` com interesse `co_owner` (ou o inverso) → `400 modality: not_allowed`; o interesse no Concept sem
-  Edition continua possível (BR-030).
-- Concept que deixa de ser público (encerramento, BR-021) → novas manifestações `404`; replays de tentativas já
-  registradas seguem `201`. Corrida entre a checagem pública e a inserção é benigna: interesse não é uso de marca nem
-  direito; a modalidade da Edition é revalidada pelo gatilho na inserção.
+- Sem `home_edition_id` → `400 required`; Home Edition em preparação, fora do público ou inexistente → `404` (BR-030).
+- Qualquer modalidade desejada é aceita: a Home Edition não restringe modalidade (BR-032).
+- Home Edition retirada do público ou Home Concept que deixa de ser público (encerramento, BR-021) → novas manifestações `404`
+  (`02` §15, item 15); replays de tentativas já registradas seguem `201`. Corrida entre a checagem pública e a
+  inserção é benigna: interesse não é uso de marca nem direito.
 - Recusas (validação, alvo, conflito) não consomem a chave: só o sucesso a grava, na transação do interesse.
 - Mesma chave em paralelo → uma linha; as demais tentativas recebem replay (mesmo conteúdo) ou `409`.
 - Corpo sem `Content-Length` ou com valor falso → limite pelos bytes recebidos.
 - `approx_days` `0`, negativo, decimal, texto ou acima do inteiro de 32 bits → `invalid`.
-- `region` só com espaços → `required`; com controle C0 → `invalid`.
+- `desired_location` só com espaços → `required`; com controle C0 → `invalid`.
 - Preview: sem `DATABASE_URL` (ADR-0007), a escrita responde `503` — validação em PostgreSQL local e na CI.
 
 ## 8. Security considerations
@@ -206,7 +208,7 @@ STRIDE completo em [`docs/security/threats/ownership.md`](../security/threats/ow
 
 - **Authn/Authz**: escrita pública sem conta; leitura só staff Admin AAL2 com `admin_read`.
 - **Input validation**: schema fechado (Zod) no servidor, corpo limitado, UUIDs, texto normalizado; o banco reforça
-  enums, limites, F2a/F2b e a relação Edition–Concept.
+  enums, limites, F2b e a FK da Home Edition.
 - **Abuse**: rate limit distribuído por origem de rede e global; falha fechada; CSRF por origem do mesmo host; portão
   `INTEREST_WRITES` fechado em Production até a ativação.
 - **PII**: nenhum dado de contato. Campos livres podem receber texto pessoal digitado pelo visitante: nunca em logs,
@@ -230,12 +232,30 @@ STRIDE completo em [`docs/security/threats/ownership.md`](../security/threats/ow
 
 ## 11. Open questions
 
-- `P-3` (W6): campos de contato/qualificação, base LGPD, consentimento e aviso — decisão de produto do fundador.
+- `P-3` (W6): campos de contato/qualificação definidos pelo `02` v4.3 (REQ-022); base LGPD, Aviso de Privacidade e
+  desenho da pré-qualificação ficam na spec da W6.
 - Exibição de `origin`/`partner_ref` ao Admin e retenção das chaves de idempotência pública: sem uso definido na W5.
 
 ## 12. References
 
-- Canônicos: `01` BR-030–BR-033, BR-040–BR-043, BR-050, BR-060–BR-065; `02` REQ-022–REQ-025; `03` §3.1 (`interest`),
+- Canônicos: `01` BR-030–BR-036, BR-040–BR-043, BR-050, BR-060–BR-065; `02` REQ-022–REQ-025; `03` §3.1 (`interest`),
   TECH-001, TECH-002, TECH-056, TECH-092, TECH-100, ADR-006.
 - ADR-0017 (idempotência pública não crítica), ADR-0014, ADR-0010 §7, ADR-0008, ADR-0006, ADR-0004 (Upstash).
-- Spec `catalog` §13 (visibilidade pública) e §14.4 (borda das escritas públicas da BP1).
+- Spec `catalog` §13 e §17 (visibilidade pública da Home Edition) e §14.4 (borda das escritas públicas da BP1).
+
+## 13. W4.2 — Interesse a partir da Home Edition
+
+Correção estrutural aprovada pelo fundador (2026-10-19), aplicada na W4.2 sem antecipar a W6 (`01` v10.2 BR-030,
+BR-032, BR-062; `02` v4.3 REQ-022; `03` v3.15 §3.1 `interest`):
+
+- `home_edition_id` obrigatório; `concept_id` sai (o Home Concept é o da Home Edition); nenhuma manifestação comercial
+  genérica no Home Concept.
+- `region` → `desired_location` (localização pretendida ≠ localização concreta da Second Home).
+- Sai a F2a (gatilho `interest_modality_offered` e a recusa `modality: not_allowed`): a Home Edition não tem modalidade.
+- Visão do Admin: Home Edition → localização pretendida → modalidade → dias aproximados.
+- Migration `ownership_interest_home_edition` (estratégia e precondição fail-closed em
+  [`docs/plan/w4-2-ontologia.md`](../plan/w4-2-ontologia.md) §3): `ALTER` preserva os registros que já tenham Home
+  Edition; aborta se houver interesse sem Home Edition.
+- Ficam para a W6: `interest_contact`, `interest_qualification`, telefone, HMAC de PII, Aviso de Privacidade,
+  formulário na página da Home Edition, pré-qualificação e Budget Fit. A escrita continua fechada em Production
+  (`INTEREST_WRITES`).

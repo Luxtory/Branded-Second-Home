@@ -208,7 +208,7 @@ function Configurations() {
  */
 export async function HowItWorksPage() {
   const cta = catalogCta(await readAvailability());
-  const hasCatalog = cta === 'editions' || cta === 'concepts';
+  const hasCatalog = cta === 'homeEditions' || cta === 'homeConcepts';
   return (
     <DiscoverySite current="howItWorks">
       {/* 01 — Hero: fotografia em toda a viewport, conteúdo embaixo à esquerda e o índice dos capítulos. */}

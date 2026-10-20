@@ -14,6 +14,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Ontologia Home Concept → Home Edition → Second Home (W4.2, `01` v10.2, ADR-0019): a Home Edition passa a ser uma
+  configuração específica e replicável de Second Home — nome, descrição, tipologia, configuração dos espaços, área
+  projetada, suítes, capacidade, ambientes, amenidades, características, imagens, renders e plantas —, sem localização,
+  modalidade nem condições comerciais. No Admin, preparação editável, finalização da definição material (uma vez, sem
+  volta), publicação e retirada do público separadas, correção editorial auditada e média projetada de investimento
+  (uma vigente, sem modalidade). Nova página pública da Home Edition, sem formulário; Home Concept e Coleção mostram as
+  Home Editions publicadas e o filtro de média projetada numa etapa. Interesse passa a partir da Home Edition, com
+  localização pretendida. Copy B2C, Brand Partners e Sobre com "Branded Second Homes", Second Home e "identidade da
+  marca" (`D-B2C-27`, `D-BP-28`, `D-LX-11`). No Como funciona, a jornada passa da Home Edition a "Interesse e
+  estruturação" antes do Design & Build.
+
 - Sobre: parágrafos da história ocupam toda a coluna disponível, com reflow natural no mobile.
 - Sobre: apresentação idêntica no B2C e B2B, edição concisa autorizada para até quatro linhas por bloco e Hero
   enquadrado na primeira tela, com remoção do espaçamento duplicado e medidas de leitura confortáveis.

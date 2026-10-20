@@ -207,8 +207,11 @@ const NEW_CORE_BLOCKS = [
   'lx-editorial-list', 'lx-section-split', 'lx-answers', 'lx-figures',
   // Coleção (spec catalog §13.12).
   'lx-discovery', 'lx-discovery-hint', 'lx-discovery-sticky', 'lx-facet', 'lx-check', 'lx-results-head', 'lx-chips',
-  'lx-chip', 'lx-sort', 'lx-concept-group', 'lx-concept-grid', 'lx-concept-card', 'lx-steps', 'lx-filters',
+  'lx-chip', 'lx-sort', 'lx-home-concept-group', 'lx-home-concept-grid', 'lx-home-concept-card', 'lx-steps', 'lx-filters',
   'lx-results',
+  // Home Concept e Home Edition (spec catalog §17.8).
+  'lx-home-edition-grid', 'lx-home-edition-card', 'lx-home-edition-opening', 'lx-home-edition-gallery',
+  'lx-home-edition-lists',
   // Brand Partners (spec catalog §14, §14.9).
   'lx-anchors', 'lx-section-note', 'lx-section-group', 'lx-media-placeholder',
 ];

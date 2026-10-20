@@ -5,17 +5,18 @@
 > or scope changes.
 
 Módulo `catalog` do TECH-011 (`src/features/catalog/`). Esta versão cobre a W3 (Catálogo + Admin); a W4 acrescenta a
-leitura pública (Discovery), a W8 a configuração da Residence, a trava da estrutura e a alteração de modalidade da
-Edition, e a W29 a conformidade (REQ-021, BR-020). Decisões: [ADR-0010](../adr/0010-catalogo-versoes-e-mutacoes-do-admin.md).
+leitura pública (Discovery), a W4.2 corrige a ontologia e o modelo da Home Edition ([§17](#17-w42--ontologia-home-concept--home-edition--second-home),
+que prevalece onde diferir), a W8 traz a configuração, a modalidade e a estrutura da Second Home, e a W29 a conformidade
+(REQ-021, BR-020). Decisões: [ADR-0010](../adr/0010-catalogo-versoes-e-mutacoes-do-admin.md).
 A leitura pública da W4 (Discovery B2C) está na [§13](#13-discovery-público-b2c-w4); decisões técnicas em
 [ADR-0014](../adr/0014-discovery-publico-leitura-anonima-csp-e-publicacao.md).
 A entrega pública B2B Brand Partners (BP1) está na [§14](#14-discovery-público-b2b-brand-partners-bp1).
 
 ## 1. Goal
 
-Brand Partner, Residence Concept (com versões), Residence Edition e Residence existem como objetos distintos e
-corretamente vinculados (REQ-020, BR-001…004); nenhuma Residence sem Concept aprovado e nenhuma oferta comercial sem
-Edition; a Residence de Investor só existe com autorização registrada (REQ-027, BR-310…314). Tudo operado pelo Admin
+Brand Partner, Home Concept (com versões), Home Edition e Second Home existem como objetos distintos e
+corretamente vinculados (REQ-020, BR-001…004); nenhuma Second Home sem Home Concept aprovado e nenhuma oferta comercial sem
+Home Edition; a Second Home de Investor só existe com autorização registrada (REQ-027, BR-310…314). Tudo operado pelo Admin
 (REQ-095), sob o guard, com `operation` e `audit_log` (REQ-015, TECH-092).
 
 ## 2. Non-goals
@@ -23,7 +24,7 @@ Edition; a Residence de Investor só existe com autorização registrada (REQ-02
 - Leitura pública, páginas do Discovery e políticas de RLS para `anon` (W4). Nenhum `GET` REST: as telas do Admin
   leem no servidor.
   → entregues pela W4 (§13), ainda sem `GET` REST: as páginas públicas também leem no servidor.
-- `residence_configuration`, `residence_administration`, trava da estrutura, alteração de modalidade da Edition e
+- `second_home_configuration`, `second_home_administration`, modalidade e estrutura definitivas da Second Home e
   formalização (W8); `party` e o vínculo Investor → party (W7); margem do Investor (W19); conformidade, personalização
   e suspensão (W29).
 - Direitos sobreviventes do encerramento (BR-022/023) como dado: não modelados na W3 (ver §7, limitação temporária).
@@ -38,13 +39,14 @@ Edition; a Residence de Investor só existe com autorização registrada (REQ-02
 ## 4. User stories
 
 - Como Admin, quero registrar uma Brand Partner e, quando houver, a autorização de exposição pública da marca (BR-015).
-- Como Admin, quero registrar um Concept com elementos essenciais, premissas de preservação e especificação (BR-013,
+- Como Admin, quero registrar um Home Concept com elementos essenciais, premissas de preservação e especificação (BR-013,
   BR-014), criar versões novas e aprovar uma versão com as referências das aprovações (REQ-096, BR-010, BR-018).
-- Como Admin, quero registrar a Edition de um Concept aprovado, com região, modalidade e condições comerciais (BR-031,
-  BR-032).
-- Como Admin, quero registrar a autorização de um Investor para um Concept e revogá-la (BR-310).
-- Como Admin, quero registrar uma Residence numa Edition — o que também registra a aprovação comercial e fixa a versão
-  vigente do Concept (BR-025) —, com ou sem Investor autorizado (REQ-027).
+- Como Admin, quero preparar a Home Edition de um Home Concept aprovado (definição material e textos), finalizá-la,
+  publicá-la ou retirá-la do público e corrigir seus textos editoriais, sem localização, modalidade nem condições
+  comerciais (§17; BR-031, BR-032, BR-036).
+- Como Admin, quero registrar a autorização de um Investor para um Home Concept e revogá-la (BR-310).
+- Como Admin, quero registrar uma Second Home numa Home Edition — o que também registra a aprovação comercial e fixa a versão
+  vigente do Home Concept (BR-025) —, com ou sem Investor autorizado (REQ-027).
 - Como Admin, quero registrar o encerramento da parceria com a Brand Partner e ter novos usos da marca bloqueados depois
   da eficácia (BR-021).
 
@@ -61,20 +63,23 @@ AAL2 com papel Admin, origem igual ao host (TECH-100) e o schema `Error` (TECH-0
 | `register_brand_partner` | `POST /v1/admin/brand-partners` | 201 |
 | `authorize_brand_exposure` | `POST /v1/admin/brand-partners/{id}/exposure-authorization` | 200 |
 | `terminate_brand_partner` | `POST /v1/admin/brand-partners/{id}/terminate` | 200 |
-| `create_concept_version` | `POST /v1/admin/concept-versions` (Concept novo ou versão nova) | 201 |
-| `approve_concept_version` | `POST /v1/admin/concept-versions/{id}/approve` | 200 |
+| `create_home_concept_version` | `POST /v1/admin/home-concept-versions` (Home Concept novo ou versão nova) | 201 |
+| `approve_home_concept_version` | `POST /v1/admin/home-concept-versions/{id}/approve` | 200 |
 | `register_investor_authorization` | `POST /v1/admin/investor-authorizations` | 201 |
 | `revoke_investor_authorization` | `POST /v1/admin/investor-authorizations/{id}/revoke` | 200 |
-| `create_edition` | `POST /v1/admin/editions` | 201 |
-| `register_residence` | `POST /v1/admin/residences` | 201 |
+| `create_home_edition` | `POST /v1/admin/home-editions` | 201 |
+| `register_second_home` | `POST /v1/admin/second-homes` | 201 |
 | `create_catalog_term` | `POST /v1/admin/catalog-terms` (Coleção, §13.12) | 201 |
 | `update_catalog_term` | `POST /v1/admin/catalog-terms/{id}` | 200 |
-| `upload_concept_cover` | `POST /v1/admin/concepts/{id}/cover` | 201 |
-| `approve_concept_media` | `POST /v1/admin/concept-media/{id}/approve` | 200 |
-| `withdraw_concept_media` | `POST /v1/admin/concept-media/{id}/withdraw` | 200 |
-| `set_concept_curation` | `POST /v1/admin/concepts/{id}/curation` | 200 |
-| `register_edition_reference_value` | `POST /v1/admin/editions/{id}/reference-values` | 201 |
-| `end_edition_reference_value` | `POST /v1/admin/edition-reference-values/{id}/end` | 200 |
+| `upload_home_concept_cover` | `POST /v1/admin/home-concepts/{id}/cover` | 201 |
+| `approve_home_concept_media` | `POST /v1/admin/home-concept-media/{id}/approve` | 200 |
+| `withdraw_home_concept_media` | `POST /v1/admin/home-concept-media/{id}/withdraw` | 200 |
+| `set_home_concept_curation` | `POST /v1/admin/home-concepts/{id}/curation` | 200 |
+| `register_home_edition_projected_investment` | `POST /v1/admin/home-editions/{id}/projected-investments` | 201 |
+| `end_home_edition_projected_investment` | `POST /v1/admin/home-edition-projected-investments/{id}/end` | 200 |
+
+Edição da preparação, finalização, publicação, retirada do público, correção editorial e mídia da Home Edition:
+§17.6 (W4.2), com as telas novas.
 
 Recusas: corpo inválido → 400 `ERR_VALIDATION` (inclui texto com termo vedado, §5 "Terminologia"); objeto referenciado
 inexistente → 404 `ERR_NOT_FOUND`; estado que não permite a operação → 409 `ERR_STATE_TRANSITION`; sem papel Admin ou
@@ -86,19 +91,19 @@ sem AAL2 → 403 `ERR_PERMISSION`; sem sessão → 401.
 |---|---|
 | Brand Partners (lista) | `/admin/catalogo` |
 | Registrar Brand Partner | `/admin/catalogo/brand-partners/nova` |
-| Brand Partner (detalhe: estado, exposição, Concepts) | `/admin/catalogo/brand-partners/[id]` |
+| Brand Partner (detalhe: estado, exposição, Home Concepts) | `/admin/catalogo/brand-partners/[id]` |
 | Registrar autorização de exposição | `/admin/catalogo/brand-partners/[id]/exposicao` |
 | Registrar encerramento (confirmação) | `/admin/catalogo/brand-partners/[id]/encerramento` |
-| Registrar Concept (versão 1) | `/admin/catalogo/brand-partners/[id]/concepts/novo` |
-| Concept (detalhe: versões, Editions, autorizações de Investor) | `/admin/catalogo/concepts/[id]` |
-| Nova versão | `/admin/catalogo/concepts/[id]/versoes/nova` |
-| Aprovar versão (confirmação) | `/admin/catalogo/concepts/[id]/versoes/[versionId]/aprovacao` |
-| Registrar Edition | `/admin/catalogo/concepts/[id]/editions/nova` |
-| Registrar autorização de Investor | `/admin/catalogo/concepts/[id]/autorizacoes-investor/nova` |
-| Revogar autorização de Investor (confirmação) | `/admin/catalogo/concepts/[id]/autorizacoes-investor/[authorizationId]/revogacao` |
-| Edition (detalhe: Residences) | `/admin/catalogo/editions/[id]` |
-| Registrar Residence | `/admin/catalogo/editions/[id]/residences/nova` |
-| Residence (detalhe) | `/admin/catalogo/residences/[id]` |
+| Registrar Home Concept (versão 1) | `/admin/catalogo/brand-partners/[id]/home-concepts/novo` |
+| Home Concept (detalhe: versões, Home Editions, autorizações de Investor) | `/admin/catalogo/home-concepts/[id]` |
+| Nova versão | `/admin/catalogo/home-concepts/[id]/versoes/nova` |
+| Aprovar versão (confirmação) | `/admin/catalogo/home-concepts/[id]/versoes/[versionId]/aprovacao` |
+| Registrar Home Edition | `/admin/catalogo/home-concepts/[id]/home-editions/nova` |
+| Registrar autorização de Investor | `/admin/catalogo/home-concepts/[id]/autorizacoes-investor/nova` |
+| Revogar autorização de Investor (confirmação) | `/admin/catalogo/home-concepts/[id]/autorizacoes-investor/[authorizationId]/revogacao` |
+| Home Edition (detalhe: Second Homes) | `/admin/catalogo/home-editions/[id]` |
+| Registrar Second Home | `/admin/catalogo/home-editions/[id]/second-homes/nova` |
+| Second Home (detalhe) | `/admin/catalogo/second-homes/[id]` |
 
 Cada leitura dessas telas grava `audit_log` `admin_read` (TECH-092). A tela só oferece a ação que o estado permite e diz
 por que uma ação não está disponível; o command revalida tudo dentro da transação (TECH-054).
@@ -116,54 +121,55 @@ command guarda o `operation_id` da criação.
 | Tabela | Conteúdo | Regras no banco |
 |---|---|---|
 | `brand_partner` | `brand_name`; autorização de exposição (`exposure_authorization_ref`, `exposure_authorized_at`); encerramento (`terminated_effective_at`, `termination_basis`, `termination_registered_at`) | exposição e encerramento: cada um passa de vazio a preenchido uma única vez; o resto é imutável |
-| `concept` | Brand Partner, `title` | imutável |
-| `concept_version` | Concept, `version` (1, 2, …), `essential_elements[]`, `preservation_premises[]`, `specification`; `state` `not_approved` → `approved` com `approval_refs[]`, instante, usuário e papel da aprovação | conteúdo imutável; a única transição é a aprovação; `(concept_id, version)` único |
-| `investor_authorization` | Concept, `instrument_ref` (referência estável do instrumento), vigência `[valid_from, valid_until)` (`valid_until` opcional: o instrumento pode não ter termo final), revogação (instante e base) | revogação só uma vez; o resto é imutável |
-| `edition` | Concept, `region`, `modality` (`owner`, `co_owner`, `owner_and_co_owner`), `commercial_conditions` | imutável na W3 (a W8 traz a trava e a alteração de modalidade) |
-| `residence` | Edition, Concept, `concept_version_id` fixada, `commercially_approved_at`, `label` (referência interna), `timezone` IANA, `investor_authorization_id` opcional | imutável; FKs compostas garantem que Edition, versão e autorização são do mesmo Concept; gatilho recusa versão que não seja a aprovada vigente |
+| `home_concept` | Brand Partner, `title` | imutável |
+| `home_concept_version` | Home Concept, `version` (1, 2, …), `essential_elements[]`, `preservation_premises[]`, `specification`; `state` `not_approved` → `approved` com `approval_refs[]`, instante, usuário e papel da aprovação | conteúdo imutável; a única transição é a aprovação; `(home_concept_id, version)` único |
+| `investor_authorization` | Home Concept, `instrument_ref` (referência estável do instrumento), vigência `[valid_from, valid_until)` (`valid_until` opcional: o instrumento pode não ter termo final), revogação (instante e base) | revogação só uma vez; o resto é imutável |
+| `home_edition` | Home Concept; definição material, campos editoriais, estado material e visibilidade pública (§17.2) | definição material editável em preparação e imutável depois de finalizada; visibilidade separada (§17.3) |
+| `second_home` | Home Edition, Home Concept, `home_concept_version_id` fixada, `commercially_approved_at`, `label` (referência interna), `timezone` IANA, `investor_authorization_id` opcional | imutável; FKs compostas garantem que Home Edition, versão e autorização são do mesmo Home Concept; gatilho recusa versão que não seja a aprovada vigente |
 
-- **Versão vigente** do Concept = a versão aprovada de maior número. Só se aprova uma versão maior que a vigente.
+- **Versão vigente** do Home Concept = a versão aprovada de maior número. Só se aprova uma versão maior que a vigente.
   Estados do REQ-096: "Não aprovado" (nenhuma versão aprovada) · "Aprovado (versão N)".
-- **Aprovação comercial (BR-025).** `register_residence` é o evento que registra a aprovação comercial da Residence:
-  grava o instante (`commercially_approved_at`, do `Clock`) e fixa a versão vigente do Concept naquele instante. Versões
-  aprovadas depois não alteram a Residence; a versão fixada nunca muda.
-- **Investor (REQ-027, D-W3-1).** A autorização vale para o Concept, dentro da vigência e enquanto não revogada. A
-  Residence de Investor referencia a autorização (`investor_authorization_id`); sem autorização válida no instante do
-  registro, é recusada. Com autorização, a Residence existe sem adquirente (nenhuma holding até a W8) numa Edition
-  Owner, Co-Owner ou ambas. A W7 acrescenta o vínculo com a `party` do Investor (coluna nova com FK) sem reescrever os
+- **Aprovação comercial (BR-025).** `register_second_home` é o evento que registra a aprovação comercial da Second Home:
+  grava o instante (`commercially_approved_at`, do `Clock`) e fixa a versão vigente do Home Concept naquele instante. Versões
+  aprovadas depois não alteram a Second Home; a versão fixada nunca muda.
+- **Investor (REQ-027, D-W3-1).** A autorização vale para o Home Concept, dentro da vigência e enquanto não revogada. A
+  Second Home de Investor referencia a autorização (`investor_authorization_id`); sem autorização válida no instante do
+  registro, é recusada. Com autorização, a Second Home existe sem adquirente (nenhuma holding até a W8), a partir de uma
+  Home Edition materialmente finalizada (§17.5). A W7 acrescenta o vínculo com a `party` do Investor (coluna nova com FK) sem reescrever os
   registros existentes.
 - **Exposição da marca (BR-015, P-8, D-W3-3).** Registrada por Brand Partner, uma vez, com a referência da autorização.
   O encerramento não a apaga: o registro fica como histórico. A W4 expõe a marca só com autorização registrada e antes
   da eficácia do encerramento.
 - **Encerramento (BR-021, D-W3-4).** Registra `terminated_effective_at` (instante de eficácia, passado ou futuro) e a
-  base. A partir da eficácia, ficam bloqueados os novos usos da marca: Concept novo, versão nova, aprovação de versão,
-  Edition nova, autorização de Investor nova, Residence nova e autorização de exposição. O que já existe não muda
+  base. A partir da eficácia, ficam bloqueados os novos usos da marca: Home Concept novo, versão nova, aprovação de versão,
+  Home Edition nova, autorização de Investor nova, Second Home nova e autorização de exposição. O que já existe não muda
   (BR-022). Ver §7 sobre direitos sobreviventes.
 - **Terminologia (REQ-100/101).** Todo texto registrado passa por uma checagem **lexical**: recusa os termos vedados
   do `02` §1 e expressões explícitas conhecidas de promessa de retorno (inclusive receita, vendas, demanda, escala,
   royalty e remuneração garantidas — Framework Brand Partners §8, ADR-0013) e de disponibilidade ou uso sem limite
   (Framework B2C §14, regras 11 e 13 — ADR-0012); os mesmos padrões estão nas varreduras de `src/` e do Design System.
   É defesa complementar, não interpretação semântica do REQ-101; o gate editorial continua sendo a aprovação humana da
-  versão (`approve_concept_version`).
+  versão (`approve_home_concept_version`).
 - **Travas (ADR-0010 §8).** Ordem do catálogo: `brand_partner` → `investor_authorization`, por id, antes de qualquer
-  classe do TECH-053 (nenhum command do catálogo toca essas classes). Os novos usos (Concept novo, autorização de
-  Investor, Edition, Residence) travam a Brand Partner em `FOR SHARE`; encerrar, autorizar a exposição, criar versão
+  classe do TECH-053 (nenhum command do catálogo toca essas classes). Os novos usos (Home Concept novo, autorização de
+  Investor, Home Edition, Second Home) travam a Brand Partner em `FOR SHARE`; encerrar, autorizar a exposição, criar versão
   nova e aprovar versão, em `FOR NO KEY UPDATE` — o que serializa numeração e aprovação de versões com o registro de
-  Residences sem bloquear as FKs. O registro de Residence trava a autorização de Investor em `FOR SHARE`; a revogação,
+  Second Homes sem bloquear as FKs. O registro de Second Home trava a autorização de Investor em `FOR SHARE`; a revogação,
   em `FOR NO KEY UPDATE`. O resto é contido por constraints.
 
 ## 6. Acceptance criteria
 
-- [x] `[REQ-020]` Residence sem Concept aprovado ou sem Edition é recusada; condição comercial só existe na Edition;
-      Concept, Edition e Residence são objetos distintos, com vínculos garantidos pelo banco.
-- [x] `[REQ-027]` Residence com autorização de Investor inexistente, revogada, fora da vigência ou de outro Concept é
-      recusada; com autorização válida, a Residence existe sem adquirente numa Edition Owner, Co-Owner ou ambas.
+- [x] `[REQ-020]` Second Home sem Home Concept aprovado ou sem Home Edition é recusada; a Home Edition não carrega condição comercial
+      (pertence à Second Home, W8);
+      Home Concept, Home Edition e Second Home são objetos distintos, com vínculos garantidos pelo banco.
+- [x] `[REQ-027]` Second Home com autorização de Investor inexistente, revogada, fora da vigência ou de outro Home Concept é
+      recusada; com autorização válida, a Second Home existe sem adquirente, a partir de uma Home Edition finalizada.
 - [x] `[BR-025]` O registro fixa a versão vigente e o instante da aprovação comercial; uma versão aprovada depois não
-      altera a Residence; o banco recusa trocar a versão fixada.
-- [x] `[BR-021]` Depois da eficácia do encerramento, Concept, versão, aprovação, Edition, autorização de Investor,
-      Residence e exposição novos são recusados (inclusive em concorrência com o encerramento); antes da eficácia e para
+      altera a Second Home; o banco recusa trocar a versão fixada.
+- [x] `[BR-021]` Depois da eficácia do encerramento, Home Concept, versão, aprovação, Home Edition, autorização de Investor,
+      Second Home e exposição novos são recusados (inclusive em concorrência com o encerramento); antes da eficácia e para
       o que já existe, nada muda; a autorização de exposição continua registrada.
-- [x] `[REQ-096]` Concept "Não aprovado" → "Aprovado (versão N)"; aprovar exige `approval_refs`; versão aprovada é
+- [x] `[REQ-096]` Home Concept "Não aprovado" → "Aprovado (versão N)"; aprovar exige `approval_refs`; versão aprovada é
       imutável; versão menor ou igual à vigente não é aprovada.
 - [x] `[REQ-100]` `[REQ-101]` Texto com termo vedado ou expressão explícita de promessa é recusado com o campo
       indicado (na tela, ao lado do campo; na API, 400 `ERR_VALIDATION` no schema `Error`, que não expõe campos).
@@ -174,7 +180,7 @@ command guarda o `operation_id` da criação.
 - [x] `[TECH-100]` `POST` com origem inválida → 403; sem sessão → 401; AAL1, sem papel ou só Super Admin → 403.
 - [x] Contrato OpenAPI de cada rota (sucesso e erros).
 - [x] UI (ADR-0009): toda tela com axe 0 a 390 e 1440 px, sem overflow de 320 a 1920 px e zero erro de console;
-      fluxo completo (Brand Partner → Concept → aprovação → Edition → autorização de Investor → Residence) a 390 px com
+      fluxo completo (Brand Partner → Home Concept → aprovação → Home Edition → autorização de Investor → Second Home) a 390 px com
       toque; textos pelo i18n.
 
 ## 7. Edge cases
@@ -184,12 +190,12 @@ command guarda o `operation_id` da criação.
   depois da eficácia, **todo** novo uso da marca é recusado (fechado para falhas), inclusive o que um contrato viesse a
   permitir. Não é regra de negócio nova e não redefine BR-022/023: registros existentes ficam intactos. Quando a Luxtory
   definir como registrar uma base sobrevivente, a exceção entra como dado registrado.
-- **Duas aprovações concorrentes do mesmo Concept:** serializadas pela trava do Concept; só a maior versão vale.
-- **Aprovação concorrente com o registro de uma Residence:** a Residence fixa a versão vigente no instante do seu
+- **Duas aprovações concorrentes do mesmo Home Concept:** serializadas pela trava do Home Concept; só a maior versão vale.
+- **Aprovação concorrente com o registro de uma Second Home:** a Second Home fixa a versão vigente no instante do seu
   commit.
 - **Autorização de Investor revogada entre abrir a tela e enviar:** o command revalida e recusa.
-- **Edition de Concept sem versão aprovada:** recusada (uma Edition sem Concept aprovado nunca teria Residence, BR-003).
-- **Fuso da Residence:** obrigatório e sem valor padrão (TECH-001); só nomes IANA conhecidos do runtime.
+- **Home Edition de Home Concept sem versão aprovada:** recusada (uma Home Edition sem Home Concept aprovado nunca teria Second Home, BR-003).
+- **Fuso da Second Home:** obrigatório e sem valor padrão (TECH-001); só nomes IANA conhecidos do runtime.
 - **Instantes digitados no Admin** (eficácia, vigência): interpretados no fuso IANA do navegador de quem registra,
   enviado com o formulário e mostrado ao lado do campo; sem fuso, o registro é recusado. A API exige ISO 8601 com
   deslocamento.
@@ -198,7 +204,7 @@ command guarda o `operation_id` da criação.
 
 - Authorization: guard do TECH-050/051 (papel Admin exercido, AAL2), releitura do papel a cada command e a cada tela.
 - Input validation: Zod com limites de tamanho em toda entrada; ids em uuid; checagem lexical de terminologia.
-- Sem dado pessoal: marca, títulos, textos, referências de instrumento e rótulo interno. O rótulo da Residence é
+- Sem dado pessoal: marca, títulos, textos, referências de instrumento e rótulo interno. O rótulo da Second Home é
   referência interna — a tela pede para não usar nome de pessoa nem endereço.
 - CSRF: `Origin` igual ao host nos `POST` de `/v1`; Server Actions comparam `Origin` e `Host`.
 - Threat model: [`docs/security/threats/catalog.md`](../security/threats/catalog.md).
@@ -221,7 +227,7 @@ command guarda o `operation_id` da criação.
 
 ## 12. References
 
-- `01`: BR-001…004, BR-010…015, BR-021…025, BR-030…033, BR-310…314, BR-373, BR-374.
+- `01`: BR-001…004, BR-010…015, BR-021…025, BR-030…036, BR-310…314, BR-373, BR-374, BR-377.
 - `02`: REQ-020, REQ-021 (parcial), REQ-022, REQ-027, REQ-095, REQ-096, REQ-098, REQ-100, REQ-101.
 - `03`: §3.1, TECH-002, TECH-020, TECH-051, TECH-052, TECH-053, TECH-054, TECH-056, TECH-092, TECH-100, §13.
 - ADR-0006, ADR-0008, ADR-0009, ADR-0010. Specs [`admin`](admin.md), [`identity`](identity.md),
@@ -238,56 +244,63 @@ Superfície **Discovery** do `02` §2 para o Protagonista B2C, pelo mapa de pág
 (ADR-0012); limites L1–L9 e objeções: [`b2c.md`](communication/b2c.md) §2 e §5; contrato: [`communication.md`](communication.md).
 Decisões técnicas: [ADR-0014](../adr/0014-discovery-publico-leitura-anonima-csp-e-publicacao.md). Donos: REQ-100, REQ-101.
 
+> **W4.2 (2026-10-19):** a [§17](#17-w42--ontologia-home-concept--home-edition--second-home) prevalece sobre esta seção
+> onde diferir — a Home Edition não tem região, modalidade nem condições comerciais; ganha página própria
+> (`/colecao/[homeConceptId]/home-editions/[homeEditionId]`); a leitura pública é a da §17.7 e os briefs da Coleção, do
+> Home Concept e da Home Edition são os da §17.8. Limites de copy: L1–L10 de `b2c.md`.
+
 ### 13.1 Escopo e decisões
 
 | Página | Rota | Dados | Schwartz | 5Ps |
 |---|---|---|---|---|
 | Home | `/` | disponibilidade (§13.2) | Unaware → Product Aware | arco completo; PICTURE = Hero |
 | Como funciona | `/como-funciona` | disponibilidade | Product Aware → Most Aware | PROOF → PUSH |
-| Coleção | `/colecao` | Concepts e Editions públicos | Product Aware → Most Aware | PROOF → PUSH |
-| Concept, com as Editions e a oferta | `/colecao/[conceptId]` | o Concept e suas Editions | Most Aware | PUSH + prova necessária |
+| Coleção | `/colecao` | Home Concepts e Home Editions públicos | Product Aware → Most Aware | PROOF → PUSH |
+| Home Concept, com as Home Editions publicadas | `/colecao/[homeConceptId]` | o Home Concept e suas Home Editions | Most Aware | PUSH + prova necessária |
+| Home Edition (W4.2, §17.8) | `/colecao/[homeConceptId]/home-editions/[homeEditionId]` | a Home Edition publicada | Most Aware | PUSH + prova necessária |
 
 Fora da W4: Interesse (W6, `P-B2C-01`), páginas Brand Partners (`P-BP-01`; jornadas separadas, `D-LX-01`), página
-própria de Edition, fotografia (`P-LX-02`), robots/sitemap e go-live.
+própria de Home Edition (entregue na W4.2), fotografia (`P-LX-02`), robots/sitemap e go-live.
 
 Decisões técnicas (aprovadas em 2026-09-29 e mantidas em 2026-10-01):
 
 | Tema | Decisão |
 |---|---|
-| Visibilidade | Concept público = versão aprovada **e** autorização de exposição da marca registrada (BR-015) **e** instante anterior à eficácia do encerramento (BR-021). Depois da eficácia, o Concept sai da Coleção e a URL responde 404 — **limitação temporária, fechada para falhas** (como a D-W3-4, §7), que **não redefine BR-021, BR-022 nem BR-023**; quando os direitos sobreviventes virarem dado, a visibilidade passa a respeitá-los |
-| Conteúdo público | o menor necessário, sem campo novo: título do Concept, especificação da versão vigente, região, modalidade e condições comerciais de cada Edition (como registradas) e nome da marca. `essential_elements` e `preservation_premises` não são publicados; a página afirma o fato (BR-014, BR-301) sem as listas. Nunca públicos: número da versão, dados de aprovação, Residences, Investor e referências de instrumento |
-| URL e ordem | `/colecao/<uuid>`; ordem de registro do Concept dentro de cada grupo da Coleção |
+| Visibilidade | Home Concept público = versão aprovada **e** autorização de exposição da marca registrada (BR-015) **e** instante anterior à eficácia do encerramento (BR-021). Depois da eficácia, o Home Concept sai da Coleção e a URL responde 404 — **limitação temporária, fechada para falhas** (como a D-W3-4, §7), que **não redefine BR-021, BR-022 nem BR-023**; quando os direitos sobreviventes virarem dado, a visibilidade passa a respeitá-los |
+| Conteúdo público | o menor necessário: título do Home Concept, especificação da versão vigente, a definição publicada de cada Home Edition (§17.7) e nome da marca. `essential_elements` e `preservation_premises` não são publicados; a página afirma o fato (BR-014, BR-301) sem as listas. Nunca públicos: número da versão, dados de aprovação, Second Homes, Investor e referências de instrumento |
+| URL e ordem | `/colecao/<uuid>`; ordem de registro do Home Concept dentro de cada grupo da Coleção |
 | Portão | rotas públicas 404 em Production até `PUBLIC_SITE=open` (go-live depende de `P-LX-03`, D1 e D5c); abertas em local, CI e Preview |
 | CSP e cache | CSP com nonce por requisição em toda página HTML; leitura pública sem cache |
-| Imagem | Frame tipográfico (P-1); Courier só com metadado real (regiões, capítulos) |
+| Imagem | Frame tipográfico (P-1); Courier só com metadado real (capítulos) |
 
 ### 13.2 Leitura pública: contrato de dados
 
 - **Papel:** transação só de leitura em que `luxtory_app` vira `anon` (`SET LOCAL ROLE anon`); sem claims, sem escrita,
   sem `admin_read`.
-- **Colunas concedidas a `anon`:** `brand_partner(id, brand_name)`; `concept(id, brand_partner_id, title, created_at)`;
-  `concept_version(id, concept_id, version, state, specification)`; `edition(id, concept_id, region, modality,
-  commercial_conditions, created_at)`. Nada mais em `app`.
+- **Colunas concedidas a `anon`:** `brand_partner(id, brand_name)`; `home_concept(id, brand_partner_id, title,
+  created_at)`; `home_concept_version(id, home_concept_id, version, state, specification)`; as da Home Edition, da mídia
+  e da média projetada na §17.7; as da Coleção na §13.12. Nada mais em `app`.
 - **Visibilidade = RLS** (fonte única): políticas `FOR SELECT TO anon` sobre os predicados `SECURITY DEFINER`
-  `app.brand_partner_is_public` e `app.concept_is_public` (só booleano, `EXECUTE` só para `anon`). Versão: só
+  `app.brand_partner_is_public` e `app.home_concept_is_public` (só booleano, `EXECUTE` só para `anon`). Versão: só
   `approved`; vigente = a aprovada de maior número.
 - **Leituras** (`application/public-views.ts`, nenhum campo numérico ou preço calculado — ADR-001 do `03`):
-  - `collection()` — cada Concept público com título, marca e suas Editions (região, modalidade);
-  - `concept(id)` — título, marca, especificação vigente e Editions (região, modalidade, condições);
-  - `availability()` — há Edition publicada? há Concept publicado? Lida pela Home e pelo Como funciona.
+  - `collection()` — cada Home Concept público com título, marca e suas Home Editions publicadas (§17.7);
+  - `homeConcept(id)` — título, marca, especificação vigente e Home Editions publicadas;
+  - `homeEdition(homeConceptId, homeEditionId)` — a Home Edition publicada (§17.7);
+  - `availability()` — há Home Edition publicada? há Home Concept publicado? Lida pela Home e pelo Como funciona.
 - **Disponibilidade e CTA (`D-B2C-13`, `D-B2C-16`):**
 
   | Estado | CTA da Home | CTA do Como funciona |
   |---|---|---|
-  | ao menos uma Edition publicada | "Conheça as Residence Editions" → primeiro grupo da Coleção | o mesmo |
-  | Concepts publicados, nenhuma Edition | "Conheça os Residence Concepts" → Coleção | o mesmo |
-  | nenhum Concept publicado | "Entenda como funciona" (nenhum CTA para a Coleção) | nenhum CTA de catálogo |
+  | ao menos uma Home Edition publicada | "Conheça as Home Editions" → primeiro grupo da Coleção | o mesmo |
+  | Home Concepts publicados, nenhuma Home Edition | "Conheça os Home Concepts" → Coleção | o mesmo |
+  | nenhum Home Concept publicado | "Entenda como funciona" (nenhum CTA para a Coleção) | nenhum CTA de catálogo |
   | dados indisponíveis (Preview sem banco, falha) | **desconhecido**: nenhum CTA de catálogo, "Entenda como funciona"; log estruturado | **desconhecido**: nenhum CTA de catálogo |
 
-  Ausência técnica de dados nunca é tratada como inexistência de Edition ou de Concept.
+  Ausência técnica de dados nunca é tratada como inexistência de Home Edition ou de Home Concept.
 
-  Nomes públicos (`D-LX-08`, `D-B2C-18`): os CTAs aparecem como "Conheça as Home Editions" e "Conheça os Home
-  Concepts"; no site, a casa é Second Home, o Concept é Home Concept e a Edition é Home Edition.
+  Nomes (`D-LX-11`, `D-B2C-27`): os CTAs aparecem como "Conheça as Home Editions." e "Conheça os Home Concepts"; os
+  nomes são os mesmos em todas as camadas.
 
 ### 13.3 Portão e exposição externa
 
@@ -330,8 +343,8 @@ Comum às quatro páginas — Brief Narrativo `[FW-B2C: §12]`:
    | Hero | PICTURE | "Como seria se meu lazer fosse assim?" | a vida de lazer desejada: viver mais e melhor as conquistas com os Aliados, em lugares que têm a ver com você e passam a fazer parte da sua história. Desperta o desejo primeiro e faz sentido sem depender de produto, categoria ou problema `[FW-B2C: §8 P1]`. Resultado: "Eu quero essa vida pra mim." | nenhuma afirmação de produto | CARE + SEEKING · Estética + Compaixão | 80·20·0 | Opening Frame com Frame tipográfico `night`; `lx-display-xl` com no máximo uma virada em itálico; uma frase de apoio em cena; sem CTA comercial |
    | O conflito | PROBLEM | "Por que eu preciso abrir mão de algo?" | as alternativas entregam partes da tríade — propriedade tradicional, hotelaria e locação, compartilhamento genérico, cada uma com o que tende a entregar e do que tende a abrir mão; os três importam `[FW-B2C: §2, §8 P2]`. Resultado: "Por que eu deveria abrir mão de um deles?" | trade-offs com "tende a" e "pode"; categorias nomeadas, nenhuma empresa (`luxtory.md` §6) | SEEKING · Intelecto + Assertividade | 40·50·10 | Scene em `paper`: afirmação curta + as três alternativas em `lx-blocks`, cada uma com o que entrega e do que abre mão (`dl`), sem caixa nem sombra |
    | A virada | PROMISE | "Existe outra forma?" | o insight: não começar escolhendo entre comprar ou alugar, e sim pelos valores; a nova lógica — uma second home construída a partir do lifestyle e conectada a mecanismos que reúnem os três valores; a categoria Branded Second Home, explicada na primeira menção `[FW-B2C: §8 P3]`. Resultado: "Eu posso ter os três." | BR-003, BR-053 (construída do zero) | SEEKING · Intelecto + Assertividade | 30·70·0 | Scene `--statement` em `night`: virada tipográfica grande e a tríade do Framework em três linhas `[FW-B2C: §2]` |
-   | A arquitetura | PROOF | "Como a Luxtory entrega os três, de verdade?" | o mecanismo `[FW-B2C: §8 P4]` costura três capítulos: **Patrimônio → Posse** (Owner: a Residence inteira; Co-Owner: Ação da SPE proprietária com Direito de Uso; patrimônio com valor econômico, sem garantia); **Liberdade → Possibilidades** (gestão aplicável; Luxchange e Luxplus com Membership vigente; locação autorizada quando elegível — ampliar possibilidades, não ausência de regras); **Pertencimento → Identificação + Lugar + Pessoas** (marca, Brand DNA, Concept, Residence, Aliados; o Club amplia progressivamente). Fecha mostrando os três na mesma arquitetura — presença, não maximização. Resultado: "Agora entendo como a Luxtory garante a presença dos três valores." | L1, L3, L4, L5, L6, L7, L8, L9; BR-052, BR-071, BR-146, BR-147, BR-374 | SEEKING + FEAR↓ · Diligência + Ordem | 10·50·40 | um Chapter de três Scenes com marker de capítulo no rail ("Patrimônio · Posse"…), Frame tipográfico alternando de lado com a linha da tríade; Owner e Co-Owner em `lx-pair`; link discreto para o Como funciona; nenhum link para mecanismo do Club (L7) |
-   | Para quem | PUSH | "Isso faz sentido para mim?" | a autosseleção `[FW-B2C: §8 P5]` e o próximo passo coerente. Resultado: "Quero descobrir qual Residence faz sentido para minha vida." | qualificação `[FW-B2C: §8 P5]` + BR-054 | CARE · Polidez + Compaixão | 20·50·30 | Scene em `wash`: `lx-pair` (faz sentido · pode não fazer sentido) + o CTA da §13.2 |
+   | A arquitetura | PROOF | "Como a Luxtory entrega os três, de verdade?" | o mecanismo `[FW-B2C: §8 P4]` costura três capítulos: **Patrimônio → Posse** (Owner: a Second Home inteira; Co-Owner: Ação da SPE proprietária com Direito de Uso; patrimônio com valor econômico, sem garantia); **Liberdade → Possibilidades** (gestão aplicável; Luxchange e Luxplus com Membership vigente; locação autorizada quando elegível — ampliar possibilidades, não ausência de regras); **Pertencimento → Identificação + Lugar + Pessoas** (marca, identidade da marca, Home Concept, Second Home, Aliados; o Club amplia progressivamente). Fecha mostrando os três na mesma arquitetura — presença, não maximização. Resultado: "Agora entendo como a Luxtory garante a presença dos três valores." | L1, L3, L4, L5, L6, L7, L8, L9; BR-052, BR-071, BR-146, BR-147, BR-374 | SEEKING + FEAR↓ · Diligência + Ordem | 10·50·40 | um Chapter de três Scenes com marker de capítulo no rail ("Patrimônio · Posse"…), Frame tipográfico alternando de lado com a linha da tríade; Owner e Co-Owner em `lx-pair`; link discreto para o Como funciona; nenhum link para mecanismo do Club (L7) |
+   | Para quem | PUSH | "Isso faz sentido para mim?" | a autosseleção `[FW-B2C: §8 P5]` e o próximo passo coerente. Resultado: "Quero descobrir qual Second Home faz sentido para minha vida." | qualificação `[FW-B2C: §8 P5]` + BR-054 | CARE · Polidez + Compaixão | 20·50·30 | Scene em `wash`: `lx-pair` (faz sentido · pode não fazer sentido) + o CTA da §13.2 |
 
 5. **CTA:** por disponibilidade (§13.2).
 6. **Dados dinâmicos:** só a disponibilidade; o resto é estático.
@@ -355,11 +368,11 @@ Comum às quatro páginas — Brief Narrativo `[FW-B2C: §12]`:
 
    | Seção | 5P | Perguntas | Mensagem-chave (ideia) | Fatos e limites | Afeto · OCEAN | Composição (DS) |
    |---|---|---|---|---|---|---|
-   | Abertura | PROOF | "Como a arquitetura funciona?" | a tríade e o mecanismo, do lifestyle à Residence e ao Club | `[FW-B2C: §8 P4]`; `luxtory.md` §5 | SEEKING · Intelecto + Ordem | cabeçalho de página + a cadeia em `lx-blocks--rows` |
-   | Patrimônio → Posse | PROOF | "O que exatamente eu possuo?" · "Qual a diferença entre Owner e Co-Owner?" · "Isso é timeshare?" · "Existe garantia de retorno, valorização ou liquidez?" | Owner: a Residence inteira; Co-Owner: Ação da SPE proprietária com Direito de Uso, equivalente entre Co-Owners; ambos nascem na formalização; transferência conforme as regras aplicáveis; não é timeshare (`D-B2C-15`); nenhuma garantia | L1, L8; BR-052, BR-065, BR-071, BR-341, BR-373, BR-374 | SEEKING + FEAR↓ · Diligência + Ordem | marker de capítulo; perguntas como títulos; Owner e Co-Owner em `lx-pair` |
+   | Abertura | PROOF | "Como a arquitetura funciona?" | a tríade e o mecanismo, do lifestyle à Second Home e ao Club | `[FW-B2C: §8 P4]`; `luxtory.md` §5 | SEEKING · Intelecto + Ordem | cabeçalho de página + a cadeia em `lx-blocks--rows` |
+   | Patrimônio → Posse | PROOF | "O que exatamente eu possuo?" · "Qual a diferença entre Owner e Co-Owner?" · "Isso é timeshare?" · "Existe garantia de retorno, valorização ou liquidez?" | Owner: a Second Home inteira; Co-Owner: Ação da SPE proprietária com Direito de Uso, equivalente entre Co-Owners; ambos nascem na formalização; transferência conforme as regras aplicáveis; não é timeshare (`D-B2C-15`); nenhuma garantia | L1, L8; BR-052, BR-065, BR-071, BR-341, BR-373, BR-374 | SEEKING + FEAR↓ · Diligência + Ordem | marker de capítulo; perguntas como títulos; Owner e Co-Owner em `lx-pair` |
    | Liberdade → Possibilidades | PROOF | "Como funciona meu uso?" · "Vou usar o suficiente?" · "O que acontece quando não utilizo?" · "Como funcionam gestão e manutenção?" · "Consigo usar outros lugares?" · "Isso reduz minha liberdade?" | Owner: toda a capacidade de uso; Co-Owner: Direito de Uso anual da configuração, limites por temporada, abertura sorteada e rotativa, até 14 dias seguidos — com as **quatro configurações canônicas como detalhe secundário**; gestão por modalidade, nunca "sem custos"; Club com Membership vigente, cada mecanismo com regras próprias; liberdade = possibilidades, não ausência de regras | `01` §8.1 (sem a capacidade Luxtory); L3, L4, L7; BR-075, BR-076, BR-082, BR-100…104, BR-111, BR-147, BR-151, BR-162 | SEEKING + FEAR↓ · Diligência + Ordem; Retraimento nas regras e custos | marker de capítulo; perguntas como títulos; configurações em `Evidence` dentro de `lx-blocks` |
-   | Pertencimento → Identificação + Lugar + Pessoas | PROOF | "Qual a diferença para uma second home tradicional?" · "Por que não continuar alugando?" | da marca ao Brand DNA, ao Concept e à Residence construída do zero e fiel a ele; Aliados como convidados; o Club amplia progressivamente; o contraste com as alternativas pelos trade-offs | L5, L6, L9; BR-003, BR-013, BR-053, BR-330…332 | CARE + SEEKING · Estética + Ordem | marker de capítulo; texto + cadeia curta |
-   | Condições e limites | PROOF | "O que mais preciso saber?" | oferta só por uma Residence Edition, com condições registradas; valores de planos e taxas não fixados nesta página; Ação com Direito de Uso (dito em positivo); nenhuma garantia de retorno | BR-004, BR-031, BR-143, L2, REQ-100, REQ-101 | FEAR↓ · Retraimento + Diligência | Scene `--statement` |
+   | Pertencimento → Identificação + Lugar + Pessoas | PROOF | "Qual a diferença para uma second home tradicional?" · "Por que não continuar alugando?" | da marca à sua identidade, ao Home Concept e à Second Home construída do zero e fiel a ele; Aliados como convidados; o Club amplia progressivamente; o contraste com as alternativas pelos trade-offs | L5, L6, L9; BR-003, BR-013, BR-053, BR-330…332 | CARE + SEEKING · Estética + Ordem | marker de capítulo; texto + cadeia curta |
+   | Condições e limites | PROOF | "O que mais preciso saber?" | a manifestação de interesse parte de uma Home Edition; localização, modalidade, estrutura e condições pertencem a cada Second Home; valores de planos e taxas não fixados nesta página; Ação com Direito de Uso (dito em positivo); nenhuma garantia de retorno | BR-004, BR-031, BR-143, L2, REQ-100, REQ-101 | FEAR↓ · Retraimento + Diligência | Scene `--statement` |
    | Para quem | PUSH | "Faz sentido para mim?" | qualificação completa | `[FW-B2C: §8 P5]` + BR-054, BR-019, BR-101, BR-104 | CARE · Polidez + Compaixão | `lx-pair` + CTA da §13.2 |
 
 5. **CTA:** §13.2.
@@ -369,80 +382,87 @@ Comum às quatro páginas — Brief Narrativo `[FW-B2C: §12]`:
 
 #### Coleção — `/colecao`
 
-1. **Jornada:** `D-B2C-14`, linha "Coleção" — as Second Homes: Concepts e suas Editions, como Discovery de produto, não
+> Revisto na §17.8 (W4.2, `D-B2C-27`): sem região, modalidade, condições ou oferta por Home Edition.
+
+1. **Jornada:** `D-B2C-14`, linha "Coleção" — as Second Homes: Home Concepts e suas Home Editions, como Discovery de produto, não
    marketplace.
-2. **Função:** levar o Protagonista à Residence que faz sentido. **Schwartz:** Product Aware → Most Aware.
+2. **Função:** levar o Protagonista à Second Home que faz sentido. **Schwartz:** Product Aware → Most Aware.
 3. **5Ps:** PROOF → PUSH.
 4. **Seções:**
 
    | Seção | 5P | Pergunta mental | Mensagem-chave (ideia) | Fatos | Composição (DS) |
    |---|---|---|---|---|---|
-   | Abertura | PROOF | "O que estou vendo?" | Residence Concept × Residence Edition em uma frase: o Concept traduz um lifestyle em uma casa; a Edition é o seu lançamento numa região, com condições | BR-001, BR-002, BR-004, `D-LX-06` | cabeçalho de página |
-   | Residence Editions | PROOF → PUSH | "Onde há oferta?" | Concepts com ao menos uma Edition: card com o título no Frame, a marca e cada Edition (região · modalidade) | dados; REQ-103 | `Collection` (alternância 7/4), âncora do CTA da Home |
-   | Residence Concepts | PROOF → PUSH | "Quais Concepts existem?" | Concepts ainda sem Edition, sem oferta comercial | REQ-022, BR-030 | `Collection`; um Concept nunca aparece nos dois grupos |
+   | Abertura | PROOF | "O que estou vendo?" | Home Concept × Home Edition em uma frase: o Home Concept traduz um lifestyle em uma casa; a Home Edition é o seu lançamento numa região, com condições | BR-001, BR-002, BR-004, `D-LX-06` | cabeçalho de página |
+   | Home Editions | PROOF → PUSH | "Onde há oferta?" | Home Concepts com ao menos uma Home Edition: card com o título no Frame, a marca e cada Home Edition (região · modalidade) | dados; REQ-103 | `Collection` (alternância 7/4), âncora do CTA da Home |
+   | Home Concepts | PROOF → PUSH | "Quais Home Concepts existem?" | Home Concepts ainda sem Home Edition, sem oferta comercial | REQ-022, BR-030 | `Collection`; um Home Concept nunca aparece nos dois grupos |
 
-5. **CTA:** o card leva ao Concept ("Ver o Concept"). Vazio ou indisponível → frase honesta + "Entenda como funciona".
+5. **CTA:** o card leva ao Home Concept ("Ver o Home Concept"). Vazio ou indisponível → frase honesta + "Entenda como funciona".
 6. **Dados:** §13.2; grupo vazio não aparece.
 7. **Não afirmar:** disponibilidade, estoque, escassez, quantidades.
 
-#### Concept — `/colecao/[conceptId]`
+#### Home Concept — `/colecao/[homeConceptId]`
 
-1. **Jornada:** `D-B2C-14`, linha "Concept, com Edition e oferta quando existirem (REQ-022)" — a Residence específica.
+> Revisto na §17.8 (W4.2, `D-B2C-27`): a seção "Oferta" dá lugar às Home Editions publicadas, cada uma com a
+> própria página.
+
+1. **Jornada:** `D-B2C-14`, linha "Home Concept, com Home Edition e oferta quando existirem (REQ-022)" — a Second Home específica.
 2. **Função:** dar a prova necessária para a decisão. **Schwartz:** Most Aware `[FW-B2C: §8.1]`.
 3. **5Ps:** PUSH + prova necessária.
 4. **Seções:**
 
    | Seção | Função | Pergunta mental | Mensagem-chave (ideia) | Fatos | Composição (DS) |
    |---|---|---|---|---|---|
-   | Abertura | prova (Pertencimento) | "Que Residence é esta?" | título, a marca que ela traduz, as regiões com lançamento | dados; BR-015 | Opening Frame tipográfico `night`; `ConceptCredit`; marker com as regiões reais |
-   | A Residence | prova | "O que ela propõe?" | a especificação registrada, como está | BR-013 | `lx-prose` |
-   | Fiel ao Concept | prova | "A casa vai ser assim?" | construída do zero e fiel ao Concept; o Owner personaliza o que não é essencial; a Residence Co-Owner é padronizada | L9; BR-014, BR-017, BR-019, BR-301 | Scene `--statement` |
-   | Oferta | prova | "Existe oferta? Onde, e em que modalidade?" | cada Edition: região, modalidade (Owner e Co-Owner com o mesmo peso) e condições registradas; sem Edition, sem oferta comercial | BR-004, BR-031, REQ-020, REQ-022, REQ-100 | `Evidence` + `lx-prose` |
+   | Abertura | prova (Pertencimento) | "Que Second Home é esta?" | título, a marca que ela traduz, as regiões com lançamento | dados; BR-015 | Opening Frame tipográfico `night`; `HomeConceptCredit`; marker com as regiões reais |
+   | A Second Home | prova | "O que ela propõe?" | a especificação registrada, como está | BR-013 | `lx-prose` |
+   | Fiel ao Home Concept | prova | "A casa vai ser assim?" | construída do zero e fiel ao Home Concept; o Owner personaliza o que não é essencial; a Second Home Co-Owner é padronizada | L9; BR-014, BR-017, BR-019, BR-301 | Scene `--statement` |
+   | Oferta | prova | "Existe oferta? Onde, e em que modalidade?" | cada Home Edition: região, modalidade (Owner e Co-Owner com o mesmo peso) e condições registradas; sem Home Edition, sem oferta comercial | BR-004, BR-031, REQ-020, REQ-022, REQ-100 | `Evidence` + `lx-prose` |
    | Para quem | PUSH | "Faz sentido para mim?" | qualificação e próximo passo possível hoje | `[FW-B2C: §8 P5]` | `lx-pair` + ações |
 
 5. **CTA:** "Manifestar interesse" ausente até a W6 (`D-B2C-10`, `P-B2C-01`). Decisão deste brief: o PUSH oferece
-   "Conheça outros Concepts" (Coleção) e "Entenda como funciona".
-6. **Dados:** §13.2. Concept não público ou inexistente → 404 do grupo público, com a navegação. Metadata: só o título.
-7. **Não afirmar:** disponibilidade, prazo de obra, preço calculado, número de Residences, configuração Co-Owner da
-   Edition (definida conforme a demanda, BR-063), Investor.
+   "Conheça outros Home Concepts" (Coleção) e "Entenda como funciona".
+6. **Dados:** §13.2. Home Concept não público ou inexistente → 404 do grupo público, com a navegação. Metadata: só o título.
+7. **Não afirmar:** disponibilidade, prazo de obra, preço calculado, número de Second Homes, configuração Co-Owner da
+   Home Edition (definida conforme a demanda, BR-063), Investor.
 
 ### 13.5 Admin: conteúdo público identificado
 
-- Os campos publicados como estão — título do Concept, especificação, região, modalidade e condições comerciais da
-  Edition — levam no rótulo a marca visível **"Público no site"** e uma dica que diz onde o texto aparece; o nome da
+- Os campos publicados como estão — título do Home Concept, especificação e os campos publicáveis da Home Edition
+  (§17.7) — levam no rótulo a marca visível **"Público no site"** e uma dica que diz onde o texto aparece; o nome da
   marca diz que só é público com a exposição autorizada.
 - `essential_elements` e `preservation_premises` dizem na dica que não aparecem no site.
 - Antes de confirmar, as telas que publicam dizem a consequência: aprovar uma versão, autorizar a exposição da marca e
-  registrar uma Edition.
+  publicar uma Home Edition (W4.2: registrar cria uma Home Edition em preparação, que só pode ir ao site depois de
+  finalizada e publicada).
 
 ### 13.6 Aceite da W4
 
 - [ ] `[REQ-100]` `[REQ-101]` o texto renderizado das páginas públicas, inclusive com os dados do catálogo, passa pela
       guarda canônica de terminologia (`domain/terminology.ts`).
-- [ ] `[REQ-022]` Concept sem Edition aparece sem oferta; na Coleção, só no grupo Residence Concepts.
+- [ ] `[REQ-022]` Home Concept sem Home Edition publicada aparece sem Home Editions; na Coleção, só no grupo "Ainda sem
+      Home Edition".
 - [ ] `[REQ-103]` Owner e Co-Owner com a mesma estrutura (mesmo nível de título, mesmas dimensões) onde aparecem juntos.
 - [ ] `[BR-015]` `[BR-021]` sem exposição autorizada, sem versão aprovada ou depois da eficácia do encerramento, o
-      Concept não aparece e a URL responde 404.
+      Home Concept não aparece e a URL responde 404.
 - [ ] `[TECH-052]` `anon` só lê as colunas da §13.2 das linhas visíveis, não escreve e só executa os dois predicados.
-- [ ] CTA por disponibilidade nos quatro estados da §13.2; dados indisponíveis nunca viram "sem Edition".
+- [ ] CTA por disponibilidade nos quatro estados da §13.2; dados indisponíveis nunca viram "sem Home Edition".
 - [ ] Hero com função de desejo: abre a página sem depender de produto, categoria ou problema para fazer sentido.
 - [ ] Nenhum link para a jornada Brand Partners nem para o Admin.
 - [ ] Portão: com `VERCEL_ENV=production` e sem `PUBLIC_SITE=open`, as rotas públicas respondem 404.
 - [ ] CSP com nonce em toda página HTML; zero erro de console nas telas públicas e do Admin.
 - [ ] Admin: conteúdo público identificado (§13.5).
-- [ ] UI (ADR-0009): axe 0 a 390 e 1440 px; sem overflow de 320 a 1920 px; jornada Home → Coleção → Concept → Como
+- [ ] UI (ADR-0009): axe 0 a 390 e 1440 px; sem overflow de 320 a 1920 px; jornada Home → Coleção → Home Concept → Como
       funciona a 390 px com toque; menu do celular; smoke Playwright WebKit.
 - [ ] Checklist da §10 do contrato de comunicação, inclusive os 6 Testes de Validação e as regras de execução do
       Framework `[FW-B2C: §13, §14]`; capturas a 390 e 1440 px no PR.
 
 ### 13.7 Edge cases
 
-- **Encerramento com eficácia futura:** o Concept aparece até o instante (`now()` do banco) e some na requisição
+- **Encerramento com eficácia futura:** o Home Concept aparece até o instante (`now()` do banco) e some na requisição
   seguinte.
 - **Versão nova ainda não aprovada:** a página continua na vigente.
 - **Especificação e condições:** parágrafos separados por linha em branco; quebra simples vira espaço; nenhum HTML.
 - **Banco indisponível:** estado desconhecido (§13.2) na Home e no Como funciona; estado indisponível na Coleção e no
-  Concept.
+  Home Concept.
 
 ### 13.8 Pendências (não bloqueiam a W4)
 
@@ -478,14 +498,14 @@ gatilho do ícone oficial; Footer `deep`.
 | Como funciona | Mecanismo, capítulos e condições | `sand` ↔ `blue` | Numbered Editorial List / Disclosure; configurações canônicas do Co-Owner como Panel Comparison (detalhe secundário do PROOF) |
 | Como funciona | PUSH | `blue` | Statement/Pause com o CTA por disponibilidade |
 | Coleção | Abertura | `blue` | Statement/Pause `--opening` |
-| Coleção | Residence Editions, depois Residence Concepts | `sand` / `white` | Sibling Blocks de CollectionCard tipográficos (P-1); estados vazio e indisponível |
-| Concept | Abertura | `blue` | Statement/Pause `--opening` + ConceptCredit (só com autorização) |
-| Concept | Proposta | `white` | Editorial Split sem mídia (uma coluna) |
-| Concept | Fiel ao Concept | `deep` | Statement/Pause |
-| Concept | Editions e oferta | `white` | Sibling Blocks com Evidence; sem Edition, sem oferta (REQ-022) |
+| Coleção | Home Editions, depois Home Concepts | `sand` / `white` | Sibling Blocks de CollectionCard tipográficos (P-1); estados vazio e indisponível |
+| Home Concept | Abertura | `blue` | Statement/Pause `--opening` + HomeConceptCredit (só com autorização) |
+| Home Concept | Proposta | `white` | Editorial Split sem mídia (uma coluna) |
+| Home Concept | Fiel ao Home Concept | `deep` | Statement/Pause |
+| Home Concept | Home Editions e oferta | `white` | Sibling Blocks com Evidence; sem Home Edition, sem oferta (REQ-022) |
 | 404 público | — | `white` | Statement/Pause com o link de volta |
 
-Aceite visual no **Checkpoint Visual do CP2 (sem push)**: Home, Como funciona, Coleção, Concept com e sem Edition, menu
+Aceite visual no **Checkpoint Visual do CP2 (sem push)**: Home, Como funciona, Coleção, Home Concept com e sem Home Edition, menu
 do celular aberto e Admin com "Público no site", a 390 e 1440 px.
 
 ### 13.10 Home — Especificação Visual Final do fundador (CP2, 2026-10-06)
@@ -514,7 +534,7 @@ do celular aberto e Admin com "Público no site", a 390 e 1440 px.
 galeria Kaizen do anteprojeto (Luxtory2.0): K09 (família na piscina), K07 (pavilhão de bem-estar) e K05 (suíte
 preparada), recomprimidas sem redimensionar em `public/images/home/kaizen/`, sem legenda sobre a foto (revisão do
 fundador). Todas provisórias: autorizadas para o site como referência visual, sem autorização definitiva de produção
-registrada. Nenhuma significa Edition, oferta ou prova de benefício (REQ-022).
+registrada. Nenhuma significa Home Edition, oferta ou prova de benefício (REQ-022).
 
 **Contraste — exceção registrada (decisão do fundador, 2026-10-06).** Os eyebrows sobre Moroccan Blue da Home
 (Renúncia, Possibilidade, Pertencimento) são Warm Sand (`lx-eyebrow--accent`) e medem 4,32:1 a 12 px, abaixo dos
@@ -528,7 +548,7 @@ painel da Regra numa só tipografia; um tamanho por tipo de texto (fechamento: p
 maior; copy nova em Pertencimento, Patrimônio, Liberdade e no PUSH (`D-B2C-19`). O carrossel do Hero volta sozinho
 com duas ou mais fotos adequadas.
 
-**Demais páginas.** Como funciona, Coleção, Concept e 404 seguem as receitas da §13.9 no Core. No Como funciona, o
+**Demais páginas.** Como funciona, Coleção, Home Concept e 404 seguem as receitas da §13.9 no Core. No Como funciona, o
 desenho da proporção do ano das configurações Co-Owner sai; os valores continuam em Evidence, painel a painel.
 
 **Refinamento tipográfico do fundador (2026-10-15, `D-B2C-22`).** O Panel Switch da Regra usa uma escala
@@ -583,15 +603,15 @@ disponibilidade, garantia ou regra nova.
 | Faz sentido | `sand` | Editorial Comparison: as duas listas com o mesmo peso, sem ícones de certo/errado | faz sentido → pode não fazer | — |
 | CTA | fotografia | `lx-hero--closing lx-hero--uniform` (scrim uniforme 0,80): headline, apoio e CTA por disponibilidade | foto → headline → apoio → CTA | `home-solucao-firepit-family.jpg` |
 
-**CTA por disponibilidade (`D-B2C-16`).** Com Home Edition publicada, "Conheça as Home Editions"; só com Concepts,
+**CTA por disponibilidade (`D-B2C-16`).** Com Home Edition publicada, "Conheça as Home Editions"; só com Home Concepts,
 "Conheça os Home Concepts"; o apoio ("…descubra quais Home Concepts e Home Editions já fazem parte da Coleção") só
-aparece com um desses dois CTAs. Sem Concept publicado, a frase "Os primeiros Home Concepts ainda não foram
+aparece com um desses dois CTAs. Sem Home Concept publicado, a frase "Os primeiros Home Concepts ainda não foram
 publicados." e nenhum CTA; com leitura indisponível, nem frase nem CTA — nunca um CTA falso.
 
 **Fotografias.** As seis fotos provisórias da §13.10 e, na Liberdade, `problema-imovel.jpg` do Luxtory2.0 (casa de
 praia ao entardecer, sem pessoas), autorizada pelo fundador em 2026-10-07 como asset provisório para comunicar outro
 destino; copiada sem alteração em `public/images/como-funciona/`. Nenhuma foto se repete na página. Nenhuma foto
-significa Edition, oferta ou prova de benefício (REQ-022).
+significa Home Edition, oferta ou prova de benefício (REQ-022).
 
 **Scrim uniforme (decisão do fundador, 2026-10-07).** Hero e CTA final usam um scrim Dark Moroccan Blue uniforme sobre
 100% da fotografia (`lx-hero--uniform`), com a menor opacidade em que tudo o que fica sobre a foto passa a 390, 768,
@@ -614,6 +634,11 @@ Visual sem push a 390/768/1024/1440.
 
 ### 13.12 Coleção — discovery curatorial (Fase A, 2026-10-07)
 
+> **Revisto na §17.8 (W4.2, `D-B2C-27`)**, que prevalece: o card mostra as Home Editions publicadas com nome, fatos e
+> média projetada; saem região, modalidade, base Owner/Ação, Localização, "modalidade disponível" e os grupos por
+> região; o valor de referência da Home Edition (item 6) foi substituído pela média projetada de investimento (§17.4).
+> O texto abaixo fica como registro do que a W4.1 entregou.
+
 > Brief UX/copy e contrato mínimo de dados da nova `/colecao`, aprovados em conceito pelo fundador (`D-B2C-21`).
 > Prevalece sobre as linhas da Coleção da §13.4 e da §13.9 quando a Fase C entrar. Fora deste brief, as regras da §13
 > continuam: SSR, CSP, RLS (`anon`), CTA por disponibilidade (`D-B2C-16`), âncoras `#home-editions`/`#home-concepts`.
@@ -631,36 +656,36 @@ lista de imóveis; estou descobrindo qual forma de viver e qual Home Concept com
 | 04 | Fechamento | `blue` | "Refinar a busca ↑" + "Entenda como funciona" |
 
 Header: o mesmo da Home (logo + menu pelo ícone), sólido. Hero tipográfico nesta versão, por falta de fotografia de
-atmosfera adequada (todas as autorizadas mostram uma casa e seriam lidas como um Concept); uma fotografia de atmosfera
-autorizada e não vinculável a um Concept pode substituí-lo depois, sem mudar a arquitetura da página.
+atmosfera adequada (todas as autorizadas mostram uma casa e seriam lidas como um Home Concept); uma fotografia de atmosfera
+autorizada e não vinculável a um Home Concept pode substituí-lo depois, sem mudar a arquitetura da página.
 
-**Card — a unidade é o Home Concept.** Um card por Concept, nunca duplicado por ter várias Editions. Identidade:
+**Card — a unidade é o Home Concept.** Um card por Home Concept, nunca duplicado por ter várias Home Editions. Identidade:
 imagem oficial (ou o fallback tipográfico do Core), lifestyle · estilo principais, título (Newsreader), "A partir do
 universo de X" (só com exposição autorizada, BR-015), fatos ("Até 10 pessoas · 5 suítes · 500 m²", só os que
-existem). Dentro dele, **Home Editions**: um bloco editorial por Edition — a região; depois uma linha por base que a
+existem). Dentro dele, **Home Editions**: um bloco editorial por Home Edition — a região; depois uma linha por base que a
 modalidade oferece, "Owner · a partir de R$ X" (a Second Home inteira) e "Co-Owner · Ação a partir de R$ Y" (sem valor
-vigente, só "Owner" ou "Co-Owner · Ação"); hairline entre Editions quando houver mais de uma; nunca valor por dia
-(REQ-100); mesmo peso (REQ-103). Sem Edition: "Ainda sem Home Edition — por enquanto, sem oferta comercial." e
-nenhum valor (REQ-020/022). Dado ausente: a linha some (nunca "—" nem "sob consulta"). CTA: "Conheça o Concept →"; o
+vigente, só "Owner" ou "Co-Owner · Ação"); hairline entre Home Editions quando houver mais de uma; nunca valor por dia
+(REQ-100); mesmo peso (REQ-103). Sem Home Edition: "Ainda sem Home Edition — por enquanto, sem oferta comercial." e
+nenhum valor (REQ-020/022). Dado ausente: a linha some (nunca "—" nem "sob consulta"). CTA: "Conheça o Home Concept →"; o
 card inteiro é o alvo (link do título), foco visível; no desktop o CTA fica no pé do card, alinhado entre os cards da
 mesma linha, sem truncar conteúdo nem criar caixa. Grade uniforme (4/12 · 6/12 · 12/12; imagem 4:5 a partir do `md`,
-4:3 no celular). **Sem capa**, o Frame tipográfico do Core mostra o lifestyle principal do Concept (rótulo do
+4:3 no celular). **Sem capa**, o Frame tipográfico do Core mostra o lifestyle principal do Home Concept (rótulo do
 vocabulário, Newsreader) — ou, sem lifestyle, o título —, decorativo (`aria-hidden`) e sem nenhum outro texto. Só com
-**destaque editorial explícito** e capa aprovada, o Concept em destaque abre o seu grupo como Editorial Split nas 12
+**destaque editorial explícito** e capa aprovada, o Home Concept em destaque abre o seu grupo como Editorial Split nas 12
 colunas (imagem 3:2 + texto; no celular, um card como os outros com o eyebrow "Em destaque") — a largura toda evita uma
-coluna vazia ao lado; um Concept sem capa nunca é destaque.
+coluna vazia ao lado; um Home Concept sem capa nunca é destaque.
 
 **Discovery.** Formulário GET renderizado no servidor (sem JS também funciona; URL compartilhável). Filtros
-principais: Lifestyle (múltiplo) · Localização (regiões das Editions) · Estilo (múltiplo) · Pessoas ("para pelo menos
+principais: Lifestyle (múltiplo) · Localização (regiões das Home Editions) · Estilo (múltiplo) · Pessoas ("para pelo menos
 N", com os valores reais) · Faixa de valor em duas etapas — 1) Owner (a Second Home inteira) ou Co-Owner (uma Ação),
 com o mesmo peso; 2) De / Até, sugeridos pelos valores vigentes publicados; aplicada, a interface diz "Considera só
-Concepts com Home Edition e valor vigente para Owner/Co-Owner". Busca livre: Concept, lifestyle, destino, estilo e
+Home Concepts com Home Edition e valor vigente para Owner/Co-Owner". Busca livre: Home Concept, lifestyle, destino, estilo e
 Brand Partner autorizada. Mais filtros: suítes (mínimo), área (m²), modalidade disponível, só com Home Edition, Brand
-Partner. **Localização não elimina Concepts sem Edition na região**: com uma região escolhida, a página mostra "Com
+Partner. **Localização não elimina Home Concepts sem Home Edition na região**: com uma região escolhida, a página mostra "Com
 Home Edition em [região]" e depois "Outros Home Concepts que combinam com suas escolhas" (os que atendem aos demais
-filtros e ainda não têm Edition naquela região: "Ainda sem Home Edition em [região]. O interesse por um Concept pode
-indicar onde um novo lançamento faz sentido."). A Faixa de valor continua restrita a Concepts com Home Edition e valor
-vigente na base escolhida; com região, o primeiro grupo exige essa Edition na região. Ordenação: Curadoria Luxtory
+filtros e ainda não têm Home Edition naquela região: "Ainda sem Home Edition em [região]. O interesse por um Home Concept pode
+indicar onde um novo lançamento faz sentido."). A Faixa de valor continua restrita a Home Concepts com Home Edition e valor
+vigente na base escolhida; com região, o primeiro grupo exige essa Home Edition na região. Ordenação: Curadoria Luxtory
 (padrão) · Mais recentes. Cada filtro só aparece com 2+ valores reais; opções
 sem resultado não aparecem; sem nenhum filtro útil, a barra mostra só a busca; com o catálogo vazio, a barra não
 aparece. Desktop: a barra fica fixa e compacta
@@ -680,14 +705,14 @@ quebra linha, nunca é reduzido nem truncado. Contagens só no status `aria-live
   "Entenda como funciona ↓" (âncora para a 03).
 - 02 — sem filtro: eyebrow "Curadoria Luxtory", H2 "Encontre uma Second Home que tenha a ver com você."; com filtro:
   H2 "Resultados da sua busca". Grupos: "Com Home Edition" ("Já lançados — com região, modalidade e condições
-  definidas.") e "Ainda sem Home Edition" ("Por enquanto, sem oferta comercial. O interesse por um Concept pode ajudar a
+  definidas.") e "Ainda sem Home Edition" ("Por enquanto, sem oferta comercial. O interesse por um Home Concept pode ajudar a
   indicar onde um novo lançamento faz sentido.").
 - 03 — "Como um Home Concept chega à sua Second Home": 01 Escolha o Home Concept — o lifestyle e a casa que combinam
   com você. · 02 Escolha onde gostaria de vivê-lo — o interesse mostra à Luxtory onde há demanda. · 03 A Home Edition ganha
   forma — com demanda e viabilidade, a Luxtory estrutura o lançamento com região, modalidade e condições próprias. · 04
   Escolha como possuir — Owner: a Second Home inteira. Co-Owner: uma Ação da SPE proprietária, com Direito de Uso. · 05
-  O Design & Build transforma o Concept em casa — arquitetura, interiores, engenharia e obra; construída do zero e fiel
-  ao Concept. · 06 Viva sua Second Home. + "Entenda como funciona". Nunca "Home Edition ou Design & Build".
+  O Design & Build transforma o Home Concept em casa — arquitetura, interiores, engenharia e obra; construída do zero e fiel
+  ao Home Concept. · 06 Viva sua Second Home. + "Entenda como funciona". Nunca "Home Edition ou Design & Build".
 - 04 — "Encontre o lugar onde suas próximas histórias podem começar." + "Refinar a busca ↑" + "Entenda como funciona".
 - Estados — sem resultado: "Nenhum Home Concept combina com todas essas escolhas." + "Limpar filtros"; catálogo vazio:
   "Os primeiros Home Concepts ainda não foram publicados." (a 03 e o fechamento continuam); leitura indisponível: "A
@@ -698,44 +723,44 @@ auditoria (TECH-002); leitura pública como `anon` com colunas e linhas mínimas
 
 1. **Vocabulários controlados** `lifestyle` e `architectural_style` (`id`, `slug` único e imutável, `label`, `active`).
    Geridos no Admin: criar, renomear o rótulo, desativar (nunca apagar um valor em uso). Sem tagging livre.
-2. **Classificações da versão do Concept**, múltiplas e ordenadas (a 1ª é a principal, mostrada no card): lifestyle
-   1–3, estilo 1–2 — um Concept costuma traduzir mais de um aspecto de um lifestyle (ex.: wellness e natureza) e, às
+2. **Classificações da versão do Home Concept**, múltiplas e ordenadas (a 1ª é a principal, mostrada no card): lifestyle
+   1–3, estilo 1–2 — um Home Concept costuma traduzir mais de um aspecto de um lifestyle (ex.: wellness e natureza) e, às
    vezes, uma linguagem arquitetônica híbrida; os limites impedem que vire tagging. Gravadas com a versão (imutáveis
    como a especificação, BR-013/021).
-3. **Atributos da versão do Concept** (colunas novas, opcionais): `summary` (≤ 160), `guests_max`, `suites`,
+3. **Atributos da versão do Home Concept** (colunas novas, opcionais): `summary` (≤ 160), `guests_max`, `suites`,
    `built_area_m2` (inteiros positivos). Versões antigas ficam sem eles; o dado ausente esconde a linha e o filtro.
-4. **Mídia do Concept** (`concept_media`): zero ou uma capa pública vigente por Concept, com ciclo próprio — `alt`
+4. **Mídia do Home Concept** (`home_concept_media`): zero ou uma capa pública vigente por Home Concept, com ciclo próprio — `alt`
    (obrigatório), `credit` (metadado editorial, nunca EXIF), foco (`crop_x`/`crop_y` nos passos das classes
    `lx-crop-*`), estado pendente → aprovada → retirada; só a aprovada é pública; uma capa nova aprovada substitui a
-   vigente e retirar a capa tira o destaque. A capa não é exigida para publicar o Concept (sem capa: fallback tipográfico
+   vigente e retirar a capa tira o destaque. A capa não é exigida para publicar o Home Concept (sem capa: fallback tipográfico
    do Core, nunca destaque). **PostgreSQL = metadados e estado; Supabase Storage privado = binários** (ADR-0015, decisão
    final do checkpoint B): o banco guarda a referência de cada versão (`storage_key`), dimensões, MIME, tamanho e
    SHA-256; o Storage guarda um master sanitizado (até 4096 px) e as larguras de exibição (480/800/1200/1600, sem
-   ampliar). Entrega por uma rota do próprio domínio, só para mídia aprovada de Concept público, sem mudar a CSP; upload
+   ampliar). Entrega por uma rota do próprio domínio, só para mídia aprovada de Home Concept público, sem mudar a CSP; upload
    no Admin com MFA, conteúdo real JPEG/PNG/WebP, até 3 MiB e 40 MP, mínimo 720 × 520 px (o maior quadro da Coleção em
    1×), orientação corrigida e reencode sem metadados. STRIDE em `docs/security/threats/catalog.md`.
-5. **Curadoria** (`concept_curation`, mutável e auditada): `rank` (ordem "Curadoria Luxtory") separado de `featured`
-   (destaque editorial explícito, no máximo um Concept por vez; só vale com capa aprovada).
-6. **Valor de referência da Edition, versionado** (`edition_reference_value`, só inserção): `edition_id`, `basis`
-   (`owner` = a Second Home inteira, `acao` = uma Ação Co-Owner; compatível com a modalidade da Edition), `amount_minor`
+5. **Curadoria** (`home_concept_curation`, mutável e auditada): `rank` (ordem "Curadoria Luxtory") separado de `featured`
+   (destaque editorial explícito, no máximo um Home Concept por vez; só vale com capa aprovada).
+6. **Valor de referência da Home Edition, versionado** (`edition_reference_value`, só inserção): `home_edition_id`, `basis`
+   (`owner` = a Second Home inteira, `acao` = uma Ação Co-Owner; compatível com a modalidade da Home Edition), `amount_minor`
    (`bigint`) + `currency` (TECH-033), `valid_from`, `valid_until` opcional; sem vigências sobrepostas por série
-   (Edition + base + moeda). No Admin: início agora ou no futuro, nunca retroativo; um valor futuro não encerra o atual
+   (Home Edition + base + moeda). No Admin: início agora ou no futuro, nunca retroativo; um valor futuro não encerra o atual
    antes da sua data de início — na entrada em vigor do novo, o anterior termina; "Encerrar" vale a partir de agora;
    nada histórico é sobrescrito. Backfill técnico, se um dia for preciso, não é funcionalidade do Admin.
    Vigente = `valid_from ≤ agora` e sem fim vencido. Registrado pela Luxtory, nunca calculado (BR-031, REQ-094). Nada
-   de valor para Concept sem Edition.
+   de valor para Home Concept sem Home Edition.
 7. **Leitura pública**: `anon` passa a ler os vocabulários ativos em uso, as classificações e atributos da versão
    vigente, a capa aprovada e os valores vigentes. Busca, filtros e ordenação rodam no servidor sobre a leitura pública
-   (camada `application`, funções puras testáveis) — o catálogo é curado (dezenas de Concepts); se crescer para
+   (camada `application`, funções puras testáveis) — o catálogo é curado (dezenas de Home Concepts); se crescer para
    milhares, passam a SQL sem mudar a interface.
 8. **Admin**: contratos no `openapi.yaml` no início da Fase B (vocabulários, classificações e atributos na criação da
    versão, mídia, curadoria, valores de referência), antes de qualquer handler.
 
 **Fase B — entregue (2026-10-07; checkpoint B aprovado com ajustes, já aplicados).** Contratos no `openapi.yaml` antes dos handlers; cinco
-migrations reversíveis (`catalog_term` + atributos e classificações da versão; `concept_media` + `concept_media_file`;
-`concept_curation`; `edition_reference_value`; leitura `anon`). Regras gravadas no banco, além dos commands: só rótulo e
+migrations reversíveis (`catalog_term` + atributos e classificações da versão; `home_concept_media` + `home_concept_media_file`;
+`home_concept_curation`; `edition_reference_value`; leitura `anon`). Regras gravadas no banco, além dos commands: só rótulo e
 estado ativo do termo mudam; classificação só com termo ativo e versão não aprovada; ciclo da capa
-pendente → aprovada → retirada com zero ou uma capa aprovada por Concept; no máximo um destaque e só com capa aprovada;
+pendente → aprovada → retirada com zero ou uma capa aprovada por Home Concept; no máximo um destaque e só com capa aprovada;
 valor de referência sem vigências sobrepostas por série e com um único encerramento; slug único por vocabulário,
 imutável e nunca reutilizado (o termo desativado continua dono dele). Recusas próprias: conteúdo que não é JPEG, PNG ou
 WebP, acima de 40 MP ou menor que 720 × 520 px, ou valor que começaria no passado → `ERR_VALIDATION` dentro do command
@@ -744,7 +769,7 @@ incompatível com a modalidade, destaque sem capa, termo desativado → `ERR_STA
 a anterior ("Substituída por nova capa"); retirar a capa tira o destaque; registrar um valor encerra o vigente em aberto da
 mesma base no início do novo. Telas do Admin: Vocabulários da Coleção (lista, registro, renomear/desativar); Coleção na
 versão (lifestyle 1–3 e estilo 1–2 por seleção, resumo, pessoas, suítes, área — pré-preenchidos da versão mais recente);
-Capa (envio, pré-visualização `data:`, aprovação, retirada com motivo); Curadoria; Valores de referência na Edition
+Capa (envio, pré-visualização `data:`, aprovação, retirada com motivo); Curadoria; Valores de referência na Home Edition
 (registro, encerramento). Leitura pública: `PublicCollectionReader` e as funções puras `parseCollectionQuery`,
 `discoverCollection` e `collectionFacets`, que a Fase C usa sem mudar. Parâmetros da URL da Coleção (estáveis): `q`,
 `lifestyle` e `estilo` (slugs, repetíveis), `regiao`, `pessoas`, `base` (`owner` | `co-owner`), `valor-de` e
@@ -772,14 +797,14 @@ contagem e a barra não conflita com a viewport.
 barra fixa mantém os controles e "Filtros (n)". (2) Ordenação como dois links no cabeçalho dos resultados em todas as
 larguras: a opção atual tem `aria-current`, ícone de check, peso semibold e fio inferior (não depende só de cor); foco
 visível do Core; a URL guarda `ordem`. (3) Dica da busca responsiva, sem reduzir a fonte: "Busque por lifestyle,
-destino, Home Concept ou Brand Partner" no Hero a partir de lg; "Lifestyle, destino, Concept ou marca" no celular, no
+destino, Home Concept ou Brand Partner" no Hero a partir de lg; "Lifestyle, destino, Home Concept ou marca" no celular, no
 tablet e na barra fixa (onde a longa seria cortada). (4) Sem "Filtros" fixo no rodapé do celular. Mídia — elegibilidade
 por quadro: toda capa aprovada (≥ 720 × 520) serve ao card; o destaque editorial (≈ 720 × 480 a 1440, 3:2) em DPR 2 pede
 uma largura de exibição ≥ 1440 × 960 px, derivada das dimensões guardadas e sem ampliar (`supportsFeatured`): a curadoria
 recusa destacar capa menor (`ERR_STATE_TRANSITION`), aprovar capa menor tira o destaque, e a leitura só abre o destaque
 com capa elegível; o Admin mostra "Uso na Coleção" na capa e o motivo na curadoria. Ajustes da validação: no diálogo do
 celular, "Faixa de valor" e "Mais filtros" aparecem como títulos de grupo (o mesmo nome do desktop); num card com várias
-Editions, as que atendem à região/modalidade/faixa de valor da busca vêm primeiro.
+Home Editions, as que atendem à região/modalidade/faixa de valor da busca vêm primeiro.
 
 **Fases.** A — este brief, o contrato e os mockups (checkpoint). B — migrations reversíveis, Admin, leitura pública,
 mídia e as funções de busca/filtro, com testes unitários e de banco; a página pública não muda (checkpoint com dados
@@ -791,7 +816,7 @@ Luxtory: termos dos vocabulários, capas oficiais (P-1), valores de referência 
 nunca entra na página; nenhum dado fictício dos mockups vira seed de produção (os seeds de E2E e de desenvolvimento são
 de teste e nunca rodam contra produção).
 
-**Fora do escopo.** Design & Build como caminho alternativo à Edition e estimativa de valor de Concept sem Edition (exigem
+**Fora do escopo.** Design & Build como caminho alternativo à Home Edition e estimativa de valor de Home Concept sem Home Edition (exigem
 nova versão do `02`); amenidades (sem vocabulário); formulário de interesse (W6, ⛔ P-3).
 
 ## 14. Discovery público B2B Brand Partners (BP1)
@@ -815,7 +840,7 @@ O portal permanece exclusivamente nos contratos futuros REQ-029/TECH-058 e na BP
 | `/brand-partner/como-funciona` | Processo, papéis e governança | `/brand-partner#conversa` |
 
 `SiteShell` com `homeHref`/navegação B2B próprios, grupo de rotas/layout independente; logo, menu e footer só
-levam a destinos B2B disponíveis. Sem links de Concepts pendente ou portal; não reutilizar CTA por disponibilidade
+levam a destinos B2B disponíveis. Sem links de Home Concepts pendente ou portal; não reutilizar CTA por disponibilidade
 do catálogo B2C nem formulário Admin. Se `/Brand-Partner` tiver uso/divulgação, redirect 308 para a Home canônica.
 
 Flag server-side `BRAND_PARTNERS_SITE=open|closed`, independente de `PUBLIC_SITE`: ausente/fechada em produção
@@ -831,9 +856,9 @@ Seções em ordem, com mensagens como intenção (copy final em i18n):
 
 | Seção | Pergunta / mensagem-chave | Fonte | Peso e composição Core |
 |---|---|---|---|
-| PICTURE | “Como nossa marca poderia ser vivida?” / expressão residencial do universo da marca | Framework §8 P1/§12; BR-013/014 | Emoção; headline e frame tipográfico com hierarquia ampla |
+| PICTURE | “Como nossa marca poderia ser vivida?” / expressão do universo da marca em Second Homes | Framework §8 P1/§12; BR-013/014 | Emoção; headline e frame tipográfico com hierarquia ampla |
 | PROBLEM | “Como expandir sem diluir?” / complexidade e identidade | Framework §8 P2; BR-010/014 | Explicação curta; statement editorial |
-| PROMISE | “Que estrutura permite esse progresso?” / DNA como origem do Concept | Framework §8 P3; BR-013/014 | Emoção + explicação; composição editorial |
+| PROMISE | “Que estrutura permite esse progresso?” / identidade da marca como origem do Home Concept | Framework §8 P3; BR-013/014 | Emoção + explicação; composição editorial |
 | PROOF | “Como funciona e como se protege?” / mecanismo e governança | Framework §8 P4/§12; aplicação L1–L9 | Evidência + explicação; sequência numerada e blocos; link para Como funciona |
 | PUSH + conversa | “Faz sentido para nossa marca?” / fit e próximo passo | Framework §8 P5; REQ-028; D-BP-13 | CTA e formulário em `white` ou `wash`, nunca estados/formulário sobre `sand` |
 
@@ -844,14 +869,14 @@ SEEKING, Intelecto + Assertividade e tom institucional do Framework §12. Próxi
 
 | Seção | Pergunta / mensagem-chave | Fonte | Peso e composição Core |
 |---|---|---|---|
-| Abertura + mecanismo | “Qual é o percurso?” / percurso Brand DNA → Concept e demais etapas | Framework §8 P4; REQ-020/022 | Explicação; título e sequência numerada, sem reiniciar PICTURE |
-| Governança | “Como o DNA e os direitos são preservados?” / aprovações e versão vinculada | REQ-021; aplicação L2–L4 | Evidência; blocos editoriais |
+| Abertura + mecanismo | “Qual é o percurso?” / percurso identidade da marca → Home Concept e demais etapas | Framework §8 P4; REQ-020/022 | Explicação; título e sequência numerada, sem reiniciar PICTURE |
+| Governança | “Como a identidade e os direitos são preservados?” / aprovações e versão vinculada | REQ-021; aplicação L2–L4 | Evidência; blocos editoriais |
 | Papéis, demanda e remuneração | “Quem faz o quê?” / responsabilidades e remuneração contratual | BR-016/030/040/041/350; aplicação L1/L5/L7 | Explicação + evidência; papéis comparáveis |
 | Replicação, continuidade e objeções | “O que condiciona a expansão e a continuidade?” | aplicação L6/L8 e §5 | Evidência; FAQ/padrões Core |
 | PUSH | “Qual é o primeiro passo?” / avaliação de fit | REQ-028; D-BP-12/13 | CTA para formulário da Home; sem duplicá-lo ou criar terceira página |
 
-Dados ausentes não viram prova: usar frames tipográficos; fotografia, marcas, Concepts reais e demais evidências
-exigem autorização e fonte (aplicação L9, P-LX-01/02). Não publicar instrumentos privados. Narrar Concepts não
+Dados ausentes não viram prova: usar frames tipográficos; fotografia, marcas, Home Concepts reais e demais evidências
+exigem autorização e fonte (aplicação L9, P-LX-01/02). Não publicar instrumentos privados. Narrar Home Concepts não
 equivale à página pendente em P-BP-02. Aceite editorial: limites L1–L10, seis testes/regras do Framework §13/14,
 checklist de `communication.md` §10 e Checkpoint Visual da BP1. P-LX-03 é gate de comunicação antes do go-live
 das afirmações abrangidas, sem bloquear implementação técnica.
@@ -1033,14 +1058,14 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
     rituais e detalhes"; a primeira seção que nomeia **Branded Second Home** e **Home Concept**.
   - **Para a sua marca:** sem a nota de limite ("O modelo cria as condições…"), sem substituto; a ausência de garantia
     segue no fechamento fotográfico e no Como funciona (J-32, J-33).
-  - **Luxchange:** converter dias elegíveis da Second Home em créditos para se hospedar em outras residências da rede.
+  - **Luxchange:** converter dias elegíveis da Second Home em créditos para se hospedar em outras Second Homes da rede.
     Sem "créditos equivalentes" — os Créditos vêm do PRL (BR-201) — e sem "dias do Direito de Uso", que é só do
     Co-Owner (o Club atende Owner e Co-Owner). A abertura e o fechamento da seção já enquadram o Club como modelo
     previsto; o mecanismo não repete a ressalva (o teste de copy lê a seção como um bloco). Redação substituída em
     `D-BP-21` (abaixo).
   - **Concisão (medida a 390, 768 e 1440 px):** a 768 e 1440 px nenhum bloco novo passa de 4 linhas. Exceções a 390 px,
     frases únicas do texto do fundador (dividir mudaria a copy): "O mercado ainda oferece poucas soluções…" (5 linhas)
-    e "A Luxtory traduz o Brand DNA em um Home Concept…" (5 linhas).
+    e "A Luxtory traduz a identidade da marca em um Home Concept…" (5 linhas).
   - **Composição:** em "Para quem vive", a frase de abertura sobe para cima dos pilares; o diagrama de solução tem, do
     `lg` em diante, o tamanho renderizado na Home B2C a 1440 px (437 × 490 px, proporção 667 × 748 preservada), o topo
     alinhado ao 01 · Patrimônio e os três pilares ao lado, no ritmo de item dos Sibling Blocks — a 1440 px, o conjunto
@@ -1059,7 +1084,7 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
     gráfica (o sinal num círculo de hairline sobre uma régua); o resultado no tamanho display maior e no papel de
     headline (`lx-equation`). Headline, introdução e corpo da seção inalterados.
   - **Luxchange:** "O clube permite ao membro converter dias do seu direito de uso em créditos equivalentes para se
-    hospedar em outras residências da rede." / "Sua Second Home deixa de estar limitada a um único endereço e passa a
+    hospedar em outras Second Homes da rede." / "Sua Second Home deixa de estar limitada a um único endereço e passa a
     fazer parte de uma rede de destinos." — redação do fundador, sem reescrita nem ressalva (teste de copy).
 - **Hierarquia tipográfica e composição (fundador, 2026-10-13; `D-BP-22`), sem mudar copy:**
   - **Taxonomia única do B2B** (teste E2E por papel a 390, 768 e 1440 px: mesma família, tamanho, peso e entrelinha):
@@ -1101,7 +1126,7 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
   verticalmente em relação ao bloco lateral completo (eyebrow, título, introdução e corpo).
   No celular, permanece a ordem cabeça → introdução → fórmula → corpo. Demais elementos preservados.
 - **Ajuste final do fundador (2026-10-14; `D-BP-26`):** card centrado somente no texto corrido lateral, do início
-  da introdução ("Quando a experiência nasce do Brand DNA…") ao fim do corpo ("A Luxtory traduz o Brand DNA em um
+  da introdução ("Quando a experiência nasce da identidade da marca…") ao fim do corpo ("A Luxtory traduz a identidade da marca em um
   Home Concept…"), sem considerar eyebrow e headline. O card ocupa as linhas 2 e 3 da grade com `align-self: center`.
   Demais elementos de `D-BP-25` aprovados; commit, push e publicação pelo GitHub autorizados.
  (PICTURE → PROBLEM → PROMISE → PROOF → PUSH):
@@ -1145,7 +1170,7 @@ com e sem o lead da cena ("Amigos ao redor da mesa…") e recomendar a versão m
 | M4 "Ateliê" | Abertura do Como funciona | Maquete volumétrica branca, amostras de materiais, croquis, mãos sem rosto | 16:9 |
 | M5 "Fim de tarde" | PUSH | Terraço ao entardecer, conversa calma, casa iluminada ao fundo | 16:9 |
 
-Regras de todos: série única de direção de arte; nenhum logotipo, produto, cor proprietária, residência real ou
+Regras de todos: série única de direção de arte; nenhum logotipo, produto, cor proprietária, imóvel real ou
 anteprojeto Luxtory; nada que pareça case ou Brand Partner real; proveniência e direitos registrados (imagem sintética
 declarada); stock genérico não é aceito automaticamente. M6 (OG): tipográfico com o logo oficial, 1200 × 630.
 
@@ -1166,7 +1191,7 @@ fundador para uso comercial público.
 | M5 PUSH | `home/hero/luxury-property-facade-hero.jpg` (1672 × 941) | `x-65`, `lg-x-50` | terraço ao entardecer, casa iluminada; sem pessoas |
 | M4 Como funciona | a mesma de M5 | `x-65`, `lg-x-50` | sem correspondente no B2C para "Ateliê"; a arquitetura ao entardecer |
 
-- **Fora:** as três fotografias Kaizen (K05, K07, K09) vêm do anteprojeto Luxtory, que o brief exclui ("residência
+- **Fora:** as três fotografias Kaizen (K05, K07, K09) vêm do anteprojeto Luxtory, que o brief exclui ("imóvel
   real ou anteprojeto Luxtory", "nada que pareça case"). A K05 (suíte, madeira e pedra, soleira para o jardim) seria
   o melhor M3; só entra por decisão expressa do fundador.
 - **Sinalizações:** resolução abaixo do brief (≥ 2400 px) em todas, como no B2C; M4 repete a fotografia de M5 (páginas
@@ -1248,7 +1273,7 @@ REQ-100, REQ-101; BR-013, BR-040, BR-041; TECH-057, TECH-100. Plano: [Sobre](../
 | Seção / pergunta mental | Mensagem e fonte | Peso / composição Core |
 |---|---|---|
 | Hero / de onde surgiu? | busca pela tríade, copy aprovada (`D-LX-09`) | explicação e emoção; abertura editorial Blue sem foto, H1, apoio, botão |
-| História / por que esse modelo? | quatro atos, biografia aprovada; Brand DNA e distribuição (BR-013, BR-040, BR-041) | evidência contextual e explicação; leitura sequencial White, Answer Rows, H3 e parágrafos completos; fechamento itálico com hairline |
+| História / por que esse modelo? | quatro atos, biografia aprovada; identidade da marca e distribuição (BR-013, BR-040, BR-041) | evidência contextual e explicação; leitura sequencial White, Answer Rows, H3 e parágrafos completos; fechamento itálico com hairline |
 | Missão, visão e propósito / o que orienta? | declaração institucional aprovada (`D-LX-09`) | explicação; Sibling Blocks abertos sobre Sand, separação discreta |
 | Fundador / quem sustenta essa visão? | fotografia, citação e assinatura aprovadas (`D-LX-09`) | vínculo e evidência; Deep, imagem e citação em colunas no desktop, empilhadas no celular |
 | Convite / qual o próximo passo? | convite aprovado (`D-LX-09`) | ação proporcional; Blue, fechamento itálico e hairline antes do bloco, CTA |
@@ -1297,7 +1322,7 @@ no PR, NOTES local atualizado. Entrega em branch/commit/push/PR draft com Previe
 O fundador autorizou a edição e redução dos textos para blocos preferencialmente de três linhas, no máximo quatro,
 e determinou apresentação idêntica nas duas jornadas (`D-LX-10`). Esta revisão prevalece sobre a exigência inicial
 de copy verbatim e sobre a aplicação do teto/título B2B em Sobre; preserva os fatos biográficos, os quatro atos,
-a tríade, Brand DNA, o racional de distribuição/valor, missão/visão/propósito e a citação original do fundador.
+a tríade, a identidade da marca, o racional de distribuição/valor, missão/visão/propósito e a citação original do fundador.
 Copy final continua única no i18n. A versão inicial permanece no histórico Git e nas seções anteriores como baseline.
 
 **Paridade:** o corpo institucional usa a mesma escala Core, cores, largura, quebra de linhas e geometria nas duas
@@ -1330,13 +1355,319 @@ em `main` e execução do pipeline oficial de migrations/deploy. Não executar d
 
 ## 16. Consultas servidas a outros módulos (W5)
 
+> Substituída pela §17.10 (W4.2): `findPublicHomeEdition` e `readHomeEditionLabels`.
+
 A W5 abre a superfície pública do módulo (`src/features/catalog/index.ts`, TECH-011) para o `ownership`, sem que ele leia
 as tabelas do catálogo (spec [`ownership`](ownership.md) §5):
 
-- `findPublicConceptOffer(conceptId)`: Concept publicado e as modalidades das Editions publicadas, lidos como `anon`
-  sob a mesma RLS do Discovery (§13.2, ADR-0014) — não publicado ou inexistente → `null`.
-- `readConceptLabels(tx, ids)`: título e marca dos Concepts, como `luxtory_app` dentro da transação da leitura do Admin
-  (ADR-0010 §7), para a visão de interesses.
+- Consultas vigentes: §17.10.
 
 Nenhuma regra de visibilidade é repetida fora da RLS; nenhuma escrita do catálogo muda.
 
+## 17. W4.2 — Ontologia Home Concept → Home Edition → Second Home
+
+> Spec da [Wave 4.2](../plan/implementation-waves.md#wave-42--ontologia-home-concept--home-edition--second-home--correção-estrutural-do-catálogo-2026-10-19)
+> (2026-10-19). **Prevalece sobre as §1–§16 onde diferir.** Canônicos: `01` v10.2 §1–§4 (BR-001 a BR-004, BR-025,
+> BR-030 a BR-036, BR-377), `02` v4.3 (§1, §2, REQ-020 a REQ-022, REQ-100, §15 itens 14 e 15), `03` v3.15 (§3.1,
+> §3.2, §13). Decisões: [ADR-0019](../adr/0019-ontologia-home-concept-home-edition-second-home.md). Dependency map e
+> migrations: [`docs/plan/w4-2-ontologia.md`](../plan/w4-2-ontologia.md). Comunicação: `D-LX-11`, `b2c.md` `D-B2C-27`,
+> `brand-partners.md` `D-BP-28`. Interesse: [`ownership` §13](ownership.md#13-w42--interesse-a-partir-da-home-edition).
+
+### 17.1 Ontologia e fronteiras
+
+| Conceito | O que é | O que nunca carrega |
+|---|---|---|
+| **Home Concept** (`home_concept` + `home_concept_version`) | sistema conceitual e identitário replicável, criado pela Luxtory a partir da identidade da marca e do lifestyle da Brand Partner: elementos essenciais, premissas de preservação, especificação conceitual, resumo, lifestyle e estilo arquitetônico; versões aprovadas (REQ-096) | atributos físicos, localização, modalidade, condições comerciais |
+| **Home Edition** (`home_edition`) | configuração específica e replicável de Second Home derivada de um Home Concept, com vínculo permanente a ele (BR-031): nome, descrição, tipologia, configuração dos espaços, área projetada, suítes, capacidade, ambientes, amenidades, características e mídia; estado material (preparação → finalizada) e visibilidade pública separada; média projetada de investimento vigente (BR-034) | localização, modalidade, estrutura patrimonial, condições comerciais (BR-031, BR-032); nenhuma alteração material depois de finalizada (BR-036) |
+| **Second Home** (`second_home`) | instância específica de uma Home Edition destinada a uma localização concreta (BR-035); fixa a Home Edition e a versão vigente do Home Concept na aprovação comercial (BR-025) | — (localização concreta, modalidade definitiva, estrutura, configuração Co-Owner, condições e estado operacional chegam na W8) |
+
+Nomes técnicos (`03` §3): `home_concept`, `home_edition`, `second_home` e derivados no banco e nos contratos;
+`HomeConcept`, `HomeEdition`, `SecondHome` no código; rotas `/home-concepts`, `/home-editions`, `/second-homes`. Nenhum
+identificador usa `residence`, nem `concept` ou `edition` isolados para essas entidades (BR-377).
+
+### 17.2 Modelo de dados
+
+Mesmas regras gerais da §5 (RLS só `luxtory_app`, `UPDATE` só nas colunas de transição, sem `DELETE`/`TRUNCATE`,
+`operation_id` da criação).
+
+| Tabela | Conteúdo | Regras no banco |
+|---|---|---|
+| `home_concept` | Brand Partner, `title` | imutável |
+| `home_concept_version` | `home_concept_id`, `version`, `essential_elements[]`, `preservation_premises[]`, `specification`, `summary`, classificações (`home_concept_version_term`); aprovação | como a `concept_version` da W3; `guests_max`, `suites` e `built_area_m2` saem (passam à Home Edition) |
+| `home_edition` | `home_concept_id`; **definição material**: `typology`, `spatial_configuration`, `projected_area_m2`, `suites`, `guests_max`, `rooms[]`, `amenities[]`, `characteristics[]`; **editoriais**: `name`, `description`; **estado material**: `material_state` (`draft` → `finalized`) com instante, usuário, papel e operação da finalização; **visibilidade pública**: `visibility` (`hidden` / `public`) e `withdrawal_basis` (base da última retirada do público) | `home_concept_id` imutável; em `draft`, definição material e campos editoriais mudam; a finalização acontece uma vez e não volta; depois dela a definição material é imutável (gatilho) e só mudam os campos editoriais e a visibilidade; `public` exige `finalized` |
+| `home_edition_media` + `home_edition_media_file` | `kind` (`image`, `render`, `floor_plan`), `alt`, `credit`, foco, SHA-256 da origem, aprovação e retirada; versões WebP no Storage privado (`home-edition-media/<sha256>.webp`) | ciclo da capa (pendente → aprovada → retirada); várias aprovadas por Home Edition |
+| `home_edition_projected_investment` | `home_edition_id`, `amount_minor` (`bigint`) + `currency` (`BRL`), vigência `[valid_from, valid_until)`, quem registrou | só inserção; único encerramento; **sem sobreposição de vigência por Home Edition** (uma vigente); sem modalidade, base, configuração ou Ação |
+| `second_home` | `home_edition_id`, `home_concept_id`, `home_concept_version_id` fixada, `commercially_approved_at`, `label`, `timezone`, `investor_authorization_id` | imutável; FKs compostas mantêm Home Edition, versão e autorização no mesmo Home Concept; gatilho exige a versão aprovada vigente, autorização válida e Home Edition materialmente finalizada |
+| `home_concept_media`, `home_concept_media_file`, `home_concept_curation`, `investor_authorization` (`home_concept_id`) | capa, curadoria e autorização de Investor do Home Concept | como na W3/W4.1 |
+
+Limites técnicos (TECH-100, não regras de negócio): `name` 1–200; `description` 1–20 000; `typology` 1–200;
+`spatial_configuration` 1–4 000; `projected_area_m2` 1–100 000; `suites` 1–50; `guests_max` 1–100; listas opcionais
+com 1–50 itens de 1–200 caracteres; `amount_minor` 1 a 10¹⁵. Todos os textos passam pela checagem lexical (§5), que
+passa a recusar também o enquadramento do produto como moradia (`Residence`, residência, residencial — BR-377) nos
+campos de produto; nome de marca e referências de instrumento seguem só as regras anteriores (BR-377, exceção para
+objeto externo).
+
+### 17.3 Home Edition: preparação, finalização material e visibilidade pública (BR-036)
+
+Três responsabilidades separadas (correção do fundador de 2026-10-19; `02` v4.3 REQ-022, `03` v3.15 §3.1), sem
+tabela de versão (`HomeEditionVersion` não existe):
+
+| Conceito | Campo | Efeito |
+|---|---|---|
+| **Preparação** | `material_state = 'draft'` | a Home Edition está em elaboração: definição material e textos editoriais podem ser completados e corrigidos; ainda não serve de base para Second Home nem pode ser publicada |
+| **Definição material finalizada** | `material_state = 'finalized'` | marco de estabilização, uma vez e sem volta: tipologia, configuração espacial, área projetada, suítes, capacidade, programa (ambientes), amenidades e características ficam imutáveis; alteração material exige **nova Home Edition**; pode originar Second Homes |
+| **Visibilidade pública** | `visibility = 'hidden' \| 'public'` | se a Home Edition aparece no Discovery; `public` exige definição finalizada (por isso, depois de publicada, a definição material é imutável — BR-036); retirar do público volta a `hidden` sem reabrir a definição material; pode ser publicada de novo |
+
+Commands:
+
+- **Preparação.** `create_home_edition` registra a Home Edition em `draft` e `hidden`. `update_home_edition_draft`
+  substitui a definição material e os textos editoriais enquanto `draft` (mesmo corpo da criação, sem
+  `home_concept_id`, que nunca muda); grava `operation` e `audit_log` com antes e depois.
+- **Finalização.** `finalize_home_edition`: `draft` → `finalized`, uma vez. Exige marca em uso (BR-021) e Home Concept
+  com versão aprovada. A partir daí, o gatilho `home_edition_transition` recusa qualquer alteração material em
+  qualquer caminho de escrita.
+- **Publicação e retirada.** `publish_home_edition`: `hidden` → `public`; exige `finalized`, marca em uso e Home
+  Concept com versão aprovada; aparece no site se o Home Concept também for público. `withdraw_home_edition`:
+  `public` → `hidden`, com base registrada; vale mesmo depois do encerramento da marca (reduz a exposição). Nenhuma das
+  duas toca a definição material; Second Homes já registradas não mudam (BR-025).
+- **Correção editorial.** `correct_home_edition_editorial`: muda `name` e/ou `description` de uma Home Edition
+  finalizada (em `draft`, a edição da preparação cobre isso), com base obrigatória e `audit_log` com antes e depois.
+  Não altera o produto. Nos snapshots de auditoria da Home Edition, o nome vai como `home_edition_name`: a chave
+  `name` é sempre redigida como possível dado pessoal (TECH-092).
+- **Mídia.** `upload_home_edition_media` → `approve_home_edition_media` → `withdraw_home_edition_media` (gestão de
+  mídia, BR-036): imagens, renders e plantas, várias aprovadas ao mesmo tempo, em qualquer estado material; enviar e
+  aprovar exigem marca em uso (retirar vale sempre). Mesmo pipeline e limites da capa (ADR-0015).
+- **Média projetada.** `register_home_edition_projected_investment` / `end_home_edition_projected_investment`
+  (atualização da média projetada, BR-036), em qualquer estado material: ver §17.4.
+
+### 17.4 Média projetada de investimento (BR-034)
+
+Referência aproximada da **ordem de grandeza do investimento total projetado necessário para materializar uma Second
+Home daquela Home Edition**, registrada pela Luxtory para que o interessado compreenda a escala econômica. **Não é**
+quanto um interessado investirá, preço de aquisição Owner, preço de Ação, parcela individual, proposta nem condição
+comercial; não se vincula a modalidade, configuração Co-Owner, participação ou Ação; não garante custo; nunca é
+derivada de outro valor nem dela se deriva valor individual de Co-Owner.
+
+- Uma vigente por Home Edition (sem vigências sobrepostas, em qualquer moeda); só `BRL` hoje; unidades menores
+  `bigint` (TECH-033); nunca calculada pelo software (ADR-001 do `03`).
+- Registro começa agora ou no futuro, nunca no passado; o vigente em aberto que começou antes termina no início do novo;
+  "Encerrar" vale a partir de agora, uma vez; nada exibido é reescrito (mesma regra do valor da W4.1).
+- Registrar exige marca em uso, em qualquer estado material; encerrar vale sempre.
+- Público só o valor vigente agora, de Home Edition pública (`visibility = public`) de Home Concept público. Apresentação obrigatória: o
+  rótulo "Média projetada de investimento" e a explicação de que é referência aproximada da ordem de grandeza do
+  investimento total para materializar uma Second Home daquela Home Edition, que o investimento efetivo varia
+  (localização, escopo, fornecedores, momento, modalidade, configuração) e que não é preço, proposta, condição nem valor
+  individual de Owner ou Co-Owner (REQ-022, REQ-100, REQ-101). Nunca valor por dia, por Ação ou por modalidade.
+- A dimensão financeira da pré-qualificação do interessado (Budget Fit) é da W6.
+
+### 17.5 Second Home
+
+`register_residence` passa a `register_second_home` (mesmo evento de aprovação comercial, ADR-0010 §2): grava o
+instante, fixa a Home Edition e a versão aprovada vigente do Home Concept (BR-025), opcionalmente com autorização de
+Investor do mesmo Home Concept (REQ-027). Exige Home Edition **materialmente finalizada** (`02` v4.3 REQ-022):
+a Second Home fica presa a uma definição material estável (BR-025, BR-036). A visibilidade pública não é condição:
+uma Home Edition finalizada e ainda não publicada, ou retirada do público, pode originar Second Home.
+Localização concreta, modalidade, estrutura, configuração Co-Owner, condições, primeiro exercício e estado operacional
+são da W8 (`03` v3.15 §3.1).
+
+### 17.6 HTTP API
+
+Mesma entrada da §5 (todas `POST` com `Idempotency-Key`, Admin AAL2, `Origin` do host, schema `Error`). Contrato em
+`docs/api/openapi.yaml` (tag `catalog`). As operações de Brand Partner e de vocabulário não mudam.
+
+| Operação | Endpoint | Sucesso |
+|---|---|---|
+| `create_home_concept_version` | `POST /v1/admin/home-concept-versions` (Home Concept novo ou versão nova) | 201 |
+| `approve_home_concept_version` | `POST /v1/admin/home-concept-versions/{id}/approve` | 200 |
+| `register_investor_authorization` | `POST /v1/admin/investor-authorizations` (`home_concept_id`) | 201 |
+| `revoke_investor_authorization` | `POST /v1/admin/investor-authorizations/{id}/revoke` | 200 |
+| `create_home_edition` | `POST /v1/admin/home-editions` (`draft`, `hidden`) | 201 |
+| `update_home_edition_draft` | `POST /v1/admin/home-editions/{id}` (só em `draft`) | 200 |
+| `finalize_home_edition` | `POST /v1/admin/home-editions/{id}/finalize` | 200 |
+| `publish_home_edition` | `POST /v1/admin/home-editions/{id}/publish` | 200 |
+| `withdraw_home_edition` | `POST /v1/admin/home-editions/{id}/withdraw` | 200 |
+| `correct_home_edition_editorial` | `POST /v1/admin/home-editions/{id}/editorial-correction` | 200 |
+| `upload_home_edition_media` | `POST /v1/admin/home-editions/{id}/media` | 201 |
+| `approve_home_edition_media` | `POST /v1/admin/home-edition-media/{id}/approve` | 200 |
+| `withdraw_home_edition_media` | `POST /v1/admin/home-edition-media/{id}/withdraw` | 200 |
+| `register_home_edition_projected_investment` | `POST /v1/admin/home-editions/{id}/projected-investments` | 201 |
+| `end_home_edition_projected_investment` | `POST /v1/admin/home-edition-projected-investments/{id}/end` | 200 |
+| `register_second_home` | `POST /v1/admin/second-homes` | 201 |
+| `upload_home_concept_cover` | `POST /v1/admin/home-concepts/{id}/cover` | 201 |
+| `approve_home_concept_media` | `POST /v1/admin/home-concept-media/{id}/approve` | 200 |
+| `withdraw_home_concept_media` | `POST /v1/admin/home-concept-media/{id}/withdraw` | 200 |
+| `set_home_concept_curation` | `POST /v1/admin/home-concepts/{id}/curation` | 200 |
+
+Recusas: as da §5. `ERR_STATE_TRANSITION` também para: editar a preparação ou finalizar uma Home Edition já
+finalizada; publicar uma Home Edition não finalizada ou já pública; retirar do público uma Home Edition que não está
+pública; correção editorial de Home Edition em `draft`; registrar Second Home em Home Edition não finalizada. Mídia que não é imagem aceita, valor que começaria no passado → `ERR_VALIDATION`.
+Os endpoints antigos (`/concept-versions`, `/concepts/{id}/…`, `/concept-media/…`, `/editions…`,
+`/edition-reference-values/…`, `/residences`) deixam de existir; não há cliente externo (Admin interno).
+
+**Telas** (App Shell, Server Actions sobre o mesmo pipeline):
+
+| Tela | Rota |
+|---|---|
+| Registrar Home Concept (versão 1) | `/admin/catalogo/brand-partners/[id]/home-concepts/novo` |
+| Home Concept (versões, Home Editions, capa, curadoria, autorizações de Investor) | `/admin/catalogo/home-concepts/[id]` |
+| Nova versão · aprovar versão | `/admin/catalogo/home-concepts/[id]/versoes/nova` · `/versoes/[versionId]/aprovacao` |
+| Capa · curadoria · autorizações de Investor | `/admin/catalogo/home-concepts/[id]/capas/…` · `/curadoria` · `/autorizacoes-investor/…` |
+| Registrar Home Edition (preparação) | `/admin/catalogo/home-concepts/[id]/home-editions/nova` |
+| Home Edition (estado material, visibilidade, definição material, campos editoriais, mídia, média projetada, Second Homes) | `/admin/catalogo/home-editions/[id]` |
+| Editar a preparação · finalizar | `/admin/catalogo/home-editions/[id]/edicao` · `/finalizacao` |
+| Publicar · retirar do público · corrigir texto editorial | `/admin/catalogo/home-editions/[id]/publicacao` · `/retirada` · `/correcao-editorial` |
+| Mídia (envio, aprovação, retirada) | `/admin/catalogo/home-editions/[id]/midia/nova` · `/midia/[mediaId]` |
+| Média projetada (registro, encerramento) | `/admin/catalogo/home-editions/[id]/media-projetada/nova` · `/media-projetada/[investmentId]/encerramento` |
+| Registrar Second Home | `/admin/catalogo/home-editions/[id]/second-homes/nova` |
+| Second Home (detalhe) | `/admin/catalogo/second-homes/[id]` |
+
+A confirmação da finalização diz que, depois dela, a definição material não muda mais (mudança material = nova Home
+Edition) e que a Home Edition passa a poder originar Second Homes; a confirmação da publicação diz que ela passa a
+aparecer no site; a da retirada, que sai do site sem reabrir a definição material. Os campos públicos levam "Público no site"
+(§13.5). A tela de nova versão do Home Concept perde pessoas, suítes e área.
+
+### 17.7 Leitura pública (anon)
+
+Mesmo papel e portão da §13.2/§13.3. Visibilidade só pela RLS:
+
+- Home Concept público = como antes (`home_concept_is_public`: exposição autorizada, antes da eficácia do
+  encerramento, versão aprovada).
+- Home Edition pública = `visibility = 'public'` (o que implica `finalized`) **e** Home Concept público. Colunas: `id`,
+  `home_concept_id`, `name`,
+  `description`, `typology`, `spatial_configuration`, `projected_area_m2`, `suites`, `guests_max`, `rooms`,
+  `amenities`, `characteristics`, `created_at`. Em preparação ou fora do público, nunca é pública.
+- Mídia pública = aprovada, de Home Edition pública: `id`, `home_edition_id`, `kind`, `alt`, `credit`, foco e
+  `approved_at` (ordem de exibição: imagens, renders e plantas, cada tipo na ordem de aprovação); arquivos só de
+  exibição.
+- Média projetada pública = vigente agora, de Home Edition pública: `id`, `home_edition_id`, `amount_minor`, `currency`,
+  `valid_from`, `valid_until`.
+- Disponibilidade (`D-B2C-16`): "há Home Edition publicada" passa a significar `visibility = public` e Home Concept
+  público.
+
+Leituras (`application/public-views.ts`, `collection-views.ts`): `collection()` (Home Concepts com suas Home Editions
+publicadas — nome, tipologia, capacidade, suítes, área, média projetada vigente e capa da Home Edition), `homeConcept(id)`
+(especificação vigente, capa e Home Editions publicadas), `homeEdition(homeConceptId, homeEditionId)` (definição,
+textos, mídia e média projetada; Home Edition de outro Home Concept → `null`), `availability()`; rotas de mídia
+`/media/home-concept-covers/{id}/{width}` e `/media/home-edition-media/{id}/{width}` (só aprovada de Home Edition
+pública; mesmo cache e portão da capa, ADR-0015).
+
+### 17.8 Briefs de página (B2C)
+
+Base comum da §13.4 (Brief Narrativo, tom, limites L1–L10 de `b2c.md`, guardrails de `luxtory.md` §4). Copy final no
+i18n, aprovada no checkpoint visual da W4.2.
+
+**Home Edition — `/colecao/[homeConceptId]/home-editions/[homeEditionId]`** (nova; `b2c.md` §8, `D-B2C-27`).
+Most Aware; PUSH + prova necessária. Sem formulário nesta wave: a solicitação de conversa entra na própria página na W6.
+
+| Seção | Função | Pergunta mental | Conteúdo | Fatos e limites |
+|---|---|---|---|---|
+| Abertura | prova (Pertencimento) | "Que Second Home é esta?" | caminho (Coleção › Home Concept), "Home Edition", nome, crédito do Home Concept e da marca (só com exposição), imagem principal aprovada ou Frame tipográfico | BR-015, BR-031 |
+| Apresentação | prova | "O que ela propõe?" | descrição registrada | BR-031 |
+| Configuração | prova | "Como ela é?" | tipologia, área projetada, suítes, capacidade; configuração dos espaços; ambientes, amenidades e características quando registrados | BR-031, BR-036 |
+| Galeria e plantas | prova | "Como ela se parece?" | imagens e renders; plantas à parte, com texto alternativo | BR-031 |
+| Média projetada de investimento | prova (Patrimônio) | "Qual a escala do investimento?" | só com valor vigente; o rótulo e a explicação obrigatória da §17.4 | BR-034, REQ-022, L10 |
+| Da Home Edition à sua Second Home | prova | "Onde e como ela existe?" | a Home Edition não tem localização: cada Second Home é estruturada para uma localização concreta, com modalidade (Owner ou Co-Owner, mesmo peso), estrutura e condições próprias; fiel ao Home Concept | BR-031, BR-032, BR-035, BR-301, REQ-103 |
+| Para quem | PUSH | "Faz sentido para mim?" | qualificação; "Conheça outros Home Concepts" e "Entenda como funciona"; nenhum CTA de interesse até a W6 | `D-B2C-10`, `P-B2C-01` |
+
+Não afirmar: localização, disponibilidade, prazo, preço, valor por modalidade ou por Ação, número de Second Homes,
+configuração Co-Owner, Investor. Metadata: nome da Home Edition e título do Home Concept. Home Edition não pública,
+inexistente ou de outro Home Concept → 404.
+
+**Home Concept — `/colecao/[homeConceptId]`** (revista). Abertura (título, marca, lifestyle principal, capa), "O Home
+Concept" (especificação), "Fiel ao Home Concept" (BR-014, BR-017, BR-019, BR-301), **Home Editions**: um card por Home
+Edition publicada (imagem principal ou Frame, nome, tipologia, "Até N pessoas · S suítes · A m²", média projetada
+vigente com o rótulo, "Ver a Home Edition"); sem Home Edition publicada: "As Home Editions deste Home Concept ainda não
+foram publicadas." PUSH: "Conheça outros Home Concepts" e "Entenda como funciona". Saem região, modalidade e condições
+comerciais por Edition.
+
+**Coleção — `/colecao`** (revista sobre a §13.12):
+
+- Card do Home Concept: identidade como antes (capa, lifestyle · estilo, título, "A partir do universo de X"); dentro,
+  as **Home Editions publicadas**, cada uma com nome, "Até N pessoas · S suítes · A m²" (os que existirem) e a média
+  projetada vigente com o rótulo curto "Média projetada"; o card leva ao Home Concept ("Conheça o Home Concept →").
+  Sem Home Edition: "As Home Editions deste Home Concept ainda não foram publicadas." Saem região, modalidade, base
+  Owner/Ação e "sem oferta comercial".
+- Grupos: "Com Home Edition" (`#home-editions`) e "Ainda sem Home Edition" (`#home-concepts`), sem os subtítulos que
+  falavam de região, modalidade, condições e de interesse no Concept.
+- Filtros: Lifestyle · Estilo · Pessoas · **Investimento projetado** (rótulo aprovado no checkpoint visual de
+  2026-10-20; por dentro, "Média projetada de investimento (R$)" e De/Até, uma etapa, sobre a média vigente das Home
+  Editions; chip "Investimento projetado: …"; aplicada, a interface diz "Considera só Home Editions com média projetada
+  vigente") · Suítes · Área · Só com Home
+  Edition · Brand Partner. Saem Localização, modalidade disponível e a base da faixa de valor, e os grupos por região.
+  Pessoas, Suítes e Área passam a valer pelas Home Editions publicadas do Home Concept. Parâmetros da URL: saem
+  `regiao`, `base` e `modalidade`; `com-edition` passa a `com-home-edition`; os demais continuam.
+- Explicação do Hero: "Home Concept é a ideia. Home Edition é uma configuração de Second Home criada a partir dela.";
+  subtítulo sem "lançadas na região que você deseja".
+- Jornada "Como um Home Concept chega à sua Second Home" (`01` §4): 01 Escolha o Home Concept · 02 Conheça as Home
+  Editions · 03 Manifeste interesse numa Home Edition, com a localização pretendida e a modalidade desejada (Owner: a
+  Second Home inteira; Co-Owner: uma Ação da SPE proprietária, com Direito de Uso) · 04 A Luxtory estrutura a Second
+  Home, com localização concreta, modalidade, estrutura e condições próprias · 05 O Design & Build dá forma à Second
+  Home, fiel ao Home Concept e à configuração da Home Edition · 06 Viva sua Second Home. Mecanismo descrito como etapa
+  do modelo, sem CTA (o formulário é da W6).
+
+**Home e Como funciona:** só as mudanças de `D-B2C-27` (nomes completos, "Branded Second Homes" no eyebrow, Second
+Home no lugar de Residence, "Brand DNA" → identidade da marca); estrutura, layout e demais afirmações não mudam.
+Complemento de 2026-10-20 (`D-B2C-27`): na jornada do Como funciona, o terceiro passo do Conceito é "Interesse e
+estruturação" (interesse numa Home Edition com localização pretendida e modalidade desejada → a Luxtory estrutura a
+Second Home → com a aquisição formalizada, o Design & Build pode começar), no lugar de "Owner ou Co-Owner"; Design &
+Build e Second Home são descritos a partir da Home Edition, preservando o Home Concept. Fases e grade 3 × 3 mantidas.
+
+### 17.9 Brand Partners e Sobre
+
+Copy vigente com as substituições de `D-BP-28` e `D-LX-11`: CTA "Explore o potencial da sua marca em Second Homes.";
+"identidade da marca" no lugar de "Brand DNA"; Second Home(s) no lugar de residência(s) quando nomeia o produto
+(inclusive em `D-BP-21` e `D-BP-24`). A página Sobre segue a mesma regra. Complemento do checkpoint de 2026-10-20
+(`D-BP-28`): o mecanismo ("Como acontece") e o Percurso seguem identidade da marca → Home Concept → **descobrir e
+validar o Home Concept** (Pesquisa de Descoberta & Validação com o público da marca, antes da Home Edition; não é
+interesse comercial nem aquisição — BR-030) → **criar a Home Edition** → **apresentar a Home Edition e captar
+interesse** (localização pretendida e Owner ou Co-Owner indicados pelo interessado; manifestação não é aquisição) →
+**estruturar cada Second Home** (localização concreta, modalidade, estrutura patrimonial, condições) → Design & Build →
+operação; nenhuma copy atribui modalidade à Home Edition; "DNA" não nomeia a identidade da marca. Regressões em
+`tests/communication-ontology.test.ts`, também sobre os Frameworks. Nenhuma outra afirmação, estrutura ou layout muda.
+
+### 17.10 Consultas a outros módulos (substitui a §16)
+
+- `findPublicHomeEdition(homeEditionId)`: a Home Edition pública e o seu Home Concept, lidos como `anon` sob a mesma
+  RLS; não pública ou inexistente → `null`.
+- `readHomeEditionLabels(tx, ids)`: nome da Home Edition, título do Home Concept e marca, como `luxtory_app` na
+  transação da leitura do Admin, para a visão de interesses.
+
+### 17.11 Critérios de aceite da W4.2
+
+- [ ] `[REQ-022]` `[BR-031]` Home Edition sem localização, modalidade e condições comerciais: não existem colunas, campos
+      de API, telas nem leitura pública para isso.
+- [ ] `[REQ-020]` `[BR-031]` O vínculo Home Edition → Home Concept é imutável (o banco recusa trocar `home_concept_id`).
+- [ ] `[REQ-022]` `[BR-036]` Em `draft`, a definição material é editável (`update_home_edition_draft`); depois de
+      finalizada, a alteração material é recusada pelo banco em qualquer caminho e exige `create_home_edition`; a
+      correção editorial muda só nome e descrição, com base e auditoria.
+- [ ] `[REQ-022]` `[BR-034]` Média projetada sem modalidade, base, configuração ou Ação; uma vigente por Home Edition;
+      pública só a vigente de Home Edition publicada, com o rótulo e a explicação obrigatória.
+- [ ] `[BR-036]` Finalização uma vez e sem volta; publicação exige finalização; retirar do público não reabre a
+      definição material; Home Edition em `draft` ou `hidden` nunca é pública; Second Home só de Home Edition
+      finalizada, pública ou não; retirada do público não altera Second Home existente.
+- [ ] `[REQ-020]` Second Home fixa Home Edition e versão vigente (BR-025), como o `register_residence` fazia.
+- [ ] `[REQ-100]` Nenhuma ocorrência da ontologia anterior nas superfícies ativas (teste terminológico com denylist e
+      allowlist).
+- [ ] `[TECH-052]` `anon` lê só as colunas e linhas da §17.7; `luxtory_app` não altera fora das transições.
+- [ ] Página da Home Edition responsiva, axe 0 a 390 e 1440 px, sem overflow de 320 a 1920 px, zero erro de console;
+      Coleção e Home Concept idem; jornada Coleção → Home Concept → Home Edition a 390 px com toque.
+- [ ] Contrato OpenAPI de cada rota nova; `npm run db:check`; `npm run trace -- --gate`.
+
+### 17.12 Edge cases
+
+- Home Edition retirada do público entre a página e o envio do interesse → a manifestação não é registrada (`02` §15, item 15;
+  `ownership` §13). A URL da página passa a responder 404.
+- Média projetada alterada entre a apresentação e a manifestação → vínculo à referência apresentada é da W6 (`02` §15,
+  item 14).
+- Home Concept deixa de ser público (exposição, encerramento) → suas Home Editions somem com ele.
+- Média projetada futura ou encerrada → não aparece; a Home Edition continua visível sem o bloco.
+- `/colecao/<A>/home-editions/<B>` com `B` de outro Home Concept → 404 (sem redirecionar).
+- Erro material em preparação → `update_home_edition_draft`. Erro material depois da finalização → nova Home
+  Edition; a anterior pode ser retirada do público.
+- Home Edition finalizada e nunca publicada → pode originar Second Home; não aparece no site.
+
+### 17.13 Fora do escopo
+
+Formulário, contato, pré-qualificação e Budget Fit (W6); localização concreta, modalidade e estrutura definitivas,
+configuração Co-Owner, condições e primeiro exercício da Second Home (W8); vocabulário de tipologia ou amenidades;
+página pública de Home Concepts no Brand Partners (`P-BP-02`).

@@ -3,16 +3,16 @@ import { hasForbiddenTerm } from '../../src/features/catalog/domain/terminology'
 import { readSeed } from './support/discovery';
 import { captureForReview, collectConsoleErrors, expectResponsive } from './support/ui';
 
-// Coleção final (docs/specs/catalog.md §13.12, D-B2C-21): discovery curatorial sobre o catálogo semeado por
-// catalog.seed.ts — Casa Alpendre (Natureza; Edition Owner e Co-Owner no Litoral Sul da Bahia; capa e destaque),
-// Casa Mirante (Natureza; sem Edition) e Casa Varanda (Bem-estar; Edition só Co-Owner no Litoral Norte). O banco é
-// compartilhado com outros specs em paralelo: as asserções olham os Concepts do seed, nunca contagens exatas.
+// Coleção (docs/specs/catalog.md §13.12, §17.8; D-B2C-21, D-B2C-27): discovery curatorial sobre o catálogo semeado por
+// catalog.seed.ts — Casa Alpendre (Natureza; Home Edition publicada com média projetada; capa e destaque), Casa Mirante
+// (Natureza; Home Edition só finalizada, fora do site) e Casa Varanda (Bem-estar; Home Edition publicada sem média). O
+// banco é compartilhado com outros specs em paralelo: as asserções olham os Home Concepts do seed, nunca contagens.
 const PRICE_PER_DAY = /R\$\s?[\d.,]+\s*(\/|por)\s*(dia|noite)\b/i;
 const titles = () => readSeed();
 
-const withEditions = (page: Page) =>
+const withHomeEditions = (page: Page) =>
   page.getByRole('list', { name: 'Home Concepts com Home Edition' });
-const withoutEditions = (page: Page) =>
+const withoutHomeEditions = (page: Page) =>
   page.getByRole('list', { name: 'Home Concepts sem Home Edition' });
 
 async function apply(
@@ -34,7 +34,7 @@ async function apply(
 test.describe('desktop (1440)', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('[REQ-020] [REQ-022] [REQ-100] [REQ-103] curadoria: um card por Concept, Editions dentro com valor por base, sem Edition sem oferta', async ({
+  test('[REQ-020] [REQ-022] [REQ-100] [BR-034] curadoria: um card por Home Concept, Home Editions publicadas dentro com a média projetada', async ({
     page,
   }) => {
     const seed = titles();
@@ -45,7 +45,7 @@ test.describe('desktop (1440)', () => {
     );
     await expect(
       page.getByText(
-        'Home Concept é a ideia. Home Edition é o lançamento dessa ideia em uma região.',
+        'Home Concept é a ideia. Home Edition é uma configuração de Second Home criada a partir dela.',
       ),
     ).toBeVisible();
     await expect(
@@ -55,31 +55,34 @@ test.describe('desktop (1440)', () => {
       }),
     ).toBeVisible();
 
-    const alpendre = withEditions(page)
+    const alpendre = withHomeEditions(page)
       .getByRole('listitem')
-      .filter({ hasText: seed.withEdition.title });
+      .filter({ hasText: seed.withHomeEdition.title });
     await expect(alpendre).toHaveCount(1);
-    await expect(alpendre.getByText('Litoral Sul da Bahia', { exact: true })).toBeVisible();
-    await expect(alpendre.getByText(/^Owner · a partir de R\$\s4\.800\.000$/)).toBeVisible();
-    await expect(alpendre.getByText(/^Co-Owner · Ação a partir de R\$\s620\.000$/)).toBeVisible();
+    await expect(
+      alpendre.getByText(seed.withHomeEdition.homeEdition.name, { exact: true }),
+    ).toBeVisible();
+    await expect(alpendre.getByText(/^Média projetada R\$\s4\.800\.000$/)).toBeVisible();
     await expect(alpendre.getByText('Até 10 pessoas · 5 suítes · 520 m²')).toBeVisible();
+    await expect(alpendre.getByText(/Owner|Ação|Litoral/)).toHaveCount(0);
     await expect(alpendre.getByRole('img')).toHaveAttribute(
       'srcset',
-      /\/media\/concept-covers\/.+ 480w/,
+      /\/media\/home-concept-covers\/.+ 480w/,
     );
 
-    const mirante = withoutEditions(page)
+    const mirante = withoutHomeEditions(page)
       .getByRole('listitem')
-      .filter({ hasText: seed.withoutEdition.title });
+      .filter({ hasText: seed.withoutHomeEdition.title });
     await expect(
-      mirante.getByText('Ainda sem Home Edition — por enquanto, sem oferta comercial.'),
+      mirante.getByText('As Home Editions deste Home Concept ainda não foram publicadas.'),
     ).toBeVisible();
     await expect(mirante.getByText(/R\$/)).toHaveCount(0);
-    // Nenhum Concept nos dois grupos (REQ-022).
-    await expect(withoutEditions(page).getByText(seed.withEdition.title)).toHaveCount(0);
-    await expect(withEditions(page).getByText(seed.withoutEdition.title)).toHaveCount(0);
+    await expect(page.getByText(seed.withoutHomeEdition.hiddenHomeEdition.name)).toHaveCount(0);
+    // Nenhum Home Concept nos dois grupos (REQ-022).
+    await expect(withoutHomeEditions(page).getByText(seed.withHomeEdition.title)).toHaveCount(0);
+    await expect(withHomeEditions(page).getByText(seed.withoutHomeEdition.title)).toHaveCount(0);
     // No máximo um destaque, sempre com capa (spec §13.12).
-    const featured = page.locator('.lx-concept-card--featured');
+    const featured = page.locator('.lx-home-concept-card--featured');
     expect(await featured.count()).toBeLessThanOrEqual(1);
     if ((await featured.count()) === 1) await expect(featured.locator('img')).toHaveCount(1);
 
@@ -90,67 +93,64 @@ test.describe('desktop (1440)', () => {
     await captureForReview(page, 'colecao-01-curadoria');
   });
 
-  test('busca e filtros principais: lifestyle, Localização em dois grupos e Faixa de valor em duas etapas', async ({
+  test('busca e filtros principais: lifestyle e média projetada numa etapa só, sem localização nem modalidade', async ({
     page,
   }) => {
     const seed = titles();
     await page.goto('/colecao');
-    // Busca livre: GET, URL estável, resultados.
-    await page.getByRole('searchbox', { name: 'Buscar na Coleção' }).first().fill('varanda');
+    // Sem filtro de localização nem de modalidade (BR-031, BR-032).
+    await expect(page.locator('#busca summary', { hasText: 'Localização' })).toHaveCount(0);
+    await expect(page.locator('#busca summary', { hasText: 'Modalidade' })).toHaveCount(0);
+    // Busca livre, também pelo nome da Home Edition: GET, URL estável, resultados.
+    await page.getByRole('searchbox', { name: 'Buscar na Coleção' }).first().fill('compacta');
     await page.getByRole('button', { name: 'Explorar a Coleção' }).first().click();
-    await expect(page).toHaveURL(/\/colecao\?q=varanda#resultados$/);
+    await expect(page).toHaveURL(/\/colecao\?q=compacta#resultados$/);
     await expect(page.getByRole('status')).toContainText('encontrado');
-    await expect(page.getByRole('link', { name: seed.coOwnerOnly.title })).toBeVisible();
-    await expect(page.getByRole('link', { name: seed.withoutEdition.title })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: seed.secondBrand.title })).toBeVisible();
+    await expect(page.getByRole('link', { name: seed.withoutHomeEdition.title })).toHaveCount(0);
 
     // Lifestyle.
     await page.goto('/colecao');
     await apply(page, 'Lifestyle', (panel) => panel.getByLabel('Natureza').check());
     await expect(page).toHaveURL(/\?lifestyle=natureza#resultados$/);
     await expect(page.getByRole('link', { name: 'Remover filtro: Natureza' })).toBeVisible();
-    await expect(page.getByRole('link', { name: seed.withEdition.title })).toBeVisible();
-    await expect(page.getByRole('link', { name: seed.withoutEdition.title })).toBeVisible();
-    await expect(page.getByRole('link', { name: seed.coOwnerOnly.title })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: seed.withHomeEdition.title })).toBeVisible();
+    await expect(page.getByRole('link', { name: seed.withoutHomeEdition.title })).toBeVisible();
+    await expect(page.getByRole('link', { name: seed.secondBrand.title })).toHaveCount(0);
 
-    // [REQ-020] [REQ-022] Localização: na região, depois os que combinam e ainda não têm Edition nela — nenhum some.
+    // [REQ-020] [REQ-100] [BR-034] "Investimento projetado": De/Até sobre a média projetada vigente, uma faixa só, sem
+    // modalidade; por dentro, o nome canônico.
     await page.goto('/colecao');
-    await apply(page, 'Localização', (panel) => panel.getByLabel('Litoral Sul da Bahia').check());
-    const inRegion = page.getByRole('list', {
-      name: 'Home Concepts com Home Edition em Litoral Sul da Bahia',
+    await apply(page, 'Investimento projetado', async (panel) => {
+      await expect(panel.getByText('Média projetada de investimento (R$)')).toBeVisible();
+      await expect(panel.getByRole('radio')).toHaveCount(0);
+      await panel.getByLabel('Até').fill('6.000.000');
     });
-    const others = page.getByRole('list', {
-      name: 'Outros Home Concepts que combinam com suas escolhas',
-    });
-    await expect(inRegion.getByRole('link', { name: seed.withEdition.title })).toBeVisible();
-    await expect(others.getByRole('link', { name: seed.withoutEdition.title })).toBeVisible();
-    await expect(others.getByRole('link', { name: seed.coOwnerOnly.title })).toBeVisible();
+    await expect(page).toHaveURL(/\?valor-ate=6000000#resultados$/);
     await expect(
-      page.getByText('Ainda sem Home Edition em Litoral Sul da Bahia.', { exact: false }),
+      page.getByRole('link', {
+        name: /^Remover filtro: Investimento projetado: até R\$\s6\.000\.000$/,
+      }),
     ).toBeVisible();
-
-    // [REQ-020] [REQ-100] [REQ-103] Faixa de valor: 1) Co-Owner (uma Ação), 2) até R$ 600.000 — só com Edition e valor.
-    await page.goto('/colecao');
-    await apply(page, 'Faixa de valor', async (panel) => {
-      await panel.getByLabel(/^Co-Owner/).check();
-      await panel.getByLabel('Até').fill('600.000');
-    });
-    await expect(page).toHaveURL(/\?base=co-owner&valor-ate=600000#resultados$/);
     await expect(page.getByRole('status')).toContainText(
-      'Considera só Concepts com Home Edition e valor vigente para Co-Owner.',
+      'Considera só Home Editions com média projetada vigente.',
     );
-    await expect(page.getByRole('link', { name: seed.coOwnerOnly.title })).toBeVisible();
-    await expect(page.getByRole('link', { name: seed.withEdition.title })).toHaveCount(0);
-    await expect(page.getByRole('link', { name: seed.withoutEdition.title })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: seed.withHomeEdition.title })).toBeVisible();
+    await expect(page.getByRole('link', { name: seed.secondBrand.title })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: seed.withoutHomeEdition.title })).toHaveCount(0);
+    // Parâmetros antigos (região, base, modalidade) não filtram mais: a URL volta à forma estável.
+    await page.goto('/colecao?regiao=Litoral&base=owner&modalidade=co-owner');
+    await expect(page).toHaveURL(/\/colecao$/);
   });
 
   test('filtros avançados, sem resultado, ordenação e barra fixa', async ({ page }) => {
     const seed = titles();
     await page.goto('/colecao');
     await apply(page, 'Mais filtros', (panel) => panel.getByLabel('Maison Nérée').check());
-    await expect(page.getByRole('link', { name: seed.coOwnerOnly.title })).toBeVisible();
-    await expect(page.getByRole('link', { name: seed.withEdition.title })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: seed.secondBrand.title })).toBeVisible();
+    await expect(page.getByRole('link', { name: seed.withHomeEdition.title })).toHaveCount(0);
 
-    await page.goto('/colecao?lifestyle=natureza&base=co-owner&valor-ate=100');
+    await page.goto('/colecao?lifestyle=natureza&valor-ate=100');
     await expect(
       page.getByText('Nenhum Home Concept combina com todas essas escolhas.'),
     ).toBeVisible();
@@ -210,9 +210,9 @@ test.describe('celular (390 px, toque)', () => {
     await dialog.getByRole('button', { name: 'Ver resultados' }).tap();
     await expect(page).toHaveURL(/\?lifestyle=natureza#resultados$/);
     await expect(page.getByRole('button', { name: 'Filtros (1)' })).toBeVisible();
-    await expect(page.getByRole('link', { name: seed.withoutEdition.title })).toBeVisible();
+    await expect(page.getByRole('link', { name: seed.withoutHomeEdition.title })).toBeVisible();
 
-    const media = page.locator('.lx-concept-card__media').first();
+    const media = page.locator('.lx-home-concept-card__media').first();
     const ratio = await media.evaluate(
       (el) => el.getBoundingClientRect().width / el.getBoundingClientRect().height,
     );

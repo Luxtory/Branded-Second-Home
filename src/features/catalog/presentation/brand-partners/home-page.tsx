@@ -234,7 +234,7 @@ export function BrandPartnersHomePage() {
         </div>
       </section>
 
-      {/* Como acontece — White: do Brand DNA à Second Home em seis passos; o link aprofunda no Como funciona. */}
+      {/* Como acontece — White: da identidade da marca à Second Home em sete passos; o link aprofunda no Como funciona. */}
       <section
         id={MECHANISM}
         className="lx-section"

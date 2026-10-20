@@ -5,7 +5,7 @@ import { discoveryPaths } from './paths';
 import { DiscoverySite } from './site';
 
 /**
- * 404 dentro do site público (receita catalog §13.9: White, Statement/Pause com o link de volta): Concept inexistente,
+ * 404 dentro do site público (receita catalog §13.9: White, Statement/Pause com o link de volta): Home Concept inexistente,
  * não público (spec catalog §13.1) ou endereço que mudou.
  */
 export function DiscoveryNotFoundPage() {

@@ -7,8 +7,8 @@ export const LOCK_CLASSES = [
   'rental_offer', // por id
   'membership', // por party_id
   'stake', // por id
-  'residence_date', // por (residence_id, stay_date)
-  'balance_and_custody', // mesma ordem de Data-Residence
+  'second_home_date', // por (second_home_id, stay_date)
+  'balance_and_custody', // mesma ordem de Data-SecondHome
   'credit_lot', // por (expires_at, originated_at, id)
   'payment', // por id
 ] as const;

@@ -1,7 +1,7 @@
 /**
  * Checagem lexical de terminologia (REQ-100, REQ-101; ADR-0010 §5, ADR-0012, ADR-0013): termos vedados do `02` §1 e
  * expressões explícitas conhecidas de promessa de retorno e de disponibilidade sem limite. É defesa complementar — não
- * interpreta o sentido do texto; o gate editorial é a aprovação humana da versão do Concept. Os mesmos padrões estão
+ * interpreta o sentido do texto; o gate editorial é a aprovação humana da versão do Home Concept. Os mesmos padrões estão
  * nos testes de terminologia de `src/` e do Design System, aqui com fronteira de palavra que reconhece letras acentuadas.
  */
 const FORBIDDEN_PATTERNS: readonly RegExp[] = [
@@ -19,4 +19,16 @@ export const FORBIDDEN_TERM = 'forbidden_term';
 export function hasForbiddenTerm(text: string): boolean {
   const normalized = text.normalize('NFC');
   return FORBIDDEN_PATTERNS.some((pattern) => pattern.test(normalized));
+}
+
+/**
+ * BR-377 (`02` v4.3 REQ-100): o produto não é denominado nem enquadrado como moradia — nada de Residence, residência
+ * ou residencial. Vale para os campos de produto (Home Concept, Home Edition); nome de marca e referências de
+ * instrumento descrevem objetos externos (exceção justificada da própria BR-377) e não passam por aqui.
+ */
+const DWELLING_FRAMING =
+  /(?<![\p{L}\p{N}])(residences?|resid[eê]ncias?|residencia(?:l|is))(?![\p{L}\p{N}])/iu;
+
+export function framesProductAsDwelling(text: string): boolean {
+  return DWELLING_FRAMING.test(text.normalize('NFC'));
 }

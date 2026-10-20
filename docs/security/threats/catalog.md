@@ -10,14 +10,14 @@
 
 ## 1. Overview
 
-O staff com papel Admin (AAL2) registra Brand Partners, Concepts e versões, Editions, autorizações de Investor e
-Residences. Toda mutação passa pelo guard e pelo executor (TECH-054) e grava `operation` + `audit_log`; toda leitura das
-telas grava `admin_read`. Dados: nomes de marca, textos do Concept e da Edition, referências de instrumentos e rótulos
+O staff com papel Admin (AAL2) registra Brand Partners, Home Concepts e versões, Home Editions, autorizações de Investor e
+Second Homes. Toda mutação passa pelo guard e pelo executor (TECH-054) e grava `operation` + `audit_log`; toda leitura das
+telas grava `admin_read`. Dados: nomes de marca, textos do Home Concept e da Home Edition, referências de instrumentos e rótulos
 internos — nenhum dado pessoal. A superfície nova reusa sessão, guard e CSRF da W2 (`identity-admin`).
 
 ## 2. Assets
 
-- Integridade do catálogo: vínculo Concept → Edition → Residence, versão fixada (BR-025), autorização do Investor.
+- Integridade do catálogo: vínculo Home Concept → Home Edition → Second Home, versão fixada (BR-025), autorização do Investor.
 - Histórico: versões aprovadas, encerramento, exposição e auditoria (sem `UPDATE`/`DELETE` funcional).
 - Conformidade editorial dos textos (REQ-100/101) antes da exposição pública (W4).
 
@@ -63,8 +63,8 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 ### C-004 [MEDIUM] Tampering — Reescrever a versão fixada, uma versão aprovada ou o histórico
 
 - **Mitigação**: `luxtory_app` sem `DELETE`; `UPDATE` só nas colunas de transição (aprovação, exposição, encerramento,
-  revogação), cada uma de vazio a preenchido uma vez; gatilhos recusam o resto; FKs compostas amarram Edition, versão e
-  autorização ao mesmo Concept. Testes de banco para cada gatilho.
+  revogação), cada uma de vazio a preenchido uma vez; gatilhos recusam o resto; FKs compostas amarram Home Edition, versão e
+  autorização ao mesmo Home Concept. Testes de banco para cada gatilho.
 
 ### C-007 [MEDIUM] Tampering — Texto com terminologia vedada ou promessa de retorno chegando ao público
 
@@ -79,7 +79,7 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 ### C-005 [LOW] Information disclosure — Catálogo lido por `anon`/`authenticated`
 
 - **Mitigação**: RLS ligada com política só para `luxtory_app`; nenhum grant para `anon`/`authenticated`. Teste de RLS.
-  Não há dado pessoal no catálogo; rótulo da Residence orientado a não conter nome nem endereço.
+  Não há dado pessoal no catálogo; rótulo da Second Home orientado a não conter nome nem endereço.
 
 ### C-006 [LOW] Denial of service — Volume de `POST` autenticados
 
@@ -89,9 +89,9 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 
 ## 7. Abuse cases
 
-- Staff tenta registrar Residence com a autorização de outro Concept → recusada (FK composta e command).
-- Staff tenta aprovar uma versão antiga para "voltar" o Concept → recusada (só versão maior que a vigente).
-- Depois do encerramento, staff tenta criar uma Edition com data retroativa no corpo → o instante vem do servidor.
+- Staff tenta registrar Second Home com a autorização de outro Home Concept → recusada (FK composta e command).
+- Staff tenta aprovar uma versão antiga para "voltar" o Home Concept → recusada (só versão maior que a vigente).
+- Depois do encerramento, staff tenta criar uma Home Edition com data retroativa no corpo → o instante vem do servidor.
 
 ## 8. Residual risk
 
@@ -179,7 +179,7 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 
 | Component | S | T | R | I | D | E | Notes |
 |---|---|---|---|---|---|---|---|
-| Upload da capa (Server Action e `POST /v1/admin/concepts/{id}/cover`) | — | C-41-1 | C-003 | C-41-2 | C-41-3 | C-002 | só staff Admin com MFA, mesma entrada das outras operações |
+| Upload da capa (Server Action e `POST /v1/admin/home-concepts/{id}/cover`) | — | C-41-1 | C-003 | C-41-2 | C-41-3 | C-002 | só staff Admin com MFA, mesma entrada das outras operações |
 | Supabase Storage (bucket privado, chave secreta no servidor) | C-41-7 | C-41-7 | — | C-41-7 | — | C-41-7 | só o servidor lê e grava |
 | Rota pública da capa | — | — | — | C-41-4 | C-41-5 | — | leitura `anon`, mesmo portão das páginas públicas |
 | Papel `anon` nas tabelas novas | — | — | — | C-41-4 | — | C-W4-2 | grants por coluna, RLS, predicado `catalog_term_is_public` |
@@ -207,9 +207,9 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 
 ### C-41-4 [HIGH] Information disclosure — Capa pendente/retirada, master, valor futuro ou dado interno chegando ao site
 
-- **Mitigação**: RLS para `anon`: mídia só `approved` de Concept público; versões só com papel `display` (o master
-  nunca); valores só vigentes (`valid_from ≤ now()` e sem fim vencido) de Edition pública; termos só ativos e em uso por
-  Concept público. Colunas de aprovação, retirada, autoria, operação, `active`, `sha256` e `source_sha256` fora dos
+- **Mitigação**: RLS para `anon`: mídia só `approved` de Home Concept público; versões só com papel `display` (o master
+  nunca); valores só vigentes (`valid_from ≤ now()` e sem fim vencido) de Home Edition pública; termos só ativos e em uso por
+  Home Concept público. Colunas de aprovação, retirada, autoria, operação, `active`, `sha256` e `source_sha256` fora dos
   grants. O bucket é privado e nenhuma URL do Storage chega ao navegador: a rota decide pela RLS e só então lê o objeto.
   Tudo que não é público responde 404 sem motivo. Testes `db` como `anon` cobrem cada caso.
 
@@ -222,7 +222,7 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 ### C-41-6 [MEDIUM] Tampering — Reescrever o valor que já foi exibido
 
 - **Mitigação**: tabela só de inserção; gatilho permite um único encerramento e barra sobreposição de vigências por série
-  (Edition + base + moeda); o command recusa início no passado (`ERR_VALIDATION`) e só encerra "agora"; auditoria
+  (Home Edition + base + moeda); o command recusa início no passado (`ERR_VALIDATION`) e só encerra "agora"; auditoria
   antes/depois de cada mudança. Valores em `bigint` + moeda, sem ponto flutuante (TECH-033).
 
 ### C-41-7 [HIGH] Spoofing/Elevation — Vazamento ou abuso da chave secreta do Storage
@@ -230,7 +230,7 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 - **Mitigação**: `SUPABASE_SECRET_KEY` só no servidor, só em Production (Sensitive na Vercel), validada no formato
   `sb_secret_…` (a `service_role` legada é recusada) e enviada só no cabeçalho `apikey` às rotas do Storage; nunca em
   log nem em mensagem de erro (só operação e status). Preview recusa o Storage como recusa o banco (ADR-0007); o adaptador
-  local é recusado na Vercel. Só chaves geradas pelo command (`concept-media/<sha256>.webp`) chegam ao Storage — caminho
+  local é recusado na Vercel. Só chaves geradas pelo command (`home-concept-media/<sha256>.webp`) chegam ao Storage — caminho
   vindo de fora é recusado antes de qualquer acesso (sem path traversal). Rotação da chave no runbook.
 
 ### Residual risk
@@ -238,3 +238,71 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 - A retirada da capa vale na próxima requisição; uma cópia já baixada no navegador continua com o visitante (aceito).
 - A curadoria (posição e destaque) é mutável por desenho; o histórico fica no `audit_log` (aceito).
 - Objetos sem referência podem sobrar no bucket privado depois de uma transação desfeita (aceito; limpeza futura).
+
+## Wave 4.2 — Ontologia Home Concept → Home Edition → Second Home (2026-10-19)
+
+- **Status**: Draft (Fase B da W4.2; revisar no fechamento da wave)
+- **Scope**: renomeação do schema e do código do catálogo; Home Edition com preparação editável, finalização material
+  (definição imutável depois dela), visibilidade pública separada e correção editorial; mídia da Home Edition (imagens, renders, plantas) com rota pública
+  `GET /media/home-edition-media/{id}/{width}`; média projetada de investimento; página pública
+  `/colecao/[homeConceptId]/home-editions/[homeEditionId]`; `register_second_home` só de Home Edition publicada
+- **Linked spec / ADR**: `docs/specs/catalog.md` §17 · ADR-0019 · ADR-0014 · ADR-0015 · `docs/plan/w4-2-ontologia.md`
+
+### Superfície nova ou alterada
+
+| Component | S | T | R | I | D | E | Notes |
+|---|---|---|---|---|---|---|---|
+| Commands da Home Edition (criar, publicar, retirar, corrigir, mídia, média projetada) | — | C-42-2, C-42-3 | C-003 | — | C-006 | C-002 | mesma entrada das outras operações do catálogo |
+| Página pública da Home Edition e rota de mídia | — | — | — | C-42-1, C-42-4, C-42-5 | C-41-5 | — | leitura `anon` sob RLS, mesmo portão |
+| Upload da mídia da Home Edition | — | C-41-1 | C-003 | C-41-2 | C-41-3 | C-002 | mesmo pipeline da capa |
+| Migrations de renomeação | — | C-42-6 | — | C-42-6 | — | — | dependency map, precondições fail-closed |
+
+### C-42-1 [HIGH] Information disclosure — Home Edition em preparação ou fora do público, mídia pendente ou média futura no site
+
+- **Vector**: leitura pública que ignore a visibilidade, o estado material, o estado da mídia ou a vigência da média.
+- **Mitigação**: visibilidade só pela RLS — Home Edition `visibility = 'public'` (que exige `finalized`) e Home
+  Concept público; mídia `approved` de Home
+  Edition pública; média vigente agora de Home Edition pública; master nunca público; grants de `anon` só nas colunas
+  da §17.7 (sem estado material, dados de finalização, de quem registrou nem base de retirada). Testes `db` como `anon` para cada estado.
+
+### C-42-2 [MEDIUM] Tampering — Alteração material silenciosa de Home Edition finalizada (BR-036)
+
+- **Vector**: update direto, command novo ou Server Action que mude tipologia, área, suítes, capacidade, programa ou o
+  Home Concept de uma Home Edition já finalizada, ou que reabra a preparação ao retirá-la do público.
+- **Mitigação**: gatilho `home_edition_transition` recusa, depois da finalização, qualquer mudança da definição material
+  e, sempre, do vínculo e do retorno a `draft`, em qualquer caminho (inclusive o dono da tabela); `public` exige
+  `finalized` por constraint; a única edição material é `update_home_edition_draft`, que exige `draft`. Teste `db`
+  por coluna material depois da finalização.
+
+### C-42-3 [MEDIUM] Tampering / Repudiation — Correção editorial usada para mudar o produto
+
+- **Vector**: reescrever a descrição para descrever outra configuração.
+- **Mitigação**: correção editorial só de nome e descrição, com base obrigatória, `operation` e `audit_log` com antes e
+  depois; checagem lexical; só staff Admin com MFA. **Residual**: o software não interpreta semântica de texto — a
+  revisão humana é o controle (como a aprovação de versão, C-007).
+
+### C-42-4 [MEDIUM] Information disclosure / misrepresentation — Média projetada lida como preço ou oferta
+
+- **Vector**: valor exibido sem contexto, por modalidade ou como valor individual (REQ-100, REQ-101, BR-034).
+- **Mitigação**: o dado não tem modalidade, base nem Ação; a página e a Coleção sempre exibem o rótulo "Média projetada
+  de investimento" e a explicação obrigatória da §17.4; testes de copy e E2E verificam a presença da explicação junto do
+  valor; checagem de terminologia sobre o texto renderizado.
+
+### C-42-5 [LOW] Information disclosure — Enumeração de Home Editions por URL
+
+- **Mitigação**: inexistente, em preparação, fora do público, de Home Concept não público ou de outro Home Concept → o mesmo 404 da
+  plataforma, sem distinguir o motivo; ids são UUIDs aleatórios.
+
+### C-42-6 [MEDIUM] Tampering / Information disclosure — Migration de renomeação com dano silencioso
+
+- **Vector**: função SQL/PL/pgSQL com corpo apontando para nome antigo (falha só na execução), policy pública perdida,
+  grant de `anon` que sobrevive numa coluna nova, perda de dado por `DROP` sem verificação.
+- **Mitigação**: dependency map extraído do banco real; `CREATE OR REPLACE` de toda função citada na mesma migration;
+  precondições fail-closed antes de qualquer `DROP`; nenhum `CASCADE`; `npm run db:check` (up → down → up), testes de
+  banco das policies, grants e gatilhos com os nomes novos e teste das precondições.
+
+### Residual risk
+
+- Semântica dos textos editoriais (C-42-3) depende de revisão humana.
+- Janela curta entre `migrate` e deploy em que o app anterior não lê o catálogo renomeado (sem dados em Production;
+  ADR-0019).

@@ -1,6 +1,8 @@
 # 01 — Business Model & Business Rules — Luxtory Branded Second Home
 
-2026-09-19 · @Someone · Versão 10.1 — Status: final
+2026-10-19 · @Someone · Versão 10.2 — Status: final
+
+Revisão M0 (fundador): ontologia Home Concept → Home Edition → Second Home; localização concreta, modalidade definitiva, estrutura patrimonial e condições comerciais pertencem à Second Home. BR-030 distingue a Pesquisa de Descoberta & Validação do Home Concept, antes da Home Edition, da manifestação de interesse comercial, que parte de uma Home Edition.
 
 ## Finalidade
 
@@ -14,17 +16,17 @@ Hierarquia documental: **01 Business Model & Business Rules → 02 Product Spec 
 
 A Luxtory desenvolve Branded Second Homes a partir do universo de marcas desejadas. A estrutura conceitual do modelo é:
 
-**Brand Partner → Brand DNA → Residence Concept → Residence Edition → Owner ou Co-Owner → Design & Build → Residence → Luxtory Club**
+**Brand Partner → identidade da marca → Home Concept → Home Edition → interesse e pré-qualificação → estruturação da Second Home → aquisição e formalização → Design & Build → operação da Second Home → Luxtory Club**
 
-A Brand Partner aporta identidade, lifestyle, desejo e comunidade. A Luxtory traduz esse universo em um Residence Concept replicável, suficientemente definido para ser implantado e comercializado. Ao longo do tempo, a Luxtory realiza Residence Editions, correspondentes a lançamentos comerciais de determinado Residence Concept. O cliente final pode adquirir a Residence integralmente, como Owner, ou em copropriedade, como Co-Owner. A Luxtory pode coordenar o Design & Build, administrar a Residence e integrá-la ao Luxtory Club.
+A Brand Partner aporta a identidade da marca, seu lifestyle, desejo e comunidade. A Luxtory traduz esse universo em um Home Concept replicável, que estabelece os princípios reconhecíveis em toda Home Edition dele derivada. Cada Home Edition é uma configuração específica e replicável de Second Home; cada Second Home é uma instância específica de uma Home Edition, destinada a uma localização concreta. O cliente final pode adquirir a Second Home integralmente, como Owner, ou em copropriedade, como Co-Owner. A Luxtory pode coordenar o Design & Build, administrar a Second Home e integrá-la ao Luxtory Club.
 
-**BR-001** — Residence Concept, Residence Edition e Residence são conceitos distintos.
+**BR-001** — Home Concept, Home Edition e Second Home são conceitos distintos.
 
-**BR-002** — Um Residence Concept PODE originar múltiplas Residence Editions e múltiplas Residences em diferentes regiões.
+**BR-002** — Um Home Concept PODE originar múltiplas Home Editions, e cada Home Edition PODE originar múltiplas Second Homes, em diferentes localizações.
 
-**BR-003** — Toda Residence DEVE derivar de um Residence Concept aprovado.
+**BR-003** — Toda Second Home DEVE derivar de uma Home Edition de Home Concept aprovado.
 
-**BR-004** — Toda oferta comercial de uma Branded Second Home DEVE estar vinculada a uma Residence Edition.
+**BR-004** — Toda oferta comercial de uma Branded Second Home DEVE estar vinculada a uma Home Edition.
 
 **BR-005** — Owner e Co-Owner são as duas modalidades de aquisição destinadas ao adquirente final.
 
@@ -32,27 +34,30 @@ A Brand Partner aporta identidade, lifestyle, desejo e comunidade. A Luxtory tra
 
 | Conceito | Definição |
 | --- | --- |
-| Brand Partner | Marca parceira que aporta seu Brand DNA e autoriza seu uso no modelo Luxtory |
-| Brand DNA | Identidade, códigos estéticos, valores, lifestyle, atributos e experiências da Brand Partner |
-| Residence Concept | Conceito residencial replicável desenvolvido pela Luxtory a partir do Brand DNA |
-| Residence Edition | Edição comercial de lançamento de determinado Residence Concept, associada a uma região, contexto e condições comerciais |
-| Residence | Imóvel físico desenvolvido do zero a partir de um Residence Concept |
-| Owner | Proprietário de 100% de uma Residence |
-| Co-Owner | Acionista da SPE proprietária de uma Residence |
+| Brand Partner | Marca parceira que aporta a identidade da marca e autoriza seu uso no modelo Luxtory |
+| Identidade da marca | Códigos estéticos, valores, lifestyle, atributos e experiências que caracterizam a Brand Partner |
+| Home Concept | Sistema conceitual e identitário replicável desenvolvido pela Luxtory a partir da identidade e do lifestyle da Brand Partner; estabelece os princípios que devem permanecer reconhecíveis nas Home Editions dele derivadas — conforme aplicável, lifestyle, identidade, linguagem conceitual, princípios de arquitetura e design, elementos essenciais, premissas de preservação e identidade da experiência |
+| Home Edition | Configuração específica e replicável de Second Home derivada de um Home Concept, concebida pela Luxtory e apresentada por meio de suas características, projeto, descrição e representação visual. Não possui localização, não representa lançamento regional, não é imóvel físico e não possui estrutura patrimonial nem condições comerciais definitivas; depois de publicada, sua definição material é imutável |
+| Second Home | Instância específica de uma Home Edition destinada a uma localização concreta, cuja estruturação estabelece, quando aplicável, modalidade, estrutura patrimonial, configuração Co-Owner e condições comerciais próprias; seu ciclo de vida pode compreender estruturação, Design & Build e operação |
+| Média projetada de investimento | Referência aproximada da ordem de grandeza do investimento total projetado necessário para materializar uma Second Home de determinada Home Edition, registrada pela Luxtory; não representa o investimento de um interessado individual, preço de aquisição Owner, preço de Ação, parcela individual, proposta nem condição comercial |
+| Localização pretendida | Local onde o interessado deseja ter uma Second Home de determinada Home Edition, declarado na manifestação de interesse |
+| Localização concreta | Local ao qual se destina determinada Second Home |
+| Owner | Proprietário de 100% de uma Second Home |
+| Co-Owner | Acionista da SPE proprietária de uma Second Home |
 | Titular | Owner ou Co-Owner quando determinada regra se aplica a ambos |
-| SPE | Sociedade de propósito específico constituída como S.A. fechada para uma Residence Co-Owner |
+| SPE | Sociedade de propósito específico constituída como S.A. fechada para uma Second Home Co-Owner |
 | Direito de Uso | Quantidade anual de dias de utilização atribuída a cada Co-Owner |
 | Membership | Associação de um CPF ou CNPJ titular ao Luxtory Club |
-| Luxtory Club | Rede de Residences, benefícios, serviços, intercâmbio e estadias adicionais |
-| PRL | Preço de Referência da Luxtory atribuído a cada data de uma Residence |
+| Luxtory Club | Rede de Second Homes, benefícios, serviços, intercâmbio e estadias adicionais |
+| PRL | Preço de Referência da Luxtory atribuído a cada data de uma Second Home |
 | Crédito Luxchange | Unidade operacional interna utilizada no Luxchange |
-| Inventário Central | Fonte única da disponibilidade física de cada Residence |
+| Inventário Central | Fonte única da disponibilidade física de cada Second Home |
 | Inventário Luxtory | Capacidade validamente atribuída ou cedida ao controle comercial da Luxtory |
-| Investor | Agente autorizado pela Luxtory a financiar e/ou desenvolver uma Residence para posterior comercialização |
+| Investor | Agente autorizado pela Luxtory a financiar e/ou desenvolver uma Second Home para posterior comercialização |
 
-## 3. Brand Partner e Residence Concept
+## 3. Brand Partner e Home Concept
 
-A Brand Partner permanece titular de sua marca, Brand DNA e demais ativos intelectuais preexistentes. A Luxtory estrutura a aplicação residencial desse universo por meio do Residence Concept e do respectivo plano estratégico de uso da marca.
+A Brand Partner permanece titular de sua marca, da identidade da marca e dos demais ativos intelectuais preexistentes. A Luxtory estrutura a aplicação desse universo em Second Homes por meio do Home Concept, das Home Editions dele derivadas e do respectivo plano estratégico de uso da marca.
 
 **BR-010** — O plano estratégico de utilização da marca DEVE ser previamente aprovado pela Brand Partner.
 
@@ -60,51 +65,57 @@ A Brand Partner permanece titular de sua marca, Brand DNA e demais ativos intele
 
 **BR-012** — Os direitos preexistentes da Brand Partner permanecem preservados, assim como os direitos da Luxtory sobre sua metodologia e demais ativos próprios, observados os instrumentos aplicáveis.
 
-**BR-013** — Todo Residence Concept DEVE possuir especificação suficiente para permitir implantação replicável e apresentação comercial.
+**BR-013** — Todo Home Concept DEVE possuir especificação suficiente para que as Home Editions dele derivadas preservem, de forma replicável, sua identidade, e para a apresentação do próprio Home Concept.
 
-**BR-014** — Cada Residence Concept DEVE identificar seus elementos essenciais e as premissas necessárias à preservação de sua identidade.
+**BR-014** — Cada Home Concept DEVE identificar seus elementos essenciais e as premissas necessárias à preservação de sua identidade.
 
-**BR-015** — A exploração e a replicação do Residence Concept dependem dos direitos de utilização da marca acordados entre Luxtory e Brand Partner. Toda exposição pública da marca, inclusive em canais externos, integra o plano estratégico da BR-010.
+**BR-015** — A exploração e a replicação do Home Concept dependem dos direitos de utilização da marca acordados entre Luxtory e Brand Partner. Toda exposição pública da marca, inclusive em canais externos, integra o plano estratégico da BR-010.
 
 **BR-016** — A remuneração da Brand Partner é definida contratualmente e permanece separada das demais receitas Luxtory.
 
-### 3.1. Preservação do Concept
+### 3.1. Preservação do Home Concept
 
-**BR-017** — O Owner PODE personalizar elementos não essenciais do Residence Concept. Personalizar, sim. Descaracterizar, não.
+**BR-017** — O Owner PODE personalizar elementos não essenciais do Home Concept. Personalizar, sim. Descaracterizar, não.
 
 **BR-018** — Alterações que afetem elementos essenciais dependem da governança de aprovação aplicável entre Luxtory e Brand Partner.
 
-**BR-019** — Residence Co-Owner DEVE permanecer padronizada e NÃO admite personalização individual que descaracterize o produto compartilhado.
+**BR-019** — Toda Second Home Co-Owner DEVE permanecer padronizada conforme sua Home Edition e NÃO admite personalização individual que descaracterize o produto compartilhado.
 
-**BR-020** — Residence materialmente descaracterizada PODE ter suspensos sua participação nos mecanismos da rede, sua certificação de conformidade e o uso comercial das marcas relacionadas enquanto persistir a não conformidade, preservados seus direitos patrimoniais.
+**BR-020** — Second Home materialmente descaracterizada PODE ter suspensos sua participação nos mecanismos da rede, sua certificação de conformidade e o uso comercial das marcas relacionadas enquanto persistir a não conformidade, preservados seus direitos patrimoniais.
 
 ### 3.2. Encerramento da parceria com a Brand Partner
 
-**BR-021** — O encerramento impede novos Residence Concepts, novas Residence Editions e novos usos da marca após sua eficácia, salvo disposição contratual diferente.
+**BR-021** — O encerramento impede novos Home Concepts, novas Home Editions e novos usos da marca após sua eficácia, salvo disposição contratual diferente.
 
-**BR-022** — O encerramento NÃO extingue automaticamente direitos necessários à conclusão ou continuidade de Residences já contratadas, vendidas ou em construção.
+**BR-022** — O encerramento NÃO extingue automaticamente direitos necessários à conclusão ou continuidade de Second Homes já contratadas, vendidas ou em construção.
 
 **BR-023** — Direitos de transição, sobrevivência de licenças e demais consequências são definidos contratualmente.
 
-**BR-024** — Obrigações relativas à preservação física do Residence Concept e eventuais direitos ou restrições da Brand Partner sobre a expressão de seu Brand DNA na Residence NÃO decorrem exclusivamente do Membership e permanecem sujeitos aos instrumentos aplicáveis mesmo após seu encerramento.
+**BR-024** — Obrigações relativas à preservação física do Home Concept e eventuais direitos ou restrições da Brand Partner sobre a expressão da identidade da marca na Second Home NÃO decorrem exclusivamente do Membership e permanecem sujeitos aos instrumentos aplicáveis mesmo após seu encerramento.
 
-### 3.3. Versionamento do Residence Concept
+### 3.3. Versionamento do Home Concept e imutabilidade material da Home Edition
 
-**BR-025** — Cada Residence permanece vinculada à versão do Residence Concept vigente na data de sua aprovação comercial. Alterações posteriores do Concept NÃO modificam automaticamente Residences já contratadas, vendidas ou construídas.
+**BR-025** — Cada Second Home permanece vinculada a uma Home Edition específica e à versão do Home Concept vigente na data de sua aprovação comercial. Alterações posteriores do Home Concept NÃO modificam automaticamente Second Homes já contratadas, vendidas, em Design & Build ou em operação; alteração material de produto gera outra Home Edition (BR-036).
 
-## 4. Residence Edition e formação da oferta
+## 4. Home Edition, manifestação de interesse e estruturação da Second Home
 
-Residence Edition representa um lançamento comercial, e não o imóvel físico. A demanda PODE existir antes da criação formal de uma Edition.
+A Home Edition apresenta uma configuração específica e replicável de Second Home, derivada de um Home Concept e sem localização. A manifestação de interesse comercial parte de uma Home Edition e declara a localização pretendida e a modalidade desejada. Localização concreta, modalidade definitiva, estrutura patrimonial e condições comerciais pertencem à Second Home estruturada.
 
-**BR-030** — Manifestações de interesse PODEM ser captadas diretamente a partir do Residence Concept antes de existir uma Residence Edition correspondente.
+**BR-030** — Toda manifestação de interesse comercial DEVE referir-se a uma Home Edition e declarar a localização pretendida e a modalidade desejada. A Pesquisa de Descoberta & Validação de um Home Concept, realizada antes de sua transformação em Home Edition, constitui mecanismo próprio de Product Discovery e NÃO é manifestação de interesse comercial, NÃO gera aquisição nem direito.
 
-**BR-031** — Quando a Luxtory identificar oportunidade e decidir realizar determinado lançamento, cria a Residence Edition correspondente, vinculando-a ao Residence Concept, região e condições comerciais aplicáveis.
+**BR-031** — A Luxtory concebe e registra Home Editions, cada uma vinculada de forma permanente ao Home Concept do qual deriva, com características próprias — entre outras, nome, descrição, tipologia, configuração dos espaços, área projetada, suítes, capacidade, ambientes, amenidades, imagens, renders e plantas. A Home Edition NÃO possui localização, modalidade, estrutura patrimonial nem condições comerciais definitivas.
 
-A sequência comercial é: Residence Concept → manifestações de interesse → decisão de lançamento → Residence Edition → aquisição e estruturação → Residence.
+A sequência comercial é: Home Concept → Home Edition → manifestação de interesse e pré-qualificação → estruturação da Second Home → aquisição e formalização → Design & Build → operação da Second Home.
 
-**BR-032** — Uma Residence Edition PODE ser oferecida como Owner, Co-Owner ou, enquanto sua estrutura definitiva permanecer aberta, pelas duas alternativas autorizadas pela Luxtory.
+**BR-032** — A modalidade desejada é declarada pelo interessado na manifestação de interesse. A modalidade definitiva e a estrutura patrimonial pertencem a cada Second Home e são definidas em sua estruturação; enquanto essa estrutura permanecer aberta, a Second Home PODE ser oferecida como Owner, Co-Owner ou pelas duas alternativas autorizadas pela Luxtory. Uma Home Edition NÃO restringe modalidades, salvo Business Rule explícita.
 
-**BR-033** — Depois da formalização definitiva de determinada estrutura de propriedade, eventual alteração exige reestruturação jurídica e comercial própria.
+**BR-033** — Depois da formalização definitiva da estrutura de propriedade de uma Second Home, eventual alteração exige reestruturação jurídica e comercial própria.
+
+**BR-034** — A Home Edition PODE possuir uma média projetada de investimento vigente, registrada pela Luxtory, que representa uma referência aproximada da ordem de grandeza do investimento total projetado necessário para materializar uma Second Home daquela Home Edition, exclusivamente para que o interessado compreenda sua escala econômica. Ela NÃO representa quanto um interessado individual investirá, preço de aquisição Owner, preço de Ação, parcela individual, proposta comercial nem condição comercial definitiva; NÃO se vincula a modalidade, configuração Co-Owner, participação ou Ação; NÃO garante custo; PODE mudar ao longo do tempo; e NÃO é derivada automaticamente de outro valor. O investimento efetivo de cada Second Home PODE variar conforme localização, escopo, fornecedores, momento, configuração, modalidade e demais condições da operação. Nenhum valor individual de Co-Owner é derivado automaticamente dessa referência.
+
+**BR-035** — Quando demanda e viabilidade comercial o justificarem, a Luxtory estrutura uma Second Home a partir de uma Home Edition, para uma localização concreta, definindo modalidade, estrutura patrimonial, configuração Co-Owner quando aplicável e condições comerciais. Uma mesma Home Edition PODE originar Second Homes de modalidades diferentes, em localizações diferentes.
+
+**BR-036** — Depois de publicada, a definição material de uma Home Edition é imutável; alteração material exige uma nova Home Edition. São materiais, entre outros, tipologia, configuração espacial, área projetada, suítes, capacidade, programa, atributos centrais e características que definem a Home Edition. Correções editoriais que não alterem o produto, gestão de mídia, atualização da média projetada de investimento e outros dados explicitamente não materiais definidos na especificação de produto seguem mecanismos próprios, controlados e auditáveis.
 
 ## 5. Go-to-market e replicação
 
@@ -114,35 +125,35 @@ O modelo é predominantemente orientado por demanda.
 
 **BR-041** — A Luxtory atua principalmente na qualificação, estruturação e conversão comercial dessa demanda.
 
-**BR-042** — Residence Concepts PODEM ser replicados regionalmente com participação de parceiros locais autorizados pela Luxtory.
+**BR-042** — Home Concepts PODEM ser replicados regionalmente com participação de parceiros locais autorizados pela Luxtory.
 
-**BR-043** — Parceiros locais DEVEM respeitar o Residence Concept, os padrões Luxtory e os direitos da Brand Partner.
+**BR-043** — Parceiros locais DEVEM respeitar o Home Concept, os padrões Luxtory e os direitos da Brand Partner.
 
 ## 6. Jornada comercial Owner
 
-O interessado em Owner seleciona um Residence Concept e sinaliza, entre outras informações comerciais, a região ou localização pretendida.
+O interessado em Owner manifesta interesse em uma Home Edition e declara a localização pretendida, entre outras informações necessárias à pré-qualificação comercial.
 
 **BR-050** — A manifestação de interesse Owner NÃO constitui aquisição.
 
 **BR-051** — A aquisição Owner PODE avançar com um único adquirente.
 
-**BR-052** — O Owner adquire 100% da Residence e de sua capacidade econômica e de uso, ressalvados compromissos validamente assumidos.
+**BR-052** — O Owner adquire 100% da Second Home e de sua capacidade econômica e de uso, ressalvados compromissos validamente assumidos.
 
-**BR-053** — O modelo atual contempla exclusivamente Residences desenvolvidas do zero a partir de Residence Concepts.
+**BR-053** — O modelo atual contempla exclusivamente Second Homes desenvolvidas do zero a partir de Home Editions de Home Concepts aprovados.
 
 **BR-054** — Retrofit, adaptação ou incorporação de imóveis preexistentes NÃO integram o modelo atual.
 
 ## 7. Jornada comercial Co-Owner
 
-Na manifestação de interesse Co-Owner, o interessado informa a região desejada, a quantidade aproximada de dias anuais pretendida e os dados necessários à qualificação comercial.
+Na manifestação de interesse Co-Owner, feita a partir de uma Home Edition, o interessado declara a localização pretendida, a quantidade aproximada de dias anuais pretendida e os dados necessários à pré-qualificação comercial.
 
 **BR-060** — A quantidade de dias indicada nessa fase é uma preferência comercial, e NÃO um Direito de Uso adquirido.
 
 **BR-061** — O Direito de Uso definitivo somente PODE corresponder a uma das configurações canônicas previstas neste documento.
 
-**BR-062** — A Luxtory agrupa intenções considerando principalmente Residence Concept, região e necessidade aproximada de uso.
+**BR-062** — A Luxtory agrupa intenções considerando principalmente Home Edition, localização pretendida e necessidade aproximada de uso.
 
-**BR-063** — A configuração da operação é definida pela Luxtory conforme a composição da demanda e a viabilidade comercial.
+**BR-063** — A configuração canônica de cada Second Home Co-Owner é definida pela Luxtory conforme a composição da demanda e a viabilidade comercial.
 
 **BR-064** — Quando houver composição suficientemente compatível, a Luxtory entra em contato com os interessados para estruturar e formalizar a aquisição.
 
@@ -150,15 +161,15 @@ Na manifestação de interesse Co-Owner, o interessado informa a região desejad
 
 ## 8. Modalidade Co-Owner
 
-Cada Residence Co-Owner pertence a uma SPE constituída como S.A. fechada. A Luxtory NÃO é acionista da SPE.
+Cada Second Home Co-Owner pertence a uma SPE constituída como S.A. fechada. A Luxtory NÃO é acionista da SPE.
 
 **BR-070** — Participação societária, Direito de Uso, reserva e Crédito Luxchange são conceitos distintos.
 
-**BR-071** — Todos os Co-Owners de uma mesma Residence possuem participação societária equivalente e Direito de Uso equivalente.
+**BR-071** — Todos os Co-Owners de uma mesma Second Home possuem participação societária equivalente e Direito de Uso equivalente.
 
-**BR-072** — A administração profissional da Residence é obrigatória no Co-Owner.
+**BR-072** — A administração profissional da Second Home é obrigatória no Co-Owner.
 
-**BR-073** — As despesas próprias da Residence são rateadas conforme participação societária ou regra válida da SPE.
+**BR-073** — As despesas próprias da Second Home são rateadas conforme participação societária ou regra válida da SPE.
 
 **BR-074** — O exercício ordinário do Direito de Uso corresponde ao ano civil.
 
@@ -173,7 +184,7 @@ Cada Residence Co-Owner pertence a uma SPE constituída como S.A. fechada. A Lux
 | 4 Co-Owners | 25% | 88 dias | 24 | 64 | 13 dias: 7 alta + 6 média/baixa |
 | 2 Co-Owners | 50% | 176 dias | 48 | 128 | 13 dias: 7 alta + 6 média/baixa |
 
-**BR-076** — Toda Residence Co-Owner DEVE adotar exatamente uma dessas quatro configurações.
+**BR-076** — Toda Second Home Co-Owner DEVE adotar exatamente uma dessas quatro configurações.
 
 **BR-077** — Depois de formalizada a SPE, a configuração NÃO pode ser alterada por simples parametrização administrativa.
 
@@ -201,7 +212,7 @@ As configurações ordinárias são estruturadas sobre 365 dias.
 
 **BR-092** — O 29 de fevereiro possui rotação própria entre os Co-Owners, independente da ordem anual de abertura das reservas.
 
-**BR-093** — Na primeira ocorrência de 29 de fevereiro posterior ao início da operação da Residence, a lista da rotação bissexta é fixada a partir da ordem ordinária vigente naquele exercício.
+**BR-093** — Na primeira ocorrência de 29 de fevereiro posterior ao início da operação da Second Home, a lista da rotação bissexta é fixada a partir da ordem ordinária vigente naquele exercício.
 
 **BR-094** — Uma vez fixada, a lista bissexta NÃO se rederiva da ordem ordinária. A cada ano bissexto subsequente, o direito ao dia extraordinário avança uma posição nessa lista própria.
 
@@ -209,7 +220,7 @@ As configurações ordinárias são estruturadas sobre 365 dias.
 
 ## 11. Ordem rotativa de abertura das reservas
 
-Cada Residence Co-Owner possui ordem rotativa anual de abertura do calendário. O ciclo corresponde à configuração: 10 Co-Owners, 10 exercícios; 8, oito; 4, quatro; 2, dois.
+Cada Second Home Co-Owner possui ordem rotativa anual de abertura do calendário. O ciclo corresponde à configuração: 10 Co-Owners, 10 exercícios; 8, oito; 4, quatro; 2, dois.
 
 **BR-100** — A ordem inicial do primeiro ciclo é definida por sorteio auditável entre os Co-Owners após a formação da operação.
 
@@ -231,7 +242,7 @@ A primeira posição abre em **15 de setembro do ano anterior**; cada posição 
 
 ### 11.2. Primeiro exercício
 
-**BR-107** — Se a Residence iniciar sua operação após 1º de janeiro, o primeiro exercício será parcial. Antes da formalização da aquisição, a Residence Edition DEVE definir os Direitos de Uso iniciais de cada Co-Owner e a capacidade inicial da Luxtory com base exclusivamente nas datas ainda disponíveis, preservando igualdade de Direito de Uso e de distribuição sazonal entre os Co-Owners da mesma configuração.
+**BR-107** — Se a Second Home iniciar sua operação após 1º de janeiro, o primeiro exercício será parcial. Antes da formalização da aquisição, a estruturação da Second Home DEVE definir os Direitos de Uso iniciais de cada Co-Owner e a capacidade inicial da Luxtory com base exclusivamente nas datas ainda disponíveis, preservando igualdade de Direito de Uso e de distribuição sazonal entre os Co-Owners da mesma configuração.
 
 **BR-108** — As alocações do primeiro exercício parcial NÃO podem incluir datas já transcorridas. A partir do exercício seguinte aplicam-se integralmente os limites da configuração canônica.
 
@@ -259,17 +270,17 @@ A Luxtory NÃO recebe ações da SPE para possuir dias de uso. Sua capacidade de
 
 ## 14. Owner: administração e serviços
 
-**BR-130** — A administração integral da Residence pela Luxtory é opcional para o Owner.
+**BR-130** — A administração integral da Second Home pela Luxtory é opcional para o Owner.
 
 **BR-131** — A Luxtory PODE oferecer Property Services avulsos ao Owner, remunerados separadamente.
 
-**BR-132** — A participação da Residence nos mecanismos do Luxtory Club exige conformidade com os padrões aplicáveis da Luxtory, ainda que o Owner não contrate administração integral.
+**BR-132** — A participação da Second Home nos mecanismos do Luxtory Club exige conformidade com os padrões aplicáveis da Luxtory, ainda que o Owner não contrate administração integral.
 
 ## 15. Membership, Taxa de Administração e despesas
 
-Membership, Taxa de Administração e despesas da Residence são conceitos independentes.
+Membership, Taxa de Administração e despesas da Second Home são conceitos independentes.
 
-**BR-140** — O Membership é vinculado ao CPF ou CNPJ titular, e NÃO à quantidade de ações ou de Residences.
+**BR-140** — O Membership é vinculado ao CPF ou CNPJ titular, e NÃO à quantidade de ações ou de Second Homes.
 
 **BR-141** — Valor-base vigente do Membership: R$ 790 por ano por titular, sujeito aos planos e condições comerciais aplicáveis.
 
@@ -283,23 +294,23 @@ Membership, Taxa de Administração e despesas da Residence são conceitos indep
 
 **BR-146** — O Membership vigente é condição de acesso aos mecanismos do Luxtory Club: Luxchange, Luxplus e locação pelo canal Luxtory.
 
-**BR-147** — O uso próprio da Residence e o exercício do Direito de Uso pelo Titular independem de Membership.
+**BR-147** — O uso próprio da Second Home e o exercício do Direito de Uso pelo Titular independem de Membership.
 
-**BR-148** — A Taxa de Administração remunera a gestão operacional da Residence. É obrigatória no Co-Owner e opcional no Owner.
+**BR-148** — A Taxa de Administração remunera a gestão operacional da Second Home. É obrigatória no Co-Owner e opcional no Owner.
 
-**BR-149** — As despesas próprias da Residence são suportadas integralmente pelo Owner ou rateadas entre os Co-Owners conforme a estrutura societária aplicável.
+**BR-149** — As despesas próprias da Second Home são suportadas integralmente pelo Owner ou rateadas entre os Co-Owners conforme a estrutura societária aplicável.
 
 ## 16. Paridade Owner e Co-Owner no Luxtory Club
 
 **BR-150** — Owner e Co-Owner estão sujeitos às mesmas regras dos mecanismos do Luxtory Club, salvo quando este documento estabelecer expressamente tratamento diferente em razão da modalidade de propriedade ou da origem da capacidade.
 
-A diferença fundamental é a origem do direito: o Owner controla a capacidade integral da Residence; o Co-Owner controla a capacidade atribuída ao seu Direito de Uso.
+A diferença fundamental é a origem do direito: o Owner controla a capacidade integral da Second Home; o Co-Owner controla a capacidade atribuída ao seu Direito de Uso.
 
 **BR-151** — Para o Owner, capacidade elegível é sua capacidade própria disponível e não comprometida. Para o Co-Owner, capacidade elegível para cessão, Luxchange ou locação externa é exclusivamente a data já validamente reservada em seu Direito de Uso e ainda não comprometida com utilização incompatível.
 
 ## 17. Inventário e disponibilidade
 
-O **Inventário Central** representa toda a capacidade física da Residence. O **Inventário Luxtory** representa apenas a capacidade validamente cedida ou atribuída ao controle comercial da Luxtory.
+O **Inventário Central** representa toda a capacidade física da Second Home. O **Inventário Luxtory** representa apenas a capacidade validamente cedida ou atribuída ao controle comercial da Luxtory.
 
 **BR-160** — Capacidade própria do Titular NÃO integra automaticamente o Inventário Luxtory.
 
@@ -329,7 +340,7 @@ O **Inventário Central** representa toda a capacidade física da Residence. O *
 
 ## 19. PRL — Preço de Referência Luxtory
 
-Cada data de cada Residence possui um PRL. **PRL do período = soma do PRL das datas correspondentes.**
+Cada data de cada Second Home possui um PRL. **PRL do período = soma do PRL das datas correspondentes.**
 
 **BR-180** — O PRL constitui a principal referência econômica para Luxchange, Luxplus e Luxchange Fee.
 
@@ -433,11 +444,11 @@ A locação externa é economicamente distinta de Luxchange e Luxplus.
 
 ### 26.1. Owner sem Membership
 
-**BR-254** — Encerrado o Membership, o Owner PODE comercializar sua Residence independentemente da Luxtory.
+**BR-254** — Encerrado o Membership, o Owner PODE comercializar sua Second Home independentemente da Luxtory.
 
 **BR-255** — Nessa hipótese, o Owner perde o direito de utilizar comercialmente as marcas Luxtory e Brand Partner ou de apresentar a oferta independente como integrante oficial da rede, salvo autorização específica.
 
-**BR-256** — O encerramento do Membership NÃO elimina obrigações permanentes de preservação do Residence Concept nem direitos ou restrições da Brand Partner que sobrevivam contratualmente.
+**BR-256** — O encerramento do Membership NÃO elimina obrigações permanentes de preservação do Home Concept nem direitos ou restrições da Brand Partner que sobrevivam contratualmente.
 
 ### 26.2. Co-Owner
 
@@ -455,7 +466,7 @@ A locação externa é economicamente distinta de Luxchange e Luxplus.
 
 | Mecanismo | Origem da capacidade | Benefício econômico principal |
 | --- | --- | --- |
-| Uso próprio | Capacidade do Titular | Utilização da própria Residence |
+| Uso próprio | Capacidade do Titular | Utilização da própria Second Home |
 | Luxchange | Capacidade cedida | Créditos Luxchange |
 | Luxplus | Inventário Luxtory | Receita Luxtory |
 | Locação externa | Capacidade própria autorizada | Receita líquida do Titular |
@@ -486,7 +497,7 @@ Considera-se capacidade futura recuperada a data ou parcela futura de um períod
 
 **BR-291** — A comercialização de capacidade do Direito de Uso por inadimplência somente PODE ocorrer quando houver autorização válida e expressa nos instrumentos societários ou contratuais aplicáveis.
 
-**BR-292** — A regra aplica-se a débitos vencidos e exigíveis relacionados à Residence perante a SPE ou a Luxtory.
+**BR-292** — A regra aplica-se a débitos vencidos e exigíveis relacionados à Second Home perante a SPE ou a Luxtory.
 
 **BR-293** — Observada a BR-291, a Luxtory PODE reservar e comercializar capacidade disponível correspondente ao saldo remanescente do Direito de Uso do exercício do Co-Owner inadimplente, respeitados seus limites sazonais e as reservas já confirmadas, apenas na extensão necessária à amortização ou quitação dos débitos.
 
@@ -504,21 +515,21 @@ Considera-se capacidade futura recuperada a data ou parcela futura de um períod
 
 **BR-300** — A Luxtory PODE coordenar integralmente arquitetura, interiores, engenharia, fornecedores, construção, implantação e entrega.
 
-**BR-301** — O Design & Build DEVE preservar o Residence Concept.
+**BR-301** — O Design & Build DEVE preservar o Home Concept e executar a configuração da Home Edition da Second Home, observada a personalização permitida.
 
 **BR-302** — O Design & Build constitui frente econômica distinta de Membership e da administração recorrente.
 
-**BR-303** — Parceiros de execução DEVEM operar dentro dos padrões e autorizações aplicáveis da Luxtory e do Residence Concept.
+**BR-303** — Parceiros de execução DEVEM operar dentro dos padrões e autorizações aplicáveis da Luxtory e do Home Concept.
 
 ## 31. Investor
 
 O Investor NÃO constitui terceira modalidade de propriedade.
 
-**BR-310** — O Investor somente PODE financiar ou desenvolver uma Residence baseada em Residence Concept mediante autorização prévia da Luxtory.
+**BR-310** — O Investor somente PODE financiar ou desenvolver uma Second Home de Home Edition de Home Concept aprovado mediante autorização prévia da Luxtory.
 
 **BR-311** — O Investor PODE antecipar o desenvolvimento antes da existência do adquirente final.
 
-**BR-312** — A Residence desenvolvida PODE ser posteriormente oferecida como Owner, Co-Owner ou pelas duas alternativas enquanto a estrutura definitiva permanecer aberta.
+**BR-312** — A Second Home desenvolvida PODE ser posteriormente oferecida como Owner, Co-Owner ou pelas duas alternativas enquanto a estrutura definitiva permanecer aberta.
 
 **BR-313** — O Investor PODE incorporar margem própria ao preço de comercialização, respeitadas as condições acordadas com Luxtory e Brand Partner.
 
@@ -532,7 +543,7 @@ O Investor NÃO constitui terceira modalidade de propriedade.
 
 ## 33. Convidados
 
-**BR-330** — O Titular PODE permitir a utilização por convidados conforme as regras aplicáveis à Residence.
+**BR-330** — O Titular PODE permitir a utilização por convidados conforme as regras aplicáveis à Second Home.
 
 **BR-331** — O convidado NÃO adquire propriedade, participação societária, Membership autônomo, Direito de Uso recorrente nem Créditos.
 
@@ -540,13 +551,13 @@ O Investor NÃO constitui terceira modalidade de propriedade.
 
 ## 34. Transferência e continuidade
 
-**BR-340** — A transferência da Residence Owner NÃO transfere automaticamente Membership ou direitos pessoais do antigo Owner.
+**BR-340** — A transferência da Second Home Owner NÃO transfere automaticamente Membership ou direitos pessoais do antigo Owner.
 
 **BR-341** — A transferência Co-Owner ocorre por meio da participação societária correspondente, permanece sujeita às regras da SPE e DEVE preservar a configuração canônica e a equivalência das participações, salvo reestruturação societária válida nos termos da BR-077.
 
 **BR-342** — O novo Co-Owner DEVE aderir às regras necessárias ao exercício do Direito de Uso.
 
-**BR-343** — A obrigação de preservação do Residence Concept acompanha a Residence conforme os instrumentos aplicáveis.
+**BR-343** — A obrigação de preservação do Home Concept acompanha a Second Home conforme os instrumentos aplicáveis.
 
 **BR-344** — A transferência NÃO extingue automaticamente reservas ou compromissos anteriormente constituídos.
 
@@ -556,7 +567,7 @@ O Investor NÃO constitui terceira modalidade de propriedade.
 
 ## 35. Revenue Model Luxtory
 
-As fontes de monetização atualmente previstas incluem: Membership; Taxa de Administração; Design & Build; Property Services; Luxchange Fee; receita Luxplus; taxas e comissões de locação externa; e remuneração pela estruturação, desenvolvimento ou comercialização das Residences, quando aplicável.
+As fontes de monetização atualmente previstas incluem: Membership; Taxa de Administração; Design & Build; Property Services; Luxchange Fee; receita Luxplus; taxas e comissões de locação externa; e remuneração pela estruturação, desenvolvimento ou comercialização das Second Homes, quando aplicável.
 
 **BR-350** — A remuneração da Brand Partner permanece contratualmente separada.
 
@@ -581,6 +592,8 @@ Podem constituir parâmetros administráveis, conforme a autoridade aplicável: 
 **BR-375** — Nenhuma capacidade pode ser comercializada sem direito, autorização ou base válida.
 
 **BR-376** — Nenhuma implementação pode criar diferença econômica relevante entre Owner e Co-Owner que não decorra deste documento.
+
+**BR-377** — O produto de lazer da Luxtory é denominado Second Home; os conceitos de que deriva são Home Concept e Home Edition. Nenhum nome de domínio, entidade, produto, contrato, interface ou comunicação utiliza Residence, residência, residencial ou equivalentes para denominar ou enquadrar o produto Luxtory. 'Imóvel de lazer' pode ser usado descritivamente; 'casa' só como linguagem narrativa natural, nunca como nome, categoria ou termo técnico. Referências históricas, jurídicas ou a produtos externos usam a terminologia do objeto descrito, como exceção justificada.
 
 ## 38. Limites do documento
 

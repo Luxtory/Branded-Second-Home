@@ -1,4 +1,4 @@
-/** Objeto sobre o qual a autorização vale (ex.: um Concept). */
+/** Objeto sobre o qual a autorização vale (ex.: um Home Concept). */
 export interface GrantScope {
   readonly type: string;
   readonly id: string;

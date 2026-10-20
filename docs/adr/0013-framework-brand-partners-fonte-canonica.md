@@ -96,3 +96,32 @@ O modelo de negócio não muda: `01 → 02 → 03` prevalecem em fatos (BR-380, 
 - Contrato: [`docs/specs/communication.md`](../specs/communication.md)
 - Canônicos: `01` §1, §3, §5, §37 (BR-010…BR-025, BR-040…BR-043, BR-350, BR-374, BR-380) · `02` §1, §2, §16 · `03` §13
 - [`docs/plan/implementation-waves.md`](../plan/implementation-waves.md) → Wave 3D
+
+## Versões do Framework
+
+- **2026-10-12 (fundador, D7 da BP1.1):** Home Concept, Home Edition e Second Home no lugar de Residence — registrada
+  no [ADR-0016](0016-framework-brand-partners-versao-2026-10-12.md); sha256 `47ccb4d6…dc04e9ad04`.
+- **2026-10-19 (fundador, `D-LX-11`; `brand-partners.md` `D-BP-28`):** versão terminológica, sem mudança de estratégia
+  narrativa, JTBD, pilares, tom, estrutura ou destino do CTA. Por decisão ontológica superveniente (`01` v10.2, BR-377),
+  Brand DNA → identidade da marca, de forma contextual (42 ocorrências, com concordância ajustada, p. ex. "Como nossa
+  identidade será preservada?"); "residencial" reescrito em 9 linhas (extensão da marca em Second Homes); "Concept"
+  isolado → Home Concept (4); a oferta do §2 e o resumo do §15 passam a "Second Homes concebidas a partir da identidade
+  de Brand Partners, desenvolvidas a partir de Home Editions, adquiridas como Owner ou Co-Owner…" (a Home Edition não
+  tem modalidade). O CTA passa a **"Explore o potencial da sua marca em Second Homes."** (§8 P5, §12, §15).
+  "Segunda residência" no §2 permanece: nomeia a alternativa convencional, não o produto Luxtory (BR-377, exceção para
+  objeto externo). "Possibilidade de captar interesse antes da Home Edition" (§8 P4) é lida pelo limite L5 da
+  aplicação: a manifestação de interesse comercial parte de uma Home Edition (BR-030). sha256
+  `e42812f1b3c2c8634cb77eb178d265f6653a01a4a01dc2f97a0addee6793a84d` (antes `47ccb4d6…dc04e9ad04`), fixado em
+  `tests/communication.test.ts`.
+- **2026-10-20 (fundador, checkpoint da W4.2; `brand-partners.md` `D-BP-28`):** distingue os dois mecanismos de
+  validação (`01` v10.2 BR-030). O mecanismo, nas três ocorrências (§2, §8 P4 e §15), passa a "Brand Partner →
+  identidade da marca → Home Concept → Pesquisa de Descoberta & Validação → Home Edition → manifestação de interesse e
+  pré-qualificação → estruturação da Second Home → aquisição e formalização → Design & Build → operação da Second Home
+  → Luxtory Club". No §8 P4, "possibilidade de captar interesse antes da Home Edition" passa a "possibilidade de validar
+  a aderência e as hipóteses do Home Concept com o público da marca antes de consolidá-lo em uma Home Edition (Pesquisa
+  de Descoberta & Validação, que não é manifestação de interesse comercial); apresentação da Home Edition e captação da
+  manifestação de interesse comercial depois dela" — substitui a leitura pelo limite L5 registrada acima. No §15, o
+  Diferencial liga o Home Concept às modalidades patrimoniais "por meio das Second Homes estruturadas a partir de suas
+  Home Editions" (BR-032). Estratégia, JTBD, pilares, tom, estrutura e CTA inalterados. sha256
+  `8323c4d137d51907c12f7804775adc19dca7c4f11d75f8edfeda27404447918e` (antes `e42812f1…8a84d`), fixado em
+  `tests/communication.test.ts`.

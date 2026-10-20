@@ -2,20 +2,18 @@
 
 // Server Actions dos formulários do catálogo (ADR-0010 §6); o apoio comum fica em `action-support.ts`.
 import {
-  approveConceptVersionInput,
+  approveHomeConceptVersionInput,
   authorizeBrandExposureInput,
-  createEditionInput,
-  newConceptInput,
+  newHomeConceptInput,
   newVersionInput,
   registerBrandPartnerInput,
   registerInvestorAuthorizationInput,
-  registerResidenceInput,
+  registerSecondHomeInput,
   revokeInvestorAuthorizationInput,
   terminateBrandPartnerInput,
 } from '../application/inputs';
 import {
   field,
-  integer,
   lines,
   NO_INVESTOR,
   orderedChoices,
@@ -84,9 +82,6 @@ const VERSION_FIELDS = [
   'preservation_premises',
   'specification',
   'summary',
-  'guests_max',
-  'suites',
-  'built_area_m2',
   'lifestyle_1',
   'lifestyle_2',
   'lifestyle_3',
@@ -99,9 +94,6 @@ const versionContent = (form: FormData) => ({
   preservation_premises: lines(field(form, 'preservation_premises')),
   specification: field(form, 'specification'),
   summary: present(field(form, 'summary')),
-  guests_max: integer(field(form, 'guests_max')),
-  suites: integer(field(form, 'suites')),
-  built_area_m2: integer(field(form, 'built_area_m2')),
   lifestyle_ids: orderedChoices(form, 'lifestyle', TERM_SLOTS.lifestyle),
   architectural_style_ids: orderedChoices(
     form,
@@ -120,57 +112,45 @@ function repeatedTerms(form: FormData): Record<string, FieldErrorCode> {
   return errors;
 }
 
-export async function registerConceptAction(state: FormState, form: FormData): Promise<FormState> {
+export async function registerHomeConceptAction(
+  state: FormState,
+  form: FormData,
+): Promise<FormState> {
   return submit(state, {
-    command: catalogCommand(catalogHandlers.createConceptVersion),
-    schema: newConceptInput,
+    command: catalogCommand(catalogHandlers.createHomeConceptVersion),
+    schema: newHomeConceptInput,
     input: {
       brand_partner_id: field(form, 'brand_partner_id'),
       title: field(form, 'title'),
       ...versionContent(form),
     },
     values: valuesOf(form, ['title', ...VERSION_FIELDS]),
-    success: (result) => paths.concept(result.concept_id, 'registered'),
+    success: (result) => paths.homeConcept(result.home_concept_id, 'registered'),
     extraErrors: repeatedTerms(form),
   });
 }
 
 export async function createVersionAction(state: FormState, form: FormData): Promise<FormState> {
   return submit(state, {
-    command: catalogCommand(catalogHandlers.createConceptVersion),
+    command: catalogCommand(catalogHandlers.createHomeConceptVersion),
     schema: newVersionInput,
-    input: { concept_id: field(form, 'concept_id'), ...versionContent(form) },
+    input: { home_concept_id: field(form, 'home_concept_id'), ...versionContent(form) },
     values: valuesOf(form, [...VERSION_FIELDS]),
-    success: (result) => paths.concept(result.concept_id, 'registered'),
+    success: (result) => paths.homeConcept(result.home_concept_id, 'registered'),
     extraErrors: repeatedTerms(form),
   });
 }
 
 export async function approveVersionAction(state: FormState, form: FormData): Promise<FormState> {
   return submit(state, {
-    command: catalogCommand(catalogHandlers.approveConceptVersion),
-    schema: approveConceptVersionInput,
+    command: catalogCommand(catalogHandlers.approveHomeConceptVersion),
+    schema: approveHomeConceptVersionInput,
     input: {
-      concept_version_id: field(form, 'concept_version_id'),
+      home_concept_version_id: field(form, 'home_concept_version_id'),
       approval_refs: lines(field(form, 'approval_refs')),
     },
     values: valuesOf(form, ['approval_refs']),
-    success: (result) => paths.concept(result.concept_id, 'approved'),
-  });
-}
-
-export async function createEditionAction(state: FormState, form: FormData): Promise<FormState> {
-  return submit(state, {
-    command: catalogCommand(catalogHandlers.createEdition),
-    schema: createEditionInput,
-    input: {
-      concept_id: field(form, 'concept_id'),
-      region: field(form, 'region'),
-      modality: present(field(form, 'modality')),
-      commercial_conditions: field(form, 'commercial_conditions'),
-    },
-    values: valuesOf(form, ['region', 'modality', 'commercial_conditions']),
-    success: (result) => paths.edition(result.id, 'registered'),
+    success: (result) => paths.homeConcept(result.home_concept_id, 'approved'),
   });
 }
 
@@ -182,13 +162,13 @@ export async function registerAuthorizationAction(
     command: catalogCommand(catalogHandlers.registerInvestorAuthorization),
     schema: registerInvestorAuthorizationInput,
     input: {
-      concept_id: field(form, 'concept_id'),
+      home_concept_id: field(form, 'home_concept_id'),
       instrument_ref: field(form, 'instrument_ref'),
       valid_from: present(field(form, 'valid_from')),
       valid_until: present(field(form, 'valid_until')),
     },
     values: valuesOf(form, ['instrument_ref', 'valid_from_local', 'valid_until_local']),
-    success: (result) => paths.concept(result.concept_id, 'registered'),
+    success: (result) => paths.homeConcept(result.home_concept_id, 'registered'),
   });
 }
 
@@ -204,26 +184,26 @@ export async function revokeAuthorizationAction(
       revocation_basis: field(form, 'revocation_basis'),
     },
     values: valuesOf(form, ['revocation_basis']),
-    success: (result) => paths.concept(result.concept_id, 'revoked'),
+    success: (result) => paths.homeConcept(result.home_concept_id, 'revoked'),
   });
 }
 
-export async function registerResidenceAction(
+export async function registerSecondHomeAction(
   state: FormState,
   form: FormData,
 ): Promise<FormState> {
   const investor = field(form, 'investor_authorization_id');
   return submit(state, {
-    command: catalogCommand(catalogHandlers.registerResidence),
-    schema: registerResidenceInput,
+    command: catalogCommand(catalogHandlers.registerSecondHome),
+    schema: registerSecondHomeInput,
     input: {
-      edition_id: field(form, 'edition_id'),
+      home_edition_id: field(form, 'home_edition_id'),
       label: field(form, 'label'),
       timezone: present(field(form, 'timezone')),
       investor_authorization_id: investor === NO_INVESTOR ? undefined : present(investor),
     },
     values: valuesOf(form, ['label', 'timezone', 'investor_authorization_id']),
-    success: (result) => paths.residence(result.id, 'registered'),
+    success: (result) => paths.secondHome(result.id, 'registered'),
     extraErrors: investor === '' ? { investor_authorization_id: 'required' } : {},
   });
 }

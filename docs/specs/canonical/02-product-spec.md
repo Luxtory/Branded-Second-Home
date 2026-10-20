@@ -1,6 +1,11 @@
 # 02 — Product Spec — Luxtory Branded Second Home
 
-2026-10-09 · Luxtory (fundador) · Versão 4.2 — final · Base normativa: 01 v10.1 (188 BRs) · PD-001 a PD-011 ratificados
+2026-10-19 · Luxtory (fundador) · Versão 4.3 — final · Base normativa: 01 v10.2 (192 BRs) · PD-001 a PD-011 ratificados
+
+Revisão M0 autorizada pelo fundador: aplica a ontologia Home Concept → Home Edition → Second Home do `01` v10.2 —
+revisa §1, §2, REQ-020 a REQ-022, REQ-024, REQ-025, REQ-028, REQ-033, REQ-100 e os edge cases 14 e 15 —, sem
+novo REQ, INV ou PD. Correção da W4.2 (fundador, 2026-10-19): o REQ-022 separa preparação, finalização material e
+visibilidade pública da Home Edition, sem nova Business Rule. Rastreabilidade técnica em `03` v3.15. Total normativo: **65 REQ · 6 INV · 11 PD**.
 
 Revisão BP0 autorizada pelo fundador: acrescenta REQ-028 e REQ-029 à v4.1, sem alterar Business Rules,
 PDs ou invariantes. A superfície pública entra na BP1; o portal é capacidade planejada para BP2, condicionada
@@ -31,15 +36,17 @@ Ausência de autorização no `01` **não é lacuna**: o comportamento simplesme
 
 **Ação** — participação societária do Co-Owner na SPE. Limite sazonal e Direito de Uso — quantidades de dias. O termo “cota” e seus derivados não são utilizados: participação societária é sempre Ação; quantidades de dias são Direito de Uso ou limite sazonal, conforme o contexto.
 
-**Data-Residence** é a unidade funcional: uma data do calendário civil em uma Residence. Todo saldo, reserva, cessão, Crédito, preço e inventário opera sobre ela.
+O produto é a **Second Home**; os conceitos de que deriva são **Home Concept** e **Home Edition**. Residence, residência, residencial ou equivalentes não denominam nem enquadram o produto (BR-377).
+
+**Data da Second Home** é a unidade funcional: uma data do calendário civil em uma Second Home. Todo saldo, reserva, cessão, Crédito, preço e inventário opera sobre ela.
 
 ## 2. Superfícies funcionais
 
 | Superfície | Finalidade |
 | --- | --- |
-| Discovery | Concepts, Editions e ofertas |
-| Interesse | Manifestações Owner e Co-Owner |
-| Área do Titular | Residences, Membership, reservas e convidados |
+| Discovery | Home Concepts e Home Editions; média projetada de investimento vigente quando registrada |
+| Interesse | Manifestação de interesse e pré-qualificação a partir de uma Home Edition |
+| Área do Titular | Second Homes, Membership, reservas e convidados |
 | Calendário | Disponibilidade e Direito de Uso |
 | Luxtory Club | Luxchange, Luxplus e locação autorizada |
 | Carteira | Créditos Luxchange |
@@ -53,7 +60,7 @@ Existir no modelo de negócio não concede acesso ao software.
 
 Decisões funcionais desta camada, **ratificadas e canônicas**. Não são derivações ocultas do `01`. O `02` as implementa; o `03` não as rediscute.
 
-**PD-001 — Membership e papéis.** Um Membership por CPF/CNPJ. Cada vínculo com Residence identifica o papel Owner ou Co-Owner; o mesmo Titular PODE exercer papéis diferentes em Residences distintas. Membership é condição do Titular, nunca um terceiro papel.
+**PD-001 — Membership e papéis.** Um Membership por CPF/CNPJ. Cada vínculo com Second Home identifica o papel Owner ou Co-Owner; o mesmo Titular PODE exercer papéis diferentes em Second Homes distintas. Membership é condição do Titular, nunca um terceiro papel.
 
 **PD-002 — Unidade de hospedagem.** Check-in 14h, check-out 10h. Cada data reservada representa a noite iniciada nela; a data de check-out não consome Direito de Uso. Exemplo: 10 a 12/03 consome 10 e 11/03.
 
@@ -81,7 +88,7 @@ Decisões funcionais desta camada, **ratificadas e canônicas**. Não são deriv
 
 **REQ-010 \[BR-005, BR-150\]** — Owner e Co-Owner são papéis distintos. Regras dirigidas ao Titular aplicam-se a ambos, salvo exceção expressa no `01`.
 
-**REQ-011 \[BR-140 a BR-147, PD-001\]** — Permissões são avaliadas pelo papel exercido em cada Residence, e o Membership é verificado no instante da ação.
+**REQ-011 \[BR-140 a BR-147, PD-001\]** — Permissões são avaliadas pelo papel exercido em cada Second Home, e o Membership é verificado no instante da ação.
 
 **REQ-012 \[BR-261, BR-330 a BR-332\]** — Convidado e locatário externo não recebem direitos patrimoniais, Ação, Membership autônomo, Direito de Uso recorrente nem Créditos.
 
@@ -106,9 +113,9 @@ Decisões funcionais desta camada, **ratificadas e canônicas**. Não são deriv
 
 Nenhuma jornada, parâmetro ou ação administrativa PODE violá-los. São verificáveis a qualquer instante.
 
-**INV-1 \[BR-165\]** — Uma data-Residence não possui duas reservas confirmadas.
+**INV-1 \[BR-165\]** — Uma data da Second Home não possui duas reservas confirmadas.
 
-**INV-2 \[BR-270\]** — Uma data-Residence não gera dois benefícios econômicos incompatíveis.
+**INV-2 \[BR-270\]** — Uma data da Second Home não gera dois benefícios econômicos incompatíveis.
 
 **INV-3 \[BR-161\]** — Toda data no Inventário Luxtory tem exatamente uma das três origens autorizadas. Nenhuma outra.
 
@@ -120,21 +127,21 @@ Nenhuma jornada, parâmetro ou ação administrativa PODE violá-los. São verif
 
 **REQ-016 \[D\] \[INV-4, BR-122\]** — Como a Luxtory abre por último e o agregado tem folga zero, a capacidade dela só se preserva pelo bloqueio duro do limite individual de cada Co-Owner. A seleção da Luxtory é direito a quantitativo por categoria, não escolha garantida de datas.
 
-## 6. Concept, Edition, Residence e aquisição
+## 6. Home Concept, Home Edition, Second Home e aquisição
 
-**REQ-020 \[BR-001 a BR-004\]** — Residence Concept, Residence Edition e Residence permanecem objetos distintos e corretamente vinculados. Nenhuma Residence sem Concept aprovado; nenhuma oferta comercial sem Edition.
+**REQ-020 \[BR-001 a BR-004\]** — Home Concept, Home Edition e Second Home permanecem objetos distintos e corretamente vinculados. Nenhuma Second Home sem Home Concept aprovado; nenhuma oferta comercial sem Home Edition. Cada Second Home deriva de uma Home Edition do seu Home Concept e se destina a uma localização concreta.
 
-**REQ-021 \[BR-010 a BR-015, BR-017 a BR-025\]** — O produto identifica versão e elementos essenciais do Concept, registra as aprovações aplicáveis, diferencia personalização permitida de não conformidade material, aplica as suspensões autorizadas pela BR-020 sem alterar direitos patrimoniais nem reservas confirmadas de terceiros, e impede novos usos de marca após o encerramento da parceria, preservando os direitos sobreviventes registrados. Cada Residence permanece vinculada à versão do Concept de sua aprovação comercial.
+**REQ-021 \[BR-010 a BR-015, BR-017 a BR-025\]** — O produto identifica versão e elementos essenciais do Home Concept, registra as aprovações aplicáveis, diferencia personalização permitida de não conformidade material, aplica as suspensões autorizadas pela BR-020 sem alterar direitos patrimoniais nem reservas confirmadas de terceiros, e impede novos usos de marca após o encerramento da parceria, preservando os direitos sobreviventes registrados. Cada Second Home permanece vinculada a uma Home Edition específica e à versão do Home Concept de sua aprovação comercial.
 
-**REQ-022 \[BR-030 a BR-033\]** — Interesse PODE existir antes da Edition; oferta comercial não. A Edition PODE permanecer Owner, Co-Owner ou ambas enquanto a estrutura estiver aberta; após a formalização, mudança não ocorre por simples configuração administrativa.
+**REQ-022 \[BR-030 a BR-036\]** — Toda manifestação de interesse comercial parte de uma Home Edition publicada, identificada pelo contexto; não há manifestação comercial genérica no Home Concept. O interessado declara a localização pretendida e a modalidade desejada (Owner ou Co-Owner). A Home Edition apresenta a configuração — sem localização, modalidade, estrutura patrimonial ou condições comerciais definitivas — e PODE exibir sua média projetada de investimento vigente: referência aproximada da ordem de grandeza do investimento total projetado para materializar uma Second Home daquela Home Edition, nunca apresentada como preço, proposta, condição ou valor individual de Owner ou Co-Owner, e sem vinculação a modalidade, configuração ou Ação. A manifestação registra o contato do interessado (nome, telefone e e-mail) e uma pré-qualificação comercial estruturada — dimensão de investimento sem falsa precisão para o Co-Owner, unidade de decisão e horizonte da decisão —, sem renda, patrimônio, comprovação financeira, financiamento, CPF, documentos, dados de terceiros ou mensagem livre. O envio é solicitação de conversa, não agendamento: nenhuma resposta cria aquisição, direito, conta, cadastro de Titular, prioridade ou classificação automática. A Home Edition tem preparação, em que sua definição material pode ser completada e corrigida, e finalização material, a partir da qual a definição material é imutável — alteração material gera nova Home Edition — e ela pode originar Second Homes (derivação necessária de BR-025 e BR-036); a visibilidade pública é separada e exige a finalização, de modo que, depois de publicada, a definição material é imutável, e retirá-la do público não reabre a definição material. Modalidade, estrutura patrimonial e condições comerciais definitivas pertencem à Second Home; após a formalização, mudança não ocorre por simples configuração administrativa.
 
 **REQ-023 \[BR-040 a BR-043\]** — O produto PODE registrar origem da demanda e parceiros autorizados, sem criar prerrogativas adicionais.
 
-**REQ-024 \[BR-050 a BR-054\]** — Jornada Owner: Concept → interesse e região → qualificação → Edition e oferta → formalização com um único adquirente. Interesse não constitui aquisição. A formalização ativa propriedade integral e capacidade econômica e de uso, respeitados compromissos válidos. O modelo atual não admite retrofit, adaptação ou imóvel preexistente.
+**REQ-024 \[BR-050 a BR-054\]** — Jornada Owner: Home Concept → Home Edition → interesse com localização pretendida → pré-qualificação → estruturação da Second Home e oferta → formalização com um único adquirente. Interesse não constitui aquisição. A formalização ativa propriedade integral e capacidade econômica e de uso, respeitados compromissos válidos. O modelo atual não admite retrofit, adaptação ou imóvel preexistente.
 
-**REQ-025 \[BR-060 a BR-065\]** — Jornada Co-Owner: Concept → região e necessidade aproximada de dias → qualificação → agrupamento pela Luxtory → definição da configuração → formalização. Dias informados antes da formalização são preferência comercial, jamais direito adquirido, e o produto não os oferece como produto comprável. Somente a formalização cria Ação e Direito de Uso.
+**REQ-025 \[BR-060 a BR-065\]** — Jornada Co-Owner: Home Concept → Home Edition → interesse com localização pretendida e necessidade aproximada de dias → pré-qualificação → agrupamento pela Luxtory → definição da configuração da Second Home → formalização. Dias informados antes da formalização são preferência comercial, jamais direito adquirido, e o produto não os oferece como produto comprável. Somente a formalização cria Ação e Direito de Uso.
 
-**REQ-026 \[BR-070 a BR-073, BR-076, BR-077\]** — Ação, Direito de Uso, reserva e Crédito permanecem objetos distintos. Ações e Direitos de Uso são equivalentes entre os Co-Owners da mesma Residence; administração profissional é obrigatória; despesas seguem a Ação ou regra válida da SPE; adota-se exatamente uma configuração canônica do `01`, imutável por parametrização.
+**REQ-026 \[BR-070 a BR-073, BR-076, BR-077\]** — Ação, Direito de Uso, reserva e Crédito permanecem objetos distintos. Ações e Direitos de Uso são equivalentes entre os Co-Owners da mesma Second Home; administração profissional é obrigatória; despesas seguem a Ação ou regra válida da SPE; adota-se exatamente uma configuração canônica do `01`, imutável por parametrização.
 
 **REQ-027 \[BR-310 a BR-314\]** — O Investor exige autorização registrada, PODE desenvolver antes do adquirente final e comercializar como Owner, Co-Owner ou ambas enquanto a estrutura estiver aberta. Sua margem permanece economicamente própria e o adquirente final segue as mesmas regras Luxtory.
 
@@ -142,9 +149,9 @@ Nenhuma jornada, parâmetro ou ação administrativa PODE violá-los. São verif
 
 **REQ-028 \[BR-010, BR-015, BR-040, BR-041, BR-374\]** — A jornada pública Brand Partners possui Home em
 `/brand-partner` e Como funciona em `/brand-partner/como-funciona`, com navegação B2B própria e sem links para
-a jornada B2C. O CTA **“Explore o potencial residencial da sua marca.”** leva ao formulário da Home
+a jornada B2C. O CTA **“Explore o potencial da sua marca em Second Homes.”** leva ao formulário da Home
 (`/brand-partner#conversa`). A comunicação segue o Framework Brand Partners, dentro dos limites deste documento
-e do `01`. A página pública de Concepts depende de exposição autorizada e não bloqueia essas duas páginas nem
+e do `01`. A página pública de Home Concepts depende de exposição autorizada e não bloqueia essas duas páginas nem
 o formulário.
 
 O formulário solicita Nome, Marca, E-mail e Mensagem obrigatórios; Site da marca é opcional. Não solicita CNPJ,
@@ -163,7 +170,7 @@ jurídica aplicável. Esses parâmetros não impedem a implementação técnica.
 
 **REQ-029 \[BR-010, BR-015, BR-021, BR-022, BR-025\]** — O Portal Brand Partner é capacidade planejada do produto,
 fora da BP1. Permitirá a representantes autenticados e autorizados consultar, somente em leitura, informações
-pertinentes à própria parceria: vendas/aquisições atribuíveis à marca, seus Concepts e Editions relevantes.
+pertinentes à própria parceria: vendas/aquisições atribuíveis à marca, seus Home Concepts e Home Editions relevantes.
 Outros indicadores exigem fonte canônica real e autorização funcional. Não autoriza métricas financeiras,
 royalties ou settlement nesta entrega.
 
@@ -183,9 +190,9 @@ O acesso respeita REQ-014 e os direitos sobreviventes aplicáveis; não decorre 
 
 **REQ-032 \[BR-100 a BR-106, PD-011\]** — A ordem inicial resulta de sorteio auditável, rotaciona conforme o `01` e aplica cumulativamente suas datas e intervalos de abertura. A janela gera vantagem temporal, não exclusividade sobre datas, e a posição nunca é usada como penalidade nem alterada por plano de Membership.
 
-**REQ-033 \[BR-107 a BR-109\]** — O primeiro exercício parcial usa apenas datas futuras disponíveis e a distribuição definida pela Residence Edition, preservando igualdade de Direito de Uso e distribuição sazonal equivalente. Se a formalização ocorrer após a abertura ordinária, a ordem sorteada aplica-se imediatamente, com os intervalos do `01` contados da formalização. **Nenhuma fórmula proporcional é presumida**: a BR-107 atribui essa definição à Edition.
+**REQ-033 \[BR-107 a BR-109\]** — O primeiro exercício parcial usa apenas datas futuras disponíveis e a distribuição definida na estruturação da Second Home, preservando igualdade de Direito de Uso e distribuição sazonal equivalente. Se a formalização ocorrer após a abertura ordinária, a ordem sorteada aplica-se imediatamente, com os intervalos do `01` contados da formalização. **Nenhuma fórmula proporcional é presumida**: a BR-107 atribui essa definição à estruturação da Second Home.
 
-**REQ-034 \[BR-110 a BR-112, PD-002\]** — Reserva de Direito de Uso respeita mínimo, máximo e adjacência do `01`; reservas contíguas do mesmo Co-Owner na mesma Residence contam como permanência única. Períodos que cruzem categorias ou exercícios são validados data a data contra os respectivos saldos e janelas. Uso próprio não exige Membership.
+**REQ-034 \[BR-110 a BR-112, PD-002\]** — Reserva de Direito de Uso respeita mínimo, máximo e adjacência do `01`; reservas contíguas do mesmo Co-Owner na mesma Second Home contam como permanência única. Períodos que cruzem categorias ou exercícios são validados data a data contra os respectivos saldos e janelas. Uso próprio não exige Membership.
 
 **REQ-035 \[D\] \[BR-111\]** — O limite de permanência é regra do Direito de Uso e não se estende a Request, Direct, Luxplus ou locação, que o `01` não limita.
 
@@ -193,7 +200,7 @@ O acesso respeita REQ-014 e os direitos sobreviventes aplicáveis; não decorre 
 
 **REQ-037 \[BR-052, BR-151\]** — O Owner controla sua capacidade própria disponível e não comprometida, sem rotação, janelas ou capacidade reservada à Luxtory.
 
-**REQ-038 \[BR-130 a BR-132\]** — Administração integral é opcional para o Owner; Property Services são contratáveis à parte; a participação da Residence no Club depende de conformidade registrada.
+**REQ-038 \[BR-130 a BR-132\]** — Administração integral é opcional para o Owner; Property Services são contratáveis à parte; a participação da Second Home no Club depende de conformidade registrada.
 
 **REQ-039 \[BR-162\]** — Capacidade ainda não reservada permanece coletiva da SPE e disponível aos demais Co-Owners, dentro de seus limites, até o encerramento do exercício.
 
@@ -239,7 +246,7 @@ O acesso respeita REQ-014 e os direitos sobreviventes aplicáveis; não decorre 
 
 **REQ-070 \[BR-240 a BR-245, PD-009\]** — O Luxplus usa somente Inventário Luxtory, exige Membership, independe de saldo de Créditos e usa o PRL como referência, com preço congelado na compra. A receita pertence à Luxtory; capacidade previamente cedida em troca de Créditos não gera nova remuneração ao cedente.
 
-**REQ-071 \[BR-250 a BR-256, PD-009\]** — O Owner escolhe expressamente as datas próprias que monetiza; Membership não transfere automaticamente capacidade ociosa. Com Membership vigente, a comercialização ocorre pela Luxtory ou por canais e operadores autorizados, e a receita líquida pertence ao Owner após as deduções aplicáveis. Sem Membership, PODE operar independentemente, sem uso comercial das marcas e da rede salvo autorização. As obrigações de preservação do Concept e as restrições que sobrevivam contratualmente permanecem registradas e ativas em qualquer dos casos.
+**REQ-071 \[BR-250 a BR-256, PD-009\]** — O Owner escolhe expressamente as datas próprias que monetiza; Membership não transfere automaticamente capacidade ociosa. Com Membership vigente, a comercialização ocorre pela Luxtory ou por canais e operadores autorizados, e a receita líquida pertence ao Owner após as deduções aplicáveis. Sem Membership, PODE operar independentemente, sem uso comercial das marcas e da rede salvo autorização. As obrigações de preservação do Home Concept e as restrições que sobrevivam contratualmente permanecem registradas e ativas em qualquer dos casos.
 
 **REQ-072 \[BR-257 a BR-261, PD-009\]** — O Co-Owner só monetiza data já reservada, disponível e sem compromisso incompatível, por mecanismos e canais autorizados. A receita líquida pertence ao Co-Owner após deduções; o dia locado permanece consumido do Direito de Uso e não gera Créditos; o locatário não adquire direitos recorrentes.
 
@@ -259,23 +266,23 @@ O acesso respeita REQ-014 e os direitos sobreviventes aplicáveis; não decorre 
 
 **REQ-090 \[BR-290 a BR-298\]** — A inadimplência **PODE** suspender novas reservas e mecanismos do Club conforme os instrumentos aplicáveis; não é automática pela simples existência de débito, e reservas confirmadas permanecem. A comercialização de Direito de Uso exige autorização expressa registrada sobre débito vencido e exigível, limita-se ao exercício atual, aos saldos e limites disponíveis e ao necessário ao débito, e não gera Créditos ao inadimplente. A receita líquida quita primeiro débitos e custos; o excedente pertence ao Co-Owner; quitado o débito, a autorização cessa e o acesso é restabelecido. A posição na rotação nunca é afetada.
 
-**REQ-091 \[BR-300, BR-301, BR-303\]** — O produto preserva o vínculo da Residence à versão do Concept, a conformidade exigida e as autorizações dos parceiros de execução. Gestão detalhada de obra não é requisito obrigatório deste `02`.
+**REQ-091 \[BR-300, BR-301, BR-303\]** — O produto preserva o vínculo da Second Home à versão do Home Concept, a conformidade exigida e as autorizações dos parceiros de execução. Gestão detalhada de obra não é requisito obrigatório deste `02`.
 
-**REQ-092 \[BR-330 a BR-332\]** — O Titular PODE indicar convidado conforme as regras da Residence, parametrizáveis por Residence. O convidado não adquire direitos, a indicação não consome Direito de Uso adicional e o Titular permanece responsável. A indicação não é canal de monetização e não substitui os canais autorizados.
+**REQ-092 \[BR-330 a BR-332\]** — O Titular PODE indicar convidado conforme as regras da Second Home, parametrizáveis por Second Home. O convidado não adquire direitos, a indicação não consome Direito de Uso adicional e o Titular permanece responsável. A indicação não é canal de monetização e não substitui os canais autorizados.
 
-**REQ-093 \[BR-340 a BR-346\]** — A transferência preserva compromissos, reservas futuras e obrigações de preservação do Concept. O Owner não transfere automaticamente Membership nem direitos pessoais. No Co-Owner, o adquirente adere às regras aplicáveis e recebe a Ação, o Direito de Uso remanescente do exercício e as posições e histórico das rotações ordinária e bissexta associadas à Ação.
+**REQ-093 \[BR-340 a BR-346\]** — A transferência preserva compromissos, reservas futuras e obrigações de preservação do Home Concept. O Owner não transfere automaticamente Membership nem direitos pessoais. No Co-Owner, o adquirente adere às regras aplicáveis e recebe a Ação, o Direito de Uso remanescente do exercício e as posições e histórico das rotações ordinária e bissexta associadas à Ação.
 
 **REQ-094 \[BR-016, BR-302, BR-350 a BR-352, BR-360, BR-361\]** — Remuneração da Brand Partner, margem do Investor, Design & Build, Membership, administração e demais receitas permanecem economicamente separadas conforme o `01`, e nenhum relatório as consolida como receita única. Valores ausentes não são inventados: campo sem valor bloqueia a função que depende dele. Parâmetros só variam dentro da autoridade e da Business Rule que os originam, e nenhuma combinação PODE quebrar um invariante da seção 5.
 
 ## 14. Admin, estados, notificações e erros
 
-**REQ-095 \[BR-143, BR-181, BR-232, BR-360, BR-361, PD-009 a PD-011\]** — O Admin opera apenas Concepts, Editions e Residences, formalizações, calendário e rotações, Membership, parâmetros autorizados, Inventário, mecanismos do Club e locação, inadimplência, transferências, conformidade, políticas vigentes e exceções autorizadas. A alteração de PRL publicado permanece exclusiva do Super Admin. Todo parâmetro tem autoridade, histórico e vigência.
+**REQ-095 \[BR-143, BR-181, BR-232, BR-360, BR-361, PD-009 a PD-011\]** — O Admin opera apenas Home Concepts, Home Editions e Second Homes, formalizações, calendário e rotações, Membership, parâmetros autorizados, Inventário, mecanismos do Club e locação, inadimplência, transferências, conformidade, políticas vigentes e exceções autorizadas. A alteração de PRL publicado permanece exclusiva do Super Admin. Todo parâmetro tem autoridade, histórico e vigência.
 
 **REQ-096 \[BR-191, BR-196, BR-214, BR-280 a BR-282, BR-320, BR-321, PD-005 a PD-010\]** — Estados mínimos:
 
 | Objeto | Estados |
 | --- | --- |
-| Residence Concept | Não aprovado · Aprovado (versão N) |
+| Home Concept | Não aprovado · Aprovado (versão N) |
 | Membership | Vigente · Suspenso · Encerrado |
 | Crédito | Disponível · Em Garantia · Consumido · Expirado · Indisponível por Membership |
 | Request | Pendente · Aceita · Recusada · Expirada · Cancelada pré-aceite |
@@ -303,13 +310,15 @@ Tratados sem criar regra econômica nova:
 10. cancelamento tardio ou no-show após início parcial do período;
 11. transferência com reservas e compromissos futuros;
 12. bloqueio extraordinário sobre reserva confirmada;
-13. Residence suspensa por não conformidade com reservas de terceiros confirmadas.
+13. Second Home suspensa por não conformidade com reservas de terceiros confirmadas;
+14. média projetada alterada entre a apresentação e a manifestação: a pré-qualificação permanece vinculada à referência apresentada;
+15. Home Edition que deixa de ser pública entre a página e o envio: a manifestação não é registrada.
 
 Toda confirmação revalida as condições aplicáveis. Falhando qualquer uma, a operação não confirma e aplica apenas consequências já definidas no `01`, em PD ou em política vigente.
 
 ## 16. Guardrails e aceite transversal
 
-**REQ-100 \[BR-373\]** — O Co-Owner é comunicado como Ação com Direito de Uso, nunca como compra de diárias. O produto não exibe preço por diária, pacote de diárias ou equivalente para Co-Owner. Interface, textos, DTOs e documentação seguem a terminologia do §1.
+**REQ-100 \[BR-373, BR-377\]** — O Co-Owner é comunicado como Ação com Direito de Uso, nunca como compra de diárias. O produto não exibe preço por diária, pacote de diárias ou equivalente para Co-Owner. Interface, textos, DTOs e documentação seguem a terminologia do §1, e nenhum nome de produto, entidade, contrato, interface ou comunicação enquadra a Second Home como moradia.
 
 **REQ-101 \[BR-374\]** — O produto não promete rentabilidade, valorização, liquidez ou renda garantidas. Simulador de receita de locação, se existir, é rotulado como estimativa sem garantia.
 
@@ -323,7 +332,7 @@ Uma funcionalidade só está pronta quando: implementa regra identificável; rev
 
 ## 17. Matriz BR → REQ
 
-As 188 BRs do `01` v10.1, uma a uma. Serve como mecanismo de auditoria contra omissão e interpretação incorreta. `01-only` = Business Rule contratual sem comportamento adicional de software.
+As 192 BRs do `01` v10.2, uma a uma. Serve como mecanismo de auditoria contra omissão e interpretação incorreta. `01-only` = Business Rule contratual sem comportamento adicional de software.
 
 | BR | REQ | BR | REQ |
 | --- | --- | --- | --- |
@@ -352,67 +361,70 @@ As 188 BRs do `01` v10.1, uma a uma. Serve como mecanismo de auditoria contra om
 | BR-031 | REQ-022 | BR-240 | REQ-070, 066 |
 | BR-032 | REQ-022 | BR-241 | REQ-070 |
 | BR-033 | REQ-022 | BR-242 | REQ-070 |
-| BR-040 | REQ-023, 028 | BR-243 | REQ-070 |
-| BR-041 | REQ-023, 028 | BR-244 | REQ-070 |
-| BR-042 | REQ-023, 014 | BR-245 | REQ-070 |
-| BR-043 | REQ-023, 014 | BR-250 | REQ-071, 041 |
-| BR-050 | REQ-024 | BR-251 | REQ-071 |
-| BR-051 | REQ-024 | BR-252 | REQ-071 |
-| BR-052 | REQ-024, 037 | BR-253 | REQ-071 |
-| BR-053 | REQ-024 | BR-254 | REQ-071 |
-| BR-054 | REQ-024 | BR-255 | REQ-071 |
-| BR-060 | REQ-025 | BR-256 | REQ-071 |
-| BR-061 | REQ-025 | BR-257 | REQ-072, 041 |
-| BR-062 | REQ-025 | BR-258 | REQ-072 |
-| BR-063 | REQ-025 | BR-259 | REQ-072 |
-| BR-064 | REQ-025 | BR-260 | REQ-072 |
-| BR-065 | REQ-025 | BR-261 | REQ-072, 012 |
-| BR-070 | REQ-026 | BR-270 | REQ-073, INV-2 |
-| BR-071 | REQ-026 | BR-280 | REQ-080 |
-| BR-072 | REQ-026 | BR-281 | REQ-080 |
-| BR-073 | REQ-026 | BR-282 | REQ-080 |
-| BR-074 | REQ-030 | BR-283 | REQ-080, 081 |
-| BR-075 | REQ-030, INV-5 | BR-284 | REQ-080 |
-| BR-076 | REQ-026 | BR-290 | REQ-090 |
-| BR-077 | REQ-026 | BR-291 | REQ-090 |
-| BR-080 | REQ-030, INV-4 | BR-292 | REQ-090 |
-| BR-081 | REQ-030, INV-4 | BR-293 | REQ-090 |
-| BR-082 | REQ-030, INV-4 | BR-294 | REQ-090 |
-| BR-083 | REQ-030, 031 | BR-295 | REQ-090 |
-| BR-090 | REQ-031 | BR-296 | REQ-090 |
-| BR-091 | REQ-031 | BR-297 | REQ-090 |
-| BR-092 | REQ-031, 097 | BR-298 | REQ-090 |
-| BR-093 | REQ-031 | BR-300 | REQ-091 |
-| BR-094 | REQ-031 | BR-301 | REQ-091 |
-| BR-095 | REQ-031 | BR-302 | REQ-094 |
-| BR-100 | REQ-032, 097 | BR-303 | REQ-091, 014 |
-| BR-101 | REQ-032 | BR-310 | REQ-027, 014 |
-| BR-102 | REQ-032 | BR-311 | REQ-027 |
-| BR-103 | REQ-032, 097 | BR-312 | REQ-027 |
-| BR-104 | REQ-032 | BR-313 | REQ-027, 094 |
-| BR-105 | REQ-032 | BR-314 | REQ-027 |
-| BR-106 | REQ-032 | BR-320 | REQ-050 |
-| BR-107 | REQ-033 | BR-321 | REQ-050 |
-| BR-108 | REQ-033 | BR-330 | REQ-092 |
-| BR-109 | REQ-033 | BR-331 | REQ-092, 012 |
-| BR-110 | REQ-034 | BR-332 | REQ-092 |
-| BR-111 | REQ-034, 035 | BR-340 | REQ-093 |
-| BR-112 | REQ-034 | BR-341 | REQ-093 |
-| BR-120 | REQ-036, INV-4 | BR-342 | REQ-093 |
-| BR-121 | REQ-036 | BR-343 | REQ-093, 071 |
-| BR-122 | REQ-036, 016, INV-4 | BR-344 | REQ-093 |
-| BR-123 | REQ-083 | BR-345 | REQ-093 |
-| BR-130 | REQ-038 | BR-346 | REQ-093 |
-| BR-131 | REQ-038 | BR-350 | REQ-094 |
-| BR-132 | REQ-038 | BR-351 | REQ-094 |
-| BR-140 | REQ-050 | BR-352 | REQ-094, 098 |
-| BR-141 | REQ-050 | BR-360 | REQ-094, 095 |
-| BR-142 | REQ-050 | BR-361 | REQ-094, 095 |
-| BR-143 | REQ-050, 095 | BR-373 | REQ-100 |
-| BR-144 | REQ-050 | BR-374 | REQ-101, 028 |
-| BR-145 | REQ-050 | BR-375 | REQ-102, 015 |
-| BR-146 | REQ-051, 011 | BR-376 | REQ-103 |
-| BR-147 | REQ-050, 034 | BR-380 | REQ-104 |
+| BR-034 | REQ-022 | BR-243 | REQ-070 |
+| BR-035 | REQ-022 | BR-244 | REQ-070 |
+| BR-036 | REQ-022 | BR-245 | REQ-070 |
+| BR-040 | REQ-023, 028 | BR-250 | REQ-071, 041 |
+| BR-041 | REQ-023, 028 | BR-251 | REQ-071 |
+| BR-042 | REQ-023, 014 | BR-252 | REQ-071 |
+| BR-043 | REQ-023, 014 | BR-253 | REQ-071 |
+| BR-050 | REQ-024 | BR-254 | REQ-071 |
+| BR-051 | REQ-024 | BR-255 | REQ-071 |
+| BR-052 | REQ-024, 037 | BR-256 | REQ-071 |
+| BR-053 | REQ-024 | BR-257 | REQ-072, 041 |
+| BR-054 | REQ-024 | BR-258 | REQ-072 |
+| BR-060 | REQ-025 | BR-259 | REQ-072 |
+| BR-061 | REQ-025 | BR-260 | REQ-072 |
+| BR-062 | REQ-025 | BR-261 | REQ-072, 012 |
+| BR-063 | REQ-025 | BR-270 | REQ-073, INV-2 |
+| BR-064 | REQ-025 | BR-280 | REQ-080 |
+| BR-065 | REQ-025 | BR-281 | REQ-080 |
+| BR-070 | REQ-026 | BR-282 | REQ-080 |
+| BR-071 | REQ-026 | BR-283 | REQ-080, 081 |
+| BR-072 | REQ-026 | BR-284 | REQ-080 |
+| BR-073 | REQ-026 | BR-290 | REQ-090 |
+| BR-074 | REQ-030 | BR-291 | REQ-090 |
+| BR-075 | REQ-030, INV-5 | BR-292 | REQ-090 |
+| BR-076 | REQ-026 | BR-293 | REQ-090 |
+| BR-077 | REQ-026 | BR-294 | REQ-090 |
+| BR-080 | REQ-030, INV-4 | BR-295 | REQ-090 |
+| BR-081 | REQ-030, INV-4 | BR-296 | REQ-090 |
+| BR-082 | REQ-030, INV-4 | BR-297 | REQ-090 |
+| BR-083 | REQ-030, 031 | BR-298 | REQ-090 |
+| BR-090 | REQ-031 | BR-300 | REQ-091 |
+| BR-091 | REQ-031 | BR-301 | REQ-091 |
+| BR-092 | REQ-031, 097 | BR-302 | REQ-094 |
+| BR-093 | REQ-031 | BR-303 | REQ-091, 014 |
+| BR-094 | REQ-031 | BR-310 | REQ-027, 014 |
+| BR-095 | REQ-031 | BR-311 | REQ-027 |
+| BR-100 | REQ-032, 097 | BR-312 | REQ-027 |
+| BR-101 | REQ-032 | BR-313 | REQ-027, 094 |
+| BR-102 | REQ-032 | BR-314 | REQ-027 |
+| BR-103 | REQ-032, 097 | BR-320 | REQ-050 |
+| BR-104 | REQ-032 | BR-321 | REQ-050 |
+| BR-105 | REQ-032 | BR-330 | REQ-092 |
+| BR-106 | REQ-032 | BR-331 | REQ-092, 012 |
+| BR-107 | REQ-033 | BR-332 | REQ-092 |
+| BR-108 | REQ-033 | BR-340 | REQ-093 |
+| BR-109 | REQ-033 | BR-341 | REQ-093 |
+| BR-110 | REQ-034 | BR-342 | REQ-093 |
+| BR-111 | REQ-034, 035 | BR-343 | REQ-093, 071 |
+| BR-112 | REQ-034 | BR-344 | REQ-093 |
+| BR-120 | REQ-036, INV-4 | BR-345 | REQ-093 |
+| BR-121 | REQ-036 | BR-346 | REQ-093 |
+| BR-122 | REQ-036, 016, INV-4 | BR-350 | REQ-094 |
+| BR-123 | REQ-083 | BR-351 | REQ-094 |
+| BR-130 | REQ-038 | BR-352 | REQ-094, 098 |
+| BR-131 | REQ-038 | BR-360 | REQ-094, 095 |
+| BR-132 | REQ-038 | BR-361 | REQ-094, 095 |
+| BR-140 | REQ-050 | BR-373 | REQ-100 |
+| BR-141 | REQ-050 | BR-374 | REQ-101, 028 |
+| BR-142 | REQ-050 | BR-375 | REQ-102, 015 |
+| BR-143 | REQ-050, 095 | BR-376 | REQ-103 |
+| BR-144 | REQ-050 | BR-377 | REQ-100 |
+| BR-145 | REQ-050 | BR-380 | REQ-104 |
+| BR-146 | REQ-051, 011 |  |  |
+| BR-147 | REQ-050, 034 |  |  |
 | BR-148 | REQ-050 |  |  |
 | BR-149 | REQ-050 |  |  |
 | BR-150 | REQ-010, 051 |  |  |
@@ -430,13 +442,13 @@ As 188 BRs do `01` v10.1, uma a uma. Serve como mecanismo de auditoria contra om
 | BR-180 | REQ-052 |  |  |
 | BR-181 | REQ-052, 013 |  |  |
 
-188 BRs mapeadas. Duas são contratuais e não geram requisito: **BR-012** (direitos preexistentes sobre metodologia e ativos próprios) e **BR-023** (direitos de transição e sobrevivência de licenças).
+192 BRs mapeadas. Duas são contratuais e não geram requisito: **BR-012** (direitos preexistentes sobre metodologia e ativos próprios) e **BR-023** (direitos de transição e sobrevivência de licenças).
 
 ## 18. Prontidão
 
 **Nenhum GAP aberto.** As duas decisões de negócio que restavam foram tomadas: o conteúdo das políticas de cancelamento é configuração comercial versionada (PD-009), e a transferência integral tem regra própria no REQ-093, derivada das BR-192 a BR-196.
 
-O documento está completo, rastreável às 188 BRs, sem conteúdo técnico, sem valor duplicado do `01` e sem decisão empurrada para o `03`.
+O documento está completo, rastreável às 192 BRs, sem conteúdo técnico, sem valor duplicado do `01` e sem decisão empurrada para o `03`.
 
 **Pré-requisito de operação, não de implementação.** Pelo PD-009, nenhuma operação de Request aceita, Direct, Luxplus ou locação confirma antes de existir política vigente e versionada para o mecanismo. O produto pode ser construído sem elas; não pode ser operado. Publicar essas políticas é tarefa comercial, anterior ao lançamento e independente do `03`.
 
@@ -446,3 +458,8 @@ O documento está completo, rastreável às 188 BRs, sem conteúdo técnico, sem
 evolução planejada e não está pronto para implementação antes dos critérios de entrada. BP0 é documental;
 não declara nenhum dos dois requisitos entregue em software. O restante do B2C permanece deliberadamente
 pausado no roadmap, sem remover seu escopo normativo.
+
+**Recorte M0 (2026-10-19):** a ontologia Home Concept → Home Edition → Second Home, o modelo da Home Edition, a
+média projetada de investimento e a correção estrutural da manifestação de interesse do REQ-022 entram em software
+na W4.2; o contato e a pré-qualificação comercial do REQ-022 entram na W6. M0 é documental; não declara nenhum
+requisito entregue em software.

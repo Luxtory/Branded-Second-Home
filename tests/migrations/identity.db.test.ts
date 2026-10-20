@@ -9,7 +9,7 @@ const OPERATION = '00000000-0000-4000-8000-00000000b101';
 const insertGrant = (id: string, partyId = PARTY) => `
   INSERT INTO app.authorization_grant (id, grantee_party_id, commands, scope_type, scope_id, valid_from, valid_until,
     basis, granted_by_user_id, granted_role, operation_id, created_at)
-  VALUES ('${id}', '${partyId}', ARRAY['test_partner_operation'], 'concept', 'concept-1', now(),
+  VALUES ('${id}', '${partyId}', ARRAY['test_partner_operation'], 'home_concept', 'home-concept-1', now(),
     now() + interval '30 days', 'instrumento', '${USER}', 'admin', '${OPERATION}', now())`;
 
 describe('staff_role e funções de operação (TECH-050, REQ-015, ADR-0008)', () => {

@@ -6,8 +6,8 @@ import { catalogHarness, controlledClock } from '../support/catalog-fixtures';
 import { appDatabase } from '../support/platform-fixtures';
 import { createTestDatabase, type TestDatabase } from '../support/test-database';
 
-// Migrations da W5 (spec ownership §5, ADR-0017): `app.interest` e `app.public_idempotency_key` — constraints, gatilhos,
-// RLS só para o papel de aplicação e linhas só de inserção.
+// Migrations da W5 e da W4.2 (spec ownership §5, §13, ADR-0017): `app.interest` (a partir da Home Edition) e
+// `app.public_idempotency_key` — constraints, gatilhos, RLS só para o papel de aplicação e linhas só de inserção.
 const TABLES = ['interest', 'public_idempotency_key'] as const;
 const CHECK_VIOLATION = '23514';
 const FOREIGN_KEY_VIOLATION = '23503';
@@ -16,11 +16,8 @@ describe('W5: interest e public_idempotency_key no banco', () => {
   let database: TestDatabase;
   let app: pg.Client;
   let db: Database;
-  let conceptId: string;
-  let otherConceptId: string;
-  let ownerEditionId: string;
-  let bothEditionId: string;
-  let otherEditionId: string;
+  let homeEditionId: string;
+  let draftHomeEditionId: string;
 
   beforeAll(async () => {
     database = await createTestDatabase();
@@ -28,13 +25,8 @@ describe('W5: interest e public_idempotency_key no banco', () => {
     await app.connect();
     db = appDatabase(database.appUrl);
     const { build } = catalogHarness(db, controlledClock(new Date('2026-09-15T12:00:00.000Z')));
-    const owner = await build.approvedEdition('owner');
-    conceptId = owner.conceptId;
-    ownerEditionId = owner.edition.id;
-    bothEditionId = (await build.edition(conceptId, 'owner_and_co_owner')).id;
-    const other = await build.approvedEdition('owner_and_co_owner');
-    otherConceptId = other.conceptId;
-    otherEditionId = other.edition.id;
+    homeEditionId = (await build.finalizedHomeEdition()).homeEdition.id;
+    draftHomeEditionId = (await build.approvedHomeEdition({ name: 'Em preparação' })).homeEdition.id;
   });
 
   afterAll(async () => {
@@ -47,10 +39,9 @@ describe('W5: interest e public_idempotency_key no banco', () => {
   function insertInterest(fields: Record<string, unknown> = {}) {
     const row: Record<string, unknown> = {
       id: randomUUID(),
-      concept_id: conceptId,
-      edition_id: null,
+      home_edition_id: homeEditionId,
       modality: 'co_owner',
-      region: 'Serra',
+      desired_location: 'Serra',
       approx_days: 14,
       origin: null,
       partner_ref: null,
@@ -127,9 +118,9 @@ describe('W5: interest e public_idempotency_key no banco', () => {
   it('modalidade fechada; textos normalizados e limitados; origem e partner_ref nulos ou 1–200', async () => {
     for (const fields of [
       { modality: 'owner_and_co_owner' },
-      { region: '' },
-      { region: ' Serra' },
-      { region: 'x'.repeat(201) },
+      { desired_location: '' },
+      { desired_location: ' Serra' },
+      { desired_location: 'x'.repeat(201) },
       { origin: '' },
       { partner_ref: 'p'.repeat(201) },
     ]) {
@@ -138,28 +129,34 @@ describe('W5: interest e public_idempotency_key no banco', () => {
       });
     }
     await expect(
-      insertInterest({ origin: 'Instagram', partner_ref: 'Parceiro', region: '😀'.repeat(200) }),
+      insertInterest({
+        origin: 'Instagram',
+        partner_ref: 'Parceiro',
+        desired_location: '😀'.repeat(200),
+      }),
     ).resolves.toBeDefined();
   });
 
-  it('[REQ-022] Edition opcional e sempre do mesmo Concept; modalidade oferecida pela Edition (F2a)', async () => {
-    await expect(insertInterest({ edition_id: otherEditionId })).rejects.toMatchObject({
+  it('[REQ-022] [BR-030] [BR-032] Home Edition obrigatória e existente; qualquer modalidade; sem Home Concept nem F2a', async () => {
+    await expect(insertInterest({ home_edition_id: null })).rejects.toMatchObject({
+      code: '23502',
+    });
+    await expect(insertInterest({ home_edition_id: randomUUID() })).rejects.toMatchObject({
       code: FOREIGN_KEY_VIOLATION,
     });
-    await expect(insertInterest({ edition_id: ownerEditionId })).rejects.toMatchObject({
-      code: CHECK_VIOLATION,
-      constraint: 'interest_modality_offered',
-    });
     await expect(
-      insertInterest({ edition_id: ownerEditionId, modality: 'owner', approx_days: null }),
+      insertInterest({ modality: 'owner', approx_days: null }),
     ).resolves.toBeDefined();
-    await expect(insertInterest({ edition_id: bothEditionId })).resolves.toBeDefined();
-    await expect(
-      insertInterest({ concept_id: otherConceptId, edition_id: otherEditionId }),
-    ).resolves.toBeDefined();
-    await expect(insertInterest({ concept_id: randomUUID() })).rejects.toMatchObject({
-      code: FOREIGN_KEY_VIOLATION,
+    await expect(insertInterest()).resolves.toBeDefined();
+    // A visibilidade é decidida pela leitura pública do use case, não pelo banco: o banco só garante o vínculo.
+    await expect(insertInterest({ home_edition_id: draftHomeEditionId })).resolves.toBeDefined();
+    await expect(insertInterest({ home_concept_id: randomUUID() })).rejects.toMatchObject({
+      code: '42703',
     });
+    const { rows } = await database.pool.query<{ n: number }>(
+      `SELECT count(*)::int AS n FROM pg_proc WHERE proname = 'interest_modality_offered'`,
+    );
+    expect(rows[0]?.n).toBe(0);
   });
 
   it('[TECH-056] chave pública: UUID em minúsculas, hash SHA-256 e superfície por extenso; única por superfície', async () => {

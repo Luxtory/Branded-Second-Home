@@ -10,7 +10,7 @@ import type { StaffRoleRecord } from '@/features/identity/domain/staff';
 export const STAFF_USER = '00000000-0000-4000-8000-0000000000b1';
 export const PARTNER_USER = '00000000-0000-4000-8000-0000000000b2';
 export const PARTY = '00000000-0000-4000-8000-0000000000c1';
-export const SCOPE = { type: 'concept', id: 'concept-1' } as const;
+export const SCOPE = { type: 'home_concept', id: 'home-concept-1' } as const;
 
 /** Operação concedível só de teste: na W2 o registro de produção não tem nenhuma (D-W2-1). */
 export const PARTNER_OPERATION: CommandSpec = {

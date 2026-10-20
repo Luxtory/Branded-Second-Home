@@ -27,8 +27,8 @@ tags:
     description: Operações administrativas (REQ-095) sob o guard, com MFA (TECH-050) e auditoria (REQ-015)
   - name: catalog
     description: |
-      Catálogo (REQ-020, REQ-027; `docs/specs/catalog.md`, ADR-0010): Brand Partner, Concept e versões, Edition,
-      Residence e autorização do Investor. Operações não críticas do REQ-095 com o papel Admin exercido (AAL2),
+      Catálogo (REQ-020, REQ-022, REQ-027; `docs/specs/catalog.md` §17, ADR-0010, ADR-0019): Brand Partner, Home
+      Concept e versões, Home Edition (publicação, mídia e média projetada), Second Home e autorização do Investor. Operações não críticas do REQ-095 com o papel Admin exercido (AAL2),
       `operation` e `audit_log`.
   - name: brand-partners
     description: |
@@ -240,7 +240,7 @@ paths:
       summary: Registra o encerramento da parceria com a Brand Partner (BR-021)
       description: |
         Operação `terminate_brand_partner`. A partir de `terminated_effective_at`, novos usos da marca são recusados
-        (Concept, versão, aprovação, Edition, autorização de Investor, Residence, exposição); o que já existe não muda
+        (Home Concept, versão, aprovação, Home Edition, autorização de Investor, Second Home, exposição); o que já existe não muda
         (BR-022). Direitos sobreviventes ainda não são modelados: sem exceção (limitação temporária, ADR-0010 §4). Já
         encerrada → 409 `ERR_STATE_TRANSITION`.
         Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
@@ -287,19 +287,19 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
-  /admin/concept-versions:
+  /admin/home-concept-versions:
     post:
       tags: [admin, catalog]
-      summary: Registra um Concept (versão 1) ou uma versão nova de um Concept (BR-013, BR-014)
+      summary: Registra um Home Concept (versão 1) ou uma versão nova de um Home Concept (BR-013, BR-014)
       description: |
-        Operação `create_concept_version`. Sem `concept_id`, cria o Concept da Brand Partner com a versão 1; com
-        `concept_id`, cria a versão seguinte. Toda versão nasce "Não aprovado" (REQ-096). Referência inexistente → 404;
-        encerramento eficaz → 409.
+        Operação `create_home_concept_version`. Sem `home_concept_id`, cria o Home Concept da Brand Partner com a versão 1;
+        com `home_concept_id`, cria a versão seguinte. Toda versão nasce "Não aprovado" (REQ-096). A versão não tem atributos
+        físicos: eles pertencem à Home Edition (`03` §3.1). Referência inexistente → 404; encerramento eficaz → 409.
         Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
         com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
-        pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
-        mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
-      operationId: createConceptVersion
+        pela checagem lexical de terminologia (REQ-100/101, BR-377) → `ERR_VALIDATION`. Repetir com a mesma
+        `Idempotency-Key` e o mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: createHomeConceptVersion
       security:
         - sessionCookie: []
       parameters:
@@ -310,7 +310,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ConceptVersionRequest'
+              $ref: '#/components/schemas/HomeConceptVersionRequest'
       responses:
         '201':
           description: Versão registrada
@@ -322,7 +322,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConceptVersion'
+                $ref: '#/components/schemas/HomeConceptVersion'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -338,31 +338,31 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
-  /admin/concept-versions/{id}/approve:
+  /admin/home-concept-versions/{id}/approve:
     post:
       tags: [admin, catalog]
-      summary: Aprova uma versão do Concept (REQ-096)
+      summary: Aprova uma versão do Home Concept (REQ-096)
       description: |
-        Operação `approve_concept_version`, com as referências das aprovações registradas (BR-010, BR-018). Só se aprova
-        uma versão maior que a vigente; versão aprovada é imutável. Já aprovada, não maior que a vigente ou encerramento
-        eficaz → 409 `ERR_STATE_TRANSITION`.
+        Operação `approve_home_concept_version`: `not_approved` → `approved`, com as referências das aprovações (BR-010,
+        BR-018). Só se aprova versão maior que a vigente; versão aprovada é imutável. Versão inexistente → 404; já aprovada,
+        menor ou igual à vigente, ou encerramento eficaz → 409.
         Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
         com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
-        pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
-        mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
-      operationId: approveConceptVersion
+        pela checagem lexical de terminologia (REQ-100/101, BR-377) → `ERR_VALIDATION`. Repetir com a mesma
+        `Idempotency-Key` e o mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: approveHomeConceptVersion
       security:
         - sessionCookie: []
       parameters:
-        - $ref: '#/components/parameters/ResourceId'
         - $ref: '#/components/parameters/CorrelationId'
         - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ConceptVersionApprovalRequest'
+              $ref: '#/components/schemas/HomeConceptVersionApprovalRequest'
       responses:
         '200':
           description: Versão aprovada
@@ -374,7 +374,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConceptVersion'
+                $ref: '#/components/schemas/HomeConceptVersion'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -393,10 +393,10 @@ paths:
   /admin/investor-authorizations:
     post:
       tags: [admin, catalog]
-      summary: Registra a autorização da Luxtory a um Investor para um Concept (BR-310)
+      summary: Registra a autorização da Luxtory a um Investor para um Home Concept (BR-310)
       description: |
-        Operação `register_investor_authorization`: Concept, referência estável do instrumento e vigência. Sem dado
-        pessoal; o vínculo com a party do Investor chega na W7. Concept inexistente → 404; encerramento eficaz → 409.
+        Operação `register_investor_authorization`: Home Concept, referência estável do instrumento e vigência. Sem dado
+        pessoal; o vínculo com a party do Investor chega na W7. Home Concept inexistente → 404; encerramento eficaz → 409.
         Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
         com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
         pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
@@ -445,7 +445,7 @@ paths:
       tags: [admin, catalog]
       summary: Revoga uma autorização de Investor
       description: |
-        Operação `revoke_investor_authorization`, com a base. Revogação única; Residences já registradas não mudam. Já
+        Operação `revoke_investor_authorization`, com a base. Revogação única; Second Homes já registradas não mudam. Já
         revogada → 409 `ERR_STATE_TRANSITION`.
         Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
         com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
@@ -491,19 +491,22 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
-  /admin/editions:
+  /admin/home-editions:
     post:
       tags: [admin, catalog]
-      summary: Registra uma Edition de um Concept aprovado (BR-031, BR-032)
+      summary: Registra uma Home Edition de um Home Concept aprovado, em preparação (BR-031, BR-036)
       description: |
-        Operação `create_edition`: região, modalidade (Owner, Co-Owner ou ambas) e condições comerciais registradas.
-        Concept sem versão aprovada ou encerramento eficaz → 409; Concept inexistente → 404. Alteração de modalidade e
-        trava da estrutura chegam na W8.
+        Operação `create_home_edition`: configuração específica e replicável de Second Home — nome, descrição, tipologia,
+        configuração dos espaços, área projetada, suítes, capacidade e, opcionalmente, ambientes, amenidades e características.
+        Sem localização, modalidade, estrutura patrimonial nem condições comerciais (BR-031, BR-032). Nasce em preparação
+        (`material_state = draft`) e fora do público (`visibility = hidden`): a definição material pode ser corrigida até a
+        finalização; o vínculo com o Home Concept nunca muda. Home Concept sem versão aprovada ou encerramento eficaz → 409;
+        Home Concept inexistente → 404.
         Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
         com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
-        pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
-        mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
-      operationId: createEdition
+        pela checagem lexical de terminologia (REQ-100/101, BR-377) → `ERR_VALIDATION`. Repetir com a mesma
+        `Idempotency-Key` e o mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: createHomeEdition
       security:
         - sessionCookie: []
       parameters:
@@ -514,10 +517,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EditionRequest'
+              $ref: '#/components/schemas/HomeEditionRequest'
       responses:
         '201':
-          description: Edition registrada
+          description: Home Edition registrada (preparação)
           headers:
             x-correlation-id:
               $ref: '#/components/headers/CorrelationId'
@@ -526,7 +529,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Edition'
+                $ref: '#/components/schemas/HomeEdition'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -542,20 +545,427 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
-  /admin/residences:
+  /admin/home-editions/{id}:
     post:
       tags: [admin, catalog]
-      summary: Registra uma Residence e sua aprovação comercial (REQ-020, REQ-027, BR-025)
+      summary: Edita a preparação de uma Home Edition (definição material e textos)
       description: |
-        Operação `register_residence`: é o evento de aprovação comercial — grava o instante e fixa a versão vigente do
-        Concept da Edition, que nunca muda. Com `investor_authorization_id`, a autorização precisa ser do mesmo Concept,
-        estar na vigência e não revogada (REQ-027); a Residence existe sem adquirente. Edition ou autorização inexistente
-        → 404; Concept sem versão aprovada, autorização inválida ou encerramento eficaz → 409.
+        Operação `update_home_edition_draft`: substitui a definição material e os textos editoriais de uma Home Edition em
+        preparação (`draft`), com antes e depois no `audit_log`. O Home Concept não muda. Depois da finalização, recusada → 409
+        (alteração material = nova Home Edition, BR-036). Marca com encerramento eficaz → 409; inexistente → 404.
         Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
         com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
-        pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
-        mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
-      operationId: registerResidence
+        pela checagem lexical de terminologia (REQ-100/101, BR-377) → `ERR_VALIDATION`. Repetir com a mesma
+        `Idempotency-Key` e o mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: updateHomeEditionDraft
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HomeEditionDraftRequest'
+      responses:
+        '200':
+          description: Preparação atualizada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeEdition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/home-editions/{id}/finalize:
+    post:
+      tags: [admin, catalog]
+      summary: Finaliza a definição material de uma Home Edition (BR-036)
+      description: |
+        Operação `finalize_home_edition`: `draft` → `finalized`, uma vez e sem volta, com quem finalizou. A partir daí a
+        definição material é imutável (alteração material = nova Home Edition) e a Home Edition pode originar Second Homes e ser
+        publicada. Exige marca em uso (BR-021) e Home Concept com versão aprovada. Já finalizada → 409; inexistente → 404.
+        Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
+        com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
+        pela checagem lexical de terminologia (REQ-100/101, BR-377) → `ERR_VALIDATION`. Repetir com a mesma
+        `Idempotency-Key` e o mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: finalizeHomeEdition
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+      responses:
+        '200':
+          description: Definição material finalizada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeEdition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/home-editions/{id}/publish:
+    post:
+      tags: [admin, catalog]
+      summary: Torna pública uma Home Edition finalizada
+      description: |
+        Operação `publish_home_edition`: `visibility` `hidden` → `public`. Exige definição material finalizada, marca em uso
+        (BR-021) e Home Concept com versão aprovada; aparece no site se o Home Concept também for público. Não altera a
+        definição material. Em preparação ou já pública → 409; inexistente → 404.
+        Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
+        com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
+        pela checagem lexical de terminologia (REQ-100/101, BR-377) → `ERR_VALIDATION`. Repetir com a mesma
+        `Idempotency-Key` e o mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: publishHomeEdition
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+      responses:
+        '200':
+          description: Home Edition pública
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeEdition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/home-editions/{id}/withdraw:
+    post:
+      tags: [admin, catalog]
+      summary: Retira uma Home Edition do público, com base
+      description: |
+        Operação `withdraw_home_edition`: `visibility` `public` → `hidden`, com a base registrada. Vale mesmo com a marca
+        encerrada (reduz a exposição). Sai do site na próxima requisição; não reabre a definição material e não afeta Second
+        Homes já registradas (BR-025); pode ser publicada de novo. Fora do público → 409; inexistente → 404.
+        Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
+        com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
+        pela checagem lexical de terminologia (REQ-100/101, BR-377) → `ERR_VALIDATION`. Repetir com a mesma
+        `Idempotency-Key` e o mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: withdrawHomeEdition
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HomeEditionWithdrawalRequest'
+      responses:
+        '200':
+          description: Home Edition fora do público
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeEdition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/home-editions/{id}/editorial-correction:
+    post:
+      tags: [admin, catalog]
+      summary: Corrige o nome e/ou a descrição de uma Home Edition finalizada (BR-036)
+      description: |
+        Operação `correct_home_edition_editorial`: correção editorial que não altera o produto — só `name` e
+        `description` de uma Home Edition finalizada, com base obrigatória e `audit_log` com antes e depois (em preparação, use
+        `update_home_edition_draft`). A definição material nunca muda por aqui (BR-036). Em preparação ou marca com
+        encerramento eficaz → 409; inexistente → 404.
+        Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
+        com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
+        pela checagem lexical de terminologia (REQ-100/101, BR-377) → `ERR_VALIDATION`. Repetir com a mesma
+        `Idempotency-Key` e o mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: correctHomeEditionEditorial
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HomeEditionEditorialCorrectionRequest'
+      responses:
+        '200':
+          description: Correção registrada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeEdition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/home-editions/{id}/media:
+    post:
+      tags: [admin, catalog]
+      summary: Envia uma imagem, render ou planta da Home Edition, pendente de aprovação
+      description: |
+        Operação `upload_home_edition_media`: mesmo pipeline e limites da capa do Home Concept (ADR-0015) — conteúdo
+        decodificado JPEG, PNG ou WebP, até 3 MiB e 40 megapixels, com pelo menos 720 × 520 px; reencode WebP sem metadados;
+        master e larguras de exibição no Storage privado. `kind`: `image`, `render` ou `floor_plan`. Nasce `pending`; uma Home
+        Edition pode ter várias mídias aprovadas, em qualquer estado material. Conteúdo inválido → 400; Home Edition
+        inexistente → 404; marca com encerramento eficaz → 409. Mesma entrada e mesmas garantias de `POST /admin/catalog-terms`.
+      operationId: uploadHomeEditionMedia
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HomeEditionMediaRequest'
+      responses:
+        '201':
+          description: Mídia recebida, pendente de aprovação
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeEditionMedia'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/home-edition-media/{id}/approve:
+    post:
+      tags: [admin, catalog]
+      summary: Aprova uma mídia pendente da Home Edition
+      description: |
+        Operação `approve_home_edition_media`: `pending` → `approved`, com quem aprovou. Pública só com a Home Edition
+        pública e o Home Concept público. Mídia que não está pendente ou marca com encerramento eficaz → 409; inexistente → 404. Mesma entrada e mesmas garantias de `POST /admin/catalog-terms`.
+      operationId: approveHomeEditionMedia
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+      responses:
+        '200':
+          description: Mídia aprovada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeEditionMedia'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/home-edition-media/{id}/withdraw:
+    post:
+      tags: [admin, catalog]
+      summary: Retira uma mídia da Home Edition (pendente ou aprovada), com base
+      description: |
+        Operação `withdraw_home_edition_media`: `pending` ou `approved` → `withdrawn`, uma única vez, com a base
+        registrada. Vale mesmo com a marca encerrada. Já retirada → 409; inexistente → 404. Mesma entrada e mesmas garantias de `POST /admin/catalog-terms`.
+      operationId: withdrawHomeEditionMedia
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaWithdrawalRequest'
+      responses:
+        '200':
+          description: Mídia retirada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeEditionMedia'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/second-homes:
+    post:
+      tags: [admin, catalog]
+      summary: Registra uma Second Home e sua aprovação comercial (REQ-020, REQ-027, BR-025, BR-035)
+      description: |
+        Operação `register_second_home`: é o evento de aprovação comercial — grava o instante e fixa a Home Edition e a
+        versão vigente do Home Concept, que nunca mudam. Exige Home Edition materialmente finalizada (`material_state =
+        finalized`); a visibilidade pública não é condição. Com `investor_authorization_id`, a
+        autorização precisa ser do mesmo Home Concept, estar na vigência e não revogada (REQ-027); a Second Home existe sem
+        adquirente. Home Edition ou autorização inexistente → 404; Home Edition em preparação, Home Concept sem versão aprovada,
+        autorização inválida ou encerramento eficaz → 409. Localização concreta, modalidade, estrutura e condições chegam na W8.
+        Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
+        com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
+        pela checagem lexical de terminologia (REQ-100/101, BR-377) → `ERR_VALIDATION`. Repetir com a mesma
+        `Idempotency-Key` e o mesmo corpo devolve a mesma resposta com `idempotency-replayed: true`.
+      operationId: registerSecondHome
       security:
         - sessionCookie: []
       parameters:
@@ -566,10 +976,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ResidenceRequest'
+              $ref: '#/components/schemas/SecondHomeRequest'
       responses:
         '201':
-          description: Residence registrada
+          description: Second Home registrada
           headers:
             x-correlation-id:
               $ref: '#/components/headers/CorrelationId'
@@ -578,7 +988,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Residence'
+                $ref: '#/components/schemas/SecondHome'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -601,7 +1011,7 @@ paths:
       description: |
         Operação `create_catalog_term`: um termo de `lifestyle` ou `architectural_style`, ativo. O `slug` (usado nas URLs
         da Coleção) é derivado do rótulo e nunca muda; rótulo ou slug já existentes no mesmo vocabulário → 409. Sem
-        tagging livre: só termos registrados classificam uma versão de Concept.
+        tagging livre: só termos registrados classificam uma versão de Home Concept.
         Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
         com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
         pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
@@ -692,21 +1102,21 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
-  /admin/concepts/{id}/cover:
+  /admin/home-concepts/{id}/cover:
     post:
       tags: [admin, catalog]
-      summary: Envia a capa de um Concept, pendente de aprovação (spec catalog §13.12)
+      summary: Envia a capa de um Home Concept, pendente de aprovação (spec catalog §13.12)
       description: |
-        Operação `upload_concept_cover`: imagem em base64 (até 3 MiB) cujo conteúdo decodificado é JPEG, PNG ou WebP,
+        Operação `upload_home_concept_cover`: imagem em base64 (até 3 MiB) cujo conteúdo decodificado é JPEG, PNG ou WebP,
         até 40 megapixels, com pelo menos 720 × 520 px (o maior quadro da Coleção em 1×). O servidor corrige a orientação,
         remove todo metadado (EXIF, localização, câmera, autoria) e grava no Supabase Storage privado um master WebP
         sanitizado (até 4096 px no lado maior) e as larguras de exibição (480, 800, 1200 e 1600 px, sem ampliar); o
         arquivo cru não é guardado. O banco guarda só referências e metadados (ADR-0015). Nasce `pending`: só a capa
         aprovada aparece na Coleção. Texto alternativo obrigatório; crédito opcional (metadado editorial no banco); foco
         (`crop_x`/`crop_y`) nos passos das classes `lx-crop-*`. Conteúdo que não é imagem aceita, acima dos limites ou
-        pequeno demais → 400; Concept inexistente → 404; marca com encerramento eficaz → 409.
+        pequeno demais → 400; Home Concept inexistente → 404; marca com encerramento eficaz → 409.
         Mesma entrada e mesmas garantias de `POST /admin/catalog-terms`.
-      operationId: uploadConceptCover
+      operationId: uploadHomeConceptCover
       security:
         - sessionCookie: []
       parameters:
@@ -718,7 +1128,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ConceptCoverRequest'
+              $ref: '#/components/schemas/HomeConceptCoverRequest'
       responses:
         '201':
           description: Capa recebida, pendente de aprovação
@@ -730,7 +1140,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConceptMedia'
+                $ref: '#/components/schemas/HomeConceptMedia'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -746,15 +1156,15 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
-  /admin/concept-media/{id}/approve:
+  /admin/home-concept-media/{id}/approve:
     post:
       tags: [admin, catalog]
-      summary: Aprova uma capa pendente; a capa aprovada anterior do Concept é retirada
+      summary: Aprova uma capa pendente; a capa aprovada anterior do Home Concept é retirada
       description: |
-        Operação `approve_concept_media`: `pending` → `approved`, com quem aprovou. Um Concept tem uma capa vigente: a
-        aprovada anterior, se houver, passa a `withdrawn` na mesma operação (base "Substituída por nova capa"). Capa que
-        não está pendente → 409; inexistente → 404. Mesma entrada e mesmas garantias de `POST /admin/catalog-terms`.
-      operationId: approveConceptMedia
+        Operação `approve_home_concept_media`: `pending` → `approved`, com quem aprovou. Um Home Concept tem uma capa
+        vigente: a aprovada anterior, se houver, passa a `withdrawn` na mesma operação (base "Substituída por nova capa"). Capa
+        que não está pendente → 409; inexistente → 404. Mesma entrada e mesmas garantias de `POST /admin/catalog-terms`.
+      operationId: approveHomeConceptMedia
       security:
         - sessionCookie: []
       parameters:
@@ -778,7 +1188,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConceptMedia'
+                $ref: '#/components/schemas/HomeConceptMedia'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -794,16 +1204,16 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
-  /admin/concept-media/{id}/withdraw:
+  /admin/home-concept-media/{id}/withdraw:
     post:
       tags: [admin, catalog]
       summary: Retira uma capa (pendente ou aprovada), com base
       description: |
-        Operação `withdraw_concept_media`: `pending` ou `approved` → `withdrawn`, uma única vez, com a base registrada. A
-        capa sai da Coleção na próxima requisição; sem capa, o Concept deixa de ser destaque (`featured` volta a falso
+        Operação `withdraw_home_concept_media`: `pending` ou `approved` → `withdrawn`, uma única vez, com a base registrada.
+        A capa sai da Coleção na próxima requisição; sem capa, o Home Concept deixa de ser destaque (`featured` volta a falso
         na mesma operação). Capa já retirada → 409; inexistente → 404. Mesma entrada e mesmas garantias de
         `POST /admin/catalog-terms`.
-      operationId: withdrawConceptMedia
+      operationId: withdrawHomeConceptMedia
       security:
         - sessionCookie: []
       parameters:
@@ -815,7 +1225,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ConceptMediaWithdrawalRequest'
+              $ref: '#/components/schemas/MediaWithdrawalRequest'
       responses:
         '200':
           description: Capa retirada
@@ -827,7 +1237,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConceptMedia'
+                $ref: '#/components/schemas/HomeConceptMedia'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -843,16 +1253,16 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
-  /admin/concepts/{id}/curation:
+  /admin/home-concepts/{id}/curation:
     post:
       tags: [admin, catalog]
-      summary: Define a posição na curadoria e o destaque editorial de um Concept
+      summary: Define a posição na curadoria e o destaque editorial de um Home Concept
       description: |
-        Operação `set_concept_curation`: `rank` (ordem "Curadoria Luxtory"; nulo = depois dos posicionados, na ordem de
-        registro) e `featured` (destaque editorial explícito). No máximo um Concept em destaque: marcar um novo tira o
-        destaque do anterior na mesma operação. Destaque exige capa aprovada → senão 409. Concept inexistente → 404.
+        Operação `set_home_concept_curation`: `rank` (ordem "Curadoria Luxtory"; nulo = depois dos posicionados, na ordem
+        de registro) e `featured` (destaque editorial explícito). No máximo um Home Concept em destaque: marcar um novo tira o
+        destaque do anterior na mesma operação. Destaque exige capa aprovada → senão 409. Home Concept inexistente → 404.
         Mesma entrada e mesmas garantias de `POST /admin/catalog-terms`.
-      operationId: setConceptCuration
+      operationId: setHomeConceptCuration
       security:
         - sessionCookie: []
       parameters:
@@ -864,7 +1274,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ConceptCurationRequest'
+              $ref: '#/components/schemas/HomeConceptCurationRequest'
       responses:
         '200':
           description: Curadoria gravada
@@ -876,7 +1286,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConceptCuration'
+                $ref: '#/components/schemas/HomeConceptCuration'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -892,18 +1302,18 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
-  /admin/editions/{id}/reference-values:
+  /admin/home-editions/{id}/projected-investments:
     post:
       tags: [admin, catalog]
-      summary: Registra um valor de referência da Edition (BR-031, TECH-033)
+      summary: Registra a média projetada de investimento da Home Edition (BR-034, TECH-033)
       description: |
-        Operação `register_edition_reference_value`: valor registrado pela Luxtory, nunca calculado (BR-031, REQ-094),
-        em unidades menores (`bigint`) + moeda (TECH-033), numa base compatível com a modalidade da Edition — `owner` (a
-        Second Home inteira) ou `acao` (uma Ação Co-Owner; nunca por dia, REQ-100). Vigente a partir de `valid_from`
-        (ausente = agora; informado, no futuro). Um valor em aberto da mesma Edition e base que começou antes é encerrado
-        em `valid_from` na mesma operação; qualquer outra sobreposição de vigência → 409. Base incompatível com a
-        modalidade → 409; Edition inexistente → 404. Mesma entrada e mesmas garantias de `POST /admin/catalog-terms`.
-      operationId: registerEditionReferenceValue
+        Operação `register_home_edition_projected_investment`: referência aproximada da ordem de grandeza do investimento
+        total projetado para materializar uma Second Home da Home Edition, registrada pela Luxtory e nunca calculada, em
+        unidades menores (`bigint`) + moeda (TECH-033). Não é preço, proposta, condição comercial nem valor individual de Owner
+        ou Co-Owner; não tem modalidade, base, configuração nem Ação (BR-034). Uma vigente por Home Edition: vigente a partir de
+        `valid_from` (ausente = agora; informado, no futuro); a vigente em aberto que começou antes termina em `valid_from` na
+        mesma operação; outra sobreposição → 409. Marca com encerramento eficaz → 409; inexistente → 404. Mesma entrada e mesmas garantias de `POST /admin/catalog-terms`.
+      operationId: registerHomeEditionProjectedInvestment
       security:
         - sessionCookie: []
       parameters:
@@ -915,10 +1325,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EditionReferenceValueRequest'
+              $ref: '#/components/schemas/HomeEditionProjectedInvestmentRequest'
       responses:
         '201':
-          description: Valor de referência registrado
+          description: Média projetada registrada
           headers:
             x-correlation-id:
               $ref: '#/components/headers/CorrelationId'
@@ -927,7 +1337,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EditionReferenceValue'
+                $ref: '#/components/schemas/HomeEditionProjectedInvestment'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -943,16 +1353,15 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
-  /admin/edition-reference-values/{id}/end:
+  /admin/home-edition-projected-investments/{id}/end:
     post:
       tags: [admin, catalog]
-      summary: Encerra agora a vigência de um valor de referência
+      summary: Encerra agora a vigência de uma média projetada
       description: |
-        Operação `end_edition_reference_value`: grava `valid_until` = agora, uma única vez. O valor deixa a Coleção na
-        próxima requisição; o histórico nunca é reescrito. Valor já encerrado ou que ainda não começou → 409 (para trocar
-        um valor futuro, registre outro); inexistente → 404. Mesma entrada e mesmas garantias de
-        `POST /admin/catalog-terms`.
-      operationId: endEditionReferenceValue
+        Operação `end_home_edition_projected_investment`: grava `valid_until` = agora, uma única vez. Sai do site na
+        próxima requisição; o histórico nunca é reescrito. Já encerrada ou que ainda não começou → 409 (para trocar uma futura,
+        registre outra); inexistente → 404. Mesma entrada e mesmas garantias de `POST /admin/catalog-terms`.
+      operationId: endHomeEditionProjectedInvestment
       security:
         - sessionCookie: []
       parameters:
@@ -976,7 +1385,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EditionReferenceValue'
+                $ref: '#/components/schemas/HomeEditionProjectedInvestment'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -1160,12 +1569,12 @@ paths:
   /interests:
     post:
       tags: [ownership]
-      summary: Registra uma manifestação de interesse num Concept publicado (REQ-022–REQ-025)
+      summary: Registra uma manifestação de interesse numa Home Edition publicada (REQ-022–REQ-025)
       description: |
         Público e sem conta (spec `ownership` §5). Ordem: publicação (`PUBLIC_SITE` e `INTEREST_WRITES`) e
         configuração → `Origin` do mesmo host → tipo de conteúdo e corpo de até 8 KiB efetivos → limite distribuído por
         origem de rede e global (conta também as tentativas recusadas depois) → schema fechado e `Idempotency-Key` →
-        chave já usada (replay ou conflito) → Concept e Edition publicados → registro atômico → resposta. Sem CORS:
+        chave já usada (replay ou conflito) → Home Edition publicada → registro atômico → resposta. Sem CORS:
         nenhuma resposta traz `Access-Control-Allow-Origin`.
 
         O interesse é preferência comercial: **não constitui aquisição** (REQ-024) e **nunca cria Ação, Direito de Uso**
@@ -1209,8 +1618,8 @@ paths:
         '400':
           description: |
             `ERR_VALIDATION`: JSON inválido, schema fechado violado, campo fora do limite, `Idempotency-Key` ausente ou
-            fora do formato UUID, `approx_days` ausente para Co-Owner ou informado para Owner, ou modalidade que a
-            Edition não oferece. `fields` traz só nomes e códigos dos campos, nunca valores.
+            fora do formato UUID, ou `approx_days` ausente para Co-Owner ou informado para Owner. `fields` traz só
+            nomes e códigos dos campos, nunca valores.
           headers:
             x-correlation-id:
               $ref: '#/components/headers/CorrelationId'
@@ -1233,8 +1642,8 @@ paths:
                 $ref: '#/components/schemas/Error'
         '404':
           description: |
-            `ERR_NOT_FOUND`: escrita de interesse fechada neste ambiente (`PUBLIC_SITE`, `INTEREST_WRITES`), ou Concept ou
-            Edition não publicados, inexistentes ou de outro Concept (as causas respondem igual).
+            `ERR_NOT_FOUND`: escrita de interesse fechada neste ambiente (`PUBLIC_SITE`, `INTEREST_WRITES`), ou Home
+            Edition fora do público (em preparação ou retirada do público) ou inexistente (as causas respondem igual).
           headers:
             x-correlation-id:
               $ref: '#/components/headers/CorrelationId'
@@ -1362,21 +1771,21 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
-  /media/concept-covers/{id}/{width}:
+  /media/home-concept-covers/{id}/{width}:
     servers:
       - url: /
         description: Mesma origem da aplicação; mídia pública fica fora de `/v1` (ADR-0015)
     get:
       tags: [catalog]
-      summary: Entrega a capa aprovada de um Concept público (spec catalog §13.12)
+      summary: Entrega a capa aprovada de um Home Concept público (spec catalog §13.12)
       description: |
-        Leitura pública como `anon` (ADR-0014): só capa `approved` de Concept público — qualquer outra (pendente,
-        retirada, de Concept não público ou inexistente) → 404, sem distinguir o motivo; o master nunca é entregue. WebP
+        Leitura pública como `anon` (ADR-0014): só capa `approved` de Home Concept público — qualquer outra (pendente,
+        retirada, de Home Concept não público ou inexistente) → 404, sem distinguir o motivo; o master nunca é entregue. WebP
         reencodado pelo servidor, sem metadados, lido do Supabase Storage privado (ADR-0015). O conteúdo de um id e largura
         nunca muda (`ETag` forte); `Cache-Control: no-cache` revalida a cada uso, para a retirada valer na próxima
         requisição (ADR-0014 §8) — `If-None-Match` igual → 304 sem corpo, só com a consulta ao banco. Mesmo portão de
         publicação das páginas públicas (ADR-0014 §6). Storage indisponível → 503.
-      operationId: getConceptCover
+      operationId: getHomeConceptCover
       security: []
       parameters:
         - $ref: '#/components/parameters/CorrelationId'
@@ -1420,6 +1829,65 @@ paths:
           $ref: '#/components/responses/InternalError'
         '503':
           $ref: '#/components/responses/Unavailable'
+  /media/home-edition-media/{id}/{width}:
+    servers:
+      - url: /
+        description: Mesma origem da aplicação; mídia pública fica fora de `/v1` (ADR-0015)
+    get:
+      tags: [catalog]
+      summary: Entrega uma mídia aprovada (imagem, render ou planta) de uma Home Edition pública (spec catalog §17.7)
+      description: |
+        Leitura pública como `anon` (ADR-0014): só mídia `approved` de Home Edition pública de Home Concept público — qualquer
+        outra (pendente, retirada, de Home Edition em preparação, fora do público ou inexistente) → 404, sem distinguir o motivo; o master nunca é entregue. WebP
+        reencodado pelo servidor, sem metadados, lido do Supabase Storage privado (ADR-0015). O conteúdo de um id e largura
+        nunca muda (`ETag` forte); `Cache-Control: no-cache` revalida a cada uso, para a retirada valer na próxima
+        requisição (ADR-0014 §8) — `If-None-Match` igual → 304 sem corpo, só com a consulta ao banco. Mesmo portão de
+        publicação das páginas públicas (ADR-0014 §6). Storage indisponível → 503.
+      operationId: getHomeEditionMedia
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/ResourceId'
+        - name: width
+          in: path
+          required: true
+          description: 'Uma das larguras de exibição da mídia (`renditions` com papel `display`), para o `srcset`.'
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1600
+        - name: If-None-Match
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Imagem WebP
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            ETag:
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+                enum: ['public, no-cache']
+          content:
+            image/webp:
+              schema:
+                type: string
+                contentMediaType: image/webp
+        '304':
+          description: A cópia do cliente continua válida
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
 
 components:
   securitySchemes:
@@ -1712,30 +2180,25 @@ components:
     InterestModality:
       type: string
       enum: [owner, co_owner]
-      description: Modalidade do interesse (BR-032); com Edition, precisa estar entre as que ela oferece.
-
+      description: Modalidade desejada (BR-030, BR-032); a Home Edition não restringe modalidade.
     InterestRequest:
       type: object
       description: |
-        Campos canônicos do `interest` (`03` §3.1; spec `ownership` §5.1). Sem dado de contato (W6, `P-3`). `origin` e
-        `partner_ref` são metadados declarados e não confiáveis: nunca concedem acesso, autorização, representação,
-        comissão ou atribuição comercial.
+        Campos canônicos do `interest` (`03` §3.1; spec `ownership` §5.1 e §13). Sem dado de contato (W6). A manifestação
+        parte de uma Home Edition publicada; o Home Concept vem dela. `origin` e `partner_ref` são metadados declarados e
+        não confiáveis: nunca concedem acesso, autorização, representação, comissão ou atribuição comercial.
       additionalProperties: false
-      required: [concept_id, modality, region]
+      required: [home_edition_id, modality, desired_location]
       properties:
-        concept_id:
+        home_edition_id:
           type: string
           format: uuid
-          description: Concept publicado (REQ-022, BR-030).
-        edition_id:
-          type: [string, 'null']
-          format: uuid
-          description: Edition publicada do mesmo Concept — opcional; ausente ou `null` = interesse no Concept.
+          description: Home Edition publicada (REQ-022, BR-030).
         modality:
           $ref: '#/components/schemas/InterestModality'
-        region:
+        desired_location:
           type: string
-          description: Região de interesse em texto livre — 1 a 200 caracteres.
+          description: Localização pretendida em texto livre — 1 a 200 caracteres (BR-030).
           minLength: 1
           maxLength: 200
         approx_days:
@@ -1753,7 +2216,6 @@ components:
           type: [string, 'null']
           description: Referência declarada de parceiro/atribuição — opcional, até 200 caracteres; vazio = ausente.
           maxLength: 200
-
     InterestRegistered:
       type: object
       additionalProperties: false
@@ -1778,7 +2240,7 @@ components:
                 properties:
                   field:
                     type: string
-                    enum: [concept_id, edition_id, modality, region, approx_days, origin, partner_ref]
+                    enum: [home_edition_id, modality, desired_location, approx_days, origin, partner_ref]
                   code:
                     type: string
                     enum: [required, too_long, invalid, not_allowed]
@@ -1804,7 +2266,7 @@ components:
       type: object
       additionalProperties: false
       required: [type, id]
-      description: "Objeto sobre o qual a autorização vale (por exemplo, um Concept); os tipos chegam com cada módulo."
+      description: "Objeto sobre o qual a autorização vale (por exemplo, um Home Concept); os tipos chegam com cada módulo."
       properties:
         type:
           type: string
@@ -1978,11 +2440,12 @@ components:
         created_at:
           type: string
           format: date-time
-    ConceptVersionRequest:
+    HomeConceptVersionRequest:
       description: |
-        Concept novo (com `brand_partner_id` e `title`) ou versão nova (com `concept_id`). Resumo, pessoas, suítes, área e
+        Home Concept novo (com `brand_partner_id` e `title`) ou versão nova (com `home_concept_id`). Resumo e
         classificações (lifestyle 1–3, estilo 1–2, de vocabulário controlado ativo) são opcionais e gravados com a versão,
-        imutáveis como a especificação (BR-013); termo inexistente → 404, desativado → 409 (spec catalog §13.12).
+        imutáveis como a especificação (BR-013); termo inexistente → 404, desativado → 409 (spec catalog §13.12). A versão
+        não tem atributos físicos: tipologia, área, suítes e capacidade pertencem à Home Edition (`03` §3.1).
       oneOf:
         - type: object
           additionalProperties: false
@@ -2004,22 +2467,16 @@ components:
               minLength: 1
               maxLength: 20000
             summary:
-              $ref: '#/components/schemas/ConceptSummary'
-            guests_max:
-              $ref: '#/components/schemas/GuestsMax'
-            suites:
-              $ref: '#/components/schemas/Suites'
-            built_area_m2:
-              $ref: '#/components/schemas/BuiltAreaM2'
+              $ref: '#/components/schemas/HomeConceptSummary'
             lifestyle_ids:
               $ref: '#/components/schemas/LifestyleIds'
             architectural_style_ids:
               $ref: '#/components/schemas/ArchitecturalStyleIds'
         - type: object
           additionalProperties: false
-          required: [concept_id, essential_elements, preservation_premises, specification]
+          required: [home_concept_id, essential_elements, preservation_premises, specification]
           properties:
-            concept_id:
+            home_concept_id:
               type: string
               format: uuid
             essential_elements:
@@ -2031,18 +2488,12 @@ components:
               minLength: 1
               maxLength: 20000
             summary:
-              $ref: '#/components/schemas/ConceptSummary'
-            guests_max:
-              $ref: '#/components/schemas/GuestsMax'
-            suites:
-              $ref: '#/components/schemas/Suites'
-            built_area_m2:
-              $ref: '#/components/schemas/BuiltAreaM2'
+              $ref: '#/components/schemas/HomeConceptSummary'
             lifestyle_ids:
               $ref: '#/components/schemas/LifestyleIds'
             architectural_style_ids:
               $ref: '#/components/schemas/ArchitecturalStyleIds'
-    ConceptVersionApprovalRequest:
+    HomeConceptVersionApprovalRequest:
       type: object
       additionalProperties: false
       required: [approval_refs]
@@ -2057,12 +2508,12 @@ components:
             type: string
             minLength: 1
             maxLength: 255
-    ConceptVersion:
+    HomeConceptVersion:
       type: object
       additionalProperties: false
       required:
         - id
-        - concept_id
+        - home_concept_id
         - brand_partner_id
         - title
         - version
@@ -2071,9 +2522,6 @@ components:
         - preservation_premises
         - specification
         - summary
-        - guests_max
-        - suites
-        - built_area_m2
         - lifestyle_ids
         - architectural_style_ids
         - approval_refs
@@ -2086,7 +2534,7 @@ components:
         id:
           type: string
           format: uuid
-        concept_id:
+        home_concept_id:
           type: string
           format: uuid
         brand_partner_id:
@@ -2113,12 +2561,6 @@ components:
           type: string
         summary:
           type: [string, 'null']
-        guests_max:
-          type: [integer, 'null']
-        suites:
-          type: [integer, 'null']
-        built_area_m2:
-          type: [integer, 'null']
         lifestyle_ids:
           type: array
           items:
@@ -2151,9 +2593,9 @@ components:
     InvestorAuthorizationRequest:
       type: object
       additionalProperties: false
-      required: [concept_id, instrument_ref, valid_from]
+      required: [home_concept_id, instrument_ref, valid_from]
       properties:
-        concept_id:
+        home_concept_id:
           type: string
           format: uuid
         instrument_ref:
@@ -2182,7 +2624,7 @@ components:
       additionalProperties: false
       required:
         - id
-        - concept_id
+        - home_concept_id
         - instrument_ref
         - valid_from
         - valid_until
@@ -2196,7 +2638,7 @@ components:
         id:
           type: string
           format: uuid
-        concept_id:
+        home_concept_id:
           type: string
           format: uuid
         instrument_ref:
@@ -2224,83 +2666,249 @@ components:
         created_at:
           type: string
           format: date-time
-    EditionModality:
-      type: string
-      enum: [owner, co_owner, owner_and_co_owner]
-      description: Owner, Co-Owner ou as duas alternativas (BR-032).
-    EditionRequest:
+    HomeEditionList:
+      type: array
+      minItems: 1
+      maxItems: 50
+      items:
+        type: string
+        minLength: 1
+        maxLength: 200
+      description: Lista opcional de 1 a 50 itens de até 200 caracteres.
+    HomeEditionRequest:
       type: object
       additionalProperties: false
-      required: [concept_id, region, modality, commercial_conditions]
+      description: |
+        Home Edition em preparação (BR-031). A definição material (tipologia, configuração dos espaços, área projetada,
+        suítes, capacidade, ambientes, amenidades, características) pode ser corrigida até a finalização e é imutável
+        depois dela (BR-036); o Home Concept nunca muda. Sem localização, modalidade, estrutura patrimonial nem condições
+        comerciais.
+      required:
+        [home_concept_id, name, description, typology, spatial_configuration, projected_area_m2, suites, guests_max]
       properties:
-        concept_id:
+        home_concept_id:
           type: string
           format: uuid
-        region:
+        name:
           type: string
           minLength: 1
           maxLength: 200
-        modality:
-          $ref: '#/components/schemas/EditionModality'
-        commercial_conditions:
+          description: Nome público da Home Edition (editorial).
+        description:
           type: string
           minLength: 1
           maxLength: 20000
-          description: Condições comerciais registradas pela Luxtory (BR-031); nenhum valor calculado pelo software.
-    Edition:
+          description: Descrição pública (editorial).
+        typology:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Tipologia (material).
+        spatial_configuration:
+          type: string
+          minLength: 1
+          maxLength: 4000
+          description: Configuração dos espaços (material).
+        projected_area_m2:
+          $ref: '#/components/schemas/ProjectedAreaM2'
+        suites:
+          $ref: '#/components/schemas/Suites'
+        guests_max:
+          $ref: '#/components/schemas/GuestsMax'
+        rooms:
+          $ref: '#/components/schemas/HomeEditionList'
+        amenities:
+          $ref: '#/components/schemas/HomeEditionList'
+        characteristics:
+          $ref: '#/components/schemas/HomeEditionList'
+    HomeEditionDraftRequest:
       type: object
       additionalProperties: false
-      required: [id, concept_id, region, modality, commercial_conditions, operation_id, created_at]
+      description: |
+        Substitui a preparação de uma Home Edition em `draft` (BR-031). A definição material (tipologia, configuração dos espaços, área projetada,
+        suítes, capacidade, ambientes, amenidades, características) pode ser corrigida até a finalização e é imutável
+        depois dela (BR-036); o Home Concept nunca muda. Sem localização, modalidade, estrutura patrimonial nem condições
+        comerciais.
+      required:
+        [name, description, typology, spatial_configuration, projected_area_m2, suites, guests_max]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Nome público da Home Edition (editorial).
+        description:
+          type: string
+          minLength: 1
+          maxLength: 20000
+          description: Descrição pública (editorial).
+        typology:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Tipologia (material).
+        spatial_configuration:
+          type: string
+          minLength: 1
+          maxLength: 4000
+          description: Configuração dos espaços (material).
+        projected_area_m2:
+          $ref: '#/components/schemas/ProjectedAreaM2'
+        suites:
+          $ref: '#/components/schemas/Suites'
+        guests_max:
+          $ref: '#/components/schemas/GuestsMax'
+        rooms:
+          $ref: '#/components/schemas/HomeEditionList'
+        amenities:
+          $ref: '#/components/schemas/HomeEditionList'
+        characteristics:
+          $ref: '#/components/schemas/HomeEditionList'
+    HomeEdition:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - home_concept_id
+        - name
+        - description
+        - typology
+        - spatial_configuration
+        - projected_area_m2
+        - suites
+        - guests_max
+        - rooms
+        - amenities
+        - characteristics
+        - material_state
+        - finalized_at
+        - finalized_by_user_id
+        - finalized_role
+        - visibility
+        - withdrawal_basis
+        - operation_id
+        - created_at
       properties:
         id:
           type: string
           format: uuid
-        concept_id:
+        home_concept_id:
           type: string
           format: uuid
-        region:
+        name:
           type: string
-        modality:
-          $ref: '#/components/schemas/EditionModality'
-        commercial_conditions:
+        description:
           type: string
+        typology:
+          type: string
+        spatial_configuration:
+          type: string
+        projected_area_m2:
+          type: integer
+        suites:
+          type: integer
+        guests_max:
+          type: integer
+        rooms:
+          type: [array, 'null']
+          items:
+            type: string
+        amenities:
+          type: [array, 'null']
+          items:
+            type: string
+        characteristics:
+          type: [array, 'null']
+          items:
+            type: string
+        material_state:
+          type: string
+          enum: [draft, finalized]
+          description: |
+            `draft` = preparação (definição material editável); `finalized` = definição material imutável, base possível
+            de Second Home (BR-036). Não volta a `draft`.
+        finalized_at:
+          type: [string, 'null']
+          format: date-time
+        finalized_by_user_id:
+          type: [string, 'null']
+          format: uuid
+        finalized_role:
+          type: [string, 'null']
+          enum: [admin, null]
+        visibility:
+          type: string
+          enum: [hidden, public]
+          description: Visibilidade pública, separada do estado material; `public` exige `finalized`.
+        withdrawal_basis:
+          type: [string, 'null']
+          description: Base da última retirada do público; nula enquanto pública ou se nunca foi retirada.
         operation_id:
           type: string
           format: uuid
         created_at:
           type: string
           format: date-time
-    ResidenceRequest:
+    HomeEditionWithdrawalRequest:
       type: object
       additionalProperties: false
-      required: [edition_id, label, timezone]
+      required: [withdrawal_basis]
       properties:
-        edition_id:
+        withdrawal_basis:
+          type: string
+          minLength: 1
+          maxLength: 255
+    HomeEditionEditorialCorrectionRequest:
+      type: object
+      additionalProperties: false
+      description: Pelo menos `name` ou `description`, diferente do atual; a base é obrigatória (BR-036).
+      required: [correction_basis]
+      minProperties: 2
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+          maxLength: 20000
+        correction_basis:
+          type: string
+          minLength: 1
+          maxLength: 255
+    SecondHomeRequest:
+      type: object
+      additionalProperties: false
+      required: [home_edition_id, label, timezone]
+      properties:
+        home_edition_id:
           type: string
           format: uuid
+          description: Home Edition materialmente finalizada da qual a Second Home deriva (BR-003, BR-035).
         label:
           type: string
           minLength: 1
           maxLength: 120
-          description: Referência interna da Residence; sem nome de pessoa nem endereço.
+          description: Referência interna da Second Home; sem nome de pessoa nem endereço.
         timezone:
           type: string
           minLength: 1
           maxLength: 64
-          description: Fuso IANA da Residence (TECH-040), sem valor padrão.
+          description: Fuso IANA da Second Home (TECH-040), sem valor padrão.
         investor_authorization_id:
           type: string
           format: uuid
-          description: Autorização do Investor (REQ-027), quando a Residence é desenvolvida por Investor.
-    Residence:
+          description: Autorização do Investor (REQ-027), quando a Second Home é desenvolvida por Investor.
+    SecondHome:
       type: object
       additionalProperties: false
       required:
         - id
-        - edition_id
-        - concept_id
-        - concept_version_id
-        - concept_version
+        - home_edition_id
+        - home_concept_id
+        - home_concept_version_id
+        - home_concept_version
         - commercially_approved_at
         - label
         - timezone
@@ -2310,23 +2918,23 @@ components:
         id:
           type: string
           format: uuid
-        edition_id:
+        home_edition_id:
           type: string
           format: uuid
-        concept_id:
+        home_concept_id:
           type: string
           format: uuid
-        concept_version_id:
+        home_concept_version_id:
           type: string
           format: uuid
-          description: Versão vigente do Concept fixada na aprovação comercial (BR-025).
-        concept_version:
+          description: Versão vigente do Home Concept fixada na aprovação comercial (BR-025).
+        home_concept_version:
           type: integer
           minimum: 1
         commercially_approved_at:
           type: string
           format: date-time
-          description: Instante da aprovação comercial, que é o registro da Residence (ADR-0010 §2).
+          description: Instante da aprovação comercial, que é o registro da Second Home (ADR-0010 §2, ADR-0019).
         label:
           type: string
         timezone:
@@ -2391,7 +2999,7 @@ components:
         created_at:
           type: string
           format: date-time
-    ConceptSummary:
+    HomeConceptSummary:
       type: string
       minLength: 1
       maxLength: 160
@@ -2400,16 +3008,16 @@ components:
       type: integer
       minimum: 1
       maximum: 100
-      description: Pessoas que a casa acomoda, no máximo.
+      description: 'Capacidade: pessoas que a Home Edition acomoda, no máximo.'
     Suites:
       type: integer
       minimum: 1
       maximum: 50
-    BuiltAreaM2:
+    ProjectedAreaM2:
       type: integer
       minimum: 1
       maximum: 100000
-      description: Área construída, em m².
+      description: Área projetada, em m².
     LifestyleIds:
       type: array
       maxItems: 3
@@ -2430,7 +3038,7 @@ components:
       type: integer
       enum: [20, 35, 50, 65, 80]
       description: Foco da imagem em %, nos passos das classes `lx-crop-*` do Core Design System.
-    ConceptCoverRequest:
+    HomeConceptCoverRequest:
       type: object
       additionalProperties: false
       required: [image, alt, crop_x, crop_y]
@@ -2454,7 +3062,37 @@ components:
           $ref: '#/components/schemas/CropStep'
         crop_y:
           $ref: '#/components/schemas/CropStep'
-    ConceptMediaWithdrawalRequest:
+    HomeEditionMediaKind:
+      type: string
+      enum: [image, render, floor_plan]
+      description: Imagem, render ou planta (BR-031).
+    HomeEditionMediaRequest:
+      type: object
+      additionalProperties: false
+      required: [kind, image, alt, crop_x, crop_y]
+      properties:
+        kind:
+          $ref: '#/components/schemas/HomeEditionMediaKind'
+        image:
+          type: string
+          format: byte
+          minLength: 4
+          maxLength: 4194304
+          description: JPEG, PNG ou WebP (pelo conteúdo) em base64, até 3 MiB decodificado e 40 MP, com pelo menos 720 × 520 px.
+        alt:
+          type: string
+          minLength: 1
+          maxLength: 300
+          description: Texto alternativo — o que a imagem mostra.
+        credit:
+          type: string
+          minLength: 1
+          maxLength: 200
+        crop_x:
+          $ref: '#/components/schemas/CropStep'
+        crop_y:
+          $ref: '#/components/schemas/CropStep'
+    MediaWithdrawalRequest:
       type: object
       additionalProperties: false
       required: [withdrawal_basis]
@@ -2463,7 +3101,7 @@ components:
           type: string
           minLength: 1
           maxLength: 255
-    ConceptMediaRendition:
+    MediaRendition:
       type: object
       additionalProperties: false
       required: [role, width, height]
@@ -2478,12 +3116,12 @@ components:
         height:
           type: integer
           minimum: 1
-    ConceptMedia:
+    HomeConceptMedia:
       type: object
       additionalProperties: false
       required:
         - id
-        - concept_id
+        - home_concept_id
         - state
         - alt
         - credit
@@ -2502,7 +3140,7 @@ components:
         id:
           type: string
           format: uuid
-        concept_id:
+        home_concept_id:
           type: string
           format: uuid
         state:
@@ -2524,7 +3162,7 @@ components:
         renditions:
           type: array
           items:
-            $ref: '#/components/schemas/ConceptMediaRendition'
+            $ref: '#/components/schemas/MediaRendition'
         approved_at:
           type: [string, 'null']
           format: date-time
@@ -2545,7 +3183,77 @@ components:
         created_at:
           type: string
           format: date-time
-    ConceptCurationRequest:
+    HomeEditionMedia:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - home_edition_id
+        - kind
+        - state
+        - alt
+        - credit
+        - crop_x
+        - crop_y
+        - source_sha256
+        - renditions
+        - approved_at
+        - approved_by_user_id
+        - approved_role
+        - withdrawn_at
+        - withdrawal_basis
+        - operation_id
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        home_edition_id:
+          type: string
+          format: uuid
+        kind:
+          $ref: '#/components/schemas/HomeEditionMediaKind'
+        state:
+          type: string
+          enum: [pending, approved, withdrawn]
+          description: Só `approved` aparece no site, com a Home Edition pública.
+        alt:
+          type: string
+        credit:
+          type: [string, 'null']
+        crop_x:
+          $ref: '#/components/schemas/CropStep'
+        crop_y:
+          $ref: '#/components/schemas/CropStep'
+        source_sha256:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+          description: SHA-256 do arquivo enviado (rastreio; o arquivo original não é guardado).
+        renditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaRendition'
+        approved_at:
+          type: [string, 'null']
+          format: date-time
+        approved_by_user_id:
+          type: [string, 'null']
+          format: uuid
+        approved_role:
+          type: [string, 'null']
+          enum: [admin, null]
+        withdrawn_at:
+          type: [string, 'null']
+          format: date-time
+        withdrawal_basis:
+          type: [string, 'null']
+        operation_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+    HomeConceptCurationRequest:
       type: object
       additionalProperties: false
       required: [rank, featured]
@@ -2557,13 +3265,13 @@ components:
           description: Posição na ordem "Curadoria Luxtory" (menor primeiro); nulo = sem posição.
         featured:
           type: boolean
-          description: Destaque editorial explícito (no máximo um Concept; exige capa aprovada).
-    ConceptCuration:
+          description: Destaque editorial explícito (no máximo um Home Concept; exige capa aprovada).
+    HomeConceptCuration:
       type: object
       additionalProperties: false
-      required: [concept_id, rank, featured, operation_id, updated_at]
+      required: [home_concept_id, rank, featured, operation_id, updated_at]
       properties:
-        concept_id:
+        home_concept_id:
           type: string
           format: uuid
         rank:
@@ -2576,19 +3284,14 @@ components:
         updated_at:
           type: string
           format: date-time
-    ReferenceValueBasis:
-      type: string
-      enum: [owner, acao]
-      description: |
-        `owner` = a Second Home inteira (modalidade Owner); `acao` = uma Ação Co-Owner (modalidade Co-Owner). Mesmo
-        peso (REQ-103); nunca valor por dia (REQ-100).
-    EditionReferenceValueRequest:
+    HomeEditionProjectedInvestmentRequest:
       type: object
       additionalProperties: false
-      required: [basis, amount_minor, currency]
+      description: |
+        Média projetada de investimento (BR-034): ordem de grandeza do investimento total projetado para materializar uma
+        Second Home da Home Edition. Sem modalidade, base, configuração ou Ação; nunca preço, proposta ou condição.
+      required: [amount_minor, currency]
       properties:
-        basis:
-          $ref: '#/components/schemas/ReferenceValueBasis'
         amount_minor:
           type: integer
           format: int64
@@ -2602,13 +3305,12 @@ components:
           type: string
           format: date-time
           description: Início da vigência, no futuro; ausente = agora.
-    EditionReferenceValue:
+    HomeEditionProjectedInvestment:
       type: object
       additionalProperties: false
       required:
         - id
-        - edition_id
-        - basis
+        - home_edition_id
         - amount_minor
         - currency
         - valid_from
@@ -2621,11 +3323,9 @@ components:
         id:
           type: string
           format: uuid
-        edition_id:
+        home_edition_id:
           type: string
           format: uuid
-        basis:
-          $ref: '#/components/schemas/ReferenceValueBasis'
         amount_minor:
           type: integer
           format: int64

@@ -82,19 +82,19 @@ describe('copy Brand Partners BP1.1 (catalog §14.9)', () => {
     const luxchange = text.howItWorks.club.mechanisms.find((item) => item.title === 'Luxchange.');
 
     expect(luxchange?.text).toEqual([
-      'O clube permite ao membro converter dias do seu direito de uso em créditos equivalentes para se hospedar em outras residências da rede.',
+      'O clube permite ao membro converter dias do seu direito de uso em créditos equivalentes para se hospedar em outras Second Homes da rede.',
       'Sua Second Home deixa de estar limitada a um único endereço e passa a fazer parte de uma rede de destinos.',
     ]);
   });
 
-  it('[REQ-028] Co-Owner descrito como participação societária na SPE, com Direito de Uso, nas duas ocorrências públicas (BR-373, D-BP-24)', () => {
-    const coOwner = PAGES.filter((line) => line.includes('SPE proprietária da residência'));
+  it('[REQ-028] Co-Owner descrito como participação societária na SPE, com Direito de Uso, nas duas ocorrências públicas (BR-373, D-BP-24, D-BP-28)', () => {
+    const coOwner = PAGES.filter((line) => line.includes('SPE proprietária da Second Home'));
 
     expect(PAGES.filter((line) => line.includes('Ação da SPE'))).toEqual([]);
     expect(coOwner).toHaveLength(2);
     for (const line of coOwner) {
       expect(line).toContain(
-        'participação societária na SPE proprietária da residência, com Direito de Uso',
+        'participação societária na SPE proprietária da Second Home, com Direito de Uso',
       );
     }
   });

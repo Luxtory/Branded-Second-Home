@@ -1,7 +1,12 @@
 import { sql } from 'kysely';
 import type { DatabaseTransaction } from '@/features/platform';
 import type { CatalogStore } from '../application/ports';
-import { toCatalogTerm, toConceptCuration, toConceptMedia, toEditionReferenceValue } from './rows';
+import {
+  toCatalogTerm,
+  toHomeConceptCuration,
+  toHomeConceptMedia,
+  toHomeEditionProjectedInvestment,
+} from './rows';
 
 /**
  * Persistência da Coleção (spec catalog §13.12, ADR-0015) como `luxtory_app`, na transação do command. Os bytes da capa
@@ -15,27 +20,27 @@ type CollectionStore = Pick<
   | 'conflictingTerm'
   | 'insertCatalogTerm'
   | 'updateCatalogTerm'
-  | 'conceptMedia'
+  | 'homeConceptMedia'
   | 'currentCover'
-  | 'insertConceptMedia'
-  | 'approveConceptMedia'
-  | 'withdrawConceptMedia'
-  | 'conceptCuration'
+  | 'insertHomeConceptMedia'
+  | 'approveHomeConceptMedia'
+  | 'withdrawHomeConceptMedia'
+  | 'homeConceptCuration'
   | 'lockFeaturedSlot'
   | 'featuredCuration'
-  | 'saveConceptCuration'
-  | 'editionReferenceValue'
-  | 'editionReferenceValues'
-  | 'insertEditionReferenceValue'
-  | 'endEditionReferenceValue'
+  | 'saveHomeConceptCuration'
+  | 'homeEditionProjectedInvestment'
+  | 'homeEditionProjectedInvestments'
+  | 'insertHomeEditionProjectedInvestment'
+  | 'endHomeEditionProjectedInvestment'
 >;
 
-/** Chave da trava consultiva que serializa a troca do destaque (no máximo um Concept em destaque). */
-const FEATURED_SLOT_LOCK = 'app.concept_curation.featured';
+/** Chave da trava consultiva que serializa a troca do destaque (no máximo um Home Concept em destaque). */
+const FEATURED_SLOT_LOCK = 'app.home_concept_curation.featured';
 
 function mediaFiles(tx: Tx, mediaId: string) {
   return tx
-    .selectFrom('app.concept_media_file')
+    .selectFrom('app.home_concept_media_file')
     .select(['role', 'width', 'height'])
     .where('media_id', '=', mediaId)
     .orderBy('width')
@@ -44,14 +49,14 @@ function mediaFiles(tx: Tx, mediaId: string) {
 
 async function mediaWhere(
   tx: Tx,
-  column: 'id' | 'concept_id',
+  column: 'id' | 'home_concept_id',
   value: string,
   approvedOnly: boolean,
 ) {
-  let query = tx.selectFrom('app.concept_media').selectAll().where(column, '=', value);
+  let query = tx.selectFrom('app.home_concept_media').selectAll().where(column, '=', value);
   if (approvedOnly) query = query.where('state', '=', 'approved');
   const row = await query.executeTakeFirst();
-  return row === undefined ? null : toConceptMedia(row, await mediaFiles(tx, row.id));
+  return row === undefined ? null : toHomeConceptMedia(row, await mediaFiles(tx, row.id));
 }
 
 export const postgresCollectionStore: CollectionStore = {
@@ -106,16 +111,16 @@ export const postgresCollectionStore: CollectionStore = {
     return toCatalogTerm(row);
   },
 
-  conceptMedia: (tx, id) => mediaWhere(tx, 'id', id, false),
+  homeConceptMedia: (tx, id) => mediaWhere(tx, 'id', id, false),
 
-  currentCover: (tx, conceptId) => mediaWhere(tx, 'concept_id', conceptId, true),
+  currentCover: (tx, homeConceptId) => mediaWhere(tx, 'home_concept_id', homeConceptId, true),
 
-  async insertConceptMedia(tx, media, renditions) {
+  async insertHomeConceptMedia(tx, media, renditions) {
     await tx
-      .insertInto('app.concept_media')
+      .insertInto('app.home_concept_media')
       .values({
         id: media.id,
-        concept_id: media.conceptId,
+        home_concept_id: media.homeConceptId,
         state: media.state,
         alt: media.alt,
         credit: media.credit,
@@ -127,7 +132,7 @@ export const postgresCollectionStore: CollectionStore = {
       })
       .execute();
     await tx
-      .insertInto('app.concept_media_file')
+      .insertInto('app.home_concept_media_file')
       .values(
         renditions.map((rendition) => ({
           media_id: media.id,
@@ -143,9 +148,9 @@ export const postgresCollectionStore: CollectionStore = {
       .execute();
   },
 
-  async approveConceptMedia(tx, id, approval) {
+  async approveHomeConceptMedia(tx, id, approval) {
     const row = await tx
-      .updateTable('app.concept_media')
+      .updateTable('app.home_concept_media')
       .set({
         state: 'approved',
         approved_at: approval.at,
@@ -156,12 +161,12 @@ export const postgresCollectionStore: CollectionStore = {
       .where('id', '=', id)
       .returningAll()
       .executeTakeFirstOrThrow();
-    return toConceptMedia(row, await mediaFiles(tx, id));
+    return toHomeConceptMedia(row, await mediaFiles(tx, id));
   },
 
-  async withdrawConceptMedia(tx, id, withdrawal) {
+  async withdrawHomeConceptMedia(tx, id, withdrawal) {
     const row = await tx
-      .updateTable('app.concept_media')
+      .updateTable('app.home_concept_media')
       .set({
         state: 'withdrawn',
         withdrawn_at: withdrawal.at,
@@ -171,16 +176,16 @@ export const postgresCollectionStore: CollectionStore = {
       .where('id', '=', id)
       .returningAll()
       .executeTakeFirstOrThrow();
-    return toConceptMedia(row, await mediaFiles(tx, id));
+    return toHomeConceptMedia(row, await mediaFiles(tx, id));
   },
 
-  async conceptCuration(tx, conceptId) {
+  async homeConceptCuration(tx, homeConceptId) {
     const row = await tx
-      .selectFrom('app.concept_curation')
+      .selectFrom('app.home_concept_curation')
       .selectAll()
-      .where('concept_id', '=', conceptId)
+      .where('home_concept_id', '=', homeConceptId)
       .executeTakeFirst();
-    return row === undefined ? null : toConceptCuration(row);
+    return row === undefined ? null : toHomeConceptCuration(row);
   },
 
   async lockFeaturedSlot(tx) {
@@ -189,14 +194,14 @@ export const postgresCollectionStore: CollectionStore = {
 
   async featuredCuration(tx) {
     const row = await tx
-      .selectFrom('app.concept_curation')
+      .selectFrom('app.home_concept_curation')
       .selectAll()
       .where('featured', '=', true)
       .executeTakeFirst();
-    return row === undefined ? null : toConceptCuration(row);
+    return row === undefined ? null : toHomeConceptCuration(row);
   },
 
-  async saveConceptCuration(tx, curation) {
+  async saveHomeConceptCuration(tx, curation) {
     const change = {
       rank: curation.rank,
       featured: curation.featured,
@@ -204,40 +209,37 @@ export const postgresCollectionStore: CollectionStore = {
       updated_at: curation.updatedAt,
     };
     await tx
-      .insertInto('app.concept_curation')
-      .values({ concept_id: curation.conceptId, ...change })
-      .onConflict((conflict) => conflict.column('concept_id').doUpdateSet(change))
+      .insertInto('app.home_concept_curation')
+      .values({ home_concept_id: curation.homeConceptId, ...change })
+      .onConflict((conflict) => conflict.column('home_concept_id').doUpdateSet(change))
       .execute();
   },
 
-  async editionReferenceValue(tx, id) {
+  async homeEditionProjectedInvestment(tx, id) {
     const row = await tx
-      .selectFrom('app.edition_reference_value')
+      .selectFrom('app.home_edition_projected_investment')
       .selectAll()
       .where('id', '=', id)
       .executeTakeFirst();
-    return row === undefined ? null : toEditionReferenceValue(row);
+    return row === undefined ? null : toHomeEditionProjectedInvestment(row);
   },
 
-  async editionReferenceValues(tx, { editionId, basis, currency }) {
+  async homeEditionProjectedInvestments(tx, homeEditionId) {
     const rows = await tx
-      .selectFrom('app.edition_reference_value')
+      .selectFrom('app.home_edition_projected_investment')
       .selectAll()
-      .where('edition_id', '=', editionId)
-      .where('basis', '=', basis)
-      .where('currency', '=', currency)
+      .where('home_edition_id', '=', homeEditionId)
       .orderBy('valid_from')
       .execute();
-    return rows.map(toEditionReferenceValue);
+    return rows.map(toHomeEditionProjectedInvestment);
   },
 
-  async insertEditionReferenceValue(tx, value) {
+  async insertHomeEditionProjectedInvestment(tx, value) {
     await tx
-      .insertInto('app.edition_reference_value')
+      .insertInto('app.home_edition_projected_investment')
       .values({
         id: value.id,
-        edition_id: value.editionId,
-        basis: value.basis,
+        home_edition_id: value.homeEditionId,
         amount_minor: value.amountMinor.toString(),
         currency: value.currency,
         valid_from: value.validFrom,
@@ -250,13 +252,13 @@ export const postgresCollectionStore: CollectionStore = {
       .execute();
   },
 
-  async endEditionReferenceValue(tx, id, at) {
+  async endHomeEditionProjectedInvestment(tx, id, at) {
     const row = await tx
-      .updateTable('app.edition_reference_value')
+      .updateTable('app.home_edition_projected_investment')
       .set({ valid_until: at })
       .where('id', '=', id)
       .returningAll()
       .executeTakeFirstOrThrow();
-    return toEditionReferenceValue(row);
+    return toHomeEditionProjectedInvestment(row);
   },
 };

@@ -22,7 +22,7 @@ import {
 const HOME = '/brand-partner';
 const HOW = '/brand-partner/como-funciona';
 const ENDPOINT = '/v1/brand-partner-contacts';
-const CTA = 'Explore o potencial residencial da sua marca.';
+const CTA = 'Explore o potencial da sua marca em Second Homes.';
 const { conversation } = text.home;
 /** H1 da Home: `lead` + a virada em itálico (`turn`). */
 const HERO_TITLE = `${text.home.hero.title.lead}${text.home.hero.title.turn}`;

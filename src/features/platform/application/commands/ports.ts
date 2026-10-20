@@ -7,7 +7,7 @@ import type { CommandSpec } from './registry';
 export type AuthorizationDecision =
   { readonly allowed: true; readonly authorizationRef: string } | { readonly allowed: false };
 
-/** Objeto sobre o qual o command age (ex.: um Concept); o guard confere contra o escopo do `authorization_grant`. */
+/** Objeto sobre o qual o command age (ex.: um Home Concept); o guard confere contra o escopo do `authorization_grant`. */
 export interface CommandScope {
   readonly type: string;
   readonly id: string;
@@ -39,7 +39,7 @@ export interface OperationDraft {
   readonly id: string;
   readonly command: string;
   readonly actor: Actor;
-  readonly residenceId: string | null;
+  readonly secondHomeId: string | null;
   readonly idempotencyKey: string;
   readonly correlationId: string;
   readonly authorizationRef: string;

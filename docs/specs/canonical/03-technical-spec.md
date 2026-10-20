@@ -1,8 +1,14 @@
 # 03 — Technical Spec — Luxtory Branded Second Home
 
-2026-10-09 · **Versão 3.14 — FINAL** · Base normativa: `01` v10.1 final · `02` v4.2 final
+2026-10-19 · **Versão 3.15 — FINAL** · Base normativa: `01` v10.2 final · `02` v4.3 final
 
 Cobertura normativa: **65 REQ · 6 INV · 11 PD**
+
+Revisão M0 autorizada pelo fundador: aplica a ontologia Home Concept → Home Edition → Second Home do `01` v10.2 e
+do `02` v4.3 — §3.1 e §3.2 revistos, identificadores renomeados, `home_edition_projected_investment`,
+`interest_contact` e `interest_qualification` acrescentados e guardrail da BR-377 no §13. Demais regras da v3.14
+preservadas. Correção da W4.2 (fundador, 2026-10-19): ciclo material da Home Edition (`draft` → `finalized`)
+separado da visibilidade pública; Second Home só de Home Edition finalizada.
 
 Revisão BP0 autorizada pelo fundador: TECH-057 implementa o contrato do REQ-028; TECH-058 delimita a evolução
 planejada do REQ-029. Demais regras da v3.13 preservadas. Impacto e aceite em
@@ -16,7 +22,7 @@ Hierarquia: **01 → 02 → 03 → Software.** O `03` define como construir e N�
 
 **TECH-002 — Operação.** Toda mutação econômica ou de estado crítico possui:
 
-`operation(id, command, actor_user_id, acting_party_id, role, residence_id, idempotency_key, correlation_id, authorization_ref, state)`
+`operation(id, command, actor_user_id, acting_party_id, role, second_home_id, idempotency_key, correlation_id, authorization_ref, state)`
 
 `state ∈ {pending, committed, failed, compensated}`.
 
@@ -55,16 +61,19 @@ Cada módulo altera seu próprio estado; coordenação ocorre por interfaces de 
 | `membership` | `party_id UNIQUE`, plano opcional, estado |
 | `membership_plan_version` | vigência, preço, benefícios, descontos e condições autorizadas |
 | `brand_partner` | encerramento, direitos sobreviventes e restrições de marca |
-| `concept_version` | elementos essenciais, `approval_refs`, versão e estado |
-| `edition` | Concept, região, modalidade e lock da estrutura |
-| `residence` | Edition, Concept version imutável, timezone, configuração, conformidade e início da operação |
-| `residence_administration` | Residence, prestador/base, caráter profissional, escopo e vigência |
-| `spe` | uma SPE por Residence Co-Owner |
+| `home_concept_version` | elementos essenciais, premissas, especificação conceitual, lifestyle e estilo arquitetônico, `approval_refs`, versão e estado; sem atributos físicos |
+| `home_edition` | `home_concept_id` imutável; nome, descrição, tipologia, configuração dos espaços, área projetada, suítes, capacidade, ambientes, amenidades, características e mídia (imagens, renders, plantas); estado material `draft` → `finalized` (em `draft` a definição material é editável; depois de finalizada, imutável — alteração material = nova Home Edition; sem tabela de versão) e visibilidade pública separada `hidden`/`public` (só Home Edition finalizada é publicável; retirar do público não reabre a definição material); sem localização, modalidade, estrutura ou condições comerciais |
+| `home_edition_projected_investment` | referência vigente da ordem de grandeza do investimento total projetado para materializar uma Second Home da Home Edition; histórico temporal (vigência); unidades menores + moeda; registro da Luxtory; sem modalidade, configuração, participação, Ação ou valor individual; nunca preço nem condição |
+| `second_home` | Home Edition específica e materialmente finalizada, versão imutável do Home Concept, localização concreta, timezone, modalidade e estrutura definitivas com lock, configuração Co-Owner, condições comerciais, conformidade e estado operacional (estruturação, Design & Build, operação) |
+| `second_home_administration` | Second Home, prestador/base, caráter profissional, escopo e vigência |
+| `spe` | uma SPE por Second Home Co-Owner |
 | `stake` | Ação permanente; participação igual conforme configuração |
-| `holding` | party, Residence, papel, Ação e vigência; sem sobreposição incompatível |
+| `holding` | party, Second Home, papel, Ação e vigência; sem sobreposição incompatível |
 | `authorization_grant` | comandos/leituras explícitos, escopo, vigência e concedente |
-| `interest` | Concept, Edition opcional, modalidade, região, `approx_days`, origem; nunca gera Direito de Uso |
-| `edition_initial_allocation` | primeiro exercício parcial: grants por Ação/categoria + capacidade Luxtory |
+| `interest` | `home_edition_id` obrigatório (Home Concept pela Home Edition, sem coluna própria), modalidade desejada, `desired_location`, `approx_days` só Co-Owner, origem; nunca gera Direito de Uso |
+| `interest_contact` | `name`, `phone`, `email` obrigatórios; 1:1 com `interest`; eliminável sem alterar `interest`; sem FK para `party` (implementação na W6) |
+| `interest_qualification` | dimensão de investimento, unidade de decisão e horizonte; desenho na spec da W6; 1:1 com `interest`; mesma regra de eliminação do contato (implementação na W6) |
+| `second_home_initial_allocation` | primeiro exercício parcial da Second Home: grants por Ação/categoria + capacidade Luxtory |
 | `booking` | canal, Titular, Ação, período, estado, política e cancelamento |
 | `luxchange_request` | solicitante, detentor, noites, estado, expiração, política e Fee |
 | `rental_offer` | capacidade, ofertante, política, estado e período |
@@ -72,13 +81,15 @@ Cada módulo altera seu próprio estado; coordenação ocorre por interfaces de 
 
 Co-Owner é sempre modelado/comunicado como **Ação + Direito de Uso**. “Cota” e derivados não são termos de domínio.
 
+Convenção de nomes (BR-377): `home_concept`/`home_edition`/`second_home` e derivados no banco e nos contratos; `HomeConcept`/`HomeEdition`/`SecondHome` no código. Nenhum identificador usa `residence`, `concept` ou `edition` isolados para essas entidades.
+
 **TECH-020 — Aquisição, administração e conformidade.**
 
-`formalize_acquisition` cria `holding`; no Co-Owner também registra SPE e Ações, exige `edition_initial_allocation` no primeiro exercício parcial e agenda o sorteio.
+`formalize_acquisition` cria `holding`; no Co-Owner também registra SPE e Ações, exige `second_home_initial_allocation` no primeiro exercício parcial e agenda o sorteio.
 
-Administração profissional é obrigatória enquanto a Residence Co-Owner estiver em operação. O modelo impede período operacional Co-Owner sem cobertura válida de `residence_administration`, sem criar consequência econômica adicional. Isso NÃO significa administração integral obrigatória pela Luxtory. No Owner, administração integral Luxtory é opcional e Property Services permanecem separados.
+Administração profissional é obrigatória enquanto a Second Home Co-Owner estiver em operação. O modelo impede período operacional Co-Owner sem cobertura válida de `second_home_administration`, sem criar consequência econômica adicional. Isso NÃO significa administração integral obrigatória pela Luxtory. No Owner, administração integral Luxtory é opcional e Property Services permanecem separados.
 
-`edition_initial_allocation` só admite datas futuras disponíveis, Direito de Uso igual entre Ações da mesma configuração, distribuição sazonal equivalente e capacidade inicial Luxtory por categoria. Nenhuma fórmula proporcional é presumida.
+`second_home_initial_allocation` só admite datas futuras disponíveis, Direito de Uso igual entre Ações da mesma configuração, distribuição sazonal equivalente e capacidade inicial Luxtory por categoria. Nenhuma fórmula proporcional é presumida.
 
 Conformidade distingue:
 
@@ -87,23 +98,23 @@ Conformidade distingue:
 - Co-Owner: personalização individual incompatível com a padronização é recusada;
 - não conformidade material: pode suspender Club, certificação e uso comercial de marcas conforme BR-020, sem alterar propriedade, Direito de Uso ou compromissos existentes.
 
-Encerramento de Brand Partner bloqueia novos Concepts, Editions e usos de marca após sua eficácia, preservando direitos sobreviventes registrados.
+Encerramento de Brand Partner bloqueia novos Home Concepts, Home Editions e usos de marca após sua eficácia, preservando direitos sobreviventes registrados.
 
 Antes da formalização não existem Ação nem Direito de Uso. Não existe retrofit, adaptação ou imóvel preexistente.
 
-### 3.2. Data-Residence, Inventário e ocupação
+### 3.2. Data da Second Home, Inventário e ocupação
 
 **ADR-003 — Grão = noite.**
 
-`residence_date(residence_id, stay_date, exercise_year, season, is_leap_day, checkin_at, sealed_at)`
+`second_home_date(second_home_id, stay_date, exercise_year, season, is_leap_day, checkin_at, sealed_at)`
 
-PK `(residence_id, stay_date)`.
+PK `(second_home_id, stay_date)`.
 
 Check-in 14:00 local; check-out 10:00 local.
 
 Estadia ocupa `[checkin_date, checkout_date)` e exige ao menos uma noite.
 
-**ADR-004 — Inventário Central.** É a projeção de `residence_date + custódia ativa + ocupação ativa`. Não existe segunda fonte mutável de disponibilidade.
+**ADR-004 — Inventário Central.** É a projeção de `second_home_date + custódia ativa + ocupação ativa`. Não existe segunda fonte mutável de disponibilidade.
 
 **Inventário Luxtory** = custódia ativa `luxtory/inventory`.
 
@@ -112,7 +123,7 @@ Locação externa não integra Inventário Luxtory.
 ```sql
 CREATE TABLE date_custody (
   id uuid PRIMARY KEY,
-  residence_id uuid NOT NULL,
+  second_home_id uuid NOT NULL,
   stay_date date NOT NULL,
 
   holder_kind text NOT NULL, -- owner | spe_pool | use_right | luxtory
@@ -128,7 +139,7 @@ CREATE TABLE date_custody (
   closed_by_operation uuid,
   closed_at timestamptz,
 
-  FOREIGN KEY (residence_id, stay_date) REFERENCES residence_date,
+  FOREIGN KEY (second_home_id, stay_date) REFERENCES second_home_date,
 
   CHECK ((holder_kind = 'use_right') = (stake_id IS NOT NULL)),
   CHECK ((holder_kind = 'use_right') = (basis IS NOT NULL)),
@@ -139,12 +150,12 @@ CREATE TABLE date_custody (
 );
 
 CREATE UNIQUE INDEX uq_custody_active
-ON date_custody(residence_id, stay_date)
+ON date_custody(second_home_id, stay_date)
 WHERE closed_at IS NULL;
 
 CREATE TABLE date_occupancy (
   id uuid PRIMARY KEY,
-  residence_id uuid NOT NULL,
+  second_home_id uuid NOT NULL,
   stay_date date NOT NULL,
   booking_id uuid NOT NULL,
   channel text NOT NULL,
@@ -152,13 +163,13 @@ CREATE TABLE date_occupancy (
   released_at timestamptz,
   release_reason text,
 
-  FOREIGN KEY (residence_id, stay_date) REFERENCES residence_date,
+  FOREIGN KEY (second_home_id, stay_date) REFERENCES second_home_date,
 
   CHECK (release_reason <> 'ceded' OR channel = 'own_use')
 );
 
 CREATE UNIQUE INDEX uq_occupancy_active
-ON date_occupancy(residence_id, stay_date)
+ON date_occupancy(second_home_id, stay_date)
 WHERE released_at IS NULL;
 ```
 
@@ -168,7 +179,7 @@ Enums usam listas fechadas por `CHECK IN`.
 
 - `uq_occupancy_active` → INV-1.
 - `uq_custody_active` + origens fechadas → INV-3.
-- toda `residence_date` selada termina a transação com exatamente uma custódia ativa;
+- toda `second_home_date` selada termina a transação com exatamente uma custódia ativa;
 - ocupação referencia custódia ativa da mesma noite;
 - custódia ocupada só fecha após liberação da ocupação na mesma transação;
 - histórico não é reescrito.
@@ -246,7 +257,7 @@ Retry não duplica efeito.
 
 **TECH-026 — INV-4/INV-5.**
 
-`residence_configuration` contém somente as quatro configurações canônicas e é imutável.
+`second_home_configuration` contém somente as quatro configurações canônicas e é imutável.
 
 Por categoria:
 
@@ -263,7 +274,7 @@ Média/Baixa = 262.
 
 `bucket ∈ {alta, media, leap}`.
 
-`grant` vem somente da configuração ou `edition_initial_allocation`.
+`grant` vem somente da configuração ou `second_home_initial_allocation`.
 
 `consume` aumenta consumo; `restore` desfaz consumo previamente registrado. Projeções nunca ficam negativas.
 
@@ -290,7 +301,7 @@ Alteração de PRL publicado: somente Super Admin.
 
 Parâmetros incluem somente valores autorizados no `01/02`, inclusive:
 
-Membership · Taxa de Administração · multiplicador · validade dos Créditos · Fee · descontos Luxplus · taxas/comissões de locação · `guest_rules` por Residence.
+Membership · Taxa de Administração · multiplicador · validade dos Créditos · Fee · descontos Luxplus · taxas/comissões de locação · `guest_rules` por Second Home.
 
 Valores iniciais:
 
@@ -328,7 +339,7 @@ Sem política vigente, o respectivo compromisso não confirma.
 
 ## 4. Tempo e calendário
 
-**TECH-040 — Fuso.** Instantes em UTC; regras civis usam timezone IANA da Residence. Exercício = ano civil local da noite. Períodos cruzando temporada/exercício são validados noite a noite.
+**TECH-040 — Fuso.** Instantes em UTC; regras civis usam timezone IANA da Second Home. Exercício = ano civil local da noite. Períodos cruzando temporada/exercício são validados noite a noite.
 
 **TECH-041 — Carnaval.** Terça de Carnaval = Páscoa gregoriana − 47 dias. Início = sexta anterior; se cair em janeiro, 01/02.
 
@@ -388,7 +399,7 @@ Request:
 
 Uso exige `now < expires_at`, independentemente de job. `expires_at` nunca é prorrogado.
 
-**TECH-045 — Permanência.** Uso próprio Co-Owner: mínimo 1 e máximo 14 noites consecutivas por Ação/Residence. Reservas adjacentes somam. Outros canais não usam esse limite.
+**TECH-045 — Permanência.** Uso próprio Co-Owner: mínimo 1 e máximo 14 noites consecutivas por Ação/Second Home. Reservas adjacentes somam. Outros canais não usam esse limite.
 
 **TECH-046 — No-show.** Só por command autorizado e após check-in da primeira noite. Job apenas identifica candidatos.
 
@@ -402,7 +413,7 @@ Autorização resolve:
 
 `user → party_delegation → party → holding/Ação ou authorization_grant → condições da ação`.
 
-Owner/Co-Owner são relações por Residence, não roles globais.
+Owner/Co-Owner são relações por Second Home, não roles globais.
 
 Membership elegível = ativo e sem restrição aplicável ao mecanismo.
 
@@ -442,8 +453,8 @@ Brand Partner, Investor e parceiros só executam o que constar em `authorization
 2. `rental_offer` por `id`;
 3. `membership` por `party_id`;
 4. `stake` por `id`;
-5. `residence_date` por `(residence_id, stay_date)`;
-6. balances e custódias pela mesma ordem de Data-Residence;
+5. `second_home_date` por `(second_home_id, stay_date)`;
+6. balances e custódias pela mesma ordem de Data da Second Home;
 7. `credit_lot` por `(expires_at, originated_at, id)`;
 8. `payment` por `id`.
 
@@ -566,7 +577,7 @@ Todos seguem TECH-053/054.
 | Direct | Inventário + Créditos + Fee → reserva |
 | Luxplus | Inventário + pagamento → reserva + settlement Luxtory |
 | Locação | oferta → reserva externa + settlement Titular |
-| Transferência | holding muda; Ação, saldo remanescente, rotações, reservas/compromissos e obrigações do Concept permanecem; Membership/Créditos não se transferem |
+| Transferência | holding muda; Ação, saldo remanescente, rotações, reservas/compromissos e obrigações do Home Concept permanecem; Membership/Créditos não se transferem |
 | Exceção | `in_exception`; nenhuma restituição, Crédito, indenização, compensação ou transferência econômica não prevista |
 
 **TECH-060 — Capacidade perdida.** `forfeited_right` não é reservável, depositável ou locável. Direito permanece consumido. Capacidade futura só entra no Inventário Luxtory por `recover_future_capacity`; caso contrário encerra com o exercício.
@@ -672,7 +683,7 @@ Estado financeiro é monotônico. Duplicidade/ordem inversa não regride estado.
 
 **TECH-083 — Settlement.** Append-only por natureza e beneficiário, distinguindo ao menos:
 
-Membership · Taxa de Administração · despesas da Residence · Design & Build · Property Services · Luxchange Fee · Luxplus · locação · estruturação/comercialização · obrigação Brand Partner · margem Investor.
+Membership · Taxa de Administração · despesas da Second Home · Design & Build · Property Services · Luxchange Fee · Luxplus · locação · estruturação/comercialização · obrigação Brand Partner · margem Investor.
 
 Brand Partner e margem Investor nunca são automaticamente receita Luxtory.
 
@@ -781,12 +792,12 @@ Tempo:
 
 Regras estruturais:
 
-- Residence Co-Owner operacional sem administração profissional válida falha;
+- Second Home Co-Owner operacional sem administração profissional válida falha;
 - alocação inicial com data passada, desigualdade ou distribuição sazonal inválida falha;
 - personalização Co-Owner incompatível falha;
 - perda de elegibilidade encerra Request e libera Garantia/Fee;
 - inadimplência não altera reserva confirmada nem rotação;
-- Data-Residence selada exige custódia ativa;
+- Data da Second Home selada exige custódia ativa;
 - seleção Luxtory para Inventário exige `annual_allocation`;
 - 29/02 é Média/Baixa, mas não consome bucket ordinário.
 
@@ -826,6 +837,7 @@ A implementação NÃO pode:
 - criar diferença Owner/Co-Owner ausente no `01`;
 - confundir administração profissional Co-Owner com administração integral Luxtory;
 - violar terminologia do `02`;
+- nomear o produto ou suas entidades como moradia (BR-377);
 - apresentar Co-Owner como compra de diárias;
 - prometer rentabilidade, valorização, liquidez ou renda garantida;
 - implementar funcionalidade fora do §15 sem atualizar primeiro o `02`.
@@ -914,7 +926,7 @@ existência no roadmap não autoriza construir login específico, dashboard vazi
 
 **READY FOR DEVELOPMENT.**
 
-`01 v10.1 + 02 v4.2 + 03 v3.14` definem o escopo atual; BP1 pode ser implementada pelo contrato do TECH-057.
+`01 v10.2 + 02 v4.3 + 03 v3.15` definem o escopo atual; BP1 pode ser implementada pelo contrato do TECH-057.
 BP2 permanece condicionada ao REQ-029/TECH-058, sem prontidão de implementação presumida.
 
 Pré-requisitos de operação, não de desenvolvimento:

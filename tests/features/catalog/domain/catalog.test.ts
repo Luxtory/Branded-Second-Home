@@ -38,7 +38,7 @@ describe('regras do catálogo (domínio puro)', () => {
 
   it('[REQ-027] autorização do Investor: mesmo Concept, não revogada e vigente no instante', () => {
     const base = {
-      conceptId: 'c1',
+      homeConceptId: 'c1',
       validFrom: before(1_000),
       validUntil: after(1_000) as Date | null,
       revokedAt: null as Date | null,
@@ -54,7 +54,7 @@ describe('regras do catálogo (domínio puro)', () => {
   it('[REQ-100] [REQ-101] checagem lexical: termos vedados e promessas explícitas, sem falso positivo nas palavras vizinhas', () => {
     for (const text of [
       'Casa por cota',
-      'COTAS da residência',
+      'COTAS da Second Home',
       'Cotista',
       'Diárias no verão',
       'uma diária',
@@ -92,7 +92,7 @@ describe('regras do catálogo (domínio puro)', () => {
       'conforme disponibilidade e regras',
       'Créditos não garantem disponibilidade',
       'Uso próprio independe de Membership',
-      'Disponibilidade sujeita às regras da Residence',
+      'Disponibilidade sujeita às regras da Second Home',
     ]) {
       expect(hasForbiddenTerm(text), text).toBe(false);
     }
@@ -120,7 +120,7 @@ describe('regras do catálogo (domínio puro)', () => {
     }
   });
 
-  it('[TECH-001] fuso da Residence: só nomes IANA do runtime, sem padrão', () => {
+  it('[TECH-001] fuso da Second Home: só nomes IANA do runtime, sem padrão', () => {
     expect(isIanaTimeZone('America/Sao_Paulo')).toBe(true);
     expect(isIanaTimeZone('Europe/Lisbon')).toBe(true);
     expect(isIanaTimeZone('Brasilia')).toBe(false);

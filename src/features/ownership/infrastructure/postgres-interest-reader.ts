@@ -11,13 +11,13 @@ export const postgresInterestReader: InterestReader<DatabaseTransaction> = {
   async counts(tx) {
     const rows = await tx
       .selectFrom('app.interest')
-      .select(['concept_id', 'region', 'modality', 'approx_days'])
+      .select(['home_edition_id', 'desired_location', 'modality', 'approx_days'])
       .select(sql<number>`count(*)::int`.as('count'))
-      .groupBy(['concept_id', 'region', 'modality', 'approx_days'])
+      .groupBy(['home_edition_id', 'desired_location', 'modality', 'approx_days'])
       .execute();
     return rows.map((row): InterestCount => ({
-      conceptId: row.concept_id,
-      region: row.region,
+      homeEditionId: row.home_edition_id,
+      desiredLocation: row.desired_location,
       modality: modality(row.modality),
       approxDays: row.approx_days,
       count: row.count,

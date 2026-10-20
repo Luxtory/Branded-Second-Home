@@ -1,22 +1,25 @@
 import type {
   BrandPartner,
-  Concept,
-  ConceptVersion,
-  ConceptVersionApproval,
-  Edition,
+  HomeConcept,
+  HomeConceptVersion,
+  HomeConceptVersionApproval,
+  HomeEdition,
+  HomeEditionEditorial,
+  HomeEditionFinalization,
+  HomeEditionMaterial,
   InvestorAuthorization,
-  Residence,
+  SecondHome,
 } from '../domain/catalog';
 import type {
   CatalogTerm,
   CatalogTermKind,
-  ConceptCuration,
-  ConceptMedia,
-  EditionReferenceValue,
+  HomeConceptCuration,
+  HomeConceptMedia,
+  HomeEditionMedia,
+  HomeEditionProjectedInvestment,
   MediaApproval,
   MediaRendition,
   MediaWithdrawal,
-  ReferenceValueSeries,
 } from '../domain/collection';
 
 /**
@@ -28,11 +31,12 @@ export type LockMode = 'share' | 'exclusive';
 /** Persistência do catálogo dentro da transação do command (implementação PostgreSQL em `infrastructure/`). */
 export interface CatalogStore<Tx> {
   brandPartner(tx: Tx, id: string, lock: LockMode): Promise<BrandPartner | null>;
-  concept(tx: Tx, id: string): Promise<Concept | null>;
-  conceptVersion(tx: Tx, id: string): Promise<ConceptVersion | null>;
-  latestVersionNumber(tx: Tx, conceptId: string): Promise<number | null>;
-  currentApprovedVersion(tx: Tx, conceptId: string): Promise<ConceptVersion | null>;
-  edition(tx: Tx, id: string): Promise<Edition | null>;
+  homeConcept(tx: Tx, id: string): Promise<HomeConcept | null>;
+  homeConceptVersion(tx: Tx, id: string): Promise<HomeConceptVersion | null>;
+  latestVersionNumber(tx: Tx, homeConceptId: string): Promise<number | null>;
+  currentApprovedVersion(tx: Tx, homeConceptId: string): Promise<HomeConceptVersion | null>;
+  /** Home Edition; `exclusive` trava a linha para mudar estado, visibilidade ou textos. */
+  homeEdition(tx: Tx, id: string, lock?: LockMode): Promise<HomeEdition | null>;
   investorAuthorization(tx: Tx, id: string, lock: LockMode): Promise<InvestorAuthorization | null>;
 
   insertBrandPartner(tx: Tx, partner: BrandPartner): Promise<void>;
@@ -46,21 +50,46 @@ export interface CatalogStore<Tx> {
       readonly registeredAt: Date;
     },
   ): Promise<BrandPartner>;
-  insertConcept(tx: Tx, concept: Concept): Promise<void>;
-  insertConceptVersion(tx: Tx, version: ConceptVersion): Promise<void>;
-  approveConceptVersion(
+  insertHomeConcept(tx: Tx, homeConcept: HomeConcept): Promise<void>;
+  insertHomeConceptVersion(tx: Tx, version: HomeConceptVersion): Promise<void>;
+  approveHomeConceptVersion(
     tx: Tx,
     id: string,
-    approval: ConceptVersionApproval,
-  ): Promise<ConceptVersion>;
+    approval: HomeConceptVersionApproval,
+  ): Promise<HomeConceptVersion>;
   insertInvestorAuthorization(tx: Tx, authorization: InvestorAuthorization): Promise<void>;
   revokeInvestorAuthorization(
     tx: Tx,
     id: string,
     revocation: { readonly at: Date; readonly basis: string },
   ): Promise<InvestorAuthorization>;
-  insertEdition(tx: Tx, edition: Edition): Promise<void>;
-  insertResidence(tx: Tx, residence: Residence): Promise<void>;
+  insertHomeEdition(tx: Tx, homeEdition: HomeEdition): Promise<void>;
+  /** Substitui a definição material e os textos de uma Home Edition em preparação. */
+  updateHomeEditionDraft(
+    tx: Tx,
+    id: string,
+    content: HomeEditionMaterial & HomeEditionEditorial,
+  ): Promise<HomeEdition>;
+  finalizeHomeEdition(
+    tx: Tx,
+    id: string,
+    finalization: HomeEditionFinalization,
+  ): Promise<HomeEdition>;
+  /** Visibilidade pública: `public` (base nula) ou `hidden` com a base da retirada. */
+  setHomeEditionVisibility(
+    tx: Tx,
+    id: string,
+    visibility: {
+      readonly visibility: HomeEdition['visibility'];
+      readonly withdrawalBasis: string | null;
+    },
+  ): Promise<HomeEdition>;
+  correctHomeEditionEditorial(
+    tx: Tx,
+    id: string,
+    editorial: HomeEditionEditorial,
+  ): Promise<HomeEdition>;
+  insertSecondHome(tx: Tx, secondHome: SecondHome): Promise<void>;
 
   /** Termos pelos ids (os que existirem), travados — `share` para classificar, `exclusive` para mudar. */
   catalogTerms(tx: Tx, ids: readonly string[], lock: LockMode): Promise<CatalogTerm[]>;
@@ -75,28 +104,58 @@ export interface CatalogStore<Tx> {
     change: { readonly label: string; readonly active: boolean },
   ): Promise<CatalogTerm>;
 
-  conceptMedia(tx: Tx, id: string): Promise<ConceptMedia | null>;
-  /** Capa aprovada (vigente) do Concept, se houver. */
-  currentCover(tx: Tx, conceptId: string): Promise<ConceptMedia | null>;
-  insertConceptMedia(
+  homeConceptMedia(tx: Tx, id: string): Promise<HomeConceptMedia | null>;
+  /** Capa aprovada (vigente) do Home Concept, se houver. */
+  currentCover(tx: Tx, homeConceptId: string): Promise<HomeConceptMedia | null>;
+  insertHomeConceptMedia(
     tx: Tx,
-    media: ConceptMedia,
+    media: HomeConceptMedia,
     renditions: readonly StoredRendition[],
   ): Promise<void>;
-  approveConceptMedia(tx: Tx, id: string, approval: MediaApproval): Promise<ConceptMedia>;
-  withdrawConceptMedia(tx: Tx, id: string, withdrawal: MediaWithdrawal): Promise<ConceptMedia>;
+  approveHomeConceptMedia(tx: Tx, id: string, approval: MediaApproval): Promise<HomeConceptMedia>;
+  withdrawHomeConceptMedia(
+    tx: Tx,
+    id: string,
+    withdrawal: MediaWithdrawal,
+  ): Promise<HomeConceptMedia>;
 
-  conceptCuration(tx: Tx, conceptId: string): Promise<ConceptCuration | null>;
-  /** Serializa as trocas de destaque (no máximo um Concept em destaque), até o fim da transação. */
+  homeEditionMedia(tx: Tx, id: string): Promise<HomeEditionMedia | null>;
+  insertHomeEditionMedia(
+    tx: Tx,
+    media: HomeEditionMedia,
+    renditions: readonly StoredRendition[],
+  ): Promise<void>;
+  approveHomeEditionMedia(tx: Tx, id: string, approval: MediaApproval): Promise<HomeEditionMedia>;
+  withdrawHomeEditionMedia(
+    tx: Tx,
+    id: string,
+    withdrawal: MediaWithdrawal,
+  ): Promise<HomeEditionMedia>;
+
+  homeConceptCuration(tx: Tx, homeConceptId: string): Promise<HomeConceptCuration | null>;
+  /** Serializa as trocas de destaque (no máximo um Home Concept em destaque), até o fim da transação. */
   lockFeaturedSlot(tx: Tx): Promise<void>;
-  featuredCuration(tx: Tx): Promise<ConceptCuration | null>;
-  saveConceptCuration(tx: Tx, curation: ConceptCuration): Promise<void>;
+  featuredCuration(tx: Tx): Promise<HomeConceptCuration | null>;
+  saveHomeConceptCuration(tx: Tx, curation: HomeConceptCuration): Promise<void>;
 
-  editionReferenceValue(tx: Tx, id: string): Promise<EditionReferenceValue | null>;
-  /** Valores de uma série (Edition + base + moeda), por início de vigência. */
-  editionReferenceValues(tx: Tx, series: ReferenceValueSeries): Promise<EditionReferenceValue[]>;
-  insertEditionReferenceValue(tx: Tx, value: EditionReferenceValue): Promise<void>;
-  endEditionReferenceValue(tx: Tx, id: string, at: Date): Promise<EditionReferenceValue>;
+  homeEditionProjectedInvestment(
+    tx: Tx,
+    id: string,
+  ): Promise<HomeEditionProjectedInvestment | null>;
+  /** Médias projetadas de uma Home Edition, por início de vigência (uma vigente por Home Edition). */
+  homeEditionProjectedInvestments(
+    tx: Tx,
+    homeEditionId: string,
+  ): Promise<HomeEditionProjectedInvestment[]>;
+  insertHomeEditionProjectedInvestment(
+    tx: Tx,
+    value: HomeEditionProjectedInvestment,
+  ): Promise<void>;
+  endHomeEditionProjectedInvestment(
+    tx: Tx,
+    id: string,
+    at: Date,
+  ): Promise<HomeEditionProjectedInvestment>;
 }
 
 export interface TermCandidate {

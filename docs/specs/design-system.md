@@ -38,7 +38,7 @@ A prioridade é o **R1 — site público: Discovery + Interesse** (02 §2).
 
 ## 4. User stories
 
-- Como visitante, quero sentir a casa antes de entender o mecanismo, para desejar o Residence Concept com clareza.
+- Como visitante, quero sentir a casa antes de entender o mecanismo, para desejar o Home Concept com clareza.
 - Como visitante, quero manifestar interesse como Owner ou Co-Owner em poucos passos e sem ambiguidade,
   sabendo que isso não é aquisição (BR-050) e que os dias indicados não são direito adquirido (REQ-025, BR-060).
 - Como visitante com teclado, leitor de tela ou movimento reduzido, quero usar tudo sem barreiras (WCAG 2.2 AA).
@@ -54,9 +54,9 @@ Nenhum. O Design System não expõe endpoints nem eventos.
 
 | ID | Consequência no Design System |
 |---|---|
-| BR-001…004, REQ-020 | Residence Concept, Residence Edition e Residence são objetos visuais distintos; oferta só com Edition. |
-| REQ-022, BR-030 | Interesse pode existir a partir do Concept sem Edition: o formulário aceita Edition ausente. |
-| BR-010, BR-015, BR-021, REQ-021 | Marca de Brand Partner aparece só pelo slot `ConceptCredit`, controlado por dados autorizados. |
+| BR-001…004, REQ-020 | Home Concept, Home Edition e Second Home são objetos visuais distintos; oferta só vinculada a uma Home Edition. |
+| REQ-022, BR-030 | Interesse parte de uma Home Edition publicada, com localização pretendida e modalidade desejada (formulário na W6). |
+| BR-010, BR-015, BR-021, REQ-021 | Marca de Brand Partner aparece só pelo slot `HomeConceptCredit`, controlado por dados autorizados. |
 | REQ-024, REQ-025, BR-050, BR-060 | Microcopy do interesse: não é aquisição; dias são preferência, jamais direito adquirido. |
 | REQ-100, BR-373 | Co-Owner = Ação com Direito de Uso. Nunca "cota" ou derivados; nunca "diária(s)"; sem preço por dia. |
 | REQ-101, BR-374 | Nenhum componente ou exemplo promete rentabilidade, valorização, liquidez ou renda. |
@@ -91,7 +91,7 @@ Nenhum. O Design System não expõe endpoints nem eventos.
 
 | Voz | Família | Uso | Nunca |
 |---|---|---|---|
-| LUXURY — Display | Newsreader (opsz 72; 400–500; itálico 400) | Opening Frames, headlines, nomes de Concept, statements | body, labels, botões |
+| LUXURY — Display | Newsreader (opsz 72; 400–500; itálico 400) | Opening Frames, headlines, nomes de Home Concept e Home Edition, statements | body, labels, botões |
 | UTILITY — Sans | Hanken Grotesk (400–600) | body, navegação, formulários, Evidence, produto | headlines de Opening Frame |
 | STORY — Script | Courier Prime (400/700) | Scene Markers, capítulos, lugar/hora, legendas | body, labels, botões, texto corrido |
 
@@ -174,7 +174,7 @@ Uso detalhado, markup e exemplos: [`docs/reference/design-system.md`](../referen
 | Mobile Navigation | `lx-mobile-nav` (`dialog`) | — | `showModal()`; foco preso; Esc fecha; foco volta ao gatilho |
 | Footer | `lx-footer` | — | `contentinfo` |
 | Collection Card | `lx-collection` (`ul`) + `lx-collection-card` | — | um link por card (área inteira clicável); sem caixa nem sombra |
-| Concept Credit | `lx-credit` | — | não renderiza sem autorização nos dados; logo da parceira nunca recolorido |
+| Home Concept Credit | `lx-credit` | — | não renderiza sem autorização nos dados; logo da parceira nunca recolorido |
 | Logo | `lx-logo` | `--vertical`; `--pending` (só para asset ausente) | `<img alt="">` dentro de link com nome acessível; `<picture>` troca pelo ícone abaixo de 360px |
 
 ### Superfícies de produto (W2B, ADR-0009)
@@ -223,7 +223,7 @@ deliberada só dentro de um componente de dados, contida e acessível.
 
 **Lab e acessibilidade**
 - [ ] O Lab (`src/design-system/lab/index.html`) mostra todas as foundations e os componentes da §5, mais três
-  composições R1: Opening Frame da Coleção, Scene de Concept, formulário de interesse.
+  composições R1: Opening Frame da Coleção, Scene de Home Concept, formulário de interesse.
 - [ ] O Lab não tem overflow horizontal em 320, 360, 390, 768, 1024, 1440 e 1920px.
 - [ ] axe-core (WCAG 2.2 AA) não aponta violações no Lab.
 - [ ] O percurso completo por teclado funciona, com foco sempre visível.
@@ -250,9 +250,9 @@ deliberada só dentro de um componente de dados, contida e acessível.
 
 - **Sem fotografia oficial:** `lx-frame--typographic` (fundo night, nome em Display, metadados em Courier,
   moldura hairline). Nunca foto de banco fingindo ser o imóvel.
-- **Concept sem Edition:** o card e a página mostram o Concept e aceitam interesse. Não mostram oferta nem
-  condição comercial (REQ-022).
-- **Brand Partner encerrada ou sem autorização:** `ConceptCredit` não renderiza (BR-021).
+- **Home Concept sem Home Edition publicada:** o card e a página mostram o Home Concept, sem oferta, condição comercial
+  nem interesse (REQ-022, BR-030).
+- **Brand Partner encerrada ou sem autorização:** `HomeConceptCredit` não renderiza (BR-021).
 - **Valor de Evidence ausente:** o item some. Nada de "—", "0" ou valor presumido (TECH-001).
 - **Headline longa em PT:** `text-wrap: balance`, medida máxima e hifenização desligada em display.
 - **Texto sobre imagem:** só branco e só dentro da área com scrim mínimo de 68%.
@@ -287,7 +287,7 @@ Não aplicável (camada visual). Performance acompanhada por Core Web Vitals no 
 
 1. ~~Kit oficial de logos~~: **recebido em 2026-09-25** (manifest em `src/design-system/brand/logo/`). Falta ainda uma
    versão **Pure White** para uso sobre fotografia; até lá, Warm Sand sobre scrim ≥ 68%.
-2. **Fotografia oficial** de Concepts e Residences.
+2. **Fotografia oficial** de Home Concepts, Home Editions e Second Homes.
 3. **Campos de contato e qualificação** do interesse (REQ-025), incluindo base legal e consentimento LGPD.
 4. **Regras de exposição de marca por Brand Partner** (BR-015).
 5. **Rótulo público da vitrine:** "Coleção" (recomendado; `Collection` internamente, termo não canônico).
@@ -394,7 +394,7 @@ compõe a cor sobre o fundo (testado contra o fundo da superfície).
   `lx-crop-x-*`/`lx-crop-y-*` (e `lx-crop-lg-*`), sem atributo `style` — a CSP de produção bloqueia estilo inline;
   proporções `ratio.media-sm/md/lg` (5:4 → 4:3 → 3:2) e altura livre ≥ 35rem a partir de `lg`; scrim localizado em
   Dark Blue (nunca camada global), validado nos pixels reais sob o texto. Sem mídia adequada, usar um pattern sem
-  mídia. Concept sem fotografia oficial = composição tipográfica (P-1).
+  mídia. Home Concept sem fotografia oficial = composição tipográfica (P-1).
 
 **Política de tokens.** Tokenizado: paleta, papéis de superfície, cores funcionais, tipografia, escala de espaço,
 layout, breakpoints, borda e radius globais, sombra, opacidade, motion, foco, z-index, alvos, proporções e scrim. Uma
@@ -430,7 +430,7 @@ SiteHeader (`lx-header`: sólido `blue` e `--overlay` transparente sobre a mídi
 Menu (`lx-mobile-nav`), Footer (`lx-footer`, superfície `deep`), AppShell (`lx-app`: navegação `blue`, conteúdo `white`,
 item ativo Warm Sand + Dark Blue), FocusedLayout (`lx-focused`: canvas `blue`, painel `deep` com hairline, sem sombra),
 PageHeader, PageSection, RecordList, FormActions, Evidence (`lx-evidence`, `dl` de atributos), Media (`lx-media`),
-HeroCarousel, CollectionCard e ConceptCredit.
+HeroCarousel, CollectionCard e HomeConceptCredit.
 Componentes novos só com consumidor real.
 
 ### 13.6 Patterns oficiais
@@ -563,13 +563,16 @@ que quebra sozinho: o grupo ao lado da busca quando cabe, numa segunda linha qua
 `color.rule` desenha o fio entre eles. A dica da busca é `span.lx-discovery__placeholder` (longa só no Hero a partir do
 `lg`, curta no resto; mesma fonte, nunca cortada). **Resultados** `div.lx-results-head`, `ul.lx-chips` >
 `a.lx-chip` (filtro ativo removível), `nav.lx-sort` > `a.lx-sort__option[aria-current]`, grupos
-`section.lx-concept-group` > `__head`. **Concept Card** `ul.lx-concept-grid` > `li` > `article.lx-concept-card`
-(`--featured` = Editorial Split nas 12 colunas a partir do `lg`) > `figure.lx-media.lx-concept-card__media` (4:3 no
+`section.lx-home-concept-group` > `__head`. **Home Concept Card** `ul.lx-home-concept-grid` > `li` >
+`article.lx-home-concept-card` (`--featured` = Editorial Split nas 12 colunas a partir do `lg`) >
+`figure.lx-media.lx-home-concept-card__media` (4:3 no
 celular, 4:5 a partir do `md`, 3:2 no destaque; recorte `lx-crop-*`) ou o quadro tipográfico
 `div.__media--type[data-surface=blue]` > `span.__word` (lifestyle principal ou título, decorativo) + `div.__body`
-(`__title` > `a.__link` que torna o card inteiro o alvo, `__meta`, `__facts`, `ul.__editions` > `li.__edition` com
-`__region` e uma linha por base, hairline entre Editions, `__none`, `__cta` no pé, alinhado na linha). **Steps**
+(`__title` > `a.__link` que torna o card inteiro o alvo, `__meta`, `__facts`, `ul.__home-editions` > `li.__home-edition` com
+`__home-edition-name`, capacidade · suítes · área e a média projetada, hairline entre Home Editions, `__none`, `__cta` no
+pé, alinhado na linha). **Home Edition Card** (página do Home Concept) `ul.lx-home-edition-grid` > `li` >
+`article.lx-home-edition-card`, com as mesmas regras, sem destaque. **Steps**
 `ol.lx-steps` > `li.lx-steps__item` (3 · 2 · 1 colunas, hairlines). **Filtros no celular** `dialog.lx-filters` >
-`form.__form` (`__bar` · `__body` com rolagem · `__foot` fixo; "Faixa de valor" e "Mais filtros" em
+`form.__form` (`__bar` · `__body` com rolagem · `__foot` fixo; "Média projetada" e "Mais filtros" em
 `section.__group` > `h3.lx-eyebrow.__heading`, o mesmo nome do desktop). Controles nativos dentro da barra, da barra fixa e do
 diálogo seguem a superfície branca (`color-scheme: light`). Ícone novo `arrow-up` ("Refinar a busca ↑").

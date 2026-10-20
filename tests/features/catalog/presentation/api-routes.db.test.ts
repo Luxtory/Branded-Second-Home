@@ -6,7 +6,7 @@ import {
 } from '@/features/identity/infrastructure/auth/test-auth-gateway';
 import { createCatalogRoutes } from '@/features/catalog/presentation/api-routes';
 import { withRoute, type Database } from '@/features/platform';
-import { CONTENT, testImage } from '../../../support/catalog-fixtures';
+import { CONTENT, HOME_EDITION_CONTENT, testImage } from '../../../support/catalog-fixtures';
 import { captureLogger } from '../../../support/capture-logger';
 import { memoryMediaStorage } from '../../../support/media-storage';
 import { responseValidator, schemaValidator } from '../../../support/openapi';
@@ -111,7 +111,7 @@ describe('POST /v1/admin/* do catálogo (TECH-050, TECH-100, contrato OpenAPI)',
     }
   });
 
-  it('[REQ-020] [REQ-027] [BR-025] as 9 operações pela API respondem conforme o OpenAPI, com o papel Admin auditado', async () => {
+  it('[REQ-020] [REQ-027] [BR-025] [BR-036] as operações do catálogo pela API respondem conforme o OpenAPI, com o papel Admin auditado', async () => {
     const partner = await created('registerBrandPartner', '/admin/brand-partners', {
       brand_name: 'Maison Contrato',
     });
@@ -127,41 +127,85 @@ describe('POST /v1/admin/* do catálogo (TECH-050, TECH-100, contrato OpenAPI)',
       id: partner.id,
       exposure_authorization_ref: 'Plano estratégico',
     });
-    const version = await created('createConceptVersion', '/admin/concept-versions', {
+    const version = await created('createHomeConceptVersion', '/admin/home-concept-versions', {
       brand_partner_id: partner.id,
       title: 'Casa Contrato',
       ...CONTENT,
     });
     const approved = await created(
-      'approveConceptVersion',
-      '/admin/concept-versions/{id}/approve',
+      'approveHomeConceptVersion',
+      '/admin/home-concept-versions/{id}/approve',
       { approval_refs: ['Ata'] },
       version.id,
       200,
     );
     expect(approved).toMatchObject({ state: 'approved', approved_role: 'admin' });
-    const edition = await created('createEdition', '/admin/editions', {
-      concept_id: version.concept_id,
-      region: 'Região',
-      modality: 'co_owner',
-      commercial_conditions: 'Condições.',
+    const homeEdition = await created('createHomeEdition', '/admin/home-editions', {
+      home_concept_id: version.home_concept_id,
+      ...HOME_EDITION_CONTENT,
+    });
+    expect(homeEdition).toMatchObject({ material_state: 'draft', visibility: 'hidden' });
+    const edited = await created(
+      'updateHomeEditionDraft',
+      '/admin/home-editions/{id}',
+      { ...HOME_EDITION_CONTENT, suites: 5 },
+      homeEdition.id,
+      200,
+    );
+    expect(edited).toMatchObject({ suites: 5, material_state: 'draft' });
+    const finalized = await created(
+      'finalizeHomeEdition',
+      '/admin/home-editions/{id}/finalize',
+      {},
+      homeEdition.id,
+      200,
+    );
+    expect(finalized).toMatchObject({ material_state: 'finalized', finalized_role: 'admin' });
+    await created(
+      'publishHomeEdition',
+      '/admin/home-editions/{id}/publish',
+      {},
+      homeEdition.id,
+      200,
+    );
+    const corrected = await created(
+      'correctHomeEditionEditorial',
+      '/admin/home-editions/{id}/editorial-correction',
+      { description: 'Descrição revista.', correction_basis: 'Revisão de texto' },
+      homeEdition.id,
+      200,
+    );
+    expect(corrected).toMatchObject({ description: 'Descrição revista.', visibility: 'public' });
+    const withdrawn = await created(
+      'withdrawHomeEdition',
+      '/admin/home-editions/{id}/withdraw',
+      { withdrawal_basis: 'Revisão das imagens' },
+      homeEdition.id,
+      200,
+    );
+    expect(withdrawn).toMatchObject({
+      visibility: 'hidden',
+      withdrawal_basis: 'Revisão das imagens',
     });
     const authorization = await created(
       'registerInvestorAuthorization',
       '/admin/investor-authorizations',
       {
-        concept_id: version.concept_id,
+        home_concept_id: version.home_concept_id,
         instrument_ref: 'Contrato INV-9',
         valid_from: new Date(Date.now() - 3_600_000).toISOString(),
       },
     );
-    const residence = await created('registerResidence', '/admin/residences', {
-      edition_id: edition.id,
+    const secondHome = await created('registerSecondHome', '/admin/second-homes', {
+      home_edition_id: homeEdition.id,
       label: 'Unidade 9',
       timezone: 'America/Sao_Paulo',
       investor_authorization_id: authorization.id,
     });
-    expect(residence).toMatchObject({ concept_version_id: version.id, concept_version: 1 });
+    expect(secondHome).toMatchObject({
+      home_concept_version_id: version.id,
+      home_concept_version: 1,
+    });
     await created(
       'revokeInvestorAuthorization',
       '/admin/investor-authorizations/{id}/revoke',
@@ -180,7 +224,7 @@ describe('POST /v1/admin/* do catálogo (TECH-050, TECH-100, contrato OpenAPI)',
 
     const { rows } = await database.pool.query<{ role: string; ref: string }>(
       `SELECT DISTINCT role, left(authorization_ref, 11) AS ref FROM app.operation
-       WHERE command IN ('register_brand_partner', 'register_residence', 'terminate_brand_partner')`,
+       WHERE command IN ('register_brand_partner', 'register_second_home', 'terminate_brand_partner')`,
     );
     expect(rows).toEqual([{ role: 'admin', ref: 'staff_role:' }]);
     expect(afterCommit).toHaveBeenCalled();
@@ -206,73 +250,105 @@ describe('POST /v1/admin/* do catálogo (TECH-050, TECH-100, contrato OpenAPI)',
     const partner = await created('registerBrandPartner', '/admin/brand-partners', {
       brand_name: 'Maison Coleção',
     });
-    const version = await created('createConceptVersion', '/admin/concept-versions', {
+    const version = await created('createHomeConceptVersion', '/admin/home-concept-versions', {
       brand_partner_id: partner.id,
       title: 'Casa Coleção',
       ...CONTENT,
       summary: 'Uma casa para longas temporadas.',
-      guests_max: 8,
-      suites: 4,
-      built_area_m2: 420,
       lifestyle_ids: [term.id],
       architectural_style_ids: [style.id],
     });
-    expect(version).toMatchObject({ lifestyle_ids: [term.id], guests_max: 8 });
+    expect(version).toMatchObject({
+      lifestyle_ids: [term.id],
+      summary: 'Uma casa para longas temporadas.',
+    });
     await created(
-      'approveConceptVersion',
-      '/admin/concept-versions/{id}/approve',
+      'approveHomeConceptVersion',
+      '/admin/home-concept-versions/{id}/approve',
       { approval_refs: ['Ata'] },
       version.id,
       200,
     );
     const media = await created(
-      'uploadConceptCover',
-      '/admin/concepts/{id}/cover',
+      'uploadHomeConceptCover',
+      '/admin/home-concepts/{id}/cover',
       { image: await testImage(), alt: 'Fachada', credit: 'Estúdio Luz', crop_x: 65, crop_y: 50 },
-      version.concept_id,
+      version.home_concept_id,
     );
     expect(media).toMatchObject({ state: 'pending', credit: 'Estúdio Luz' });
-    await created('approveConceptMedia', '/admin/concept-media/{id}/approve', {}, media.id, 200);
+    await created(
+      'approveHomeConceptMedia',
+      '/admin/home-concept-media/{id}/approve',
+      {},
+      media.id,
+      200,
+    );
     const curation = await created(
-      'setConceptCuration',
-      '/admin/concepts/{id}/curation',
+      'setHomeConceptCuration',
+      '/admin/home-concepts/{id}/curation',
       { rank: 1, featured: true },
-      version.concept_id,
+      version.home_concept_id,
       200,
     );
     expect(curation).toMatchObject({ rank: 1, featured: true });
-    const edition = await created('createEdition', '/admin/editions', {
-      concept_id: version.concept_id,
-      region: 'Trancoso, BA',
-      modality: 'owner_and_co_owner',
-      commercial_conditions: 'Condições.',
+    const homeEdition = await created('createHomeEdition', '/admin/home-editions', {
+      home_concept_id: version.home_concept_id,
+      ...HOME_EDITION_CONTENT,
     });
     const value = await created(
-      'registerEditionReferenceValue',
-      '/admin/editions/{id}/reference-values',
-      { basis: 'acao', amount_minor: 600_000_000, currency: 'BRL' },
-      edition.id,
+      'registerHomeEditionProjectedInvestment',
+      '/admin/home-editions/{id}/projected-investments',
+      { amount_minor: 600_000_000, currency: 'BRL' },
+      homeEdition.id,
     );
-    expect(value).toMatchObject({ basis: 'acao', amount_minor: 600_000_000, valid_until: null });
+    expect(value).toMatchObject({ amount_minor: 600_000_000, valid_until: null });
+    expect(value).not.toHaveProperty('basis');
+    const plan = await created(
+      'uploadHomeEditionMedia',
+      '/admin/home-editions/{id}/media',
+      {
+        kind: 'floor_plan',
+        image: await testImage(),
+        alt: 'Planta térrea',
+        crop_x: 50,
+        crop_y: 50,
+      },
+      homeEdition.id,
+    );
+    expect(plan).toMatchObject({ kind: 'floor_plan', state: 'pending' });
+    await created(
+      'approveHomeEditionMedia',
+      '/admin/home-edition-media/{id}/approve',
+      {},
+      plan.id,
+      200,
+    );
+    await created(
+      'withdrawHomeEditionMedia',
+      '/admin/home-edition-media/{id}/withdraw',
+      { withdrawal_basis: 'Planta revista' },
+      plan.id,
+      200,
+    );
     await new Promise((resolve) => setTimeout(resolve, 5));
     await created(
-      'endEditionReferenceValue',
-      '/admin/edition-reference-values/{id}/end',
+      'endHomeEditionProjectedInvestment',
+      '/admin/home-edition-projected-investments/{id}/end',
       {},
       value.id,
       200,
     );
     await created(
-      'withdrawConceptMedia',
-      '/admin/concept-media/{id}/withdraw',
+      'withdrawHomeConceptMedia',
+      '/admin/home-concept-media/{id}/withdraw',
       { withdrawal_basis: 'Nova sessão de fotos' },
       media.id,
       200,
     );
     const invalidImage = await call(
-      'uploadConceptCover',
+      'uploadHomeConceptCover',
       { image: Buffer.from('texto').toString('base64'), alt: 'x', crop_x: 50, crop_y: 50 },
-      { id: version.concept_id },
+      { id: version.home_concept_id },
     );
     expect(invalidImage.status).toBe(400);
     await expect(invalidImage.json()).resolves.toMatchObject({ code: 'ERR_VALIDATION' });
@@ -287,11 +363,9 @@ describe('POST /v1/admin/* do catálogo (TECH-050, TECH-100, contrato OpenAPI)',
     expect(malformed.status).toBe(400);
     expect(validError(await malformed.json())).toBe(true);
 
-    const missing = await call('createEdition', {
-      concept_id: randomUUID(),
-      region: 'Região',
-      modality: 'owner',
-      commercial_conditions: 'Condições.',
+    const missing = await call('createHomeEdition', {
+      home_concept_id: randomUUID(),
+      ...HOME_EDITION_CONTENT,
     });
     expect(missing.status).toBe(404);
     await expect(missing.json()).resolves.toMatchObject({ code: 'ERR_NOT_FOUND' });

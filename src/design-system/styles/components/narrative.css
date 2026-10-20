@@ -444,7 +444,7 @@
     }
   }
 
-  /* Rows: a plain list read line by line, each item under its hairline (criteria, Editions of a card). ------- */
+  /* Rows: a plain list read line by line, each item under its hairline (criteria, Home Editions of a card). ------- */
   .lx-rows {
     display: grid;
     margin: 0;
@@ -586,8 +586,8 @@
     line-height: var(--lx-leading-heading);
   }
 
-  /* Edition sheet: number and region on the left, the conditions on the right. ------------------------------- */
-  .lx-edition__head {
+  /* Home Edition sheet: number and region on the left, the conditions on the right. ------------------------------- */
+  .lx-home-edition__head {
     display: grid;
     gap: var(--lx-space-3);
     align-content: start;
@@ -606,7 +606,7 @@
     }
   }
 
-  /* The Concept's credit on the cover reads at lead size. */
+  /* The Home Concept's credit on the cover reads at lead size. */
   .lx-opening-row .lx-credit {
     font-size: var(--lx-text-lead);
   }

@@ -149,7 +149,7 @@ function handler(behavior?: Behavior): CommandHandler<{ n: number }, JsonValue, 
   return {
     command: 'test_command',
     input: z.object({ n: z.number() }),
-    residenceId: () => 'r-1',
+    secondHomeId: () => 'r-1',
     execute:
       behavior ??
       ((context) => {
@@ -191,7 +191,7 @@ describe('executor de commands (TECH-054)', () => {
     const [written] = store.committed;
     expect(written?.draft).toMatchObject({
       command: 'test_command',
-      residenceId: 'r-1',
+      secondHomeId: 'r-1',
       authorizationRef: 'base:test',
       at: NOW,
     });

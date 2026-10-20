@@ -12,8 +12,8 @@
 
 **Mentor = Luxtory**, nas duas jornadas. Papel, personalidade (OCEAN), regra afetiva e tom vêm do Framework da jornada:
 B2C `[FW-B2C: §5, §9, §10, §10.1, §10.2, §11]`; Brand Partners `[FW-BP: §5, §9, §10, §10.1, §10.2, §11]`. Pelo modelo,
-a Brand Partner aporta identidade, lifestyle, desejo e comunidade; a Luxtory traduz esse universo em um Residence
-Concept replicável e qualifica, estrutura e converte a demanda `[F: 01 §1, BR-013, BR-041]`.
+a Brand Partner aporta a identidade da marca, seu lifestyle, desejo e comunidade; a Luxtory traduz esse universo em
+um Home Concept replicável e qualifica, estrutura e converte a demanda `[F: 01 §1, BR-013, BR-041]`.
 
 ## 4. Guardrails compartilhados
 
@@ -31,41 +31,51 @@ Concept replicável e qualifica, estrutura e converte a demanda `[F: 01 §1, BR-
 | inventar prova (depoimento, case, número, prêmio, imprensa, parceira, foto) — ver `P-LX-01` e `P-LX-02` | BR-352, TECH-001 |
 | usar a copy de demonstração do Lab como fonte | [`../communication.md`](../communication.md) §3 |
 | ligar uma jornada à outra | `D-LX-01` |
+| denominar ou enquadrar o produto como moradia — Residence, residência, residencial ou equivalentes; "casa" só como linguagem narrativa, nunca como nome ou categoria; "imóvel de lazer" só descritivo | BR-377, REQ-100, `D-LX-11` |
+| atribuir à Home Edition localização, modalidade, estrutura patrimonial ou condições comerciais — pertencem à Second Home | BR-031, BR-032, BR-035 |
+| apresentar a média projetada de investimento como preço, proposta, condição comercial ou valor individual de Owner ou Co-Owner, ou vinculá-la a modalidade, configuração ou Ação | BR-034, REQ-022 |
 
 Pares que não se confundem: Ação × Direito de Uso × reserva × Crédito `[F: BR-070]` · Membership × propriedade
 `[F: BR-144, BR-147]` · convidado ou locatário × Titular `[F: BR-261, BR-331]` · interesse × aquisição `[F: BR-050,
-BR-065]` · Residence Concept × Residence Edition × Residence `[F: BR-001]`.
+BR-065]` · Home Concept × Home Edition × Second Home `[F: BR-001]` · localização pretendida × localização concreta
+`[F: BR-030, BR-035]` · média projetada de investimento × preço ou condição comercial `[F: BR-034]`.
 
 ## 5. Fatos transversais
 
 Só os que as duas jornadas usam; o restante é citado direto na aplicação de cada Framework.
 
-1. Cadeia do modelo: Brand Partner → Brand DNA → Residence Concept → Residence Edition → Owner ou Co-Owner → Design &
-   Build → Residence → Luxtory Club `[F: 01 §1]`.
-2. Toda Residence é construída do zero a partir de um Residence Concept aprovado; não há retrofit `[F: BR-003, BR-053,
-   BR-054]`.
-3. O Concept é replicável e identifica seus elementos essenciais; personalizar, sim; descaracterizar, não
+1. Cadeia do modelo: Brand Partner → identidade da marca → Home Concept → Home Edition → interesse e
+   pré-qualificação → estruturação da Second Home → aquisição e formalização → Design & Build → operação da Second
+   Home → Luxtory Club `[F: 01 §1]`.
+2. Toda Second Home é construída do zero a partir de uma Home Edition de Home Concept aprovado; não há retrofit
+   `[F: BR-003, BR-053, BR-054]`.
+3. O Home Concept é replicável e identifica seus elementos essenciais; personalizar, sim; descaracterizar, não
    `[F: BR-002, BR-013, BR-014, BR-017]`.
-4. A Brand Partner continua titular da marca e do Brand DNA, e aprova o plano de uso da marca `[F: 01 §3, BR-010,
-   BR-012]`.
-5. Oferta comercial só existe por uma Residence Edition; interesse pode existir antes dela `[F: BR-004, BR-030]`.
+4. A Brand Partner continua titular da marca e da identidade da marca, e aprova o plano de uso da marca
+   `[F: 01 §3, BR-010, BR-012]`.
+5. A manifestação de interesse comercial parte de uma Home Edition e declara a localização pretendida e a modalidade
+   desejada; a Home Edition não tem localização, modalidade, estrutura patrimonial nem condições comerciais
+   definitivas, que pertencem à Second Home `[F: BR-004, BR-030, BR-031, BR-032, BR-035]`.
+6. A Home Edition pode exibir sua média projetada de investimento vigente — referência aproximada da ordem de grandeza
+   do investimento total projetado para materializar uma Second Home dela —, nunca preço, proposta, condição ou valor
+   individual `[F: BR-034, REQ-022]`.
 
 ## 6. Nomenclatura pública — `D-LX-06`
 
 - Termos canônicos em inglês como nomes próprios, explicados em português na primeira menção da página: Branded Second
-  Home, Residence Concept (depois, "Concept"), Residence Edition, Residence, Owner, Co-Owner, Brand Partner, Luxtory
-  Club, Membership. Ação e Direito de Uso sempre em português `[F: 02 §1]`.
-- Vitrine pública de Concepts no B2C: **Coleção** (recomendação do DS, open question 5).
+  Home, Home Concept, Home Edition, Second Home, Owner, Co-Owner, Brand Partner, Luxtory Club, Membership — sempre com
+  o nome completo. Ação e Direito de Uso sempre em português `[F: 02 §1]`.
+- Vitrine pública de Home Concepts no B2C: **Coleção** (recomendação do DS, open question 5).
 - Alternativas e contraste: as categorias de alternativas são nomeadas para mostrar seus trade-offs
   `[FW-B2C: §2, P2]` `[FW-BP: §15]`. Concorrente só aparece como Vilão quando houver evidência, sem atribuir intenção
   maliciosa `[FW-B2C: §5, §14]`; no Brand Partners, o Vilão é uma lógica, não uma empresa `[FW-BP: §5]`. Nome de empresa
   concorrente na copy passa pela revisão jurídica (`P-LX-03`).
 
-- **Site B2C (`D-LX-08`):** a casa é **Second Home**; Residence Concept → **Home Concept**; Residence Edition →
-  **Home Edition**. Branded Second Home (categoria), Luxtory Club, Membership e a página **Coleção** continuam. Admin,
-  banco, `01/02/03` e instrumentos jurídicos usam os nomes canônicos.
-- **Site Brand Partners (`D-BP-16`):** a mesma nomenclatura, agora no próprio Framework Brand Partners (versão de
-  2026-10-12) `[FW-BP: §2]`; o estágio formal do mecanismo é **Second Home**, e "Home" só aparece como linguagem natural.
+- **Ontologia única (`D-LX-11`):** **Home Concept → Home Edition → Second Home** são os nomes canônicos em todas as
+  camadas — `01/02/03`, Frameworks, specs, Admin, banco, código, APIs e as duas jornadas —, sem tradução pública
+  `[F: BR-377, REQ-100]` `[FW-B2C: §2]` `[FW-BP: §2]`. O produto Luxtory é nomeado **Branded Second Homes**; "identidade
+  da marca" substitui "Brand DNA"; o estágio formal do mecanismo é **Second Home**, e "Home" sozinho só aparece como
+  linguagem natural. Branded Second Home (categoria), Luxtory Club, Membership e a página **Coleção** continuam.
 
 ## 7. Registro
 
@@ -78,14 +88,15 @@ Só os que as duas jornadas usam; o restante é citado direto na aplicação de 
 | D-LX-05 | Regras observáveis do tom e variação pelos 5Ps (§3 da versão anterior) | substituída em 2026-10-01 → `[FW-B2C: §9, §11]` · `[FW-BP: §9, §11]` | Mestre §8, §9 |
 | D-LX-06 | Nomenclatura pública: termos canônicos + "Coleção" (§6) | aprovada em 2026-09-29 | `02` §1; DS spec §11 (open question 5) |
 | D-LX-07 | Contraste com convenções, nunca com concorrentes nomeados | substituída em 2026-10-01 → `[FW-B2C: §2, §5]` · `[FW-BP: §5, §15]` | Mestre §4 (Vilão); REQ-100 |
-| D-LX-08 | Nomenclatura pública do site B2C (§6), complementando `D-LX-06`: Second Home, Home Concept e Home Edition no lugar de Residence, Residence Concept e Residence Edition; nomes canônicos no Admin, no banco, nos canônicos e nos instrumentos | aprovada em 2026-10-01 (fundador) | `01` §1, §2; BR-001, BR-004 |
+| D-LX-08 | Nomenclatura pública do site B2C (§6), complementando `D-LX-06`: Second Home, Home Concept e Home Edition no lugar de Residence, Residence Concept e Residence Edition; nomes canônicos no Admin, no banco, nos canônicos e nos instrumentos | aprovada em 2026-10-01 (fundador); substituída em 2026-10-19 → `D-LX-11` | `01` §1, §2; BR-001, BR-004 |
 | D-LX-09 | Sobre a Luxtory compartilhado entre as jornadas, com copy integral, cinco seções, biografia e citação fornecidas/aprovadas pelo fundador; foto original de `Luxtory2.0/public/images/sobre/marcos-rodopiano.png`, preservada como JPEG local. Cada entrada mantém shell, links e portão próprios; não retoma o posicionamento antigo. Fonte única no i18n, brief em `catalog` §15 | aprovada no pedido em 2026-10-15; entrega em PR/Preview, sem merge automático | pedido do fundador; BR-013, BR-040, BR-041; REQ-028 |
 | D-LX-10 | Revisão visual de Sobre: corpo idêntico entre B2C e B2B, blocos preferencialmente de três linhas e no máximo quatro; edição e redução de copy autorizadas, preservando fatos e racional. Hero completo e sem espaçamento duplicado. Refina `D-LX-09` somente na copy e apresentação | aprovada pelo fundador nesta revisão; entrega no mesmo PR/Preview, sem merge automático | pedido de ajustes com prints; `catalog` §15.5 |
+| D-LX-11 | Ontologia única Home Concept → Home Edition → Second Home (§6) em todas as camadas e nas duas jornadas, sem tradução pública; "Branded Second Homes" nomeia o produto (nunca "Branded Residences"); "identidade da marca" no lugar de "Brand DNA"; Residence, residência e residencial não denominam nem enquadram o produto; nova versão terminológica dos dois Frameworks | aprovada em 2026-10-19 (fundador) | `01` v10.2 §1, §2, BR-001, BR-377; REQ-100; ADR-0012, ADR-0013 |
 
 | ID | Pendência | Bloqueia |
 |---|---|---|
 | P-LX-01 | Provas externas — depoimentos, cases, números, prêmios, imprensa: não existem | qualquer uso de prova social ou dado de mercado |
-| P-LX-02 | Fotografia oficial de Concepts e Residences (P-1 do roadmap); até lá, Frame tipográfico | PICTURE com fotografia real |
+| P-LX-02 | Fotografia oficial de Home Concepts e Home Editions (P-1 do roadmap); até lá, Frame tipográfico | PICTURE com fotografia real |
 | P-LX-03 | Revisão jurídica da comunicação pública (Ação de SPE para público indeterminado, uso de marcas de terceiros, o termo "posse" no B2C, o termo "licenciamento" e a remuneração no Brand Partners, menção comparativa a categorias de alternativas e a empresas concorrentes) | go-live das páginas, não os documentos. Brand Partners: encerrada para a BP1.1 em 2026-10-13 por decisão do fundador, com o risco residual aceito (`brand-partners.md` `D-BP-24`) |
 | P-LX-04 | Brand guide oficial: quando chegar, entra pelo protocolo de conflito do contrato | nada até lá |
 | P-LX-05 | Framework B2B (Brand Partners), anunciado pelo fundador em 2026-09-30 | resolvida em 2026-10-01: Framework Brand Partners recebido ([ADR-0013](../../adr/0013-framework-brand-partners-fonte-canonica.md)) |

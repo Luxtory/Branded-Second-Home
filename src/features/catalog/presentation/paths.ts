@@ -9,6 +9,11 @@ export const STATUS_KEYS = [
   'cover_approved',
   'withdrawn',
   'ended',
+  'finalized',
+  'published',
+  'unpublished',
+  'corrected',
+  'media_approved',
 ] as const;
 export type StatusKey = (typeof STATUS_KEYS)[number];
 
@@ -16,6 +21,8 @@ const withStatus = (path: string, status?: StatusKey) =>
   status === undefined ? path : `${path}?status=${status}`;
 
 const ROOT = '/admin/catalogo';
+const HOME_CONCEPTS = `${ROOT}/home-concepts`;
+const HOME_EDITIONS = `${ROOT}/home-editions`;
 
 export const paths = {
   catalog: ROOT,
@@ -24,29 +31,40 @@ export const paths = {
     withStatus(`${ROOT}/brand-partners/${id}`, status),
   exposure: (id: string) => `${ROOT}/brand-partners/${id}/exposicao`,
   termination: (id: string) => `${ROOT}/brand-partners/${id}/encerramento`,
-  newConcept: (brandPartnerId: string) => `${ROOT}/brand-partners/${brandPartnerId}/concepts/novo`,
-  concept: (id: string, status?: StatusKey) => withStatus(`${ROOT}/concepts/${id}`, status),
-  newVersion: (conceptId: string) => `${ROOT}/concepts/${conceptId}/versoes/nova`,
-  approval: (conceptId: string, versionId: string) =>
-    `${ROOT}/concepts/${conceptId}/versoes/${versionId}/aprovacao`,
-  newEdition: (conceptId: string) => `${ROOT}/concepts/${conceptId}/editions/nova`,
-  newAuthorization: (conceptId: string) =>
-    `${ROOT}/concepts/${conceptId}/autorizacoes-investor/nova`,
-  revocation: (conceptId: string, authorizationId: string) =>
-    `${ROOT}/concepts/${conceptId}/autorizacoes-investor/${authorizationId}/revogacao`,
-  edition: (id: string, status?: StatusKey) => withStatus(`${ROOT}/editions/${id}`, status),
-  newResidence: (editionId: string) => `${ROOT}/editions/${editionId}/residences/nova`,
-  residence: (id: string, status?: StatusKey) => withStatus(`${ROOT}/residences/${id}`, status),
+  newHomeConcept: (brandPartnerId: string) =>
+    `${ROOT}/brand-partners/${brandPartnerId}/home-concepts/novo`,
+  homeConcept: (id: string, status?: StatusKey) => withStatus(`${HOME_CONCEPTS}/${id}`, status),
+  newVersion: (homeConceptId: string) => `${HOME_CONCEPTS}/${homeConceptId}/versoes/nova`,
+  approval: (homeConceptId: string, versionId: string) =>
+    `${HOME_CONCEPTS}/${homeConceptId}/versoes/${versionId}/aprovacao`,
+  newHomeEdition: (homeConceptId: string) => `${HOME_CONCEPTS}/${homeConceptId}/home-editions/nova`,
+  newAuthorization: (homeConceptId: string) =>
+    `${HOME_CONCEPTS}/${homeConceptId}/autorizacoes-investor/nova`,
+  revocation: (homeConceptId: string, authorizationId: string) =>
+    `${HOME_CONCEPTS}/${homeConceptId}/autorizacoes-investor/${authorizationId}/revogacao`,
+  // Home Edition (spec catalog §17.6).
+  homeEdition: (id: string, status?: StatusKey) => withStatus(`${HOME_EDITIONS}/${id}`, status),
+  editHomeEdition: (id: string) => `${HOME_EDITIONS}/${id}/edicao`,
+  finalizeHomeEdition: (id: string) => `${HOME_EDITIONS}/${id}/finalizacao`,
+  publishHomeEdition: (id: string) => `${HOME_EDITIONS}/${id}/publicacao`,
+  withdrawHomeEdition: (id: string) => `${HOME_EDITIONS}/${id}/retirada`,
+  correctHomeEdition: (id: string) => `${HOME_EDITIONS}/${id}/correcao-editorial`,
+  newHomeEditionMedia: (homeEditionId: string) => `${HOME_EDITIONS}/${homeEditionId}/midia/nova`,
+  homeEditionMedia: (homeEditionId: string, mediaId: string, status?: StatusKey) =>
+    withStatus(`${HOME_EDITIONS}/${homeEditionId}/midia/${mediaId}`, status),
+  newProjectedInvestment: (homeEditionId: string) =>
+    `${HOME_EDITIONS}/${homeEditionId}/media-projetada/nova`,
+  projectedInvestmentEnd: (homeEditionId: string, investmentId: string) =>
+    `${HOME_EDITIONS}/${homeEditionId}/media-projetada/${investmentId}/encerramento`,
+  newSecondHome: (homeEditionId: string) => `${HOME_EDITIONS}/${homeEditionId}/second-homes/nova`,
+  secondHome: (id: string, status?: StatusKey) => withStatus(`${ROOT}/second-homes/${id}`, status),
   // Coleção (spec catalog §13.12).
   vocabulary: (status?: StatusKey) => withStatus(`${ROOT}/vocabularios`, status),
   term: (id: string) => `${ROOT}/vocabularios/${id}`,
-  newCover: (conceptId: string) => `${ROOT}/concepts/${conceptId}/capas/nova`,
-  media: (conceptId: string, mediaId: string, status?: StatusKey) =>
-    withStatus(`${ROOT}/concepts/${conceptId}/capas/${mediaId}`, status),
-  curation: (conceptId: string) => `${ROOT}/concepts/${conceptId}/curadoria`,
-  newReferenceValue: (editionId: string) => `${ROOT}/editions/${editionId}/valores/novo`,
-  referenceValueEnd: (editionId: string, valueId: string) =>
-    `${ROOT}/editions/${editionId}/valores/${valueId}/encerramento`,
+  newCover: (homeConceptId: string) => `${HOME_CONCEPTS}/${homeConceptId}/capas/nova`,
+  media: (homeConceptId: string, mediaId: string, status?: StatusKey) =>
+    withStatus(`${HOME_CONCEPTS}/${homeConceptId}/capas/${mediaId}`, status),
+  curation: (homeConceptId: string) => `${HOME_CONCEPTS}/${homeConceptId}/curadoria`,
 } as const;
 
 export function statusKey(value: string | string[] | undefined): StatusKey | null {

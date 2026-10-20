@@ -1,16 +1,16 @@
 'use client';
 
 import { useActionState } from 'react';
-import { CROP_STEPS, type CatalogTermKind, type ReferenceValueBasis } from '../domain/collection';
+import { CROP_STEPS, type CatalogTermKind } from '../domain/collection';
 import {
-  approveConceptMediaAction,
+  approveHomeConceptMediaAction,
   createCatalogTermAction,
-  endReferenceValueAction,
-  registerReferenceValueAction,
-  setConceptCurationAction,
+  endProjectedInvestmentAction,
+  registerProjectedInvestmentAction,
+  setHomeConceptCurationAction,
   updateCatalogTermAction,
-  uploadConceptCoverAction,
-  withdrawConceptMediaAction,
+  uploadHomeConceptCoverAction,
+  withdrawHomeConceptMediaAction,
 } from './collection-actions';
 import {
   ChoiceField,
@@ -33,7 +33,6 @@ const LABEL_MAX = 80;
 const ALT_MAX = 300;
 const CREDIT_MAX = 200;
 const REF_MAX = 255;
-const NUMBER_MAX = 9;
 const AMOUNT_MAX = 24;
 const RANK_DIGITS = 3;
 const IMAGE_TYPES = 'image/jpeg,image/png,image/webp';
@@ -91,7 +90,10 @@ function TermGroup({
   );
 }
 
-/** Classificação e atributos da Coleção na versão (spec catalog §13.12): todos opcionais. */
+/**
+ * Classificação e resumo da Coleção na versão (spec catalog §13.12): todos opcionais. Pessoas, suítes e área são da
+ * Home Edition (spec §17.2).
+ */
 export function VersionCollectionFields({
   form,
   state,
@@ -125,26 +127,6 @@ export function VersionCollectionFields({
         maxLength={SUMMARY_MAX}
         state={state}
       />
-      {(
-        [
-          ['guests_max', version.guestsLabel],
-          ['suites', version.suitesLabel],
-          ['built_area_m2', version.areaLabel],
-        ] as const
-      ).map(([name, label]) => (
-        <TextField
-          key={name}
-          form={form}
-          name={name}
-          label={label}
-          hint={version.numberHint}
-          publicTag={publicTag}
-          optional
-          inputMode="numeric"
-          maxLength={NUMBER_MAX}
-          state={state}
-        />
-      ))}
     </div>
   );
 }
@@ -228,16 +210,16 @@ export function TermEditForm({
 const cover = collectionMessages.cover;
 const CENTER = String(CROP_STEPS[2]);
 
-/** Envio da capa (`upload_concept_cover`): o servidor reencoda e grava pendente. */
+/** Envio da capa (`upload_home_concept_cover`): o servidor reencoda e grava pendente. */
 export function CoverForm({
-  conceptId,
+  homeConceptId,
   idempotencyKey,
 }: {
-  readonly conceptId: string;
+  readonly homeConceptId: string;
   readonly idempotencyKey: string;
 }) {
   const [state, action] = useActionState(
-    uploadConceptCoverAction,
+    uploadHomeConceptCoverAction,
     initialFormState(idempotencyKey, { crop_x: CENTER, crop_y: CENTER }),
   );
   const crop = (labels: Readonly<Record<number, string>>) =>
@@ -245,7 +227,7 @@ export function CoverForm({
   return (
     <form className="lx-form" action={action} noValidate>
       <FormAlert state={state} />
-      <input type="hidden" name="concept_id" value={conceptId} />
+      <input type="hidden" name="home_concept_id" value={homeConceptId} />
       <FileField
         form="cover"
         name="image"
@@ -289,52 +271,52 @@ export function CoverForm({
         options={crop(cover.cropY)}
         state={state}
       />
-      <FormActions submit={cover.submit} cancelHref={paths.concept(conceptId)} />
+      <FormActions submit={cover.submit} cancelHref={paths.homeConcept(homeConceptId)} />
     </form>
   );
 }
 
-/** Aprovação da capa (`approve_concept_media`): só o id. */
+/** Aprovação da capa (`approve_home_concept_media`): só o id. */
 export function MediaApprovalForm({
-  conceptId,
+  homeConceptId,
   mediaId,
   idempotencyKey,
 }: {
-  readonly conceptId: string;
+  readonly homeConceptId: string;
   readonly mediaId: string;
   readonly idempotencyKey: string;
 }) {
   const [state, action] = useActionState(
-    approveConceptMediaAction,
+    approveHomeConceptMediaAction,
     initialFormState(idempotencyKey),
   );
   return (
     <form className="lx-form" action={action} noValidate>
       <FormAlert state={state} />
-      <input type="hidden" name="concept_media_id" value={mediaId} />
-      <FormActions submit={cover.approveSubmit} cancelHref={paths.concept(conceptId)} />
+      <input type="hidden" name="home_concept_media_id" value={mediaId} />
+      <FormActions submit={cover.approveSubmit} cancelHref={paths.homeConcept(homeConceptId)} />
     </form>
   );
 }
 
-/** Retirada da capa (`withdraw_concept_media`), irreversível, com motivo. */
+/** Retirada da capa (`withdraw_home_concept_media`), irreversível, com motivo. */
 export function MediaWithdrawalForm({
-  conceptId,
+  homeConceptId,
   mediaId,
   idempotencyKey,
 }: {
-  readonly conceptId: string;
+  readonly homeConceptId: string;
   readonly mediaId: string;
   readonly idempotencyKey: string;
 }) {
   const [state, action] = useActionState(
-    withdrawConceptMediaAction,
+    withdrawHomeConceptMediaAction,
     initialFormState(idempotencyKey),
   );
   return (
     <form className="lx-form" action={action} noValidate>
       <FormAlert state={state} />
-      <input type="hidden" name="concept_media_id" value={mediaId} />
+      <input type="hidden" name="home_concept_media_id" value={mediaId} />
       <TextField
         form="withdrawal"
         name="withdrawal_basis"
@@ -345,7 +327,7 @@ export function MediaWithdrawalForm({
       />
       <FormActions
         submit={cover.withdrawSubmit}
-        cancelHref={paths.concept(conceptId)}
+        cancelHref={paths.homeConcept(homeConceptId)}
         tone="destructive"
       />
     </form>
@@ -354,20 +336,20 @@ export function MediaWithdrawalForm({
 
 const curation = collectionMessages.curation;
 
-/** Curadoria (`set_concept_curation`): posição e destaque, partindo dos valores atuais. */
+/** Curadoria (`set_home_concept_curation`): posição e destaque, partindo dos valores atuais. */
 export function CurationForm({
-  conceptId,
+  homeConceptId,
   rank,
   featured,
   idempotencyKey,
 }: {
-  readonly conceptId: string;
+  readonly homeConceptId: string;
   readonly rank: number | null;
   readonly featured: boolean;
   readonly idempotencyKey: string;
 }) {
   const [state, action] = useActionState(
-    setConceptCurationAction,
+    setHomeConceptCurationAction,
     initialFormState(idempotencyKey, {
       rank: rank === null ? '' : String(rank),
       featured: featured ? YES : NO,
@@ -376,7 +358,7 @@ export function CurationForm({
   return (
     <form className="lx-form" action={action} noValidate>
       <FormAlert state={state} />
-      <input type="hidden" name="concept_id" value={conceptId} />
+      <input type="hidden" name="home_concept_id" value={homeConceptId} />
       <TextField
         form="curation"
         name="rank"
@@ -398,44 +380,37 @@ export function CurationForm({
           { value: NO, label: curation.notFeatured },
         ]}
       />
-      <FormActions submit={curation.submit} cancelHref={paths.concept(conceptId)} />
+      <FormActions submit={curation.submit} cancelHref={paths.homeConcept(homeConceptId)} />
     </form>
   );
 }
 
-const values = collectionMessages.referenceValues;
+const investment = collectionMessages.projectedInvestment;
 
-/** Valor de referência (`register_edition_reference_value`): só as bases que a modalidade oferece. */
-export function ReferenceValueForm({
-  editionId,
-  bases,
+/**
+ * Média projetada de investimento (`register_home_edition_projected_investment`, BR-034): só o valor e o início; sem
+ * modalidade, base ou Ação.
+ */
+export function ProjectedInvestmentForm({
+  homeEditionId,
   idempotencyKey,
 }: {
-  readonly editionId: string;
-  readonly bases: readonly ReferenceValueBasis[];
+  readonly homeEditionId: string;
   readonly idempotencyKey: string;
 }) {
   const [state, action] = useActionState(
-    registerReferenceValueAction,
-    initialFormState(idempotencyKey, bases.length === 1 ? { basis: bases[0] ?? '' } : {}),
+    registerProjectedInvestmentAction,
+    initialFormState(idempotencyKey),
   );
   return (
     <form className="lx-form" action={action} noValidate>
       <FormAlert state={state} />
-      <input type="hidden" name="edition_id" value={editionId} />
-      <ChoiceField
-        form="value"
-        name="basis"
-        label={values.basisLabel}
-        publicTag={messages.form.publicTag}
-        state={state}
-        options={bases.map((basis) => ({ value: basis, label: values.bases[basis] }))}
-      />
+      <input type="hidden" name="home_edition_id" value={homeEditionId} />
       <TextField
         form="value"
         name="amount"
-        label={values.amountLabel}
-        hint={values.amountHint}
+        label={investment.amountLabel}
+        hint={investment.amountHint}
         publicTag={messages.form.publicTag}
         inputMode="decimal"
         maxLength={AMOUNT_MAX}
@@ -444,34 +419,37 @@ export function ReferenceValueForm({
       <DateTimeField
         form="value"
         name="valid_from"
-        label={values.validFromLabel2}
-        hint={values.validFromHint}
+        label={investment.validFromLabel2}
+        hint={investment.validFromHint}
         optional
         state={state}
       />
-      <FormActions submit={values.submit} cancelHref={paths.edition(editionId)} />
+      <FormActions submit={investment.submit} cancelHref={paths.homeEdition(homeEditionId)} />
     </form>
   );
 }
 
-/** Encerramento do valor (`end_edition_reference_value`): agora, uma vez. */
-export function EndReferenceValueForm({
-  editionId,
-  valueId,
+/** Encerramento da média (`end_home_edition_projected_investment`): agora, uma vez. */
+export function EndProjectedInvestmentForm({
+  homeEditionId,
+  investmentId,
   idempotencyKey,
 }: {
-  readonly editionId: string;
-  readonly valueId: string;
+  readonly homeEditionId: string;
+  readonly investmentId: string;
   readonly idempotencyKey: string;
 }) {
-  const [state, action] = useActionState(endReferenceValueAction, initialFormState(idempotencyKey));
+  const [state, action] = useActionState(
+    endProjectedInvestmentAction,
+    initialFormState(idempotencyKey),
+  );
   return (
     <form className="lx-form" action={action} noValidate>
       <FormAlert state={state} />
-      <input type="hidden" name="edition_reference_value_id" value={valueId} />
+      <input type="hidden" name="home_edition_projected_investment_id" value={investmentId} />
       <FormActions
-        submit={values.endSubmit}
-        cancelHref={paths.edition(editionId)}
+        submit={investment.endSubmit}
+        cancelHref={paths.homeEdition(homeEditionId)}
         tone="destructive"
       />
     </form>

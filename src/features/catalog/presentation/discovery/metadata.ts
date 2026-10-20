@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { discoveryMessages as text } from '../i18n/discovery-pt-br';
-import { loadPublicConcept } from './concept-page';
+import { loadPublicHomeConcept } from './home-concept-page';
+import { loadPublicHomeEdition } from './home-edition-page';
 
 const { metadata } = text;
 
@@ -20,10 +21,21 @@ export const howItWorksMetadata = page(metadata.howItWorks);
 export const collectionMetadata = page(metadata.collection);
 export const notFoundMetadata: Metadata = { title: metadata.notFound };
 
-/** Concept: só o título — resumir a especificação arriscaria mudar o sentido (docs/specs/catalog.md §13.4). */
-export async function conceptMetadata(conceptId: string): Promise<Metadata> {
-  const result = await loadPublicConcept(conceptId);
+/** Home Concept: só o título — resumir a especificação arriscaria mudar o sentido (docs/specs/catalog.md §13.4). */
+export async function homeConceptMetadata(homeConceptId: string): Promise<Metadata> {
+  const result = await loadPublicHomeConcept(homeConceptId);
   if (result.status !== 'ok' || result.value === null) return { title: metadata.notFound };
-  const title = `${result.value.title}${metadata.conceptSuffix}`;
+  const title = `${result.value.title}${metadata.homeConceptSuffix}`;
+  return { title, openGraph: { title, locale: 'pt_BR', type: 'website' } };
+}
+
+/** Home Edition: o nome e o título do Home Concept (spec catalog §17.8); não pública ou inexistente → "não encontrada". */
+export async function homeEditionMetadata(
+  homeConceptId: string,
+  homeEditionId: string,
+): Promise<Metadata> {
+  const result = await loadPublicHomeEdition(homeConceptId, homeEditionId);
+  if (result.status !== 'ok' || result.value === null) return { title: metadata.notFound };
+  const title = metadata.homeEdition(result.value.name, result.value.homeConceptTitle);
   return { title, openGraph: { title, locale: 'pt_BR', type: 'website' } };
 }

@@ -10,6 +10,9 @@
 > Repriorização aprovada pelo fundador em BP0 (2026-10-09): [catalog §14](../specs/catalog.md#14-discovery-público-b2b-brand-partners-bp1).
 > Retomada do B2C autorizada pelo fundador em 2026-10-19, a partir da W5 (ver "Regras de execução"); a decisão BP0
 > permanece registrada como histórico.
+> **Correção ontológica (W4.2, 2026-10-19):** specs-fonte vigentes `01` v10.2 → `02` v4.3 → `03` v3.15 — ontologia
+> Home Concept → Home Edition → Second Home. Seções de waves concluídas preservam a nomenclatura da época como
+> registro; as waves futuras usam os nomes vigentes.
 
 ## Página institucional Sobre — solicitação aprovada em 2026-10-15
 
@@ -98,7 +101,8 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 | BP1.1 | Brand Partners Communication Upgrade: copy e composição do Decision & Approval Pack, Framework de 2026-10-12 | catalog (presentation), Core DS, docs | — (complementa REQ-028) | BP1 | — | B2B | ✅ implementação concluída em 2026-10-12 (PR #42, portão fechado); merged em `0f33dcf` (2026-10-13); refinamento pós-merge `D-BP-20` em revisão; publicação depende de P-LX-03 e das verificações externas de pré-go-live → refinamento `D-BP-20`–`D-BP-23` merged (#43 `7a864fa`); go-live por `D-BP-24` (#44, 2026-10-13); ajustes #45, #49 e #50 |
 | BP2 | Portal autenticado read-only com dados reais da própria parceria | identity, catalog, ownership | REQ-029 | BP0, critérios de entrada; representação/fatos canônicos de W7/W8 | — | B2B | ⛔ critérios de entrada ainda não satisfeitos |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ próxima executável (retomada de 2026-10-19) → ✅ (#54, `1fa6f01`, 2026-10-19; escrita fechada em Production) |
-| 6 | Interesse — formulário público | ownership | — | 4, 5 | — | R1 | ⛔ P-3 |
+| 4.2 | Ontologia Home Concept → Home Edition → Second Home + correção estrutural do catálogo e do interest | catalog, ownership, admin, design-system, docs | REQ-020, REQ-021, REQ-022, REQ-100 | 4.1, 5 | — | R1 | 🔄 em execução (`feat/w4-2-ontologia-home-edition`, 2026-10-19) |
+| 6 | Interesse — formulário público | ownership | — | 4, 5, 4.2 | — | R1 | ⛔ P-3 → ⬜ após a W4.2: P-3 definida pelo `02` v4.3 (REQ-022); reconstruída sobre a `main` corrigida |
 | 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ |
 | 8 | Formalização e calendário civil | ownership, calendar | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003 | 3, 7 | — | R2 | ⬜ |
 | 9 | Sorteio auditável | ownership | PD-011 | 8 | 10 | R2 | ⬜ |
@@ -130,6 +134,8 @@ Referências históricas em W3B/W3D/W4 a `P-BP-01` bloqueada descrevem aquelas e
 **Atualização 2026-10-19:** pausa encerrada pelo fundador; o B2C retoma em sequência a partir da W5. Os símbolos das
 linhas W5–W30 voltam a indicar o estado de execução conforme as dependências (W6 ⛔ P-3); CP3–CP5 seguem aguardando
 e não bloqueiam a W5.
+**Atualização 2026-10-19 (noite):** correção ontológica aprovada pelo fundador — a W4.2 entra antes da W6, que deixa
+de depender da P-3 (definida pelo `02` v4.3) e passa a depender da W4.2.
 
 Paralelismo na retomada do B2C: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
 canal do AsyncAPI, telas e `CHANGELOG.md`, e o STRIDE do beacon. A W10 toca migrations de `calendar`/`inventory`,
@@ -658,7 +664,7 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 ### BP2 — Portal Brand Partner (evolução planejada)
 
 - **Goal:** representantes autorizados acompanham dados reais da própria parceria; primeiro recorte autenticado,
-  read-only: vendas/aquisições atribuíveis à marca e Concepts/Editions relevantes.
+  read-only: vendas/aquisições atribuíveis à marca e Home Concepts/Home Editions relevantes.
 - **IDs (dona):** REQ-029. **TECH:** TECH-050, TECH-052, TECH-058, TECH-100.
 - **Entrada obrigatória:** Brand Partner real/necessidade concreta; evento canônico de venda; fonte verificável;
   atribuição à marca; campos visíveis; representação usuário → party → marca; autorização/revogação; isolamento
@@ -716,17 +722,74 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   continua **fechado** e nenhuma variável `INTEREST_*` foi criada; nenhum interesse gravado. A coleta produtiva segue
   dependente da D2 e de decisão própria do fundador. A W6 segue ⛔ P-3.
 
+### Wave 4.2 — Ontologia Home Concept → Home Edition → Second Home + correção estrutural do catálogo (2026-10-19)
+
+- **Status:** em execução na branch `feat/w4-2-ontologia-home-edition` (worktree própria a partir de `origin/main`
+  `89eb638`). Uma wave = uma branch = um PR = um ciclo; sem deploy intermediário. Production fica fechada para esta
+  wave até implementação, gates, PR, CI, revisão e aprovação explícita do fundador; nenhuma migration é aplicada em
+  Production durante o desenvolvimento.
+- **Goal**: remover a ontologia anterior de todas as camadas ativas e corrigir o modelo da Home Edition, o catálogo e
+  a estrutura preexistente do `interest` conforme `01` v10.2 / `02` v4.3 / `03` v3.15.
+- **IDs**: REQ-020, REQ-021, REQ-022, REQ-024, REQ-025, REQ-100 (complementa REQ-023 da W5); BR-030 a BR-036, BR-377.
+  **TECH**: TECH-002, TECH-033, TECH-056, TECH-100.
+- **Fases (sequenciais)**:
+  - **A — fontes superiores:** canônicos (1º commit da wave), Frameworks B2C e Brand Partners em versão terminológica
+    com novo pin (ADR-0012, ADR-0013), aplicações `b2c.md`/`brand-partners.md`/`luxtory.md`, `CLAUDE.md` (exceção
+    estreita da correção ontológica), este plano e a rastreabilidade (`02` §17, `03` §14).
+  - **B — arquitetura e contratos:** specs `catalog` (modelo da Home Edition, imutabilidade material e mecanismos não
+    materiais, média projetada, brief da página da Home Edition, Home Concept e Coleção revistos) e `ownership`
+    (correção estrutural do interesse); ADR-0019; STRIDE pertinente; OpenAPI; dependency map completo do banco
+    (tabelas, FKs, constraints, índices, gatilhos, funções, policies, grants, RLS, views, ordem das migrations,
+    contratos e tipos) e estratégia de migration por objeto — `ALTER … RENAME`/`ALTER TABLE` preferidos; recriação só
+    em substituição real; operação destrutiva com precondição fail-closed; sem `CASCADE` indiscriminado.
+  - **C — ontologia técnica:** migrations, tabelas, FKs, constraints, funções, policies, grants/RLS, tipos, domínio,
+    commands, readers/stores, APIs, Admin, Design System, arquivos e pastas (`git mv`), fixtures, testes e varredura
+    terminológica (denylist explícita + allowlist mínima versionada; sem regex genérica sobre `concept`/`edition`).
+  - **D — modelo público e catálogo:** atributos, mídia e média projetada da Home Edition; preparação, finalização
+    material e visibilidade pública; remoção de região, modalidade e condições comerciais da Home Edition; interesse com `home_edition_id`
+    obrigatório e `desired_location`, sem `concept_id` e sem validação de modalidade contra a Home Edition; Home
+    Concept e Coleção revistos; comunicação B2C e Brand Partners; Admin; página pública da Home Edition em
+    `/colecao/[homeConceptId]/home-editions/[homeEditionId]`, sem formulário.
+  - **E — validação:** checkpoint visual (desktop e mobile: Home Edition, Home Concept, Coleção e comunicação);
+    `verify`, E2E, security review, `db:check`, `trace --gate`; PR em draft → CI → parada antes do merge.
+- **Fora desta wave:** W6 — `interest_contact`, `interest_qualification`, telefone, HMAC de PII, Aviso de Privacidade
+  da jornada, formulário público, Budget Fit, pré-qualificação final, agenda, CRM, scoring e integração comercial;
+  W8 — localização concreta, estrutura, alocação inicial e condições da Second Home (além da renomeação).
+- **Depends on / parallel with**: W4.1 (✅) e W5 (✅); sequencial — toca migrations, `openapi.yaml`, o registro de
+  commands, i18n e `CHANGELOG.md`. Bloqueia a W6.
+- **Acceptance criteria**: `[REQ-022] Home Edition sem localização, modalidade nem condições comerciais` ·
+  `[REQ-020] vínculo Home Edition → Home Concept imutável` · `[REQ-022] definição material editável em preparação;
+  depois da finalização, alteração material é recusada e exige nova Home Edition; visibilidade pública separada e
+  Second Home só de Home Edition finalizada` · `[REQ-022] média projetada sem modalidade nem configuração`
+  · `[REQ-022] interest.home_edition_id obrigatório, desired_location, sem concept_id; Home Concept derivável da Home
+  Edition` · `[REQ-100] nenhuma ocorrência da ontologia anterior nas superfícies ativas (teste terminológico)` ·
+  página da Home Edition responsiva com axe 0 a 390 e 1440 px · `npm run db:check` (up → down → up) ·
+  `npm run trace -- --gate`.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-020,REQ-021,REQ-022,REQ-100 exits 0 and npx vitest run tests/terminology.test.ts exits 0, stop after 5 tries`
+
 ### Wave 6 — Interesse: formulário público ⛔ P-3
 
 - **Goal**: publicar o formulário (composição do Lab) com os campos e o consentimento definidos pela Luxtory.
 - **IDs**: complementa REQ-022, REQ-024, REQ-025, REQ-100, REQ-101.
 - **Scope (slices/files)**: `ownership` (presentation). Campos de contato e qualificação de P-3 (nenhum presumido),
-  aviso de privacidade e consentimento com o texto da Luxtory, rota pública e botão na página do Concept, dados
+  aviso de privacidade e consentimento com o texto da Luxtory, rota pública e botão na página da Home Edition, dados
   pessoais fora dos logs.
 - **Depends on / parallel with**: W4, W5 e P-3; sequencial — entra na fila quando P-3 chegar.
 - **Acceptance criteria**: E2E `[REQ-025] campo de dias só para Co-Owner, apresentado como preferência` ·
   `[REQ-024] a confirmação não sugere aquisição` · axe 0.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and the interest form E2E passes with 0 axe violations, stop after 3 tries`
+- **Revisão (2026-10-19, W4.2 e `02` v4.3)** — prevalece sobre o texto acima onde diferir:
+  - A W6 é reconstruída numa branch nova a partir da `main` já corrigida pela W4.2, portando o que for válido da
+    branch provisória `feat/w6-interesse-formulario` (hash chaveado, contato, portões da coleta, Aviso, drill-down do
+    Admin). A branch provisória fica intacta como referência: sem rebase, cherry-pick ou reaproveitamento direto.
+  - Escopo: `interest_contact` (nome, telefone e e-mail obrigatórios; 1:1; eliminável sem alterar `interest`; sem FK
+    para `party`) e `interest_qualification` (dimensão de investimento sem falsa precisão para o Co-Owner, unidade de
+    decisão e horizonte) do `03` v3.15; HMAC de PII; Aviso de Privacidade da jornada; formulário de solicitação de
+    conversa na própria página da Home Edition (sem página de Interesse separada; `b2c.md` `D-B2C-27`); Budget Fit
+    redesenhado; edge cases 14 e 15 do `02` §15.
+  - Conferir a ordem dos timestamps das migrations da W6 no dbmate/`db:check` em relação às da W4.2.
+  - **Depends on**: W4, W5 e W4.2 (a P-3 está definida pelo REQ-022 do `02` v4.3).
+  - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-022 exits 0 and the Home Edition conversation-request E2E passes with 0 axe violations, stop after 4 tries`
 
 ### Wave 7 — Titulares
 
@@ -756,19 +819,19 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   - Classificação civil pura no módulo `calendar`: temporadas por mês, Carnaval (TECH-041), 29/02 como Média/Baixa,
     exercício = ano civil local da noite, fuso IANA (TECH-040; `temporal-polyfill`). Usada pela validação da
     alocação inicial e pela selagem da W10.
-  - Carga imutável de `residence_configuration` com as 4 configurações do `01` §8.1 (TECH-026).
-  - `residence_administration` com cobertura obrigatória do Co-Owner em operação (TECH-020).
-  - `edition_initial_allocation` com as validações do TECH-020, sem fórmula presumida.
+  - Carga imutável de `second_home_configuration` com as 4 configurações do `01` §8.1 (TECH-026).
+  - `second_home_administration` com cobertura obrigatória do Co-Owner em operação (TECH-020).
+  - `second_home_initial_allocation` com as validações do TECH-020, sem fórmula presumida.
   - `formalize_acquisition` (TECH-051): Owner → `holding` de 100%; Co-Owner → `spe` + N `stake` iguais + `holding`s,
-    exige a alocação no exercício parcial e agenda o sorteio. Trava da estrutura da Edition; o adquirente final
+    exige a alocação no exercício parcial e agenda o sorteio. Trava da estrutura da Second Home; o adquirente final
     segue as mesmas regras (complemento do REQ-027).
-  - API `POST /v1/admin/acquisitions`, `POST /v1/admin/editions/{id}/initial-allocation`,
-    `POST /v1/admin/residences/{id}/administration`; tela Admin.
+  - API `POST /v1/admin/acquisitions`, `POST /v1/admin/second-homes/{id}/initial-allocation`,
+    `POST /v1/admin/second-homes/{id}/administration`; tela Admin.
 - **Depends on / parallel with**: W3, W7; sequencial.
 - **Acceptance criteria**: `[PD-003][EC-3] Carnaval começa na sexta anterior (01/02 se cair em janeiro) e seleciona
   as 10 primeiras datas válidas, ignorando 29/02 e meses já Alta` · `[TECH-110] Carnaval até 2100, 31/01, 2100 não
   bissexto, fusos` · `[REQ-010] a mesma party é Owner em A e Co-Owner em B` · `[REQ-024] Owner com 2 adquirentes é
-  recusado; a formalização Owner cria holding de 100%; não existe cadastro de imóvel sem Concept (nem preexistente)`
+  recusado; a formalização Owner cria holding de 100%; não existe cadastro de Second Home sem Home Edition de Home Concept aprovado (nem imóvel preexistente)`
   · `[REQ-025] não existe Ação nem Direito de Uso antes da formalização` · `[REQ-026] Ação, Direito de Uso, reserva
   e Crédito são entidades distintas; Ações iguais (base da divisão de despesas pela Ação; cobrança fora de escopo,
   03 §15); configuração imutável` · `[REQ-022] modalidade não muda após a trava` · `[TECH-110] Co-Owner em operação
@@ -794,11 +857,11 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 
 ### Wave 10 — Custódia e selagem
 
-- **Goal**: toda noite de Residence em operação fica selada com exatamente uma custódia ativa.
+- **Goal**: toda noite de Second Home em operação fica selada com exatamente uma custódia ativa.
 - **IDs (dona)**: REQ-040, INV-2, INV-3. **TECH**: ADR-003, ADR-004, TECH-021, TECH-022, TECH-023, TECH-042,
   TECH-056, TECH-090, TECH-101.
 - **Scope (slices/files)**: `calendar`, `inventory`.
-  - Migrations `residence_date` (ADR-003), `date_custody` e `date_occupancy` com o DDL do `03` §3.2 (ADR-004).
+  - Migrations `second_home_date` (ADR-003), `date_custody` e `date_occupancy` com o DDL do `03` §3.2 (ADR-004).
   - Triggers das barreiras do TECH-021, da cadeia de origem do TECH-022 e da matriz do TECH-023, completas aqui
     para as waves seguintes só usarem.
   - Job `open_exercise`: mantém selados o exercício corrente e o seguinte, porque a posição 1 abre em 15/09 do ano
@@ -807,11 +870,11 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   - Consultas de INV-1/INV-2/INV-3 após todo teste `db`; alerta `open_exercise_failure` (log estruturado +
     notificação de staff, fora do outbox — TECH-101). Sem telas.
 - **Depends on / parallel with**: W8; paralela com W9.
-- **Acceptance criteria**: `[TECH-110] Data-Residence selada sem custódia ativa falha` · `[TECH-041] a selagem exige
+- **Acceptance criteria**: `[TECH-110] Data da Second Home selada sem custódia ativa falha` · `[TECH-041] a selagem exige
   103 + 262 datas (+29/02); data selada não é reclassificada` · `[INV-3] quarta origem falha` · `[INV-2] par
   ocupação/custódia fora da matriz falha com ERR_CAPACITY_UNAVAILABLE` · `[REQ-040] entrada no Inventário Luxtory
   sem origem, autorização ou tratamento econômico é recusada; reversão só volta à custódia pai` · `[REQ-024]
-  open_exercise cria a custódia owner da Residence Owner formalizada` · `[TECH-110] check-in 14:00 e check-out
+  open_exercise cria a custódia owner da Second Home Owner formalizada` · `[TECH-110] check-in 14:00 e check-out
   10:00 locais convertidos em UTC`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-040,INV-2,INV-3 exits 0, stop after 5 tries`
 
@@ -831,7 +894,7 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   errada falha` · `[INV-5] saldo do ano N não atende N+1` · `[REQ-030] categorias não se compensam; saldo
   insuficiente → ERR_USE_RIGHT_BALANCE` · `[REQ-031] lista bissexta nunca é recalculada` · `[TECH-110] o 29/02 é
   Média/Baixa e consome só o saldo leap, nunca o ordinário` · `[REQ-032] rotação e abertura cumulativa` ·
-  `[REQ-033] exercício parcial usa só a alocação da Edition; janelas contam da formalização` · `[PD-004][EC-4] o
+  `[REQ-033] exercício parcial usa só a alocação definida na estruturação da Second Home; janelas contam da formalização` · `[PD-004][EC-4] o
   29/02 abre em 15/09 ou na formalização e expira sem transporte nem Inventário` · `[REQ-039] capacidade não
   reservada fica coletiva até o fim do exercício` · `[TECH-110] correção nunca altera concessão`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-030,REQ-031,REQ-032,REQ-033,REQ-039,PD-004,INV-4,INV-5 exits 0, stop after 5 tries`
@@ -861,7 +924,7 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 - **Goal**: reversões devolvem à origem econômica certa e exceções não criam efeito econômico.
 - **IDs (dona)**: REQ-080, REQ-081, REQ-083, PD-010. **TECH**: TECH-043, TECH-046, TECH-055, TECH-060, TECH-090.
 - **Scope (slices/files)**: `booking`, `inventory`.
-  - `cancel_own_use_booking` (TECH-043, contado no fuso da Residence) com classificação gravada; tardio → noites
+  - `cancel_own_use_booking` (TECH-043, contado no fuso da Second Home) com classificação gravada; tardio → noites
     futuras `forfeited_right`; Owner permanece `owner`.
   - `declare_no_show` (TECH-046) + job `flag_no_show_candidates`; `recover_future_capacity`; job
     `advance_booking_states` (TECH-055).
@@ -886,11 +949,11 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
     diferente de `inventory` cria reserva e ocupação `luxtory_use` (TECH-023); manutenção só a partir da janela.
   - Migration `parameter` (TECH-030: só-inserção, vigências sem sobreposição, autoridade, `authorization_ref`) +
     `set_parameter`.
-  - `guest_rules` = texto versionado por Residence, exibido e aceito na indicação; nenhuma regra executável
+  - `guest_rules` = texto versionado por Second Home, exibido e aceito na indicação; nenhuma regra executável
     presumida (conteúdo em P-5).
   - `nominate_guest`: sem `guest_rules` publicado → `ERR_PARAMETER_MISSING`; dados do convidado ⛔ P-6 (registra só
     a indicação e a versão aceita).
-  - Registro fechado dos commands Admin. API `POST /v1/admin/residences/{id}/luxtory-selection`,
+  - Registro fechado dos commands Admin. API `POST /v1/admin/second-homes/{id}/luxtory-selection`,
     `POST /v1/admin/parameters`, `POST /v1/bookings/{id}/guests`; telas.
 - **Depends on / parallel with**: W12; sequencial depois da W13 (compartilha `openapi.yaml` e o registro de
   commands).
@@ -922,7 +985,7 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 
 - **Goal**: PRL e parâmetros econômicos versionados, com snapshot do que formou cada operação.
 - **IDs (dona)**: REQ-013, REQ-052. **TECH**: TECH-030, TECH-031, TECH-033.
-- **Scope (slices/files)**: `pricing`. Migration `prl` por (Residence, data) versionado (TECH-030): inicial por Admin
+- **Scope (slices/files)**: `pricing`. Migration `prl` por (Second Home, data) versionado (TECH-030): inicial por Admin
   ou Super Admin, publicado só o Super Admin altera, efeitos só para o futuro. Tipos de parâmetro: Membership
   (valor-base), Taxa de Administração (sem cobrança — `03` §15), multiplicador, validade dos Créditos, Fee, prazo da
   Request, descontos Luxplus, taxas e comissões de locação. Os valores iniciais do TECH-030 são publicados pelo
@@ -1037,7 +1100,7 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   Membership dos dois e Garantia` · `[PD-006][CONC-4][CONC-5] vale o primeiro aceite válido; aceite contra retirada
   ou expiração; a avaliação de cancelamento pós-aceite nunca debita os Créditos do cedente` (domínio, P-11) ·
   `[TECH-023] reserved_right devolvido por política (exceção resolvida) recebe nova reserva de uso próprio sem novo
-  consumo` · `[REQ-096] estados de Concept, Membership, Crédito, Request e Reserva conferem com o 02`.
+  consumo` · `[REQ-096] estados de Home Concept, Membership, Crédito, Request e Reserva conferem com o 02`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-061,REQ-063,REQ-064,REQ-096,PD-006 exits 0, stop after 5 tries`
 
 ### Wave 23 — Luxchange Direct
@@ -1141,9 +1204,9 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 - **Depends on / parallel with**: W27 (mesmos guards dos mecanismos); sequencial.
 - **Acceptance criteria**: `[REQ-021] personalização não essencial do Owner é aceita; elemento essencial exige
   aprovação registrada; não conformidade material suspende Club, certificação e uso de marca sem alterar direitos;
-  após o encerramento da parceria, nenhum uso novo de marca` · `[REQ-038] Residence sem conformidade registrada não
-  participa do Club; administração integral do Owner é opcional` · `[REQ-091] Residence preserva a versão do
-  Concept; parceiro de execução sem autorização é recusado` · `[EC-13] Residence suspensa preserva reservas
+  após o encerramento da parceria, nenhum uso novo de marca` · `[REQ-038] Second Home sem conformidade registrada não
+  participa do Club; administração integral do Owner é opcional` · `[REQ-091] Second Home preserva a Home Edition e a versão do
+  Home Concept; parceiro de execução sem autorização é recusado` · `[EC-13] Second Home suspensa preserva reservas
   confirmadas de terceiros` · `[TECH-110] personalização incompatível de Co-Owner falha`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-021,REQ-038,REQ-091 exits 0, stop after 4 tries`
 
@@ -1448,8 +1511,8 @@ próprios, nascidos da `main` com o anterior mergeado (nunca CP1 + CP2 numa bran
 - **Goal**: Admin no Core como "folha de papel inteligente", preservando toda a funcionalidade. Baseline das 16 rotas
   imediatamente antes.
 - **Acceptance criteria**: smoke visual das 16 rotas; responsivo; axe; estados principais (vazio, aviso, sucesso, erro,
-  destrutivo); fluxos críticos por módulo (Brand Partner: criar, exposição, encerramento; Concept: versão, aprovação,
-  autorização e revogação de investor; Edition e Residence: criar e detalhar); zero mudança de domínio ou dados.
+  destrutivo); fluxos críticos por módulo (Brand Partner: criar, exposição, encerramento; Home Concept: versão, aprovação,
+  autorização e revogação de investor; Home Edition: criar, publicar e detalhar; Second Home: criar e detalhar); zero mudança de domínio ou dados.
 - **Goal command**: `/goal npx playwright test tests/e2e/catalog-admin.spec.ts tests/e2e/admin-access.spec.ts tests/e2e/app-shell.spec.ts exit 0, stop after 3 tries`
 
 ### CP5 — Consolidação global

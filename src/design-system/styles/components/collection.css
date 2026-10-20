@@ -1,4 +1,4 @@
-/* Coleção (internal: Collection) — a curated sequence of Residence Concepts, not a real-estate grid.
+/* Coleção (internal: Collection) — a curated sequence of Home Concepts, not a real-estate grid.
  * Card = Frame + marker + name + credit. No box, no shadow, no radius. One link per card (whole card clickable). */
 @layer lx.components {
   .lx-collection {
@@ -75,7 +75,7 @@
     max-width: var(--lx-measure-narrow);
   }
 
-  /* Card details (credit, Editions, cue) as one block beside or below the Frame. */
+  /* Card details (credit, Home Editions, cue) as one block beside or below the Frame. */
   .lx-collection-card__details {
     display: grid;
     gap: var(--lx-space-4);
@@ -94,7 +94,7 @@
     color: var(--lx-color-accent);
   }
 
-  /* Feature: one Concept per row — a wide Frame on one side, its data on the other, the side alternating. -- */
+  /* Feature: one Home Concept per row — a wide Frame on one side, its data on the other, the side alternating. -- */
   .lx-collection--feature {
     gap: var(--lx-space-16);
   }

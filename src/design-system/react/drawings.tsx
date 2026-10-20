@@ -1,7 +1,7 @@
 /**
  * Desenhos de linha do DS (LUXURY — "a Planta"): hairlines em `currentColor`, cores só pelo ground (`lx-triad`,
  * `lx-horizon`, `lx-measure` em drawings.css). São ilustração do texto ao lado — nunca o único portador da informação —,
- * por isso saem da árvore de acessibilidade. Nenhum desenho representa uma Residence (P-LX-02).
+ * por isso saem da árvore de acessibilidade. Nenhum desenho representa uma Second Home (P-LX-02).
  */
 
 export type TriadVertex = 'patrimony' | 'freedom' | 'belonging';

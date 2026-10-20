@@ -3,21 +3,17 @@ import type { ReactElement } from 'react';
 import { PageHeader, RecordList, type RecordListItem } from '@/design-system/react';
 import { adminRoleGate, type ExercisedAdminSession } from '@/features/admin';
 import { systemClock } from '@/features/platform';
-import type { ConceptDetail, EditionDetail } from '../application/views';
-import { isBrandInUse, type ConceptVersion } from '../domain/catalog';
+import type { HomeConceptDetail } from '../application/views';
+import { isBrandInUse, type HomeConceptVersion } from '../domain/catalog';
 import {
-  basesForModality,
   CATALOG_TERM_KINDS,
   displayRenditions,
   FEATURED_MIN_HEIGHT,
   FEATURED_MIN_WIDTH,
-  isCurrentValue,
   supportsFeatured,
   type CatalogTerm,
-  type ConceptMedia,
-  type EditionReferenceValue,
+  type CropStep,
 } from '../domain/collection';
-import { runtimeMediaStorage } from '../infrastructure/media-storage';
 import { postgresCatalogReader as reader } from '../infrastructure/postgres-catalog-reader';
 import {
   CatalogNotFound,
@@ -33,10 +29,8 @@ import { readCatalog } from './catalog-read';
 import {
   CoverForm,
   CurationForm,
-  EndReferenceValueForm,
   MediaApprovalForm,
   MediaWithdrawalForm,
-  ReferenceValueForm,
   TermEditForm,
   TermForm,
   type TermOptions,
@@ -45,7 +39,7 @@ import { CATALOG_ROLE } from './handlers';
 import { collectionMessages } from './i18n/collection-pt-br';
 import { messages } from './i18n/pt-br';
 import { Instant } from './instant';
-import { formatMoney } from './money';
+import { previewOf, type Preview } from './media-preview';
 import { Notice } from './notice';
 import { paths, type StatusKey } from './paths';
 
@@ -68,32 +62,28 @@ export function termOptions(terms: readonly CatalogTerm[]): TermOptions {
   return { lifestyle: of('lifestyle'), architectural_style: of('architectural_style') };
 }
 
-/** Classificação e atributos de uma versão, para pré-preencher a versão nova. */
-export function versionCollectionValues(version: ConceptVersion): Record<string, string> {
+/** Classificação e resumo de uma versão, para pré-preencher a versão nova. */
+export function versionCollectionValues(version: HomeConceptVersion): Record<string, string> {
   const slots = (prefix: string, ids: readonly string[]) =>
     Object.fromEntries(ids.map((id, index) => [`${prefix}_${index + 1}`, id]));
-  const number = (value: number | null) => (value === null ? '' : String(value));
   return {
     summary: version.attributes.summary ?? '',
-    guests_max: number(version.attributes.guestsMax),
-    suites: number(version.attributes.suites),
-    built_area_m2: number(version.attributes.builtAreaM2),
     ...slots('lifestyle', version.lifestyleIds),
     ...slots('architectural_style', version.architecturalStyleIds),
   };
 }
 
-/** Classificação, resumo e atributos da versão (o que a Coleção mostra). */
+/** Classificação e resumo da versão (o que a Coleção mostra do Home Concept). */
 export function VersionCollection({
   version,
   terms,
 }: {
-  readonly version: ConceptVersion;
+  readonly version: HomeConceptVersion;
   readonly terms: readonly CatalogTerm[];
 }) {
   const label = (id: string) => terms.find((term) => term.id === id)?.label ?? id;
   const classification = [...version.lifestyleIds, ...version.architecturalStyleIds].map(label);
-  const { summary, guestsMax, suites, builtAreaM2 } = version.attributes;
+  const { summary } = version.attributes;
   return (
     <KeyValues
       items={[
@@ -101,23 +91,20 @@ export function VersionCollection({
           label: text.versionFields.classificationLabel,
           value: classification.length === 0 ? text.versionFields.none : classification.join(' · '),
         },
-        {
-          label: text.versionFields.attributesLabel,
-          value: text.versionFields.attributes(guestsMax, suites, builtAreaM2),
-        },
         ...(summary === null ? [] : [{ label: text.versionFields.summaryLabel, value: summary }]),
       ]}
     />
   );
 }
 
-const cropLabel = (media: ConceptMedia) =>
+/** Foco de uma mídia ("Centro · Topo"), da capa ou da mídia da Home Edition. */
+export const cropLabel = (media: { readonly cropX: CropStep; readonly cropY: CropStep }) =>
   `${text.cover.cropX[media.cropX]} · ${text.cover.cropY[media.cropY]}`;
 
-function mediaItems(detail: ConceptDetail): RecordListItem[] {
+function mediaItems(detail: HomeConceptDetail): RecordListItem[] {
   return detail.media.map((media) => ({
     id: media.id,
-    href: paths.media(detail.concept.id, media.id),
+    href: paths.media(detail.homeConcept.id, media.id),
     title: media.alt,
     attributes: [
       { label: text.cover.stateLabel, value: text.cover.states[media.state] },
@@ -126,17 +113,17 @@ function mediaItems(detail: ConceptDetail): RecordListItem[] {
   }));
 }
 
-/** Seção "Capa" da página do Concept: a vigente, o histórico e o envio. */
+/** Seção "Capa" da página do Home Concept: a vigente, o histórico e o envio. */
 export function CoverSection({
   detail,
   inUse,
 }: {
-  readonly detail: ConceptDetail;
+  readonly detail: HomeConceptDetail;
   readonly inUse: boolean;
 }) {
   const current = detail.media.find((media) => media.state === 'approved') ?? null;
   return (
-    <Section id="concept-cover" title={text.cover.sectionTitle}>
+    <Section id="home-concept-cover" title={text.cover.sectionTitle}>
       {current === null ? (
         <Empty message={text.cover.noCurrent} />
       ) : (
@@ -152,7 +139,10 @@ export function CoverSection({
       )}
       {inUse ? (
         <div>
-          <a className="lx-button lx-button--secondary" href={paths.newCover(detail.concept.id)}>
+          <a
+            className="lx-button lx-button--secondary"
+            href={paths.newCover(detail.homeConcept.id)}
+          >
             {text.cover.upload}
           </a>
         </div>
@@ -161,17 +151,17 @@ export function CoverSection({
   );
 }
 
-/** Seção "Curadoria" da página do Concept. */
+/** Seção "Curadoria" da página do Home Concept. */
 export function CurationSection({
   detail,
   inUse,
 }: {
-  readonly detail: ConceptDetail;
+  readonly detail: HomeConceptDetail;
   readonly inUse: boolean;
 }) {
   const curation = detail.curation;
   return (
-    <Section id="concept-curation" title={text.curation.sectionTitle}>
+    <Section id="home-concept-curation" title={text.curation.sectionTitle}>
       <KeyValues
         items={[
           {
@@ -186,74 +176,11 @@ export function CurationSection({
       />
       {inUse ? (
         <div>
-          <a className="lx-button lx-button--secondary" href={paths.curation(detail.concept.id)}>
-            {text.curation.edit}
-          </a>
-        </div>
-      ) : null}
-    </Section>
-  );
-}
-
-function valueState(value: EditionReferenceValue, now: Date): string {
-  if (now < value.validFrom) return text.referenceValues.future;
-  return isCurrentValue(value, now) ? text.referenceValues.current : text.referenceValues.ended;
-}
-
-const endable = (value: EditionReferenceValue, now: Date) =>
-  value.validUntil === null && value.validFrom < now;
-
-/** Seção "Valores de referência" da página da Edition (BR-031, TECH-033). */
-export function ReferenceValuesSection({
-  detail,
-  now,
-  inUse,
-}: {
-  readonly detail: EditionDetail;
-  readonly now: Date;
-  readonly inUse: boolean;
-}) {
-  const page = text.referenceValues;
-  return (
-    <Section id="edition-reference-values" title={page.sectionTitle}>
-      <p className="lx-body">{page.lead}</p>
-      {detail.referenceValues.length === 0 ? (
-        <Empty message={page.empty} />
-      ) : (
-        <RecordList
-          label={page.sectionTitle}
-          items={detail.referenceValues.map((value) => ({
-            id: value.id,
-            title: `${page.bases[value.basis]} — ${formatMoney(value.amountMinor, value.currency)}`,
-            ...(endable(value, now)
-              ? { href: paths.referenceValueEnd(detail.edition.id, value.id) }
-              : {}),
-            attributes: [
-              { label: page.stateLabel, value: valueState(value, now) },
-              {
-                label: page.validFromLabel,
-                value: <Instant iso={value.validFrom.toISOString()} />,
-              },
-              {
-                label: page.validUntilLabel,
-                value:
-                  value.validUntil === null ? (
-                    page.noEnd
-                  ) : (
-                    <Instant iso={value.validUntil.toISOString()} />
-                  ),
-              },
-            ],
-          }))}
-        />
-      )}
-      {inUse ? (
-        <div>
           <a
             className="lx-button lx-button--secondary"
-            href={paths.newReferenceValue(detail.edition.id)}
+            href={paths.curation(detail.homeConcept.id)}
           >
-            {page.new}
+            {text.curation.edit}
           </a>
         </div>
       ) : null}
@@ -341,55 +268,39 @@ export async function TermPage({ id }: { readonly id: string }) {
   );
 }
 
-type ConceptLoaded = {
+type HomeConceptLoaded = {
   readonly session: ExercisedAdminSession;
-  readonly detail: ConceptDetail;
+  readonly detail: HomeConceptDetail;
   readonly preview: Preview | null;
 };
 
-interface Preview {
-  readonly src: string;
-  readonly width: number;
-  readonly height: number;
-}
-
-/** Concept (+ a pré-visualização de uma capa) numa só leitura auditada. */
-async function loadConcept(
+/** Home Concept (+ a pré-visualização de uma capa) numa só leitura auditada. */
+async function loadHomeConcept(
   id: string,
   previewMediaId: string | null = null,
-): Promise<ConceptLoaded | { readonly page: ReactElement }> {
+): Promise<HomeConceptLoaded | { readonly page: ReactElement }> {
   const access = await gate();
   if ('page' in access) return access;
   const ids = previewMediaId === null ? [id] : [id, previewMediaId];
   if (!ids.every(isRecordId)) return { page: <CatalogNotFound session={access.session} /> };
   const { detail, rendition } = await readCatalog(
     access.session,
-    { type: 'concept', id },
+    { type: 'home_concept', id },
     async (tx) => ({
-      detail: await reader.concept(tx, id),
+      detail: await reader.homeConcept(tx, id),
       rendition: previewMediaId === null ? null : await reader.mediaPreview(tx, previewMediaId),
     }),
   );
   if (detail === null) return { page: <CatalogNotFound session={access.session} /> };
-  // Bytes do Storage, fora da transação; a CSP admite `img-src data:` — nenhuma rota nem URL pública para pendentes.
-  const bytes = rendition === null ? null : await runtimeMediaStorage.get(rendition.storageKey);
-  const preview =
-    rendition === null || bytes === null
-      ? null
-      : {
-          src: `data:${rendition.contentType};base64,${Buffer.from(bytes).toString('base64')}`,
-          width: rendition.width,
-          height: rendition.height,
-        };
-  return { session: access.session, detail, preview };
+  return { session: access.session, detail, preview: await previewOf(rendition) };
 }
 
-function ConceptContextHeader({
+function HomeConceptContextHeader({
   detail,
   title,
   lead,
 }: {
-  readonly detail: ConceptDetail;
+  readonly detail: HomeConceptDetail;
   readonly title: string;
   readonly lead: string;
 }) {
@@ -397,21 +308,25 @@ function ConceptContextHeader({
     <PageHeader
       title={title}
       lead={lead}
-      context={{ href: paths.concept(detail.concept.id), label: detail.concept.title }}
+      context={{ href: paths.homeConcept(detail.homeConcept.id), label: detail.homeConcept.title }}
     />
   );
 }
 
-/** `/admin/catalogo/concepts/[id]/capas/nova`. */
+/** `/admin/catalogo/home-concepts/[id]/capas/nova`. */
 export async function NewCoverPage({ id }: { readonly id: string }) {
-  const loaded = await loadConcept(id);
+  const loaded = await loadHomeConcept(id);
   if ('page' in loaded) return loaded.page;
   const { session, detail } = loaded;
   return (
     <CatalogPage session={session}>
-      <ConceptContextHeader detail={detail} title={text.cover.newTitle} lead={text.cover.newLead} />
+      <HomeConceptContextHeader
+        detail={detail}
+        title={text.cover.newTitle}
+        lead={text.cover.newLead}
+      />
       {isBrandInUse(detail.partner, systemClock.now()) ? (
-        <CoverForm conceptId={id} idempotencyKey={randomUUID()} />
+        <CoverForm homeConceptId={id} idempotencyKey={randomUUID()} />
       ) : (
         <Notice tone="warning" title={text.cover.blocked} />
       )}
@@ -419,7 +334,7 @@ export async function NewCoverPage({ id }: { readonly id: string }) {
   );
 }
 
-/** `/admin/catalogo/concepts/[id]/capas/[mediaId]`: pré-visualização, aprovação e retirada. */
+/** `/admin/catalogo/home-concepts/[id]/capas/[mediaId]`: pré-visualização, aprovação e retirada. */
 export async function MediaPage({
   id,
   mediaId,
@@ -429,7 +344,7 @@ export async function MediaPage({
   readonly mediaId: string;
   readonly status: StatusKey | null;
 }) {
-  const loaded = await loadConcept(id, mediaId);
+  const loaded = await loadHomeConcept(id, mediaId);
   if ('page' in loaded) return loaded.page;
   const { session, detail, preview } = loaded;
   const media = detail.media.find((candidate) => candidate.id === mediaId);
@@ -438,7 +353,7 @@ export async function MediaPage({
   const inUse = isBrandInUse(detail.partner, systemClock.now());
   return (
     <CatalogPage session={session}>
-      <ConceptContextHeader
+      <HomeConceptContextHeader
         detail={detail}
         title={page.detailTitle}
         lead={page.states[media.state]}
@@ -482,7 +397,11 @@ export async function MediaPage({
         <Section id="media-approve" title={page.approveTitle}>
           <div className="lx-form">
             <Notice tone="warning" title={page.approveNotice} />
-            <MediaApprovalForm conceptId={id} mediaId={media.id} idempotencyKey={randomUUID()} />
+            <MediaApprovalForm
+              homeConceptId={id}
+              mediaId={media.id}
+              idempotencyKey={randomUUID()}
+            />
           </div>
         </Section>
       ) : null}
@@ -492,7 +411,11 @@ export async function MediaPage({
         ) : (
           <div className="lx-form">
             <Notice tone="warning" title={page.withdrawNotice} />
-            <MediaWithdrawalForm conceptId={id} mediaId={media.id} idempotencyKey={randomUUID()} />
+            <MediaWithdrawalForm
+              homeConceptId={id}
+              mediaId={media.id}
+              idempotencyKey={randomUUID()}
+            />
           </div>
         )}
       </Section>
@@ -500,9 +423,9 @@ export async function MediaPage({
   );
 }
 
-/** `/admin/catalogo/concepts/[id]/curadoria`. */
+/** `/admin/catalogo/home-concepts/[id]/curadoria`. */
 export async function CurationPage({ id }: { readonly id: string }) {
-  const loaded = await loadConcept(id);
+  const loaded = await loadHomeConcept(id);
   if ('page' in loaded) return loaded.page;
   const { session, detail } = loaded;
   const page = text.curation;
@@ -515,107 +438,17 @@ export async function CurationPage({ id }: { readonly id: string }) {
         : page.coverTooSmall(FEATURED_MIN_WIDTH, FEATURED_MIN_HEIGHT);
   return (
     <CatalogPage session={session}>
-      <ConceptContextHeader detail={detail} title={page.title} lead={page.lead} />
+      <HomeConceptContextHeader detail={detail} title={page.title} lead={page.lead} />
       {coverNote === null ? null : <Notice tone="warning" title={coverNote} />}
       {isBrandInUse(detail.partner, systemClock.now()) ? (
         <CurationForm
-          conceptId={id}
+          homeConceptId={id}
           rank={detail.curation?.rank ?? null}
           featured={detail.curation?.featured ?? false}
           idempotencyKey={randomUUID()}
         />
       ) : (
         <Notice tone="warning" title={page.blocked} />
-      )}
-    </CatalogPage>
-  );
-}
-
-type EditionLoaded = { readonly session: ExercisedAdminSession; readonly detail: EditionDetail };
-
-async function loadEdition(id: string): Promise<EditionLoaded | { readonly page: ReactElement }> {
-  const access = await gate();
-  if ('page' in access) return access;
-  if (!isRecordId(id)) return { page: <CatalogNotFound session={access.session} /> };
-  const detail = await readCatalog(access.session, { type: 'edition', id }, (tx) =>
-    reader.edition(tx, id),
-  );
-  if (detail === null) return { page: <CatalogNotFound session={access.session} /> };
-  return { session: access.session, detail };
-}
-
-function EditionContextHeader({
-  detail,
-  title,
-  lead,
-}: {
-  readonly detail: EditionDetail;
-  readonly title: string;
-  readonly lead: string;
-}) {
-  return (
-    <PageHeader
-      title={title}
-      lead={lead}
-      context={{
-        href: paths.edition(detail.edition.id),
-        label: messages.edition.title(detail.concept.title, detail.edition.region),
-      }}
-    />
-  );
-}
-
-/** `/admin/catalogo/editions/[id]/valores/novo`. */
-export async function NewReferenceValuePage({ id }: { readonly id: string }) {
-  const loaded = await loadEdition(id);
-  if ('page' in loaded) return loaded.page;
-  const { session, detail } = loaded;
-  const page = text.referenceValues;
-  return (
-    <CatalogPage session={session}>
-      <EditionContextHeader detail={detail} title={page.newTitle} lead={page.newLead} />
-      {isBrandInUse(detail.partner, systemClock.now()) ? (
-        <ReferenceValueForm
-          editionId={id}
-          bases={basesForModality(detail.edition.modality)}
-          idempotencyKey={randomUUID()}
-        />
-      ) : (
-        <Notice tone="warning" title={page.blocked} />
-      )}
-    </CatalogPage>
-  );
-}
-
-/** `/admin/catalogo/editions/[id]/valores/[valueId]/encerramento` (irreversível). */
-export async function EndReferenceValuePage({
-  id,
-  valueId,
-}: {
-  readonly id: string;
-  readonly valueId: string;
-}) {
-  const loaded = await loadEdition(id);
-  if ('page' in loaded) return loaded.page;
-  const { session, detail } = loaded;
-  const value = detail.referenceValues.find((candidate) => candidate.id === valueId);
-  if (value === undefined) return <CatalogNotFound session={session} />;
-  const page = text.referenceValues;
-  const now = systemClock.now();
-  return (
-    <CatalogPage session={session}>
-      <EditionContextHeader detail={detail} title={page.endTitle} lead={page.endLead} />
-      <KeyValues
-        items={[
-          { label: page.basisLabel, value: page.bases[value.basis] },
-          { label: page.amountLabel, value: formatMoney(value.amountMinor, value.currency) },
-          { label: page.stateLabel, value: valueState(value, now) },
-        ]}
-      />
-      {endable(value, now) ? (
-        <EndReferenceValueForm editionId={id} valueId={value.id} idempotencyKey={randomUUID()} />
-      ) : (
-        <Notice tone="warning" title={page.endUnavailable} />
       )}
     </CatalogPage>
   );

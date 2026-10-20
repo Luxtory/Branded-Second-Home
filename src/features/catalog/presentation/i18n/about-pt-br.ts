@@ -39,7 +39,7 @@ export const aboutMessages = {
           title: 'Ato 4 — A resposta',
           paragraphs: [
             'Marcos percebeu que marcas fortes expressam valores, identidades e estilos de vida reconhecidos por seu público.',
-            'O Brand DNA poderia traduzir essa afinidade na arquitetura, nos espaços e nas experiências da Second Home.',
+            'A identidade da marca poderia traduzir essa afinidade na arquitetura, nos espaços e nas experiências da Second Home.',
             'Assim, a identidade da marca ganharia um lugar para ser vivida e compartilhada com quem se ama.',
             'As marcas aproximariam a proposta de públicos com os quais já construíram afinidade e confiança.',
             'Pessoas ganhariam lugares ligados ao seu lifestyle; marcas, relações mais profundas; a Luxtory, mais alcance.',

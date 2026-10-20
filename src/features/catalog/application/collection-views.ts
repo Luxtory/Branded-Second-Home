@@ -1,15 +1,16 @@
-import type { EditionModality } from '../domain/catalog';
-import type { CropStep, ReferenceValueBasis, ReferenceValueCurrency } from '../domain/collection';
+import type { CropStep, ProjectedInvestmentCurrency } from '../domain/collection';
 
 /**
- * Leitura pública da Coleção (spec catalog §13.12 item 7): só o publicável, lido como `anon` sob RLS (ADR-0014) —
- * termos ativos, atributos da versão vigente, capa aprovada, curadoria e valores vigentes. Nada é calculado aqui.
+ * Leitura pública da Coleção (spec catalog §13.12 item 7, §17.7): só o publicável, lido como `anon` sob RLS (ADR-0014)
+ * — termos ativos, resumo da versão vigente, capa aprovada, curadoria e, por Home Edition pública, a definição, a
+ * imagem principal e a média projetada vigente. Nada é calculado aqui.
  */
 export interface PublicTerm {
   readonly slug: string;
   readonly label: string;
 }
 
+/** Uma mídia aprovada (capa do Home Concept ou imagem da Home Edition): metadados de exibição, nunca o master. */
 export interface PublicCover {
   readonly mediaId: string;
   readonly alt: string;
@@ -20,22 +21,30 @@ export interface PublicCover {
   readonly widths: readonly { readonly width: number; readonly height: number }[];
 }
 
-/** Valor de referência vigente, como registrado pela Luxtory (BR-031); `acao` = uma Ação Co-Owner, nunca por dia. */
-export interface PublicReferenceValue {
-  readonly basis: ReferenceValueBasis;
+/**
+ * Média projetada de investimento vigente (BR-034): ordem de grandeza do investimento total projetado para materializar
+ * uma Second Home da Home Edition — nunca preço, proposta, condição ou valor individual; sem modalidade nem Ação.
+ */
+export interface PublicProjectedInvestment {
   readonly amountMinor: bigint;
-  readonly currency: ReferenceValueCurrency;
+  readonly currency: ProjectedInvestmentCurrency;
 }
 
-export interface PublicCollectionEdition {
+/** Uma Home Edition pública no card do Home Concept (sem localização, modalidade nem condições — BR-031). */
+export interface PublicCollectionHomeEdition {
   readonly id: string;
-  readonly region: string;
-  readonly modality: EditionModality;
-  /** Só as bases que a modalidade oferece, no máximo um valor por base (vigências não se sobrepõem). */
-  readonly values: readonly PublicReferenceValue[];
+  readonly name: string;
+  readonly typology: string;
+  readonly guestsMax: number;
+  readonly suites: number;
+  readonly projectedAreaM2: number;
+  readonly projectedInvestment: PublicProjectedInvestment | null;
+  /** Imagem principal (a primeira imagem ou render aprovado), se houver. */
+  readonly cover: PublicCover | null;
+  readonly createdAt: Date;
 }
 
-/** Um Home Concept da Coleção — a unidade do card, nunca duplicada por ter várias Editions. */
+/** Um Home Concept da Coleção — a unidade do card, nunca duplicada por ter várias Home Editions. */
 export interface PublicCollectionEntry {
   readonly id: string;
   readonly title: string;
@@ -43,27 +52,29 @@ export interface PublicCollectionEntry {
   readonly brandName: string;
   readonly createdAt: Date;
   readonly summary: string | null;
-  readonly guestsMax: number | null;
-  readonly suites: number | null;
-  readonly builtAreaM2: number | null;
   /** Em ordem; o primeiro é o principal. Termos desativados não aparecem. */
   readonly lifestyles: readonly PublicTerm[];
   readonly styles: readonly PublicTerm[];
   readonly cover: PublicCover | null;
   readonly rank: number | null;
   readonly featured: boolean;
-  /** Na ordem de registro; vazio = Concept sem Edition, sem oferta (REQ-020/022). */
-  readonly editions: readonly PublicCollectionEdition[];
+  /** Home Editions públicas, na ordem de registro; vazio = ainda sem Home Edition publicada. */
+  readonly homeEditions: readonly PublicCollectionHomeEdition[];
 }
 
-/** Uma largura de exibição da capa aprovada de um Concept público: o objeto fica no Storage (ADR-0015). */
+/** Uma largura de exibição de mídia pública: o objeto fica no Storage (ADR-0015). */
 export interface PublicRendition {
   readonly contentType: string;
   readonly storageKey: string;
 }
 
-/** Leituras públicas da Coleção, dentro de uma transação como `anon` (ADR-0014, ADR-0015). */
+/** Leituras públicas da Coleção e da mídia, dentro de uma transação como `anon` (ADR-0014, ADR-0015). */
 export interface PublicCollectionReader<Db> {
   entries(db: Db): Promise<readonly PublicCollectionEntry[]>;
   coverRendition(db: Db, mediaId: string, width: number): Promise<PublicRendition | null>;
+  homeEditionMediaRendition(
+    db: Db,
+    mediaId: string,
+    width: number,
+  ): Promise<PublicRendition | null>;
 }

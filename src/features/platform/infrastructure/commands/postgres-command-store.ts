@@ -23,7 +23,7 @@ const operationRow = (draft: OperationDraft, state: 'pending' | 'failed') => ({
   actor_user_id: draft.actor.kind === 'user' ? draft.actor.userId : null,
   acting_party_id: draft.actor.kind === 'user' ? draft.actor.actingPartyId : null,
   role: actorRole(draft.actor),
-  residence_id: draft.residenceId,
+  second_home_id: draft.secondHomeId,
   idempotency_key: draft.idempotencyKey,
   correlation_id: draft.correlationId,
   authorization_ref: draft.authorizationRef,

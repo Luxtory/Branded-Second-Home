@@ -30,7 +30,7 @@ describe('Sobre a Luxtory — contrato aprovado, catalog §15', () => {
       'patrimônio',
       'liberdade',
       'pertencimento',
-      'Brand DNA',
+      'identidade da marca',
       'arquitetura',
       'experiências',
       'confiança',

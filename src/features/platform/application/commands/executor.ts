@@ -45,7 +45,7 @@ export interface CommandContext<I, Tx> {
 export interface CommandHandler<I, R extends JsonValue, Tx> {
   readonly command: string;
   readonly input: ZodType<I>;
-  residenceId?(input: I): string | null;
+  secondHomeId?(input: I): string | null;
   /** Objeto do command, para o guard conferir o escopo de um `authorization_grant` (REQ-014). */
   scope?(input: I): CommandScope;
   execute(context: CommandContext<I, Tx>): Promise<R>;
@@ -142,7 +142,7 @@ async function execute<I, R extends JsonValue, Tx>(
     id: (deps.newId ?? randomUUID)(),
     command: spec.name,
     actor: request.actor,
-    residenceId: handler.residenceId?.(parsed.data) ?? null,
+    secondHomeId: handler.secondHomeId?.(parsed.data) ?? null,
     idempotencyKey: request.idempotencyKey,
     correlationId: request.correlationId,
     authorizationRef: decision.authorizationRef,

@@ -13,7 +13,7 @@
 ## 1. Overview
 
 A W5 abre a primeira escrita pública **persistida** sem conta: o visitante registra uma manifestação de interesse num
-Concept publicado (campos canônicos do `03` §3.1). Não há dado de contato (W6, `P-3`), mas há campos de texto livre
+Home Concept publicado (campos canônicos do `03` §3.1). Não há dado de contato (W6, `P-3`), mas há campos de texto livre
 (`region`, `origin`, `partner_ref`) que podem receber texto pessoal digitado. A escrita passa por portão, origem,
 limites de corpo, rate limit distribuído (Upstash, reutilizado da BP1) e idempotência atômica no PostgreSQL. A leitura
 é só do staff Admin, auditada.
@@ -25,7 +25,7 @@ limites de corpo, rate limit distribuído (Upstash, reutilizado da BP1) e idempo
 - Disponibilidade do banco e da aplicação diante de escrita anônima (custo do Supabase Free, D2).
 - Texto livre do visitante (possível PII digitada) — fora de logs, erros e respostas.
 - Segredo da pseudonimização da origem de rede (`BRAND_PARTNERS_CONTACT_HMAC_SECRET`) e credenciais Upstash.
-- Confidencialidade da existência de Concepts não publicados (BR-015) e da demanda agregada (só staff).
+- Confidencialidade da existência de Home Concepts não publicados (BR-015) e da demanda agregada (só staff).
 
 ## 3. Actors
 
@@ -98,13 +98,13 @@ flowchart LR
   - Config: leitura restrita ao Admin AAL2; a visão agrupada não mostra registros individuais nem `origin`/`partner_ref`.
 - **Owner**: Engenharia · **Tracking**: W5
 
-### T-404 [LOW] Information disclosure — enumeração de Concepts não publicados
+### T-404 [LOW] Information disclosure — enumeração de Home Concepts não publicados
 
-- **Vector**: atacante varia `concept_id`/`edition_id` para descobrir Concepts ou Editions não publicados (BR-015).
+- **Vector**: atacante varia `home_edition_id` para descobrir Home Editions em preparação ou fora do público (BR-015, BR-036).
 - **Likelihood**: Low · **Impact**: Medium · **Risk**: Low
 - **Mitigation**:
   - Code: alvo resolvido pela leitura pública como `anon` sob RLS (ADR-0014); inexistente, não publicado e de outro
-    Concept respondem o mesmo `404`; ids são UUID; rate limit.
+    Home Concept respondem o mesmo `404`; ids são UUID; rate limit.
 - **Owner**: Engenharia · **Tracking**: W5
 
 ### T-405 [LOW] Tampering — reuso ou colisão de `Idempotency-Key`
@@ -149,7 +149,7 @@ flowchart LR
 
 - Bot repete o mesmo corpo com chaves novas → contado pelo limitador; cada registro é uma manifestação (sem direito).
 - Visitante tenta `approx_days` para Owner ou `0`/negativo → `400`; banco recusa por CHECK em qualquer caminho.
-- Cliente envia `edition_id` de outro Concept ou de modalidade incompatível → `404` / `400`; gatilho revalida F2a.
+- Cliente envia `home_edition_id` em preparação, fora do público ou inexistente → `404`, sem distinguir o motivo (a F2a saiu na W4.2).
 - Atacante injeta HTML/script em `region` → texto simples, controles recusados; React escapa na visão do Admin.
 - Upstash fora do ar → `503` antes do banco; nenhuma escrita sem limitador.
 
@@ -168,3 +168,18 @@ flowchart LR
 - OWASP ASVS — https://owasp.org/asvs/
 - Microsoft STRIDE — https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool
 - `03`: TECH-056, TECH-092, TECH-100, ADR-006; `02`: REQ-022–REQ-025; `01`: BR-015, BR-040–BR-043, BR-060.
+
+## W4.2 — Interesse a partir da Home Edition (2026-10-19)
+
+- **Scope**: `home_edition_id` obrigatório, sem `concept_id`; `region` → `desired_location`; sai a F2a. Superfície
+  pública inalterada (mesmo endpoint, portão, limitador e idempotência); escrita segue fechada em Production.
+- **Linked spec / ADR**: `docs/specs/ownership.md` §13 · ADR-0019
+
+| Ameaça | Mudança |
+|---|---|
+| T-404 Enumeração | O alvo passa a ser a Home Edition: em preparação, fora do público, de Home Concept não público ou inexistente respondem o mesmo `404`. |
+| T-403 Texto pessoal | `desired_location` herda as regras de `region`: nunca em logs, erros, métricas ou respostas. |
+| T-402 Interesse como direito | Inalterado: `home_edition_id` não cria vínculo com Second Home, Ação ou Direito de Uso. |
+| Abuso F2a | Sai: a Home Edition não tem modalidade (BR-032); qualquer modalidade desejada é aceita. |
+
+Nenhuma ameaça nova: sem campo novo de visitante, sem contato e sem dado pessoal (W6).

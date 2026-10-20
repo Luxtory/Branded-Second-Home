@@ -90,3 +90,19 @@ A restrição permanece: a comunicação não redefine o modelo de negócio. Os 
 - **2026-10-01 (fundador, `D-B2C-17`):** no §2, a lista de alternativas passa a dizer "outros clubes de second homes,
   intercâmbio ou hospitalidade" — a Luxtory se apresenta como clube de Branded Second Homes. Única alteração; sha256
   `bf1a7f74f8cc2faf02236eeec17864ae5920b31248ca60fb12acec2177c5f6f3` (antes `7b0ec6c1…dab5577`).
+- **2026-10-19 (fundador, `D-LX-11`; `b2c.md` `D-B2C-27`):** versão terminológica, sem mudança de estratégia
+  narrativa, Desejo, JTBD, pilares, tom ou CTA. Por decisão ontológica superveniente (`01` v10.2, BR-377), Residence
+  Concept → Home Concept, Residence Edition → Home Edition e Residence → Second Home (44 ocorrências); Brand DNA →
+  identidade da marca, de forma contextual (11 ocorrências, mais "esse DNA" → "essa identidade" no §5); a oferta do §2
+  passa a "Second Homes concebidas a partir da identidade de Brand Partners, desenvolvidas a partir de Home Editions,
+  adquiridas como Owner ou Co-Owner…" (a Home Edition não tem modalidade). "Segunda residência" no §2 permanece: nomeia
+  a alternativa convencional, não o produto Luxtory (BR-377, exceção para objeto externo). A âncora do mapa de páginas
+  passa a "Conheça as Home Editions.". sha256 `78c09cd6069d8a7dfe314e4d4126124f5e8d423a1098a4b16d297fea28e616ba` (antes
+  `bf1a7f74…77c5f6f3`), fixado em `tests/communication.test.ts`.
+- **2026-10-20 (fundador, checkpoint da W4.2; `b2c.md` `D-B2C-27`):** só o mecanismo, nas três ocorrências (§2, §8 P4 e
+  §15): "Home Concept → Home Edition → Owner/Co-Owner → Design & Build → Second Home" passa a "Home Concept → Home
+  Edition → manifestação de interesse → estruturação da Second Home → aquisição e formalização → Design & Build →
+  operação da Second Home → Luxtory Club" (`01` v10.2 §1, BR-030 a BR-032: Owner/Co-Owner é modalidade desejada no
+  interesse e definitiva na Second Home, nunca nó da Home Edition). Estratégia, Desejo, JTBD, pilares, tom e CTA
+  inalterados. sha256 `2f43c67e3b537b3db8ecf103c5f1e58a30c194c370ca9083d84a5795308c450d` (antes `78c09cd6…a28e616ba`),
+  fixado em `tests/communication.test.ts`.
