@@ -83,6 +83,12 @@ seed('catálogo público semeado pela API do Admin', async ({ page, baseURL }) =
   });
   const alpendre = await homeEdition(withHomeEdition.id, 'Alpendre Pátio', 'public');
   const alpendreDraft = await homeEdition(withHomeEdition.id, 'Alpendre em Preparação', 'draft');
+  // Segunda Home Edition publicada, com outra média: o filtro "Investimento projetado" só aparece com 2+ médias.
+  const alpendreJardim = await homeEdition(withHomeEdition.id, 'Alpendre Jardim', 'public', {
+    projected_area_m2: 400,
+    suites: 4,
+    guests_max: 8,
+  });
   const withoutHomeEdition = await homeConcept(solenne, 'Casa Mirante', true, {
     lifestyle_ids: [natureza],
   });
@@ -105,6 +111,10 @@ seed('catálogo público semeado pela API do Admin', async ({ page, baseURL }) =
   // Média projetada (BR-034, TECH-033), mídia da Home Edition e capa aprovada + pendente (ADR-0015).
   await post(`/v1/admin/home-editions/${alpendre.id}/projected-investments`, {
     amount_minor: 480_000_000,
+    currency: 'BRL',
+  });
+  await post(`/v1/admin/home-editions/${alpendreJardim.id}/projected-investments`, {
+    amount_minor: 900_000_000,
     currency: 'BRL',
   });
   const coverImage = await testCover();

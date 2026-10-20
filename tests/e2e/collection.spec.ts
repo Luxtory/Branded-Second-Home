@@ -118,8 +118,20 @@ test.describe('desktop (1440)', () => {
     await expect(page.getByRole('link', { name: seed.withoutHomeEdition.title })).toBeVisible();
     await expect(page.getByRole('link', { name: seed.secondBrand.title })).toHaveCount(0);
 
-    // [REQ-020] [REQ-100] [BR-034] Média projetada: De/Até sobre a média vigente — só Home Editions com média vigente.
-    await page.goto('/colecao?valor-ate=6000000');
+    // [REQ-020] [REQ-100] [BR-034] "Investimento projetado": De/Até sobre a média projetada vigente, uma faixa só, sem
+    // modalidade; por dentro, o nome canônico.
+    await page.goto('/colecao');
+    await apply(page, 'Investimento projetado', async (panel) => {
+      await expect(panel.getByText('Média projetada de investimento (R$)')).toBeVisible();
+      await expect(panel.getByRole('radio')).toHaveCount(0);
+      await panel.getByLabel('Até').fill('6.000.000');
+    });
+    await expect(page).toHaveURL(/\?valor-ate=6000000#resultados$/);
+    await expect(
+      page.getByRole('link', {
+        name: /^Remover filtro: Investimento projetado: até R\$\s6\.000\.000$/,
+      }),
+    ).toBeVisible();
     await expect(page.getByRole('status')).toContainText(
       'Considera só Home Editions com média projetada vigente.',
     );
