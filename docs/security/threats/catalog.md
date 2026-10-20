@@ -10,14 +10,14 @@
 
 ## 1. Overview
 
-O staff com papel Admin (AAL2) registra Brand Partners, Concepts e versões, Editions, autorizações de Investor e
-Residences. Toda mutação passa pelo guard e pelo executor (TECH-054) e grava `operation` + `audit_log`; toda leitura das
-telas grava `admin_read`. Dados: nomes de marca, textos do Concept e da Edition, referências de instrumentos e rótulos
+O staff com papel Admin (AAL2) registra Brand Partners, Home Concepts e versões, Home Editions, autorizações de Investor e
+Second Homes. Toda mutação passa pelo guard e pelo executor (TECH-054) e grava `operation` + `audit_log`; toda leitura das
+telas grava `admin_read`. Dados: nomes de marca, textos do Home Concept e da Home Edition, referências de instrumentos e rótulos
 internos — nenhum dado pessoal. A superfície nova reusa sessão, guard e CSRF da W2 (`identity-admin`).
 
 ## 2. Assets
 
-- Integridade do catálogo: vínculo Concept → Edition → Residence, versão fixada (BR-025), autorização do Investor.
+- Integridade do catálogo: vínculo Home Concept → Home Edition → Second Home, versão fixada (BR-025), autorização do Investor.
 - Histórico: versões aprovadas, encerramento, exposição e auditoria (sem `UPDATE`/`DELETE` funcional).
 - Conformidade editorial dos textos (REQ-100/101) antes da exposição pública (W4).
 
@@ -63,8 +63,8 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 ### C-004 [MEDIUM] Tampering — Reescrever a versão fixada, uma versão aprovada ou o histórico
 
 - **Mitigação**: `luxtory_app` sem `DELETE`; `UPDATE` só nas colunas de transição (aprovação, exposição, encerramento,
-  revogação), cada uma de vazio a preenchido uma vez; gatilhos recusam o resto; FKs compostas amarram Edition, versão e
-  autorização ao mesmo Concept. Testes de banco para cada gatilho.
+  revogação), cada uma de vazio a preenchido uma vez; gatilhos recusam o resto; FKs compostas amarram Home Edition, versão e
+  autorização ao mesmo Home Concept. Testes de banco para cada gatilho.
 
 ### C-007 [MEDIUM] Tampering — Texto com terminologia vedada ou promessa de retorno chegando ao público
 
@@ -79,7 +79,7 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 ### C-005 [LOW] Information disclosure — Catálogo lido por `anon`/`authenticated`
 
 - **Mitigação**: RLS ligada com política só para `luxtory_app`; nenhum grant para `anon`/`authenticated`. Teste de RLS.
-  Não há dado pessoal no catálogo; rótulo da Residence orientado a não conter nome nem endereço.
+  Não há dado pessoal no catálogo; rótulo da Second Home orientado a não conter nome nem endereço.
 
 ### C-006 [LOW] Denial of service — Volume de `POST` autenticados
 
@@ -89,9 +89,9 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 
 ## 7. Abuse cases
 
-- Staff tenta registrar Residence com a autorização de outro Concept → recusada (FK composta e command).
-- Staff tenta aprovar uma versão antiga para "voltar" o Concept → recusada (só versão maior que a vigente).
-- Depois do encerramento, staff tenta criar uma Edition com data retroativa no corpo → o instante vem do servidor.
+- Staff tenta registrar Second Home com a autorização de outro Home Concept → recusada (FK composta e command).
+- Staff tenta aprovar uma versão antiga para "voltar" o Home Concept → recusada (só versão maior que a vigente).
+- Depois do encerramento, staff tenta criar uma Home Edition com data retroativa no corpo → o instante vem do servidor.
 
 ## 8. Residual risk
 
@@ -179,7 +179,7 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 
 | Component | S | T | R | I | D | E | Notes |
 |---|---|---|---|---|---|---|---|
-| Upload da capa (Server Action e `POST /v1/admin/concepts/{id}/cover`) | — | C-41-1 | C-003 | C-41-2 | C-41-3 | C-002 | só staff Admin com MFA, mesma entrada das outras operações |
+| Upload da capa (Server Action e `POST /v1/admin/home-concepts/{id}/cover`) | — | C-41-1 | C-003 | C-41-2 | C-41-3 | C-002 | só staff Admin com MFA, mesma entrada das outras operações |
 | Supabase Storage (bucket privado, chave secreta no servidor) | C-41-7 | C-41-7 | — | C-41-7 | — | C-41-7 | só o servidor lê e grava |
 | Rota pública da capa | — | — | — | C-41-4 | C-41-5 | — | leitura `anon`, mesmo portão das páginas públicas |
 | Papel `anon` nas tabelas novas | — | — | — | C-41-4 | — | C-W4-2 | grants por coluna, RLS, predicado `catalog_term_is_public` |
@@ -207,9 +207,9 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 
 ### C-41-4 [HIGH] Information disclosure — Capa pendente/retirada, master, valor futuro ou dado interno chegando ao site
 
-- **Mitigação**: RLS para `anon`: mídia só `approved` de Concept público; versões só com papel `display` (o master
-  nunca); valores só vigentes (`valid_from ≤ now()` e sem fim vencido) de Edition pública; termos só ativos e em uso por
-  Concept público. Colunas de aprovação, retirada, autoria, operação, `active`, `sha256` e `source_sha256` fora dos
+- **Mitigação**: RLS para `anon`: mídia só `approved` de Home Concept público; versões só com papel `display` (o master
+  nunca); valores só vigentes (`valid_from ≤ now()` e sem fim vencido) de Home Edition pública; termos só ativos e em uso por
+  Home Concept público. Colunas de aprovação, retirada, autoria, operação, `active`, `sha256` e `source_sha256` fora dos
   grants. O bucket é privado e nenhuma URL do Storage chega ao navegador: a rota decide pela RLS e só então lê o objeto.
   Tudo que não é público responde 404 sem motivo. Testes `db` como `anon` cobrem cada caso.
 
@@ -222,7 +222,7 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 ### C-41-6 [MEDIUM] Tampering — Reescrever o valor que já foi exibido
 
 - **Mitigação**: tabela só de inserção; gatilho permite um único encerramento e barra sobreposição de vigências por série
-  (Edition + base + moeda); o command recusa início no passado (`ERR_VALIDATION`) e só encerra "agora"; auditoria
+  (Home Edition + base + moeda); o command recusa início no passado (`ERR_VALIDATION`) e só encerra "agora"; auditoria
   antes/depois de cada mudança. Valores em `bigint` + moeda, sem ponto flutuante (TECH-033).
 
 ### C-41-7 [HIGH] Spoofing/Elevation — Vazamento ou abuso da chave secreta do Storage
@@ -230,7 +230,7 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 - **Mitigação**: `SUPABASE_SECRET_KEY` só no servidor, só em Production (Sensitive na Vercel), validada no formato
   `sb_secret_…` (a `service_role` legada é recusada) e enviada só no cabeçalho `apikey` às rotas do Storage; nunca em
   log nem em mensagem de erro (só operação e status). Preview recusa o Storage como recusa o banco (ADR-0007); o adaptador
-  local é recusado na Vercel. Só chaves geradas pelo command (`concept-media/<sha256>.webp`) chegam ao Storage — caminho
+  local é recusado na Vercel. Só chaves geradas pelo command (`home-concept-media/<sha256>.webp`) chegam ao Storage — caminho
   vindo de fora é recusado antes de qualquer acesso (sem path traversal). Rotação da chave no runbook.
 
 ### Residual risk

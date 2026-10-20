@@ -95,7 +95,7 @@ Os componentes leem `--lx-color-*`: `bg`, `surface`, `fg`, `fg-muted`, `accent`,
 |---|---|---|---|---|
 | LUXURY | Newsreader 400 | `lx-display-xl` | 44 → 96px | Opening Frame |
 | | | `lx-display-l` | 36 → 68px | headline de Scene |
-| | | `lx-display-m` | 28 → 44px | nomes de Concept, títulos de seção |
+| | | `lx-display-m` | 28 → 44px | nomes de Home Concept e Home Edition, títulos de seção |
 | | Newsreader 500 | `lx-display-s` | 22 → 28px | subtítulos, statements curtos |
 | UTILITY | Hanken Grotesk | `lx-lead` | 19 → 22px | abertura de texto |
 | | | `lx-body` | 17 → 18px | texto corrido (≤ 66ch) |
@@ -295,7 +295,7 @@ bloqueia, `role="alert"`.
 `ul` + `article` com Frame, `lx-marker` (região), `h3.lx-collection-card__title > a.lx-collection-card__link`
 (link único que estica sobre o card), `__summary` e `lx-credit`. Sem caixa nem sombra.
 
-### Concept Credit · `lx-credit`
+### Home Concept Credit · `lx-credit`
 
 - Slot da Brand Partner: `__mark` (logo da parceira, como fornecido) ou `__name`.
 - **Só renderiza com autorização ativa nos dados** (BR-015, BR-021).
@@ -575,10 +575,18 @@ Complementares consumidos pela W4: `lx-diagram` (Text + Diagram, `/diagrams/core
   `form.lx-discovery--compact` > `div.lx-discovery__search` + `div.lx-discovery__tools` (facetas com
   `span.lx-facet__count`, `a.lx-discovery__count`, envio); a dica visível é `span.lx-discovery__placeholder` com
   `__placeholder-long`/`__placeholder-short` sobre `input[placeholder=" "]`.
-- Card de Home Concept: `ul.lx-concept-grid[aria-label] > li > article.lx-concept-card` — mídia (`figure.lx-media` com
-  `srcset` ou `div.lx-concept-card__media--type[data-surface=blue][aria-hidden] > span.__word`) + `div.__body` (eyebrow,
-  `h3.lx-display-m.__title > a.__link`, `p.__meta`, `p.__facts`, `ul.__editions > li.__edition`, `span.__cta[aria-hidden]`).
-  Destaque: `lx-concept-card--featured`. Grupos: `section.lx-concept-group > div.__head` + a lista.
+- Card de Home Concept: `ul.lx-home-concept-grid[aria-label] > li > article.lx-home-concept-card` — mídia
+  (`figure.lx-media` com `srcset` ou `div.lx-home-concept-card__media--type[data-surface=blue][aria-hidden] >
+  span.__word`) + `div.__body` (eyebrow, `h3.lx-display-m.__title > a.__link`, `p.__meta`, `ul.__home-editions >
+  li.__home-edition` — nome em `span.__home-edition-name`, capacidade · suítes · área, "Média projetada R$ …" —,
+  `span.__cta[aria-hidden]`). Destaque: `lx-home-concept-card--featured`. Grupos: `section.lx-home-concept-group >
+  div.__head` + a lista.
+- Card de Home Edition (página do Home Concept): `ul.lx-home-edition-grid[aria-label] > li > article.lx-home-edition-card`
+  — as mesmas regras do card de Home Concept (`__media`/`__media--type`, `__body`, `__title > a.__link`, `__facts`,
+  `__cta`), sem destaque; o link leva à página da Home Edition.
+- Página da Home Edition: abertura `lx-columns--5-7` com `figure.lx-media.lx-home-edition-opening__media` (imagem
+  principal; sem ela, abertura tipográfica); galeria `ul.lx-home-edition-gallery > li.__item > figure.lx-media.__media`
+  (plantas com `__media--plan`, inteiras, `object-fit: contain`) e `p.__credit`.
 - Filtros ativos: `ul.lx-chips > li > a.lx-chip[aria-label="Remover filtro: …"]`; ordenação: `nav.lx-sort` com
   `a.lx-sort__option[aria-current=true]`; jornada em passos: `ol.lx-steps > li.lx-steps__item`.
 

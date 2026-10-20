@@ -28,8 +28,8 @@ citing the canonical IDs):
 - [platform](platform.md) — módulo `platform` (TECH-011): probes `/v1`, ambiente, logs com `correlation_id`, `Clock`, `/lab`, harness de testes
 - [identity](identity.md) — módulo `identity`: login do staff, MFA, guard, `staff_role`, `authorization_grant` (W2)
 - [admin](admin.md) — módulo `admin`: superfície `/admin` no App Shell (W2, W2B, W3)
-- [catalog](catalog.md) — módulo `catalog`: Brand Partner, Concept e versões, Edition, Residence, autorização do Investor (W3); Discovery público B2C (§13) e [B2B Brand Partners (§14)](catalog.md#14-discovery-público-b2b-brand-partners-bp1), com `P-BP-01` resolvida
-- [ownership](ownership.md) — módulo `ownership`: manifestação de interesse e visão agrupada do Admin (W5)
+- [catalog](catalog.md) — módulo `catalog`: Brand Partner, Home Concept e versões, Home Edition, Second Home, autorização do Investor (W3, W4.2 §17); Discovery público B2C (§13) e [B2B Brand Partners (§14)](catalog.md#14-discovery-público-b2b-brand-partners-bp1), com `P-BP-01` resolvida
+- [ownership](ownership.md) — módulo `ownership`: manifestação de interesse a partir da Home Edition e visão agrupada do Admin (W5, W4.2 §13)
 
 **Cross-cutting specs** (not a `src/features/` slice):
 

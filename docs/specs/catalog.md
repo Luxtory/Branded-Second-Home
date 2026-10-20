@@ -1058,14 +1058,14 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
     rituais e detalhes"; a primeira seção que nomeia **Branded Second Home** e **Home Concept**.
   - **Para a sua marca:** sem a nota de limite ("O modelo cria as condições…"), sem substituto; a ausência de garantia
     segue no fechamento fotográfico e no Como funciona (J-32, J-33).
-  - **Luxchange:** converter dias elegíveis da Second Home em créditos para se hospedar em outras residências da rede.
+  - **Luxchange:** converter dias elegíveis da Second Home em créditos para se hospedar em outras Second Homes da rede.
     Sem "créditos equivalentes" — os Créditos vêm do PRL (BR-201) — e sem "dias do Direito de Uso", que é só do
     Co-Owner (o Club atende Owner e Co-Owner). A abertura e o fechamento da seção já enquadram o Club como modelo
     previsto; o mecanismo não repete a ressalva (o teste de copy lê a seção como um bloco). Redação substituída em
     `D-BP-21` (abaixo).
   - **Concisão (medida a 390, 768 e 1440 px):** a 768 e 1440 px nenhum bloco novo passa de 4 linhas. Exceções a 390 px,
     frases únicas do texto do fundador (dividir mudaria a copy): "O mercado ainda oferece poucas soluções…" (5 linhas)
-    e "A Luxtory traduz o Brand DNA em um Home Concept…" (5 linhas).
+    e "A Luxtory traduz a identidade da marca em um Home Concept…" (5 linhas).
   - **Composição:** em "Para quem vive", a frase de abertura sobe para cima dos pilares; o diagrama de solução tem, do
     `lg` em diante, o tamanho renderizado na Home B2C a 1440 px (437 × 490 px, proporção 667 × 748 preservada), o topo
     alinhado ao 01 · Patrimônio e os três pilares ao lado, no ritmo de item dos Sibling Blocks — a 1440 px, o conjunto
@@ -1084,7 +1084,7 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
     gráfica (o sinal num círculo de hairline sobre uma régua); o resultado no tamanho display maior e no papel de
     headline (`lx-equation`). Headline, introdução e corpo da seção inalterados.
   - **Luxchange:** "O clube permite ao membro converter dias do seu direito de uso em créditos equivalentes para se
-    hospedar em outras residências da rede." / "Sua Second Home deixa de estar limitada a um único endereço e passa a
+    hospedar em outras Second Homes da rede." / "Sua Second Home deixa de estar limitada a um único endereço e passa a
     fazer parte de uma rede de destinos." — redação do fundador, sem reescrita nem ressalva (teste de copy).
 - **Hierarquia tipográfica e composição (fundador, 2026-10-13; `D-BP-22`), sem mudar copy:**
   - **Taxonomia única do B2B** (teste E2E por papel a 390, 768 e 1440 px: mesma família, tamanho, peso e entrelinha):
@@ -1126,7 +1126,7 @@ endpoint, OpenAPI, Resend, Upstash, proteções, B2C e BP2 (fora de escopo).
   verticalmente em relação ao bloco lateral completo (eyebrow, título, introdução e corpo).
   No celular, permanece a ordem cabeça → introdução → fórmula → corpo. Demais elementos preservados.
 - **Ajuste final do fundador (2026-10-14; `D-BP-26`):** card centrado somente no texto corrido lateral, do início
-  da introdução ("Quando a experiência nasce do Brand DNA…") ao fim do corpo ("A Luxtory traduz o Brand DNA em um
+  da introdução ("Quando a experiência nasce da identidade da marca…") ao fim do corpo ("A Luxtory traduz a identidade da marca em um
   Home Concept…"), sem considerar eyebrow e headline. O card ocupa as linhas 2 e 3 da grade com `align-self: center`.
   Demais elementos de `D-BP-25` aprovados; commit, push e publicação pelo GitHub autorizados.
  (PICTURE → PROBLEM → PROMISE → PROOF → PUSH):
