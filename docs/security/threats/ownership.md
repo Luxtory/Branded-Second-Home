@@ -177,7 +177,7 @@ flowchart LR
 
 | Ameaça | Mudança |
 |---|---|
-| T-404 Enumeração | O alvo passa a ser a Home Edition: rascunho, retirada, de Home Concept não público ou inexistente respondem o mesmo `404`. |
+| T-404 Enumeração | O alvo passa a ser a Home Edition: em preparação, fora do público, de Home Concept não público ou inexistente respondem o mesmo `404`. |
 | T-403 Texto pessoal | `desired_location` herda as regras de `region`: nunca em logs, erros, métricas ou respostas. |
 | T-402 Interesse como direito | Inalterado: `home_edition_id` não cria vínculo com Second Home, Ação ou Direito de Uso. |
 | Abuso F2a | Sai: a Home Edition não tem modalidade (BR-032); qualquer modalidade desejada é aceita. |

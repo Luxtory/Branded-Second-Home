@@ -745,8 +745,8 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   - **C — ontologia técnica:** migrations, tabelas, FKs, constraints, funções, policies, grants/RLS, tipos, domínio,
     commands, readers/stores, APIs, Admin, Design System, arquivos e pastas (`git mv`), fixtures, testes e varredura
     terminológica (denylist explícita + allowlist mínima versionada; sem regex genérica sobre `concept`/`edition`).
-  - **D — modelo público e catálogo:** atributos, mídia e média projetada da Home Edition; publicação e imutabilidade
-    material; remoção de região, modalidade e condições comerciais da Home Edition; interesse com `home_edition_id`
+  - **D — modelo público e catálogo:** atributos, mídia e média projetada da Home Edition; preparação, finalização
+    material e visibilidade pública; remoção de região, modalidade e condições comerciais da Home Edition; interesse com `home_edition_id`
     obrigatório e `desired_location`, sem `concept_id` e sem validação de modalidade contra a Home Edition; Home
     Concept e Coleção revistos; comunicação B2C e Brand Partners; Admin; página pública da Home Edition em
     `/colecao/[homeConceptId]/home-editions/[homeEditionId]`, sem formulário.
@@ -758,8 +758,9 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 - **Depends on / parallel with**: W4.1 (✅) e W5 (✅); sequencial — toca migrations, `openapi.yaml`, o registro de
   commands, i18n e `CHANGELOG.md`. Bloqueia a W6.
 - **Acceptance criteria**: `[REQ-022] Home Edition sem localização, modalidade nem condições comerciais` ·
-  `[REQ-020] vínculo Home Edition → Home Concept imutável` · `[REQ-022] alteração material de Home Edition publicada
-  é recusada; mudança material exige nova Home Edition` · `[REQ-022] média projetada sem modalidade nem configuração`
+  `[REQ-020] vínculo Home Edition → Home Concept imutável` · `[REQ-022] definição material editável em preparação;
+  depois da finalização, alteração material é recusada e exige nova Home Edition; visibilidade pública separada e
+  Second Home só de Home Edition finalizada` · `[REQ-022] média projetada sem modalidade nem configuração`
   · `[REQ-022] interest.home_edition_id obrigatório, desired_location, sem concept_id; Home Concept derivável da Home
   Edition` · `[REQ-100] nenhuma ocorrência da ontologia anterior nas superfícies ativas (teste terminológico)` ·
   página da Home Edition responsiva com axe 0 a 390 e 1440 px · `npm run db:check` (up → down → up) ·

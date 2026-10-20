@@ -33,26 +33,32 @@ Production.
    mínima versionada — sem regex genérica sobre palavras inglesas.
 2. **Fronteiras.** O Home Concept guarda a identidade e a especificação conceitual (versões aprovadas), sem atributos
    físicos. A Home Edition guarda a configuração (tipologia, configuração dos espaços, área projetada, suítes,
-   capacidade, ambientes, amenidades, características), os textos editoriais, a mídia, a publicação e a média
-   projetada; não tem localização, modalidade, estrutura nem condições comerciais. A Second Home guarda a instância:
+   capacidade, ambientes, amenidades, características), os textos editoriais, a mídia, o estado material, a
+   visibilidade pública e a média projetada; não tem localização, modalidade, estrutura nem condições comerciais. A Second Home guarda a instância:
    Home Edition, versão fixada do Home Concept, aprovação comercial, rótulo e fuso. Localização concreta, modalidade
    definitiva, estrutura e condições chegam na W8.
-3. **Imutabilidade material (BR-036), mecanismo mínimo, sem tabela de versão.** A definição material e o vínculo com o
-   Home Concept são imutáveis **desde a criação** da Home Edition: é mais estrito que o canônico ("depois de
-   publicada") e dispensa um estado editável e o seu controle. Um gatilho recusa a alteração em qualquer caminho de
-   escrita. Ciclo único e para frente: `draft` → `published` → `withdrawn`, ou `draft` → `withdrawn`. Alteração material
-   é uma Home Edition nova; um rascunho errado é retirado. Os mecanismos não materiais são próprios, auditados e
-   controlados: correção editorial de nome e descrição (com base), mídia (pendente → aprovada → retirada) e média
-   projetada (vigências).
+3. **Preparação, finalização material e visibilidade pública são separadas (BR-036; `02` v4.3 REQ-022), sem tabela de
+   versão.** Correção do fundador (2026-10-19) sobre a primeira versão deste ADR.
+   - `material_state` `draft` → `finalized`, uma vez e sem volta. Em `draft` (preparação), definição material e textos
+     editoriais podem ser completados e corrigidos (`update_home_edition_draft`).
+   - `finalize_home_edition` é o marco de estabilização: a partir dele um gatilho recusa qualquer alteração material em
+     qualquer caminho de escrita; alteração material posterior é uma Home Edition nova.
+   - `visibility` `hidden`/`public` governa só o Discovery: `public` exige `finalized` (logo, depois de publicada, a
+     definição é imutável — BR-036); retirar do público (`hidden`, com base) não reabre a definição material, e a Home
+     Edition pode voltar a ser publicada.
+   - O vínculo com o Home Concept nunca muda.
+   - Os mecanismos não materiais são próprios, auditados e controlados: correção editorial de nome e descrição depois
+     da finalização (com base), mídia (pendente → aprovada → retirada) e média projetada (vigências).
 4. **Média projetada como entidade nova, não reaproveitada.** `home_edition_projected_investment` substitui
    `edition_reference_value`, que tinha base por modalidade (Owner/Ação). A média tem uma referência vigente por Home
    Edition, vigência temporal, `bigint` + moeda e registro da Luxtory. Não tem modalidade, base, configuração ou Ação, e
    nada é derivado dela. Na apresentação pública, o rótulo e a explicação obrigatória da semântica da BR-034 são parte do
    contrato.
-5. **Second Home só de Home Edition publicada (regra derivada).** O `register_second_home` mantém o evento de
-   aprovação comercial do ADR-0010 §2 e passa a exigir que a Home Edition esteja publicada naquele instante. A
-   definição material a que a Second Home fica presa (BR-025) é a que foi apresentada. A retirada posterior não afeta
-   Second Homes existentes.
+5. **Second Home só de Home Edition materialmente finalizada** (`02` v4.3 REQ-022, derivação de BR-025 e BR-036). O
+   `register_second_home` mantém o evento de aprovação comercial do ADR-0010 §2 e passa a exigir `material_state =
+   'finalized'`: a Second Home fica presa a uma definição estável. A visibilidade pública não é condição — uma Home
+   Edition finalizada, publicada ou não, pode originar Second Home; tirá-la do público não afeta Second Homes
+   existentes.
 6. **Interesse a partir da Home Edition.** `interest.home_edition_id` passa a obrigatório; `concept_id` sai, porque o
    Home Concept vem da Home Edition. `region` passa a `desired_location`. A validação de modalidade contra a Edition
    (F2a) sai, porque a Home Edition não restringe modalidade (BR-032). Contato, qualificação, formulário e Budget Fit
@@ -67,7 +73,7 @@ Production.
    - Nenhum `CASCADE`.
    - As migrations aplicadas não mudam; o `audit_log` e as `operation` antigas ficam com os nomes da época.
 8. **Página pública da Home Edition** em `/colecao/[homeConceptId]/home-editions/[homeEditionId]`. A visibilidade é da
-   RLS (`published` e Home Concept público). Uma Home Edition de outro Home Concept responde 404. A página não tem
+   RLS (`visibility = 'public'` e Home Concept público). Uma Home Edition de outro Home Concept responde 404. A página não tem
    formulário até a W6.
 
 ## Consequences
@@ -77,16 +83,15 @@ Production.
 - O software deixa de contornar um erro canônico: nenhuma região, modalidade ou condição comercial existe na Home
   Edition, nem como dado nem como copy.
 - Um só nome por conceito, do canônico ao CSS, com verificação automática.
-- BR-036 é garantida pelo banco, sem tabela de versão nem estado mutável.
+- BR-036 é garantida pelo banco depois da finalização, sem tabela de versão; a preparação continua editável.
 - O dependency map e as precondições tornam a migration auditável e segura para dados inesperados.
 
 ### Negative
 
 - Diff grande (renomeação de arquivos, rotas, tipos, tabelas e testes) concentrado numa wave.
-- Erro material num rascunho exige uma Home Edition nova, e não uma edição.
 - Entre o `migrate` e o fim do deploy da CI, o app anterior não lê o catálogo renomeado: a Coleção mostra o estado
   "indisponível" por alguns minutos. Production não tem catálogo.
-- O Admin precisa publicar a Home Edition antes de registrar Second Home.
+- O Admin precisa finalizar a Home Edition antes de publicá-la ou de registrar Second Home.
 
 ### Neutral / follow-ups
 
@@ -101,9 +106,11 @@ Production.
   favor da estratégia por objeto.
 - **`HomeEditionVersion`** (versões da Home Edition, como as do Home Concept). Duplica o modelo de versão sem
   necessidade: BR-036 pede uma Home Edition nova para mudança material. Rejeitada pelo fundador.
-- **Rascunho editável até a publicação.** É fiel ao "depois de publicada", mas exige um command de edição, um estado
-  mutável e regras de quais campos mudam em rascunho. Rejeitada: imutável desde a criação é o mínimo e é mais
-  estrito.
+- **Imutável desde a criação** (primeira versão deste ADR). Mais estrita que o canônico e operacionalmente ruim:
+  corrigir um dado digitado na preparação exigiria outra Home Edition. Rejeitada pelo fundador.
+- **Publicação como marco de estabilização e condição da Second Home** (`draft` → `published` → `withdrawn`).
+  Confunde visibilidade pública com definição estável: uma Home Edition finalizada fora do site não poderia originar
+  Second Home, e retirar do público seria irreversível. Rejeitada pelo fundador.
 - **Reaproveitar `edition_reference_value` sem a base.** O valor de referência era por modalidade (Owner/Ação) e por
   série; a média projetada tem outra semântica (BR-034). Rejeitada pelo fundador ("não reutilizar por proximidade").
 - **Manter a tradução pública (`D-LX-08`)** com nomes antigos no banco e no código. Mantém duas linguagens e o erro de

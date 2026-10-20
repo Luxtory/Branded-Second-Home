@@ -52,8 +52,10 @@ conflict, 01 prevails (BR-380, REQ-104).
   `home_concept`/`home_edition`/`second_home` (DB, contracts), `HomeConcept`/`HomeEdition`/`SecondHome` (code); derived
   names follow (`second_home_id`, `second_home_date`, `register_second_home`…). A Home Edition is a specific, replicable
   configuration of a Second Home: it has **no** location, modality, ownership structure or commercial conditions (they
-  belong to each Second Home) and, once published, its material definition never changes (a material change is a new
-  Home Edition). The commercial interest always starts from a Home Edition (`home_edition_id`, `desired_location`).
+  belong to each Second Home). It is prepared as a `draft` (material definition editable), then materially
+  `finalized` — after which the material definition never changes (a material change is a new Home Edition) and it may
+  originate Second Homes; public `visibility` is separate, requires finalization, and withdrawing from the public never
+  reopens the material definition. The commercial interest always starts from a Home Edition (`home_edition_id`, `desired_location`).
   Never Residence, residência or residencial to name or frame the product; "identidade da marca", never "Brand DNA";
   "imóvel de lazer" only descriptively and "casa" only as narrative language.
 - **Gate:** 65/65 REQ · 11/11 PD · 6/6 INV covered by tests (03 §12).
@@ -283,8 +285,8 @@ always keep it updated:**
 - ❌ "cota" or "diária(s)" for Co-Owner, or any promise of guaranteed return (REQ-100, REQ-101)
 - ❌ Residence, residência, residencial or "Brand DNA" naming or framing the product, or bare `concept`/`edition`
   identifiers for the domain entities (BR-377) — use Home Concept, Home Edition, Second Home and identidade da marca
-- ❌ Location, modality, ownership structure or commercial conditions on a Home Edition, a silent material change to a
-  published Home Edition, or a projected average investment shown as price, offer or individual value (BR-031,
+- ❌ Location, modality, ownership structure or commercial conditions on a Home Edition, a material change to a
+  finalized Home Edition, or a projected average investment shown as price, offer or individual value (BR-031,
   BR-034, BR-036)
 
 ## Conventions

@@ -242,8 +242,8 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 ## Wave 4.2 — Ontologia Home Concept → Home Edition → Second Home (2026-10-19)
 
 - **Status**: Draft (Fase B da W4.2; revisar no fechamento da wave)
-- **Scope**: renomeação do schema e do código do catálogo; Home Edition com definição material imutável, publicação,
-  retirada e correção editorial; mídia da Home Edition (imagens, renders, plantas) com rota pública
+- **Scope**: renomeação do schema e do código do catálogo; Home Edition com preparação editável, finalização material
+  (definição imutável depois dela), visibilidade pública separada e correção editorial; mídia da Home Edition (imagens, renders, plantas) com rota pública
   `GET /media/home-edition-media/{id}/{width}`; média projetada de investimento; página pública
   `/colecao/[homeConceptId]/home-editions/[homeEditionId]`; `register_second_home` só de Home Edition publicada
 - **Linked spec / ADR**: `docs/specs/catalog.md` §17 · ADR-0019 · ADR-0014 · ADR-0015 · `docs/plan/w4-2-ontologia.md`
@@ -257,20 +257,22 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 | Upload da mídia da Home Edition | — | C-41-1 | C-003 | C-41-2 | C-41-3 | C-002 | mesmo pipeline da capa |
 | Migrations de renomeação | — | C-42-6 | — | C-42-6 | — | — | dependency map, precondições fail-closed |
 
-### C-42-1 [HIGH] Information disclosure — Rascunho, Home Edition retirada, mídia pendente ou média futura no site
+### C-42-1 [HIGH] Information disclosure — Home Edition em preparação ou fora do público, mídia pendente ou média futura no site
 
-- **Vector**: leitura pública que ignore o estado de publicação, o estado da mídia ou a vigência da média.
-- **Mitigação**: visibilidade só pela RLS — Home Edition `published` e Home Concept público; mídia `approved` de Home
+- **Vector**: leitura pública que ignore a visibilidade, o estado material, o estado da mídia ou a vigência da média.
+- **Mitigação**: visibilidade só pela RLS — Home Edition `visibility = 'public'` (que exige `finalized`) e Home
+  Concept público; mídia `approved` de Home
   Edition pública; média vigente agora de Home Edition pública; master nunca público; grants de `anon` só nas colunas
-  da §17.7 (sem dados de publicação, de quem registrou nem de retirada). Testes `db` como `anon` para cada estado.
+  da §17.7 (sem estado material, dados de finalização, de quem registrou nem base de retirada). Testes `db` como `anon` para cada estado.
 
-### C-42-2 [MEDIUM] Tampering — Alteração material silenciosa de Home Edition publicada (BR-036)
+### C-42-2 [MEDIUM] Tampering — Alteração material silenciosa de Home Edition finalizada (BR-036)
 
 - **Vector**: update direto, command novo ou Server Action que mude tipologia, área, suítes, capacidade, programa ou o
-  Home Concept de uma Home Edition já apresentada.
-- **Mitigação**: gatilho `home_edition_transition` recusa qualquer mudança da definição material e do vínculo em
-  qualquer caminho (inclusive o dono da tabela); `UPDATE` de `luxtory_app` concedido só nas colunas de estado e nas
-  editoriais; nenhum command de edição material. Teste `db` por coluna material.
+  Home Concept de uma Home Edition já finalizada, ou que reabra a preparação ao retirá-la do público.
+- **Mitigação**: gatilho `home_edition_transition` recusa, depois da finalização, qualquer mudança da definição material
+  e, sempre, do vínculo e do retorno a `draft`, em qualquer caminho (inclusive o dono da tabela); `public` exige
+  `finalized` por constraint; a única edição material é `update_home_edition_draft`, que exige `draft`. Teste `db`
+  por coluna material depois da finalização.
 
 ### C-42-3 [MEDIUM] Tampering / Repudiation — Correção editorial usada para mudar o produto
 
@@ -288,7 +290,7 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 
 ### C-42-5 [LOW] Information disclosure — Enumeração de Home Editions por URL
 
-- **Mitigação**: inexistente, rascunho, retirada, de Home Concept não público ou de outro Home Concept → o mesmo 404 da
+- **Mitigação**: inexistente, em preparação, fora do público, de Home Concept não público ou de outro Home Concept → o mesmo 404 da
   plataforma, sem distinguir o motivo; ids são UUIDs aleatórios.
 
 ### C-42-6 [MEDIUM] Tampering / Information disclosure — Migration de renomeação com dano silencioso

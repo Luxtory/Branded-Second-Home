@@ -79,9 +79,10 @@ Ordem de processamento (cada etapa recusa antes da seguinte; nenhuma recusa ante
 8. **Idempotência** (ADR-0017) — chave já usada: mesmo conteúdo validado → replay (`201` + `idempotency-replayed:
    true`); conteúdo diferente → `409 ERR_IDEMPOTENCY_CONFLICT`. O replay não reavalia a Home Edition.
 9. **Alvo público** — Home Edition publicada e visível no Discovery (leitura como `anon` sob RLS, ADR-0014: Home
-   Edition `published` de Home Concept público — Brand Partner com exposição autorizada e não encerrada + versão
-   aprovada; BR-015, BR-021, BR-030, REQ-096). Senão → `404 ERR_NOT_FOUND` (inexistente, rascunho, retirada e não
-   publicada respondem igual; `02` §15, item 15). A Home Edition não restringe modalidade (BR-032): não há validação
+   Edition com `visibility = 'public'` — o que exige definição material finalizada — de Home Concept público: Brand
+   Partner com exposição autorizada e não encerrada + versão aprovada; BR-015, BR-021, BR-030, REQ-096). Senão →
+   `404 ERR_NOT_FOUND` (inexistente, em preparação, fora do público e de Home Concept não público respondem igual;
+   `02` §15, item 15). A Home Edition não restringe modalidade (BR-032): não há validação
    de modalidade contra ela.
 10. **Escrita atômica** — numa transação: reserva da chave (`app.public_idempotency_key`) + inserção em `app.interest`.
     Corrida com a mesma chave → uma única linha; a outra tentativa vira replay ou conflito.
@@ -92,7 +93,7 @@ Ordem de processamento (cada etapa recusa antes da seguinte; nenhuma recusa ante
 | 201 | — | Interesse registrado, ou replay da mesma tentativa (`idempotency-replayed: true`) |
 | 400 | `ERR_VALIDATION` | JSON/schema/campo/chave inválidos; F2b violada (`fields` só com nome e código) |
 | 403 | `ERR_PERMISSION` | `Origin` ausente ou de outro host |
-| 404 | `ERR_NOT_FOUND` | Escrita fechada neste ambiente; Home Edition não publicada, retirada ou inexistente |
+| 404 | `ERR_NOT_FOUND` | Escrita fechada neste ambiente; Home Edition fora do público ou inexistente |
 | 409 | `ERR_IDEMPOTENCY_CONFLICT` | Mesma chave com outro conteúdo |
 | 413 | `ERR_PAYLOAD_TOO_LARGE` | Corpo acima de 8 KiB |
 | 415 | `ERR_UNSUPPORTED_MEDIA_TYPE` | Corpo não é `application/json` |
@@ -189,9 +190,9 @@ grava o `admin_read` (TECH-092, ADR-0010 §7; objeto `interest`, `*`).
 
 ## 7. Edge cases
 
-- Sem `home_edition_id` → `400 required`; Home Edition em rascunho, retirada ou inexistente → `404` (BR-030).
+- Sem `home_edition_id` → `400 required`; Home Edition em preparação, fora do público ou inexistente → `404` (BR-030).
 - Qualquer modalidade desejada é aceita: a Home Edition não restringe modalidade (BR-032).
-- Home Edition retirada ou Home Concept que deixa de ser público (encerramento, BR-021) → novas manifestações `404`
+- Home Edition retirada do público ou Home Concept que deixa de ser público (encerramento, BR-021) → novas manifestações `404`
   (`02` §15, item 15); replays de tentativas já registradas seguem `201`. Corrida entre a checagem pública e a
   inserção é benigna: interesse não é uso de marca nem direito.
 - Recusas (validação, alvo, conflito) não consomem a chave: só o sucesso a grava, na transação do interesse.

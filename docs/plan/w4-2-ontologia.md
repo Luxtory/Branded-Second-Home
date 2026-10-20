@@ -97,14 +97,15 @@ mesmos atributos (`STABLE`, `SECURITY DEFINER`, `SET search_path = ''`) — o OI
 gatilhos que as chamam ficam.
 
 Gatilhos renomeados por `ALTER TRIGGER … RENAME`. Mudança de comportamento: `edition_no_update` (`forbid_change`) dá
-lugar a `home_edition_transition` (publicação, retirada e correção editorial; definição material imutável);
+lugar a `home_edition_transition` (preparação editável; finalização uma vez e sem volta; depois dela, definição
+material imutável; visibilidade pública separada);
 `interest_modality_offered` sai.
 
 ### 2.5 Policies (RLS) e grants
 
 - Policies guardam a expressão já resolvida (OIDs): continuam válidas depois de `RENAME`; recebem nomes novos
   (`ALTER POLICY … RENAME`). Mudam de regra: `edition_public_read` → `home_edition_public_read` passa a exigir
-  `state = 'published'`; as policies de `edition_reference_value` saem com a tabela.
+  `visibility = 'public'`; as policies de `edition_reference_value` saem com a tabela.
 - Grants de tabela e de coluna estão presos ao OID e ao número da coluna: sobrevivem a `RENAME`. Somem com
   `DROP COLUMN` os grants de `anon` em `region`, `modality`, `commercial_conditions` e nos três atributos físicos da
   versão. Novos: `UPDATE` por coluna de `luxtory_app` nas transições da Home Edition; `SELECT` por coluna de `anon` nas
@@ -132,8 +133,8 @@ Arquivos novos com timestamp posterior a `20261019034110`; as migrations aplicad
 |---|---|---|---|
 | 1 | `platform_operation_second_home_id` | `RENAME COLUMN`; `CREATE OR REPLACE` das duas funções | — (preserva dados) |
 | 2 | `catalog_home_concept` | `RENAME` de 6 tabelas, 5 colunas, constraints, índices, gatilhos, policies e 6 funções; corpos novos; saem `guests_max`, `suites`, `built_area_m2` da versão; chave do Storage `home-concept-media/` | nenhuma versão com atributo físico preenchido; nenhum arquivo de mídia registrado |
-| 3 | `catalog_home_edition` | `RENAME` + `ALTER`: saem `region`, `modality`, `commercial_conditions`; entram atributos, estado de publicação e gatilho de transição; policy pública por `state` | `edition` vazia (as colunas novas são obrigatórias e a modalidade não tem destino) |
-| 4 | `catalog_second_home` | `RENAME` de tabela, 3 colunas, constraints, índices, gatilhos e policies; `second_home_require_basis()` exige Home Edition publicada | — |
+| 3 | `catalog_home_edition` | `RENAME` + `ALTER`: saem `region`, `modality`, `commercial_conditions`; entram atributos, estado material (`draft` → `finalized`), visibilidade (`hidden`/`public`) e gatilho de transição; policy pública por `visibility` | `edition` vazia (as colunas novas são obrigatórias e a modalidade não tem destino) |
+| 4 | `catalog_second_home` | `RENAME` de tabela, 3 colunas, constraints, índices, gatilhos e policies; `second_home_require_basis()` exige Home Edition materialmente finalizada | — |
 | 5 | `catalog_home_edition_projected_investment` | `DROP TABLE edition_reference_value` (sem `CASCADE`: nada a referencia) + `CREATE TABLE home_edition_projected_investment` | `edition_reference_value` vazia |
 | 6 | `catalog_home_edition_media` | `CREATE TABLE home_edition_media` e `home_edition_media_file` (mesmo ciclo da capa) | — |
 | 7 | `ownership_interest_home_edition` | `ALTER`: sai F2a e a FK composta; `edition_id` → `home_edition_id NOT NULL` com FK simples; sai `concept_id`; `region` → `desired_location`; índice recriado | nenhum interesse sem Home Edition (o `NOT NULL` não tem como ser preenchido) |
@@ -155,7 +156,7 @@ precondição aborta com dado inesperado e não altera nada.
 | `Residence` | `SecondHome` |
 | `findPublicConceptOffer`, `readConceptLabels` | `findPublicHomeEdition`, `readHomeEditionLabels` |
 | commands `create_concept_version`, `approve_concept_version`, `upload_concept_cover`, `approve_concept_media`, `withdraw_concept_media`, `set_concept_curation`, `create_edition`, `register_edition_reference_value`, `end_edition_reference_value`, `register_residence` | `create_home_concept_version`, `approve_home_concept_version`, `upload_home_concept_cover`, `approve_home_concept_media`, `withdraw_home_concept_media`, `set_home_concept_curation`, `create_home_edition`, `register_home_edition_projected_investment`, `end_home_edition_projected_investment`, `register_second_home` |
-| — | `publish_home_edition`, `withdraw_home_edition`, `correct_home_edition_editorial`, `upload_home_edition_media`, `approve_home_edition_media`, `withdraw_home_edition_media` |
+| — | `update_home_edition_draft`, `finalize_home_edition`, `publish_home_edition`, `withdraw_home_edition`, `correct_home_edition_editorial`, `upload_home_edition_media`, `approve_home_edition_media`, `withdraw_home_edition_media` |
 | `/v1/admin/concept-versions…`, `/concepts/{id}/…`, `/concept-media/…`, `/editions…`, `/edition-reference-values/…`, `/residences` | `/v1/admin/home-concept-versions…`, `/home-concepts/{id}/…`, `/home-concept-media/…`, `/home-editions…`, `/home-edition-media/…`, `/home-edition-projected-investments/…`, `/second-homes` |
 | `/admin/catalogo/concepts…`, `/editions…`, `/residences…` | `/admin/catalogo/home-concepts…`, `/home-editions…` (`media-projetada`, `midia`), `/second-homes…` |
 | `/colecao/[conceptId]`, `/media/concept-covers/…` | `/colecao/[homeConceptId]`, `/colecao/[homeConceptId]/home-editions/[homeEditionId]`, `/media/home-concept-covers/…`, `/media/home-edition-media/…` |

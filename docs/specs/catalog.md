@@ -41,9 +41,9 @@ Home Edition; a Second Home de Investor só existe com autorização registrada 
 - Como Admin, quero registrar uma Brand Partner e, quando houver, a autorização de exposição pública da marca (BR-015).
 - Como Admin, quero registrar um Home Concept com elementos essenciais, premissas de preservação e especificação (BR-013,
   BR-014), criar versões novas e aprovar uma versão com as referências das aprovações (REQ-096, BR-010, BR-018).
-- Como Admin, quero registrar a Home Edition de um Home Concept aprovado, com sua definição material, publicá-la,
-  retirá-la e corrigir seus textos editoriais, sem localização, modalidade nem condições comerciais (§17; BR-031,
-  BR-032, BR-036).
+- Como Admin, quero preparar a Home Edition de um Home Concept aprovado (definição material e textos), finalizá-la,
+  publicá-la ou retirá-la do público e corrigir seus textos editoriais, sem localização, modalidade nem condições
+  comerciais (§17; BR-031, BR-032, BR-036).
 - Como Admin, quero registrar a autorização de um Investor para um Home Concept e revogá-la (BR-310).
 - Como Admin, quero registrar uma Second Home numa Home Edition — o que também registra a aprovação comercial e fixa a versão
   vigente do Home Concept (BR-025) —, com ou sem Investor autorizado (REQ-027).
@@ -78,7 +78,8 @@ AAL2 com papel Admin, origem igual ao host (TECH-100) e o schema `Error` (TECH-0
 | `register_home_edition_projected_investment` | `POST /v1/admin/home-editions/{id}/projected-investments` | 201 |
 | `end_home_edition_projected_investment` | `POST /v1/admin/home-edition-projected-investments/{id}/end` | 200 |
 
-Publicação, retirada, correção editorial e mídia da Home Edition: §17.6 (W4.2), com as telas novas.
+Edição da preparação, finalização, publicação, retirada do público, correção editorial e mídia da Home Edition:
+§17.6 (W4.2), com as telas novas.
 
 Recusas: corpo inválido → 400 `ERR_VALIDATION` (inclui texto com termo vedado, §5 "Terminologia"); objeto referenciado
 inexistente → 404 `ERR_NOT_FOUND`; estado que não permite a operação → 409 `ERR_STATE_TRANSITION`; sem papel Admin ou
@@ -123,7 +124,7 @@ command guarda o `operation_id` da criação.
 | `home_concept` | Brand Partner, `title` | imutável |
 | `home_concept_version` | Home Concept, `version` (1, 2, …), `essential_elements[]`, `preservation_premises[]`, `specification`; `state` `not_approved` → `approved` com `approval_refs[]`, instante, usuário e papel da aprovação | conteúdo imutável; a única transição é a aprovação; `(home_concept_id, version)` único |
 | `investor_authorization` | Home Concept, `instrument_ref` (referência estável do instrumento), vigência `[valid_from, valid_until)` (`valid_until` opcional: o instrumento pode não ter termo final), revogação (instante e base) | revogação só uma vez; o resto é imutável |
-| `home_edition` | Home Concept; definição material, campos editoriais e publicação (§17.2) | definição material imutável; só publicação, retirada e correção editorial (§17.3) |
+| `home_edition` | Home Concept; definição material, campos editoriais, estado material e visibilidade pública (§17.2) | definição material editável em preparação e imutável depois de finalizada; visibilidade separada (§17.3) |
 | `second_home` | Home Edition, Home Concept, `home_concept_version_id` fixada, `commercially_approved_at`, `label` (referência interna), `timezone` IANA, `investor_authorization_id` opcional | imutável; FKs compostas garantem que Home Edition, versão e autorização são do mesmo Home Concept; gatilho recusa versão que não seja a aprovada vigente |
 
 - **Versão vigente** do Home Concept = a versão aprovada de maior número. Só se aprova uma versão maior que a vigente.
@@ -134,7 +135,7 @@ command guarda o `operation_id` da criação.
 - **Investor (REQ-027, D-W3-1).** A autorização vale para o Home Concept, dentro da vigência e enquanto não revogada. A
   Second Home de Investor referencia a autorização (`investor_authorization_id`); sem autorização válida no instante do
   registro, é recusada. Com autorização, a Second Home existe sem adquirente (nenhuma holding até a W8), a partir de uma
-  Home Edition publicada (§17.5). A W7 acrescenta o vínculo com a `party` do Investor (coluna nova com FK) sem reescrever os
+  Home Edition materialmente finalizada (§17.5). A W7 acrescenta o vínculo com a `party` do Investor (coluna nova com FK) sem reescrever os
   registros existentes.
 - **Exposição da marca (BR-015, P-8, D-W3-3).** Registrada por Brand Partner, uma vez, com a referência da autorização.
   O encerramento não a apaga: o registro fica como histórico. A W4 expõe a marca só com autorização registrada e antes
@@ -162,7 +163,7 @@ command guarda o `operation_id` da criação.
       (pertence à Second Home, W8);
       Home Concept, Home Edition e Second Home são objetos distintos, com vínculos garantidos pelo banco.
 - [x] `[REQ-027]` Second Home com autorização de Investor inexistente, revogada, fora da vigência ou de outro Home Concept é
-      recusada; com autorização válida, a Second Home existe sem adquirente, a partir de uma Home Edition publicada.
+      recusada; com autorização válida, a Second Home existe sem adquirente, a partir de uma Home Edition finalizada.
 - [x] `[BR-025]` O registro fixa a versão vigente e o instante da aprovação comercial; uma versão aprovada depois não
       altera a Second Home; o banco recusa trocar a versão fixada.
 - [x] `[BR-021]` Depois da eficácia do encerramento, Home Concept, versão, aprovação, Home Edition, autorização de Investor,
@@ -430,7 +431,8 @@ Comum às quatro páginas — Brief Narrativo `[FW-B2C: §12]`:
   marca diz que só é público com a exposição autorizada.
 - `essential_elements` e `preservation_premises` dizem na dica que não aparecem no site.
 - Antes de confirmar, as telas que publicam dizem a consequência: aprovar uma versão, autorizar a exposição da marca e
-  publicar uma Home Edition (W4.2: registrar cria um rascunho, que só aparece no site depois de publicado).
+  publicar uma Home Edition (W4.2: registrar cria uma Home Edition em preparação, que só pode ir ao site depois de
+  finalizada e publicada).
 
 ### 13.6 Aceite da W4
 
@@ -1376,7 +1378,7 @@ Nenhuma regra de visibilidade é repetida fora da RLS; nenhuma escrita do catál
 | Conceito | O que é | O que nunca carrega |
 |---|---|---|
 | **Home Concept** (`home_concept` + `home_concept_version`) | sistema conceitual e identitário replicável, criado pela Luxtory a partir da identidade da marca e do lifestyle da Brand Partner: elementos essenciais, premissas de preservação, especificação conceitual, resumo, lifestyle e estilo arquitetônico; versões aprovadas (REQ-096) | atributos físicos, localização, modalidade, condições comerciais |
-| **Home Edition** (`home_edition`) | configuração específica e replicável de Second Home derivada de um Home Concept, com vínculo permanente a ele (BR-031): nome, descrição, tipologia, configuração dos espaços, área projetada, suítes, capacidade, ambientes, amenidades, características e mídia; estado de publicação; média projetada de investimento vigente (BR-034) | localização, modalidade, estrutura patrimonial, condições comerciais (BR-031, BR-032); nenhuma alteração material depois de publicada (BR-036) |
+| **Home Edition** (`home_edition`) | configuração específica e replicável de Second Home derivada de um Home Concept, com vínculo permanente a ele (BR-031): nome, descrição, tipologia, configuração dos espaços, área projetada, suítes, capacidade, ambientes, amenidades, características e mídia; estado material (preparação → finalizada) e visibilidade pública separada; média projetada de investimento vigente (BR-034) | localização, modalidade, estrutura patrimonial, condições comerciais (BR-031, BR-032); nenhuma alteração material depois de finalizada (BR-036) |
 | **Second Home** (`second_home`) | instância específica de uma Home Edition destinada a uma localização concreta (BR-035); fixa a Home Edition e a versão vigente do Home Concept na aprovação comercial (BR-025) | — (localização concreta, modalidade definitiva, estrutura, configuração Co-Owner, condições e estado operacional chegam na W8) |
 
 Nomes técnicos (`03` §3): `home_concept`, `home_edition`, `second_home` e derivados no banco e nos contratos;
@@ -1392,10 +1394,10 @@ Mesmas regras gerais da §5 (RLS só `luxtory_app`, `UPDATE` só nas colunas de 
 |---|---|---|
 | `home_concept` | Brand Partner, `title` | imutável |
 | `home_concept_version` | `home_concept_id`, `version`, `essential_elements[]`, `preservation_premises[]`, `specification`, `summary`, classificações (`home_concept_version_term`); aprovação | como a `concept_version` da W3; `guests_max`, `suites` e `built_area_m2` saem (passam à Home Edition) |
-| `home_edition` | `home_concept_id`; **definição material**: `typology`, `spatial_configuration`, `projected_area_m2`, `suites`, `guests_max`, `rooms[]`, `amenities[]`, `characteristics[]`; **editoriais**: `name`, `description`; **publicação**: `state` (`draft` → `published` → `withdrawn`, ou `draft` → `withdrawn`), instante, usuário, papel e operação da publicação; instante, base e operação da retirada | definição material e `home_concept_id` imutáveis desde a criação (gatilho); só mudam o estado (uma publicação e uma retirada, para frente) e os campos editoriais enquanto não retirada |
+| `home_edition` | `home_concept_id`; **definição material**: `typology`, `spatial_configuration`, `projected_area_m2`, `suites`, `guests_max`, `rooms[]`, `amenities[]`, `characteristics[]`; **editoriais**: `name`, `description`; **estado material**: `material_state` (`draft` → `finalized`) com instante, usuário, papel e operação da finalização; **visibilidade pública**: `visibility` (`hidden` / `public`) e `withdrawal_basis` (base da última retirada do público) | `home_concept_id` imutável; em `draft`, definição material e campos editoriais mudam; a finalização acontece uma vez e não volta; depois dela a definição material é imutável (gatilho) e só mudam os campos editoriais e a visibilidade; `public` exige `finalized` |
 | `home_edition_media` + `home_edition_media_file` | `kind` (`image`, `render`, `floor_plan`), `alt`, `credit`, foco, SHA-256 da origem, aprovação e retirada; versões WebP no Storage privado (`home-edition-media/<sha256>.webp`) | ciclo da capa (pendente → aprovada → retirada); várias aprovadas por Home Edition |
 | `home_edition_projected_investment` | `home_edition_id`, `amount_minor` (`bigint`) + `currency` (`BRL`), vigência `[valid_from, valid_until)`, quem registrou | só inserção; único encerramento; **sem sobreposição de vigência por Home Edition** (uma vigente); sem modalidade, base, configuração ou Ação |
-| `second_home` | `home_edition_id`, `home_concept_id`, `home_concept_version_id` fixada, `commercially_approved_at`, `label`, `timezone`, `investor_authorization_id` | imutável; FKs compostas mantêm Home Edition, versão e autorização no mesmo Home Concept; gatilho exige a versão aprovada vigente, autorização válida e Home Edition publicada |
+| `second_home` | `home_edition_id`, `home_concept_id`, `home_concept_version_id` fixada, `commercially_approved_at`, `label`, `timezone`, `investor_authorization_id` | imutável; FKs compostas mantêm Home Edition, versão e autorização no mesmo Home Concept; gatilho exige a versão aprovada vigente, autorização válida e Home Edition materialmente finalizada |
 | `home_concept_media`, `home_concept_media_file`, `home_concept_curation`, `investor_authorization` (`home_concept_id`) | capa, curadoria e autorização de Investor do Home Concept | como na W3/W4.1 |
 
 Limites técnicos (TECH-100, não regras de negócio): `name` 1–200; `description` 1–20 000; `typology` 1–200;
@@ -1405,28 +1407,37 @@ passa a recusar também o enquadramento do produto como moradia (`Residence`, re
 campos de produto; nome de marca e referências de instrumento seguem só as regras anteriores (BR-377, exceção para
 objeto externo).
 
-### 17.3 Home Edition: imutabilidade material e mecanismos não materiais (BR-036)
+### 17.3 Home Edition: preparação, finalização material e visibilidade pública (BR-036)
 
-Mecanismo mínimo, sem tabela de versão (`HomeEditionVersion` não existe):
+Três responsabilidades separadas (correção do fundador de 2026-10-19; `02` v4.3 REQ-022, `03` v3.15 §3.1), sem
+tabela de versão (`HomeEditionVersion` não existe):
 
-- **Definição material imutável desde a criação.** Tipologia, configuração espacial, área projetada, suítes,
-  capacidade, programa (ambientes), amenidades, características e o vínculo com o Home Concept são gravados por
-  `create_home_edition` e nunca mudam — nem em rascunho. O gatilho `home_edition_transition` recusa qualquer
-  alteração deles em qualquer caminho de escrita. Alteração material = **nova Home Edition** (`create_home_edition`);
-  a anterior pode ser retirada.
-- **Publicação.** `publish_home_edition`: `draft` → `published`, uma vez. Exige marca em uso (BR-021) e Home Concept
-  com versão aprovada. Publicar torna a Home Edition visível no site se o Home Concept também for público.
-- **Retirada.** `withdraw_home_edition`: `draft` ou `published` → `withdrawn`, uma vez, com base registrada. Vale
-  mesmo depois do encerramento da marca (reduz a exposição). Retirada não volta a ser publicada (republicar = nova Home
-  Edition). Second Homes já registradas não mudam (BR-025).
-- **Correção editorial.** `correct_home_edition_editorial`: muda `name` e/ou `description` de uma Home Edition não
-  retirada, com base obrigatória; grava `operation` e `audit_log` com antes/depois. Não altera o produto: mudança de
-  configuração, área, suítes, capacidade, programa, amenidades ou características não passa por aqui.
+| Conceito | Campo | Efeito |
+|---|---|---|
+| **Preparação** | `material_state = 'draft'` | a Home Edition está em elaboração: definição material e textos editoriais podem ser completados e corrigidos; ainda não serve de base para Second Home nem pode ser publicada |
+| **Definição material finalizada** | `material_state = 'finalized'` | marco de estabilização, uma vez e sem volta: tipologia, configuração espacial, área projetada, suítes, capacidade, programa (ambientes), amenidades e características ficam imutáveis; alteração material exige **nova Home Edition**; pode originar Second Homes |
+| **Visibilidade pública** | `visibility = 'hidden' \| 'public'` | se a Home Edition aparece no Discovery; `public` exige definição finalizada (por isso, depois de publicada, a definição material é imutável — BR-036); retirar do público volta a `hidden` sem reabrir a definição material; pode ser publicada de novo |
+
+Commands:
+
+- **Preparação.** `create_home_edition` registra a Home Edition em `draft` e `hidden`. `update_home_edition_draft`
+  substitui a definição material e os textos editoriais enquanto `draft` (mesmo corpo da criação, sem
+  `home_concept_id`, que nunca muda); grava `operation` e `audit_log` com antes e depois.
+- **Finalização.** `finalize_home_edition`: `draft` → `finalized`, uma vez. Exige marca em uso (BR-021) e Home Concept
+  com versão aprovada. A partir daí, o gatilho `home_edition_transition` recusa qualquer alteração material em
+  qualquer caminho de escrita.
+- **Publicação e retirada.** `publish_home_edition`: `hidden` → `public`; exige `finalized`, marca em uso e Home
+  Concept com versão aprovada; aparece no site se o Home Concept também for público. `withdraw_home_edition`:
+  `public` → `hidden`, com base registrada; vale mesmo depois do encerramento da marca (reduz a exposição). Nenhuma das
+  duas toca a definição material; Second Homes já registradas não mudam (BR-025).
+- **Correção editorial.** `correct_home_edition_editorial`: muda `name` e/ou `description` de uma Home Edition
+  finalizada (em `draft`, a edição da preparação cobre isso), com base obrigatória e `audit_log` com antes e depois.
+  Não altera o produto.
 - **Mídia.** `upload_home_edition_media` → `approve_home_edition_media` → `withdraw_home_edition_media` (gestão de
-  mídia, BR-036): imagens, renders e plantas, várias aprovadas ao mesmo tempo; só para Home Edition não retirada e
-  marca em uso (retirar vale sempre). Mesmo pipeline e limites da capa (ADR-0015).
+  mídia, BR-036): imagens, renders e plantas, várias aprovadas ao mesmo tempo, em qualquer estado material; enviar e
+  aprovar exigem marca em uso (retirar vale sempre). Mesmo pipeline e limites da capa (ADR-0015).
 - **Média projetada.** `register_home_edition_projected_investment` / `end_home_edition_projected_investment`
-  (atualização da média projetada, BR-036): ver §17.4.
+  (atualização da média projetada, BR-036), em qualquer estado material: ver §17.4.
 
 ### 17.4 Média projetada de investimento (BR-034)
 
@@ -1440,8 +1451,8 @@ derivada de outro valor nem dela se deriva valor individual de Co-Owner.
   `bigint` (TECH-033); nunca calculada pelo software (ADR-001 do `03`).
 - Registro começa agora ou no futuro, nunca no passado; o vigente em aberto que começou antes termina no início do novo;
   "Encerrar" vale a partir de agora, uma vez; nada exibido é reescrito (mesma regra do valor da W4.1).
-- Só para Home Edition não retirada e marca em uso; encerrar vale sempre.
-- Público só o valor vigente agora, de Home Edition publicada de Home Concept público. Apresentação obrigatória: o
+- Registrar exige marca em uso, em qualquer estado material; encerrar vale sempre.
+- Público só o valor vigente agora, de Home Edition pública (`visibility = public`) de Home Concept público. Apresentação obrigatória: o
   rótulo "Média projetada de investimento" e a explicação de que é referência aproximada da ordem de grandeza do
   investimento total para materializar uma Second Home daquela Home Edition, que o investimento efetivo varia
   (localização, escopo, fornecedores, momento, modalidade, configuração) e que não é preço, proposta, condição nem valor
@@ -1452,8 +1463,9 @@ derivada de outro valor nem dela se deriva valor individual de Co-Owner.
 
 `register_residence` passa a `register_second_home` (mesmo evento de aprovação comercial, ADR-0010 §2): grava o
 instante, fixa a Home Edition e a versão aprovada vigente do Home Concept (BR-025), opcionalmente com autorização de
-Investor do mesmo Home Concept (REQ-027). Exige Home Edition **publicada** no instante do registro — a definição
-material a que a Second Home fica presa é a apresentada (BR-025, BR-036; regra derivada registrada no ADR-0019).
+Investor do mesmo Home Concept (REQ-027). Exige Home Edition **materialmente finalizada** (`02` v4.3 REQ-022):
+a Second Home fica presa a uma definição material estável (BR-025, BR-036). A visibilidade pública não é condição:
+uma Home Edition finalizada e ainda não publicada, ou retirada do público, pode originar Second Home.
 Localização concreta, modalidade, estrutura, configuração Co-Owner, condições, primeiro exercício e estado operacional
 são da W8 (`03` v3.15 §3.1).
 
@@ -1468,7 +1480,9 @@ Mesma entrada da §5 (todas `POST` com `Idempotency-Key`, Admin AAL2, `Origin` d
 | `approve_home_concept_version` | `POST /v1/admin/home-concept-versions/{id}/approve` | 200 |
 | `register_investor_authorization` | `POST /v1/admin/investor-authorizations` (`home_concept_id`) | 201 |
 | `revoke_investor_authorization` | `POST /v1/admin/investor-authorizations/{id}/revoke` | 200 |
-| `create_home_edition` | `POST /v1/admin/home-editions` (rascunho) | 201 |
+| `create_home_edition` | `POST /v1/admin/home-editions` (`draft`, `hidden`) | 201 |
+| `update_home_edition_draft` | `POST /v1/admin/home-editions/{id}` (só em `draft`) | 200 |
+| `finalize_home_edition` | `POST /v1/admin/home-editions/{id}/finalize` | 200 |
 | `publish_home_edition` | `POST /v1/admin/home-editions/{id}/publish` | 200 |
 | `withdraw_home_edition` | `POST /v1/admin/home-editions/{id}/withdraw` | 200 |
 | `correct_home_edition_editorial` | `POST /v1/admin/home-editions/{id}/editorial-correction` | 200 |
@@ -1483,9 +1497,9 @@ Mesma entrada da §5 (todas `POST` com `Idempotency-Key`, Admin AAL2, `Origin` d
 | `withdraw_home_concept_media` | `POST /v1/admin/home-concept-media/{id}/withdraw` | 200 |
 | `set_home_concept_curation` | `POST /v1/admin/home-concepts/{id}/curation` | 200 |
 
-Recusas: as da §5. `ERR_STATE_TRANSITION` também para: publicar o que não está em rascunho; retirar o que já foi
-retirado; corrigir, enviar ou aprovar mídia, ou registrar média projetada em Home Edition retirada; registrar Second
-Home em Home Edition não publicada. Mídia que não é imagem aceita, valor que começaria no passado → `ERR_VALIDATION`.
+Recusas: as da §5. `ERR_STATE_TRANSITION` também para: editar a preparação ou finalizar uma Home Edition já
+finalizada; publicar uma Home Edition não finalizada ou já pública; retirar do público uma Home Edition que não está
+pública; correção editorial de Home Edition em `draft`; registrar Second Home em Home Edition não finalizada. Mídia que não é imagem aceita, valor que começaria no passado → `ERR_VALIDATION`.
 Os endpoints antigos (`/concept-versions`, `/concepts/{id}/…`, `/concept-media/…`, `/editions…`,
 `/edition-reference-values/…`, `/residences`) deixam de existir; não há cliente externo (Admin interno).
 
@@ -1497,16 +1511,18 @@ Os endpoints antigos (`/concept-versions`, `/concepts/{id}/…`, `/concept-media
 | Home Concept (versões, Home Editions, capa, curadoria, autorizações de Investor) | `/admin/catalogo/home-concepts/[id]` |
 | Nova versão · aprovar versão | `/admin/catalogo/home-concepts/[id]/versoes/nova` · `/versoes/[versionId]/aprovacao` |
 | Capa · curadoria · autorizações de Investor | `/admin/catalogo/home-concepts/[id]/capas/…` · `/curadoria` · `/autorizacoes-investor/…` |
-| Registrar Home Edition (rascunho, definição material completa) | `/admin/catalogo/home-concepts/[id]/home-editions/nova` |
-| Home Edition (estado, definição material, campos editoriais, mídia, média projetada, Second Homes) | `/admin/catalogo/home-editions/[id]` |
-| Publicar · retirar · corrigir texto editorial | `/admin/catalogo/home-editions/[id]/publicacao` · `/retirada` · `/correcao-editorial` |
+| Registrar Home Edition (preparação) | `/admin/catalogo/home-concepts/[id]/home-editions/nova` |
+| Home Edition (estado material, visibilidade, definição material, campos editoriais, mídia, média projetada, Second Homes) | `/admin/catalogo/home-editions/[id]` |
+| Editar a preparação · finalizar | `/admin/catalogo/home-editions/[id]/edicao` · `/finalizacao` |
+| Publicar · retirar do público · corrigir texto editorial | `/admin/catalogo/home-editions/[id]/publicacao` · `/retirada` · `/correcao-editorial` |
 | Mídia (envio, aprovação, retirada) | `/admin/catalogo/home-editions/[id]/midia/nova` · `/midia/[mediaId]` |
 | Média projetada (registro, encerramento) | `/admin/catalogo/home-editions/[id]/media-projetada/nova` · `/media-projetada/[investmentId]/encerramento` |
 | Registrar Second Home | `/admin/catalogo/home-editions/[id]/second-homes/nova` |
 | Second Home (detalhe) | `/admin/catalogo/second-homes/[id]` |
 
-O formulário da Home Edition diz, antes do envio, que a definição material não muda depois do registro; a
-confirmação da publicação diz que a Home Edition passa a aparecer no site. Os campos públicos levam "Público no site"
+A confirmação da finalização diz que, depois dela, a definição material não muda mais (mudança material = nova Home
+Edition) e que a Home Edition passa a poder originar Second Homes; a confirmação da publicação diz que ela passa a
+aparecer no site; a da retirada, que sai do site sem reabrir a definição material. Os campos públicos levam "Público no site"
 (§13.5). A tela de nova versão do Home Concept perde pessoas, suítes e área.
 
 ### 17.7 Leitura pública (anon)
@@ -1515,14 +1531,16 @@ Mesmo papel e portão da §13.2/§13.3. Visibilidade só pela RLS:
 
 - Home Concept público = como antes (`home_concept_is_public`: exposição autorizada, antes da eficácia do
   encerramento, versão aprovada).
-- Home Edition pública = `state = 'published'` **e** Home Concept público. Colunas: `id`, `home_concept_id`, `name`,
+- Home Edition pública = `visibility = 'public'` (o que implica `finalized`) **e** Home Concept público. Colunas: `id`,
+  `home_concept_id`, `name`,
   `description`, `typology`, `spatial_configuration`, `projected_area_m2`, `suites`, `guests_max`, `rooms`,
-  `amenities`, `characteristics`, `created_at`. Rascunho e retirada nunca são públicos.
+  `amenities`, `characteristics`, `created_at`. Em preparação ou fora do público, nunca é pública.
 - Mídia pública = aprovada, de Home Edition pública: `id`, `home_edition_id`, `kind`, `alt`, `credit`, foco; arquivos só
   de exibição.
 - Média projetada pública = vigente agora, de Home Edition pública: `id`, `home_edition_id`, `amount_minor`, `currency`,
   `valid_from`, `valid_until`.
-- Disponibilidade (`D-B2C-16`): "há Home Edition publicada" passa a significar `published` e pública.
+- Disponibilidade (`D-B2C-16`): "há Home Edition publicada" passa a significar `visibility = public` e Home Concept
+  público.
 
 Leituras (`application/public-views.ts`, `collection-views.ts`): `collection()` (Home Concepts com suas Home Editions
 publicadas — nome, tipologia, capacidade, suítes, área, média projetada vigente e capa da Home Edition), `homeConcept(id)`
@@ -1605,13 +1623,14 @@ muda.
 - [ ] `[REQ-022]` `[BR-031]` Home Edition sem localização, modalidade e condições comerciais: não existem colunas, campos
       de API, telas nem leitura pública para isso.
 - [ ] `[REQ-020]` `[BR-031]` O vínculo Home Edition → Home Concept é imutável (o banco recusa trocar `home_concept_id`).
-- [ ] `[REQ-022]` `[BR-036]` Alteração material de Home Edition — publicada ou não — é recusada pelo banco em qualquer
-      caminho; a mudança material exige `create_home_edition`; correção editorial muda só nome e descrição, com base e
-      auditoria.
+- [ ] `[REQ-022]` `[BR-036]` Em `draft`, a definição material é editável (`update_home_edition_draft`); depois de
+      finalizada, a alteração material é recusada pelo banco em qualquer caminho e exige `create_home_edition`; a
+      correção editorial muda só nome e descrição, com base e auditoria.
 - [ ] `[REQ-022]` `[BR-034]` Média projetada sem modalidade, base, configuração ou Ação; uma vigente por Home Edition;
       pública só a vigente de Home Edition publicada, com o rótulo e a explicação obrigatória.
-- [ ] `[BR-036]` Publicação e retirada uma vez cada, para frente; rascunho e retirada nunca públicos; Second Home só de
-      Home Edition publicada; retirada não altera Second Home existente.
+- [ ] `[BR-036]` Finalização uma vez e sem volta; publicação exige finalização; retirar do público não reabre a
+      definição material; Home Edition em `draft` ou `hidden` nunca é pública; Second Home só de Home Edition
+      finalizada, pública ou não; retirada do público não altera Second Home existente.
 - [ ] `[REQ-020]` Second Home fixa Home Edition e versão vigente (BR-025), como o `register_residence` fazia.
 - [ ] `[REQ-100]` Nenhuma ocorrência da ontologia anterior nas superfícies ativas (teste terminológico com denylist e
       allowlist).
@@ -1622,14 +1641,16 @@ muda.
 
 ### 17.12 Edge cases
 
-- Home Edition retirada entre a página e o envio do interesse → a manifestação não é registrada (`02` §15, item 15;
+- Home Edition retirada do público entre a página e o envio do interesse → a manifestação não é registrada (`02` §15, item 15;
   `ownership` §13). A URL da página passa a responder 404.
 - Média projetada alterada entre a apresentação e a manifestação → vínculo à referência apresentada é da W6 (`02` §15,
   item 14).
 - Home Concept deixa de ser público (exposição, encerramento) → suas Home Editions somem com ele.
 - Média projetada futura ou encerrada → não aparece; a Home Edition continua visível sem o bloco.
 - `/colecao/<A>/home-editions/<B>` com `B` de outro Home Concept → 404 (sem redirecionar).
-- Rascunho criado com erro material → retirar e criar outra Home Edition (o rascunho nunca foi público).
+- Erro material em preparação → `update_home_edition_draft`. Erro material depois da finalização → nova Home
+  Edition; a anterior pode ser retirada do público.
+- Home Edition finalizada e nunca publicada → pode originar Second Home; não aparece no site.
 
 ### 17.13 Fora do escopo
 
