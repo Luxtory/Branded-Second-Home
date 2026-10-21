@@ -49,10 +49,11 @@ pesam:
    não é copiada: `presented_projected_investment_id` é FK para `app.home_edition_projected_investment`, cujas linhas
    não aceitam `DELETE`/`TRUNCATE` e só mudam o fim da vigência; um gatilho confere que a referência é da mesma Home
    Edition. O contexto não expira (nenhum prazo canônico, TECH-001).
-5. **Variante da dimensão de investimento decidida no servidor.** `reference_fit` só para Owner com média apresentada;
-   `investment_definition` para Co-Owner e para Owner sem média. O cliente declara a variante que viu; divergência é
-   recusada. Nenhum valor individual é derivado da média (BR-034). O gatilho de inserção repete a regra em qualquer
-   caminho de escrita.
+5. **Pré-qualificação versionada, com a comparação decidida no servidor** (revisão do fundador de 2026-10-21). Códigos
+   fechados na versão 1 (`qualification_version`): faixa autodeclarada de recursos para iniciar (todos), unidade de
+   decisão e horizonte; `reference_fit` só existe para Owner quando o contexto prova uma média apresentada — o servidor
+   exige nesse caso e recusa nos demais. Nenhum valor exato é gravado e nenhum valor individual é derivado da média
+   (BR-034). O gatilho de inserção repete a regra em qualquer caminho de escrita.
 6. **Revalidação do alvo dentro da transação (`02` §15, item 15).** Além da leitura pública como `anon` (ADR-0014), a
    transação de escrita revalida a Home Edition por uma consulta exposta pelo `catalog` (sem acesso do `ownership` às
    tabelas dele): trava a linha como `luxtory_app` (`FOR SHARE`) e lê a visibilidade pela própria RLS pública, como

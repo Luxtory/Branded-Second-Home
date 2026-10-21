@@ -68,12 +68,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Solicitação de conversa na página da Home Edition (W6, spec `ownership` §14, ADR-0018): seção "Solicitar uma
-  conversa" depois de "Para quem", com modalidade desejada, localização pretendida, dias aproximados só para Co-Owner,
-  pré-qualificação em três dimensões (investimento — comparação com a média projetada apresentada só para Owner;
-  estágio de definição para Co-Owner e para Owner sem média —, unidade de decisão e horizonte) e contato (nome,
-  telefone, e-mail). O envio não é aquisição nem agendamento; o sucesso só confirma o recebimento da solicitação.
-  Aviso de Privacidade da jornada em `/privacidade` (pendente). No Admin, drill-down Home Edition → interesse →
-  contato e pré-qualificação, com cada leitura auditada. A coleta segue fechada em Production até os gates de go-live.
+  conversa" depois de "Para quem", em 3 etapas (Sua Second Home · Investimento e decisão · Contato), com modalidade
+  desejada, localização pretendida, dias aproximados só para Co-Owner, pré-qualificação (faixa autodeclarada de recursos
+  para iniciar; comparação com a média projetada apresentada só para Owner; unidade de decisão; horizonte com
+  "imediatamente") e contato (nome, telefone, e-mail). O envio não é aquisição nem agendamento; o sucesso só confirma o
+  recebimento da solicitação. Aviso de Privacidade da jornada em `/privacidade` (pendente). No Admin, drill-down Home
+  Edition → interesse → Second Home desejada, pré-qualificação e contato, com cada leitura auditada. A coleta segue
+  fechada em Production até os gates de go-live.
 - Interesse (W5, spec `ownership`): `POST /v1/interests` registra a manifestação de interesse num Concept publicado —
   com ou sem Edition, como Owner ou Co-Owner, com a região e, em Co-Owner, a necessidade aproximada de dias —, sem conta,
   com `Idempotency-Key`, rate limit distribuído e falha fechada. Interesse não constitui aquisição e nunca cria Ação,

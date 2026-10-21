@@ -24,7 +24,9 @@
 | Nome | sim | `app.interest_contact.name` | 1–200 caracteres |
 | Telefone ou WhatsApp | sim | `app.interest_contact.phone` | `+` opcional e 8–15 dígitos; código do país nunca inferido |
 | E-mail | sim | `app.interest_contact.email` | até 254; domínio em minúsculas |
-| Dimensão de investimento | sim | `app.interest_qualification.investment_question`, `investment_answer` | código fechado; nunca valor, renda, patrimônio ou financiamento |
+| Faixa de recursos para iniciar | sim | `app.interest_qualification.available_to_start_band` | **faixa autodeclarada** de investimento (7 faixas em reais ou "Ainda não defini"); nunca valor exato, renda, patrimônio, saldo, financiamento ou comprovação |
+| Comparação com a média apresentada | só Owner com média apresentada | `app.interest_qualification.reference_fit` | código fechado; declaração do interessado, nunca preço |
+| Versão dos códigos | — | `app.interest_qualification.qualification_version` | técnica; interpreta as faixas no tempo |
 | Média projetada apresentada | quando houve | `app.interest_qualification.presented_projected_investment_id` | referência (FK) ao registro da Luxtory — não é dado do visitante |
 | Unidade de decisão, horizonte | sim | `app.interest_qualification.decision_unit`, `decision_horizon` | códigos fechados; nenhum dado de terceiros |
 | Home Edition, modalidade desejada, localização pretendida, `approx_days`, `origin`, `partner_ref` | conforme a modalidade | `app.interest` (W5/W4.2) | manifestação imutável; textos livres podem conter texto pessoal digitado |
@@ -92,6 +94,11 @@ Transferência internacional: depende das cláusulas e da infraestrutura de cada
 - **Replay depois da eliminação:** não recria contato nem pré-qualificação (ADR-0018).
 
 ## 8. Gates de validação (pendentes)
+
+> O Aviso final precisa declarar, entre as categorias, que a pré-qualificação inclui uma **faixa autodeclarada de
+> investimento** — e que não se coletam renda, patrimônio, documentos, CPF, dados bancários, comprovação financeira,
+> financiamento ou dados de terceiros (revisão do fundador de 2026-10-21).
+
 
 1. Validação jurídica da base legal proposta.
 2. Aviso de Privacidade final (controlador, finalidades, bases, categorias, retenção, acesso, operadores,

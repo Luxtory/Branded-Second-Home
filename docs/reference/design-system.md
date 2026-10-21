@@ -226,6 +226,12 @@ Sempre sublinhado. `--standalone` acrescenta ícone (`lx-link__icon`) e alvo de 
 - Número de dias: `type="text" inputmode="numeric"`.
 - Opções de `select` vêm dos dados, nunca de lista inventada.
 
+### Form em etapas · `lx-form__step`
+
+Formulário em etapas na mesma seção (W6): cada etapa abre com um título `lx-form__step` (`tabindex="-1"`) que recebe o
+foco a cada troca — é título, não controle, então não ganha anel de foco de campo. Ações em `lx-form__actions`: a
+principal primeiro ("Continuar" ou o envio), "Voltar" como `lx-button--secondary`.
+
 ### Choice Group · `lx-choice-group`
 
 `fieldset` + `legend.lx-label` + `lx-choice-group__options` com `label.lx-choice`

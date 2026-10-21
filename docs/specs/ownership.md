@@ -266,7 +266,10 @@ BR-032, BR-062; `02` v4.3 REQ-022; `03` v3.15 §3.1 `interest`):
 
 > Decisões do fundador: P-3 (2026-10-19, vigente onde não superada), plano executivo da W6 (D-W6-1 a D-W6-3,
 > 2026-10-19), correção do modelo da Home Edition (2026-10-19, noite) e checkpoint da dimensão de investimento
-> (2026-10-20, alternativa A com ajustes). Esta seção prevalece sobre as anteriores onde diferir.
+> (2026-10-20, alternativa A com ajustes), **revisto pelo fundador em 2026-10-21** (pré-qualificação como BANT
+> adaptado: faixa de recursos para iniciar, `reference_fit` só para Owner com média apresentada, horizonte com
+> "imediatamente"; sai a variante `investment_definition`; formulário em 3 etapas). Esta seção prevalece sobre as
+> anteriores onde diferir.
 > [ADR-0018](../adr/0018-contato-e-pre-qualificacao-do-interesse.md) · STRIDE `ownership`
 > [§W6](../security/threats/ownership.md#w6--solicitação-de-conversa-na-home-edition-2026-10-20) ·
 > [inventário LGPD](../security/lgpd-interesse.md). A branch provisória `feat/w6-interesse-formulario` (`9e41101`) é
@@ -295,9 +298,12 @@ REQ-025, BR-050, BR-065).
 - Consentimento: sem checkbox, sem botão "consentir", sem consentimento presumido. Transparência pelo Aviso de
   Privacidade da jornada (§14.11); a base legal proposta é **hipótese** sujeita à validação jurídica. Marketing e
   newsletter não fazem parte da submissão.
-- Qualquer outro dado: CPF, documentos, renda, patrimônio, patrimônio disponível, entrada, capacidade de crédito,
-  financiamento, comprovação financeira, valor numérico, valor de Ação, mensagem ou campo livre, dados de parceiro,
-  família ou terceiros. Nenhuma quarta dimensão de pré-qualificação.
+- Qualquer outro dado: CPF, documentos, dados bancários, saldo, renda, patrimônio, patrimônio líquido, capacidade de
+  crédito, financiamento, comprovação financeira, valor exato em reais, valor de Ação, mensagem ou campo livre,
+  motivação ou "dor", dados de parceiro, família ou terceiros. A faixa **autodeclarada** de recursos para iniciar
+  (§14.5) supera a decisão anterior que listava "entrada"/valor disponível como non-goal (fundador, 2026-10-21) — ela
+  não é renda, patrimônio, comprovação nem financiamento (`02` REQ-022), e "entrada" não é termo de produto: não existe
+  estrutura comercial de entrada + saldo.
 - Score, Hot/Warm/Cold, prioridade, aprovação, roteamento, atribuição, agenda, CRM, pipeline comercial, exportação,
   busca por e-mail/telefone, edição, eliminação pela aplicação (D-W6-2 = A), workflow de direitos do titular, expurgo
   automático, notificação por e-mail.
@@ -314,46 +320,55 @@ A página da Home Edition (`catalog` §17.8) ganha, **depois** de "Para quem", a
 a página fica como na W4.2 (`D-B2C-10`: sem CTA para destino inexistente).
 
 1. **Jornada:** `b2c.md` §8, linhas "Home Edition" e "Interesse — na página da Home Edition" (`D-B2C-27`, `D-B2C-28`).
-2. **Função:** registrar a solicitação de conversa sobre aquela Home Edition. **Schwartz:** Most Aware → ação.
-   **5Ps:** PUSH.
-3. **Composição (Core DS):** `lx-section` + `lx-container` + `lx-section-head`; `lx-form` com `lx-field`,
-   `lx-input`, `lx-choice-group`/`lx-choice` (Owner e Co-Owner com o mesmo peso, REQ-103), `lx-hint`, `lx-error`,
-   `lx-message` e `lx-button--primary`. Mobile-first, paridade funcional a partir de 320 px (ADR-0009).
+2. **Função:** registrar a solicitação de conversa sobre aquela Home Edition com uma pré-qualificação útil ao SDR.
+   **Schwartz:** Most Aware → ação. **5Ps:** PUSH.
+3. **Composição (Core DS):** `lx-section` + `lx-container` + `lx-columns--aside` (abertura | formulário, o mesmo split
+   editorial no desktop); `lx-form` com `lx-field`, `lx-input`, `lx-choice-group`/`lx-choice` (Owner e Co-Owner com o
+   mesmo peso, REQ-103), `lx-hint`, `lx-error`, `lx-message`, `lx-button--primary` e `lx-button--secondary`.
+   Mobile-first, paridade funcional a partir de 320 px (ADR-0009).
 
-| Bloco | Pergunta mental | Conteúdo | Fatos e limites |
+**Fluxo progressivo em 3 etapas, na mesma seção e sem URL nova:**
+
+| Etapa | Conteúdo | Ações | Fatos e limites |
 |---|---|---|---|
-| Abertura | "Posso conversar sobre esta Home Edition?" | título, linha de apoio com o nome da Home Edition | REQ-022 |
-| Sua Second Home | "O que eu imagino?" | modalidade desejada (Owner · Co-Owner, descrições aprovadas de `D-B2C-19`); localização pretendida (texto); dias aproximados **só para Co-Owner**, com a microcopy da P-3 | BR-030, BR-032, REQ-025, BR-060 |
-| Investimento e decisão | "Em que momento estou?" | a dimensão de investimento na variante da §14.5, a unidade de decisão e o horizonte | REQ-022, BR-034 |
-| Contato | "Como a Luxtory fala comigo?" | Nome, Telefone ou WhatsApp, E-mail — todos obrigatórios | REQ-022, `03` §3.1 |
-| Transparência | "Isto é uma compra? O que fazem com meus dados?" | "Manifestar interesse não é uma aquisição." e a microcopy D4 com o link para o Aviso de Privacidade | P-3, D4, BR-050 |
-| Envio e sucesso | "Deu certo?" | botão "Solicitar uma conversa"; sucesso **só** informa que a solicitação de conversa foi recebida | REQ-024, REQ-101 |
+| 1 de 3 — Sua Second Home | modalidade desejada (Owner · Co-Owner, descrições de `D-B2C-19`); localização pretendida; dias aproximados **só para Co-Owner**, com a microcopy da P-3 | Continuar | BR-030, BR-032, REQ-025, BR-060 |
+| 2 de 3 — Investimento e decisão | faixa de recursos para iniciar; comparação com a média apresentada (só Owner com média); unidade de decisão; horizonte | Voltar · Continuar | REQ-022, BR-034, BR-063 |
+| 3 de 3 — Contato | Nome, Telefone ou WhatsApp, E-mail (todos obrigatórios); "Manifestar interesse não é uma aquisição." e a microcopy D4 com o link para o Aviso de Privacidade | Voltar · Solicitar uma conversa | REQ-022, P-3, D4, BR-050 |
 
-**Não afirmar:** aquisição, agendamento, reserva de dias, Direito de Uso, prioridade, disponibilidade, prazo de
-resposta, garantia de contato ou retorno, localização, preço, valor por modalidade ou por Ação (REQ-101, L10); nunca
-"cota"/"diárias" (REQ-100).
+- **Nada é enviado nem persistido antes do envio final**: os dados ficam só na memória do componente — sem URL, cookie,
+  `localStorage` ou `sessionStorage`. "Continuar" valida só a etapa atual, no navegador; "Voltar" preserva tudo.
+- **Troca de modalidade** invalida só o que ficou incompatível: Co-Owner descarta a comparação com a média; Owner
+  descarta os dias. Faixa, unidade de decisão, horizonte e contato ficam.
+- **Foco e leitores de tela:** cada etapa abre com um título "N de 3 — …" que recebe o foco na troca de etapa; erros com
+  resumo acessível (`role="alert"`) e foco no primeiro campo inválido; o sucesso recebe o foco. Teclado em todo o
+  fluxo (Enter avança; setas nas opções).
+- **Erros do servidor** num campo de etapa anterior levam de volta àquela etapa, com o erro no campo.
 
-**Estados:** inicial → validação no cliente (o mesmo schema; o servidor decide) → enviando (campos somente leitura,
-botão desabilitado, sem envio concorrente) → sucesso (a confirmação substitui o formulário e recebe o foco) |
-inválido (resumo acessível com links, `aria-invalid` + `lx-error` no campo, foco no primeiro erro) | falha por
-código: `429` limite, `409` conflito (a próxima tentativa usa chave nova), `404` Home Edition indisponível (com link
+**Não afirmar:** aquisição, agendamento, reserva de dias, Direito de Uso, prioridade, aprovação, disponibilidade, prazo
+de resposta, garantia de contato ou retorno, localização, preço, valor por modalidade ou por Ação (REQ-101, L10); nunca
+"cota"/"diárias" (REQ-100); nunca "entrada".
+
+**Estados:** etapa → validação no cliente (o mesmo schema; o servidor decide) → enviando (campos somente leitura, botão
+desabilitado, sem envio concorrente) → sucesso (a confirmação substitui o formulário e recebe o foco) | inválido | falha
+por código: `429` limite, `409` conflito (a próxima tentativa usa chave nova), `404` Home Edition indisponível (com link
 para a Coleção), contexto de apresentação recusado (pede para atualizar a página), `403`/`413`/`415` recusado,
-`503`/`500`/rede **não confirmado** (dados e chave preservados só em memória para repetir). Telefone com
-`type="tel"` e `autocomplete="tel"`; dias com `type="text" inputmode="numeric"`; e-mail com `type="email"`.
+`503`/`500`/rede **não confirmado** (dados e chave preservados só em memória para repetir). Telefone com `type="tel"` e
+`autocomplete="tel"`; dias com `type="text" inputmode="numeric"`; e-mail com `type="email"`.
 
-**Copy (pt-BR; Terminologia do `02` §1):** as perguntas e respostas da §14.5 são literais do fundador. Demais textos
-— título, apoio, rótulos e mensagens de falha — são proposta revista no checkpoint visual final da W6:
+**Copy (pt-BR; Terminologia do `02` §1).** Perguntas, respostas, ajuda, abertura, botões e sucesso são literais do
+fundador (2026-10-21, §14.5); as microcopies da P-3 e a D4, de 2026-10-19:
 
 | Texto | Valor |
 |---|---|
 | Título | Solicite uma conversa sobre esta Home Edition |
-| Apoio | Conte como você imagina sua Second Home a partir desta Home Edition. |
+| Apoio | Conte como você imagina sua Second Home. Com essas informações, podemos preparar uma conversa mais objetiva sobre esta Home Edition. |
+| Etapas | 1 de 3 — Sua Second Home · 2 de 3 — Investimento e decisão · 3 de 3 — Contato |
 | Modalidade | "Como você imagina ter sua Second Home?" — Owner: "Você como proprietário do imóvel."; Co-Owner: "Você como acionista da SPE proprietária do imóvel." (`D-B2C-19`) |
 | Localização pretendida | "Onde você imagina sua Second Home?" — dica: "Cidade, região ou destino, do jeito que preferir." |
 | Dias (Co-Owner) | "Quantos dias por ano, aproximadamente?" — dica: "Para Co-Owner, os dias informados representam apenas uma preferência e não criam Direito de Uso." (P-3) |
 | Contato | "Nome" · "Telefone ou WhatsApp" (dica: "Com DDD. Fora do Brasil, inclua o código do país.") · "E-mail" |
 | Transparência | "Manifestar interesse não é uma aquisição." (P-3) · "Usaremos seus dados para responder à sua solicitação de conversa e conduzir a pré-qualificação comercial relacionada a esta Home Edition. Saiba mais no Aviso de Privacidade." (D4) |
-| Botão | Solicitar uma conversa |
+| Botões | Continuar · Voltar · Solicitar uma conversa |
 | Sucesso | Recebemos sua solicitação de conversa. |
 
 ### 14.4 Contrato — `POST /v1/interests` (mudanças)
@@ -383,10 +398,10 @@ identificador interno.
 | Campo | Regra | Base |
 |---|---|---|
 | `home_edition_id`, `modality`, `desired_location`, `approx_days`, `origin`, `partner_ref` | como no §5.1 | §5.1, §13 |
-| `investment_question` | `reference_fit` ou `investment_definition`; precisa ser a variante apresentada (§14.5) — outra → `not_allowed` | REQ-022, BR-034 |
-| `investment_answer` | um código da variante (§14.5); fora dela → `invalid` | REQ-022 |
+| `available_to_start_band` | obrigatório; uma faixa da §14.5 (`up_to_250k` … `not_defined`); nunca valor em reais | REQ-022 |
+| `reference_fit` | `within`, `could_consider` ou `above` — **obrigatório** só para Owner quando o contexto traz média apresentada; para Co-Owner ou sem média, ausente ou `null` (senão `not_allowed`) | REQ-022, BR-034 |
 | `decision_unit` | `self`, `with_partner_or_family` ou `with_others` | REQ-022 |
-| `decision_horizon` | `within_3_months`, `from_3_to_6_months`, `from_6_to_12_months`, `over_12_months` ou `exploring` | REQ-022 |
+| `decision_horizon` | `immediate`, `one_to_three_months`, `three_to_six_months`, `six_to_twelve_months`, `over_twelve_months` ou `exploring` | REQ-022 |
 | `name` | texto obrigatório, 1–200, mesma normalização de `desired_location` | REQ-022, `03` §3.1 |
 | `phone` | obrigatório; até 32 caracteres digitados; aceita formatos humanos — o servidor remove espaços, parênteses, hífens e pontos; depois só `+` inicial opcional e 8–15 dígitos (limite técnico E.164); DDI nunca inferido, Brasil nunca presumido | REQ-022, D-W6 (telefone) |
 | `email` | obrigatório; pontas sem espaço; até 254; formato `local@domínio` com ponto no domínio; domínio em minúsculas, parte local preservada | REQ-022 |
@@ -395,45 +410,64 @@ identificador interno.
 Códigos de campo: `required`, `too_long`, `invalid`, `not_allowed`. A validação do telefone é de formato: não confirma
 a existência do número. Erros trazem só nomes e códigos, nunca valores.
 
-### 14.5 Pré-qualificação — três dimensões obrigatórias
+### 14.5 Pré-qualificação — Need, Budget, Authority, Timeline
 
-Contexto estruturado para a conversa comercial (BR-041, BR-064): **não** produz score, faixa, prioridade, aprovação,
-aquisição nem agendamento, e nenhuma regra, ordenação ou agrupamento do software o usa. Códigos semânticos estáveis,
-independentes da copy.
+Contexto estruturado para o SDR (BR-041, BR-064), inspirado em BANT adaptado a B2C high-ticket — o termo nunca aparece ao
+visitante. **Não** produz score, Hot/Warm/Cold, prioridade, aprovação, aquisição nem agendamento, e nenhuma regra,
+ordenação ou agrupamento do software o usa: o SDR interpreta. Códigos semânticos estáveis, independentes da copy, na
+**versão 1** da pré-qualificação (`qualification_version = 1`; faixas em reais) — uma mudança de faixas ou de códigos
+exige versão nova, para que os registros antigos continuem interpretáveis.
 
-**Dimensão de investimento** (nunca "Budget Fit" como nome universal). A variante é decidida pelo servidor a partir
-da modalidade desejada e do contexto efetivamente apresentado (§14.6) — nunca pela média projetada vigente no envio:
+**Need** — já capturado por Home Edition, modalidade desejada, localização pretendida e, no Co-Owner, dias
+aproximados. Nenhuma pergunta de motivação nesta wave.
 
-| Modalidade | Média projetada apresentada | Variante (`investment_question`) |
+**Budget** — duas perguntas:
+
+- **Faixa de recursos para iniciar** (`available_to_start_band`, Owner e Co-Owner, obrigatória): "Se decidir avançar,
+  qual faixa de recursos você teria disponível para iniciar o investimento?" — ajuda: "Essa referência nos ajuda a
+  preparar uma conversa mais adequada ao seu momento. Não é uma proposta nem condição comercial."
+
+  | Código | Resposta |
+  |---|---|
+  | `up_to_250k` | Até R$ 250 mil |
+  | `from_250k_to_500k` | De R$ 250 mil a R$ 500 mil |
+  | `from_500k_to_1m` | De R$ 500 mil a R$ 1 milhão |
+  | `from_1m_to_2_5m` | De R$ 1 milhão a R$ 2,5 milhões |
+  | `from_2_5m_to_5m` | De R$ 2,5 milhões a R$ 5 milhões |
+  | `above_5m` | Acima de R$ 5 milhões |
+  | `not_defined` | Ainda não defini |
+
+  Faixa autodeclarada do que o próprio interessado pretende alocar para iniciar: não é renda, patrimônio, comprovação,
+  financiamento, preço, aprovação nem capacidade financeira comprovada; nenhum valor exato é gravado. Comercialmente
+  corresponde ao capital disponível para iniciar, mas "entrada" não é termo de produto.
+- **Comparação com a média apresentada** (`reference_fit`) — **só** para Owner quando a página efetivamente mostrou a
+  média projetada (contexto da §14.6), e então obrigatória: "Considerando a média projetada de R$ X desta Home Edition,
+  como ela se compara ao investimento total que você considera?" — `within` "Está dentro do que considero investir." ·
+  `could_consider` "Posso considerar, mas preciso entender melhor o investimento." · `above` "Está acima do que
+  considero investir hoje." Junto, a explicação da média: "Referência aproximada do investimento total projetado para
+  materializar uma Second Home desta Home Edition. Não é preço, proposta ou condição comercial." (BR-034). É só uma
+  comparação declarada com a referência que o interessado viu — nunca preço Owner.
+
+| Modalidade | Média apresentada | Perguntas de Budget |
 |---|---|---|
-| `owner` | sim | `reference_fit` (A1) |
-| `owner` | não | `investment_definition` (A2) |
-| `co_owner` | sim ou não | `investment_definition` (A2) |
+| `owner` | sim | faixa para iniciar + `reference_fit` |
+| `owner` | não | faixa para iniciar |
+| `co_owner` | sim ou não | faixa para iniciar (nunca `reference_fit` contra a média total) |
 
-- **A1 — `reference_fit`.** Pergunta: "Como a média projetada de investimento desta Home Edition se compara ao que
-  você considera investir?" Junto, a referência apresentada: "Média projetada apresentada: R$ X." e "Referência
-  aproximada do investimento total projetado para materializar uma Second Home desta Home Edition. Não é preço,
-  proposta ou condição comercial." Respostas: `within` "Está dentro do que considero investir." · `needs_understanding`
-  "Preciso entender melhor o investimento antes de avaliar." · `above` "Está acima do que considero investir hoje."
-  É só uma comparação declarada pelo interessado com a referência aproximada que ele viu — nunca preço Owner (BR-034).
-- **A2 — `investment_definition`.** Pergunta: "Em relação ao investimento, qual opção melhor descreve seu momento?"
-  Respostas: `range_defined` "Já defini uma faixa que considero investir." · `idea_without_range` "Tenho uma ideia do
-  que considero investir, mas ainda não defini uma faixa." · `needs_understanding` "Preciso entender melhor o
-  investimento antes de definir uma faixa." Mede o estágio de definição do investimento, não valor. Para Co-Owner,
-  nota fixa: "No Co-Owner, o investimento individual depende da configuração da Second Home, definida pela Luxtory
-  durante a estruturação. Por isso, a média projetada da Home Edition não representa o valor de uma Ação." (BR-034,
-  BR-063). Nenhum valor individual é derivado nem exibido.
+**Co-Owner:** nunca se converte a média total em valor individual nem se divide por qualquer configuração (2, 4, 8,
+10). Com média apresentada na página, a etapa 2 mostra a nota: "No Co-Owner, o investimento individual depende da
+configuração da Second Home, definida pela Luxtory durante a estruturação. A média projetada da Home Edition não
+representa o valor de uma Ação." (BR-034, BR-063). A faixa é informação do interessado, não valor derivado pela Luxtory.
+A média apresentada fica registrada também no Co-Owner (edge 14).
 
-**Unidade de decisão** (`decision_unit`) — "Quem participa dessa decisão com você?": `self` "A decisão é minha." ·
-`with_partner_or_family` "Decido com meu parceiro, parceira ou família." · `with_others` "Outras pessoas também
-participam." Nenhum dado das outras pessoas.
+**Authority** — `decision_unit`, "Quem participa dessa decisão com você?": `self` "A decisão é minha." ·
+`with_partner_or_family` "Decido em conjunto com meu parceiro, parceira ou família." · `with_others` "Outras pessoas
+também participam da decisão." Nenhum dado das outras pessoas.
 
-**Horizonte** (`decision_horizon`) — "Quando você imagina avançar com essa decisão?": `within_3_months` "Nos próximos
-3 meses." · `from_3_to_6_months` "Entre 3 e 6 meses." · `from_6_to_12_months` "Entre 6 e 12 meses." ·
-`over_12_months` "Mais de 12 meses." · `exploring` "Ainda estou explorando possibilidades."
-
-No formulário, a pergunta de investimento aparece depois da modalidade e muda com ela; trocar a modalidade descarta a
-resposta anterior de investimento quando a variante muda.
+**Timeline** — `decision_horizon`, "Se encontrar uma opção que faça sentido, quando você estaria pronto para avançar?":
+`immediate` "Imediatamente / nos próximos 30 dias" · `one_to_three_months` "Entre 1 e 3 meses" · `three_to_six_months`
+"Entre 3 e 6 meses" · `six_to_twelve_months` "Entre 6 e 12 meses" · `over_twelve_months` "Mais de 12 meses" ·
+`exploring` "Ainda estou explorando possibilidades". "Imediatamente" fica separado de quem pensa em até três meses.
 
 ### 14.6 Contexto de apresentação assinado (`02` §15, item 14)
 
@@ -475,14 +509,16 @@ O navegador só o devolve; nunca é confiado como dado do cliente.
 | Coluna | Regra |
 |---|---|
 | `interest_id` | uuid, chave primária e FK `app.interest (id)` — 1:1 |
-| `investment_question` | `reference_fit` ou `investment_definition` |
-| `investment_answer` | código da variante: `within`/`needs_understanding`/`above` para `reference_fit`; `range_defined`/`idea_without_range`/`needs_understanding` para `investment_definition` |
-| `presented_projected_investment_id` | nulo ou FK `app.home_edition_projected_investment (id)`; obrigatório em `reference_fit` |
+| `qualification_version` | `1` — versão dos códigos e das faixas (§14.5) |
+| `available_to_start_band` | código de faixa da §14.5 |
+| `reference_fit` | nulo ou `within`/`could_consider`/`above`; só com média apresentada |
+| `presented_projected_investment_id` | nulo ou FK `app.home_edition_projected_investment (id)` |
 | `decision_unit`, `decision_horizon` | códigos da §14.5 |
 | `created_at` | o mesmo instante do `interest` |
 
-- Gatilho de inserção (`interest_qualification_guard`): a referência apresentada é da mesma Home Edition do `interest`
-  e a variante é a da §14.5 para a modalidade do `interest` — em qualquer caminho de escrita.
+- Gatilho de inserção (`interest_qualification_guard`): a referência apresentada é da mesma Home Edition do `interest`,
+  e `reference_fit` existe **se e somente se** a modalidade do `interest` é Owner e houve média apresentada — em
+  qualquer caminho de escrita.
 - Ambas: **sem FK** para `party`, `holding`, `membership`, Brand Partner ou parceiro; nada as referencia. `UPDATE` e
   `TRUNCATE` recusados por gatilho; **`DELETE` estruturalmente possível** (sem gatilho), mas **não concedido** ao papel
   de aplicação (D-W6-2 = A). Eliminar uma delas não altera `interest`, a outra nem `public_idempotency_key`.
@@ -542,7 +578,7 @@ como `luxtory_app` na transação que grava o `admin_read` (TECH-092); o `audit_
 | Agregado (W5/W4.2) | `/admin/interesses` | Home Edition → localização pretendida → modalidade → dias exatos (BR-062), com link para a Home Edition | `interest`, `*` |
 | Home Edition | `/admin/interesses/home-editions/[homeEditionId]` | os interesses da Home Edition por localização pretendida → modalidade: data, dias e link — **sem PII** | `interest_group`, id da Home Edition |
 | Interesse | `/admin/interesses/[interestId]` | campos do interesse e a ação "Ver contato e pré-qualificação" — **sem PII** | `interest`, id do interesse |
-| Contato e pré-qualificação | `/admin/interesses/[interestId]/contato` | Nome, Telefone, E-mail; variante, pergunta e resposta de investimento (com a média projetada apresentada, quando houver), unidade de decisão e horizonte; "indisponível" quando eliminados | `interest_contact` e `interest_qualification`, id do interesse |
+| Contato e pré-qualificação | `/admin/interesses/[interestId]/contato` | **Second Home desejada** (Home Edition, localização pretendida, modalidade, dias no Co-Owner) · **Pré-qualificação** (Recursos para iniciar, Compatibilidade com a média projetada — só quando aplicável, com o valor apresentado —, Decisão, Momento) · **Contato** (nome, telefone, e-mail); "indisponível" quando eliminados | `interest_contact` e `interest_qualification`, id do interesse |
 
 Sem busca, filtro por contato, exportação, edição, eliminação, status, anotação, score ou atribuição — visão
 operacional mínima, não um CRM. A localização pretendida não vai à URL (URLs entram nos logs da plataforma); `origin` e
@@ -590,8 +626,11 @@ mensagens de erro do banco nunca entram no log. A página registra só falhas t�
 
 - [ ] `[REQ-022]` a solicitação parte da página da Home Edition publicada; contato (nome, telefone, e-mail) e as três
       dimensões obrigatórios; sem página de Interesse separada.
-- [ ] `[REQ-022]` variante A1 só para Owner com média apresentada; A2 para Co-Owner e para Owner sem média; nenhum
-      valor derivado; variante divergente → `400 not_allowed`.
+- [ ] `[REQ-022]` faixa de recursos para iniciar obrigatória para Owner e Co-Owner; `reference_fit` obrigatório só
+      para Owner com média apresentada e recusado (`not_allowed`) nos demais casos; nenhum valor derivado ou exato.
+- [ ] `[REQ-022]` horizonte com `immediate` separado de `one_to_three_months`.
+- [ ] Formulário em 3 etapas: Continuar valida a etapa, Voltar preserva, troca de modalidade invalida só o
+      incompatível, nada enviado antes do envio final, foco no título da etapa.
 - [ ] `[REQ-022]` edge 14: média alterada depois da exibição → a pré-qualificação guarda a apresentada; sem média
       apresentada → fica sem referência mesmo que uma passe a existir; contexto adulterado → `400`.
 - [ ] `[REQ-022]` edge 15: Home Edition retirada entre a página e o envio (inclusive dentro da transação) → `404`,
@@ -616,8 +655,8 @@ mensagens de erro do banco nunca entram no log. A página registra só falhas t�
 - Telefone "(61) 99999-9999" → `61999999999`; "+55 61 99999-9999" → `+5561999999999`; letras, `+` no meio ou menos de
   8 / mais de 15 dígitos → `invalid`; vazio ou só espaços → `required`.
 - E-mail com domínio em maiúsculas → domínio em minúsculas; dois envios que diferem só nisso na mesma chave → replay.
-- Owner com contexto sem referência enviando `reference_fit` → `not_allowed`; Co-Owner enviando `reference_fit` →
-  `not_allowed`; resposta `above` em `investment_definition` → `invalid`.
+- Owner com média apresentada sem `reference_fit` → `required`; Owner sem média ou Co-Owner enviando `reference_fit` →
+  `not_allowed`; faixa fora da lista ou valor numérico → `invalid`.
 - Contexto de outra Home Edition, com assinatura alterada, versão ou chave desconhecidas → `presentation_context:
   invalid`, nada gravado.
 - Média projetada encerrada e substituída entre a página e o envio → registra a apresentada (FK preservada).

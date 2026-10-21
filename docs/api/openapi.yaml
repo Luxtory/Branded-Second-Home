@@ -1626,8 +1626,9 @@ paths:
           description: |
             `ERR_VALIDATION`: JSON inválido, schema fechado violado, campo fora do limite, `Idempotency-Key` ausente ou
             fora do formato UUID, `approx_days` ausente para Co-Owner ou informado para Owner, `presentation_context`
-            com assinatura, versão, chave ou Home Edition divergentes, ou `investment_question` diferente da variante
-            apresentada. `fields` traz só nomes e códigos dos campos, nunca valores.
+            com assinatura, versão, chave ou Home Edition divergentes, ou `reference_fit` ausente quando a página mostrou
+            média projetada a um Owner (`required`) ou informado nos demais casos (`not_allowed`). `fields` traz só
+            nomes e códigos dos campos, nunca valores.
           headers:
             x-correlation-id:
               $ref: '#/components/headers/CorrelationId'
@@ -2204,8 +2205,7 @@ components:
         - home_edition_id
         - modality
         - desired_location
-        - investment_question
-        - investment_answer
+        - available_to_start_band
         - decision_unit
         - decision_horizon
         - name
@@ -2239,23 +2239,41 @@ components:
           type: [string, 'null']
           description: Referência declarada de parceiro/atribuição — opcional, até 200 caracteres; vazio = ausente.
           maxLength: 200
-        investment_question:
-          $ref: '#/components/schemas/InterestInvestmentQuestion'
-        investment_answer:
+        available_to_start_band:
           type: string
-          enum: [within, needs_understanding, above, range_defined, idea_without_range]
+          enum:
+            - up_to_250k
+            - from_250k_to_500k
+            - from_500k_to_1m
+            - from_1m_to_2_5m
+            - from_2_5m_to_5m
+            - above_5m
+            - not_defined
           description: |
-            Resposta da dimensão de investimento, da variante apresentada: `reference_fit` → `within`,
-            `needs_understanding`, `above`; `investment_definition` → `range_defined`, `idea_without_range`,
-            `needs_understanding`. Código de outra variante → `invalid`. Nunca valor nem faixa numérica.
+            Faixa autodeclarada de recursos disponíveis para iniciar o investimento (spec `ownership` §14.5, versão 1 —
+            faixas em reais). Obrigatória para Owner e Co-Owner. Nunca valor exato, renda, patrimônio, financiamento,
+            comprovação, preço ou aprovação.
+        reference_fit:
+          type: [string, 'null']
+          enum: [within, could_consider, above, null]
+          description: |
+            Comparação declarada com a média projetada que a página apresentou. Obrigatória só para Owner quando o
+            `presentation_context` traz média apresentada; ausente ou `null` nos demais casos (senão `not_allowed`).
+            Nunca preço Owner nem valor individual de Co-Owner (BR-034).
         decision_unit:
           type: string
           enum: [self, with_partner_or_family, with_others]
           description: Unidade de decisão — quem participa da decisão; nenhum dado das outras pessoas.
         decision_horizon:
           type: string
-          enum: [within_3_months, from_3_to_6_months, from_6_to_12_months, over_12_months, exploring]
-          description: Horizonte da decisão.
+          enum:
+            - immediate
+            - one_to_three_months
+            - three_to_six_months
+            - six_to_twelve_months
+            - over_twelve_months
+            - exploring
+          description: Horizonte da decisão; `immediate` = imediatamente ou nos próximos 30 dias.
         name:
           type: string
           description: Nome do interessado — 1 a 200 caracteres depois da normalização.
@@ -2280,13 +2298,6 @@ components:
             média projetada foi apresentada (ou de que nenhuma foi). Opaco para o cliente; até 512 caracteres.
           minLength: 1
           maxLength: 512
-    InterestInvestmentQuestion:
-      type: string
-      enum: [reference_fit, investment_definition]
-      description: |
-        Variante da dimensão de investimento que a página apresentou (spec `ownership` §14.5): `reference_fit` só para
-        Owner com média projetada apresentada; `investment_definition` para Co-Owner e para Owner sem média. Outra →
-        `not_allowed`.
     InterestRegistered:
       type: object
       additionalProperties: false
@@ -2318,8 +2329,8 @@ components:
                       - approx_days
                       - origin
                       - partner_ref
-                      - investment_question
-                      - investment_answer
+                      - available_to_start_band
+                      - reference_fit
                       - decision_unit
                       - decision_horizon
                       - name

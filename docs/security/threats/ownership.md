@@ -313,7 +313,8 @@ flowchart LR
   Ação (BR-034, REQ-101).
 - **Likelihood**: Low · **Impact**: Medium · **Risk**: Medium
 - **Mitigation**:
-  - Code: códigos fechados sem número; nenhum valor gravado ou derivado; nenhuma regra, ordenação ou agrupamento do
+  - Code: códigos fechados e versionados; a faixa de recursos é autodeclarada e nunca vira valor exato, preço,
+    aprovação ou capacidade comprovada; nenhum valor derivado da média; nenhuma regra, ordenação ou agrupamento do
     software usa a pré-qualificação; o Admin só a mostra no nível individual.
   - Test: o registro altera só as três tabelas do interesse e a chave pública; textos sem promessa de retorno.
 - **Owner**: Engenharia · **Tracking**: W6

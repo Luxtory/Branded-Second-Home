@@ -808,8 +808,9 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-022 exits 0 and the Home Edition conversation-request E2E passes with 0 axe violations, stop after 4 tries`
 - **Execução (2026-10-20/21):** branch nova `feat/w6-interesse-home-edition` a partir da `main` `97d620d` (a provisória
   ficou intacta, só referência). Checkpoint da dimensão de investimento resolvido pelo fundador em 2026-10-20
-  (alternativa A: `reference_fit` só para Owner com média apresentada; `investment_definition` para Co-Owner e Owner sem
-  média; contexto de apresentação assinado). Entregue: spec `ownership` §14, ADR-0018, STRIDE T-409–T-417, inventário
+  (alternativa A: `reference_fit` só para Owner com média apresentada; contexto de apresentação assinado) e revisto em
+  2026-10-21 (pré-qualificação como BANT adaptado: faixa de recursos para iniciar para todos, `reference_fit` adicional
+  só para Owner com média, horizonte com "imediatamente"; formulário em 3 etapas; sai `investment_definition`). Entregue: spec `ownership` §14, ADR-0018, STRIDE T-409–T-417, inventário
   LGPD, OpenAPI, migrations `20261021030831`/`20261021030838`/`20261021030855` (posteriores às 27 da W4.2), formulário
   na página da Home Edition, Aviso de Privacidade `pending`, drill-down do Admin. Production segue fechada
   (`INTEREST_WRITES` ausente; Aviso `pending`); merge e go-live só por decisão do fundador.
