@@ -25,6 +25,11 @@ tags:
     description: Jobs do TECH-090 disparados pelo Vercel Cron (fora de `/v1`, ADR-0004)
   - name: admin
     description: Operações administrativas (REQ-095) sob o guard, com MFA (TECH-050) e auditoria (REQ-015)
+  - name: identity
+    description: |
+      Titulares (TECH-050, TECH-052, TECH-100; `docs/specs/identity.md` §13, ADR-0020): `party` com CPF/CNPJ cifrado
+      (AES-256-GCM + `key_id`) e HMAC `UNIQUE`, sem nome; `party_delegation` pendente até a ativação pelo próprio
+      usuário autenticado. Respostas nunca trazem documento, HMAC, cifra nem e-mail.
   - name: catalog
     description: |
       Catálogo (REQ-020, REQ-022, REQ-027; `docs/specs/catalog.md` §17, ADR-0010, ADR-0019): Brand Partner, Home
@@ -94,6 +99,7 @@ paths:
         (REQ-015). `commands` só aceita operações concedíveis a parceiros (autoridade `grantee`) — nenhuma existe
         ainda, então toda requisição é recusada com `ERR_VALIDATION` até a primeira existir. Enquanto `party` não
         existir (W7), o banco também recusa qualquer grant (dívida transitória D-W2-1, `docs/specs/identity.md`).
+        W7: dívida encerrada — FK validada para `party`; party inexistente → 404 `ERR_NOT_FOUND`.
         `Origin` ausente ou diferente do host → 403 (TECH-100). Repetir com a mesma `Idempotency-Key` e o mesmo
         corpo devolve a mesma resposta com `idempotency-replayed: true`.
       operationId: createAuthorizationGrant
@@ -126,6 +132,157 @@ paths:
           $ref: '#/components/responses/Unauthenticated'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/parties:
+    post:
+      tags: [admin, identity]
+      summary: Cadastra uma party pelo CPF/CNPJ (TECH-100)
+      description: |
+        Operação não crítica `register_party` (REQ-095): sessão de staff com MFA (AAL2) e papel Admin ativo exercido
+        (ADR-0008); grava `operation` e `audit_log` só com ids e tipo. O documento é normalizado (remove `.`, `-`, `/` e
+        espaços; maiúsculas), validado (DV do CPF; CNPJ numérico ou alfanumérico), cifrado com AES-256-GCM e `key_id`, e
+        deduplicado por HMAC em todas as chaves do anel. Documento inválido → 400; já cadastrado → 409
+        `ERR_STATE_TRANSITION`. A resposta nunca traz o documento (nem mascarado). `Origin` diferente do host → 403
+        (TECH-100). Repetir com a mesma `Idempotency-Key` e o mesmo corpo devolve a mesma resposta com
+        `idempotency-replayed: true`; o hash de idempotência usa o HMAC do documento, nunca o documento.
+      operationId: registerParty
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartyRequest'
+      responses:
+        '201':
+          description: Party cadastrada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Party'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/parties/{id}/delegations:
+    post:
+      tags: [admin, identity]
+      summary: Convida um representante para a party — delegação pendente até a ativação (TECH-050)
+      description: |
+        Operação não crítica `create_party_delegation` (REQ-095), papel Admin com MFA. A delegação nasce `pending` e
+        **não representa a party** até o próprio usuário, autenticado, ativá-la na Área do Titular. Conta do Supabase
+        Auth inexistente ou não confirmada → convite pela Admin API (a conta nunca nasce confirmada); conta confirmada →
+        vinculada, sem conta nova nem e-mail. Escopo único `party`; `valid_until` opcional (só com termo final). Party
+        inexistente → 404; já existe delegação pendente ou ativa para o par usuário × party → 409
+        `ERR_STATE_TRANSITION` (antes de qualquer e-mail); `valid_until` não futuro → 400. A resposta nunca traz o
+        e-mail. `Origin` diferente do host → 403 (TECH-100); idempotência com o e-mail só como HMAC.
+      operationId: createPartyDelegation
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartyDelegationRequest'
+      responses:
+        '201':
+          description: Delegação pendente registrada e convite encaminhado ao Supabase Auth, quando aplicável
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartyDelegation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/party-delegations/{id}/revoke:
+    post:
+      tags: [admin, identity]
+      summary: Revoga uma delegação pendente ou ativa, com efeito imediato
+      description: |
+        Operação não crítica `revoke_party_delegation` (REQ-095), papel Admin com MFA, com a base. Vale na leitura ou no
+        command seguinte (RLS e guard leem o banco a cada request). Inexistente → 404; já revogada → 409
+        `ERR_STATE_TRANSITION`. `Origin` diferente do host → 403 (TECH-100).
+      operationId: revokePartyDelegation
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartyDelegationRevocationRequest'
+      responses:
+        '200':
+          description: Delegação revogada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartyDelegation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
         '500':
@@ -397,6 +554,9 @@ paths:
       description: |
         Operação `register_investor_authorization`: Home Concept, referência estável do instrumento e vigência. Sem dado
         pessoal; o vínculo com a party do Investor chega na W7. Home Concept inexistente → 404; encerramento eficaz → 409.
+        W7 (D-W3-1): `investor_document` (CPF/CNPJ) obrigatório, normalizado e resolvido pelo HMAC para uma party já
+        cadastrada; party inexistente → 404; documento inválido → 400. Nunca cria party nem guarda o documento; a
+        resposta traz só `party_id`.
         Mesma entrada de todas as operações do catálogo: `Origin` igual ao host (senão 403, TECH-100), sessão de staff
         com MFA (AAL2) e papel Admin ativo exercido (ADR-0008); grava `operation` e `audit_log` (REQ-015). Textos passam
         pela checagem lexical de terminologia (REQ-100/101) → `ERR_VALIDATION`. Repetir com a mesma `Idempotency-Key` e o
@@ -2454,6 +2614,123 @@ components:
         created_at:
           type: string
           format: date-time
+    PartyRequest:
+      type: object
+      additionalProperties: false
+      required: [document]
+      properties:
+        document:
+          type: string
+          minLength: 11
+          maxLength: 32
+          description: |
+            CPF (11 dígitos) ou CNPJ (12 alfanuméricos + 2 dígitos verificadores), com ou sem máscara. Normalizado,
+            validado e cifrado no servidor; nunca devolvido nem registrado em log ou auditoria.
+    Party:
+      type: object
+      additionalProperties: false
+      required: [id, document_type, operation_id, created_at]
+      description: Party cadastrada. Sem documento, HMAC ou cifra (a leitura mascarada é do Admin, auditada).
+      properties:
+        id:
+          type: string
+          format: uuid
+        document_type:
+          type: string
+          enum: [cpf, cnpj]
+        operation_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+    PartyDelegationRequest:
+      type: object
+      additionalProperties: false
+      required: [email, basis]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          description: E-mail do representante. Só o Supabase Auth o guarda; nunca devolvido nem registrado em log.
+        valid_until:
+          type: string
+          format: date-time
+          description: Fim exclusivo da vigência, só se a delegação tiver termo final; posterior ao instante do registro.
+        basis:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Base registrada do convite (sem CPF/CNPJ nem dado pessoal).
+    PartyDelegationRevocationRequest:
+      type: object
+      additionalProperties: false
+      required: [revocation_basis]
+      properties:
+        revocation_basis:
+          type: string
+          minLength: 1
+          maxLength: 255
+    PartyDelegation:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - party_id
+        - user_id
+        - scope
+        - state
+        - valid_from
+        - valid_until
+        - basis
+        - operation_id
+        - created_at
+        - activated_at
+        - revoked_at
+        - revocation_basis
+      description: |
+        Delegação usuário → party (`03` §3.1). `pending` não representa a party; só `active` dentro da vigência
+        representa. Expiração é derivada de `valid_until`.
+      properties:
+        id:
+          type: string
+          format: uuid
+        party_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+          description: Usuário do Supabase Auth (id; nunca o e-mail).
+        scope:
+          type: string
+          enum: [party]
+        state:
+          type: string
+          enum: [pending, active, revoked]
+        valid_from:
+          type: string
+          format: date-time
+        valid_until:
+          type: [string, 'null']
+          format: date-time
+        basis:
+          type: string
+        operation_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        activated_at:
+          type: [string, 'null']
+          format: date-time
+        revoked_at:
+          type: [string, 'null']
+          format: date-time
+        revocation_basis:
+          type: [string, 'null']
     TextList:
       type: array
       minItems: 1
@@ -2691,11 +2968,18 @@ components:
     InvestorAuthorizationRequest:
       type: object
       additionalProperties: false
-      required: [home_concept_id, instrument_ref, valid_from]
+      required: [home_concept_id, investor_document, instrument_ref, valid_from]
       properties:
         home_concept_id:
           type: string
           format: uuid
+        investor_document:
+          type: string
+          minLength: 11
+          maxLength: 32
+          description: |
+            CPF ou CNPJ (numérico ou alfanumérico) do Investor, com ou sem máscara (W7, D-W3-1). Resolvido pelo HMAC para
+            uma party já cadastrada; nunca gravado nem devolvido.
         instrument_ref:
           type: string
           minLength: 1
@@ -2723,6 +3007,7 @@ components:
       required:
         - id
         - home_concept_id
+        - party_id
         - instrument_ref
         - valid_from
         - valid_until
@@ -2739,6 +3024,10 @@ components:
         home_concept_id:
           type: string
           format: uuid
+        party_id:
+          type: string
+          format: uuid
+          description: Party do Investor (W7, D-W3-1).
         instrument_ref:
           type: string
         valid_from:

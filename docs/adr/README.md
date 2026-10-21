@@ -27,6 +27,7 @@ described by Michael Nygard. The ADR process itself is established in
 | 0017 | [Idempotência de mutações públicas não críticas, fora do pipeline de commands críticos](0017-idempotencia-de-mutacoes-publicas-nao-criticas.md) | Accepted |
 | 0018 | [Contato e pré-qualificação do interesse: dados separados, hash chaveado e contexto de apresentação assinado](0018-contato-e-pre-qualificacao-do-interesse.md) | Accepted |
 | 0019 | [Ontologia Home Concept → Home Edition → Second Home em todas as camadas](0019-ontologia-home-concept-home-edition-second-home.md) | Accepted |
+| 0020 | [Party cifrada, HMAC com rotação e delegação pendente até a ativação](0020-party-cifrada-e-delegacao.md) | Accepted |
 
 The technical decisions ADR-001…008 of the canonical
 [03 — Technical Spec](../specs/canonical/03-technical-spec.md) also apply, by reference.

@@ -136,7 +136,11 @@ command guarda o `operation_id` da criação.
   Second Home de Investor referencia a autorização (`investor_authorization_id`); sem autorização válida no instante do
   registro, é recusada. Com autorização, a Second Home existe sem adquirente (nenhuma holding até a W8), a partir de uma
   Home Edition materialmente finalizada (§17.5). A W7 acrescenta o vínculo com a `party` do Investor (coluna nova com FK) sem reescrever os
-  registros existentes.
+  registros existentes. **W7 (2026-10-21, execução da D-W3-1):** `investor_authorization.party_id` com FK para
+  `app.party`; `register_investor_authorization` exige `investor_document` (CPF/CNPJ), resolvido pelo HMAC para uma party
+  existente (inexistente → `ERR_NOT_FOUND`), sem criar party nem guardar o documento. Production tinha 0 autorizações:
+  sem backfill, coluna `NOT NULL`. A relação continua `party do Investor → investor_authorization → Home Concept` (e
+  `Second Home → investor_authorization`); titularidade patrimonial fora da W7 (spec `identity` §13).
 - **Exposição da marca (BR-015, P-8, D-W3-3).** Registrada por Brand Partner, uma vez, com a referência da autorização.
   O encerramento não a apaga: o registro fica como histórico. A W4 expõe a marca só com autorização registrada e antes
   da eficácia do encerramento.
