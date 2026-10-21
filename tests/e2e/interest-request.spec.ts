@@ -5,7 +5,7 @@ import { readSeed } from './support/discovery';
 import { collectConsoleErrors, expectResponsive } from './support/ui';
 
 // Solicitação de conversa na página da Home Edition (W6, docs/specs/ownership.md §14; b2c.md D-B2C-28): formulário em
-// 3 etapas na mesma seção, mobile-first com paridade (ADR-0009), pré-qualificação (faixa para iniciar, comparação com a
+// 4 etapas na mesma seção, mobile-first com paridade (ADR-0009), pré-qualificação (faixa para iniciar, comparação com a
 // média só para Owner com média, decisão e momento), estados de envio, Aviso de Privacidade e o Admin até contato e
 // pré-qualificação. O banco do E2E é compartilhado: cada teste usa uma localização pretendida própria.
 const FLOW_TIMEOUT_MS = 300_000;
@@ -15,6 +15,12 @@ const unique = (prefix: string) =>
 const TEXT = {
   title: 'Solicite uma conversa sobre esta Home Edition',
   lead: 'Conte como você imagina sua Second Home. Com essas informações, podemos preparar uma conversa mais objetiva sobre esta Home Edition.',
+  steps: [
+    '1 de 4 — Sua Second Home',
+    '2 de 4 — Investimento',
+    '3 de 4 — Decisão',
+    '4 de 4 — Contato',
+  ],
   modality: 'Como você imagina ter sua Second Home?',
   location: 'Onde você imagina sua Second Home?',
   days: 'Quantos dias por ano, aproximadamente?',
@@ -36,6 +42,26 @@ const TEXT = {
     'Usaremos seus dados para responder à sua solicitação de conversa e conduzir a pré-qualificação comercial relacionada a esta Home Edition.',
   success: 'Recebemos sua solicitação de conversa.',
 } as const;
+
+// Faixas sem sobreposição, com espaços inseparáveis entre "R$", o número e a unidade.
+const BANDS = [
+  /^Até R\$\s250\smil$/u,
+  /^Mais de R\$\s250\smil até R\$\s500\smil$/u,
+  /^Mais de R\$\s500\smil até R\$\s1\smilhão$/u,
+  /^Mais de R\$\s1\smilhão até R\$\s2,5\smilhões$/u,
+  /^Mais de R\$\s2,5\smilhões até R\$\s5\smilhões$/u,
+  /^Acima de R\$\s5\smilhões$/u,
+  /^Ainda não defini$/u,
+] as const;
+const HORIZONS = [
+  'Imediatamente',
+  'Nos próximos 30 dias',
+  'Entre 1 e 3 meses',
+  'Entre 3 e 6 meses',
+  'Entre 6 e 12 meses',
+  'Mais de 12 meses',
+  'Ainda estou explorando possibilidades',
+] as const;
 
 function pathOf(homeConceptId: string, homeEditionId: string) {
   return `/colecao/${homeConceptId}/home-editions/${homeEditionId}`;
@@ -112,7 +138,7 @@ async function expectNoForbiddenPromise(section: Locator) {
 test.describe('desktop (1440 px, teclado)', () => {
   test.use({ viewport: { width: 1440, height: 900 }, locale: 'pt-BR' });
 
-  test('[REQ-022] [REQ-024] [REQ-025] [REQ-100] [REQ-101] 3 etapas com teclado: Owner com média (faixa + comparação), Voltar preserva, troca de modalidade invalida só o incompatível, nada enviado antes do fim; Admin até a pré-qualificação', async ({
+  test('[REQ-022] [REQ-024] [REQ-025] [REQ-100] [REQ-101] 4 etapas com teclado: Owner com média (faixa + comparação), Voltar preserva, troca de modalidade invalida só o incompatível, horizonte com "Imediatamente", nada enviado antes do fim; Admin até a pré-qualificação', async ({
     page,
   }) => {
     test.setTimeout(FLOW_TIMEOUT_MS);
@@ -124,7 +150,7 @@ test.describe('desktop (1440 px, teclado)', () => {
     const section = sectionOf(page);
     await expect(section.getByRole('heading', { level: 2 })).toHaveText(TEXT.title);
     await expect(section.getByText(TEXT.lead)).toBeVisible();
-    await expect(stepTitle(section)).toHaveText('1 de 3 — Sua Second Home');
+    await expect(stepTitle(section)).toHaveText(TEXT.steps[0]);
     await expect(section.getByLabel(TEXT.days)).toHaveCount(0);
     await expect(group(section, TEXT.band)).toHaveCount(0);
     await capture(section, 'etapa1-inicial');
@@ -134,44 +160,43 @@ test.describe('desktop (1440 px, teclado)', () => {
     await expect(section.getByRole('alert')).toContainText('Revise os campos indicados.');
     const modality = group(section, TEXT.modality);
     await expect(modality.getByRole('radio').first()).toBeFocused();
-    await expect(stepTitle(section)).toHaveText('1 de 3 — Sua Second Home');
+    await expect(stepTitle(section)).toHaveText(TEXT.steps[0]);
 
     // Teclado: Espaço escolhe Owner; Enter na localização avança; o foco vai ao título da etapa 2.
     await page.keyboard.press('Space');
     await expect(modality.getByRole('radio', { name: /^Owner/u })).toBeChecked();
     await section.getByLabel(TEXT.location).fill(location);
     await page.keyboard.press('Enter');
-    await expect(stepTitle(section)).toHaveText('2 de 3 — Investimento e decisão');
+    await expect(stepTitle(section)).toHaveText(TEXT.steps[1]);
     await expect(stepTitle(section)).toBeFocused();
 
-    // Owner com média apresentada: faixa para iniciar + comparação com a média; sem a nota do Co-Owner.
+    // Investimento — Owner com média apresentada: faixa (sem sobreposição) + comparação; decisão fica para a etapa 3.
     const band = group(section, TEXT.band);
     await expect(band.getByText(TEXT.bandHint)).toBeVisible();
-    await expect(band.getByRole('radio')).toHaveCount(7);
+    for (const [index, label] of BANDS.entries()) {
+      await expect(band.getByRole('radio').nth(index)).toHaveAccessibleName(label);
+    }
     const fit = group(section, TEXT.referenceFit);
     await expect(fit).toBeVisible();
     await expect(fit.getByText(TEXT.referenceNote)).toBeVisible();
     await expect(section.getByText(TEXT.coOwnerNote)).toHaveCount(0);
+    await expect(group(section, TEXT.decisionUnit)).toHaveCount(0);
+    await expect(group(section, TEXT.horizon)).toHaveCount(0);
     await capture(section, 'etapa2-owner-media');
 
     await section.getByRole('button', { name: 'Continuar' }).click();
     await expect(band.getByRole('radio').first()).toBeFocused();
-    for (const legend of [TEXT.band, TEXT.decisionUnit, TEXT.horizon]) {
+    for (const legend of [TEXT.band, TEXT.referenceFit]) {
       await expect(group(section, legend).getByText('Escolha uma opção.')).toBeVisible();
     }
-    await band.getByRole('radio', { name: /^De R\$\s1\smilhão a R\$\s2,5\smilhões$/u }).check();
+    await band.getByRole('radio', { name: BANDS[3] }).check();
     await fit
       .getByRole('radio', { name: 'Posso considerar, mas preciso entender melhor o investimento.' })
-      .check();
-    await group(section, TEXT.decisionUnit)
-      .getByRole('radio', { name: 'Decido em conjunto com meu parceiro, parceira ou família.' })
-      .check();
-    await group(section, TEXT.horizon)
-      .getByRole('radio', { name: 'Imediatamente / nos próximos 30 dias' })
       .check();
 
     // Voltar preserva; Co-Owner descarta só a comparação e pede os dias.
     await section.getByRole('button', { name: 'Voltar' }).click();
+    await expect(stepTitle(section)).toHaveText(TEXT.steps[0]);
     await expect(stepTitle(section)).toBeFocused();
     await expect(section.getByLabel(TEXT.location)).toHaveValue(location);
     await modality.getByRole('radio', { name: /^Owner/u }).focus();
@@ -182,14 +207,7 @@ test.describe('desktop (1440 px, teclado)', () => {
     await section.getByRole('button', { name: 'Continuar' }).click();
     await expect(group(section, TEXT.referenceFit)).toHaveCount(0);
     await expect(section.getByText(TEXT.coOwnerNote)).toBeVisible();
-    await expect(
-      band.getByRole('radio', { name: /^De R\$\s1\smilhão a R\$\s2,5\smilhões$/u }),
-    ).toBeChecked();
-    await expect(
-      group(section, TEXT.horizon).getByRole('radio', {
-        name: 'Imediatamente / nos próximos 30 dias',
-      }),
-    ).toBeChecked();
+    await expect(band.getByRole('radio', { name: BANDS[3] })).toBeChecked();
     await capture(section, 'etapa2-co-owner');
 
     // De volta a Owner: os dias somem; a comparação volta a ser pedida, vazia.
@@ -201,8 +219,30 @@ test.describe('desktop (1440 px, teclado)', () => {
     await fit.getByRole('radio', { name: 'Está dentro do que considero investir.' }).check();
     await section.getByRole('button', { name: 'Continuar' }).click();
 
-    // Etapa 3: contato, transparência e o envio final.
-    await expect(stepTitle(section)).toHaveText('3 de 3 — Contato');
+    // Decisão: unidade de decisão e horizonte, com "Imediatamente" separado de "Nos próximos 30 dias".
+    await expect(stepTitle(section)).toHaveText(TEXT.steps[2]);
+    await expect(stepTitle(section)).toBeFocused();
+    const horizon = group(section, TEXT.horizon);
+    await expect(horizon.getByRole('radio')).toHaveCount(HORIZONS.length);
+    for (const [index, label] of HORIZONS.entries()) {
+      await expect(horizon.getByRole('radio').nth(index)).toHaveAccessibleName(label);
+    }
+    await section.getByRole('button', { name: 'Continuar' }).click();
+    await expect(group(section, TEXT.decisionUnit).getByRole('radio').first()).toBeFocused();
+    await group(section, TEXT.decisionUnit)
+      .getByRole('radio', { name: 'Decido em conjunto com meu parceiro, parceira ou família.' })
+      .check();
+    await horizon.getByRole('radio', { name: 'Imediatamente', exact: true }).check();
+    await capture(section, 'etapa3-decisao');
+    await section.getByRole('button', { name: 'Voltar' }).click();
+    await expect(stepTitle(section)).toHaveText(TEXT.steps[1]);
+    await expect(band.getByRole('radio', { name: BANDS[3] })).toBeChecked();
+    await section.getByRole('button', { name: 'Continuar' }).click();
+    await expect(horizon.getByRole('radio', { name: 'Imediatamente', exact: true })).toBeChecked();
+    await section.getByRole('button', { name: 'Continuar' }).click();
+
+    // Contato: transparência, Aviso e o envio final.
+    await expect(stepTitle(section)).toHaveText(TEXT.steps[3]);
     await expect(stepTitle(section)).toBeFocused();
     await fillContact(section, 'Etapas');
     await expect(section.getByText(TEXT.notAcquisition)).toBeVisible();
@@ -210,7 +250,7 @@ test.describe('desktop (1440 px, teclado)', () => {
     const privacy = section.getByRole('link', { name: /Aviso de Privacidade/u });
     await expect(privacy).toHaveAttribute('href', '/privacidade');
     await expect(privacy).toHaveAttribute('target', '_blank');
-    await capture(section, 'etapa3-contato');
+    await capture(section, 'etapa4-contato');
     expect(posts).toHaveLength(0);
     await expectResponsive(page, consoleErrors);
 
@@ -252,14 +292,15 @@ test.describe('desktop (1440 px, teclado)', () => {
     await expect(headings).toHaveText(['Second Home desejada', 'Pré-qualificação', 'Contato']);
     const qualification = page.getByRole('region', { name: 'Pré-qualificação' });
     await expect(qualification).toContainText('Recursos para iniciar');
-    await expect(qualification).toContainText(/De R\$\s1\smilhão a R\$\s2,5\smilhões/u);
+    await expect(qualification).toContainText(/Mais de R\$\s1\smilhão até R\$\s2,5\smilhões/u);
     await expect(qualification).toContainText('Compatibilidade com a média projetada');
     await expect(qualification).toContainText('Está dentro do que considero investir.');
     await expect(qualification).toContainText(/R\$\s4\.800\.000/u);
     await expect(qualification).toContainText(
       'Decido em conjunto com meu parceiro, parceira ou família.',
     );
-    await expect(qualification).toContainText('Imediatamente / nos próximos 30 dias');
+    await expect(qualification).toContainText('Imediatamente');
+    await expect(qualification).not.toContainText('Nos próximos 30 dias');
     const desired = page.getByRole('region', { name: 'Second Home desejada' });
     await expect(desired).toContainText(location);
     await expect(desired).toContainText('Owner');
@@ -283,6 +324,7 @@ test.describe('desktop (1440 px, teclado)', () => {
       await section.getByLabel(TEXT.location).fill(unique('Litoral Sem Média E2E'));
       if (String(choice).includes('Co-Owner')) await section.getByLabel(TEXT.days).fill('14');
       await section.getByRole('button', { name: 'Continuar' }).click();
+      await expect(stepTitle(section)).toHaveText(TEXT.steps[1]);
       await expect(group(section, TEXT.band)).toBeVisible();
       await expect(section.getByText(/Considerando a média projetada/u)).toHaveCount(0);
       await expect(section.getByText(TEXT.coOwnerNote)).toHaveCount(0);
@@ -302,7 +344,8 @@ test.describe('desktop (1440 px, teclado)', () => {
       .check();
     await section.getByLabel(TEXT.location).fill(unique('Litoral Falhas E2E'));
     await section.getByRole('button', { name: 'Continuar' }).click();
-    await group(section, TEXT.band).getByRole('radio', { name: 'Ainda não defini' }).check();
+    await group(section, TEXT.band).getByRole('radio', { name: BANDS[6] }).check();
+    await section.getByRole('button', { name: 'Continuar' }).click();
     await group(section, TEXT.decisionUnit)
       .getByRole('radio', { name: 'A decisão é minha.' })
       .check();
@@ -382,7 +425,7 @@ test.describe('celular (390 px, toque)', () => {
     locale: 'pt-BR',
   });
 
-  test('[REQ-022] [REQ-025] 3 etapas com toque: Owner com média e Co-Owner na etapa 2, contato e sucesso; sem overflow e axe 0', async ({
+  test('[REQ-022] [REQ-025] 4 etapas com toque: Owner com média e Co-Owner no Investimento, Decisão com "Nos próximos 30 dias", contato e sucesso; sem overflow e axe 0', async ({
     page,
   }) => {
     test.setTimeout(FLOW_TIMEOUT_MS);
@@ -398,7 +441,7 @@ test.describe('celular (390 px, toque)', () => {
     await modality.getByRole('radio', { name: /^Owner/u }).tap();
     await section.getByLabel(TEXT.location).fill(unique('Litoral Toque E2E'));
     await section.getByRole('button', { name: 'Continuar' }).tap();
-    await expect(stepTitle(section)).toHaveText('2 de 3 — Investimento e decisão');
+    await expect(stepTitle(section)).toHaveText(TEXT.steps[1]);
     await expect(group(section, TEXT.referenceFit)).toBeVisible();
     await capture(section, 'etapa2-owner-media');
 
@@ -408,20 +451,23 @@ test.describe('celular (390 px, toque)', () => {
     await section.getByRole('button', { name: 'Continuar' }).tap();
     await expect(section.getByText(TEXT.coOwnerNote)).toBeVisible();
     await expect(group(section, TEXT.referenceFit)).toHaveCount(0);
-    await group(section, TEXT.band)
-      .getByRole('radio', { name: /^De R\$\s250\smil a R\$\s500\smil$/u })
-      .tap();
-    await group(section, TEXT.decisionUnit)
-      .getByRole('radio', { name: 'Outras pessoas também participam da decisão.' })
-      .tap();
-    await group(section, TEXT.horizon).getByRole('radio', { name: 'Entre 1 e 3 meses' }).tap();
+    await group(section, TEXT.band).getByRole('radio', { name: BANDS[1] }).tap();
     await capture(section, 'etapa2-co-owner');
     await expectResponsive(page, consoleErrors);
 
     await section.getByRole('button', { name: 'Continuar' }).tap();
-    await expect(stepTitle(section)).toHaveText('3 de 3 — Contato');
+    await expect(stepTitle(section)).toHaveText(TEXT.steps[2]);
+    await group(section, TEXT.decisionUnit)
+      .getByRole('radio', { name: 'Outras pessoas também participam da decisão.' })
+      .tap();
+    await group(section, TEXT.horizon).getByRole('radio', { name: 'Nos próximos 30 dias' }).tap();
+    await capture(section, 'etapa3-decisao');
+    await expectResponsive(page, consoleErrors);
+
+    await section.getByRole('button', { name: 'Continuar' }).tap();
+    await expect(stepTitle(section)).toHaveText(TEXT.steps[3]);
     await fillContact(section, 'Toque');
-    await capture(section, 'etapa3-contato');
+    await capture(section, 'etapa4-contato');
     await expectResponsive(page, consoleErrors);
     expect(posts).toHaveLength(0);
 
@@ -432,7 +478,7 @@ test.describe('celular (390 px, toque)', () => {
       approx_days: 21,
       available_to_start_band: 'from_250k_to_500k',
       decision_unit: 'with_others',
-      decision_horizon: 'one_to_three_months',
+      decision_horizon: 'within_30_days',
     });
     expect(JSON.parse(posts[0] ?? '{}')).not.toHaveProperty('reference_fit');
     await expectNoForbiddenPromise(section);

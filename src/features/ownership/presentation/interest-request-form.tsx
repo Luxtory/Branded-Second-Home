@@ -22,15 +22,17 @@ import type { InterestRequestMessages } from './i18n/interest-request-pt-br';
 const ENDPOINT = '/v1/interests';
 const DAYS = /^[0-9]+$/u;
 
-/** As 3 etapas do fluxo progressivo (spec ownership §14.3), na mesma seção e sem URL nova. */
-const STEPS = [1, 2, 3] as const;
+/** As 4 etapas do fluxo progressivo (spec ownership §14.3), na mesma seção e sem URL nova. */
+const STEPS = [1, 2, 3, 4] as const;
 type Step = (typeof STEPS)[number];
+const LAST_STEP: Step = 4;
 
 /** Campos que o visitante preenche, por etapa e na ordem da interface. */
 const STEP_FIELDS = {
   1: ['modality', 'desired_location', 'approx_days'],
-  2: ['available_to_start_band', 'reference_fit', 'decision_unit', 'decision_horizon'],
-  3: ['name', 'phone', 'email'],
+  2: ['available_to_start_band', 'reference_fit'],
+  3: ['decision_unit', 'decision_horizon'],
+  4: ['name', 'phone', 'email'],
 } as const;
 type UiField = (typeof STEP_FIELDS)[Step][number];
 const UI_FIELDS: readonly UiField[] = STEPS.flatMap((step) => STEP_FIELDS[step]);
@@ -90,7 +92,7 @@ function uiFieldOf(field: InterestField): UiField | null {
 }
 
 function stepOf(field: UiField): Step {
-  return STEPS.find((step) => (STEP_FIELDS[step] as readonly string[]).includes(field)) ?? 3;
+  return STEPS.find((step) => (STEP_FIELDS[step] as readonly string[]).includes(field)) ?? 4;
 }
 
 /** HTTP → mensagem (TECH-056): 503, 500, falha de rede ou corpo inesperado = envio não confirmado. */
@@ -253,8 +255,8 @@ export interface InterestRequestFormProps {
 }
 
 /**
- * Formulário "Solicitar uma conversa" em 3 etapas (spec ownership §14.3–§14.5): Sua Second Home → Investimento e
- * decisão → Contato. "Continuar" valida só a etapa (o mesmo schema do servidor); "Voltar" preserva tudo; nada é enviado
+ * Formulário "Solicitar uma conversa" em 4 etapas (spec ownership §14.3–§14.5): Sua Second Home → Investimento →
+ * Decisão → Contato. "Continuar" valida só a etapa (o mesmo schema do servidor); "Voltar" preserva tudo; nada é enviado
  * antes do envio final. Os dados e a `Idempotency-Key` ficam só na memória desta interação — nunca em URL, cookie ou
  * storage: falha preserva ambos (repetir com a mesma chave e o mesmo conteúdo); sucesso encerra a tentativa e substitui
  * o formulário. Foco no título da etapa a cada troca, no primeiro erro e na confirmação.
@@ -385,13 +387,13 @@ export function InterestRequestForm({
     setStatus({ kind: 'failed', outcome: outcomeFor(response.status) });
   };
 
-  /** Envio do formulário: nas etapas 1 e 2 é "Continuar" (só valida a etapa); na 3, o envio final. */
+  /** Envio do formulário: nas etapas 1 a 3 é "Continuar" (só valida a etapa); na última, o envio final. */
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (sending.current) return;
     const body = bodyOf(values, asksFit, homeEditionId, presentationContext);
     const issues = issuesOf(body, asksFit);
-    if (step !== 3) {
+    if (step !== LAST_STEP) {
       const own = issues.filter((issue) => {
         const field = uiFieldOf(issue.field);
         return field !== null && stepOf(field) === step;
@@ -578,6 +580,11 @@ export function InterestRequestForm({
           {...choice('reference_fit')}
         />
       ) : null}
+    </>
+  );
+
+  const stepThree = (
+    <>
       <ChoiceGroup
         name="decision_unit"
         legend={text.decisionUnit.legend}
@@ -603,7 +610,7 @@ export function InterestRequestForm({
     </>
   );
 
-  const stepThree = (
+  const stepFour = (
     <>
       {textInput('name', {
         label: text.contact.name,
@@ -685,17 +692,17 @@ export function InterestRequestForm({
         </div>
       ) : null}
 
-      {step === 1 ? stepOne : step === 2 ? stepTwo : stepThree}
+      {{ 1: stepOne, 2: stepTwo, 3: stepThree, 4: stepFour }[step]}
 
       <div className="lx-form__actions">
         <button
-          ref={step === 3 ? submitButton : undefined}
+          ref={step === LAST_STEP ? submitButton : undefined}
           className="lx-button lx-button--primary"
           type="submit"
           disabled={isSending}
           aria-busy={isSending ? true : undefined}
         >
-          {step === 3 ? text.submit : text.continue}
+          {step === LAST_STEP ? text.submit : text.continue}
         </button>
         {step === 1 ? null : (
           <button

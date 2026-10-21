@@ -68,10 +68,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Solicitação de conversa na página da Home Edition (W6, spec `ownership` §14, ADR-0018): seção "Solicitar uma
-  conversa" depois de "Para quem", em 3 etapas (Sua Second Home · Investimento e decisão · Contato), com modalidade
+  conversa" depois de "Para quem", em 4 etapas (Sua Second Home · Investimento · Decisão · Contato), com modalidade
   desejada, localização pretendida, dias aproximados só para Co-Owner, pré-qualificação (faixa autodeclarada de recursos
   para iniciar; comparação com a média projetada apresentada só para Owner; unidade de decisão; horizonte com
-  "imediatamente") e contato (nome, telefone, e-mail). O envio não é aquisição nem agendamento; o sucesso só confirma o
+  "Imediatamente" separado de "Nos próximos 30 dias") e contato (nome, telefone, e-mail). O envio não é aquisição nem agendamento; o sucesso só confirma o
   recebimento da solicitação. Aviso de Privacidade da jornada em `/privacidade` (pendente). No Admin, drill-down Home
   Edition → interesse → Second Home desejada, pré-qualificação e contato, com cada leitura auditada. A coleta segue
   fechada em Production até os gates de go-live.

@@ -199,6 +199,9 @@ describe('W6: interest_contact, interest_qualification e esquema do hash no banc
         decision_horizon: 'immediate',
       }),
     ).resolves.toBeDefined();
+    await expect(
+      qualification(await insertInterest(), { decision_horizon: 'within_30_days' }),
+    ).resolves.toBeDefined();
   });
 
   it('[REQ-022] [BR-034] guarda do banco: referência de outra Home Edition, comparação sem Owner com média, ou Owner com média sem comparação → recusada', async () => {

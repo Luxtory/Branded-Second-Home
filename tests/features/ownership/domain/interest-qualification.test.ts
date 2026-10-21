@@ -33,10 +33,11 @@ describe('pré-qualificação do interesse — dimensões e códigos', () => {
     expect(REFERENCE_FIT_ANSWERS).toEqual(['within', 'could_consider', 'above']);
   });
 
-  it('[REQ-022] unidade de decisão (3) e horizonte com "imediatamente" separado de até 3 meses', () => {
+  it('[REQ-022] unidade de decisão (3) e horizonte com "imediatamente" separado de "nos próximos 30 dias"', () => {
     expect(DECISION_UNITS).toEqual(['self', 'with_partner_or_family', 'with_others']);
     expect(DECISION_HORIZONS).toEqual([
       'immediate',
+      'within_30_days',
       'one_to_three_months',
       'three_to_six_months',
       'six_to_twelve_months',

@@ -30,8 +30,8 @@ CREATE TABLE app.interest_qualification (
     CHECK (decision_unit IN ('self', 'with_partner_or_family', 'with_others')),
   decision_horizon text NOT NULL
     CONSTRAINT interest_qualification_decision_horizon_check
-    CHECK (decision_horizon IN ('immediate', 'one_to_three_months', 'three_to_six_months', 'six_to_twelve_months',
-                                'over_twelve_months', 'exploring')),
+    CHECK (decision_horizon IN ('immediate', 'within_30_days', 'one_to_three_months', 'three_to_six_months',
+                                'six_to_twelve_months', 'over_twelve_months', 'exploring')),
   created_at timestamptz NOT NULL,
   -- A comparação com a média só existe quando uma média foi apresentada.
   CONSTRAINT interest_qualification_reference_check

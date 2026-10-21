@@ -268,7 +268,9 @@ BR-032, BR-062; `02` v4.3 REQ-022; `03` v3.15 §3.1 `interest`):
 > 2026-10-19), correção do modelo da Home Edition (2026-10-19, noite) e checkpoint da dimensão de investimento
 > (2026-10-20, alternativa A com ajustes), **revisto pelo fundador em 2026-10-21** (pré-qualificação como BANT
 > adaptado: faixa de recursos para iniciar, `reference_fit` só para Owner com média apresentada, horizonte com
-> "imediatamente"; sai a variante `investment_definition`; formulário em 3 etapas). Esta seção prevalece sobre as
+> "imediatamente"; sai a variante `investment_definition`; formulário em etapas), com os **ajustes finais do mesmo dia**
+> (horizonte com "Imediatamente" separado de "Nos próximos 30 dias"; faixas sem sobreposição; 4 etapas). Esta seção
+> prevalece sobre as
 > anteriores onde diferir.
 > [ADR-0018](../adr/0018-contato-e-pre-qualificacao-do-interesse.md) · STRIDE `ownership`
 > [§W6](../security/threats/ownership.md#w6--solicitação-de-conversa-na-home-edition-2026-10-20) ·
@@ -327,19 +329,20 @@ a página fica como na W4.2 (`D-B2C-10`: sem CTA para destino inexistente).
    mesmo peso, REQ-103), `lx-hint`, `lx-error`, `lx-message`, `lx-button--primary` e `lx-button--secondary`.
    Mobile-first, paridade funcional a partir de 320 px (ADR-0009).
 
-**Fluxo progressivo em 3 etapas, na mesma seção e sem URL nova:**
+**Fluxo progressivo em 4 etapas, na mesma seção e sem URL nova:**
 
 | Etapa | Conteúdo | Ações | Fatos e limites |
 |---|---|---|---|
-| 1 de 3 — Sua Second Home | modalidade desejada (Owner · Co-Owner, descrições de `D-B2C-19`); localização pretendida; dias aproximados **só para Co-Owner**, com a microcopy da P-3 | Continuar | BR-030, BR-032, REQ-025, BR-060 |
-| 2 de 3 — Investimento e decisão | faixa de recursos para iniciar; comparação com a média apresentada (só Owner com média); unidade de decisão; horizonte | Voltar · Continuar | REQ-022, BR-034, BR-063 |
-| 3 de 3 — Contato | Nome, Telefone ou WhatsApp, E-mail (todos obrigatórios); "Manifestar interesse não é uma aquisição." e a microcopy D4 com o link para o Aviso de Privacidade | Voltar · Solicitar uma conversa | REQ-022, P-3, D4, BR-050 |
+| 1 de 4 — Sua Second Home | modalidade desejada (Owner · Co-Owner, descrições de `D-B2C-19`); localização pretendida; dias aproximados **só para Co-Owner**, com a microcopy da P-3 | Continuar | BR-030, BR-032, REQ-025, BR-060 |
+| 2 de 4 — Investimento | faixa de recursos para iniciar; comparação com a média apresentada (só Owner com média); nota do Co-Owner quando a página mostrou a média | Voltar · Continuar | REQ-022, BR-034, BR-063 |
+| 3 de 4 — Decisão | unidade de decisão; horizonte | Voltar · Continuar | REQ-022 |
+| 4 de 4 — Contato | Nome, Telefone ou WhatsApp, E-mail (todos obrigatórios); "Manifestar interesse não é uma aquisição." e a microcopy D4 com o link para o Aviso de Privacidade | Voltar · Solicitar uma conversa | REQ-022, P-3, D4, BR-050 |
 
 - **Nada é enviado nem persistido antes do envio final**: os dados ficam só na memória do componente — sem URL, cookie,
   `localStorage` ou `sessionStorage`. "Continuar" valida só a etapa atual, no navegador; "Voltar" preserva tudo.
 - **Troca de modalidade** invalida só o que ficou incompatível: Co-Owner descarta a comparação com a média; Owner
   descarta os dias. Faixa, unidade de decisão, horizonte e contato ficam.
-- **Foco e leitores de tela:** cada etapa abre com um título "N de 3 — …" que recebe o foco na troca de etapa; erros com
+- **Foco e leitores de tela:** cada etapa abre com um título "N de 4 — …" que recebe o foco na troca de etapa; erros com
   resumo acessível (`role="alert"`) e foco no primeiro campo inválido; o sucesso recebe o foco. Teclado em todo o
   fluxo (Enter avança; setas nas opções).
 - **Erros do servidor** num campo de etapa anterior levam de volta àquela etapa, com o erro no campo.
@@ -362,7 +365,7 @@ fundador (2026-10-21, §14.5); as microcopies da P-3 e a D4, de 2026-10-19:
 |---|---|
 | Título | Solicite uma conversa sobre esta Home Edition |
 | Apoio | Conte como você imagina sua Second Home. Com essas informações, podemos preparar uma conversa mais objetiva sobre esta Home Edition. |
-| Etapas | 1 de 3 — Sua Second Home · 2 de 3 — Investimento e decisão · 3 de 3 — Contato |
+| Etapas | 1 de 4 — Sua Second Home · 2 de 4 — Investimento · 3 de 4 — Decisão · 4 de 4 — Contato |
 | Modalidade | "Como você imagina ter sua Second Home?" — Owner: "Você como proprietário do imóvel."; Co-Owner: "Você como acionista da SPE proprietária do imóvel." (`D-B2C-19`) |
 | Localização pretendida | "Onde você imagina sua Second Home?" — dica: "Cidade, região ou destino, do jeito que preferir." |
 | Dias (Co-Owner) | "Quantos dias por ano, aproximadamente?" — dica: "Para Co-Owner, os dias informados representam apenas uma preferência e não criam Direito de Uso." (P-3) |
@@ -401,7 +404,7 @@ identificador interno.
 | `available_to_start_band` | obrigatório; uma faixa da §14.5 (`up_to_250k` … `not_defined`); nunca valor em reais | REQ-022 |
 | `reference_fit` | `within`, `could_consider` ou `above` — **obrigatório** só para Owner quando o contexto traz média apresentada; para Co-Owner ou sem média, ausente ou `null` (senão `not_allowed`) | REQ-022, BR-034 |
 | `decision_unit` | `self`, `with_partner_or_family` ou `with_others` | REQ-022 |
-| `decision_horizon` | `immediate`, `one_to_three_months`, `three_to_six_months`, `six_to_twelve_months`, `over_twelve_months` ou `exploring` | REQ-022 |
+| `decision_horizon` | `immediate`, `within_30_days`, `one_to_three_months`, `three_to_six_months`, `six_to_twelve_months`, `over_twelve_months` ou `exploring` | REQ-022 |
 | `name` | texto obrigatório, 1–200, mesma normalização de `desired_location` | REQ-022, `03` §3.1 |
 | `phone` | obrigatório; até 32 caracteres digitados; aceita formatos humanos — o servidor remove espaços, parênteses, hífens e pontos; depois só `+` inicial opcional e 8–15 dígitos (limite técnico E.164); DDI nunca inferido, Brasil nunca presumido | REQ-022, D-W6 (telefone) |
 | `email` | obrigatório; pontas sem espaço; até 254; formato `local@domínio` com ponto no domínio; domínio em minúsculas, parte local preservada | REQ-022 |
@@ -430,12 +433,17 @@ aproximados. Nenhuma pergunta de motivação nesta wave.
   | Código | Resposta |
   |---|---|
   | `up_to_250k` | Até R$ 250 mil |
-  | `from_250k_to_500k` | De R$ 250 mil a R$ 500 mil |
-  | `from_500k_to_1m` | De R$ 500 mil a R$ 1 milhão |
-  | `from_1m_to_2_5m` | De R$ 1 milhão a R$ 2,5 milhões |
-  | `from_2_5m_to_5m` | De R$ 2,5 milhões a R$ 5 milhões |
+  | `from_250k_to_500k` | Mais de R$ 250 mil até R$ 500 mil |
+  | `from_500k_to_1m` | Mais de R$ 500 mil até R$ 1 milhão |
+  | `from_1m_to_2_5m` | Mais de R$ 1 milhão até R$ 2,5 milhões |
+  | `from_2_5m_to_5m` | Mais de R$ 2,5 milhões até R$ 5 milhões |
   | `above_5m` | Acima de R$ 5 milhões |
   | `not_defined` | Ainda não defini |
+
+  **Semântica da versão 1** (fronteiras sem sobreposição; nenhum valor é armazenado — isto só torna a interpretação
+  histórica dos códigos inequívoca): `up_to_250k` ≤ R$ 250 mil · `from_250k_to_500k` > R$ 250 mil e ≤ R$ 500 mil ·
+  `from_500k_to_1m` > R$ 500 mil e ≤ R$ 1 milhão · `from_1m_to_2_5m` > R$ 1 milhão e ≤ R$ 2,5 milhões ·
+  `from_2_5m_to_5m` > R$ 2,5 milhões e ≤ R$ 5 milhões · `above_5m` > R$ 5 milhões · `not_defined` sem faixa definida.
 
   Faixa autodeclarada do que o próprio interessado pretende alocar para iniciar: não é renda, patrimônio, comprovação,
   financiamento, preço, aprovação nem capacidade financeira comprovada; nenhum valor exato é gravado. Comercialmente
@@ -465,9 +473,10 @@ A média apresentada fica registrada também no Co-Owner (edge 14).
 também participam da decisão." Nenhum dado das outras pessoas.
 
 **Timeline** — `decision_horizon`, "Se encontrar uma opção que faça sentido, quando você estaria pronto para avançar?":
-`immediate` "Imediatamente / nos próximos 30 dias" · `one_to_three_months` "Entre 1 e 3 meses" · `three_to_six_months`
+`immediate` "Imediatamente" · `within_30_days` "Nos próximos 30 dias" · `one_to_three_months` "Entre 1 e 3 meses" · `three_to_six_months`
 "Entre 3 e 6 meses" · `six_to_twelve_months` "Entre 6 e 12 meses" · `over_twelve_months` "Mais de 12 meses" ·
-`exploring` "Ainda estou explorando possibilidades". "Imediatamente" fica separado de quem pensa em até três meses.
+`exploring` "Ainda estou explorando possibilidades". Quem está pronto para avançar agora fica separado de quem pensa em
+algumas semanas.
 
 ### 14.6 Contexto de apresentação assinado (`02` §15, item 14)
 
@@ -628,8 +637,8 @@ mensagens de erro do banco nunca entram no log. A página registra só falhas t�
       dimensões obrigatórios; sem página de Interesse separada.
 - [ ] `[REQ-022]` faixa de recursos para iniciar obrigatória para Owner e Co-Owner; `reference_fit` obrigatório só
       para Owner com média apresentada e recusado (`not_allowed`) nos demais casos; nenhum valor derivado ou exato.
-- [ ] `[REQ-022]` horizonte com `immediate` separado de `one_to_three_months`.
-- [ ] Formulário em 3 etapas: Continuar valida a etapa, Voltar preserva, troca de modalidade invalida só o
+- [ ] `[REQ-022]` horizonte com `immediate` separado de `within_30_days` e de `one_to_three_months`.
+- [ ] Formulário em 4 etapas: Continuar valida a etapa, Voltar preserva, troca de modalidade invalida só o
       incompatível, nada enviado antes do envio final, foco no título da etapa.
 - [ ] `[REQ-022]` edge 14: média alterada depois da exibição → a pré-qualificação guarda a apresentada; sem média
       apresentada → fica sem referência mesmo que uma passe a existir; contexto adulterado → `400`.

@@ -2251,7 +2251,8 @@ components:
             - not_defined
           description: |
             Faixa autodeclarada de recursos disponíveis para iniciar o investimento (spec `ownership` §14.5, versão 1 —
-            faixas em reais). Obrigatória para Owner e Co-Owner. Nunca valor exato, renda, patrimônio, financiamento,
+            faixas em reais, sem sobreposição: `up_to_250k` ≤ 250 mil; `from_250k_to_500k` > 250 mil e ≤ 500 mil; …;
+            `above_5m` > 5 milhões). Obrigatória para Owner e Co-Owner. Nunca valor exato, renda, patrimônio, financiamento,
             comprovação, preço ou aprovação.
         reference_fit:
           type: [string, 'null']
@@ -2268,12 +2269,13 @@ components:
           type: string
           enum:
             - immediate
+            - within_30_days
             - one_to_three_months
             - three_to_six_months
             - six_to_twelve_months
             - over_twelve_months
             - exploring
-          description: Horizonte da decisão; `immediate` = imediatamente ou nos próximos 30 dias.
+          description: Horizonte da decisão; `immediate` (imediatamente) separado de `within_30_days` (nos próximos 30 dias).
         name:
           type: string
           description: Nome do interessado — 1 a 200 caracteres depois da normalização.

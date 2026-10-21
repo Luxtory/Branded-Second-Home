@@ -142,6 +142,12 @@ describe('solicitação de conversa — validação do corpo', () => {
         issues: [{ field: 'decision_horizon', code: 'invalid' }],
       });
     }
+    expect(parseInterestRequest({ ...CO_OWNER, decision_horizon: 'within_30_days' })).toMatchObject(
+      {
+        ok: true,
+        request: { answers: { decisionHorizon: 'within_30_days' } },
+      },
+    );
     expect(parseInterestRequest({ ...CO_OWNER, decision_horizon: 'immediate' })).toMatchObject({
       ok: true,
       request: {

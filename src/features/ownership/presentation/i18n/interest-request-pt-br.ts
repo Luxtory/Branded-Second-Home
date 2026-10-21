@@ -18,9 +18,9 @@ export const interestRequestMessages = {
     lead: 'Conte como você imagina sua Second Home. Com essas informações, podemos preparar uma conversa mais objetiva sobre esta Home Edition.',
   },
   steps: {
-    // "1 de 3 — Sua Second Home"
+    // "1 de 4 — Sua Second Home"
     of: 'de',
-    titles: ['Sua Second Home', 'Investimento e decisão', 'Contato'],
+    titles: ['Sua Second Home', 'Investimento', 'Decisão', 'Contato'],
   },
   modality: {
     legend: 'Como você imagina ter sua Second Home?',
@@ -47,10 +47,10 @@ export const interestRequestMessages = {
     hint: 'Essa referência nos ajuda a preparar uma conversa mais adequada ao seu momento. Não é uma proposta nem condição comercial.',
     answers: {
       up_to_250k: 'Até R$\u00a0250\u00a0mil',
-      from_250k_to_500k: 'De R$\u00a0250\u00a0mil a R$\u00a0500\u00a0mil',
-      from_500k_to_1m: 'De R$\u00a0500\u00a0mil a R$\u00a01\u00a0milhão',
-      from_1m_to_2_5m: 'De R$\u00a01\u00a0milhão a R$\u00a02,5\u00a0milhões',
-      from_2_5m_to_5m: 'De R$\u00a02,5\u00a0milhões a R$\u00a05\u00a0milhões',
+      from_250k_to_500k: 'Mais de R$\u00a0250\u00a0mil até R$\u00a0500\u00a0mil',
+      from_500k_to_1m: 'Mais de R$\u00a0500\u00a0mil até R$\u00a01\u00a0milhão',
+      from_1m_to_2_5m: 'Mais de R$\u00a01\u00a0milhão até R$\u00a02,5\u00a0milhões',
+      from_2_5m_to_5m: 'Mais de R$\u00a02,5\u00a0milhões até R$\u00a05\u00a0milhões',
       above_5m: 'Acima de R$\u00a05\u00a0milhões',
       not_defined: 'Ainda não defini',
     } satisfies Record<AvailableToStartBand, string>,
@@ -81,7 +81,8 @@ export const interestRequestMessages = {
   decisionHorizon: {
     legend: 'Se encontrar uma opção que faça sentido, quando você estaria pronto para avançar?',
     answers: {
-      immediate: 'Imediatamente / nos próximos 30 dias',
+      immediate: 'Imediatamente',
+      within_30_days: 'Nos próximos 30 dias',
       one_to_three_months: 'Entre 1 e 3 meses',
       three_to_six_months: 'Entre 3 e 6 meses',
       six_to_twelve_months: 'Entre 6 e 12 meses',

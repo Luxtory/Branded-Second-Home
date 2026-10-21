@@ -13,7 +13,10 @@ export const QUALIFICATION_VERSION = 1;
 
 /**
  * Faixa autodeclarada de recursos disponíveis para iniciar o investimento (versão 1, em reais) — para Owner e
- * Co-Owner. Não é renda, patrimônio, comprovação, financiamento, preço nem capacidade financeira comprovada.
+ * Co-Owner. Não é renda, patrimônio, comprovação, financiamento, preço nem capacidade financeira comprovada. Fronteiras
+ * sem sobreposição (spec §14.5): `up_to_250k` ≤ 250 mil; `from_250k_to_500k` > 250 mil e ≤ 500 mil; `from_500k_to_1m`
+ * > 500 mil e ≤ 1 milhão; `from_1m_to_2_5m` > 1 milhão e ≤ 2,5 milhões; `from_2_5m_to_5m` > 2,5 milhões e ≤ 5 milhões;
+ * `above_5m` > 5 milhões; `not_defined` sem faixa definida.
  */
 export const AVAILABLE_TO_START_BANDS = [
   'up_to_250k',
@@ -34,9 +37,10 @@ export type ReferenceFit = (typeof REFERENCE_FIT_ANSWERS)[number];
 export const DECISION_UNITS = ['self', 'with_partner_or_family', 'with_others'] as const;
 export type DecisionUnit = (typeof DECISION_UNITS)[number];
 
-/** Horizonte da decisão; `immediate` (imediatamente ou nos próximos 30 dias) separado de quem pensa em até 3 meses. */
+/** Horizonte da decisão: quem está pronto para avançar agora (`immediate`) separado de quem pensa em semanas. */
 export const DECISION_HORIZONS = [
   'immediate',
+  'within_30_days',
   'one_to_three_months',
   'three_to_six_months',
   'six_to_twelve_months',
