@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { sql } from 'kysely';
 import type pg from 'pg';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { findPublicHomeEdition, lockPublicHomeEdition } from '@/features/catalog';
@@ -249,7 +250,7 @@ describe('solicitação de conversa — registro em PostgreSQL real (W5, W6)', (
     ]);
   });
 
-  it('[REQ-022] edge 14: média alterada entre a página e o envio → a pré-qualificação guarda a apresentada, sem recalcular', async () => {
+  it('[REQ-022] [EC-14] média alterada entre a página e o envio → a pré-qualificação guarda a apresentada, sem recalcular', async () => {
     const { homeEditionId } = await publicHomeEdition();
     const presented = await harness.build.projectedInvestment(homeEditionId, 480_000_000);
     const body = ownerBody(homeEditionId, presented.id, { investment_answer: 'above' });
@@ -275,7 +276,7 @@ describe('solicitação de conversa — registro em PostgreSQL real (W5, W6)', (
     expect(rows[0]?.presented).not.toBe(current.id);
   });
 
-  it('[REQ-022] edge 14: sem média apresentada, uma média registrada depois não entra — o contexto continua "sem referência"', async () => {
+  it('[REQ-022] [EC-14] sem média apresentada, uma média registrada depois não entra — o contexto continua "sem referência"', async () => {
     const { homeEditionId } = await publicHomeEdition();
     const withoutReference = ownerBody(homeEditionId, null);
     await harness.build.projectedInvestment(homeEditionId, 480_000_000);
@@ -322,7 +323,7 @@ describe('solicitação de conversa — registro em PostgreSQL real (W5, W6)', (
     expect(rows).toEqual([{ column_name: 'home_edition_id', is_nullable: 'NO' }]);
   });
 
-  it('[REQ-022] edge 15: Home Edition em preparação, fora do público, retirada, de marca encerrada ou inexistente → 404, nada gravado', async () => {
+  it('[REQ-022] [EC-15] Home Edition em preparação, fora do público, retirada, de marca encerrada ou inexistente → 404, nada gravado', async () => {
     const { build, ok, handlers } = harness;
     const published = await publicHomeEdition();
     const draft = await build.homeEdition(published.homeConceptId, { name: 'Em preparação' });
@@ -357,7 +358,7 @@ describe('solicitação de conversa — registro em PostgreSQL real (W5, W6)', (
     await expectNothingWritten();
   });
 
-  it('[REQ-022] edge 15 dentro da transação: retirada depois da leitura pública → a revalidação com trava recusa e desfaz a chave', async () => {
+  it('[REQ-022] [EC-15] dentro da transação: retirada depois da leitura pública → a revalidação com trava recusa e desfaz a chave', async () => {
     const { homeEditionId, homeConceptId } = await publicHomeEdition();
     const body = coOwnerBody(homeEditionId);
     // A leitura pública "viu" a Home Edition antes da retirada: o alvo injetado responde como público.
@@ -405,8 +406,14 @@ describe('solicitação de conversa — registro em PostgreSQL real (W5, W6)', (
       randomUUID(),
     ]) {
       const anon = await findPublicHomeEdition(id, db);
-      const locked = await db.transaction().execute((tx) => lockPublicHomeEdition(tx, id));
+      const { locked, role } = await db.transaction().execute(async (tx) => {
+        const target = await lockPublicHomeEdition(tx, id);
+        // Depois da leitura pública, a transação volta exatamente ao papel do chamador.
+        const { rows } = await sql<{ role: string }>`SELECT current_user AS role`.execute(tx);
+        return { locked: target, role: rows[0]?.role };
+      });
       expect(locked, id).toEqual(anon);
+      expect(role, id).toBe('luxtory_app');
     }
     expect(await findPublicHomeEdition(published.homeEditionId, db)).not.toBeNull();
   });

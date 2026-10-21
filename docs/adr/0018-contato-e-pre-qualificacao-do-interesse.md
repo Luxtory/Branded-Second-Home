@@ -83,8 +83,9 @@ pesam:
 - Dois segredos novos de produção no go-live, sem default (TECH-001).
 - O derivado chaveado continua sendo dado pseudonimizado no registro imutável; entra no inventário para a validação
   jurídica ([`lgpd-interesse.md`](../security/lgpd-interesse.md)).
-- A transação de escrita troca de papel por um instante (`SET LOCAL ROLE anon` e de volta) para ler a visibilidade pela
-  RLS sem repetir a regra; a troca vale só para a transação e é desfeita no rollback.
+- A transação de escrita troca de papel por um instante (`SET LOCAL ROLE anon` e de volta ao papel exato do chamador,
+  nunca ao usuário da sessão) para ler a visibilidade pela RLS sem repetir a regra; a troca vale só para a transação e é
+  desfeita no rollback.
 - A eliminação real depende de um procedimento ainda inexistente — gate de go-live, não da W6.
 
 ### Neutral / follow-ups

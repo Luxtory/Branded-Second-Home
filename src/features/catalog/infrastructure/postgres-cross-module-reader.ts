@@ -53,11 +53,19 @@ export async function readHomeEditionLabels(
   );
 }
 
+/** O papel do chamador não pôde ser lido antes da leitura pública — a transação é desfeita. */
+class PublicReadRoleError extends Error {
+  constructor() {
+    super('current_user could not be read before the public read of the home edition');
+    this.name = 'PublicReadRoleError';
+  }
+}
+
 /**
  * Revalidação da Home Edition pública **dentro da transação do chamador** (W6, `02` §15 item 15; ADR-0018 §6). Primeiro
  * trava a linha como `luxtory_app` (`FOR SHARE`, possível pelo `UPDATE` de coluna do papel): uma retirada concorrente
  * espera o fim da transação ou já foi confirmada antes. Depois lê a visibilidade **pela própria RLS pública** (como
- * `anon`, ADR-0014), sem repetir a regra, e volta ao papel da sessão para o resto da transação. Em preparação, fora do
+ * `anon`, ADR-0014), sem repetir a regra, e volta ao papel do chamador para o resto da transação. Em preparação, fora do
  * público, de Home Concept não público ou inexistente → `null`.
  */
 export async function lockPublicHomeEdition(
@@ -71,10 +79,14 @@ export async function lockPublicHomeEdition(
     .forShare()
     .executeTakeFirst();
   if (locked === undefined) return null;
-  // Uma falha aqui aborta a transação, e o rollback desfaz também a troca de papel.
+  // Volta exatamente ao papel do chamador (nunca ao usuário da sessão, que poderia ter mais privilégio). Uma falha aqui
+  // aborta a transação, e o rollback desfaz também a troca de papel.
+  const { rows } = await sql<{ role: string }>`SELECT current_user AS role`.execute(tx);
+  const caller = rows[0]?.role;
+  if (caller === undefined) throw new PublicReadRoleError();
   await sql`SET LOCAL ROLE anon`.execute(tx);
   const target = await readPublicHomeEditionTarget(tx, homeEditionId);
-  await sql`SET LOCAL ROLE NONE`.execute(tx);
+  await sql`SET LOCAL ROLE ${sql.id(caller)}`.execute(tx);
   return target;
 }
 

@@ -224,7 +224,7 @@ describe('W6: interest_contact, interest_qualification e esquema do hash no banc
     ).rejects.toMatchObject({ code: CHECK_VIOLATION });
   });
 
-  it('[REQ-022] edge 14: a referência apresentada não some nem muda de valor — a média projetada é só inserção', async () => {
+  it('[REQ-022] [EC-14] a referência apresentada não some nem muda de valor — a média projetada é só inserção', async () => {
     await expect(
       database.pool.query('DELETE FROM app.home_edition_projected_investment WHERE id = $1', [referenceId]),
     ).rejects.toThrow(/is not allowed/);

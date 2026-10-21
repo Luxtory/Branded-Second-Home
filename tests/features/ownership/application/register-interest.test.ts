@@ -185,7 +185,7 @@ describe('solicitação de conversa — use case (spec ownership §14)', () => {
     expect(written).toHaveLength(0);
   });
 
-  it('[REQ-022] edge 14: contexto adulterado, de outra Home Edition ou malformado → presentation_context invalid', async () => {
+  it('[REQ-022] [EC-14] contexto adulterado, de outra Home Edition ou malformado → presentation_context invalid', async () => {
     const { store, written } = fakeStore();
     const forged = presentationContext(HOME_EDITION, REFERENCE).replace(/\.[^.]+$/, '.AAAA');
 
@@ -204,7 +204,7 @@ describe('solicitação de conversa — use case (spec ownership §14)', () => {
     expect(written).toHaveLength(0);
   });
 
-  it('[REQ-022] edge 14: a referência registrada é a apresentada — o use case nem consulta a média vigente', async () => {
+  it('[REQ-022] [EC-14] a referência registrada é a apresentada — o use case nem consulta a média vigente', async () => {
     const { store, written } = fakeStore();
     const dependencies = deps(store);
 
@@ -222,7 +222,7 @@ describe('solicitação de conversa — use case (spec ownership §14)', () => {
     expect(written[0]?.request.qualification.presentedProjectedInvestmentId).toBe(REFERENCE);
   });
 
-  it('[REQ-022] edge 15: Home Edition fora do público na leitura pública ou na revalidação da gravação → not_found', async () => {
+  it('[REQ-022] [EC-15] Home Edition fora do público na leitura pública ou na revalidação da gravação → not_found', async () => {
     const hidden = fakeStore();
     const hiddenDeps = deps(hidden.store, null);
     expect(await registerInterest(coOwnerBody(HOME_EDITION), ATTEMPT_ID, hiddenDeps)).toEqual({
