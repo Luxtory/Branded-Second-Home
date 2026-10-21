@@ -18,15 +18,14 @@ import {
   type InterestContact,
 } from '../domain/interest-contact';
 import {
-  ALL_INVESTMENT_ANSWERS,
+  AVAILABLE_TO_START_BANDS,
   DECISION_HORIZONS,
   DECISION_UNITS,
-  INVESTMENT_QUESTIONS,
-  isAnswerOf,
+  REFERENCE_FIT_ANSWERS,
+  type AvailableToStartBand,
   type DecisionHorizon,
   type DecisionUnit,
-  type InvestmentAnswer,
-  type InvestmentQuestion,
+  type ReferenceFit,
 } from '../domain/interest-qualification';
 
 /**
@@ -39,8 +38,8 @@ export const INTEREST_FIELDS = [
   'modality',
   'desired_location',
   'approx_days',
-  'investment_question',
-  'investment_answer',
+  'available_to_start_band',
+  'reference_fit',
   'decision_unit',
   'decision_horizon',
   'name',
@@ -118,11 +117,9 @@ export const interestRequestSchema = z.strictObject({
     .positive('invalid')
     .max(APPROX_DAYS_MAX, 'invalid')
     .nullish(),
-  investment_question: z.enum(INVESTMENT_QUESTIONS, 'invalid'),
-  investment_answer: z.enum(
-    ALL_INVESTMENT_ANSWERS as [InvestmentAnswer, ...InvestmentAnswer[]],
-    'invalid',
-  ),
+  available_to_start_band: z.enum(AVAILABLE_TO_START_BANDS, 'invalid'),
+  // Exigida ou recusada no servidor, conforme a modalidade e a média que a página apresentou (spec §14.5).
+  reference_fit: z.enum(REFERENCE_FIT_ANSWERS, 'invalid').nullish(),
   decision_unit: z.enum(DECISION_UNITS, 'invalid'),
   decision_horizon: z.enum(DECISION_HORIZONS, 'invalid'),
   name: requiredText,
@@ -163,8 +160,8 @@ function issueOf(issue: z.core.$ZodIssue, values: unknown): InterestFieldIssue |
 
 /** As respostas declaradas da pré-qualificação; a referência apresentada vem do contexto assinado, no servidor. */
 export interface QualificationAnswers {
-  readonly investmentQuestion: InvestmentQuestion;
-  readonly investmentAnswer: InvestmentAnswer;
+  readonly availableToStartBand: AvailableToStartBand;
+  readonly referenceFit: ReferenceFit | null;
   readonly decisionUnit: DecisionUnit;
   readonly decisionHorizon: DecisionHorizon;
 }
@@ -193,15 +190,10 @@ export function orderedIssues(
   });
 }
 
-/** Regras entre campos: dias só e sempre para Co-Owner (F2b); a resposta pertence à variante declarada. */
+/** Regra entre campos: dias só e sempre para Co-Owner (F2b). */
 function crossFieldIssues(data: z.infer<typeof interestRequestSchema>): InterestFieldIssue[] {
-  const issues: InterestFieldIssue[] = [];
   const rule = approxDaysRule(data.modality, data.approx_days ?? null);
-  if (rule !== 'ok') issues.push({ field: 'approx_days', code: rule });
-  if (!isAnswerOf(data.investment_question, data.investment_answer)) {
-    issues.push({ field: 'investment_answer', code: 'invalid' });
-  }
-  return issues;
+  return rule === 'ok' ? [] : [{ field: 'approx_days', code: rule }];
 }
 
 /** Valida o corpo; um problema por campo, na ordem do contrato, nunca com o valor recebido. */
@@ -230,8 +222,8 @@ export function parseInterestRequest(values: unknown): InterestRequestParse {
       },
       contact: { name: data.name, phone: data.phone, email: data.email },
       answers: {
-        investmentQuestion: data.investment_question,
-        investmentAnswer: data.investment_answer,
+        availableToStartBand: data.available_to_start_band,
+        referenceFit: data.reference_fit ?? null,
         decisionUnit: data.decision_unit,
         decisionHorizon: data.decision_horizon,
       },

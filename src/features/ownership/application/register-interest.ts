@@ -5,7 +5,8 @@ import {
   type PublicHashKey,
 } from '@/features/platform';
 import {
-  investmentQuestionFor,
+  asksReferenceFit,
+  QUALIFICATION_VERSION,
   type InterestQualification,
 } from '../domain/interest-qualification';
 import {
@@ -45,7 +46,8 @@ type Qualified =
 
 /**
  * Pré-qualificação com a referência **apresentada** (`02` §15, item 14): o contexto assinado prova o que a página
- * mostrou — nunca a média vigente no envio — e decide a variante da dimensão de investimento (spec §14.5).
+ * mostrou — nunca a média vigente no envio — e decide se a comparação com a média é exigida (Owner com média) ou
+ * recusada (Co-Owner ou sem média) (spec §14.5).
  */
 function qualify(
   request: InterestRequest,
@@ -56,19 +58,27 @@ function qualify(
     return { ok: false, issues: [{ field: 'presentation_context', code: 'invalid' }] };
   }
   const presented = context.presentedProjectedInvestmentId;
-  const expected = investmentQuestionFor(request.interest.modality, presented !== null);
-  if (request.answers.investmentQuestion !== expected) {
-    return { ok: false, issues: [{ field: 'investment_question', code: 'not_allowed' }] };
+  const asked = asksReferenceFit(request.interest.modality, presented !== null);
+  const answered = request.answers.referenceFit !== null;
+  if (asked && !answered) {
+    return { ok: false, issues: [{ field: 'reference_fit', code: 'required' }] };
+  }
+  if (!asked && answered) {
+    return { ok: false, issues: [{ field: 'reference_fit', code: 'not_allowed' }] };
   }
   return {
     ok: true,
-    qualification: { ...request.answers, presentedProjectedInvestmentId: presented },
+    qualification: {
+      version: QUALIFICATION_VERSION,
+      ...request.answers,
+      presentedProjectedInvestmentId: presented,
+    },
   };
 }
 
 /**
  * Solicitação de conversa (REQ-022–REQ-025; spec ownership §5, §13, §14): chave UUID e schema fechado → contexto de
- * apresentação e variante → chave já usada (repetição ou conflito, sem reavaliar o alvo) → Home Edition pública →
+ * apresentação e comparação com a média → chave já usada (repetição ou conflito, sem reavaliar o alvo) → Home Edition pública →
  * gravação atômica com a chave, revalidando a Home Edition dentro da transação. Recusas não consomem a chave
  * (ADR-0017). Nunca cria aquisição, conta, Titular, Ação, Direito de Uso, prioridade nem classificação.
  */

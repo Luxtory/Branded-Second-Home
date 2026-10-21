@@ -138,6 +138,12 @@
     max-width: var(--lx-layout-container-narrow);
   }
 
+  /* Título de etapa de um formulário em etapas (W6): recebe o foco programático a cada troca de etapa — é título, não
+   * controle, como o `main` do app (o leitor de tela anuncia; nenhum anel de foco de campo). */
+  .lx-form__step:focus {
+    outline: none;
+  }
+
   .lx-form__row {
     display: grid;
     gap: var(--lx-space-8) var(--lx-layout-gutter);

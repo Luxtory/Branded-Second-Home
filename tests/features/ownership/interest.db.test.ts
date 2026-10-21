@@ -181,7 +181,7 @@ describe('solicitação de conversa — registro em PostgreSQL real (W5, W6)', (
     expect(changed(before, after).sort()).toEqual(REQUEST_TABLES);
     const { rows } = await database.pool.query(
       `SELECT i.origin, i.partner_ref, i.desired_location, i.approx_days, i.home_edition_id,
-              c.name, c.phone, c.email, q.investment_question, q.investment_answer,
+              c.name, c.phone, c.email, q.qualification_version, q.available_to_start_band, q.reference_fit,
               q.presented_projected_investment_id, q.decision_unit, q.decision_horizon,
               (c.created_at = i.created_at AND q.created_at = i.created_at) AS same_instant
          FROM app.interest i
@@ -198,11 +198,12 @@ describe('solicitação de conversa — registro em PostgreSQL real (W5, W6)', (
         name: SENTINEL_CONTACT.name,
         phone: '11987654321',
         email: SENTINEL_CONTACT.email,
-        investment_question: 'investment_definition',
-        investment_answer: 'idea_without_range',
+        qualification_version: 1,
+        available_to_start_band: 'from_500k_to_1m',
+        reference_fit: null,
         presented_projected_investment_id: null,
         decision_unit: 'with_partner_or_family',
-        decision_horizon: 'from_6_to_12_months',
+        decision_horizon: 'six_to_twelve_months',
         same_instant: true,
       },
     ]);
@@ -232,19 +233,19 @@ describe('solicitação de conversa — registro em PostgreSQL real (W5, W6)', (
     ]);
   });
 
-  it('[REQ-022] [BR-034] Owner com média apresentada → reference_fit vinculado à média do contexto', async () => {
+  it('[REQ-022] [BR-034] Owner com média apresentada → faixa para iniciar + reference_fit vinculado à média do contexto', async () => {
     const { homeEditionId } = await publicHomeEdition();
     const reference = await harness.build.projectedInvestment(homeEditionId, 480_000_000);
 
     expect((await post(ownerBody(homeEditionId, reference.id))).status).toBe(201);
 
     const { rows } = await database.pool.query(
-      'SELECT investment_question, investment_answer, presented_projected_investment_id FROM app.interest_qualification',
+      'SELECT available_to_start_band, reference_fit, presented_projected_investment_id FROM app.interest_qualification',
     );
     expect(rows).toEqual([
       {
-        investment_question: 'reference_fit',
-        investment_answer: 'within',
+        available_to_start_band: 'from_1m_to_2_5m',
+        reference_fit: 'within',
         presented_projected_investment_id: reference.id,
       },
     ]);
@@ -253,7 +254,7 @@ describe('solicitação de conversa — registro em PostgreSQL real (W5, W6)', (
   it('[REQ-022] [EC-14] média alterada entre a página e o envio → a pré-qualificação guarda a apresentada, sem recalcular', async () => {
     const { homeEditionId } = await publicHomeEdition();
     const presented = await harness.build.projectedInvestment(homeEditionId, 480_000_000);
-    const body = ownerBody(homeEditionId, presented.id, { investment_answer: 'above' });
+    const body = ownerBody(homeEditionId, presented.id, { reference_fit: 'above' });
     // Depois da página: a Luxtory registra uma nova média; a apresentada deixa de ser a vigente.
     harness = catalogHarness(db, controlledClock(new Date(START.getTime() + HOUR)));
     const current = await harness.build.projectedInvestment(homeEditionId, 520_000_000);
@@ -261,14 +262,14 @@ describe('solicitação de conversa — registro em PostgreSQL real (W5, W6)', (
     expect((await post(body)).status).toBe(201);
 
     const { rows } = await database.pool.query(
-      `SELECT q.presented_projected_investment_id AS presented, q.investment_answer, p.amount_minor, p.valid_until IS NOT NULL AS ended
+      `SELECT q.presented_projected_investment_id AS presented, q.reference_fit, p.amount_minor, p.valid_until IS NOT NULL AS ended
          FROM app.interest_qualification q
          JOIN app.home_edition_projected_investment p ON p.id = q.presented_projected_investment_id`,
     );
     expect(rows).toEqual([
       {
         presented: presented.id,
-        investment_answer: 'above',
+        reference_fit: 'above',
         amount_minor: '480000000',
         ended: true,
       },
@@ -283,23 +284,16 @@ describe('solicitação de conversa — registro em PostgreSQL real (W5, W6)', (
 
     expect((await post(withoutReference)).status).toBe(201);
     // Responder à comparação sem referência apresentada é recusado, mesmo com média vigente agora.
-    const compared = await post(
-      ownerBody(homeEditionId, null, {
-        investment_question: 'reference_fit',
-        investment_answer: 'within',
-      }),
-    );
+    const compared = await post(ownerBody(homeEditionId, null, { reference_fit: 'within' }));
     expect(compared.status).toBe(400);
     expect(await compared.json()).toMatchObject({
-      fields: [{ field: 'investment_question', code: 'not_allowed' }],
+      fields: [{ field: 'reference_fit', code: 'not_allowed' }],
     });
 
     const { rows } = await database.pool.query(
-      'SELECT investment_question, presented_projected_investment_id FROM app.interest_qualification',
+      'SELECT reference_fit, presented_projected_investment_id FROM app.interest_qualification',
     );
-    expect(rows).toEqual([
-      { investment_question: 'investment_definition', presented_projected_investment_id: null },
-    ]);
+    expect(rows).toEqual([{ reference_fit: null, presented_projected_investment_id: null }]);
   });
 
   it('[REQ-022] [BR-030] Home Edition obrigatória: sem ela a solicitação é recusada', async () => {
@@ -437,7 +431,7 @@ describe('solicitação de conversa — registro em PostgreSQL real (W5, W6)', (
         { name: 'Outra Pessoa' },
         { email: 'outra@example.com' },
         { phone: '(11) 91234-5678' },
-        { investment_answer: 'range_defined' },
+        { available_to_start_band: 'not_defined' },
         { decision_unit: 'self' },
         { decision_horizon: 'exploring' },
       ].map((extra) => post(coOwnerBody(homeEditionId, extra), key)),
@@ -545,7 +539,7 @@ describe('solicitação de conversa — registro em PostgreSQL real (W5, W6)', (
       SENTINEL_CONTACT.email,
       '98765',
       'Litoral norte',
-      'idea_without_range',
+      'from_500k_to_1m',
       String(body.presentation_context).slice(0, 24),
       'invalido',
     ]) {
@@ -619,11 +613,12 @@ describe('solicitação de conversa — registro em PostgreSQL real (W5, W6)', (
     expect(contact).toMatchObject({
       contact: { name: SENTINEL_CONTACT.name, phone: '11987654321', email: SENTINEL_CONTACT.email },
       qualification: {
-        investmentQuestion: 'reference_fit',
-        investmentAnswer: 'within',
+        version: 1,
+        availableToStartBand: 'from_1m_to_2_5m',
+        referenceFit: 'within',
         presentedProjectedInvestmentId: reference.id,
         decisionUnit: 'self',
-        decisionHorizon: 'within_3_months',
+        decisionHorizon: 'immediate',
       },
       presented: { id: reference.id, amountMinor: 480_000_000n, currency: 'BRL' },
     });

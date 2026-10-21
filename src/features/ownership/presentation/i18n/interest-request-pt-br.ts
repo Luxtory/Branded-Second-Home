@@ -1,25 +1,26 @@
 import type {
+  AvailableToStartBand,
   DecisionHorizon,
   DecisionUnit,
-  InvestmentAnswer,
-  InvestmentQuestion,
+  ReferenceFit,
 } from '../../domain/interest-qualification';
 
 /**
  * Copy da seção "Solicitar uma conversa" na página da Home Edition (spec ownership §14.3 e §14.5; `b2c.md` `D-B2C-28`).
- * Literais do fundador e que não mudam sem nova decisão: perguntas e respostas da pré-qualificação (2026-10-20), as
- * microcopies da P-3 e a D4. Título, apoio, rótulos e mensagens de falha são proposta até o checkpoint visual final da
- * W6. Terminologia do `02` §1 (REQ-100); nenhuma promessa de retorno, prazo, aquisição ou agendamento (REQ-101).
+ * Literais do fundador e que não mudam sem nova decisão: abertura, etapas, perguntas, respostas, ajudas, botões e
+ * sucesso (revisão de 2026-10-21), as microcopies da P-3 e a D4. Mensagens de validação e de falha seguem o padrão da
+ * BP1. Terminologia do `02` §1 (REQ-100); nenhuma promessa de retorno, prazo, aquisição ou agendamento (REQ-101); nunca
+ * "entrada" (não há estrutura comercial de entrada + saldo).
  */
 export const interestRequestMessages = {
   section: {
     title: 'Solicite uma conversa sobre esta Home Edition',
-    lead: 'Conte como você imagina sua Second Home a partir desta Home Edition.',
+    lead: 'Conte como você imagina sua Second Home. Com essas informações, podemos preparar uma conversa mais objetiva sobre esta Home Edition.',
   },
-  groups: {
-    secondHome: 'Sua Second Home',
-    decision: 'Investimento e decisão',
-    contact: 'Contato',
+  steps: {
+    // "1 de 3 — Sua Second Home"
+    of: 'de',
+    titles: ['Sua Second Home', 'Investimento e decisão', 'Contato'],
   },
   modality: {
     legend: 'Como você imagina ter sua Second Home?',
@@ -38,48 +39,54 @@ export const interestRequestMessages = {
     // P-3 (fundador, 2026-10-19) — literal.
     hint: 'Para Co-Owner, os dias informados representam apenas uma preferência e não criam Direito de Uso.',
   },
-  // Decisão do fundador de 2026-10-20 (spec ownership §14.5) — literais.
-  investment: {
-    reference_fit: {
-      legend:
-        'Como a média projetada de investimento desta Home Edition se compara ao que você considera investir?',
-      // "Média projetada apresentada: R$ X." — o valor é o mesmo texto do bloco da página.
-      presented: 'Média projetada apresentada:',
-      note: 'Referência aproximada do investimento total projetado para materializar uma Second Home desta Home Edition. Não é preço, proposta ou condição comercial.',
-      answers: {
-        within: 'Está dentro do que considero investir.',
-        needs_understanding: 'Preciso entender melhor o investimento antes de avaliar.',
-        above: 'Está acima do que considero investir hoje.',
-      },
-    },
-    investment_definition: {
-      legend: 'Em relação ao investimento, qual opção melhor descreve seu momento?',
-      coOwnerNote:
-        'No Co-Owner, o investimento individual depende da configuração da Second Home, definida pela Luxtory durante a estruturação. Por isso, a média projetada da Home Edition não representa o valor de uma Ação.',
-      answers: {
-        range_defined: 'Já defini uma faixa que considero investir.',
-        idea_without_range:
-          'Tenho uma ideia do que considero investir, mas ainda não defini uma faixa.',
-        needs_understanding: 'Preciso entender melhor o investimento antes de definir uma faixa.',
-      },
-    },
+  // Revisão do fundador de 2026-10-21 (spec ownership §14.5) — literais.
+  availableToStart: {
+    // Espaços inseparáveis entre "R$", o número e a unidade: a faixa nunca quebra com "R$" sozinho no fim da linha.
+    legend:
+      'Se decidir avançar, qual faixa de recursos você teria disponível para iniciar o investimento?',
+    hint: 'Essa referência nos ajuda a preparar uma conversa mais adequada ao seu momento. Não é uma proposta nem condição comercial.',
+    answers: {
+      up_to_250k: 'Até R$\u00a0250\u00a0mil',
+      from_250k_to_500k: 'De R$\u00a0250\u00a0mil a R$\u00a0500\u00a0mil',
+      from_500k_to_1m: 'De R$\u00a0500\u00a0mil a R$\u00a01\u00a0milhão',
+      from_1m_to_2_5m: 'De R$\u00a01\u00a0milhão a R$\u00a02,5\u00a0milhões',
+      from_2_5m_to_5m: 'De R$\u00a02,5\u00a0milhões a R$\u00a05\u00a0milhões',
+      above_5m: 'Acima de R$\u00a05\u00a0milhões',
+      not_defined: 'Ainda não defini',
+    } satisfies Record<AvailableToStartBand, string>,
   },
+  referenceFit: {
+    // "Considerando a média projetada de R$ X desta Home Edition, como ela se compara ao investimento total que você
+    // considera?" — o valor é o mesmo texto do bloco da página.
+    legendBefore: 'Considerando a média projetada de',
+    legendAfter:
+      'desta Home Edition, como ela se compara ao investimento total que você considera?',
+    note: 'Referência aproximada do investimento total projetado para materializar uma Second Home desta Home Edition. Não é preço, proposta ou condição comercial.',
+    answers: {
+      within: 'Está dentro do que considero investir.',
+      could_consider: 'Posso considerar, mas preciso entender melhor o investimento.',
+      above: 'Está acima do que considero investir hoje.',
+    } satisfies Record<ReferenceFit, string>,
+  },
+  coOwnerNote:
+    'No Co-Owner, o investimento individual depende da configuração da Second Home, definida pela Luxtory durante a estruturação. A média projetada da Home Edition não representa o valor de uma Ação.',
   decisionUnit: {
     legend: 'Quem participa dessa decisão com você?',
     answers: {
       self: 'A decisão é minha.',
-      with_partner_or_family: 'Decido com meu parceiro, parceira ou família.',
-      with_others: 'Outras pessoas também participam.',
+      with_partner_or_family: 'Decido em conjunto com meu parceiro, parceira ou família.',
+      with_others: 'Outras pessoas também participam da decisão.',
     } satisfies Record<DecisionUnit, string>,
   },
   decisionHorizon: {
-    legend: 'Quando você imagina avançar com essa decisão?',
+    legend: 'Se encontrar uma opção que faça sentido, quando você estaria pronto para avançar?',
     answers: {
-      within_3_months: 'Nos próximos 3 meses.',
-      from_3_to_6_months: 'Entre 3 e 6 meses.',
-      from_6_to_12_months: 'Entre 6 e 12 meses.',
-      over_12_months: 'Mais de 12 meses.',
-      exploring: 'Ainda estou explorando possibilidades.',
+      immediate: 'Imediatamente / nos próximos 30 dias',
+      one_to_three_months: 'Entre 1 e 3 meses',
+      three_to_six_months: 'Entre 3 e 6 meses',
+      six_to_twelve_months: 'Entre 6 e 12 meses',
+      over_twelve_months: 'Mais de 12 meses',
+      exploring: 'Ainda estou explorando possibilidades',
     } satisfies Record<DecisionHorizon, string>,
   },
   contact: {
@@ -98,6 +105,8 @@ export const interestRequestMessages = {
     privacyLink: 'Aviso de Privacidade',
     newTab: '(abre em nova aba)',
   },
+  continue: 'Continuar',
+  back: 'Voltar',
   submit: 'Solicitar uma conversa',
   sending: 'Enviando…',
   errorSummary: 'Revise os campos indicados.',
@@ -118,9 +127,10 @@ export const interestRequestMessages = {
     modality: 'Modalidade',
     desired_location: 'Localização pretendida',
     approx_days: 'Dias por ano',
-    investment_answer: 'Investimento',
-    decision_unit: 'Unidade de decisão',
-    decision_horizon: 'Horizonte',
+    available_to_start_band: 'Recursos para iniciar',
+    reference_fit: 'Média projetada',
+    decision_unit: 'Quem decide',
+    decision_horizon: 'Quando avançar',
     name: 'Nome',
     phone: 'Telefone ou WhatsApp',
     email: 'E-mail',
@@ -141,13 +151,3 @@ export const interestRequestMessages = {
 } as const;
 
 export type InterestRequestMessages = typeof interestRequestMessages;
-
-/** Pergunta e resposta da dimensão de investimento, na copy aprovada (formulário e Admin). */
-export function investmentAnswerLabel(
-  question: InvestmentQuestion,
-  answer: InvestmentAnswer,
-): string {
-  const answers: Readonly<Record<string, string>> =
-    interestRequestMessages.investment[question].answers;
-  return answers[answer] ?? answer;
-}

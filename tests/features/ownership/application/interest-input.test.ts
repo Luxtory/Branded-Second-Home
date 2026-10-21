@@ -24,10 +24,9 @@ describe('solicitação de conversa — validação do corpo', () => {
     ).toEqual({ ok: false, issues: [{ field: 'home_edition_id', code: 'required' }] });
   });
 
-  it('[REQ-022] contato e as três dimensões são obrigatórios — nenhum dado a mais é aceito', () => {
+  it('[REQ-022] contato, faixa para iniciar, unidade de decisão e horizonte obrigatórios — nenhum dado a mais é aceito', () => {
     const fields = [
-      'investment_question',
-      'investment_answer',
+      'available_to_start_band',
       'decision_unit',
       'decision_horizon',
       'name',
@@ -45,6 +44,10 @@ describe('solicitação de conversa — validação do corpo', () => {
       { income: 1 },
       { budget: 1 },
       { amount_minor: 1 },
+      { available_to_start_amount: 300_000 },
+      { entrada: 'R$ 100 mil' },
+      { patrimonio: 'alto' },
+      { qualification_version: 2 },
       { presented_projected_investment_id: HOME_CONCEPT },
       { score: 'hot' },
     ]) {
@@ -108,22 +111,42 @@ describe('solicitação de conversa — validação do corpo', () => {
     }
   });
 
-  it('[REQ-022] dimensão de investimento: códigos fechados, resposta da variante declarada', () => {
-    expect(parseInterestRequest({ ...CO_OWNER, investment_question: 'budget_fit' })).toMatchObject({
-      issues: [{ field: 'investment_question', code: 'invalid' }],
+  it('[REQ-022] faixa, comparação, unidade de decisão e horizonte: só códigos fechados, nunca valor em reais', () => {
+    for (const band of ['300000', 'R$ 300 mil', 'between_1_and_2m', 300_000]) {
+      expect(
+        parseInterestRequest({ ...CO_OWNER, available_to_start_band: band }),
+        String(band),
+      ).toMatchObject({
+        issues: [{ field: 'available_to_start_band', code: 'invalid' }],
+      });
+    }
+    expect(
+      parseInterestRequest({ ...CO_OWNER, reference_fit: 'needs_understanding' }),
+    ).toMatchObject({
+      issues: [{ field: 'reference_fit', code: 'invalid' }],
     });
-    expect(parseInterestRequest({ ...CO_OWNER, investment_answer: 'above' })).toEqual({
-      ok: false,
-      issues: [{ field: 'investment_answer', code: 'invalid' }],
-    });
-    expect(parseInterestRequest({ ...CO_OWNER, investment_answer: '4800000' })).toMatchObject({
-      issues: [{ field: 'investment_answer', code: 'invalid' }],
+    // A comparação é opcional no schema: o servidor a exige ou recusa pelo contexto apresentado (spec §14.5).
+    expect(parseInterestRequest({ ...CO_OWNER, reference_fit: null })).toMatchObject({ ok: true });
+    expect(parseInterestRequest({ ...CO_OWNER, reference_fit: 'could_consider' })).toMatchObject({
+      ok: true,
+      request: { answers: { referenceFit: 'could_consider' } },
     });
     expect(parseInterestRequest({ ...CO_OWNER, decision_unit: 'family_name' })).toMatchObject({
       issues: [{ field: 'decision_unit', code: 'invalid' }],
     });
-    expect(parseInterestRequest({ ...CO_OWNER, decision_horizon: 'hot' })).toMatchObject({
-      issues: [{ field: 'decision_horizon', code: 'invalid' }],
+    for (const horizon of ['hot', 'within_3_months', 'from_3_to_6_months']) {
+      expect(
+        parseInterestRequest({ ...CO_OWNER, decision_horizon: horizon }),
+        horizon,
+      ).toMatchObject({
+        issues: [{ field: 'decision_horizon', code: 'invalid' }],
+      });
+    }
+    expect(parseInterestRequest({ ...CO_OWNER, decision_horizon: 'immediate' })).toMatchObject({
+      ok: true,
+      request: {
+        answers: { decisionHorizon: 'immediate', availableToStartBand: 'from_500k_to_1m' },
+      },
     });
   });
 

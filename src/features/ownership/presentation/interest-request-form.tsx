@@ -11,30 +11,29 @@ import {
 } from '../application/interest-input';
 import type { InterestModality } from '../domain/interest';
 import {
+  asksReferenceFit,
+  AVAILABLE_TO_START_BANDS,
   DECISION_HORIZONS,
   DECISION_UNITS,
-  INVESTMENT_ANSWERS,
-  investmentQuestionFor,
-  type InvestmentQuestion,
+  REFERENCE_FIT_ANSWERS,
 } from '../domain/interest-qualification';
 import type { InterestRequestMessages } from './i18n/interest-request-pt-br';
 
 const ENDPOINT = '/v1/interests';
 const DAYS = /^[0-9]+$/u;
 
-/** Campos que o visitante preenche, na ordem da interface (spec ownership §14.3). */
-const UI_FIELDS = [
-  'modality',
-  'desired_location',
-  'approx_days',
-  'investment_answer',
-  'decision_unit',
-  'decision_horizon',
-  'name',
-  'phone',
-  'email',
-] as const;
-type UiField = (typeof UI_FIELDS)[number];
+/** As 3 etapas do fluxo progressivo (spec ownership §14.3), na mesma seção e sem URL nova. */
+const STEPS = [1, 2, 3] as const;
+type Step = (typeof STEPS)[number];
+
+/** Campos que o visitante preenche, por etapa e na ordem da interface. */
+const STEP_FIELDS = {
+  1: ['modality', 'desired_location', 'approx_days'],
+  2: ['available_to_start_band', 'reference_fit', 'decision_unit', 'decision_horizon'],
+  3: ['name', 'phone', 'email'],
+} as const;
+type UiField = (typeof STEP_FIELDS)[Step][number];
+const UI_FIELDS: readonly UiField[] = STEPS.flatMap((step) => STEP_FIELDS[step]);
 type FieldErrors = Partial<Record<UiField, InterestFieldCode>>;
 type Outcome = keyof InterestRequestMessages['outcomes'];
 
@@ -49,7 +48,8 @@ interface Values {
   readonly modality: InterestModality | '';
   readonly desiredLocation: string;
   readonly approxDays: string;
-  readonly investmentAnswer: string;
+  readonly availableToStartBand: string;
+  readonly referenceFit: string;
   readonly decisionUnit: string;
   readonly decisionHorizon: string;
   readonly name: string;
@@ -62,7 +62,8 @@ const FIELD_OF: Readonly<Record<keyof Values, UiField>> = {
   modality: 'modality',
   desiredLocation: 'desired_location',
   approxDays: 'approx_days',
-  investmentAnswer: 'investment_answer',
+  availableToStartBand: 'available_to_start_band',
+  referenceFit: 'reference_fit',
   decisionUnit: 'decision_unit',
   decisionHorizon: 'decision_horizon',
   name: 'name',
@@ -74,7 +75,8 @@ const EMPTY: Values = {
   modality: '',
   desiredLocation: '',
   approxDays: '',
-  investmentAnswer: '',
+  availableToStartBand: '',
+  referenceFit: '',
   decisionUnit: '',
   decisionHorizon: '',
   name: '',
@@ -82,10 +84,13 @@ const EMPTY: Values = {
   email: '',
 };
 
-/** Campo do contrato → campo da interface; a variante da pergunta é respondida na mesma escolha da resposta. */
+/** Campo do contrato → campo da interface; os técnicos (Home Edition, origem, contexto) não têm campo. */
 function uiFieldOf(field: InterestField): UiField | null {
-  if (field === 'investment_question') return 'investment_answer';
   return (UI_FIELDS as readonly string[]).includes(field) ? (field as UiField) : null;
+}
+
+function stepOf(field: UiField): Step {
+  return STEPS.find((step) => (STEP_FIELDS[step] as readonly string[]).includes(field)) ?? 3;
 }
 
 /** HTTP → mensagem (TECH-056): 503, 500, falha de rede ou corpo inesperado = envio não confirmado. */
@@ -113,11 +118,6 @@ function serverIssues(body: unknown): readonly InterestFieldIssue[] {
   );
 }
 
-/** Variante da dimensão de investimento: a mesma regra do servidor, a partir do que a página apresentou. */
-function questionOf(values: Values, hasReference: boolean): InvestmentQuestion | null {
-  return values.modality === '' ? null : investmentQuestionFor(values.modality, hasReference);
-}
-
 const optional = (key: string, value: string) => (value === '' ? {} : { [key]: value });
 
 /** Dias digitados: inteiro → número; outro texto → `NaN` (o schema recusa como inválido); vazio → ausente. */
@@ -129,7 +129,7 @@ function daysOf(text: string): number | undefined {
 
 function bodyOf(
   values: Values,
-  question: InvestmentQuestion | null,
+  asksFit: boolean,
   homeEditionId: string,
   presentationContext: string,
 ): Record<string, unknown> {
@@ -138,8 +138,8 @@ function bodyOf(
     ...optional('modality', values.modality),
     desired_location: values.desiredLocation,
     ...(values.modality === 'co_owner' ? { approx_days: daysOf(values.approxDays) } : {}),
-    ...(question === null ? {} : { investment_question: question }),
-    ...optional('investment_answer', values.investmentAnswer),
+    ...optional('available_to_start_band', values.availableToStartBand),
+    ...(asksFit ? optional('reference_fit', values.referenceFit) : {}),
     ...optional('decision_unit', values.decisionUnit),
     ...optional('decision_horizon', values.decisionHorizon),
     name: values.name,
@@ -147,6 +147,19 @@ function bodyOf(
     email: values.email,
     presentation_context: presentationContext,
   };
+}
+
+/**
+ * Problemas do formulário inteiro, como o servidor os veria — mais a regra que só o servidor conhece pelo contexto:
+ * a comparação com a média é obrigatória para Owner quando a página a mostrou (spec §14.5).
+ */
+function issuesOf(body: Record<string, unknown>, asksFit: boolean): readonly InterestFieldIssue[] {
+  const parsed = parseInterestRequest(body);
+  const issues = parsed.ok ? [] : [...parsed.issues];
+  if (asksFit && body.reference_fit === undefined) {
+    issues.push({ field: 'reference_fit', code: 'required' });
+  }
+  return issues;
 }
 
 function ErrorText({ id, children }: { readonly id: string; readonly children: ReactNode }) {
@@ -186,7 +199,7 @@ function ChoiceGroup({
   readonly errorId: string;
   readonly error: string | null;
   readonly disabled: boolean;
-  /** Notas factuais ligadas ao grupo (referência apresentada, nota do Co-Owner). */
+  /** Notas factuais ligadas ao grupo (ajuda, referência apresentada, nota do Co-Owner). */
   readonly notes?: readonly { readonly id: string; readonly text: string }[];
 }) {
   const describedBy = [
@@ -240,10 +253,11 @@ export interface InterestRequestFormProps {
 }
 
 /**
- * Formulário "Solicitar uma conversa" (spec ownership §14.3–§14.5). Estados: inicial → validação (o mesmo schema do
- * servidor) → enviando → solicitação recebida ou falha. Foco no primeiro erro, resumo acessível e região viva. Os dados
- * e a `Idempotency-Key` ficam só na memória desta interação — nunca em URL, cookie ou storage: falha preserva ambos
- * (repetir com a mesma chave e o mesmo conteúdo); sucesso encerra a tentativa e substitui o formulário.
+ * Formulário "Solicitar uma conversa" em 3 etapas (spec ownership §14.3–§14.5): Sua Second Home → Investimento e
+ * decisão → Contato. "Continuar" valida só a etapa (o mesmo schema do servidor); "Voltar" preserva tudo; nada é enviado
+ * antes do envio final. Os dados e a `Idempotency-Key` ficam só na memória desta interação — nunca em URL, cookie ou
+ * storage: falha preserva ambos (repetir com a mesma chave e o mesmo conteúdo); sucesso encerra a tentativa e substitui
+ * o formulário. Foco no título da etapa a cada troca, no primeiro erro e na confirmação.
  */
 export function InterestRequestForm({
   homeEditionId,
@@ -256,17 +270,20 @@ export function InterestRequestForm({
   const id = useId();
   const fieldId = (field: UiField) => `${id}-${field}`;
   const errorId = (field: UiField) => `${fieldId(field)}-error`;
+  const [step, setStep] = useState<Step>(1);
   const [values, setValues] = useState<Values>(EMPTY);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const submitButton = useRef<HTMLButtonElement>(null);
+  const stepTitle = useRef<HTMLHeadingElement>(null);
   const successMessage = useRef<HTMLDivElement>(null);
   const sending = useRef(false);
+  const stepMoved = useRef(false);
   // Tentativa lógica: a chave acompanha exatamente o conteúdo enviado. Conteúdo novo = tentativa nova.
   const attempt = useRef<{ readonly key: string; readonly payload: string } | null>(null);
 
   const hasReference = presentedLabel !== null;
-  const question = questionOf(values, hasReference);
+  const asksFit = values.modality !== '' && asksReferenceFit(values.modality, hasReference);
   const isSending = status.kind === 'sending';
 
   /** Um erro mostrado não sobrevive à edição do campo; o resumo acompanha (o servidor decide de novo no envio). */
@@ -283,35 +300,47 @@ export function InterestRequestForm({
     clearErrors((Object.keys(patch) as (keyof Values)[]).map((key) => FIELD_OF[key]));
   };
 
-  /** Trocar a modalidade descarta a resposta de investimento quando a variante muda (spec §14.5). */
+  /**
+   * Trocar a modalidade invalida só o que ficou incompatível (spec §14.3): Co-Owner descarta a comparação com a média;
+   * Owner descarta os dias. Faixa, decisão, momento e contato ficam.
+   */
   const chooseModality = (modality: InterestModality) => {
-    clearErrors(['modality', 'approx_days']);
-    setValues((current) => {
-      const before = questionOf(current, hasReference);
-      const after = investmentQuestionFor(modality, hasReference);
-      return {
-        ...current,
-        modality,
-        investmentAnswer: before === after ? current.investmentAnswer : '',
-      };
-    });
+    clearErrors(['modality', 'approx_days', 'reference_fit']);
+    setValues((current) => ({
+      ...current,
+      modality,
+      approxDays: modality === 'owner' ? '' : current.approxDays,
+      referenceFit: asksReferenceFit(modality, hasReference) ? current.referenceFit : '',
+    }));
   };
 
+  const goTo = (next: Step) => {
+    stepMoved.current = true;
+    setErrors({});
+    setStatus({ kind: 'idle' });
+    setStep(next);
+  };
+
+  /** Mostra os erros de uma etapa (a primeira com erro) e leva o foco ao primeiro campo inválido. */
   const showIssues = (issues: readonly InterestFieldIssue[]) => {
     const fieldErrors: FieldErrors = {};
     for (const issue of issues) {
       const field = uiFieldOf(issue.field);
-      // Sem modalidade, a pergunta de investimento ainda não aparece: o erro fica na modalidade.
-      if (field === null || (field === 'investment_answer' && values.modality === '')) continue;
-      fieldErrors[field] ??= issue.code;
+      if (field !== null) fieldErrors[field] ??= issue.code;
     }
+    const first = UI_FIELDS.find((field) => fieldErrors[field] !== undefined);
+    if (first === undefined) return;
+    const target = stepOf(first);
+    const onStep = Object.fromEntries(
+      Object.entries(fieldErrors).filter(([field]) => stepOf(field as UiField) === target),
+    ) as FieldErrors;
     // O foco só vai ao campo depois que `aria-invalid` e a mensagem de erro já estão no DOM.
     flushSync(() => {
-      setErrors(fieldErrors);
+      setStep(target);
+      setErrors(onStep);
       setStatus({ kind: 'invalid' });
     });
-    const first = UI_FIELDS.find((field) => fieldErrors[field] !== undefined);
-    if (first !== undefined) document.getElementById(fieldId(first))?.focus();
+    document.getElementById(fieldId(first))?.focus();
   };
 
   const send = async (payload: string) => {
@@ -356,13 +385,23 @@ export function InterestRequestForm({
     setStatus({ kind: 'failed', outcome: outcomeFor(response.status) });
   };
 
+  /** Envio do formulário: nas etapas 1 e 2 é "Continuar" (só valida a etapa); na 3, o envio final. */
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (sending.current) return;
-    const body = bodyOf(values, question, homeEditionId, presentationContext);
-    const parsed = parseInterestRequest(body);
-    if (!parsed.ok) {
-      showIssues(parsed.issues);
+    const body = bodyOf(values, asksFit, homeEditionId, presentationContext);
+    const issues = issuesOf(body, asksFit);
+    if (step !== 3) {
+      const own = issues.filter((issue) => {
+        const field = uiFieldOf(issue.field);
+        return field !== null && stepOf(field) === step;
+      });
+      if (own.length > 0) showIssues(own);
+      else goTo((step + 1) as Step);
+      return;
+    }
+    if (issues.length > 0) {
+      showIssues(issues);
       return;
     }
     setErrors({});
@@ -378,8 +417,14 @@ export function InterestRequestForm({
     }
   };
 
-  // Ao fim do envio com falha, o foco volta ao botão; no sucesso, vai à confirmação que substitui o formulário.
+  // Troca de etapa → foco no título da etapa; fim de envio com falha → botão; sucesso → confirmação.
   const wasSending = useRef(false);
+  useEffect(() => {
+    if (stepMoved.current) {
+      stepMoved.current = false;
+      stepTitle.current?.focus();
+    }
+  }, [step]);
   useEffect(() => {
     if (wasSending.current && status.kind === 'failed') submitButton.current?.focus();
     if (wasSending.current && status.kind === 'success') successMessage.current?.focus();
@@ -459,42 +504,15 @@ export function InterestRequestForm({
     );
   };
 
-  const investment = question === null ? null : text.investment[question];
-  const investmentNotes =
-    question === 'reference_fit' && presentedLabel !== null
-      ? [
-          {
-            id: `${id}-reference`,
-            text: `${text.investment.reference_fit.presented} ${presentedLabel}.`,
-          },
-          { id: `${id}-reference-note`, text: text.investment.reference_fit.note },
-        ]
-      : values.modality === 'co_owner'
-        ? [{ id: `${id}-co-owner-note`, text: text.investment.investment_definition.coOwnerNote }]
-        : [];
-  const invalidFields = UI_FIELDS.filter((field) => errors[field] !== undefined);
+  const choice = (field: UiField) => ({
+    firstId: fieldId(field),
+    errorId: errorId(field),
+    error: errorText(field, text.choiceRequired),
+    disabled: isSending,
+  });
 
-  return (
-    <form className="lx-form" noValidate method="post" onSubmit={(event) => void onSubmit(event)}>
-      {/* O contexto de apresentação assinado viaja com o formulário; opaco aqui, verificado no servidor. */}
-      <input type="hidden" name="presentation_context" value={presentationContext} />
-      {status.kind === 'invalid' && invalidFields.length > 0 ? (
-        <div className="lx-message lx-message--error" role="alert">
-          <Icon name="alert" className="lx-message__icon" />
-          <p className="lx-message__title">{text.errorSummary}</p>
-          <ul className="lx-message__body">
-            {invalidFields.map((field) => (
-              <li key={field}>
-                <a className="lx-link" href={`#${fieldId(field)}`}>
-                  {text.labels[field]}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
-      <h3 className="lx-display-s">{text.groups.secondHome}</h3>
+  const stepOne = (
+    <>
       <ChoiceGroup
         name="modality"
         legend={text.modality.legend}
@@ -504,10 +522,7 @@ export function InterestRequestForm({
         ]}
         value={values.modality}
         onChange={(value) => chooseModality(value as InterestModality)}
-        firstId={fieldId('modality')}
-        errorId={errorId('modality')}
-        error={errorText('modality', text.choiceRequired)}
-        disabled={isSending}
+        {...choice('modality')}
       />
       {textInput('desired_location', {
         label: text.desiredLocation.label,
@@ -526,25 +541,43 @@ export function InterestRequestForm({
             autoComplete: 'off',
           })
         : null}
+    </>
+  );
 
-      <h3 className="lx-display-s">{text.groups.decision}</h3>
-      {question === null || investment === null ? null : (
+  const startNotes = [
+    { id: `${id}-start-hint`, text: text.availableToStart.hint },
+    ...(values.modality === 'co_owner' && hasReference
+      ? [{ id: `${id}-co-owner-note`, text: text.coOwnerNote }]
+      : []),
+  ];
+  const stepTwo = (
+    <>
+      <ChoiceGroup
+        name="available_to_start_band"
+        legend={text.availableToStart.legend}
+        options={AVAILABLE_TO_START_BANDS.map((band) => ({
+          value: band,
+          title: text.availableToStart.answers[band],
+        }))}
+        value={values.availableToStartBand}
+        onChange={(availableToStartBand) => update({ availableToStartBand })}
+        notes={startNotes}
+        {...choice('available_to_start_band')}
+      />
+      {asksFit && presentedLabel !== null ? (
         <ChoiceGroup
-          name="investment_answer"
-          legend={investment.legend}
-          options={INVESTMENT_ANSWERS[question].map((answer) => ({
+          name="reference_fit"
+          legend={`${text.referenceFit.legendBefore} ${presentedLabel} ${text.referenceFit.legendAfter}`}
+          options={REFERENCE_FIT_ANSWERS.map((answer) => ({
             value: answer,
-            title: (investment.answers as Readonly<Record<string, string>>)[answer] ?? answer,
+            title: text.referenceFit.answers[answer],
           }))}
-          value={values.investmentAnswer}
-          onChange={(investmentAnswer) => update({ investmentAnswer })}
-          firstId={fieldId('investment_answer')}
-          errorId={errorId('investment_answer')}
-          error={errorText('investment_answer', text.choiceRequired)}
-          disabled={isSending}
-          notes={investmentNotes}
+          value={values.referenceFit}
+          onChange={(referenceFit) => update({ referenceFit })}
+          notes={[{ id: `${id}-reference-note`, text: text.referenceFit.note }]}
+          {...choice('reference_fit')}
         />
-      )}
+      ) : null}
       <ChoiceGroup
         name="decision_unit"
         legend={text.decisionUnit.legend}
@@ -554,10 +587,7 @@ export function InterestRequestForm({
         }))}
         value={values.decisionUnit}
         onChange={(decisionUnit) => update({ decisionUnit })}
-        firstId={fieldId('decision_unit')}
-        errorId={errorId('decision_unit')}
-        error={errorText('decision_unit', text.choiceRequired)}
-        disabled={isSending}
+        {...choice('decision_unit')}
       />
       <ChoiceGroup
         name="decision_horizon"
@@ -568,13 +598,13 @@ export function InterestRequestForm({
         }))}
         value={values.decisionHorizon}
         onChange={(decisionHorizon) => update({ decisionHorizon })}
-        firstId={fieldId('decision_horizon')}
-        errorId={errorId('decision_horizon')}
-        error={errorText('decision_horizon', text.choiceRequired)}
-        disabled={isSending}
+        {...choice('decision_horizon')}
       />
+    </>
+  );
 
-      <h3 className="lx-display-s">{text.groups.contact}</h3>
+  const stepThree = (
+    <>
       {textInput('name', {
         label: text.contact.name,
         value: values.name,
@@ -600,7 +630,6 @@ export function InterestRequestForm({
           autoComplete: 'email',
         })}
       </div>
-
       <div className="lx-stack">
         <p className="lx-small">{text.transparency.notAcquisition}</p>
         <p className="lx-small">
@@ -612,17 +641,72 @@ export function InterestRequestForm({
           .
         </p>
       </div>
+    </>
+  );
+
+  const invalidFields = STEP_FIELDS[step].filter((field) => errors[field] !== undefined);
+  const stepTitleId = `${id}-step`;
+  const count = `${step} ${text.steps.of} ${STEPS.length}`;
+
+  return (
+    <form
+      className="lx-form"
+      noValidate
+      method="post"
+      aria-labelledby={stepTitleId}
+      onSubmit={(event) => void onSubmit(event)}
+    >
+      {/* O contexto de apresentação assinado viaja com o formulário; opaco aqui, verificado no servidor. */}
+      <input type="hidden" name="presentation_context" value={presentationContext} />
+
+      <div className="lx-stack">
+        <p className="lx-eyebrow" aria-hidden="true">
+          {count}
+        </p>
+        <h3 ref={stepTitle} id={stepTitleId} className="lx-display-s lx-form__step" tabIndex={-1}>
+          <span className="lx-visually-hidden">{count} — </span>
+          {text.steps.titles[step - 1]}
+        </h3>
+      </div>
+
+      {status.kind === 'invalid' && invalidFields.length > 0 ? (
+        <div className="lx-message lx-message--error" role="alert">
+          <Icon name="alert" className="lx-message__icon" />
+          <p className="lx-message__title">{text.errorSummary}</p>
+          <ul className="lx-message__body">
+            {invalidFields.map((field) => (
+              <li key={field}>
+                <a className="lx-link" href={`#${fieldId(field)}`}>
+                  {text.labels[field]}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {step === 1 ? stepOne : step === 2 ? stepTwo : stepThree}
 
       <div className="lx-form__actions">
         <button
-          ref={submitButton}
+          ref={step === 3 ? submitButton : undefined}
           className="lx-button lx-button--primary"
           type="submit"
           disabled={isSending}
           aria-busy={isSending ? true : undefined}
         >
-          {text.submit}
+          {step === 3 ? text.submit : text.continue}
         </button>
+        {step === 1 ? null : (
+          <button
+            className="lx-button lx-button--secondary"
+            type="button"
+            disabled={isSending}
+            onClick={() => goTo((step - 1) as Step)}
+          >
+            {text.back}
+          </button>
+        )}
       </div>
 
       <div aria-live="polite" aria-atomic="true">

@@ -29,7 +29,7 @@ export function presentationContext(
   return signPresentationContext({ homeEditionId, presentedProjectedInvestmentId }, CONTEXT_KEY);
 }
 
-/** Co-Owner válido (dimensão de investimento `investment_definition`), com o contexto sem referência por padrão. */
+/** Co-Owner válido (faixa para iniciar, sem comparação com a média), com o contexto sem referência por padrão. */
 export function coOwnerBody(
   homeEditionId: string,
   extra: Record<string, unknown> = {},
@@ -40,17 +40,16 @@ export function coOwnerBody(
     modality: 'co_owner',
     desired_location: 'Litoral norte de SP',
     approx_days: 21,
-    investment_question: 'investment_definition',
-    investment_answer: 'idea_without_range',
+    available_to_start_band: 'from_500k_to_1m',
     decision_unit: 'with_partner_or_family',
-    decision_horizon: 'from_6_to_12_months',
+    decision_horizon: 'six_to_twelve_months',
     ...SENTINEL_CONTACT,
     presentation_context: presentationContext(homeEditionId, presented),
     ...extra,
   };
 }
 
-/** Owner válido: `reference_fit` com média apresentada, `investment_definition` sem ela. */
+/** Owner válido: faixa para iniciar e, com média apresentada, a comparação com ela (`reference_fit`). */
 export function ownerBody(
   homeEditionId: string,
   presented: string | null,
@@ -60,10 +59,10 @@ export function ownerBody(
     home_edition_id: homeEditionId,
     modality: 'owner',
     desired_location: 'Serra da Mantiqueira',
-    investment_question: presented === null ? 'investment_definition' : 'reference_fit',
-    investment_answer: presented === null ? 'range_defined' : 'within',
+    available_to_start_band: 'from_1m_to_2_5m',
+    ...(presented === null ? {} : { reference_fit: 'within' }),
     decision_unit: 'self',
-    decision_horizon: 'within_3_months',
+    decision_horizon: 'immediate',
     ...SENTINEL_CONTACT,
     presentation_context: presentationContext(homeEditionId, presented),
     ...extra,

@@ -73,8 +73,9 @@ describe('W6: interest_contact, interest_qualification e esquema do hash no banc
   const qualification = (interestId: string, fields: Record<string, unknown> = {}) =>
     insertRow('interest_qualification', {
       interest_id: interestId,
-      investment_question: 'investment_definition',
-      investment_answer: 'range_defined',
+      qualification_version: 1,
+      available_to_start_band: 'not_defined',
+      reference_fit: null,
       presented_projected_investment_id: null,
       decision_unit: 'self',
       decision_horizon: 'exploring',
@@ -168,54 +169,61 @@ describe('W6: interest_contact, interest_qualification e esquema do hash no banc
     await expect(contact(interestId)).rejects.toMatchObject({ code: '23505' });
   });
 
-  it('[REQ-022] [BR-034] pré-qualificação: códigos fechados por variante; reference_fit exige referência', async () => {
+  it('[REQ-022] [BR-034] pré-qualificação: códigos fechados e versionados; reference_fit exige referência apresentada', async () => {
     const coOwner = await insertInterest();
     for (const fields of [
-      { investment_question: 'budget_fit' },
-      { investment_answer: 'above' },
-      { investment_question: 'reference_fit', investment_answer: 'within' },
+      { available_to_start_band: '300000' },
+      { available_to_start_band: 'between_1_and_2m' },
+      { qualification_version: 2 },
+      { reference_fit: 'needs_understanding' },
+      { reference_fit: 'within' },
       { decision_unit: 'family' },
+      { decision_horizon: 'within_3_months' },
       { decision_horizon: 'hot' },
     ]) {
       await expect(qualification(coOwner, fields), JSON.stringify(fields)).rejects.toMatchObject({
         code: CHECK_VIOLATION,
       });
     }
+    for (const column of ['available_to_start_band', 'qualification_version', 'decision_unit', 'decision_horizon']) {
+      await expect(qualification(coOwner, { [column]: null }), column).rejects.toMatchObject({
+        code: NOT_NULL_VIOLATION,
+      });
+    }
     const owner = await insertInterest('owner');
     await expect(
-      qualification(owner, { investment_question: 'reference_fit', investment_answer: 'within' }),
-    ).rejects.toMatchObject({ code: CHECK_VIOLATION });
-    await expect(
       qualification(owner, {
-        investment_question: 'reference_fit',
-        investment_answer: 'above',
+        available_to_start_band: 'above_5m',
+        reference_fit: 'could_consider',
         presented_projected_investment_id: referenceId,
+        decision_horizon: 'immediate',
       }),
     ).resolves.toBeDefined();
   });
 
-  it('[REQ-022] [BR-034] guarda do banco: referência de outra Home Edition ou variante diferente da modalidade → recusada', async () => {
+  it('[REQ-022] [BR-034] guarda do banco: referência de outra Home Edition, comparação sem Owner com média, ou Owner com média sem comparação → recusada', async () => {
     const owner = await insertInterest('owner');
     await expect(
       qualification(owner, {
-        investment_question: 'reference_fit',
-        investment_answer: 'within',
+        reference_fit: 'within',
         presented_projected_investment_id: otherReferenceId,
       }),
-    ).rejects.toMatchObject({ code: CHECK_VIOLATION, constraint: 'interest_qualification_reference_home_edition' });
-    // Owner com referência apresentada responde à comparação; não à definição.
+    ).rejects.toMatchObject({
+      code: CHECK_VIOLATION,
+      constraint: 'interest_qualification_reference_home_edition',
+    });
+    // Owner com média apresentada precisa da comparação.
     await expect(
       qualification(owner, { presented_projected_investment_id: referenceId }),
-    ).rejects.toMatchObject({ constraint: 'interest_qualification_investment_question_variant' });
-    // Co-Owner nunca compara com a média, mesmo com a referência apresentada (BR-063).
+    ).rejects.toMatchObject({ constraint: 'interest_qualification_reference_fit_variant' });
+    // Co-Owner nunca compara com a média total, mesmo com a referência apresentada (BR-063).
     const coOwner = await insertInterest();
     await expect(
       qualification(coOwner, {
-        investment_question: 'reference_fit',
-        investment_answer: 'within',
+        reference_fit: 'within',
         presented_projected_investment_id: referenceId,
       }),
-    ).rejects.toMatchObject({ constraint: 'interest_qualification_investment_question_variant' });
+    ).rejects.toMatchObject({ constraint: 'interest_qualification_reference_fit_variant' });
     await expect(
       qualification(coOwner, { presented_projected_investment_id: referenceId }),
     ).resolves.toBeDefined();

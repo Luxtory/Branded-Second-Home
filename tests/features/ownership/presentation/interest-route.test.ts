@@ -504,7 +504,7 @@ describe('POST /v1/interests — abuso e falha fechada (TECH-100)', () => {
       SENTINEL_CONTACT.name,
       SENTINEL_CONTACT.email,
       '98765',
-      'idea_without_range',
+      'from_500k_to_1m',
       'with_partner_or_family',
       String(INTEREST.presentation_context).slice(0, 20),
     ]) {

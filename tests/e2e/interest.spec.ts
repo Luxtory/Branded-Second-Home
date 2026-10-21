@@ -48,28 +48,22 @@ async function seedInterests(
   const common = {
     home_edition_id: seed.homeEdition.id,
     desired_location: location,
+    available_to_start_band: 'from_1m_to_2_5m',
     decision_unit: 'self',
-    decision_horizon: 'within_3_months',
+    decision_horizon: 'immediate',
     ...CONTACT,
     presentation_context: context,
   };
   const coOwner = {
     ...common,
     modality: 'co_owner',
-    investment_question: 'investment_definition',
-    investment_answer: 'needs_understanding',
   };
   for (const body of [
     { ...coOwner, approx_days: 14 },
     { ...coOwner, approx_days: 14 },
     { ...coOwner, approx_days: 30 },
-    // Owner com a média apresentada pela página: a comparação declarada com a referência (A1).
-    {
-      ...common,
-      modality: 'owner',
-      investment_question: 'reference_fit',
-      investment_answer: 'within',
-    },
+    // Owner com a média apresentada pela página: a faixa e a comparação declarada com a referência.
+    { ...common, modality: 'owner', reference_fit: 'within' },
   ]) {
     const response = await postInterest(request, origin, body);
     expect(response.status(), await response.text()).toBe(201);
@@ -107,10 +101,9 @@ test('[REQ-023] [REQ-022] [BR-030] [TECH-056] API pública: registra na Home Edi
     modality: 'co_owner',
     desired_location: unique('Serra E2E'),
     approx_days: 21,
-    investment_question: 'investment_definition',
-    investment_answer: 'range_defined',
+    available_to_start_band: 'not_defined',
     decision_unit: 'with_partner_or_family',
-    decision_horizon: 'from_3_to_6_months',
+    decision_horizon: 'three_to_six_months',
     ...CONTACT,
     origin: 'Campanha E2E',
     partner_ref: 'Parceiro E2E',

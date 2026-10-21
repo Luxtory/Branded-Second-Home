@@ -88,11 +88,12 @@ describe('solicitação de conversa — use case (spec ownership §14)', () => {
       },
       contact: { name: 'Maria Teste', phone: '+5511987654321', email: 'Maria.Teste@example.com' },
       qualification: {
-        investmentQuestion: 'investment_definition',
-        investmentAnswer: 'idea_without_range',
+        version: 1,
+        availableToStartBand: 'from_500k_to_1m',
+        referenceFit: null,
         presentedProjectedInvestmentId: null,
         decisionUnit: 'with_partner_or_family',
-        decisionHorizon: 'from_6_to_12_months',
+        decisionHorizon: 'six_to_twelve_months',
       },
     });
     expect(written[0]?.attempt).toMatchObject({
@@ -104,83 +105,60 @@ describe('solicitação de conversa — use case (spec ownership §14)', () => {
     expect(JSON.stringify(written[0]?.attempt)).not.toContain(HASH_KEY.secret);
   });
 
-  it('[REQ-022] [BR-034] Owner com média apresentada → reference_fit vinculado à referência do contexto', async () => {
+  it('[REQ-022] [BR-034] Owner com média apresentada → faixa para iniciar + reference_fit vinculado à referência do contexto', async () => {
     const { store, written } = fakeStore();
 
     expect(
       await registerInterest(ownerBody(HOME_EDITION, REFERENCE), ATTEMPT_ID, deps(store)),
     ).toEqual({ status: 'registered', replayed: false });
     expect(written[0]?.request.qualification).toEqual({
-      investmentQuestion: 'reference_fit',
-      investmentAnswer: 'within',
+      version: 1,
+      availableToStartBand: 'from_1m_to_2_5m',
+      referenceFit: 'within',
       presentedProjectedInvestmentId: REFERENCE,
       decisionUnit: 'self',
-      decisionHorizon: 'within_3_months',
+      decisionHorizon: 'immediate',
     });
     expect(written[0]?.request.interest.approxDays).toBeNull();
   });
 
-  it('[REQ-022] [BR-034] [BR-063] Co-Owner sempre investment_definition, mesmo com média apresentada (contexto guardado)', async () => {
+  it('[REQ-022] [BR-034] [BR-063] Co-Owner responde à faixa para iniciar e nunca compara com a média total (contexto guardado)', async () => {
     const { store, written } = fakeStore();
 
     await registerInterest(coOwnerBody(HOME_EDITION, {}, REFERENCE), ATTEMPT_ID, deps(store));
 
     expect(written[0]?.request.qualification).toMatchObject({
-      investmentQuestion: 'investment_definition',
+      availableToStartBand: 'from_500k_to_1m',
+      referenceFit: null,
       presentedProjectedInvestmentId: REFERENCE,
     });
     expect(
       await registerInterest(
-        coOwnerBody(
-          HOME_EDITION,
-          { investment_question: 'reference_fit', investment_answer: 'within' },
-          REFERENCE,
-        ),
+        coOwnerBody(HOME_EDITION, { reference_fit: 'within' }, REFERENCE),
         ATTEMPT_ID,
         deps(fakeStore().store),
       ),
-    ).toEqual({
-      status: 'invalid',
-      issues: [{ field: 'investment_question', code: 'not_allowed' }],
-    });
+    ).toEqual({ status: 'invalid', issues: [{ field: 'reference_fit', code: 'not_allowed' }] });
   });
 
-  it('[REQ-022] variante divergente do apresentado → not_allowed; resposta de outra variante → invalid; nada gravado', async () => {
+  it('[REQ-022] reference_fit exigido só para Owner com média apresentada e recusado sem ela; nada gravado', async () => {
     const { store, written } = fakeStore();
-    const notAllowed = {
-      status: 'invalid',
-      issues: [{ field: 'investment_question', code: 'not_allowed' }],
-    };
 
-    // Owner sem média apresentada não pode responder à comparação com a referência.
+    // Owner com média apresentada precisa comparar.
+    const withoutFit = ownerBody(HOME_EDITION, REFERENCE);
+    delete withoutFit.reference_fit;
+    expect(await registerInterest(withoutFit, ATTEMPT_ID, deps(store))).toEqual({
+      status: 'invalid',
+      issues: [{ field: 'reference_fit', code: 'required' }],
+    });
+    // Owner sem média apresentada não pode responder à comparação.
     expect(
       await registerInterest(
-        ownerBody(HOME_EDITION, null, {
-          investment_question: 'reference_fit',
-          investment_answer: 'within',
-        }),
+        ownerBody(HOME_EDITION, null, { reference_fit: 'above' }),
         ATTEMPT_ID,
         deps(store),
       ),
-    ).toEqual(notAllowed);
-    // Owner com média apresentada não pode trocar a pergunta.
-    expect(
-      await registerInterest(
-        ownerBody(HOME_EDITION, REFERENCE, {
-          investment_question: 'investment_definition',
-          investment_answer: 'range_defined',
-        }),
-        ATTEMPT_ID,
-        deps(store),
-      ),
-    ).toEqual(notAllowed);
-    expect(
-      await registerInterest(
-        ownerBody(HOME_EDITION, REFERENCE, { investment_answer: 'range_defined' }),
-        ATTEMPT_ID,
-        deps(store),
-      ),
-    ).toEqual({ status: 'invalid', issues: [{ field: 'investment_answer', code: 'invalid' }] });
+    ).toEqual({ status: 'invalid', issues: [{ field: 'reference_fit', code: 'not_allowed' }] });
     expect(store.priorAttempt).not.toHaveBeenCalled();
     expect(written).toHaveLength(0);
   });
@@ -317,8 +295,8 @@ describe('solicitação de conversa — use case (spec ownership §14)', () => {
       { email: 'outra@example.com' },
       { phone: '(11) 91234-5678' },
       { decision_unit: 'self' },
-      { decision_horizon: 'exploring' },
-      { investment_answer: 'range_defined' },
+      { decision_horizon: 'immediate' },
+      { available_to_start_band: 'not_defined' },
     ]) {
       expect(await hashOf(coOwnerBody(HOME_EDITION, extra)), JSON.stringify(extra)).not.toBe(base);
     }

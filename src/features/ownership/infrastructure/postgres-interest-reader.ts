@@ -2,12 +2,21 @@ import { sql } from 'kysely';
 import type { DatabaseTransaction } from '@/features/platform';
 import type { InterestCount, InterestReader, InterestRecord } from '../application/ports';
 import type { InterestModality } from '../domain/interest';
-import type {
-  DecisionHorizon,
-  DecisionUnit,
-  InvestmentAnswer,
-  InvestmentQuestion,
+import {
+  QUALIFICATION_VERSION,
+  type AvailableToStartBand,
+  type DecisionHorizon,
+  type DecisionUnit,
+  type ReferenceFit,
 } from '../domain/interest-qualification';
+
+/** Registro de pré-qualificação numa versão de códigos que esta leitura não conhece. */
+export class QualificationVersionError extends Error {
+  constructor(readonly version: number) {
+    super(`interest_qualification version ${version} is not readable by this release`);
+    this.name = 'QualificationVersionError';
+  }
+}
 
 // Os CHECKs do banco garantem os valores dos enums.
 const modality = (value: string) => value as InterestModality;
@@ -91,8 +100,9 @@ export const postgresInterestReader: InterestReader<DatabaseTransaction> = {
     const row = await tx
       .selectFrom('app.interest_qualification')
       .select([
-        'investment_question',
-        'investment_answer',
+        'qualification_version',
+        'available_to_start_band',
+        'reference_fit',
         'presented_projected_investment_id',
         'decision_unit',
         'decision_horizon',
@@ -100,9 +110,14 @@ export const postgresInterestReader: InterestReader<DatabaseTransaction> = {
       .where('interest_id', '=', interestId)
       .executeTakeFirst();
     if (row === undefined) return null;
+    // Só a versão 1 existe; uma versão nova traz a sua própria leitura dos códigos.
+    if (row.qualification_version !== QUALIFICATION_VERSION) {
+      throw new QualificationVersionError(row.qualification_version);
+    }
     return {
-      investmentQuestion: row.investment_question as InvestmentQuestion,
-      investmentAnswer: row.investment_answer as InvestmentAnswer,
+      version: QUALIFICATION_VERSION,
+      availableToStartBand: row.available_to_start_band as AvailableToStartBand,
+      referenceFit: row.reference_fit as ReferenceFit | null,
       presentedProjectedInvestmentId: row.presented_projected_investment_id,
       decisionUnit: row.decision_unit as DecisionUnit,
       decisionHorizon: row.decision_horizon as DecisionHorizon,

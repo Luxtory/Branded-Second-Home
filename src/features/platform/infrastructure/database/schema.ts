@@ -252,13 +252,14 @@ export interface AppInterestContact {
 }
 
 export interface AppInterestQualification {
+  available_to_start_band: string;
   created_at: Timestamp;
   decision_horizon: string;
   decision_unit: string;
   interest_id: string;
-  investment_answer: string;
-  investment_question: string;
   presented_projected_investment_id: string | null;
+  qualification_version: number;
+  reference_fit: string | null;
 }
 
 export interface AppInvestorAuthorization {

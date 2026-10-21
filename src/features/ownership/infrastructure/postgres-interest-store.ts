@@ -44,8 +44,9 @@ async function insertRequest(tx: DatabaseTransaction, request: NewInterest): Pro
     .insertInto('app.interest_qualification')
     .values({
       interest_id: id,
-      investment_question: qualification.investmentQuestion,
-      investment_answer: qualification.investmentAnswer,
+      qualification_version: qualification.version,
+      available_to_start_band: qualification.availableToStartBand,
+      reference_fit: qualification.referenceFit,
       presented_projected_investment_id: qualification.presentedProjectedInvestmentId,
       decision_unit: qualification.decisionUnit,
       decision_horizon: qualification.decisionHorizon,

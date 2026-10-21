@@ -5,7 +5,7 @@ import { formatMoney, type HomeEditionLabel } from '@/features/catalog';
 import type { LocationInterests } from '../application/interest-group';
 import type { InterestRecord } from '../application/ports';
 import { daysValue, instantLabel, messages } from './i18n/pt-br';
-import { interestRequestMessages, investmentAnswerLabel } from './i18n/interest-request-pt-br';
+import { interestRequestMessages } from './i18n/interest-request-pt-br';
 import {
   readHomeEditionInterests,
   readInterestContact,
@@ -180,26 +180,35 @@ function Unavailable({ message }: { readonly message: string }) {
   );
 }
 
-/** Pré-qualificação na copy aprovada; a média apresentada pelo histórico imutável (`02` §15, item 14). */
+/**
+ * Pré-qualificação na copy aprovada (spec ownership §14.5, §14.10): recursos para iniciar, a compatibilidade com a média
+ * só quando foi perguntada (com a média apresentada pelo histórico imutável, `02` §15 item 14), decisão e momento.
+ * Nenhum score, ordem ou interpretação: o SDR lê o que foi declarado.
+ */
 function QualificationEvidence({ view }: { readonly view: ContactView }) {
   const text = messages.contact;
   const qualification = view.qualification;
   if (qualification === null) return <Unavailable message={text.qualificationUnavailable} />;
-  const question = qualification.investmentQuestion;
+  const presented =
+    view.presented === null
+      ? null
+      : formatMoney(view.presented.amountMinor, view.presented.currency);
   return (
     <Evidence
       items={[
         {
-          label: text.investment,
-          value: `${request.investment[question].legend} ${investmentAnswerLabel(question, qualification.investmentAnswer)}`,
+          label: text.availableToStart,
+          value: request.availableToStart.answers[qualification.availableToStartBand],
         },
-        {
-          label: text.presented,
-          value:
-            view.presented === null
-              ? text.noneLabel
-              : formatMoney(view.presented.amountMinor, view.presented.currency),
-        },
+        ...(qualification.referenceFit === null
+          ? []
+          : [
+              {
+                label: text.referenceFit,
+                value: request.referenceFit.answers[qualification.referenceFit],
+              },
+            ]),
+        ...(presented === null ? [] : [{ label: text.presented, value: presented }]),
         {
           label: text.decisionUnit,
           value: request.decisionUnit.answers[qualification.decisionUnit],
@@ -228,6 +237,19 @@ export async function InterestContactPage({ interestId }: { readonly interestId:
         lead={homeEditionTitle(view.label)}
         context={{ href: paths.interest(view.interest.id), label: text.context }}
       />
+      <section className="lx-page-section" aria-labelledby="interest-second-home">
+        <h2 className="lx-display-s" id="interest-second-home">
+          {text.secondHomeTitle}
+        </h2>
+        <InterestEvidence interest={view.interest} label={view.label} />
+      </section>
+      <section className="lx-page-section" aria-labelledby="interest-qualification">
+        <h2 className="lx-display-s" id="interest-qualification">
+          {text.qualificationTitle}
+        </h2>
+        <QualificationEvidence view={view} />
+        <p className="lx-small">{text.note}</p>
+      </section>
       <section className="lx-page-section" aria-labelledby="interest-contact">
         <h2 className="lx-display-s" id="interest-contact">
           {text.contactTitle}
@@ -243,13 +265,6 @@ export async function InterestContactPage({ interestId }: { readonly interestId:
             ]}
           />
         )}
-      </section>
-      <section className="lx-page-section" aria-labelledby="interest-qualification">
-        <h2 className="lx-display-s" id="interest-qualification">
-          {text.qualificationTitle}
-        </h2>
-        <QualificationEvidence view={view} />
-        <p className="lx-small">{text.note}</p>
       </section>
     </InterestShell>
   );

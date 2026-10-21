@@ -2,49 +2,54 @@ import type { InterestModality } from './interest';
 
 /**
  * Pré-qualificação comercial do interesse (W6; `02` v4.3 REQ-022; `03` v3.15 §3.1 `interest_qualification`; spec
- * ownership §14.5; decisão do fundador de 2026-10-20). Três dimensões obrigatórias com códigos semânticos estáveis,
- * independentes da copy: contexto para a conversa comercial (BR-041, BR-064) — nunca score, faixa, prioridade,
- * aprovação, aquisição nem agendamento. Nenhum valor é gravado ou derivado da média projetada (BR-034).
+ * ownership §14.5; revisão do fundador de 2026-10-21). Inspirada em BANT adaptado a B2C high-ticket — o termo nunca
+ * aparece ao visitante: o Need vem do próprio interesse (Home Edition, modalidade, localização, dias); aqui ficam Budget,
+ * Authority e Timeline. Contexto para o SDR (BR-041, BR-064): nunca score, Hot/Warm/Cold, prioridade, aprovação,
+ * aquisição nem agendamento. Nenhum valor exato é gravado e nenhum valor é derivado da média projetada (BR-034).
  */
+
+/** Versão dos códigos e das faixas: uma mudança exige versão nova, e os registros antigos seguem interpretáveis. */
+export const QUALIFICATION_VERSION = 1;
 
 /**
- * Variantes da **dimensão de investimento** (nunca "Budget Fit" como nome universal): `reference_fit` compara a média
- * projetada apresentada com o que o interessado considera investir; `investment_definition` mede o estágio de definição
- * do investimento, sem valor.
+ * Faixa autodeclarada de recursos disponíveis para iniciar o investimento (versão 1, em reais) — para Owner e
+ * Co-Owner. Não é renda, patrimônio, comprovação, financiamento, preço nem capacidade financeira comprovada.
  */
-export const INVESTMENT_QUESTIONS = ['reference_fit', 'investment_definition'] as const;
-export type InvestmentQuestion = (typeof INVESTMENT_QUESTIONS)[number];
+export const AVAILABLE_TO_START_BANDS = [
+  'up_to_250k',
+  'from_250k_to_500k',
+  'from_500k_to_1m',
+  'from_1m_to_2_5m',
+  'from_2_5m_to_5m',
+  'above_5m',
+  'not_defined',
+] as const;
+export type AvailableToStartBand = (typeof AVAILABLE_TO_START_BANDS)[number];
 
-/** Respostas de cada variante, na ordem da interface. */
-export const INVESTMENT_ANSWERS = {
-  reference_fit: ['within', 'needs_understanding', 'above'],
-  investment_definition: ['range_defined', 'idea_without_range', 'needs_understanding'],
-} as const satisfies Record<InvestmentQuestion, readonly string[]>;
-
-export type InvestmentAnswer = (typeof INVESTMENT_ANSWERS)[InvestmentQuestion][number];
-
-/** Todos os códigos de resposta, sem repetição (o mesmo código pode valer em mais de uma variante). */
-export const ALL_INVESTMENT_ANSWERS: readonly InvestmentAnswer[] = [
-  ...new Set<InvestmentAnswer>(Object.values(INVESTMENT_ANSWERS).flat()),
-];
+/** Comparação declarada com a média projetada apresentada — só para Owner com média apresentada. */
+export const REFERENCE_FIT_ANSWERS = ['within', 'could_consider', 'above'] as const;
+export type ReferenceFit = (typeof REFERENCE_FIT_ANSWERS)[number];
 
 /** Unidade de decisão: quem participa da decisão — nenhum dado das outras pessoas. */
 export const DECISION_UNITS = ['self', 'with_partner_or_family', 'with_others'] as const;
 export type DecisionUnit = (typeof DECISION_UNITS)[number];
 
-/** Horizonte da decisão. */
+/** Horizonte da decisão; `immediate` (imediatamente ou nos próximos 30 dias) separado de quem pensa em até 3 meses. */
 export const DECISION_HORIZONS = [
-  'within_3_months',
-  'from_3_to_6_months',
-  'from_6_to_12_months',
-  'over_12_months',
+  'immediate',
+  'one_to_three_months',
+  'three_to_six_months',
+  'six_to_twelve_months',
+  'over_twelve_months',
   'exploring',
 ] as const;
 export type DecisionHorizon = (typeof DECISION_HORIZONS)[number];
 
 export interface InterestQualification {
-  readonly investmentQuestion: InvestmentQuestion;
-  readonly investmentAnswer: InvestmentAnswer;
+  readonly version: typeof QUALIFICATION_VERSION;
+  readonly availableToStartBand: AvailableToStartBand;
+  /** Só existe para Owner com média apresentada; `null` nos demais casos. */
+  readonly referenceFit: ReferenceFit | null;
   /** A média projetada que a página efetivamente apresentou (`02` §15, item 14); `null` = nenhuma. */
   readonly presentedProjectedInvestmentId: string | null;
   readonly decisionUnit: DecisionUnit;
@@ -52,18 +57,12 @@ export interface InterestQualification {
 }
 
 /**
- * Variante apresentada, decidida pela modalidade desejada e pelo contexto efetivamente apresentado — nunca pela média
- * vigente no envio: `reference_fit` só para Owner com média apresentada; `investment_definition` para Co-Owner (o valor
- * individual depende da configuração da Second Home, BR-034, BR-063) e para Owner sem média.
+ * A comparação com a média só é perguntada a Owner quando a página mostrou a média — nunca ao Co-Owner, cujo valor
+ * individual depende da configuração da Second Home (BR-034, BR-063), e nunca sem a referência apresentada.
  */
-export function investmentQuestionFor(
+export function asksReferenceFit(
   modality: InterestModality,
   hasPresentedReference: boolean,
-): InvestmentQuestion {
-  return modality === 'owner' && hasPresentedReference ? 'reference_fit' : 'investment_definition';
-}
-
-/** A resposta pertence à variante. */
-export function isAnswerOf(question: InvestmentQuestion, answer: string): boolean {
-  return (INVESTMENT_ANSWERS[question] as readonly string[]).includes(answer);
+): boolean {
+  return modality === 'owner' && hasPresentedReference;
 }
