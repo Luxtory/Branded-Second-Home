@@ -100,6 +100,17 @@ export interface HomeEditionLabel {
   readonly brandName: string;
 }
 
+/**
+ * Média projetada que uma página apresentou (W6, `02` §15 item 14): valor e moeda do registro imutável, lidos para a
+ * leitura auditada do Admin — nunca a vigente no momento da leitura.
+ */
+export interface ProjectedInvestmentReference {
+  readonly id: string;
+  readonly homeEditionId: string;
+  readonly amountMinor: bigint;
+  readonly currency: string;
+}
+
 /** Leituras do Admin sobre o catálogo, numa transação que também grava o `admin_read` (TECH-092). */
 export interface CatalogReader<Db> {
   brandPartners(db: Db): Promise<readonly BrandPartnerSummary[]>;

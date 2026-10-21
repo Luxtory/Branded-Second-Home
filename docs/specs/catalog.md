@@ -1683,10 +1683,10 @@ Complementa a §17 (spec [`ownership`](ownership.md) §14; [ADR-0018](../adr/001
 - **Leitura pública (§17.7):** a média projetada pública passa a levar também o seu `id` (coluna já concedida a `anon`
   na W4.2), para que o contexto de apresentação assine exatamente a referência que o bloco "Média projetada de
   investimento" mostrou (`02` §15, item 14). Nenhum valor novo é exposto.
-- **Consultas a outros módulos (§17.10):** `lockPublicHomeEdition` — dentro da transação do chamador, como
-  `luxtory_app`, trava a linha da Home Edition (`FOR SHARE`) e devolve o alvo só se ela for pública pela mesma regra da
-  policy `home_edition_public_read` (`visibility = 'public'` de Home Concept público); um teste de banco garante que a
-  consulta e a leitura `anon` concordam. `readProjectedInvestmentReferences` — valor e moeda das médias projetadas
+- **Consultas a outros módulos (§17.10):** `lockPublicHomeEdition` — dentro da transação do chamador, trava a linha da
+  Home Edition como `luxtory_app` (`FOR SHARE`) e lê a visibilidade pela própria policy `home_edition_public_read`
+  (como `anon`, na mesma transação, voltando ao papel da sessão em seguida) — nenhuma regra de visibilidade repetida;
+  um teste de banco confere que ela e a leitura `anon` concordam em todos os estados. `readProjectedInvestmentReferences` — valor e moeda das médias projetadas
   apresentadas, para a leitura auditada do Admin.
 - **Edge cases (§17.12):** a média projetada alterada entre a apresentação e a manifestação fica resolvida pela W6 (a
   pré-qualificação guarda a referência apresentada); a Home Edition retirada do público entre a página e o envio é

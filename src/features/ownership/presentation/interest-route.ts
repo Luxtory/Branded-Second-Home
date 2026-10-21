@@ -2,17 +2,12 @@ import { randomUUID } from 'node:crypto';
 import {
   BODY_NOT_TEXT,
   BODY_TOO_LARGE,
-  createMemoryRateLimiter,
-  createUpstashRateLimiter,
   errorResponse,
-  getDatabase,
   isDatabaseUnavailable,
-  isInterestWriteOpen,
   isJsonRequest,
   isSameOrigin,
-  loadEnv,
-  loadRuntimeConfig,
   pseudonymizeNetwork,
+  PublicAttemptUnverifiableError,
   RateLimiterUnavailableError,
   readBoundedText,
   systemClock,
@@ -20,111 +15,34 @@ import {
   unavailableKeys,
   withRoute,
   type Clock,
-  type Database,
-  type Env,
   type EnvSource,
   type ErrorCode,
-  type RateLimiter,
-  type RateLimitPolicies,
   type RouteContext,
 } from '@/features/platform';
-import type { InterestStore, InterestTargets } from '../application/ports';
+import type { InterestFieldIssue } from '../application/interest-input';
 import {
   INTEREST_SURFACE,
   registerInterest,
-  type InterestFieldIssue,
   type InterestRegistration,
 } from '../application/register-interest';
 import { INTEREST_BODY_MAX_BYTES } from '../domain/interest';
-import { createCatalogInterestTargets } from '../infrastructure/catalog-interest-targets';
-import { createPostgresInterestStore } from '../infrastructure/postgres-interest-store';
+import type { PrivacyNotice } from '../domain/privacy-notice';
+import { loadInterestConfig, type InterestAdapters, type InterestConfig } from './interest-config';
+import { isInterestCollectionOpen } from './interest-gate';
 
 const HTTP_CREATED = 201;
 const NO_STORE = 'no-store';
 
-/**
- * Chaves comuns aos dois modos (runbook, TECH-001): limites e o segredo da pseudonimização da origem de rede — o da BP1,
- * com separação de domínio pela superfície (STRIDE ownership T-407). O modo real acrescenta Upstash e o prazo.
- */
-const COMMON_KEYS = [
-  'BRAND_PARTNERS_CONTACT_HMAC_SECRET',
-  'INTEREST_NETWORK_LIMIT',
-  'INTEREST_NETWORK_WINDOW_SECONDS',
-  'INTEREST_GLOBAL_LIMIT',
-  'INTEREST_GLOBAL_WINDOW_SECONDS',
-] as const;
-const LIVE_KEYS = [
-  'UPSTASH_REDIS_REST_URL',
-  'UPSTASH_REDIS_REST_TOKEN',
-  'INTEREST_LIMITER_TIMEOUT_MS',
-] as const;
-
-interface InterestConfig {
-  readonly env: Env;
-  readonly hmacSecret: string;
-  readonly limiter: RateLimiter;
-  readonly store: InterestStore;
-  readonly targets: InterestTargets;
-}
-
-export interface InterestRouteOptions {
+export interface InterestRouteOptions extends InterestAdapters {
   /** Ambiente lido pela rota (injeção nos testes). */
   readonly env?: EnvSource;
-  /** Adaptadores no lugar dos do ambiente, depois da configuração validada (injeção nos testes). */
-  readonly limiter?: RateLimiter;
-  readonly database?: Database;
-  readonly store?: InterestStore;
-  readonly targets?: InterestTargets;
+  /** Aviso de Privacidade considerado pelo portão (injeção nos testes; o padrão é o versionado). */
+  readonly notice?: PrivacyNotice;
   readonly clock?: Clock;
   readonly newId?: () => string;
 }
 
-// Limitador determinístico de local/CI: contadores em memória do processo.
-let fakeLimiter: RateLimiter | null = null;
-
-function limiterFor(env: Env, policies: RateLimitPolicies, source: EnvSource, namespace: string) {
-  if (env.INTEREST_LIMITER_MODE === 'fake') {
-    fakeLimiter ??= createMemoryRateLimiter(policies);
-    return fakeLimiter;
-  }
-  const live = loadRuntimeConfig(LIVE_KEYS, source);
-  return createUpstashRateLimiter({
-    url: live.UPSTASH_REDIS_REST_URL,
-    token: live.UPSTASH_REDIS_REST_TOKEN,
-    namespace,
-    policies,
-    timeoutMs: live.INTEREST_LIMITER_TIMEOUT_MS,
-  });
-}
-
-/** Configuração completa do ambiente ou erro explícito com os nomes das chaves (TECH-001); nunca um default. */
-function loadInterestConfig(source: EnvSource, options: InterestRouteOptions): InterestConfig {
-  const env = loadEnv(source);
-  const common = loadRuntimeConfig(COMMON_KEYS, source);
-  const policies: RateLimitPolicies = {
-    network: {
-      limit: common.INTEREST_NETWORK_LIMIT,
-      windowSeconds: common.INTEREST_NETWORK_WINDOW_SECONDS,
-    },
-    global: {
-      limit: common.INTEREST_GLOBAL_LIMIT,
-      windowSeconds: common.INTEREST_GLOBAL_WINDOW_SECONDS,
-    },
-  };
-  const namespace = `luxtory:${INTEREST_SURFACE}:${env.VERCEL_ENV ?? 'local'}`;
-  const limiter = options.limiter ?? limiterFor(env, policies, source, namespace);
-  const needsDatabase = options.store === undefined || options.targets === undefined;
-  const db = needsDatabase ? (options.database ?? getDatabase(source)) : null;
-  return {
-    env,
-    hmacSecret: common.BRAND_PARTNERS_CONTACT_HMAC_SECRET,
-    limiter,
-    store: options.store ?? createPostgresInterestStore(db as Database),
-    targets: options.targets ?? createCatalogInterestTargets(db as Database),
-  };
-}
-
-/** Resultado registrado no log: só códigos de um conjunto fechado, nunca campos, corpo, IP, chave ou hash. */
+/** Resultado registrado no log: só códigos de um conjunto fechado, nunca campos, corpo, IP, chave, hash ou contexto. */
 type Stage =
   | 'closed'
   | 'configuration'
@@ -137,6 +55,7 @@ type Stage =
   | 'database'
   | 'json'
   | 'schema'
+  | 'idempotency'
   | 'not_found'
   | 'conflict'
   | 'registered'
@@ -155,7 +74,7 @@ const reject = (code: ErrorCode, correlationId: string, stage: Stage, reason?: s
   ...(reason === undefined ? {} : { reason }),
 });
 
-/** `ERR_VALIDATION` com os campos recusados: só nome e código, nunca o valor enviado (spec ownership §5.1). */
+/** `ERR_VALIDATION` com os campos recusados: só nome e código, nunca o valor enviado (spec ownership §5.1, §14.4). */
 async function validationResponse(issues: readonly InterestFieldIssue[], correlationId: string) {
   const base = errorResponse('ERR_VALIDATION', correlationId);
   const body = (await base.json()) as Readonly<Record<string, unknown>>;
@@ -195,7 +114,9 @@ async function handleInterest(
 ): Promise<Outcome> {
   let config: InterestConfig;
   try {
-    if (!isInterestWriteOpen(source)) return reject('ERR_NOT_FOUND', correlationId, 'closed');
+    if (!isInterestCollectionOpen(source, options.notice)) {
+      return reject('ERR_NOT_FOUND', correlationId, 'closed');
+    }
     config = loadInterestConfig(source, options);
   } catch (error) {
     // Ambiente inválido ou incompleto: falha fechada, nomeando só as chaves.
@@ -238,15 +159,23 @@ async function handleInterest(
     store: config.store,
     clock: options.clock ?? systemClock,
     newId: options.newId ?? randomUUID,
+    hashKey: config.hashKey,
+    contextKeys: config.contextKeys,
   });
   return registrationOutcome(registration, correlationId);
 }
 
-/** Banco inalcançável ou recusado no ambiente durante o registro: `503` sem detalhe; o resto é erro interno. */
+/**
+ * Banco inalcançável, configuração recusada ou registro de idempotência não verificável (ADR-0018): `503` sem detalhe
+ * e sem efeito; o resto é erro interno. O log leva só o nome do erro, nunca a mensagem do banco (que traz a linha).
+ */
 function failureOutcome(error: unknown, correlationId: string): Outcome {
   const keys = unavailableKeys(error);
   if (keys !== null)
     return reject('ERR_UNAVAILABLE', correlationId, 'configuration', keys.join(','));
+  if (error instanceof PublicAttemptUnverifiableError) {
+    return reject('ERR_UNAVAILABLE', correlationId, 'idempotency', 'hash_key_unavailable');
+  }
   if (isDatabaseUnavailable(error)) {
     return reject('ERR_UNAVAILABLE', correlationId, 'database', 'unavailable');
   }
@@ -259,9 +188,10 @@ function failureOutcome(error: unknown, correlationId: string): Outcome {
 }
 
 /**
- * `POST /v1/interests` (OpenAPI `createInterest`, spec ownership §5), sem o `withRoute` (injeção nos testes). Portão e
- * configuração → origem → tipo e corpo → limitador → schema e chave → idempotência → alvo público → registro. Toda
- * resposta é `no-store`, sem CORS. Erros nunca sobem crus ao `withRoute`: o log leva só etapa, código e duração.
+ * `POST /v1/interests` (OpenAPI `createInterest`, spec ownership §5 e §14), sem o `withRoute` (injeção nos testes).
+ * Portões e configuração → origem → tipo e corpo → limitador → schema, contexto e chave → idempotência → alvo público →
+ * registro com revalidação. Toda resposta é `no-store`, sem CORS. Erros nunca sobem crus ao `withRoute`: o log leva só
+ * etapa, código e duração.
  */
 export function createInterestRoute(options: InterestRouteOptions = {}) {
   return async (request: Request, { correlationId, log }: RouteContext): Promise<Response> => {

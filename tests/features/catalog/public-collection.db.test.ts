@@ -165,7 +165,11 @@ describe('Coleção — leitura pública como anon', () => {
             name: 'Edição Varanda',
             ...facts,
             suites: 4,
-            projectedInvestment: { amountMinor: 4_800_000_000n, currency: 'BRL' },
+            projectedInvestment: {
+              id: expect.any(String),
+              amountMinor: 4_800_000_000n,
+              currency: 'BRL',
+            },
             // A imagem principal é a imagem aprovada, nunca a planta.
             cover: expect.objectContaining({ mediaId: image.id }),
             createdAt: start,
@@ -190,7 +194,7 @@ describe('Coleção — leitura pública como anon', () => {
     const homeEdition = await publishedHomeEdition(homeConceptId);
     const value = await build.projectedInvestment(homeEdition.id, 4_800_000 * REAIS);
     const current = async () => (await entries())[0]?.homeEditions[0]?.projectedInvestment;
-    expect(await current()).toEqual({ amountMinor: 480_000_000n, currency: 'BRL' });
+    expect(await current()).toEqual({ id: value.id, amountMinor: 480_000_000n, currency: 'BRL' });
     harness = catalogHarness(db, controlledClock(new Date(start.getTime() + HOUR / 2)));
     await harness.ok(harness.handlers.endHomeEditionProjectedInvestment, {
       home_edition_projected_investment_id: value.id,

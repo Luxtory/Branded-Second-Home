@@ -347,7 +347,7 @@ para a Coleção), contexto de apresentação recusado (pede para atualizar a p�
 | Texto | Valor |
 |---|---|
 | Título | Solicite uma conversa sobre esta Home Edition |
-| Apoio | Conte como você imagina sua Second Home a partir da {Home Edition}. |
+| Apoio | Conte como você imagina sua Second Home a partir desta Home Edition. |
 | Modalidade | "Como você imagina ter sua Second Home?" — Owner: "Você como proprietário do imóvel."; Co-Owner: "Você como acionista da SPE proprietária do imóvel." (`D-B2C-19`) |
 | Localização pretendida | "Onde você imagina sua Second Home?" — dica: "Cidade, região ou destino, do jeito que preferir." |
 | Dias (Co-Owner) | "Quantos dias por ano, aproximadamente?" — dica: "Para Co-Owner, os dias informados representam apenas uma preferência e não criam Direito de Uso." (P-3) |
@@ -503,7 +503,7 @@ O navegador só o devolve; nunca é confiado como dado do cliente.
   desconhecida → tentativa não verificável → `503` sem efeito. HMAC é pseudonimização, não anonimização; rotação ou
   descarte do segredo não é eliminação.
 - **Transação (`READ COMMITTED`):** reserva da chave → revalidação da Home Edition **dentro da transação**, com trava
-  de leitura da linha (`FOR SHARE`) e a mesma regra pública da RLS (`visibility = 'public'` de Home Concept público) —
+  de leitura da linha (`FOR SHARE`) e a visibilidade lida pela própria RLS pública (como `anon`, sem repetir a regra) —
   uma retirada concorrente espera ou é vista → `interest` → `interest_contact` → `interest_qualification`. Home
   Edition fora do público na revalidação → a transação é desfeita (inclusive a chave) e a resposta é `404`: nada é
   gravado. Falha em qualquer etapa → nenhum efeito. Concorrência com a mesma chave → exatamente um `interest`, um

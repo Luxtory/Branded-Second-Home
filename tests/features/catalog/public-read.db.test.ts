@@ -208,12 +208,17 @@ describe('catálogo — leitura pública como anon', () => {
     const { build } = harness;
     const { homeConceptId } = await publicHomeConcept();
     const published = await publishedHomeEdition(homeConceptId);
-    await build.projectedInvestment(published.id, 480_000_000);
+    const current = await build.projectedInvestment(published.id, 480_000_000);
     // A RLS usa o `now()` do banco: a média futura começa depois do instante real.
     await build.projectedInvestment(published.id, 520_000_000, new Date(Date.now() + 10 * DAY));
 
     const read = await homeEdition(homeConceptId, published.id);
-    expect(read?.projectedInvestment).toEqual({ amountMinor: 480_000_000n, currency: 'BRL' });
+    // O id é o do registro vigente: o contexto de apresentação da W6 assina exatamente esta referência.
+    expect(read?.projectedInvestment).toEqual({
+      id: current.id,
+      amountMinor: 480_000_000n,
+      currency: 'BRL',
+    });
     for (const key of [
       'region',
       'modality',
@@ -225,6 +230,7 @@ describe('catálogo — leitura pública como anon', () => {
     }
     const entry = (await collection()).find((item) => item.id === homeConceptId);
     expect(entry?.homeEditions[0]?.projectedInvestment).toEqual({
+      id: current.id,
       amountMinor: 480_000_000n,
       currency: 'BRL',
     });

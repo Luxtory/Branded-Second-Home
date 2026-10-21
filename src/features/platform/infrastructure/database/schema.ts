@@ -243,6 +243,24 @@ export interface AppInterest {
   partner_ref: string | null;
 }
 
+export interface AppInterestContact {
+  created_at: Timestamp;
+  email: string;
+  interest_id: string;
+  name: string;
+  phone: string;
+}
+
+export interface AppInterestQualification {
+  created_at: Timestamp;
+  decision_horizon: string;
+  decision_unit: string;
+  interest_id: string;
+  investment_answer: string;
+  investment_question: string;
+  presented_projected_investment_id: string | null;
+}
+
 export interface AppInvestorAuthorization {
   created_at: Timestamp;
   home_concept_id: string;
@@ -302,6 +320,8 @@ export interface AppOutboxReceipt {
 
 export interface AppPublicIdempotencyKey {
   created_at: Timestamp;
+  hash_key_id: string | null;
+  hash_scheme: string;
   idempotency_key: string;
   request_hash: string;
   surface: string;
@@ -346,6 +366,8 @@ export interface DB {
   'app.home_edition_projected_investment': AppHomeEditionProjectedInvestment;
   'app.idempotency_record': AppIdempotencyRecord;
   'app.interest': AppInterest;
+  'app.interest_contact': AppInterestContact;
+  'app.interest_qualification': AppInterestQualification;
   'app.investor_authorization': AppInvestorAuthorization;
   'app.notification': AppNotification;
   'app.operation': AppOperation;

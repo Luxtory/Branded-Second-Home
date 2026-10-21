@@ -100,13 +100,19 @@ export {
 } from './presentation/public-request';
 
 // W5 — idempotência de mutações públicas não críticas (ADR-0017), fora do pipeline de commands críticos.
+// W6 — hash chaveado com esquema por registro (ADR-0018).
 export {
   isPublicIdempotencyKey,
+  keyedPublicAttempt,
   priorAttempt,
   publicAttempt,
+  PublicAttemptUnverifiableError,
   type PriorAttempt,
   type PublicAttempt,
   type PublicAttemptClaim,
+  type PublicHashKey,
+  type PublicHashScheme,
+  type StoredPublicHash,
 } from './application/public-idempotency';
 export {
   claimPublicAttempt,

@@ -41,7 +41,10 @@ function homeEdition(
     guestsMax: facts.guests,
     suites: facts.suites,
     projectedAreaM2: facts.area,
-    projectedInvestment: investment === null ? null : { amountMinor: investment, currency: 'BRL' },
+    projectedInvestment:
+      investment === null
+        ? null
+        : { id: `investment-${name}`, amountMinor: investment, currency: 'BRL' },
     cover: null,
     createdAt: new Date(Date.UTC(2026, 9, 1)),
   };

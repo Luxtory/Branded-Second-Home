@@ -3,6 +3,7 @@ import {
   type PriorAttempt,
   type PublicAttempt,
   type PublicAttemptClaim,
+  type PublicHashScheme,
 } from '../../application/public-idempotency';
 import type { Database, DatabaseTransaction } from '../database/connection';
 
@@ -14,18 +15,30 @@ export class PublicIdempotencyError extends Error {
   }
 }
 
-/** Repetição ou conflito de uma chave já usada com sucesso; `null` se a chave nunca foi usada (ADR-0017). */
+/**
+ * Repetição ou conflito de uma chave já usada com sucesso; `null` se a chave nunca foi usada (ADR-0017). Registro com
+ * esquema ou chave que a tentativa não sabe verificar → `PublicAttemptUnverifiableError` (ADR-0018).
+ */
 export async function findPublicAttempt(
   db: Database | DatabaseTransaction,
   attempt: PublicAttempt,
 ): Promise<PriorAttempt | null> {
   const row = await db
     .selectFrom('app.public_idempotency_key')
-    .select('request_hash')
+    .select(['request_hash', 'hash_scheme', 'hash_key_id'])
     .where('surface', '=', attempt.surface)
     .where('idempotency_key', '=', attempt.key)
     .executeTakeFirst();
-  return row === undefined ? null : priorAttempt(row.request_hash, attempt);
+  if (row === undefined) return null;
+  return priorAttempt(
+    {
+      requestHash: row.request_hash,
+      // O CHECK do banco garante o valor do enum.
+      hashScheme: row.hash_scheme as PublicHashScheme,
+      hashKeyId: row.hash_key_id,
+    },
+    attempt,
+  );
 }
 
 /**
@@ -44,6 +57,8 @@ export async function claimPublicAttempt(
       surface: attempt.surface,
       idempotency_key: attempt.key,
       request_hash: attempt.requestHash,
+      hash_scheme: attempt.hashScheme,
+      hash_key_id: attempt.hashKeyId,
       created_at: at,
     })
     .onConflict((conflict) => conflict.columns(['surface', 'idempotency_key']).doNothing())
