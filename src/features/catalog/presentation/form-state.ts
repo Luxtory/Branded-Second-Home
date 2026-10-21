@@ -24,7 +24,9 @@ export type FieldErrorCode =
   | 'invalid_image'
   | 'invalid_amount'
   | 'not_in_future'
-  | 'nothing_to_correct';
+  | 'nothing_to_correct'
+  | 'invalid_document'
+  | 'party_not_found';
 
 export type FormRejection =
   'invalid' | 'state' | 'not_found' | 'permission' | 'conflict' | 'unavailable' | 'unexpected';
@@ -45,6 +47,8 @@ export const initialFormState = (
 ): FormState => ({ key, values, fieldErrors: {}, rejection: null });
 
 const CUSTOM: ReadonlySet<string> = new Set([
+  // CPF/CNPJ do Investor (W7): a validação é do módulo identity.
+  'invalid_document',
   FORBIDDEN_TERM,
   INVALID_TIME_ZONE,
   DUPLICATE_ITEM,

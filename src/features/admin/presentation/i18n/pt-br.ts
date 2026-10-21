@@ -14,6 +14,7 @@ export const messages = {
     home: 'Início',
     catalog: 'Catálogo',
     interests: 'Interesses',
+    parties: 'Partes',
   },
   home: {
     title: 'Administração',
@@ -35,6 +36,10 @@ export const messages = {
         includesLabel: 'Inclui',
         includes:
           'Manifestações de interesse por Home Edition, localização pretendida e modalidade',
+      },
+      parties: {
+        includesLabel: 'Inclui',
+        includes: 'CPF e CNPJ cadastrados (mascarados) e convites de representantes',
       },
     },
   },

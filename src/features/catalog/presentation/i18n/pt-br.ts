@@ -115,6 +115,8 @@ export const messages = {
       invalid_amount: 'Digite o valor em reais, por exemplo 4.800.000 ou 4.800.000,00.',
       not_in_future: 'Escolha um instante no futuro, ou deixe vazio para começar agora.',
       nothing_to_correct: 'Preencha o nome, a descrição ou os dois.',
+      invalid_document: 'CPF ou CNPJ inválido. Confira os dígitos.',
+      party_not_found: 'Nenhuma parte com este CPF ou CNPJ. Cadastre a parte em Partes antes.',
     },
     rejections: {
       invalid: 'Revise os campos indicados.',
@@ -253,7 +255,10 @@ export const messages = {
   newAuthorization: {
     title: 'Registrar autorização de Investor',
     lead: 'A autorização da Luxtory para um Investor financiar ou desenvolver Second Homes deste Home Concept.',
-    notice: 'Sem dados pessoais: o registro guarda o instrumento e a vigência.',
+    notice:
+      'O Investor é identificado pelo CPF ou CNPJ de uma parte já cadastrada em Partes; o documento não fica guardado neste registro, só o vínculo com a parte.',
+    documentLabel: 'CPF ou CNPJ do Investor',
+    documentHint: 'Com ou sem pontuação. A parte precisa estar cadastrada antes.',
     refLabel: 'Instrumento de autorização',
     refHint: 'Referência estável do instrumento (por exemplo, o número do contrato).',
     fromLabel: 'Início da vigência',
