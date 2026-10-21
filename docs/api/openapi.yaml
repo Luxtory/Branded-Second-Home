@@ -1569,13 +1569,20 @@ paths:
   /interests:
     post:
       tags: [ownership]
-      summary: Registra uma manifestação de interesse numa Home Edition publicada (REQ-022–REQ-025)
+      summary: Registra a solicitação de conversa numa Home Edition publicada — interesse, contato e pré-qualificação (REQ-022–REQ-025)
       description: |
-        Público e sem conta (spec `ownership` §5). Ordem: publicação (`PUBLIC_SITE` e `INTEREST_WRITES`) e
-        configuração → `Origin` do mesmo host → tipo de conteúdo e corpo de até 8 KiB efetivos → limite distribuído por
-        origem de rede e global (conta também as tentativas recusadas depois) → schema fechado e `Idempotency-Key` →
-        chave já usada (replay ou conflito) → Home Edition publicada → registro atômico → resposta. Sem CORS:
-        nenhuma resposta traz `Access-Control-Allow-Origin`.
+        Público e sem conta (spec `ownership` §5 e §14). Ordem: publicação (`PUBLIC_SITE`, `INTEREST_WRITES` e, em
+        Production, Aviso de Privacidade aprovado) e configuração → `Origin` do mesmo host → tipo de conteúdo e corpo
+        de até 16 KiB efetivos → limite distribuído por origem de rede e global (conta também as tentativas recusadas
+        depois) → schema fechado, contexto de apresentação assinado e `Idempotency-Key` → chave já usada (replay ou
+        conflito) → Home Edition publicada → registro atômico (com nova verificação da Home Edition dentro da
+        transação) → resposta. Sem CORS: nenhuma resposta traz `Access-Control-Allow-Origin`.
+
+        O envio é **solicitação de conversa**, não agendamento: registra o interesse, o contato (`interest_contact`) e a
+        pré-qualificação (`interest_qualification`) sem criar aquisição, conta, Titular, prioridade ou classificação
+        (REQ-022). A pré-qualificação fica vinculada à média projetada **apresentada** pela página, provada pelo
+        `presentation_context` (`02` §15, item 14); Home Edition que deixou de ser pública antes do envio → `404` sem
+        nada gravado (item 15).
 
         O interesse é preferência comercial: **não constitui aquisição** (REQ-024) e **nunca cria Ação, Direito de Uso**
         ou prerrogativa (REQ-025); `origin` e `partner_ref` são metadados declarados, sem efeito (REQ-023). Repetir com a
@@ -1595,7 +1602,7 @@ paths:
       requestBody:
         required: true
         description: |
-          JSON (`application/json`, UTF-8) de até 8 KiB. Textos sem espaços nas pontas e com espaços internos reduzidos a
+          JSON (`application/json`, UTF-8) de até 16 KiB. Textos sem espaços nas pontas e com espaços internos reduzidos a
           um; limites em pontos de código Unicode; controles recusados. Nenhum campo além dos listados é aceito.
         content:
           application/json:
@@ -1618,8 +1625,9 @@ paths:
         '400':
           description: |
             `ERR_VALIDATION`: JSON inválido, schema fechado violado, campo fora do limite, `Idempotency-Key` ausente ou
-            fora do formato UUID, ou `approx_days` ausente para Co-Owner ou informado para Owner. `fields` traz só
-            nomes e códigos dos campos, nunca valores.
+            fora do formato UUID, `approx_days` ausente para Co-Owner ou informado para Owner, `presentation_context`
+            com assinatura, versão, chave ou Home Edition divergentes, ou `investment_question` diferente da variante
+            apresentada. `fields` traz só nomes e códigos dos campos, nunca valores.
           headers:
             x-correlation-id:
               $ref: '#/components/headers/CorrelationId'
@@ -1642,8 +1650,9 @@ paths:
                 $ref: '#/components/schemas/Error'
         '404':
           description: |
-            `ERR_NOT_FOUND`: escrita de interesse fechada neste ambiente (`PUBLIC_SITE`, `INTEREST_WRITES`), ou Home
-            Edition fora do público (em preparação ou retirada do público) ou inexistente (as causas respondem igual).
+            `ERR_NOT_FOUND`: escrita de interesse fechada neste ambiente (`PUBLIC_SITE`, `INTEREST_WRITES`, Aviso de
+            Privacidade não aprovado em Production), ou Home Edition fora do público (em preparação, retirada do público
+            antes ou durante o envio) ou inexistente (as causas respondem igual). Nada é registrado.
           headers:
             x-correlation-id:
               $ref: '#/components/headers/CorrelationId'
@@ -1667,7 +1676,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '413':
-          description: '`ERR_PAYLOAD_TOO_LARGE`: corpo acima de 8 KiB.'
+          description: '`ERR_PAYLOAD_TOO_LARGE`: corpo acima de 16 KiB.'
           headers:
             x-correlation-id:
               $ref: '#/components/headers/CorrelationId'
@@ -1718,7 +1727,8 @@ paths:
         '503':
           description: |
             `ERR_UNAVAILABLE`: configuração ausente ou inválida (TECH-001), limitador indisponível ou sem resposta no
-            prazo, ou banco indisponível; nada é registrado. Repetir com a mesma `Idempotency-Key` e o mesmo conteúdo.
+            prazo, banco indisponível, ou registro de idempotência gravado com uma chave de hash que este ambiente não
+            tem (ADR-0018); nada é registrado. Repetir com a mesma `Idempotency-Key` e o mesmo conteúdo.
           headers:
             x-correlation-id:
               $ref: '#/components/headers/CorrelationId'
@@ -2184,11 +2194,24 @@ components:
     InterestRequest:
       type: object
       description: |
-        Campos canônicos do `interest` (`03` §3.1; spec `ownership` §5.1 e §13). Sem dado de contato (W6). A manifestação
-        parte de uma Home Edition publicada; o Home Concept vem dela. `origin` e `partner_ref` são metadados declarados e
-        não confiáveis: nunca concedem acesso, autorização, representação, comissão ou atribuição comercial.
+        Solicitação de conversa (spec `ownership` §5.1, §13 e §14.4): os campos canônicos do `interest`, o contato
+        (`interest_contact`) e a pré-qualificação (`interest_qualification`) do `03` §3.1. A manifestação parte de uma
+        Home Edition publicada; o Home Concept vem dela. `origin` e `partner_ref` são metadados declarados e não
+        confiáveis: nunca concedem acesso, autorização, representação, comissão ou atribuição comercial. Nenhum outro dado
+        (CPF, renda, patrimônio, financiamento, valor, mensagem livre ou dados de terceiros) é aceito.
       additionalProperties: false
-      required: [home_edition_id, modality, desired_location]
+      required:
+        - home_edition_id
+        - modality
+        - desired_location
+        - investment_question
+        - investment_answer
+        - decision_unit
+        - decision_horizon
+        - name
+        - phone
+        - email
+        - presentation_context
       properties:
         home_edition_id:
           type: string
@@ -2216,6 +2239,54 @@ components:
           type: [string, 'null']
           description: Referência declarada de parceiro/atribuição — opcional, até 200 caracteres; vazio = ausente.
           maxLength: 200
+        investment_question:
+          $ref: '#/components/schemas/InterestInvestmentQuestion'
+        investment_answer:
+          type: string
+          enum: [within, needs_understanding, above, range_defined, idea_without_range]
+          description: |
+            Resposta da dimensão de investimento, da variante apresentada: `reference_fit` → `within`,
+            `needs_understanding`, `above`; `investment_definition` → `range_defined`, `idea_without_range`,
+            `needs_understanding`. Código de outra variante → `invalid`. Nunca valor nem faixa numérica.
+        decision_unit:
+          type: string
+          enum: [self, with_partner_or_family, with_others]
+          description: Unidade de decisão — quem participa da decisão; nenhum dado das outras pessoas.
+        decision_horizon:
+          type: string
+          enum: [within_3_months, from_3_to_6_months, from_6_to_12_months, over_12_months, exploring]
+          description: Horizonte da decisão.
+        name:
+          type: string
+          description: Nome do interessado — 1 a 200 caracteres depois da normalização.
+          minLength: 1
+          maxLength: 200
+        phone:
+          type: string
+          description: |
+            Telefone ou WhatsApp — até 32 caracteres como digitado; espaços, parênteses, hífens e pontos são removidos e o
+            resultado precisa ser `+` inicial opcional e 8 a 15 dígitos. O código do país nunca é inferido.
+          minLength: 1
+          maxLength: 32
+        email:
+          type: string
+          description: E-mail — até 254 caracteres; domínio guardado em minúsculas.
+          minLength: 3
+          maxLength: 254
+        presentation_context:
+          type: string
+          description: |
+            Contexto de apresentação emitido pela página da Home Edition (ADR-0018): prova assinada pelo servidor de qual
+            média projetada foi apresentada (ou de que nenhuma foi). Opaco para o cliente; até 512 caracteres.
+          minLength: 1
+          maxLength: 512
+    InterestInvestmentQuestion:
+      type: string
+      enum: [reference_fit, investment_definition]
+      description: |
+        Variante da dimensão de investimento que a página apresentou (spec `ownership` §14.5): `reference_fit` só para
+        Owner com média projetada apresentada; `investment_definition` para Co-Owner e para Owner sem média. Outra →
+        `not_allowed`.
     InterestRegistered:
       type: object
       additionalProperties: false
@@ -2240,7 +2311,21 @@ components:
                 properties:
                   field:
                     type: string
-                    enum: [home_edition_id, modality, desired_location, approx_days, origin, partner_ref]
+                    enum:
+                      - home_edition_id
+                      - modality
+                      - desired_location
+                      - approx_days
+                      - origin
+                      - partner_ref
+                      - investment_question
+                      - investment_answer
+                      - decision_unit
+                      - decision_horizon
+                      - name
+                      - phone
+                      - email
+                      - presentation_context
                   code:
                     type: string
                     enum: [required, too_long, invalid, not_allowed]

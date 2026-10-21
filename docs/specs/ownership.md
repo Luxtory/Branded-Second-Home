@@ -8,6 +8,8 @@
 > Threat model: [`docs/security/threats/ownership.md`](../security/threats/ownership.md)
 > Plano: [W5 em `implementation-waves.md`](../plan/implementation-waves.md#wave-5--interesse-núcleo), com a revisão
 > aprovada pelo fundador em 2026-10-19; correção estrutural da W4.2 na [§13](#13-w42--interesse-a-partir-da-home-edition).
+> W6 (2026-10-20): solicitação de conversa na Home Edition, contato e pré-qualificação na
+> [§14](#14-w6--solicitação-de-conversa-na-home-edition); [ADR-0018](../adr/0018-contato-e-pre-qualificacao-do-interesse.md).
 
 Módulo `ownership` do TECH-011. A W5 entrega só a manifestação de interesse; formalização, Ação, holding e Direito de
 Uso chegam nas W8 em diante. Esta spec cita os canônicos (`01` v10.2, `02` v4.3, `03` v3.15) e não os parafraseia.
@@ -259,3 +261,374 @@ BR-032, BR-062; `02` v4.3 REQ-022; `03` v3.15 §3.1 `interest`):
 - Ficam para a W6: `interest_contact`, `interest_qualification`, telefone, HMAC de PII, Aviso de Privacidade,
   formulário na página da Home Edition, pré-qualificação e Budget Fit. A escrita continua fechada em Production
   (`INTEREST_WRITES`).
+
+## 14. W6 — Solicitação de conversa na Home Edition
+
+> Decisões do fundador: P-3 (2026-10-19, vigente onde não superada), plano executivo da W6 (D-W6-1 a D-W6-3,
+> 2026-10-19), correção do modelo da Home Edition (2026-10-19, noite) e checkpoint da dimensão de investimento
+> (2026-10-20, alternativa A com ajustes). Esta seção prevalece sobre as anteriores onde diferir.
+> [ADR-0018](../adr/0018-contato-e-pre-qualificacao-do-interesse.md) · STRIDE `ownership`
+> [§W6](../security/threats/ownership.md#w6--solicitação-de-conversa-na-home-edition-2026-10-20) ·
+> [inventário LGPD](../security/lgpd-interesse.md). A branch provisória `feat/w6-interesse-formulario` (`9e41101`) é
+> só referência histórica: o que valia foi portado conceitualmente; a página separada de Interesse foi descartada.
+
+### 14.1 Goal
+
+Na própria página pública da Home Edition, receber a **solicitação de conversa** do interessado: a manifestação de
+interesse (§5, §13), o contato (`interest_contact`) e a pré-qualificação comercial estruturada
+(`interest_qualification`) do `03` v3.15 §3.1 — e dar ao Admin uma leitura mínima e auditada desse material
+(BR-041, BR-062, BR-064). A coleta continua **fechada** em Production até os gates de go-live (§14.12).
+
+- **IDs (complementa)**: REQ-022, REQ-024, REQ-025, REQ-100, REQ-101 (e REQ-103 no formulário); `02` §15, itens 14 e
+  15. A W6 não é dona de REQ.
+- **TECH**: TECH-001, TECH-033, TECH-056 (ADR-006), TECH-092, TECH-100, TECH-110. **BR**: BR-030–BR-036, BR-041,
+  BR-050, BR-060–BR-065.
+
+Jornada: **Home Edition → manifestação de interesse e pré-qualificação → solicitação de conversa**. O envio não é
+aquisição, agendamento, criação de Titular, conta ou cadastro, reserva, prioridade nem classificação (REQ-022, REQ-024,
+REQ-025, BR-050, BR-065).
+
+### 14.2 Non-goals
+
+- Rota ou página pública de Interesse separada; escolha de Home Edition ou de região no formulário; Home Concept no
+  `interest` (vem da Home Edition, §13).
+- Consentimento: sem checkbox, sem botão "consentir", sem consentimento presumido. Transparência pelo Aviso de
+  Privacidade da jornada (§14.11); a base legal proposta é **hipótese** sujeita à validação jurídica. Marketing e
+  newsletter não fazem parte da submissão.
+- Qualquer outro dado: CPF, documentos, renda, patrimônio, patrimônio disponível, entrada, capacidade de crédito,
+  financiamento, comprovação financeira, valor numérico, valor de Ação, mensagem ou campo livre, dados de parceiro,
+  família ou terceiros. Nenhuma quarta dimensão de pré-qualificação.
+- Score, Hot/Warm/Cold, prioridade, aprovação, roteamento, atribuição, agenda, CRM, pipeline comercial, exportação,
+  busca por e-mail/telefone, edição, eliminação pela aplicação (D-W6-2 = A), workflow de direitos do titular, expurgo
+  automático, notificação por e-mail.
+- Diferença econômica entre Owner e Co-Owner que não exista no `01`; valor individual derivado da média projetada
+  (BR-034); divisão da média por qualquer configuração.
+- Titular, conta, `party`, `holding`, Ação, Direito de Uso (W7/W8).
+- Captura de `origin`/`partner_ref` pelo formulário (seguem metadados da API, §5.1, sem fonte definida).
+
+### 14.3 Página e brief — solicitação de conversa na Home Edition
+
+A página da Home Edition (`catalog` §17.8) ganha, **depois** de "Para quem", a seção **Solicitar uma conversa**
+(`#solicitar-conversa`), renderizada pelo módulo `ownership` num espaço que a página do `catalog` oferece ao shell
+(`src/app/`), sem import entre slices. Nada mais da página muda. Sem a coleta disponível (§14.9) a seção não existe e
+a página fica como na W4.2 (`D-B2C-10`: sem CTA para destino inexistente).
+
+1. **Jornada:** `b2c.md` §8, linhas "Home Edition" e "Interesse — na página da Home Edition" (`D-B2C-27`, `D-B2C-28`).
+2. **Função:** registrar a solicitação de conversa sobre aquela Home Edition. **Schwartz:** Most Aware → ação.
+   **5Ps:** PUSH.
+3. **Composição (Core DS):** `lx-section` + `lx-container` + `lx-section-head`; `lx-form` com `lx-field`,
+   `lx-input`, `lx-choice-group`/`lx-choice` (Owner e Co-Owner com o mesmo peso, REQ-103), `lx-hint`, `lx-error`,
+   `lx-message` e `lx-button--primary`. Mobile-first, paridade funcional a partir de 320 px (ADR-0009).
+
+| Bloco | Pergunta mental | Conteúdo | Fatos e limites |
+|---|---|---|---|
+| Abertura | "Posso conversar sobre esta Home Edition?" | título, linha de apoio com o nome da Home Edition | REQ-022 |
+| Sua Second Home | "O que eu imagino?" | modalidade desejada (Owner · Co-Owner, descrições aprovadas de `D-B2C-19`); localização pretendida (texto); dias aproximados **só para Co-Owner**, com a microcopy da P-3 | BR-030, BR-032, REQ-025, BR-060 |
+| Investimento e decisão | "Em que momento estou?" | a dimensão de investimento na variante da §14.5, a unidade de decisão e o horizonte | REQ-022, BR-034 |
+| Contato | "Como a Luxtory fala comigo?" | Nome, Telefone ou WhatsApp, E-mail — todos obrigatórios | REQ-022, `03` §3.1 |
+| Transparência | "Isto é uma compra? O que fazem com meus dados?" | "Manifestar interesse não é uma aquisição." e a microcopy D4 com o link para o Aviso de Privacidade | P-3, D4, BR-050 |
+| Envio e sucesso | "Deu certo?" | botão "Solicitar uma conversa"; sucesso **só** informa que a solicitação de conversa foi recebida | REQ-024, REQ-101 |
+
+**Não afirmar:** aquisição, agendamento, reserva de dias, Direito de Uso, prioridade, disponibilidade, prazo de
+resposta, garantia de contato ou retorno, localização, preço, valor por modalidade ou por Ação (REQ-101, L10); nunca
+"cota"/"diárias" (REQ-100).
+
+**Estados:** inicial → validação no cliente (o mesmo schema; o servidor decide) → enviando (campos somente leitura,
+botão desabilitado, sem envio concorrente) → sucesso (a confirmação substitui o formulário e recebe o foco) |
+inválido (resumo acessível com links, `aria-invalid` + `lx-error` no campo, foco no primeiro erro) | falha por
+código: `429` limite, `409` conflito (a próxima tentativa usa chave nova), `404` Home Edition indisponível (com link
+para a Coleção), contexto de apresentação recusado (pede para atualizar a página), `403`/`413`/`415` recusado,
+`503`/`500`/rede **não confirmado** (dados e chave preservados só em memória para repetir). Telefone com
+`type="tel"` e `autocomplete="tel"`; dias com `type="text" inputmode="numeric"`; e-mail com `type="email"`.
+
+**Copy (pt-BR; Terminologia do `02` §1):** as perguntas e respostas da §14.5 são literais do fundador. Demais textos
+— título, apoio, rótulos e mensagens de falha — são proposta revista no checkpoint visual final da W6:
+
+| Texto | Valor |
+|---|---|
+| Título | Solicite uma conversa sobre esta Home Edition |
+| Apoio | Conte como você imagina sua Second Home a partir da {Home Edition}. |
+| Modalidade | "Como você imagina ter sua Second Home?" — Owner: "Você como proprietário do imóvel."; Co-Owner: "Você como acionista da SPE proprietária do imóvel." (`D-B2C-19`) |
+| Localização pretendida | "Onde você imagina sua Second Home?" — dica: "Cidade, região ou destino, do jeito que preferir." |
+| Dias (Co-Owner) | "Quantos dias por ano, aproximadamente?" — dica: "Para Co-Owner, os dias informados representam apenas uma preferência e não criam Direito de Uso." (P-3) |
+| Contato | "Nome" · "Telefone ou WhatsApp" (dica: "Com DDD. Fora do Brasil, inclua o código do país.") · "E-mail" |
+| Transparência | "Manifestar interesse não é uma aquisição." (P-3) · "Usaremos seus dados para responder à sua solicitação de conversa e conduzir a pré-qualificação comercial relacionada a esta Home Edition. Saiba mais no Aviso de Privacidade." (D4) |
+| Botão | Solicitar uma conversa |
+| Sucesso | Recebemos sua solicitação de conversa. |
+
+### 14.4 Contrato — `POST /v1/interests` (mudanças)
+
+Mesma operação `createInterest` ([OpenAPI](../api/openapi.yaml)); a ordem do §5 vale com estas mudanças:
+
+- **Etapa 1 — Portão** — além de `PUBLIC_SITE` e `INTEREST_WRITES`, em Production o Aviso de Privacidade precisa estar
+  `approved` (§14.9). Fechado → `404`.
+- **Etapa 2 — Configuração** — acrescenta `INTEREST_REQUEST_HMAC_SECRET` e `INTEREST_CONTEXT_HMAC_SECRET` (segredos próprios,
+  ≥ 32 caracteres, sem default — TECH-001). Ausente → `503`.
+- **Etapa 4 — Corpo** — até **16 KiB** efetivos: o pior caso válido (todos os textos no limite, escapados em JSON como
+  `\uXXXX`) passa de 8 KiB; o teste do pior caso comprova o limite.
+- **Etapa 7 — Validação** — corpo da §14.4.1, contexto de apresentação verificado (§14.6) e a variante da dimensão de
+  investimento conferida contra a modalidade e o contexto (§14.5).
+- **Etapa 8 — Idempotência** — hash chaveado com esquema por registro (§14.8). Registro com chave desconhecida → `503` sem
+  efeito.
+- **Etapa 9 — Alvo público** — inalterado (leitura como `anon`, ADR-0014) **e** revalidado dentro da transação de escrita
+  (§14.8): Home Edition que deixou de ser pública → `404`, nada gravado (`02` §15, item 15).
+- **Etapa 10 — Escrita atômica** — reserva da chave → revalidação do alvo → `interest` → `interest_contact` →
+   `interest_qualification`, numa transação.
+
+#### 14.4.1 Corpo
+
+Fechado (campo extra → `400`). Textos como no §5.1. A resposta continua `201 { "status": "registered" }`, sem
+identificador interno.
+
+| Campo | Regra | Base |
+|---|---|---|
+| `home_edition_id`, `modality`, `desired_location`, `approx_days`, `origin`, `partner_ref` | como no §5.1 | §5.1, §13 |
+| `investment_question` | `reference_fit` ou `investment_definition`; precisa ser a variante apresentada (§14.5) — outra → `not_allowed` | REQ-022, BR-034 |
+| `investment_answer` | um código da variante (§14.5); fora dela → `invalid` | REQ-022 |
+| `decision_unit` | `self`, `with_partner_or_family` ou `with_others` | REQ-022 |
+| `decision_horizon` | `within_3_months`, `from_3_to_6_months`, `from_6_to_12_months`, `over_12_months` ou `exploring` | REQ-022 |
+| `name` | texto obrigatório, 1–200, mesma normalização de `desired_location` | REQ-022, `03` §3.1 |
+| `phone` | obrigatório; até 32 caracteres digitados; aceita formatos humanos — o servidor remove espaços, parênteses, hífens e pontos; depois só `+` inicial opcional e 8–15 dígitos (limite técnico E.164); DDI nunca inferido, Brasil nunca presumido | REQ-022, D-W6 (telefone) |
+| `email` | obrigatório; pontas sem espaço; até 254; formato `local@domínio` com ponto no domínio; domínio em minúsculas, parte local preservada | REQ-022 |
+| `presentation_context` | obrigatório; até 512 caracteres; contexto assinado emitido pela página (§14.6); assinatura, versão, chave ou Home Edition divergentes → `invalid` | `02` §15, item 14 |
+
+Códigos de campo: `required`, `too_long`, `invalid`, `not_allowed`. A validação do telefone é de formato: não confirma
+a existência do número. Erros trazem só nomes e códigos, nunca valores.
+
+### 14.5 Pré-qualificação — três dimensões obrigatórias
+
+Contexto estruturado para a conversa comercial (BR-041, BR-064): **não** produz score, faixa, prioridade, aprovação,
+aquisição nem agendamento, e nenhuma regra, ordenação ou agrupamento do software o usa. Códigos semânticos estáveis,
+independentes da copy.
+
+**Dimensão de investimento** (nunca "Budget Fit" como nome universal). A variante é decidida pelo servidor a partir
+da modalidade desejada e do contexto efetivamente apresentado (§14.6) — nunca pela média projetada vigente no envio:
+
+| Modalidade | Média projetada apresentada | Variante (`investment_question`) |
+|---|---|---|
+| `owner` | sim | `reference_fit` (A1) |
+| `owner` | não | `investment_definition` (A2) |
+| `co_owner` | sim ou não | `investment_definition` (A2) |
+
+- **A1 — `reference_fit`.** Pergunta: "Como a média projetada de investimento desta Home Edition se compara ao que
+  você considera investir?" Junto, a referência apresentada: "Média projetada apresentada: R$ X." e "Referência
+  aproximada do investimento total projetado para materializar uma Second Home desta Home Edition. Não é preço,
+  proposta ou condição comercial." Respostas: `within` "Está dentro do que considero investir." · `needs_understanding`
+  "Preciso entender melhor o investimento antes de avaliar." · `above` "Está acima do que considero investir hoje."
+  É só uma comparação declarada pelo interessado com a referência aproximada que ele viu — nunca preço Owner (BR-034).
+- **A2 — `investment_definition`.** Pergunta: "Em relação ao investimento, qual opção melhor descreve seu momento?"
+  Respostas: `range_defined` "Já defini uma faixa que considero investir." · `idea_without_range` "Tenho uma ideia do
+  que considero investir, mas ainda não defini uma faixa." · `needs_understanding` "Preciso entender melhor o
+  investimento antes de definir uma faixa." Mede o estágio de definição do investimento, não valor. Para Co-Owner,
+  nota fixa: "No Co-Owner, o investimento individual depende da configuração da Second Home, definida pela Luxtory
+  durante a estruturação. Por isso, a média projetada da Home Edition não representa o valor de uma Ação." (BR-034,
+  BR-063). Nenhum valor individual é derivado nem exibido.
+
+**Unidade de decisão** (`decision_unit`) — "Quem participa dessa decisão com você?": `self` "A decisão é minha." ·
+`with_partner_or_family` "Decido com meu parceiro, parceira ou família." · `with_others` "Outras pessoas também
+participam." Nenhum dado das outras pessoas.
+
+**Horizonte** (`decision_horizon`) — "Quando você imagina avançar com essa decisão?": `within_3_months` "Nos próximos
+3 meses." · `from_3_to_6_months` "Entre 3 e 6 meses." · `from_6_to_12_months` "Entre 6 e 12 meses." ·
+`over_12_months` "Mais de 12 meses." · `exploring` "Ainda estou explorando possibilidades."
+
+No formulário, a pergunta de investimento aparece depois da modalidade e muda com ela; trocar a modalidade descarta a
+resposta anterior de investimento quando a variante muda.
+
+### 14.6 Contexto de apresentação assinado (`02` §15, item 14)
+
+A página emite, no servidor, um **contexto de apresentação** para o formulário — prova de qual referência ela mostrou.
+O navegador só o devolve; nunca é confiado como dado do cliente.
+
+- **Conteúdo** (JSON canônico, sem PII): versão do esquema (`v: 1`), id da chave (`k`), `home_edition_id` (`h`) e o id
+  da média projetada apresentada ou ausência explícita (`p: null`). Nada de valor, instante ou dado do visitante.
+- **Formato:** `<payload base64url>.<assinatura base64url>`; assinatura HMAC-SHA-256 com o segredo próprio
+  `INTEREST_CONTEXT_HMAC_SECRET` (`k = "v1"`), sobre um rótulo de domínio fixo + o payload. Comparação em tempo
+  constante. Separado do segredo do hash de idempotência e do da pseudonimização de rede: cada segredo, uma finalidade.
+- **Emissão:** a mesma leitura pública que desenha o bloco "Média projetada de investimento" da página fornece o id ao
+  contexto — o que a página mostra é o que o contexto assina. Sem média vigente → `p: null`.
+- **Envio:** assinatura válida, versão `1`, chave conhecida e `h` igual a `home_edition_id`; senão
+  `presentation_context: invalid` (a interface pede para atualizar a página). A referência apresentada é registrada
+  como veio no contexto: **nunca** substituída pela vigente nem recalculada. Se a média mudou depois da exibição, fica
+  a anterior; se nenhuma foi apresentada e uma passou a existir antes do envio, fica "sem referência".
+- **Integridade no banco:** `presented_projected_investment_id` é FK para `app.home_edition_projected_investment`, cujas
+  linhas não aceitam `DELETE`/`TRUNCATE` e só mudam o fim da vigência (W4.2) — o valor apresentado é reconstruível
+  pela FK, sem cópia de `amount_minor`. Um gatilho confere que a referência é da mesma Home Edition do `interest`.
+- **Sem validade temporal:** o contexto atesta o que a página apresentou; não expira (não há valor canônico de prazo,
+  TECH-001). Reenviar um contexto antigo só registra a referência que de fato foi apresentada naquela Home Edition.
+- **Rotação:** possível no futuro com nova chave para emitir e a antiga para verificar; não implementada (sem KMS).
+
+### 14.7 Modelo de dados
+
+`app.interest_contact` — só o necessário ao contato comercial:
+
+| Coluna | Regra |
+|---|---|
+| `interest_id` | uuid, chave primária e FK `app.interest (id)` — 1:1 |
+| `name` | texto normalizado, 1–200 |
+| `phone` | obrigatório, `^\+?[0-9]{8,15}$` |
+| `email` | texto normalizado, 3–254, `local@domínio` |
+| `created_at` | o mesmo instante do `interest` (`Clock`, TECH-110) |
+
+`app.interest_qualification`:
+
+| Coluna | Regra |
+|---|---|
+| `interest_id` | uuid, chave primária e FK `app.interest (id)` — 1:1 |
+| `investment_question` | `reference_fit` ou `investment_definition` |
+| `investment_answer` | código da variante: `within`/`needs_understanding`/`above` para `reference_fit`; `range_defined`/`idea_without_range`/`needs_understanding` para `investment_definition` |
+| `presented_projected_investment_id` | nulo ou FK `app.home_edition_projected_investment (id)`; obrigatório em `reference_fit` |
+| `decision_unit`, `decision_horizon` | códigos da §14.5 |
+| `created_at` | o mesmo instante do `interest` |
+
+- Gatilho de inserção (`interest_qualification_guard`): a referência apresentada é da mesma Home Edition do `interest`
+  e a variante é a da §14.5 para a modalidade do `interest` — em qualquer caminho de escrita.
+- Ambas: **sem FK** para `party`, `holding`, `membership`, Brand Partner ou parceiro; nada as referencia. `UPDATE` e
+  `TRUNCATE` recusados por gatilho; **`DELETE` estruturalmente possível** (sem gatilho), mas **não concedido** ao papel
+  de aplicação (D-W6-2 = A). Eliminar uma delas não altera `interest`, a outra nem `public_idempotency_key`.
+- RLS ligada; `SELECT` e `INSERT` só para `luxtory_app`; `anon` e `authenticated` sem acesso; fora do PostgREST.
+- `app.public_idempotency_key` ganha `hash_scheme` (`sha256` | `hmac_sha256`) e `hash_key_id` (nulo se e somente se
+  `sha256`). Linhas existentes ficam `sha256` (W5). Nenhuma chave, segredo ou conteúdo em claro no banco.
+- Migrations com timestamp posterior a `20261019210007` (última da W4.2), em ordem: `platform` (esquema do hash) →
+  `ownership` (contato) → `ownership` (pré-qualificação).
+
+### 14.8 Idempotência, atomicidade e revalidação
+
+- **Conteúdo do hash:** JSON canônico de `{ surface, input: { interest, contact, qualification } }`, já normalizado,
+  com a referência apresentada (não o contexto bruto). Mesma chave + mesmo conteúdo completo → replay; qualquer
+  diferença, inclusive só em contato ou em pré-qualificação → `409 ERR_IDEMPOTENCY_CONFLICT`.
+- **Esquema (D-W6-1, ADR-0018):** novos registros `hmac_sha256` com `hash_key_id = 'v1'`
+  (`INTEREST_REQUEST_HMAC_SECRET`). A verificação usa o esquema e a chave do registro gravado: `sha256` (legado da W5)
+  pela semântica do ADR-0017 — o conteúdo agora sempre difere, logo `409`; `hmac_sha256` pela chave de mesmo id; chave
+  desconhecida → tentativa não verificável → `503` sem efeito. HMAC é pseudonimização, não anonimização; rotação ou
+  descarte do segredo não é eliminação.
+- **Transação (`READ COMMITTED`):** reserva da chave → revalidação da Home Edition **dentro da transação**, com trava
+  de leitura da linha (`FOR SHARE`) e a mesma regra pública da RLS (`visibility = 'public'` de Home Concept público) —
+  uma retirada concorrente espera ou é vista → `interest` → `interest_contact` → `interest_qualification`. Home
+  Edition fora do público na revalidação → a transação é desfeita (inclusive a chave) e a resposta é `404`: nada é
+  gravado. Falha em qualquer etapa → nenhum efeito. Concorrência com a mesma chave → exatamente um `interest`, um
+  contato e uma pré-qualificação.
+- **Replay** não reavalia a Home Edition (§5, etapa 8) e, depois da eliminação do contato ou da pré-qualificação,
+  responde como replay **sem recriar** nada: a manifestação estatística permanece; replay não é caminho para recriar
+  PII; nova manifestação = nova tentativa, nova `Idempotency-Key`.
+- **Cliente:** a chave acompanha exatamente o conteúdo enviado (padrão da BP1); `409` descarta a chave; falha não
+  confirmada preserva dados e chave só em memória.
+
+### 14.9 Portões (defesa em profundidade)
+
+Abrir a coleta exige **todos** ao mesmo tempo; nenhum sozinho abre:
+
+1. site público aberto (`PUBLIC_SITE`, ADR-0014);
+2. `INTEREST_WRITES=open` (ausente = fechado em Production);
+3. em Production, Aviso de Privacidade `approved` e estruturalmente completo (§14.11);
+4. configuração completa (limites, prazo e Upstash ou modo `fake` local, os segredos) e banco permitido no ambiente.
+
+| Superfície | Fechada quando | Efeito |
+|---|---|---|
+| `POST /v1/interests` | 1–3 | `404`; 4 → `503` |
+| Seção "Solicitar uma conversa" na Home Edition | 1–4 | ausente (página como na W4.2) |
+| `/privacidade` | Production com site fechado ou Aviso não `approved` | `404` |
+
+Fora de Production (Development, CI), o Aviso `pending` aparece como pendência técnica. O Preview não tem banco
+(ADR-0007): a seção não aparece e a escrita responde `503`. Nada é configurado na W6.
+
+### 14.10 Admin — drill-down
+
+Papel Admin exercido com AAL2 (`adminRoleGate('admin')`), como na W5; Super Admin sozinho não acessa. Toda leitura roda
+como `luxtory_app` na transação que grava o `admin_read` (TECH-092); o `audit_log` leva só ids, nunca PII.
+
+| Nível | Rota | Mostra | `admin_read` |
+|---|---|---|---|
+| Agregado (W5/W4.2) | `/admin/interesses` | Home Edition → localização pretendida → modalidade → dias exatos (BR-062), com link para a Home Edition | `interest`, `*` |
+| Home Edition | `/admin/interesses/home-editions/[homeEditionId]` | os interesses da Home Edition por localização pretendida → modalidade: data, dias e link — **sem PII** | `interest_group`, id da Home Edition |
+| Interesse | `/admin/interesses/[interestId]` | campos do interesse e a ação "Ver contato e pré-qualificação" — **sem PII** | `interest`, id do interesse |
+| Contato e pré-qualificação | `/admin/interesses/[interestId]/contato` | Nome, Telefone, E-mail; variante, pergunta e resposta de investimento (com a média projetada apresentada, quando houver), unidade de decisão e horizonte; "indisponível" quando eliminados | `interest_contact` e `interest_qualification`, id do interesse |
+
+Sem busca, filtro por contato, exportação, edição, eliminação, status, anotação, score ou atribuição — visão
+operacional mínima, não um CRM. A localização pretendida não vai à URL (URLs entram nos logs da plataforma); `origin` e
+`partner_ref` seguem fora da visão.
+
+### 14.11 Aviso de Privacidade da jornada (`/privacidade`)
+
+1. **Função:** informar o tratamento dos dados da solicitação de conversa; página informativa, sem conversão, na casca
+   B2C; acesso pelo link da transparência do formulário.
+2. **Conteúdo:** só o texto entregue pela Luxtory depois da validação jurídica — nada inventado (controlador,
+   finalidades, bases legais, categorias, retenção, acesso, operadores, compartilhamentos, transferências
+   internacionais, direitos do titular, canal).
+3. **Modelo:** objeto tipado `pending` | `approved`. `approved` carrega versão, data de aprovação e uma seção por
+   tópico; só muda para `approved` depois do checkpoint jurídico/fundador, por commit.
+4. **Testes:** um Aviso `approved` tem os 11 tópicos, títulos e parágrafos não vazios, link no canal e nenhum marcador
+   de rascunho. **Nunca** afirmam suficiência jurídica: estrutura completa não é validação.
+5. **`pending`:** só fora de Production, como pendência técnica; em Production, `404` e coleta fechada (§14.9).
+
+### 14.12 Privacidade, LGPD e go-live
+
+- **Finalidade:** responder à solicitação de conversa e conduzir a pré-qualificação comercial relacionada à Home
+  Edition (D4; BR-041, BR-064). Sem marketing, newsletter, campanha, compartilhamento com Brand Partners ou parceiros,
+  venda ou cessão; finalidade futura exige nova análise.
+- **Base legal:** hipótese LGPD art. 7º, V, a validar pelo jurídico; nada no software a declara correta.
+- **Retenção proposta:** até 12 meses sem relação comercial ativa, depois da última interação relevante ou do
+  encerramento da oportunidade; depois, eliminação ou anonimização conforme a LGPD, preservadas as hipóteses legais.
+  Sem promessa de exclusão imediata nem expurgo automático na W6.
+- **PII fora de logs, erros, métricas, respostas e `audit_log`.** Erros do banco nunca são registrados com mensagem
+  ou detalhe (o PostgreSQL inclui a linha recusada no detalhe).
+- **Inventário técnico** para a revisão jurídica: [`lgpd-interesse.md`](../security/lgpd-interesse.md) — não é
+  parecer.
+- **Gates de go-live (nenhum feito na W6):** (1) validação jurídica da base; (2) Aviso final `approved`; (3) canal de
+  direitos; (4) procedimento operacional de retenção e de exercício de direitos (quem executa, fundamento, verificação
+  de identidade quando necessária, auditoria, backups, eliminação × conservação legal) — nunca `DELETE` manual não
+  auditado; (5) D2; (6) reavaliação formal da D3 (ADR-0007) antes de PII real; (7) variáveis operacionais, inclusive
+  `INTEREST_REQUEST_HMAC_SECRET` e `INTEREST_CONTEXT_HMAC_SECRET`; (8) smoke seguro antes da abertura.
+
+### 14.13 Observabilidade
+
+Evento `interest_registration` (§9) com os mesmos campos; `stage` ganha `idempotency` (registro não verificável →
+`503`, `reason: hash_key_unavailable`). Nome, E-mail, Telefone, pré-qualificação, contexto, valores, hash, chave e
+mensagens de erro do banco nunca entram no log. A página registra só falhas técnicas de leitura, sem dado.
+
+### 14.14 Acceptance criteria (W6)
+
+- [ ] `[REQ-022]` a solicitação parte da página da Home Edition publicada; contato (nome, telefone, e-mail) e as três
+      dimensões obrigatórios; sem página de Interesse separada.
+- [ ] `[REQ-022]` variante A1 só para Owner com média apresentada; A2 para Co-Owner e para Owner sem média; nenhum
+      valor derivado; variante divergente → `400 not_allowed`.
+- [ ] `[REQ-022]` edge 14: média alterada depois da exibição → a pré-qualificação guarda a apresentada; sem média
+      apresentada → fica sem referência mesmo que uma passe a existir; contexto adulterado → `400`.
+- [ ] `[REQ-022]` edge 15: Home Edition retirada entre a página e o envio (inclusive dentro da transação) → `404`,
+      nenhum `interest`, contato, pré-qualificação ou chave.
+- [ ] `[REQ-025]` E2E: o campo de dias aparece só para Co-Owner e é apresentado como preferência.
+- [ ] `[REQ-024]` E2E: o sucesso só informa o recebimento da solicitação de conversa — sem aquisição nem agendamento.
+- [ ] `[REQ-100]`/`[REQ-101]` formulário e confirmação sem termos proibidos e sem promessa de retorno.
+- [ ] `[TECH-056]` replay com o mesmo conteúdo completo; `409` por qualquer campo de contato ou de pré-qualificação;
+      falha no contato ou na pré-qualificação → nada; concorrência → 1 + 1 + 1.
+- [ ] `[TECH-100]` nenhuma PII, pré-qualificação ou contexto em logs ou erros; corpo de 16 KiB comprovado pelo pior
+      caso escapado.
+- [ ] Eliminar contato ou pré-qualificação não altera `interest`; replay depois disso não recria.
+- [ ] `[TECH-092]` cada leitura do drill-down grava `admin_read`; `audit_log` sem PII.
+- [ ] Portões: Production sem Aviso `approved` fica fechada mesmo com `INTEREST_WRITES=open`; Aviso `approved`
+      sozinho não abre.
+- [ ] Testes do Aviso: estrutura sim, suficiência jurídica nunca.
+- [ ] UI: axe 0 a 390 e 1440 px; sem overflow de 320 a 1920 px; teclado; fluxo a 390 px com toque; checklist de
+      `communication.md`.
+
+### 14.15 Edge cases (W6)
+
+- Telefone "(61) 99999-9999" → `61999999999`; "+55 61 99999-9999" → `+5561999999999`; letras, `+` no meio ou menos de
+  8 / mais de 15 dígitos → `invalid`; vazio ou só espaços → `required`.
+- E-mail com domínio em maiúsculas → domínio em minúsculas; dois envios que diferem só nisso na mesma chave → replay.
+- Owner com contexto sem referência enviando `reference_fit` → `not_allowed`; Co-Owner enviando `reference_fit` →
+  `not_allowed`; resposta `above` em `investment_definition` → `invalid`.
+- Contexto de outra Home Edition, com assinatura alterada, versão ou chave desconhecidas → `presentation_context:
+  invalid`, nada gravado.
+- Média projetada encerrada e substituída entre a página e o envio → registra a apresentada (FK preservada).
+- Home Edition retirada do público (ou Home Concept que deixa de ser público) entre a página e o envio → `404`; a
+  interface informa e oferece a Coleção.
+- Registro de idempotência `sha256` (W5) com a mesma chave → conteúdo diferente → `409`.
+- Contato eliminado + replay da mesma tentativa → `201` replay; o Admin mostra "Contato indisponível".
+
+### 14.16 Rollout
+
+- Merge só no checkpoint do fundador; migrations e deploy pela CI. Production continua fechada: nenhuma variável,
+  segredo ou Aviso `approved` é criado na W6.
+- Ativação: runbook em [`docs/how-to/operacao.md`](../how-to/operacao.md) depois dos gates da §14.12.
+- Rollback: `down` das migrations testado (`npm run db:check`), fail-closed se houver contato ou pré-qualificação.

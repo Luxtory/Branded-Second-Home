@@ -48,6 +48,15 @@ já prova toda migration (up → down → up) e todo comportamento de banco num 
 - **Continua obrigatória** nova reavaliação antes do primeiro destes eventos: PII de clientes (W7: party cifrada; W6:
   dados do interesse), primeira transação econômica (W19) ou go-live público.
 
+### 2026-10-20 — W6: estrutura de PII de clientes (contato e pré-qualificação do interesse)
+
+- **Gatilho em preparação.** A W6 cria `interest_contact` e `interest_qualification`
+  ([ADR-0018](0018-contato-e-pre-qualificacao-do-interesse.md)), mas nenhuma PII real é persistida: a coleta fica
+  fechada em Production (`INTEREST_WRITES` ausente; Aviso de Privacidade `pending`).
+- **Decisão do fundador (D3, 2026-10-19):** a W6 reaciona este checkpoint; desenvolvimento e validação seguem em local
+  e CI, sem staging, e nenhum staging é criado. A **reavaliação formal** desta decisão é gate do go-live da coleta,
+  antes do primeiro contato real gravado (spec [`ownership`](../specs/ownership.md) §14.12).
+
 ## Consequences
 
 ### Positive

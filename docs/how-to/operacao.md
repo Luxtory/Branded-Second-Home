@@ -283,6 +283,38 @@ migrations `public_idempotency_key` e `interest` são aplicadas pelo job `migrat
 
 **Fechar de novo**: `INTEREST_WRITES=closed` e redeploy — o endpoint volta a `404` sem perder registros.
 
+## Preparar a W6 em produção (solicitação de conversa na Home Edition)
+
+Formulário "Solicitar uma conversa" na página da Home Edition, contato e pré-qualificação (spec
+[`ownership`](../specs/ownership.md) §14, ADR-0018) e drill-down em `/admin/interesses`. **Nada aqui foi
+configurado**: cada passo é decisão e ação do fundador, depois do checkpoint final da W6. O merge publica tudo
+**fechado** em Production (`INTEREST_WRITES` ausente e Aviso de Privacidade `pending` → `404` e nenhuma seção de
+formulário); as migrations de esquema do hash, contato e pré-qualificação são aplicadas pelo job `migrate`.
+
+**Gates antes de abrir a coleta (spec `ownership` §14.12), todos obrigatórios:**
+
+1. Validação jurídica da base legal proposta e Aviso de Privacidade final entregue pela Luxtory, marcado `approved`
+   por commit revisado (o software verifica só a estrutura).
+2. Canal de direitos do titular e procedimento operacional de retenção e eliminação (quem executa, fundamento,
+   verificação de identidade, auditoria, backups, conservação legal). Nunca `DELETE` manual não auditado.
+3. D2 resolvida e reavaliação formal da D3 ([ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md)).
+4. Os pré-requisitos da W5 (seção acima) e, além deles, os segredos próprios da W6 (Vercel → só Production,
+   **Sensitive**; valores gerados por um gerador de segredos, ≥ 32 caracteres, nunca reaproveitados):
+
+   | Variável | Uso |
+   |---|---|
+   | `INTEREST_REQUEST_HMAC_SECRET` | HMAC do hash de idempotência (`hash_key_id = v1`) — não trocar sem rotação planejada |
+   | `INTEREST_CONTEXT_HMAC_SECRET` | assinatura do contexto de apresentação da Home Edition |
+
+5. **Abrir** (autorização própria do fundador): `INTEREST_WRITES=open` só em Production e redeploy pela CI.
+6. **Smoke em Production, logo depois** (dados sintéticos identificáveis, depois tratados pelo procedimento do item 2):
+   a seção aparece numa Home Edition publicada; envio Owner com média apresentada e Co-Owner → sucesso "Recebemos sua
+   solicitação de conversa."; a mesma tentativa → replay; `/admin/interesses` → Home Edition → interesse → contato e
+   pré-qualificação; logs sem contato, pré-qualificação, IP ou chave.
+
+**Fechar de novo**: `INTEREST_WRITES=closed` e redeploy — a seção some e o endpoint volta a `404` sem perder
+registros.
+
 ## Preparar a W4.2 em produção (ontologia Home Concept → Home Edition → Second Home)
 
 Spec [`catalog`](../specs/catalog.md) §17, [`ownership`](../specs/ownership.md) §13, ADR-0019; dependency map e

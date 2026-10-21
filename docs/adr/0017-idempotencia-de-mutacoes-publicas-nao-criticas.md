@@ -41,6 +41,12 @@ precedente: o contato Brand Partners não persiste nada e deduplica pela chave d
    devolve a resposta de sucesso da superfície, que precisa ser determinística a partir da entrada (o registro não
    guarda corpo de resposta). Antes do efeito, uma consulta à chave responde replay/conflito sem reavaliar o alvo.
 
+### Extensão — W6 (2026-10-20, [ADR-0018](0018-contato-e-pre-qualificacao-do-interesse.md))
+
+Na superfície `interest`, o conteúdo passa a incluir contato e pré-qualificação: o item 4 vale com HMAC-SHA-256 e
+segredo próprio no lugar do SHA-256 sem chave, e cada registro identifica o esquema e a chave (`hash_scheme`,
+`hash_key_id`). Registros `sha256` existentes mantêm a semântica deste ADR. Os demais itens seguem inalterados.
+
 ## Consequences
 
 ### Positive
