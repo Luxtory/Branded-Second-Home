@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { ExercisedAdminSession } from '@/features/admin';
+import { AccountAlreadyConfirmedError } from '@/features/identity/application/party-ports';
 import { createDocumentProtector } from '@/features/identity/infrastructure/pii/document-protector';
 import {
   readPartyDetail,
@@ -267,6 +268,32 @@ describe('party, delegação e leituras (TECH-050, TECH-052, TECH-100, ADR-0002)
 
       expect(delegation).toMatchObject({ user_id: userId, state: 'pending' });
       expect(accounts.invites).toEqual([]);
+    });
+
+    it('[TECH-050] conta confirmada entre a busca e o convite: segue vinculada, sem e-mail, ainda pendente', async () => {
+      const userId = randomUUID();
+      let confirmed = false;
+      const racing = {
+        ...harness.accounts,
+        port: {
+          find: () => Promise.resolve({ userId, confirmed }),
+          labels: () => Promise.resolve(new Map()),
+          invite: () => {
+            confirmed = true;
+            return Promise.reject(new AccountAlreadyConfirmedError());
+          },
+        },
+      };
+      const withRace = partyHarness(db, clock, { protector: harness.protector, accounts: racing });
+      const party = await register(CPF);
+
+      await expect(
+        withRace.ok(withRace.handlers.createPartyDelegation, {
+          party_id: party.id,
+          email: EMAIL,
+          basis: 'B',
+        }),
+      ).resolves.toMatchObject({ user_id: userId, state: 'pending' });
     });
 
     it('[TECH-050] par com delegação aberta → ERR_STATE_TRANSITION antes de qualquer e-mail; party inexistente → ERR_NOT_FOUND', async () => {

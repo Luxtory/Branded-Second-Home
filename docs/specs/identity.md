@@ -410,25 +410,29 @@ seguinte (RLS e guard leem o banco a cada request). Já revogada → `ERR_STATE_
 
 ### 13.11 Critérios de aceite
 
-- [ ] `[TECH-100]` CPF/CNPJ nunca em claro no banco (colunas, índices, `idempotency_key`, `operation`, `audit_log`,
+Verificados em 2026-10-21 (local): `npm run verify` exit 0, E2E completo 117/117 (`--workers=2`), `trace --expect
+TECH-050,TECH-052,TECH-100,ADR-0002,TECH-092,REQ-014,REQ-027` 7/7.
+
+
+- [x] `[TECH-100]` CPF/CNPJ nunca em claro no banco (colunas, índices, `idempotency_key`, `operation`, `audit_log`,
       `outbox`), nos logs nem em resposta; cifra AES-256-GCM com `key_id`; AAD amarrado à party.
-- [ ] `[TECH-100]` HMAC barra duplicidade (com e sem máscara, CPF e CNPJ alfanumérico); segredo do HMAC separado
+- [x] `[TECH-100]` HMAC barra duplicidade (com e sem máscara, CPF e CNPJ alfanumérico); segredo do HMAC separado
       (anéis com material igual recusados).
-- [ ] `[ADR-0002]` valor cifrado com `key_id` antigo continua legível após a rotação; `key_id` ausente → erro explícito.
-- [ ] `[ADR-0002]` após rotação do segredo do HMAC, a party antiga é encontrada e o duplicado continua barrado.
-- [ ] `[TECH-050]` sem delegação vigente não há acesso: sem delegação, pendente, expirada e revogada → negado (Área, RLS
+- [x] `[ADR-0002]` valor cifrado com `key_id` antigo continua legível após a rotação; `key_id` ausente → erro explícito.
+- [x] `[ADR-0002]` após rotação do segredo do HMAC, a party antiga é encontrada e o duplicado continua barrado.
+- [x] `[TECH-050]` sem delegação vigente não há acesso: sem delegação, pendente, expirada e revogada → negado (Área, RLS
       e guard); ativação só pelo próprio convidado, com sessão.
-- [ ] `[TECH-050]` existência de conta ≠ representação: convite para conta existente fica pendente; conta nova nasce
+- [x] `[TECH-050]` existência de conta ≠ representação: convite para conta existente fica pendente; conta nova nasce
       pelo convite (não confirmada).
-- [ ] `[TECH-052]` Titular A não lê a party do Titular B (RLS direto, tela por id e manipulação de ids na ativação).
-- [ ] `[TECH-052]` `authenticated` não lê HMAC, `basis`, nem outras tabelas de `app`; `luxtory_app` não altera nem apaga
+- [x] `[TECH-052]` Titular A não lê a party do Titular B (RLS direto, tela por id e manipulação de ids na ativação).
+- [x] `[TECH-052]` `authenticated` não lê HMAC, `basis`, nem outras tabelas de `app`; `luxtory_app` não altera nem apaga
       party; delegação só muda pelas transições.
-- [ ] `[TECH-092]` leituras do Admin gravam `admin_read` (lista, detalhe, documento completo) sem o documento.
-- [ ] `[REQ-014]` D-W2-1: FK validada; grant para party inexistente → `ERR_NOT_FOUND`; gatilho removido.
-- [ ] `[REQ-027]` autorização de Investor exige party existente pelo CPF/CNPJ (HMAC); documento duplicado resolve para a
+- [x] `[TECH-092]` leituras do Admin gravam `admin_read` (lista, detalhe, documento completo) sem o documento.
+- [x] `[REQ-014]` D-W2-1: FK validada; grant para party inexistente → `ERR_NOT_FOUND`; gatilho removido.
+- [x] `[REQ-027]` autorização de Investor exige party existente pelo CPF/CNPJ (HMAC); documento duplicado resolve para a
       mesma party; vigência, Home Concept e revogação intactos; migração sem backfill.
-- [ ] `[TECH-100]` `POST` com origem inválida → 403 nas rotas novas.
-- [ ] E2E (autenticação de teste): Admin cadastra party, convida, revoga; convidado ativa e vê só a própria party;
+- [x] `[TECH-100]` `POST` com origem inválida → 403 nas rotas novas.
+- [x] E2E (autenticação de teste): Admin cadastra party, convida, revoga; convidado ativa e vê só a própria party;
       usuário sem delegação negado; A não abre B; axe 0 e sem overflow (320–1920) nas telas novas.
 
 ### 13.12 Edge cases

@@ -838,6 +838,8 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 - **Status (2026-10-21):** ⬜ próxima executável (W6 ✅, #59). Ainda não iniciada.
   **Atualização (2026-10-21, noite):** 🔄 em andamento na branch `feat/w7-titulares` (spec, ADR-0020 e STRIDE
   `titular-pii` primeiro; um PR draft, sem merge até o checkpoint do fundador).
+  **Checkpoint (2026-10-21):** implementação completa no PR draft da branch; gates locais verdes (verify, E2E,
+  trace). Aguarda a decisão de merge do fundador; Production intocada (sem migrations, segredos, parties ou convites).
 - **Goal**: o Titular existe como party cifrada e acessa sua área por delegação.
 - **IDs**: TECH-050, TECH-052, TECH-100, ADR-0002.
 - **Scope (slices/files)**: `identity`.
