@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { CommandRejection, type Actor, type CommandHandler } from '@/features/platform';
 import { delegationStatus } from '../domain/party-delegation';
-import { normalizePartyDocument, type PartyDocument } from '../domain/party-document';
 import { isStaffRole, type StaffRole } from '../domain/staff';
+import { partyDocumentInput } from './party-document-input';
 import { createPartyDocumentResolver } from './party-resolver';
 import {
   AccountAlreadyConfirmedError,
@@ -12,23 +12,10 @@ import {
   type RepresentativeAccounts,
 } from './party-ports';
 
-const DOCUMENT_INPUT_MAX = 32;
 const EMAIL_MAX = 254;
 const TEXT_MAX = 255;
 
-/** Texto digitado → documento normalizado; inválido vira erro do campo (spec identity §13.3). */
-export const partyDocumentInput = z
-  .string()
-  .min(1)
-  .max(DOCUMENT_INPUT_MAX)
-  .transform((value, context): PartyDocument => {
-    const document = normalizePartyDocument(value);
-    if (document === null) {
-      context.addIssue({ code: 'custom', message: 'invalid_document' });
-      return z.NEVER;
-    }
-    return document;
-  });
+export { partyDocumentInput };
 
 export const registerPartyInput = z.strictObject({ document: partyDocumentInput });
 export type RegisterPartyInput = z.infer<typeof registerPartyInput>;

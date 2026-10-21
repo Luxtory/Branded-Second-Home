@@ -139,7 +139,7 @@ function PendingInvitations({ overview }: { readonly overview: TitularOverview }
         {area.pendingTitle}
       </h2>
       {overview.pending.map((item) => (
-        <article className="lx-page-section" key={item.delegationId} aria-label={area.pendingItem}>
+        <article key={item.delegationId} aria-label={area.pendingItem}>
           <h3 className="lx-title">{area.pendingItem}</h3>
           <p className="lx-body">
             {area.invitedLabel} <Instant iso={item.invitedAt.toISOString()} />. {area.pendingBody}
@@ -162,12 +162,12 @@ export async function TitularAreaPage({ activated }: { readonly activated: boole
   }
   return (
     <TitularShell>
+      <PageHeader title={text.area.title} lead={text.area.lead} />
       {activated ? (
         <div className="lx-message lx-message--success" role="status">
           <p className="lx-message__title">{text.area.activated}</p>
         </div>
       ) : null}
-      <PageHeader title={text.area.title} lead={text.area.lead} />
       {overview.representations.length === 0 ? null : <Representations overview={overview} />}
       {overview.pending.length === 0 ? null : <PendingInvitations overview={overview} />}
     </TitularShell>
@@ -191,26 +191,31 @@ export async function TitularRepresentationPage({ partyId }: { readonly partyId:
         lead={detail.lead}
         context={{ href: titularPaths.area, label: detail.contextLink }}
       />
-      <dl className="lx-evidence lx-evidence--inline">
-        <div className="lx-evidence__item">
-          <dt className="lx-evidence__label">{detail.typeLabel}</dt>
-          <dd className="lx-evidence__value">{text.documentType[representation.documentType]}</dd>
-        </div>
-        <div className="lx-evidence__item">
-          <dt className="lx-evidence__label">{detail.documentLabel}</dt>
-          <dd className="lx-evidence__value">{representation.maskedDocument}</dd>
-        </div>
-        <div className="lx-evidence__item">
-          <dt className="lx-evidence__label">{text.area.untilLabel}</dt>
-          <dd className="lx-evidence__value">
-            {representation.validUntil === null ? (
-              text.area.noEnd
-            ) : (
-              <Instant iso={representation.validUntil.toISOString()} />
-            )}
-          </dd>
-        </div>
-      </dl>
+      <section className="lx-page-section" aria-labelledby="titular-representation">
+        <h2 className="lx-display-s" id="titular-representation">
+          {detail.sectionTitle}
+        </h2>
+        <dl className="lx-evidence lx-evidence--inline">
+          <div className="lx-evidence__item">
+            <dt className="lx-evidence__label">{detail.typeLabel}</dt>
+            <dd className="lx-evidence__value">{text.documentType[representation.documentType]}</dd>
+          </div>
+          <div className="lx-evidence__item">
+            <dt className="lx-evidence__label">{detail.documentLabel}</dt>
+            <dd className="lx-evidence__value">{representation.maskedDocument}</dd>
+          </div>
+          <div className="lx-evidence__item">
+            <dt className="lx-evidence__label">{text.area.untilLabel}</dt>
+            <dd className="lx-evidence__value">
+              {representation.validUntil === null ? (
+                text.area.noEnd
+              ) : (
+                <Instant iso={representation.validUntil.toISOString()} />
+              )}
+            </dd>
+          </div>
+        </dl>
+      </section>
     </TitularShell>
   );
 }

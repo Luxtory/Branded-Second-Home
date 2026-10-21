@@ -36,6 +36,7 @@ export const partyMessages = {
   detail: {
     contextLink: 'Partes',
     lead: 'Documento mascarado. Representantes só representam a parte depois de ativar o convite.',
+    summaryTitle: 'Cadastro',
     documentLabel: 'Documento',
     typeLabel: 'Tipo',
     createdLabel: 'Cadastro',
@@ -96,6 +97,7 @@ export const partyMessages = {
     contextLink: 'Voltar à parte',
     basisLabel: 'Base da revogação',
     basisHint: 'Por exemplo, o fim da procuração. Não inclua CPF, CNPJ nem outros dados pessoais.',
+    summaryTitle: 'Representação',
     submit: 'Revogar',
   },
   status: {
@@ -123,6 +125,10 @@ export const partyMessages = {
     unexpected: 'Não foi possível concluir. Tente de novo.',
   },
   duplicate: 'Já existe uma parte com este CPF ou CNPJ. Use a busca para abri-la.',
+  unavailable: {
+    title: 'Partes indisponíveis neste ambiente',
+    body: 'A configuração de proteção dos documentos ainda não está disponível. Nenhum dado foi lido ou gravado.',
+  },
   timeZoneHint: (zone: string) => `Horário de ${zone}.`,
   optional: '(opcional)',
   cancel: 'Cancelar',

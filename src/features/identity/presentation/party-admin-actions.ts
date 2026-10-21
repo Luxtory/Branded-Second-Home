@@ -3,7 +3,7 @@
 import { randomUUID } from 'node:crypto';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import type { JsonValue } from '@/features/platform';
+import { unavailableKeys, type JsonValue } from '@/features/platform';
 import {
   createPartyDelegationInput,
   partyDocumentInput,
@@ -102,7 +102,13 @@ export async function searchPartyAction(
     return { ...state, values, rejection: 'permission' };
   }
   const session = { userId: access.userId, roles: access.roles, ...exercised };
-  const partyId = await lookupPartyByDocument(session, parsed.data.document);
+  let partyId: string | null;
+  try {
+    partyId = await lookupPartyByDocument(session, parsed.data.document);
+  } catch (error) {
+    if (unavailableKeys(error) === null) throw error;
+    return { ...state, values, rejection: 'unavailable' };
+  }
   if (partyId === null)
     return { ...state, values, fieldErrors: {}, rejection: null, notFound: true };
   redirect(partyPaths.party(partyId));

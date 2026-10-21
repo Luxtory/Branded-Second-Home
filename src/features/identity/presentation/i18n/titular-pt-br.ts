@@ -57,6 +57,7 @@ export const titularMessages = {
   detail: {
     contextLink: 'Área do Titular',
     lead: 'Documento mascarado, como a Luxtory o registrou.',
+    sectionTitle: 'Representação',
     typeLabel: 'Tipo',
     documentLabel: 'Documento',
   },

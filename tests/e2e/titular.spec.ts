@@ -148,7 +148,9 @@ test.describe('Titulares a 390 px com toque', () => {
     await expect(page.getByRole('status')).toContainText('Representação revogada.');
     await titular.goto('/titular');
     await expect(
-      titular.getByText('Esta conta não representa nenhum Titular na Luxtory.'),
+      titular.getByRole('heading', {
+        name: 'Esta conta não representa nenhum Titular na Luxtory.',
+      }),
     ).toBeVisible();
   });
 
@@ -159,9 +161,9 @@ test.describe('Titulares a 390 px com toque', () => {
     test.setTimeout(FLOW_TIMEOUT_MS);
     const consoleErrors = collectConsoleErrors(page);
     await titularSignIn(page, VISITOR_EMAIL);
-    await expect(page.getByText('Acesso negado')).toBeVisible();
+    await expect(page.getByText('Acesso negado', { exact: true })).toBeVisible();
     await expect(
-      page.getByText('Esta conta não representa nenhum Titular na Luxtory.'),
+      page.getByRole('heading', { name: 'Esta conta não representa nenhum Titular na Luxtory.' }),
     ).toBeVisible();
     await expectResponsive(page, consoleErrors);
     await captureForReview(page, 'w7-10-acesso-negado');
@@ -191,7 +193,7 @@ test.describe('Titulares a 390 px com toque', () => {
       revocation_basis: 'Encerramento E2E',
     });
     await page.goto('/titular');
-    await expect(page.getByText('Acesso negado')).toBeVisible();
+    await expect(page.getByText('Acesso negado', { exact: true })).toBeVisible();
   });
 });
 
@@ -215,7 +217,7 @@ test.describe('Titulares a 1440 px', () => {
     await page.getByLabel('E-mail').fill(uniqueEmail('sem-convite'));
     await page.getByLabel('Código do convite').fill(TEST_CODE);
     await page.getByRole('button', { name: 'Continuar' }).click();
-    await expect(page.getByRole('alert')).toContainText('Código inválido ou expirado.');
+    await expect(page.locator('#invite-error')).toContainText('Código inválido ou expirado.');
     await expectResponsive(page, consoleErrors);
     await captureForReview(page, 'w7-11-primeiro-acesso-erro');
   });

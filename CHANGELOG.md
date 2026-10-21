@@ -12,6 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Titulares (W7, spec `identity` §13, ADR-0020): no Admin, "Partes" — cadastro por CPF ou CNPJ (numérico ou
+  alfanumérico), cifrado e nunca exibido em claro (documento completo só em leitura deliberada e auditada), busca por
+  CPF/CNPJ e convite de representantes em dois passos; o representante só representa a parte depois de entrar e ativar
+  o convite, e a revogação vale na hora. Nova Área do Titular (`/titular`), com login por código, primeiro acesso pelo
+  código do convite e a parte representada com o documento mascarado. A autorização de Investor passa a identificar o
+  Investor pelo CPF/CNPJ de uma parte já cadastrada.
+
 ### Changed
 
 - Ontologia Home Concept → Home Edition → Second Home (W4.2, `01` v10.2, ADR-0019): a Home Edition passa a ser uma

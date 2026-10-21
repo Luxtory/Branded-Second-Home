@@ -16,7 +16,7 @@ export {
 } from './presentation/admin-command';
 
 // W7 — Titulares (spec identity §13): validação do CPF/CNPJ e resolução da party pelo HMAC para outros módulos (D-W3-1).
-export { partyDocumentInput } from './application/party-commands';
-export type { PartyDocument } from './domain/party-document';
+export { partyDocumentInput } from './contracts';
+export type { PartyDocument } from './contracts';
 export type { PartyDocumentResolver } from './application/party-resolver';
 export { partyDocumentResolver } from './presentation/party-resolver';

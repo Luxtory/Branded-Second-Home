@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { ReactNode } from 'react';
 import { PageHeader, RecordList, type RecordAttribute } from '@/design-system/react';
 import { adminRoleGate, AdminShell, type ExercisedAdminSession } from '@/features/admin';
-import { systemClock } from '@/features/platform';
+import { systemClock, unavailableKeys } from '@/features/platform';
 import { delegationStatus } from '../domain/party-delegation';
 import { partyMessages as text } from './i18n/parties-pt-br';
 import { Instant } from './instant';
@@ -51,11 +51,53 @@ function NotFound({ session }: { readonly session: ExercisedAdminSession }) {
   );
 }
 
+/** Configuração ausente (anéis `PII_*`, banco): a tela diz "indisponível", sem erro 500 (TECH-001). */
+function Unavailable({ session }: { readonly session: ExercisedAdminSession }) {
+  return (
+    <PartyPage session={session}>
+      <PageHeader
+        title={text.unavailable.title}
+        lead={text.unavailable.body}
+        context={{ href: partyPaths.list, label: text.detail.contextLink }}
+      />
+    </PartyPage>
+  );
+}
+
+async function readOrUnavailable<T>(read: () => Promise<T>): Promise<T | 'unavailable'> {
+  try {
+    return await read();
+  } catch (error) {
+    if (unavailableKeys(error) === null) throw error;
+    return 'unavailable';
+  }
+}
+
 function StatusNotice({ status }: { readonly status: PartyStatus | null }) {
   return status === null ? null : (
     <div className="lx-message lx-message--success" role="status">
       <p className="lx-message__title">{text.status[status]}</p>
     </div>
+  );
+}
+
+/** Seção de página (`lx-page-section`) com `h2` ligado por `aria-labelledby`, como no catálogo. */
+function Section({
+  id,
+  title,
+  children,
+}: {
+  readonly id: string;
+  readonly title: string;
+  readonly children: ReactNode;
+}) {
+  return (
+    <section className="lx-page-section" aria-labelledby={id}>
+      <h2 className="lx-display-s" id={id}>
+        {title}
+      </h2>
+      {children}
+    </section>
   );
 }
 
@@ -76,7 +118,8 @@ function KeyValues({ items }: { readonly items: readonly RecordAttribute[] }) {
 export async function PartiesPage() {
   const gate = await adminRoleGate(PARTY_ROLE);
   if (gate.kind === 'blocked') return gate.page;
-  const parties = await readPartyDirectory(gate.session);
+  const parties = await readOrUnavailable(() => readPartyDirectory(gate.session));
+  if (parties === 'unavailable') return <Unavailable session={gate.session} />;
   return (
     <PartyPage session={gate.session}>
       <PageHeader
@@ -207,12 +250,14 @@ export async function PartyDetailPage({
 }) {
   const gate = await adminRoleGate(PARTY_ROLE);
   if (gate.kind === 'blocked') return gate.page;
-  const party = UUID.test(id) ? await readPartyDetail(gate.session, id) : null;
+  const party = UUID.test(id)
+    ? await readOrUnavailable(() => readPartyDetail(gate.session, id))
+    : null;
+  if (party === 'unavailable') return <Unavailable session={gate.session} />;
   if (party === null) return <NotFound session={gate.session} />;
   const detail = text.detail;
   return (
     <PartyPage session={gate.session}>
-      <StatusNotice status={status} />
       <PageHeader
         title={party.maskedDocument}
         lead={detail.lead}
@@ -228,19 +273,19 @@ export async function PartyDetailPage({
           </>
         }
       />
-      <KeyValues
-        items={[
-          { label: detail.typeLabel, value: text.documentType[party.documentType] },
-          { label: detail.documentLabel, value: party.maskedDocument },
-          { label: detail.createdLabel, value: <Instant iso={party.createdAt.toISOString()} /> },
-        ]}
-      />
-      <section className="lx-page-section" aria-labelledby="party-representatives">
-        <h2 className="lx-display-s" id="party-representatives">
-          {detail.representativesTitle}
-        </h2>
+      <StatusNotice status={status} />
+      <Section id="party-summary" title={detail.summaryTitle}>
+        <KeyValues
+          items={[
+            { label: detail.typeLabel, value: text.documentType[party.documentType] },
+            { label: detail.documentLabel, value: party.maskedDocument },
+            { label: detail.createdLabel, value: <Instant iso={party.createdAt.toISOString()} /> },
+          ]}
+        />
+      </Section>
+      <Section id="party-representatives" title={detail.representativesTitle}>
         <Representatives party={party} />
-      </section>
+      </Section>
     </PartyPage>
   );
 }
@@ -249,7 +294,10 @@ export async function PartyDetailPage({
 export async function PartyDocumentPage({ id }: { readonly id: string }) {
   const gate = await adminRoleGate(PARTY_ROLE);
   if (gate.kind === 'blocked') return gate.page;
-  const document = UUID.test(id) ? await readPartyDocument(gate.session, id) : null;
+  const document = UUID.test(id)
+    ? await readOrUnavailable(() => readPartyDocument(gate.session, id))
+    : null;
+  if (document === 'unavailable') return <Unavailable session={gate.session} />;
   if (document === null) return <NotFound session={gate.session} />;
   return (
     <PartyPage session={gate.session}>
@@ -258,12 +306,14 @@ export async function PartyDocumentPage({ id }: { readonly id: string }) {
         lead={text.document.lead}
         context={{ href: partyPaths.party(id), label: text.document.contextLink }}
       />
-      <KeyValues
-        items={[
-          { label: text.detail.typeLabel, value: text.documentType[document.documentType] },
-          { label: text.detail.documentLabel, value: document.document },
-        ]}
-      />
+      <Section id="party-document" title={text.detail.summaryTitle}>
+        <KeyValues
+          items={[
+            { label: text.detail.typeLabel, value: text.documentType[document.documentType] },
+            { label: text.detail.documentLabel, value: document.document },
+          ]}
+        />
+      </Section>
     </PartyPage>
   );
 }
@@ -272,7 +322,10 @@ export async function PartyDocumentPage({ id }: { readonly id: string }) {
 export async function InviteRepresentativePage({ id }: { readonly id: string }) {
   const gate = await adminRoleGate(PARTY_ROLE);
   if (gate.kind === 'blocked') return gate.page;
-  const party = UUID.test(id) ? await readPartyDetail(gate.session, id) : null;
+  const party = UUID.test(id)
+    ? await readOrUnavailable(() => readPartyDetail(gate.session, id))
+    : null;
+  if (party === 'unavailable') return <Unavailable session={gate.session} />;
   if (party === null) return <NotFound session={gate.session} />;
   return (
     <PartyPage session={gate.session}>
@@ -300,7 +353,10 @@ export async function RevokeDelegationPage({
 }) {
   const gate = await adminRoleGate(PARTY_ROLE);
   if (gate.kind === 'blocked') return gate.page;
-  const party = UUID.test(id) ? await readPartyDetail(gate.session, id) : null;
+  const party = UUID.test(id)
+    ? await readOrUnavailable(() => readPartyDetail(gate.session, id))
+    : null;
+  if (party === 'unavailable') return <Unavailable session={gate.session} />;
   const delegation = party?.delegations.find((item) => item.id === delegationId) ?? null;
   if (party === null || delegation === null || delegation.state === 'revoked') {
     return <NotFound session={gate.session} />;
@@ -312,15 +368,17 @@ export async function RevokeDelegationPage({
         lead={text.revoke.lead}
         context={{ href: partyPaths.party(id), label: text.revoke.contextLink }}
       />
-      <KeyValues
-        items={[
-          {
-            label: text.detail.emailLabel,
-            value: delegation.account?.maskedEmail ?? text.detail.emailUnavailable,
-          },
-          { label: text.detail.documentLabel, value: party.maskedDocument },
-        ]}
-      />
+      <Section id="revoke-summary" title={text.revoke.summaryTitle}>
+        <KeyValues
+          items={[
+            {
+              label: text.detail.emailLabel,
+              value: delegation.account?.maskedEmail ?? text.detail.emailUnavailable,
+            },
+            { label: text.detail.documentLabel, value: party.maskedDocument },
+          ]}
+        />
+      </Section>
       <RevokeDelegationForm
         partyId={party.id}
         delegationId={delegation.id}

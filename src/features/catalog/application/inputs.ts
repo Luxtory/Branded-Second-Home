@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { partyDocumentInput } from '@/features/identity';
+import { partyDocumentInput } from '@/features/identity/contracts';
 import {
   CATALOG_TERM_KINDS,
   CROP_STEPS,

@@ -21,6 +21,8 @@ Production da Vercel**, nunca em Preview ou Development.
 | `CRON_SECRET` | Vercel, Production, **Sensitive** | ao menos 32 caracteres aleatórios do gerenciador de senhas; a Vercel o envia como `Authorization: Bearer` ao chamar os crons |
 | `DATABASE_URL` | Vercel, Production, **Sensitive** | passo 5 abaixo |
 | `SUPABASE_SECRET_KEY` | Vercel, **só Production**, **Sensitive** — nunca `NEXT_PUBLIC_*` | Supabase → Settings → API Keys → chave secreta `sb_secret_…` (a `service_role` legada é recusada pela validação) |
+| `PII_ENCRYPTION_KEYRING` · `PII_ENCRYPTION_ACTIVE_KEY_ID` | Vercel, **só Production**, **Sensitive** (W7) | anel `id:base64` com chave de 32 bytes aleatórios (ex.: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` numa máquina confiável, colado direto na Vercel; nunca em arquivo, chat ou commit); id curto e minúsculo (ex.: `e2026a`) |
+| `PII_HMAC_KEYRING` · `PII_HMAC_ACTIVE_KEY_ID` | Vercel, **só Production**, **Sensitive** (W7) | mesmo formato, com chave **gerada à parte** (a validação recusa material igual ao do anel de cifra); id próprio (ex.: `h2026a`) |
 
 ## Preparar a W1 em produção
 
@@ -315,6 +317,38 @@ formulário); as migrations de esquema do hash, contato e pré-qualificação s�
 **Fechar de novo**: `INTEREST_WRITES=closed` e redeploy — a seção some e o endpoint volta a `404` sem perder
 registros.
 
+## Preparar a W7 em produção (Titulares: party cifrada, delegação e Área do Titular)
+
+Spec [`identity`](../specs/identity.md) §13, [ADR-0020](../adr/0020-party-cifrada-e-delegacao.md), STRIDE
+[`titular-pii`](../security/threats/titular-pii.md). **Nada aqui foi configurado**: nenhuma party real, nenhum convite
+real e nenhum segredo novo antes do checkpoint final do fundador. Sem os anéis `PII_*`, as telas de Partes e da Área do
+Titular respondem "indisponível" e o cadastro de autorização de Investor responde `503` (fechado para falhas).
+
+1. **Antes do merge (só leitura):** `SELECT count(*) FROM app.authorization_grant` e
+   `SELECT count(*) FROM app.investor_authorization` devem ser **0** (auditados em 2026-10-21). A FK do grant é criada
+   validada e `investor_authorization.party_id` nasce `NOT NULL`: com linha antiga, o job `migrate` falha fechado sem
+   reescrever nada.
+2. **Merge → `migrate` → `deploy`** pela CI. Migrations `20261021220001`…`20261021220005`.
+3. **Depois (só leitura):** 35 versões em `dbmate.schema_migrations`; `app.party` e `app.party_delegation` vazias, com
+   RLS; `authenticated` com `SELECT` só nas colunas previstas (sem HMAC nem bases); constraint
+   `authorization_grant_grantee_party_fk` com `convalidated = true` e sem o gatilho `authorization_grant_require_party`;
+   `app.auth_account_by_email` e `app.auth_account_labels` executáveis só por `luxtory_app`.
+4. **Gates antes da primeira party real ou do primeiro convite real** (todos obrigatórios, decisão do fundador):
+   - os quatro segredos `PII_*` criados conforme a tabela de [Segredos](#segredos) (registre só os **ids** das chaves;
+     o valor não sai da Vercel);
+   - template **Invite user** do Supabase Auth (Authentication → Emails → Templates) com o código `{{ .Token }}` e o
+     link para `/titular/ativar` do site — sem documento, party ou outro dado; o prazo do código é o "Email OTP
+     Expiration" do projeto;
+   - reavaliação formal da D3 ([ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md)) e base legal/aviso
+     aplicáveis aos dados de Titulares;
+   - autorização explícita do fundador para a primeira party e o primeiro convite.
+5. **Primeiro uso real** (não há party de teste em Production): Admin → Partes → Cadastrar parte → Convidar
+   representante (o resumo mostra o e-mail completo e o documento mascarado) → o representante faz o primeiro acesso em
+   `/titular/ativar` (conta nova) ou entra em `/titular/entrar` (conta existente) e ativa; confira na lista de
+   representantes "Ativa" e, nos logs, nenhum documento, e-mail ou código.
+6. **Revogar** uma delegação: Admin → Partes → a parte → o representante → Revogar (com a base). Vale na próxima tela.
+   Convite expirado: revogue a pendente e convide de novo (o Supabase reenvia o convite para conta não confirmada).
+
 ## Preparar a W4.2 em produção (ontologia Home Concept → Home Edition → Second Home)
 
 Spec [`catalog`](../specs/catalog.md) §17, [`ownership`](../specs/ownership.md) §13, ADR-0019; dependency map e
@@ -343,6 +377,12 @@ nova.
 
 - `SUPABASE_SECRET_KEY`: crie uma chave secreta nova no Supabase, troque na Vercel (Production), refaça o deploy e só
   então revogue a antiga.
+- `PII_ENCRYPTION_KEYRING` (W7, ADR-0020): **acrescente** a chave nova ao anel (`idAntigo:…,idNovo:…`), troque
+  `PII_ENCRYPTION_ACTIVE_KEY_ID` para o id novo e refaça o deploy. Valores antigos continuam legíveis. **Nunca remova**
+  uma chave enquanto `SELECT document_key_id, count(*) FROM app.party GROUP BY 1` mostrar linhas com ela (a
+  recifragem auditada que permite retirá-la ainda não existe).
+- `PII_HMAC_KEYRING`: mesmo procedimento com `PII_HMAC_ACTIVE_KEY_ID`; a busca e a deduplicação usam todas as chaves do
+  anel. Não remova chave com linhas em `SELECT document_hmac_key_id, count(*) FROM app.party GROUP BY 1`.
 - `RESEND_API_KEY` e `UPSTASH_REDIS_REST_TOKEN` (BP1): crie a credencial nova, troque na Vercel (no ambiente certo),
   refaça o deploy e só então revogue a antiga. `BRAND_PARTNERS_CONTACT_HMAC_SECRET`: trocar só reinicia as contagens
   do limitador (chaves novas no Redis; as antigas expiram sozinhas).
