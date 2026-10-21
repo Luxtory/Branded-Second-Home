@@ -45,6 +45,8 @@
     line-height: var(--lx-leading-tight);
     font-variant-numeric: tabular-nums lining-nums;
     color: var(--lx-color-fg);
+    /* Valores sem ponto de quebra (e-mail, ids) não estouram a coluna — como no Record List (W6, ADR-0009). */
+    overflow-wrap: anywhere;
   }
 
   .lx-evidence--inline {

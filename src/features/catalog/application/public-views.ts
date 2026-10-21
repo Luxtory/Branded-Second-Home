@@ -54,6 +54,17 @@ export interface PublicHomeEdition {
   readonly projectedInvestment: PublicProjectedInvestment | null;
 }
 
+/**
+ * O que a página da Home Edition entrega à seção "Solicitar uma conversa" (W6, spec catalog §18), montada pelo shell:
+ * a Home Edition e a média projetada **exatamente como o bloco da página a mostrou** (`02` §15, item 14).
+ */
+export interface HomeEditionConversationContext {
+  readonly homeEditionId: string;
+  readonly homeEditionName: string;
+  /** `null` = a página não apresentou média projetada. */
+  readonly presentedProjectedInvestment: { readonly id: string; readonly label: string } | null;
+}
+
 /** O que existe publicado agora — decide o CTA da Home e do Como funciona (D-B2C-13, D-B2C-16). */
 export interface PublicAvailability {
   readonly homeConcepts: boolean;

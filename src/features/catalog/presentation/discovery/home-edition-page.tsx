@@ -1,7 +1,11 @@
 import { notFound } from 'next/navigation';
-import { cache } from 'react';
+import { cache, type ReactNode } from 'react';
 import { Evidence } from '@/design-system/react';
-import { publicId, type PublicHomeEdition } from '../../application/public-views';
+import {
+  publicId,
+  type HomeEditionConversationContext,
+  type PublicHomeEdition,
+} from '../../application/public-views';
 import { mainImage } from '../../application/public-media';
 import { postgresPublicCatalogReader as reader } from '../../infrastructure/postgres-public-catalog-reader';
 import { discoveryMessages as text } from '../i18n/discovery-pt-br';
@@ -190,17 +194,35 @@ function ProjectedInvestment({ homeEdition }: { readonly homeEdition: PublicHome
   );
 }
 
+/** A média projetada como o bloco da página a mostra — o mesmo texto que o contexto de apresentação assina (W6). */
+function conversationContext(homeEdition: PublicHomeEdition): HomeEditionConversationContext {
+  const value = homeEdition.projectedInvestment;
+  return {
+    homeEditionId: homeEdition.id,
+    homeEditionName: homeEdition.name,
+    presentedProjectedInvestment:
+      value === null
+        ? null
+        : { id: value.id, label: formatMoney(value.amountMinor, value.currency) },
+  };
+}
+
 /**
  * Home Edition `/colecao/[homeConceptId]/home-editions/[homeEditionId]` (spec catalog §17.8, D-B2C-27): Most Aware,
  * PUSH + prova necessária. Só o registrado e aprovado (§17.7); sem localização, modalidade, condições, disponibilidade,
- * prazo nem preço (BR-031, BR-032, L10). Sem formulário até a W6 (D-B2C-10). De outro Home Concept → 404.
+ * prazo nem preço (BR-031, BR-032, L10). De outro Home Concept → 404. Depois de "Para quem", o shell pode encaixar a
+ * seção "Solicitar uma conversa" do módulo `ownership` (W6, §18; `D-B2C-28`) — sem ela, a página é a da W4.2
+ * (`D-B2C-10`).
  */
 export async function HomeEditionPage({
   homeConceptId,
   homeEditionId,
+  conversationRequest,
 }: {
   readonly homeConceptId: string;
   readonly homeEditionId: string;
+  /** Seção da solicitação de conversa, montada pelo shell com o contexto da página (sem import entre slices). */
+  readonly conversationRequest?: (context: HomeEditionConversationContext) => ReactNode;
 }) {
   const result = await loadPublicHomeEdition(homeConceptId, homeEditionId);
   if (result.status === 'unavailable') {
@@ -263,6 +285,8 @@ export async function HomeEditionPage({
           <ActionLink outline href={discoveryPaths.howItWorks} label={actions.howItWorks} />
         </div>
       </Qualification>
+
+      {conversationRequest?.(conversationContext(homeEdition))}
     </DiscoverySite>
   );
 }
