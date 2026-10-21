@@ -211,4 +211,48 @@ test.describe('desktop (1440 px)', () => {
     await expectGroupedView(page, location);
     await expectResponsive(page, consoleErrors);
   });
+
+  test('[REQ-025] Admin: o horizonte `within_30_days` registrado pela API aparece em "Momento" como "Nos próximos 30 dias"', async ({
+    page,
+    request,
+    baseURL,
+  }) => {
+    test.setTimeout(FLOW_TIMEOUT_MS);
+    // API → PostgreSQL → leitor → Admin → UI: o código persistido e o rótulo exibido não podem divergir.
+    const seed = readSeed().withHomeEdition;
+    const location = unique('Campo E2E');
+    const context = await presentationContext(page, seed.id, seed.homeEdition.id);
+    const response = await postInterest(request, baseURL ?? '', {
+      home_edition_id: seed.homeEdition.id,
+      modality: 'co_owner',
+      desired_location: location,
+      approx_days: 14,
+      available_to_start_band: 'from_500k_to_1m',
+      decision_unit: 'self',
+      decision_horizon: 'within_30_days',
+      ...CONTACT,
+      presentation_context: context,
+    });
+    expect(response.status(), await response.text()).toBe(201);
+
+    await signIn(page, STAFF_EMAIL);
+    await expect(page).toHaveURL(/\/admin$/);
+    await page.goto('/admin/interesses');
+    await page
+      .getByRole('region', { name: seed.homeEdition.name })
+      .getByRole('link', { name: 'Ver as manifestações desta Home Edition' })
+      .click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(seed.homeEdition.name);
+    await page.getByRole('region', { name: location }).getByRole('link').first().click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Manifestação de interesse');
+    await page.getByRole('link', { name: 'Ver contato e pré-qualificação' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Contato e pré-qualificação');
+    await expect(
+      page
+        .getByRole('region', { name: 'Pré-qualificação' })
+        .getByRole('term')
+        .filter({ hasText: /^Momento$/u })
+        .locator('xpath=following-sibling::dd[1]'),
+    ).toHaveText('Nos próximos 30 dias');
+  });
 });
