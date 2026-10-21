@@ -45,14 +45,15 @@ function sectionOf(page: Page): Locator {
 const group = (section: Locator, legend: string) => section.getByRole('group', { name: legend });
 
 /**
- * Capturas do checkpoint visual (material do PR): só a seção, com `UI_CAPTURE_DIR`. Recorte da página inteira — o
- * cabeçalho fixo não cobre a seção como cobriria numa captura do elemento rolado.
+ * Capturas do checkpoint visual (material do PR): só a seção, com `UI_CAPTURE_DIR`. Recorte da página inteira rolada ao
+ * topo: o cabeçalho fixo fica no alto da página, fora do recorte (sem CSS injetado, que a CSP do app recusa).
  */
 async function capture(section: Locator, name: string) {
   const dir = process.env.UI_CAPTURE_DIR;
   if (dir === undefined || dir === '') return;
   const page = section.page();
   const width = page.viewportSize()?.width ?? 0;
+  await page.evaluate(() => window.scrollTo(0, 0));
   const clip = await section.evaluate((element) => {
     const box = element.getBoundingClientRect();
     return {
