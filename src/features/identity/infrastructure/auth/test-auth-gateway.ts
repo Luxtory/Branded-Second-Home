@@ -1,8 +1,9 @@
-import { createHash, createHmac, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
+import { createHmac, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import type { Clock } from '@/features/platform';
 import type { AuthGateway } from '../../application/ports';
 import { isAssuranceLevel, type AssuranceLevel, type VerifiedSession } from '../../domain/session';
 import { SESSION_COOKIE_OPTIONS, type CookieJar } from './cookie-jar';
+import { acceptTestInvite, confirmTestAccount } from './test-accounts';
 
 /**
  * Autenticação de teste (ADR-0005 §7, `AUTH_MODE=test`): só local e na CI — a validação de ambiente a recusa quando
@@ -48,11 +49,7 @@ const TEST_QR_CODE =
   );
 const TEST_TOTP_SECRET = 'LUXTORYTESTSECRET';
 
-/** Id determinístico por e-mail (sem guardar o e-mail): o E2E cadastra o papel de staff desse id. */
-export function testUserId(email: string): string {
-  const hex = createHash('sha256').update(email.trim().toLowerCase()).digest('hex');
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-5${hex.slice(13, 16)}-8${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
-}
+export { testUserId } from './test-accounts';
 
 const encode = (value: object) => Buffer.from(JSON.stringify(value)).toString('base64url');
 const sign = (content: string) => createHmac('sha256', signingKey).update(content).digest();
@@ -106,7 +103,13 @@ export function createTestAuthGateway(jar: CookieJar, clock: Clock): AuthGateway
     },
     verifyLoginCode(email, code) {
       if (code !== TEST_AUTH_CODE) return Promise.resolve(false);
-      store(issueTestToken(testUserId(email), 'aal1', clock), SESSION_SECONDS);
+      store(issueTestToken(confirmTestAccount(email), 'aal1', clock), SESSION_SECONDS);
+      return Promise.resolve(true);
+    },
+    verifyInviteCode(email, code) {
+      const userId = code === TEST_AUTH_CODE ? acceptTestInvite(email) : null;
+      if (userId === null) return Promise.resolve(false);
+      store(issueTestToken(userId, 'aal1', clock), SESSION_SECONDS);
       return Promise.resolve(true);
     },
     verifiedTotpFactor() {

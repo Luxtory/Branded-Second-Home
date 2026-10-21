@@ -27,6 +27,7 @@ import type { StaffRole } from '../domain/staff';
 import { createAuthGateway } from '../infrastructure/auth/auth-gateway';
 import type { CookieJar } from '../infrastructure/auth/cookie-jar';
 import { createPostgresGrantDirectory } from '../infrastructure/postgres-grants';
+import { createPostgresDelegationDirectory } from '../infrastructure/postgres-parties';
 import { createPostgresStaffDirectory } from '../infrastructure/postgres-staff-directory';
 import { withAuth } from './server-auth';
 
@@ -66,6 +67,7 @@ async function runAdminCommand<I, R extends JsonValue>(
     session,
     staff: createPostgresStaffDirectory(database),
     grants: createPostgresGrantDirectory(database),
+    delegations: createPostgresDelegationDirectory(database),
     clock,
   });
   const executor = createProductionExecutor({ guard, log: call.log, source, database: database() });

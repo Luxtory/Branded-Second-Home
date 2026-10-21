@@ -22,6 +22,8 @@ export interface NewAuthorizationGrant extends AuthorizationGrant {
 
 /** Grava o grant na transação do command. */
 export interface GrantWriter<Tx> {
+  /** A party beneficiária existe (D-W2-1 encerrada: erro funcional antes da FK). */
+  partyExists(tx: Tx, partyId: string): Promise<boolean>;
   insert(tx: Tx, grant: NewAuthorizationGrant): Promise<void>;
 }
 
@@ -41,6 +43,8 @@ export interface AuthGateway {
   /** `sent` também para e-mail sem conta: a resposta não enumera usuários. */
   sendLoginCode(email: string): Promise<'sent' | 'rate_limited'>;
   verifyLoginCode(email: string, code: string): Promise<boolean>;
+  /** Código do convite (W7): conta convidada e não confirmada; inválido, expirado ou sem convite → `false`. */
+  verifyInviteCode(email: string, code: string): Promise<boolean>;
   /** Id do fator TOTP já verificado, se houver. */
   verifiedTotpFactor(): Promise<string | null>;
   startTotpEnrollment(): Promise<TotpEnrollment>;

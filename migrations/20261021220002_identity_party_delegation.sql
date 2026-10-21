@@ -98,7 +98,7 @@ GRANT SELECT (id, party_id, user_id, scope, state, valid_from, valid_until, crea
   ON app.party_delegation TO authenticated;
 CREATE POLICY party_delegation_own_read ON app.party_delegation FOR SELECT TO authenticated
   USING (user_id = auth.uid());
-GRANT SELECT (id, document_type, document_ciphertext, document_key_id) ON app.party TO authenticated;
+GRANT SELECT (id, document_type, document_ciphertext, document_key_id, created_at) ON app.party TO authenticated;
 CREATE POLICY party_represented_read ON app.party FOR SELECT TO authenticated
   USING (EXISTS (
     SELECT 1 FROM app.party_delegation d

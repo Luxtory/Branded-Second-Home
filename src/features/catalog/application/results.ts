@@ -68,6 +68,7 @@ export function investorAuthorizationResult(authorization: InvestorAuthorization
   return {
     id: authorization.id,
     home_concept_id: authorization.homeConceptId,
+    party_id: authorization.partyId,
     instrument_ref: authorization.instrumentRef,
     valid_from: authorization.validFrom.toISOString(),
     valid_until: iso(authorization.validUntil),

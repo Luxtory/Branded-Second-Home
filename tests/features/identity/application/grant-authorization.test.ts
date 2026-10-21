@@ -57,7 +57,10 @@ describe('grant_authorization — execução (REQ-015)', () => {
     const audit: AuditRecord[] = [];
     const handler = createGrantAuthorizationHandler<'tx'>({
       registry: PARTNER_REGISTRY,
-      grants: { insert: (_tx, grant) => Promise.resolve(void inserted.push(grant)) },
+      grants: {
+        partyExists: () => Promise.resolve(true),
+        insert: (_tx, grant) => Promise.resolve(void inserted.push(grant)),
+      },
       newId: () => '00000000-0000-4000-8000-0000000000e1',
     });
     const input = handler.input.parse(body);
@@ -97,7 +100,7 @@ describe('grant_authorization — execução (REQ-015)', () => {
   it('[TECH-051] recusa execução sem ator de staff (o guard deveria ter negado antes)', async () => {
     const handler = createGrantAuthorizationHandler<'tx'>({
       registry: PARTNER_REGISTRY,
-      grants: { insert: () => Promise.resolve() },
+      grants: { partyExists: () => Promise.resolve(true), insert: () => Promise.resolve() },
       newId: () => 'x',
     });
 
@@ -113,5 +116,33 @@ describe('grant_authorization — execução (REQ-015)', () => {
         emit: () => undefined,
       }),
     ).rejects.toThrow(/without a staff actor/);
+  });
+});
+
+describe('grant_authorization — party inexistente (D-W2-1 encerrada, W7)', () => {
+  it('[REQ-014] party inexistente é recusa funcional ERR_NOT_FOUND antes do INSERT (não depende da FK)', async () => {
+    const inserted: NewAuthorizationGrant[] = [];
+    const handler = createGrantAuthorizationHandler<'tx'>({
+      registry: PARTNER_REGISTRY,
+      grants: {
+        partyExists: () => Promise.resolve(false),
+        insert: (_tx, grant) => Promise.resolve(void inserted.push(grant)),
+      },
+      newId: () => 'x',
+    });
+
+    await expect(
+      handler.execute({
+        input: handler.input.parse(body),
+        actor: staffActor('admin'),
+        operationId: 'op',
+        now: new Date('2026-09-15T00:00:00.000Z'),
+        tx: 'tx',
+        locks: new LockSequence(),
+        audit: () => undefined,
+        emit: () => undefined,
+      }),
+    ).rejects.toMatchObject({ name: 'CommandRejection', code: 'ERR_NOT_FOUND' });
+    expect(inserted).toHaveLength(0);
   });
 });

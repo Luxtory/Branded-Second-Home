@@ -222,6 +222,7 @@ export const postgresCatalogStore: CatalogStore<DatabaseTransaction> = {
       .values({
         id: authorization.id,
         home_concept_id: authorization.homeConceptId,
+        party_id: authorization.partyId,
         instrument_ref: authorization.instrumentRef,
         valid_from: authorization.validFrom,
         valid_until: authorization.validUntil,

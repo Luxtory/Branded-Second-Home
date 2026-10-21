@@ -65,6 +65,8 @@ export interface HomeConceptVersion {
 export interface InvestorAuthorization {
   readonly id: string;
   readonly homeConceptId: string;
+  /** Party do Investor (W7, D-W3-1): sempre uma party existente, resolvida pelo HMAC do CPF/CNPJ. */
+  readonly partyId: string;
   readonly instrumentRef: string;
   readonly validFrom: Date;
   readonly validUntil: Date | null;

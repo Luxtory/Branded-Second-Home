@@ -1,6 +1,7 @@
 import { sql } from 'kysely';
 import type { Database, DatabaseTransaction } from '@/features/platform';
 import type { GrantDirectory, GrantWriter } from '../application/ports';
+import { partyExists } from './postgres-parties';
 
 /** Grants vigentes da party que listam o command (`app.authorization_grant`, REQ-014). */
 export function createPostgresGrantDirectory(database: () => Database): GrantDirectory {
@@ -29,8 +30,9 @@ export function createPostgresGrantDirectory(database: () => Database): GrantDir
   };
 }
 
-/** Insere o grant na transação do command, como `luxtory_app` (o banco recusa party inexistente — D-W2-1). */
+/** Insere o grant na transação do command, como `luxtory_app` (FK validada para `party` desde a W7). */
 export const postgresGrantWriter: GrantWriter<DatabaseTransaction> = {
+  partyExists,
   async insert(tx, grant) {
     await tx
       .insertInto('app.authorization_grant')

@@ -1,5 +1,6 @@
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { ownerParty } from '../support/party-fixtures';
 import { createTestDatabase, type TestDatabase } from '../support/test-database';
 
 const USER = '00000000-0000-4000-8000-00000000a001';
@@ -130,7 +131,7 @@ describe('staff_role e funções de operação (TECH-050, REQ-015, ADR-0008)', (
   });
 });
 
-describe('authorization_grant: dívida transitória fechada para falhas e revogação (REQ-014, D-W2-1)', () => {
+describe('authorization_grant: FK definitiva (D-W2-1 encerrada na W7) e revogação (REQ-014)', () => {
   let database: TestDatabase;
   let app: pg.Client;
 
@@ -148,24 +149,33 @@ describe('authorization_grant: dívida transitória fechada para falhas e revoga
     await database.drop();
   });
 
-  it('[REQ-014] sem app.party (antes da W7) nenhum grant entra, nem pelo dono das tabelas', async () => {
-    const attempt = app.query(insertGrant('00000000-0000-4000-8000-00000000d001'));
+  it('[REQ-014] D-W2-1 encerrada: FK validada para app.party e gatilho transitório removido', async () => {
+    const { rows } = await database.pool.query<{ convalidated: boolean; target: string }>(
+      `SELECT convalidated, confrelid::regclass::text AS target FROM pg_constraint
+        WHERE conname = 'authorization_grant_grantee_party_fk'`,
+    );
+    const triggers = await database.pool.query(
+      `SELECT 1 FROM pg_trigger WHERE tgname = 'authorization_grant_require_party'`,
+    );
+    const functions = await database.pool.query(
+      `SELECT 1 FROM pg_proc WHERE proname = 'authorization_grant_require_party'`,
+    );
 
-    await expect(attempt).rejects.toMatchObject({
-      code: '23503',
-      constraint: 'authorization_grant_grantee_party_fk',
-    });
-    await expect(
-      database.pool.query(insertGrant('00000000-0000-4000-8000-00000000d002')),
-    ).rejects.toThrow(/grantee party .* does not exist/);
+    expect(rows).toEqual([{ convalidated: true, target: 'app.party' }]);
+    expect(triggers.rowCount).toBe(0);
+    expect(functions.rowCount).toBe(0);
   });
 
-  it('[REQ-014] com app.party, só entra grant de party existente (mesma semântica da FK da W7)', async () => {
-    await database.pool.query(`CREATE TABLE app.party (id uuid PRIMARY KEY)`);
-    await database.pool.query(`INSERT INTO app.party VALUES ('${PARTY}')`);
+  it('[REQ-014] só entra grant de party existente — pela FK, para o papel de aplicação e para o dono', async () => {
+    await ownerParty(database.pool, PARTY);
 
     await expect(
       app.query(insertGrant('00000000-0000-4000-8000-00000000d003', '00000000-0000-4000-8000-00000000c999')),
+    ).rejects.toMatchObject({ code: '23503', constraint: 'authorization_grant_grantee_party_fk' });
+    await expect(
+      database.pool.query(
+        insertGrant('00000000-0000-4000-8000-00000000d002', '00000000-0000-4000-8000-00000000c998'),
+      ),
     ).rejects.toMatchObject({ constraint: 'authorization_grant_grantee_party_fk' });
     await expect(app.query(insertGrant('00000000-0000-4000-8000-00000000d004'))).resolves.toBeDefined();
   });

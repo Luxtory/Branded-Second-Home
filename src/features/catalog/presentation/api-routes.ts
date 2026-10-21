@@ -1,8 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import {
   createAdminCommandRoute,
+  partyDocumentResolver,
   type AdminCommand,
   type AdminCommandDependencies,
+  type PartyDocumentResolver,
 } from '@/features/identity';
 import {
   withRoute,
@@ -24,6 +26,8 @@ export interface CatalogRouteDependencies extends AdminCommandDependencies {
   readonly newId?: () => string;
   readonly images?: CoverImageProcessor;
   readonly media?: MediaStorage;
+  /** Party do Investor pelo CPF/CNPJ (D-W3-1); padrão: os anéis do ambiente. */
+  readonly parties?: PartyDocumentResolver<DatabaseTransaction>;
   readonly afterCommit?: (log: LogPort) => void;
 }
 
@@ -38,12 +42,14 @@ export function createCatalogRoutes({
   newId = randomUUID,
   images = sharpCoverProcessor,
   media = runtimeMediaStorage,
+  parties = partyDocumentResolver,
   ...dependencies
 }: CatalogRouteDependencies = {}) {
   const handlers = createCatalogHandlers<DatabaseTransaction>({
     store: postgresCatalogStore,
     images,
     media,
+    parties,
     newId,
   });
   const route = <I, R extends JsonValue>(

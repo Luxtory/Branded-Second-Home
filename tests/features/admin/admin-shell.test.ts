@@ -6,8 +6,8 @@ describe('seções do Admin (ADR-0008, ADR-0009)', () => {
     const ids = (roles: Parameters<typeof availableSections>[0]) =>
       availableSections(roles).map((section) => section.id);
 
-    expect(ids(['admin'])).toEqual(['home', 'catalog', 'interests']);
-    expect(ids(['admin', 'super_admin'])).toEqual(['home', 'catalog', 'interests']);
+    expect(ids(['admin'])).toEqual(['home', 'catalog', 'interests', 'parties']);
+    expect(ids(['admin', 'super_admin'])).toEqual(['home', 'catalog', 'interests', 'parties']);
     expect(ids(['super_admin'])).toEqual(['home']);
   });
 
@@ -16,6 +16,15 @@ describe('seções do Admin (ADR-0008, ADR-0009)', () => {
 
     expect(interests).toMatchObject({ href: '/admin/interesses', role: 'admin' });
     expect(availableSections(['super_admin']).some((section) => section.id === 'interests')).toBe(
+      false,
+    );
+  });
+
+  it('[TECH-050] Partes (W7) segue a mesma regra: só com o papel Admin exercido', () => {
+    const parties = availableSections(['admin']).find((section) => section.id === 'parties');
+
+    expect(parties).toMatchObject({ href: '/admin/partes', role: 'admin' });
+    expect(availableSections(['super_admin']).some((section) => section.id === 'parties')).toBe(
       false,
     );
   });

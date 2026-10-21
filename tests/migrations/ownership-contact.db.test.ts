@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { readdirSync } from 'node:fs';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Database } from '@/features/platform';
@@ -11,6 +12,11 @@ import { createTestDatabase, type TestDatabase } from '../support/test-database'
 // `public_idempotency_key` — constraints, gatilhos, RLS só para o papel de aplicação, eliminação estrutural sem caminho
 // na aplicação e rollback fail-closed.
 const TABLES = ['interest_contact', 'interest_qualification'] as const;
+// Última migration da W6: as posteriores (W7+) saem antes, para o rollback da W6 ficar no topo.
+const LAST_W6_MIGRATION = '20261021030855';
+const LATER_MIGRATIONS = readdirSync(new URL('../../migrations/', import.meta.url)).filter(
+  (file) => file.slice(0, LAST_W6_MIGRATION.length) > LAST_W6_MIGRATION,
+);
 const CHECK_VIOLATION = '23514';
 const FOREIGN_KEY_VIOLATION = '23503';
 const NOT_NULL_VIOLATION = '23502';
@@ -273,6 +279,9 @@ describe('W6: interest_contact, interest_qualification e esquema do hash no banc
   });
 
   it('rollback fail-closed: com contato, pré-qualificação ou hash chaveado gravados, o down recusa apagar', async () => {
+    for (let undone = 0; undone < LATER_MIGRATIONS.length; undone += 1) {
+      await dbmate(['rollback'], { url: database.url });
+    }
     await expect(dbmate(['rollback'], { url: database.url })).rejects.toThrow(
       /interest_qualification has rows/,
     );

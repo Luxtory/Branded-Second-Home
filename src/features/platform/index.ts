@@ -9,6 +9,7 @@ export {
   ConfigurationMissingError,
   EnvironmentRestrictionError,
   EnvValidationError,
+  ExternalServiceUnavailableError,
   type Env,
   type EnvSource,
 } from './infrastructure/env';

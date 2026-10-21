@@ -296,7 +296,8 @@ igual com ou sem conta) → `/titular`. Sem MFA obrigatório: o TECH-050 exige M
 AAL2 serve à Área do Titular, e o staff continua exigindo AAL2 no Admin.
 
 **Ativação (`activate_party_delegation`).** Na Área, o convite pendente aparece como "Convite para representar um
-Titular na Luxtory" (data do convite e tipo `CPF`/`CNPJ`; **sem** documento) com "Ativar representação". Exige sessão
+Titular na Luxtory" (só a data do convite; **sem** documento nem tipo — a RLS só mostra a party depois da ativação) com
+"Ativar representação". Exige sessão
 verificada cujo `sub` = `user_id` da delegação, estado `pending`, não revogada e não expirada; revalida com a linha
 travada; grava `active`, `activated_at`, `operation` e `audit_log` (antes/depois, só ids e estados). Só então a party
 aparece, com o documento mascarado.
@@ -379,7 +380,7 @@ seguinte (RLS e guard leem o banco a cada request). Já revogada → `ERR_STATE_
 ### 13.9 Leituras, RLS e guard
 
 - **RLS (TECH-052).** `authenticated` ganha `USAGE` no schema `app` e `SELECT` **por coluna** só em `party` (`id`,
-  `document_type`, `document_ciphertext`, `document_key_id` — sem HMAC) e `party_delegation` (sem `basis`,
+  `document_type`, `document_ciphertext`, `document_key_id`, `created_at` — sem HMAC) e `party_delegation` (sem `basis`,
   `revocation_basis` nem ids de staff). Políticas: `party_delegation` → `user_id = auth.uid()`; `party` → existe
   delegação **vigente** do `auth.uid()` para a linha. Auditoria de Production (2026-10-21): `authenticated` não tem
   `SELECT` em nenhuma tabela de `app` nem privilégio padrão no schema; as funções de `app` executáveis por PUBLIC são de

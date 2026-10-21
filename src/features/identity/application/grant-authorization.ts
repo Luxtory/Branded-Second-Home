@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { CommandHandler, CommandRegistry } from '@/features/platform';
+import { CommandRejection, type CommandHandler, type CommandRegistry } from '@/features/platform';
 import { isStaffRole } from '../domain/staff';
 import type { GrantWriter } from './ports';
 
@@ -72,6 +72,10 @@ export function createGrantAuthorizationHandler<Tx>(
     async execute({ input, actor, operationId, now, tx, audit }) {
       if (actor.kind !== 'user' || !isStaffRole(actor.role)) {
         throw new Error('grant_authorization reached the handler without a staff actor');
+      }
+      // D-W2-1 encerrada (W7): party inexistente é recusa funcional, não violação acidental da FK.
+      if (!(await deps.grants.partyExists(tx, input.grantee_party_id))) {
+        throw new CommandRejection('ERR_NOT_FOUND');
       }
       const grant = {
         id: deps.newId(),

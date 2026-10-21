@@ -4,6 +4,11 @@ import {
   CRITICAL_COMMANDS,
 } from '@/features/platform/application/commands/registry';
 import type { GrantDirectory, StaffDirectory } from '@/features/identity/application/ports';
+import type { DelegationDirectory } from '@/features/identity/application/party-ports';
+import {
+  isDelegationCurrent,
+  type PartyDelegation,
+} from '@/features/identity/domain/party-delegation';
 import type { AuthorizationGrant } from '@/features/identity/domain/grant';
 import type { StaffRoleRecord } from '@/features/identity/domain/staff';
 
@@ -75,5 +80,35 @@ export function grant(overrides: Partial<AuthorizationGrant> = {}): Authorizatio
     validUntil: new Date('2026-10-01T00:00:00.000Z'),
     revokedAt: null,
     ...overrides,
+  };
+}
+
+/** Delegação usuário → party (W7); padrão: ativa, sem fim, do parceiro para a party de teste. */
+export function delegation(overrides: Partial<PartyDelegation> = {}): PartyDelegation {
+  return {
+    id: '00000000-0000-4000-8000-0000000000f7',
+    partyId: PARTY,
+    userId: PARTNER_USER,
+    state: 'active',
+    validFrom: new Date('2026-09-01T00:00:00.000Z'),
+    validUntil: null,
+    createdAt: new Date('2026-09-01T00:00:00.000Z'),
+    activatedAt: new Date('2026-09-02T00:00:00.000Z'),
+    revokedAt: null,
+    ...overrides,
+  };
+}
+
+/** Diretório em memória: a vigência é a do domínio (`isDelegationCurrent`). */
+export function delegationDirectory(delegations: readonly PartyDelegation[]): DelegationDirectory {
+  return {
+    currentDelegation: (userId, partyId, at) =>
+      Promise.resolve(
+        delegations.find(
+          (item) =>
+            item.userId === userId && item.partyId === partyId && isDelegationCurrent(item, at),
+        ) ?? null,
+      ),
+    delegation: (id) => Promise.resolve(delegations.find((item) => item.id === id) ?? null),
   };
 }

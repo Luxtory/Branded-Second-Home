@@ -14,6 +14,7 @@ import { captureLogger } from '../../../support/capture-logger';
 import { responseValidator, schemaValidator } from '../../../support/openapi';
 import { appDatabase } from '../../../support/platform-fixtures';
 import { createTestDatabase, type TestDatabase } from '../../../support/test-database';
+import { ownerParty } from '../../../support/party-fixtures';
 import {
   PARTNER_OPERATION,
   PARTNER_REGISTRY,
@@ -76,8 +77,8 @@ describe('POST /v1/admin/authorization-grants (REQ-014, TECH-050, TECH-100)', ()
 
   beforeAll(async () => {
     database = await createTestDatabase();
+    await ownerParty(database.pool, PARTY);
     await database.pool.query(`
-      CREATE TABLE app.party (id uuid PRIMARY KEY); INSERT INTO app.party VALUES ('${PARTY}');
       INSERT INTO auth.users (id) VALUES ('${STAFF_USER}'), ('${SUPER_ONLY}');
       SELECT app.assign_staff_role('${STAFF_USER}', 'admin', 'Ata');
       SELECT app.assign_staff_role('${SUPER_ONLY}', 'super_admin', 'Ata');`);
@@ -179,6 +180,30 @@ describe('POST /v1/admin/authorization-grants (REQ-014, TECH-050, TECH-100)', ()
     const conflict = await route()(post(headers, { ...body, basis: 'Outro instrumento' }));
     expect(conflict.status).toBe(409);
     await expect(conflict.json()).resolves.toMatchObject({ code: 'ERR_IDEMPOTENCY_CONFLICT' });
+  });
+
+  it('[REQ-014] D-W2-1 encerrada: grant para party inexistente → 404 ERR_NOT_FOUND, sem grant gravado', async () => {
+    const grants = async () =>
+      (
+        await database.pool.query<{ n: number }>(
+          `SELECT count(*)::int AS n FROM app.authorization_grant`,
+        )
+      ).rows[0]?.n;
+    const before = await grants();
+    const response = await route()(
+      post(
+        {
+          origin: ORIGIN,
+          cookie: cookie(STAFF_USER, 'aal2'),
+          'idempotency-key': 'k-missing-party',
+        },
+        { ...body, grantee_party_id: '00000000-0000-4000-8000-00000000c999' },
+      ),
+    );
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toMatchObject({ code: 'ERR_NOT_FOUND' });
+    expect(await grants()).toBe(before);
   });
 
   it('[TECH-001][ADR-0007] configuração ausente ou Auth recusado no ambiente → 503 nomeando só a chave', async () => {

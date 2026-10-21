@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { punctuatedCpf, validCpf, wrongCheckDigit } from '../../../support/party-fixtures';
 import {
   approveHomeConceptVersionInput,
   createHomeConceptVersionInput,
@@ -76,10 +77,23 @@ describe('entradas das operações do catálogo (schemas do command e da tela)',
   it('[REQ-027] vigência da autorização do Investor: fim depois do início; termo final opcional', () => {
     const base = {
       home_concept_id: ID,
+      investor_document: punctuatedCpf(validCpf('314159265')),
       instrument_ref: 'Instrumento 1',
       valid_from: '2026-09-01T00:00:00Z',
     };
     expect(registerInvestorAuthorizationInput.safeParse(base).success).toBe(true);
+    // W7 (D-W3-1): o CPF/CNPJ do Investor é obrigatório e validado (dígitos verificadores).
+    const withoutDocument: Partial<typeof base> = { ...base };
+    delete withoutDocument.investor_document;
+    expect(errors(registerInvestorAuthorizationInput, withoutDocument)).toEqual({
+      investor_document: 'required',
+    });
+    expect(
+      errors(registerInvestorAuthorizationInput, {
+        ...base,
+        investor_document: wrongCheckDigit(validCpf('314159265')),
+      }),
+    ).toEqual({ investor_document: 'invalid_document' });
     expect(
       errors(registerInvestorAuthorizationInput, { ...base, valid_until: '2026-08-01T00:00:00Z' }),
     ).toEqual({ valid_until: 'end_before_start' });

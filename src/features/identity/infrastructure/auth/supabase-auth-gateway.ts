@@ -62,6 +62,11 @@ export function createSupabaseAuthGateway(jar: CookieJar, config: SupabaseAuthCo
       const { error } = await auth.verifyOtp({ email, token: code, type: 'email' });
       return error === null;
     },
+    async verifyInviteCode(email, code) {
+      // Código do e-mail de convite (W7): prova de controle do endereço; a conta passa a confirmada.
+      const { error } = await auth.verifyOtp({ email, token: code, type: 'invite' });
+      return error === null;
+    },
     async verifiedTotpFactor() {
       const { data, error } = await auth.mfa.listFactors();
       if (error !== null) throw new AuthProviderError('listFactors', error.code ?? 'unknown');

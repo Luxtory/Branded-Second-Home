@@ -4,6 +4,8 @@ import type { Actor, CommandSpec } from '@/features/platform';
 import { createAuthorizationGuard } from '@/features/identity/application/authorization-guard';
 import type { VerifiedSession } from '@/features/identity/domain/session';
 import {
+  delegation,
+  delegationDirectory,
   grant,
   grantDirectory,
   PARTNER_OPERATION,
@@ -37,12 +39,15 @@ function guardFor(
   options: {
     staff?: Parameters<typeof staffDirectory>[0];
     grants?: Parameters<typeof grantDirectory>[0];
+    delegations?: Parameters<typeof delegationDirectory>[0];
   } = {},
 ) {
   return createAuthorizationGuard({
     session,
     staff: staffDirectory(options.staff ?? roles),
     grants: grantDirectory(options.grants ?? []),
+    // Padrão: o parceiro representa a party de teste (delegação ativa e vigente, W7).
+    delegations: delegationDirectory(options.delegations ?? [delegation()]),
     clock,
   });
 }
@@ -202,5 +207,118 @@ describe('guard de parceiros por authorization_grant (REQ-014)', () => {
     await expect(guard.authorize(ADMIN_SPEC, partnerActor(), {}, SCOPE)).resolves.toEqual({
       allowed: false,
     });
+  });
+});
+
+describe('guard: cadeia user → party_delegation → party (TECH-050, W7)', () => {
+  const session = { userId: PARTNER_USER, assurance: 'aal1' } as const;
+  const OTHER_PARTY = '00000000-0000-4000-8000-0000000000c2';
+
+  it.each([
+    ['sem delegação', []],
+    [
+      'delegação pendente (convite enviado ≠ delegação ativa)',
+      [delegation({ state: 'pending', activatedAt: null })],
+    ],
+    [
+      'delegação revogada',
+      [delegation({ state: 'revoked', revokedAt: new Date('2026-09-10T00:00:00.000Z') })],
+    ],
+    ['delegação expirada', [delegation({ validUntil: new Date('2026-09-15T00:00:00.000Z') })]],
+    [
+      'delegação ainda não iniciada',
+      [delegation({ validFrom: new Date('2026-09-20T00:00:00.000Z') })],
+    ],
+    ['delegação para outra party', [delegation({ partyId: OTHER_PARTY })]],
+    ['delegação de outro usuário', [delegation({ userId: STAFF_USER })]],
+  ])(
+    '[TECH-050] sem delegação vigente o grant da party não vale: %s',
+    async (_case, delegations) => {
+      const guard = guardFor(session, { grants: [grant()], delegations });
+
+      await expect(guard.authorize(PARTNER_OPERATION, partnerActor(), {}, SCOPE)).resolves.toEqual({
+        allowed: false,
+      });
+    },
+  );
+
+  it('[TECH-050] manipular actingPartyId não atravessa a fronteira: party sem delegação → negado', async () => {
+    const guard = guardFor(session, { grants: [grant({ granteePartyId: OTHER_PARTY })] });
+
+    await expect(
+      guard.authorize(PARTNER_OPERATION, partnerActor(OTHER_PARTY), {}, SCOPE),
+    ).resolves.toEqual({ allowed: false });
+  });
+});
+
+describe('guard: ativação pelo próprio convidado (invitee, W7)', () => {
+  const INVITEE = PARTNER_USER;
+  const ACTIVATE: CommandSpec = {
+    name: 'activate_party_delegation',
+    module: 'identity',
+    authority: 'invitee',
+    membership: 'not_applicable',
+    critical: false,
+  };
+  const pending = delegation({ state: 'pending', activatedAt: null });
+  const invitee = (overrides: Partial<Extract<Actor, { kind: 'user' }>> = {}): Actor => ({
+    kind: 'user',
+    userId: INVITEE,
+    actingPartyId: null,
+    role: 'titular',
+    ...overrides,
+  });
+  const scope = { type: 'party_delegation', id: pending.id };
+
+  it('[TECH-050] o próprio usuário, com sessão, é autorizado sobre a própria delegação (base party_delegation)', async () => {
+    const guard = guardFor({ userId: INVITEE, assurance: 'aal1' }, { delegations: [pending] });
+
+    await expect(guard.authorize(ACTIVATE, invitee(), {}, scope)).resolves.toEqual({
+      allowed: true,
+      authorizationRef: `party_delegation:${pending.id}`,
+    });
+  });
+
+  it('[TECH-050] delegação de outro usuário, inexistente, sem escopo, outro papel ou com party representada → negado', async () => {
+    const guard = guardFor({ userId: INVITEE, assurance: 'aal1' }, { delegations: [pending] });
+    const other = guardFor(
+      { userId: INVITEE, assurance: 'aal1' },
+      { delegations: [delegation({ ...pending, userId: STAFF_USER })] },
+    );
+
+    await expect(other.authorize(ACTIVATE, invitee(), {}, scope)).resolves.toEqual({
+      allowed: false,
+    });
+    await expect(
+      guard.authorize(ACTIVATE, invitee(), {}, { type: 'party_delegation', id: 'missing' }),
+    ).resolves.toEqual({ allowed: false });
+    await expect(guard.authorize(ACTIVATE, invitee(), {}, null)).resolves.toEqual({
+      allowed: false,
+    });
+    await expect(
+      guard.authorize(ACTIVATE, invitee(), {}, { type: 'home_concept', id: pending.id }),
+    ).resolves.toEqual({ allowed: false });
+    await expect(
+      guard.authorize(ACTIVATE, invitee({ role: 'grantee' }), {}, scope),
+    ).resolves.toEqual({
+      allowed: false,
+    });
+    await expect(
+      guard.authorize(ACTIVATE, invitee({ actingPartyId: PARTY }), {}, scope),
+    ).resolves.toEqual({ allowed: false });
+  });
+
+  it('[TECH-050] sem sessão ou sessão de outro usuário → negado ("a conta existe" não ativa nada)', async () => {
+    await expect(
+      guardFor(null, { delegations: [pending] }).authorize(ACTIVATE, invitee(), {}, scope),
+    ).resolves.toEqual({ allowed: false });
+    await expect(
+      guardFor(aal2(STAFF_USER), { delegations: [pending] }).authorize(
+        ACTIVATE,
+        invitee(),
+        {},
+        scope,
+      ),
+    ).resolves.toEqual({ allowed: false });
   });
 });

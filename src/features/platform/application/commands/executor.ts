@@ -48,6 +48,11 @@ export interface CommandHandler<I, R extends JsonValue, Tx> {
   secondHomeId?(input: I): string | null;
   /** Objeto do command, para o guard conferir o escopo de um `authorization_grant` (REQ-014). */
   scope?(input: I): CommandScope;
+  /**
+   * Forma do input que entra no hash de idempotência quando o input carrega dado pessoal (ADR-0020 §5): o handler troca
+   * o valor sensível por um pseudônimo chaveado. Sem o hook, o hash usa o input validado.
+   */
+  fingerprint?(input: I): unknown;
   execute(context: CommandContext<I, Tx>): Promise<R>;
 }
 
@@ -147,7 +152,11 @@ async function execute<I, R extends JsonValue, Tx>(
     correlationId: request.correlationId,
     authorizationRef: decision.authorizationRef,
     scope: idempotencyScope(request.actor),
-    requestHash: requestHash(spec.name, request.actor, parsed.data),
+    requestHash: requestHash(
+      spec.name,
+      request.actor,
+      handler.fingerprint === undefined ? parsed.data : handler.fingerprint(parsed.data),
+    ),
   };
   const existing = await deps.store.findIdempotency(base.scope, base.idempotencyKey);
   if (existing !== null) return replay<R>(existing, base.command, base.requestHash);

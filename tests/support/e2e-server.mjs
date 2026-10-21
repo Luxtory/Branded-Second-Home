@@ -95,6 +95,11 @@ try {
       // apresentação da Home Edition. O E2E lê o contexto da própria página.
       INTEREST_REQUEST_HMAC_SECRET: randomBytes(32).toString('base64url'),
       INTEREST_CONTEXT_HMAC_SECRET: randomBytes(32).toString('base64url'),
+      // W7 (ADR-0020): anéis de teste da party, gerados a cada execução (cifra e HMAC com material separado).
+      PII_ENCRYPTION_KEYRING: `e2e1:${randomBytes(32).toString('base64')}`,
+      PII_ENCRYPTION_ACTIVE_KEY_ID: 'e2e1',
+      PII_HMAC_KEYRING: `h2e1:${randomBytes(32).toString('base64')}`,
+      PII_HMAC_ACTIVE_KEY_ID: 'h2e1',
       // Vazio = ausente para a aplicação, e impede que um arquivo `.env*` local o defina.
       VERCEL_ENV: '',
     },

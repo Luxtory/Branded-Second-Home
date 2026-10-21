@@ -103,6 +103,18 @@ const origins = z
       .min(1),
   );
 
+/** Id de chave de um anel (ADR-0020): curto, minúsculo, nunca segredo. */
+const keyId = z.string().regex(/^[a-z0-9][a-z0-9_-]{0,31}$/);
+/**
+ * Anel `id:base64,id:base64` com chaves de 32 bytes em base64 padrão (44 caracteres). Aqui só a forma; ids únicos, a
+ * ativa no anel e o material separado entre anéis são validados no módulo identity.
+ */
+const keyRing = z
+  .string()
+  .regex(
+    /^[a-z0-9][a-z0-9_-]{0,31}:[A-Za-z0-9+/]{43}=(,[a-z0-9][a-z0-9_-]{0,31}:[A-Za-z0-9+/]{43}=)*$/,
+  );
+
 /**
  * Configuração de runtime (W1). Os valores pertencem ao runbook `docs/how-to/operacao.md` (TECH-001): nenhum tem
  * default, e cada função lê só as chaves de que depende.
@@ -148,6 +160,11 @@ const runtimeSchema = z.object({
   // pré-qualificação) e assinatura do contexto de apresentação da Home Edition. Nunca o segredo da pseudonimização.
   INTEREST_REQUEST_HMAC_SECRET: z.string().min(32),
   INTEREST_CONTEXT_HMAC_SECRET: z.string().min(32),
+  // W7 (ADR-0020): anel da cifra AES-256-GCM do CPF/CNPJ e anel separado do HMAC de busca, cada um com a chave ativa.
+  PII_ENCRYPTION_KEYRING: keyRing,
+  PII_ENCRYPTION_ACTIVE_KEY_ID: keyId,
+  PII_HMAC_KEYRING: keyRing,
+  PII_HMAC_ACTIVE_KEY_ID: keyId,
 });
 
 export type RuntimeConfig = z.infer<typeof runtimeSchema>;
@@ -172,6 +189,20 @@ export class EnvironmentRestrictionError extends Error {
   ) {
     super(`${service} is disabled in the ${vercelEnv} environment (ADR-0007)`);
     this.name = 'EnvironmentRestrictionError';
+  }
+}
+
+/**
+ * Serviço externo que não respondeu como esperado (ex.: Admin API do Supabase Auth, W7): a função fica indisponível
+ * (503) sem consumir a chave de idempotência. Só o nome do serviço e o código do provedor; nunca dado do pedido.
+ */
+export class ExternalServiceUnavailableError extends Error {
+  constructor(
+    readonly service: string,
+    readonly providerCode: string,
+  ) {
+    super(`${service} unavailable (${providerCode})`);
+    this.name = 'ExternalServiceUnavailableError';
   }
 }
 
