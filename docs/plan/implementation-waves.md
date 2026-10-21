@@ -103,8 +103,8 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 | BP2 | Portal autenticado read-only com dados reais da própria parceria | identity, catalog, ownership | REQ-029 | BP0, critérios de entrada; representação/fatos canônicos de W7/W8 | — | B2B | ⛔ critérios de entrada ainda não satisfeitos |
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ próxima executável (retomada de 2026-10-19) → ✅ (#54, `1fa6f01`, 2026-10-19; escrita fechada em Production) |
 | 4.2 | Ontologia Home Concept → Home Edition → Second Home + correção estrutural do catálogo e do interest | catalog, ownership, admin, design-system, docs | REQ-020, REQ-021, REQ-022, REQ-100 | 4.1, 5 | — | R1 | ✅ concluída (#56, squash `7ac1af8`, 2026-10-20; 7 migrations aplicadas; Production validada) |
-| 6 | Interesse — formulário público | ownership | — | 4, 5, 4.2 | — | R1 | ⬜ próxima executável — P-3 resolvida pelo `02` v4.3 (REQ-022); W4.2 ✅; reconstruída a partir da nova `main` (ver Wave 6 → Status) |
-| 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ |
+| 6 | Interesse — formulário público | ownership | — | 4, 5, 4.2 | — | R1 | ⬜ próxima executável — P-3 resolvida pelo `02` v4.3 (REQ-022); W4.2 ✅; reconstruída a partir da nova `main` (ver Wave 6 → Status) → ✅ concluída (#59, squash `1d538cc`, 2026-10-21; 3 migrations aplicadas; em Production com a coleta fechada por gates operacionais) |
+| 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ próxima executável (W6 ✅ em 2026-10-21) |
 | 8 | Formalização e calendário civil | ownership, calendar | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003 | 3, 7 | — | R2 | ⬜ |
 | 9 | Sorteio auditável | ownership | PD-011 | 8 | 10 | R2 | ⬜ |
 | 10 | Custódia e selagem | calendar, inventory | REQ-040, INV-2, INV-3 | 8 | 9 | R2 | ⬜ |
@@ -139,6 +139,9 @@ superado** pela atualização seguinte e pelo `02` v4.3); CP3–CP5 seguem aguar
 de depender da P-3 (definida pelo `02` v4.3) e passa a depender da W4.2.
 **Atualização 2026-10-20:** W4.2 ✅ (PR #56, `7ac1af8`); a dependência da W6 está satisfeita e a W6 passa a ser a
 próxima wave funcional executável, reconstruída a partir da `main` corrigida.
+**Atualização 2026-10-21:** W6 ✅ (PR #59, `1d538cc`); a implementação está em Production, mas a coleta de interesse
+continua fechada por gates operacionais (`INTEREST_WRITES` ausente, Aviso de Privacidade `pending`, segredos
+`INTEREST_*` não criados). A W7 passa a ser a próxima wave funcional executável.
 
 Paralelismo na retomada do B2C: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
 canal do AsyncAPI, telas e `CHANGELOG.md`, e o STRIDE do beacon. A W10 toca migrations de `calendar`/`inventory`,
@@ -779,6 +782,8 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 
 ### Wave 6 — Interesse: formulário público
 
+- **Status (2026-10-21):** ✅ concluída — PR #59, squash `1d538cc` (ver Encerramento). O Status de 2026-10-20 abaixo é
+  **histórico / posteriormente superado**.
 - **Status (2026-10-20):** ⬜ próxima executável. A P-3 está resolvida pelo `02` v4.3 (REQ-022) e a dependência da W4.2
   está satisfeita (✅ #56, `7ac1af8`). A W6 é reconstruída a partir da nova `main`; a branch antiga
   `feat/w6-interesse-formulario` @ `9e41101` é só referência histórica — sem rebase nem cherry-pick integral. O
@@ -815,9 +820,21 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   LGPD, OpenAPI, migrations `20261021030831`/`20261021030838`/`20261021030855` (posteriores às 27 da W4.2), formulário
   na página da Home Edition, Aviso de Privacidade `pending`, drill-down do Admin. Production segue fechada
   (`INTEREST_WRITES` ausente; Aviso `pending`); merge e go-live só por decisão do fundador.
+- **Encerramento (2026-10-21): ✅.** PR #59, squash merge `1d538cc` (head aprovado `58a9aa1`), aprovado pelo fundador.
+  Pré-qualificação como BANT adaptado, sem score: Need pela manifestação; Budget pela faixa de recursos para iniciar e
+  `reference_fit` só para Owner com média apresentada; Authority; Timeline. Formulário progressivo em 4 etapas na
+  página da Home Edition. CI de `main` run 39664997196: lint, typecheck, test, e2e, security, migrate e deploy verdes;
+  migrations `20261021030831`, `20261021030838` e `20261021030855` aplicadas (30 no total); deploy de Production verde
+  em `1d538cc`. Verificação pós-deploy só de leitura: `interest_contact` e `interest_qualification` existem, vazias,
+  com RLS e acesso só de `luxtory_app` (nenhum para `anon`/`authenticated`); `public_idempotency_key` com
+  `hash_scheme`/`hash_key_id`; `qualification_version = 1`; `decision_horizon` admite `immediate` e `within_30_days`.
+  Coleta fechada: seção ausente, `POST /v1/interests` → 404, `/privacidade` → 404 (Aviso `pending`), `/admin*` → 307
+  `/entrar`, nenhuma variável `INTEREST_*`, nenhum dado gravado. Go-live da coleta depende dos gates operacionais
+  (base legal, Aviso aprovado, canal de direitos, procedimento de eliminação, D2, reavaliação da D3 e os dois segredos).
 
 ### Wave 7 — Titulares
 
+- **Status (2026-10-21):** ⬜ próxima executável (W6 ✅, #59). Ainda não iniciada.
 - **Goal**: o Titular existe como party cifrada e acessa sua área por delegação.
 - **IDs**: TECH-050, TECH-052, TECH-100, ADR-0002.
 - **Scope (slices/files)**: `identity`.
