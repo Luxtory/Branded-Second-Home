@@ -268,6 +268,7 @@ export interface AppInvestorAuthorization {
   id: string;
   instrument_ref: string;
   operation_id: string;
+  party_id: string;
   registered_by_user_id: string;
   registered_role: string;
   revocation_basis: string | null;
@@ -317,6 +318,41 @@ export interface AppOutboxReceipt {
   consumer: string;
   event_id: string;
   received_at: Timestamp;
+}
+
+export interface AppParty {
+  created_at: Timestamp;
+  document_ciphertext: Buffer;
+  document_hmac: Buffer;
+  document_hmac_key_id: string;
+  document_key_id: string;
+  document_type: string;
+  id: string;
+  operation_id: string;
+  registered_by_user_id: string;
+  registered_role: string;
+}
+
+export interface AppPartyDelegation {
+  activated_at: Timestamp | null;
+  activation_operation_id: string | null;
+  basis: string;
+  created_at: Timestamp;
+  id: string;
+  invited_by_user_id: string;
+  invited_role: string;
+  operation_id: string;
+  party_id: string;
+  revocation_basis: string | null;
+  revocation_operation_id: string | null;
+  revoked_at: Timestamp | null;
+  revoked_by_user_id: string | null;
+  revoked_role: string | null;
+  scope: string;
+  state: string;
+  user_id: string;
+  valid_from: Timestamp;
+  valid_until: Timestamp | null;
 }
 
 export interface AppPublicIdempotencyKey {
@@ -374,6 +410,8 @@ export interface DB {
   'app.operation': AppOperation;
   'app.outbox': AppOutbox;
   'app.outbox_receipt': AppOutboxReceipt;
+  'app.party': AppParty;
+  'app.party_delegation': AppPartyDelegation;
   'app.public_idempotency_key': AppPublicIdempotencyKey;
   'app.second_home': AppSecondHome;
   'app.staff_role': AppStaffRole;
