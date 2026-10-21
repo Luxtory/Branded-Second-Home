@@ -27,7 +27,7 @@ const varanda: PublicCollectionHomeEdition = {
   guestsMax: 10,
   suites: 5,
   projectedAreaM2: 1200,
-  projectedInvestment: { amountMinor: 480_000_000n, currency: 'BRL' },
+  projectedInvestment: { id: 'investment-e1', amountMinor: 480_000_000n, currency: 'BRL' },
   cover: null,
   createdAt: new Date('2026-10-01T00:00:00Z'),
 };
@@ -105,7 +105,11 @@ describe('Coleção — rótulos', () => {
           ...varanda,
           id: 'e3',
           guestsMax: 6,
-          projectedInvestment: { amountMinor: 900_000_000n, currency: 'BRL' as const },
+          projectedInvestment: {
+            id: 'investment-e2',
+            amountMinor: 900_000_000n,
+            currency: 'BRL' as const,
+          },
         },
       ],
     };

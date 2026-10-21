@@ -6,16 +6,27 @@ import type {
 } from '@/features/ownership/application/ports';
 import { createInterestRoute } from '@/features/ownership/presentation/interest-route';
 import {
+  PRIVACY_NOTICE_TOPICS,
+  type PrivacyNotice,
+} from '@/features/ownership/domain/privacy-notice';
+import {
   createMemoryRateLimiter,
+  PublicAttemptUnverifiableError,
   RateLimiterUnavailableError,
   withRoute,
   type RateLimiter,
 } from '@/features/platform';
 import { captureLogger } from '../../../support/capture-logger';
+import {
+  coOwnerBody,
+  INTEREST_SECRETS,
+  presentationContext,
+  SENTINEL_CONTACT,
+} from '../../../support/interest-fixtures';
 import { responseValidator } from '../../../support/openapi';
 
-// Borda HTTP do POST /v1/interests (spec ownership §5) com adaptadores falsos; o registro em PostgreSQL real está em
-// tests/features/ownership/interest.db.test.ts.
+// Borda HTTP do POST /v1/interests (spec ownership §5, §14) com adaptadores falsos; o registro em PostgreSQL real está
+// em tests/features/ownership/interest.db.test.ts.
 const PATH = '/interests';
 const HOST = 'luxtory.test';
 const ORIGIN = `https://${HOST}`;
@@ -26,6 +37,7 @@ const HOME_EDITION = '66666666-7777-4888-9999-aaaaaaaaaaaa';
 const ENV = {
   INTEREST_LIMITER_MODE: 'fake',
   BRAND_PARTNERS_CONTACT_HMAC_SECRET: 'h'.repeat(32),
+  ...INTEREST_SECRETS,
   INTEREST_NETWORK_LIMIT: '5',
   INTEREST_NETWORK_WINDOW_SECONDS: '60',
   INTEREST_GLOBAL_LIMIT: '100',
@@ -37,20 +49,42 @@ function omit(env: Readonly<Record<string, string>>, key: string): Record<string
   return Object.fromEntries(Object.entries(env).filter(([name]) => name !== key));
 }
 
-// Valores sensíveis de propósito: nenhum deles pode aparecer em log ou resposta.
-const INTEREST = {
-  home_edition_id: HOME_EDITION,
-  modality: 'co_owner',
+// Valores sensíveis de propósito: nenhum deles pode aparecer em log ou resposta (inclusive o contato sentinela).
+const INTEREST = coOwnerBody(HOME_EDITION, {
   desired_location: 'Rua Sigilosa 123, Ana Sigilosa',
-  approx_days: 21,
   origin: 'telefone 11 99999-0000',
   partner_ref: 'Parceiro Confidencial',
+});
+
+/** Aviso estruturalmente completo, texto fictício de teste — só para exercitar o portão. */
+const APPROVED: PrivacyNotice = {
+  status: 'approved',
+  version: 'fixture-1',
+  approvedOn: '2026-10-20',
+  sections: PRIVACY_NOTICE_TOPICS.map((topic) => ({
+    topic,
+    title: `Título de teste ${topic}`,
+    paragraphs: [`Parágrafo de teste ${topic}.`],
+    links: topic === 'channel' ? [{ label: 'Canal', href: 'mailto:canal@example.com' }] : [],
+  })),
 };
+
+/** JSON com cada unidade UTF-16 fora do ASCII escapada como `\uXXXX` (o pior caso em bytes do mesmo conteúdo). */
+function escapedJson(value: unknown): string {
+  const json = JSON.stringify(value);
+  let escaped = '';
+  for (let index = 0; index < json.length; index += 1) {
+    const unit = json.charCodeAt(index);
+    escaped += unit < 0x80 ? json.charAt(index) : `\\u${unit.toString(16).padStart(4, '0')}`;
+  }
+  return escaped;
+}
 
 const TARGET: InterestTarget = { homeEditionId: HOME_EDITION, homeConceptId: HOME_CONCEPT };
 
 interface SetupOptions {
   readonly env?: Readonly<Record<string, string>>;
+  readonly notice?: PrivacyNotice;
   readonly limiter?: RateLimiter;
   readonly store?: InterestStore;
   readonly target?: InterestTarget | null;
@@ -73,7 +107,13 @@ function setup(options: SetupOptions = {}) {
         global: { limit: 100, windowSeconds: 60 },
       });
   const route = withRoute(
-    createInterestRoute({ env: options.env ?? ENV, limiter, store, targets }),
+    createInterestRoute({
+      env: options.env ?? ENV,
+      ...(options.notice === undefined ? {} : { notice: options.notice }),
+      limiter,
+      store,
+      targets,
+    }),
     logger,
   );
   const call = ({
@@ -210,10 +250,51 @@ describe('POST /v1/interests — validação sem eco (TECH-100)', () => {
       'ERR_UNSUPPORTED_MEDIA_TYPE',
     );
     await expectError(
-      await call({ body: JSON.stringify({ ...INTEREST, desired_location: 'x'.repeat(9000) }) }),
+      await call({ body: JSON.stringify({ ...INTEREST, desired_location: 'x'.repeat(17_000) }) }),
       413,
       'ERR_PAYLOAD_TOO_LARGE',
     );
+    expectNoEffect(store);
+  });
+
+  it('[TECH-100] 16 KiB comprovados: o pior caso válido, com todos os textos no limite e escapados, passa de 8 KiB', async () => {
+    const { call, store } = setup();
+    // Cada ponto de código fora do BMP vira um par substituto escapado: 12 bytes no JSON.
+    const longest = '😀'.repeat(200);
+    const worst = escapedJson(
+      coOwnerBody(HOME_EDITION, {
+        desired_location: longest,
+        name: longest,
+        origin: longest,
+        partner_ref: longest,
+        email: `${'😀'.repeat(248)}@x.com`,
+        // Separadores Unicode removidos na normalização: 32 pontos de código digitados.
+        phone: `+55${'\u3000'.repeat(17)}11987654321`,
+        approx_days: 2_147_483_647,
+      }),
+    );
+
+    expect(new TextEncoder().encode(worst).byteLength).toBeGreaterThan(8 * 1024);
+    expect(new TextEncoder().encode(worst).byteLength).toBeLessThanOrEqual(16 * 1024);
+    expect((await call({ body: worst })).status).toBe(201);
+    expect(store.register).toHaveBeenCalledOnce();
+  });
+
+  it('[REQ-022] contexto de apresentação adulterado ou de outra Home Edition → 400 sem efeito', async () => {
+    const { call, store } = setup();
+    const other = '77777777-8888-4999-8aaa-bbbbbbbbbbbb';
+
+    for (const context of [
+      presentationContext(other),
+      presentationContext(HOME_EDITION).replace(/\.[^.]+$/, '.AAAA'),
+    ]) {
+      const error = await expectError(
+        await call({ body: JSON.stringify({ ...INTEREST, presentation_context: context }) }),
+        400,
+        'ERR_VALIDATION',
+      );
+      expect(error).toMatchObject({ fields: [{ field: 'presentation_context', code: 'invalid' }] });
+    }
     expectNoEffect(store);
   });
 });
@@ -282,6 +363,60 @@ describe('POST /v1/interests — abuso e falha fechada (TECH-100)', () => {
     expect(production.entries()).toContainEqual(expect.objectContaining({ stage: 'closed' }));
   });
 
+  it('[TECH-100] Production com INTEREST_WRITES=open e Aviso pendente → 404; com Aviso aprovado, a escrita abre', async () => {
+    const live = omit(ENV, 'INTEREST_LIMITER_MODE');
+    const production = {
+      ...live,
+      VERCEL_ENV: 'production',
+      PUBLIC_SITE: 'open',
+      INTEREST_WRITES: 'open',
+      UPSTASH_REDIS_REST_URL: 'https://upstash.example',
+      UPSTASH_REDIS_REST_TOKEN: 't'.repeat(24),
+      INTEREST_LIMITER_TIMEOUT_MS: '500',
+    };
+    const pending = setup({ env: production });
+    const approved = setup({ env: production, notice: APPROVED });
+
+    await expectError(await pending.call(), 404, 'ERR_NOT_FOUND');
+    expectNoEffect(pending.store);
+    // Aprovado e aberto: passa do portão (e para na origem de rede, ausente fora da Vercel real).
+    await expectError(await approved.call(), 503, 'ERR_UNAVAILABLE');
+    expect(approved.entries()).toContainEqual(
+      expect.objectContaining({ stage: 'network_identity' }),
+    );
+  });
+
+  it('[TECH-001] sem os segredos próprios da W6 → 503 nomeando só as chaves', async () => {
+    const env = omit(omit(ENV, 'INTEREST_REQUEST_HMAC_SECRET'), 'INTEREST_CONTEXT_HMAC_SECRET');
+    const { call, store, entries } = setup({ env });
+
+    await expectError(await call(), 503, 'ERR_UNAVAILABLE');
+    expectNoEffect(store);
+    expect(entries()).toContainEqual(
+      expect.objectContaining({
+        stage: 'configuration',
+        reason: 'INTEREST_REQUEST_HMAC_SECRET,INTEREST_CONTEXT_HMAC_SECRET',
+      }),
+    );
+  });
+
+  it('[TECH-056] registro de idempotência com chave de hash desconhecida → 503 sem efeito (ADR-0018)', async () => {
+    const { call, store, entries } = setup({
+      store: {
+        priorAttempt: vi.fn(() =>
+          Promise.reject(new PublicAttemptUnverifiableError('interest', 'hmac_sha256', 'v9')),
+        ),
+        register: vi.fn(),
+      },
+    });
+
+    await expectError(await call(), 503, 'ERR_UNAVAILABLE');
+    expect(store.register).not.toHaveBeenCalled();
+    expect(entries()).toContainEqual(
+      expect.objectContaining({ stage: 'idempotency', reason: 'hash_key_unavailable' }),
+    );
+  });
+
   it('[TECH-001] ambiente inválido (modo fake na Vercel) falha fechado com 503, antes do portão', async () => {
     const { call, store } = setup({
       env: { ...ENV, VERCEL_ENV: 'production', PUBLIC_SITE: 'open', INTEREST_WRITES: 'open' },
@@ -323,7 +458,7 @@ describe('POST /v1/interests — abuso e falha fechada (TECH-100)', () => {
       VERCEL_ENV: 'production',
       PUBLIC_SITE: 'open',
     };
-    const { call } = setup({ env: { ...env, INTEREST_WRITES: 'open' } });
+    const { call } = setup({ env: { ...env, INTEREST_WRITES: 'open' }, notice: APPROVED });
 
     await expectError(await call(), 503, 'ERR_UNAVAILABLE');
   });
@@ -352,7 +487,7 @@ describe('POST /v1/interests — abuso e falha fechada (TECH-100)', () => {
     );
   });
 
-  it('[TECH-100] log estruturado sem corpo, campos, IP, chave ou hash', async () => {
+  it('[TECH-100] log estruturado sem corpo, contato, pré-qualificação, contexto, IP, chave ou hash', async () => {
     const { call, entries, logged } = setup();
 
     await call();
@@ -360,8 +495,20 @@ describe('POST /v1/interests — abuso e falha fechada (TECH-100)', () => {
     expect(entries()).toContainEqual(
       expect.objectContaining({ event: 'interest_registration', stage: 'registered', status: 201 }),
     );
-    for (const secret of ['Sigilosa', 'telefone', 'Confidencial', ATTEMPT_ID, HOME_EDITION]) {
-      expect(logged()).not.toContain(secret);
+    for (const secret of [
+      'Sigilosa',
+      'telefone',
+      'Confidencial',
+      ATTEMPT_ID,
+      HOME_EDITION,
+      SENTINEL_CONTACT.name,
+      SENTINEL_CONTACT.email,
+      '98765',
+      'from_500k_to_1m',
+      'with_partner_or_family',
+      String(INTEREST.presentation_context).slice(0, 20),
+    ]) {
+      expect(logged(), secret).not.toContain(secret);
     }
   });
 });

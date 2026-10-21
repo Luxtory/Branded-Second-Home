@@ -12,8 +12,12 @@ export const INTEREST_TEXT_MAX = 200;
 /** Maior valor da coluna `integer`: limite de representação, não teto de negócio (REQ-025: sem teto presumido). */
 export const APPROX_DAYS_MAX = 2_147_483_647;
 
-/** Corpo efetivo máximo do request (TECH-100): folga sobre os campos no maior tamanho em UTF-8. */
-export const INTEREST_BODY_MAX_BYTES = 8 * 1024;
+/**
+ * Corpo efetivo máximo do request (TECH-100). Na W6 o corpo leva também contato, pré-qualificação e o contexto de
+ * apresentação: o pior caso válido, com todos os textos no limite escapados em JSON (`\uXXXX`), passa de 8 KiB — o
+ * teste do pior caso comprova os 16 KiB (spec ownership §14.4).
+ */
+export const INTEREST_BODY_MAX_BYTES = 16 * 1024;
 
 export interface Interest {
   /** A Home Edition da manifestação (BR-030); o Home Concept vem dela. */

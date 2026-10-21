@@ -144,6 +144,10 @@ const runtimeSchema = z.object({
   INTEREST_GLOBAL_LIMIT: positiveInteger,
   INTEREST_GLOBAL_WINDOW_SECONDS: positiveInteger,
   INTEREST_LIMITER_TIMEOUT_MS: positiveInteger,
+  // W6 (ADR-0018): segredos próprios, um por finalidade — HMAC do hash de idempotência (o conteúdo inclui contato e
+  // pré-qualificação) e assinatura do contexto de apresentação da Home Edition. Nunca o segredo da pseudonimização.
+  INTEREST_REQUEST_HMAC_SECRET: z.string().min(32),
+  INTEREST_CONTEXT_HMAC_SECRET: z.string().min(32),
 });
 
 export type RuntimeConfig = z.infer<typeof runtimeSchema>;

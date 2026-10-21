@@ -25,6 +25,7 @@ described by Michael Nygard. The ADR process itself is established in
 | 0015 | [Mídia do catálogo: metadados no PostgreSQL, binários no Supabase Storage, entrega pelo próprio domínio](0015-midia-do-catalogo-metadados-e-storage.md) | Accepted |
 | 0016 | [Nova versão do Framework Brand Partners (Home Concept, Home Edition e Second Home)](0016-framework-brand-partners-versao-2026-10-12.md) | Accepted |
 | 0017 | [Idempotência de mutações públicas não críticas, fora do pipeline de commands críticos](0017-idempotencia-de-mutacoes-publicas-nao-criticas.md) | Accepted |
+| 0018 | [Contato e pré-qualificação do interesse: dados separados, hash chaveado e contexto de apresentação assinado](0018-contato-e-pre-qualificacao-do-interesse.md) | Accepted |
 | 0019 | [Ontologia Home Concept → Home Edition → Second Home em todas as camadas](0019-ontologia-home-concept-home-edition-second-home.md) | Accepted |
 
 The technical decisions ADR-001…008 of the canonical

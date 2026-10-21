@@ -183,3 +183,148 @@ flowchart LR
 | Abuso F2a | Sai: a Home Edition não tem modalidade (BR-032); qualquer modalidade desejada é aceita. |
 
 Nenhuma ameaça nova: sem campo novo de visitante, sem contato e sem dado pessoal (W6).
+
+## W6 — Solicitação de conversa na Home Edition (2026-10-20)
+
+- **Scope**: formulário na página pública da Home Edition; `interest_contact` (nome, telefone, e-mail) e
+  `interest_qualification` (dimensão de investimento, unidade de decisão, horizonte); hash de idempotência chaveado;
+  contexto de apresentação assinado; revalidação da Home Edition dentro da transação; drill-down do Admin até o contato
+  e a pré-qualificação; Aviso de Privacidade da jornada. Primeira PII de cliente persistida pela aplicação. A coleta
+  continua fechada em Production até os gates de go-live.
+- **Linked spec / ADR**: `docs/specs/ownership.md` §14 · [ADR-0018](../../adr/0018-contato-e-pre-qualificacao-do-interesse.md)
+  · inventário [`lgpd-interesse.md`](../lgpd-interesse.md)
+
+**Assets acrescentados:** confidencialidade e eliminabilidade do contato e da pré-qualificação;
+`INTEREST_REQUEST_HMAC_SECRET` (hash da idempotência) e `INTEREST_CONTEXT_HMAC_SECRET` (contexto de apresentação);
+autenticidade do vínculo com a média projetada apresentada; integridade dos portões da coleta; dados digitados no
+navegador.
+
+**Actors acrescentados:** terceiro cujo contato é enviado por outra pessoa (titular dos dados, sem interação);
+navegador do visitante (guarda o formulário em memória e devolve o contexto assinado).
+
+```mermaid
+flowchart LR
+  visitor[Visitante] -.trust boundary.-> page[/colecao/:hc/home-editions/:he — seção Solicitar uma conversa/]
+  page -- contexto assinado --> visitor
+  visitor --> route[POST /v1/interests]
+  route -.trust boundary.-> db[(PostgreSQL: interest + interest_contact + interest_qualification + public_idempotency_key)]
+  route -- FOR SHARE --> he[(home_edition)]
+  admin[Admin AAL2] -.trust boundary.-> group[/admin/interesses/home-editions/:id/] --> detail[/admin/interesses/:id/] --> contact[/admin/interesses/:id/contato/]
+  contact --> db
+  contact --> audit[(audit_log: admin_read, só ids)]
+```
+
+| Component | S | T | R | I | D | E | Notes |
+|---|---|---|---|---|---|---|---|
+| Formulário na Home Edition | ✓ | ✓ | — | ✓ | — | — | dados só em memória; contexto assinado no servidor |
+| `app.interest_contact` / `app.interest_qualification` | — | ✓ | ✓ | ✓ | — | ✓ | RLS só `luxtory_app` (SELECT/INSERT); UPDATE/TRUNCATE recusados; DELETE sem grant |
+| Hash da idempotência | — | ✓ | — | ✓ | — | — | HMAC com segredo próprio; esquema/chave por registro |
+| Contexto de apresentação | ✓ | ✓ | — | — | — | — | HMAC próprio; sem PII; Home Edition conferida |
+| Revalidação na transação | — | ✓ | — | — | ✓ | — | `FOR SHARE` na linha da Home Edition; espera curta da retirada concorrente |
+| Portões da coleta | — | ✓ | — | — | — | ✓ | quatro condições simultâneas; Aviso `approved` só por commit |
+| Drill-down do Admin | ✓ | — | ✓ | ✓ | — | ✓ | PII só no nível "contato e pré-qualificação"; `admin_read` por leitura |
+
+### T-409 [HIGH] Information disclosure — exposição do contato e da pré-qualificação
+
+- **Vector**: leitura do contato ou da pré-qualificação por quem não deveria (papel errado, PostgREST, log, erro,
+  exportação, tela de lista).
+- **Likelihood**: Medium · **Impact**: High · **Risk**: High
+- **Mitigation**:
+  - Code: tabelas próprias com RLS só para `luxtory_app`, Data API desligada (ADR-0006); Admin AAL2 com papel exercido
+    (Super Admin sozinho não acessa); PII só em `/admin/interesses/[id]/contato`, com `admin_read` de contato e de
+    pré-qualificação (só ids); grupo e interesse individual sem PII; sem busca, filtro, exportação nem e-mail; logs e
+    respostas nunca com contato, pré-qualificação ou contexto; erros do banco registrados só pelo nome do erro.
+  - Test: sentinelas de PII ausentes dos logs da rota e do `audit_log`; `anon`/`authenticated` sem leitura; portão do
+    Admin.
+- **Owner**: Engenharia · **Tracking**: W6
+
+### T-410 [MEDIUM] Spoofing — contato de terceiro enviado por outra pessoa
+
+- **Vector**: alguém envia nome, telefone e e-mail de outra pessoa; a Luxtory contata quem não pediu.
+- **Likelihood**: Medium · **Impact**: Medium · **Risk**: Medium
+- **Mitigation**:
+  - Code: a W6 não envia mensagem automática a ninguém — o formulário não dispara e-mail, SMS ou WhatsApp.
+  - Process: o primeiro contato é humano (BR-064); pedidos do titular entram pelo procedimento de direitos, gate de
+    go-live. Residual aceito até lá.
+- **Owner**: Luxtory (operação) · **Tracking**: go-live W6
+
+### T-411 [MEDIUM] Information disclosure — derivado de PII no registro imutável de idempotência
+
+- **Vector**: com o conteúdo incluindo contato e pré-qualificação, um SHA-256 sem chave permitiria confirmar um
+  conteúdo adivinhado e sobreviveria à eliminação.
+- **Likelihood**: Low · **Impact**: Medium · **Risk**: Medium
+- **Mitigation**:
+  - Code: HMAC-SHA-256 com `INTEREST_REQUEST_HMAC_SECRET` (segredo próprio); `hash_scheme`/`hash_key_id` por registro;
+    nenhuma chave, segredo ou claro no banco; chave desconhecida → `503`.
+  - Process: o HMAC é pseudonimização; o derivado consta do inventário para a validação jurídica; rotação não é
+    eliminação.
+- **Owner**: Engenharia · **Tracking**: W6
+
+### T-412 [MEDIUM] Elevation — abertura indevida da coleta
+
+- **Vector**: `INTEREST_WRITES=open` configurado por engano antes do Aviso, do jurídico ou da D2.
+- **Likelihood**: Low · **Impact**: High · **Risk**: Medium
+- **Mitigation**:
+  - Code: em Production, endpoint e seção do formulário exigem site aberto + `INTEREST_WRITES=open` + Aviso `approved`
+    (só por commit revisado) + configuração completa; nenhuma condição sozinha abre.
+  - Test: Production com `INTEREST_WRITES=open` e Aviso `pending` → `404` e sem seção; Aviso `approved` com escrita
+    fechada → `404`.
+- **Owner**: Engenharia · **Tracking**: W6
+
+### T-413 [MEDIUM] Tampering — contexto de apresentação forjado ou reaproveitado
+
+- **Vector**: o cliente envia um id de média projetada que a página não mostrou (outra Home Edition, valor menor ou
+  maior) para distorcer a pré-qualificação, ou troca a variante da pergunta.
+- **Likelihood**: Medium · **Impact**: Low · **Risk**: Medium
+- **Mitigation**:
+  - Code: contexto `{v, k, h, p}` assinado no servidor com `INTEREST_CONTEXT_HMAC_SECRET`, comparação em tempo
+    constante; `h` precisa ser a Home Edition do corpo; variante derivada no servidor (modalidade + `p`); gatilho no
+    banco confere que a referência é da mesma Home Edition e que a variante bate com a modalidade.
+  - Residual: reenviar um contexto antigo autêntico só registra uma referência que a página de fato apresentou naquela
+    Home Edition; a pré-qualificação é declaração do interessado, nunca decisão.
+- **Owner**: Engenharia · **Tracking**: W6
+
+### T-414 [LOW] Information disclosure — dados no navegador
+
+- **Vector**: dados do formulário persistidos no dispositivo (storage, cache, URL).
+- **Mitigation**: dados só no estado do componente; nada em `localStorage`/`sessionStorage`/URL; respostas
+  `no-store`; sucesso limpa os campos; o contexto assinado não tem PII.
+- **Owner**: Engenharia · **Tracking**: W6
+
+### T-415 [MEDIUM] Repudiation — eliminação sem trilha
+
+- **Vector**: `DELETE` manual do contato ou da pré-qualificação no console, sem fundamento nem auditoria.
+- **Mitigation**: o papel de aplicação não tem `DELETE`; não há ação de eliminação na W6; o go-live exige procedimento
+  operacional (quem executa, fundamento, verificação de identidade, auditoria, backups, conservação legal); `DELETE`
+  manual não auditado em Production não é solução; o `down` das migrations recusa apagar linhas existentes.
+- **Owner**: Luxtory + Engenharia · **Tracking**: go-live W6
+
+### T-416 [LOW] Denial of service — corpo maior e trava de leitura
+
+- **Vector**: o limite passa de 8 para 16 KiB; a trava `FOR SHARE` poderia segurar a retirada da Home Edition.
+- **Mitigation**: limite contado pelos bytes recebidos, antes do parse, e justificado pelo pior caso escapado;
+  limitador antes do banco; a trava dura só a transação curta do registro (sem I/O externo) e não conflita com as
+  travas de chave das FKs.
+- **Owner**: Engenharia · **Tracking**: W6
+
+### T-417 [MEDIUM] Tampering / Elevation — pré-qualificação usada como prioridade ou valor
+
+- **Vector**: as respostas viram score, ordem ou faixa de valor; a média projetada vira preço individual de Owner ou de
+  Ação (BR-034, REQ-101).
+- **Likelihood**: Low · **Impact**: Medium · **Risk**: Medium
+- **Mitigation**:
+  - Code: códigos fechados e versionados; a faixa de recursos é autodeclarada e nunca vira valor exato, preço,
+    aprovação ou capacidade comprovada; nenhum valor derivado da média; nenhuma regra, ordenação ou agrupamento do
+    software usa a pré-qualificação; o Admin só a mostra no nível individual.
+  - Test: o registro altera só as três tabelas do interesse e a chave pública; textos sem promessa de retorno.
+- **Owner**: Engenharia · **Tracking**: W6
+
+**Abuse cases (W6):** bot envia contatos falsos em volume → limitador (T-401); cada contato pode ser eliminado pelo
+procedimento futuro, a manifestação imutável permanece · mesma chave com outro e-mail ou outra resposta → `409` ·
+replay depois da eliminação → `201` sem recriar · contexto de outra Home Edition → `400` · retirada da Home Edition
+durante o envio → `404` sem nada gravado · URL do Admin com localização pretendida → não existe (grupo pelo id da Home
+Edition).
+
+**Residual risk (W6):** derivado chaveado no registro imutável enquanto a chave existir (T-411); contatos de terceiros
+até o procedimento de direitos (T-410); retenção sem expurgo automático até o procedimento de go-live; contexto
+autêntico reaproveitado (T-413, sem efeito econômico).

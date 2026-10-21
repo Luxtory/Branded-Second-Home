@@ -26,6 +26,8 @@ export interface PublicCover {
  * uma Second Home da Home Edition — nunca preço, proposta, condição ou valor individual; sem modalidade nem Ação.
  */
 export interface PublicProjectedInvestment {
+  /** Registro da média projetada (W6): o contexto de apresentação assina exatamente a referência exibida. */
+  readonly id: string;
   readonly amountMinor: bigint;
   readonly currency: ProjectedInvestmentCurrency;
 }

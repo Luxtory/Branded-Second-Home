@@ -89,13 +89,14 @@ export async function publicProjectedInvestments(
   if (homeEditionIds.length === 0) return new Map();
   const rows = await tx
     .selectFrom('app.home_edition_projected_investment')
-    .select(['home_edition_id', 'amount_minor', 'currency'])
+    .select(['id', 'home_edition_id', 'amount_minor', 'currency'])
     .where('home_edition_id', 'in', [...homeEditionIds])
     .execute();
   return new Map(
     rows.map((row) => [
       row.home_edition_id,
       {
+        id: row.id,
         // `bigint` chega como texto do driver; nunca passa por ponto flutuante (TECH-033).
         amountMinor: BigInt(row.amount_minor),
         currency: row.currency as ProjectedInvestmentCurrency,

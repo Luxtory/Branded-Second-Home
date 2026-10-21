@@ -3,6 +3,7 @@ import { AdminShell, adminRoleGate } from '@/features/admin';
 import type { HomeEditionLabel } from '@/features/catalog';
 import type { HomeEditionGroup, LocationGroup } from '../application/interest-overview';
 import { daysLabel, interestCount, messages } from './i18n/pt-br';
+import { interestPaths } from './interest-admin-paths';
 import { readInterestOverview } from './interest-overview-read';
 
 /** Papel exercido que a visão exige, como o Catálogo (sem hierarquia, ADR-0008). */
@@ -48,6 +49,11 @@ function HomeEditionSection({ group }: { readonly group: HomeEditionGroup<HomeEd
           attributes: locationAttributes(location),
         }))}
       />
+      <p className="lx-body">
+        <a className="lx-link" href={interestPaths.homeEdition(group.homeEditionId)}>
+          {text.openGroup}
+        </a>
+      </p>
     </section>
   );
 }

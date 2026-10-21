@@ -1671,3 +1671,23 @@ operação; nenhuma copy atribui modalidade à Home Edition; "DNA" não nomeia a
 Formulário, contato, pré-qualificação e Budget Fit (W6); localização concreta, modalidade e estrutura definitivas,
 configuração Co-Owner, condições e primeiro exercício da Second Home (W8); vocabulário de tipologia ou amenidades;
 página pública de Home Concepts no Brand Partners (`P-BP-02`).
+
+## 18. W6 — Solicitação de conversa na página da Home Edition
+
+Complementa a §17 (spec [`ownership`](ownership.md) §14; [ADR-0018](../adr/0018-contato-e-pre-qualificacao-do-interesse.md);
+`b2c.md` `D-B2C-28`). Nada da §17 muda além do que segue:
+
+- **Brief da Home Edition (§17.8):** depois de "Para quem", a seção "Solicitar uma conversa" (`#solicitar-conversa`),
+  renderizada pelo `ownership` num espaço que a página do `catalog` oferece ao shell (`src/app/`), sem import entre
+  slices. Sem a coleta disponível (spec `ownership` §14.9), a página fica exatamente como na W4.2 (`D-B2C-10`).
+- **Leitura pública (§17.7):** a média projetada pública passa a levar também o seu `id` (coluna já concedida a `anon`
+  na W4.2), para que o contexto de apresentação assine exatamente a referência que o bloco "Média projetada de
+  investimento" mostrou (`02` §15, item 14). Nenhum valor novo é exposto.
+- **Consultas a outros módulos (§17.10):** `lockPublicHomeEdition` — dentro da transação do chamador, trava a linha da
+  Home Edition como `luxtory_app` (`FOR SHARE`) e lê a visibilidade pela própria policy `home_edition_public_read`
+  (como `anon`, na mesma transação, voltando ao papel da sessão em seguida) — nenhuma regra de visibilidade repetida;
+  um teste de banco confere que ela e a leitura `anon` concordam em todos os estados. `readProjectedInvestmentReferences` — valor e moeda das médias projetadas
+  apresentadas, para a leitura auditada do Admin.
+- **Edge cases (§17.12):** a média projetada alterada entre a apresentação e a manifestação fica resolvida pela W6 (a
+  pré-qualificação guarda a referência apresentada); a Home Edition retirada do público entre a página e o envio é
+  revalidada também dentro da transação de escrita.

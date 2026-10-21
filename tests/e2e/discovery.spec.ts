@@ -304,7 +304,7 @@ test.describe('Discovery público — conteúdo', () => {
     await expect(page.getByText('Manifestar interesse')).toHaveCount(0);
   });
 
-  test('[REQ-022] [BR-031] [BR-034] página da Home Edition: definição, galeria e plantas, média projetada com a explicação; sem formulário', async ({
+  test('[REQ-022] [BR-031] [BR-034] página da Home Edition: definição, galeria e plantas, média projetada com a explicação; a solicitação de conversa no fim (W6)', async ({
     page,
   }) => {
     const seed = readSeed();
@@ -321,7 +321,10 @@ test.describe('Discovery público — conteúdo', () => {
     await expect(page.getByRole('heading', { name: copy.gallery.plans })).toBeVisible();
     await expect(page.getByRole('heading', { name: copy.projected.title })).toBeVisible();
     for (const line of copy.projected.text) await expect(page.getByText(line)).toBeVisible();
-    await expect(page.locator('form')).toHaveCount(0);
+    // W6 (D-B2C-28): com a coleta disponível, o único formulário da página é a solicitação de conversa, depois de
+    // "Para quem" (spec ownership §14.3).
+    await expect(page.locator('form')).toHaveCount(1);
+    await expect(page.locator('section#solicitar-conversa form')).toHaveCount(1);
     expect(await page.title()).toContain(seed.withHomeEdition.homeEdition.name);
 
     // Sem média nem mídia: a página continua, sem os blocos (nada é presumido).

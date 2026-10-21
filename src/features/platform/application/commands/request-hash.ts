@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 import { actorRole, type Actor } from './actor';
 
 // Mesmo conteúdo → mesmo texto, qualquer que seja a ordem das chaves.
@@ -25,6 +25,13 @@ export function requestHash(command: string, actor: Actor, input: unknown): stri
 /** SHA-256 (hex) do JSON canônico — chaves ordenadas — de `payload`. */
 export function canonicalHash(payload: unknown): string {
   return createHash('sha256')
+    .update(JSON.stringify(canonical(payload)))
+    .digest('hex');
+}
+
+/** HMAC-SHA-256 (hex) do mesmo JSON canônico, com `secret` (ADR-0018): derivado pseudonimizado, nunca anônimo. */
+export function keyedCanonicalHash(secret: string, payload: unknown): string {
+  return createHmac('sha256', secret)
     .update(JSON.stringify(canonical(payload)))
     .digest('hex');
 }

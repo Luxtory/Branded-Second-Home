@@ -91,6 +91,10 @@ try {
       INTEREST_NETWORK_WINDOW_SECONDS: '60',
       INTEREST_GLOBAL_LIMIT: '500',
       INTEREST_GLOBAL_WINDOW_SECONDS: '60',
+      // W6 (ADR-0018): segredos próprios de teste, gerados a cada execução — hash de idempotência e contexto de
+      // apresentação da Home Edition. O E2E lê o contexto da própria página.
+      INTEREST_REQUEST_HMAC_SECRET: randomBytes(32).toString('base64url'),
+      INTEREST_CONTEXT_HMAC_SECRET: randomBytes(32).toString('base64url'),
       // Vazio = ausente para a aplicação, e impede que um arquivo `.env*` local o defina.
       VERCEL_ENV: '',
     },

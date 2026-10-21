@@ -83,8 +83,8 @@ describe('W5: interest e public_idempotency_key no banco', () => {
     // Uma linha em cada tabela: gatilhos por linha só disparam quando há linha atingida.
     await insertInterest();
     await app.query(
-      `INSERT INTO app.public_idempotency_key (surface, idempotency_key, request_hash, created_at)
-       VALUES ('interest', $1, $2, now())`,
+      `INSERT INTO app.public_idempotency_key (surface, idempotency_key, request_hash, hash_scheme, created_at)
+       VALUES ('interest', $1, $2, 'sha256', now())`,
       [randomUUID(), 'b'.repeat(64)],
     );
     for (const table of TABLES) {
@@ -97,7 +97,11 @@ describe('W5: interest e public_idempotency_key no banco', () => {
         /is not allowed/,
       );
       await expect(database.pool.query(`DELETE FROM app.${table}`)).rejects.toThrow(/is not allowed/);
-      await expect(database.pool.query(`TRUNCATE app.${table}`)).rejects.toThrow(/is not allowed/);
+      // Desde a W6, `interest` é referenciada pelo contato e pela pré-qualificação: o TRUNCATE do dono é barrado já pela
+      // FK, antes do gatilho — recusado de qualquer forma.
+      await expect(database.pool.query(`TRUNCATE app.${table}`)).rejects.toThrow(
+        /is not allowed|cannot truncate a table referenced in a foreign key constraint/,
+      );
     }
   });
 
@@ -169,8 +173,8 @@ describe('W5: interest e public_idempotency_key no banco', () => {
         ...fields,
       };
       return app.query(
-        `INSERT INTO app.public_idempotency_key (surface, idempotency_key, request_hash, created_at)
-         VALUES ($1, $2, $3, $4)`,
+        `INSERT INTO app.public_idempotency_key (surface, idempotency_key, request_hash, hash_scheme, created_at)
+         VALUES ($1, $2, $3, 'sha256', $4)`,
         [row.surface, row.idempotency_key, row.request_hash, row.created_at],
       );
     };
