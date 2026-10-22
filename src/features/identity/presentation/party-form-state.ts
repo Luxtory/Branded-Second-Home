@@ -1,7 +1,7 @@
 import type { ZodError } from 'zod';
 import type { ErrorCode } from '@/features/platform';
 
-/** Estado dos formulários de partes (Server Action ↔ componente). Textos só pelo i18n. */
+/** Estado dos formulários de pessoas e empresas (Server Action ↔ componente). Textos só pelo i18n. */
 export type PartyFieldError =
   | 'required'
   | 'too_long'

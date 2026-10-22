@@ -20,7 +20,7 @@ describe('seções do Admin (ADR-0008, ADR-0009)', () => {
     );
   });
 
-  it('[TECH-050] Partes (W7) segue a mesma regra: só com o papel Admin exercido', () => {
+  it('[TECH-050] Pessoas e empresas (W7) segue a mesma regra: só com o papel Admin exercido', () => {
     const parties = availableSections(['admin']).find((section) => section.id === 'parties');
 
     expect(parties).toMatchObject({ href: '/admin/pessoas-e-empresas', role: 'admin' });

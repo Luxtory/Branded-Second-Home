@@ -8,7 +8,7 @@ export type LoginMessage =
   | 'resend_rate_limited'
   | 'unavailable';
 
-/** Para onde o login leva (lista fechada, nunca uma URL vinda do navegador): staff → MFA; Titular → Área (W7). */
+/** Para onde o login leva (lista fechada, nunca uma URL vinda do navegador): staff → MFA; Área do Titular → representações (W7). */
 export type LoginDestination = 'admin' | 'titular';
 
 export interface LoginState {

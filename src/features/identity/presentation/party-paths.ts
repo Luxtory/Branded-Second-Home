@@ -1,4 +1,4 @@
-/** Caminhos das telas de partes (Admin) e da Área do Titular. Ids sempre de registros já lidos. */
+/** Caminhos das telas de pessoas e empresas (Admin) e da Área do Titular. Ids sempre de registros já lidos. */
 export type PartyStatus = 'registered' | 'invited' | 'revoked';
 
 const withStatus = (path: string, status?: PartyStatus) =>

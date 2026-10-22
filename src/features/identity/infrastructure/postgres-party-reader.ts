@@ -57,7 +57,7 @@ function toSealedParty(row: {
 
 /**
  * Leituras de party e delegação (spec identity §13.9). O Admin lê como `luxtory_app` (com `admin_read` na mesma
- * transação); o Titular, dentro de `withUserRead`, onde a RLS só deixa ver as próprias delegações e as parties com
+ * transação); quem representa a pessoa ou empresa, na Área do Titular, dentro de `withUserRead`, onde a RLS só deixa ver as próprias delegações e as parties com
  * delegação vigente — as mesmas consultas, filtradas pela política.
  */
 export const postgresPartyReader = {

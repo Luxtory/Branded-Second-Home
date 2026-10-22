@@ -103,7 +103,8 @@ const nonCritical = (name: string, module: Module): CommandSpec => ({
 
 export const NON_CRITICAL_OPERATIONS: readonly CommandSpec[] = [
   nonCritical('grant_authorization', 'identity'),
-  // Titulares (W7, spec identity §13): party, convite e revogação pelo Admin; ativação pelo próprio convidado.
+  // Pessoas e empresas e representações (W7, spec identity §13): party, convite e revogação pelo Admin; ativação pelo
+  // próprio convidado.
   nonCritical('register_party', 'identity'),
   nonCritical('create_party_delegation', 'identity'),
   nonCritical('revoke_party_delegation', 'identity'),

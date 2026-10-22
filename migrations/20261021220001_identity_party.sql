@@ -27,7 +27,7 @@ CREATE TRIGGER party_no_change BEFORE UPDATE OR DELETE ON app.party
 CREATE TRIGGER party_no_truncate BEFORE TRUNCATE ON app.party
   FOR EACH STATEMENT EXECUTE FUNCTION app.forbid_change();
 
--- O command `register_party` insere pelo papel de aplicação; a leitura do Titular (por delegação vigente) chega com a
+-- O command `register_party` insere pelo papel de aplicação; a leitura na Área do Titular (por delegação vigente) chega com a
 -- tabela de delegações, na migration seguinte.
 ALTER TABLE app.party ENABLE ROW LEVEL SECURITY;
 CREATE POLICY party_app_read ON app.party FOR SELECT TO luxtory_app USING (true);

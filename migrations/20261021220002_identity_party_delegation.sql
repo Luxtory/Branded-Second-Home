@@ -98,7 +98,7 @@ GRANT UPDATE (state, activated_at, activation_operation_id, revoked_at, revocati
               revoked_role, revocation_operation_id)
   ON app.party_delegation TO luxtory_app;
 
--- Leitura do Titular sob RLS (TECH-052, ADR-0006 §6): `authenticated` só nas colunas necessárias — sem HMAC, sem bases
+-- Leitura na Área do Titular sob RLS, por quem representa a pessoa ou empresa (TECH-052, ADR-0006 §6): `authenticated` só nas colunas necessárias — sem HMAC, sem bases
 -- e sem ids de staff — e só nas próprias linhas. A party só aparece com delegação vigente do `auth.uid()`.
 -- Auditoria de Production (2026-10-21): `authenticated` não tinha `SELECT` em `app` nem privilégio padrão no schema.
 GRANT USAGE ON SCHEMA app TO authenticated;

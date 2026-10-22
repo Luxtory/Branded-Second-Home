@@ -222,7 +222,7 @@ describe('party e party_delegation no banco (TECH-052, TECH-100)', () => {
     expect(rows[0]).toEqual({ n: 1 });
   });
 
-  it('[TECH-052] RLS: Titular A não lê a party de B; sem delegação vigente (nenhuma, pendente, expirada, revogada) nada aparece', async () => {
+  it('[TECH-052] RLS: o representante A não lê a pessoa ou empresa de B; sem delegação vigente (nenhuma, pendente, expirada, revogada) nada aparece', async () => {
     // Usuários próprios deste caso: o banco do bloco é compartilhado entre os testes.
     const userA = randomUUID();
     const userB = randomUUID();

@@ -12,7 +12,7 @@ const sixDigits = z.string().regex(/^\d{6}$/);
 const factorIdSchema = z.string().min(1).max(128);
 const destinationSchema = z.enum(['admin', 'titular']);
 
-/** Depois do código: staff segue para o segundo fator; o Titular, para a Área (TECH-050 exige MFA só do staff). */
+/** Depois do código: staff segue para o segundo fator; a Área do Titular abre direto (TECH-050 exige MFA só do staff). */
 const AFTER_CODE: Record<LoginDestination, string> = { admin: '/entrar/mfa', titular: '/titular' };
 const AFTER_SIGN_OUT: Record<LoginDestination, string> = {
   admin: '/entrar',

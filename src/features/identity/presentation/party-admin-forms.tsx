@@ -23,7 +23,7 @@ function rejectionTitle(state: PartyFormState, duplicate = false): string | null
     : text.rejections[state.rejection];
 }
 
-/** Cadastro de parte (`register_party`): CPF ou CNPJ. */
+/** Cadastro de pessoa ou empresa (`register_party`): CPF ou CNPJ. */
 export function RegisterPartyForm({ idempotencyKey }: { readonly idempotencyKey: string }) {
   const [state, action] = useActionState(
     registerPartyAction,

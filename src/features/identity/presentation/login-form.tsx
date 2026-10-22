@@ -32,7 +32,7 @@ const NOTICES: Partial<
 
 /**
  * Formulário de login em dois passos: e-mail → código de uso único (TECH-050), com reenvio do código. `destination`
- * (fechado): staff segue para o segundo fator; o Titular, para a Área (W7).
+ * (fechado): staff segue para o segundo fator; a Área do Titular abre direto (W7).
  */
 export function LoginForm({ destination = 'admin' }: { readonly destination?: LoginDestination }) {
   const [state, formAction, pending] = useActionState(loginAction, initialLoginState(destination));

@@ -22,7 +22,7 @@ import {
 } from './party-admin-forms';
 import { partyPaths, type PartyStatus } from './party-paths';
 
-/** Autoridade "Admin" (REQ-095): sem hierarquia, Super Admin sozinho não vê as partes (ADR-0008). */
+/** Autoridade "Admin" (REQ-095): sem hierarquia, Super Admin sozinho não vê pessoas e empresas (ADR-0008). */
 const PARTY_ROLE = 'admin';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

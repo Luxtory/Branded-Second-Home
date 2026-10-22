@@ -578,7 +578,7 @@ describe('party, delegação e leituras (TECH-050, TECH-052, TECH-100, ADR-0002)
       };
     }
 
-    it('[TECH-052] Titular A vê só a própria party (mascarada); não lê a de B nem pelo id', async () => {
+    it('[TECH-052] representante A vê só a pessoa ou empresa que representa (mascarada); não lê a de B nem pelo id', async () => {
       const a = await activeFor(CPF, 'a@exemplo.test');
       const b = await activeFor(CNPJ, 'b@exemplo.test');
       const deps = { db, protector: harness.protector };
