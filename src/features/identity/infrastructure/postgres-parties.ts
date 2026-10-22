@@ -26,8 +26,6 @@ const DELEGATION_COLUMNS = [
   'revocation_basis',
 ] as const;
 
-const OPEN_STATES: readonly DelegationState[] = ['pending', 'active'];
-
 function documentType(value: string): DocumentType {
   if (!isDocumentType(value)) throw new Error(`app.party: unexpected document_type ${value}`);
   return value;
@@ -65,15 +63,15 @@ export const postgresPartyStore: PartyStore<DatabaseTransaction> = {
   async findPartyIdByDigests(tx, digests) {
     if (digests.length === 0) return null;
     const row = await tx
-      .selectFrom('app.party')
-      .select('id')
+      .selectFrom('app.party_document_digest')
+      .select('party_id')
       .where(
-        'document_hmac',
+        'digest',
         'in',
         digests.map((digest) => Buffer.from(digest)),
       )
       .executeTakeFirst();
-    return row?.id ?? null;
+    return row?.party_id ?? null;
   },
   async insertParty(tx, party) {
     await tx
@@ -83,13 +81,23 @@ export const postgresPartyStore: PartyStore<DatabaseTransaction> = {
         document_type: party.document.type,
         document_ciphertext: Buffer.from(party.document.ciphertext),
         document_key_id: party.document.keyId,
-        document_hmac: Buffer.from(party.document.hmac),
-        document_hmac_key_id: party.document.hmacKeyId,
         registered_by_user_id: party.registeredByUserId,
         registered_role: party.registeredRole,
         operation_id: party.operationId,
         created_at: party.createdAt,
       })
+      .execute();
+    // Um digest por chave do anel: a corrida com outra versão do app (outro anel) cai no UNIQUE da chave comum.
+    await tx
+      .insertInto('app.party_document_digest')
+      .values(
+        party.document.digests.map((item) => ({
+          party_id: party.id,
+          hmac_key_id: item.keyId,
+          digest: Buffer.from(item.digest),
+          created_at: party.createdAt,
+        })),
+      )
       .execute();
   },
   async lockParty(tx, partyId): Promise<PartyRecord | null> {
@@ -107,13 +115,16 @@ export const postgresPartyStore: PartyStore<DatabaseTransaction> = {
       ? null
       : { id: row.id, documentType: documentType(row.document_type), createdAt: row.created_at };
   },
-  async openDelegation(tx, userId, partyId) {
+  async overlappingDelegation(tx, userId, partyId, validFrom, validUntil) {
     const row = await tx
       .selectFrom('app.party_delegation')
       .select(DELEGATION_COLUMNS)
       .where('user_id', '=', userId)
       .where('party_id', '=', partyId)
-      .where('state', 'in', OPEN_STATES)
+      .where('state', '<>', 'revoked')
+      .where(
+        sql<boolean>`tstzrange(valid_from, valid_until, '[)') && tstzrange(${validFrom}::timestamptz, ${validUntil}::timestamptz, '[)')`,
+      )
       .executeTakeFirst();
     return row === undefined ? null : toDelegation(row);
   },

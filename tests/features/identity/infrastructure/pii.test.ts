@@ -138,27 +138,45 @@ describe('cifra AES-256-GCM e HMAC do documento (TECH-100, ADR-0020)', () => {
     expect(unavailableKeys(error)).toEqual(['PII_ENCRYPTION_KEYRING']);
   });
 
-  it('[ADR-0002] rotação do segredo do HMAC: a busca calcula em todas as chaves; linhas novas usam a ativa', () => {
+  it('[ADR-0002] rotação do segredo do HMAC: a party nova grava um digest por chave do anel; a busca usa todas', () => {
     const before = ringSpec(['e1'], ['h1']);
-    const oldDigest = createDocumentProtector(keysOf(before)).protect(PARTY, CPF).hmac;
+    const [oldDigest] = createDocumentProtector(keysOf(before)).protect(PARTY, CPF).digests;
     const next = rotated(before.hmac, 'h2');
     const after = createDocumentProtector(
       keysOf({ ...before, hmac: next.ring, hmacActive: next.active }),
     );
-    const digests = after.lookupDigests(CPF).map((digest) => Buffer.from(digest).toString('hex'));
+    const hex = (bytes: Uint8Array) => Buffer.from(bytes).toString('hex');
+    const written = after.protect(PARTY, CPF).digests;
 
-    expect(digests).toHaveLength(2);
-    expect(digests).toContain(Buffer.from(oldDigest).toString('hex'));
-    expect(after.protect(PARTY, CPF).hmacKeyId).toBe('h2');
+    expect(oldDigest?.keyId).toBe('h1');
+    expect(written.map((item) => item.keyId)).toEqual(['h1', 'h2']);
+    // A chave comum (h1) produz o mesmo digest nas duas versões: é nela que a corrida colide.
+    expect(hex(written[0]?.digest ?? new Uint8Array())).toBe(
+      hex(oldDigest?.digest ?? new Uint8Array()),
+    );
+    expect(after.lookupDigests(CPF).map(hex)).toEqual(written.map((item) => hex(item.digest)));
+    expect(after.activeHmacKeyId()).toBe('h2');
   });
 
-  it('[TECH-100] HMAC determinístico por chave, separado por finalidade e por tipo de documento', () => {
-    const protector = createDocumentProtector(keysOf(ringSpec()));
-    const digest = Buffer.from(protector.protect(PARTY, CPF).hmac).toString('hex');
+  it('[TECH-100] HMAC determinístico por chave, separado por finalidade, por tipo e por chave', () => {
+    const spec = ringSpec(['e1'], ['h1', 'h2']);
+    const protector = createDocumentProtector(keysOf(spec));
+    const [h1] = protector.protect(PARTY, CPF).digests;
+    const digest = Buffer.from(h1?.digest ?? new Uint8Array()).toString('hex');
 
-    expect(Buffer.from(protector.protect(OTHER_PARTY, CPF).hmac).toString('hex')).toBe(digest);
-    expect(protector.fingerprint('document', `cpf|${CPF.value}`)).not.toBe(digest);
-    expect(protector.fingerprint('document', 'x')).not.toBe(protector.fingerprint('email', 'x'));
-    expect(protector.fingerprint('email', 'pessoa@exemplo.test')).toMatch(/^[0-9a-f]{64}$/);
+    expect(
+      Buffer.from(
+        protector.protect(OTHER_PARTY, CPF).digests[0]?.digest ?? new Uint8Array(),
+      ).toString('hex'),
+    ).toBe(digest);
+    expect(protector.fingerprint('document', `cpf|${CPF.value}`, 'h1')).not.toBe(digest);
+    expect(protector.fingerprint('document', 'x', 'h1')).not.toBe(
+      protector.fingerprint('email', 'x', 'h1'),
+    );
+    expect(protector.fingerprint('email', 'x', 'h1')).not.toBe(
+      protector.fingerprint('email', 'x', 'h2'),
+    );
+    expect(protector.fingerprint('email', 'pessoa@exemplo.test', 'h2')).toMatch(/^[0-9a-f]{64}$/);
+    expect(() => protector.fingerprint('email', 'x', 'h9')).toThrow(PiiKeyUnavailableError);
   });
 });

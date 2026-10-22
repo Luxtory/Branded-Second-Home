@@ -15,6 +15,7 @@ import {
 } from '@/features/identity/application/party-ports';
 import { createDocumentProtector } from '@/features/identity/infrastructure/pii/document-protector';
 import { parseKeyRing, type PiiKeys } from '@/features/identity/infrastructure/pii/keyring';
+import type { PartyStore } from '@/features/identity/application/party-ports';
 import { postgresPartyStore } from '@/features/identity/infrastructure/postgres-parties';
 import type {
   Actor,
@@ -148,10 +149,13 @@ export function partyHarness(
     protector = testProtector(),
     accounts = fakeAccounts(),
     guard = allowAll,
+    store = postgresPartyStore,
   }: {
     protector?: PartyDocumentProtector;
     accounts?: ReturnType<typeof fakeAccounts>;
     guard?: CommandGuard;
+    /** Store instrumentado (ex.: barreira depois da busca, para provar corrida). */
+    store?: PartyStore<DatabaseTransaction>;
   } = {},
 ) {
   const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
@@ -163,7 +167,7 @@ export function partyHarness(
     log,
     registry: commandRegistry,
   });
-  const base = { store: postgresPartyStore, protector, newId: randomUUID };
+  const base = { store, protector, newId: randomUUID };
   const handlers = {
     registerParty: registerPartyHandler<DatabaseTransaction>(base),
     createPartyDelegation: createPartyDelegationHandler<DatabaseTransaction>({
@@ -212,10 +216,14 @@ export async function ownerParty(
     [operation, `test:${operation}`],
   );
   await admin.query(
-    `INSERT INTO app.party (id, document_type, document_ciphertext, document_key_id, document_hmac, document_hmac_key_id,
-                            registered_by_user_id, registered_role, operation_id, created_at)
-     VALUES ($1, $2, $3, 'e1', $4, 'h1', $5, 'admin', $6, now())`,
-    [id, type, randomBytes(ciphertextBytes), hmac, STAFF_ID, operation],
+    `INSERT INTO app.party (id, document_type, document_ciphertext, document_key_id, registered_by_user_id,
+                            registered_role, operation_id, created_at)
+     VALUES ($1, $2, $3, 'e1', $4, 'admin', $5, now())`,
+    [id, type, randomBytes(ciphertextBytes), STAFF_ID, operation],
+  );
+  await admin.query(
+    `INSERT INTO app.party_document_digest (party_id, hmac_key_id, digest, created_at) VALUES ($1, 'h1', $2, now())`,
+    [id, hmac],
   );
   return id;
 }

@@ -1,8 +1,10 @@
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { ExercisedAdminSession } from '@/features/admin';
 import { AccountAlreadyConfirmedError } from '@/features/identity/application/party-ports';
 import { createDocumentProtector } from '@/features/identity/infrastructure/pii/document-protector';
+import { PiiKeyUnavailableError } from '@/features/identity/infrastructure/pii/keyring';
+import { postgresPartyStore } from '@/features/identity/infrastructure/postgres-parties';
 import {
   readPartyDetail,
   readPartyDirectory,
@@ -27,7 +29,7 @@ import {
   validCnpj,
   validCpf,
 } from '../../support/party-fixtures';
-import { appDatabase } from '../../support/platform-fixtures';
+import { appDatabase, deferred } from '../../support/platform-fixtures';
 import { createTestDatabase, type TestDatabase } from '../../support/test-database';
 
 // W7 com PostgreSQL real (spec identity §13): commands pelo executor de produção como `luxtory_app`, cifra e HMAC reais,
@@ -233,10 +235,110 @@ describe('party, delegação e leituras (TECH-050, TECH-052, TECH-100, ADR-0002)
       ).resolves.toBe(old.id);
       const fresh = await after.ok(after.handlers.registerParty, { document: CNPJ });
       const { rows } = await database.pool.query(
-        `SELECT document_hmac_key_id FROM app.party WHERE id = $1`,
+        `SELECT hmac_key_id FROM app.party_document_digest WHERE party_id = $1 ORDER BY hmac_key_id`,
         [fresh.id],
       );
-      expect(rows[0]).toEqual({ document_hmac_key_id: 'h2' });
+      expect(rows).toEqual([{ hmac_key_id: 'h1' }, { hmac_key_id: 'h2' }]);
+    });
+
+    it('[TECH-100] corrida entre versões com anéis diferentes (A: {h1} ativa h1; B: {h1,h2} ativa h2): exatamente uma party', async () => {
+      const next = rotated(spec.hmac, 'h2');
+      const ringB = { ...spec, hmac: next.ring, hmacActive: next.active };
+      // As duas tentativas passam pela busca antes de qualquer gravação: a barreira só libera quando ambas buscaram.
+      let looked = 0;
+      const bothLooked = deferred();
+      const racing: typeof postgresPartyStore = {
+        ...postgresPartyStore,
+        async findPartyIdByDigests(tx, digests) {
+          const found = await postgresPartyStore.findPartyIdByDigests(tx, digests);
+          looked += 1;
+          if (looked === 2) bothLooked.resolve();
+          await bothLooked.promise;
+          return found;
+        },
+      };
+      const processA = partyHarness(db, clock, { protector: harness.protector, store: racing });
+      const processB = partyHarness(db, clock, {
+        protector: createDocumentProtector(keysOf(ringB)),
+        store: racing,
+      });
+
+      const outcomes = await Promise.all([
+        processA.run(processA.handlers.registerParty, { document: CPF }),
+        processB.run(processB.handlers.registerParty, { document: punctuatedCpf(CPF) }),
+      ]);
+      const { rows } = await database.pool.query(`SELECT count(*)::int AS n FROM app.party`);
+
+      expect(looked).toBe(2);
+      expect(outcomes.map((outcome) => outcome.status).sort()).toEqual(['committed', 'rejected']);
+      expect(outcomes.find((outcome) => outcome.status === 'rejected')).toMatchObject({
+        code: 'ERR_STATE_TRANSITION',
+      });
+      expect(rows[0]).toEqual({ n: 1 });
+    });
+  });
+
+  describe('[ADR-0020] idempotência atravessando a rotação do HMAC', () => {
+    const rotatedHarness = (hmacIds: readonly string[], active: string) => {
+      const ring = hmacIds.map((id) =>
+        id === 'h1' ? spec.hmac : `${id}:${randomBytes(32).toString('base64')}`,
+      );
+      const keys = keysOf({ ...spec, hmac: ring.join(','), hmacActive: active });
+      return partyHarness(db, clock, {
+        protector: createDocumentProtector(keys),
+        accounts: harness.accounts,
+      });
+    };
+
+    it('[ADR-0020] register_party: replay depois da troca da chave ativa; payload diferente → conflito; chave histórica ausente → falha fechada', async () => {
+      const key = randomUUID();
+      const first = await harness.run(harness.handlers.registerParty, { document: CPF }, { key });
+      const after = rotatedHarness(['h1', 'h2'], 'h2');
+      const replay = await after.run(
+        after.handlers.registerParty,
+        { document: punctuatedCpf(CPF) },
+        { key },
+      );
+      const conflict = await after.run(after.handlers.registerParty, { document: CNPJ }, { key });
+      const withoutH1 = rotatedHarness(['h2'], 'h2');
+
+      expect(first).toMatchObject({ status: 'committed', replayed: false });
+      expect(replay).toMatchObject({ status: 'committed', replayed: true });
+      expect(
+        replay.status === 'committed' && first.status === 'committed' && replay.result.id,
+      ).toBe(first.status === 'committed' ? first.result.id : null);
+      expectRejected(conflict, 'ERR_IDEMPOTENCY_CONFLICT');
+      await expect(
+        withoutH1.run(withoutH1.handlers.registerParty, { document: CPF }, { key }),
+      ).rejects.toBeInstanceOf(PiiKeyUnavailableError);
+      const { rows } = await database.pool.query(
+        `SELECT request_hash_key_id FROM app.idempotency_record WHERE idempotency_key = $1`,
+        [key],
+      );
+      expect(rows).toEqual([{ request_hash_key_id: 'h1' }]);
+    });
+
+    it('[ADR-0020] create_party_delegation: replay depois da rotação sem novo convite; e-mail diferente → conflito; chave ausente → falha fechada', async () => {
+      const party = await register(CPF);
+      const key = randomUUID();
+      const input = { party_id: party.id, email: EMAIL, basis: 'Procuração' };
+      const first = await harness.run(harness.handlers.createPartyDelegation, input, { key });
+      const after = rotatedHarness(['h1', 'h2'], 'h2');
+      const replay = await after.run(after.handlers.createPartyDelegation, input, { key });
+      const conflict = await after.run(
+        after.handlers.createPartyDelegation,
+        { ...input, email: 'outra@exemplo.test' },
+        { key },
+      );
+      const withoutH1 = rotatedHarness(['h2'], 'h2');
+
+      expect(first).toMatchObject({ status: 'committed', replayed: false });
+      expect(replay).toMatchObject({ status: 'committed', replayed: true });
+      expectRejected(conflict, 'ERR_IDEMPOTENCY_CONFLICT');
+      expect(harness.accounts.invites).toEqual([EMAIL]);
+      await expect(
+        withoutH1.run(withoutH1.handlers.createPartyDelegation, input, { key }),
+      ).rejects.toBeInstanceOf(PiiKeyUnavailableError);
     });
   });
 
@@ -351,6 +453,41 @@ describe('party, delegação e leituras (TECH-050, TECH-052, TECH-100, ADR-0002)
       );
       expect(rows).toEqual([
         { role: 'titular', authorization_ref: 'base:test', before: 'pending', after: 'active' },
+      ]);
+    });
+
+    it('[TECH-050] depois da expiração, nova delegação do mesmo par sem revogar a anterior (que fica no histórico)', async () => {
+      const party = await register(CPF);
+      const soon = new Date(Date.now() + 60_000);
+      const old = await invite(party.id, EMAIL, { valid_until: soon.toISOString() });
+      const late = partyHarness(
+        db,
+        { now: () => new Date(soon.getTime() + 1) },
+        { protector: harness.protector, accounts: harness.accounts },
+      );
+
+      expectRejected(
+        await harness.run(harness.handlers.createPartyDelegation, {
+          party_id: party.id,
+          email: EMAIL,
+          basis: 'Ainda vigente',
+        }),
+        'ERR_STATE_TRANSITION',
+      );
+      const fresh = await late.ok(late.handlers.createPartyDelegation, {
+        party_id: party.id,
+        email: EMAIL,
+        basis: 'Nova procuração',
+      });
+      const { rows } = await database.pool.query<{ id: string; state: string }>(
+        `SELECT id, state FROM app.party_delegation WHERE party_id = $1 ORDER BY created_at`,
+        [party.id],
+      );
+
+      expect(fresh).toMatchObject({ user_id: old.user_id, state: 'pending' });
+      expect(rows).toEqual([
+        { id: old.id, state: 'pending' },
+        { id: fresh.id, state: 'pending' },
       ]);
     });
 

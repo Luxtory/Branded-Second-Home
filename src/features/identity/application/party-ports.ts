@@ -2,13 +2,21 @@ import type { DocumentType, PartyDocument } from '../domain/party-document';
 import type { PartyDelegation } from '../domain/party-delegation';
 import type { StaffRole } from '../domain/staff';
 
-/** CPF/CNPJ protegido para gravar (ADR-0020): cifra com `key_id` e HMAC com a chave ativa do anel próprio. */
+/** HMAC do documento normalizado com uma chave do anel do HMAC (ADR-0020 §2). */
+export interface DocumentDigest {
+  readonly keyId: string;
+  readonly digest: Uint8Array;
+}
+
+/**
+ * CPF/CNPJ protegido para gravar (ADR-0020): cifra com o `key_id` ativo e um digest por chave do anel do HMAC — o
+ * `UNIQUE` sobre os digests mantém um documento → uma party mesmo com versões do app em anéis diferentes.
+ */
 export interface ProtectedDocument {
   readonly type: DocumentType;
   readonly ciphertext: Uint8Array;
   readonly keyId: string;
-  readonly hmac: Uint8Array;
-  readonly hmacKeyId: string;
+  readonly digests: readonly DocumentDigest[];
 }
 
 /** Cifra, HMAC e fingerprint do documento (implementação AES-256-GCM + HMAC-SHA-256 na infraestrutura). */
@@ -18,8 +26,13 @@ export interface PartyDocumentProtector {
   reveal(partyId: string, sealed: SealedDocument): PartyDocument;
   /** HMAC com **todas** as chaves do anel: busca e deduplicação sobrevivem à rotação do segredo. */
   lookupDigests(document: PartyDocument): readonly Uint8Array[];
-  /** Pseudônimo (hex) para o hash de idempotência — nunca o documento ou o e-mail (ADR-0020 §5). */
-  fingerprint(purpose: 'document' | 'email', value: string): string;
+  /** Chave ativa do anel do HMAC: a que pseudonimiza um hash de idempotência novo (gravada ao lado dele). */
+  activeHmacKeyId(): string;
+  /**
+   * Pseudônimo (hex) para o hash de idempotência com a chave `keyId` do anel — nunca o documento ou o e-mail
+   * (ADR-0020 §5). Chave fora do anel → erro explícito (o replay falha fechado, nunca é falso).
+   */
+  fingerprint(purpose: 'document' | 'email', value: string, keyId: string): string;
 }
 
 /** O que o banco guarda do documento (sem HMAC): a party só decifra com o próprio id no AAD. */
@@ -79,7 +92,17 @@ export interface PartyStore<Tx> {
   insertParty(tx: Tx, party: NewParty): Promise<void>;
   /** Lê a party e a trava na transação: convites concorrentes do mesmo par são serializados. */
   lockParty(tx: Tx, partyId: string): Promise<PartyRecord | null>;
-  openDelegation(tx: Tx, userId: string, partyId: string): Promise<DelegationRecord | null>;
+  /**
+   * Delegação pendente ou ativa do par cuja vigência se sobrepõe a [validFrom, validUntil) — a que impediria uma nova.
+   * Expirada antes de `validFrom` não conta (a constraint `conflict_party_delegation_overlap` é a garantia final).
+   */
+  overlappingDelegation(
+    tx: Tx,
+    userId: string,
+    partyId: string,
+    validFrom: Date,
+    validUntil: Date | null,
+  ): Promise<DelegationRecord | null>;
   insertDelegation(tx: Tx, delegation: NewDelegation): Promise<DelegationRecord>;
   lockDelegation(tx: Tx, delegationId: string): Promise<DelegationRecord | null>;
   activateDelegation(

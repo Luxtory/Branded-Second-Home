@@ -112,9 +112,15 @@ export function registerPartyHandler<Tx>(
   return {
     command: 'register_party',
     input: registerPartyInput,
-    fingerprint: (input) => ({
-      document: createPartyDocumentResolver(deps.protector, deps.store).fingerprint(input.document),
-    }),
+    fingerprint: {
+      activeKeyId: () => deps.protector.activeHmacKeyId(),
+      payload: (input, keyId) => ({
+        document: createPartyDocumentResolver(deps.protector, deps.store).fingerprint.payload(
+          input.document,
+          keyId,
+        ),
+      }),
+    },
     async execute({ input, actor, operationId, now, tx, audit }) {
       const staff = staffOf(actor, 'register_party');
       const existing = await deps.store.findPartyIdByDigests(
@@ -143,26 +149,51 @@ export function registerPartyHandler<Tx>(
   };
 }
 
+/** Vigência pedida para a nova delegação: começa no registro; fim opcional. */
+interface Validity {
+  readonly from: Date;
+  readonly until: Date | null;
+}
+
+/** Nenhuma delegação pendente ou ativa do par com vigência sobreposta (expirada não conta) → senão `ERR_STATE_TRANSITION`. */
+async function requireNoOverlap<Tx>(
+  deps: DelegationCommandDependencies<Tx>,
+  tx: Tx,
+  userId: string,
+  partyId: string,
+  validity: Validity,
+): Promise<void> {
+  const overlapping = await deps.store.overlappingDelegation(
+    tx,
+    userId,
+    partyId,
+    validity.from,
+    validity.until,
+  );
+  requireState(overlapping === null);
+}
+
 /** Conta do e-mail para a delegação: confirmada → a própria; inexistente ou não confirmada → convite (ADR-0020 §8). */
 async function representativeAccount<Tx>(
   deps: DelegationCommandDependencies<Tx>,
   tx: Tx,
   email: string,
   partyId: string,
+  validity: Validity,
 ): Promise<string> {
   const account = await deps.accounts.find(tx, email);
   if (account !== null) {
-    requireState((await deps.store.openDelegation(tx, account.userId, partyId)) === null);
+    await requireNoOverlap(deps, tx, account.userId, partyId, validity);
     if (account.confirmed) return account.userId;
   }
   try {
     return await deps.accounts.invite(email);
   } catch (error) {
-    // Confirmada entre a busca e o convite: segue com a conta, sem convite (e sem duplicar a delegação).
+    // Confirmada entre a busca e o convite: segue com a conta, sem convite (e sem sobrepor delegação).
     if (!(error instanceof AccountAlreadyConfirmedError)) throw error;
     const confirmed = await deps.accounts.find(tx, email);
     if (confirmed === null || !confirmed.confirmed) throw error;
-    requireState((await deps.store.openDelegation(tx, confirmed.userId, partyId)) === null);
+    await requireNoOverlap(deps, tx, confirmed.userId, partyId, validity);
     return confirmed.userId;
   }
 }
@@ -177,7 +208,13 @@ export function createPartyDelegationHandler<Tx>(
   return {
     command: 'create_party_delegation',
     input: createPartyDelegationInput,
-    fingerprint: (input) => ({ ...input, email: deps.protector.fingerprint('email', input.email) }),
+    fingerprint: {
+      activeKeyId: () => deps.protector.activeHmacKeyId(),
+      payload: (input, keyId) => ({
+        ...input,
+        email: deps.protector.fingerprint('email', input.email, keyId),
+      }),
+    },
     async execute({ input, actor, operationId, now, tx, audit }) {
       const staff = staffOf(actor, 'create_party_delegation');
       const validUntil = input.valid_until === undefined ? null : new Date(input.valid_until);
@@ -185,7 +222,10 @@ export function createPartyDelegationHandler<Tx>(
         throw new CommandRejection('ERR_VALIDATION');
       }
       const party = found(await deps.store.lockParty(tx, input.party_id));
-      const userId = await representativeAccount(deps, tx, input.email, party.id);
+      const userId = await representativeAccount(deps, tx, input.email, party.id, {
+        from: now,
+        until: validUntil,
+      });
       const delegation = await deps.store.insertDelegation(tx, {
         id: deps.newId(),
         partyId: party.id,

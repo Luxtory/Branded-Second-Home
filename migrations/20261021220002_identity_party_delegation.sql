@@ -1,8 +1,12 @@
 -- migrate:up
--- Delegação usuário → party (`03` §3.1: escopo e vigência; W7, spec identity §13, ADR-0020). Decisões do fundador
--- (2026-10-21): escopo único `party` (representação integral), fim opcional, no máximo uma delegação aberta por par
--- usuário × party, e **pendente até a ativação** pelo próprio usuário autenticado. Representa a party só a delegação
--- `active` dentro da vigência; a expiração é derivada de `valid_until`, nunca gravada.
+-- Delegação usuário → party (`03` §3.1: escopo e vigência; W7, spec identity §13, ADR-0020): **quem pode representar
+-- quem** no software. Não é titularidade, propriedade, Ação, Membership nem autorização irrestrita — o que a party pode
+-- fazer vem da relação aplicável (holding, `authorization_grant`, …). Decisões do fundador (2026-10-21): escopo único
+-- `party` (representação da party), fim opcional, vigências sem sobreposição por par usuário × party, e **pendente até
+-- a ativação** pelo próprio usuário autenticado. Só a delegação `active` dentro da vigência representa; a expiração é
+-- derivada de `valid_until`, nunca gravada, e não exige revogação.
+CREATE EXTENSION btree_gist WITH SCHEMA extensions;
+
 CREATE TABLE app.party_delegation (
   id uuid PRIMARY KEY,
   party_id uuid NOT NULL REFERENCES app.party (id),
@@ -41,9 +45,13 @@ CREATE TABLE app.party_delegation (
   )
 );
 
--- Uma delegação pendente ou ativa por par; uma expirada e não revogada ainda ocupa o par (spec identity §13.3).
-CREATE UNIQUE INDEX conflict_party_delegation_open ON app.party_delegation (user_id, party_id)
-  WHERE state IN ('pending', 'active');
+-- No máximo uma delegação pendente ou ativa por par usuário × party **em cada instante** (spec identity §13.3): as
+-- vigências [valid_from, valid_until) não se sobrepõem. A expiração encerra a vigência — depois dela uma nova delegação
+-- pode começar sem revogar a anterior, que fica no histórico; revogada não conta. O banco garante, inclusive entre
+-- transações concorrentes (o prefixo `conflict_` vira `ERR_STATE_TRANSITION`).
+ALTER TABLE app.party_delegation ADD CONSTRAINT conflict_party_delegation_overlap
+  EXCLUDE USING gist (user_id WITH =, party_id WITH =, tstzrange(valid_from, valid_until, '[)') WITH &&)
+  WHERE (state <> 'revoked');
 CREATE INDEX party_delegation_party_idx ON app.party_delegation (party_id, created_at);
 
 -- Transições fechadas: pending → active (só os campos de ativação) e pending|active → revoked (só os de revogação).
@@ -117,3 +125,4 @@ REVOKE USAGE ON SCHEMA app FROM authenticated;
 REVOKE ALL ON app.party_delegation FROM luxtory_app;
 DROP TABLE app.party_delegation;
 DROP FUNCTION app.party_delegation_transition();
+DROP EXTENSION btree_gist;

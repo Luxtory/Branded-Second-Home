@@ -228,6 +228,7 @@ export interface AppIdempotencyRecord {
   operation_id: string;
   outcome: string | null;
   request_hash: string;
+  request_hash_key_id: string | null;
   response: Json | null;
   scope: string;
 }
@@ -323,8 +324,6 @@ export interface AppOutboxReceipt {
 export interface AppParty {
   created_at: Timestamp;
   document_ciphertext: Buffer;
-  document_hmac: Buffer;
-  document_hmac_key_id: string;
   document_key_id: string;
   document_type: string;
   id: string;
@@ -353,6 +352,13 @@ export interface AppPartyDelegation {
   user_id: string;
   valid_from: Timestamp;
   valid_until: Timestamp | null;
+}
+
+export interface AppPartyDocumentDigest {
+  created_at: Timestamp;
+  digest: Buffer;
+  hmac_key_id: string;
+  party_id: string;
 }
 
 export interface AppPublicIdempotencyKey {
@@ -412,6 +418,7 @@ export interface DB {
   'app.outbox_receipt': AppOutboxReceipt;
   'app.party': AppParty;
   'app.party_delegation': AppPartyDelegation;
+  'app.party_document_digest': AppPartyDocumentDigest;
   'app.public_idempotency_key': AppPublicIdempotencyKey;
   'app.second_home': AppSecondHome;
   'app.staff_role': AppStaffRole;

@@ -46,6 +46,7 @@ export {
   type CommandContext,
   type CommandExecutor,
   type CommandHandler,
+  type InputFingerprint,
   type CommandOutcome,
   type CommandRequest,
 } from './application/commands/executor';

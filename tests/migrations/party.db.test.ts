@@ -2,6 +2,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ownerDelegation, ownerParty } from '../support/party-fixtures';
+import { waitForLockWaiter } from '../support/platform-fixtures';
 import { createTestDatabase, type TestDatabase } from '../support/test-database';
 
 // W7 no banco (spec identity §13.3, §13.9): party imutável, delegação com transições fechadas, RLS por party (TECH-052)
@@ -10,6 +11,7 @@ const USER_A = '00000000-0000-4000-8000-00000000a0a1';
 const USER_B = '00000000-0000-4000-8000-00000000a0b1';
 const CHECK_VIOLATION = '23514';
 const UNIQUE_VIOLATION = '23505';
+const EXCLUSION_VIOLATION = '23P01';
 
 const claims = (sub: string) => JSON.stringify({ sub, role: 'authenticated' });
 
@@ -40,22 +42,24 @@ describe('party e party_delegation no banco (TECH-052, TECH-100)', () => {
     await database.drop();
   });
 
-  it('[TECH-100] party: nenhuma coluna de documento em claro; cifra e HMAC com tamanho fixo e HMAC UNIQUE', async () => {
-    const { rows } = await database.pool.query<{ column_name: string; data_type: string }>(
-      `SELECT column_name, data_type FROM information_schema.columns
-        WHERE table_schema = 'app' AND table_name = 'party' ORDER BY column_name`,
-    );
+  it('[TECH-100] party: nenhuma coluna de documento em claro; digests HMAC de 32 bytes em tabela própria com UNIQUE', async () => {
+    const columns = async (table: string) =>
+      (
+        await database.pool.query<{ column_name: string }>(
+          `SELECT column_name FROM information_schema.columns
+            WHERE table_schema = 'app' AND table_name = $1 ORDER BY column_name`,
+          [table],
+        )
+      ).rows.map((row) => row.column_name);
     const partyId = await ownerParty(database.pool);
-    const { rows: hmac } = await database.pool.query<{ document_hmac: Buffer }>(
-      `SELECT document_hmac FROM app.party WHERE id = $1`,
+    const { rows } = await database.pool.query<{ digest: Buffer }>(
+      `SELECT digest FROM app.party_document_digest WHERE party_id = $1`,
       [partyId],
     );
 
-    expect(rows.map((row) => row.column_name)).toEqual([
+    expect(await columns('party')).toEqual([
       'created_at',
       'document_ciphertext',
-      'document_hmac',
-      'document_hmac_key_id',
       'document_key_id',
       'document_type',
       'id',
@@ -63,11 +67,19 @@ describe('party e party_delegation no banco (TECH-052, TECH-100)', () => {
       'registered_by_user_id',
       'registered_role',
     ]);
-    expect(rows.find((row) => row.column_name === 'document_ciphertext')?.data_type).toBe('bytea');
+    expect(await columns('party_document_digest')).toEqual([
+      'created_at',
+      'digest',
+      'hmac_key_id',
+      'party_id',
+    ]);
+    expect(rows[0]?.digest).toHaveLength(32);
     await expect(
-      ownerParty(database.pool, randomUUID(), { hmac: hmac[0]?.document_hmac }),
-    ).rejects.toMatchObject({ code: UNIQUE_VIOLATION, constraint: 'conflict_party_document_hmac' });
-    expect(hmac[0]?.document_hmac).toHaveLength(32);
+      ownerParty(database.pool, randomUUID(), { hmac: rows[0]?.digest }),
+    ).rejects.toMatchObject({ code: UNIQUE_VIOLATION, constraint: 'conflict_party_document_digest' });
+    await expect(
+      database.pool.query(`UPDATE app.party_document_digest SET hmac_key_id = 'h9' WHERE party_id = $1`, [partyId]),
+    ).rejects.toThrow(/not allowed/);
   });
 
   it('[TECH-052] party é imutável: sem UPDATE/DELETE/TRUNCATE, nem pelo dono; luxtory_app só lê e insere', async () => {
@@ -127,17 +139,87 @@ describe('party e party_delegation no banco (TECH-052, TECH-100)', () => {
     ).rejects.toThrow(/not allowed/);
   });
 
-  it('[TECH-050] no máximo uma delegação pendente ou ativa por par usuário × party; revogada libera o par', async () => {
+  it('[TECH-050] vigências do mesmo par não se sobrepõem (pendente ou ativa); revogada e outro usuário não contam', async () => {
+    const user = randomUUID();
     const partyId = await ownerParty(database.pool);
-    await ownerDelegation(database.pool, { partyId, userId: USER_A, state: 'revoked' });
-    await ownerDelegation(database.pool, { partyId, userId: USER_A, state: 'pending' });
+    await ownerDelegation(database.pool, { partyId, userId: user, state: 'revoked' });
+    await ownerDelegation(database.pool, { partyId, userId: user, state: 'pending' });
 
     await expect(
-      ownerDelegation(database.pool, { partyId, userId: USER_A, state: 'active' }),
-    ).rejects.toMatchObject({ code: UNIQUE_VIOLATION, constraint: 'conflict_party_delegation_open' });
+      ownerDelegation(database.pool, { partyId, userId: user, state: 'active' }),
+    ).rejects.toMatchObject({ code: EXCLUSION_VIOLATION, constraint: 'conflict_party_delegation_overlap' });
     await expect(
-      ownerDelegation(database.pool, { partyId, userId: USER_B, state: 'active' }),
+      ownerDelegation(database.pool, {
+        partyId,
+        userId: user,
+        validFrom: "now() - interval '30 days'",
+        validUntil: "now() - interval '20 days'",
+      }),
     ).resolves.toBeDefined();
+    await expect(ownerDelegation(database.pool, { partyId, userId: randomUUID() })).resolves.toBeDefined();
+  });
+
+  it('[TECH-050] depois da expiração uma nova delegação do mesmo par entra sem revogar a anterior, que fica no histórico', async () => {
+    const user = randomUUID();
+    const partyId = await ownerParty(database.pool);
+    const expired = await ownerDelegation(database.pool, {
+      partyId,
+      userId: user,
+      validFrom: "now() - interval '10 days'",
+      validUntil: "now() - interval '1 day'",
+    });
+    const fresh = await ownerDelegation(database.pool, { partyId, userId: user, validFrom: 'now()' });
+    const { rows } = await database.pool.query<{ id: string; state: string }>(
+      `SELECT id, state FROM app.party_delegation WHERE party_id = $1 ORDER BY created_at`,
+      [partyId],
+    );
+
+    expect(rows).toEqual([
+      { id: expired, state: 'active' },
+      { id: fresh, state: 'active' },
+    ]);
+  });
+
+  it('[TECH-050] concorrência: duas transações com vigências sobrepostas do mesmo par — o banco deixa entrar só uma', async () => {
+    const user = randomUUID();
+    const partyId = await ownerParty(database.pool);
+    const insert = async (client: pg.PoolClient) => {
+      const operation = randomUUID();
+      await client.query(
+        `INSERT INTO app.operation VALUES ($1, 'create_party_delegation', NULL, NULL, 'system', NULL, $2, $2,
+           'runbook:test', 'committed', now(), now())`,
+        [operation, `test:${operation}`],
+      );
+      await client.query(
+        `INSERT INTO app.party_delegation (id, party_id, user_id, scope, state, valid_from, valid_until, basis,
+            invited_by_user_id, invited_role, operation_id, created_at)
+         VALUES ($1, $2, $3, 'party', 'pending', now(), NULL, 'Base', $3, 'admin', $4, now())`,
+        [randomUUID(), partyId, user, operation],
+      );
+    };
+    const first = await database.pool.connect();
+    const second = await database.pool.connect();
+    try {
+      await first.query('BEGIN');
+      await second.query('BEGIN');
+      await insert(first);
+      const blocked = insert(second);
+      await waitForLockWaiter(database.pool);
+      await first.query('COMMIT');
+
+      await expect(blocked).rejects.toMatchObject({
+        code: EXCLUSION_VIOLATION,
+        constraint: 'conflict_party_delegation_overlap',
+      });
+      await second.query('ROLLBACK');
+    } finally {
+      first.release();
+      second.release();
+    }
+    const { rows } = await database.pool.query(`SELECT count(*)::int AS n FROM app.party_delegation WHERE party_id = $1`, [
+      partyId,
+    ]);
+    expect(rows[0]).toEqual({ n: 1 });
   });
 
   it('[TECH-052] RLS: Titular A não lê a party de B; sem delegação vigente (nenhuma, pendente, expirada, revogada) nada aparece', async () => {
@@ -178,8 +260,8 @@ describe('party e party_delegation no banco (TECH-052, TECH-100)', () => {
     await ownerDelegation(database.pool, { partyId, userId: user });
 
     for (const query of [
-      'SELECT document_hmac FROM app.party',
-      'SELECT document_hmac_key_id FROM app.party',
+      'SELECT digest FROM app.party_document_digest',
+      'SELECT hmac_key_id FROM app.party_document_digest',
       'SELECT basis FROM app.party_delegation',
       'SELECT invited_by_user_id FROM app.party_delegation',
       'SELECT revocation_basis FROM app.party_delegation',

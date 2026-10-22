@@ -72,13 +72,15 @@ export function createDocumentProtector(keys: PiiKeys): PartyDocumentProtector {
   return {
     protect(partyId, document) {
       const encryptionKey = keyOf(encryption, encryption.activeId, 'PII_ENCRYPTION_KEYRING');
-      const hmacKey = keyOf(hmac, hmac.activeId, 'PII_HMAC_KEYRING');
       return {
         type: document.type,
         ciphertext: seal(encryptionKey, partyId, encryption.activeId, document.value),
         keyId: encryption.activeId,
-        hmac: documentDigest(hmacKey, document),
-        hmacKeyId: hmac.activeId,
+        // Um digest por chave do anel do HMAC (ADR-0020 §2): a unicidade sobrevive a versões com anéis diferentes.
+        digests: [...hmac.keys.entries()].map(([keyId, key]) => ({
+          keyId,
+          digest: documentDigest(key, document),
+        })),
       };
     },
     reveal(partyId, sealed) {
@@ -90,8 +92,9 @@ export function createDocumentProtector(keys: PiiKeys): PartyDocumentProtector {
     lookupDigests(document) {
       return [...hmac.keys.values()].map((key) => documentDigest(key, document));
     },
-    fingerprint(purpose, value) {
-      const key = keyOf(hmac, hmac.activeId, 'PII_HMAC_KEYRING');
+    activeHmacKeyId: () => hmac.activeId,
+    fingerprint(purpose, value, keyId) {
+      const key = keyOf(hmac, keyId, 'PII_HMAC_KEYRING');
       return createHmac('sha256', key)
         .update(`${FINGERPRINT_CONTEXT}|${purpose}|${value}`)
         .digest('hex');
@@ -112,6 +115,7 @@ export function environmentDocumentProtector(
     protect: (partyId, document) => current().protect(partyId, document),
     reveal: (partyId, sealed) => current().reveal(partyId, sealed),
     lookupDigests: (document) => current().lookupDigests(document),
-    fingerprint: (purpose, value) => current().fingerprint(purpose, value),
+    activeHmacKeyId: () => current().activeHmacKeyId(),
+    fingerprint: (purpose, value, keyId) => current().fingerprint(purpose, value, keyId),
   };
 }

@@ -26,10 +26,13 @@ export function registerInvestorAuthorizationHandler<Tx>(
   return {
     command: 'register_investor_authorization',
     input: registerInvestorAuthorizationInput,
-    fingerprint: (input) => ({
-      ...input,
-      investor_document: deps.parties.fingerprint(input.investor_document),
-    }),
+    fingerprint: {
+      activeKeyId: () => deps.parties.fingerprint.activeKeyId(),
+      payload: (input, keyId) => ({
+        ...input,
+        investor_document: deps.parties.fingerprint.payload(input.investor_document, keyId),
+      }),
+    },
     async execute({ input, actor, operationId, now, tx, audit }) {
       const staff = staffActor(actor, 'register_investor_authorization');
       const homeConcept = found(await deps.store.homeConcept(tx, input.home_concept_id));
