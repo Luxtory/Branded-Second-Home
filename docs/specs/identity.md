@@ -179,12 +179,37 @@ são removidos, e o `grant_authorization` confere a party antes de gravar: party
 > Decisões do fundador de 2026-10-21 (§13.2). Cripto, HMAC e rotação: [ADR-0020](../adr/0020-party-cifrada-e-delegacao.md).
 > STRIDE: [`titular-pii`](../security/threats/titular-pii.md).
 
+### 13.0 O que cada conceito significa — backend × interface (revisão do fundador, 2026-10-22)
+
+**Backend / domínio** (nomes técnicos; nunca aparecem na interface):
+
+- **`user`** — conta de autenticação do Supabase Auth.
+- **`party`** — pessoa física ou jurídica real, identificada por CPF/CNPJ: a identidade no domínio. **Não é sinônimo de
+  Titular.** Uma party pode existir, por exemplo, só porque participa de uma `investor_authorization` (D-W3-1), sem
+  nenhuma relação de titularidade. Titularidade (Owner, Co-Owner) é **relação posterior** — holding/Ação, W8.
+- **`party_delegation`** — vínculo que permite a um `user` representar uma `party` no software: **quem pode representar
+  quem**, e só isso. Não é propriedade, titularidade patrimonial, participação em SPE, Owner, Co-Owner, Membership nem
+  autorização econômica irrestrita.
+- A capacidade efetiva de agir continua dependendo das relações e regras aplicáveis:
+  `user → party_delegation vigente → party → relação/autorização aplicável → command` — holding/Ação, Direito de Uso,
+  `authorization_grant`, Membership e as autoridades do TECH-051, nas waves que as constroem.
+
+**Interface** (o que o Admin e o usuário leem; "party", "parte" e "partes" nunca aparecem):
+
+- **Admin — "Pessoas e empresas"**: Cadastrar pessoa ou empresa · Dados da pessoa ou empresa · Representantes · Buscar
+  por CPF ou CNPJ. Microcopy: "Pessoas físicas e jurídicas cadastradas na Luxtory para participar de representações,
+  autorizações e, futuramente, relações de titularidade." Nunca afirma que todas já são Titulares.
+- **Área do Titular — "Suas representações"** e **"Pessoas e empresas que você representa"**. Mostra só o que existe no
+  domínio (tipo e CPF/CNPJ mascarado), sem inventar nome ou razão social. A `party` não ganha `name` para melhorar a
+  interface; onde nome/razão social pertencem ao modelo é decisão separada, se vier a ser necessária.
+- Linguagem humana da delegação: "representar esta pessoa ou empresa" (nunca "representação integral").
+
 ### 13.1 Goal e non-goals
 
-**Goal.** O futuro Titular existe como `party` protegida (CPF/CNPJ cifrado + HMAC `UNIQUE`, sem nome) e um usuário do
-Supabase Auth só a representa por uma `party_delegation` **ativada** e vigente. A Área do Titular prova identidade e
-isolamento: quem representa vê a própria party (documento mascarado); quem não representa é negado; quem representa A
-não lê B.
+**Goal.** A pessoa física ou jurídica existe como `party` protegida (CPF/CNPJ cifrado + HMAC `UNIQUE`, sem nome) e um
+usuário do Supabase Auth só a representa por uma `party_delegation` **ativada** e vigente. A Área do Titular prova
+identidade e isolamento: quem representa vê as pessoas e empresas que representa (documento mascarado); quem não
+representa é negado; quem representa A não lê B.
 
 **Non-goals (W7).** Aquisição/formalização, holding, Ação, Direito de Uso, calendário, reservas, Membership e Créditos
 (W8+); commands do Titular do TECH-051 (o guard continua negando: falta holding); edição ou eliminação de CPF/CNPJ (sem
@@ -196,11 +221,14 @@ a Área tem um só destino na W7); portal Brand Partner (BP2, TECH-058).
 
 - **Existência de usuário ≠ representação da party.** **Convite enviado ≠ delegação ativa.** Só **usuário autenticado +
   ativação válida + `party_delegation` vigente** representa a party.
-- **Escopo único, fim opcional.** `scope = 'party'` = representação integral da party: o que ela pode fazer vem do
-  holding (W8) ou do `authorization_grant` (REQ-014); escopos mais estreitos não existem (BR-352). Início = instante do
-  registro; fim (`valid_until`) só se a delegação tiver termo final (precedente: autorização do Investor, D-W3-1);
-  revogação única, com base registrada e efeito imediato. N:N — uma party pode ter vários representantes e um usuário
-  pode representar várias parties; no máximo **uma delegação não revogada (pendente ou ativa) por par usuário × party**.
+- **Escopo único, fim opcional.** `scope = 'party'` = representação da party (quem pode representar quem). Não confere
+  poderes por si: o que se pode fazer vem da relação aplicável — holding (W8), `authorization_grant` (REQ-014) e as
+  demais autoridades; escopos mais estreitos não existem (BR-352). Início = instante do registro; fim (`valid_until`) só
+  se a delegação tiver termo final (precedente: autorização do Investor, D-W3-1); revogação única, com base registrada
+  e efeito imediato. N:N — uma party pode ter vários representantes e um usuário pode representar várias parties; no
+  máximo **uma delegação vigente por par usuário × party em cada instante**: as vigências de delegações pendentes ou
+  ativas do mesmo par não se sobrepõem. A expiração encerra a vigência sem revogação: depois dela uma nova delegação
+  pode ser criada, e a anterior fica no histórico.
 - **Delegação pendente até a ativação.** O Admin informa e confirma visualmente o e-mail; o sistema mostra um resumo
   mascarado antes da confirmação; o Supabase Auth envia o convite; enquanto não houver ativação o usuário **não**
   representa a party; pendente ou ativa, o Admin pode revogar (efeito imediato).
@@ -224,9 +252,13 @@ a Área tem um só destino na W7); portal Brand Partner (BP2, TECH-058).
 | `document_type` | `cpf` \| `cnpj`, derivado da normalização |
 | `document_ciphertext` | `bytea`: IV (12 bytes) ‖ cifra ‖ tag GCM (16 bytes), AES-256-GCM |
 | `document_key_id` | id da chave de cifra usada (`[a-z0-9][a-z0-9_-]{0,31}`) |
-| `document_hmac` | `bytea` de 32 bytes, HMAC-SHA-256 do documento normalizado; **`UNIQUE`** |
-| `document_hmac_key_id` | id da chave de HMAC usada |
 | `registered_by_user_id`, `registered_role`, `operation_id`, `created_at` | quem registrou, papel exercido e operation |
+
+**`app.party_document_digest`** — o "HMAC normalizado `UNIQUE`" do `03`: um digest HMAC-SHA-256 do documento normalizado
+**por chave do anel do HMAC** de quem gravou (`party_id`, `hmac_key_id`, `digest` de 32 bytes, `created_at`), com
+`UNIQUE (digest)` (`conflict_party_document_digest`). Invariante: **um CPF/CNPJ normalizado → no máximo uma party**,
+inclusive durante a rotação e com versões do app em anéis diferentes ao mesmo tempo (§13.5). Imutável; nunca legível por
+`authenticated`.
 
 - **Sem nome** (o `03` não o prevê) e **sem** coluna em claro, parcial, mascarada ou reversível do documento; nenhum
   índice sobre texto do documento.
@@ -261,8 +293,11 @@ converte para maiúsculas; então
   **Expirada** é derivada (`valid_until ≤ t`), nunca gravada: pendente expirada não ativa; ativa expirada não autoriza.
 - Gatilho de transição: só `pending → active` (grava só os campos de ativação) e `pending|active → revoked` (só os de
   revogação); o resto é imutável; sem `DELETE`/`TRUNCATE`.
-- Unicidade `conflict_party_delegation_open`: no máximo uma linha `pending|active` por (`user_id`, `party_id`). Uma
-  delegação expirada e não revogada ocupa o par: novo convite exige revogá-la antes (base registrada).
+- Vigências sem sobreposição: constraint de exclusão `conflict_party_delegation_overlap` (`btree_gist`) sobre
+  (`user_id`, `party_id`, `tstzrange(valid_from, valid_until, '[)')`) para as linhas `pending|active` — no máximo uma
+  delegação vigente por par em cada instante, garantida pelo banco inclusive entre transações concorrentes. Expirada
+  **não ocupa o par**: uma nova delegação que comece depois do fim da anterior entra sem revogá-la, e a anterior fica
+  no histórico. Revogada não conta.
 
 **Contas do Supabase Auth.** Funções `SECURITY DEFINER` do dono das tabelas, executáveis só por `luxtory_app`:
 `app.auth_account_by_email(text)` → (`user_id`, `email_confirmed`) e `app.auth_account_labels(uuid[])` → (`user_id`,
@@ -274,9 +309,12 @@ conta para o mesmo e-mail → erro (fechado para falhas).
 **Convite (Admin, `create_party_delegation`).** Passo 1: e-mail (digitado duas vezes), fim opcional e base. Passo 2:
 resumo — e-mail completo para conferência visual, documento da party **mascarado**, vigência e base — e "Confirmar
 convite". No command, dentro da transação (TECH-054):
-1. trava a party (`FOR UPDATE`); inexistente → `ERR_NOT_FOUND`;
+1. lê a party e toma a **trava consultiva da transação** sobre ela (`pg_advisory_xact_lock` com a chave
+   `app.party:<id>`): a party é imutável e `luxtory_app` não tem `UPDATE` nela, então não há `FOR UPDATE`; a trava
+   serializa convites concorrentes do mesmo par. Inexistente → `ERR_NOT_FOUND`;
 2. procura a conta pelo e-mail (`auth_account_by_email`);
-3. se já houver delegação `pending|active` para o par → `ERR_STATE_TRANSITION` (antes de qualquer e-mail);
+3. se houver delegação `pending|active` do par com vigência sobreposta à pedida (expirada não conta) →
+   `ERR_STATE_TRANSITION`, antes de qualquer e-mail (a constraint de exclusão é a garantia final);
 4. conta inexistente ou não confirmada → `inviteUserByEmail` (Admin API, só no servidor): cria a conta não confirmada ou
    reenvia o convite; `user_metadata` vazio (o convite não carrega documento nem party); conta confirmada → nenhum
    e-mail (o representante ativa ao entrar com código em `/titular/entrar`);
@@ -295,8 +333,8 @@ pendente e convida de novo (o Supabase reenvia o convite para conta não confirm
 igual com ou sem conta) → `/titular`. Sem MFA obrigatório: o TECH-050 exige MFA só de Admin/Super Admin; sessão AAL1 ou
 AAL2 serve à Área do Titular, e o staff continua exigindo AAL2 no Admin.
 
-**Ativação (`activate_party_delegation`).** Na Área, o convite pendente aparece como "Convite para representar um
-Titular na Luxtory" (só a data do convite; **sem** documento nem tipo — a RLS só mostra a party depois da ativação) com
+**Ativação (`activate_party_delegation`).** Na Área, o convite pendente aparece como "Convite para representar uma
+pessoa ou empresa na Luxtory" (só a data do convite; **sem** documento nem tipo — a RLS só mostra a party depois da ativação) com
 "Ativar representação". Exige sessão
 verificada cujo `sub` = `user_id` da delegação, estado `pending`, não revogada e não expirada; revalida com a linha
 travada; grava `active`, `activated_at`, `operation` e `audit_log` (antes/depois, só ids e estados). Só então a party
@@ -314,24 +352,33 @@ seguinte (RLS e guard leem o banco a cada request). Já revogada → `ERR_STATE_
   `audit_log` nem em resposta de API; erros nomeiam só a variável ou o `key_id`.
 - **Cifra**: AES-256-GCM, IV aleatório de 96 bits por valor, AAD = `luxtory:party.document:v1|<party_id>|<key_id>` —
   a cifra só decifra na própria linha e com o próprio `key_id`. O `key_id` grava-se ao lado do valor.
-- **HMAC**: HMAC-SHA-256 sobre `luxtory:party.document:v1|<document_type>|<normalizado>` com a chave ativa;
-  `document_hmac_key_id` ao lado. **Deduplicação/busca**: o HMAC é calculado com **todas** as chaves do anel e procurado
-  em `document_hmac`; o `UNIQUE` barra a corrida entre inserções concorrentes (ambas usam a chave ativa).
+- **HMAC**: HMAC-SHA-256 sobre `luxtory:party.document:v1|<document_type>|<normalizado>`. Quem grava uma party grava
+  **um digest por chave do seu anel** em `app.party_document_digest` (`UNIQUE (digest)`); a busca calcula o digest com
+  todas as chaves do anel. Duas versões do app com anéis diferentes ao mesmo tempo (ex.: A `{h1}` ativa h1; B `{h1,h2}`
+  ativa h2) compartilham ao menos uma chave pelo protocolo abaixo e **colidem no digest da chave comum**, seja qual for a
+  ativa de cada uma: exatamente uma party, a outra tentativa recebe `ERR_STATE_TRANSITION`. Nenhuma trava depende da
+  chave ativa.
 - **Rotação da chave de cifra**: acrescentar a chave nova ao anel e trocar a ativa. Valores com `key_id` antigo
   continuam legíveis enquanto a chave antiga estiver no anel; novas cifras usam a ativa. `key_id` ausente do anel →
   erro explícito (`PiiKeyUnavailableError`, só o id), nunca leitura silenciosa.
-- **Rotação do segredo do HMAC**: mesmo procedimento com o anel do HMAC. Parties antigas continuam encontradas (busca em
-  todas as chaves) e a duplicidade continua barrada. Remover uma chave antiga do anel exige antes recifrar/reindexar as
-  linhas que a usam — operação **fora da W7** (follow-up registrado; runbook proíbe remover chave em uso).
-- **Idempotência sem PII**: o hash de idempotência dos commands da W7 recebe o documento e o e-mail só como HMAC
-  (hook `fingerprint` do handler, ADR-0020); a resposta gravada para replay não contém documento nem e-mail.
+- **Rotação do segredo do HMAC — protocolo em fases** (runbook): (1) acrescentar a chave nova ao anel, mantendo a
+  ativa, e fazer o deploy; (2) trocar a ativa e fazer o deploy; (3) retirar a chave antiga **só depois** de toda party ter
+  digest na chave que fica (reindexação auditada — operação **fora da W7**; até lá a chave antiga fica no anel). Em
+  cada transição, as versões que rodam ao mesmo tempo compartilham ao menos uma chave e toda party tem digest nela, então
+  o invariante vale durante a rotação. Parties antigas continuam encontradas (busca em todas as chaves).
+- **Idempotência sem PII e através da rotação**: o hash de idempotência dos commands da W7 recebe o documento e o e-mail
+  só como HMAC, **por chave** (`InputFingerprint` do executor): o registro grava o id da chave
+  (`idempotency_record.request_hash_key_id`) e o replay recalcula com ela. Mesma `Idempotency-Key` + mesmo
+  command/ator/payload → replay, mesmo depois da troca da chave ativa (ADR-006 do `03`, sem exceção); payload diferente →
+  `ERR_IDEMPOTENCY_CONFLICT`; chave histórica fora do anel → falha fechada (indisponível), nunca replay falso. A
+  resposta gravada para replay não contém documento nem e-mail.
 
 ### 13.6 Commands (operações não críticas do REQ-095; `CRITICAL_COMMANDS` intacto)
 
 | Command | Autoridade | Entrada | Efeito | Recusas |
 |---|---|---|---|---|
 | `register_party` | Admin | `document` | party nova | `ERR_VALIDATION` (documento inválido) · `ERR_STATE_TRANSITION` (já existe, em qualquer chave do anel) |
-| `create_party_delegation` | Admin | `party_id`, `email`, `valid_until?`, `basis` | delegação `pending` + convite | `ERR_NOT_FOUND` · `ERR_STATE_TRANSITION` (par com delegação aberta) · `ERR_VALIDATION` (`valid_until` não futuro) |
+| `create_party_delegation` | Admin | `party_id`, `email`, `valid_until?`, `basis` | delegação `pending` + convite | `ERR_NOT_FOUND` · `ERR_STATE_TRANSITION` (vigência sobreposta a outra pendente ou ativa do par) · `ERR_VALIDATION` (`valid_until` não futuro) |
 | `revoke_party_delegation` | Admin | `party_delegation_id`, `revocation_basis` | `revoked` | `ERR_NOT_FOUND` · `ERR_STATE_TRANSITION` |
 | `activate_party_delegation` | `invitee` (o próprio convidado) | `party_delegation_id` | `active` | `ERR_PERMISSION` (inexistente ou de outro usuário: mesma resposta) · `ERR_STATE_TRANSITION` (não pendente, expirada) |
 
@@ -356,15 +403,16 @@ seguinte (RLS e guard leem o banco a cada request). Já revogada → `ERR_STATE_
 
 ### 13.8 Telas
 
-**Admin** (papel Admin; AAL2; item "Partes" na navegação, como "Catálogo" e "Interesses"):
-- `/admin/partes` — lista (mais recentes primeiro, limite fixo) com tipo, documento mascarado e data; busca por CPF/CNPJ
-  (HMAC); "Cadastrar parte".
-- `/admin/partes/nova` — CPF ou CNPJ → `register_party` → detalhe.
-- `/admin/partes/[id]` — tipo, documento mascarado, data; representantes (e-mail mascarado, estado, vigência, base;
+**Admin** (papel Admin; AAL2; item **"Pessoas e empresas"** na navegação, como "Catálogo" e "Interesses"; nenhum texto
+de interface diz "parte"):
+- `/admin/pessoas-e-empresas` — lista (mais recentes primeiro, limite fixo) com tipo, documento mascarado e data; busca por CPF/CNPJ
+  (HMAC); "Cadastrar pessoa ou empresa".
+- `/admin/pessoas-e-empresas/nova` — CPF ou CNPJ → `register_party` → detalhe.
+- `/admin/pessoas-e-empresas/[id]` — "Dados da pessoa ou empresa": tipo, documento mascarado, data; representantes (e-mail mascarado, estado, vigência, base;
   "Revogar"); "Convidar representante"; "Ver documento completo".
-- `/admin/partes/[id]/documento` — documento completo, leitura deliberada e auditada.
-- `/admin/partes/[id]/representantes/novo` — convite em dois passos (§13.4).
-- `/admin/partes/[id]/representantes/[delegationId]/revogacao` — base da revogação.
+- `/admin/pessoas-e-empresas/[id]/documento` — documento completo, leitura deliberada e auditada.
+- `/admin/pessoas-e-empresas/[id]/representantes/novo` — convite em dois passos (§13.4).
+- `/admin/pessoas-e-empresas/[id]/representantes/[delegationId]/revogacao` — base da revogação.
 - Autorização de Investor (`/admin/catalogo/home-concepts/[id]/autorizacoes-investor/nova`) ganha "CPF/CNPJ do
   Investor".
 
@@ -374,7 +422,7 @@ seguinte (RLS e guard leem o banco a cada request). Já revogada → `ERR_STATE_
 - `/titular` — Área do Titular (App Shell; um item, "Início"; conta com "Sair"): representações vigentes (tipo, documento
   mascarado, desde quando, link), convites pendentes ("Ativar representação"); sem representação vigente nem convite →
   tela "Acesso negado" sem dado.
-- `/titular/partes/[partyId]` — party representada (tipo, documento mascarado, vigência). Party que o usuário não
+- `/titular/representacoes/[partyId]` — party representada (tipo, documento mascarado, vigência). Party que o usuário não
   representa, inexistente ou id inválido → 404 (mesma resposta: sem oráculo de existência).
 
 ### 13.9 Leituras, RLS e guard
@@ -411,7 +459,8 @@ seguinte (RLS e guard leem o banco a cada request). Já revogada → `ERR_STATE_
 ### 13.11 Critérios de aceite
 
 Verificados em 2026-10-21 (local): `npm run verify` exit 0, E2E completo 117/117 (`--workers=2`), `trace --expect
-TECH-050,TECH-052,TECH-100,ADR-0002,TECH-092,REQ-014,REQ-027` 7/7.
+TECH-050,TECH-052,TECH-100,ADR-0002,TECH-092,REQ-014,REQ-027` 7/7. Revisão do fundador (2026-10-22): critérios
+acrescentados abaixo, reverificados no mesmo PR.
 
 
 - [x] `[TECH-100]` CPF/CNPJ nunca em claro no banco (colunas, índices, `idempotency_key`, `operation`, `audit_log`,
@@ -432,6 +481,15 @@ TECH-050,TECH-052,TECH-100,ADR-0002,TECH-092,REQ-014,REQ-027` 7/7.
 - [x] `[REQ-027]` autorização de Investor exige party existente pelo CPF/CNPJ (HMAC); documento duplicado resolve para a
       mesma party; vigência, Home Concept e revogação intactos; migração sem backfill.
 - [x] `[TECH-100]` `POST` com origem inválida → 403 nas rotas novas.
+- [x] `[TECH-050]` vigências do mesmo par não se sobrepõem (constraint de exclusão, inclusive entre transações
+      concorrentes); depois da expiração uma nova delegação entra sem revogar a anterior, que fica no histórico;
+      pendente expirada não ativa; revogação encerra na hora.
+- [x] `[TECH-100]` corrida entre versões com anéis do HMAC diferentes (A `{h1}`, B `{h1,h2}`) para o mesmo documento →
+      exatamente uma party.
+- [x] `[ADR-0002]` idempotência atravessando a rotação do HMAC (`register_party`, `create_party_delegation`): mesmo
+      payload → replay; payload diferente → `ERR_IDEMPOTENCY_CONFLICT`; chave histórica ausente → falha fechada.
+- [x] Interface sem "party"/"parte": Admin "Pessoas e empresas"; Área "Suas representações" / "Pessoas e empresas que
+      você representa".
 - [x] E2E (autenticação de teste): Admin cadastra party, convida, revoga; convidado ativa e vê só a própria party;
       usuário sem delegação negado; A não abre B; axe 0 e sem overflow (320–1920) nas telas novas.
 
@@ -442,7 +500,12 @@ TECH-050,TECH-052,TECH-100,ADR-0002,TECH-092,REQ-014,REQ-027` 7/7.
   ativar.
 - Dois Admins convidando o mesmo par ao mesmo tempo → trava da party serializa; o segundo recebe 409.
 - Revogação com a sessão do Titular aberta → a próxima navegação já não mostra a party (RLS a cada request).
-- Delegação ativa expirada → some da Área; novo convite para o par exige revogar a expirada.
+- Delegação ativa expirada → some da Área; um novo convite para o par entra sem revogar a expirada, que fica no
+  histórico.
+- Versões do app com anéis do HMAC diferentes cadastrando o mesmo documento ao mesmo tempo → exatamente uma party (o
+  digest da chave comum colide); a outra tentativa recebe 409.
+- Replay de um command com a mesma `Idempotency-Key` depois da troca da chave ativa do HMAC → replay (não conflito);
+  chave histórica já fora do anel → "indisponível", nunca replay falso.
 - `PII_*` ausentes ou inválidas → telas e API respondem "indisponível" nomeando só a chave (TECH-001).
 - Usuário com várias parties (CPF + CNPJ) → todas listadas; cada detalhe isolado.
 

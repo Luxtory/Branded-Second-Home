@@ -114,7 +114,7 @@ function KeyValues({ items }: { readonly items: readonly RecordAttribute[] }) {
   );
 }
 
-/** `/admin/partes`: lista mascarada (auditada) e busca por CPF/CNPJ. */
+/** `/admin/pessoas-e-empresas`: lista mascarada (auditada) e busca por CPF/CNPJ. */
 export async function PartiesPage() {
   const gate = await adminRoleGate(PARTY_ROLE);
   if (gate.kind === 'blocked') return gate.page;
@@ -170,7 +170,7 @@ export async function PartiesPage() {
   );
 }
 
-/** `/admin/partes/nova`. */
+/** `/admin/pessoas-e-empresas/nova`. */
 export async function NewPartyPage() {
   const gate = await adminRoleGate(PARTY_ROLE);
   if (gate.kind === 'blocked') return gate.page;
@@ -240,7 +240,7 @@ function Representatives({ party }: { readonly party: PartyDetail }) {
   );
 }
 
-/** `/admin/partes/[id]`: documento mascarado e representantes (auditado). */
+/** `/admin/pessoas-e-empresas/[id]`: documento mascarado e representantes (auditado). */
 export async function PartyDetailPage({
   id,
   status,
@@ -290,7 +290,7 @@ export async function PartyDetailPage({
   );
 }
 
-/** `/admin/partes/[id]/documento`: documento completo, leitura deliberada e auditada (`party_document`). */
+/** `/admin/pessoas-e-empresas/[id]/documento`: documento completo, leitura deliberada e auditada (`party_document`). */
 export async function PartyDocumentPage({ id }: { readonly id: string }) {
   const gate = await adminRoleGate(PARTY_ROLE);
   if (gate.kind === 'blocked') return gate.page;
@@ -318,7 +318,7 @@ export async function PartyDocumentPage({ id }: { readonly id: string }) {
   );
 }
 
-/** `/admin/partes/[id]/representantes/novo`: convite em dois passos. */
+/** `/admin/pessoas-e-empresas/[id]/representantes/novo`: convite em dois passos. */
 export async function InviteRepresentativePage({ id }: { readonly id: string }) {
   const gate = await adminRoleGate(PARTY_ROLE);
   if (gate.kind === 'blocked') return gate.page;
@@ -343,7 +343,7 @@ export async function InviteRepresentativePage({ id }: { readonly id: string }) 
   );
 }
 
-/** `/admin/partes/[id]/representantes/[delegationId]/revogacao`. */
+/** `/admin/pessoas-e-empresas/[id]/representantes/[delegationId]/revogacao`. */
 export async function RevokeDelegationPage({
   id,
   delegationId,

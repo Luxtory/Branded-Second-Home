@@ -1,4 +1,8 @@
-/** Textos da Área do Titular (W7, spec identity §13.8; pt-BR, único locale). */
+/**
+ * Textos da Área do Titular (W7, spec identity §13.8; pt-BR, único locale). A área mostra **representações**: pessoas e
+ * empresas que a conta pode representar (`party_delegation`) — não titularidade, que é relação posterior (W8). Nunca
+ * "party" nem "parte" na interface.
+ */
 export const titularMessages = {
   brand: 'Luxtory',
   metadata: {
@@ -26,15 +30,15 @@ export const titularMessages = {
   },
   area: {
     title: 'Área do Titular',
-    lead: 'Quem você representa na Luxtory.',
+    lead: 'Suas representações na Luxtory.',
     navHome: 'Início',
-    representationsTitle: 'Você representa',
+    representationsTitle: 'Pessoas e empresas que você representa',
     sinceLabel: 'Desde',
     untilLabel: 'Até',
     noEnd: 'Sem data final',
     pendingTitle: 'Convites pendentes',
-    pendingItem: 'Convite para representar um Titular na Luxtory',
-    pendingBody: 'Ao ativar, você passa a representá-lo nesta área.',
+    pendingItem: 'Convite para representar uma pessoa ou empresa na Luxtory',
+    pendingBody: 'Ao ativar, você passa a representá-la nesta área.',
     invitedLabel: 'Convite de',
     activate: 'Ativar representação',
     activated: 'Representação ativada.',
@@ -50,13 +54,13 @@ export const titularMessages = {
   account: 'Sua conta',
   forbidden: {
     marker: 'Acesso negado',
-    title: 'Esta conta não representa nenhum Titular na Luxtory.',
+    title: 'Esta conta não representa nenhuma pessoa ou empresa na Luxtory.',
     body: 'Se você recebeu um convite, faça o primeiro acesso com o código do e-mail. Em caso de dúvida, fale com a Luxtory.',
     firstAccess: 'Primeiro acesso',
   },
   detail: {
-    contextLink: 'Área do Titular',
-    lead: 'Documento mascarado, como a Luxtory o registrou.',
+    contextLink: 'Suas representações',
+    lead: 'Pessoa ou empresa que você representa. Documento mascarado, como a Luxtory o registrou.',
     sectionTitle: 'Representação',
     typeLabel: 'Tipo',
     documentLabel: 'Documento',

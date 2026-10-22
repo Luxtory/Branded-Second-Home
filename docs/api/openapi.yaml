@@ -27,9 +27,10 @@ tags:
     description: Operações administrativas (REQ-095) sob o guard, com MFA (TECH-050) e auditoria (REQ-015)
   - name: identity
     description: |
-      Titulares (TECH-050, TECH-052, TECH-100; `docs/specs/identity.md` §13, ADR-0020): `party` com CPF/CNPJ cifrado
-      (AES-256-GCM + `key_id`) e HMAC `UNIQUE`, sem nome; `party_delegation` pendente até a ativação pelo próprio
-      usuário autenticado. Respostas nunca trazem documento, HMAC, cifra nem e-mail.
+      Pessoas e empresas e representações (TECH-050, TECH-052, TECH-100; `docs/specs/identity.md` §13, ADR-0020):
+      `party` = pessoa física ou jurídica com CPF/CNPJ cifrado (AES-256-GCM + `key_id`) e HMAC `UNIQUE` por chave, sem
+      nome — não sinônimo de Titular; `party_delegation` = quem pode representar quem, pendente até a ativação pelo
+      próprio usuário autenticado. Respostas nunca trazem documento, HMAC, cifra nem e-mail.
   - name: catalog
     description: |
       Catálogo (REQ-020, REQ-022, REQ-027; `docs/specs/catalog.md` §17, ADR-0010, ADR-0019): Brand Partner, Home
@@ -199,9 +200,10 @@ paths:
         **não representa a party** até o próprio usuário, autenticado, ativá-la na Área do Titular. Conta do Supabase
         Auth inexistente ou não confirmada → convite pela Admin API (a conta nunca nasce confirmada); conta confirmada →
         vinculada, sem conta nova nem e-mail. Escopo único `party`; `valid_until` opcional (só com termo final). Party
-        inexistente → 404; já existe delegação pendente ou ativa para o par usuário × party → 409
-        `ERR_STATE_TRANSITION` (antes de qualquer e-mail); `valid_until` não futuro → 400. A resposta nunca traz o
-        e-mail. `Origin` diferente do host → 403 (TECH-100); idempotência com o e-mail só como HMAC.
+        inexistente → 404; delegação pendente ou ativa do par usuário × party com vigência sobreposta → 409
+        `ERR_STATE_TRANSITION` (antes de qualquer e-mail; expirada não conta); `valid_until` não futuro → 400. A
+        resposta nunca traz o e-mail. `Origin` diferente do host → 403 (TECH-100); idempotência com o e-mail só como
+        HMAC por chave (o replay sobrevive à rotação da chave ativa).
       operationId: createPartyDelegation
       security:
         - sessionCookie: []
@@ -2630,7 +2632,9 @@ components:
       type: object
       additionalProperties: false
       required: [id, document_type, operation_id, created_at]
-      description: Party cadastrada. Sem documento, HMAC ou cifra (a leitura mascarada é do Admin, auditada).
+      description: |
+        Party cadastrada: pessoa física ou jurídica identificada por CPF/CNPJ (não sinônimo de Titular). Sem documento,
+        HMAC ou cifra (a leitura mascarada é do Admin, auditada).
       properties:
         id:
           type: string
@@ -2690,7 +2694,9 @@ components:
         - revoked_at
         - revocation_basis
       description: |
-        Delegação usuário → party (`03` §3.1). `pending` não representa a party; só `active` dentro da vigência
+        Delegação usuário → party (`03` §3.1): quem pode representar quem — não é titularidade nem autorização própria.
+        Vigências pendentes ou ativas do mesmo par não se sobrepõem; a expiração encerra a vigência sem revogação.
+        `pending` não representa a party; só `active` dentro da vigência
         representa. Expiração é derivada de `valid_until`.
       properties:
         id:

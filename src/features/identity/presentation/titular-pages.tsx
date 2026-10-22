@@ -174,7 +174,7 @@ export async function TitularAreaPage({ activated }: { readonly activated: boole
   );
 }
 
-/** `/titular/partes/[partyId]`: só a party representada; qualquer outra (ou id inválido) → 404, sem oráculo. */
+/** `/titular/representacoes/[partyId]`: só a party representada; qualquer outra (ou id inválido) → 404, sem oráculo. */
 export async function TitularRepresentationPage({ partyId }: { readonly partyId: string }) {
   const session = await requireSession();
   if (session === 'unavailable') return <AuthUnavailable />;

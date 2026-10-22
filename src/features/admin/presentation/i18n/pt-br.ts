@@ -14,7 +14,7 @@ export const messages = {
     home: 'Início',
     catalog: 'Catálogo',
     interests: 'Interesses',
-    parties: 'Partes',
+    parties: 'Pessoas e empresas',
   },
   home: {
     title: 'Administração',
@@ -39,7 +39,7 @@ export const messages = {
       },
       parties: {
         includesLabel: 'Inclui',
-        includes: 'CPF e CNPJ cadastrados (mascarados) e convites de representantes',
+        includes: 'Pessoas físicas e jurídicas (CPF/CNPJ mascarado) e convites de representantes',
       },
     },
   },

@@ -54,7 +54,7 @@ Regras:
 | `PII_ENCRYPTION_KEYRING` | Vercel (Sensitive, só servidor) | cifra AES-256-GCM de CPF/CNPJ, com `key_id` (ADR-0002). W7: só Production; formato `id:base64,…` (32 bytes por chave); chave antiga fica no anel enquanto houver valor cifrado com ela (ADR-0020) | W7 |
 | `PII_ENCRYPTION_ACTIVE_KEY_ID` | Vercel (Sensitive, só servidor) | chave ativa para novas cifras | W7 |
 | `PII_HMAC_KEY` | Vercel (Sensitive, só servidor) | HMAC de busca, segredo separado (TECH-100) — **não adotada**: substituída na W7 pelo anel abaixo ([ADR-0020](../adr/0020-party-cifrada-e-delegacao.md)) | W7 |
-| `PII_HMAC_KEYRING` | Vercel (Sensitive, só servidor) — só Production | anel do HMAC de busca/deduplicação do CPF/CNPJ (`id:base64,…`, 32 bytes por chave); material nunca igual ao do anel de cifra; chave antiga só sai depois de reindexar (ADR-0020) | W7 |
+| `PII_HMAC_KEYRING` | Vercel (Sensitive, só servidor) — só Production | anel do HMAC de busca/deduplicação do CPF/CNPJ e do pseudônimo do hash de idempotência (`id:base64,…`, 32 bytes por chave); a party grava um digest por chave do anel; material nunca igual ao do anel de cifra; rotação em fases e chave antiga só sai depois de reindexar (runbook, ADR-0020) | W7 |
 | `PII_HMAC_ACTIVE_KEY_ID` | Vercel (Sensitive, só servidor) — só Production | chave do anel do HMAC usada nas linhas novas | W7 |
 | `NEXT_PUBLIC_SITE_URL` | Vercel | links de convite e redirecionamentos de Auth — **não adotada na W7**: o convite usa código (`{{ .Token }}`) e o `Site URL` do próprio Supabase Auth, sem `redirectTo` | W7 |
 | `PAYMENT_GATEWAY` | Preview, Development e CI | `fake` enquanto o PSP não é contratado; recusado em produção (TECH-081) | W19 |

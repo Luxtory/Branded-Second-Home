@@ -42,7 +42,7 @@ async function acceptInvite(page: Page, email: string) {
   await expect(page).toHaveURL(/\/titular$/);
 }
 
-/** Login do Titular por código (sem segundo fator: TECH-050 só exige MFA do staff). */
+/** Login na Área do Titular por código (sem segundo fator: TECH-050 só exige MFA do staff). */
 async function titularSignIn(page: Page, email: string) {
   await page.goto('/titular/entrar');
   await page.getByLabel('E-mail').fill(email);
@@ -53,7 +53,7 @@ async function titularSignIn(page: Page, email: string) {
   await expect(page).toHaveURL(/\/titular$/);
 }
 
-test.describe('Titulares a 390 px com toque', () => {
+test.describe('Representações a 390 px com toque', () => {
   test.use(MOBILE);
 
   test('[TECH-050] [TECH-052] [TECH-100] Admin cadastra e convida; o convidado ativa e vê só a própria party; revogação vale na hora', async ({
@@ -70,23 +70,23 @@ test.describe('Titulares a 390 px com toque', () => {
     const cpf = randomCpf();
     const email = uniqueEmail('titular-a');
 
-    // Admin: cadastro da parte (CPF com pontuação) → detalhe com o documento só mascarado.
+    // Admin: cadastro da pessoa (CPF com pontuação) → dados com o documento só mascarado.
     await signIn(page, STAFF_EMAIL);
     await expect(page).toHaveURL(/\/admin$/);
-    await page.goto('/admin/partes');
-    await expect(heading).toHaveText('Partes');
-    await gate(page, consoleErrors, 'w7-01-partes');
-    await page.getByRole('link', { name: 'Cadastrar parte' }).tap();
+    await page.goto('/admin/pessoas-e-empresas');
+    await expect(heading).toHaveText('Pessoas e empresas');
+    await gate(page, consoleErrors, 'w7-01-pessoas-e-empresas');
+    await page.getByRole('link', { name: 'Cadastrar pessoa ou empresa' }).tap();
     await page.getByLabel('CPF ou CNPJ').fill('123');
     await page.getByRole('button', { name: 'Cadastrar' }).tap();
     await expect(page.getByText('CPF ou CNPJ inválido. Confira os dígitos.')).toBeVisible();
     await gate(page, consoleErrors, 'w7-02-cadastro-erro');
     await page.getByLabel('CPF ou CNPJ').fill(punctuatedCpf(cpf));
     await page.getByRole('button', { name: 'Cadastrar' }).tap();
-    await expect(page.getByRole('status')).toContainText('Parte cadastrada.');
+    await expect(page.getByRole('status')).toContainText('Pessoa ou empresa cadastrada.');
     await expect(heading).toHaveText(maskOfCpf(cpf));
     await expect(page.getByText(cpf)).toHaveCount(0);
-    await gate(page, consoleErrors, 'w7-03-parte');
+    await gate(page, consoleErrors, 'w7-03-pessoa-ou-empresa');
     const partyUrl = page.url();
 
     // Convite em dois passos: e-mail conferido e documento mascarado no resumo.
@@ -106,7 +106,7 @@ test.describe('Titulares a 390 px com toque', () => {
     await expect(page.getByRole('status')).toContainText('Convite registrado.');
     await expect(page.getByText('Convite pendente')).toBeVisible();
 
-    // Outra parte (CNPJ alfanumérico) com outro representante: B.
+    // Outra party (empresa, CNPJ alfanumérico): B.
     const other = await adminPost(page, '/v1/admin/parties', {
       document: validCnpj(
         `${randomUUID()
@@ -134,9 +134,9 @@ test.describe('Titulares a 390 px com toque', () => {
     await gate(titular, titularErrors, 'w7-08-representacao');
 
     // A não abre a party de B nem um id qualquer: 404, sem oráculo.
-    const forbidden = await titular.goto(`/titular/partes/${other.id as string}`);
+    const forbidden = await titular.goto(`/titular/representacoes/${other.id as string}`);
     expect(forbidden?.status()).toBe(404);
-    expect((await titular.goto(`/titular/partes/${randomUUID()}`))?.status()).toBe(404);
+    expect((await titular.goto(`/titular/representacoes/${randomUUID()}`))?.status()).toBe(404);
 
     // Revogação pelo Admin: a próxima navegação do Titular já não mostra a party.
     await page.goto(partyUrl);
@@ -149,7 +149,7 @@ test.describe('Titulares a 390 px com toque', () => {
     await titular.goto('/titular');
     await expect(
       titular.getByRole('heading', {
-        name: 'Esta conta não representa nenhum Titular na Luxtory.',
+        name: 'Esta conta não representa nenhuma pessoa ou empresa na Luxtory.',
       }),
     ).toBeVisible();
   });
@@ -163,7 +163,9 @@ test.describe('Titulares a 390 px com toque', () => {
     await titularSignIn(page, VISITOR_EMAIL);
     await expect(page.getByText('Acesso negado', { exact: true })).toBeVisible();
     await expect(
-      page.getByRole('heading', { name: 'Esta conta não representa nenhum Titular na Luxtory.' }),
+      page.getByRole('heading', {
+        name: 'Esta conta não representa nenhuma pessoa ou empresa na Luxtory.',
+      }),
     ).toBeVisible();
     await expectResponsive(page, consoleErrors);
     await captureForReview(page, 'w7-10-acesso-negado');
@@ -197,7 +199,7 @@ test.describe('Titulares a 390 px com toque', () => {
   });
 });
 
-test.describe('Titulares a 1440 px', () => {
+test.describe('Representações a 1440 px', () => {
   test.use({
     viewport: { width: 1440, height: 900 },
     timezoneId: 'America/Sao_Paulo',

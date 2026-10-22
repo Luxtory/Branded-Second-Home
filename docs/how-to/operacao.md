@@ -321,18 +321,26 @@ registros.
 
 Spec [`identity`](../specs/identity.md) §13, [ADR-0020](../adr/0020-party-cifrada-e-delegacao.md), STRIDE
 [`titular-pii`](../security/threats/titular-pii.md). **Nada aqui foi configurado**: nenhuma party real, nenhum convite
-real e nenhum segredo novo antes do checkpoint final do fundador. Sem os anéis `PII_*`, as telas de Partes e da Área do
-Titular respondem "indisponível" e o cadastro de autorização de Investor responde `503` (fechado para falhas).
+real e nenhum segredo novo antes do checkpoint final do fundador. Sem os anéis `PII_*`, as telas de "Pessoas e empresas"
+e da Área do Titular respondem "indisponível" e o cadastro de autorização de Investor responde `503` (fechado para
+falhas). Na interface, a `party` é sempre "pessoa ou empresa" (nunca "parte") e não é sinônimo de Titular.
 
 1. **Antes do merge (só leitura):** `SELECT count(*) FROM app.authorization_grant` e
    `SELECT count(*) FROM app.investor_authorization` devem ser **0** (auditados em 2026-10-21). A FK do grant é criada
    validada e `investor_authorization.party_id` nasce `NOT NULL`: com linha antiga, o job `migrate` falha fechado sem
-   reescrever nada.
-2. **Merge → `migrate` → `deploy`** pela CI. Migrations `20261021220001`…`20261021220005`.
-3. **Depois (só leitura):** 35 versões em `dbmate.schema_migrations`; `app.party` e `app.party_delegation` vazias, com
-   RLS; `authenticated` com `SELECT` só nas colunas previstas (sem HMAC nem bases); constraint
+   reescrever nada. Confirme também, só por leitura, que a **Data API continua desligada e `app` fora dos Exposed
+   schemas**: `GET /rest/v1/staff_role?select=id` com `Accept-Profile: app` e a chave publicável responde `PGRST002`
+   (ou recusa), nunca dados (conferido em 2026-10-22). Se `app` estiver exposto: **NO-GO** — `authenticated` lê a cifra
+   por coluna para a decifragem no servidor, e o navegador nunca pode recebê-la.
+2. **Merge → `migrate` → `deploy`** pela CI. Migrations `20261021220001`…`20261021220006` (a 0002 instala a extensão
+   `btree_gist` no schema `extensions`).
+3. **Depois (só leitura):** 36 versões em `dbmate.schema_migrations`; `app.party`, `app.party_document_digest` e
+   `app.party_delegation` vazias, com RLS; constraint `conflict_party_delegation_overlap`; `idempotency_record` com
+   `request_hash_key_id`; `authenticated` com `SELECT` só nas colunas previstas (sem digests nem bases); constraint
    `authorization_grant_grantee_party_fk` com `convalidated = true` e sem o gatilho `authorization_grant_require_party`;
-   `app.auth_account_by_email` e `app.auth_account_labels` executáveis só por `luxtory_app`.
+   `app.auth_account_by_email` e `app.auth_account_labels` executáveis só por `luxtory_app`. **Smoke da Data API depois
+   do deploy:** `GET /rest/v1/party?select=id,document_ciphertext` e `GET /rest/v1/party_delegation?select=id` com
+   `Accept-Profile: app` e a chave publicável → `PGRST002` ou recusa, nunca linhas nem `document_ciphertext`.
 4. **Gates antes da primeira party real ou do primeiro convite real** (todos obrigatórios, decisão do fundador):
    - os quatro segredos `PII_*` criados conforme a tabela de [Segredos](#segredos) (registre só os **ids** das chaves;
      o valor não sai da Vercel);
@@ -342,12 +350,15 @@ Titular respondem "indisponível" e o cadastro de autorização de Investor resp
    - reavaliação formal da D3 ([ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md)) e base legal/aviso
      aplicáveis aos dados de Titulares;
    - autorização explícita do fundador para a primeira party e o primeiro convite.
-5. **Primeiro uso real** (não há party de teste em Production): Admin → Partes → Cadastrar parte → Convidar
+5. **Primeiro uso real** (não há party de teste em Production): Admin → Pessoas e empresas → Cadastrar pessoa ou
+   empresa → Convidar
    representante (o resumo mostra o e-mail completo e o documento mascarado) → o representante faz o primeiro acesso em
    `/titular/ativar` (conta nova) ou entra em `/titular/entrar` (conta existente) e ativa; confira na lista de
    representantes "Ativa" e, nos logs, nenhum documento, e-mail ou código.
-6. **Revogar** uma delegação: Admin → Partes → a parte → o representante → Revogar (com a base). Vale na próxima tela.
-   Convite expirado: revogue a pendente e convide de novo (o Supabase reenvia o convite para conta não confirmada).
+6. **Revogar** uma delegação: Admin → Pessoas e empresas → a pessoa ou empresa → o representante → Revogar (com a base).
+   Vale na próxima tela. Convite expirado: revogue a pendente e convide de novo (o Supabase reenvia o convite para conta
+   não confirmada). Delegação com fim (`valid_until`) já passado não precisa de revogação: um novo convite para o mesmo
+   representante entra direto, e a anterior fica no histórico.
 
 ## Preparar a W4.2 em produção (ontologia Home Concept → Home Edition → Second Home)
 
@@ -381,8 +392,13 @@ nova.
   `PII_ENCRYPTION_ACTIVE_KEY_ID` para o id novo e refaça o deploy. Valores antigos continuam legíveis. **Nunca remova**
   uma chave enquanto `SELECT document_key_id, count(*) FROM app.party GROUP BY 1` mostrar linhas com ela (a
   recifragem auditada que permite retirá-la ainda não existe).
-- `PII_HMAC_KEYRING`: mesmo procedimento com `PII_HMAC_ACTIVE_KEY_ID`; a busca e a deduplicação usam todas as chaves do
-  anel. Não remova chave com linhas em `SELECT document_hmac_key_id, count(*) FROM app.party GROUP BY 1`.
+- `PII_HMAC_KEYRING` (W7, ADR-0020 §2) — **protocolo em fases**, um deploy por fase: (1) **acrescente** a chave nova ao
+  anel mantendo `PII_HMAC_ACTIVE_KEY_ID`; (2) troque `PII_HMAC_ACTIVE_KEY_ID` para a nova; (3) só retire a antiga
+  **depois** que toda party tiver digest na chave que fica (`SELECT count(DISTINCT party_id) FROM app.party` igual a
+  `SELECT count(*) FROM app.party_document_digest WHERE hmac_key_id = '<nova>'`) — a reindexação auditada que preenche
+  os digests antigos ainda não existe, então, por ora, a chave antiga **fica** no anel. Pular fase (ex.: trocar `h1` por
+  `h2` de uma vez) quebra o invariante "um CPF/CNPJ → uma party" entre versões que rodam juntas e invalida replays de
+  idempotência gravados com a chave antiga (falham fechados).
 - `RESEND_API_KEY` e `UPSTASH_REDIS_REST_TOKEN` (BP1): crie a credencial nova, troque na Vercel (no ambiente certo),
   refaça o deploy e só então revogue a antiga. `BRAND_PARTNERS_CONTACT_HMAC_SECRET`: trocar só reinicia as contagens
   do limitador (chaves novas no Redis; as antigas expiram sozinhas).

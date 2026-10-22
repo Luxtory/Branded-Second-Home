@@ -854,8 +854,10 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
     para `app.party`, sem reescrever registros (Production com 0 autorizações, sem backfill); nova autorização só com
     party existente, identificada pelo CPF/CNPJ do Investor e resolvida pelo HMAC. (Omitida do resumo original desta
     wave; incluída pelo fundador em 2026-10-21.)
-  - **Decisões do fundador (2026-10-21)**: escopo único de delegação (representação integral), fim opcional, N:N com no
-    máximo uma delegação aberta por par; delegação **pendente até a ativação** pelo próprio usuário autenticado; conta
+  - **Decisões do fundador (2026-10-21; revisão de 2026-10-22)**: escopo único de delegação (representação da party:
+    quem pode representar quem, sem poderes próprios), fim opcional, N:N com vigências sem sobreposição por par (a
+    expiração não bloqueia o par); `party` = pessoa física ou jurídica, não sinônimo de Titular; interface "Pessoas e
+    empresas" / "Suas representações"; delegação **pendente até a ativação** pelo próprio usuário autenticado; conta
     existente vinculada sem duplicar; conta nova criada pelo convite, nunca já confirmada; CPF/CNPJ nunca como prova de
     conhecimento. Detalhe na spec `identity` §13 e no [ADR-0020](../adr/0020-party-cifrada-e-delegacao.md).
 - **Depends on / parallel with**: W2; sequencial.

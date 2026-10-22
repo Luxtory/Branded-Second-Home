@@ -16,7 +16,7 @@ const SECTIONS: readonly {
   { id: 'home', href: '/admin', label: messages.nav.home },
   { id: 'catalog', href: '/admin/catalogo', label: messages.nav.catalog, role: 'admin' },
   { id: 'interests', href: '/admin/interesses', label: messages.nav.interests, role: 'admin' },
-  { id: 'parties', href: '/admin/partes', label: messages.nav.parties, role: 'admin' },
+  { id: 'parties', href: '/admin/pessoas-e-empresas', label: messages.nav.parties, role: 'admin' },
 ];
 
 export type AdminSection = (typeof SECTIONS)[number]['id'];

@@ -4,7 +4,7 @@
 - **Author(s)**: Engenharia
 - **Status**: Reviewed
 - **Scope**: W7 — `party` (CPF/CNPJ cifrado + HMAC), `party_delegation` (pendente → ativa → revogada), convite e
-  ativação pelo Supabase Auth (Admin API), Área do Titular (`/titular*`), telas e API do Admin (`/admin/partes*`,
+  ativação pelo Supabase Auth (Admin API), Área do Titular (`/titular*`), telas e API do Admin (`/admin/pessoas-e-empresas*`,
   `POST /v1/admin/parties*`, `POST /v1/admin/party-delegations/{id}/revoke`), vínculo `investor_authorization → party`,
   FK validada de `authorization_grant` (D-W2-1)
 - **Linked spec**: `docs/specs/identity.md` §13, `docs/specs/catalog.md` (D-W3-1)
@@ -79,8 +79,8 @@ flowchart LR
 
 - **Vector**: CPF tem ~10⁹ valores; com o HMAC e o segredo, basta testar todos.
 - **Mitigation**: HMAC **chaveado** (nunca hash simples), segredo de 32 bytes separado da cifra (validação recusa
-  material repetido); `document_hmac` fora de toda leitura de `authenticated`, de respostas e do `audit_log`; o hash de
-  idempotência usa o HMAC, não o documento (ADR-0020 §5). Se o segredo vazar junto com o banco, a proteção cai para a
+  material repetido); os digests (`app.party_document_digest`) ficam fora de toda leitura de `authenticated`, de
+  respostas e do `audit_log`; o hash de idempotência usa o HMAC por chave, não o documento (ADR-0020 §5). Se o segredo vazar junto com o banco, a proteção cai para a
   da cifra: rotação do anel (T-705) e recifragem/reindexação (follow-up).
 - **Tracking**: `[TECH-100]`.
 
@@ -101,9 +101,15 @@ flowchart LR
 
 ### T-705 [MEDIUM] Information disclosure/Tampering — Rotação do segredo do HMAC quebra a deduplicação
 
-- **Vector**: trocar o segredo e passar a aceitar duplicata de party antiga.
-- **Mitigation**: busca e deduplicação calculam o HMAC com todas as chaves do anel; novas linhas usam a ativa; `UNIQUE`
-  cobre a corrida. Retirar uma chave exige reindexação (fora da W7).
+- **Vector**: trocar o segredo e passar a aceitar duplicata de party antiga; durante a rotação, duas versões do app com
+  chaves ativas diferentes cadastram o mesmo documento ao mesmo tempo e gravam digests distintos (duas parties); replay
+  de idempotência atravessando a troca da chave ativa vira conflito artificial.
+- **Mitigation** (revisão de 2026-10-22): cada party grava **um digest por chave do anel** em `app.party_document_digest`
+  com `UNIQUE (digest)`; o protocolo de rotação em fases (acrescentar → trocar a ativa → só retirar a antiga depois de
+  toda party ter digest na que fica) garante que versões simultâneas compartilham uma chave e colidem nela — exatamente
+  uma party, provado com corrida A `{h1}` × B `{h1,h2}` e barreira depois da busca. Nenhuma trava depende da chave
+  ativa. O hash de idempotência grava o id da chave e o replay recalcula com ela: mesmo payload → replay; chave histórica
+  fora do anel → falha fechada. Retirar uma chave exige reindexação (fora da W7).
 - **Tracking**: `[ADR-0002]`.
 
 ### T-706 [HIGH] Information disclosure — PII em logs, audit, idempotência ou respostas
@@ -148,8 +154,10 @@ flowchart LR
 ### T-711 [HIGH] Tampering/Elevation — Delegação forjada, expirada ou revogada reutilizada
 
 - **Vector**: `INSERT` direto; `actingPartyId` arbitrário num command; delegação vencida ainda aceita.
-- **Mitigation**: só `luxtory_app` insere (pelo command); gatilho fecha as transições; unicidade da delegação aberta;
-  guard `grantee` exige delegação vigente para a `actingPartyId` (antes não exigia); vigência calculada no instante de
+- **Mitigation**: só `luxtory_app` insere (pelo command); gatilho fecha as transições; constraint de exclusão
+  `conflict_party_delegation_overlap` (vigências do mesmo par não se sobrepõem, inclusive entre transações concorrentes;
+  expirada não bloqueia o par e fica no histórico); `party_delegation` é só "quem pode representar quem", nunca poderes
+  próprios; guard `grantee` exige delegação vigente para a `actingPartyId` (antes não exigia); vigência calculada no instante de
   cada decisão; revogação lida a cada request.
 - **Tracking**: `[TECH-050]`.
 
@@ -196,7 +204,7 @@ flowchart LR
 
 ## 7. Abuse cases
 
-- Titular A abre `/titular/partes/<id de B>` → 404.
+- Titular A abre `/titular/representacoes/<id de B>` → 404.
 - Convidado com o e-mail certo tenta ativar a delegação de outro id → 403.
 - Admin repete o convite para o mesmo par → 409 antes de enviar e-mail.
 - Delegação revogada com a aba aberta → a próxima navegação não mostra a party.

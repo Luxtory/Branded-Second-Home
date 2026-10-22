@@ -5,13 +5,14 @@ const withStatus = (path: string, status?: PartyStatus) =>
   status === undefined ? path : `${path}?status=${status}`;
 
 export const partyPaths = {
-  list: '/admin/partes',
-  newParty: '/admin/partes/nova',
-  party: (id: string, status?: PartyStatus) => withStatus(`/admin/partes/${id}`, status),
-  document: (id: string) => `/admin/partes/${id}/documento`,
-  invite: (id: string) => `/admin/partes/${id}/representantes/novo`,
+  list: '/admin/pessoas-e-empresas',
+  newParty: '/admin/pessoas-e-empresas/nova',
+  party: (id: string, status?: PartyStatus) =>
+    withStatus(`/admin/pessoas-e-empresas/${id}`, status),
+  document: (id: string) => `/admin/pessoas-e-empresas/${id}/documento`,
+  invite: (id: string) => `/admin/pessoas-e-empresas/${id}/representantes/novo`,
   revoke: (id: string, delegationId: string) =>
-    `/admin/partes/${id}/representantes/${delegationId}/revogacao`,
+    `/admin/pessoas-e-empresas/${id}/representantes/${delegationId}/revogacao`,
 };
 
 export const titularPaths = {
@@ -19,7 +20,7 @@ export const titularPaths = {
   activated: '/titular?status=activated',
   login: '/titular/entrar',
   activate: '/titular/ativar',
-  representation: (partyId: string) => `/titular/partes/${partyId}`,
+  representation: (partyId: string) => `/titular/representacoes/${partyId}`,
 };
 
 const STATUSES: readonly PartyStatus[] = ['registered', 'invited', 'revoked'];
