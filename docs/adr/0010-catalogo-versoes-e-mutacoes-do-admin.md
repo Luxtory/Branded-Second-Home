@@ -84,7 +84,9 @@ canônicos não fixam e que não podem virar regra de negócio nova:
 ### Neutral / follow-ups
 
 - W4: leitura pública do catálogo sob RLS para `anon`; exposição efetiva da marca.
-- W7: vínculo `investor_authorization` → `party`, sem reescrever registros.
+- W7: vínculo `investor_authorization` → `party`, sem reescrever registros. **Executado na W7 (2026-10-21)**:
+  `party_id` com FK, resolvido pelo HMAC do CPF/CNPJ informado; sem backfill (0 registros); ver spec `catalog` e
+  [ADR-0020](0020-party-cifrada-e-delegacao.md).
 - W8: trava da estrutura, alteração de modalidade e configuração da Residence (novas colunas; a versão fixada
   continua imutável).
 

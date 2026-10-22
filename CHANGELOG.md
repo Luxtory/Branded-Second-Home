@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Representações (W7, spec `identity` §13, ADR-0020): no Admin, "Pessoas e empresas" — cadastro de pessoa física ou
+  jurídica por CPF ou CNPJ (numérico ou alfanumérico), cifrado e nunca exibido em claro (documento completo só em
+  leitura deliberada e auditada), busca por CPF/CNPJ e convite de representantes em dois passos; quem é convidado só
+  representa a pessoa ou empresa depois de entrar e ativar o convite, e a revogação vale na hora. Nova Área do Titular
+  (`/titular`), com login por código, primeiro acesso pelo código do convite e "Suas representações", com o documento
+  mascarado. A autorização de Investor passa a identificar o Investor pelo CPF/CNPJ de uma pessoa ou empresa já
+  cadastrada.
+
 ### Changed
 
 - Ontologia Home Concept → Home Edition → Second Home (W4.2, `01` v10.2, ADR-0019): a Home Edition passa a ser uma

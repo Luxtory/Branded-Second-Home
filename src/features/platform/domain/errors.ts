@@ -75,6 +75,8 @@ const CONSTRAINT_PREFIXES: readonly (readonly [string, RejectionCode])[] = [
   ['custody_', 'ERR_CAPACITY_UNAVAILABLE'],
   ['balance_', 'ERR_USE_RIGHT_BALANCE'],
   ['credits_', 'ERR_CREDITS_INSUFFICIENT'],
+  // Unicidade de estado (W7, ADR-0020 §10): documento de party já cadastrado, delegação aberta para o mesmo par.
+  ['conflict_', 'ERR_STATE_TRANSITION'],
 ];
 
 export function rejectionForConstraint(constraint: string): RejectionCode | null {

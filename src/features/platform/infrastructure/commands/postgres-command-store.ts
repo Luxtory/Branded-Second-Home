@@ -75,6 +75,7 @@ export function createPostgresCommandStore(db: Database): CommandStore<DatabaseT
         idempotency_key: draft.idempotencyKey,
         command: draft.command,
         request_hash: draft.requestHash,
+        request_hash_key_id: draft.requestHashKeyId,
         operation_id: draft.id,
         created_at: draft.at,
         ...extra,
@@ -87,7 +88,14 @@ export function createPostgresCommandStore(db: Database): CommandStore<DatabaseT
     async findIdempotency(scope, idempotencyKey): Promise<IdempotencyEntry | null> {
       const row = await db
         .selectFrom('app.idempotency_record')
-        .select(['command', 'request_hash', 'operation_id', 'outcome', 'response'])
+        .select([
+          'command',
+          'request_hash',
+          'request_hash_key_id',
+          'operation_id',
+          'outcome',
+          'response',
+        ])
         .where('scope', '=', scope)
         .where('idempotency_key', '=', idempotencyKey)
         .executeTakeFirst();
@@ -95,6 +103,7 @@ export function createPostgresCommandStore(db: Database): CommandStore<DatabaseT
       return {
         command: row.command,
         requestHash: row.request_hash,
+        requestHashKeyId: row.request_hash_key_id,
         operationId: row.operation_id,
         response: storedResponse(row.outcome, row.response),
       };

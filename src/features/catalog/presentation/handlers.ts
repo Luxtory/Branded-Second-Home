@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { AdminCommand } from '@/features/identity';
+import { partyDocumentResolver, type AdminCommand } from '@/features/identity';
 import type { DatabaseTransaction, JsonValue } from '@/features/platform';
 import { createCatalogHandlers } from '../application/handlers';
 import { postgresCatalogStore } from '../infrastructure/postgres-catalog-store';
@@ -17,6 +17,7 @@ export const catalogHandlers = createCatalogHandlers<DatabaseTransaction>({
   store: postgresCatalogStore,
   images: sharpCoverProcessor,
   media: runtimeMediaStorage,
+  parties: partyDocumentResolver,
   newId: randomUUID,
 });
 

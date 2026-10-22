@@ -7,6 +7,11 @@ import type { CatalogTermKind, HomeEditionMediaKind } from '@/features/catalog/d
 import { postgresCatalogStore } from '@/features/catalog/infrastructure/postgres-catalog-store';
 import { sharpCoverProcessor } from '@/features/catalog/infrastructure/sharp-cover-processor';
 import { memoryMediaStorage } from './media-storage';
+import { registerPartyHandler } from '@/features/identity/application/party-commands';
+import { createPartyDocumentResolver } from '@/features/identity/application/party-resolver';
+import type { PartyDocumentProtector } from '@/features/identity/application/party-ports';
+import { postgresPartyStore } from '@/features/identity/infrastructure/postgres-parties';
+import { testProtector, validCpf } from './party-fixtures';
 import {
   commandRegistry,
   createPostgresCommandStore,
@@ -109,6 +114,7 @@ export function catalogHarness(
   clock: { now(): Date },
   lockTimeoutMs = 5_000,
   media = memoryMediaStorage(),
+  protector: PartyDocumentProtector = testProtector(),
 ) {
   const executor = createCommandExecutor({
     store: createPostgresCommandStore(db),
@@ -122,8 +128,15 @@ export function catalogHarness(
     store: postgresCatalogStore,
     images: sharpCoverProcessor,
     media,
+    parties: createPartyDocumentResolver(protector, postgresPartyStore),
     newId: randomUUID,
   });
+  const registerParty = registerPartyHandler<DatabaseTransaction>({
+    store: postgresPartyStore,
+    protector,
+    newId: randomUUID,
+  });
+  let investorSeed = 100_000_000;
 
   const run = <I, R extends JsonValue>(
     handler: CommandHandler<I, R, DatabaseTransaction>,
@@ -189,9 +202,20 @@ export function catalogHarness(
       }),
     approveHomeEditionMedia: (mediaId: string) =>
       ok(handlers.approveHomeEditionMedia, { home_edition_media_id: mediaId }),
-    authorization: (homeConceptId: string, validFrom: Date, validUntil?: Date) =>
+    /** Party do Investor (W7, D-W3-1): CPF sintético novo a cada chamada. */
+    investorParty: async (document: string = validCpf(String((investorSeed += 1)))) => {
+      const party = await ok(registerParty, { document });
+      return { id: party.id, document };
+    },
+    authorization: async (
+      homeConceptId: string,
+      validFrom: Date,
+      validUntil?: Date,
+      investorDocument?: string,
+    ) =>
       ok(handlers.registerInvestorAuthorization, {
         home_concept_id: homeConceptId,
+        investor_document: investorDocument ?? (await build.investorParty()).document,
         instrument_ref: `Instrumento ${randomUUID().slice(0, 8)}`,
         valid_from: validFrom.toISOString(),
         ...(validUntil === undefined ? {} : { valid_until: validUntil.toISOString() }),

@@ -15,20 +15,33 @@ import {
 } from './inputs';
 import { investorAuthorizationResult, type InvestorAuthorizationResult } from './results';
 
-/** `register_investor_authorization` (BR-310, D-W3-1): Home Concept, instrumento e vigência; sem dado pessoal. */
+/**
+ * `register_investor_authorization` (BR-310, D-W3-1): Home Concept, instrumento, vigência e a party do Investor — já
+ * cadastrada, resolvida pelo HMAC do CPF/CNPJ (W7). O documento nunca é gravado; no hash de idempotência entra só o
+ * pseudônimo chaveado.
+ */
 export function registerInvestorAuthorizationHandler<Tx>(
   deps: CatalogDependencies<Tx>,
 ): CommandHandler<RegisterInvestorAuthorizationInput, InvestorAuthorizationResult, Tx> {
   return {
     command: 'register_investor_authorization',
     input: registerInvestorAuthorizationInput,
+    fingerprint: {
+      activeKeyId: () => deps.parties.fingerprint.activeKeyId(),
+      payload: (input, keyId) => ({
+        ...input,
+        investor_document: deps.parties.fingerprint.payload(input.investor_document, keyId),
+      }),
+    },
     async execute({ input, actor, operationId, now, tx, audit }) {
       const staff = staffActor(actor, 'register_investor_authorization');
       const homeConcept = found(await deps.store.homeConcept(tx, input.home_concept_id));
       await lockBrandInUse(deps.store, tx, homeConcept.brandPartnerId, 'share', now);
+      const partyId = found(await deps.parties.resolve(tx, input.investor_document));
       const authorization: InvestorAuthorization = {
         id: deps.newId(),
         homeConceptId: homeConcept.id,
+        partyId,
         instrumentRef: input.instrument_ref,
         validFrom: new Date(input.valid_from),
         validUntil: input.valid_until === undefined ? null : new Date(input.valid_until),

@@ -100,6 +100,8 @@ flowchart LR
   - Code: validação só aceita operações concedíveis (nenhuma na W2); gatilho no banco recusa grant sem `app.party`
     correspondente (sempre, enquanto a tabela não existir).
   - Process: a W7 cria a FK validada e remove o gatilho (plano → Wave 7).
+  - **Encerrada na W7 (2026-10-21)**: FK `authorization_grant_grantee_party_fk` validada, gatilho removido, party
+    inexistente → `ERR_NOT_FOUND` no command (STRIDE [`titular-pii`](titular-pii.md)).
 - **Owner**: Engenharia · **Tracking**: teste `[REQ-014]` (banco recusa)
 
 ### T-001 [MEDIUM] Spoofing — Adivinhação do código de login

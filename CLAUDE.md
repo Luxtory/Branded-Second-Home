@@ -337,6 +337,12 @@ always keep it updated:**
   investment (`home_edition_projected_investment`)
 - **Second Home** (`second_home`): specific instance of a Home Edition for a concrete location; holds modality,
   ownership structure, Co-Owner configuration, commercial conditions, timezone, conformity and operational state
+- **party** (`party`, W7): the real natural or legal person identified by CPF/CNPJ — the domain identity. **Not a
+  synonym of Titular**: a party may exist only for an `investor_authorization`; ownership (Owner/Co-Owner) is a later
+  relation (`holding`, W8). In the UI it is always "pessoa ou empresa" ("Pessoas e empresas"), never "party"/"parte".
+- **party_delegation** (W7): which `user` (Supabase Auth account) may represent which `party` in the software — and
+  only that; not ownership, SPE stake, Membership or unrestricted authority. Acting still requires
+  `user → party_delegation vigente → party → applicable relation/authorization → command`. UI: "Suas representações".
 
 ## Checklist before starting a task
 

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { partyDocumentInput } from '@/features/identity/contracts';
 import {
   CATALOG_TERM_KINDS,
   CROP_STEPS,
@@ -122,6 +123,8 @@ export const approveHomeConceptVersionInput = z.strictObject({
 export const registerInvestorAuthorizationInput = z
   .strictObject({
     home_concept_id: id,
+    // W7 (D-W3-1): CPF/CNPJ do Investor, normalizado pelo módulo identity; só resolve a party, nunca é gravado.
+    investor_document: partyDocumentInput,
     instrument_ref: text(REF_MAX),
     valid_from: instant,
     valid_until: instant.optional(),

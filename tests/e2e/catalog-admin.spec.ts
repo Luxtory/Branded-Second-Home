@@ -1,7 +1,9 @@
+import { randomUUID } from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
 import sharp from 'sharp';
 import { signIn, STAFF_EMAIL, VISITOR_EMAIL } from './support/auth';
 import { captureForReview, collectConsoleErrors, expectResponsive } from './support/ui';
+import { punctuatedCpf, randomCpf } from '../support/documents';
 
 // Catálogo no Admin (W3, docs/specs/catalog.md): telas sobre o App Shell, mobile-first com paridade (ADR-0009).
 // O banco do E2E é compartilhado entre os testes: cada teste usa nomes próprios e não presume lista vazia.
@@ -191,11 +193,18 @@ test.describe('celular (390 px, toque)', () => {
     await expect(status).toContainText('Home Edition publicada.');
     await expect(page.getByText('Finalizada · Publicada')).toBeVisible();
 
-    // Autorização de Investor para o Home Concept (REQ-027).
+    // Autorização de Investor para o Home Concept (REQ-027), com a party do Investor já cadastrada (W7, D-W3-1).
+    const investorCpf = randomCpf();
+    const party = await page.request.post('/v1/admin/parties', {
+      headers: { origin: new URL(page.url()).origin, 'idempotency-key': randomUUID() },
+      data: { document: investorCpf },
+    });
+    expect(party.status()).toBe(201);
     await page.getByRole('link', { name: 'Casa do Pátio', exact: true }).tap();
     await page.getByRole('link', { name: 'Registrar autorização de Investor' }).tap();
     await expect(heading).toHaveText('Registrar autorização de Investor');
     await gate('15-registrar-autorizacao');
+    await page.getByLabel('CPF ou CNPJ do Investor').fill(punctuatedCpf(investorCpf));
     await page.getByLabel('Instrumento de autorização').fill('Contrato INV-001');
     await page.getByLabel('Início da vigência').fill('2026-01-01T00:00');
     await page.getByRole('button', { name: 'Registrar autorização' }).tap();

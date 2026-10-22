@@ -323,7 +323,11 @@ describe('W4.2: Second Home, média projetada e interesse no banco', () => {
   });
 });
 
-describe('W4.2: precondições fail-closed das migrations de renomeação', () => {
+// Cada caso desfaz, uma a uma, todas as migrations desde a W4.2 (inclusive as das waves seguintes): o orçamento cresce
+// com o histórico, não com o caso.
+const PRE_W42_TIMEOUT_MS = 180_000;
+
+describe('W4.2: precondições fail-closed das migrations de renomeação', { timeout: PRE_W42_TIMEOUT_MS }, () => {
   let databases: TestDatabase[] = [];
 
   afterAll(async () => {

@@ -41,6 +41,16 @@ export interface CommandContext<I, Tx> {
   emit(event: OutboxEventDraft): void;
 }
 
+/**
+ * Pseudonimização do input para o hash de idempotência quando o input carrega dado pessoal (ADR-0020 §5), **por chave**:
+ * o hash grava o id da chave usada e o replay recalcula com ela — trocar a chave ativa não muda o payload do usuário, então
+ * não transforma replay em conflito (ADR-006 do `03`). Chave histórica indisponível → erro, nunca replay falso.
+ */
+export interface InputFingerprint<I> {
+  activeKeyId(): string;
+  payload(input: I, keyId: string): unknown;
+}
+
 /** Handler de um command do registro: revalida tudo dentro da transação e lança `CommandRejection` para recusar. */
 export interface CommandHandler<I, R extends JsonValue, Tx> {
   readonly command: string;
@@ -48,6 +58,8 @@ export interface CommandHandler<I, R extends JsonValue, Tx> {
   secondHomeId?(input: I): string | null;
   /** Objeto do command, para o guard conferir o escopo de um `authorization_grant` (REQ-014). */
   scope?(input: I): CommandScope;
+  /** Input com dado pessoal: o hash de idempotência usa o pseudônimo por chave; sem ele, o input validado. */
+  readonly fingerprint?: InputFingerprint<I>;
   execute(context: CommandContext<I, Tx>): Promise<R>;
 }
 
@@ -104,6 +116,10 @@ export class MissingAuditError extends Error {
 
 // Outra transação comitou a mesma chave antes desta: desfaz e responde com o replay.
 class IdempotencyKeyTaken extends Error {}
+
+/** Tentativa do command: o draft gravado mais o recálculo do hash com a chave de um registro anterior. */
+type Attempt = Omit<OperationDraft, 'at'> & { readonly rehash: (keyId: string | null) => string };
+type AttemptDraft = OperationDraft & Pick<Attempt, 'rehash'>;
 const RETRY = Symbol('retry');
 
 export interface CommandExecutor<Tx> {
@@ -138,7 +154,18 @@ async function execute<I, R extends JsonValue, Tx>(
   const decision = await deps.guard.authorize(spec, request.actor, parsed.data, scope);
   if (!decision.allowed) return early('ERR_PERMISSION');
 
-  const base = {
+  const fingerprint = handler.fingerprint;
+  const hashKeyId = fingerprint?.activeKeyId() ?? null;
+  const hashWith = (keyId: string | null) =>
+    requestHash(
+      spec.name,
+      request.actor,
+      fingerprint === undefined || keyId === null
+        ? parsed.data
+        : fingerprint.payload(parsed.data, keyId),
+    );
+  const currentHash = hashWith(hashKeyId);
+  const base: Attempt = {
     id: (deps.newId ?? randomUUID)(),
     command: spec.name,
     actor: request.actor,
@@ -147,10 +174,13 @@ async function execute<I, R extends JsonValue, Tx>(
     correlationId: request.correlationId,
     authorizationRef: decision.authorizationRef,
     scope: idempotencyScope(request.actor),
-    requestHash: requestHash(spec.name, request.actor, parsed.data),
+    requestHash: currentHash,
+    requestHashKeyId: hashKeyId,
+    // Hash com a chave de um registro anterior (rotação): o mesmo payload continua replay.
+    rehash: (keyId) => (keyId === hashKeyId ? currentHash : hashWith(keyId)),
   };
   const existing = await deps.store.findIdempotency(base.scope, base.idempotencyKey);
-  if (existing !== null) return replay<R>(existing, base.command, base.requestHash);
+  if (existing !== null) return replay<R>(existing, base);
   return run(deps, handler, parsed.data, base);
 }
 
@@ -164,10 +194,10 @@ async function run<I, R extends JsonValue, Tx>(
   deps: ExecutorDependencies<Tx>,
   handler: CommandHandler<I, R, Tx>,
   input: I,
-  base: Omit<OperationDraft, 'at'>,
+  base: Attempt,
 ): Promise<CommandOutcome<R>> {
   for (let attempt = 1; ; attempt += 1) {
-    const draft: OperationDraft = { ...base, at: deps.clock.now() };
+    const draft: AttemptDraft = { ...base, at: deps.clock.now() };
     try {
       const result = await deps.store.transaction(deps.limits.lockTimeoutMs, (tx) =>
         runOnce(deps, handler, input, draft, tx),
@@ -213,7 +243,7 @@ async function runOnce<I, R extends JsonValue, Tx>(
 /** Destino de uma tentativa que falhou: replay, recusa gravada, nova tentativa ou erro inesperado. */
 async function settle<R, Tx>(
   deps: ExecutorDependencies<Tx>,
-  draft: OperationDraft,
+  draft: AttemptDraft,
   error: unknown,
   attempt: number,
 ): Promise<CommandOutcome<R> | typeof RETRY> {
@@ -236,7 +266,7 @@ async function settle<R, Tx>(
 
 async function reject<R, Tx>(
   deps: ExecutorDependencies<Tx>,
-  draft: OperationDraft,
+  draft: AttemptDraft,
   code: RejectionCode,
 ): Promise<CommandOutcome<R>> {
   if (!(await deps.store.recordRejection(draft, code))) return replayTaken<R, Tx>(deps, draft);
@@ -246,23 +276,33 @@ async function reject<R, Tx>(
 
 async function replayTaken<R, Tx>(
   deps: ExecutorDependencies<Tx>,
-  draft: OperationDraft,
+  draft: AttemptDraft,
 ): Promise<CommandOutcome<R>> {
   const existing = await deps.store.findIdempotency(draft.scope, draft.idempotencyKey);
   if (existing === null) {
     throw new Error(`Idempotency key reported as taken but not found (${draft.command})`);
   }
-  return replay<R>(existing, draft.command, draft.requestHash);
+  return replay<R>(existing, draft);
 }
 
-function replay<R>(existing: IdempotencyEntry, command: string, hash: string): CommandOutcome<R> {
-  if (existing.command !== command || existing.requestHash !== hash) {
+/**
+ * Mesma key + ator + payload → replay (ADR-006). O hash do registro é comparado com o recalculado pela **mesma chave** que
+ * o gravou: a rotação da chave ativa não muda o payload; chave histórica fora do anel lança erro (falha fechada).
+ */
+function replay<R>(
+  existing: IdempotencyEntry,
+  attempt: Pick<Attempt, 'command' | 'rehash'>,
+): CommandOutcome<R> {
+  if (
+    existing.command !== attempt.command ||
+    existing.requestHash !== attempt.rehash(existing.requestHashKeyId)
+  ) {
     return early('ERR_IDEMPOTENCY_CONFLICT');
   }
   const response = existing.response;
   if (response === null) {
     // A resposta é gravada no mesmo commit que torna a chave visível: nulo aqui é corrupção.
-    throw new Error(`Idempotency record without response (${command})`);
+    throw new Error(`Idempotency record without response (${attempt.command})`);
   }
   if (response.outcome === 'rejected') {
     return {

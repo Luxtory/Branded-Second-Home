@@ -250,6 +250,7 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 | `AUTH_MODE` (`supabase` ou `test`; `test` é recusado se `VERCEL_ENV` existir) | local e CI | W2 |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Vercel (sensitive) | W5 |
 | `SUPABASE_SECRET_KEY`, `PII_ENCRYPTION_KEYRING`, `PII_ENCRYPTION_ACTIVE_KEY_ID`, `PII_HMAC_KEY` | Vercel (sensitive, só servidor) | W7 |
+| `PII_HMAC_KEYRING`, `PII_HMAC_ACTIVE_KEY_ID` — substituem `PII_HMAC_KEY` (anel com rotação online, [ADR-0020](../adr/0020-party-cifrada-e-delegacao.md)) | Vercel (sensitive, só servidor) | W7 |
 | `NEXT_PUBLIC_SITE_URL` | Vercel | W7 |
 | `PAYMENT_GATEWAY` (`fake`, recusado em produção) | Preview, Development, CI | W19 |
 | `ULTRONPX_PURCHASE_EMAIL` | fora do catálogo: nem exigida nem removida | — |
@@ -835,6 +836,10 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 ### Wave 7 — Titulares
 
 - **Status (2026-10-21):** ⬜ próxima executável (W6 ✅, #59). Ainda não iniciada.
+  **Atualização (2026-10-21, noite):** 🔄 em andamento na branch `feat/w7-titulares` (spec, ADR-0020 e STRIDE
+  `titular-pii` primeiro; um PR draft, sem merge até o checkpoint do fundador).
+  **Checkpoint (2026-10-21):** implementação completa no PR draft da branch; gates locais verdes (verify, E2E,
+  trace). Aguarda a decisão de merge do fundador; Production intocada (sem migrations, segredos, parties ou convites).
 - **Goal**: o Titular existe como party cifrada e acessa sua área por delegação.
 - **IDs**: TECH-050, TECH-052, TECH-100, ADR-0002.
 - **Scope (slices/files)**: `identity`.
@@ -845,6 +850,16 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   - API `POST /v1/admin/parties` e `POST /v1/admin/parties/{id}/delegations`. STRIDE `titular-pii`.
   - **Obrigação herdada da W2 (D-W2-1)**: adicionar e validar a FK `authorization_grant.grantee_party_id → party`
     (constraint validada, sem `NOT VALID` pendente) e encerrar a dívida transitória no spec `identity`.
+  - **Obrigação herdada da W3 (D-W3-1, spec `catalog` e ADR-0010)**: acrescentar `investor_authorization.party_id` com FK
+    para `app.party`, sem reescrever registros (Production com 0 autorizações, sem backfill); nova autorização só com
+    party existente, identificada pelo CPF/CNPJ do Investor e resolvida pelo HMAC. (Omitida do resumo original desta
+    wave; incluída pelo fundador em 2026-10-21.)
+  - **Decisões do fundador (2026-10-21; revisão de 2026-10-22)**: escopo único de delegação (representação da party:
+    quem pode representar quem, sem poderes próprios), fim opcional, N:N com vigências sem sobreposição por par (a
+    expiração não bloqueia o par); `party` = pessoa física ou jurídica, não sinônimo de Titular; interface "Pessoas e
+    empresas" / "Suas representações"; delegação **pendente até a ativação** pelo próprio usuário autenticado; conta
+    existente vinculada sem duplicar; conta nova criada pelo convite, nunca já confirmada; CPF/CNPJ nunca como prova de
+    conhecimento. Detalhe na spec `identity` §13 e no [ADR-0020](../adr/0020-party-cifrada-e-delegacao.md).
 - **Depends on / parallel with**: W2; sequencial.
 - **Acceptance criteria**: `[TECH-100] CPF/CNPJ nunca em claro no banco, nos logs nem no audit_log; HMAC barra
   duplicidade` · `[TECH-050] sem delegação vigente não há acesso` · `[TECH-052] Titular A não lê dados do Titular

@@ -110,6 +110,7 @@ export function toInvestorAuthorization(
   return {
     id: row.id,
     homeConceptId: row.home_concept_id,
+    partyId: row.party_id,
     instrumentRef: row.instrument_ref,
     validFrom: row.valid_from,
     validUntil: row.valid_until,

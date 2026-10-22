@@ -5,6 +5,14 @@ import {
   TEST_SESSION_COOKIE,
 } from '@/features/identity/infrastructure/auth/test-auth-gateway';
 import { createCatalogRoutes } from '@/features/catalog/presentation/api-routes';
+import { createPartyDocumentResolver } from '@/features/identity/application/party-resolver';
+import { postgresPartyStore } from '@/features/identity/infrastructure/postgres-parties';
+import {
+  punctuatedCpf,
+  partyHarness,
+  testProtector,
+  validCpf,
+} from '../../../support/party-fixtures';
 import { withRoute, type Database } from '@/features/platform';
 import { CONTENT, HOME_EDITION_CONTENT, testImage } from '../../../support/catalog-fixtures';
 import { captureLogger } from '../../../support/capture-logger';
@@ -19,6 +27,9 @@ const clock = { now: () => new Date() };
 const STAFF = '00000000-0000-4000-8000-0000000000f1';
 const SUPER_ONLY = '00000000-0000-4000-8000-0000000000f2';
 const source = { AUTH_MODE: 'test', COMMAND_MAX_ATTEMPTS: '3', COMMAND_LOCK_TIMEOUT_MS: '5000' };
+// Anéis de teste (W7): a party do Investor é resolvida pelo HMAC do CPF (D-W3-1).
+const protector = testProtector();
+const INVESTOR_CPF = validCpf('987654321');
 const validError = schemaValidator('Error');
 const media = memoryMediaStorage();
 
@@ -53,7 +64,14 @@ describe('POST /v1/admin/* do catálogo (TECH-050, TECH-100, contrato OpenAPI)',
     body: unknown,
     options: { id?: string; headers?: Record<string, string>; key?: string } = {},
   ) {
-    const routes = createCatalogRoutes({ source, clock, database: () => db, afterCommit, media });
+    const routes = createCatalogRoutes({
+      source,
+      clock,
+      database: () => db,
+      afterCommit,
+      media,
+      parties: createPartyDocumentResolver(protector, postgresPartyStore),
+    });
     const { logger } = captureLogger();
     const request = new Request(`${ORIGIN}/v1/admin/x`, {
       method: 'POST',
@@ -187,15 +205,20 @@ describe('POST /v1/admin/* do catálogo (TECH-050, TECH-100, contrato OpenAPI)',
       visibility: 'hidden',
       withdrawal_basis: 'Revisão das imagens',
     });
+    const parties = partyHarness(db, clock, { protector });
+    const investor = await parties.ok(parties.handlers.registerParty, { document: INVESTOR_CPF });
     const authorization = await created(
       'registerInvestorAuthorization',
       '/admin/investor-authorizations',
       {
         home_concept_id: version.home_concept_id,
+        // Com máscara: a normalização resolve para a mesma party (sem criar outra).
+        investor_document: punctuatedCpf(INVESTOR_CPF),
         instrument_ref: 'Contrato INV-9',
         valid_from: new Date(Date.now() - 3_600_000).toISOString(),
       },
     );
+    expect(authorization).toMatchObject({ party_id: investor.id });
     const secondHome = await created('registerSecondHome', '/admin/second-homes', {
       home_edition_id: homeEdition.id,
       label: 'Unidade 9',

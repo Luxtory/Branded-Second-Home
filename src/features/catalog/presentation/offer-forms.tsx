@@ -19,6 +19,8 @@ import { messages } from './i18n/pt-br';
 import { paths } from './paths';
 
 const REF_MAX = 255;
+// CPF ou CNPJ com pontuação (W7, D-W3-1).
+const DOCUMENT_MAX = 32;
 const LABEL_MAX = 120;
 
 /** Autorização de Investor para o Home Concept (`register_investor_authorization`, BR-310). */
@@ -38,6 +40,14 @@ export function AuthorizationForm({
     <form className="lx-form" action={action} noValidate>
       <FormAlert state={state} />
       <input type="hidden" name="home_concept_id" value={homeConceptId} />
+      <TextField
+        form="authorization"
+        name="investor_document"
+        label={text.documentLabel}
+        hint={text.documentHint}
+        maxLength={DOCUMENT_MAX}
+        state={state}
+      />
       <TextField
         form="authorization"
         name="instrument_ref"

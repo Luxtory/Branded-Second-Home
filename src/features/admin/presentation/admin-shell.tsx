@@ -8,7 +8,7 @@ import { messages } from './i18n/pt-br';
  * papel exercido que a seção exige (sem hierarquia, ADR-0008); sem ele o item não aparece.
  */
 const SECTIONS: readonly {
-  readonly id: 'home' | 'catalog' | 'interests';
+  readonly id: 'home' | 'catalog' | 'interests' | 'parties';
   readonly href: string;
   readonly label: string;
   readonly role?: StaffRole;
@@ -16,6 +16,7 @@ const SECTIONS: readonly {
   { id: 'home', href: '/admin', label: messages.nav.home },
   { id: 'catalog', href: '/admin/catalogo', label: messages.nav.catalog, role: 'admin' },
   { id: 'interests', href: '/admin/interesses', label: messages.nav.interests, role: 'admin' },
+  { id: 'parties', href: '/admin/pessoas-e-empresas', label: messages.nav.parties, role: 'admin' },
 ];
 
 export type AdminSection = (typeof SECTIONS)[number]['id'];

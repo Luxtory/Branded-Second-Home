@@ -75,6 +75,7 @@ class FakeStore implements CommandStore<string> {
     this.staged = {
       command: draft.command,
       requestHash: draft.requestHash,
+      requestHashKeyId: draft.requestHashKeyId,
       operationId: draft.id,
       response: null,
     };
@@ -105,6 +106,7 @@ class FakeStore implements CommandStore<string> {
     this.records.set(`${draft.scope}|${draft.idempotencyKey}`, {
       command: draft.command,
       requestHash: draft.requestHash,
+      requestHashKeyId: draft.requestHashKeyId,
       operationId: draft.id,
       response: { outcome: 'rejected', code },
     });
@@ -308,6 +310,7 @@ describe('executor de commands (TECH-054)', () => {
     store.concurrentWinner = {
       command: 'test_command',
       requestHash: '',
+      requestHashKeyId: null,
       operationId: 'op-winner',
       response: { outcome: 'committed', result: { doubled: 2 } },
     };
@@ -365,6 +368,7 @@ describe('executor de commands (TECH-054)', () => {
     store.records.set('user:u-1|key-1', {
       command: 'test_command',
       requestHash: 'x',
+      requestHashKeyId: null,
       operationId: 'op-x',
       response: null,
     });
@@ -374,6 +378,7 @@ describe('executor de commands (TECH-054)', () => {
     store.records.set('user:u-1|key-1', {
       command: 'test_command',
       requestHash: record?.requestHash ?? '',
+      requestHashKeyId: null,
       operationId: 'op-x',
       response: null,
     });
@@ -381,5 +386,55 @@ describe('executor de commands (TECH-054)', () => {
     await expect(executor.execute(handler(), request({ n: 1 }))).rejects.toThrow(
       /without response/,
     );
+  });
+
+  describe('[ADR-0020] hash de idempotência pseudonimizado por chave (rotação)', () => {
+    // Pseudônimo de teste: a "chave" entra no valor — trocar a chave muda o pseudônimo, como no HMAC real.
+    const keys = new Set(['h1', 'h2']);
+    const fingerprinted = (active: string) => ({
+      ...handler(),
+      fingerprint: {
+        activeKeyId: () => active,
+        payload: (input: { n: number }, keyId: string) => {
+          if (!keys.has(keyId)) throw new Error(`key ${keyId} unavailable`);
+          return { n: `${keyId}:${input.n}` };
+        },
+      },
+    });
+
+    it('[ADR-0020] mesma chave + mesmo payload depois da troca da chave ativa → replay; o registro guarda a chave', async () => {
+      const { store, executor } = setup();
+
+      const first = await executor.execute(fingerprinted('h1'), request({ n: 1 }));
+      const replay = await executor.execute(fingerprinted('h2'), request({ n: 1 }));
+
+      expect(first).toMatchObject({ status: 'committed', replayed: false });
+      expect(replay).toMatchObject({ status: 'committed', replayed: true, result: { doubled: 2 } });
+      expect([...store.records.values()][0]).toMatchObject({ requestHashKeyId: 'h1' });
+      expect(store.committed).toHaveLength(1);
+    });
+
+    it('[ADR-0020] payload realmente diferente depois da rotação → ERR_IDEMPOTENCY_CONFLICT', async () => {
+      const { executor } = setup();
+      await executor.execute(fingerprinted('h1'), request({ n: 1 }));
+
+      await expect(executor.execute(fingerprinted('h2'), request({ n: 2 }))).resolves.toMatchObject(
+        {
+          status: 'rejected',
+          code: 'ERR_IDEMPOTENCY_CONFLICT',
+        },
+      );
+    });
+
+    it('[ADR-0020] chave histórica fora do anel → falha fechada, nunca replay falso', async () => {
+      const { executor } = setup();
+      await executor.execute(fingerprinted('h1'), request({ n: 1 }));
+      keys.delete('h1');
+
+      await expect(executor.execute(fingerprinted('h2'), request({ n: 1 }))).rejects.toThrow(
+        /key h1 unavailable/,
+      );
+      keys.add('h1');
+    });
   });
 });

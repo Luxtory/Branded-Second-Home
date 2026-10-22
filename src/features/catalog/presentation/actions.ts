@@ -158,18 +158,28 @@ export async function registerAuthorizationAction(
   state: FormState,
   form: FormData,
 ): Promise<FormState> {
-  return submit(state, {
+  const next = await submit(state, {
     command: catalogCommand(catalogHandlers.registerInvestorAuthorization),
     schema: registerInvestorAuthorizationInput,
     input: {
       home_concept_id: field(form, 'home_concept_id'),
+      investor_document: field(form, 'investor_document'),
       instrument_ref: field(form, 'instrument_ref'),
       valid_from: present(field(form, 'valid_from')),
       valid_until: present(field(form, 'valid_until')),
     },
-    values: valuesOf(form, ['instrument_ref', 'valid_from_local', 'valid_until_local']),
+    values: valuesOf(form, [
+      'investor_document',
+      'instrument_ref',
+      'valid_from_local',
+      'valid_until_local',
+    ]),
     success: (result) => paths.homeConcept(result.home_concept_id, 'registered'),
   });
+  // W7 (D-W3-1): sem party para o documento, o erro vai para o campo — o Home Concept já existe na tela.
+  return next.rejection === 'not_found'
+    ? { ...next, rejection: 'invalid', fieldErrors: { investor_document: 'party_not_found' } }
+    : next;
 }
 
 export async function revokeAuthorizationAction(

@@ -40,6 +40,13 @@ $$;
 -- Usuários do Supabase Auth: só a coluna que as funções de operação consultam (W2, `app.assign_staff_role`). No
 -- Supabase real a tabela é do GoTrue e tem muito mais colunas.
 CREATE TABLE IF NOT EXISTS auth.users (id uuid PRIMARY KEY);
+-- W7 (ADR-0020): as colunas que as funções de conta (`app.auth_account_by_email`, `app.auth_account_labels`) leem,
+-- com os mesmos nomes e tipos do GoTrue.
+ALTER TABLE auth.users
+  ADD COLUMN IF NOT EXISTS email text,
+  ADD COLUMN IF NOT EXISTS email_confirmed_at timestamptz,
+  ADD COLUMN IF NOT EXISTS deleted_at timestamptz,
+  ADD COLUMN IF NOT EXISTS is_sso_user boolean NOT NULL DEFAULT false;
 
 GRANT USAGE ON SCHEMA auth, extensions TO anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION auth.uid(), auth.role(), auth.jwt() TO anon, authenticated, service_role;

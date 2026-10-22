@@ -11,6 +11,7 @@ import {
   HOME_EDITION_CONTENT,
   ownerOperation,
 } from '../../support/catalog-fixtures';
+import { punctuatedCpf, validCpf } from '../../support/documents';
 import { appDatabase, waitForLockWaiter } from '../../support/platform-fixtures';
 import { createTestDatabase, type TestDatabase } from '../../support/test-database';
 
@@ -519,6 +520,7 @@ describe('catálogo — commands, constraints e concorrência', () => {
       const { partner, homeConceptId, homeEdition } = await build.finalizedHomeEdition();
       const draft = await build.version(homeConceptId);
       const authorization = await build.authorization(homeConceptId, START);
+      const investor = await build.investorParty();
       expect(await terminate(partner.id, new Date(START.getTime() - HOUR))).toMatchObject({
         status: 'committed',
       });
@@ -549,6 +551,7 @@ describe('catálogo — commands, constraints e concorrência', () => {
         }),
         run(handlers.registerInvestorAuthorization, {
           home_concept_id: homeConceptId,
+          investor_document: investor.document,
           instrument_ref: 'Instrumento',
           valid_from: START.toISOString(),
         }),
@@ -932,6 +935,102 @@ describe('catálogo — commands, constraints e concorrência', () => {
         'ERR_VALIDATION',
       );
       expect(await count(database.pool, 'operation')).toBe(before);
+    });
+  });
+
+  describe('[REQ-027] party do Investor (W7, D-W3-1)', () => {
+    async function persisted(table: string): Promise<string> {
+      const { rows } = await database.pool.query(
+        `SELECT to_jsonb(t)::text AS row FROM app.${table} t`,
+      );
+      return rows.map((row: { row: string }) => row.row).join('\n');
+    }
+
+    it('[REQ-027] nova autorização referencia exatamente a party existente; documento com outra máscara resolve para a mesma party', async () => {
+      const { build } = harness;
+      const { homeConceptId } = await build.finalizedHomeEdition();
+      const investor = await build.investorParty();
+      const plain = await build.authorization(homeConceptId, START, undefined, investor.document);
+      const masked = await build.authorization(
+        homeConceptId,
+        START,
+        undefined,
+        punctuatedCpf(investor.document),
+      );
+
+      expect(plain.party_id).toBe(investor.id);
+      expect(masked.party_id).toBe(investor.id);
+      expect(await count(database.pool, 'party')).toBe(1);
+    });
+
+    it('[REQ-027] CPF/CNPJ sem party → ERR_NOT_FOUND, nada gravado; documento inválido → ERR_VALIDATION', async () => {
+      const { build, handlers, run } = harness;
+      const { homeConceptId } = await build.finalizedHomeEdition();
+      const before = await Promise.all(
+        ['party', 'investor_authorization'].map((t) => count(database.pool, t)),
+      );
+      const input = {
+        home_concept_id: homeConceptId,
+        instrument_ref: 'Contrato',
+        valid_from: START.toISOString(),
+      };
+
+      expectRejected(
+        await run(handlers.registerInvestorAuthorization, {
+          ...input,
+          investor_document: validCpf('192837465'),
+        }),
+        'ERR_NOT_FOUND',
+      );
+      expectRejected(
+        await run(handlers.registerInvestorAuthorization, {
+          ...input,
+          investor_document: '000.000.000-00',
+        }),
+        'ERR_VALIDATION',
+      );
+      expect(
+        await Promise.all(['party', 'investor_authorization'].map((t) => count(database.pool, t))),
+      ).toEqual(before);
+    });
+
+    it('[TECH-100] o CPF do Investor não fica no banco: nem na autorização, nem na operation, idempotência ou audit_log', async () => {
+      const { build } = harness;
+      const { homeConceptId } = await build.finalizedHomeEdition();
+      const investor = await build.investorParty();
+      await build.authorization(homeConceptId, START, undefined, punctuatedCpf(investor.document));
+
+      for (const table of [
+        'investor_authorization',
+        'operation',
+        'idempotency_record',
+        'audit_log',
+        'outbox',
+      ]) {
+        const text = await persisted(table);
+        expect(text, table).not.toContain(investor.document);
+        expect(text, table).not.toContain(punctuatedCpf(investor.document));
+      }
+    });
+
+    it('[REQ-027] vigência e revogação da autorização continuam as da D-W3-1', async () => {
+      const { build, handlers, ok } = harness;
+      const { homeConceptId } = await build.finalizedHomeEdition();
+      const authorization = await build.authorization(
+        homeConceptId,
+        START,
+        new Date(START.getTime() + HOUR),
+      );
+      const revoked = await ok(handlers.revokeInvestorAuthorization, {
+        investor_authorization_id: authorization.id,
+        revocation_basis: 'Distrato',
+      });
+
+      expect(authorization.valid_until).toBe(new Date(START.getTime() + HOUR).toISOString());
+      expect(revoked).toMatchObject({
+        party_id: authorization.party_id,
+        revocation_basis: 'Distrato',
+      });
     });
   });
 });

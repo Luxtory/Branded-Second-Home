@@ -6,6 +6,7 @@ import {
   ConfigurationMissingError,
   EnvironmentRestrictionError,
   EnvValidationError,
+  ExternalServiceUnavailableError,
 } from '../infrastructure/env';
 
 /**
@@ -19,5 +20,7 @@ export function unavailableKeys(error: unknown): readonly string[] | null {
   if (error instanceof EnvironmentRestrictionError) return ['VERCEL_ENV'];
   // URL presente porém malformada (ex.: sem `sslmode=verify-full`): configuração inválida, não erro interno.
   if (error instanceof DatabaseConfigError) return ['DATABASE_URL'];
+  // Serviço externo fora (W7): o log nomeia o serviço, como nomeia as chaves.
+  if (error instanceof ExternalServiceUnavailableError) return [error.service];
   return null;
 }

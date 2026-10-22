@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from 'react';
 import { loginAction } from './actions';
-import { INITIAL_LOGIN_STATE, type LoginMessage } from './form-state';
+import { initialLoginState, type LoginDestination, type LoginMessage } from './form-state';
 import { messages } from './i18n/pt-br';
 
 const text = messages.login;
@@ -30,9 +30,13 @@ const NOTICES: Partial<
   },
 };
 
-/** Formulário de login em dois passos: e-mail → código de uso único (TECH-050), com reenvio do código. */
-export function LoginForm() {
-  const [state, formAction, pending] = useActionState(loginAction, INITIAL_LOGIN_STATE);
+/**
+ * Formulário de login em dois passos: e-mail → código de uso único (TECH-050), com reenvio do código. `destination`
+ * (fechado): staff segue para o segundo fator; a Área do Titular abre direto (W7).
+ */
+export function LoginForm({ destination = 'admin' }: { readonly destination?: LoginDestination }) {
+  const [state, formAction, pending] = useActionState(loginAction, initialLoginState(destination));
+  const restart = destination === 'titular' ? '/titular/entrar' : '/entrar';
   // Qual botão enviou o formulário, para o indicador de espera aparecer no botão certo.
   const [resending, setResending] = useState(false);
   const error = state.message === null ? undefined : ERRORS[state.message];
@@ -48,6 +52,7 @@ export function LoginForm() {
         </div>
       )}
       <input type="hidden" name="step" value={state.step} />
+      <input type="hidden" name="destination" value={state.destination} />
       {onCode ? (
         <>
           <input type="hidden" name="email" value={state.email} />
@@ -128,7 +133,7 @@ export function LoginForm() {
         ) : null}
       </div>
       {onCode ? (
-        <a className="lx-link" href="/entrar">
+        <a className="lx-link" href={restart}>
           {text.otherEmail}
         </a>
       ) : null}

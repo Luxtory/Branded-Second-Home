@@ -1,3 +1,4 @@
+import type { PartyDocumentResolver } from '@/features/identity';
 import { CommandRejection, type Actor } from '@/features/platform';
 import { isBrandInUse, type BrandPartner, type StaffRoleName } from '../domain/catalog';
 import type { CatalogStore, CoverImageProcessor, LockMode, MediaStorage } from './ports';
@@ -10,6 +11,8 @@ export interface CatalogDependencies<Tx> {
   readonly store: CatalogStore<Tx>;
   readonly images: CoverImageProcessor;
   readonly media: MediaStorage;
+  /** Party do Investor pelo CPF/CNPJ (módulo identity, D-W3-1). */
+  readonly parties: PartyDocumentResolver<Tx>;
   readonly newId: () => string;
 }
 

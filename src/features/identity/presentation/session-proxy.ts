@@ -33,7 +33,7 @@ export async function refreshSession(
   return response;
 }
 
-/** Rotas com Auth (ADR-0008): só nelas a sessão é renovada. */
+/** Rotas com Auth (ADR-0008; W7: Área do Titular): só nelas a sessão é renovada. */
 export function isSessionPath(pathname: string): boolean {
-  return /^\/(entrar|admin|v1\/admin)(\/|$)/.test(pathname);
+  return /^\/(entrar|admin|titular|v1\/admin)(\/|$)/.test(pathname);
 }

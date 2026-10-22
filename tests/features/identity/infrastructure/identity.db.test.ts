@@ -11,6 +11,8 @@ import {
 } from '@/features/platform';
 import { createPostgresCommandStore } from '@/features/platform/infrastructure/commands/postgres-command-store';
 import { createAuthorizationGuard } from '@/features/identity/application/authorization-guard';
+import { createPostgresDelegationDirectory } from '@/features/identity/infrastructure/postgres-parties';
+import { ownerDelegation, ownerParty } from '../../../support/party-fixtures';
 import { createPostgresGrantDirectory } from '@/features/identity/infrastructure/postgres-grants';
 import { createPostgresStaffDirectory } from '@/features/identity/infrastructure/postgres-staff-directory';
 import type { VerifiedSession } from '@/features/identity/domain/session';
@@ -79,10 +81,13 @@ describe('guard com PostgreSQL real e pipeline de commands (REQ-014, TECH-050/05
 
   beforeAll(async () => {
     database = await createTestDatabase();
-    // `party` nasce na W7; aqui, só a tabela mínima que o gatilho transitório consulta (D-W2-1).
-    await database.pool.query(
-      `CREATE TABLE app.party (id uuid PRIMARY KEY); INSERT INTO app.party VALUES ('${PARTY}')`,
-    );
+    // W7: party real (FK validada do grant) e delegação ativa do parceiro para ela (cadeia do TECH-050).
+    await ownerParty(database.pool, PARTY);
+    await ownerDelegation(database.pool, {
+      partyId: PARTY,
+      userId: PARTNER_USER,
+      validFrom: "'2026-09-01T00:00:00Z'",
+    });
     await database.pool.query(`INSERT INTO auth.users (id) VALUES ('${STAFF_USER}')`);
     db = appDatabase(database.appUrl);
   });
@@ -99,6 +104,7 @@ describe('guard com PostgreSQL real e pipeline de commands (REQ-014, TECH-050/05
         session,
         staff: createPostgresStaffDirectory(() => db),
         grants: createPostgresGrantDirectory(() => db),
+        delegations: createPostgresDelegationDirectory(() => db),
         clock,
       }),
       clock,

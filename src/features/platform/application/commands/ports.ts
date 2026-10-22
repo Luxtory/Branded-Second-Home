@@ -30,6 +30,8 @@ export type StoredResponse =
 export interface IdempotencyEntry {
   readonly command: string;
   readonly requestHash: string;
+  /** Chave do HMAC que pseudonimizou o input no hash (ADR-0020 §5); `null` = hash do input validado. */
+  readonly requestHashKeyId: string | null;
   readonly operationId: string;
   readonly response: StoredResponse | null;
 }
@@ -45,6 +47,7 @@ export interface OperationDraft {
   readonly authorizationRef: string;
   readonly scope: string;
   readonly requestHash: string;
+  readonly requestHashKeyId: string | null;
   readonly at: Date;
 }
 

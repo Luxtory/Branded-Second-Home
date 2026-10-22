@@ -9,6 +9,7 @@ export {
   ConfigurationMissingError,
   EnvironmentRestrictionError,
   EnvValidationError,
+  ExternalServiceUnavailableError,
   type Env,
   type EnvSource,
 } from './infrastructure/env';
@@ -45,6 +46,7 @@ export {
   type CommandContext,
   type CommandExecutor,
   type CommandHandler,
+  type InputFingerprint,
   type CommandOutcome,
   type CommandRequest,
 } from './application/commands/executor';

@@ -17,7 +17,8 @@ export type Module = (typeof MODULES)[number];
 
 /**
  * Coluna "Autoridade" do TECH-051. Detentor, solicitante e ofertante são Titulares em relação ao objeto. `grantee`:
- * operação não crítica que uma party só executa por `authorization_grant` (TECH-051, REQ-014).
+ * operação não crítica que uma party só executa por `authorization_grant` (TECH-051, REQ-014). `invitee` (W7): o próprio
+ * usuário convidado, sobre a delegação pendente dele (spec identity §13.4).
  */
 export type Authority =
   | 'titular'
@@ -27,7 +28,8 @@ export type Authority =
   | 'admin'
   | 'admin_or_super_admin'
   | 'super_admin'
-  | 'grantee';
+  | 'grantee'
+  | 'invitee';
 
 /** Coluna "Membership" do TECH-051: `not_applicable` = "—". */
 export type MembershipRule = 'eligible' | 'not_required' | 'not_applicable';
@@ -101,6 +103,18 @@ const nonCritical = (name: string, module: Module): CommandSpec => ({
 
 export const NON_CRITICAL_OPERATIONS: readonly CommandSpec[] = [
   nonCritical('grant_authorization', 'identity'),
+  // Pessoas e empresas e representações (W7, spec identity §13): party, convite e revogação pelo Admin; ativação pelo
+  // próprio convidado.
+  nonCritical('register_party', 'identity'),
+  nonCritical('create_party_delegation', 'identity'),
+  nonCritical('revoke_party_delegation', 'identity'),
+  {
+    name: 'activate_party_delegation',
+    module: 'identity',
+    authority: 'invitee',
+    membership: 'not_applicable',
+    critical: false,
+  },
   // Catálogo (W3, W4.2; REQ-095; docs/specs/catalog.md §5, §17): o Admin opera Home Concepts, Home Editions e Second
   // Homes.
   nonCritical('register_brand_partner', 'catalog'),
