@@ -104,8 +104,8 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 | 5 | Interesse — núcleo | ownership | REQ-023 | 3 | — | R1 | ⬜ próxima executável (retomada de 2026-10-19) → ✅ (#54, `1fa6f01`, 2026-10-19; escrita fechada em Production) |
 | 4.2 | Ontologia Home Concept → Home Edition → Second Home + correção estrutural do catálogo e do interest | catalog, ownership, admin, design-system, docs | REQ-020, REQ-021, REQ-022, REQ-100 | 4.1, 5 | — | R1 | ✅ concluída (#56, squash `7ac1af8`, 2026-10-20; 7 migrations aplicadas; Production validada) |
 | 6 | Interesse — formulário público | ownership | — | 4, 5, 4.2 | — | R1 | ⬜ próxima executável — P-3 resolvida pelo `02` v4.3 (REQ-022); W4.2 ✅; reconstruída a partir da nova `main` (ver Wave 6 → Status) → ✅ concluída (#59, squash `1d538cc`, 2026-10-21; 3 migrations aplicadas; em Production com a coleta fechada por gates operacionais) |
-| 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ próxima executável (W6 ✅ em 2026-10-21) |
-| 8 | Formalização e calendário civil | ownership, calendar | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003 | 3, 7 | — | R2 | ⬜ |
+| 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ próxima executável (W6 ✅ em 2026-10-21) → ✅ concluída (#61, squash `ef15bbb`, 2026-10-22; 6 migrations aplicadas; estrutura em Production sem dados reais e sem `PII_*`) |
+| 8 | Formalização e calendário civil | ownership, calendar | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003 | 3, 7 | — | R2 | ⬜ próxima executável (W7 ✅ em 2026-10-22) |
 | 9 | Sorteio auditável | ownership | PD-011 | 8 | 10 | R2 | ⬜ |
 | 10 | Custódia e selagem | calendar, inventory | REQ-040, INV-2, INV-3 | 8 | 9 | R2 | ⬜ |
 | 11 | Direito de Uso, janelas e rotações | calendar | REQ-030, REQ-031, REQ-032, REQ-033, REQ-039, PD-004, INV-4, INV-5 | 9, 10 | — | R2 | ⬜ |
@@ -142,6 +142,9 @@ próxima wave funcional executável, reconstruída a partir da `main` corrigida.
 **Atualização 2026-10-21:** W6 ✅ (PR #59, `1d538cc`); a implementação está em Production, mas a coleta de interesse
 continua fechada por gates operacionais (`INTEREST_WRITES` ausente, Aviso de Privacidade `pending`, segredos
 `INTEREST_*` não criados). A W7 passa a ser a próxima wave funcional executável.
+**Atualização 2026-10-22:** W7 ✅ (PR #61, `ef15bbb`); a estrutura de pessoas e empresas (`party`), representação
+(`party_delegation`) e Área do Titular está em Production, sem dados reais e sem os segredos `PII_*` (fail-closed até os
+gates operacionais). A W8 passa a ser a próxima wave funcional executável.
 
 Paralelismo na retomada do B2C: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
 canal do AsyncAPI, telas e `CHANGELOG.md`, e o STRIDE do beacon. A W10 toca migrations de `calendar`/`inventory`,
@@ -835,6 +838,8 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 
 ### Wave 7 — Titulares
 
+- **Status (2026-10-22):** ✅ concluída — PR #61, squash `ef15bbb` (ver Encerramento). Os Status, a Atualização e o
+  Checkpoint de 2026-10-21 abaixo são **histórico / posteriormente superados**.
 - **Status (2026-10-21):** ⬜ próxima executável (W6 ✅, #59). Ainda não iniciada.
   **Atualização (2026-10-21, noite):** 🔄 em andamento na branch `feat/w7-titulares` (spec, ADR-0020 e STRIDE
   `titular-pii` primeiro; um PR draft, sem merge até o checkpoint do fundador).
@@ -865,9 +870,25 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   duplicidade` · `[TECH-050] sem delegação vigente não há acesso` · `[TECH-052] Titular A não lê dados do Titular
   B` · `[ADR-0002] valor cifrado com key_id antigo continua legível após rotação`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect TECH-050,TECH-100 exits 0, stop after 4 tries`
+- **Encerramento (2026-10-22): ✅.** PR #61, squash merge `ef15bbb` (head aprovado `2c1ecdf`), aprovado pelo fundador
+  depois da auditoria de 2026-10-22 (vigências sem sobreposição, um digest por chave do anel, idempotência através da
+  rotação, nomenclatura "Pessoas e empresas" / "Representações", `.gitleaksignore` removido). CI de `main` run
+  39816721969: lint, typecheck, test, e2e, security, migrate e deploy verdes; migrations `20261021220001` a
+  `20261021220006` aplicadas (36 no total); deploy de Production verde em `ef15bbb`. Verificação pós-deploy só de
+  leitura: `party`, `party_document_digest` e `party_delegation` existem, vazias, com RLS; `btree_gist` em `extensions`;
+  `conflict_party_delegation_overlap` e `conflict_party_document_digest` presentes; FK
+  `authorization_grant.grantee_party_id → party` validada e gatilho transitório removido (D-W2-1 encerrada);
+  `investor_authorization.party_id NOT NULL` com FK validada (D-W3-1 encerrada); `idempotency_record.request_hash_key_id`
+  presente; 0 grants, 0 autorizações de Investor, nenhum convite. Fail-closed: telas do Admin e da Área do Titular →
+  307 para o login, APIs de escrita → 403, nenhuma variável `PII_*`, nenhum erro de runtime; Data API com
+  `Accept-Profile: app` → `PGRST002` (nada de `party`, digest, delegação ou `document_ciphertext`). Dados reais dependem
+  dos gates operacionais: template Invite do Supabase, reavaliação da D3, base legal/aviso, os quatro `PII_*` e as
+  autorizações do fundador para a primeira pessoa/empresa e o primeiro convite. O protocolo de rotação em fases do HMAC
+  (ADR-0020) continua obrigatório.
 
 ### Wave 8 — Formalização e calendário civil
 
+- **Status (2026-10-22):** ⬜ próxima executável (W7 ✅, #61). Ainda não iniciada.
 - **Goal**: `formalize_acquisition` é o único ato que cria titularidade, Ação e Direito de Uso, com a alocação
   inicial validada contra o calendário civil.
 - **IDs (dona)**: REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003. **TECH**: TECH-020, TECH-026, TECH-040,
