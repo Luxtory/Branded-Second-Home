@@ -44,4 +44,3 @@ BEGIN
   RETURN p_staff_role_id;
 END
 $$;
-

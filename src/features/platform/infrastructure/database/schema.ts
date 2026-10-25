@@ -26,6 +26,20 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface AppAcquisition {
+  basis_ref: string;
+  configuration_id: number | null;
+  exercise_year: Generated<number | null>;
+  formalized_at: Timestamp;
+  id: string;
+  initial_allocation_id: string | null;
+  location: string;
+  modality: string;
+  operation_id: string;
+  operation_start_date: Timestamp;
+  second_home_id: string;
+}
+
 export interface AppAuditLog {
   acting_party_id: string | null;
   actor_user_id: string | null;
@@ -78,6 +92,19 @@ export interface AppCatalogTerm {
   label: string;
   operation_id: string;
   slug: string;
+}
+
+export interface AppHolding {
+  acquisition_id: string;
+  id: string;
+  operation_id: string;
+  participation_bps: number;
+  party_id: string;
+  role: string;
+  second_home_id: string;
+  stake_id: string | null;
+  valid_from: Timestamp;
+  valid_until: Timestamp | null;
 }
 
 export interface AppHomeConcept {
@@ -233,6 +260,14 @@ export interface AppIdempotencyRecord {
   scope: string;
 }
 
+export interface AppInitialAllocationGrant {
+  alta: number;
+  initial_allocation_id: string;
+  media: number;
+  operation_id: string;
+  position: number;
+}
+
 export interface AppInterest {
   approx_days: number | null;
   created_at: Timestamp;
@@ -276,6 +311,15 @@ export interface AppInvestorAuthorization {
   revoked_at: Timestamp | null;
   valid_from: Timestamp;
   valid_until: Timestamp | null;
+}
+
+export interface AppLuxtoryLegalIdentity {
+  basis_ref: string;
+  document_type: Generated<string | null>;
+  operation_id: string;
+  party_id: string;
+  registered_at: Timestamp;
+  singleton: Generated<boolean>;
 }
 
 export interface AppNotification {
@@ -382,6 +426,64 @@ export interface AppSecondHome {
   timezone: string;
 }
 
+export interface AppSecondHomeAdministration {
+  basis_ref: string;
+  created_at: Timestamp;
+  id: string;
+  operation_id: string;
+  professional: boolean;
+  provider_party_id: string;
+  replaces_id: string | null;
+  scope: string;
+  second_home_id: string;
+  valid_from: Timestamp;
+  valid_until: Timestamp | null;
+}
+
+export interface AppSecondHomeConfiguration {
+  alta: number;
+  annual_days: number;
+  id: number;
+  luxtory_alta: number;
+  luxtory_media: number;
+  media: number;
+  participation_bps: number;
+}
+
+export interface AppSecondHomeInitialAllocation {
+  basis_ref: string;
+  configuration_id: number;
+  exercise_year: Generated<number | null>;
+  id: string;
+  luxtory_alta: number;
+  luxtory_media: number;
+  operation_id: string;
+  operation_start_date: Timestamp;
+  second_home_id: string;
+  validated_at: Timestamp;
+  version: number;
+}
+
+export interface AppSecondHomeOperationStart {
+  acquisition_id: string;
+  basis_ref: string;
+  effective_start_date: Timestamp;
+  id: string;
+  operation_id: string;
+  operation_start_registered_at: Timestamp;
+  second_home_id: string;
+}
+
+export interface AppSpe {
+  acquisition_id: string;
+  document_type: Generated<string | null>;
+  id: string;
+  legal_form: string;
+  operation_id: string;
+  party_id: string;
+  second_home_id: string;
+}
+
 export interface AppStaffRole {
   basis: string;
   granted_at: Timestamp;
@@ -392,11 +494,38 @@ export interface AppStaffRole {
   user_id: string;
 }
 
+export interface AppStake {
+  acquisition_id: string;
+  allocation_position: number;
+  id: string;
+  operation_id: string;
+  participation_bps: number;
+  second_home_id: string;
+  spe_id: string;
+}
+
+export interface AppUseRightLedger {
+  acquisition_id: string;
+  bucket: string;
+  created_at: Timestamp;
+  exercise_year: number;
+  id: string;
+  initial_allocation_id: string | null;
+  movement: string;
+  operation_id: string;
+  quantity: number;
+  second_home_id: string;
+  source: string;
+  stake_id: string;
+}
+
 export interface DB {
+  'app.acquisition': AppAcquisition;
   'app.audit_log': AppAuditLog;
   'app.authorization_grant': AppAuthorizationGrant;
   'app.brand_partner': AppBrandPartner;
   'app.catalog_term': AppCatalogTerm;
+  'app.holding': AppHolding;
   'app.home_concept': AppHomeConcept;
   'app.home_concept_curation': AppHomeConceptCuration;
   'app.home_concept_media': AppHomeConceptMedia;
@@ -408,10 +537,12 @@ export interface DB {
   'app.home_edition_media_file': AppHomeEditionMediaFile;
   'app.home_edition_projected_investment': AppHomeEditionProjectedInvestment;
   'app.idempotency_record': AppIdempotencyRecord;
+  'app.initial_allocation_grant': AppInitialAllocationGrant;
   'app.interest': AppInterest;
   'app.interest_contact': AppInterestContact;
   'app.interest_qualification': AppInterestQualification;
   'app.investor_authorization': AppInvestorAuthorization;
+  'app.luxtory_legal_identity': AppLuxtoryLegalIdentity;
   'app.notification': AppNotification;
   'app.operation': AppOperation;
   'app.outbox': AppOutbox;
@@ -421,5 +552,12 @@ export interface DB {
   'app.party_document_digest': AppPartyDocumentDigest;
   'app.public_idempotency_key': AppPublicIdempotencyKey;
   'app.second_home': AppSecondHome;
+  'app.second_home_administration': AppSecondHomeAdministration;
+  'app.second_home_configuration': AppSecondHomeConfiguration;
+  'app.second_home_initial_allocation': AppSecondHomeInitialAllocation;
+  'app.second_home_operation_start': AppSecondHomeOperationStart;
+  'app.spe': AppSpe;
   'app.staff_role': AppStaffRole;
+  'app.stake': AppStake;
+  'app.use_right_ledger': AppUseRightLedger;
 }
