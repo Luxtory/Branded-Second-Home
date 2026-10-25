@@ -584,6 +584,16 @@ describe('W8 — estrutura patrimonial canônica no PostgreSQL', () => {
     });
   });
 
+  it.each([
+    { from: '-infinity', until: null },
+    { from: '2027-01-01', until: 'infinity' },
+  ])(
+    '[TECH-020] cobertura exige data civil real, sem sentinela PostgreSQL $from/$until',
+    async ({ from, until }) => {
+      await expect(coverage(await root(), from, until)).rejects.toMatchObject({ code: '23514' });
+    },
+  );
+
   it('[TECH-020] cadeia contínua com extremo aberto habilita operação e substituição que abre lacuna falha', async () => {
     const home = await root();
     await facts(home, [await ownerParty(database.pool), await ownerParty(database.pool)], 2);

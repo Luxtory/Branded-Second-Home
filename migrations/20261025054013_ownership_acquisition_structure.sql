@@ -154,6 +154,10 @@ CREATE TABLE app.second_home_administration (
   basis_ref text NOT NULL CHECK (length(btrim(basis_ref)) BETWEEN 1 AND 255),
   operation_id uuid NOT NULL REFERENCES app.operation(id),
   created_at timestamptz NOT NULL,
+  CONSTRAINT conflict_administration_civil_dates CHECK (
+    valid_from BETWEEN DATE '0001-01-01' AND DATE '9999-12-31'
+    AND (valid_until IS NULL OR valid_until BETWEEN DATE '0001-01-01' AND DATE '9999-12-31')
+  ),
   CHECK (valid_until IS NULL OR valid_until > valid_from),
   CHECK (replaces_id IS NULL OR replaces_id <> id),
   UNIQUE (id, second_home_id),
