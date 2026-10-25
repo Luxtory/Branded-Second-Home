@@ -62,6 +62,20 @@ function tech051Table(): Map<string, [Authority, MembershipRule]> {
 }
 
 describe('registro de commands (TECH-051, TECH-011)', () => {
+  it.each([
+    'register_second_home_initial_allocation',
+    'register_second_home_administration',
+    'register_second_home_operation_start',
+  ])('[REQ-095] auxiliar W8 %s usa Admin sem ampliar a tabela crítica', (name) => {
+    expect(commandRegistry.get(name)).toEqual({
+      name,
+      module: 'ownership',
+      authority: 'admin',
+      membership: 'not_applicable',
+      critical: false,
+    });
+  });
+
   it('[TECH-051] o registro crítico é exatamente a tabela fechada do 03, com autoridade e Membership', () => {
     const critical = commandRegistry.list().filter((spec) => spec.critical);
     const registered = new Map(
