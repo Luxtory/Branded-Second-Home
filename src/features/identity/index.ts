@@ -7,6 +7,7 @@ export { SignOutButton } from './presentation/sign-out-button';
 export { AuthUnavailable } from './presentation/auth-unavailable';
 export { exercisedRole } from './application/staff-access';
 export { assertTransactionalAdminAuthority } from './infrastructure/transactional-admin-authority';
+export { readPartyReference } from './infrastructure/party-reference';
 export type { StaffRoleRecord } from './domain/staff';
 export {
   createAdminCommandRoute,

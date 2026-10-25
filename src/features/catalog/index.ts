@@ -16,3 +16,11 @@ export {
   readProjectedInvestmentReferences,
 } from './infrastructure/postgres-cross-module-reader';
 export { formatMoney } from './presentation/money';
+// W8: transactional authority, aggregate lock and immutable definitive facts (ADR-0021).
+export type {
+  AcquisitionCatalog,
+  AcquisitionOrigin,
+  SecondHomeFormalization,
+  SecondHomeOperationStart,
+} from './application/acquisition-port';
+export { postgresAcquisitionCatalog } from './infrastructure/postgres-acquisition-catalog';

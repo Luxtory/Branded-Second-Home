@@ -2,12 +2,16 @@ import { headers } from 'next/headers';
 import { NextRequest } from 'next/server';
 import {
   commandResponse,
+  BODY_NOT_TEXT,
+  BODY_TOO_LARGE,
   createProductionExecutor,
   dispatchOutboxAfterCommit,
   errorResponse,
   getDatabase,
   idempotencyKey,
   isSameOrigin,
+  isJsonRequest,
+  readBoundedText,
   resolveCorrelationId,
   systemClock,
   unavailableKeys,
@@ -17,6 +21,7 @@ import {
   type Database,
   type DatabaseTransaction,
   type EnvSource,
+  type ErrorCode,
   type JsonValue,
   type LogPort,
   type RouteContext,
@@ -105,10 +110,32 @@ async function readJson(request: Request): Promise<{ ok: true; value: unknown } 
   }
 }
 
+/** Opt-in bounded JSON parsing after session verification; legacy endpoints retain their existing reader. */
+async function readCommandBody(
+  request: Request,
+  maxBodyBytes?: number,
+): Promise<{ ok: true; value: unknown } | { ok: false; code: ErrorCode }> {
+  if (maxBodyBytes === undefined) {
+    const body = await readJson(request);
+    return body.ok ? body : { ok: false, code: 'ERR_VALIDATION' };
+  }
+  if (!isJsonRequest(request)) return { ok: false, code: 'ERR_UNSUPPORTED_MEDIA_TYPE' };
+  try {
+    const raw = await readBoundedText(request, maxBodyBytes);
+    if (raw === BODY_TOO_LARGE) return { ok: false, code: 'ERR_PAYLOAD_TOO_LARGE' };
+    if (raw === BODY_NOT_TEXT) return { ok: false, code: 'ERR_VALIDATION' };
+    return { ok: true, value: JSON.parse(raw) as unknown };
+  } catch {
+    return { ok: false, code: 'ERR_VALIDATION' };
+  }
+}
+
 export interface AdminCommandRouteOptions<I, R extends JsonValue> extends AdminCommandDependencies {
   /** Command do request (montado a cada request: o registro e as dependências podem ser injetados). */
   readonly command: () => AdminCommand<I, R>;
   readonly successStatus: number;
+  /** Explicit opt-in actual byte limit and JSON media type check; parsed only after authentication. */
+  readonly maxBodyBytes?: number;
   /** Corpo JSON + parâmetros do caminho → entrada do command. Padrão: o corpo. */
   readonly input?: (body: unknown, params: Readonly<Record<string, string>>) => unknown;
   /** Disparo do outbox depois de um commit novo; padrão: `after()` do Next (TECH-091). */
@@ -135,8 +162,8 @@ export function createAdminCommandRoute<I, R extends JsonValue>(
       );
       const session = await auth.session();
       if (session === null) return errorResponse('ERR_UNAUTHENTICATED', correlationId);
-      const body = await readJson(request);
-      if (!body.ok) return errorResponse('ERR_VALIDATION', correlationId);
+      const body = await readCommandBody(request, options.maxBodyBytes);
+      if (!body.ok) return errorResponse(body.code, correlationId);
       const params = segment === undefined ? {} : await segment.params;
       const outcome = await runAdminCommand(
         session,
