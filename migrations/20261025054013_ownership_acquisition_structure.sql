@@ -114,6 +114,7 @@ CREATE TABLE app.holding (
 );
 CREATE INDEX holding_party_idx ON app.holding(party_id, second_home_id);
 CREATE INDEX holding_acquisition_idx ON app.holding(acquisition_id);
+CREATE INDEX stake_acquisition_idx ON app.stake(acquisition_id);
 
 -- TECH-026: append-only ledger; W8 implements initial grants only. Other movements/balance belong to W11.
 CREATE TABLE app.use_right_ledger (
@@ -139,6 +140,7 @@ CREATE TABLE app.use_right_ledger (
     REFERENCES app.second_home_initial_allocation(id, second_home_id)
 );
 CREATE INDEX use_right_ledger_operation_idx ON app.use_right_ledger(operation_id);
+CREATE INDEX use_right_ledger_acquisition_idx ON app.use_right_ledger(acquisition_id);
 
 CREATE TABLE app.second_home_administration (
   id uuid PRIMARY KEY,

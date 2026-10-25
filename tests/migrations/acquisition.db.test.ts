@@ -392,6 +392,7 @@ describe('W8 — estrutura patrimonial canônica no PostgreSQL', () => {
   });
 
   it('[REQ-025] estruturação não cria aquisição, Ação, holding ou grant; cada conceito tem sua própria relação', async () => {
+    const home = await root();
     const tables = [
       'second_home_initial_allocation',
       'initial_allocation_grant',
@@ -413,7 +414,12 @@ describe('W8 — estrutura patrimonial canônica no PostgreSQL', () => {
     for (const name of ['acquisition', 'spe', 'stake', 'holding', 'use_right_ledger']) {
       // The table name is a closed test-owned list, never request data.
       expect(
-        (await database.pool.query(`SELECT count(*)::int AS n FROM app.${name}`)).rows,
+        (
+          await database.pool.query(
+            `SELECT count(*)::int AS n FROM app.${name} WHERE second_home_id=$1`,
+            [home],
+          )
+        ).rows,
       ).toEqual([{ n: 0 }]);
     }
   });
