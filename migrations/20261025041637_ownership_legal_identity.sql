@@ -45,6 +45,7 @@ REVOKE ALL ON FUNCTION app.register_luxtory_legal_identity(uuid, text) FROM PUBL
 
 -- migrate:down
 DO $$ BEGIN
+  LOCK TABLE app.luxtory_legal_identity IN ACCESS EXCLUSIVE MODE;
   IF EXISTS (SELECT 1 FROM app.luxtory_legal_identity) THEN
     RAISE EXCEPTION 'W8 rollback would discard a registered institutional identity';
   END IF;

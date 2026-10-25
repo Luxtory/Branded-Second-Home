@@ -231,6 +231,11 @@ END $$;
 DO $$
 DECLARE v_table text;
 BEGIN
+  -- Serialize before observing facts, in the same table order as structure.down.
+  FOREACH v_table IN ARRAY ARRAY['second_home_initial_allocation','initial_allocation_grant','acquisition','spe',
+      'stake','holding','use_right_ledger','second_home_administration','second_home_operation_start'] LOOP
+    EXECUTE format('LOCK TABLE app.%I IN ACCESS EXCLUSIVE MODE', v_table);
+  END LOOP;
   IF EXISTS (SELECT 1 FROM app.acquisition) OR EXISTS (SELECT 1 FROM app.second_home_initial_allocation)
       OR EXISTS (SELECT 1 FROM app.second_home_administration) THEN
     RAISE EXCEPTION 'W8 rollback cannot remove ownership invariants with formalized facts';
