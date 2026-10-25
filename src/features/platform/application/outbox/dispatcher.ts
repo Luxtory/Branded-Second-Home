@@ -5,10 +5,11 @@ import type { ConsumerRegistry, OutboxEvent } from './consumers';
 /** Persistência do outbox (implementação PostgreSQL em `infrastructure/outbox/`). */
 export interface OutboxStore<Tx> {
   /**
-   * Em transação própria, trava o evento pendente mais antigo fora de `skip` (sem esperar por eventos travados por
-   * outra varredura) e roda `work`. `null` quando não há evento.
+   * Filter `eventTypes` before ordering/limiting/locking, then lock the oldest pending event outside `skip` in its
+   * own transaction without waiting for other scans. An empty list never queries events. `null` means no event.
    */
   withNextPending<T>(
+    eventTypes: readonly string[],
     skip: readonly string[],
     work: (event: OutboxEvent, tx: Tx) => Promise<T>,
   ): Promise<{ readonly event: OutboxEvent; readonly value: T } | null>;
@@ -46,10 +47,14 @@ const errorName = (error: unknown): string =>
  * consumidor mantém o evento pendente para a próxima varredura e nunca desfaz o domínio.
  */
 export async function dispatchOutbox<Tx>(deps: DispatchDependencies<Tx>): Promise<DispatchResult> {
+  const eventTypes = deps.consumers.eventTypes();
+  if (eventTypes.length === 0) return { delivered: 0, failed: 0 };
   const seen: string[] = [];
   let delivered = 0;
   while (seen.length < deps.batchSize) {
-    const outcome = await deps.store.withNextPending(seen, (event, tx) => deliver(deps, event, tx));
+    const outcome = await deps.store.withNextPending(eventTypes, seen, (event, tx) =>
+      deliver(deps, event, tx),
+    );
     if (outcome === null) break;
     seen.push(outcome.event.id);
     if (outcome.value) delivered += 1;

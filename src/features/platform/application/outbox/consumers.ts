@@ -52,4 +52,9 @@ export class ConsumerRegistry<Tx> {
   forEvent(eventType: string): readonly OutboxConsumer<Tx>[] {
     return [...this.byName.values()].filter((consumer) => consumer.eventTypes.includes(eventType));
   }
+
+  /** Eligible event types for SQL filtering before batch limits and locks (ADR-0021). */
+  eventTypes(): readonly string[] {
+    return [...new Set([...this.byName.values()].flatMap((consumer) => consumer.eventTypes))];
+  }
 }

@@ -39,6 +39,8 @@ import { withAuth } from './server-auth';
 export interface AdminCommand<I, R extends JsonValue> {
   readonly handler: CommandHandler<I, R, DatabaseTransaction>;
   readonly role: StaffRole;
+  /** Optional server policy after the guard and before idempotency; existing commands do not opt in (ADR-0021). */
+  assertAvailable?(): void | Promise<void>;
 }
 
 export interface AdminCommandDependencies {
@@ -71,7 +73,17 @@ async function runAdminCommand<I, R extends JsonValue>(
     clock,
   });
   const executor = createProductionExecutor({ guard, log: call.log, source, database: database() });
-  return executor.execute(command.handler, {
+  const handler: CommandHandler<I, R, DatabaseTransaction> =
+    command.assertAvailable === undefined
+      ? command.handler
+      : {
+          ...command.handler,
+          async assertAvailable() {
+            await command.assertAvailable?.();
+            await command.handler.assertAvailable?.();
+          },
+        };
+  return executor.execute(handler, {
     actor: { kind: 'user', userId: session.userId, actingPartyId: null, role: command.role },
     idempotencyKey: call.idempotencyKey,
     correlationId: call.correlationId,

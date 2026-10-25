@@ -12,6 +12,15 @@ const consumer = (name: string, eventTypes: string[]): OutboxConsumer<unknown> =
 });
 
 describe('registro de consumidores do outbox (TECH-091)', () => {
+  it('[ADR-0021] expõe tipos elegíveis únicos, incluindo registro vazio', () => {
+    const registry = new ConsumerRegistry([
+      consumer('notifier', ['booking.confirmed', 'booking.cancelled']),
+      consumer('mirror', ['booking.confirmed']),
+    ]);
+    expect(registry.eventTypes()).toEqual(['booking.confirmed', 'booking.cancelled']);
+    expect(new ConsumerRegistry([]).eventTypes()).toEqual([]);
+  });
+
   it('entrega cada tipo de evento só aos consumidores inscritos', () => {
     const registry = new ConsumerRegistry([
       consumer('notifier', ['booking.confirmed', 'booking.cancelled']),
