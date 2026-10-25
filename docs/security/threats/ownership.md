@@ -347,5 +347,7 @@ Ator autorizado: Admin AAL2 vigente + base registrada; delegação identifica re
 | T-809 Repudiation — rollback parcial/ato sem base | operation/audit/outbox no commit; rejeição no pipeline vigente | fault injection em cada etapa, nenhum efeito patrimonial parcial |
 | T-810 Tampering — sorteio agendado descartado | outbox genérico consumer-aware, evento pendente até W9 | desconhecidos > batch, conhecido entregue, consumer futuro elegível |
 | T-811 Elevation — ativação produtiva indevida | ACQUISITION_WRITES opt-in, ausência fecha antes da idempotência | REST/SA 503/indisponível sem persistência; fluxo anterior preservado |
+| T-812 Tampering — rollback concorre com criação de fato | ACCESS EXCLUSIVE antes de EXISTS nos down, ordem consistente e recusa com fatos | writer pendente, down bloqueado, writer comita, down recusa e preserva registro/proteções |
+| T-813 Denial of service — corpo Admin sem limite | JSON efetivo até 32 KiB nas rotas novas, parsing depois da sessão | 413 mesmo com Content-Length ausente/forjado; 415 para mídia incompatível; endpoints anteriores preservados |
 
 Sem nova criptografia, sem PII em payload/audit/outbox e sem efeito econômico por administração. Residuais: qualidade da base registrada pelo Admin; obrigações/compromissos fora do modelo não são detectados pelo software. Dados reais e referência institucional dependem de ativação posterior autorizada. W9/W10/W11 permanecem fora desta superfície.

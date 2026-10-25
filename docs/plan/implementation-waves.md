@@ -900,6 +900,13 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   - Carga imutável de `second_home_configuration` com as 4 configurações do `01` §8.1 (TECH-026).
   - `second_home_administration` com cobertura obrigatória do Co-Owner em operação (TECH-020).
   - `second_home_initial_allocation` com as validações do TECH-020, sem fórmula presumida.
+  - Subconjunto inicial do `use_right_ledger` append-only (TECH-026): somente `grant`, com origem
+    `configuration | initial_allocation`, Ação, exercício, categoria, quantidade e `operation_id`. A W8 não calcula
+    saldo nem implementa consume/restore/expire/correction, grants operacionais futuros, leap, janelas ou rotações
+    (W11); não declara os IDs operacionais da W11 entregues.
+  - Registro unidirecional do início efetivo na mesma base civil congelada pela formalização; cobertura profissional
+    contínua em Co-Owner (`POST /v1/admin/second-homes/{id}/operation-start`, complemento técnico aprovado na W8).
+    Não cria lifecycle genérico, encerramento, suspensão, reserva, custódia ou selagem.
   - `formalize_acquisition` (TECH-051): Owner → `holding` de 100%; Co-Owner → `spe` + N `stake` iguais + `holding`s,
     exige a alocação no exercício parcial e agenda o sorteio. Trava da estrutura da Second Home; o adquirente final
     segue as mesmas regras (complemento do REQ-027).

@@ -380,6 +380,40 @@ nova.
 4. **Não publicar Home Edition de teste em Production.** A primeira Home Edition real segue o ciclo do Admin:
    preparação → finalização → publicação.
 
+## Preparar a W8 em produção (formalização e calendário civil)
+
+Spec [`ownership`](../specs/ownership.md) §15, [`calendar`](../specs/calendar.md),
+[ADR-0021](../adr/0021-formalizacao-calendario-civil-e-outbox.md). O PR funcional permanece em draft durante o
+desenvolvimento. Merge só depois do checkpoint do fundador; nenhuma configuração ou formalização produtiva está
+autorizada pela entrega da Wave.
+
+1. **Manter fechado:** não criar `ACQUISITION_WRITES`, `PII_*`, party, convite ou identidade institucional real e não
+   criar dados sintéticos em Production. Os gates da W7 e da coleta de interesse continuam independentes e fechados.
+2. Depois de eventual merge autorizado, somente o pipeline aplica as seis migrations W8 (36 → 42) e publica o app.
+   Conferir em leitura as versões, as quatro linhas imutáveis de `second_home_configuration`, RLS/privilégios e zero
+   fatos nas novas relações. A carga das configurações é o único catálogo inserido pelas migrations.
+3. `ACQUISITION_WRITES` ausente/`closed`/inválido mantém as quatro mutations novas indisponíveis. Request válido e
+   autorizado recebe `503 ERR_UNAVAILABLE`; sessão/papel/MFA recusados conservam os erros de autenticação/autorização.
+   O gate precede lookup/reserva da idempotência: inclusive uma chave antiga não devolve replay enquanto fechado.
+   REST e Server Actions usam a mesma regra. Leituras e o cadastro anterior de Second Home permanecem independentes.
+4. **Identidade institucional é um gate posterior**, sem variável de ambiente, busca por nome ou leitura do CNPJ.
+   Após autorização específica do fundador e conclusão dos gates de identidade/dados reais da W7, o operador poderá
+   referenciar uma `party` CNPJ existente pelo procedimento versionado e auditado:
+   `SELECT app.register_luxtory_legal_identity('<party_id CNPJ>', '<referência da base>');`.
+   A função é invoker e não tem execução para `luxtory_app`, `authenticated` ou `anon`. Não cria a party, não copia
+   seu documento e não admite CPF. A referência singleton é imutável. Ausência na formalização Co-Owner resulta em
+   `ERR_PARAMETER_MISSING`, sem efeito patrimonial.
+5. Primeira formalização real exige autorização posterior, reavaliação D3 e os pré-requisitos operacionais aplicáveis.
+   A data-base civil é definitiva no ato; alocação parcial e capacidade Luxtory são explícitas, sem proporcionalidade.
+   Administração Co-Owner deve cobrir continuamente o período operacional, com extremo final realmente aberto; não
+   presumir renovação. Registro posterior de início declara a mesma base e não abre reservas ou calendário.
+6. `ownership.initial_draw_scheduled` sem consumer fica pendente, sem tentativa, recibo ou erro. Isso é esperado até a
+   W9 registrar seu consumer. Não marcar entregue manualmente nem executar sorteio, selagem, custódia ou rotações.
+7. **Rollback:** fechar o gate interrompe novas mutations sem desfazer fatos. Os `down` recusam descartar identidade,
+   aquisição, alocação ou administração registradas e bloqueiam escritores antes da verificação. Com fatos, preservar
+   o banco e preparar correção por migration nova; nunca desabilitar triggers ou apagar histórico. Retorno da aplicação
+   e migrations seguem o pipeline, com decisão explícita do fundador.
+
 ## Rotacionar segredos
 
 - `CRON_SECRET`: gere outro valor, atualize na Vercel (Production) e refaça o deploy (passo 6).

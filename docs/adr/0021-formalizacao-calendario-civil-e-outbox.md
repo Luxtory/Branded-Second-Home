@@ -41,3 +41,18 @@ W9 implementa consumidor/sorteio; W10 possui calendário selado/custódia/Invent
 Base timestamptz: adicionaria precisão de início não definida pelo domínio. Datas por alocação: pareceriam outra fonte de disponibilidade. Identidade Luxtory em env: referência efêmera sem integridade relacional.
 Validar administração só no início/por cron: permitiria estado operacional descoberto após expiração. Inventar encerramento automático: sem autorização normativa.
 Exceção de evento de sorteio no platform: acoplamento desnecessário; seleção genérica resolve o mesmo problema.
+
+## Concretização técnica da W8 (2026-10-25)
+
+- `acquisition` e `second_home_operation_start` são extensões relacionais imutáveis 1:1 da raiz Second Home já
+  imutável do catálogo. Evitam conceder UPDATE na raiz; os fatos definitivos continuam pertencendo à Second Home.
+- Datas PostgreSQL são projetadas como ISO civil textual nas consultas, sem reinterpretar `DATE` pelo timezone do
+  processo JavaScript. Instantes de auditoria permanecem UTC.
+- As rotas novas limitam JSON efetivo a 32 KiB, com 413/415 contratados. A leitura limitada opt-in fica depois da
+  sessão verificada na entrada Admin compartilhada, preservando o parser dos endpoints anteriores e o mesmo executor.
+- Rollbacks que verificam ausência de fatos adquirem locks de escrita antes do `EXISTS`, mantidos na transação.
+  A regressão concorrente comprova escritor pendente → commit → recusa do down; não há janela para descartar fatos
+  que se tornem visíveis durante a espera de DDL.
+
+Estas são escolhas de implementação, sem nova regra de negócio. A reconciliação com `main` b7b42a7 após o hotfix
+\#65 preservou o inventário de eventos descrito acima: o hotfix alterou somente Zod/manifests, sem produtor adicional.
