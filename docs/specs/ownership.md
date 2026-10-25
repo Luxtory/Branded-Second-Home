@@ -680,3 +680,62 @@ mensagens de erro do banco nunca entram no log. A página registra só falhas t�
   segredo ou Aviso `approved` é criado na W6.
 - Ativação: runbook em [`docs/how-to/operacao.md`](../how-to/operacao.md) depois dos gates da §14.12.
 - Rollback: `down` das migrations testado (`npm run db:check`), fail-closed se houver contato ou pré-qualificação.
+
+## 15. W8 — Formalização e calendário civil
+
+### 15.1 Autoridade e rastreabilidade
+
+Entrega própria: REQ-010/022/024/025/026 e PD-003 (calendar). Fontes: 01 BR-025/032/033/050–054/060–083/107–109; 03 TECH-001/020/026/040/041/051–056/110. Plano e adendo aprovados; execução em docs/plan/w8-formalizacao-calendario-civil.md; ADR-0021.
+CANÔNICA é a estrutura e o ato criador; N parties distintas e a resolução CNPJ da SPE são DERIVAÇÕES NECESSÁRIAS; schema, base civil congelada e barreiras são PROPOSTAS W8. Infraestrutura W1/W2/W7 é HERDADA.
+
+### 15.2 Modelo e commands
+
+formalize_acquisition exige Admin AAL2 + basis_ref registrada e usa o executor existente. Owner: exatamente uma party e holding 100%, sem SPE/Ação artificial. Co-Owner: party CNPJ da SPE, forma S.A. fechada, configuração 10/8/4/2, N Ações/holdings/parties distintas equivalentes; identidade institucional registrada excluída dos adquirentes.
+N Ações nunca significam N posições para a mesma party. A mesma party pode ser Owner de A e Co-Owner de B. Exclusões temporais por Second Home/party e Ação impedem sobreposições incompatíveis.
+Antes do ato, interesse/alocação/administração não criam holdings, Ações ou grants.
+
+Second Home conserva Home Edition finalizada e versão de Home Concept fixadas na aprovação comercial. A formalização registra localização concreta, modalidade/configuração definitivas e operation_start_date civil; nenhuma dessas informações migra para Home Edition. Campos originais e fatos formalizados são imutáveis. Publicação da Home Edition não é condição para formalizar.
+Sem condições financeiras genéricas, preços, descontos, parcelamento, quitação ou dados de contrato digital. basis_ref referencia a evidência do ato e não substitui semântica financeira ausente.
+
+API-first: POST /v1/admin/acquisitions; POST /v1/admin/second-homes/{id}/initial-allocation; /administration; /operation-start. Auxiliares REQ-095 no registro não crítico, mesmo guard/executor/auditoria. Respostas mínimas: id, second_home_id e operation_id.
+Inputs estritos; CPF/CNPJ nunca atravessa esses payloads. Erros existentes e mensagens i18n; não incluir bases, payload ou detalhes PostgreSQL em log/erro.
+
+### 15.3 Base civil e primeiro exercício
+
+operation_start_date DATE local usa o timezone IANA já imutável da Second Home. O ano define o primeiro exercício; início após 01/01 exige alocação inicial explícita antes da formalização Co-Owner. Sua proteção após grants é escolha conservadora W8, não nova Business Rule.
+Alocação tem configuração, base/exercício, itens por posição técnica 1..N e categorias alta/media, capacidade Luxtory por categoria, basis/operação. É snapshot imutável sem linhas por noite; posição não é ordem de sorteio.
+Direitos são iguais em cada categoria. Total N × quantidade por Ação + capacidade Luxtory <= capacidade civil futura da categoria, respeitando limites anuais da configuração. Quantidades são explícitas; zero nunca é inferido, categorias não se compensam e nenhuma proporcionalidade é calculada. Não é obrigatório esgotar toda capacidade parcial.
+Calendar enumera noites futuras do exercício desde a base, exclui leap e usa check-in 14h local; ownership relê relógio após locks. Não há fonte de compromisso de noites pré-formalização na base atual. W8 não cria prova externa, Inventário ou calendário paralelo.
+
+### 15.4 Grants
+
+use_right_ledger append-only é CANÔNICO (TECH-026). Subconjunto W8: movement=grant; source=configuration|initial_allocation; stake_id, exercício, categoria alta/media, quantidade e operation_id. FKs/constraint agregada verificam fonte/quantidade e pertencimento à mesma Second Home.
+Grant inicial é único por Ação/exercício/categoria e só nasce no ato formalize_acquisition. Owner tem propriedade/capacidade integral pela holding, sem fabricar Ação para encaixá-lo no ledger Co-Owner. 29/02 não recebe grant W8.
+
+### 15.5 Administração e início
+
+second_home_administration registra provider_party_id existente, professional, escopo explicitamente de administração, basis_ref e vigência civil [valid_from,valid_until). Os escopos suportados são professional_administration e full_luxtory_administration, separados de Property Services/Membership. O segundo exige prestador igual à referência institucional Luxtory.
+Substituição: novo registro referencia replaces_id; o anterior permanece no histórico, com cobertura efetiva limitada ao início do sucessor. A mesma cobertura não tem dois sucessores. Não há DELETE funcional nem reescrita da base anterior.
+Administração profissional em operação Co-Owner: união das coberturas válidas, considerando substituições, contém o período aberto desde operation_start_date. Constraint trigger diferível e lock da raiz protegem início e alterações contra lacunas. Cadeias contínuas são aceitas; somente coberturas finitas não habilitam início, pois W8 não modela encerramento. Extremo aberto requer base real sem termo final; não pressupõe renovação/perpetuidade.
+register_second_home_operation_start exige formalização, basis_ref e declaração effective_start_date igual à base congelada, não futura em relação à data local do registro. Preenche uma única vez operation_start_registered_at UTC, referência de base e operation_id. Data divergente falha fechado, sem recalcular/redistribuir grants. O instante do registro não é um instante físico presumido de início.
+Não abre reserva/calendário, não sela, não cria custódia, encerramento ou suspensão. Falta de administração não cria consequência econômica.
+
+### 15.6 Identidade institucional e rollout
+
+ownership possui app.luxtory_legal_identity singleton: party CNPJ existente, basis_ref, operação e data; imutável. Migration vazia; provisionamento real posterior restrito/auditado. Nenhum nome/documento/env identifica Luxtory. Ausência em Co-Owner => ERR_PARAMETER_MISSING 422 pelo pipeline; nenhuma titularidade é criada.
+ACQUISITION_WRITES: somente open habilita; closed/ausente/valor inválido fecham. Local/CI abertura explícita por configuração injetada; Preview permanece sem banco canônico. Política única opt-in na entrada compartilhada Admin, depois da autorização e antes de idempotência/efeitos. REST 503 ERR_UNAVAILABLE, Server Action indisponível. Sem variável criada/aberta nesta Wave.
+Leituras e register_second_home anterior independem do gate. Production não recebe dados reais/sintéticos, PII_*, identidade institucional ou convites.
+
+### 15.7 Banco, concorrência e leitura
+
+Formalização all-or-nothing na mesma transação para fatos definitivos, aquisição, SPE/Ações/holdings, grants, auditoria e evento ownership.initial_draw_scheduled. Falha desfaz efeitos; executor preserva seu registro separado de recusa funcional. Replay não duplica efeito nem evento; outra chave concorrente não formaliza novamente.
+Preâmbulo: trava compartilhada consultiva da staff_role exata que autorizou, releitura de user/admin/revogação; revogação obtém exclusiva correspondente antes do FOR UPDATE. Chave app.staff_role:<id>, hashtextextended(...,0), sem UPDATE/EXEC de staff concedido à aplicação.
+Depois: preâmbulo do catálogo Brand Partner/autorização Investor; raiz Second Home; Ações em ordem quando existentes, respeitando subconjunto TECH-053. Deadlock/timeout segue retry vigente. Não mudar semântica de commands anteriores.
+RLS exige representação vigente + holding aplicável. Grants SELECT por coluna e consultas explícitas; bases/operation_id/refs administrativas/institucional e outros Co-Owners não são dados do Titular. PII permanece na W7; não replicar cifra ou HMAC. Sem grants de escrita authenticated/anon.
+
+### 15.8 Fronteiras e aceite
+
+W9: consumidor do evento/sorteio/PD-011/aleatoriedade/evidências. W10: second_home_date, selagem, custódia e Inventário/REQ-040/INV-2/3. W11: balance/consume/restore/expire/correction, grants operacionais futuros/leap, janelas e rotações/REQ-030/031/032/033/039/PD-004/INV-4/5. A validação parcial referencia REQ-033, sem declarar sua entrega operacional.
+Testes: REQ-010 mesma party em papéis por Second Home; REQ-024 único Owner/100%/derivação; REQ-025 ausência prévia/ato criador; REQ-026 equivalência/cardinalidade/imutabilidade/distinção de entidades; REQ-022 trava de modalidade; PD-003/EC-3 e TECH-110 calendário até 2100/fusos/administração/alocação.
+PostgreSQL real comprova rollback, cardinalidade, CPF-SPE, Luxtory, RLS de linhas e colunas, TOCTOU nas duas ordens, duas formalizações, replay/conflito, administração sem lacunas. UI Admin com origem/localização/modalidade/configuração/adquirentes/SPE/base/admin/alocação/basis; DS/i18n, checkpoint 390/1440, axe 0 e overflow 0 320..1920.
+Gates integrais: npm run verify; npm run test:e2e; npm run trace -- --expect REQ-010,REQ-022,REQ-024,REQ-025,REQ-026,PD-003. Status W8 somente no closeout após merge autorizado.
