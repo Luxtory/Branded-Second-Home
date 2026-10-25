@@ -694,6 +694,12 @@ formalize_acquisition exige Admin AAL2 + basis_ref registrada e usa o executor e
 N Ações nunca significam N posições para a mesma party. A mesma party pode ser Owner de A e Co-Owner de B. Exclusões temporais por Second Home/party e Ação impedem sobreposições incompatíveis.
 Antes do ato, interesse/alocação/administração não criam holdings, Ações ou grants.
 
+Concretização W8: `acquisition` é a extensão 1:1 imutável dos fatos definitivos da Second Home. A seam pública
+`AcquisitionCatalog` é a única escritora dessa extensão e do registro posterior `second_home_operation_start`;
+ownership orquestra a formalização e persiste SPE/Ações/holdings/grants na mesma transação. A raiz do catálogo não
+recebe UPDATE, e os fatos não são duplicados em duas tabelas. A posição de alocação da Ação é técnica, sem determinar
+o sorteio W9 ou as rotações W11.
+
 Second Home conserva Home Edition finalizada e versão de Home Concept fixadas na aprovação comercial. A formalização registra localização concreta, modalidade/configuração definitivas e operation_start_date civil; nenhuma dessas informações migra para Home Edition. Campos originais e fatos formalizados são imutáveis. Publicação da Home Edition não é condição para formalizar.
 Sem condições financeiras genéricas, preços, descontos, parcelamento, quitação ou dados de contrato digital. basis_ref referencia a evidência do ato e não substitui semântica financeira ausente.
 

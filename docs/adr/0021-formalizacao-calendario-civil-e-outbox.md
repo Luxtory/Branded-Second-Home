@@ -46,6 +46,7 @@ Exceção de evento de sorteio no platform: acoplamento desnecessário; seleçã
 
 - `acquisition` e `second_home_operation_start` são extensões relacionais imutáveis 1:1 da raiz Second Home já
   imutável do catálogo. Evitam conceder UPDATE na raiz; os fatos definitivos continuam pertencendo à Second Home.
+  A seam pública catalog escreve essas extensões; ownership conduz a transação e escreve as relações patrimoniais.
 - Datas PostgreSQL são projetadas como ISO civil textual nas consultas, sem reinterpretar `DATE` pelo timezone do
   processo JavaScript. Instantes de auditoria permanecem UTC.
 - As rotas novas limitam JSON efetivo a 32 KiB, com 413/415 contratados. A leitura limitada opt-in fica depois da
