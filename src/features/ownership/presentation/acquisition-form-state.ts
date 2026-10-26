@@ -3,7 +3,18 @@ import { unstable_rethrow } from 'next/navigation';
 export interface AcquisitionFormState {
   readonly key: string;
   readonly values: Readonly<Record<string, string>>;
-  readonly errors: Readonly<Record<string, 'required' | 'invalid' | 'confirmation'>>;
+  readonly errors: Readonly<
+    Record<
+      string,
+      | 'required'
+      | 'invalid'
+      | 'confirmation'
+      | 'acquirerCount'
+      | 'duplicateAcquirer'
+      | 'allocationDate'
+      | 'endBeforeStart'
+    >
+  >;
   readonly rejection: ErrorCode | 'invalid' | 'unexpected' | null;
 }
 export const acquisitionInitialState = (key: string): AcquisitionFormState => ({

@@ -27,11 +27,21 @@ export const formalizeAcquisitionInput = z
   ])
   .refine(
     (input) =>
+      input.modality === 'owner' || input.acquirer_party_ids.length === input.configuration_id,
+    { path: ['configuration_id'], message: 'acquirerCount' },
+  )
+  .refine(
+    (input) =>
       input.modality === 'owner' ||
-      (input.acquirer_party_ids.length === input.configuration_id &&
-        new Set(input.acquirer_party_ids).size === input.configuration_id &&
-        (input.operation_start_date.slice(5) !== '01-01') ===
-          (input.initial_allocation_id !== undefined)),
+      new Set(input.acquirer_party_ids).size === input.acquirer_party_ids.length,
+    { path: ['acquirer_party_ids', 0], message: 'duplicateAcquirer' },
+  )
+  .refine(
+    (input) =>
+      input.modality === 'owner' ||
+      (input.operation_start_date.slice(5) !== '01-01') ===
+        (input.initial_allocation_id !== undefined),
+    { path: ['operation_start_date'], message: 'allocationDate' },
   );
 const quantity = z.strictObject({
   alta: z.number().int().min(0).max(103),
@@ -59,7 +69,10 @@ const coverage = z
     valid_until: date.optional(),
     replaces_id: id.optional(),
   })
-  .refine((input) => input.valid_until === undefined || input.valid_until > input.valid_from);
+  .refine((input) => input.valid_until === undefined || input.valid_until > input.valid_from, {
+    path: ['valid_until'],
+    message: 'endBeforeStart',
+  });
 export const administrationInput = z.strictObject({
   second_home_id: id,
   coverages: z.array(coverage).min(1).max(20),

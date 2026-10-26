@@ -118,6 +118,11 @@ export const acquisitionMessages = {
   saved: 'Registro concluído. Os fatos persistidos estão apresentados abaixo.',
   required: 'Preencha este campo.',
   invalid: 'Revise este campo.',
+  duplicateAcquirer: 'Selecione uma pessoa diferente para cada Ação.',
+  acquirerCount: 'A quantidade de adquirentes deve corresponder à configuração.',
+  allocationDate:
+    'Para início em 1º de janeiro, não selecione alocação inicial; para outra data, selecione uma alocação registrada.',
+  endBeforeStart: 'O fim da vigência deve ser posterior ao início.',
   confirmation: 'Confirme esta declaração para continuar.',
   invalidSummary: 'Revise os campos indicados e as escolhas do formulário.',
   cancel: 'Voltar à Second Home',

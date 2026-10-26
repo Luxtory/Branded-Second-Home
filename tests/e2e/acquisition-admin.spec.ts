@@ -8,6 +8,15 @@ import { readSeed } from './support/discovery';
 import { captureForReview, collectConsoleErrors, expectResponsive } from './support/ui';
 const FLOW_TIMEOUT_MS = 300_000;
 const closedNotice = 'Os novos registros estão indisponíveis neste ambiente.';
+const gateMode = process['env']['E2E_ACQUISITION_GATE'];
+if (gateMode !== undefined && gateMode !== 'closed')
+  throw new Error('E2E_ACQUISITION_GATE must be absent or closed');
+const closedMode = gateMode === 'closed';
+async function assertGateMode(page: Page, closed: boolean, timeout?: number) {
+  await expect(page.getByText(closedNotice, { exact: false })).toHaveCount(closed ? 1 : 0, {
+    timeout,
+  });
+}
 const day = () =>
   new Intl.DateTimeFormat('en-CA', {
     timeZone: 'America/Sao_Paulo',
@@ -65,14 +74,13 @@ test.describe('W8 Admin 390 px com toque e PostgreSQL real', () => {
   test('[REQ-024] [REQ-022] Owner: confirmação, base congelada, recusa de mudança e início único', async ({
     page,
   }) => {
+    test.skip(closedMode, 'Open acquisition gate variant not selected');
     test.setTimeout(FLOW_TIMEOUT_MS);
     const operationDate = day();
     const errors = collectConsoleErrors(page);
     const home = await enter(page, 'Second Home sintética Owner');
-    test.skip(
-      await page.getByText(closedNotice, { exact: false }).isVisible(),
-      'Controlled server has acquisition gate closed',
-    );
+    await assertGateMode(page, false);
+    await expect(assertGateMode(page, true, 300)).rejects.toThrow();
     const acquirer = await party(page);
     await page.goto(`/admin/catalogo/second-homes/${home}`);
     await page.getByRole('link', { name: 'Formalização e operação' }).tap();
@@ -117,10 +125,11 @@ test.describe('W8 Admin 390 px com toque e PostgreSQL real', () => {
   });
 
   test.describe.serial('Co-Owner parcial — formalização e administração', () => {
+    test.skip(closedMode, 'Open acquisition gate variant not selected');
     let fixture: {
       home: string;
       institution: string;
-      acquirers: readonly string[];
+      acquirers: readonly [string, string];
       spe: string;
       provider: string;
       scenario: ReturnType<typeof partialAcquisitionScenario>;
@@ -150,10 +159,7 @@ test.describe('W8 Admin 390 px com toque e PostgreSQL real', () => {
       await signIn(page, STAFF_EMAIL);
       await expect(page).toHaveURL(/\/admin$/);
       await page.goto(entry(fixture.home));
-      test.skip(
-        await page.getByText(closedNotice, { exact: false }).isVisible(),
-        'Controlled server has acquisition gate closed',
-      );
+      await assertGateMode(page, false);
     }
     test('[REQ-025] [REQ-026] [BR-071] [BR-081] alocação explícita, capacidade, SPE e grants', async ({
       page,
@@ -207,6 +213,11 @@ test.describe('W8 Admin 390 px com toque e PostgreSQL real', () => {
         await form.getByLabel(`Adquirente ${i + 1}`, { exact: true }).selectOption(id);
       await form.getByLabel('Referência da base registrada').fill('Ato sintético Co-Owner');
       await form.getByRole('checkbox').check();
+      await form.getByLabel('Adquirente 2', { exact: true }).selectOption(acquirers[0]);
+      await form.getByRole('button', { name: 'Formalizar aquisição' }).tap();
+      await expect(form.getByText('Selecione uma pessoa diferente para cada Ação.')).toBeVisible();
+      await expect(form.getByLabel('Adquirente 1', { exact: true })).toBeFocused();
+      await form.getByLabel('Adquirente 2', { exact: true }).selectOption(acquirers[1]);
       await gate(page, errors, '05-parcial-pronto');
       await form.getByRole('button', { name: 'Formalizar aquisição' }).tap();
       await saved(page);
@@ -252,6 +263,15 @@ test.describe('W8 Admin 390 px com toque e PostgreSQL real', () => {
       await admin
         .getByLabel('Referência da base registrada')
         .fill('Contrato sintético com termo final');
+      await admin.getByLabel('Fim da vigência (exclusivo)').fill(operationDate);
+      await admin.getByRole('button', { name: 'Registrar administração' }).tap();
+      await expect(
+        admin.getByText('O fim da vigência deve ser posterior ao início.'),
+      ).toBeVisible();
+      await expect(admin.getByLabel('Fim da vigência (exclusivo)')).toBeFocused();
+      await admin
+        .getByLabel('Fim da vigência (exclusivo)')
+        .fill(`${Number(operationDate.slice(0, 4)) + 1}-01-01`);
       await gate(page, errors, '07-administracao-finita');
       await admin.getByRole('button', { name: 'Registrar administração' }).tap();
       await saved(page);
@@ -295,13 +315,12 @@ test.describe('W8 Admin 390 px com toque e PostgreSQL real', () => {
   test('gate W8 fechado: catálogo e consulta independentes, mutations indisponíveis', async ({
     page,
   }) => {
+    test.skip(!closedMode, 'Closed acquisition gate variant not selected');
     test.setTimeout(FLOW_TIMEOUT_MS);
     const errors = collectConsoleErrors(page);
     const home = await enter(page, 'Second Home sintética · gate fechado');
-    test.skip(
-      !(await page.getByText(closedNotice, { exact: false }).isVisible()),
-      'Requires separately controlled closed acquisition gate',
-    );
+    await assertGateMode(page, true);
+    await expect(assertGateMode(page, false, 300)).rejects.toThrow();
     await expect(page.getByRole('button', { name: 'Formalizar aquisição' })).toHaveCount(0);
     await expect(page.getByText('Versão 1', { exact: true })).toBeVisible();
     const acquirer = await party(page);

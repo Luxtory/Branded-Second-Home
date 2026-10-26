@@ -43,6 +43,48 @@ const payload = (values: Record<string, string> = {}) => {
 };
 beforeEach(() => execute.mockReset());
 describe('W8 Admin actions [TECH-054] [TECH-002]', () => {
+  it('identifies a repeated acquirer with an actionable field error', async () => {
+    const state = await formalizeAcquisitionAction(
+      acquisitionInitialState('key'),
+      payload({
+        modality: 'co_owner',
+        configuration_id: '2',
+        spe_party_id: randomUUID(),
+        operation_start_date: '2026-01-01',
+        acquirer_2: party,
+      }),
+    );
+    expect(state.errors.acquirer_1).toBe('duplicateAcquirer');
+    expect(execute).not.toHaveBeenCalled();
+  });
+  it('explains the relationship between the civil date and initial allocation', async () => {
+    const state = await formalizeAcquisitionAction(
+      acquisitionInitialState('key'),
+      payload({
+        modality: 'co_owner',
+        configuration_id: '2',
+        spe_party_id: randomUUID(),
+        acquirer_2: randomUUID(),
+      }),
+    );
+    expect(state.errors.operation_start_date).toBe('allocationDate');
+    expect(execute).not.toHaveBeenCalled();
+  });
+  it.each(['2026-12-31', '2026-12-30'])('identifies an invalid coverage end %s', async (end) => {
+    const state = await administrationAction(
+      acquisitionInitialState('key'),
+      payload({
+        provider_party_id: party,
+        scope: 'professional_administration',
+        professional: 'on',
+        valid_from: '2026-12-31',
+        end_kind: 'defined',
+        valid_until: end,
+      }),
+    );
+    expect(state.errors.valid_until).toBe('endBeforeStart');
+    expect(execute).not.toHaveBeenCalled();
+  });
   it('requires deliberate confirmation and sends no mutation when missing', async () => {
     const state = await formalizeAcquisitionAction(
       acquisitionInitialState('key'),

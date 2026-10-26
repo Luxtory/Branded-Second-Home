@@ -37,7 +37,7 @@ async function submit<I, R extends JsonValue>(
   );
   const input = acquisitionFormInput(kind, form);
   const parsed = schema.safeParse(input);
-  const errors: Record<string, 'required' | 'invalid' | 'confirmation'> = {};
+  const errors: Record<string, AcquisitionFormState['errors'][string]> = {};
   if (!parsed.success)
     for (const issue of parsed.error.issues) {
       const root = String(issue.path[0] ?? '');
@@ -52,8 +52,17 @@ async function submit<I, R extends JsonValue>(
               : root === 'coverages'
                 ? leaf
                 : root;
-      if (name !== '')
-        errors[name] = values[name] === undefined || values[name] === '' ? 'required' : 'invalid';
+      if (name !== '') {
+        const specific = [
+          'acquirerCount',
+          'duplicateAcquirer',
+          'allocationDate',
+          'endBeforeStart',
+        ] as const;
+        const reason = specific.find((value) => value === issue.message);
+        errors[name] =
+          reason ?? (values[name] === undefined || values[name] === '' ? 'required' : 'invalid');
+      }
     }
   if ((kind === 'formalize' || kind === 'start') && formField(form, 'confirmation') !== 'on')
     errors.confirmation = 'confirmation';

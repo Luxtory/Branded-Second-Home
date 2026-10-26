@@ -413,6 +413,9 @@ autorizada pela entrega da Wave.
    aquisição, alocação ou administração registradas e bloqueiam escritores antes da verificação. Com fatos, preservar
    o banco e preparar correção por migration nova; nunca desabilitar triggers ou apagar histórico. Retorno da aplicação
    e migrations seguem o pipeline, com decisão explícita do fundador.
+   Com eventos pendentes, o retorno da aplicação precisa preservar o dispatcher consumer-aware do ADR-0021: a versão
+   anterior da W1 marcava eventos sem consumidor como entregues. Fechar mutations não protege esses eventos de um
+   dispatcher antigo; não reintroduzir essa política nem descartar o agendamento da W9.
 
 ### Operar a formalização no Admin depois de ativação autorizada
 
