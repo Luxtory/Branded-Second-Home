@@ -103,12 +103,18 @@ export async function expectResponsive(page: Page, consoleErrors: readonly strin
  * Capturas de revisão dos checkpoints (material do PR, não baseline — ADR-0009): só com `UI_CAPTURE_DIR`, a 390 e
  * 1440 px, página inteira e assentada.
  */
-export async function captureForReview(page: Page, name: string) {
+export async function captureForReview(
+  page: Page,
+  name: string,
+  options: { readonly fromTop?: boolean } = {},
+) {
   const dir = process.env.UI_CAPTURE_DIR;
   if (dir === undefined || dir === '') return;
   const original = page.viewportSize();
   for (const viewport of AXE_VIEWPORTS) {
     await page.setViewportSize(viewport);
+    // Optional for operational pages: fixed app navigation stays at the top in a full-page capture.
+    if (options.fromTop === true) await page.evaluate(() => window.scrollTo(0, 0));
     await settle(page);
     await page.screenshot({ path: `${dir}/${name}-${viewport.width}.png`, fullPage: true });
   }

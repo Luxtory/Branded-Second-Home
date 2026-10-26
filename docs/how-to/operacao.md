@@ -414,6 +414,27 @@ autorizada pela entrega da Wave.
    o banco e preparar correção por migration nova; nunca desabilitar triggers ou apagar histórico. Retorno da aplicação
    e migrations seguem o pipeline, com decisão explícita do fundador.
 
+### Operar a formalização no Admin depois de ativação autorizada
+
+Este procedimento descreve o uso futuro. Não autoriza abrir o gate ou criar dados em Production nesta Wave.
+
+1. No catálogo, abrir a Second Home e sua formalização. Conferir Home Edition, versão aprovada de Home Concept de
+   origem e timezone. A localização concreta, a modalidade e a data-base civil são registradas na formalização.
+2. Selecionar pessoas ou empresas já cadastradas em "Pessoas e empresas", pelo identificador e documento mascarado.
+   Owner exige um adquirente; Co-Owner exige uma das quatro configurações, N adquirentes distintos e uma SPE CNPJ.
+   A identidade institucional da Luxtory precisa estar previamente registrada; não é criada por esta tela.
+3. Para primeiro exercício parcial Co-Owner, registrar as quantidades equivalentes por Ação e categoria e a
+   capacidade Luxtory explicitamente definidas na estruturação. Selecionar essa versão de alocação na formalização.
+   O servidor revalida as noites futuras; o registro não reserva datas, não cria Ação e não presume proporcionalidade.
+4. Registrar a referência da base do ato e confirmar a formalização. Depois do sucesso, modalidade, configuração e
+   data-base ficam somente leitura. Ação, titularidade e grants surgem juntos; uma recusa não deixa estrutura parcial.
+5. Registrar as coberturas de administração com prestador, escopo, vigência civil e base explícitos. Um contrato sem
+   termo precisa ser declarado como tal. Co-Owner exige cadeia profissional contínua com extremo aberto para iniciar
+   a operação; cobertura apenas finita ou com lacuna é insuficiente. Substituições preservam o histórico e a cobertura.
+6. Quando a Second Home tiver efetivamente iniciado, registrar esse fato com a mesma data-base formalizada. Se a data
+   efetiva divergir, interromper e obter decisão de domínio; não recalcular ou corrigir grants. O ato não abre reservas
+   nem calendário. Em erro transitório, conservar a chave e os dados da tentativa para verificar/repetir o mesmo ato.
+
 ## Rotacionar segredos
 
 - `CRON_SECRET`: gere outro valor, atualize na Vercel (Production) e refaça o deploy (passo 6).

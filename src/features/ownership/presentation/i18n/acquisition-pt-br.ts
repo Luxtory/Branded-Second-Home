@@ -1,0 +1,143 @@
+/** Admin W8 — operational copy only; immutable facts come from the server projection. */
+export const acquisitionMessages = {
+  title: 'Formalização e base civil',
+  entry: 'Formalização e operação',
+  lead: 'Registre os fatos da aquisição e acompanhe a base civil da Second Home.',
+  back: 'Voltar à Second Home',
+  context: 'Origem comercial fixada',
+  home: 'Second Home',
+  concept: 'Home Concept',
+  edition: 'Home Edition',
+  version: 'Versão original',
+  timezone: 'Fuso horário',
+  location: 'Localização concreta',
+  originVersion: (version: number) => `Versão ${version}`,
+  unavailable:
+    'Os novos registros estão indisponíveis neste ambiente. A consulta dos fatos e o cadastro do catálogo continuam disponíveis.',
+  readUnavailable:
+    'Consulta indisponível. A configuração necessária ainda não está disponível neste ambiente.',
+  notFound: 'Second Home não encontrada',
+  configurations: 'Quatro configurações imutáveis',
+  configuration: 'Configuração Co-Owner',
+  configurationName: (count: number) => `${count} Ações`,
+  configurationSummary: (
+    bps: number,
+    alta: number,
+    media: number,
+    annual: number,
+    la: number,
+    lm: number,
+  ) =>
+    `${new Intl.NumberFormat('pt-BR').format(bps / 100)}% por Ação · ${annual} dias anuais (${alta} alta / ${media} média) · Luxtory: ${la} alta / ${lm} média`,
+  configurationHint:
+    'Participação e direitos anuais são somente leitura. As posições técnicas não são sorteio nem rotação.',
+  choose: 'Selecione uma opção',
+  allocation: 'Alocação do exercício parcial',
+  allocationRecords: 'Alocações registradas',
+  allocationLead:
+    'Para início diferente de 1º de janeiro, registre uma alocação explícita antes da aquisição. Nenhuma quantidade é proporcional ou redistribuída automaticamente.',
+  allocationTitle: (version: number) => `Alocação · versão ${version}`,
+  allocationOption: (version: number, count: number, date: string, basis: string) =>
+    `v${version} · ${count} Ações · ${date} · ${basis}`,
+  allocationSelected: 'Alocação inicial registrada',
+  noAllocation: 'Sem alocação — início em 1º de janeiro',
+  alta: 'Alta por Ação',
+  media: 'Média por Ação',
+  luxtoryAlta: 'Alta Luxtory',
+  luxtoryMedia: 'Média Luxtory',
+  quantityHint:
+    'Informe cada quantidade, inclusive quando for zero. O mesmo par será registrado igualmente em todas as posições técnicas.',
+  allocationSubmit: 'Registrar alocação inicial',
+  formalize: 'Aquisição definitiva',
+  formalizeLead:
+    'A formalização fixa modalidade, adquirentes, localização e base civil. Esta ação não pode ser desfeita neste fluxo.',
+  modality: 'Modalidade',
+  owner: 'Owner',
+  coOwner: 'Co-Owner',
+  startDate: 'Data de início da operação (base civil)',
+  frozenBase: (date: string) => `Base civil formalizada: ${date}`,
+  basis: 'Referência da base registrada',
+  partySelector: 'Pessoas e empresas existentes',
+  acquirers: 'Adquirentes da aquisição',
+  acquirer: (position: number) => `Adquirente ${position}`,
+  spe: 'Pessoa jurídica da SPE',
+  partyHint:
+    'Selecione pessoas e empresas já cadastradas. Somente o identificador é enviado; a máscara é fornecida pelo cadastro autorizado.',
+  partyId: 'Identificador de outra pessoa ou empresa',
+  partyLookup: 'Carregar pessoa pelo identificador',
+  partyLookupHint:
+    'A lista contém as 50 mais recentes. Carregue qualquer cadastro anterior pelo identificador disponível no detalhe de Pessoas e empresas.',
+  partyMissing: 'Cadastro não encontrado ou identificador inválido.',
+  partyUnavailable: 'Não foi possível consultar o cadastro. Tente novamente.',
+  partyAdded: 'Cadastro carregado. Agora ele pode ser selecionado.',
+  partyDetail: 'Consultar cadastro mascarado',
+  confirmFormalize: 'Confirmo os adquirentes e a base civil definitiva.',
+  formalizeSubmit: 'Formalizar aquisição',
+  formalized: 'Fatos da aquisição formalizada',
+  noStakes: 'Titularidade integral Owner registrada.',
+  holding: 'Vínculos dos adquirentes',
+  participation: 'Participação',
+  participationValue: (bps: number) => `${new Intl.NumberFormat('pt-BR').format(bps / 100)}%`,
+  party: 'Pessoa ou empresa',
+  technicalPosition: (position: number) => `Posição técnica ${position} · alta / média`,
+  grants: 'Direitos de Uso iniciais',
+  grant: (position: number, year: number, bucket: string, quantity: number, source: string) =>
+    `Posição ${position} · ${year} · ${bucket === 'alta' ? 'alta' : 'média'}: ${quantity} · ${source === 'configuration' ? 'configuração anual' : 'alocação inicial'}`,
+  administration: 'Administração profissional',
+  administrationRecords: 'Administração registrada',
+  administrationLead:
+    'Vigência [início, fim): o dia final fica fora da cobertura. O histórico de substituições é preservado.',
+  provider: 'Prestador existente',
+  professional: 'Confirmo o caráter profissional da administração.',
+  scope: 'Escopo',
+  professionalScope: 'Administração profissional de terceiro',
+  fullScope: 'Administração integral Luxtory',
+  scopeHint:
+    'Administração integral Luxtory exige a identidade institucional registrada. Os escopos são distintos e não representam Membership ou Property Services.',
+  validFrom: 'Início da vigência',
+  endKind: 'Termo final',
+  definedEnd: 'Fim definido',
+  noEnd: 'Ausência real de termo final',
+  validUntil: 'Fim da vigência (exclusivo)',
+  replaces: 'Cobertura a substituir (opcional)',
+  newCoverage: 'Nova cobertura, sem substituição',
+  coverageHint:
+    'Co-Owner exige cobertura profissional contínua durante a operação. Coberturas apenas finitas não bastam para registrar o início. Registre a vigência contratual real; este fluxo não presume renovação.',
+  administrationSubmit: 'Registrar administração',
+  noCoverages: 'Nenhuma administração registrada.',
+  coverageTitle: (from: string, until: string | null) => `[${from}, ${until ?? 'sem termo final'})`,
+  replaced: 'Substitui',
+  operation: 'Declaração de início',
+  frozen:
+    'A base civil formalizada é somente leitura. Declare a mesma data efetiva; atraso ou data diferente não alteram os Direitos de Uso iniciais neste fluxo.',
+  effectiveDate: 'Data efetiva de início',
+  confirmStart: 'Confirmo a declaração de início na mesma data da base civil.',
+  operationSubmit: 'Declarar início da operação',
+  noCalendar: 'Este registro não abre reservas nem calendário.',
+  started: 'Início da operação registrado',
+  saved: 'Registro concluído. Os fatos persistidos estão apresentados abaixo.',
+  required: 'Preencha este campo.',
+  invalid: 'Revise este campo.',
+  confirmation: 'Confirme esta declaração para continuar.',
+  invalidSummary: 'Revise os campos indicados e as escolhas do formulário.',
+  cancel: 'Voltar à Second Home',
+  pending: 'Registrando…',
+  rejection: {
+    ERR_VALIDATION:
+      'Os dados não atendem ao contrato. Revise adquirentes, SPE, configuração e quantidades explícitas.',
+    ERR_CAPACITY_UNAVAILABLE:
+      'A capacidade futura ou os limites sazonais não comportam a alocação. Nenhuma quantidade foi recalculada ou redistribuída.',
+    ERR_STATE_TRANSITION:
+      'O estado atual não permite este registro. Confira a data civil fixada, as vigências e o histórico. A cobertura Co-Owner precisa sustentar toda a operação.',
+    ERR_PARAMETER_MISSING:
+      'Falta um parâmetro operacional obrigatório, como a identidade institucional. Nenhum valor será presumido.',
+    ERR_NOT_FOUND: 'Um dos registros selecionados não foi encontrado. Confira os identificadores.',
+    ERR_PERMISSION: 'Sua autoridade atual não permite este registro.',
+    ERR_IDEMPOTENCY_CONFLICT:
+      'Esta tentativa conflita com um envio anterior. Consulte os fatos antes de reenviar.',
+    ERR_UNAVAILABLE:
+      'Não foi possível confirmar o resultado. Os dados e a chave da tentativa foram preservados para repetir o envio.',
+    unexpected:
+      'Não foi possível confirmar o resultado. Preserve os dados e tente novamente com a mesma tentativa.',
+  },
+} as const;

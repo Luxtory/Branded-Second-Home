@@ -54,6 +54,9 @@ Exceção de evento de sorteio no platform: acoplamento desnecessário; seleçã
 - Rollbacks que verificam ausência de fatos adquirem locks de escrita antes do `EXISTS`, mantidos na transação.
   A regressão concorrente comprova escritor pendente → commit → recusa do down; não há janela para descartar fatos
   que se tornem visíveis durante a espera de DDL.
+- A leitura Admin usa snapshot `repeatable read`, mantendo a auditoria na mesma transação. O aviso de conclusão
+  consulta uma operação W8 commitada da mesma Second Home; um parâmetro de URL não comprova execução. O resultado
+  dessa verificação é apenas booleano, sem ampliar campos ou privilégios do Titular.
 
 Estas são escolhas de implementação, sem nova regra de negócio. A reconciliação com `main` b7b42a7 após o hotfix
 \#65 preservou o inventário de eventos descrito acima: o hotfix alterou somente Zod/manifests, sem produtor adicional.

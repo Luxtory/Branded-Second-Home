@@ -739,6 +739,11 @@ Preâmbulo: trava compartilhada consultiva da staff_role exata que autorizou, re
 Depois: preâmbulo do catálogo Brand Partner/autorização Investor; raiz Second Home; Ações em ordem quando existentes, respeitando subconjunto TECH-053. Deadlock/timeout segue retry vigente. Não mudar semântica de commands anteriores.
 RLS exige representação vigente + holding aplicável. Grants SELECT por coluna e consultas explícitas; bases/operation_id/refs administrativas/institucional e outros Co-Owners não são dados do Titular. PII permanece na W7; não replicar cifra ou HMAC. Sem grants de escrita authenticated/anon.
 
+A projeção Admin auditada usa `repeatable read` para apresentar fatos do mesmo snapshot, sem locks de formalização.
+O parâmetro de navegação de sucesso só indica qual operação verificar: o aviso exige `operation` commitada, de um dos
+quatro commands W8 e da mesma Second Home. UUID desconhecido, ato rejeitado, outro command ou outra Second Home não
+produzem confirmação. Nenhum identificador adicional de operação integra a projeção do Titular.
+
 ### 15.8 Fronteiras e aceite
 
 W9: consumidor do evento/sorteio/PD-011/aleatoriedade/evidências. W10: second_home_date, selagem, custódia e Inventário/REQ-040/INV-2/3. W11: balance/consume/restore/expire/correction, grants operacionais futuros/leap, janelas e rotações/REQ-030/031/032/033/039/PD-004/INV-4/5. A validação parcial referencia REQ-033, sem declarar sua entrega operacional.

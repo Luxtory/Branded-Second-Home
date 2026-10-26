@@ -24,3 +24,5 @@ export type {
   SecondHomeOperationStart,
 } from './application/acquisition-port';
 export { postgresAcquisitionCatalog } from './infrastructure/postgres-acquisition-catalog';
+// W8 Admin: read-only commercial origin; no current brand/Investor validity is needed to display history.
+export { readAcquisitionOrigin } from './infrastructure/acquisition-admin-read';

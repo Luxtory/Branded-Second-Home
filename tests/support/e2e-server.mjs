@@ -2,13 +2,17 @@
 // com autenticação de teste (`AUTH_MODE=test`, nunca na Vercel). Uso: node tests/support/e2e-server.mjs <porta>.
 import { spawn } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
-import { mkdtempSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { migrateUp } from '../../scripts/lib/dbmate.mjs';
 import { applySupabaseCompat, createDatabase, withClient } from '../../scripts/lib/pg.mjs';
 import { startPostgresProcess } from '../../scripts/lib/postgres-process.mjs';
 import { scramVerifier } from '../../scripts/lib/scram.mjs';
+import {
+  E2E_ACQUISITION_DATABASE_FILE,
+  validateE2eAcquisitionDatabase,
+} from './e2e-acquisition-database.mjs';
 
 // E-mails dos usuários de teste: os mesmos de tests/e2e/admin-access.spec.ts.
 const E2E_STAFF_EMAIL = 'staff@luxtory.test';
@@ -40,9 +44,13 @@ async function prepareDatabase(adminUrl) {
   const appUrl = new URL(url);
   appUrl.username = APP_ROLE;
   appUrl.password = password;
-  return appUrl.toString();
+  return { databaseUrl: appUrl.toString(), ownerUrl: url };
 }
 
+// This harness only owns an embedded disposable database, never a deployment or an external DATABASE_URL.
+const source = process.env;
+if (source.VERCEL || source.VERCEL_ENV) throw new Error('E2E server is local/CI only');
+const acquisitionFixtureFile = join(process.cwd(), E2E_ACQUISITION_DATABASE_FILE);
 const port = process.argv[2] ?? '3100';
 const postgres = await startPostgresProcess();
 let next;
@@ -52,6 +60,7 @@ async function stop(code) {
   if (stopping) return;
   stopping = true;
   next?.kill('SIGTERM');
+  rmSync(acquisitionFixtureFile, { force: true });
   await postgres.stop();
   process.exit(code);
 }
@@ -60,7 +69,13 @@ process.on('SIGTERM', () => void stop(0));
 process.on('SIGINT', () => void stop(0));
 
 try {
-  const databaseUrl = await prepareDatabase(postgres.adminUrl);
+  const { databaseUrl, ownerUrl } = await prepareDatabase(postgres.adminUrl);
+  const disposableOwnerUrl = validateE2eAcquisitionDatabase(ownerUrl);
+  mkdirSync(dirname(acquisitionFixtureFile), { recursive: true });
+  writeFileSync(acquisitionFixtureFile, JSON.stringify({ ownerUrl: disposableOwnerUrl }), {
+    mode: 0o600,
+  });
+  chmodSync(acquisitionFixtureFile, 0o600);
   next = spawn('npx', ['next', 'start', '--port', port, '--hostname', '127.0.0.1'], {
     stdio: 'inherit',
     env: {
@@ -69,6 +84,8 @@ try {
       DATABASE_URL: databaseUrl,
       // Valores só de teste; os de produção vêm do runbook (TECH-001).
       COMMAND_MAX_ATTEMPTS: '3',
+      // W8 is opened only in this disposable local/CI child; a separate closed run exercises its read state.
+      ACQUISITION_WRITES: source.E2E_ACQUISITION_GATE === 'closed' ? 'closed' : 'open',
       COMMAND_LOCK_TIMEOUT_MS: '5000',
       OUTBOX_BATCH_SIZE: '100',
       // Mídia do catálogo em diretório local descartável (ADR-0015; `local` é recusado na Vercel).

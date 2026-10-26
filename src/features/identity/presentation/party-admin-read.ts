@@ -151,3 +151,17 @@ export function readPartyDocument(
     return { documentType: document.type, document: formatPartyDocument(document) };
   });
 }
+
+/** W8 masked selector: lookup by id, including parties older than the recent directory. No delegation/PII export. */
+export function readPartySummary(
+  session: ExercisedAdminSession,
+  partyId: string,
+  deps: PartyAdminReadDependencies = {},
+): Promise<PartySummary | null> {
+  const { db, protector } = defaults(deps);
+  return db.transaction().execute(async (tx) => {
+    await recordRead(tx, session, 'party', partyId);
+    const party = await reader.party(tx, partyId);
+    return party === null ? null : summaryOf(protector, party);
+  });
+}

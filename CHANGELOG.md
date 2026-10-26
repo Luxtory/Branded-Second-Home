@@ -14,6 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Formalização (W8, spec `ownership` §15, `calendar`, ADR-0021): no Admin, formalização da Second Home a partir de
+  sua Home Edition de origem, com localização concreta e modalidade definitiva. Owner tem um único adquirente e
+  titularidade integral; Co-Owner tem SPE S.A. fechada, uma das quatro configurações imutáveis, Ações equivalentes
+  para pessoas ou empresas distintas e grants iniciais equivalentes de Direito de Uso. Primeiro exercício parcial
+  usa alocação explicitamente registrada, validada pelo calendário civil e Carnaval, sem proporcionalidade presumida.
+  Registro de administração profissional e início da operação com base civil definitiva, sem abrir reservas.
+  A superfície de escrita permanece fechada em Production até autorização de ativação posterior.
+
 - Representações (W7, spec `identity` §13, ADR-0020): no Admin, "Pessoas e empresas" — cadastro de pessoa física ou
   jurídica por CPF ou CNPJ (numérico ou alfanumérico), cifrado e nunca exibido em claro (documento completo só em
   leitura deliberada e auditada), busca por CPF/CNPJ e convite de representantes em dois passos; quem é convidado só

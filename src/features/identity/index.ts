@@ -22,3 +22,9 @@ export { partyDocumentInput } from './contracts';
 export type { PartyDocument } from './contracts';
 export type { PartyDocumentResolver } from './application/party-resolver';
 export { partyDocumentResolver } from './presentation/party-resolver';
+// W8 Admin selectors only receive authorized masked labels, never a sealed or full document.
+export {
+  readPartyDirectory,
+  readPartySummary,
+  type PartySummary,
+} from './presentation/party-admin-read';
