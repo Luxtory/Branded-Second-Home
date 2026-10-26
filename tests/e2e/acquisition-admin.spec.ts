@@ -209,6 +209,7 @@ test.describe('W8 Admin 390 px com toque e PostgreSQL real', () => {
       await form.getByLabel('Configuração Co-Owner').selectOption('2');
       await form.getByLabel('Pessoa jurídica da SPE').selectOption(spe);
       await form.getByLabel('Alocação inicial registrada').selectOption({ index: 1 });
+      const allocationId = await form.getByLabel('Alocação inicial registrada').inputValue();
       for (const [i, id] of acquirers.entries())
         await form.getByLabel(`Adquirente ${i + 1}`, { exact: true }).selectOption(id);
       await form.getByLabel('Referência da base registrada').fill('Ato sintético Co-Owner');
@@ -217,6 +218,22 @@ test.describe('W8 Admin 390 px com toque e PostgreSQL real', () => {
       await form.getByRole('button', { name: 'Formalizar aquisição' }).tap();
       await expect(form.getByText('Selecione uma pessoa diferente para cada Ação.')).toBeVisible();
       await expect(form.getByLabel('Adquirente 1', { exact: true })).toBeFocused();
+      await expect(form.getByLabel('Modalidade', { exact: true })).toHaveValue('co_owner');
+      await expect(form.getByLabel('Configuração Co-Owner')).toHaveValue('2');
+      await expect(form.getByLabel('Pessoa jurídica da SPE')).toHaveValue(spe);
+      await expect(form.getByLabel('Adquirente 1', { exact: true })).toHaveValue(acquirers[0]);
+      await expect(form.getByLabel('Adquirente 2', { exact: true })).toHaveValue(acquirers[0]);
+      await expect(form.getByLabel('Alocação inicial registrada')).toHaveValue(allocationId);
+      await expect(form.getByLabel('Data de início da operação (base civil)')).toHaveValue(
+        operationDate,
+      );
+      await expect(form.getByLabel('Localização concreta')).toHaveValue(
+        'Localização sintética · Serra 02',
+      );
+      await expect(form.getByLabel('Referência da base registrada')).toHaveValue(
+        'Ato sintético Co-Owner',
+      );
+      await expect(form.getByRole('checkbox')).toBeChecked();
       await form.getByLabel('Adquirente 2', { exact: true }).selectOption(acquirers[1]);
       await gate(page, errors, '05-parcial-pronto');
       await form.getByRole('button', { name: 'Formalizar aquisição' }).tap();
@@ -269,6 +286,19 @@ test.describe('W8 Admin 390 px com toque e PostgreSQL real', () => {
         admin.getByText('O fim da vigência deve ser posterior ao início.'),
       ).toBeVisible();
       await expect(admin.getByLabel('Fim da vigência (exclusivo)')).toBeFocused();
+      await expect(admin.getByLabel('Prestador existente')).toHaveValue(provider);
+      await expect(admin.getByLabel('Escopo', { exact: true })).toHaveValue(
+        'professional_administration',
+      );
+      await expect(admin.getByLabel('Termo final', { exact: true })).toHaveValue('defined');
+      await expect(admin.getByLabel('Início da vigência', { exact: true })).toHaveValue(
+        operationDate,
+      );
+      await expect(admin.getByLabel('Fim da vigência (exclusivo)')).toHaveValue(operationDate);
+      await expect(admin.getByLabel('Referência da base registrada')).toHaveValue(
+        'Contrato sintético com termo final',
+      );
+      await expect(admin.getByRole('checkbox')).toBeChecked();
       await admin
         .getByLabel('Fim da vigência (exclusivo)')
         .fill(`${Number(operationDate.slice(0, 4)) + 1}-01-01`);

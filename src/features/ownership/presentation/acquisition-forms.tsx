@@ -109,7 +109,14 @@ function OperationalForm({
     }
   }, [state]);
   return (
-    <form className="lx-form" action={action} noValidate ref={ref}>
+    <form
+      className="lx-form"
+      action={action}
+      noValidate
+      ref={ref}
+      // A resolved Action can still be a rejection; React's automatic reset would discard its values.
+      onReset={(event) => event.preventDefault()}
+    >
       <input type="hidden" name="second_home_id" value={homeId} />
       {state.rejection === null ? null : (
         <div className="lx-message lx-message--error" role="alert" data-error-summary tabIndex={-1}>
