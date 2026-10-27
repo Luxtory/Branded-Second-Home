@@ -67,6 +67,6 @@ export async function createDatabase(adminUrl, name, options = {}) {
 /** @param {string} adminUrl @param {string} name */
 export async function dropDatabase(adminUrl, name) {
   await withClient(adminUrl, (client) =>
-    client.query(`DROP DATABASE IF EXISTS ${assertIdentifier(name)} WITH (FORCE)`),
+    client.query(`DROP DATABASE IF EXISTS ${assertIdentifier(name)}`),
   );
 }
