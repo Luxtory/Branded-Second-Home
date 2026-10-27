@@ -62,6 +62,11 @@ function classification(date: CivilDate, carnival: ReadonlySet<CivilDate>): Nigh
 }
 
 export function civilCalendar(time: CivilTime): CivilCalendar {
+  // Only a deterministic classification is memoized, never availability or the injected clock.
+  // Keeping one year bounds memory; the private set cannot be mutated through the public date list.
+  let classifiedYear: number | undefined;
+  let classifiedCarnival: ReadonlySet<CivilDate> = new Set();
+
   function carnivalDates(year: number): readonly CivilDate[] {
     validateYear(year);
     // Tuesday is Easter -47; its previous Friday is another four days earlier.
@@ -95,7 +100,14 @@ export function civilCalendar(time: CivilTime): CivilCalendar {
       return month !== 1 || day !== 1;
     },
     carnivalDates,
-    classify: (date) => classification(date, new Set(carnivalDates(parseCivilDate(date).year))),
+    classify: (date) => {
+      const year = parseCivilDate(date).year;
+      if (classifiedYear !== year) {
+        classifiedCarnival = new Set(carnivalDates(year));
+        classifiedYear = year;
+      }
+      return classification(date, classifiedCarnival);
+    },
     futureCapacity: ({ operationStartDate, timezone, now }) => {
       const { year } = parseCivilDate(operationStartDate);
       const today = localDate(now, timezone);

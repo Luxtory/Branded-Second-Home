@@ -13,6 +13,9 @@ W8 entrega PD-003 e a classificação civil necessária à formalização. Não 
 - A base operation_start_date é civil. Seu ano é o primeiro exercício. A partialidade é derivada de mês/dia, não da data de aquisição.
 - temporal-polyfill 1.0.5 (HERDADA, ADR-0004) fica encapsulado no adapter; tipos próprios de data/season atravessam a porta pública.
 - Enumeração de noites é determinística e efêmera; não existe calendário persistido paralelo.
+- PROPOSTA W8: a classificação reutiliza somente a janela determinística de Carnaval do último ano consultado,
+  em memória limitada a um exercício e sem expor o conjunto interno. A capacidade futura continua sendo calculada
+  a cada chamada, com timezone e relógio revalidados; nenhuma disponibilidade é armazenada nesse memo.
 - Na base atual, nenhuma fonte modelada compromete noites antes da formalização. W8 não inventa bloqueios externos ou antecipa W10.
 
 ## 3. Classificação e validação
