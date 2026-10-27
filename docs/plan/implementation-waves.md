@@ -105,8 +105,8 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 | 4.2 | Ontologia Home Concept → Home Edition → Second Home + correção estrutural do catálogo e do interest | catalog, ownership, admin, design-system, docs | REQ-020, REQ-021, REQ-022, REQ-100 | 4.1, 5 | — | R1 | ✅ concluída (#56, squash `7ac1af8`, 2026-10-20; 7 migrations aplicadas; Production validada) |
 | 6 | Interesse — formulário público | ownership | — | 4, 5, 4.2 | — | R1 | ⬜ próxima executável — P-3 resolvida pelo `02` v4.3 (REQ-022); W4.2 ✅; reconstruída a partir da nova `main` (ver Wave 6 → Status) → ✅ concluída (#59, squash `1d538cc`, 2026-10-21; 3 migrations aplicadas; em Production com a coleta fechada por gates operacionais) |
 | 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ próxima executável (W6 ✅ em 2026-10-21) → ✅ concluída (#61, squash `ef15bbb`, 2026-10-22; 6 migrations aplicadas; estrutura em Production sem dados reais e sem `PII_*`) |
-| 8 | Formalização e calendário civil | ownership, calendar | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003 | 3, 7 | — | R2 | ⬜ próxima executável (W7 ✅ em 2026-10-22) |
-| 9 | Sorteio auditável | ownership | PD-011 | 8 | 10 | R2 | ⬜ |
+| 8 | Formalização e calendário civil | ownership, calendar | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003 | 3, 7 | — | R2 | ⬜ próxima executável (W7 ✅ em 2026-10-22) → ✅ concluída (#67, squash `266a0ae`, 2026-10-27; 6 migrations aplicadas, 42 no total; Production sincronizada com os gates operacionais fechados) |
+| 9 | Sorteio auditável | ownership | PD-011 | 8 | 10 | R2 | ⬜ próxima executável (W8 ✅ em 2026-10-27); ainda não iniciada |
 | 10 | Custódia e selagem | calendar, inventory | REQ-040, INV-2, INV-3 | 8 | 9 | R2 | ⬜ |
 | 11 | Direito de Uso, janelas e rotações | calendar | REQ-030, REQ-031, REQ-032, REQ-033, REQ-039, PD-004, INV-4, INV-5 | 9, 10 | — | R2 | ⬜ |
 | 12 | Reserva de uso próprio | booking | REQ-034, REQ-035, REQ-037, PD-002, INV-1 | 11 | — | R2 | ⬜ |
@@ -145,6 +145,9 @@ continua fechada por gates operacionais (`INTEREST_WRITES` ausente, Aviso de Pri
 **Atualização 2026-10-22:** W7 ✅ (PR #61, `ef15bbb`); a estrutura de pessoas e empresas (`party`), representação
 (`party_delegation`) e Área do Titular está em Production, sem dados reais e sem os segredos `PII_*` (fail-closed até os
 gates operacionais). A W8 passa a ser a próxima wave funcional executável.
+**Atualização 2026-10-27:** W8 ✅ (PR #67, `266a0ae`); formalização e calendário civil em Production, com 42
+migrations aplicadas / 0 pendentes e `ACQUISITION_WRITES` ainda fechado. A W9 passa a ser a próxima wave funcional
+executável, ainda não iniciada; W10 e W11 também não foram iniciadas, com dependências e paralelismo inalterados.
 
 Paralelismo na retomada do B2C: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
 canal do AsyncAPI, telas e `CHANGELOG.md`, e o STRIDE do beacon. A W10 toca migrations de `calendar`/`inventory`,
@@ -888,6 +891,8 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 
 ### Wave 8 — Formalização e calendário civil
 
+- **Status (2026-10-27):** ✅ concluída — PR #67, squash `266a0ae` (ver Encerramento). O Status de 2026-10-22
+  abaixo é **histórico / posteriormente superado**.
 - **Status (2026-10-22):** ⬜ próxima executável (W7 ✅, #61). Ainda não iniciada.
 - **Goal**: `formalize_acquisition` é o único ato que cria titularidade, Ação e Direito de Uso, com a alocação
   inicial validada contra o calendário civil.
@@ -922,6 +927,21 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   03 §15); configuração imutável` · `[REQ-022] modalidade não muda após a trava` · `[TECH-110] Co-Owner em operação
   sem administração válida falha; alocação com data passada, desigual ou com distribuição sazonal inválida falha`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-010,REQ-022,REQ-024,REQ-025,REQ-026,PD-003 exits 0, stop after 5 tries`
+- **Encerramento (2026-10-27): ✅.** PR #67, squash merge `266a0ae3b58f926a9a84488c1d06c09c12b85b19` (head
+  aprovado `36c7bab`), com fechamento funcional e operacional aprovado pelo fundador. CI de `main` run
+  40559250949 (CI201), attempt 2: lint, typecheck, test, e2e, security, migrate e deploy verdes; 1.154/1.154 testes em
+  121 arquivos, E2E 121 passed / 1 skipped, WebKit aprovado e gate W8 fechado 4/4. As seis migrations W8
+  (`20261025024807` a `20261025160200`) foram aplicadas pelo pipeline sobre as 36 anteriores: **42 aplicadas / 0
+  pendentes**. Production sincronizada com o squash da W8: `/v1/version` nos dois domínios confirmou o SHA completo;
+  smoke somente de leitura 28/28 aprovado, sem respostas 5xx, erros ou eventos fatais nos logs do novo deployment
+  na janela consultada.
+  `ACQUISITION_WRITES` permanece ausente/fechado; identidade institucional real não provisionada, nenhuma
+  formalização real executada, nenhum dado real, convite ou segredo `PII_*` criado. As quatro configurações
+  canônicas são a única carga imutável da W8; os demais gates operacionais continuam fechados. O único `57P01`
+  assíncrono da primeira tentativa, após as 1.154 asserções aprovadas, fica registrado como **Minor técnico de
+  intermitência do harness**: uma única reexecução dos failed jobs no mesmo SHA passou, sem alteração de código ou
+  hotfix; a causa exata não foi comprovada. A W9 é a próxima wave; W9, W10 e W11 permanecem não iniciadas. Este
+  encerramento não autoriza a execução de outra wave nem abre os gates operacionais.
 
 ### Wave 9 — Sorteio auditável
 
