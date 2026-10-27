@@ -102,6 +102,10 @@ const nonCritical = (name: string, module: Module): CommandSpec => ({
 });
 
 export const NON_CRITICAL_OPERATIONS: readonly CommandSpec[] = [
+  // W8 (ownership §15): structuring and a one-way operation-start record, without new economic effects.
+  nonCritical('register_second_home_initial_allocation', 'ownership'),
+  nonCritical('register_second_home_administration', 'ownership'),
+  nonCritical('register_second_home_operation_start', 'ownership'),
   nonCritical('grant_authorization', 'identity'),
   // Pessoas e empresas e representações (W7, spec identity §13): party, convite e revogação pelo Admin; ativação pelo
   // próprio convidado.

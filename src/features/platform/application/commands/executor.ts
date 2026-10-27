@@ -30,6 +30,8 @@ export const IDEMPOTENCY_KEY = /^[!-~]{1,255}$/;
 export interface CommandContext<I, Tx> {
   readonly input: I;
   readonly actor: Actor;
+  /** Exact authority returned by the server guard, never by command input (ADR-0021). */
+  readonly authorizationRef: string;
   readonly operationId: string;
   /** Instante da tentativa, do `Clock` injetado (TECH-110). */
   readonly now: Date;
@@ -55,6 +57,8 @@ export interface InputFingerprint<I> {
 export interface CommandHandler<I, R extends JsonValue, Tx> {
   readonly command: string;
   readonly input: ZodType<I>;
+  /** Optional server policy: after authorization, before any idempotency lookup or effect (ADR-0021). */
+  assertAvailable?(): void | Promise<void>;
   secondHomeId?(input: I): string | null;
   /** Objeto do command, para o guard conferir o escopo de um `authorization_grant` (REQ-014). */
   scope?(input: I): CommandScope;
@@ -154,6 +158,8 @@ async function execute<I, R extends JsonValue, Tx>(
   const decision = await deps.guard.authorize(spec, request.actor, parsed.data, scope);
   if (!decision.allowed) return early('ERR_PERMISSION');
 
+  await handler.assertAvailable?.();
+
   const fingerprint = handler.fingerprint;
   const hashKeyId = fingerprint?.activeKeyId() ?? null;
   const hashWith = (keyId: string | null) =>
@@ -224,6 +230,7 @@ async function runOnce<I, R extends JsonValue, Tx>(
   const result = await handler.execute({
     input,
     actor: draft.actor,
+    authorizationRef: draft.authorizationRef,
     operationId: draft.id,
     now: draft.at,
     tx,

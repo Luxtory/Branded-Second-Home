@@ -328,3 +328,27 @@ Edition).
 **Residual risk (W6):** derivado chaveado no registro imutável enquanto a chave existir (T-411); contatos de terceiros
 até o procedimento de direitos (T-410); retenção sem expurgo automático até o procedimento de go-live; contexto
 autêntico reaproveitado (T-413, sem efeito econômico).
+
+## W8 — formalização patrimonial (2026-10-23)
+
+Ativos: titularidade, Ações, grants, base civil, coberturas administrativas, evidência da formalização e agendamento do sorteio.
+Ator autorizado: Admin AAL2 vigente + base registrada; delegação identifica representação, holding identifica relação, nenhuma party é Titular global.
+
+| Ameaça | Controle | Evidência exigida |
+|---|---|---|
+| T-801 Tampering — duas aquisições/concorrência/replay | raiz travada, UNIQUE aquisição/Second Home, executor/idempotência e transaction única | duas sessões, mesma/outra chave, 1 estrutura e 1 evento |
+| T-802 Elevation — staff revogado durante espera | lock consultivo compartilhado da atribuição exata, revogação exclusiva, releitura | barreiras nas duas ordens, sem novo privilégio |
+| T-803 Tampering — Owner múltiplo/Ações desiguais/party repetida | configuração imutável, FK/UNIQUE/exclusion e cardinalidade diferível | SQL direto e commands com 2 Owners, N inválido, party repetida |
+| T-804 Tampering — CPF como SPE/Luxtory acionista | FK party CNPJ + singleton institucional durável, ausência fecha | CPF recusado, Luxtory recusada, base ausente 422 |
+| T-805 Tampering — modalidade/configuração/base alterada | gatilhos imutáveis após formalização, alocação/grants append-only | UPDATE/DELETE/TRUNCATE negados e rollback integral |
+| T-806 Tampering — parcial passada/desigual/sazonal inválida | calendário civil, relógio fresco após locks, igualdade e capacidade por categoria | fusos/check-in/espera/limites/29-02 sem grant |
+| T-807 Tampering — operação sem administração | união de vigências + raiz serializada + validação diferível | cadeia contínua, lacuna, último termo finito, substituição concorrente |
+| T-808 Information disclosure — acesso cruzado/PII em evidências | RLS delegação+holding, SELECT por coluna, DTOs explícitos/ids e logs sanitizados | isolamento de linha e coluna, sem bases/HMAC/cifra/outros Co-Owners |
+| T-809 Repudiation — rollback parcial/ato sem base | operation/audit/outbox no commit; rejeição no pipeline vigente | fault injection em cada etapa, nenhum efeito patrimonial parcial |
+| T-810 Tampering — sorteio agendado descartado | outbox genérico consumer-aware, evento pendente até W9 | desconhecidos > batch, conhecido entregue, consumer futuro elegível |
+| T-811 Elevation — ativação produtiva indevida | ACQUISITION_WRITES opt-in, ausência fecha antes da idempotência | REST/SA 503/indisponível sem persistência; fluxo anterior preservado |
+| T-812 Tampering — rollback concorre com criação de fato | ACCESS EXCLUSIVE antes de EXISTS nos down, ordem consistente e recusa com fatos | writer pendente, down bloqueado, writer comita, down recusa e preserva registro/proteções |
+| T-813 Denial of service — corpo Admin sem limite | JSON efetivo até 32 KiB nas rotas novas, parsing depois da sessão | 413 mesmo com Content-Length ausente/forjado; 415 para mídia incompatível; endpoints anteriores preservados |
+| T-814 Spoofing — confirmação visual forjada pela URL | projeção Admin verifica operação W8 commitada da mesma Second Home em snapshot consistente | UUID inventado sem aviso; operação rejeitada, outro command ou outra Second Home sem confirmação; recibo válido preserva sucesso/foco |
+
+Sem nova criptografia, sem PII em payload/audit/outbox e sem efeito econômico por administração. Residuais: qualidade da base registrada pelo Admin; obrigações/compromissos fora do modelo não são detectados pelo software. Dados reais e referência institucional dependem de ativação posterior autorizada. W9/W10/W11 permanecem fora desta superfície.

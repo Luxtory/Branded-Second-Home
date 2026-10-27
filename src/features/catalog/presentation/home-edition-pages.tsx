@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { ReactElement } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { PageHeader, RecordList, type RecordAttribute } from '@/design-system/react';
 import { adminRoleGate } from '@/features/admin';
 import { systemClock } from '@/features/platform';
@@ -415,9 +415,11 @@ export async function NewSecondHomePage({ id }: { readonly id: string }) {
 export async function SecondHomePage({
   id,
   status,
+  actions,
 }: {
   readonly id: string;
   readonly status: StatusKey | null;
+  readonly actions?: ReactNode;
 }) {
   const gate = await adminRoleGate(CATALOG_ROLE);
   if (gate.kind === 'blocked') return gate.page;
@@ -432,6 +434,7 @@ export async function SecondHomePage({
   return (
     <CatalogPage session={gate.session}>
       <PageHeader
+        actions={actions}
         title={secondHome.label}
         lead={`${homeConcept.title} · ${homeEdition.name}`}
         context={{ href: paths.homeEdition(homeEdition.id), label: homeEdition.name }}

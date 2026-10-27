@@ -179,6 +179,64 @@ const request = (input: unknown, idempotencyKey = 'key-1') => ({
 });
 
 describe('executor de commands (TECH-054)', () => {
+  it('[ADR-0021] contexto recebe somente authorizationRef da decisão do servidor', async () => {
+    const { executor } = setup();
+    const outcome = await executor.execute(
+      handler(async (context) => {
+        context.audit({ objectType: 'widget', objectId: 'w', before: null, after: null });
+        return { authorizationRef: context.authorizationRef };
+      }),
+      request({ n: 1, authorizationRef: 'staff_role:forged' }),
+    );
+    expect(outcome).toMatchObject({ result: { authorizationRef: 'base:test' } });
+  });
+
+  it('[ADR-0021] preflight opt-in após guard e antes de idempotência, incluindo replay', async () => {
+    const { executor, store } = setup();
+    await executor.execute(handler(), request({ n: 1 }));
+    const lookup = vi.spyOn(store, 'findIdempotency');
+    const reserve = vi.spyOn(store, 'reserve');
+    const unavailable = new Error('closed');
+    const assertAvailable = vi.fn(() => {
+      throw unavailable;
+    });
+    await expect(
+      executor.execute({ ...handler(), assertAvailable }, request({ n: 1 })),
+    ).rejects.toBe(unavailable);
+    expect(assertAvailable).toHaveBeenCalledTimes(1);
+    expect(lookup).not.toHaveBeenCalled();
+    expect(reserve).not.toHaveBeenCalled();
+    expect(store.committed).toHaveLength(1);
+    expect(store.rejected).toHaveLength(0);
+  });
+
+  it('[ADR-0021] guard negando nunca chama preflight; callback assíncrono termina antes do lookup', async () => {
+    const denied = setup({ guard: { authorize: () => Promise.resolve({ allowed: false }) } });
+    const assertAvailable = vi.fn();
+    expect(
+      await denied.executor.execute({ ...handler(), assertAvailable }, request({ n: 1 })),
+    ).toMatchObject({ code: 'ERR_PERMISSION' });
+    expect(assertAvailable).not.toHaveBeenCalled();
+    const allowed = setup();
+    const order: string[] = [];
+    const lookup = allowed.store.findIdempotency.bind(allowed.store);
+    vi.spyOn(allowed.store, 'findIdempotency').mockImplementation(async (...args) => {
+      order.push('lookup');
+      return lookup(...args);
+    });
+    await allowed.executor.execute(
+      {
+        ...handler(),
+        assertAvailable: async () => {
+          await Promise.resolve();
+          order.push('available');
+        },
+      },
+      request({ n: 1 }),
+    );
+    expect(order).toEqual(['available', 'lookup']);
+  });
+
   it('[REQ-015] comita com operation, auditoria e eventos; antes/depois e payload sem dado pessoal bruto', async () => {
     const { store, executor } = setup();
 

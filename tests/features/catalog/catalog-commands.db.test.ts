@@ -319,10 +319,9 @@ describe('catálogo — commands, constraints e concorrência', () => {
         });
       }
       // Sem adquirente: titularidade (holding) só nasce com a formalização da W8.
-      const { rows } = await database.pool.query<{ holding: string | null }>(
-        `SELECT to_regclass('app.holding')::text AS holding`,
-      );
-      expect(rows[0]?.holding).toBeNull();
+      expect(await count(database.pool, 'holding')).toBe(0);
+      expect(await count(database.pool, 'stake')).toBe(0);
+      expect(await count(database.pool, 'use_right_ledger')).toBe(0);
       expect(await count(database.pool, 'second_home')).toBe(3);
     });
 

@@ -1695,3 +1695,15 @@ Complementa a §17 (spec [`ownership`](ownership.md) §14; [ADR-0018](../adr/001
 - **Edge cases (§17.12):** a média projetada alterada entre a apresentação e a manifestação fica resolvida pela W6 (a
   pré-qualificação guarda a referência apresentada); a Home Edition retirada do público entre a página e o envio é
   revalidada também dentro da transação de escrita.
+
+## 19. W8 — fatos definitivos da Second Home
+
+ownership §15 e ADR-0021 definem formalização. catalog conserva a autoria dos fatos da Second Home e disponibiliza seam público transacional para ownership: revalidar origem/versionamento/Brand Partner/Investor sob os locks vigentes e registrar, uma única vez, localização concreta, modalidade/configuração, operation_start_date e referência de formalização.
+Os campos originais permanecem imutáveis; não substituir versão fixada pela mais recente nem exigir publicação pública da Home Edition. O schema permite registro posterior unidirecional do início, com mesma base civil, sem lifecycle genérico.
+register_second_home vigente continua funcional independentemente de ACQUISITION_WRITES; campos definitivos chegam no ato W8. Condições financeiras sem semântica definida não viram campo genérico. Nenhuma regra/fato de estrutura migra para Home Edition.
+
+Concretização W8: a raiz `app.second_home` continua imutável. O port público `AcquisitionCatalog` controla os locks e
+a revalidação de origem; `recordFormalization` registra a extensão 1:1 `app.acquisition`, e `recordOperationStart`
+registra `app.second_home_operation_start`. O command de ownership conduz a mesma transação e seu store registra
+SPE, Ações, holdings e grants; nenhuma dessas etapas atualiza a raiz ou cria segunda persistência dos fatos. O relógio
+da elegibilidade é relido depois de todos os locks, conservando a versão original aprovada e a Home Edition finalizada.

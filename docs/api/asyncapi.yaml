@@ -18,11 +18,15 @@ channels:
     description: |
       Tabela `app.outbox` (ADR-0006). Um command grava seus eventos no mesmo commit do domínio (TECH-054);
       `dedup_key` único impede o mesmo evento duas vezes. Entrega ao menos uma vez (ADR-006): disparo após o commit
-      (`after()` do Next) e varredura pelo job `outbox` (TECH-090). Evento sem consumidor registrado é marcado entregue.
+      (`after()` do Next) e varredura pelo job `outbox` (TECH-090). W8 substitui o descarte W1 de eventos sem consumidor:
+      apenas tipos com consumidor registrado são selecionados, antes do LIMIT/locks. Os demais permanecem pendentes,
+      sem attempts, receipt, delivered_at ou falha; não ocupam o lote nem impedem eventos processáveis.
       Os tipos de evento (`type`) e seus payloads entram aqui com a wave que os produz.
     messages:
       outboxEvent:
         $ref: '#/components/messages/OutboxEvent'
+      initialDrawScheduled:
+        $ref: '#/components/messages/InitialDrawScheduled'
 
 operations:
   publishOutboxEvent:
@@ -47,6 +51,22 @@ operations:
 
 components:
   messages:
+    InitialDrawScheduled:
+      name: ownership.initial_draw_scheduled
+      title: Necessidade do sorteio inicial registrada na formalização Co-Owner
+      description: |
+        W8 produz no mesmo commit da formalização. Nenhum consumer W8, seed ou resultado de sorteio.
+        Permanece pendente até W9 registrar consumer; W9 implementa participantes, aleatoriedade e evidências.
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/OutboxEnvelope'
+          - type: object
+            properties:
+              type:
+                const: ownership.initial_draw_scheduled
+              payload:
+                $ref: '#/components/schemas/InitialDrawScheduledPayload'
     OutboxEvent:
       name: OutboxEvent
       title: Envelope de evento do outbox
@@ -54,6 +74,17 @@ components:
       payload:
         $ref: '#/components/schemas/OutboxEnvelope'
   schemas:
+    InitialDrawScheduledPayload:
+      type: object
+      additionalProperties: false
+      required: [acquisition_id, second_home_id]
+      properties:
+        acquisition_id:
+          type: string
+          format: uuid
+        second_home_id:
+          type: string
+          format: uuid
     OutboxEnvelope:
       type: object
       additionalProperties: false

@@ -143,7 +143,7 @@ describe('outbox em PostgreSQL real (TECH-091)', () => {
     expect(await scalar('SELECT count(*)::int AS v FROM app.notification')).toBe(1);
   });
 
-  it('respeita o lote, não repete um evento que falhou na mesma varredura e entrega evento sem consumidor', async () => {
+  it('[ADR-0021] respeita lote/retry e retém eventos sem consumidor sem novas tentativas ou recibos', async () => {
     await emit(3, 'k-batch');
     const alwaysFailing: Consumer = {
       name: 'test_broken',
@@ -152,10 +152,54 @@ describe('outbox em PostgreSQL real (TECH-091)', () => {
     };
 
     expect(await dispatch([alwaysFailing], 2)).toEqual({ delivered: 0, failed: 2 });
-    expect(await dispatch([], 10)).toEqual({ delivered: 3, failed: 0 });
+    const before = await database.pool.query('SELECT * FROM app.outbox ORDER BY id');
+    expect(await dispatch([], 10)).toEqual({ delivered: 0, failed: 0 });
+    expect((await database.pool.query('SELECT * FROM app.outbox ORDER BY id')).rows).toEqual(
+      before.rows,
+    );
+    expect(await scalar('SELECT count(*)::int AS v FROM app.outbox_receipt')).toBe(0);
+    expect(
+      await scalar('SELECT count(*)::int AS v FROM app.outbox WHERE delivered_at IS NULL'),
+    ).toBe(3);
+  });
+
+  it('[ADR-0021] desconhecidos anteriores maiores que o lote não bloqueiam conhecidos e ficam elegíveis com consumidor futuro', async () => {
+    await emit(5, 'k-unknown');
+    await database.pool.query(
+      "UPDATE app.outbox SET event_type = 'platform.future_event', occurred_at = occurred_at - interval '1 second'",
+    );
+    const before = await database.pool.query('SELECT * FROM app.outbox ORDER BY id');
+    await emit(1, 'k-known');
+
+    expect(await dispatch([notifyingConsumer()], 2)).toEqual({ delivered: 1, failed: 0 });
+    expect(
+      (
+        await database.pool.query(
+          "SELECT * FROM app.outbox WHERE event_type = 'platform.future_event' ORDER BY id",
+        )
+      ).rows,
+    ).toEqual(before.rows);
+    expect(await scalar('SELECT count(*)::int AS v FROM app.outbox_receipt')).toBe(1);
+
+    const future: Consumer = {
+      name: 'future_notifier',
+      eventTypes: ['platform.future_event'],
+      handle: vi.fn(() => Promise.resolve()),
+    };
+    expect(await dispatch([future], 10)).toEqual({ delivered: 5, failed: 0 });
+    expect(future.handle).toHaveBeenCalledTimes(5);
     expect(
       await scalar('SELECT count(*)::int AS v FROM app.outbox WHERE delivered_at IS NULL'),
     ).toBe(0);
+    expect(await scalar('SELECT count(*)::int AS v FROM app.outbox_receipt')).toBe(6);
+  });
+
+  it('[ADR-0021] lista vazia no store não abre transação nem seleciona eventos', async () => {
+    const work = vi.fn();
+    const transaction = vi.spyOn(db, 'transaction');
+    await expect(createPostgresOutboxStore(db).withNextPending([], [], work)).resolves.toBeNull();
+    expect(transaction).not.toHaveBeenCalled();
+    expect(work).not.toHaveBeenCalled();
   });
 
   it('[TECH-091] a mesma notificação não é gravada duas vezes', async () => {

@@ -273,3 +273,13 @@ Contrato em [ADR-0017](../adr/0017-idempotencia-de-mutacoes-publicas-nao-critica
   ([catálogo de ambiente](../reference/environment.md)).
 - **Banco indisponível**: `isDatabaseUnavailable` classifica falha de conexão (SQLSTATE classe 08, 57P01–57P03, 53300 e
   erros de rede do driver) para a borda responder `503` em vez de erro interno.
+
+## W8 — evolução compatível do outbox e preflight opt-in
+
+ADR-0021 substitui a política W1 da §W1 que entregava eventos sem consumidor. Na base 6ee4ae8 não há produtor funcional e o registro produtivo de consumidores é vazio; somente o teste de infraestrutura de lote depende deliberadamente da política antiga.
+ConsumerRegistry fornece os tipos inscritos; OutboxStore seleciona somente esses tipos, no SQL antes de ORDER/LIMIT/FOR UPDATE SKIP LOCKED. Registro vazio retorna delivered=0/failed=0 sem selecionar eventos.
+Sem consumer: delivered_at continua NULL, attempts/last_error inalterados, nenhum recibo ou falha. Esses eventos não ocupam batch nem causam starvation de tipos elegíveis. Novo consumer em implantação futura torna o evento pendente naturalmente processável. Não reabrir eventos já entregues.
+Preservar transação por evento, savepoint/recibo por consumer, deduplicação, retries e idempotência externa no destino. W8 só agenda ownership.initial_draw_scheduled; W9 registra seu consumer. Testes reais cobrem retenção, batch, conhecido posterior, registro futuro e concorrência.
+
+CommandContext passa a transportar authorizationRef derivada exclusivamente da decisão do guard, nunca de input. Isto permite revalidação cirúrgica de staff na W8; commands antigos conservam autoridade e semântica.
+AdminCommand pode declarar política assertAvailable opt-in; a entrada compartilhada REST/Server Action executa-a após autorização positiva e antes da idempotência. W8 usa ACQUISITION_WRITES; ausência/closed em Production não gera operation, idempotência, audit ou outbox. Outros commands e leituras não optam e não dependem desse gate.

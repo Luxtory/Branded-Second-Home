@@ -69,6 +69,7 @@ describe('grant_authorization — execução (REQ-015)', () => {
     const result = await handler.execute({
       input,
       actor: staffActor('admin'),
+      authorizationRef: 'staff_role:00000000-0000-4000-8000-0000000000f2',
       operationId: '00000000-0000-4000-8000-0000000000f1',
       now,
       tx: 'tx',
@@ -108,6 +109,7 @@ describe('grant_authorization — execução (REQ-015)', () => {
       handler.execute({
         input: handler.input.parse(body),
         actor: { kind: 'system', job: 'outbox' },
+        authorizationRef: 'base:test',
         operationId: 'op',
         now: new Date(),
         tx: 'tx',
@@ -135,6 +137,7 @@ describe('grant_authorization — party inexistente (D-W2-1 encerrada, W7)', () 
       handler.execute({
         input: handler.input.parse(body),
         actor: staffActor('admin'),
+        authorizationRef: 'staff_role:00000000-0000-4000-8000-0000000000f2',
         operationId: 'op',
         now: new Date('2026-09-15T00:00:00.000Z'),
         tx: 'tx',

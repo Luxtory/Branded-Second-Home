@@ -9,7 +9,8 @@ const CONSUMER_SAVEPOINT = sql.raw('outbox_consumer');
 /** Outbox no schema `app` (TECH-091): um evento por transação, travado com `FOR UPDATE SKIP LOCKED`. */
 export function createPostgresOutboxStore(db: Database): OutboxStore<DatabaseTransaction> {
   return {
-    withNextPending(skip, work) {
+    withNextPending(eventTypes, skip, work) {
+      if (eventTypes.length === 0) return Promise.resolve(null);
       return db
         .transaction()
         .setIsolationLevel('read committed')
@@ -17,7 +18,8 @@ export function createPostgresOutboxStore(db: Database): OutboxStore<DatabaseTra
           let query = tx
             .selectFrom('app.outbox')
             .select(['id', 'event_type', 'dedup_key', 'operation_id', 'occurred_at', 'payload'])
-            .where('delivered_at', 'is', null);
+            .where('delivered_at', 'is', null)
+            .where('event_type', 'in', eventTypes);
           if (skip.length > 0) query = query.where('id', 'not in', skip);
           const row = await query
             .orderBy('occurred_at')
