@@ -86,4 +86,7 @@ Regressões com PostgreSQL real retêm o pacote de encerramento usando uma barre
 e Kysely em um lote concorrente finito e verificam, em processo isolado, que uma falha inesperada de conexão
 continua encerrando o processo com erro. Gates, cobertura, dependências e código da aplicação permanecem iguais.
 
+Uma sessão deixada aberta, sem iniciar seu encerramento, também deve impedir o drop com `55006` e continuar
+respondendo a `SELECT 1` após essa rejeição; somente sua finalização explícita permite a limpeza.
+
 Referência: [PostgreSQL 17 — DROP DATABASE](https://www.postgresql.org/docs/17/sql-dropdatabase.html).

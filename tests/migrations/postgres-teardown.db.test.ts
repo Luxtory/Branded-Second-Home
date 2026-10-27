@@ -72,6 +72,30 @@ describe('PostgreSQL teardown (ADR-0005)', () => {
     expect(clientEnded).toBe(true);
   });
 
+  it('[TECH-110] a genuinely leaked client blocks the drop and remains usable after its rejection', async () => {
+    const database = await createTestDatabase({ migrated: false });
+    const { adminUrl } = inject('postgres');
+    const name = new URL(database.url).pathname.slice(1);
+    const leaked = new pg.Client({ connectionString: database.url });
+    const errors: string[] = [];
+    leaked.on('error', (error) => errors.push(sqlState(error)));
+    try {
+      await leaked.connect();
+      // No end or release has begun: this is a real open session, distinct from the closing-socket regression.
+      const outcome = await dropDatabase(adminUrl, name).then(
+        () => ({ dropped: true }),
+        (error: unknown) => ({ dropped: false, code: sqlState(error) }),
+      );
+      expect(outcome).toEqual({ dropped: false, code: '55006' });
+      const result = await leaked.query<{ alive: number }>('SELECT 1 AS alive');
+      expect(result.rows).toEqual([{ alive: 1 }]);
+    } finally {
+      await leaked.end();
+      await database.drop();
+    }
+    expect(errors).toEqual([]);
+  });
+
   it('[TECH-110] concurrently drains pg and Kysely pools and removes every isolated database', async () => {
     const { adminUrl } = inject('postgres');
     const names: string[] = [];
