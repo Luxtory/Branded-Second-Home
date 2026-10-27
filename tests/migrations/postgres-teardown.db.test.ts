@@ -42,11 +42,14 @@ describe('PostgreSQL teardown (ADR-0005)', () => {
     let clientEnded = false;
     try {
       const client = await owner.connect();
-      client.once('end', () => {
-        clientEnded = true;
-      });
-      await client.query('SELECT 1');
-      client.release();
+      try {
+        client.once('end', () => {
+          clientEnded = true;
+        });
+        await client.query('SELECT 1');
+      } finally {
+        client.release();
+      }
       await sql`SELECT 1`.execute(db);
       socket.cork();
       await db.destroy();
@@ -145,7 +148,7 @@ describe('PostgreSQL teardown (ADR-0005)', () => {
         metric: 'postgres_test_teardown_ms',
         databases: names.length,
         min: Math.round(sorted[0]!),
-        median: Math.round(sorted[6]!),
+        median: Math.round((sorted[5]! + sorted[6]!) / 2),
         max: Math.round(sorted.at(-1)!),
       }),
     );
