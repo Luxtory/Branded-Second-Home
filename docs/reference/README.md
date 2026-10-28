@@ -16,6 +16,7 @@ its scope. No tutorials, no opinions, no narrative.
 
 - [`design-system.md`](design-system.md) — Design System Luxtory (LUXURY + STORY): tokens, grounds, tipografia, componentes `lx-*`, a11y
 - [`environment.md`](environment.md) — catálogo de variáveis de ambiente (só nomes) e onde cada uma vive
+- [`sorteio-inicial.md`](sorteio-inicial.md) — evidência do sorteio da ordem inicial e verificação independente do `fy-v1` (TECH-093)
 - The OpenAPI contract is at [`../api/openapi.yaml`](../api/openapi.yaml)
 
 See https://diataxis.fr/reference/

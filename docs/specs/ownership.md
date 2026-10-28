@@ -10,6 +10,8 @@
 > aprovada pelo fundador em 2026-10-19; correção estrutural da W4.2 na [§13](#13-w42--interesse-a-partir-da-home-edition).
 > W6 (2026-10-20): solicitação de conversa na Home Edition, contato e pré-qualificação na
 > [§14](#14-w6--solicitação-de-conversa-na-home-edition); [ADR-0018](../adr/0018-contato-e-pre-qualificacao-do-interesse.md).
+> W9 (2026-10-28): sorteio auditável da ordem inicial na
+> [§16](#16-w9--sorteio-auditável-da-ordem-inicial); [ADR-0022](../adr/0022-sorteio-auditavel-e-elegibilidade-temporal-do-outbox.md).
 
 Módulo `ownership` do TECH-011. A W5 entrega só a manifestação de interesse; formalização, Ação, holding e Direito de
 Uso chegam nas W8 em diante. Esta spec cita os canônicos (`01` v10.2, `02` v4.3, `03` v3.15) e não os parafraseia.
@@ -750,3 +752,143 @@ W9: consumidor do evento/sorteio/PD-011/aleatoriedade/evidências. W10: second_h
 Testes: REQ-010 mesma party em papéis por Second Home; REQ-024 único Owner/100%/derivação; REQ-025 ausência prévia/ato criador; REQ-026 equivalência/cardinalidade/imutabilidade/distinção de entidades; REQ-022 trava de modalidade; PD-003/EC-3 e TECH-110 calendário até 2100/fusos/administração/alocação.
 PostgreSQL real comprova rollback, cardinalidade, CPF-SPE, Luxtory, RLS de linhas e colunas, TOCTOU nas duas ordens, duas formalizações, replay/conflito, administração sem lacunas. UI Admin com origem/localização/modalidade/configuração/adquirentes/SPE/base/admin/alocação/basis; DS/i18n, checkpoint 390/1440, axe 0 e overflow 0 320..1920.
 Gates integrais: npm run verify; npm run test:e2e; npm run trace -- --expect REQ-010,REQ-022,REQ-024,REQ-025,REQ-026,PD-003. Status W8 somente no closeout após merge autorizado.
+
+## 16. W9 — Sorteio auditável da ordem inicial
+
+### 16.1 Autoridade e rastreabilidade
+
+Dona: PD-011 (metade do sorteio; a auditoria de commands veio da W1) e TECH-093. Fontes: 01 BR-100, BR-102, BR-104,
+BR-106, BR-109; 02 PD-011, REQ-032 (dona W11), REQ-097 (dona W30); 03 TECH-001, TECH-002, TECH-020, TECH-051,
+TECH-052, TECH-090–TECH-093, TECH-100, TECH-110. Plano aprovado pelo fundador em 2026-10-28; execução em
+[`docs/plan/w9-sorteio-auditavel.md`](../plan/w9-sorteio-auditavel.md); decisão em
+[ADR-0022](../adr/0022-sorteio-auditavel-e-elegibilidade-temporal-do-outbox.md). A formação da operação de BR-100 é a
+formalização (TECH-020, BR-109): o sorteio não espera o registro de início da operação.
+
+Escopo: o sorteio agendado por `formalize_acquisition` em toda Second Home Co-Owner — compromisso, beacon, `fy-v1`,
+posição inicial por Ação, evidência no Admin e na Área do Titular e registro da notificação do resultado. Fora:
+rotação, janelas e abertura em 15/09 (W11), selagem e custódia (W10), selo e ancoragem da auditoria (W30), interface e
+catálogo de notificações (W30), novo sorteio, correção manual de resultado e Owner (sem sorteio). Nenhum command ou job
+novo (TECH-051, TECH-090): o sorteio é o efeito agendado da formalização, concluído por consumidores do outbox.
+
+### 16.2 Protocolo (TECH-093)
+
+Três transações, cada uma um consumidor idempotente do outbox (recibo na mesma transação):
+
+1. `ownership_initial_draw_commit` recebe `ownership.initial_draw_scheduled` (W8). Congela os participantes — as N
+   Ações da aquisição na ordem crescente de `allocation_position`, que é a ordem determinística do passo 1 —, gera
+   `seed` de 32 bytes por CSPRNG, grava `commitment = SHA-256(seed)`, a rodada alvo `R` do beacon e o prazo de commit,
+   audita e enfileira `ownership.initial_draw_committed`, elegível só depois da rodada.
+2. `ownership_initial_draw_reveal` recebe `ownership.initial_draw_committed`. Obtém a rodada `R` verificada, calcula
+   `key = SHA-256(seed ‖ randomness)`, aplica `fy-v1`, grava a revelação e as posições, audita e enfileira
+   `ownership.initial_draw_completed`.
+3. `ownership_initial_draw_notification` recebe `ownership.initial_draw_completed` e registra a notificação do
+   resultado (REQ-097) para cada pessoa ou empresa titular vigente das Ações sorteadas.
+
+Uma aquisição tem no máximo um sorteio (`UNIQUE`), sem caminho de novo sorteio. Seed e `R` ficam fixos no compromisso:
+toda retentativa da revelação recalcula o mesmo resultado.
+
+**`fy-v1`** (definição fixa; mudança exige `fy-v2`). Participantes `P[0..n−1]`; `seed` S; `B` = `randomness` da rodada
+verificada (32 bytes, `SHA-256` da assinatura); `K = SHA-256(S ‖ B)`. Começa com `a = [0..n−1]`; para `i` de `n−1` até
+`1`: `j = U(K, i, i+1)` e troca `a[i]` com `a[j]`. `U(K, i, m)`: `c = 0`; repete `h = HMAC-SHA256(K, u32be(i) ‖ u32be(c))`,
+`x` = `h` como inteiro sem sinal big-endian; se `x < 2²⁵⁶ − (2²⁵⁶ mod m)` devolve `x mod m`, senão `c = c + 1`. O
+contador recomeça em 0 a cada posição. A posição `p` (1..n) é da Ação `P[a[p−1]]`. Vetor fixo calculado por uma
+implementação independente: [referência de verificação](../reference/sorteio-inicial.md).
+
+**Beacon.** Port `RandomnessBeacon`; adaptador da rede drand quicknet com `ChainInfo` fixado no código (chain hash
+`52db9ba7…e971`, chave pública, `genesis_time` 1692803367, período 3 s, esquema `bls-unchained-g1-rfc9380`), nunca
+obtido de um relay. A verificação usa `fetchBeacon` do `drand-client` 1.4.2 (ADR-0004) com um `ChainClient` próprio:
+`fetch` nativo com prazo e relays públicos em sequência fixa, que não precisam ser confiáveis. A biblioteca confere
+rodada, `randomness = SHA-256(assinatura)` e a assinatura BLS; o adaptador confere ainda rodada igual a `R`, tamanhos e
+constantes. Rodada futura (`425`/`404`), erro de rede, `5xx`, prazo esgotado ou assinatura inválida deixam o sorteio
+pendente, sem nada gravado. Testes usam rodadas reais gravadas e suas versões adulteradas; nenhuma aleatoriedade falsa
+entra no código de produção nem passa pela constraint de chain do banco.
+
+### 16.3 Anterioridade do compromisso e limites de tempo
+
+O compromisso, os participantes e `R` precisam estar duráveis antes de a rodada existir. Garantias da W9:
+
+- O consumidor de commit arma `transaction_timeout = DRAW_TRANSACTION_TIMEOUT_MS` na própria transação, lê o relógio do
+  banco e define `commit_deadline` = esse instante + o mesmo prazo; `R` é a primeira rodada com
+  `t(R) ≥ commit_deadline + DRAW_BEACON_LEAD_SECONDS`, `t(R) = genesis + (R − 1) × 3 s`.
+- O banco recusa o compromisso fora destas regras, independentemente do código da aplicação: `t(R)` igual à fórmula;
+  `recorded_at < commit_deadline < t(R)`; `recorded_at` dentro da transação; prazo ainda não vencido na inserção; e um
+  gatilho diferido **no COMMIT efetivo** recusa o commit se `clock_timestamp() > commit_deadline`. Uma transação lenta
+  não torna durável um compromisso tardio; o `transaction_timeout` libera conexão e locks como salvaguarda operacional.
+- A revelação só é aceita com `clock_timestamp() ≥ t(R)`, rodada igual a `R`, `randomness = SHA-256(assinatura)` e
+  `SHA-256(seed) = commitment`; as posições formam uma permutação exata dos participantes.
+
+Limites residuais até a W30 (aceitos pelo fundador, D5): essas são garantias do banco controlado pela Luxtory, não prova
+independente. Um superusuário pode contornar gatilhos e reescrever um compromisso ainda não revelado; o compromisso não
+é notificado (o REQ-097 só lista o resultado); seed fica legível para quem opera o banco antes da revelação (sem permitir
+enviesar o resultado); quicknet descontinuado deixa o sorteio pendente.
+
+Orçamentos (runbook, sem default — TECH-001; lidos só ao processar o evento, ausentes ou inválidos deixam o evento
+pendente sem efeito):
+
+| Variável | Uso |
+|---|---|
+| `DRAW_TRANSACTION_TIMEOUT_MS` | `transaction_timeout` das transações de commit e revelação; largura do prazo de commit |
+| `DRAW_BEACON_TIMEOUT_MS` | orçamento total de obtenção e verificação da rodada, somando os relays; deve ser menor que o anterior |
+| `DRAW_BEACON_LEAD_SECONDS` | folga mínima entre o prazo de commit e `t(R)` (latência final do commit e diferença de relógio) |
+
+Durante a chamada ao beacon a transação mantém só a linha do próprio evento (`FOR UPDATE`; os demais despachantes
+pulam com `SKIP LOCKED`) e o recibo; nenhum lock de domínio nem do TECH-053. Depois de uma falha do beacon, as
+obtenções seguintes falham sem rede pelo mesmo orçamento, para que uma varredura não multiplique o tempo de espera.
+
+### 16.4 Evolução do outbox (platform, ADR-0022)
+
+- `app.outbox.available_at` (nulo = imediato; todas as linhas e produtores anteriores inalterados). O store seleciona só
+  eventos com `available_at` nulo ou vencido, no SQL antes de ORDER/LIMIT/locks, como o filtro de tipos do ADR-0021:
+  evento futuro fica pendente sem tentativa, erro, recibo nem vaga no lote.
+- Ordem de seleção: `attempts`, `occurred_at`, `id`. Um evento que falha repetidamente cede a vez a eventos com menos
+  tentativas; nenhuma falha recorrente impede indefinidamente eventos independentes.
+- Falha que ocorre no COMMIT da transação do evento (por exemplo, constraint diferida) é registrada em transação própria
+  (`attempts`, `last_error`) e a varredura continua; sem evento travado, o erro continua propagando (banco indisponível).
+- Seams para consumidores, no molde de `recordNotification`: `enqueueOutboxEvent` (mesma deduplicação dos commands,
+  `availableAt` opcional, `operation_id` obrigatório) e `recordSystemAudit` (papel `system`, `event_type 'command'`).
+  Commands e executor não mudam.
+
+### 16.5 Dados, RLS e evidência
+
+Migrations `platform_outbox_available_at` e `ownership_initial_draw`. Tabelas só de inserção (`forbid_change`, sem
+TRUNCATE), `luxtory_app` com SELECT/INSERT: `initial_draw` (aquisição única, Second Home, `operation_id` da formalização,
+evento de origem, `fy-v1`, chain, N, `commitment`, `R`, `t(R)`, `recorded_at`, `commit_deadline`),
+`initial_draw_participant` (ordinal = `allocation_position`, Ação), `initial_draw_seed`, `initial_draw_reveal`
+(rodada, assinatura, `randomness`, `revealed_at`, evento de origem) e `initial_draw_position` (posição → Ação). O
+rollback recusa descartar sorteios ou eventos agendados.
+
+Titular (RLS de delegação vigente + holding da Second Home, SELECT por coluna): vê o sorteio da Second Home de que é
+titular — participantes como Ações por identificador não pessoal com a sua destacada, método, compromisso, `R`, `t(R)`,
+prazo de commit e, só depois da revelação, seed, beacon e resultado completo (D1). Nunca vê pessoas ou empresas de
+outros Co-Owners, `operation_id` nem eventos. Admin: a mesma evidência na página de formalização, com a leitura
+auditada (`admin_read`). Página do Titular: `/titular/sorteios/{drawId}`, com entrada na Área do Titular.
+
+Notificação: `ownership.initial_draw_result` em `app.notification`, um registro por pessoa ou empresa titular vigente,
+dados só com ids. A interface de notificações é da W30.
+
+### 16.6 Edge cases
+
+Owner nunca gera sorteio. Evento duplicado ou reentregue não cria segundo compromisso, revelação ou notificação. Beacon
+fora do ar, relay adulterado ou rodada ainda não publicada mantêm o sorteio pendente. Configuração ausente mantém o
+evento agendado pendente, sem compromisso. Compromisso que perde o prazo de commit é desfeito e o evento é tentado de
+novo com outra seed e outra rodada (nenhuma informação da rodada existia). Eventos pendentes anteriores ao deploy
+(conferência D4 antes do merge) seriam processados normalmente pelo consumidor.
+
+### 16.7 Acceptance criteria (W9)
+
+Títulos exatos, conferidos como aprovados em `reports/vitest.json` e `reports/playwright.json` no fechamento:
+
+| Critério | Arquivo | Título |
+|---|---|---|
+| AC1 `[PD-011]` | `tests/features/ownership/initial-draw-read.db.test.ts` | `[PD-011][TECH-093] a evidência mostra participantes, método e resultado ao Admin e ao Titular, sem identificar outros Co-Owners` |
+| AC1 `[PD-011]` | `tests/e2e/initial-draw.spec.ts` | `[PD-011] Admin e Titular veem a evidência do sorteio inicial em 390 px com toque` |
+| AC2 `[TECH-093]` | `tests/features/ownership/application/initial-draw-algorithm.test.ts` | `[TECH-093] vetor fixo reproduz exatamente fy-v1` |
+| AC2 `[TECH-093]` | `tests/features/ownership/application/initial-draw-algorithm.test.ts` | `[TECH-093] índice uniforme por rejection sampling, sem viés de módulo` |
+| AC3 `[TECH-110]` | `tests/features/ownership/initial-draw-consumers.db.test.ts` | `[TECH-110][TECH-093] beacon fora do ar deixa o sorteio pendente, sem resultado parcial` |
+
+Complementares: anterioridade sob atraso transacional (`[TECH-093] o compromisso só se torna durável antes do prazo que
+antecede a rodada`), rodadas reais e adulteradas, despachantes paralelos (`[CONC-12]`), elegibilidade temporal, ordem por
+tentativas e falha no COMMIT do outbox, Owner sem sorteio, configuração ausente, RLS, imutabilidade e rollback.
+
+Gates: `npm run verify`; `npm run test:e2e`; `npm run trace -- --expect PD-011,TECH-093` e conferência dos títulos acima.
+Status W9 só no fechamento, após merge autorizado.
