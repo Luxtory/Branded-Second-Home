@@ -9,6 +9,7 @@ import { AcquisitionForms, AcquisitionSuccess } from './acquisition-forms';
 import type { MaskedPartyOption } from './acquisition-form-state';
 import { assertAcquisitionWritesAvailable } from './acquisition-gate';
 import { AcquisitionFacts, AcquisitionNotice, AcquisitionSection } from './acquisition-ui';
+import { InitialDrawAdminSection } from './initial-draw-admin-section';
 import { acquisitionMessages as text } from './i18n/acquisition-pt-br';
 const path = (id: string) => `/admin/catalogo/second-homes/${id}`;
 const partyPath = (id: string) => `/admin/pessoas-e-empresas/${id}`;
@@ -274,6 +275,9 @@ export async function AcquisitionAdminPage({
         />
       </AcquisitionSection>
       <RecordedFacts view={view} parties={parties} />
+      {view.acquisition?.modality === 'co_owner' ? (
+        <InitialDrawAdminSection session={gate.session} secondHomeId={id} />
+      ) : null}
       <AcquisitionSection id="configurations" title={text.configurations}>
         <p className="lx-hint">{text.configurationHint}</p>
         <RecordList

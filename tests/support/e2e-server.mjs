@@ -71,10 +71,14 @@ process.on('SIGINT', () => void stop(0));
 try {
   const { databaseUrl, ownerUrl } = await prepareDatabase(postgres.adminUrl);
   const disposableOwnerUrl = validateE2eAcquisitionDatabase(ownerUrl);
+  // W9: segredo do job `outbox` gerado a cada execução, entregue ao teste pelo mesmo arquivo privado.
+  const cronSecret = randomBytes(32).toString('base64url');
   mkdirSync(dirname(acquisitionFixtureFile), { recursive: true });
-  writeFileSync(acquisitionFixtureFile, JSON.stringify({ ownerUrl: disposableOwnerUrl }), {
-    mode: 0o600,
-  });
+  writeFileSync(
+    acquisitionFixtureFile,
+    JSON.stringify({ ownerUrl: disposableOwnerUrl, cronSecret }),
+    { mode: 0o600 },
+  );
   chmodSync(acquisitionFixtureFile, 0o600);
   next = spawn('npx', ['next', 'start', '--port', port, '--hostname', '127.0.0.1'], {
     stdio: 'inherit',
@@ -88,6 +92,12 @@ try {
       ACQUISITION_WRITES: source.E2E_ACQUISITION_GATE === 'closed' ? 'closed' : 'open',
       COMMAND_LOCK_TIMEOUT_MS: '5000',
       OUTBOX_BATCH_SIZE: '100',
+      CRON_SECRET: cronSecret,
+      // W9 (spec ownership §16.3): orçamentos de teste do sorteio. A folga de um dia garante que a revelação nunca
+      // consulta a drand durante o E2E; o estado concluído vem de uma rodada real gravada (e2e-initial-draw.ts).
+      DRAW_TRANSACTION_TIMEOUT_MS: '10000',
+      DRAW_BEACON_TIMEOUT_MS: '5000',
+      DRAW_BEACON_LEAD_SECONDS: '86400',
       // Mídia do catálogo em diretório local descartável (ADR-0015; `local` é recusado na Vercel).
       MEDIA_STORAGE: 'local',
       MEDIA_LOCAL_DIR: mkdtempSync(join(tmpdir(), 'luxtory-e2e-media-')),

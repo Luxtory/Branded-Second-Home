@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
 import { registerE2eInstitution } from '../support/e2e-acquisition-database.mjs';
+import { completeE2eInitialDraw, e2eCronSecret } from '../support/e2e-initial-draw';
 import { randomCpf, validCnpj } from '../support/documents';
 import { partialAcquisitionScenario } from '../support/acquisition-scenario';
-import { signIn, STAFF_EMAIL } from './support/auth';
+import { signIn, STAFF_EMAIL, TEST_CODE } from './support/auth';
 import { readSeed } from './support/discovery';
 import { captureForReview, collectConsoleErrors, expectResponsive } from './support/ui';
 const FLOW_TIMEOUT_MS = 300_000;
@@ -339,6 +340,81 @@ test.describe('W8 Admin 390 px com toque e PostgreSQL real', () => {
       await start.getByRole('button', { name: 'Declarar início da operação' }).tap();
       await saved(page);
       await gate(page, errors, '09-co-owner-inicio-historico');
+    });
+
+    // W9 (spec ownership §16.7, AC1): a formalização Co-Owner acima agendou o sorteio; o job outbox real grava o
+    // compromisso. O estado concluído liga uma rodada quicknet real gravada (fixture só do E2E).
+    test('[PD-011] Admin e Titular veem a evidência do sorteio inicial em 390 px com toque', async ({
+      page,
+      browser,
+    }) => {
+      test.setTimeout(FLOW_TIMEOUT_MS);
+      const errors = collectConsoleErrors(page);
+      await openScenario(page);
+      const job = await page.request.get('/api/jobs/outbox', {
+        headers: { authorization: `Bearer ${e2eCronSecret()}` },
+      });
+      expect(job.status(), await job.text()).toBe(200);
+      await page.reload();
+      const draw = section(page, 'initial-draw');
+      await expect(draw.getByRole('status')).toContainText('Compromisso registrado');
+      await expect(draw.getByText('drand quicknet', { exact: true })).toBeVisible();
+      for (const label of ['Ação 1', 'Ação 2'])
+        await expect(draw.getByText(label, { exact: true })).toBeVisible();
+      await expect(draw.getByText('Seed', { exact: true })).toHaveCount(0);
+      await gate(page, errors, '10-sorteio-pendente');
+
+      await completeE2eInitialDraw(fixture.home);
+      await page.reload();
+      await expect(draw.getByRole('status')).toContainText('Sorteio concluído em');
+      for (const label of ['1ª posição', '2ª posição', 'Seed', 'Randomness da rodada'])
+        await expect(draw.getByText(label, { exact: true })).toBeVisible();
+      await gate(page, errors, '11-sorteio-concluido');
+
+      // Titular de uma das Ações: convite, ativação e evidência com só a própria Ação destacada.
+      const email = `titular-sorteio-${randomUUID().slice(0, 8)}@luxtory.test`;
+      const delegation = await page.request.post(
+        `/v1/admin/parties/${fixture.acquirers[0]}/delegations`,
+        {
+          headers: { origin: new URL(page.url()).origin, 'idempotency-key': randomUUID() },
+          data: { email, basis: 'Contrato social E2E do sorteio' },
+        },
+      );
+      expect(delegation.status(), await delegation.text()).toBe(201);
+      const context = await browser.newContext({
+        baseURL: new URL(page.url()).origin,
+        viewport: { width: 390, height: 844 },
+        hasTouch: true,
+        isMobile: true,
+        timezoneId: 'America/Sao_Paulo',
+        locale: 'pt-BR',
+      });
+      const titular = await context.newPage();
+      const titularErrors = collectConsoleErrors(titular);
+      try {
+        await titular.goto('/titular/ativar');
+        await titular.getByLabel('E-mail').fill(email);
+        await titular.getByLabel('Código do convite').fill(TEST_CODE);
+        await titular.getByRole('button', { name: 'Continuar' }).tap();
+        await expect(titular).toHaveURL(/\/titular$/);
+        await titular.getByRole('button', { name: 'Ativar representação' }).tap();
+        await expect(titular.getByRole('status')).toContainText('Representação ativada.');
+        await expect(
+          titular.getByRole('heading', { level: 2, name: 'Sorteio da ordem inicial' }),
+        ).toBeVisible();
+        await gate(titular, titularErrors, '12-titular-sorteios');
+        await titular.getByRole('link', { name: /Second Home sintética Co-Owner/ }).tap();
+        await expect(titular.getByRole('heading', { level: 1 })).toHaveText(
+          'Sorteio da ordem inicial',
+        );
+        await expect(titular.getByRole('status')).toContainText('Sorteio concluído em');
+        // Sua Ação: uma vez entre os participantes e uma no resultado; nenhuma pessoa ou empresa exibida.
+        await expect(titular.getByText('Sua Ação', { exact: true })).toHaveCount(2);
+        await expect(titular.getByText(/CPF|CNPJ/)).toHaveCount(0);
+        await gate(titular, titularErrors, '13-titular-evidencia');
+      } finally {
+        await context.close();
+      }
     });
   });
 
