@@ -1,6 +1,7 @@
 import { Kysely, PostgresDialect, type Transaction } from 'kysely';
 import pg from 'pg';
 import { loadEnv, loadRuntimeConfig, type EnvSource } from '../env';
+import { rootLogger } from '../logger';
 import type { DB } from './schema';
 import { SUPABASE_ROOT_CA } from './supabase-root-ca';
 
@@ -61,9 +62,29 @@ export function parseDatabaseUrl(url: string): ConnectionSettings {
   };
 }
 
+// Só nome e SQLSTATE: a mensagem do driver pode carregar dados da consulta (TECH-100).
+const connectionError = (error: Error & { code?: string }) => {
+  rootLogger.error('database connection error', {
+    error_name: error.name,
+    code: error.code ?? null,
+  });
+};
+
+/**
+ * Conexão encerrada pelo servidor enquanto a aplicação a segura (por exemplo `transaction_timeout` durante uma espera
+ * externa, ADR-0022 §6): a transação em curso falha e o pool descarta o cliente; o evento `error` vira log, nunca
+ * exceção não tratada que derrubaria a instância.
+ */
+function guardedPool(settings: ConnectionSettings): pg.Pool {
+  const pool = new pg.Pool({ ...settings });
+  pool.on('error', connectionError);
+  pool.on('connect', (client) => client.on('error', connectionError));
+  return pool;
+}
+
 /** Kysely sobre um pool `pg`. Sem prepared statements nomeados: compatível com o Supavisor em modo transação. */
 export function createDatabase(settings: ConnectionSettings): Database {
-  return new Kysely<DB>({ dialect: new PostgresDialect({ pool: new pg.Pool({ ...settings }) }) });
+  return new Kysely<DB>({ dialect: new PostgresDialect({ pool: guardedPool(settings) }) });
 }
 
 let shared: Database | undefined;

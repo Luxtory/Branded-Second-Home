@@ -369,7 +369,7 @@ RLS e Admin AAL2. Nenhum endpoint novo; superfície externa nova: leitura HTTP d
 | T-906 Repudiation — efeito sem autoria | auditoria `system` com o `operation_id` da formalização e o evento de origem | registros de commit e revelação com antes/depois sem PII |
 | T-907 Denial of service — beacon lento ou fora do ar | orçamento total menor que o `transaction_timeout`, sem lock de domínio, falha rápida após uma falha | sorteio pendente, varredura continua, sem conexão retida além do prazo |
 | T-908 Denial of service — eventos futuros ou falhas recorrentes travam o outbox | `available_at` antes do LIMIT, ordem por tentativas, falha no COMMIT registrada à parte | lote cheio de falhas não impede evento independente; falha no COMMIT não interrompe a varredura |
-| T-909 Elevation — aleatoriedade falsa em Production | nenhum adaptador falso no código de produção; constraint da chain quicknet no banco | testes usam rodadas reais gravadas; chain diferente recusada |
+| T-909 Elevation — aleatoriedade falsa em Production | nenhum adaptador falso no código de produção; composição de produção sempre com a quicknet; constraint da chain no banco | adaptador testado com rodadas reais; beacon de teste só em `tests/`; chain diferente recusada |
 
 Residuais aceitos (D5): anterioridade e integridade dependem do banco da Luxtory até o selo e a ancoragem da W30;
 compromisso não notificado; seed legível por quem opera o banco antes da revelação; quicknet descontinuado deixa o

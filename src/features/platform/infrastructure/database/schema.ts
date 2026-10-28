@@ -268,6 +268,50 @@ export interface AppInitialAllocationGrant {
   position: number;
 }
 
+export interface AppInitialDraw {
+  acquisition_id: string;
+  algorithm: string;
+  beacon_chain_hash: string;
+  commit_deadline: Timestamp;
+  commitment: Buffer;
+  id: string;
+  operation_id: string;
+  participant_count: number;
+  recorded_at: Generated<Timestamp>;
+  second_home_id: string;
+  source_event_id: string;
+  target_round: Int8;
+  target_round_at: Timestamp;
+}
+
+export interface AppInitialDrawParticipant {
+  acquisition_id: string;
+  draw_id: string;
+  ordinal: number;
+  second_home_id: string;
+  stake_id: string;
+}
+
+export interface AppInitialDrawPosition {
+  draw_id: string;
+  position: number;
+  stake_id: string;
+}
+
+export interface AppInitialDrawReveal {
+  beacon_randomness: Buffer;
+  beacon_round: Int8;
+  beacon_signature: Buffer;
+  draw_id: string;
+  revealed_at: Generated<Timestamp>;
+  source_event_id: string;
+}
+
+export interface AppInitialDrawSeed {
+  draw_id: string;
+  seed: Buffer;
+}
+
 export interface AppInterest {
   approx_days: number | null;
   created_at: Timestamp;
@@ -349,6 +393,7 @@ export interface AppOperation {
 
 export interface AppOutbox {
   attempts: Generated<number>;
+  available_at: Timestamp | null;
   dedup_key: string;
   delivered_at: Timestamp | null;
   event_type: string;
@@ -538,6 +583,11 @@ export interface DB {
   'app.home_edition_projected_investment': AppHomeEditionProjectedInvestment;
   'app.idempotency_record': AppIdempotencyRecord;
   'app.initial_allocation_grant': AppInitialAllocationGrant;
+  'app.initial_draw': AppInitialDraw;
+  'app.initial_draw_participant': AppInitialDrawParticipant;
+  'app.initial_draw_position': AppInitialDrawPosition;
+  'app.initial_draw_reveal': AppInitialDrawReveal;
+  'app.initial_draw_seed': AppInitialDrawSeed;
   'app.interest': AppInterest;
   'app.interest_contact': AppInterestContact;
   'app.interest_qualification': AppInterestQualification;

@@ -800,8 +800,9 @@ obtido de um relay. A verificação usa `fetchBeacon` do `drand-client` 1.4.2 (A
 `fetch` nativo com prazo e relays públicos em sequência fixa, que não precisam ser confiáveis. A biblioteca confere
 rodada, `randomness = SHA-256(assinatura)` e a assinatura BLS; o adaptador confere ainda rodada igual a `R`, tamanhos e
 constantes. Rodada futura (`425`/`404`), erro de rede, `5xx`, prazo esgotado ou assinatura inválida deixam o sorteio
-pendente, sem nada gravado. Testes usam rodadas reais gravadas e suas versões adulteradas; nenhuma aleatoriedade falsa
-entra no código de produção nem passa pela constraint de chain do banco.
+pendente, sem nada gravado. O adaptador é testado com rodadas reais gravadas e suas versões adulteradas; os testes de
+banco dos consumidores injetam pelo port um beacon que só existe no código de teste (o banco exige rodada futura pelo
+seu próprio relógio). Nenhum adaptador falso existe no código de produção.
 
 ### 16.3 Anterioridade do compromisso e limites de tempo
 
