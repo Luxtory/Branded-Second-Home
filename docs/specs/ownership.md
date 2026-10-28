@@ -882,7 +882,7 @@ Títulos exatos, conferidos como aprovados em `reports/vitest.json` e `reports/p
 | Critério | Arquivo | Título |
 |---|---|---|
 | AC1 `[PD-011]` | `tests/features/ownership/initial-draw-read.db.test.ts` | `[PD-011][TECH-093] a evidência mostra participantes, método e resultado ao Admin e ao Titular, sem identificar outros Co-Owners` |
-| AC1 `[PD-011]` | `tests/e2e/initial-draw.spec.ts` | `[PD-011] Admin e Titular veem a evidência do sorteio inicial em 390 px com toque` |
+| AC1 `[PD-011]` | `tests/e2e/acquisition-admin.spec.ts` (bloco serial Co-Owner da W8, que registra a identidade institucional singleton) | `[PD-011] Admin e Titular veem a evidência do sorteio inicial em 390 px com toque` |
 | AC2 `[TECH-093]` | `tests/features/ownership/application/initial-draw-algorithm.test.ts` | `[TECH-093] vetor fixo reproduz exatamente fy-v1` |
 | AC2 `[TECH-093]` | `tests/features/ownership/application/initial-draw-algorithm.test.ts` | `[TECH-093] índice uniforme por rejection sampling, sem viés de módulo` |
 | AC3 `[TECH-110]` | `tests/features/ownership/initial-draw-consumers.db.test.ts` | `[TECH-110][TECH-093] beacon fora do ar deixa o sorteio pendente, sem resultado parcial` |

@@ -12,6 +12,9 @@ Production da Vercel**, nunca em Preview ou Development.
 | `COMMAND_MAX_ATTEMPTS` | `3` | Vercel, Production | tentativas de um command em deadlock ou `lock_timeout` (TECH-053); esgotadas → `ERR_UNAVAILABLE`, nada gravado |
 | `COMMAND_LOCK_TIMEOUT_MS` | `5000` | Vercel, Production | espera máxima por lock dentro da transação do command |
 | `OUTBOX_BATCH_SIZE` | `100` | Vercel, Production | eventos por execução do job `outbox` (um por transação) |
+| `DRAW_TRANSACTION_TIMEOUT_MS` | `15000` (proposto; **não criar antes da ativação das aquisições**) | Vercel, Production | `transaction_timeout` das transações de compromisso e revelação do sorteio e largura do prazo de commit (W9) |
+| `DRAW_BEACON_TIMEOUT_MS` | `8000` (proposto; idem) | Vercel, Production | orçamento total para obter e verificar a rodada da drand, somando os relays; **menor** que o anterior, senão o sorteio fica pendente |
+| `DRAW_BEACON_LEAD_SECONDS` | `120` (proposto; idem) | Vercel, Production | folga mínima entre o prazo de commit e a rodada alvo (latência final do commit e diferença de relógio) |
 | Cadência do job `outbox` | `17 6 * * *` (06:17 UTC, 1×/dia) | `vercel.json` → `crons` | varredura de segurança; o caminho normal é o disparo logo após o commit. O plano Hobby limita o cron a 1×/dia (ADR-0002) |
 
 ## Segredos
@@ -437,6 +440,37 @@ Este procedimento descreve o uso futuro. Não autoriza abrir o gate ou criar dad
 6. Quando a Second Home tiver efetivamente iniciado, registrar esse fato com a mesma data-base formalizada. Se a data
    efetiva divergir, interromper e obter decisão de domínio; não recalcular ou corrigir grants. O ato não abre reservas
    nem calendário. Em erro transitório, conservar a chave e os dados da tentativa para verificar/repetir o mesmo ato.
+
+## Preparar a W9 em produção (sorteio auditável)
+
+Spec [`ownership`](../specs/ownership.md) §16, [ADR-0022](../adr/0022-sorteio-auditavel-e-elegibilidade-temporal-do-outbox.md),
+[referência de verificação](../reference/sorteio-inicial.md). Merge só depois do checkpoint do fundador; a entrega não
+autoriza sorteio, formalização ou configuração produtiva.
+
+1. **Antes do merge (D4):** conferência agregada e somente leitura no Production, com igualdade exata dos tipos:
+   `SELECT event_type, count(*) FILTER (WHERE delivered_at IS NULL) AS pending, count(*) AS total FROM app.outbox
+   WHERE event_type IN ('ownership.initial_draw_scheduled', 'ownership.initial_draw_committed',
+   'ownership.initial_draw_completed') GROUP BY event_type;` e `SELECT count(*) FROM app.acquisition;`. Esperado: sem
+   linhas e `0`. Qualquer outro resultado: parar antes do merge.
+2. **Manter fechado:** não criar `DRAW_*`, `ACQUISITION_WRITES`, `PII_*`, identidade institucional ou dados. Sem
+   aquisição não há evento de sorteio; o consumidor registrado não executa nada. Se um evento de sorteio surgir sem os
+   `DRAW_*`, ele fica pendente com `ConfigurationMissingError` (log por varredura), sem compromisso nem efeito.
+3. Depois de eventual merge autorizado, somente o pipeline aplica as duas migrations W9 (42 → 44). Conferir em leitura
+   `app.outbox.available_at` (nulo nas linhas anteriores), as cinco tabelas `initial_draw*` vazias, RLS e privilégios
+   por coluna, e o log do job `outbox` (`delivered 0`, `failed 0`).
+4. **Ativação futura** (junto com a das aquisições, por autorização do fundador): criar os três `DRAW_*` com os valores
+   da tabela de operação. A primeira formalização Co-Owner agenda o sorteio; o compromisso é gravado no `after()` do
+   command ou na varredura seguinte; a revelação é elegível depois de `t(R)` + 3 s e ocorre no próximo disparo do
+   outbox (cron diário ou outro command). A evidência aparece no Admin (formalização) e na Área do Titular.
+5. **Beacon fora do ar ou rodada inválida:** o evento de revelação fica pendente com `InitialDrawBeaconUnavailableError`
+   ou `InitialDrawBeaconInvalidError`, um log por varredura, sem resultado parcial. Não marcar entregue, não refazer o
+   sorteio e não trocar de beacon: compromisso e rodada são definitivos. Quicknet descontinuado exige decisão do
+   fundador (sem caminho técnico previsto).
+6. **Falha no COMMIT** (prazo de commit excedido, conexão encerrada por `transaction_timeout`) aparece como
+   `outbox delivery failed` com `phase: commit`; a tentativa é registrada e a varredura segue. O compromisso perdido
+   não deixa rastro além do log e é refeito com outra seed e outra rodada futura.
+7. **Rollback:** os `down` recusam descartar sorteios ou eventos agendados. Com fatos, preservar o banco e corrigir por
+   migration nova; nunca desabilitar gatilhos (`session_replication_role` é só do fixture do E2E descartável).
 
 ## Rotacionar segredos
 

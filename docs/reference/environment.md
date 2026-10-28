@@ -25,6 +25,9 @@ Regras:
 | `COMMAND_MAX_ATTEMPTS` | Vercel — só Production | tentativas de um command em deadlock/`lock_timeout` (TECH-053); valor no runbook `docs/how-to/operacao.md` (TECH-001) | W1 |
 | `COMMAND_LOCK_TIMEOUT_MS` | Vercel — só Production | `lock_timeout` da transação do command; valor no runbook (TECH-001) | W1 |
 | `OUTBOX_BATCH_SIZE` | Vercel — só Production | eventos por execução do job `outbox`; valor no runbook (TECH-001) | W1 |
+| `DRAW_TRANSACTION_TIMEOUT_MS` | Vercel — só Production, **ativação posterior** | `transaction_timeout` e prazo de commit do sorteio inicial; valor no runbook (TECH-001); ausente deixa o sorteio pendente | W9 |
+| `DRAW_BEACON_TIMEOUT_MS` | Vercel — só Production, **ativação posterior** | orçamento total da rodada da drand (relays + verificação), menor que o anterior; valor no runbook | W9 |
+| `DRAW_BEACON_LEAD_SECONDS` | Vercel — só Production, **ativação posterior** | folga entre o prazo de commit e a rodada alvo; valor no runbook | W9 |
 | `NEXT_PUBLIC_SUPABASE_URL` | Vercel — **só Production** enquanto a D3 estiver adiada ([ADR-0007](../adr/0007-ambientes-pre-lancamento-sem-staging.md), [ADR-0008](../adr/0008-autenticacao-e-autorizacao-administrativa.md)) | Supabase Auth, só no servidor (`identity`): URL `https://` do projeto; ausente → telas e API de Auth indisponíveis (o build não depende dela) | W2 |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Vercel — **só Production** (idem) | Supabase Auth (chave pública), só no servidor; precisa ter o formato `sb_publishable_…` — a `anon` legada e chaves secretas são recusadas | W2 |
 | `AUTH_MODE` | local e CI | `supabase` ou `test`; `test` é recusado quando `VERCEL_ENV` existe (ADR-0005). Ausente = `supabase`; nunca configurar na Vercel | W2 |
