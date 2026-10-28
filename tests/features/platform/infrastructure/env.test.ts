@@ -100,3 +100,29 @@ describe('escrita pública de interesse (W5, spec ownership §5)', () => {
     });
   });
 });
+
+describe('orçamentos do sorteio inicial (W9, spec ownership §16.3)', () => {
+  const keys = [
+    'DRAW_TRANSACTION_TIMEOUT_MS',
+    'DRAW_BEACON_TIMEOUT_MS',
+    'DRAW_BEACON_LEAD_SECONDS',
+  ] as const;
+
+  it('[TECH-001] lê os três valores do runbook como inteiros positivos, sem default', () => {
+    expect(
+      loadRuntimeConfig(keys, {
+        DRAW_TRANSACTION_TIMEOUT_MS: '20000',
+        DRAW_BEACON_TIMEOUT_MS: '8000',
+        DRAW_BEACON_LEAD_SECONDS: '120',
+      }),
+    ).toEqual({
+      DRAW_TRANSACTION_TIMEOUT_MS: 20000,
+      DRAW_BEACON_TIMEOUT_MS: 8000,
+      DRAW_BEACON_LEAD_SECONDS: 120,
+    });
+    expect(() => loadRuntimeConfig(keys, {})).toThrow(ConfigurationMissingError);
+    expect(() =>
+      loadRuntimeConfig(['DRAW_BEACON_LEAD_SECONDS'], { DRAW_BEACON_LEAD_SECONDS: '0' }),
+    ).toThrow(EnvValidationError);
+  });
+});
