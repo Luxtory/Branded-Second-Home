@@ -60,6 +60,13 @@ export {
 export type { DB as DatabaseTables } from './infrastructure/database/schema';
 export { createPostgresCommandStore } from './infrastructure/commands/postgres-command-store';
 export { recordNotification } from './infrastructure/notifications/notification-repository';
+// W9 — efeitos de consumidor do outbox (ADR-0022 §5): evento seguinte e auditoria `system`.
+export {
+  enqueueOutboxEvent,
+  recordSystemAudit,
+  type ConsumerEventDraft,
+  type SystemAuditRecord,
+} from './infrastructure/outbox/consumer-effects';
 export { errorResponse } from './presentation/errors';
 export { scheduleOutboxDispatch } from './presentation/outbox-dispatch';
 

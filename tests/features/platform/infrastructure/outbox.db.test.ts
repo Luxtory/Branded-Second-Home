@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import type { CommandHandler } from '@/features/platform/application/commands/executor';
@@ -11,6 +12,10 @@ import type {
   DatabaseTransaction,
 } from '@/features/platform/infrastructure/database/connection';
 import { recordNotification } from '@/features/platform/infrastructure/notifications/notification-repository';
+import {
+  enqueueOutboxEvent,
+  recordSystemAudit,
+} from '@/features/platform/infrastructure/outbox/consumer-effects';
 import { createPostgresOutboxStore } from '@/features/platform/infrastructure/outbox/postgres-outbox-store';
 import {
   ADMIN,
@@ -221,5 +226,142 @@ describe('outbox em PostgreSQL real (TECH-091)', () => {
       ]);
 
     expect(results).toEqual([true, false]);
+  });
+
+  // W9 (ADR-0022): elegibilidade temporal, ordem por tentativas, falha no COMMIT e seams de consumidor.
+  const at = (offsetMs: number) => new Date(testClock.now().getTime() + offsetMs);
+  const HOUR = 3_600_000;
+  const dispatchAt = (consumers: readonly Consumer[], now: Date, batchSize = 10) =>
+    dispatchOutbox({
+      store: createPostgresOutboxStore(db),
+      consumers: new ConsumerRegistry(consumers),
+      clock: { now: () => now },
+      batchSize,
+      log,
+    });
+  const originOperation = async () => {
+    await emit(1, `k-origin-${Math.random()}`);
+    await database.pool.query("UPDATE app.outbox SET event_type = 'platform.origin_only'");
+    return String(
+      await scalar('SELECT id AS v FROM app.operation ORDER BY created_at DESC LIMIT 1'),
+    );
+  };
+
+  it('[ADR-0022] evento com available_at futuro não ocupa o lote nem gera tentativa e é entregue no vencimento', async () => {
+    const operationId = await originOperation();
+    const enqueued = await db.transaction().execute(async (tx) => [
+      await enqueueOutboxEvent(tx, {
+        operationId,
+        type: 'platform.test_happened',
+        dedupKey: 'later',
+        payload: { i: 1 },
+        occurredAt: testClock.now(),
+        availableAt: at(HOUR),
+      }),
+      await enqueueOutboxEvent(tx, {
+        operationId,
+        type: 'platform.test_happened',
+        dedupKey: 'later',
+        payload: { i: 1 },
+        occurredAt: testClock.now(),
+        availableAt: at(HOUR),
+      }),
+    ]);
+    expect(enqueued).toEqual([true, false]);
+    await emit(1, 'k-now');
+    const notifier = notifyingConsumer();
+    expect(await dispatchAt([notifier], at(0), 1)).toEqual({ delivered: 1, failed: 0 });
+    expect(
+      await scalar(
+        "SELECT row(attempts, last_error IS NULL, delivered_at IS NULL)::text AS v FROM app.outbox WHERE dedup_key = 'later'",
+      ),
+    ).toBe('(0,t,t)');
+    expect(await dispatchAt([notifier], at(HOUR - 1), 10)).toEqual({ delivered: 0, failed: 0 });
+    expect(await dispatchAt([notifier], at(HOUR), 10)).toEqual({ delivered: 1, failed: 0 });
+    expect(await scalar('SELECT count(*)::int AS v FROM app.outbox_receipt')).toBe(2);
+  });
+
+  it('[ADR-0022] falhas recorrentes de eventos devidos cedem a vez a eventos independentes', async () => {
+    await emit(2, 'k-chronic');
+    await database.pool.query(
+      "UPDATE app.outbox SET event_type = 'platform.chronic', occurred_at = occurred_at - interval '1 minute'",
+    );
+    await emit(1, 'k-independent');
+    const chronic: Consumer = {
+      name: 'test_chronic',
+      eventTypes: ['platform.chronic'],
+      handle: () => Promise.reject(new RangeError('always')),
+    };
+    const notifier = notifyingConsumer();
+    // Lote cheio de falhas: a primeira varredura só tenta os dois eventos mais antigos.
+    expect(await dispatchAt([chronic, notifier], at(0), 2)).toEqual({ delivered: 0, failed: 2 });
+    // Com mais tentativas, cedem a vez: o evento independente é entregue na varredura seguinte.
+    expect(await dispatchAt([chronic, notifier], at(0), 2)).toEqual({ delivered: 1, failed: 1 });
+    expect(notifier.handle).toHaveBeenCalledTimes(1);
+    expect(
+      await scalar(
+        "SELECT max(attempts)::int AS v FROM app.outbox WHERE event_type = 'platform.chronic'",
+      ),
+    ).toBe(2);
+  });
+
+  it('[ADR-0022] falha no COMMIT da transação de um evento é registrada e a varredura continua', async () => {
+    await database.pool.query(`
+      CREATE TABLE app.test_deferred (id int);
+      CREATE FUNCTION app.test_deferred_fail() RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN RAISE EXCEPTION 'deferred failure' USING ERRCODE = 'check_violation'; END $$;
+      CREATE CONSTRAINT TRIGGER test_deferred_fail AFTER INSERT ON app.test_deferred
+        DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION app.test_deferred_fail();
+      GRANT INSERT ON app.test_deferred TO luxtory_app;`);
+    await emit(1, 'k-commit-fails');
+    await database.pool.query(
+      "UPDATE app.outbox SET event_type = 'platform.commit_fails', occurred_at = occurred_at - interval '1 minute'",
+    );
+    await emit(1, 'k-after');
+    const commitFails: Consumer = {
+      name: 'test_commit_fails',
+      eventTypes: ['platform.commit_fails'],
+      handle: async (_event, tx) => {
+        // Passa no savepoint; a constraint diferida só falha no COMMIT da transação do evento.
+        await sql`INSERT INTO app.test_deferred VALUES (1)`.execute(tx);
+      },
+    };
+    const notifier = notifyingConsumer();
+    expect(await dispatchAt([commitFails, notifier], at(0))).toEqual({ delivered: 1, failed: 1 });
+    expect(
+      await scalar(
+        "SELECT row(attempts, last_error IS NOT NULL, delivered_at IS NULL)::text AS v FROM app.outbox WHERE event_type = 'platform.commit_fails'",
+      ),
+    ).toBe('(1,t,t)');
+    expect(await scalar('SELECT count(*)::int AS v FROM app.test_deferred')).toBe(0);
+    expect(
+      await scalar(
+        "SELECT count(*)::int AS v FROM app.outbox_receipt WHERE consumer = 'test_commit_fails'",
+      ),
+    ).toBe(0);
+    expect(log.error).toHaveBeenCalledWith(
+      'outbox delivery failed',
+      expect.objectContaining({ event_type: 'platform.commit_fails', phase: 'commit' }),
+    );
+  });
+
+  it('[TECH-092] auditoria de efeito de consumidor usa o papel system e a operação de origem', async () => {
+    const operationId = await originOperation();
+    await db.transaction().execute((tx) =>
+      recordSystemAudit(tx, {
+        operationId,
+        at: testClock.now(),
+        objectType: 'test_effect',
+        objectId: 'x',
+        authorizationRef: 'outbox:test',
+        before: null,
+        after: { ok: true },
+      }),
+    );
+    expect(
+      await scalar(
+        "SELECT row(event_type, role, actor_user_id IS NULL, authorization_ref)::text AS v FROM app.audit_log WHERE object_type = 'test_effect'",
+      ),
+    ).toBe('(command,system,t,outbox:test)');
   });
 });
