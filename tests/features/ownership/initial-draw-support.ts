@@ -1,7 +1,17 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { sql } from 'kysely';
-import type { DatabaseTransaction } from '@/features/platform';
+import { systemClock, type DatabaseTransaction } from '@/features/platform';
+import { ConsumerRegistry } from '@/features/platform/application/outbox/consumers';
+import { dispatchOutbox } from '@/features/platform/application/outbox/dispatcher';
+import { createPostgresOutboxStore } from '@/features/platform/infrastructure/outbox/postgres-outbox-store';
+import { initialDrawConsumers } from '@/features/ownership/application/initial-draw';
+import {
+  InitialDrawBeaconInvalidError,
+  InitialDrawBeaconUnavailableError,
+  type RandomnessBeacon,
+} from '@/features/ownership/application/initial-draw-ports';
 import { QUICKNET, roundTime } from '@/features/ownership/domain/initial-draw';
+import { postgresInitialDrawStore } from '@/features/ownership/infrastructure/postgres-initial-draw-store';
 import type { AcquisitionHarness } from './acquisition-support';
 
 export interface FormalizedCoOwner {
@@ -131,4 +141,52 @@ export async function insertCommitment(
 export async function waitUntil(at: Date): Promise<void> {
   const wait = at.getTime() - Date.now() + 50;
   if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
+}
+
+export type BeaconMode = 'ok' | 'unavailable' | 'invalid';
+
+/** Beacon de teste (só em tests/): "não publicada" antes de t(R) pelo relógio real, como os relays. */
+export function testBeacon() {
+  const state = { mode: 'ok' as BeaconMode, calls: 0 };
+  const beacon: RandomnessBeacon = {
+    verifiedRound(round) {
+      state.calls += 1;
+      if (state.mode === 'invalid') return Promise.reject(new InitialDrawBeaconInvalidError(round));
+      if (state.mode === 'unavailable' || Date.now() < roundTime(round).getTime()) {
+        return Promise.reject(new InitialDrawBeaconUnavailableError(round));
+      }
+      const signature = createHash('sha512').update(`signature-${round}`).digest().subarray(0, 48);
+      return Promise.resolve({ round, signature, randomness: sha256(signature) });
+    },
+  };
+  return { beacon, state };
+}
+
+const SWEEP_CONFIG = { transactionTimeoutMs: 1_000, beaconTimeoutMs: 500, leadSeconds: 1 };
+
+/** Conclui o sorteio da aquisição pelos consumidores reais: commit, espera da rodada, revelação e notificação. */
+export async function completeDraw(h: AcquisitionHarness, options: { reveal?: boolean } = {}) {
+  const { beacon } = testBeacon();
+  const sweep = () =>
+    dispatchOutbox({
+      store: createPostgresOutboxStore(h.db),
+      consumers: new ConsumerRegistry(
+        initialDrawConsumers<DatabaseTransaction>({
+          store: postgresInitialDrawStore,
+          beacon: () => beacon,
+          config: () => SWEEP_CONFIG,
+          clock: h.clock,
+        }),
+      ),
+      clock: systemClock,
+      batchSize: 10,
+      log: { info: () => undefined, warn: () => undefined, error: () => undefined },
+    });
+  await sweep();
+  if (options.reveal === false) return;
+  const { rows } = await h.database.pool.query<{ target_round: string }>(
+    'SELECT target_round FROM app.initial_draw ORDER BY recorded_at DESC LIMIT 1',
+  );
+  await waitUntil(new Date(roundTime(Number(rows[0]!.target_round)).getTime() + 3_000));
+  await sweep();
 }

@@ -26,7 +26,10 @@ describe('W8 — rollback concorrente preserva fatos', () => {
       try {
         if (kind === 'institution') {
           // Match reverse migration order: SPE's CNPJ FK is gone before legal_identity.down.
+          // Later migrations (W9 draw tables depend on stake/holding) roll back first, newest first.
           for (const migration of [
+            '20261028230907_ownership_initial_draw',
+            '20261028230905_platform_outbox_available_at',
             '20261025160200_ownership_holder_projections',
             '20261025055044_ownership_acquisition_invariants',
             '20261025054112_identity_staff_authority_lock',

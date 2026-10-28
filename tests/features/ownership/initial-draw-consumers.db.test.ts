@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   ConfigurationMissingError,
@@ -15,15 +15,16 @@ import {
   type InitialDrawConfig,
   type InitialDrawStore,
 } from '@/features/ownership/application/initial-draw';
-import {
-  InitialDrawBeaconInvalidError,
-  InitialDrawBeaconUnavailableError,
-  type RandomnessBeacon,
-} from '@/features/ownership/application/initial-draw-ports';
+import type { RandomnessBeacon } from '@/features/ownership/application/initial-draw-ports';
 import { QUICKNET, roundTime } from '@/features/ownership/domain/initial-draw';
 import { postgresInitialDrawStore } from '@/features/ownership/infrastructure/postgres-initial-draw-store';
 import { acquisitionHarness, type AcquisitionHarness } from './acquisition-support';
-import { formalizedCoOwner, waitUntil, type FormalizedCoOwner } from './initial-draw-support';
+import {
+  formalizedCoOwner,
+  testBeacon,
+  waitUntil,
+  type FormalizedCoOwner,
+} from './initial-draw-support';
 
 const CONFIG: InitialDrawConfig = {
   transactionTimeoutMs: 1_000,
@@ -31,29 +32,6 @@ const CONFIG: InitialDrawConfig = {
   leadSeconds: 1,
 };
 const PERIOD_MS = QUICKNET.periodSeconds * 1_000;
-
-type BeaconMode = 'ok' | 'unavailable' | 'invalid';
-
-/** Beacon de teste (só em tests/): "não publicada" antes de t(R) pelo relógio real, como os relays. */
-function testBeacon() {
-  const state = { mode: 'ok' as BeaconMode, calls: 0 };
-  const beacon: RandomnessBeacon = {
-    verifiedRound(round) {
-      state.calls += 1;
-      if (state.mode === 'invalid') return Promise.reject(new InitialDrawBeaconInvalidError(round));
-      if (state.mode === 'unavailable' || Date.now() < roundTime(round).getTime()) {
-        return Promise.reject(new InitialDrawBeaconUnavailableError(round));
-      }
-      const signature = createHash('sha512').update(`signature-${round}`).digest().subarray(0, 48);
-      return Promise.resolve({
-        round,
-        signature,
-        randomness: createHash('sha256').update(signature).digest(),
-      });
-    },
-  };
-  return { beacon, state };
-}
 
 describe('W9 consumidores do sorteio no PostgreSQL real [TECH-093]', () => {
   let h: AcquisitionHarness;
