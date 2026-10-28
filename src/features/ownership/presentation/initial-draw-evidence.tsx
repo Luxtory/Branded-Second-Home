@@ -16,7 +16,8 @@ function Part({
   readonly children: ReactNode;
 }) {
   return (
-    <section aria-labelledby={id}>
+    // Page Section do DS (ADR-0009): título a distância fixa do conteúdo e blocos bem separados.
+    <section className="lx-page-section" aria-labelledby={id}>
       <h3 className="lx-title" id={id}>
         {title}
       </h3>
