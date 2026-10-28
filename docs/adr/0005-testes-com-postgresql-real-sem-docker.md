@@ -73,3 +73,20 @@ credenciais nos testes. Fica para verificação de staging, não para a suíte.
 
 - Related ADRs: [ADR-0004](0004-toolchain-bibliotecas-e-pipeline.md), [ADR-0006](0006-acesso-a-dados.md)
 - `docs/specs/canonical/03-technical-spec.md`: TECH-053, TECH-110, §12
+
+## Adendo — encerramento dos bancos de teste (2026-10-27)
+
+O teardown normal mantém `await db.destroy()` e `await pool.end()`, seguido de `DROP DATABASE IF EXISTS`
+**sem `FORCE`**. O pool pode concluir sua contabilidade antes do encerramento efetivo das conexões; terminá-las
+administrativamente nesse intervalo pode produzir `57P01` assíncrono. O PostgreSQL aguarda o encerramento normal
+com seu limite nativo e recusa a exclusão com `55006` se restarem sessões. Não há fallback forçado, retry nem
+tratamento global que ignore erros: uma conexão vazada deve continuar fazendo o teste falhar.
+
+Regressões com PostgreSQL real retêm o pacote de encerramento usando uma barreira no socket, exercitam pools `pg`
+e Kysely em um lote concorrente finito e verificam, em processo isolado, que uma falha inesperada de conexão
+continua encerrando o processo com erro. Gates, cobertura, dependências e código da aplicação permanecem iguais.
+
+Uma sessão deixada aberta, sem iniciar seu encerramento, também deve impedir o drop com `55006` e continuar
+respondendo a `SELECT 1` após essa rejeição; somente sua finalização explícita permite a limpeza.
+
+Referência: [PostgreSQL 17 — DROP DATABASE](https://www.postgresql.org/docs/17/sql-dropdatabase.html).
