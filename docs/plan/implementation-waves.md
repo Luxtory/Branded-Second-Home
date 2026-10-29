@@ -106,8 +106,8 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 | 6 | Interesse — formulário público | ownership | — | 4, 5, 4.2 | — | R1 | ⬜ próxima executável — P-3 resolvida pelo `02` v4.3 (REQ-022); W4.2 ✅; reconstruída a partir da nova `main` (ver Wave 6 → Status) → ✅ concluída (#59, squash `1d538cc`, 2026-10-21; 3 migrations aplicadas; em Production com a coleta fechada por gates operacionais) |
 | 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ próxima executável (W6 ✅ em 2026-10-21) → ✅ concluída (#61, squash `ef15bbb`, 2026-10-22; 6 migrations aplicadas; estrutura em Production sem dados reais e sem `PII_*`) |
 | 8 | Formalização e calendário civil | ownership, calendar | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003 | 3, 7 | — | R2 | ⬜ próxima executável (W7 ✅ em 2026-10-22) → ✅ concluída (#67, squash `266a0ae`, 2026-10-27; 6 migrations aplicadas, 42 no total; Production sincronizada com os gates operacionais fechados) |
-| 9 | Sorteio auditável | ownership | PD-011 | 8 | 10 | R2 | ⬜ próxima executável (W8 ✅ em 2026-10-27); ainda não iniciada |
-| 10 | Custódia e selagem | calendar, inventory | REQ-040, INV-2, INV-3 | 8 | 9 | R2 | ⬜ |
+| 9 | Sorteio auditável | ownership | PD-011 | 8 | 10 | R2 | ⬜ próxima executável (W8 ✅ em 2026-10-27); ainda não iniciada → ✅ concluída (#71, squash `a6a1f6b`, 2026-10-29; 2 migrations aplicadas, 44 no total; Production sincronizada com os gates operacionais fechados; executada em sequência, sem paralelismo com a W10 — D3) |
+| 10 | Custódia e selagem | calendar, inventory | REQ-040, INV-2, INV-3 | 8 | 9 | R2 | ⬜ → próxima executável (W9 ✅ em 2026-10-29), em sequência (D3); ainda não iniciada |
 | 11 | Direito de Uso, janelas e rotações | calendar | REQ-030, REQ-031, REQ-032, REQ-033, REQ-039, PD-004, INV-4, INV-5 | 9, 10 | — | R2 | ⬜ |
 | 12 | Reserva de uso próprio | booking | REQ-034, REQ-035, REQ-037, PD-002, INV-1 | 11 | — | R2 | ⬜ |
 | 13 | Cancelamento, no-show, recuperação e exceção | booking, inventory | REQ-080, REQ-081, REQ-083, PD-010 | 12 | — | R2 | ⬜ |
@@ -148,12 +148,22 @@ gates operacionais). A W8 passa a ser a próxima wave funcional executável.
 **Atualização 2026-10-27:** W8 ✅ (PR #67, `266a0ae`); formalização e calendário civil em Production, com 42
 migrations aplicadas / 0 pendentes e `ACQUISITION_WRITES` ainda fechado. A W9 passa a ser a próxima wave funcional
 executável, ainda não iniciada; W10 e W11 também não foram iniciadas, com dependências e paralelismo inalterados.
+**Atualização 2026-10-29:** W9 ✅ (PR #71, `a6a1f6b`); sorteio auditável da ordem inicial em Production, com 44
+migrations aplicadas / 0 pendentes, sem `DRAW_*`, aquisição ou sorteio real e com os gates operacionais fechados. A W10
+passa a ser a próxima wave funcional executável, ainda não iniciada, **em sequência** (D3; ver correção do paralelismo
+abaixo); a W11 também não foi iniciada.
 
 Paralelismo na retomada do B2C: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
 canal do AsyncAPI, telas e `CHANGELOG.md`, e o STRIDE do beacon. A W10 toca migrations de `calendar`/`inventory`,
 a entrada `open_exercise` em `vercel.json` e no registro de jobs, e o port de alerta; não tem tela, endpoint,
 pacote novo nem entrada de CHANGELOG. Nenhum arquivo em comum. Todas as outras waves são sequenciais porque
 compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.json` ou `CHANGELOG.md`.
+**Correção (2026-10-28, decisão D3 do fundador):** a premissa "nenhum arquivo em comum" não se confirmou no código da
+`main` em `75cb0ca`: W9 e W10 tocam ambas `src/features/platform/infrastructure/database/schema.ts` (tipos gerados
+pelo kysely-codegen) e `src/features/platform/infrastructure/jobs/job-registry.ts` (consumidores do outbox e mapa de
+jobs), além de, provavelmente, `env.ts`, `docs/reference/environment.md` e `docs/how-to/operacao.md`. Pela regra de
+paralelismo acima, W9 e W10 executam em sequência; a W9 foi entregue isoladamente (#71). O parágrafo anterior fica
+como **histórico / posteriormente superado**; não resta wave paralelizável na retomada do B2C.
 
 > **2026-10-06:** a W4 é executada como **CP2** do [Core Design System Luxtory](#core-design-system-luxtory--cp1cp5-2026-10-06)
 > (CP1 Core + Lab → GATE-COPY-W4 → CP2 = W4); Auth e Admin migram depois (CP3, CP4) e não bloqueiam a W4.
@@ -945,6 +955,7 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
 
 ### Wave 9 — Sorteio auditável
 
+- **Status (2026-10-29):** ✅ concluída — PR #71, squash `a6a1f6b` (ver Encerramento).
 - **Goal**: ordem inicial das Ações por sorteio verificável (TECH-093).
 - **IDs (dona)**: PD-011 (fecha aqui; a metade de auditoria vem da W1). **TECH**: TECH-093.
 - **Scope (slices/files)**: `ownership`.
@@ -954,11 +965,30 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   - Conclusão do sorteio agendado pelo `formalize_acquisition` (TECH-020) feita pelo consumidor do outbox — sem
     command nem job novo (TECH-051, TECH-090).
   - Evidência na Área do Titular e no Admin; notificação do resultado (REQ-097); STRIDE do beacon.
-- **Depends on / parallel with**: W8; paralela com W10 (nenhum arquivo em comum, ver "Paralelismo").
+- **Depends on / parallel with**: W8; paralela com W10 (nenhum arquivo em comum, ver "Paralelismo") → **sequencial**
+  (correção D3, 2026-10-28).
 - **Acceptance criteria**: `[PD-011] a evidência mostra participantes, método ou insumo de aleatoriedade e
   resultado` · `[TECH-093] vetor fixo reproduz exatamente fy-v1; índice uniforme por rejection sampling, sem viés de
   módulo` · `[TECH-110] beacon fora do ar deixa o sorteio pendente, sem resultado parcial`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect PD-011 exits 0, stop after 4 tries`
+  → no fechamento, `--expect PD-011,TECH-093` e conferência dos títulos exatos de AC1–AC3 (a tag `PD-011` já existia
+  desde a W1; spec `ownership` §16.7).
+- **Encerramento (2026-10-29): ✅.** PR #71, squash merge `a6a1f6bfd3d4323c7549b1dcebf44d88837fab64` (head aprovado
+  `a589070`), com aprovação técnica do fundador condicionada a D4, smoke real do beacon e conferência da anterioridade,
+  todas satisfeitas antes do merge. CI do PR (run 40792213922) e CI de `main` run 40808120930: lint, typecheck, test,
+  e2e, security, migrate e deploy verdes; 1.230/1.230 testes em 132 arquivos, cobertura 98,91 / 94,75 / 99,41 / 99,25,
+  E2E 122 passed (inclui WebKit) / 1 skipped e gate W8 fechado 4/4; gitleaks, `npm audit` e Semgrep sem achados. As
+  duas migrations W9 (`20261028230905`, `20261028230907`) foram aplicadas pelo pipeline sobre as 42 anteriores: **44
+  aplicadas / 0 pendentes**, tabelas `initial_draw*` vazias com RLS e `available_at` nulo nas linhas existentes.
+  Production sincronizada: `/v1/version` nos dois domínios com o SHA completo; smoke somente de leitura 34/34 (os 28
+  controles da W8 e 6 da W9); logs do novo deployment sem erro, fatal ou 5xx na janela consultada. Smoke real da drand
+  quicknet pelo adaptador (sem banco): chain igual ao `ChainInfo` fixado e rodada publicada verificada nos quatro
+  relays. Conferência D4 agregada e somente leitura antes e depois do deploy: nenhum evento `ownership.initial_draw_*` e
+  0 aquisições. `DRAW_*`, `ACQUISITION_WRITES`, `INTEREST_WRITES` e `PII_*` permanecem ausentes; nenhum sorteio,
+  formalização, identidade ou dado real. A anterioridade do compromisso é garantia do banco para o código da aplicação;
+  o limite T-910 (HIGH, spec `ownership` §16.3) não está coberto pela D5 e bloqueia a ativação do sorteio até a mitigação
+  aprovada (carimbo de COMMIT do servidor) ser implementada, testada e validada operacionalmente. A W10 é a próxima wave, em sequência; W10 e W11
+  permanecem não iniciadas. Este encerramento não autoriza a execução de outra wave nem abre os gates operacionais.
 
 ### Wave 10 — Custódia e selagem
 
@@ -974,7 +1004,7 @@ compartilham `openapi.yaml`, o registro de commands, `vercel.json`, `package.jso
   - Check-in às 14:00 e check-out às 10:00 locais (ADR-003).
   - Consultas de INV-1/INV-2/INV-3 após todo teste `db`; alerta `open_exercise_failure` (log estruturado +
     notificação de staff, fora do outbox — TECH-101). Sem telas.
-- **Depends on / parallel with**: W8; paralela com W9.
+- **Depends on / parallel with**: W8; paralela com W9 → **sequencial, depois da W9** (correção D3, 2026-10-28).
 - **Acceptance criteria**: `[TECH-110] Data da Second Home selada sem custódia ativa falha` · `[TECH-041] a selagem exige
   103 + 262 datas (+29/02); data selada não é reclassificada` · `[INV-3] quarta origem falha` · `[INV-2] par
   ocupação/custódia fora da matriz falha com ERR_CAPACITY_UNAVAILABLE` · `[REQ-040] entrada no Inventário Luxtory

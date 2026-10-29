@@ -823,6 +823,16 @@ independente. Um superusuário pode contornar gatilhos e reescrever um compromis
 é notificado (o REQ-097 só lista o resultado); seed fica legível para quem opera o banco antes da revelação (sem permitir
 enviesar o resultado); quicknet descontinuado deixa o sorteio pendente.
 
+**T-910 — limite em aberto da anterioridade (HIGH, bloqueante; 2026-10-29).** "Independentemente do código da
+aplicação", acima, vale para o comportamento do código da aplicação. A verificação do prazo no COMMIT e o
+`transaction_timeout` não resistem a uso deliberado das credenciais do banco da aplicação, o que permitiria influenciar o
+resultado sem evidência detectável. O limite não está coberto pela D5, e o banco também não oferece prova externa nem de
+durabilidade. Mitigação aprovada pelo fundador: a revelação passa a exigir o carimbo de COMMIT registrado pelo próprio
+servidor (`track_commit_timestamp`), conferido por mecanismo não diferível e com recusa segura quando ausente.
+**Bloqueio:** nenhuma ativação do sorteio (`DRAW_*` ou formalização Co-Owner real) antes de a mitigação ser
+implementada, testada e validada operacionalmente. Relatório técnico em Security Advisory privado (GHSA-vqxw-h93w-3x32); decisão e
+critérios no [plano da W9](../plan/w9-sorteio-auditavel.md#limite-de-anterioridade-com-as-credenciais-da-aplicação).
+
 Orçamentos (runbook, sem default — TECH-001; lidos só ao processar o evento, ausentes ou inválidos deixam o evento
 pendente sem efeito):
 
