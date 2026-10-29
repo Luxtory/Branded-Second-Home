@@ -903,3 +903,30 @@ tentativas e falha no COMMIT do outbox, Owner sem sorteio, configuração ausent
 
 Gates: `npm run verify`; `npm run test:e2e`; `npm run trace -- --expect PD-011,TECH-093` e conferência dos títulos acima.
 Status W9 só no fechamento, após merge autorizado.
+
+### 16.8 Correção T-910 — carimbo de COMMIT do servidor (ADR-0023)
+
+Mitigação aprovada pelo fundador (2026-10-29) para o limite T-910 (§16.3), em entrega própria, sem reabrir a W9. A
+revelação passa a depender do instante de COMMIT registrado pelo **servidor** para a transação do compromisso, que o
+papel da aplicação não altera nem desliga.
+
+- `track_commit_timestamp` precisa estar ligado no servidor. Desligado, o banco recusa criar compromissos (nunca seriam
+  reveláveis) e evidências: o sorteio fica pendente, sem efeito. Production permanece desligado até a mudança planejada
+  com o fundador (reinício do banco).
+- `initial_draw_commit_evidence` (só inserção): o gatilho não diferível calcula `committed_at` pelo carimbo do servidor
+  para a transação que gravou o compromisso, ignorando qualquer valor enviado, e recusa carimbo indisponível (inclusive
+  na própria transação do compromisso) ou posterior ao `commit_deadline`.
+- Consumidor `ownership_initial_draw_commit_evidence`, no mesmo evento da revelação e antes dela: grava a evidência na
+  primeira entrega, mesmo com o beacon fora do ar. A revelação exige a evidência, antes de consultar o beacon.
+- Retenção: o carimbo resiste a `VACUUM (FREEZE)` de tabelas e do banco, mas o servidor o descarta quando o congelamento
+  de todo o cluster avança além da transação (proteção contra wraparound ou manutenção equivalente), e restaurações
+  lógicas ou migrações de servidor não o preservam. Capturada a evidência, a revelação não depende mais do carimbo. Sem
+  evidência e com o carimbo descartado, a revelação é recusada e o sorteio fica pendente; não há mecanismo novo de
+  recuperação ou de repetição fora dos canônicos.
+- Ativação real do sorteio continua bloqueada até: esta correção mergeada; `track_commit_timestamp` habilitado e
+  conferido no Supabase com autorização, janela e testes posteriores; autorização do fundador.
+
+Testes (`tests/features/ownership/initial-draw-commit-evidence.db.test.ts`): compromisso legítimo, COMMIT tardio com os
+privilégios da aplicação, evidência não forjável nem alterável e configuração não desligável pelo papel, subtransação,
+`VACUUM (FREEZE)`, evidência capturada com o beacon fora do ar e servidor com a configuração desligada (recusa segura,
+migrations aplicam).

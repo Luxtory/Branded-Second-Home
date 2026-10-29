@@ -9,9 +9,16 @@ const SERVER_ENTRY = fileURLToPath(new URL('../pg-server.mjs', import.meta.url))
 const START_TIMEOUT_MS = 120_000;
 const STOP_TIMEOUT_MS = 30_000;
 
-/** @returns {Promise<{ adminUrl: string, stop: () => Promise<void> }>} */
-export function startPostgresProcess() {
-  const child = spawn(process.execPath, [SERVER_ENTRY], { stdio: ['pipe', 'pipe', 'inherit'] });
+/**
+ * @param {{ trackCommitTimestamp?: boolean }} [options] padrão: carimbo de COMMIT ligado (T-910, ADR-0023)
+ * @returns {Promise<{ adminUrl: string, stop: () => Promise<void> }>}
+ */
+export function startPostgresProcess(options = {}) {
+  const args =
+    options.trackCommitTimestamp === false
+      ? [SERVER_ENTRY, 'commit-timestamp-off']
+      : [SERVER_ENTRY];
+  const child = spawn(process.execPath, args, { stdio: ['pipe', 'pipe', 'inherit'] });
   const exited = new Promise((resolve) => child.once('exit', resolve));
   const stop = async () => {
     if (child.exitCode !== null) return;

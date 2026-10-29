@@ -81,7 +81,8 @@ components:
       title: Compromisso do sorteio inicial gravado (TECH-093 passos 1–3)
       description: |
         Enfileirado pelo consumidor de commit na mesma transação do compromisso, com `available_at` = instante da
-        rodada alvo + um período do beacon. Consumido por `ownership_initial_draw_reveal`. Nunca carrega seed.
+        rodada alvo + um período do beacon. Consumido por `ownership_initial_draw_commit_evidence` (evidência do COMMIT
+        pelo servidor, T-910/ADR-0023) e, em seguida, por `ownership_initial_draw_reveal`. Nunca carrega seed.
       contentType: application/json
       payload:
         allOf:

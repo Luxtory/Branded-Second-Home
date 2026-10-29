@@ -19,6 +19,7 @@ const DRAW_TABLES = [
   'initial_draw_seed',
   'initial_draw_reveal',
   'initial_draw_position',
+  'initial_draw_commit_evidence',
 ] as const;
 
 describe('W9 sorteio no PostgreSQL real [TECH-093]', () => {
@@ -42,6 +43,12 @@ describe('W9 sorteio no PostgreSQL real [TECH-093]', () => {
     overrides: { round?: number; positions?: number } = {},
   ) {
     const signature = randomBytes(48);
+    // T-910: a revelação exige a evidência do COMMIT (calculada pelo servidor, em transação posterior ao compromisso).
+    await h.db
+      .insertInto('app.initial_draw_commit_evidence')
+      .values({ draw_id: rows.drawId, committed_at: new Date(0) })
+      .onConflict((conflict) => conflict.column('draw_id').doNothing())
+      .execute();
     return h.db.transaction().execute(async (tx) => {
       await tx
         .insertInto('app.initial_draw_reveal')
@@ -201,6 +208,10 @@ describe('W9 sorteio no PostgreSQL real [TECH-093]', () => {
   it('[TECH-093] randomness precisa ser SHA-256 da assinatura', async () => {
     const rows = await commit({ deadlineMs: 300 });
     await waitUntil(roundTime(rows.round));
+    await h.database.pool.query(
+      'INSERT INTO app.initial_draw_commit_evidence (draw_id, committed_at) VALUES ($1, now())',
+      [rows.drawId],
+    );
     await expect(
       h.database.pool.query(
         `INSERT INTO app.initial_draw_reveal VALUES ($1, $2, $3, $4, now(), $5)`,
@@ -217,6 +228,7 @@ describe('W9 sorteio no PostgreSQL real [TECH-093]', () => {
       [randomUUID(), draw.operationId, `test:${randomUUID()}`],
     );
     for (const migration of [
+      '20261029051805_ownership_initial_draw_commit_evidence',
       '20261028230907_ownership_initial_draw',
       '20261028230905_platform_outbox_available_at',
     ]) {

@@ -284,6 +284,12 @@ export interface AppInitialDraw {
   target_round_at: Timestamp;
 }
 
+export interface AppInitialDrawCommitEvidence {
+  committed_at: Timestamp;
+  draw_id: string;
+  recorded_at: Generated<Timestamp>;
+}
+
 export interface AppInitialDrawParticipant {
   acquisition_id: string;
   draw_id: string;
@@ -584,6 +590,7 @@ export interface DB {
   'app.idempotency_record': AppIdempotencyRecord;
   'app.initial_allocation_grant': AppInitialAllocationGrant;
   'app.initial_draw': AppInitialDraw;
+  'app.initial_draw_commit_evidence': AppInitialDrawCommitEvidence;
   'app.initial_draw_participant': AppInitialDrawParticipant;
   'app.initial_draw_position': AppInitialDrawPosition;
   'app.initial_draw_reveal': AppInitialDrawReveal;

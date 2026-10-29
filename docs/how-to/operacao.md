@@ -461,7 +461,10 @@ autoriza sorteio, formalização ou configuração produtiva.
 4. **Pré-requisito bloqueante da ativação** (spec `ownership` §16.3, T-910 HIGH): mitigação aprovada mergeada e testada
    (carimbo de COMMIT do servidor conferido na revelação) e `track_commit_timestamp` habilitado e conferido no Supabase
    (`supabase --experimental --project-ref <ref> postgres-config update --config track_commit_timestamp=true`; reinicia o
-   banco; só com autorização e janela do fundador). Sem isso, não criar `DRAW_*`.
+   banco; só com autorização e janela do fundador). Sem isso, não criar `DRAW_*`. Depois do reinício, conferir
+   `SHOW track_commit_timestamp` = `on` com o papel da aplicação; desligado, o banco recusa compromissos e evidências do
+   sorteio (ADR-0023). Restauração lógica ou migração de servidor não preserva os carimbos: com sorteio pendente sem
+   evidência, não restaurar sem decisão do fundador.
    **Ativação futura** (junto com a das aquisições, por autorização do fundador): criar os três `DRAW_*` com os valores
    da tabela de operação. A primeira formalização Co-Owner agenda o sorteio; o compromisso é gravado no `after()` do
    command ou na varredura seguinte; a revelação é elegível depois de `t(R)` + 3 s e ocorre no próximo disparo do

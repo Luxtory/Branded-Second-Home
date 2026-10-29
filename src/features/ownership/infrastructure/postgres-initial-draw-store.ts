@@ -92,6 +92,7 @@ export const postgresInitialDrawStore: InitialDrawStore<DatabaseTransaction> = {
       .selectFrom('app.initial_draw as d')
       .innerJoin('app.initial_draw_seed as s', 's.draw_id', 'd.id')
       .leftJoin('app.initial_draw_reveal as r', 'r.draw_id', 'd.id')
+      .leftJoin('app.initial_draw_commit_evidence as e', 'e.draw_id', 'd.id')
       .select([
         'd.acquisition_id',
         'd.second_home_id',
@@ -100,6 +101,7 @@ export const postgresInitialDrawStore: InitialDrawStore<DatabaseTransaction> = {
         'd.target_round',
         's.seed',
         'r.draw_id as revealed',
+        'e.draw_id as evidence',
       ])
       .where('d.id', '=', drawId)
       .executeTakeFirst();
@@ -119,8 +121,26 @@ export const postgresInitialDrawStore: InitialDrawStore<DatabaseTransaction> = {
       targetRound: Number(draw.target_round),
       seed: draw.seed,
       participants,
+      commitEvidence: draw.evidence !== null,
       revealed: draw.revealed !== null,
     };
+  },
+
+  async insertCommitEvidence(tx, drawId) {
+    // `committed_at` é sobrescrito pelo gatilho com o carimbo do servidor; o valor enviado nunca prevalece.
+    await tx
+      .insertInto('app.initial_draw_commit_evidence')
+      .values({ draw_id: drawId, committed_at: new Date(0) })
+      .execute();
+  },
+
+  async hasCommitEvidence(tx, drawId) {
+    const row = await tx
+      .selectFrom('app.initial_draw_commit_evidence')
+      .select('draw_id')
+      .where('draw_id', '=', drawId)
+      .executeTakeFirst();
+    return row !== undefined;
   },
 
   async insertReveal(tx, draft) {
