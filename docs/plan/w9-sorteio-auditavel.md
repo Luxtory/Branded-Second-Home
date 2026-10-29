@@ -36,7 +36,7 @@ sem substituir os canônicos. Spec: ownership §16 e platform (W9). ADR-0022. W9
 | E5 | seams do outbox, dispatcher, três consumidores, registro e configuração | ✅ `f579959`, `7c51eb8`, `0c88836` |
 | E6 | leituras, Admin, Titular, i18n, E2E → C2 | ✅ `ba2f94b`, `3a696d0` (E2E no bloco serial Co-Owner da W8) |
 | E7 | runbook, catálogo de ambiente, CHANGELOG, gates integrais | ✅ `0c5a2b0`; verify, E2E, trace e títulos AC verdes |
-| E8 | D4 → PR draft → CI → C3 (parar antes do merge) | em andamento |
+| E8 | D4 → PR draft → CI → C3 (parar antes do merge) | ✅ #71 squash `a6a1f6b` (2026-10-29), após D4, smoke real do beacon e conferência da anterioridade; CI de `main` e Production confirmadas |
 
 ## Conferência D4 (somente leitura, agregada)
 
@@ -55,3 +55,31 @@ SELECT count(*) AS acquisitions FROM app.acquisition;
 
 Esperado: nenhuma linha na primeira consulta e `0` na segunda. Qualquer valor diferente: parar e reportar antes do
 merge.
+
+## Limite de anterioridade com as credenciais da aplicação
+
+**T-910 — HIGH, aberto, bloqueante da ativação real do sorteio.** Investigação de 2026-10-29 em PostgreSQL 17 isolado,
+sem acesso a Production: a verificação do prazo no COMMIT e o `transaction_timeout` dependem do comportamento do código
+da aplicação e não resistem a uso deliberado das credenciais do banco da aplicação, o que permitiria influenciar o
+resultado sem evidência detectável — contrário à imparcialidade de BR-100 e ao TECH-093, com falsa segurança na prova do
+PD-011. Exposição atual nula (gates fechados, sem aquisições nem `DRAW_*`). Relatório técnico, condições e demonstração
+em Security Advisory privado (GHSA-vqxw-h93w-3x32).
+
+**Decisão do fundador (2026-10-29): opção 2.** Risco não coberto pela D5, formalmente condicionado à ativação; mitigação
+por carimbo de COMMIT do servidor, em entrega própria antes da W10.
+
+| Alternativa | Avaliação |
+|---|---|
+| Carimbo de COMMIT do servidor (`track_commit_timestamp`) conferido na revelação | **Escolhida**: registrado pelo servidor, fora do alcance da aplicação; comprovado em PostgreSQL 17 isolado; no Supabase exige `postgres-config update` com reinício |
+| Selagem em transação própria antes da rodada | Descartada: não oferece garantia contra o mesmo ator |
+| Ancoragem externa (W30) | Complementar (cobre também o superusuário), sem substituir |
+| Aceitação explícita | Não adotada |
+
+**Critérios de segurança da mitigação:** verificação pelo servidor por mecanismo não diferível e resistente aos
+privilégios de `luxtory_app`; recusa segura com a configuração desligada ou o carimbo indisponível; nenhum resultado
+parcial; testes de regressão para compromisso legítimo, commit tardio, privilégios da aplicação, subtransações,
+configuração ausente e carimbo indisponível; retenção dos carimbos sob manutenção do PostgreSQL e sorteio pendente por
+muito tempo documentada; nenhum mecanismo novo de recuperação ou de repetição fora dos canônicos.
+
+**Ativação** continua bloqueada até: mitigação mergeada com esses testes; `track_commit_timestamp` habilitado e conferido
+no Supabase, com autorização, janela e testes posteriores; autorização do fundador.

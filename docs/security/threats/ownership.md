@@ -374,3 +374,11 @@ RLS e Admin AAL2. Nenhum endpoint novo; superfície externa nova: leitura HTTP d
 Residuais aceitos (D5): anterioridade e integridade dependem do banco da Luxtory até o selo e a ancoragem da W30;
 compromisso não notificado; seed legível por quem opera o banco antes da revelação; quicknet descontinuado deixa o
 sorteio pendente.
+
+**T-910 [HIGH, aberto] Tampering — anterioridade do compromisso contornável com as credenciais da aplicação
+(2026-10-29).** O controle de T-902 depende do comportamento do código da aplicação e não resiste a uso deliberado das
+credenciais do banco da aplicação, sem evidência detectável. Não coberto pela D5. Mitigação aprovada: carimbo de COMMIT
+registrado pelo servidor, conferido na revelação por mecanismo não diferível e resistente aos privilégios da aplicação,
+com recusa segura (configuração desligada ou carimbo indisponível) e sem resultado parcial. Status: bloqueia a ativação
+do sorteio até a mitigação implementada, testada e validada operacionalmente. Relatório técnico em Security Advisory
+privado (GHSA-vqxw-h93w-3x32); critérios na spec `ownership` §16.3 e no plano da W9.

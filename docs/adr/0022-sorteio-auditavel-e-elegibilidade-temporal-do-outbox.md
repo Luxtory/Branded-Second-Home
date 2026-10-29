@@ -87,3 +87,10 @@ consumidor roda dentro da transação que trava a linha do evento; o único disp
   [ADR-0021](0021-formalizacao-calendario-civil-e-outbox.md)
 - Spec [`ownership` §16](../specs/ownership.md#16-w9--sorteio-auditável-da-ordem-inicial),
   [`platform`](../specs/platform.md), [referência de verificação](../reference/sorteio-inicial.md)
+
+## Limite em aberto da decisão 4 — T-910 (2026-10-29)
+
+A decisão 4 vale para o comportamento do código da aplicação: a verificação no COMMIT e o `transaction_timeout` não
+resistem a uso deliberado das credenciais do banco da aplicação. O limite (HIGH) não está coberto pela D5 e bloqueia a
+ativação do sorteio. Mitigação aprovada: carimbo de COMMIT do servidor (`track_commit_timestamp`) conferido na revelação
+por mecanismo não diferível, com recusa segura quando ausente. Relatório técnico em Security Advisory privado (GHSA-vqxw-h93w-3x32).

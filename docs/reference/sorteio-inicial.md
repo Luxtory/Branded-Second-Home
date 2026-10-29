@@ -35,7 +35,9 @@ contém e como conferir o resultado sem depender da Luxtory. Contrato: spec
 compromisso cujo COMMIT ocorra depois do prazo, e o prazo antecede `t(R)` por uma folga operacional. Quem guardar o
 compromisso, a rodada e o prazo antes de `t(R)` tem uma cópia independente. Até o selo e a ancoragem externa da
 auditoria (W30), um superusuário do banco poderia reescrever um compromisso ainda não revelado sem deixar prova
-verificável por terceiros.
+verificável por terceiros. A verificação do prazo vale para o comportamento do código da aplicação e não resiste a uso
+deliberado das credenciais do banco da aplicação; esse limite (T-910) está em aberto e bloqueia a ativação do sorteio até
+a verificação do carimbo de COMMIT do servidor (spec `ownership` §16.3). Não há prova externa até a W30.
 
 ## Algoritmo `fy-v1`
 
