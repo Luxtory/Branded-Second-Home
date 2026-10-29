@@ -208,6 +208,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   curso (spec catalog §14.8).
 
 ### Security
+- Sorteio inicial — T-910 (spec `ownership` §16.8, ADR-0023): a revelação passa a exigir a evidência do COMMIT do
+  compromisso registrada pelo próprio servidor (`track_commit_timestamp`), com recusa segura quando a configuração está
+  desligada ou o carimbo indisponível. A ativação real do sorteio continua bloqueada até a configuração ser habilitada
+  em Production com autorização.
 - Brand Partners — portão `BRAND_PARTNERS_SITE`: fechado, o 404 de `/brand-partner` e `/brand-partner/como-funciona`
   não leva mais a copy, as props do formulário nem os metadados (title, description, Open Graph, Twitter) da BP1 no
   HTML/RSC; o portão passa a valer também nas páginas e no `generateMetadata` (REQ-028, spec catalog §14.1/§14.8).

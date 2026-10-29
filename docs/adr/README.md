@@ -30,6 +30,7 @@ described by Michael Nygard. The ADR process itself is established in
 | 0020 | [Party cifrada, HMAC com rotação e delegação pendente até a ativação](0020-party-cifrada-e-delegacao.md) | Accepted |
 | 0021 | [Formalização atômica, base civil e outbox consumer-aware](0021-formalizacao-calendario-civil-e-outbox.md) | Accepted |
 | 0022 | [Sorteio auditável em três consumidores e elegibilidade temporal do outbox](0022-sorteio-auditavel-e-elegibilidade-temporal-do-outbox.md) | Accepted |
+| 0023 | [Carimbo de COMMIT do servidor na anterioridade do sorteio (T-910)](0023-carimbo-de-commit-do-servidor-no-sorteio.md) | Accepted |
 
 The technical decisions ADR-001…008 of the canonical
 [03 — Technical Spec](../specs/canonical/03-technical-spec.md) also apply, by reference.

@@ -381,4 +381,6 @@ credenciais do banco da aplicação, sem evidência detectável. Não coberto pe
 registrado pelo servidor, conferido na revelação por mecanismo não diferível e resistente aos privilégios da aplicação,
 com recusa segura (configuração desligada ou carimbo indisponível) e sem resultado parcial. Status: bloqueia a ativação
 do sorteio até a mitigação implementada, testada e validada operacionalmente. Relatório técnico em Security Advisory
-privado (GHSA-vqxw-h93w-3x32); critérios na spec `ownership` §16.3 e no plano da W9.
+privado (GHSA-vqxw-h93w-3x32); critérios na spec `ownership` §16.3 e no plano da W9. Mitigação implementada na correção
+T-910 (spec §16.8, ADR-0023); a ativação continua bloqueada até `track_commit_timestamp` habilitado e conferido no
+Supabase e autorização do fundador.
