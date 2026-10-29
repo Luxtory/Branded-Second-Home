@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sorteio auditável da ordem inicial (W9, spec `ownership` §16, ADR-0022): toda formalização Co-Owner tem a ordem
+  inicial das Ações definida por sorteio verificável — compromisso SHA-256 da seed e rodada futura da rede pública
+  drand quicknet gravados antes do beacon, rodada verificada pela assinatura, algoritmo `fy-v1` e resultado por Ação.
+  A evidência aparece no Admin e, para os titulares, na Área do Titular, com a própria Ação destacada e sem identificar
+  outros Co-Owners; qualquer pessoa pode reproduzir o resultado. O resultado gera notificação aos titulares. Beacon fora
+  do ar deixa o sorteio pendente, sem resultado parcial.
+
 - Formalização (W8, spec `ownership` §15, `calendar`, ADR-0021): no Admin, formalização da Second Home a partir de
   sua Home Edition de origem, com localização concreta e modalidade definitiva. Owner tem um único adquirente e
   titularidade integral; Co-Owner tem SPE S.A. fechada, uma das quatro configurações imutáveis, Ações equivalentes

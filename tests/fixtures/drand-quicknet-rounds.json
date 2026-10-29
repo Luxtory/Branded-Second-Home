@@ -1,0 +1,26 @@
+{
+  "description": "Rodadas reais da rede drand quicknet, gravadas em 2026-10-28T22:56Z de https://drand.cloudflare.com e conferidas em https://api.drand.sh. Usadas sem rede pelos testes do beacon (TECH-093).",
+  "chainHash": "52db9ba70e0cc0f6eaf7803dd07447a1f5477735fd3f661792ba94600c84e971",
+  "rounds": [
+    {
+      "round": 33474932,
+      "randomness": "ca93c230825ce92dd4d8dad03ef3d236378647ef62fa670587664cf9c25dcf52",
+      "signature": "985d7a780f7de12369e943364ba49cbf696c61f53d284e7c731b6e6084400a23602530ca0bf79c382b82eeace3a9e695"
+    },
+    {
+      "round": 33474931,
+      "randomness": "e3859e216806b1f437c6f31148448bd6e826aa0f911f3327a2dc9a36d2a281cb",
+      "signature": "86dc0755f44bd0f23d7c8d6f9531f7f19b9366902e1f6cc2ecde80975f45110245198ec140dfea272179c371bbcc73f9"
+    },
+    {
+      "round": 33474930,
+      "randomness": "858b8b6c5223417997ba7184992ddbca328a3a6c5c0a3412d7bcd5ee5ca85e08",
+      "signature": "8258e9ede6373618747165cec9107cda1546e251dfdaf00922a6a032f084e74661a4ca3495b5da089a2045a2d6cddf98"
+    },
+    {
+      "round": 33474929,
+      "randomness": "80b53a430a5ce797978b363ae5dc916df46d34681132e4ecad12099f11e88baa",
+      "signature": "a4c922ea0c058d549b901ff28b97bfb7d6c8de59bbcfa3b1d45b0c94afb511a322f0eceef0df3bb2c47c69be33608464"
+    }
+  ]
+}

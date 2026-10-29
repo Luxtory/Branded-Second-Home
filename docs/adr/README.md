@@ -28,6 +28,8 @@ described by Michael Nygard. The ADR process itself is established in
 | 0018 | [Contato e pré-qualificação do interesse: dados separados, hash chaveado e contexto de apresentação assinado](0018-contato-e-pre-qualificacao-do-interesse.md) | Accepted |
 | 0019 | [Ontologia Home Concept → Home Edition → Second Home em todas as camadas](0019-ontologia-home-concept-home-edition-second-home.md) | Accepted |
 | 0020 | [Party cifrada, HMAC com rotação e delegação pendente até a ativação](0020-party-cifrada-e-delegacao.md) | Accepted |
+| 0021 | [Formalização atômica, base civil e outbox consumer-aware](0021-formalizacao-calendario-civil-e-outbox.md) | Accepted |
+| 0022 | [Sorteio auditável em três consumidores e elegibilidade temporal do outbox](0022-sorteio-auditavel-e-elegibilidade-temporal-do-outbox.md) | Accepted |
 
 The technical decisions ADR-001…008 of the canonical
 [03 — Technical Spec](../specs/canonical/03-technical-spec.md) also apply, by reference.

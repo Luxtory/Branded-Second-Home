@@ -352,3 +352,25 @@ Ator autorizado: Admin AAL2 vigente + base registrada; delegação identifica re
 | T-814 Spoofing — confirmação visual forjada pela URL | projeção Admin verifica operação W8 commitada da mesma Second Home em snapshot consistente | UUID inventado sem aviso; operação rejeitada, outro command ou outra Second Home sem confirmação; recibo válido preserva sucesso/foco |
 
 Sem nova criptografia, sem PII em payload/audit/outbox e sem efeito econômico por administração. Residuais: qualidade da base registrada pelo Admin; obrigações/compromissos fora do modelo não são detectados pelo software. Dados reais e referência institucional dependem de ativação posterior autorizada. W9/W10/W11 permanecem fora desta superfície.
+
+## W9 — sorteio auditável da ordem inicial (2026-10-28)
+
+Ativos: participantes congelados, seed, compromisso, rodada alvo, prazo de commit, rodada verificada, resultado por Ação
+e notificação. Atores: consumidores do outbox (papel `system`, `luxtory_app`), relays drand não confiáveis, Titular sob
+RLS e Admin AAL2. Nenhum endpoint novo; superfície externa nova: leitura HTTP de relays públicos.
+
+| Ameaça | Controle | Evidência exigida |
+|---|---|---|
+| T-901 Spoofing — relay ou rede entrega rodada falsa | `ChainInfo` fixado no código, `fetchBeacon` oficial (rodada, `randomness`, BLS/RFC 9380) e conferência da rodada `R` | rodadas reais aceitas; assinatura, `randomness`, rodada, chave e chain adulteradas recusadas sem gravação |
+| T-902 Tampering — escolher o resultado depois do beacon (abortar e refazer, ou commit tardio) | um sorteio por aquisição; prazo de commit verificado pelo banco no COMMIT efetivo; `t(R)` posterior ao prazo pela folga do runbook | transação atrasada além do prazo não comita; nova tentativa usa outra seed e outra rodada futura |
+| T-903 Tampering — resultado parcial ou incoerente | savepoint do consumidor, permutação exata validada no COMMIT, `SHA-256(seed) = commitment` e `randomness = SHA-256(assinatura)` no banco | falhas injetadas em cada etapa sem revelação, posições ou notificação |
+| T-904 Tampering — reescrita do sorteio | tabelas só de inserção (`forbid_change`, sem TRUNCATE), `luxtory_app` só com SELECT/INSERT | UPDATE/DELETE/TRUNCATE negados; residual de superusuário até a W30 (D5) |
+| T-905 Information disclosure — seed antes da revelação ou identidade de outros Co-Owners | RLS por holding; seed visível ao Titular só com a revelação; DTOs por Ação sem pessoa ou empresa, `operation_id` ou eventos; eventos e logs sem seed nem PII | isolamento de linha e coluna; outro usuário não vê o sorteio |
+| T-906 Repudiation — efeito sem autoria | auditoria `system` com o `operation_id` da formalização e o evento de origem | registros de commit e revelação com antes/depois sem PII |
+| T-907 Denial of service — beacon lento ou fora do ar | orçamento total menor que o `transaction_timeout`, sem lock de domínio, falha rápida após uma falha | sorteio pendente, varredura continua, sem conexão retida além do prazo |
+| T-908 Denial of service — eventos futuros ou falhas recorrentes travam o outbox | `available_at` antes do LIMIT, ordem por tentativas, falha no COMMIT registrada à parte | lote cheio de falhas não impede evento independente; falha no COMMIT não interrompe a varredura |
+| T-909 Elevation — aleatoriedade falsa em Production | nenhum adaptador falso no código de produção; composição de produção sempre com a quicknet; constraint da chain no banco | adaptador testado com rodadas reais; beacon de teste só em `tests/`; chain diferente recusada |
+
+Residuais aceitos (D5): anterioridade e integridade dependem do banco da Luxtory até o selo e a ancoragem da W30;
+compromisso não notificado; seed legível por quem opera o banco antes da revelação; quicknet descontinuado deixa o
+sorteio pendente.

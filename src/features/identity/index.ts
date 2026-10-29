@@ -5,6 +5,9 @@ export type { StaffAccess } from './application/staff-access';
 export { getStaffAccess, type AdminAccess } from './presentation/staff-access';
 export { SignOutButton } from './presentation/sign-out-button';
 export { AuthUnavailable } from './presentation/auth-unavailable';
+// W9: o shell e a sessão da Área do Titular para páginas de outros módulos (sorteio da ordem inicial).
+export { TitularShell, requireTitularSession } from './presentation/titular-pages';
+export type { VerifiedSession } from './domain/session';
 export { exercisedRole } from './application/staff-access';
 export { assertTransactionalAdminAuthority } from './infrastructure/transactional-admin-authority';
 export { readPartyReference } from './infrastructure/party-reference';

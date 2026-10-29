@@ -5,13 +5,15 @@ import type { ConsumerRegistry, OutboxEvent } from './consumers';
 /** Persistência do outbox (implementação PostgreSQL em `infrastructure/outbox/`). */
 export interface OutboxStore<Tx> {
   /**
-   * Filter `eventTypes` before ordering/limiting/locking, then lock the oldest pending event outside `skip` in its
-   * own transaction without waiting for other scans. An empty list never queries events. `null` means no event.
+   * Filter `eventTypes` and availability (`available_at` null or not after `at`, ADR-0022) before ordering/limiting/
+   * locking, then lock the pending event with fewest attempts (then oldest) outside `skip`, in its own transaction,
+   * without waiting for other scans. An empty list never queries events. `null` means no event.
    */
   withNextPending<T>(
     eventTypes: readonly string[],
     skip: readonly string[],
     work: (event: OutboxEvent, tx: Tx) => Promise<T>,
+    at?: Date,
   ): Promise<{ readonly event: OutboxEvent; readonly value: T } | null>;
   /** Roda `work` isolado (savepoint): se lançar, só o efeito dele é desfeito, e o erro é relançado. */
   isolated(tx: Tx, work: () => Promise<void>): Promise<void>;
@@ -19,6 +21,8 @@ export interface OutboxStore<Tx> {
   claimReceipt(tx: Tx, eventId: string, consumer: string, at: Date): Promise<boolean>;
   markDelivered(tx: Tx, eventId: string, at: Date): Promise<void>;
   markFailed(tx: Tx, eventId: string, errorName: string): Promise<void>;
+  /** Falha da transação do evento fora do savepoint (COMMIT, conexão encerrada): registrada em transação própria. */
+  recordFailure(eventId: string, errorName: string): Promise<void>;
 }
 
 export interface DispatchDependencies<Tx> {
@@ -44,7 +48,9 @@ const errorName = (error: unknown): string =>
 
 /**
  * Entrega ao menos uma vez (TECH-091): cada evento em transação própria, cada consumidor isolado. Falha de um
- * consumidor mantém o evento pendente para a próxima varredura e nunca desfaz o domínio.
+ * consumidor mantém o evento pendente para a próxima varredura e nunca desfaz o domínio. Falha da transação do evento
+ * fora do savepoint (COMMIT com constraint diferida, conexão encerrada) é registrada à parte e a varredura continua;
+ * sem evento travado (banco indisponível), o erro propaga (ADR-0022 §5).
  */
 export async function dispatchOutbox<Tx>(deps: DispatchDependencies<Tx>): Promise<DispatchResult> {
   const eventTypes = deps.consumers.eventTypes();
@@ -52,14 +58,43 @@ export async function dispatchOutbox<Tx>(deps: DispatchDependencies<Tx>): Promis
   const seen: string[] = [];
   let delivered = 0;
   while (seen.length < deps.batchSize) {
-    const outcome = await deps.store.withNextPending(eventTypes, seen, (event, tx) =>
-      deliver(deps, event, tx),
-    );
+    const current: { event?: OutboxEvent } = {};
+    let outcome: { readonly event: OutboxEvent; readonly value: boolean } | null;
+    try {
+      outcome = await deps.store.withNextPending(
+        eventTypes,
+        seen,
+        (event, tx) => {
+          current.event = event;
+          return deliver(deps, event, tx);
+        },
+        deps.clock.now(),
+      );
+    } catch (error) {
+      if (current.event === undefined) throw error;
+      await recordAborted(deps, current.event, error);
+      seen.push(current.event.id);
+      continue;
+    }
     if (outcome === null) break;
     seen.push(outcome.event.id);
     if (outcome.value) delivered += 1;
   }
   return { delivered, failed: seen.length - delivered };
+}
+
+async function recordAborted<Tx>(
+  deps: DispatchDependencies<Tx>,
+  event: OutboxEvent,
+  error: unknown,
+): Promise<void> {
+  deps.log.error('outbox delivery failed', {
+    event_id: event.id,
+    event_type: event.type,
+    phase: 'commit',
+    error_name: errorName(error),
+  });
+  await deps.store.recordFailure(event.id, errorName(error));
 }
 
 async function deliver<Tx>(

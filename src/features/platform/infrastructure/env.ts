@@ -125,6 +125,11 @@ const runtimeSchema = z.object({
   COMMAND_MAX_ATTEMPTS: positiveInteger,
   COMMAND_LOCK_TIMEOUT_MS: positiveInteger,
   OUTBOX_BATCH_SIZE: positiveInteger,
+  // Sorteio inicial (W9, spec ownership §16.3, ADR-0022): orçamentos do runbook, sem default — lidos só ao processar o
+  // evento; ausentes deixam o sorteio pendente. O do beacon precisa ser menor que o da transação.
+  DRAW_TRANSACTION_TIMEOUT_MS: positiveInteger,
+  DRAW_BEACON_TIMEOUT_MS: positiveInteger,
+  DRAW_BEACON_LEAD_SECONDS: positiveInteger,
   // Supabase Auth, só no servidor (W2, ADR-0008). Só a chave publicável: `anon` legada e chaves secretas são recusadas.
   NEXT_PUBLIC_SUPABASE_URL: z.url({ protocol: /^https$/ }),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().regex(/^sb_publishable_[A-Za-z0-9_-]+$/),

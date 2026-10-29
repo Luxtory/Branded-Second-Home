@@ -60,3 +60,10 @@ Exceção de evento de sorteio no platform: acoplamento desnecessário; seleçã
 
 Estas são escolhas de implementação, sem nova regra de negócio. A reconciliação com `main` b7b42a7 após o hotfix
 \#65 preservou o inventário de eventos descrito acima: o hotfix alterou somente Zod/manifests, sem produtor adicional.
+
+## Evolução na W9 (2026-10-28)
+
+O ADR-0022 estende a política consumer-aware sem alterá-la: além do tipo com consumidor, o store só seleciona eventos
+com `available_at` nulo ou vencido, no mesmo ponto (antes de ORDER/LIMIT/locks); a ordem passa a `attempts,
+occurred_at, id`; e uma falha no COMMIT da transação de um evento é registrada em transação própria. Eventos sem
+consumidor continuam pendentes sem tentativa, recibo ou falha.

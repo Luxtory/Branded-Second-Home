@@ -6,10 +6,13 @@ import type { Database, DatabaseTransaction } from '../database/connection';
 
 const CONSUMER_SAVEPOINT = sql.raw('outbox_consumer');
 
-/** Outbox no schema `app` (TECH-091): um evento por transação, travado com `FOR UPDATE SKIP LOCKED`. */
+/**
+ * Outbox no schema `app` (TECH-091): um evento por transação, travado com `FOR UPDATE SKIP LOCKED`; só eventos
+ * disponíveis, os com menos tentativas primeiro (ADR-0022).
+ */
 export function createPostgresOutboxStore(db: Database): OutboxStore<DatabaseTransaction> {
   return {
-    withNextPending(eventTypes, skip, work) {
+    withNextPending(eventTypes, skip, work, at) {
       if (eventTypes.length === 0) return Promise.resolve(null);
       return db
         .transaction()
@@ -19,9 +22,16 @@ export function createPostgresOutboxStore(db: Database): OutboxStore<DatabaseTra
             .selectFrom('app.outbox')
             .select(['id', 'event_type', 'dedup_key', 'operation_id', 'occurred_at', 'payload'])
             .where('delivered_at', 'is', null)
-            .where('event_type', 'in', eventTypes);
+            .where('event_type', 'in', eventTypes)
+            .where((eb) =>
+              eb.or([
+                eb('available_at', 'is', null),
+                eb('available_at', '<=', at ?? sql<Date>`now()`),
+              ]),
+            );
           if (skip.length > 0) query = query.where('id', 'not in', skip);
           const row = await query
+            .orderBy('attempts')
             .orderBy('occurred_at')
             .orderBy('id')
             .limit(1)
@@ -76,6 +86,14 @@ export function createPostgresOutboxStore(db: Database): OutboxStore<DatabaseTra
         .updateTable('app.outbox')
         .set((eb) => ({ last_error: errorName, attempts: eb('attempts', '+', 1) }))
         .where('id', '=', eventId)
+        .execute();
+    },
+    async recordFailure(eventId, errorName) {
+      await db
+        .updateTable('app.outbox')
+        .set((eb) => ({ last_error: errorName, attempts: eb('attempts', '+', 1) }))
+        .where('id', '=', eventId)
+        .where('delivered_at', 'is', null)
         .execute();
     },
   };

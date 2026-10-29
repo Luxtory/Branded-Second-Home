@@ -283,3 +283,23 @@ Preservar transação por evento, savepoint/recibo por consumer, deduplicação,
 
 CommandContext passa a transportar authorizationRef derivada exclusivamente da decisão do guard, nunca de input. Isto permite revalidação cirúrgica de staff na W8; commands antigos conservam autoridade e semântica.
 AdminCommand pode declarar política assertAvailable opt-in; a entrada compartilhada REST/Server Action executa-a após autorização positiva e antes da idempotência. W8 usa ACQUISITION_WRITES; ausência/closed em Production não gera operation, idempotência, audit ou outbox. Outros commands e leituras não optam e não dependem desse gate.
+
+## W9 — elegibilidade temporal e progresso do outbox
+
+ADR-0022 estende a seleção do ADR-0021 sem mudar commands, executor, recibos, deduplicação ou o job `outbox`:
+
+- `app.outbox.available_at timestamptz` opcional (nulo = imediato). O store filtra `available_at IS NULL OR
+  available_at <= now` no SQL antes de ORDER/LIMIT/`FOR UPDATE SKIP LOCKED`, com `now` do relógio injetado. Evento
+  futuro fica pendente sem attempts, last_error, recibo ou vaga no lote. A coluna não muda depois de gravada.
+- Ordem `attempts, occurred_at, id` (índice parcial dos pendentes): um evento só é precedido por eventos com no máximo
+  as mesmas tentativas, então falhas recorrentes não impedem indefinidamente eventos independentes.
+- O dispatcher guarda o evento travado; se a transação dele falhar fora do savepoint do consumidor (COMMIT com
+  constraint diferida, conexão encerrada por `transaction_timeout`), registra `attempts`/`last_error` em transação
+  própria, loga só o nome do erro e segue a varredura. Sem evento travado (banco indisponível), o erro propaga.
+- `enqueueOutboxEvent(tx, draft)`: consumidor enfileira evento seguinte na própria transação, com `operation_id`
+  obrigatório, `dedup_key` único (`ON CONFLICT DO NOTHING`, como os commands) e `availableAt` opcional.
+- `recordSystemAudit(tx, record)`: auditoria de efeito de consumidor com papel `system`, `event_type 'command'` e o
+  `operation_id` de origem (TECH-002, TECH-092), sem PII.
+
+Testes reais: evento futuro retido e elegível no vencimento; ordem por tentativas sob lote cheio de falhas; falha no
+COMMIT registrada sem interromper a varredura; varreduras paralelas; eventos anteriores inalterados.

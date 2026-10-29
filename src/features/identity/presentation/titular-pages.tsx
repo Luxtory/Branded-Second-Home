@@ -17,7 +17,7 @@ import { readRepresentation, readTitularOverview, type TitularOverview } from '.
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Sessão do request; sem sessão → login do Titular. Sem MFA obrigatório: o TECH-050 o exige só do staff. */
-async function requireSession(): Promise<VerifiedSession | 'unavailable'> {
+export async function requireTitularSession(): Promise<VerifiedSession | 'unavailable'> {
   const session = await currentSession();
   if (session === null) redirect(titularPaths.login);
   return session;
@@ -80,7 +80,7 @@ function TitularForbidden() {
 }
 
 /** Área do Titular no App Shell do DS (ADR-0009): um só destino na W7, sem navegação inferior. */
-function TitularShell({ children }: { readonly children: ReactNode }) {
+export function TitularShell({ children }: { readonly children: ReactNode }) {
   return (
     <AppShell
       homeHref={titularPaths.area}
@@ -151,9 +151,18 @@ function PendingInvitations({ overview }: { readonly overview: TitularOverview }
   );
 }
 
-/** `/titular`: quem o usuário representa (RLS) e os convites pendentes dele. */
-export async function TitularAreaPage({ activated }: { readonly activated: boolean }) {
-  const session = await requireSession();
+/**
+ * `/titular`: quem o usuário representa (RLS) e os convites pendentes dele. `extra`: seções de outros módulos sobre o
+ * que o usuário representa (W9: sorteio da ordem inicial), compostas pelo shell da rota.
+ */
+export async function TitularAreaPage({
+  activated,
+  extra,
+}: {
+  readonly activated: boolean;
+  readonly extra?: (session: VerifiedSession) => ReactNode;
+}) {
+  const session = await requireTitularSession();
   if (session === 'unavailable') return <AuthUnavailable />;
   const overview = await readOrUnavailable(() => readTitularOverview(session));
   if (overview === 'unavailable') return <AuthUnavailable />;
@@ -170,13 +179,14 @@ export async function TitularAreaPage({ activated }: { readonly activated: boole
       ) : null}
       {overview.representations.length === 0 ? null : <Representations overview={overview} />}
       {overview.pending.length === 0 ? null : <PendingInvitations overview={overview} />}
+      {extra?.(session)}
     </TitularShell>
   );
 }
 
 /** `/titular/representacoes/[partyId]`: só a party representada; qualquer outra (ou id inválido) → 404, sem oráculo. */
 export async function TitularRepresentationPage({ partyId }: { readonly partyId: string }) {
-  const session = await requireSession();
+  const session = await requireTitularSession();
   if (session === 'unavailable') return <AuthUnavailable />;
   const representation = UUID.test(partyId)
     ? await readOrUnavailable(() => readRepresentation(session, partyId))
