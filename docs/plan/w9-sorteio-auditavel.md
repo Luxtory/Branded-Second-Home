@@ -29,14 +29,14 @@ sem substituir os canônicos. Spec: ownership §16 e platform (W9). ADR-0022. W9
 | Etapa | Entregáveis | Estado |
 |---|---|---|
 | E0 | worktree `/home/rjr-idb/luxtory-w9`, `npm ci`, `npm run verify` na base (1.158/1.158, 42 up/down/up) | ✅ |
-| E1 | spec ownership §16 e platform W9, ADR-0022 (+ adendo ao ADR-0021), AsyncAPI, STRIDE, referência de verificação → C1 | |
-| E2 | `fy-v1`, rodadas e compromisso (TDD, vetor fixo independente) | |
-| E3 | adaptador quicknet (`fetchBeacon` + `ChainClient`), rodadas reais gravadas e adulteradas | |
-| E4 | migrations `platform_outbox_available_at` e `ownership_initial_draw`; codegen; testes db | |
-| E5 | seams do outbox, dispatcher, três consumidores, registro e configuração | |
-| E6 | leituras, Admin, Titular, i18n, E2E → C2 | |
-| E7 | runbook, catálogo de ambiente, CHANGELOG, gates integrais | |
-| E8 | D4 → PR draft → CI → C3 (parar antes do merge) | |
+| E1 | spec ownership §16 e platform W9, ADR-0022 (+ adendo ao ADR-0021), AsyncAPI, STRIDE, referência de verificação → C1 | ✅ `a8e6013` |
+| E2 | `fy-v1`, rodadas e compromisso (TDD, vetor fixo independente) | ✅ `45392b1` |
+| E3 | adaptador quicknet (`fetchBeacon` + `ChainClient`), rodadas reais gravadas e adulteradas | ✅ `45392b1` |
+| E4 | migrations `platform_outbox_available_at` e `ownership_initial_draw`; codegen; testes db | ✅ `9dceb5a` (+ tratamento do `error` do pool pg) |
+| E5 | seams do outbox, dispatcher, três consumidores, registro e configuração | ✅ `f579959`, `7c51eb8`, `0c88836` |
+| E6 | leituras, Admin, Titular, i18n, E2E → C2 | ✅ `ba2f94b`, `3a696d0` (E2E no bloco serial Co-Owner da W8) |
+| E7 | runbook, catálogo de ambiente, CHANGELOG, gates integrais | ✅ `0c5a2b0`; verify, E2E, trace e títulos AC verdes |
+| E8 | D4 → PR draft → CI → C3 (parar antes do merge) | em andamento |
 
 ## Conferência D4 (somente leitura, agregada)
 
