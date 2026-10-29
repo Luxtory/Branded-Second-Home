@@ -2,7 +2,10 @@
 // do stdout quando está pronto e para quando o stdin fecha (inclusive se o processo pai morrer) ou com SIGTERM.
 import { startPostgres } from './lib/embedded-pg.mjs';
 
-const server = await startPostgres();
+// `commit-timestamp-off`: servidor dos testes de recusa segura do T-910 (ADR-0023).
+const server = await startPostgres({
+  trackCommitTimestamp: process.argv[2] !== 'commit-timestamp-off',
+});
 let stopping = false;
 const stop = async () => {
   if (stopping) return;

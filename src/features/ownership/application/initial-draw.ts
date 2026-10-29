@@ -62,6 +62,8 @@ export interface RevealContext {
   readonly targetRound: number;
   readonly seed: Uint8Array;
   readonly participants: readonly { readonly ordinal: number; readonly stakeId: string }[];
+  /** Evidência do COMMIT registrada pelo servidor (T-910): sem ela a revelação é recusada. */
+  readonly commitEvidence: boolean;
   readonly revealed: boolean;
 }
 
@@ -90,6 +92,9 @@ export interface InitialDrawStore<Tx> {
   armTransactionTimeout(tx: Tx, timeoutMs: number): Promise<Date>;
   insertCommitment(tx: Tx, draft: CommitmentDraft): Promise<void>;
   revealContext(tx: Tx, drawId: string): Promise<RevealContext | null>;
+  /** T-910: grava a evidência do COMMIT do compromisso; o banco calcula o instante pelo carimbo do servidor. */
+  insertCommitEvidence(tx: Tx, drawId: string): Promise<void>;
+  hasCommitEvidence(tx: Tx, drawId: string): Promise<boolean>;
   insertReveal(tx: Tx, draft: RevealDraft): Promise<void>;
   /** Pessoas ou empresas titulares vigentes em `at` das Ações do sorteio. */
   recipients(tx: Tx, drawId: string, at: Date): Promise<readonly string[]>;
@@ -114,6 +119,14 @@ export class InitialDrawConfigurationError extends Error {
   constructor() {
     super('DRAW_BEACON_TIMEOUT_MS must be lower than DRAW_TRANSACTION_TIMEOUT_MS');
     this.name = 'InitialDrawConfigurationError';
+  }
+}
+
+/** Revelação sem a evidência do COMMIT do compromisso (T-910): pendente, sem consultar o beacon. */
+export class InitialDrawCommitEvidenceMissingError extends Error {
+  constructor(readonly drawId: string) {
+    super(`Initial draw ${drawId} has no server commit evidence`);
+    this.name = 'InitialDrawCommitEvidenceMissingError';
   }
 }
 
@@ -205,6 +218,22 @@ function commitConsumer<Tx>(deps: InitialDrawDependencies<Tx>): OutboxConsumer<T
   };
 }
 
+/**
+ * T-910 (ADR-0023): evidência do COMMIT do compromisso, registrada pelo servidor na primeira entrega do evento de
+ * revelação — antes da revelação e mesmo com o beacon fora do ar —, para não depender da retenção dos carimbos.
+ */
+function commitEvidenceConsumer<Tx>(deps: InitialDrawDependencies<Tx>): OutboxConsumer<Tx> {
+  return {
+    name: 'ownership_initial_draw_commit_evidence',
+    eventTypes: [INITIAL_DRAW_COMMITTED],
+    async handle(event, tx) {
+      const { draw_id } = drawPayload.parse(event.payload);
+      if (await deps.store.hasCommitEvidence(tx, draw_id)) return;
+      await deps.store.insertCommitEvidence(tx, draw_id);
+    },
+  };
+}
+
 /** Passos 4–7: rodada verificada, `fy-v1`, resultado por Ação e publicação. */
 function revealConsumer<Tx>(deps: InitialDrawDependencies<Tx>): OutboxConsumer<Tx> {
   let cached: { readonly budgetMs: number; readonly beacon: RandomnessBeacon } | undefined;
@@ -221,6 +250,7 @@ function revealConsumer<Tx>(deps: InitialDrawDependencies<Tx>): OutboxConsumer<T
       const context = await deps.store.revealContext(tx, draw_id);
       if (context === null) throw new InitialDrawScheduleError(draw_id);
       if (context.revealed) return;
+      if (!context.commitEvidence) throw new InitialDrawCommitEvidenceMissingError(draw_id);
       await deps.store.armTransactionTimeout(tx, config.transactionTimeoutMs);
       const verified = await beaconFor(config.beaconTimeoutMs).verifiedRound(context.targetRound);
       if (verified.round !== context.targetRound) {
@@ -295,5 +325,11 @@ function notificationConsumer<Tx>(deps: InitialDrawDependencies<Tx>): OutboxCons
 export function initialDrawConsumers<Tx>(
   deps: InitialDrawDependencies<Tx>,
 ): readonly OutboxConsumer<Tx>[] {
-  return [commitConsumer(deps), revealConsumer(deps), notificationConsumer(deps)];
+  // A evidência precede a revelação na mesma entrega (ordem do registro).
+  return [
+    commitConsumer(deps),
+    commitEvidenceConsumer(deps),
+    revealConsumer(deps),
+    notificationConsumer(deps),
+  ];
 }

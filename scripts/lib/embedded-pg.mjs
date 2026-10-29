@@ -32,7 +32,9 @@ function freePort() {
 /**
  * Sobe um PostgreSQL local. A pasta de dados precisa estar num sistema de arquivos com permissões POSIX
  * (ext4/tmpfs do WSL), nunca em /mnt/c (drvfs): o padrão é uma pasta temporária descartável.
- * @param {{ dataDir?: string, port?: number, persistent?: boolean }} [options]
+ * `trackCommitTimestamp` (padrão: ligado): carimbo de COMMIT do servidor exigido pelo sorteio (T-910, ADR-0023); só os
+ * testes de recusa segura sobem um servidor com ele desligado.
+ * @param {{ dataDir?: string, port?: number, persistent?: boolean, trackCommitTimestamp?: boolean }} [options]
  * @returns {Promise<{ adminUrl: string, stop: () => Promise<void> }>}
  */
 export async function startPostgres(options = {}) {
@@ -52,6 +54,10 @@ export async function startPostgres(options = {}) {
     password: PG_PASSWORD,
     persistent,
     initdbFlags: INITDB_FLAGS,
+    postgresFlags: [
+      '-c',
+      `track_commit_timestamp=${options.trackCommitTimestamp === false ? 'off' : 'on'}`,
+    ],
     onLog: remember,
     onError: remember,
   });

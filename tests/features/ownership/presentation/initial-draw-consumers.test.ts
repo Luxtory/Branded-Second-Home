@@ -36,6 +36,7 @@ describe('W9 registro dos consumidores do sorteio (ADR-0022)', () => {
     );
     expect(createInitialDrawConsumers({ source: {} }).map((c) => c.name)).toEqual([
       'ownership_initial_draw_commit',
+      'ownership_initial_draw_commit_evidence',
       'ownership_initial_draw_reveal',
       'ownership_initial_draw_notification',
     ]);
