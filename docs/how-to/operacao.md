@@ -591,7 +591,8 @@ Merge só depois do checkpoint do fundador; a entrega não abre gates nem cria c
     ORDER BY y.exercise_year, a.second_home_id;
    ```
 
-   `stake_id` nulo = sorteio ainda não revelado.
+   `stake_id` nulo = sorteio ainda não revelado: o exercício venceu sem concessão, mas a consulta não identifica Ação
+   alguma até a revelação.
 5. **Pendências preservadas:** comprovar ao menos uma execução autenticada bem-sucedida do `open_exercise` antes da
    primeira aquisição real (W10); nenhuma ativação de `ACQUISITION_WRITES`, `DRAW_*`, `OPS_ALERT_*` ou reservas reais
    sem autorização do fundador — reservas reais só depois dos mecanismos da W13 (restrição operacional temporária de

@@ -1,7 +1,7 @@
 # 0025. Direito de Uso: ledger único conferido pelos fatos, rotação derivada e fronteira de confiança da W11
 
 - Date: 2026-10-30
-- Status: Accepted (arquitetura); risco residual **pendente de ratificação** do fundador
+- Status: Accepted (arquitetura); risco residual **ratificado** pelo fundador em 2026-10-30, exclusivo da W11
 - Deciders: Luxtory (fundador), Engenharia
 - Tags: calendar, ownership, postgresql, security, jobs
 
@@ -67,14 +67,32 @@ aceitação do risco residual da W10 vale só para a W10.
    ambos sob a trava consultiva da Second Home: um dos dois sempre enxerga selagem e revelação commitadas, e a
    `dedup_key` descarta a cópia. Destinatários resolvidos na entrega. A elegibilidade nunca depende da entrega.
 
-## Risco residual da W11 — pendente de ratificação
+## Risco residual da W11
 
 Uma operação forjada pelo papel da aplicação só consegue, nos limites provados pelos testes com os privilégios reais
-(`tests/migrations/use-right.db.test.ts`): (1) selar um exercício devido junto com as concessões canônicas dele; (2)
-conceder o 29/02 à Ação canônica, com a noite selada e antes do vencimento, no máximo uma execução antes do job; (3)
-registrar a expiração exata de saldo já inutilizável. Não consegue consumir, restaurar, corrigir, escrever no saldo,
-alterar concessão ou rotação, nem tocar custódia. A ratificação da W10 não se estende; a decisão do fundador fica
-registrada aqui quando tomada.
+(`tests/migrations/use-right.db.test.ts`): (1) antecipar a selagem de um exercício devido, junto com as concessões
+ordinárias canônicas dele; (2) antecipar a concessão do 29/02 — a mesma que o job faria — exclusivamente à Ação
+contemplada, com a noite selada e antes do vencimento; (3) registrar a expiração exata de um saldo cujo direito já
+venceu. Não consegue consumir, restaurar, corrigir, escrever no saldo, alterar concessão ou rotação, nem tocar
+custódia. A ratificação da W10 não se estende.
+
+## Ratificação do risco residual da W11 (fundador, 2026-10-30)
+
+Separada da decisão de arquitetura acima. O fundador ratificou o risco residual **estritamente limitado** às três
+possibilidades de uma operação forjada com `luxtory_app` descritas na seção anterior — antecipar a selagem de exercício
+devido com concessões ordinárias canônicas; antecipar o grant do 29/02 exclusivamente à Ação contemplada, com a noite
+selada e antes do vencimento; registrar a expiração exata de um saldo cujo direito já venceu —, **condicionada** à
+preservação integral das barreiras verificadas:
+
+1. sem consumo, restauração ou correção pelo papel da aplicação;
+2. sem escrita direta em `use_right_balance`;
+3. sem alteração de concessões ou da rotação;
+4. sem fechamento ou transições de custódia e sem escrita de ocupação fora das autorizações específicas;
+5. operações, eventos e trilhas gravados pelo próprio papel não constituem prova independente de autenticidade.
+
+Qualquer mudança nessas condições exige nova decisão do fundador. **Alcance:** exclusivamente a W11, ratificada com a
+autorização do squash merge do PR #76; não se estende à W12 nem a nenhuma wave futura, que avaliam a própria fronteira
+antes de habilitar consumo, restauração, correção ou transições.
 
 ## Consequences
 

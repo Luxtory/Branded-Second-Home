@@ -10,7 +10,9 @@ autorizado.
 ## Decisões do fundador (2026-10-30)
 
 - **D1:** arquitetura aprovada para implementação; o risco residual da W11 **não está ratificado** — depende dos testes
-  com os privilégios reais e da auditoria do PR. A ratificação da W10 não se estende.
+  com os privilégios reais e da auditoria do PR. A ratificação da W10 não se estende. → **Ratificado** pelo fundador
+  em 2026-10-30, com a autorização do squash merge do PR #76, estritamente limitado e condicionado (ADR-0025,
+  "Ratificação do risco residual da W11"); exclusivo da W11.
 - **D2:** `correct_use_right` (command e `POST /v1/admin/use-right-corrections`) adiado para a W13 por emenda explícita
   do roadmap; na W11, `correction` só estrutural e fechada ao papel da aplicação.
 - **D3:** INV-4 com igualdade estrita na configuração integral; exercício parcial conforme a alocação aprovada na W8,

@@ -287,7 +287,8 @@ Decisão: ADR-0025.
   efetivo pelo relógio do servidor e exatamente sobre o restante, com o instante canônico carimbado pelo banco;
   `consume`/`restore` recusados a todo papel exceto o dono do schema, mesmo com o INSERT concedido; `correction`
   recusada a todos. Operação de outra transação é recusada (consistência, não autenticidade).
-- **Residual (pendente de ratificação, ADR-0025)**: efeito máximo de uma operação forjada — selar um exercício devido
+- **Residual (ratificado pelo fundador em 2026-10-30, exclusivo da W11, condicionado — ADR-0025)**: efeito máximo de
+  uma operação forjada — selar um exercício devido
   com as concessões canônicas; conceder o 29/02 à Ação canônica no máximo uma execução antes do job; registrar a
   expiração exata de saldo já inutilizável. Fronteira de confiança no servidor, como desde a W1; superusuário contorna
   gatilhos (D5, até a W30). Antes de habilitar consumo/restauração (W12/W13) e correção (W13): regra de autorização no
