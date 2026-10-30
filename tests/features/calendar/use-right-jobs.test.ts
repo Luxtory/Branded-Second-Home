@@ -230,6 +230,15 @@ describe('job close_exercise (W11) [TECH-090] [INV-5]', () => {
     );
   });
 
+  it('[TECH-090] falha da consulta inicial propaga (a rota responde 500 com log estruturado) sem executar nada', async () => {
+    const failure = new Error('database down');
+    const { deps, requests } = harness(new Date('2030-01-01T00:00:00Z'), [committed()], () =>
+      Promise.reject(failure),
+    );
+    await expect(runCloseExercise(deps, { correlationId: 'run' })).rejects.toBe(failure);
+    expect(requests).toEqual([]);
+  });
+
   it('[TECH-090] orçamento esgotado adia; fim efetivo incalculável no fuso falha fechado, sem expirar', async () => {
     const budget = harness(new Date('2030-01-01T00:00:00Z'), [committed()], () =>
       Promise.resolve(

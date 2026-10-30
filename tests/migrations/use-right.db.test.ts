@@ -490,6 +490,40 @@ describe('W11 — ledger do Direito de Uso: banco, privilégios reais e estrutur
     });
   });
 
+  describe('29/02 vencido sem concessão: derivável dos fatos, em qualquer exercício', () => {
+    // A mesma consulta do runbook (docs/how-to/operacao.md, W11 passo 4): somente leitura, sem depender do log do job.
+    const LAPSED_LEAP_DAYS = `
+      SELECT a.second_home_id, y.exercise_year,
+             app.leap_day_beneficiary(a.second_home_id, y.exercise_year) AS stake_id
+        FROM app.acquisition a
+        JOIN app.second_home h ON h.id = a.second_home_id
+       CROSS JOIN LATERAL generate_series(a.exercise_year,
+               extract(year FROM now() AT TIME ZONE h.timezone)::int) AS y(exercise_year)
+       WHERE a.modality = 'co_owner'
+         AND app.is_leap_year(y.exercise_year)
+         AND y.exercise_year >= app.first_leap_exercise(a.operation_start_date)
+         AND now() >= app.use_right_effective_end('leap', y.exercise_year, h.timezone)
+         AND NOT EXISTS (SELECT 1 FROM app.use_right_ledger l
+                          WHERE l.second_home_id = a.second_home_id AND l.exercise_year = y.exercise_year
+                            AND l.movement = 'grant' AND l.bucket = 'leap')
+       ORDER BY y.exercise_year, a.second_home_id`;
+
+    it('[PD-004][REQ-031] fora do horizonte do job, o vencimento sem concessão continua reconstruível pela Ação contemplada', async () => {
+      const { rows } = await h.database.pool.query<{ second_home_id: string; exercise_year: number; stake_id: string | null }>(
+        LAPSED_LEAP_DAYS,
+      );
+      const expected = leapDayBeneficiary({
+        drawn: await drawnPositions(h, past.acquisitionId),
+        operationStartDate: `${PAST_LEAP}-01-01`,
+        exerciseYear: PAST_LEAP,
+      });
+      // O exercício bissexto encerrado (fora do corrente e do seguinte) aparece, com a Ação da lista.
+      expect(rows).toContainEqual({ second_home_id: past.homeId, exercise_year: PAST_LEAP, stake_id: expected });
+      // O 29/02 concedido e ainda não vencido não aparece.
+      expect(rows.some((row) => row.second_home_id === leap.homeId)).toBe(false);
+    });
+  });
+
   describe('garantias da W8 preservadas', () => {
     it('[REQ-026][TECH-026] concessão extra com a operação da formalização falha no COMMIT; o Titular só lê concessões', async () => {
       await expect(
