@@ -49,8 +49,9 @@ Fatos que restringem o desenho:
      chamado pelos gatilhos de transição, fechamento, ocupação e liberação, recusa todo papel que não seja o dono do
      schema — conceder privilégio não basta (teste com privilégio concedido). Habilitar uma transição exige migration
      que substitua o gate pela regra de autorização da wave dona: ponto obrigatório de reavaliação no banco.
-   - o banco limita a selagem ao exercício corrente e ao seguinte pela data local do servidor (com um dia de
-     tolerância em cada ponta), também para uma operação forjada: sem o teto, uma forjada poderia selar até 9999 —
+   - o banco limita a selagem ao exercício corrente e ao seguinte pelo ano civil local do relógio do servidor, no fuso
+     da Second Home e sem tolerância (`app.exercise_within_horizon`, testada nas viradas de ano), também para uma
+     operação forjada: sem o teto, uma forjada poderia selar até 9999 —
      noites imutáveis em volume sem limite, com instantes fixados pelas regras de fuso de hoje e sem recuperação sem
      reescrever histórico; sem o piso, poderia selar exercícios passados desde uma data-base antiga, sem noite
      utilizável e sem necessidade legítima (o job nunca sela exercício passado);
@@ -62,11 +63,9 @@ Fatos que restringem o desenho:
      servidor, funções `SECURITY DEFINER` com revalidação, papel ou credencial separada, ou decisão assinada), implementar
      e verificar essa regra — inclusive carimbo do banco nos instantes de fechamento e liberação —, e só então
      substituir o gate para ela. Elegibilidade de reserva nunca é inferida só da selagem (W11/W12).
-   - **Risco residual — PENDENTE DE RATIFICAÇÃO DO FUNDADOR (não aprovado por este ADR):** na W10, o único efeito
-     possível de uma operação forjada pelo papel da aplicação é selar, de forma canônica, um exercício já devido (o
-     corrente ou o seguinte) antes do cron — sem ocupação, custódia econômica, Direito de Uso, crédito ou alteração de
-     fronteira de confiança. A aceitação proposta limita-se a essa selagem estrutural e não autoriza transição
-     econômica, ocupação nem mudança futura das fronteiras.
+   - **Risco residual:** na W10, o único efeito possível de uma operação forjada pelo papel da aplicação é selar, de
+     forma canônica, um exercício já devido (o corrente ou o seguinte) antes do cron. Aceitação do fundador, com alcance
+     e condições, registrada à parte em "Aceitação do risco residual da W10".
 4. **Três camadas.** (1) Estrutural, completa na W10: tabela fechada da TECH-022 (inclusive `luxtory/inventory → pai`,
    BR-163), matriz da TECH-023, cadeia linear (`UNIQUE(parent_custody_id)`), fechamento e liberação únicos, custódia
    ocupada só fecha após a liberação, exatamente uma custódia ativa por noite no COMMIT. (2) Operação concreta, como no
@@ -88,6 +87,20 @@ Fatos que restringem o desenho:
    (fornecedor já contratado, `fetch`, sem dependência), resolvida só quando há o que alertar. Configuração ausente ou
    inválida → recusa segura (alerta só no log, com as chaves nomeadas). Transporte simulado para local e CI. Falha de
    item e falha geral são distintas; a ausência de execução do cron não é detectável pelo próprio job.
+
+## Aceitação do risco residual da W10 (fundador, 2026-10-30)
+
+Separada da decisão de arquitetura acima. O fundador aceitou o risco residual **estritamente limitado** à selagem
+estrutural canônica de exercícios devidos — sem movimentação econômica, ocupação, Créditos ou alteração dos direitos dos
+Titulares —, **condicionada** à preservação de:
+
+1. nenhuma transição econômica ou ocupação habilitada sem regra de autorização implementada e verificada na wave
+   correspondente;
+2. `luxtory_app` sem privilégios de fechamento de custódia e de escrita de ocupação na W10;
+3. operação `pending` ou trilha gravada pelo mesmo papel nunca tratada como prova independente de autenticidade;
+4. esta aceitação não constitui autorização antecipada de novas fronteiras de confiança em waves futuras.
+
+Qualquer mudança nessas condições exige nova decisão do fundador.
 
 ## Consequences
 

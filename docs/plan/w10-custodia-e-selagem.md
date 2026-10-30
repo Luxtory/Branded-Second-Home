@@ -8,8 +8,8 @@ autorizado.
 
 ## Decisões consolidadas
 
-- Horizonte imposto pelo banco: só o exercício corrente e o seguinte pela data local do servidor (um dia de tolerância
-  em cada ponta); exercício passado nunca é selado. `sealed_at` carimbado pelo banco.
+- Horizonte imposto pelo banco: só o exercício corrente e o seguinte pelo ano civil local do servidor, no fuso da Second
+  Home, sem tolerância; exercício passado nunca é selado. `sealed_at` carimbado pelo banco.
 - Selagem por exercício, numa transação, da data-base (`acquisition.operation_start_date`) ou de 01/01 até 31/12;
   exercício completo 103 + 262 (+29/02); formalização torna a Second Home selável, o registro do início efetivo não
   interfere. Exercício corrente e seguinte pela data local (TECH-040, TECH-042).
@@ -57,8 +57,8 @@ autorizado.
    é só sinal de anomalia. Segunda trava: o gate `app.assert_inventory_transition_enabled` recusa transições e
    ocupações para todo papel exceto o dono do schema, mesmo com privilégio concedido (testado). A fronteira de
    confiança fica explícita no ADR-0024 §3, com condição de resolução antes da primeira wave que habilitar cada
-   transição — **proposta, não ratificada**: aceitar na W10 o efeito residual (selar, de forma canônica, um exercício já
-   devido antes do cron).
+   transição. Aceitação do efeito residual (selar, de forma canônica, um exercício já devido antes do cron) pelo
+   fundador em 2026-10-30, estritamente limitada e condicionada (ADR-0024, "Aceitação do risco residual da W10").
 2. **Cadeia de custódia.** `UNIQUE(parent_custody_id)` validado com `spe_pool → reserved_right → spe_pool →
    reserved_right`, `owner → luxtory/inventory → owner → luxtory/inventory`, bifurcação recusada, transição concorrente
    da mesma custódia com duas conexões nas duas ordens e histórico preservado após a reversão.
@@ -73,8 +73,11 @@ autorizado.
 
 ## Decisões pendentes do fundador
 
-- Ratificar (ou não) o risco residual do ADR-0024 §3, limitado à selagem estrutural.
 - Canal de e-mail do alerta na ativação (caixa, remetente, chave dedicada ou reaproveitada).
-- D7: orientação favorável do fundador (2026-10-29) a encaminhar P-12 e P-13 para revisão normativa antes da W14, sem
-  alterar agora os canônicos.
+
+## Decisões do fundador registradas (2026-10-30)
+
+- Risco residual da W10 aceito, estritamente limitado à selagem estrutural e condicionado (ADR-0024).
+- D7 aprovada: P-12 e P-13 encaminhadas para revisão normativa antes da W14, sem alterar agora os canônicos.
+- Horizonte estrito (ano civil local do servidor, sem tolerância) — preferência do fundador, adotada.
 - Na W12: fronteira de confiança das transições discricionárias e horizonte de reserva do Owner (P-14).

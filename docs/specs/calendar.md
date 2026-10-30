@@ -48,7 +48,8 @@ Custódia, ocupação e barreiras: [`inventory.md`](inventory.md).
   job sela o exercício corrente e o seguinte pela data local de cada Second Home (TECH-040), a partir do ano da
   data-base — a posição 1 abre em 15/09 do ano anterior (TECH-042), e o exercício seguinte é selado já em 01/01.
 - **Horizonte no banco.** O gatilho de selagem recusa noite de exercício anterior ao corrente ou posterior ao seguinte
-  pela data local do servidor, com um dia de tolerância em cada ponta (`custody_exercise_horizon`): o job e o banco usam
+  pelo ano civil local do relógio do servidor, no fuso da Second Home e sem tolerância (`app.exercise_within_horizon`,
+  testada nas viradas de ano; `custody_exercise_horizon`): o job e o banco usam
   o mesmo horizonte, e uma operação forjada não sela à frente nem para trás dele. Exercício passado nunca é selado,
   mesmo com data-base antiga. `sealed_at` é carimbado pelo banco (instante da transação).
 - **Classificação.** O TypeScript (W8) produz `season` e o check-in; o banco confere: `app.canonical_season` (mesmo

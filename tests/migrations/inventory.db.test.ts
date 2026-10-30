@@ -148,6 +148,22 @@ describe('custódia e selagem: barreiras do banco (W10)', () => {
       ).rejects.toEqual(constraint('custody_exercise_coverage'));
     });
 
+    it.each([
+      // [instante, fuso, exercícios aceitos] — viradas de ano reproduzidas sem esperar o relógio real.
+      ['2026-12-31T23:30:00-03:00', 'America/Sao_Paulo', [2026, 2027]],
+      ['2027-01-01T00:30:00-03:00', 'America/Sao_Paulo', [2027, 2028]],
+      // O mesmo instante já é 2027 em Lisboa: o ano civil é o local da Second Home.
+      ['2027-01-01T02:30:00Z', 'Europe/Lisbon', [2027, 2028]],
+      ['2027-01-01T02:30:00Z', 'America/Sao_Paulo', [2026, 2027]],
+    ] as const)('[TECH-042] horizonte estrito na virada do ano (%s, %s): só o corrente e o seguinte', async (at, zone, accepted) => {
+      const { rows } = await h.database.pool.query<{ exercise: number; ok: boolean }>(
+        `SELECT y AS exercise, app.exercise_within_horizon(y, $1::timestamptz, $2) AS ok
+           FROM generate_series(2024, 2030) AS y ORDER BY y`,
+        [at, zone],
+      );
+      expect(rows.filter((row) => row.ok).map((row) => row.exercise)).toEqual(accepted);
+    });
+
     it('[TECH-042] só o exercício corrente e o seguinte pelo relógio do banco: além disso a selagem é recusada', async () => {
       const beyond = `${N + 1}-07-10`;
       await expect(

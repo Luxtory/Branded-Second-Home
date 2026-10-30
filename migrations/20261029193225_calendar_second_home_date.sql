@@ -55,6 +55,16 @@ AS $$
   END
 $$;
 
+-- Horizonte de selagem (TECH-042; ADR-0024 §1): só o exercício corrente e o seguinte pelo ano civil local de `p_at` no
+-- fuso da Second Home — sem tolerância. Instante explícito para ser testável em qualquer virada de ano; o gatilho usa
+-- o relógio do servidor.
+CREATE FUNCTION app.exercise_within_horizon(p_exercise integer, p_at timestamptz, p_timezone text) RETURNS boolean
+  LANGUAGE sql STABLE STRICT PARALLEL SAFE SET search_path = ''
+AS $$
+  SELECT p_exercise BETWEEN extract(year FROM p_at AT TIME ZONE p_timezone)::integer
+                        AND extract(year FROM p_at AT TIME ZONE p_timezone)::integer + 1
+$$;
+
 CREATE TABLE app.second_home_date (
   second_home_id uuid NOT NULL REFERENCES app.second_home(id),
   stay_date date NOT NULL CHECK (stay_date BETWEEN DATE '0001-01-01' AND DATE '9999-12-31'),
@@ -90,13 +100,10 @@ BEGIN
     RAISE EXCEPTION 'nights before the operation base date are never sealed'
       USING ERRCODE = 'check_violation', CONSTRAINT = 'custody_night_after_operation_start';
   END IF;
-  -- Horizonte (TECH-042; ADR-0024 §1): só o exercício corrente e o seguinte pela data local do servidor, com um dia de
-  -- tolerância à diferença de relógio em cada ponta. Barra selagem antecipada (noites imutáveis com instantes fixados
-  -- pelas regras de fuso de hoje, volume sem limite) e retroativa (exercício passado não tem noite utilizável; com
-  -- data-base antiga, volume sem limite), inclusive por operação forjada. Gatilho BEFORE: a coluna gerada ainda não existe.
-  IF extract(year FROM NEW.stay_date)
-       NOT BETWEEN extract(year FROM (now() - interval '1 day') AT TIME ZONE v_timezone)
-               AND extract(year FROM (now() + interval '1 day') AT TIME ZONE v_timezone) + 1 THEN
+  -- Horizonte pelo relógio do servidor: barra selagem antecipada (noites imutáveis com instantes fixados pelas regras
+  -- de fuso de hoje, volume sem limite) e retroativa (exercício passado não tem noite utilizável; com data-base antiga,
+  -- volume sem limite), inclusive por operação forjada. Gatilho BEFORE: a coluna gerada ainda não existe.
+  IF NOT app.exercise_within_horizon(extract(year FROM NEW.stay_date)::integer, now(), v_timezone) THEN
     RAISE EXCEPTION 'only the current and the next exercise can be sealed'
       USING ERRCODE = 'check_violation', CONSTRAINT = 'custody_exercise_horizon';
   END IF;
@@ -152,8 +159,10 @@ CREATE TRIGGER second_home_date_no_change BEFORE UPDATE OR DELETE ON app.second_
 CREATE TRIGGER second_home_date_no_truncate BEFORE TRUNCATE ON app.second_home_date
   FOR EACH STATEMENT EXECUTE FUNCTION app.forbid_change();
 
-REVOKE ALL ON FUNCTION app.carnival_dates(integer), app.canonical_season(date) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION app.carnival_dates(integer), app.canonical_season(date) TO luxtory_app;
+REVOKE ALL ON FUNCTION app.carnival_dates(integer), app.canonical_season(date),
+  app.exercise_within_horizon(integer, timestamptz, text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION app.carnival_dates(integer), app.canonical_season(date),
+  app.exercise_within_horizon(integer, timestamptz, text) TO luxtory_app;
 
 -- Escrita só no servidor (ADR-002 do 03); nenhuma leitura do Titular na W10.
 ALTER TABLE app.second_home_date ENABLE ROW LEVEL SECURITY;
@@ -174,5 +183,6 @@ END $$;
 DROP TABLE app.second_home_date;
 DROP FUNCTION app.second_home_date_exercise_constraint();
 DROP FUNCTION app.second_home_date_seal();
+DROP FUNCTION app.exercise_within_horizon(integer, timestamptz, text);
 DROP FUNCTION app.canonical_season(date);
 DROP FUNCTION app.carnival_dates(integer);

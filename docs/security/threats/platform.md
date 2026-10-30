@@ -238,8 +238,8 @@ Decisão: ADR-0024.
   da trilha do executor é sinal de anomalia, não prova: `luxtory_app` também grava `idempotency_record` e `audit_log`.
 - **Residual**: o banco não prova que o guard rodou — fronteira de confiança no servidor da aplicação, como em todos os
   commands desde a W1; a trilha não é independente do mesmo papel até a W30. Efeito máximo na W10: selar, de forma
-  canônica, um exercício já devido antes do cron, sem efeito econômico — aceitação **pendente de ratificação do
-  fundador**, limitada a essa selagem estrutural. Condição de resolução: antes da primeira wave
+  canônica, um exercício já devido antes do cron, sem efeito econômico — aceito pelo fundador em 2026-10-30,
+  estritamente limitado a essa selagem estrutural e condicionado (ADR-0024, "Aceitação do risco residual da W10"). Condição de resolução: antes da primeira wave
   que habilitar cada transição, decidir com o fundador a autorização no banco, implementá-la, verificá-la e só então
   substituir o gate. Superusuário contorna gatilhos (D5, até a W30).
 - **Owner**: Engenharia · **Tracking**: `tests/migrations/inventory.db.test.ts` (privilégios e operação forjada)
