@@ -33,6 +33,11 @@ autorizado.
   e a 3 deixaria saldo aparente depois do vencimento. Sem ambiguidade normativa material: PD-004 define o desfecho
   (expira com a data, sem transporte), BR-094 faz a lista avançar a cada ano bissexto e nenhum canônico prevê
   compensação; a causa operacional (sorteio atrasado) fica em log (`leap_day_lapsed`) e nos riscos.
+- **Auditoria do PR (2026-10-30).** (1) `leap_day_lapsed` só cobre o horizonte do job (corrente e seguinte): sinal
+  operacional, não registro; sem obrigação de rastreabilidade que peça outro mecanismo, porque o vencimento sem
+  concessão é reconstruível dos fatos por consulta somente leitura — documentada no runbook e testada. (2) Falha da
+  consulta inicial do `close_exercise`: a infraestrutura existente já responde 500 `ERR_INTERNAL` com log estruturado
+  (`withRoute`), sem escrita anterior; nenhum tratamento novo, só um teste do job.
 - **C — expiração e recuperação.** O banco recusa consumo e restauração depois do fim efetivo pelo próprio relógio
   (`balance_use_right_expired`), sem depender do job; o `close_exercise` varre todo exercício com saldo restante, de
   qualquer ano, e registra o restante exato com o instante canônico.

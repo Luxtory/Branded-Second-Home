@@ -47,7 +47,11 @@ aceitação do risco residual da W10 vale só para a W10.
    command novo nem novo mecanismo de autorização: o mesmo command de sistema e o guard da W10.
 6. **29/02 sem concessão retroativa (D5).** Se o sorteio só termina depois do fim efetivo do 29/02, nada é concedido
    (antes ou depois de 31/12, mesma regra); a lista avança pelo calendário, sem compensação presumida (PD-004). O job
-   registra o caso em log (`leap_day_lapsed`).
+   registra o caso em log (`leap_day_lapsed`) só dentro do próprio horizonte (exercício corrente e seguinte): é sinal
+   operacional, não registro. Nenhuma obrigação de rastreabilidade pede outro mecanismo — o REQ-015 exige auditar
+   movimentos e intervenções, e o vencimento sem concessão é a ausência de movimento com desfecho canônico; ele é
+   reconstruível a qualquer momento dos fatos imutáveis (data-base, posições sorteadas, fuso, ledger) por consulta
+   somente leitura (runbook, testada).
 7. **Expiração (`close_exercise`).** Command de sistema e job novos (TECH-090), cron diário. Considera todo exercício
    com saldo restante, de qualquer ano, e expira exatamente o restante de cada bucket vencido: recupera atrasos sem
    prorrogar. O direito deixa de ser utilizável no fim efetivo pelo banco, com ou sem o registro. Falha vai só ao log

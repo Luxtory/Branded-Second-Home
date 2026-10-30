@@ -158,7 +158,9 @@ async function runStep(
 
 /**
  * 29/02 a conceder agora: noite selada, sorteio revelado e ainda sem concessão. Depois do fim efetivo o direito venceu
- * sem concessão retroativa (D5) — registrado em log, a lista bissexta avança pelo calendário.
+ * sem concessão retroativa (D5) e a lista bissexta avança pelo calendário. `leap_day_lapsed` é só sinal operacional, no
+ * horizonte do job (exercício corrente e seguinte); o vencimento sem concessão de qualquer exercício é reconstruível dos
+ * fatos (consulta do runbook), não depende deste log.
  */
 function leapDaysToGrant(
   deps: OpenExerciseJobDependencies,

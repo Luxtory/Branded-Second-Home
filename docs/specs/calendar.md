@@ -108,7 +108,8 @@ Luxtory (W14), telas e leituras do Titular (W12), catálogo de notificações (W
   ordinária daquele exercício; avança uma posição por ano bissexto (2100, 2200, 2300 não contam) e reinicia na mesma
   ordem; nunca lê a ordem ordinária de ano posterior. O passo `leap_day` concede 1 à Ação contemplada quando a noite
   está selada e o sorteio revelado, antes do fim efetivo. Vencido antes disso, não há concessão retroativa nem
-  compensação (D5).
+  compensação (D5); o log `leap_day_lapsed` só cobre o horizonte do job, e o vencimento de qualquer exercício é
+  reconstruível dos fatos (consulta do runbook).
 - **Fim efetivo e `close_exercise`.** 29/02: 00:00 de 01/03; Alta e Média: 00:00 de 01/01 seguinte, no fuso da Second
   Home. Depois dele o banco recusa uso, com ou sem registro. O job `close_exercise` registra a expiração exata do
   restante de todo exercício vencido, de qualquer ano, com o instante canônico; repetição é no-op. Não toca custódia:

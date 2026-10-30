@@ -563,9 +563,35 @@ Merge só depois do checkpoint do fundador; a entrega não abre gates nem cria c
    (ou `open_exercise`). Idempotentes: expiração já registrada não se repete; passo já feito conta como não aplicável.
 4. **Leitura dos resultados.** `open_exercise`: `leap_day_granted` (29/02 concedido) e `leap_day_lapsed` (29/02 vencido
    antes de o sorteio terminar — sem concessão retroativa nem compensação; o log `open_exercise leap day lapsed` traz a
-   Second Home e o exercício; tratar como sinal operacional de atraso do sorteio). `close_exercise`: `closed`,
-   `not_due`, `failed` e `deferred`; falha vai ao log `close_exercise item rejected|failed` com o código — não há
-   alerta deste job no TECH-101. Corrigir a causa e disparar o job (passo 3).
+   Second Home e o exercício; tratar como sinal operacional de atraso do sorteio). O log só cobre o horizonte do job
+   (exercício corrente e seguinte); para qualquer exercício, a fonte é a consulta somente leitura abaixo, derivada dos
+   fatos. `close_exercise`: `closed`, `not_due`, `failed` e `deferred`; falha de item vai ao log
+   `close_exercise item rejected|failed` com o código — não há alerta deste job no TECH-101. Falha geral (banco
+   indisponível na consulta inicial) não grava nada: a rota responde 500 `ERR_INTERNAL` e o log
+   `unhandled route error` traz o `correlation_id`; configuração ausente responde 503 com `job unavailable` e as chaves.
+   Corrigir a causa e disparar o job (passo 3).
+
+   29/02 da operação já vencido e nunca concedido, em qualquer exercício (somente leitura; mesma consulta do teste
+   `tests/migrations/use-right.db.test.ts`):
+
+   ```sql
+   SELECT a.second_home_id, y.exercise_year,
+          app.leap_day_beneficiary(a.second_home_id, y.exercise_year) AS stake_id
+     FROM app.acquisition a
+     JOIN app.second_home h ON h.id = a.second_home_id
+    CROSS JOIN LATERAL generate_series(a.exercise_year,
+            extract(year FROM now() AT TIME ZONE h.timezone)::int) AS y(exercise_year)
+    WHERE a.modality = 'co_owner'
+      AND app.is_leap_year(y.exercise_year)
+      AND y.exercise_year >= app.first_leap_exercise(a.operation_start_date)
+      AND now() >= app.use_right_effective_end('leap', y.exercise_year, h.timezone)
+      AND NOT EXISTS (SELECT 1 FROM app.use_right_ledger l
+                       WHERE l.second_home_id = a.second_home_id AND l.exercise_year = y.exercise_year
+                         AND l.movement = 'grant' AND l.bucket = 'leap')
+    ORDER BY y.exercise_year, a.second_home_id;
+   ```
+
+   `stake_id` nulo = sorteio ainda não revelado.
 5. **Pendências preservadas:** comprovar ao menos uma execução autenticada bem-sucedida do `open_exercise` antes da
    primeira aquisição real (W10); nenhuma ativação de `ACQUISITION_WRITES`, `DRAW_*`, `OPS_ALERT_*` ou reservas reais
    sem autorização do fundador — reservas reais só depois dos mecanismos da W13 (restrição operacional temporária de

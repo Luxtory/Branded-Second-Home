@@ -313,8 +313,10 @@ Decisão: ADR-0025.
   de qualquer ano; validade não depende do job — o banco recusa uso depois do fim efetivo e nenhuma outra Ação usa o
   29/02 pendente; falhas do `open_exercise` alertam (`open_exercise_failure`), as do `close_exercise` vão ao log
   estruturado (o TECH-101 não tem alerta deste job).
-- **Residual**: 29/02 vencido antes de o sorteio terminar não é concedido (D5, log `leap_day_lapsed`); ausência do cron
-  não é detectável pelo próprio job (W30 / Vercel Pro, D1).
+- **Residual**: 29/02 vencido antes de o sorteio terminar não é concedido (D5); o log `leap_day_lapsed` só cobre o
+  horizonte do job, e o vencimento de qualquer exercício é reconstruível dos fatos (consulta do runbook). Falha geral do
+  `close_exercise` → 500 com log estruturado, sem efeito parcial. Ausência do cron não é detectável pelo próprio job
+  (W30 / Vercel Pro, D1).
 - **Owner**: Engenharia · **Tracking**: `tests/features/calendar/use-rights.db.test.ts`
 
 ### T-1104 [LOW] Information disclosure — notificações e eventos

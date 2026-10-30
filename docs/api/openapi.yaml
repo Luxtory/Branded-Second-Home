@@ -2152,7 +2152,8 @@ paths:
         concessões da configuração do exercício seguinte ao primeiro (passo `seal`); depois concede o 29/02 da operação
         à Ação contemplada quando o sorteio já foi revelado e o direito não venceu (passo `leap_day`, transação
         própria). Contagens: `formalized`, `due`, `sealed`, `already_sealed`, `leap_day_granted`, `leap_day_lapsed`
-        (29/02 vencido antes de poder ser concedido, sem concessão retroativa), `failed` (cada falha gera o alerta
+        (29/02 vencido antes de poder ser concedido, sem concessão retroativa; só no horizonte do job), `failed`
+        (cada falha gera o alerta
         `open_exercise_failure`, TECH-101) e `deferred` (orçamento de tempo esgotado; a próxima execução continua).
 
         `close_exercise` (spec calendar §6, ADR-0025): registra a expiração exata do saldo restante de cada bucket cujo
