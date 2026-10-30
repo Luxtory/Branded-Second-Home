@@ -148,14 +148,15 @@ gates operacionais). A W8 passa a ser a próxima wave funcional executável.
 **Atualização 2026-10-27:** W8 ✅ (PR #67, `266a0ae`); formalização e calendário civil em Production, com 42
 migrations aplicadas / 0 pendentes e `ACQUISITION_WRITES` ainda fechado. A W9 passa a ser a próxima wave funcional
 executável, ainda não iniciada; W10 e W11 também não foram iniciadas, com dependências e paralelismo inalterados.
-**Atualização 2026-10-30:** W10 ✅ (PR #74, `25f668c`); noite selada, custódia, ocupação e matriz da TECH-023 em
-Production, com 49 migrations aplicadas / 0 pendentes, cron `open_exercise` registrado (`23 4 * * *`), 0 aquisições,
-custódias ou ocupações e os gates operacionais fechados. Risco residual da W10 ratificado pelo fundador, limitado à
-selagem estrutural (ADR-0024). A W11 passa a ser a próxima wave funcional executável, ainda não iniciada.
 **Atualização 2026-10-29:** W9 ✅ (PR #71, `a6a1f6b`); sorteio auditável da ordem inicial em Production, com 44
 migrations aplicadas / 0 pendentes, sem `DRAW_*`, aquisição ou sorteio real e com os gates operacionais fechados. A W10
 passa a ser a próxima wave funcional executável, ainda não iniciada, **em sequência** (D3; ver correção do paralelismo
 abaixo); a W11 também não foi iniciada.
+**Atualização 2026-10-30:** W10 ✅ (PR #74, `25f668c`); noite selada, custódia, ocupação e matriz da TECH-023 em
+Production, com 49 migrations aplicadas / 0 pendentes, cron `open_exercise` registrado (`23 4 * * *`), 0 aquisições,
+custódias ou ocupações e os gates operacionais fechados. INV-3 completo; REQ-040 e INV-2 com as garantias estruturais,
+e as provas econômicas nas waves W13, W14, W17, W19 e W20. Risco residual ratificado pelo fundador, exclusivo da W10 e
+limitado à selagem estrutural (ADR-0024). A W11 passa a ser a próxima wave funcional executável, ainda não iniciada.
 
 Paralelismo na retomada do B2C: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
 canal do AsyncAPI, telas e `CHANGELOG.md`, e o STRIDE do beacon. A W10 toca migrations de `calendar`/`inventory`,
