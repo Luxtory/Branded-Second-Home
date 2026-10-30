@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { notBefore } from './available-at';
 import type { JsonObject, JsonValue } from '../../domain/json';
 import type { DatabaseTransaction } from '../database/connection';
 
@@ -31,7 +32,7 @@ export async function enqueueOutboxEvent(
       dedup_key: draft.dedupKey,
       payload: JSON.stringify(draft.payload),
       occurred_at: draft.occurredAt,
-      available_at: draft.availableAt ?? null,
+      available_at: notBefore(draft.availableAt, draft.occurredAt),
     })
     .onConflict((conflict) => conflict.column('dedup_key').doNothing())
     .returning('id')

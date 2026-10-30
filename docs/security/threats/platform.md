@@ -268,3 +268,63 @@ Decisão: ADR-0024.
 - **Mitigation**: o alerta só carrega ids técnicos, anos e códigos de erro; destinatário e remetente vêm do servidor;
   credencial própria por finalidade (`OPS_ALERT_RESEND_API_KEY`); a resposta do provedor nunca é logada.
 - **Owner**: Engenharia · **Tracking**: `operational-alert.test.ts`
+
+## W11 — Direito de Uso, janelas e rotações (2026-10-30)
+
+Superfície nova: um job (`close_exercise`) na rota existente `/api/jobs/{job}`, um command de sistema, o passo
+`leap_day` do `open_exercise`, dois eventos e dois consumidores do outbox, a projeção `use_right_balance` e uma função
+`SECURITY DEFINER` (manutenção da projeção). Nenhum endpoint, segredo, variável ou papel novo; nenhum dado pessoal novo.
+Decisão: ADR-0025.
+
+### T-1101 [HIGH] Elevation/Tampering — Direito de Uso forjado pelo papel da aplicação
+
+- **Vector**: código (ou SQL injetado) rodando como `luxtory_app` insere no ledger, com operação `pending` forjada,
+  concessão extra, 29/02 para outra Ação, expiração antecipada (dano ao Titular), consumo, restauração ou correção.
+- **Mitigation**: cada movimento é conferido pelos fatos num gatilho INVOKER — concessão só do `open_exercise`, só
+  Co-Owner, só exercício selado posterior ao primeiro, quantidade igual ao limite da configuração, única por Ação,
+  exercício e bucket; 29/02 só com a noite selada, para a Ação da lista bissexta (função SQL equivalente à do
+  TypeScript), uma vez por Second Home e ano e antes do fim efetivo; expiração só do `close_exercise`, depois do fim
+  efetivo pelo relógio do servidor e exatamente sobre o restante, com o instante canônico carimbado pelo banco;
+  `consume`/`restore` recusados a todo papel exceto o dono do schema, mesmo com o INSERT concedido; `correction`
+  recusada a todos. Operação de outra transação é recusada (consistência, não autenticidade).
+- **Residual (ratificado pelo fundador em 2026-10-30, exclusivo da W11, condicionado — ADR-0025)**: efeito máximo de
+  uma operação forjada — selar um exercício devido
+  com as concessões canônicas; conceder o 29/02 à Ação canônica no máximo uma execução antes do job; registrar a
+  expiração exata de saldo já inutilizável. Fronteira de confiança no servidor, como desde a W1; superusuário contorna
+  gatilhos (D5, até a W30). Antes de habilitar consumo/restauração (W12/W13) e correção (W13): regra de autorização no
+  banco decidida com o fundador.
+- **Owner**: Engenharia · **Tracking**: `tests/migrations/use-right.db.test.ts` (privilégios reais e operação forjada)
+
+### T-1102 [MEDIUM] Elevation — abuso da função SECURITY DEFINER do saldo
+
+- **Vector**: reutilizar `app.use_right_balance_apply()` (dono do schema) para escrever saldos arbitrários — por exemplo,
+  criando um gatilho próprio que a chame com uma linha forjada —, ou contornar o gate de dentro dela.
+- **Mitigation**: sem `EXECUTE` para ninguém (requisito para criar gatilho com a função); `luxtory_app` sem `CREATE` em
+  esquema algum; a função confere que roda como gatilho AFTER INSERT ROW de `app.use_right_ledger`, deriva o efeito só
+  da linha já validada, não tem parâmetro nem SQL dinâmico e usa `search_path` vazio; gate e validações ficam em
+  funções INVOKER (o gate decide por `current_user`); `granted` e chave imutáveis na projeção (inclusive para o dono);
+  sem INSERT/UPDATE/DELETE no saldo para `luxtory_app`.
+- **Owner**: Engenharia · **Tracking**: `use-right.db.test.ts`
+
+### T-1103 [MEDIUM] Denial of service / Repudiation — concessão, 29/02 ou expiração que não acontecem
+
+- **Vector**: cron não entregue (Hobby), sorteio atrasado (beacon, outbox), falha de item, orçamento esgotado.
+- **Mitigation**: passos por estado, uma transação cada, chave por passo e por execução, idempotentes e retomáveis; o
+  passo `leap_day` é descoberto também em exercício selado antes; `close_exercise` varre todo exercício com saldo,
+  de qualquer ano; validade não depende do job — o banco recusa uso depois do fim efetivo e nenhuma outra Ação usa o
+  29/02 pendente; falhas do `open_exercise` alertam (`open_exercise_failure`), as do `close_exercise` vão ao log
+  estruturado (o TECH-101 não tem alerta deste job).
+- **Residual**: 29/02 vencido antes de o sorteio terminar não é concedido (D5); o log `leap_day_lapsed` só cobre o
+  horizonte do job, e o vencimento de qualquer exercício é reconstruível dos fatos (consulta do runbook). Falha geral do
+  `close_exercise` → 500 com log estruturado, sem efeito parcial. Ausência do cron não é detectável pelo próprio job
+  (W30 / Vercel Pro, D1).
+- **Owner**: Engenharia · **Tracking**: `tests/features/calendar/use-rights.db.test.ts`
+
+### T-1104 [LOW] Information disclosure — notificações e eventos
+
+- **Vector**: payload de evento ou notificação com dado pessoal; notificação a quem não é mais titular.
+- **Mitigation**: só ids, exercício, posição e instantes; destinatários resolvidos na entrega pelos titulares vigentes da
+  Ação; leitura do saldo e dos novos movimentos fechada a `authenticated`/`anon` (o Titular continua só com concessões).
+- **Residual**: o papel da aplicação já grava `notification` desde a W1 — uma notificação forjada não cria direito
+  (REQ-097).
+- **Owner**: Engenharia · **Tracking**: `use-rights.db.test.ts`

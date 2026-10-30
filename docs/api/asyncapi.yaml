@@ -35,6 +35,10 @@ channels:
         $ref: '#/components/messages/InitialDrawCommitted'
       initialDrawCompleted:
         $ref: '#/components/messages/InitialDrawCompleted'
+      useWindowOpened:
+        $ref: '#/components/messages/UseWindowOpened'
+      leapDayGranted:
+        $ref: '#/components/messages/LeapDayGranted'
 
 operations:
   publishOutboxEvent:
@@ -98,7 +102,8 @@ components:
       title: Resultado do sorteio inicial gravado (TECH-093 passos 4–7)
       description: |
         Enfileirado pela revelação na mesma transação do resultado. Consumido por
-        `ownership_initial_draw_notification`, que registra a notificação do resultado (REQ-097, TECH-091).
+        `ownership_initial_draw_notification`, que registra a notificação do resultado (REQ-097, TECH-091), e por
+        `calendar_use_windows_on_draw` (W11), que agenda as janelas dos exercícios já selados sob a trava da Second Home.
       contentType: application/json
       payload:
         allOf:
@@ -109,6 +114,43 @@ components:
                 const: ownership.initial_draw_completed
               payload:
                 $ref: '#/components/schemas/InitialDrawCompletedPayload'
+    UseWindowOpened:
+      name: calendar.use_window_opened
+      title: Abertura da janela de reserva de uma Ação no exercício (TECH-042, REQ-097)
+      description: |
+        Um por Ação e exercício (`dedup_key` = `calendar.use_window_opened:<stake_id>:<exercise_year>`), gravado pelo
+        passo `seal` do `open_exercise` quando o sorteio já foi revelado, ou pelo consumidor da revelação para os
+        exercícios já selados. `available_at` = abertura canônica da posição (nunca antes do `occurred_at`): janela já
+        aberta é entregue já. Consumido por `calendar_use_right_notification`, que registra a notificação aos titulares
+        vigentes da Ação na entrega. A elegibilidade nunca depende deste evento (D4): é recalculada pelas regras.
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/OutboxEnvelope'
+          - type: object
+            properties:
+              type:
+                const: calendar.use_window_opened
+              payload:
+                $ref: '#/components/schemas/UseWindowOpenedPayload'
+    LeapDayGranted:
+      name: calendar.leap_day_granted
+      title: Direito ao 29 de fevereiro concedido à Ação contemplada (TECH-027, REQ-097)
+      description: |
+        Gravado pelo passo `leap_day` do `open_exercise` na transação da concessão (`dedup_key` =
+        `calendar.leap_day_granted:<second_home_id>:<exercise_year>`), com `available_at` = base do exercício (TECH-042:
+        o 29/02 abre para a Ação contemplada na base). Consumido por `calendar_use_right_notification`; depois de
+        `expires_at` nada é notificado.
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/OutboxEnvelope'
+          - type: object
+            properties:
+              type:
+                const: calendar.leap_day_granted
+              payload:
+                $ref: '#/components/schemas/LeapDayGrantedPayload'
     OutboxEvent:
       name: OutboxEvent
       title: Envelope de evento do outbox
@@ -159,6 +201,49 @@ components:
         second_home_id:
           type: string
           format: uuid
+    UseWindowOpenedPayload:
+      type: object
+      additionalProperties: false
+      required: [second_home_id, stake_id, exercise_year, position, opens_at]
+      properties:
+        second_home_id:
+          type: string
+          format: uuid
+        stake_id:
+          type: string
+          format: uuid
+        exercise_year:
+          type: integer
+          minimum: 1
+          maximum: 9999
+        position:
+          type: integer
+          minimum: 1
+          maximum: 10
+          description: Posição ordinária da Ação no exercício (BR-101).
+        opens_at:
+          type: string
+          format: date-time
+          description: Abertura canônica da posição (TECH-042), em UTC.
+    LeapDayGrantedPayload:
+      type: object
+      additionalProperties: false
+      required: [second_home_id, stake_id, exercise_year, expires_at]
+      properties:
+        second_home_id:
+          type: string
+          format: uuid
+        stake_id:
+          type: string
+          format: uuid
+        exercise_year:
+          type: integer
+          minimum: 1
+          maximum: 9999
+        expires_at:
+          type: string
+          format: date-time
+          description: Fim efetivo do 29/02 (00:00 de 01/03 no fuso da Second Home), em UTC.
     OutboxEnvelope:
       type: object
       additionalProperties: false

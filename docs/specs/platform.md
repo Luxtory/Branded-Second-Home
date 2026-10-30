@@ -332,3 +332,20 @@ ADR-0024 acrescenta, sem mudar o executor, os commands existentes nem o outbox:
 - **Executor de produção** aceita `clock` injetável (TECH-110).
 - **Harness.** `TestDatabase.drop()` roda `app.inventory_invariant_breaches()` numa conexão própria antes de apagar o
   banco e falha o teste se houver violação (bancos não migrados ou com a W10 desfeita ficam de fora).
+
+## W11 — segundo command de sistema, elegibilidade de eventos de commands e consumidores do calendar
+
+ADR-0025 acrescenta, sem mudar o executor, o guard nem a seleção do outbox:
+
+- **Commands de sistema.** `close_exercise` (módulo `calendar`, job `close_exercise`) entra em `SYSTEM_COMMANDS`;
+  `GET /api/jobs/{job}` aceita `close_exercise` (OpenAPI `runJob`); cron diário em `vercel.json`. O `open_exercise`
+  ganha o campo `step` (`seal` | `leap_day`, padrão `seal`) no mesmo command e no mesmo guard.
+- **`availableAt` nos eventos de commands.** `OutboxEventDraft.availableAt` opcional, como o dos consumidores (ADR-0022).
+  O store grava `available_at = max(availableAt, occurred_at)` (`notBefore`), nos dois caminhos: o banco exige
+  `available_at >= occurred_at`, e um instante já passado (janela aberta antes de o sorteio terminar) vira entrega
+  imediata.
+- **Consumidores.** `calendar_use_windows_on_draw` (recebe `ownership.initial_draw_completed`) e
+  `calendar_use_right_notification` (recebe `calendar.use_window_opened` e `calendar.leap_day_granted`) entram no
+  registro do job `outbox`. Um evento só é dado como entregue quando todos os consumidores do registro o processaram.
+- **Alertas.** A lista do TECH-101 continua fechada: o `close_exercise` não tem alerta próprio; falhas vão ao log.
+- **Harness.** `TestDatabase.drop()` roda também `app.use_right_invariant_breaches()` (W11).

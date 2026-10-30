@@ -1,7 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { performance } from 'node:perf_hooks';
 import { createRootCustodyOpener } from '@/features/inventory';
-import { findFormalizedSecondHome, listFormalizedSecondHomes } from '@/features/ownership';
+import {
+  findFormalizedSecondHome,
+  findUseRightFacts,
+  listFormalizedSecondHomes,
+  listUseRightFacts,
+} from '@/features/ownership';
 import {
   createProductionExecutor,
   createProductionOperationalAlert,
@@ -22,10 +27,15 @@ import {
   type OpenExerciseJobDependencies,
 } from '../application/open-exercise-job';
 import { civilCalendar } from '../domain/civil-calendar';
+import { createUseRightCalendar } from '../domain/use-right-calendar';
 import {
   createPostgresSealingStore,
   sealedExercises,
 } from '../infrastructure/postgres-sealing-store';
+import {
+  createPostgresUseRightStore,
+  leapDayStates,
+} from '../infrastructure/postgres-use-right-store';
 import { temporalCivilTime } from '../infrastructure/temporal-civil-time';
 
 export interface OpenExerciseJobEnvironment {
@@ -42,6 +52,7 @@ function dependencies(env: OpenExerciseJobEnvironment): OpenExerciseJobDependenc
   const db = env.database ?? getDatabase(env.source);
   const clock = env.clock ?? systemClock;
   const calendar = civilCalendar(temporalCivilTime);
+  const rights = createUseRightCalendar(temporalCivilTime);
   // Ator `system` só passa no guard dos commands de sistema; o executor é o mesmo pipeline do TECH-054.
   const executor = createProductionExecutor({
     guard: systemCommandGuard,
@@ -52,15 +63,40 @@ function dependencies(env: OpenExerciseJobEnvironment): OpenExerciseJobDependenc
   });
   const handler = createOpenExerciseHandler({
     calendar,
+    useRightCalendar: rights,
     store: createPostgresSealingStore(),
+    useRights: createPostgresUseRightStore(),
     findFormalized: findFormalizedSecondHome,
+    findUseRightFacts,
     openRoots: createRootCustodyOpener(),
   });
   return {
     clock,
     calendar,
+    useRightCalendar: rights,
     listFormalized: () => listFormalizedSecondHomes(db),
     sealedExercises: (ids) => sealedExercises(db, ids),
+    leapDayStates: async (items) => {
+      const ids = [...new Set(items.map((item) => item.secondHomeId))];
+      if (ids.length === 0) return [];
+      const facts = new Map((await listUseRightFacts(db)).map((home) => [home.secondHomeId, home]));
+      const states = await leapDayStates(db, ids);
+      // Sem fatos (corrida improvável com a própria formalização) o item fica para a próxima execução.
+      return items.flatMap((item) => {
+        const home = facts.get(item.secondHomeId);
+        const state = states.get(item.secondHomeId);
+        if (home === undefined || state === undefined) return [];
+        return [
+          {
+            ...item,
+            timezone: home.timezone,
+            nightSealed: state.sealed.has(item.exerciseYear),
+            granted: state.granted.has(item.exerciseYear),
+            drawRevealed: home.drawn !== null,
+          },
+        ];
+      });
+    },
     execute: (request) => executor.execute(handler, request),
     alert: env.alert ?? createProductionOperationalAlert({ log: env.log, source: env.source }),
     log: env.log,

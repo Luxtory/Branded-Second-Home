@@ -13,6 +13,7 @@ import type { RejectionCode } from '../../domain/errors';
 import type { JsonValue } from '../../domain/json';
 import type { Database, DatabaseTransaction } from '../database/connection';
 import { isTransientDatabaseError, violatedConstraint } from '../database/errors';
+import { notBefore } from '../outbox/available-at';
 
 // jsonb sempre como texto JSON: o `pg` converteria arrays JavaScript em arrays do PostgreSQL.
 const jsonb = (value: JsonValue): string => JSON.stringify(value);
@@ -53,6 +54,7 @@ const outboxRow = (draft: OperationDraft, event: OutboxEventDraft) => ({
   dedup_key: event.dedupKey,
   payload: jsonb(event.payload),
   occurred_at: draft.at,
+  available_at: notBefore(event.availableAt, draft.at),
 });
 
 function storedResponse(outcome: string | null, response: unknown): StoredResponse | null {

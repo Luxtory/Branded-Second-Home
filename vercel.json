@@ -16,6 +16,10 @@
     {
       "path": "/api/jobs/open_exercise",
       "schedule": "23 4 * * *"
+    },
+    {
+      "path": "/api/jobs/close_exercise",
+      "schedule": "41 5 * * *"
     }
   ]
 }

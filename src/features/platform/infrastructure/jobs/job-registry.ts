@@ -1,4 +1,8 @@
-import { createOpenExerciseJob } from '@/features/calendar/jobs';
+import {
+  createCloseExerciseJob,
+  createOpenExerciseJob,
+  createUseRightConsumers,
+} from '@/features/calendar/jobs';
 import { createInitialDrawConsumers } from '@/features/ownership';
 import type { Clock } from '../../application/clock';
 import { JobRegistry, type JobRunner } from '../../application/jobs/registry';
@@ -28,6 +32,8 @@ export function createOutboxConsumers({
   return new ConsumerRegistry<DatabaseTransaction>([
     // W9 — sorteio inicial (spec ownership §16).
     ...createInitialDrawConsumers({ source, clock }),
+    // W11 — janelas e notificações do Direito de Uso (spec calendar §6).
+    ...createUseRightConsumers({ clock }),
   ]);
 }
 
@@ -54,7 +60,9 @@ export function createOutboxDispatch({
 export function createJobRegistry(environment: JobEnvironment): JobRegistry {
   return new JobRegistry({
     outbox: createOutboxDispatch(environment),
-    // W10 — selagem e custódia raiz (spec calendar §5).
+    // W10 — selagem e custódia raiz (spec calendar §5); W11 — concessões e 29/02 (spec calendar §6).
     open_exercise: createOpenExerciseJob(environment),
+    // W11 — expiração do Direito de Uso no fim efetivo (spec calendar §6).
+    close_exercise: createCloseExerciseJob(environment),
   });
 }

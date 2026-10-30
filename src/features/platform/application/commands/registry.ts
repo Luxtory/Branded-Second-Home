@@ -159,7 +159,8 @@ export const NON_CRITICAL_OPERATIONS: readonly CommandSpec[] = [
  * fechada do TECH-051 (commands de usuários), mas seguem o mesmo protocolo do TECH-054 no executor.
  */
 export const SYSTEM_COMMANDS: readonly CommandSpec[] = [
-  // TECH-021/TECH-041: sela um exercício da Second Home formalizada e abre as custódias raiz (spec calendar §5).
+  // TECH-021/TECH-041: sela um exercício da Second Home formalizada e abre as custódias raiz (spec calendar §5); na
+  // W11 também concede o Direito de Uso do exercício e o do 29/02 (passos `seal` e `leap_day`, spec calendar §6).
   {
     name: 'open_exercise',
     module: 'calendar',
@@ -167,6 +168,15 @@ export const SYSTEM_COMMANDS: readonly CommandSpec[] = [
     membership: 'not_applicable',
     critical: false,
     job: 'open_exercise',
+  },
+  // TECH-026/TECH-090 (W11): registra a expiração do Direito de Uso no fim efetivo de cada bucket (spec calendar §6).
+  {
+    name: 'close_exercise',
+    module: 'calendar',
+    authority: 'system',
+    membership: 'not_applicable',
+    critical: false,
+    job: 'close_exercise',
   },
 ];
 

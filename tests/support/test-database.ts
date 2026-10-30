@@ -11,7 +11,10 @@ export interface TestDatabase {
   drop(): Promise<void>;
 }
 
-/** Violação de invariante encontrada no fim de um teste db (TECH-021, INV-1, INV-2, INV-3, TECH-022). */
+/**
+ * Violação de invariante encontrada no fim de um teste db: inventário (TECH-021, INV-1, INV-2, INV-3, TECH-022, W10) e
+ * Direito de Uso (TECH-026, TECH-027, INV-4, INV-5, W11).
+ */
 export class InventoryInvariantError extends Error {
   constructor(readonly breaches: readonly string[]) {
     super(`Inventory invariants broken after the test: ${breaches.join(', ')}`);
@@ -40,7 +43,20 @@ async function inventoryBreaches(url: string): Promise<readonly string[]> {
       `SELECT invariant, second_home_id, stay_date::text AS stay_date
          FROM app.inventory_invariant_breaches() LIMIT 10`,
     );
-    return rows.map((row) => `${row.invariant}@${row.second_home_id}/${row.stay_date}`);
+    const breaches = rows.map((row) => `${row.invariant}@${row.second_home_id}/${row.stay_date}`);
+    const useRights = await client.query<{ present: boolean }>(
+      `SELECT to_regprocedure('app.use_right_invariant_breaches()') IS NOT NULL AS present`,
+    );
+    if (useRights.rows[0]?.present !== true) return breaches;
+    const ledger = await client.query<{
+      invariant: string;
+      second_home_id: string;
+      detail: string;
+    }>(`SELECT invariant, second_home_id, detail FROM app.use_right_invariant_breaches() LIMIT 10`);
+    return [
+      ...breaches,
+      ...ledger.rows.map((row) => `${row.invariant}@${row.second_home_id}/${row.detail}`),
+    ];
   } finally {
     await client.end();
   }

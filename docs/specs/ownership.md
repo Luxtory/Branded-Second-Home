@@ -753,6 +753,17 @@ Testes: REQ-010 mesma party em papéis por Second Home; REQ-024 único Owner/100
 PostgreSQL real comprova rollback, cardinalidade, CPF-SPE, Luxtory, RLS de linhas e colunas, TOCTOU nas duas ordens, duas formalizações, replay/conflito, administração sem lacunas. UI Admin com origem/localização/modalidade/configuração/adquirentes/SPE/base/admin/alocação/basis; DS/i18n, checkpoint 390/1440, axe 0 e overflow 0 320..1920.
 Gates integrais: npm run verify; npm run test:e2e; npm run trace -- --expect REQ-010,REQ-022,REQ-024,REQ-025,REQ-026,PD-003. Status W8 somente no closeout após merge autorizado.
 
+### 15.9 Evolução do ledger na W11
+
+O `use_right_ledger` continua o único ledger do TECH-026 e passa a receber os movimentos do calendar (spec
+[`calendar`](calendar.md) §6, [ADR-0025](../adr/0025-direito-de-uso-ledger-rotacao-derivada-e-fronteira.md)). Para a
+W8 nada muda: a constraint diferida conta só as concessões da própria formalização (exatamente 2N, primeiro
+exercício, fonte e quantidade exatas) e só dispara para `grant`; a trava da estrutura também. A formalização nunca
+concede o 29/02. A leitura Admin desta seção lista só as concessões da formalização, e a do Titular continua só com
+concessões (`movement = 'grant'`). Superfície pública nova do ownership para o calendar: `findUseRightFacts`,
+`listUseRightFacts` (data-base, formalização, fuso, configuração, Ações e posições sorteadas depois da revelação) e
+`stakeHolders` (titulares vigentes da Ação, para as notificações).
+
 ## 16. W9 — Sorteio auditável da ordem inicial
 
 ### 16.1 Autoridade e rastreabilidade

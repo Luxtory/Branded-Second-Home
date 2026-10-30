@@ -4,9 +4,12 @@ import { sql } from 'kysely';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createCivilCalendar } from '@/features/calendar';
 import { createOpenExerciseHandler } from '@/features/calendar/application/open-exercise';
+import { createUseRightCalendar } from '@/features/calendar/domain/use-right-calendar';
 import { createPostgresSealingStore } from '@/features/calendar/infrastructure/postgres-sealing-store';
+import { createPostgresUseRightStore } from '@/features/calendar/infrastructure/postgres-use-right-store';
+import { temporalCivilTime } from '@/features/calendar/infrastructure/temporal-civil-time';
 import { createRootCustodyOpener } from '@/features/inventory';
-import { findFormalizedSecondHome } from '@/features/ownership';
+import { findFormalizedSecondHome, findUseRightFacts } from '@/features/ownership';
 import {
   commandRegistry,
   createCommandExecutor,
@@ -318,8 +321,11 @@ describe('recusas pelo executor (W10) [TECH-056]', () => {
     });
     const handler = createOpenExerciseHandler({
       calendar: createCivilCalendar(),
+      useRightCalendar: createUseRightCalendar(temporalCivilTime),
       store: createPostgresSealingStore(),
+      useRights: createPostgresUseRightStore(),
       findFormalized: findFormalizedSecondHome,
+      findUseRightFacts,
       openRoots: createRootCustodyOpener(),
     });
     const seal = (secondHomeId: string, exerciseYear: number) =>

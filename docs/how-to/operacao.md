@@ -17,6 +17,7 @@ Production da Vercel**, nunca em Preview ou Development.
 | `DRAW_BEACON_LEAD_SECONDS` | `120` (proposto; idem) | Vercel, Production | folga mínima entre o prazo de commit e a rodada alvo (latência final do commit e diferença de relógio) |
 | Cadência do job `outbox` | `17 6 * * *` (06:17 UTC, 1×/dia) | `vercel.json` → `crons` | varredura de segurança; o caminho normal é o disparo logo após o commit. O plano Hobby limita o cron a 1×/dia (ADR-0002) |
 | Cadência do job `open_exercise` | `23 4 * * *` (hora 04 UTC, 1×/dia) | `vercel.json` → `crons` | sela o exercício corrente e o seguinte de cada Second Home formalizada (W10); o caminho normal após uma formalização é o `after()`. No Hobby o disparo ocorre em qualquer minuto da hora, sem retry |
+| Cadência do job `close_exercise` | `41 5 * * *` (hora 05 UTC, 1×/dia) | `vercel.json` → `crons` | registra a expiração exata do Direito de Uso vencido (W11); a validade não depende dele — o banco recusa uso depois do fim efetivo. No Hobby, em qualquer minuto da hora, sem retry |
 | `OPS_ALERT_SEND_TIMEOUT_MS` | `5000` (proposto; **não criar sem autorização do fundador**) | Vercel, Production | prazo do e-mail de alerta à staff (W10); ausente → alerta só no log |
 
 ## Segredos
@@ -544,3 +545,57 @@ entrega não abre gates nem cria configuração produtiva.
   `sb_publishable_…`). Corrija na Vercel (Production) e refaça o deploy pela CI (passo 6 da W1).
 - `command retries exhausted` nos logs: contenção de locks acima do `COMMAND_LOCK_TIMEOUT_MS` em
   `COMMAND_MAX_ATTEMPTS` tentativas; o cliente pode repetir com a mesma `Idempotency-Key`.
+
+## Preparar a W11 em produção (Direito de Uso, janelas e rotações)
+
+Spec [`calendar`](../specs/calendar.md) §6, [ADR-0025](../adr/0025-direito-de-uso-ledger-rotacao-derivada-e-fronteira.md).
+Merge só depois do checkpoint do fundador; a entrega não abre gates nem cria configuração produtiva.
+
+1. **Antes do merge:** conferência agregada e somente leitura no Production: `SELECT count(*) FROM app.acquisition;` e
+   `SELECT count(*) FROM app.second_home_date;`. Esperado `0` e `0` — a migration de saldo falha fechada se houver
+   exercício Co-Owner posterior ao primeiro selado sem concessões.
+2. Depois do merge autorizado, só o pipeline aplica as três migrations W11 (49 → 52). Conferir em leitura: ledger só com
+   concessões da formalização (nenhuma), `use_right_balance` vazia com RLS, `luxtory_app` só com SELECT nela, sem
+   EXECUTE em `app.use_right_balance_apply()`, e nenhum privilégio novo de `authenticated`/`anon`. O cron
+   `close_exercise` passa a rodar 1×/dia: sem saldo, o log mostra `job completed` com `candidates 0`.
+3. **Disparo manual** (recuperação, sem esperar o cron): `read -rs CRON_SECRET` e
+   `curl -s -H "Authorization: Bearer $CRON_SECRET" https://branded-second-home.vercel.app/api/jobs/close_exercise`
+   (ou `open_exercise`). Idempotentes: expiração já registrada não se repete; passo já feito conta como não aplicável.
+4. **Leitura dos resultados.** `open_exercise`: `leap_day_granted` (29/02 concedido) e `leap_day_lapsed` (29/02 vencido
+   antes de o sorteio terminar — sem concessão retroativa nem compensação; o log `open_exercise leap day lapsed` traz a
+   Second Home e o exercício; tratar como sinal operacional de atraso do sorteio). O log só cobre o horizonte do job
+   (exercício corrente e seguinte); para qualquer exercício, a fonte é a consulta somente leitura abaixo, derivada dos
+   fatos. `close_exercise`: `closed`, `not_due`, `failed` e `deferred`; falha de item vai ao log
+   `close_exercise item rejected|failed` com o código — não há alerta deste job no TECH-101. Falha geral (banco
+   indisponível na consulta inicial) não grava nada: a rota responde 500 `ERR_INTERNAL` e o log
+   `unhandled route error` traz o `correlation_id`; configuração ausente responde 503 com `job unavailable` e as chaves.
+   Corrigir a causa e disparar o job (passo 3).
+
+   29/02 da operação já vencido e nunca concedido, em qualquer exercício (somente leitura; mesma consulta do teste
+   `tests/migrations/use-right.db.test.ts`):
+
+   ```sql
+   SELECT a.second_home_id, y.exercise_year,
+          app.leap_day_beneficiary(a.second_home_id, y.exercise_year) AS stake_id
+     FROM app.acquisition a
+     JOIN app.second_home h ON h.id = a.second_home_id
+    CROSS JOIN LATERAL generate_series(a.exercise_year,
+            extract(year FROM now() AT TIME ZONE h.timezone)::int) AS y(exercise_year)
+    WHERE a.modality = 'co_owner'
+      AND app.is_leap_year(y.exercise_year)
+      AND y.exercise_year >= app.first_leap_exercise(a.operation_start_date)
+      AND now() >= app.use_right_effective_end('leap', y.exercise_year, h.timezone)
+      AND NOT EXISTS (SELECT 1 FROM app.use_right_ledger l
+                       WHERE l.second_home_id = a.second_home_id AND l.exercise_year = y.exercise_year
+                         AND l.movement = 'grant' AND l.bucket = 'leap')
+    ORDER BY y.exercise_year, a.second_home_id;
+   ```
+
+   `stake_id` nulo = sorteio ainda não revelado: o exercício venceu sem concessão, mas a consulta não identifica Ação
+   alguma até a revelação.
+5. **Pendências preservadas:** comprovar ao menos uma execução autenticada bem-sucedida do `open_exercise` antes da
+   primeira aquisição real (W10); nenhuma ativação de `ACQUISITION_WRITES`, `DRAW_*`, `OPS_ALERT_*` ou reservas reais
+   sem autorização do fundador — reservas reais só depois dos mecanismos da W13 (restrição operacional temporária de
+   ativação, não regra canônica).
+6. **Rollback:** os `down` recusam descartar movimentos além das concessões da formalização. Com fatos, preservar o banco
+   e corrigir por migration nova; nunca desabilitar gatilhos.

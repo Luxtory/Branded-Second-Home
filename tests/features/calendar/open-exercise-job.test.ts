@@ -10,6 +10,8 @@ import {
   runOpenExercise,
   type OpenExerciseJobDependencies,
 } from '@/features/calendar/application/open-exercise-job';
+import { createUseRightCalendar } from '@/features/calendar/domain/use-right-calendar';
+import { temporalCivilTime } from '@/features/calendar/infrastructure/temporal-civil-time';
 import type { CommandOutcome, CommandRequest, OperationalAlertEvent } from '@/features/platform';
 
 const calendar = createCivilCalendar();
@@ -30,7 +32,13 @@ const committed = (replayed = false): CommandOutcome<OpenExerciseResult> => ({
   status: 'committed',
   operationId: 'op',
   replayed,
-  result: { second_home_id: A, exercise_year: 2027, nights: 365, root_holder: 'owner' },
+  result: {
+    second_home_id: A,
+    exercise_year: 2027,
+    nights: 365,
+    root_holder: 'owner',
+    use_right_grants: 0,
+  },
 });
 
 function harness(overrides: Partial<OpenExerciseJobDependencies> = {}) {
@@ -41,6 +49,8 @@ function harness(overrides: Partial<OpenExerciseJobDependencies> = {}) {
   const deps: OpenExerciseJobDependencies = {
     clock: { now: () => NOW },
     calendar,
+    useRightCalendar: createUseRightCalendar(temporalCivilTime),
+    leapDayStates: () => Promise.resolve([]),
     listFormalized: () => Promise.resolve([home(A, '2027-01-01'), home(B, '2030-01-01')]),
     sealedExercises: () => Promise.resolve(new Set<string>()),
     execute: (request) => {
@@ -96,6 +106,8 @@ describe('job open_exercise (W10) [TECH-090] [TECH-042] [TECH-101]', () => {
       due: 2,
       sealed: 1,
       already_sealed: 1,
+      leap_day_granted: 0,
+      leap_day_lapsed: 0,
       failed: 0,
       deferred: 0,
     });
@@ -104,7 +116,7 @@ describe('job open_exercise (W10) [TECH-090] [TECH-042] [TECH-101]', () => {
         actor: { kind: 'system', job: 'open_exercise' },
         idempotencyKey: `open_exercise:${A}:2028:run-1`,
         correlationId: 'run-1',
-        input: { second_home_id: A, exercise_year: 2028 },
+        input: { second_home_id: A, exercise_year: 2028, step: 'seal' },
       },
     ]);
     expect(alerts).toEqual([]);

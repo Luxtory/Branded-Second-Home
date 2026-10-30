@@ -63,6 +63,8 @@ export interface OutboxEventDraft {
   readonly type: string;
   readonly dedupKey: string;
   readonly payload: JsonObject;
+  /** Primeiro instante de entrega (ADR-0022); ausente = imediato. Nunca antes do instante da operação. */
+  readonly availableAt?: Date;
 }
 
 /** Persistência do pipeline de commands (implementação PostgreSQL em `infrastructure/commands/`). */
