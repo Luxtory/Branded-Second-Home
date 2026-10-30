@@ -30,7 +30,8 @@ Fatos que restringem o desenho:
    abre a custódia raiz de cada noite (`owner` no Owner, `spe_pool` no Co-Owner). O registro do início efetivo da
    operação não interfere. O banco confere cobertura contínua, 103 + 262 (+29/02) no exercício completo, classificação
    canônica (função SQL, comparada exaustivamente com o TypeScript nos anos 1–9999) e o check-in das 14:00 locais pelas
-   regras de fuso do PostgreSQL. Divergência → falha fechada.
+   regras de fuso do PostgreSQL. Divergência → falha fechada. O instante `sealed_at` é carimbado pelo banco (instante da
+   transação), como os carimbos do sorteio (ADR-0022): o valor enviado nunca prevalece.
 2. **Prontidão.** O job roda pelo cron diário e também logo após a formalização, via `after()` nas duas entradas (rota e
    Server Action), sem evento, command ou endpoint novo. Nenhum dos dois é garantia: a integridade vem do banco — sem
    noite selada não existe custódia nem ocupação (FK), e toda operação futura sobre noite não selada falha fechada.
@@ -39,25 +40,33 @@ Fatos que restringem o desenho:
    legítima, então a W10 não usa a operação como prova de autorização:
    - a raiz é autorizada pelos fatos — primeira custódia da noite, modalidade da aquisição, noite selada e canônica —,
      de modo que uma operação forjada só consegue a selagem que o sistema faria (teste com os privilégios efetivos);
-   - toda linha de inventário aponta para uma operação `pending` (a da própria transação) e, na raiz, do command
-     `open_exercise`: consistência contra erros de código, declaradamente não autenticidade;
+   - toda linha de inventário aponta para uma operação `pending` e, na raiz, do command `open_exercise`. Para o código do
+     servidor é a operação da transação corrente (o executor nunca comita uma operação `pending`); o papel da aplicação
+     consegue comitar uma `pending` e reutilizá-la em outra transação (teste), sem capacidade além da de inserir uma
+     operação nova. É consistência contra erros de código, declaradamente não autenticidade;
    - nenhuma transição ou ocupação é executável pelo papel da aplicação na W10, por duas travas independentes: sem
      `UPDATE` em `date_custody` e sem `INSERT`/`UPDATE` em `date_occupancy`; e o gate `app.assert_inventory_transition_enabled`,
      chamado pelos gatilhos de transição, fechamento, ocupação e liberação, recusa todo papel que não seja o dono do
      schema — conceder privilégio não basta (teste com privilégio concedido). Habilitar uma transição exige migration
      que substitua o gate pela regra de autorização da wave dona: ponto obrigatório de reavaliação no banco.
    - o banco limita a selagem ao exercício corrente e ao seguinte pela data local do servidor (com um dia de
-     tolerância), também para uma operação forjada: sem ela, uma forjada poderia selar até 9999 — noites imutáveis em
-     volume sem limite, com instantes fixados pelas regras de fuso de hoje e sem recuperação sem reescrever histórico;
+     tolerância em cada ponta), também para uma operação forjada: sem o teto, uma forjada poderia selar até 9999 —
+     noites imutáveis em volume sem limite, com instantes fixados pelas regras de fuso de hoje e sem recuperação sem
+     reescrever histórico; sem o piso, poderia selar exercícios passados desde uma data-base antiga, sem noite
+     utilizável e sem necessidade legítima (o job nunca sela exercício passado);
    - a ausência da trilha do executor (idempotência e auditoria) é sinal de anomalia, mas a presença não comprova o
      guard: o mesmo papel consegue gravar uma trilha de mesma forma (teste). Autenticidade independente não existe antes
      de uma decisão de fronteira (abaixo) ou do selo da auditoria da W30, que esta wave não antecipa.
    - **Condição de resolução**, antes da primeira wave que precisar habilitar **cada** transição ou ocupação (não
      necessariamente a W12): decidir com o fundador a autorização no banco dessa transição (manter a fronteira do
      servidor, funções `SECURITY DEFINER` com revalidação, papel ou credencial separada, ou decisão assinada), implementar
-     e verificar essa regra, e só então substituir o gate para ela. Até lá, o único efeito possível de uma operação
-     forjada é selar, de forma canônica, um exercício já devido antes do cron — sem ocupação, custódia econômica,
-     Direito de Uso ou crédito. Elegibilidade de reserva nunca é inferida só da selagem (W11/W12).
+     e verificar essa regra — inclusive carimbo do banco nos instantes de fechamento e liberação —, e só então
+     substituir o gate para ela. Elegibilidade de reserva nunca é inferida só da selagem (W11/W12).
+   - **Risco residual — PENDENTE DE RATIFICAÇÃO DO FUNDADOR (não aprovado por este ADR):** na W10, o único efeito
+     possível de uma operação forjada pelo papel da aplicação é selar, de forma canônica, um exercício já devido (o
+     corrente ou o seguinte) antes do cron — sem ocupação, custódia econômica, Direito de Uso, crédito ou alteração de
+     fronteira de confiança. A aceitação proposta limita-se a essa selagem estrutural e não autoriza transição
+     econômica, ocupação nem mudança futura das fronteiras.
 4. **Três camadas.** (1) Estrutural, completa na W10: tabela fechada da TECH-022 (inclusive `luxtory/inventory → pai`,
    BR-163), matriz da TECH-023, cadeia linear (`UNIQUE(parent_custody_id)`), fechamento e liberação únicos, custódia
    ocupada só fecha após a liberação, exatamente uma custódia ativa por noite no COMMIT. (2) Operação concreta, como no
@@ -84,7 +93,7 @@ Fatos que restringem o desenho:
 
 - O Inventário Central é uma projeção (`central_inventory`), sem segunda fonte mutável; as consultas de invariantes
   rodam após todo teste db e servirão à reconciliação da W30.
-- Owner e Co-Owner têm o mesmo horizonte de selagem (corrente + seguinte). Se o Owner poderá reservar além do exercício
+- Owner e Co-Owner têm o mesmo horizonte de selagem (corrente + seguinte), imposto pelo job e pelo banco. Se o Owner poderá reservar além do exercício
   seguinte é questão da W12 (REQ-037), registrada como pendência.
 - A W10 não declara REQ-040 e INV-2 integralmente entregues: a parte estrutural é dela; a prova econômica, das waves
   seguintes. INV-3 fica completa.

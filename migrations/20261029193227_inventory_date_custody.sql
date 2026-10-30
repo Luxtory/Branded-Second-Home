@@ -54,9 +54,10 @@ CREATE TABLE app.date_custody (
 CREATE UNIQUE INDEX uq_custody_active ON app.date_custody(second_home_id, stay_date) WHERE closed_at IS NULL;
 CREATE INDEX date_custody_night_idx ON app.date_custody(second_home_id, stay_date);
 
--- Todo fato de inventário pertence à operação da transação corrente: o store insere a operação `pending` e só a marca
--- `committed` no fim da mesma transação; operação de outra transação ou já encerrada não é aceita. Consistência contra
--- erros de código — não prova de que o guard rodou: essa fronteira é do servidor da aplicação (ADR-0024 §3).
+-- Todo fato de inventário aponta para uma operação `pending`. O executor insere a operação `pending` e a marca `committed`
+-- no fim da mesma transação, então, para o código do servidor, é a operação da transação corrente; operação encerrada é
+-- recusada. Consistência contra erros de código, não barreira: o papel da aplicação consegue comitar uma operação ainda
+-- `pending` e reutilizá-la — sem capacidade além da de inserir uma operação nova (ADR-0024 §3).
 CREATE FUNCTION app.assert_operation_in_transaction(p_operation uuid) RETURNS void
   LANGUAGE plpgsql STABLE SET search_path = ''
 AS $$

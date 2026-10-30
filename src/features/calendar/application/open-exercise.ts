@@ -29,7 +29,8 @@ export interface SealingStore<Tx> {
   /** Preâmbulo da W8: trava consultiva da raiz Second Home, antes de qualquer leitura (formalização × selagem). */
   lockSecondHome(tx: Tx, secondHomeId: string): Promise<void>;
   isSealed(tx: Tx, secondHomeId: string, exerciseYear: number): Promise<boolean>;
-  seal(tx: Tx, secondHomeId: string, nights: readonly SealedNight[], sealedAt: Date): Promise<void>;
+  /** O instante da selagem é carimbado pelo banco (ADR-0024 §1), nunca enviado. */
+  seal(tx: Tx, secondHomeId: string, nights: readonly SealedNight[]): Promise<void>;
 }
 
 export interface OpenExerciseDependencies<Tx> {
@@ -68,7 +69,7 @@ export function createOpenExerciseHandler<Tx>(
     command: 'open_exercise',
     input: openExerciseInput,
     secondHomeId: (input) => input.second_home_id,
-    async execute({ input, tx, now, operationId, audit }) {
+    async execute({ input, tx, operationId, audit }) {
       const { second_home_id: secondHomeId, exercise_year: exerciseYear } = input;
       await deps.store.lockSecondHome(tx, secondHomeId);
       const home = await deps.findFormalized(tx, secondHomeId);
@@ -83,7 +84,7 @@ export function createOpenExerciseHandler<Tx>(
         operationStartDate: home.operationStartDate,
         timezone: home.timezone,
       });
-      await deps.store.seal(tx, secondHomeId, nights, now);
+      await deps.store.seal(tx, secondHomeId, nights);
       const rootHolder = await deps.openRoots(tx, {
         secondHomeId,
         modality: home.modality,

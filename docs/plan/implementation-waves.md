@@ -1474,7 +1474,7 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 | D5b | Este arquivo: seção DS e Anexo A preservados byte a byte; plano Luxtory acrescentado no topo | — | adotada em 2026-09-25 |
 | D5c | R1 pode ir ao ar só com Discovery (W3–W4) se P-3 atrasar? | — | aberta |
 | D6 | Encaminhar P-11 à Luxtory: nova versão do `03` com command de cancelamento para os mecanismos do Club | encaminhar antes da W18 | aberta |
-| D7 | Encaminhar P-12 e P-13 à Luxtory: saídas da TECH-022 para `luxtory/{finalidade ≠ inventory}` e `use_right/delinquency` | encaminhar antes da W14 | aberta (registrada na W10, 2026-10-29) |
+| D7 | Encaminhar P-12 e P-13 à Luxtory: saídas da TECH-022 para `luxtory/{finalidade ≠ inventory}` e `use_right/delinquency` | encaminhar antes da W14 | registrada na W10 (2026-10-29); orientação favorável do fundador ao encaminhamento para revisão normativa antes da W14, sem alterar os canônicos agora; encaminhamento pendente |
 
 ### Registro da revisão (2026-09-25)
 

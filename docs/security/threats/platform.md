@@ -228,15 +228,18 @@ Decisão: ADR-0024.
 - **Vector**: código (ou SQL injetado) rodando como `luxtory_app` insere uma operação `pending` com o command de sistema
   e grava custódia ou ocupação sem passar pelo guard.
 - **Mitigation**: a raiz é autorizada pelos fatos — primeira custódia da noite, modalidade da aquisição, noite selada,
-  classificação e check-in canônicos —, então uma operação forjada só obtém a selagem que o sistema faria; operação de
-  outra transação ou já encerrada é recusada; sem `UPDATE` em `date_custody` e sem `INSERT`/`UPDATE` em
+  classificação e check-in canônicos —, então uma operação forjada só obtém a selagem que o sistema faria; operação já
+  encerrada é recusada; sem `UPDATE` em `date_custody` e sem `INSERT`/`UPDATE` em
   `date_occupancy` e com o gate `app.assert_inventory_transition_enabled` (recusa todo papel exceto o dono do schema,
   mesmo com privilégio concedido), nenhuma transição ou ocupação é executável pela aplicação na W10; selagem limitada
-  pelo banco ao exercício corrente e ao seguinte (relógio do servidor); SQL só parametrizado (Kysely, Semgrep). A falta
+  pelo banco ao exercício corrente e ao seguinte (relógio do servidor, nas duas pontas) e `sealed_at` carimbado pelo
+  banco; SQL só parametrizado (Kysely, Semgrep). Uma operação `pending` comitada pelo próprio papel é reutilizável — sem
+  capacidade além da de inserir uma nova. A falta
   da trilha do executor é sinal de anomalia, não prova: `luxtory_app` também grava `idempotency_record` e `audit_log`.
 - **Residual**: o banco não prova que o guard rodou — fronteira de confiança no servidor da aplicação, como em todos os
   commands desde a W1; a trilha não é independente do mesmo papel até a W30. Efeito máximo na W10: selar, de forma
-  canônica, um exercício já devido antes do cron, sem efeito econômico. Condição de resolução: antes da primeira wave
+  canônica, um exercício já devido antes do cron, sem efeito econômico — aceitação **pendente de ratificação do
+  fundador**, limitada a essa selagem estrutural. Condição de resolução: antes da primeira wave
   que habilitar cada transição, decidir com o fundador a autorização no banco, implementá-la, verificá-la e só então
   substituir o gate. Superusuário contorna gatilhos (D5, até a W30).
 - **Owner**: Engenharia · **Tracking**: `tests/migrations/inventory.db.test.ts` (privilégios e operação forjada)
@@ -244,7 +247,7 @@ Decisão: ADR-0024.
 ### T-1002 [MEDIUM] Tampering — reescrita do histórico ou da classificação
 
 - **Vector**: UPDATE/DELETE em noite selada ou custódia; reclassificação de temporada; bifurcação da cadeia.
-- **Mitigation**: noite selada sem UPDATE/DELETE/TRUNCATE; custódia só fecha, uma vez, pela operação da transação;
+- **Mitigation**: noite selada sem UPDATE/DELETE/TRUNCATE; custódia só fecha, uma vez, por operação `pending`;
   `UNIQUE(parent_custody_id)`; `CHECK` de temporada canônica (validação na escrita, sem coluna gerada que uma correção
   futura recalcularia); mesmas regras para o superusuário (gatilhos).
 - **Owner**: Engenharia · **Tracking**: `inventory.db.test.ts`

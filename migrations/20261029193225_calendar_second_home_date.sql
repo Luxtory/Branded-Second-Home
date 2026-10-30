@@ -64,7 +64,8 @@ CREATE TABLE app.second_home_date (
     extract(month FROM stay_date) = 2 AND extract(day FROM stay_date) = 29
   ) STORED,
   checkin_at timestamptz NOT NULL,
-  sealed_at timestamptz NOT NULL,
+  -- Carimbado pelo banco no gatilho de selagem (instante da transação): o valor enviado pela aplicação nunca prevalece.
+  sealed_at timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (second_home_id, stay_date),
   CONSTRAINT second_home_date_season_check CHECK (season IN ('alta', 'media')),
   -- Divergência entre a classificação do TypeScript e a do banco falha fechada.
@@ -90,12 +91,18 @@ BEGIN
       USING ERRCODE = 'check_violation', CONSTRAINT = 'custody_night_after_operation_start';
   END IF;
   -- Horizonte (TECH-042; ADR-0024 §1): só o exercício corrente e o seguinte pela data local do servidor, com um dia de
-  -- tolerância à diferença de relógio. Barra selagem antecipada — noites imutáveis com instantes fixados pelas regras de
-  -- fuso de hoje e volume sem limite —, inclusive por operação forjada. Gatilho BEFORE: a coluna gerada ainda não existe.
-  IF extract(year FROM NEW.stay_date) > extract(year FROM (now() + interval '1 day') AT TIME ZONE v_timezone) + 1 THEN
+  -- tolerância à diferença de relógio em cada ponta. Barra selagem antecipada (noites imutáveis com instantes fixados
+  -- pelas regras de fuso de hoje, volume sem limite) e retroativa (exercício passado não tem noite utilizável; com
+  -- data-base antiga, volume sem limite), inclusive por operação forjada. Gatilho BEFORE: a coluna gerada ainda não existe.
+  IF extract(year FROM NEW.stay_date)
+       NOT BETWEEN extract(year FROM (now() - interval '1 day') AT TIME ZONE v_timezone)
+               AND extract(year FROM (now() + interval '1 day') AT TIME ZONE v_timezone) + 1 THEN
     RAISE EXCEPTION 'only the current and the next exercise can be sealed'
       USING ERRCODE = 'check_violation', CONSTRAINT = 'custody_exercise_horizon';
   END IF;
+  -- Instante da selagem carimbado pelo banco (como os carimbos do sorteio, ADR-0022): não é forjável pelo papel da
+  -- aplicação.
+  NEW.sealed_at := now();
   IF NEW.checkin_at IS DISTINCT FROM ((NEW.stay_date + time '14:00') AT TIME ZONE v_timezone) THEN
     RAISE EXCEPTION 'check-in instant disagrees with 14:00 local under the database time zone rules'
       USING ERRCODE = 'check_violation', CONSTRAINT = 'second_home_date_checkin_local';

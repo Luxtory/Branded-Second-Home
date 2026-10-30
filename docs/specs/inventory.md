@@ -41,7 +41,7 @@ do Titular; INV-1 (o índice nasce aqui, a dona é a W12).
 | Custódia ocupada só fecha depois da liberação | gatilho no fechamento | ERR_CAPACITY_UNAVAILABLE |
 | `ceded` só libera own_use Co-Owner sobre reserved_right da mesma Ação | `CHECK` + gatilho de liberação | erro |
 | Segunda ocupação ativa da noite | `uq_occupancy_active` | ERR_BOOKING_CONFLICT |
-| Fato de inventário pertence à operação da transação (`pending`) | gatilhos | erro (não é recusa funcional) |
+| Fato de inventário aponta para operação `pending` (consistência, não autenticidade) | gatilhos | erro (não é recusa funcional) |
 
 A tabela fechada da TECH-022 está em `app.custody_transition_valid`; a matriz da TECH-023, em
 `app.occupancy_pair_valid` — as mesmas funções servem aos gatilhos e à consulta de invariantes. `use_right/delinquency`
@@ -51,7 +51,8 @@ Condições de tempo (capacidade futura, prazos) ficam nos commands, com relógi
 ## 4. Três camadas e fronteira de confiança (ADR-0024 §3–§4)
 
 1. **Estrutural** — completa na W10 (§3).
-2. **Operação concreta** — toda linha aponta para a operação `pending` da própria transação; na raiz, do command de
+2. **Operação concreta** — toda linha aponta para uma operação `pending` (para o código do servidor, a da transação
+   corrente; o papel da aplicação consegue reutilizar uma `pending` comitada, sem capacidade nova); na raiz, do command de
    sistema `open_exercise`. O banco não prova que o guard rodou (o papel da aplicação pode inserir operações): a raiz é
    autorizada pelos fatos, então uma operação forjada só obtém a selagem canônica; transições e ocupações ficam
    fechadas por duas travas — sem privilégio para o papel da aplicação e o gate `app.assert_inventory_transition_enabled`,

@@ -47,9 +47,10 @@ Custódia, ocupação e barreiras: [`inventory.md`](inventory.md).
 - **Quando.** Formalização (W8) torna a Second Home selável; o registro do início efetivo da operação não interfere. O
   job sela o exercício corrente e o seguinte pela data local de cada Second Home (TECH-040), a partir do ano da
   data-base — a posição 1 abre em 15/09 do ano anterior (TECH-042), e o exercício seguinte é selado já em 01/01.
-- **Horizonte no banco.** O gatilho de selagem recusa noite de exercício posterior ao seguinte pela data local do
-  servidor, com um dia de tolerância à diferença de relógio (`custody_exercise_horizon`): o job e o banco usam o mesmo
-  horizonte, e uma operação forjada não sela à frente dele.
+- **Horizonte no banco.** O gatilho de selagem recusa noite de exercício anterior ao corrente ou posterior ao seguinte
+  pela data local do servidor, com um dia de tolerância em cada ponta (`custody_exercise_horizon`): o job e o banco usam
+  o mesmo horizonte, e uma operação forjada não sela à frente nem para trás dele. Exercício passado nunca é selado,
+  mesmo com data-base antiga. `sealed_at` é carimbado pelo banco (instante da transação).
 - **Classificação.** O TypeScript (W8) produz `season` e o check-in; o banco confere: `app.canonical_season` (mesmo
   algoritmo, comparado exaustivamente nos anos 1–9999) e `checkin_at = (stay_date + 14:00) AT TIME ZONE timezone`.
   Divergência → falha fechada e alerta. Check-out = 10:00 local da manhã seguinte, derivado (`checkOutAt`), sem coluna.

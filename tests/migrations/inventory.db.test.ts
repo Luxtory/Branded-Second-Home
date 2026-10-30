@@ -401,7 +401,7 @@ describe('custódia e selagem: barreiras do banco (W10)', () => {
       ).rejects.toEqual(constraint('custody_closed_once'));
     });
 
-    it('[TECH-021] operação de outra transação ou já encerrada não abre nem fecha custódia', async () => {
+    it('[TECH-021] operação já encerrada (committed) não abre nem fecha custódia', async () => {
       const { rows } = await h.database.pool.query<{ id: string }>(
         `SELECT id FROM app.operation WHERE command = 'open_exercise' AND state = 'committed' LIMIT 1`,
       );
@@ -560,13 +560,21 @@ describe('custódia e selagem: barreiras do banco (W10)', () => {
         await client.end();
       }
     };
-    const forgeSealing = (client: pg.Client, op: string, home: string, year: number, holder: string, start = `${year}-01-01`) =>
+    const forgeSealing = (
+      client: pg.Client,
+      op: string,
+      home: string,
+      year: number,
+      holder: string,
+      sealedAt: Date | null = null,
+    ) =>
       (async () => {
-        const nights = calendar.exerciseNights({ exerciseYear: year, operationStartDate: start, timezone });
+        const nights = calendar.exerciseNights({ exerciseYear: year, operationStartDate: `${year}-01-01`, timezone });
         for (const night of nights) {
           await client.query(
-            `INSERT INTO app.second_home_date (second_home_id, stay_date, season, checkin_at, sealed_at) VALUES ($1, $2, $3, $4, now())`,
-            [home, night.stayDate, night.season, night.checkInAt],
+            `INSERT INTO app.second_home_date (second_home_id, stay_date, season, checkin_at, sealed_at)
+             VALUES ($1, $2, $3, $4, coalesce($5, now()))`,
+            [home, night.stayDate, night.season, night.checkInAt, sealedAt],
           );
           await client.query(
             `INSERT INTO app.date_custody (id, second_home_id, stay_date, holder_kind, opened_by_operation) VALUES ($1, $2, $3, $4, $5)`,
@@ -661,6 +669,59 @@ describe('custódia e selagem: barreiras do banco (W10)', () => {
       expect((await trail(imitation)).rows[0]).toEqual({ idempotency: 1, audit: 1 });
     });
 
+    it('[TECH-021] operação pending comitada por outra transação é reutilizável pelo mesmo papel — sem capacidade nova', async () => {
+      // O executor nunca comita uma operação pending; o papel da aplicação consegue. A verificação é de consistência.
+      const stale = await asApp((client) => openOperation(client, 'open_exercise', null));
+      const state = await h.database.pool.query<{ state: string }>('SELECT state FROM app.operation WHERE id = $1', [
+        stale,
+      ]);
+      expect(state.rows[0]?.state).toBe('pending');
+      const fresh = await h.formalizeOwner();
+      await asApp((client) => forgeSealing(client, stale, fresh, Y, 'owner'));
+      // Efeito: o mesmo de uma operação forjada nova — selagem canônica de um exercício devido, nada econômico.
+      const effects = await h.database.pool.query<{ nights: number; economic: number; occupancies: number }>(
+        `SELECT (SELECT count(*)::int FROM app.second_home_date WHERE second_home_id = $1) AS nights,
+                (SELECT count(*)::int FROM app.date_custody WHERE second_home_id = $1 AND holder_kind <> 'owner') AS economic,
+                (SELECT count(*)::int FROM app.date_occupancy WHERE second_home_id = $1) AS occupancies`,
+        [fresh],
+      );
+      expect(effects.rows[0]).toEqual({
+        nights: calendar.exerciseNights({ exerciseYear: Y, operationStartDate: `${Y}-01-01`, timezone }).length,
+        economic: 0,
+        occupancies: 0,
+      });
+    });
+
+    it('[TECH-042] operação forjada não sela exercício passado, mesmo com data-base antiga; o job sela o corrente e o seguinte', async () => {
+      const old = await h.formalizeOwner(`${Y - 1}-01-01`);
+      await expect(
+        asApp(async (client) => forgeSealing(client, await openOperation(client, 'open_exercise', null), old, Y - 1, 'owner')),
+      ).rejects.toEqual(constraint('custody_exercise_horizon'));
+      expect(await h.runJob()).toMatchObject({ failed: 0 });
+      const years = await h.database.pool.query<{ year: number }>(
+        'SELECT DISTINCT exercise_year AS year FROM app.second_home_date WHERE second_home_id = $1 ORDER BY 1',
+        [old],
+      );
+      expect(years.rows.map((row) => row.year)).toEqual([Y, N]);
+    });
+
+    it('[TECH-041] o instante da selagem é carimbado pelo banco: valor forjado, passado ou futuro, não prevalece', async () => {
+      for (const fake of [new Date('2001-01-01T00:00:00Z'), new Date('2999-01-01T00:00:00Z')]) {
+        const fresh = await h.formalizeOwner();
+        const window = await asApp(async (client) => {
+          const op = await openOperation(client, 'open_exercise', null);
+          const { rows } = await client.query<{ now: Date }>('SELECT now() AS now');
+          await forgeSealing(client, op, fresh, Y, 'owner', fake);
+          return rows[0]!.now;
+        });
+        const stamps = await h.database.pool.query<{ sealed_at: Date }>(
+          'SELECT DISTINCT sealed_at FROM app.second_home_date WHERE second_home_id = $1',
+          [fresh],
+        );
+        expect(stamps.rows.map((row) => row.sealed_at.getTime())).toEqual([window.getTime()]);
+      }
+    });
+
     it('[TECH-042] operação forjada não sela além do horizonte (exercício seguinte + 1)', async () => {
       const fresh = await h.formalizeOwner();
       await expect(
@@ -670,7 +731,7 @@ describe('custódia e selagem: barreiras do banco (W10)', () => {
       ).rejects.toEqual(constraint('custody_exercise_horizon'));
     });
 
-    it('[TECH-021] operação forjada não abre raiz fora dos fatos: modalidade, segunda raiz, outro command, outra transação', async () => {
+    it('[TECH-021] operação forjada não abre raiz fora dos fatos: modalidade, segunda raiz, outro command, operação encerrada', async () => {
       const fresh = await h.formalizeOwner();
       await expect(
         asApp(async (client) =>

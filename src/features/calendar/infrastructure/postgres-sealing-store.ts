@@ -21,7 +21,7 @@ export function createPostgresSealingStore(): SealingStore<DatabaseTransaction> 
         .executeTakeFirst();
       return row !== undefined;
     },
-    async seal(tx, secondHomeId, nights, sealedAt) {
+    async seal(tx, secondHomeId, nights) {
       await tx
         .insertInto('app.second_home_date')
         .values(
@@ -30,7 +30,6 @@ export function createPostgresSealingStore(): SealingStore<DatabaseTransaction> 
             stay_date: night.stayDate,
             season: night.season,
             checkin_at: night.checkInAt,
-            sealed_at: sealedAt,
           })),
         )
         .execute();

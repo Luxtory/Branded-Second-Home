@@ -571,7 +571,7 @@ export interface AppSecondHomeDate {
   checkin_at: Timestamp;
   exercise_year: Generated<number | null>;
   is_leap_day: Generated<boolean | null>;
-  sealed_at: Timestamp;
+  sealed_at: Generated<Timestamp>;
   season: string;
   second_home_id: string;
   stay_date: Timestamp;

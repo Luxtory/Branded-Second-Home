@@ -8,13 +8,14 @@ autorizado.
 
 ## Decisões consolidadas
 
-- Horizonte imposto pelo banco: só o exercício corrente e o seguinte pela data local do servidor (um dia de tolerância).
+- Horizonte imposto pelo banco: só o exercício corrente e o seguinte pela data local do servidor (um dia de tolerância
+  em cada ponta); exercício passado nunca é selado. `sealed_at` carimbado pelo banco.
 - Selagem por exercício, numa transação, da data-base (`acquisition.operation_start_date`) ou de 01/01 até 31/12;
   exercício completo 103 + 262 (+29/02); formalização torna a Second Home selável, o registro do início efetivo não
   interfere. Exercício corrente e seguinte pela data local (TECH-040, TECH-042).
 - Prontidão: cron diário + `after()` nas duas entradas da formalização (rota e Server Action), sem evento, command ou
   endpoint novo; a integridade é do banco (sem noite selada não há custódia nem ocupação).
-- Três camadas: estrutural completa; operação concreta (operação `pending` da própria transação; raiz autorizada pelos
+- Três camadas: estrutural completa; operação concreta (operação `pending` — consistência, não autenticidade; raiz autorizada pelos
   fatos); prova econômica nas waves seguintes. Fronteira de confiança no servidor da aplicação (ADR-0024 §3).
 - Transições e ocupações sem command ficam protegidas por privilégio (`luxtory_app` sem UPDATE em custódia e sem
   INSERT/UPDATE em ocupação). Sem tabela de vínculo command↔transição (daria aparência de autorização que o banco não
@@ -48,7 +49,8 @@ autorizado.
 
 1. **Operação forjada.** Reproduzido com os privilégios efetivos de `luxtory_app`: uma operação `pending` forjada com o
    command de sistema consegue apenas a selagem canônica (raiz autorizada pelos fatos); modalidade errada, segunda raiz,
-   outro command, operação de outra transação e qualquer transição ou ocupação são recusados. A selagem forjada é
+   outro command, operação já encerrada e qualquer transição ou ocupação são recusados (uma `pending` comitada pelo
+   próprio papel é reutilizável, sem capacidade nova). A selagem forjada é
    idêntica à canônica (classificação e check-in) e não cria ocupação, custódia econômica nem Direito de Uso. O banco
    limita a selagem ao exercício corrente e ao seguinte (relógio do servidor), inclusive para a forjada. A trilha do
    executor não prova autenticidade: o mesmo papel grava idempotência e auditoria de mesma forma (testado); a ausência
@@ -61,8 +63,18 @@ autorizado.
    reserved_right`, `owner → luxtory/inventory → owner → luxtory/inventory`, bifurcação recusada, transição concorrente
    da mesma custódia com duas conexões nas duas ordens e histórico preservado após a reversão.
 
+## Revisão do código pelo fundador (2026-10-29)
+
+1. Operação `pending` comitada por outra transação: reutilizável pelo papel da aplicação (testado), sem capacidade além
+   da de inserir uma operação nova — afirmação corrigida no ADR-0024, sem mecanismo novo (nenhum ganho de segurança).
+2. Horizonte sem piso: operação forjada selaria exercícios passados com data-base antiga — corrigido no banco (piso no
+   exercício corrente; testado), sem necessidade legítima de selagem retroativa.
+3. `sealed_at` aceitava qualquer valor — corrigido: carimbado pelo banco (testado com valores passado e futuro).
+
 ## Decisões pendentes do fundador
 
+- Ratificar (ou não) o risco residual do ADR-0024 §3, limitado à selagem estrutural.
 - Canal de e-mail do alerta na ativação (caixa, remetente, chave dedicada ou reaproveitada).
-- Encaminhar P-12 e P-13 à Luxtory (D7).
+- D7: orientação favorável do fundador (2026-10-29) a encaminhar P-12 e P-13 para revisão normativa antes da W14, sem
+  alterar agora os canônicos.
 - Na W12: fronteira de confiança das transições discricionárias e horizonte de reserva do Owner (P-14).
