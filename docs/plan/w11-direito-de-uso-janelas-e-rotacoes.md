@@ -68,3 +68,30 @@ autorizado.
 - **E6** eventos e consumidores; `availableAt` com piso `occurred_at` no platform.
 - **E7** documentação.
 - **E8** `npm run verify`, `npm run test:e2e --workers=2`, `npm run trace`, revisão, PR draft, CI; parar antes do merge.
+
+## Encerramento (2026-10-30)
+
+- Ratificação D1 do fundador registrada no ADR-0025 (exclusiva da W11, condicionada às barreiras verificadas), com a
+  autorização do squash merge. PR #76 → squash `3a989e63806d9bde3e6a18f34d710771a0a4ef88` (HEAD `813ff30`, CI do PR
+  41118554660). CI da `main` 41119540245 verde: lint, typecheck, test, e2e, security, migrate (49 → 52) e deploy.
+- Production, conferida somente em leitura: `/v1/version` = `3a989e6` nos dois domínios; health 200; smoke conforme
+  esperado; três crons (`close_exercise 41 5 * * *` novo); logs do deployment `dpl_FH4AZU5B5hyTaxwm7wsiKSr2ezfJ` sem
+  erro nem 5xx; 52/0 com as versões idênticas às da `main`; banco vazio de aquisições e de movimentos de Direito de
+  Uso; invariantes vazias; `luxtory_app` com SELECT no saldo, sem escrita nem EXECUTE na função DEFINER, sem UPDATE em
+  custódia, INSERT em ocupação ou CREATE em esquema; `authenticated` sem saldo e o Titular só com concessões;
+  `track_commit_timestamp` desligado; 24 nomes de env, sem gates. Nenhum cron manual, segredo ou gate alterado.
+
+## Pendências preservadas
+
+- **W12:** decidir com o fundador a autorização no banco antes de habilitar consumo/restauração e a transição
+  `spe_pool → reserved_right` (ADR-0024 §3, ADR-0025 §8); recusar noite passada; a ratificação da W11 não se estende.
+- **W13:** `correct_use_right` e `POST /v1/admin/use-right-corrections` (emenda D2), com prova contra reserva, ocupação e
+  custódia, sem desfazer `forfeited_right` nem duplicar restauração.
+- **W14:** recusar a seleção Luxtory do 29/02 (fora da capacidade ordinária da Luxtory, BR-091).
+- **W28:** caso ponta a ponta de transferência sobre rotação, 29/02 e destinatários das notificações (REQ-093).
+- **W30:** reconciliação (inclusive o 29/02 vencido sem concessão, derivável dos fatos), ausência de cron e catálogo de
+  notificações.
+- **Operação:** comprovar ao menos uma execução autenticada bem-sucedida do `open_exercise` antes da primeira aquisição
+  real; primeira execução do `close_exercise` ainda não observada; nenhuma reserva real antes dos mecanismos necessários
+  da W13; nenhum gate operacional (`ACQUISITION_WRITES`, `DRAW_*`, `OPS_ALERT_*`, `PII_*`) aberto sem autorização do
+  fundador.

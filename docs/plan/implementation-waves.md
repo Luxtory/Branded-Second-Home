@@ -108,8 +108,8 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 | 8 | Formalização e calendário civil | ownership, calendar | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003 | 3, 7 | — | R2 | ⬜ próxima executável (W7 ✅ em 2026-10-22) → ✅ concluída (#67, squash `266a0ae`, 2026-10-27; 6 migrations aplicadas, 42 no total; Production sincronizada com os gates operacionais fechados) |
 | 9 | Sorteio auditável | ownership | PD-011 | 8 | 10 | R2 | ⬜ próxima executável (W8 ✅ em 2026-10-27); ainda não iniciada → ✅ concluída (#71, squash `a6a1f6b`, 2026-10-29; 2 migrations aplicadas, 44 no total; Production sincronizada com os gates operacionais fechados; executada em sequência, sem paralelismo com a W10 — D3) |
 | 10 | Custódia e selagem | calendar, inventory | REQ-040, INV-2, INV-3 | 8 | 9 | R2 | ⬜ → próxima executável (W9 ✅ em 2026-10-29), em sequência (D3); ainda não iniciada → 🔄 em execução (plano aprovado em 2026-10-29; [`w10-custodia-e-selagem.md`](w10-custodia-e-selagem.md), PR draft) → ✅ concluída (#74, squash `25f668c`, 2026-10-30; 4 migrations aplicadas, 49 no total; Production sincronizada, sem aquisição, custódia ou ocupação, gates operacionais fechados; REQ-040 e INV-2 na parte estrutural, INV-3 completo) |
-| 11 | Direito de Uso, janelas e rotações | calendar | REQ-030, REQ-031, REQ-032, REQ-033, REQ-039, PD-004, INV-4, INV-5 | 9, 10 | — | R2 | ⬜ → próxima executável (W9 e W10 ✅); ainda não iniciada |
-| 12 | Reserva de uso próprio | booking | REQ-034, REQ-035, REQ-037, PD-002, INV-1 | 11 | — | R2 | ⬜ |
+| 11 | Direito de Uso, janelas e rotações | calendar | REQ-030, REQ-031, REQ-032, REQ-033, REQ-039, PD-004, INV-4, INV-5 | 9, 10 | — | R2 | ⬜ → próxima executável (W9 e W10 ✅); ainda não iniciada → ✅ concluída (#76, squash `3a989e6`, 2026-10-30; 3 migrations aplicadas, 52 no total; Production sincronizada, sem aquisição nem movimento de Direito de Uso, gates operacionais fechados; risco residual ratificado, exclusivo da W11; `correct_use_right` para a W13 pela emenda D2) |
+| 12 | Reserva de uso próprio | booking | REQ-034, REQ-035, REQ-037, PD-002, INV-1 | 11 | — | R2 | ⬜ → próxima executável (W11 ✅ em 2026-10-30); ainda não iniciada |
 | 13 | Cancelamento, no-show, recuperação e exceção | booking, inventory | REQ-080, REQ-081, REQ-083, PD-010 | 12 | — | R2 | ⬜ |
 | 14 | Seleção Luxtory, parâmetros e convidados | calendar, admin, booking | REQ-016, REQ-036, REQ-092, REQ-095 | 12 | — | R2 | ⬜ |
 | 15 | Membership | identity | REQ-011, REQ-050, PD-001 | 7 | — | R3 | ⬜ |
@@ -157,6 +157,12 @@ Production, com 49 migrations aplicadas / 0 pendentes, cron `open_exercise` regi
 custódias ou ocupações e os gates operacionais fechados. INV-3 completo; REQ-040 e INV-2 com as garantias estruturais,
 e as provas econômicas nas waves W13, W14, W17, W19 e W20. Risco residual ratificado pelo fundador, exclusivo da W10 e
 limitado à selagem estrutural (ADR-0024). A W11 passa a ser a próxima wave funcional executável, ainda não iniciada.
+**Atualização 2026-10-30 (W11):** W11 ✅ (PR #76, `3a989e6`); ledger do Direito de Uso com os cinco movimentos, saldo
+projetado, rotação e janelas derivadas, lista do 29/02 e expiração em Production, com 52 migrations aplicadas / 0
+pendentes, cron `close_exercise` registrado (`41 5 * * *`), 0 aquisições e 0 movimentos de Direito de Uso, e os gates
+operacionais fechados. Risco residual ratificado pelo fundador, exclusivo da W11 e condicionado às barreiras verificadas
+(ADR-0025). Emenda D2: `correct_use_right` passa para a W13. A W12 passa a ser a próxima wave funcional executável,
+ainda não iniciada.
 
 Paralelismo na retomada do B2C: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
 canal do AsyncAPI, telas e `CHANGELOG.md`, e o STRIDE do beacon. A W10 toca migrations de `calendar`/`inventory`,
@@ -1057,8 +1063,20 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   notificação por Ação na abertura, pelo outbox, sem afetar a elegibilidade), D5 (derivações do 29/02 fundamentadas nos
   canônicos: data-base em 29/02 conta; primeira posição da lista na fixação; fonte `configuration`; "+7 dias" civis;
   sem concessão retroativa de 29/02 vencido). **Emenda D2:** `correct_use_right` (command e endpoint) passa para a W13;
-  TECH-051 sai da lista acima. Risco residual da W11 pendente de ratificação (ADR-0025). Restrição operacional temporária
-  de ativação (não regra canônica): nenhuma reserva real antes dos mecanismos necessários da W13.
+  TECH-051 sai da lista acima. Risco residual da W11 pendente de ratificação (ADR-0025) → ratificado pelo fundador em
+  2026-10-30, exclusivo da W11 e condicionado (ADR-0025, "Ratificação do risco residual da W11"). Restrição operacional
+  temporária de ativação (não regra canônica): nenhuma reserva real antes dos mecanismos necessários da W13.
+- **Encerramento (2026-10-30): ✅.** PR #76, squash merge `3a989e63806d9bde3e6a18f34d710771a0a4ef88` (HEAD auditado
+  `813ff30`, `--match-head-commit`), autorizado pelo fundador junto com a ratificação do risco residual. CI do PR (run
+  41118554660) e CI da `main` run 41119540245: lint, typecheck, test, e2e, security, migrate e deploy verdes. As três
+  migrations W11 (`20261030164710`, `20261030164712`, `20261030164714`) foram aplicadas pelo pipeline sobre as 49
+  anteriores: **52 aplicadas / 0 pendentes**. Production sincronizada (somente leitura): `/v1/version` = `3a989e6` nos
+  dois domínios; health 200; smoke (jobs 401 sem execução, Admin e Titular → login, `/privacidade` 404, páginas
+  públicas 200); `vercel crons ls`: `close_exercise 41 5 * * *`, `open_exercise 23 4 * * *`, `outbox 17 6 * * *`; logs
+  do deployment sem erro nem 5xx; 0 aquisições, linhas no ledger e no saldo, noites, custódias, ocupações e eventos de
+  calendário; consultas de invariantes vazias; privilégios conforme ADR-0025; 24 nomes de env, sem gates. O cron
+  `close_exercise` está registrado, mas nenhuma execução foi observada (registro não é execução). Este encerramento não
+  autoriza a execução de outra wave nem abre os gates operacionais.
 
 ### Wave 12 — Reserva de uso próprio
 
