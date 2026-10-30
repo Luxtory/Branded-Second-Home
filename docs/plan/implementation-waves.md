@@ -1036,7 +1036,10 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   - Migrations `use_right_ledger` (só-inserção: grant · consume · restore · expire · correction) e
     `use_right_balance` (TECH-026); concessões só da configuração ou da alocação inicial.
   - Saldo próprio do 29/02 (`leap`) e lista bissexta própria (TECH-027/042); janelas e rotação (TECH-042, BR-101).
-  - Job `close_exercise`; `correct_use_right` em `POST /v1/admin/use-right-corrections`.
+  - Job `close_exercise`; `correct_use_right` em `POST /v1/admin/use-right-corrections` → **emenda D2 (2026-10-30):**
+    o command e o endpoint passam para a W13; na W11 o movimento `correction` é só estrutural (nunca sobre concessão,
+    referência obrigatória a consumo ou expiração da mesma Ação, exercício e categoria, projeção nunca negativa) e
+    fechado a todos. O texto original fica como **histórico / posteriormente superado**.
   - Consultas de INV-4/INV-5 após todo teste `db`; notificações de abertura anual e de direito ao 29/02 (REQ-097).
 - **Depends on / parallel with**: W9, W10; sequencial.
 - **Acceptance criteria**: `[INV-4] limites somados + Luxtory = capacidade de cada categoria; excesso ou categoria
@@ -1047,6 +1050,15 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   29/02 abre em 15/09 ou na formalização e expira sem transporte nem Inventário` · `[REQ-039] capacidade não
   reservada fica coletiva até o fim do exercício` · `[TECH-110] correção nunca altera concessão`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-030,REQ-031,REQ-032,REQ-033,REQ-039,PD-004,INV-4,INV-5 exits 0, stop after 5 tries`
+- **Execução (2026-10-30)**: plano aprovado pelo fundador após duas rodadas de revisão —
+  [`w11-direito-de-uso-janelas-e-rotacoes.md`](w11-direito-de-uso-janelas-e-rotacoes.md),
+  [ADR-0025](../adr/0025-direito-de-uso-ledger-rotacao-derivada-e-fronteira.md). Os critérios acima ficam. Decisões: D3
+  (INV-4 com igualdade estrita na configuração integral; exercício parcial pela alocação aprovada na W8), D4 (uma
+  notificação por Ação na abertura, pelo outbox, sem afetar a elegibilidade), D5 (derivações do 29/02 fundamentadas nos
+  canônicos: data-base em 29/02 conta; primeira posição da lista na fixação; fonte `configuration`; "+7 dias" civis;
+  sem concessão retroativa de 29/02 vencido). **Emenda D2:** `correct_use_right` (command e endpoint) passa para a W13;
+  TECH-051 sai da lista acima. Risco residual da W11 pendente de ratificação (ADR-0025). Restrição operacional temporária
+  de ativação (não regra canônica): nenhuma reserva real antes dos mecanismos necessários da W13.
 
 ### Wave 12 — Reserva de uso próprio
 
@@ -1078,6 +1090,10 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   - `declare_no_show` (TECH-046) + job `flag_no_show_candidates`; `recover_future_capacity`; job
     `advance_booking_states` (TECH-055).
   - `open_exception`/`resolve_exception` sobre reserva de uso próprio (mecanismos do Club na W18).
+  - **Emenda D2 (2026-10-30, vinda da W11):** `correct_use_right` em `POST /v1/admin/use-right-corrections` (TECH-026,
+    TECH-051): correção só de consumo ou expiração comprovados contra reserva, ocupação e custódia; direção e limites
+    decididos com o fundador; nunca altera concessão, nunca desfaz `forfeited_right` nem duplica `restore`; regra de
+    autorização no banco antes de abrir o gate do movimento (ADR-0024 §3, ADR-0025 §8).
   - API `POST /v1/bookings/{id}/cancel`, `POST /v1/admin/bookings/{id}/{no-show,recover-future-capacity,exceptions}`,
     `POST /v1/admin/exceptions/{id}/resolve`; telas do Titular e do Admin; notificações.
 - **Depends on / parallel with**: W12; sequencial.
@@ -1085,7 +1101,8 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   é recalculada` · E2E `[REQ-080] a consequência aparece antes de confirmar` · `[EC-10] após início parcial, só as
   noites futuras viram forfeited_right e são recuperáveis` · `[REQ-081] cancelamento do Owner não gera Inventário
   Luxtory` · `[TECH-060] forfeited_right não é reservável, depositável nem locável` · `[PD-010][REQ-083][EC-12]
-  exceção sem restituição, Crédito ou compensação; resolução auditada`.
+  exceção sem restituição, Crédito ou compensação; resolução auditada` · `[TECH-110] correção nunca altera concessão;
+  correção sem prova é recusada; não duplica restauração nem desfaz forfeited_right` (emenda D2).
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-080,REQ-081,REQ-083,PD-010 exits 0, stop after 4 tries`
 
 ### Wave 14 — Seleção Luxtory, parâmetros e convidados
@@ -1430,7 +1447,8 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 - **Concorrência (TECH-110)**: CONC-1, CONC-2 e CONC-3 → W12 · CONC-4 e CONC-5 → W22 · CONC-6 → W25 · CONC-7 → W24 ·
   CONC-8 → W17/W23 · CONC-9 → W23 · CONC-10 → W20 · CONC-11 → W14 · CONC-12 → W0/W1.
 - **Commands e jobs**: todo command do TECH-051 e todo job do TECH-090 têm wave (W1 `outbox`; W10 `open_exercise`;
-  W11 `close_exercise`; W13 `advance_booking_states`, `flag_no_show_candidates`; W17 `expire_credit_lots`; W19 e W30
+  W11 `close_exercise`; W13 `advance_booking_states`, `flag_no_show_candidates` (e o command `correct_use_right`,
+  emenda D2); W17 `expire_credit_lots`; W19 e W30
   `reconciliation`; W21 `expire_requests`; W27 `close_delinquency_authorization`).
 
 ### Pendências externas

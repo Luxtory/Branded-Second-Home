@@ -32,6 +32,7 @@ described by Michael Nygard. The ADR process itself is established in
 | 0022 | [Sorteio auditável em três consumidores e elegibilidade temporal do outbox](0022-sorteio-auditavel-e-elegibilidade-temporal-do-outbox.md) | Accepted |
 | 0023 | [Carimbo de COMMIT do servidor na anterioridade do sorteio (T-910)](0023-carimbo-de-commit-do-servidor-no-sorteio.md) | Accepted |
 | 0024 | [Selagem por exercício, custódia em camadas e fronteira de confiança do inventário](0024-custodia-selagem-e-fronteira-de-confianca.md) | Accepted |
+| 0025 | [Direito de Uso: ledger único conferido pelos fatos, rotação derivada e fronteira de confiança da W11](0025-direito-de-uso-ledger-rotacao-derivada-e-fronteira.md) | Accepted (risco residual pendente de ratificação) |
 
 The technical decisions ADR-001…008 of the canonical
 [03 — Technical Spec](../specs/canonical/03-technical-spec.md) also apply, by reference.

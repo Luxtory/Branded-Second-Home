@@ -76,3 +76,50 @@ Custódia, ocupação e barreiras: [`inventory.md`](inventory.md).
   fusos; [TECH-090] repetição, execuções simultâneas, queda da conexão, timeout de lock, orçamento esgotado e
   falha → correção → sucesso produzem exatamente uma selagem e uma custódia ativa por noite; [TECH-101] alerta de item e
   de execução, com transporte simulado e recusa segura sem configuração.
+
+## 6. Direito de Uso, janelas e rotações (W11)
+
+Fontes: 01 BR-071, BR-074–BR-083, BR-090–BR-095, BR-100–BR-109, BR-120–BR-122, BR-162; 02 REQ-030, REQ-031,
+REQ-032, REQ-033, REQ-039, REQ-097, PD-004, INV-4, INV-5, §15 itens 3 e 4; 03 TECH-026, TECH-027, TECH-040, TECH-042,
+TECH-053, TECH-054, TECH-056, TECH-090, TECH-110, §13. Decisão: [ADR-0025](../adr/0025-direito-de-uso-ledger-rotacao-derivada-e-fronteira.md);
+plano: [`docs/plan/w11-direito-de-uso-janelas-e-rotacoes.md`](../plan/w11-direito-de-uso-janelas-e-rotacoes.md).
+
+Dona: REQ-030, REQ-031, REQ-032, REQ-033, REQ-039, PD-004, INV-4, INV-5. Fora: reserva, permanência e
+`ERR_WINDOW_NOT_OPEN` (W12), cancelamento e restauração pelo command (W13), `correct_use_right` (W13, D2), seleção
+Luxtory (W14), telas e leituras do Titular (W12), catálogo de notificações (W30).
+
+- **Ledger (TECH-026).** O `use_right_ledger` da W8, só-inserção, com `grant · consume · restore · expire ·
+  correction`. Forma por movimento: só o `grant` tem `source` (`configuration` ou `initial_allocation`; o 29/02 é
+  `configuration`, quantidade 1); `consume`/`restore` têm a noite; `restore`/`correction` apontam o movimento
+  corrigido; `expire` tem o fim efetivo carimbado pelo banco. Uma concessão por Ação, exercício e bucket; um 29/02 por
+  Second Home e ano; uma restauração por consumo.
+- **Concessões.** Primeiro exercício: as da formalização (W8; parcial = alocação aprovada, sem proporcionalidade, D3).
+  Do seguinte em diante: o passo `seal` do `open_exercise` concede a cada Ação o limite da configuração, na transação
+  da selagem; o banco recusa exercício Co-Owner posterior ao primeiro selado sem as 2N concessões. INV-4: N × limite +
+  capacidade Luxtory = 103 Alta/Super Alta e 262 Média/Baixa na configuração integral.
+- **Saldo (`use_right_balance`).** Projeção por (Ação, exercício, bucket): `granted`, `consumed`, `expired`,
+  `remaining`. Nunca negativo; buckets não se compensam; cada noite consome o bucket da própria categoria e do próprio
+  exercício (o 29/02 só o `leap`). Saldo do exercício N nunca atende N+1. Recusa → `ERR_USE_RIGHT_BALANCE`.
+- **Rotação e janelas (TECH-042).** Derivadas dos fatos, sem tabela: posição ordinária pela BR-101 a partir da
+  posição sorteada; base `15/09 00:00` local do ano anterior ou a formalização, se posterior; posição `p` abre
+  `(p − 1) × 7` dias civis depois; Luxtory na posição N+1; abertura cumulativa (BR-103) até o fim do exercício. Hora
+  local inexistente ou ambígua → recusa. Sem sorteio revelado não há janela (falha fechada).
+- **29/02 (TECH-027, PD-004).** Lista fixada no primeiro 29/02 da operação (data-base em 29/02 conta), copiando a ordem
+  ordinária daquele exercício; avança uma posição por ano bissexto (2100, 2200, 2300 não contam) e reinicia na mesma
+  ordem; nunca lê a ordem ordinária de ano posterior. O passo `leap_day` concede 1 à Ação contemplada quando a noite
+  está selada e o sorteio revelado, antes do fim efetivo. Vencido antes disso, não há concessão retroativa nem
+  compensação (D5).
+- **Fim efetivo e `close_exercise`.** 29/02: 00:00 de 01/03; Alta e Média: 00:00 de 01/01 seguinte, no fuso da Second
+  Home. Depois dele o banco recusa uso, com ou sem registro. O job `close_exercise` registra a expiração exata do
+  restante de todo exercício vencido, de qualquer ano, com o instante canônico; repetição é no-op. Não toca custódia:
+  capacidade não reservada continua `spe_pool` (REQ-039, BR-162) e nunca entra no Inventário Luxtory.
+- **Notificações (REQ-097, D4).** `calendar.use_window_opened` por Ação na abertura da janela e
+  `calendar.leap_day_granted` na base, pelo outbox com `available_at`; registro aos titulares vigentes na entrega.
+- **Fronteira (ADR-0025 §8).** O papel da aplicação só insere `grant` e `expire`, conferidos pelos fatos; `consume` e
+  `restore` são do dono do schema até a W12/W13; `correction` é recusada a todos até a W13. Sem leitura do Titular.
+- **Aceite.** [INV-4] limites somados + Luxtory = capacidade; excesso ou categoria errada falha · [INV-5] saldo do ano N
+  não atende N+1 · [REQ-030] categorias não se compensam; saldo insuficiente → ERR_USE_RIGHT_BALANCE · [REQ-031] lista
+  bissexta nunca é recalculada · [TECH-110] o 29/02 é Média/Baixa e consome só o leap · [REQ-032] rotação e abertura
+  cumulativa · [REQ-033] exercício parcial usa só a alocação; janelas contam da formalização · [PD-004][EC-4] o 29/02
+  abre na base e expira sem transporte nem Inventário · [REQ-039] capacidade não reservada fica coletiva até o fim do
+  exercício · [TECH-110] correção nunca altera concessão.

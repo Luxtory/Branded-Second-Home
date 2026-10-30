@@ -2145,12 +2145,21 @@ paths:
       description: |
         Chamado pelo Vercel Cron, que só faz `GET`, com `Authorization: Bearer <CRON_SECRET>`. Cada execução e cada
         item são idempotentes (TECH-090); execuções em paralelo produzem um único efeito. Só existem os jobs do
-        registro de jobs implementados (W1: `outbox`; W10: `open_exercise`).
+        registro de jobs implementados (W1: `outbox`; W10: `open_exercise`; W11: `close_exercise`).
 
-        `open_exercise` (spec calendar §5, ADR-0024): sela o exercício corrente e o seguinte de cada Second Home
-        formalizada, um exercício por transação, com a custódia raiz de cada noite. Contagens: `formalized`, `due`,
-        `sealed`, `already_sealed`, `failed` (cada falha gera o alerta `open_exercise_failure`, TECH-101) e
-        `deferred` (orçamento de tempo esgotado; a próxima execução continua). Falha de item não muda o status 200.
+        `open_exercise` (spec calendar §5–§6, ADR-0024, ADR-0025): sela o exercício corrente e o seguinte de cada
+        Second Home formalizada, um exercício por transação, com a custódia raiz de cada noite e, no Co-Owner, as
+        concessões da configuração do exercício seguinte ao primeiro (passo `seal`); depois concede o 29/02 da operação
+        à Ação contemplada quando o sorteio já foi revelado e o direito não venceu (passo `leap_day`, transação
+        própria). Contagens: `formalized`, `due`, `sealed`, `already_sealed`, `leap_day_granted`, `leap_day_lapsed`
+        (29/02 vencido antes de poder ser concedido, sem concessão retroativa), `failed` (cada falha gera o alerta
+        `open_exercise_failure`, TECH-101) e `deferred` (orçamento de tempo esgotado; a próxima execução continua).
+
+        `close_exercise` (spec calendar §6, ADR-0025): registra a expiração exata do saldo restante de cada bucket cujo
+        fim efetivo já passou no fuso da Second Home (29/02: 00:00 de 01/03; Alta e Média: 00:00 de 01/01 seguinte),
+        em qualquer exercício anterior — recupera atrasos. Contagens: `candidates`, `due`, `closed`, `not_due`,
+        `failed` (só log estruturado: o TECH-101 não tem alerta deste job) e `deferred`. Falha de item não muda o
+        status 200.
       operationId: runJob
       security:
         - cronSecret: []
@@ -2162,7 +2171,7 @@ paths:
           description: Nome do job no TECH-090.
           schema:
             type: string
-            enum: [outbox, open_exercise]
+            enum: [outbox, open_exercise, close_exercise]
       responses:
         '200':
           description: Execução concluída
