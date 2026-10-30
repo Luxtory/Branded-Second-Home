@@ -303,3 +303,32 @@ ADR-0022 estende a seleção do ADR-0021 sem mudar commands, executor, recibos, 
 
 Testes reais: evento futuro retido e elegível no vencimento; ordem por tentativas sob lote cheio de falhas; falha no
 COMMIT registrada sem interromper a varredura; varreduras paralelas; eventos anteriores inalterados.
+
+## W10 — commands de sistema, contexto dos jobs, alerta operacional e disparo pós-commit
+
+ADR-0024 acrescenta, sem mudar o executor, os commands existentes nem o outbox:
+
+- **Commands de sistema.** `SYSTEM_COMMANDS` (autoridade `system`, campo `job`) compõe o registro do executor ao lado
+  do TECH-051 e das operações não críticas; `CRITICAL_COMMANDS` continua exatamente a tabela fechada. W10:
+  `open_exercise` (módulo `calendar`, job `open_exercise`). `systemCommandGuard` nega por padrão e só autoriza o job dono
+  do command (`authorizationRef = job:<nome>`); usuário nunca executa command de sistema, e o guard de identity continua
+  negando o ator `system`. Chave de idempotência no escopo `system:<job>`.
+- **Jobs.** `JobRunner` recebe `{ correlationId }` (o do request do cron, do `after()` ou manual). `GET /api/jobs/{job}`
+  aceita `open_exercise` (OpenAPI `runJob`); `maxDuration = 300` (teto do Hobby com Fluid compute). Cron em
+  `vercel.json` — o Hobby admite até 100 crons, cada um no máximo 1×/dia, em qualquer minuto da hora marcada, sem retry e
+  com entrega best effort (pode faltar ou duplicar): todo job é idempotente por item e retomável.
+- **Disparo pós-commit.** `dispatchJobAfterCommit(job, log, correlationId)` agenda um job pelo `after()` do Next, como
+  `dispatchOutboxAfterCommit`; falha só vira log (`job after commit failed`), e o cron recupera.
+- **Mapeamento de recusas.** Além dos prefixos, os índices do 03 §3.2 mapeiam pelo nome exato: `uq_occupancy_active` →
+  ERR_BOOKING_CONFLICT, `uq_custody_active` → ERR_CAPACITY_UNAVAILABLE. `inventory_operation_provenance` não é recusa
+  funcional (erro de código).
+- **Alerta operacional (TECH-101).** `OperationalAlert.raise({ kind, scope: 'item' | 'run', correlationId, details })`:
+  log estruturado `operational alert` sempre; notificação de staff pelo `StaffNotificationTransport`. Produção
+  (`createProductionOperationalAlert`) resolve o transporte só ao alertar: `OPS_ALERT_MODE=fake` (local e CI; recusado
+  na Vercel) usa o transporte em memória; senão o e-mail via API HTTP do Resend com `OPS_ALERT_RESEND_API_KEY`,
+  `OPS_ALERT_EMAIL_FROM`, `OPS_ALERT_EMAIL_TO` e `OPS_ALERT_SEND_TIMEOUT_MS`. Configuração ausente ou inválida → recusa
+  segura: `staff notification configuration unavailable` com as chaves, alerta só no log, sem lançar. `Idempotency-Key`
+  do provedor = alerta + escopo + `correlation_id`. Conteúdo: só ids e códigos (TECH-100). Nunca lança.
+- **Executor de produção** aceita `clock` injetável (TECH-110).
+- **Harness.** `TestDatabase.drop()` roda `app.inventory_invariant_breaches()` numa conexão própria antes de apagar o
+  banco e falha o teste se houver violação (bancos não migrados ou com a W10 desfeita ficam de fora).
