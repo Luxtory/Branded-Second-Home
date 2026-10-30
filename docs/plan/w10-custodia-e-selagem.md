@@ -42,8 +42,8 @@ autorizado.
 | E3 | 4 migrations (45 → 49), codegen, testes db das barreiras, da cadeia, da matriz, de privilégios e da operação forjada | ✅ |
 | E4 | `open_exercise` (command de sistema, guard do platform), job, `after()`, alerta, cron, `maxDuration` | ✅ |
 | E5 | consultas de invariantes após todo teste db (`TestDatabase.drop()`); rollback W8 encadeado | ✅ |
-| E6 | gates integrais (verify, E2E com 2 workers, trace, segurança) | ver checkpoint |
-| E7 | PR draft → CI verde → checkpoint (parar antes do merge) | ver checkpoint |
+| E6 | gates integrais (verify, E2E com 2 workers, trace, segurança) | ✅ verify 1.323/1.323 (0 skips), E2E 121 + 1 skip preexistente, trace 3/3 |
+| E7 | PR draft → CI verde → checkpoint → merge autorizado | ✅ #74 squash `25f668c` (2026-10-30), CI da `main` 40998972343 verde (migrate 45 → 49, deploy) |
 
 ## Achados de integridade do fundador (2026-10-29)
 
@@ -81,3 +81,24 @@ autorizado.
 - D7 aprovada: P-12 e P-13 encaminhadas para revisão normativa antes da W14, sem alterar agora os canônicos.
 - Horizonte estrito (ano civil local do servidor, sem tolerância) — preferência do fundador, adotada.
 - Na W12: fronteira de confiança das transições discricionárias e horizonte de reserva do Owner (P-14).
+
+## Encerramento (2026-10-30)
+
+- Squash merge autorizado pelo fundador (HEAD auditado `86564eb`, CI 40990394457) → `main` = `25f668c`.
+- CI da `main` 40998972343: lint, typecheck, test, security, e2e, migrate e deploy verdes. Migrate: 45 aplicadas,
+  4 pendentes → 49 (0,83–0,95 s cada).
+- Production (verificações somente leitura): `/v1/version` = `25f668c` nos dois domínios; health 200; smoke sem
+  credenciais conforme esperado (jobs 401, Admin e Titular redirecionam ao login, `/privacidade` 404 com aviso
+  `pending`); cron `open_exercise` `23 4 * * *` registrado, não disparado manualmente; logs do deployment sem error, fatal
+  ou 5xx; 49/0; 0 aquisições, noites seladas, custódias e ocupações; 0 violações de invariantes; RLS e privilégios
+  conforme o ADR-0024; nomes de variáveis inalterados, gates e `OPS_ALERT_*` ausentes.
+
+## Pendências operacionais para ativação antes de uso real
+
+- Notificação de staff do alerta: caixa, remetente e chave (`OPS_ALERT_*`), só com autorização do fundador; até lá o
+  alerta fica no log.
+- Monitoramento da execução do cron (o job não detecta a própria ausência) até a reconciliação da W30 ou o Vercel Pro
+  (D1); conferir periodicamente os logs do cron.
+- Ativação das aquisições (`ACQUISITION_WRITES`) e do sorteio (`track_commit_timestamp`, `DRAW_*`) seguem pendentes,
+  por decisão do fundador; a selagem só começa com a primeira formalização.
+- D7 aprovada: P-12 e P-13 à revisão normativa antes da W14; P-14 para a W12.

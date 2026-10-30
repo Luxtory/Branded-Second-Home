@@ -107,8 +107,8 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 | 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ próxima executável (W6 ✅ em 2026-10-21) → ✅ concluída (#61, squash `ef15bbb`, 2026-10-22; 6 migrations aplicadas; estrutura em Production sem dados reais e sem `PII_*`) |
 | 8 | Formalização e calendário civil | ownership, calendar | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003 | 3, 7 | — | R2 | ⬜ próxima executável (W7 ✅ em 2026-10-22) → ✅ concluída (#67, squash `266a0ae`, 2026-10-27; 6 migrations aplicadas, 42 no total; Production sincronizada com os gates operacionais fechados) |
 | 9 | Sorteio auditável | ownership | PD-011 | 8 | 10 | R2 | ⬜ próxima executável (W8 ✅ em 2026-10-27); ainda não iniciada → ✅ concluída (#71, squash `a6a1f6b`, 2026-10-29; 2 migrations aplicadas, 44 no total; Production sincronizada com os gates operacionais fechados; executada em sequência, sem paralelismo com a W10 — D3) |
-| 10 | Custódia e selagem | calendar, inventory | REQ-040, INV-2, INV-3 | 8 | 9 | R2 | ⬜ → próxima executável (W9 ✅ em 2026-10-29), em sequência (D3); ainda não iniciada → 🔄 em execução (plano aprovado em 2026-10-29; [`w10-custodia-e-selagem.md`](w10-custodia-e-selagem.md), PR draft) |
-| 11 | Direito de Uso, janelas e rotações | calendar | REQ-030, REQ-031, REQ-032, REQ-033, REQ-039, PD-004, INV-4, INV-5 | 9, 10 | — | R2 | ⬜ |
+| 10 | Custódia e selagem | calendar, inventory | REQ-040, INV-2, INV-3 | 8 | 9 | R2 | ⬜ → próxima executável (W9 ✅ em 2026-10-29), em sequência (D3); ainda não iniciada → 🔄 em execução (plano aprovado em 2026-10-29; [`w10-custodia-e-selagem.md`](w10-custodia-e-selagem.md), PR draft) → ✅ concluída (#74, squash `25f668c`, 2026-10-30; 4 migrations aplicadas, 49 no total; Production sincronizada, sem aquisição, custódia ou ocupação, gates operacionais fechados; REQ-040 e INV-2 na parte estrutural, INV-3 completo) |
+| 11 | Direito de Uso, janelas e rotações | calendar | REQ-030, REQ-031, REQ-032, REQ-033, REQ-039, PD-004, INV-4, INV-5 | 9, 10 | — | R2 | ⬜ → próxima executável (W9 e W10 ✅); ainda não iniciada |
 | 12 | Reserva de uso próprio | booking | REQ-034, REQ-035, REQ-037, PD-002, INV-1 | 11 | — | R2 | ⬜ |
 | 13 | Cancelamento, no-show, recuperação e exceção | booking, inventory | REQ-080, REQ-081, REQ-083, PD-010 | 12 | — | R2 | ⬜ |
 | 14 | Seleção Luxtory, parâmetros e convidados | calendar, admin, booking | REQ-016, REQ-036, REQ-092, REQ-095 | 12 | — | R2 | ⬜ |
@@ -148,6 +148,10 @@ gates operacionais). A W8 passa a ser a próxima wave funcional executável.
 **Atualização 2026-10-27:** W8 ✅ (PR #67, `266a0ae`); formalização e calendário civil em Production, com 42
 migrations aplicadas / 0 pendentes e `ACQUISITION_WRITES` ainda fechado. A W9 passa a ser a próxima wave funcional
 executável, ainda não iniciada; W10 e W11 também não foram iniciadas, com dependências e paralelismo inalterados.
+**Atualização 2026-10-30:** W10 ✅ (PR #74, `25f668c`); noite selada, custódia, ocupação e matriz da TECH-023 em
+Production, com 49 migrations aplicadas / 0 pendentes, cron `open_exercise` registrado (`23 4 * * *`), 0 aquisições,
+custódias ou ocupações e os gates operacionais fechados. Risco residual da W10 ratificado pelo fundador, limitado à
+selagem estrutural (ADR-0024). A W11 passa a ser a próxima wave funcional executável, ainda não iniciada.
 **Atualização 2026-10-29:** W9 ✅ (PR #71, `a6a1f6b`); sorteio auditável da ordem inicial em Production, com 44
 migrations aplicadas / 0 pendentes, sem `DRAW_*`, aquisição ou sorteio real e com os gates operacionais fechados. A W10
 passa a ser a próxima wave funcional executável, ainda não iniciada, **em sequência** (D3; ver correção do paralelismo

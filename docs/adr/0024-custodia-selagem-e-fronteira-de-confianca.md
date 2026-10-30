@@ -100,7 +100,9 @@ Titulares —, **condicionada** à preservação de:
 3. operação `pending` ou trilha gravada pelo mesmo papel nunca tratada como prova independente de autenticidade;
 4. esta aceitação não constitui autorização antecipada de novas fronteiras de confiança em waves futuras.
 
-Qualquer mudança nessas condições exige nova decisão do fundador.
+Qualquer mudança nessas condições exige nova decisão do fundador. **Ratificação formal:** 2026-10-30, com a autorização
+do squash merge do PR #74 — exclusivamente para a W10; não autoriza aceitar riscos equivalentes em waves futuras sem
+nova avaliação.
 
 ## Consequences
 
