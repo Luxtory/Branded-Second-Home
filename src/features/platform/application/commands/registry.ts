@@ -1,3 +1,5 @@
+import type { JobName } from '../jobs/names';
+
 /** Módulos do TECH-011: cada command pertence a um módulo dono do estado que ele altera. */
 export const MODULES = [
   'identity',
@@ -29,7 +31,8 @@ export type Authority =
   | 'admin_or_super_admin'
   | 'super_admin'
   | 'grantee'
-  | 'invitee';
+  | 'invitee'
+  | 'system';
 
 /** Coluna "Membership" do TECH-051: `not_applicable` = "—". */
 export type MembershipRule = 'eligible' | 'not_required' | 'not_applicable';
@@ -41,6 +44,8 @@ export interface CommandSpec {
   readonly membership: MembershipRule;
   /** Econômico ou de estado crítico: consta da tabela fechada do TECH-051. */
   readonly critical: boolean;
+  /** Autoridade `system` (W10): o único job do TECH-090 que executa o command. */
+  readonly job?: JobName;
 }
 
 const critical = (
@@ -149,6 +154,22 @@ export const NON_CRITICAL_OPERATIONS: readonly CommandSpec[] = [
   nonCritical('end_home_edition_projected_investment', 'catalog'),
 ];
 
+/**
+ * Commands de sistema (W10, ADR-0024): executados só por um job do TECH-090, nunca por usuário. Ficam fora da tabela
+ * fechada do TECH-051 (commands de usuários), mas seguem o mesmo protocolo do TECH-054 no executor.
+ */
+export const SYSTEM_COMMANDS: readonly CommandSpec[] = [
+  // TECH-021/TECH-041: sela um exercício da Second Home formalizada e abre as custódias raiz (spec calendar §5).
+  {
+    name: 'open_exercise',
+    module: 'calendar',
+    authority: 'system',
+    membership: 'not_applicable',
+    critical: false,
+    job: 'open_exercise',
+  },
+];
+
 export class CommandRegistryError extends Error {
   constructor(message: string) {
     super(message);
@@ -186,8 +207,9 @@ export class CommandRegistry {
   }
 }
 
-/** Registro do executor: a tabela fechada do TECH-051 composta com as operações não críticas. */
+/** Registro do executor: a tabela fechada do TECH-051 composta com as operações não críticas e as de sistema. */
 export const commandRegistry = new CommandRegistry([
   ...CRITICAL_COMMANDS,
   ...NON_CRITICAL_OPERATIONS,
+  ...SYSTEM_COMMANDS,
 ]);

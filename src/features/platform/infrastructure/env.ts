@@ -27,6 +27,9 @@ const envShape = {
   INTEREST_WRITES: z.enum(['open', 'closed']).optional(),
   // Limitador do interesse. Ausente = Upstash real. `fake` (contadores em memória) só local e na CI: recusado na Vercel.
   INTEREST_LIMITER_MODE: z.literal('fake').optional(),
+  // Notificação de staff dos alertas operacionais (W10, TECH-101). Ausente = Resend real, se configurado. `fake`
+  // (transporte em memória) só local e na CI: recusado na Vercel, inclusive em Preview.
+  OPS_ALERT_MODE: z.literal('fake').optional(),
 };
 
 const envSchema = z.object(envShape).superRefine((env, context) => {
@@ -41,6 +44,13 @@ const envSchema = z.object(envShape).superRefine((env, context) => {
       code: 'custom',
       path: ['BRAND_PARTNERS_CONTACT_MODE'],
       message: 'fake contact delivery on Vercel',
+    });
+  }
+  if (env.OPS_ALERT_MODE === 'fake' && env.VERCEL_ENV !== undefined) {
+    context.addIssue({
+      code: 'custom',
+      path: ['OPS_ALERT_MODE'],
+      message: 'fake staff notification on Vercel',
     });
   }
   if (env.INTEREST_LIMITER_MODE === 'fake' && env.VERCEL_ENV !== undefined) {
@@ -170,6 +180,12 @@ const runtimeSchema = z.object({
   PII_ENCRYPTION_ACTIVE_KEY_ID: keyId,
   PII_HMAC_KEYRING: keyRing,
   PII_HMAC_ACTIVE_KEY_ID: keyId,
+  // W10 (TECH-101): notificação de staff do alerta `open_exercise_failure`, por e-mail via Resend. Chave própria por
+  // finalidade (o valor é decisão de ativação do fundador); ausente ou inválida → notificação recusada, alerta só no log.
+  OPS_ALERT_RESEND_API_KEY: z.string().regex(/^re_[A-Za-z0-9_-]+$/),
+  OPS_ALERT_EMAIL_FROM: sender,
+  OPS_ALERT_EMAIL_TO: mailbox,
+  OPS_ALERT_SEND_TIMEOUT_MS: positiveInteger,
 });
 
 export type RuntimeConfig = z.infer<typeof runtimeSchema>;

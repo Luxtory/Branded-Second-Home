@@ -5,7 +5,12 @@ import { redirect } from 'next/navigation';
 import type { ZodType } from 'zod';
 import { adminRoleGate } from '@/features/admin';
 import { executeAdminCommand, readPartySummary, type AdminCommand } from '@/features/identity';
-import { rootLogger, resolveCorrelationId, type JsonValue } from '@/features/platform';
+import {
+  dispatchJobAfterCommit,
+  rootLogger,
+  resolveCorrelationId,
+  type JsonValue,
+} from '@/features/platform';
 import {
   formalizeAcquisitionInput,
   initialAllocationInput,
@@ -92,6 +97,15 @@ async function submit<I, R extends JsonValue>(
       errors: {},
       rejection: outcome.code,
     };
+  }
+  if (kind === 'formalize' && !outcome.replayed) {
+    // W10 (ADR-0024 §2): sela o exercício logo após a formalização; o cron diário recupera se isto falhar.
+    const correlationId = resolveCorrelationId(await headers());
+    dispatchJobAfterCommit(
+      'open_exercise',
+      rootLogger.child({ correlation_id: correlationId }),
+      correlationId,
+    );
   }
   redirect(
     `${path(formField(form, 'second_home_id'))}?registered=${outcome.operationId}#registered`,

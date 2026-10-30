@@ -1,5 +1,8 @@
 import { createAdminCommandRoute, type AdminCommandDependencies } from '@/features/identity';
+import { randomUUID } from 'node:crypto';
 import {
+  dispatchJobAfterCommit,
+  dispatchOutboxAfterCommit,
   withRoute,
   type CommandHandler,
   type DatabaseTransaction,
@@ -32,6 +35,7 @@ export function createAcquisitionRoutes(options: AcquisitionRouteDependencies = 
   const route = <I>(
     handler: CommandHandler<I, AcquisitionResult, DatabaseTransaction>,
     auxiliary = false,
+    afterCommit = options.afterCommit,
   ) =>
     createAdminCommandRoute({
       ...options,
@@ -39,9 +43,17 @@ export function createAcquisitionRoutes(options: AcquisitionRouteDependencies = 
       successStatus: 201,
       maxBodyBytes: 32768,
       ...(auxiliary ? { input: withHomePath } : {}),
+      ...(afterCommit === undefined ? {} : { afterCommit }),
+    });
+  // W10 (ADR-0024 §2): depois da formalização, outbox e selagem do exercício sem esperar o cron (melhor esforço).
+  const afterFormalization =
+    options.afterCommit ??
+    ((log: LogPort) => {
+      dispatchOutboxAfterCommit(log);
+      dispatchJobAfterCommit('open_exercise', log, randomUUID());
     });
   return {
-    formalizeAcquisition: route(handlers.formalizeAcquisition),
+    formalizeAcquisition: route(handlers.formalizeAcquisition, false, afterFormalization),
     initialAllocation: route(handlers.initialAllocation, true),
     administration: route(handlers.administration, true),
     operationStart: route(handlers.operationStart, true),

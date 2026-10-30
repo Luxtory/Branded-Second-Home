@@ -79,8 +79,18 @@ const CONSTRAINT_PREFIXES: readonly (readonly [string, RejectionCode])[] = [
   ['conflict_', 'ERR_STATE_TRANSITION'],
 ];
 
+/** Índices com o nome exato do 03 §3.2 (W10), fora da convenção de prefixos. */
+const CONSTRAINT_NAMES: ReadonlyMap<string, RejectionCode> = new Map([
+  ['uq_occupancy_active', 'ERR_BOOKING_CONFLICT'],
+  ['uq_custody_active', 'ERR_CAPACITY_UNAVAILABLE'],
+]);
+
 export function rejectionForConstraint(constraint: string): RejectionCode | null {
-  return CONSTRAINT_PREFIXES.find(([prefix]) => constraint.startsWith(prefix))?.[1] ?? null;
+  return (
+    CONSTRAINT_NAMES.get(constraint) ??
+    CONSTRAINT_PREFIXES.find(([prefix]) => constraint.startsWith(prefix))?.[1] ??
+    null
+  );
 }
 
 /** Recusa funcional lançada por um handler dentro da transação: o executor faz ROLLBACK e grava a recusa. */

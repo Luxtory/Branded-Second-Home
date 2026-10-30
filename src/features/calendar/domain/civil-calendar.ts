@@ -10,6 +10,18 @@ export type FutureCapacityInput = Readonly<{
   now: Date;
 }>;
 export type FutureCapacity = Readonly<{ exerciseYear: number; alta: number; media: number }>;
+export type ExerciseNightsInput = Readonly<{
+  exerciseYear: number;
+  operationStartDate: CivilDate;
+  timezone: string;
+}>;
+/** A night to seal (ADR-003 of the 03): civil date, canonical classification and its 14:00 local check-in in UTC. */
+export type SealedNight = Readonly<{
+  stayDate: CivilDate;
+  season: Season;
+  isLeapDay: boolean;
+  checkInAt: Date;
+}>;
 
 /** Civil primitives only; library-specific objects never cross this boundary. */
 export interface CivilTime {
@@ -17,6 +29,7 @@ export interface CivilTime {
   localDate(at: Date, timezone: string): CivilDate;
   addDays(date: CivilDate, days: number): CivilDate;
   checkInEpochMilliseconds(date: CivilDate, timezone: string): number;
+  checkOutEpochMilliseconds(date: CivilDate, timezone: string): number;
 }
 
 export interface CivilCalendar {
@@ -27,6 +40,19 @@ export interface CivilCalendar {
   carnivalDates(year: number): readonly CivilDate[];
   classify(date: CivilDate): NightClassification;
   futureCapacity(input: FutureCapacityInput): FutureCapacity;
+  /** ADR-003: check-in at 14:00 local on the night's date. */
+  checkInAt(date: CivilDate, timezone: string): Date;
+  /** ADR-003: check-out at 10:00 local on the morning after the night. */
+  checkOutAt(date: CivilDate, timezone: string): Date;
+  /** TECH-041: every night of an exercise from its first operational night to December 31, in order. */
+  exerciseNights(input: ExerciseNightsInput): readonly SealedNight[];
+}
+
+export class ExerciseBeforeOperationError extends RangeError {
+  constructor(exerciseYear: number, operationStartDate: CivilDate) {
+    super(`Exercise ${exerciseYear} precedes the operation base date ${operationStartDate}`);
+    this.name = 'ExerciseBeforeOperationError';
+  }
 }
 
 // Gregorian computus (Meeus/Jones/Butcher), without process-local date arithmetic.
@@ -91,6 +117,34 @@ export function civilCalendar(time: CivilTime): CivilCalendar {
     return date;
   }
 
+  function exerciseNights({
+    exerciseYear,
+    operationStartDate,
+    timezone,
+  }: ExerciseNightsInput): readonly SealedNight[] {
+    validateYear(exerciseYear);
+    time.validateTimezone(timezone);
+    const start = parseCivilDate(operationStartDate);
+    if (exerciseYear < start.year)
+      throw new ExerciseBeforeOperationError(exerciseYear, operationStartDate);
+    const year = String(exerciseYear).padStart(4, '0');
+    const end = `${year}-12-31`;
+    const carnival = new Set(carnivalDates(exerciseYear));
+    const nights: SealedNight[] = [];
+    let date = exerciseYear === start.year ? operationStartDate : `${year}-01-01`;
+    for (;;) {
+      const { season, isLeapDay } = classification(date, carnival);
+      nights.push({
+        stayDate: date,
+        season,
+        isLeapDay,
+        checkInAt: new Date(time.checkInEpochMilliseconds(date, timezone)),
+      });
+      if (date === end) return nights;
+      date = time.addDays(date, 1);
+    }
+  }
+
   return {
     validateTimezone: (timezone) => time.validateTimezone(timezone),
     localDate,
@@ -126,5 +180,16 @@ export function civilCalendar(time: CivilTime): CivilCalendar {
       }
       return capacity;
     },
+    checkInAt: (date, timezone) => {
+      time.validateTimezone(timezone);
+      parseCivilDate(date);
+      return new Date(time.checkInEpochMilliseconds(date, timezone));
+    },
+    checkOutAt: (date, timezone) => {
+      time.validateTimezone(timezone);
+      parseCivilDate(date);
+      return new Date(time.checkOutEpochMilliseconds(time.addDays(date, 1), timezone));
+    },
+    exerciseNights,
   };
 }

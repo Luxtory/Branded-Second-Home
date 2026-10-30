@@ -42,7 +42,7 @@ export function createJobRoute({ registry, source }: JobRouteDependencies) {
     const run = registry(log).get(job);
     if (run === undefined) return errorResponse('ERR_NOT_FOUND', correlationId);
     try {
-      const result = await run();
+      const result = await run({ correlationId });
       log.info('job completed', { job, ...result });
       return Response.json({ job, result }, { headers: { 'cache-control': 'no-store' } });
     } catch (error) {
