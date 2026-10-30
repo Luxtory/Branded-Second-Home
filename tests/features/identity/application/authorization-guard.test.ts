@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { CRITICAL_COMMANDS } from '@/features/platform/application/commands/registry';
+import {
+  CRITICAL_COMMANDS,
+  commandRegistry,
+} from '@/features/platform/application/commands/registry';
 import type { Actor, CommandSpec } from '@/features/platform';
 import { createAuthorizationGuard } from '@/features/identity/application/authorization-guard';
 import type { VerifiedSession } from '@/features/identity/domain/session';
@@ -150,6 +153,16 @@ describe('guard de staff (TECH-050/051)', () => {
     });
     await expect(
       guardFor(aal2()).authorize(spec('create_own_use_booking'), titular, {}, null),
+    ).resolves.toEqual({ allowed: false });
+  });
+
+  it('[TECH-090] o guard de usuários nega o command de sistema, mesmo ao Admin AAL2 e ao próprio job (W10)', async () => {
+    const openExercise = commandRegistry.get('open_exercise')!;
+    await expect(
+      guardFor(aal2()).authorize(openExercise, staffActor('admin'), {}, null),
+    ).resolves.toEqual({ allowed: false });
+    await expect(
+      guardFor(aal2()).authorize(openExercise, { kind: 'system', job: 'open_exercise' }, {}, null),
     ).resolves.toEqual({ allowed: false });
   });
 });

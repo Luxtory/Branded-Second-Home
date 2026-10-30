@@ -76,7 +76,7 @@ acesso ao software (`02` §2).
 | `admin`, `admin_or_super_admin`, `super_admin` | sessão AAL2 do próprio ator; papel exercido aceito pela autoridade (Admin → `admin`; "Admin ou Super Admin" → qualquer um dos dois; Super Admin → `super_admin`); papel ativo em `staff_role` no instante. Referência: `staff_role:<id>` |
 | `grantee` | papel exercido `grantee`, party representada, grant ativo da party que lista o command e cobre o escopo do input. Referência: `authorization_grant:<id>` |
 | Titular, detentor, solicitante, ofertante | nunca na W2 (W7/W8) |
-| ator `system` | nunca na W2 (jobs que executam commands chegam a partir da W10) |
+| ator `system` | nunca neste guard. Desde a W10, jobs que executam commands usam o guard de commands de sistema do platform, que só autoriza o job dono do command (ADR-0024 §7; spec platform, W10) |
 
 ### Dívida transitória deliberada (D-W2-1)
 

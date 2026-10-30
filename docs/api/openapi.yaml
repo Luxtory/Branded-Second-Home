@@ -2145,7 +2145,12 @@ paths:
       description: |
         Chamado pelo Vercel Cron, que só faz `GET`, com `Authorization: Bearer <CRON_SECRET>`. Cada execução e cada
         item são idempotentes (TECH-090); execuções em paralelo produzem um único efeito. Só existem os jobs do
-        registro de jobs implementados (W1: `outbox`).
+        registro de jobs implementados (W1: `outbox`; W10: `open_exercise`).
+
+        `open_exercise` (spec calendar §5, ADR-0024): sela o exercício corrente e o seguinte de cada Second Home
+        formalizada, um exercício por transação, com a custódia raiz de cada noite. Contagens: `formalized`, `due`,
+        `sealed`, `already_sealed`, `failed` (cada falha gera o alerta `open_exercise_failure`, TECH-101) e
+        `deferred` (orçamento de tempo esgotado; a próxima execução continua). Falha de item não muda o status 200.
       operationId: runJob
       security:
         - cronSecret: []
@@ -2157,7 +2162,7 @@ paths:
           description: Nome do job no TECH-090.
           schema:
             type: string
-            enum: [outbox]
+            enum: [outbox, open_exercise]
       responses:
         '200':
           description: Execução concluída

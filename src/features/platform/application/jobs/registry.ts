@@ -2,7 +2,11 @@ import { isJobName, type JobName } from './names';
 
 /** Contagens de uma execução de job (schema `JobResult` do OpenAPI). */
 export type JobResult = Readonly<Record<string, number>>;
-export type JobRunner = () => Promise<JobResult>;
+/** Contexto da invocação (W10): o `correlation_id` do request que disparou o job (cron, `after()` ou manual). */
+export interface JobContext {
+  readonly correlationId: string;
+}
+export type JobRunner = (context?: JobContext) => Promise<JobResult>;
 
 /** Registro de jobs implementados, separado do registro de consumidores do outbox. */
 export class JobRegistry {

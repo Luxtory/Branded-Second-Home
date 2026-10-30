@@ -9,6 +9,7 @@ import {
   CRITICAL_COMMANDS,
   MODULES,
   NON_CRITICAL_OPERATIONS,
+  SYSTEM_COMMANDS,
   type Authority,
   type CommandSpec,
   type MembershipRule,
@@ -95,7 +96,33 @@ describe('registro de commands (TECH-051, TECH-011)', () => {
     expect(CRITICAL_COMMANDS.every((spec) => spec.critical)).toBe(true);
     expect(NON_CRITICAL_OPERATIONS.every((spec) => !spec.critical)).toBe(true);
     expect(NON_CRITICAL_OPERATIONS.filter((spec) => table.has(spec.name))).toEqual([]);
-    expect(commandRegistry.list()).toEqual([...CRITICAL_COMMANDS, ...NON_CRITICAL_OPERATIONS]);
+    expect(commandRegistry.list()).toEqual([
+      ...CRITICAL_COMMANDS,
+      ...NON_CRITICAL_OPERATIONS,
+      ...SYSTEM_COMMANDS,
+    ]);
+  });
+
+  it('[TECH-090] commands de sistema ficam fora do TECH-051 e cada um pertence a um único job', () => {
+    expect(SYSTEM_COMMANDS).toEqual([
+      {
+        name: 'open_exercise',
+        module: 'calendar',
+        authority: 'system',
+        membership: 'not_applicable',
+        critical: false,
+        job: 'open_exercise',
+      },
+    ]);
+    expect(SYSTEM_COMMANDS.filter((spec) => tech051Table().has(spec.name))).toEqual([]);
+    expect(
+      SYSTEM_COMMANDS.every((spec) => spec.job !== undefined && spec.authority === 'system'),
+    ).toBe(true);
+    expect(
+      [...CRITICAL_COMMANDS, ...NON_CRITICAL_OPERATIONS].some(
+        (spec) => spec.authority === 'system',
+      ),
+    ).toBe(false);
   });
 
   it('[REQ-014] na W2 o registro não tem operação concedível a parceiros (grantee)', () => {

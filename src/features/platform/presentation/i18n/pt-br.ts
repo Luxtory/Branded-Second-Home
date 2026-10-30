@@ -47,4 +47,17 @@ export const messages = {
     ERR_UNSUPPORTED_MEDIA_TYPE: 'O formato do conteúdo enviado não é aceito.',
     ERR_RATE_LIMITED: 'Muitas tentativas em pouco tempo. Tente novamente mais tarde.',
   },
+  // Notificação de staff dos alertas operacionais (W10, TECH-101): só identificadores e códigos, nunca PII.
+  operationalAlert: {
+    subject: 'Luxtory — alerta operacional',
+    alert: 'Alerta',
+    scope: 'Escopo',
+    scopes: {
+      item: 'falha de itens; a execução terminou',
+      run: 'falha da execução inteira',
+    },
+    correlation: 'Correlation id',
+    details: 'Detalhes',
+    footer: 'Consulte o runbook (docs/how-to/operacao.md) e os logs deste correlation id.',
+  },
 } as const;

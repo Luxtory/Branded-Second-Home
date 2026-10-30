@@ -94,6 +94,54 @@ export interface AppCatalogTerm {
   slug: string;
 }
 
+export interface AppCentralInventory {
+  basis: string | null;
+  booking_id: string | null;
+  channel: string | null;
+  checkin_at: Timestamp | null;
+  custody_id: string | null;
+  exercise_year: number | null;
+  holder_kind: string | null;
+  inventory_origin: string | null;
+  is_leap_day: boolean | null;
+  occupancy_id: string | null;
+  purpose: string | null;
+  season: string | null;
+  second_home_id: string | null;
+  stake_id: string | null;
+  stay_date: Timestamp | null;
+}
+
+export interface AppDateCustody {
+  authorization_ref: string | null;
+  basis: string | null;
+  closed_at: Timestamp | null;
+  closed_by_operation: string | null;
+  holder_kind: string;
+  id: string;
+  inventory_origin: string | null;
+  opened_by_operation: string;
+  parent_custody_id: string | null;
+  purpose: string | null;
+  second_home_id: string;
+  stake_id: string | null;
+  stay_date: Timestamp;
+}
+
+export interface AppDateOccupancy {
+  booking_id: string;
+  channel: string;
+  custody_id: string;
+  id: string;
+  opened_by_operation: string;
+  release_reason: string | null;
+  released_at: Timestamp | null;
+  released_by_operation: string | null;
+  second_home_id: string;
+  stake_id: string | null;
+  stay_date: Timestamp;
+}
+
 export interface AppHolding {
   acquisition_id: string;
   id: string;
@@ -363,6 +411,24 @@ export interface AppInvestorAuthorization {
   valid_until: Timestamp | null;
 }
 
+export interface AppLuxtoryInventory {
+  basis: string | null;
+  booking_id: string | null;
+  channel: string | null;
+  checkin_at: Timestamp | null;
+  custody_id: string | null;
+  exercise_year: number | null;
+  holder_kind: string | null;
+  inventory_origin: string | null;
+  is_leap_day: boolean | null;
+  occupancy_id: string | null;
+  purpose: string | null;
+  season: string | null;
+  second_home_id: string | null;
+  stake_id: string | null;
+  stay_date: Timestamp | null;
+}
+
 export interface AppLuxtoryLegalIdentity {
   basis_ref: string;
   document_type: Generated<string | null>;
@@ -501,6 +567,16 @@ export interface AppSecondHomeConfiguration {
   participation_bps: number;
 }
 
+export interface AppSecondHomeDate {
+  checkin_at: Timestamp;
+  exercise_year: Generated<number | null>;
+  is_leap_day: Generated<boolean | null>;
+  sealed_at: Generated<Timestamp>;
+  season: string;
+  second_home_id: string;
+  stay_date: Timestamp;
+}
+
 export interface AppSecondHomeInitialAllocation {
   basis_ref: string;
   configuration_id: number;
@@ -576,6 +652,9 @@ export interface DB {
   'app.authorization_grant': AppAuthorizationGrant;
   'app.brand_partner': AppBrandPartner;
   'app.catalog_term': AppCatalogTerm;
+  'app.central_inventory': AppCentralInventory;
+  'app.date_custody': AppDateCustody;
+  'app.date_occupancy': AppDateOccupancy;
   'app.holding': AppHolding;
   'app.home_concept': AppHomeConcept;
   'app.home_concept_curation': AppHomeConceptCuration;
@@ -599,6 +678,7 @@ export interface DB {
   'app.interest_contact': AppInterestContact;
   'app.interest_qualification': AppInterestQualification;
   'app.investor_authorization': AppInvestorAuthorization;
+  'app.luxtory_inventory': AppLuxtoryInventory;
   'app.luxtory_legal_identity': AppLuxtoryLegalIdentity;
   'app.notification': AppNotification;
   'app.operation': AppOperation;
@@ -611,6 +691,7 @@ export interface DB {
   'app.second_home': AppSecondHome;
   'app.second_home_administration': AppSecondHomeAdministration;
   'app.second_home_configuration': AppSecondHomeConfiguration;
+  'app.second_home_date': AppSecondHomeDate;
   'app.second_home_initial_allocation': AppSecondHomeInitialAllocation;
   'app.second_home_operation_start': AppSecondHomeOperationStart;
   'app.spe': AppSpe;

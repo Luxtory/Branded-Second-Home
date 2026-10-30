@@ -30,6 +30,8 @@ citing the canonical IDs):
 - [admin](admin.md) — módulo `admin`: superfície `/admin` no App Shell (W2, W2B, W3)
 - [catalog](catalog.md) — módulo `catalog`: Brand Partner, Home Concept e versões, Home Edition, Second Home, autorização do Investor (W3, W4.2 §17); Discovery público B2C (§13) e [B2B Brand Partners (§14)](catalog.md#14-discovery-público-b2b-brand-partners-bp1), com `P-BP-01` resolvida
 - [ownership](ownership.md) — módulo `ownership`: manifestação de interesse a partir da Home Edition e visão agrupada do Admin (W5, W4.2 §13)
+- [calendar](calendar.md) — módulo `calendar`: classificação civil (W8) e selagem do exercício com o job `open_exercise` (W10)
+- [inventory](inventory.md) — módulo `inventory`: custódia por noite, ocupação, matriz da TECH-023 e Inventário Central (W10)
 
 **Cross-cutting specs** (not a `src/features/` slice):
 

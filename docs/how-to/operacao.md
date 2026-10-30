@@ -16,6 +16,8 @@ Production da Vercel**, nunca em Preview ou Development.
 | `DRAW_BEACON_TIMEOUT_MS` | `8000` (proposto; idem) | Vercel, Production | orçamento total para obter e verificar a rodada da drand, somando os relays; **menor** que o anterior, senão o sorteio fica pendente |
 | `DRAW_BEACON_LEAD_SECONDS` | `120` (proposto; idem) | Vercel, Production | folga mínima entre o prazo de commit e a rodada alvo (latência final do commit e diferença de relógio) |
 | Cadência do job `outbox` | `17 6 * * *` (06:17 UTC, 1×/dia) | `vercel.json` → `crons` | varredura de segurança; o caminho normal é o disparo logo após o commit. O plano Hobby limita o cron a 1×/dia (ADR-0002) |
+| Cadência do job `open_exercise` | `23 4 * * *` (hora 04 UTC, 1×/dia) | `vercel.json` → `crons` | sela o exercício corrente e o seguinte de cada Second Home formalizada (W10); o caminho normal após uma formalização é o `after()`. No Hobby o disparo ocorre em qualquer minuto da hora, sem retry |
+| `OPS_ALERT_SEND_TIMEOUT_MS` | `5000` (proposto; **não criar sem autorização do fundador**) | Vercel, Production | prazo do e-mail de alerta à staff (W10); ausente → alerta só no log |
 
 ## Segredos
 
@@ -478,6 +480,35 @@ autoriza sorteio, formalização ou configuração produtiva.
    não deixa rastro além do log e é refeito com outra seed e outra rodada futura.
 7. **Rollback:** os `down` recusam descartar sorteios ou eventos agendados. Com fatos, preservar o banco e corrigir por
    migration nova; nunca desabilitar gatilhos (`session_replication_role` é só do fixture do E2E descartável).
+
+## Preparar a W10 em produção (custódia e selagem)
+
+Spec [`calendar`](../specs/calendar.md) §5 e [`inventory`](../specs/inventory.md),
+[ADR-0024](../adr/0024-custodia-selagem-e-fronteira-de-confianca.md). Merge só depois do checkpoint do fundador; a
+entrega não abre gates nem cria configuração produtiva.
+
+1. **Antes do merge:** conferência agregada e somente leitura no Production: `SELECT count(*) FROM app.acquisition;`.
+   Esperado `0` (com `ACQUISITION_WRITES` fechado, não há o que selar).
+2. Depois do merge autorizado, só o pipeline aplica as quatro migrations W10 (45 → 49). Conferir em leitura as três
+   tabelas vazias, RLS habilitada, privilégios de `luxtory_app` (SELECT; INSERT só em `second_home_date` e
+   `date_custody`) e nenhum privilégio de `authenticated`/`anon`. O cron `open_exercise` passa a rodar 1×/dia: sem
+   aquisição, o log mostra `job completed` com `formalized 0`, `sealed 0`, `failed 0`. Não exige variável nova.
+3. **Disparo manual** (recuperação depois de uma correção, sem esperar o cron): `read -rs CRON_SECRET` e
+   `curl -s -H "Authorization: Bearer $CRON_SECRET" https://branded-second-home.vercel.app/api/jobs/open_exercise`.
+   Idempotente: o que já está selado conta como `already_sealed`.
+4. **Alerta `open_exercise_failure`.** O log estruturado `operational alert` traz o escopo (`item`: a execução terminou
+   com itens falhos; `run`: a execução inteira falhou), o `correlation_id` e, por item, a Second Home, o exercício e o
+   código. Corrigir a causa e disparar o job (passo 3) ou aguardar o cron. Item `ERR_UNAVAILABLE` = timeout de lock
+   (transitório); `second_home_date_checkin_local` = regras de fuso divergentes entre Node e PostgreSQL (não selar à
+   força; investigar o fuso da Second Home).
+5. **Notificação de staff por e-mail — ativação só com autorização do fundador** (caixa de destino, remetente e se a
+   chave do Resend é dedicada ou reaproveitada). Criar na Vercel (Production) `OPS_ALERT_RESEND_API_KEY` (Sensitive),
+   `OPS_ALERT_EMAIL_FROM`, `OPS_ALERT_EMAIL_TO` e `OPS_ALERT_SEND_TIMEOUT_MS`, e refazer o deploy. Até lá, o alerta fica só
+   no log, com `staff notification configuration unavailable` nomeando as chaves — recusa segura, nunca envio simulado.
+6. **Ausência do cron** não gera alerta (o job não roda). Conferir periodicamente os logs do cron na Vercel até a
+   reconciliação da W30 ou o Vercel Pro (D1).
+7. **Rollback:** os `down` recusam descartar noites, custódias ou ocupações. Com fatos, preservar o banco e corrigir por
+   migration nova; nunca desabilitar gatilhos.
 
 ## Rotacionar segredos
 

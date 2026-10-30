@@ -107,7 +107,7 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 | 7 | Titulares: party cifrada, delegação, Área do Titular | identity | — | 2 | — | R2 | ⬜ próxima executável (W6 ✅ em 2026-10-21) → ✅ concluída (#61, squash `ef15bbb`, 2026-10-22; 6 migrations aplicadas; estrutura em Production sem dados reais e sem `PII_*`) |
 | 8 | Formalização e calendário civil | ownership, calendar | REQ-010, REQ-022, REQ-024, REQ-025, REQ-026, PD-003 | 3, 7 | — | R2 | ⬜ próxima executável (W7 ✅ em 2026-10-22) → ✅ concluída (#67, squash `266a0ae`, 2026-10-27; 6 migrations aplicadas, 42 no total; Production sincronizada com os gates operacionais fechados) |
 | 9 | Sorteio auditável | ownership | PD-011 | 8 | 10 | R2 | ⬜ próxima executável (W8 ✅ em 2026-10-27); ainda não iniciada → ✅ concluída (#71, squash `a6a1f6b`, 2026-10-29; 2 migrations aplicadas, 44 no total; Production sincronizada com os gates operacionais fechados; executada em sequência, sem paralelismo com a W10 — D3) |
-| 10 | Custódia e selagem | calendar, inventory | REQ-040, INV-2, INV-3 | 8 | 9 | R2 | ⬜ → próxima executável (W9 ✅ em 2026-10-29), em sequência (D3); ainda não iniciada |
+| 10 | Custódia e selagem | calendar, inventory | REQ-040, INV-2, INV-3 | 8 | 9 | R2 | ⬜ → próxima executável (W9 ✅ em 2026-10-29), em sequência (D3); ainda não iniciada → 🔄 em execução (plano aprovado em 2026-10-29; [`w10-custodia-e-selagem.md`](w10-custodia-e-selagem.md), PR draft) |
 | 11 | Direito de Uso, janelas e rotações | calendar | REQ-030, REQ-031, REQ-032, REQ-033, REQ-039, PD-004, INV-4, INV-5 | 9, 10 | — | R2 | ⬜ |
 | 12 | Reserva de uso próprio | booking | REQ-034, REQ-035, REQ-037, PD-002, INV-1 | 11 | — | R2 | ⬜ |
 | 13 | Cancelamento, no-show, recuperação e exceção | booking, inventory | REQ-080, REQ-081, REQ-083, PD-010 | 12 | — | R2 | ⬜ |
@@ -1012,6 +1012,15 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   open_exercise cria a custódia owner da Second Home Owner formalizada` · `[TECH-110] check-in 14:00 e check-out
   10:00 locais convertidos em UTC`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-040,INV-2,INV-3 exits 0, stop after 5 tries`
+- **Execução (2026-10-29)**: plano aprovado pelo fundador após auditoria — [`w10-custodia-e-selagem.md`](w10-custodia-e-selagem.md),
+  [ADR-0024](../adr/0024-custodia-selagem-e-fronteira-de-confianca.md). Os critérios acima ficam; a rastreabilidade
+  distingue o que a W10 entrega: **INV-3 completo**; **REQ-040 e INV-2 na parte estrutural** (barreiras, cadeia de
+  origem, matriz, entrada no Inventário Luxtory sem command da wave dona recusada) — a prova econômica (capacidade
+  anual Luxtory, Créditos ao cedente, ausência de compensação na recuperação, settlements apontando à custódia) é
+  complemento de W13, W14, W17, W19 e W20, sem declarar os IDs integralmente entregues antes disso. Acrescentados:
+  `[TECH-090]` repetição, execuções simultâneas, queda, timeout, orçamento e falha → correção → sucesso produzem uma
+  selagem e uma custódia ativa por noite · `[TECH-101]` alerta de item e de execução, transporte simulado e recusa
+  segura sem configuração · `[TECH-053]` duas conexões reais nas duas ordens. Pendências novas: P-12, P-13, P-14.
 
 ### Wave 11 — Direito de Uso, janelas e rotações
 
@@ -1407,7 +1416,8 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 - **Complementos** (acrescentam casos à suíte da dona): REQ-022, REQ-024 e REQ-025 em W5, W6 e W10 · REQ-027 em W8 e
   W19 · REQ-031 em W12 · REQ-032 em W15 e W27 · REQ-035 e REQ-051 em W21–W25 · REQ-038 em W8 e W19 · REQ-095 em
   cada wave com command Admin (PRL na W16) · REQ-096 em W3, W12, W13, W15 e W17 · REQ-097 em cada wave que emite
-  evento · REQ-100 e REQ-101 na varredura da W0 e em toda tela · PD-009 em W21–W25 · PD-010 na W18 · PD-011 na W1.
+  evento · REQ-100 e REQ-101 na varredura da W0 e em toda tela · PD-009 em W21–W25 · PD-010 na W18 · PD-011 na W1 ·
+  REQ-040 e INV-2 (dona W10, parte estrutural) com a prova econômica em W13, W14, W17, W19 e W20.
 - **INV como regressão transversal**: as consultas de INV-1…INV-6 rodam após todo teste `db` a partir da wave em que
   as tabelas nascem (W10, W11, W17); a conciliação da W30 reusa as mesmas consultas.
 - **Edge cases (`02` §15)**: EC-1 e EC-2 → W12 · EC-3 → W8 · EC-4 → W11/W12 · EC-5 → W14 · EC-6, EC-7 e EC-9 → W21 ·
@@ -1433,6 +1443,9 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 | P-9 | SMTP próprio (D4) — **resolvida em 2026-09-27**: SMTP customizado do Supabase Auth com Resend | go-live do login de Titulares (W7) | SMTP padrão do Supabase só envia a membros da org; notificações dentro do app. Resolvida: o login por código envia pelo Resend (credencial só no Supabase, nunca no repositório) |
 | P-10 | Banco Upstash Redis + envs (`NOTES.md`) | go-live das escritas públicas (W5, W6) e do formulário BP1 | sem Redis a escrita pública/envio é recusada; testes com fake |
 | P-11 | **Lacuna normativa**: o `02` exige cancelamento de Request aceita, Direct, Luxplus e locação pela política (PD-006, PD-009, REQ-082), mas a tabela fechada do TECH-051 só tem `cancel_own_use_booking` | cancelamento pelo usuário nesses mecanismos (W18, W22–W25) | nenhum command criado; avaliação só no domínio; no-show e exceção seguem pelos commands existentes; exige nova versão do `03` (D6) |
+| P-12 | **Lacuna normativa (W10)**: a TECH-022 não tem saída de `luxtory/{maintenance, marketing, promotion, production}` — capacidade selecionada pela Luxtory para finalidade fora do inventário não volta à SPE nem muda de finalidade | liberação ou troca de finalidade da seleção Luxtory (W14) | gatilho recusa a transição (tabela fechada); nenhuma saída presumida; exige nova versão do `03` (D7) |
+| P-13 | **Lacuna normativa (W10)**: a TECH-022 não tem saída de `use_right/delinquency` — fim da inadimplência ou da autorização não devolve a custódia | encerramento da autorização de inadimplência (W27) | gatilho recusa a transição; nenhuma saída presumida; exige nova versão do `03` (D7) |
+| P-14 | Horizonte de reserva do Owner (W10): a selagem cobre o exercício corrente e o seguinte para as duas modalidades; o `01`/`02` não fixam até quando o Owner pode reservar à frente (REQ-037) | reserva do Owner além do exercício seguinte (W12) | noite não selada recusa a operação (falha fechada); decidir na W12 com o fundador, sem diferença Owner/Co-Owner presumida |
 
 ### Riscos
 
@@ -1461,6 +1474,7 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 | D5b | Este arquivo: seção DS e Anexo A preservados byte a byte; plano Luxtory acrescentado no topo | — | adotada em 2026-09-25 |
 | D5c | R1 pode ir ao ar só com Discovery (W3–W4) se P-3 atrasar? | — | aberta |
 | D6 | Encaminhar P-11 à Luxtory: nova versão do `03` com command de cancelamento para os mecanismos do Club | encaminhar antes da W18 | aberta |
+| D7 | Encaminhar P-12 e P-13 à Luxtory: saídas da TECH-022 para `luxtory/{finalidade ≠ inventory}` e `use_right/delinquency` | encaminhar antes da W14 | registrada na W10 (2026-10-29); **aprovada pelo fundador em 2026-10-30**: encaminhar à revisão normativa antes da W14, sem alterar os canônicos agora |
 
 ### Registro da revisão (2026-09-25)
 

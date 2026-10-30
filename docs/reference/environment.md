@@ -56,6 +56,11 @@ Regras:
 | `SUPABASE_SECRET_KEY` | Vercel (Sensitive, só servidor) | Admin API do Supabase Auth (convites, W7) e, desde a Wave 4.1, o Supabase Storage privado da mídia do catálogo (cabeçalho `apikey`, ADR-0015); só no formato `sb_secret_…` — a `service_role` legada é recusada; **só Production** | W7 (antecipada na 4.1) |
 | `PII_ENCRYPTION_KEYRING` | Vercel (Sensitive, só servidor) | cifra AES-256-GCM de CPF/CNPJ, com `key_id` (ADR-0002). W7: só Production; formato `id:base64,…` (32 bytes por chave); chave antiga fica no anel enquanto houver valor cifrado com ela (ADR-0020) | W7 |
 | `PII_ENCRYPTION_ACTIVE_KEY_ID` | Vercel (Sensitive, só servidor) | chave ativa para novas cifras | W7 |
+| `OPS_ALERT_MODE` | local e CI | `fake` = notificação de staff dos alertas operacionais em memória (nenhum e-mail real); recusado quando `VERCEL_ENV` existe, inclusive em Preview. Ausente = Resend, se configurado | W10 |
+| `OPS_ALERT_RESEND_API_KEY` | Vercel (Sensitive, só servidor) — Production, **ativação posterior autorizada pelo fundador** | e-mail de alerta à staff (`open_exercise_failure`, TECH-101) pela API HTTP do Resend; formato `re_…`; chave própria por finalidade (o valor pode ser dedicado ou o mesmo da BP1, decisão de ativação). Ausente ou inválida → alerta só no log | W10 |
+| `OPS_ALERT_EMAIL_FROM` | Vercel — Production, ativação posterior | remetente verificado no Resend | W10 |
+| `OPS_ALERT_EMAIL_TO` | Vercel — Production, ativação posterior | caixa de operação da staff; nunca vem do client | W10 |
+| `OPS_ALERT_SEND_TIMEOUT_MS` | Vercel — Production, ativação posterior | prazo do envio do alerta; valor no runbook | W10 |
 | `PII_HMAC_KEY` | Vercel (Sensitive, só servidor) | HMAC de busca, segredo separado (TECH-100) — **não adotada**: substituída na W7 pelo anel abaixo ([ADR-0020](../adr/0020-party-cifrada-e-delegacao.md)) | W7 |
 | `PII_HMAC_KEYRING` | Vercel (Sensitive, só servidor) — só Production | anel do HMAC de busca/deduplicação do CPF/CNPJ e do pseudônimo do hash de idempotência (`id:base64,…`, 32 bytes por chave); a party grava um digest por chave do anel; material nunca igual ao do anel de cifra; rotação em fases e chave antiga só sai depois de reindexar (runbook, ADR-0020) | W7 |
 | `PII_HMAC_ACTIVE_KEY_ID` | Vercel (Sensitive, só servidor) — só Production | chave do anel do HMAC usada nas linhas novas | W7 |

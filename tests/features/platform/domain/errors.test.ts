@@ -26,6 +26,15 @@ describe('códigos de erro (TECH-056)', () => {
     expect(rejectionForConstraint('operation_actor_check')).toBeNull();
   });
 
+  it('[TECH-056] os índices do 03 §3.2 mapeiam pelo nome exato: ocupação e custódia (W10)', () => {
+    expect(rejectionForConstraint('uq_occupancy_active')).toBe('ERR_BOOKING_CONFLICT');
+    expect(rejectionForConstraint('uq_custody_active')).toBe('ERR_CAPACITY_UNAVAILABLE');
+    expect(rejectionForConstraint('custody_occupancy_matrix')).toBe('ERR_CAPACITY_UNAVAILABLE');
+    expect(rejectionForConstraint('uq_other_index')).toBeNull();
+    // Proveniência da operação é erro de código, não recusa funcional.
+    expect(rejectionForConstraint('inventory_operation_provenance')).toBeNull();
+  });
+
   it('[REQ-098] cada causa funcional do REQ-098 aponta para ao menos um código do TECH-056', () => {
     expect(Object.keys(REQ_098_CAUSES)).toHaveLength(10);
     for (const codes of Object.values(REQ_098_CAUSES)) {

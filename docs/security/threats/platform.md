@@ -215,3 +215,56 @@ Repúdio não se aplica à W0: não há mutation. A trilha de auditoria chega na
 - **Verificação**: E2E com zero erro de console (uma violação de CSP aparece como erro) em todas as telas públicas e
   do Admin; teste unitário do cabeçalho e do matcher.
 - **Residual**: `'unsafe-eval'` só em `next dev` (desenvolvimento local), nunca no build servido.
+
+## W10 — selagem, custódia e alerta operacional (2026-10-29)
+
+Superfície nova: um job (`open_exercise`) na rota existente `/api/jobs/{job}`, um command de sistema, o disparo
+pós-commit da formalização, três tabelas de estado crítico (noite, custódia, ocupação) e uma integração de saída
+(e-mail de alerta pelo Resend, fornecedor já contratado). Nenhum endpoint, segredo ou papel novo em Production.
+Decisão: ADR-0024.
+
+### T-1001 [HIGH] Elevation/Tampering — operação forjada pelo papel da aplicação
+
+- **Vector**: código (ou SQL injetado) rodando como `luxtory_app` insere uma operação `pending` com o command de sistema
+  e grava custódia ou ocupação sem passar pelo guard.
+- **Mitigation**: a raiz é autorizada pelos fatos — primeira custódia da noite, modalidade da aquisição, noite selada,
+  classificação e check-in canônicos —, então uma operação forjada só obtém a selagem que o sistema faria; operação já
+  encerrada é recusada; sem `UPDATE` em `date_custody` e sem `INSERT`/`UPDATE` em
+  `date_occupancy` e com o gate `app.assert_inventory_transition_enabled` (recusa todo papel exceto o dono do schema,
+  mesmo com privilégio concedido), nenhuma transição ou ocupação é executável pela aplicação na W10; selagem limitada
+  pelo banco ao exercício corrente e ao seguinte (relógio do servidor, nas duas pontas) e `sealed_at` carimbado pelo
+  banco; SQL só parametrizado (Kysely, Semgrep). Uma operação `pending` comitada pelo próprio papel é reutilizável — sem
+  capacidade além da de inserir uma nova. A falta
+  da trilha do executor é sinal de anomalia, não prova: `luxtory_app` também grava `idempotency_record` e `audit_log`.
+- **Residual**: o banco não prova que o guard rodou — fronteira de confiança no servidor da aplicação, como em todos os
+  commands desde a W1; a trilha não é independente do mesmo papel até a W30. Efeito máximo na W10: selar, de forma
+  canônica, um exercício já devido antes do cron, sem efeito econômico — aceito pelo fundador em 2026-10-30,
+  estritamente limitado a essa selagem estrutural e condicionado (ADR-0024, "Aceitação do risco residual da W10"). Condição de resolução: antes da primeira wave
+  que habilitar cada transição, decidir com o fundador a autorização no banco, implementá-la, verificá-la e só então
+  substituir o gate. Superusuário contorna gatilhos (D5, até a W30).
+- **Owner**: Engenharia · **Tracking**: `tests/migrations/inventory.db.test.ts` (privilégios e operação forjada)
+
+### T-1002 [MEDIUM] Tampering — reescrita do histórico ou da classificação
+
+- **Vector**: UPDATE/DELETE em noite selada ou custódia; reclassificação de temporada; bifurcação da cadeia.
+- **Mitigation**: noite selada sem UPDATE/DELETE/TRUNCATE; custódia só fecha, uma vez, por operação `pending`;
+  `UNIQUE(parent_custody_id)`; `CHECK` de temporada canônica (validação na escrita, sem coluna gerada que uma correção
+  futura recalcularia); mesmas regras para o superusuário (gatilhos).
+- **Owner**: Engenharia · **Tracking**: `inventory.db.test.ts`
+
+### T-1003 [MEDIUM] Denial of service / Repudiation — selagem que não acontece
+
+- **Vector**: cron não entregue (Hobby: sem retry, entrega best effort), falha de item, configuração ausente, função
+  interrompida no teto de 300 s.
+- **Mitigation**: `after()` logo após a formalização + cron diário; idempotente por item e retomável; orçamento de 240 s;
+  alerta `open_exercise_failure` fora do outbox (log sempre; e-mail quando configurado); operação sobre noite não selada
+  falha fechada (FK), nunca presume disponibilidade.
+- **Residual**: a ausência de execução do cron não é detectável pelo próprio job — reconciliação da W30 ou Vercel Pro (D1).
+- **Owner**: Engenharia · **Tracking**: `open-exercise.db.test.ts`, `open-exercise-job.test.ts`, `job-dispatch.test.ts`
+
+### T-1004 [LOW] Information disclosure — conteúdo do alerta
+
+- **Vector**: e-mail de alerta com PII, payload de usuário ou resposta bruta do provedor.
+- **Mitigation**: o alerta só carrega ids técnicos, anos e códigos de erro; destinatário e remetente vêm do servidor;
+  credencial própria por finalidade (`OPS_ALERT_RESEND_API_KEY`); a resposta do provedor nunca é logada.
+- **Owner**: Engenharia · **Tracking**: `operational-alert.test.ts`

@@ -37,6 +37,7 @@ export type {
 export {
   commandRegistry,
   CommandRegistry,
+  SYSTEM_COMMANDS,
   type Authority,
   type CommandSpec,
   type Module,
@@ -52,6 +53,22 @@ export {
 } from './application/commands/executor';
 export type { OutboxConsumer, OutboxEvent } from './application/outbox/consumers';
 export type { JobName } from './application/jobs/names';
+export type { JobContext, JobResult, JobRunner } from './application/jobs/registry';
+export { systemCommandGuard } from './application/commands/system-guard';
+export {
+  OPERATIONAL_ALERTS,
+  createOperationalAlert,
+  type OperationalAlert,
+  type OperationalAlertEvent,
+  type OperationalAlertKind,
+  type StaffNotificationTransport,
+} from './application/alerts';
+export { createFakeStaffNotification } from './infrastructure/alerts/fake-staff-notification';
+export {
+  composeStaffNotification,
+  createProductionOperationalAlert,
+} from './presentation/operational-alert';
+export { dispatchJobAfterCommit } from './presentation/job-dispatch';
 export {
   getDatabase,
   type Database,

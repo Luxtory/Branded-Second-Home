@@ -1,5 +1,6 @@
 import { createCommandExecutor, type CommandExecutor } from '../../application/commands/executor';
 import type { CommandGuard } from '../../application/commands/ports';
+import type { Clock } from '../../application/clock';
 import type { LogPort } from '../../application/log';
 import { getDatabase, type Database, type DatabaseTransaction } from '../database/connection';
 import { loadRuntimeConfig, type EnvSource } from '../env';
@@ -12,6 +13,8 @@ export interface ProductionExecutorDependencies {
   readonly source?: EnvSource;
   /** Banco da aplicação; padrão: `getDatabase(source)`. */
   readonly database?: Database;
+  /** Relógio injetável (TECH-110); padrão: o do sistema. */
+  readonly clock?: Clock;
 }
 
 /**
@@ -23,12 +26,13 @@ export function createProductionExecutor({
   log,
   source,
   database,
+  clock = systemClock,
 }: ProductionExecutorDependencies): CommandExecutor<DatabaseTransaction> {
   const limits = loadRuntimeConfig(['COMMAND_MAX_ATTEMPTS', 'COMMAND_LOCK_TIMEOUT_MS'], source);
   return createCommandExecutor({
     store: createPostgresCommandStore(database ?? getDatabase(source)),
     guard,
-    clock: systemClock,
+    clock,
     limits: {
       maxAttempts: limits.COMMAND_MAX_ATTEMPTS,
       lockTimeoutMs: limits.COMMAND_LOCK_TIMEOUT_MS,

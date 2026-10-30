@@ -1,3 +1,4 @@
+import { createOpenExerciseJob } from '@/features/calendar/jobs';
 import { createInitialDrawConsumers } from '@/features/ownership';
 import type { Clock } from '../../application/clock';
 import { JobRegistry, type JobRunner } from '../../application/jobs/registry';
@@ -51,5 +52,9 @@ export function createOutboxDispatch({
 
 /** Jobs implementados, com as dependências de produção. */
 export function createJobRegistry(environment: JobEnvironment): JobRegistry {
-  return new JobRegistry({ outbox: createOutboxDispatch(environment) });
+  return new JobRegistry({
+    outbox: createOutboxDispatch(environment),
+    // W10 — selagem e custódia raiz (spec calendar §5).
+    open_exercise: createOpenExerciseJob(environment),
+  });
 }
