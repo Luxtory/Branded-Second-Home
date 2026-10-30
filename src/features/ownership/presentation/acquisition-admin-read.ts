@@ -123,9 +123,15 @@ export function readAcquisitionAdmin(
         .select(['id', 'party_id', 'legal_form'])
         .where('second_home_id', '=', id)
         .executeTakeFirst();
+      // Só as concessões da formalização (W8): os movimentos seguintes do ledger (W11) são do calendar.
       const ledger = await tx
         .selectFrom('app.use_right_ledger as l')
         .innerJoin('app.stake as s', 's.id', 'l.stake_id')
+        .innerJoin('app.acquisition as a', (join) =>
+          join
+            .onRef('a.id', '=', 'l.acquisition_id')
+            .onRef('a.operation_id', '=', 'l.operation_id'),
+        )
         .select([
           'l.id',
           'l.exercise_year',
@@ -135,6 +141,8 @@ export function readAcquisitionAdmin(
           's.allocation_position',
         ])
         .where('l.second_home_id', '=', id)
+        .where('l.movement', '=', 'grant')
+        .$narrowType<{ source: string }>()
         .orderBy('s.allocation_position')
         .orderBy('l.bucket')
         .execute();

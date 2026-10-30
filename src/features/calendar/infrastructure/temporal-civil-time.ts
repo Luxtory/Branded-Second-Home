@@ -42,4 +42,11 @@ export const temporalCivilTime: CivilTime = {
     localEpochMilliseconds(date, timezone, CHECK_IN_HOUR),
   checkOutEpochMilliseconds: (date, timezone) =>
     localEpochMilliseconds(date, timezone, CHECK_OUT_HOUR),
+  startOfDayEpochMilliseconds: (date, timezone) => localEpochMilliseconds(date, timezone, 0),
+  addLocalDaysEpochMilliseconds: (epochMilliseconds, days, timezone) =>
+    Temporal.Instant.fromEpochMilliseconds(epochMilliseconds)
+      .toZonedDateTimeISO(timezone)
+      .toPlainDateTime()
+      .add({ days })
+      .toZonedDateTime(timezone, { disambiguation: 'reject' }).epochMilliseconds,
 };

@@ -30,6 +30,10 @@ export interface CivilTime {
   addDays(date: CivilDate, days: number): CivilDate;
   checkInEpochMilliseconds(date: CivilDate, timezone: string): number;
   checkOutEpochMilliseconds(date: CivilDate, timezone: string): number;
+  /** 00:00 local da data (W11: janelas e fim efetivo do Direito de Uso); hora inexistente ou ambígua é recusada. */
+  startOfDayEpochMilliseconds(date: CivilDate, timezone: string): number;
+  /** Soma dias civis mantendo a hora local (W11, TECH-042: "+7 dias"); hora inexistente ou ambígua é recusada. */
+  addLocalDaysEpochMilliseconds(epochMilliseconds: number, days: number, timezone: string): number;
 }
 
 export interface CivilCalendar {

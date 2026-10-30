@@ -113,6 +113,14 @@ describe('registro de commands (TECH-051, TECH-011)', () => {
         critical: false,
         job: 'open_exercise',
       },
+      {
+        name: 'close_exercise',
+        module: 'calendar',
+        authority: 'system',
+        membership: 'not_applicable',
+        critical: false,
+        job: 'close_exercise',
+      },
     ]);
     expect(SYSTEM_COMMANDS.filter((spec) => tech051Table().has(spec.name))).toEqual([]);
     expect(

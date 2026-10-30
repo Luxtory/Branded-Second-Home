@@ -12,3 +12,10 @@ export {
   type AcquisitionModality,
   type FormalizedSecondHome,
 } from './infrastructure/formalized-second-homes';
+// W11: fatos imutáveis da formalização e do sorteio para o Direito de Uso do calendar (spec calendar §6).
+export {
+  findUseRightFacts,
+  listUseRightFacts,
+  stakeHolders,
+  type UseRightFacts,
+} from './infrastructure/use-right-facts';

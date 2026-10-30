@@ -631,19 +631,33 @@ export interface AppStake {
   spe_id: string;
 }
 
+export interface AppUseRightBalance {
+  bucket: string;
+  consumed: Generated<number>;
+  exercise_year: number;
+  expired: Generated<number>;
+  granted: number;
+  remaining: Generated<number | null>;
+  second_home_id: string;
+  stake_id: string;
+}
+
 export interface AppUseRightLedger {
   acquisition_id: string;
   bucket: string;
   created_at: Timestamp;
+  effective_at: Timestamp | null;
   exercise_year: number;
   id: string;
   initial_allocation_id: string | null;
   movement: string;
   operation_id: string;
   quantity: number;
+  refers_to_id: string | null;
   second_home_id: string;
-  source: string;
+  source: string | null;
   stake_id: string;
+  stay_date: Timestamp | null;
 }
 
 export interface DB {
@@ -697,5 +711,6 @@ export interface DB {
   'app.spe': AppSpe;
   'app.staff_role': AppStaffRole;
   'app.stake': AppStake;
+  'app.use_right_balance': AppUseRightBalance;
   'app.use_right_ledger': AppUseRightLedger;
 }
