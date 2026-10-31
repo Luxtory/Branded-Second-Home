@@ -92,6 +92,14 @@ prévia calculada no servidor → confirmação; lista de reservas e detalhe; ce
 `lx-calendar` no Design System. Mobile-first a partir de 320 px (ADR-0009). Terminologia: "noites", "Direito de Uso"
 (Co-Owner), "uso próprio" (Owner); nunca "diária(s)" nem "cota" (REQ-100).
 
+Seletor de período proposto no checkpoint E5a (aguarda aprovação do fundador): **híbrido** — os campos de data nativos
+continuam a entrada canônica do formulário, e o calendário interativo, sincronizado com eles, escolhe entrada (1º toque) e
+saída (2º toque). Um período contínuo por reserva (D5). A saída não consome noite (PD-002), então uma noite indisponível
+pode ser a data de saída. Conflitos (noite indisponível, passada, fora do calendário, janela não aberta, saldo,
+permanência) são explicados no resumo, nunca ajustados automaticamente; "Confirmar reserva" só habilita depois de uma
+prévia válida do servidor para as mesmas datas; sem preço por noite. Contrato visual e de teclado: `lx-calendar` em
+`docs/reference/design-system.md`.
+
 ## 8. Aceite
 
 `[INV-1][CONC-1]` reservas concorrentes na mesma noite → exatamente uma, a outra `ERR_BOOKING_CONFLICT` · `[CONC-2]`

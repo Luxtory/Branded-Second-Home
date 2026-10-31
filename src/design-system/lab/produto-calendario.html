@@ -4,12 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Luxtory — Lab: Calendário do Titular</title>
+  <title>Luxtory — Lab: Reservar uso próprio</title>
   <link rel="stylesheet" href="../styles/index.css">
+  <script src="calendario.js" defer></script>
 </head>
 <body data-ground="paper">
-  <!-- Demonstração do lx-calendar na Área do Titular (W12, revisão E5a). Conteúdo de exemplo, nunca fonte de copy: as
-       datas, os saldos e a disponibilidade vêm do servidor e são conferidos de novo na confirmação. -->
+  <!-- Protótipo E5a da W12 (seletor híbrido de período). Dados FICTÍCIOS de demonstração, nunca fonte de copy nem de
+       regra: no app, disponibilidade, janela, saldo e prévia vêm do servidor, que confere tudo de novo na confirmação.
+       O comportamento aqui (calendario.js) demonstra a interação; na E5b ele vira componente React com prévia do
+       servidor. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="i-alert" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M12 3L22 20H2L12 3z"/><path d="M12 10v5M12 17.5v.5"/></g></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+  </svg>
   <div class="lx-app" data-expression="product">
     <a class="lx-skip-link" href="#conteudo">Pular para o conteúdo</a>
     <header class="lx-app__bar" data-ground="night">
@@ -17,145 +25,61 @@
     </header>
     <main class="lx-app__main" id="conteudo" tabindex="-1">
       <div class="lx-container">
+        <div class="lx-field" data-lab-scenario style="margin-block-end: var(--lx-space-8)">
+          <label class="lx-label" for="cenario">Cenário de demonstração (dados fictícios)</label>
+          <select class="lx-input" id="cenario">
+            <option value="co-owner">Co-Owner — janela aberta, com saldo</option>
+            <option value="co-owner-fechada">Co-Owner — janela ainda não aberta</option>
+            <option value="co-owner-saldo">Co-Owner — saldo de Alta/Super Alta insuficiente</option>
+            <option value="co-owner-29">Co-Owner — sem o direito ao 29/02 em 2028</option>
+            <option value="co-owner-virada">Co-Owner — virada de exercício (2028 → 2029)</option>
+            <option value="owner">Owner — propriedade integral</option>
+            <option value="carregando">Carregando disponibilidade</option>
+            <option value="erro">Falha ao carregar</option>
+            <option value="vazio">Sem noites abertas</option>
+          </select>
+        </div>
+
         <header class="lx-page-header">
-          <h1 class="lx-display-m">Casa Ipê · uso próprio</h1>
-          <p class="lx-lead lx-page-header__lead">Reserve noites dentro do seu Direito de Uso. Disponibilidade, janela e saldo são conferidos de novo quando você confirma.</p>
+          <h1 class="lx-display-m">Reservar uso próprio</h1>
+          <p class="lx-lead lx-page-header__lead" data-context></p>
         </header>
-        <section class="lx-page-section" aria-labelledby="saldo">
-          <h2 id="saldo" class="lx-display-s">Seu Direito de Uso em 2028</h2>
-          <dl class="lx-evidence">
-            <div class="lx-evidence__item"><dt class="lx-evidence__label">Alta/Super Alta</dt><dd class="lx-evidence__value">41 de 48 noites</dd></div>
-            <div class="lx-evidence__item"><dt class="lx-evidence__label">Média/Baixa</dt><dd class="lx-evidence__value">121 de 128 noites</dd></div>
-            <div class="lx-evidence__item"><dt class="lx-evidence__label">29/02</dt><dd class="lx-evidence__value">1 noite</dd></div>
-            <div class="lx-evidence__item"><dt class="lx-evidence__label">Sua janela</dt><dd class="lx-evidence__value">Aberta desde 15/09/2027</dd></div>
-          </dl>
+
+        <section class="lx-page-section" aria-labelledby="direito">
+          <h2 id="direito" class="lx-display-s" data-rights-title>Seu Direito de Uso</h2>
+          <dl class="lx-evidence lx-evidence--inline" data-rights></dl>
         </section>
-        <section class="lx-page-section" aria-labelledby="reservar">
-          <h2 id="reservar" class="lx-display-s">Reservar</h2>
-          <form class="lx-form" novalidate>
-            <div class="lx-field">
-              <label class="lx-label" for="entrada">Entrada</label>
-              <p class="lx-hint" id="entrada-hint">Check-in às 14h. Cada data é a noite que começa nela.</p>
-              <input class="lx-input" id="entrada" name="checkin_date" type="date" value="2028-02-27" aria-describedby="entrada-hint">
+
+        <div class="lx-booking">
+          <section class="lx-booking__period" aria-labelledby="periodo">
+            <div class="lx-booking__intro">
+              <h2 id="periodo" class="lx-display-s">Escolha o período</h2>
+              <p class="lx-hint" id="periodo-hint">Escolha no calendário a entrada e depois a saída, ou digite as datas. A data de saída não consome noite: você sai às 10h.</p>
             </div>
-            <div class="lx-field">
-              <label class="lx-label" for="saida">Saída</label>
-              <p class="lx-hint" id="saida-hint">Check-out às 10h. A data de saída não consome Direito de Uso.</p>
-              <input class="lx-input" id="saida" name="checkout_date" type="date" value="2028-03-02" aria-describedby="saida-hint">
+            <div class="lx-booking__dates">
+              <div class="lx-field">
+                <label class="lx-label" for="entrada">Entrada</label>
+                <input class="lx-input" id="entrada" name="checkin_date" type="date" aria-describedby="periodo-hint">
+              </div>
+              <div class="lx-field">
+                <label class="lx-label" for="saida">Saída</label>
+                <input class="lx-input" id="saida" name="checkout_date" type="date" aria-describedby="periodo-hint">
+              </div>
             </div>
-            <div class="lx-form__row">
-              <button class="lx-button lx-button--quiet" type="button">Revisar</button>
+            <div class="lx-calendar" data-calendar>
+              <noscript><p class="lx-body">O calendário precisa de JavaScript; as datas podem ser digitadas acima.</p></noscript>
             </div>
-          </form>
-          <h3 class="lx-title">Revisão: 27/02 a 02/03/2028</h3>
-          <dl class="lx-evidence">
-            <div class="lx-evidence__item"><dt class="lx-evidence__label">Noites</dt><dd class="lx-evidence__value">4</dd></div>
-            <div class="lx-evidence__item"><dt class="lx-evidence__label">Alta/Super Alta</dt><dd class="lx-evidence__value">3</dd></div>
-            <div class="lx-evidence__item"><dt class="lx-evidence__label">29/02</dt><dd class="lx-evidence__value">1</dd></div>
-            <div class="lx-evidence__item"><dt class="lx-evidence__label">Permanência</dt><dd class="lx-evidence__value">4 de 14 noites seguidas</dd></div>
-          </dl>
-          <div class="lx-form__row">
-            <button class="lx-button lx-button--primary" type="button">Confirmar reserva</button>
-          </div>
-        </section>
-        <section class="lx-page-section" aria-labelledby="calendario">
-          <h2 id="calendario" class="lx-display-s">Calendário</h2>
-          <p class="lx-body">Calendário aberto até 31/12/2028.</p>
-          <ul class="lx-calendar__legend" aria-label="Legenda do calendário">
-            <li class="lx-calendar__legend-item"><span class="lx-calendar__night lx-calendar__swatch" data-state="available" aria-hidden="true"><span class="lx-calendar__date">8</span></span>Disponível</li>
-            <li class="lx-calendar__legend-item"><span class="lx-calendar__night lx-calendar__swatch" data-state="mine" aria-hidden="true"><span class="lx-calendar__date">8</span></span>Sua reserva</li>
-            <li class="lx-calendar__legend-item"><span class="lx-calendar__night lx-calendar__swatch" data-state="unavailable" aria-hidden="true"><span class="lx-calendar__date">8</span></span>Indisponível</li>
-            <li class="lx-calendar__legend-item"><span class="lx-calendar__night lx-calendar__swatch" data-state="closed" aria-hidden="true"><span class="lx-calendar__date">8</span></span>Ainda não reservável</li>
-            <li class="lx-calendar__legend-item"><span class="lx-calendar__night lx-calendar__swatch" data-state="past" aria-hidden="true"><span class="lx-calendar__date">8</span></span>Noite passada</li>
-            <li class="lx-calendar__legend-item"><span class="lx-calendar__night lx-calendar__swatch" data-state="available" data-season="alta" aria-hidden="true"><span class="lx-calendar__date">8</span></span>Alta/Super Alta</li>
-            <li class="lx-calendar__legend-item"><span class="lx-calendar__night lx-calendar__swatch" data-state="available" data-leap aria-hidden="true"><span class="lx-calendar__date">29</span></span>29/02</li>
-            <li class="lx-calendar__legend-item"><span class="lx-calendar__night lx-calendar__swatch" data-state="available" data-selected aria-hidden="true"><span class="lx-calendar__date">8</span></span>Período em revisão</li>
-          </ul>
-          <div class="lx-calendar__months">
-          <section class="lx-calendar" aria-labelledby="mes-2028-02">
-            <h3 class="lx-calendar__month" id="mes-2028-02">Fevereiro de 2028</h3>
-            <ol class="lx-calendar__weekdays" aria-hidden="true"><li>dom</li><li>seg</li><li>ter</li><li>qua</li><li>qui</li><li>sex</li><li>sáb</li></ol>
-            <ol class="lx-calendar__grid">
-              <li class="lx-calendar__gap" aria-hidden="true"></li>
-              <li class="lx-calendar__gap" aria-hidden="true"></li>
-              <li class="lx-calendar__night" data-state="past"><span class="lx-calendar__date">1</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, noite passada</span></li>
-              <li class="lx-calendar__night" data-state="past"><span class="lx-calendar__date">2</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, noite passada</span></li>
-              <li class="lx-calendar__night" data-state="past"><span class="lx-calendar__date">3</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, noite passada</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">4</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">5</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">6</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="mine"><span class="lx-calendar__date">7</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, sua reserva</span></li>
-              <li class="lx-calendar__night" data-state="mine"><span class="lx-calendar__date">8</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, sua reserva</span></li>
-              <li class="lx-calendar__night" data-state="mine"><span class="lx-calendar__date">9</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, sua reserva</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">10</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">11</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">12</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">13</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="unavailable"><span class="lx-calendar__date">14</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, indisponível</span></li>
-              <li class="lx-calendar__night" data-state="unavailable"><span class="lx-calendar__date">15</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, indisponível</span></li>
-              <li class="lx-calendar__night" data-state="unavailable"><span class="lx-calendar__date">16</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, indisponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">17</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">18</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">19</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">20</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">21</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">22</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">23</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">24</span><span class="lx-visually-hidden"> de fevereiro, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available" data-season="alta"><span class="lx-calendar__date">25</span><span class="lx-visually-hidden"> de fevereiro, Alta/Super Alta, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available" data-season="alta"><span class="lx-calendar__date">26</span><span class="lx-visually-hidden"> de fevereiro, Alta/Super Alta, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available" data-season="alta" data-selected><span class="lx-calendar__date">27</span><span class="lx-visually-hidden"> de fevereiro, Alta/Super Alta, disponível, no período em revisão</span></li>
-              <li class="lx-calendar__night" data-state="available" data-season="alta" data-selected><span class="lx-calendar__date">28</span><span class="lx-visually-hidden"> de fevereiro, Alta/Super Alta, disponível, no período em revisão</span></li>
-              <li class="lx-calendar__night" data-state="available" data-leap data-selected><span class="lx-calendar__date">29</span><span class="lx-visually-hidden"> de fevereiro, 29/02, capacidade extraordinária, disponível, no período em revisão</span></li>
-              <li class="lx-calendar__gap" aria-hidden="true"></li>
-              <li class="lx-calendar__gap" aria-hidden="true"></li>
-              <li class="lx-calendar__gap" aria-hidden="true"></li>
-              <li class="lx-calendar__gap" aria-hidden="true"></li>
-            </ol>
           </section>
-          <section class="lx-calendar" aria-labelledby="mes-2028-03">
-            <h3 class="lx-calendar__month" id="mes-2028-03">Março de 2028</h3>
-            <ol class="lx-calendar__weekdays" aria-hidden="true"><li>dom</li><li>seg</li><li>ter</li><li>qua</li><li>qui</li><li>sex</li><li>sáb</li></ol>
-            <ol class="lx-calendar__grid">
-              <li class="lx-calendar__gap" aria-hidden="true"></li>
-              <li class="lx-calendar__gap" aria-hidden="true"></li>
-              <li class="lx-calendar__gap" aria-hidden="true"></li>
-              <li class="lx-calendar__night" data-state="available" data-season="alta" data-selected><span class="lx-calendar__date">1</span><span class="lx-visually-hidden"> de março, Alta/Super Alta, disponível, no período em revisão</span></li>
-              <li class="lx-calendar__night" data-state="available" data-season="alta"><span class="lx-calendar__date">2</span><span class="lx-visually-hidden"> de março, Alta/Super Alta, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available" data-season="alta"><span class="lx-calendar__date">3</span><span class="lx-visually-hidden"> de março, Alta/Super Alta, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available" data-season="alta"><span class="lx-calendar__date">4</span><span class="lx-visually-hidden"> de março, Alta/Super Alta, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available" data-season="alta"><span class="lx-calendar__date">5</span><span class="lx-visually-hidden"> de março, Alta/Super Alta, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available" data-season="alta"><span class="lx-calendar__date">6</span><span class="lx-visually-hidden"> de março, Alta/Super Alta, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">7</span><span class="lx-visually-hidden"> de março, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">8</span><span class="lx-visually-hidden"> de março, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="unavailable"><span class="lx-calendar__date">9</span><span class="lx-visually-hidden"> de março, Média/Baixa, indisponível</span></li>
-              <li class="lx-calendar__night" data-state="unavailable"><span class="lx-calendar__date">10</span><span class="lx-visually-hidden"> de março, Média/Baixa, indisponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">11</span><span class="lx-visually-hidden"> de março, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">12</span><span class="lx-visually-hidden"> de março, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">13</span><span class="lx-visually-hidden"> de março, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">14</span><span class="lx-visually-hidden"> de março, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="mine"><span class="lx-calendar__date">15</span><span class="lx-visually-hidden"> de março, Média/Baixa, sua reserva</span></li>
-              <li class="lx-calendar__night" data-state="mine"><span class="lx-calendar__date">16</span><span class="lx-visually-hidden"> de março, Média/Baixa, sua reserva</span></li>
-              <li class="lx-calendar__night" data-state="mine"><span class="lx-calendar__date">17</span><span class="lx-visually-hidden"> de março, Média/Baixa, sua reserva</span></li>
-              <li class="lx-calendar__night" data-state="mine"><span class="lx-calendar__date">18</span><span class="lx-visually-hidden"> de março, Média/Baixa, sua reserva</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">19</span><span class="lx-visually-hidden"> de março, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">20</span><span class="lx-visually-hidden"> de março, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">21</span><span class="lx-visually-hidden"> de março, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">22</span><span class="lx-visually-hidden"> de março, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="available"><span class="lx-calendar__date">23</span><span class="lx-visually-hidden"> de março, Média/Baixa, disponível</span></li>
-              <li class="lx-calendar__night" data-state="closed"><span class="lx-calendar__date">24</span><span class="lx-visually-hidden"> de março, Média/Baixa, ainda não reservável</span></li>
-              <li class="lx-calendar__night" data-state="closed"><span class="lx-calendar__date">25</span><span class="lx-visually-hidden"> de março, Média/Baixa, ainda não reservável</span></li>
-              <li class="lx-calendar__night" data-state="closed"><span class="lx-calendar__date">26</span><span class="lx-visually-hidden"> de março, Média/Baixa, ainda não reservável</span></li>
-              <li class="lx-calendar__night" data-state="closed"><span class="lx-calendar__date">27</span><span class="lx-visually-hidden"> de março, Média/Baixa, ainda não reservável</span></li>
-              <li class="lx-calendar__night" data-state="closed"><span class="lx-calendar__date">28</span><span class="lx-visually-hidden"> de março, Média/Baixa, ainda não reservável</span></li>
-              <li class="lx-calendar__night" data-state="closed"><span class="lx-calendar__date">29</span><span class="lx-visually-hidden"> de março, Média/Baixa, ainda não reservável</span></li>
-              <li class="lx-calendar__night" data-state="closed"><span class="lx-calendar__date">30</span><span class="lx-visually-hidden"> de março, Média/Baixa, ainda não reservável</span></li>
-              <li class="lx-calendar__night" data-state="closed"><span class="lx-calendar__date">31</span><span class="lx-visually-hidden"> de março, Média/Baixa, ainda não reservável</span></li>
-              <li class="lx-calendar__gap" aria-hidden="true"></li>
-            </ol>
-          </section>
-          </div>
-        </section>
+
+          <aside class="lx-booking__summary" aria-labelledby="resumo">
+            <h2 id="resumo" class="lx-title">Resumo</h2>
+            <p class="lx-booking__status" role="status" data-status>Escolha a data de entrada.</p>
+            <dl class="lx-evidence" data-summary hidden></dl>
+            <ul class="lx-booking__issues" data-issues hidden></ul>
+            <p class="lx-hint">Até você confirmar, nenhuma noite fica reservada. Ao confirmar, a Luxtory confere de novo disponibilidade, janela e saldo.</p>
+            <button class="lx-button lx-button--primary" type="button" data-confirm disabled>Confirmar reserva</button>
+          </aside>
+        </div>
       </div>
     </main>
   </div>

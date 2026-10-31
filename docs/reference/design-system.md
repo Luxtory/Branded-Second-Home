@@ -355,16 +355,35 @@ de volta no celular); `actions` vai em `lx-page-header__actions`, depois do text
 largura. Uma confirmação (`lx-message` com `role="status"`) logo depois do cabeçalho ganha a mesma distância do
 conteúdo. Aviso fixo da página não é região viva: sem `role`.
 
-**Calendar · `lx-calendar`** — Calendário de noites da Área do Titular (W12, spec `booking` §7; Lab:
-`produto-calendario.html`). **Só exibe**: o período é escolhido por campos de data nativos e conferido no servidor — o
-calendário nunca decide disponibilidade (`03` §13). Um mês por `section.lx-calendar` (`h3.lx-calendar__month`,
-`ol.lx-calendar__weekdays` decorativo, `ol.lx-calendar__grid`), sete colunas a partir de 320 px, semanas sempre inteiras
-(`li.lx-calendar__gap` antes do dia 1 e depois do último). Cada noite (`li.lx-calendar__night`) leva `data-state`
-(`available` · `mine` · `unavailable` · `closed` · `past`), `data-season="alta"`, `data-leap` (29/02) e `data-selected`
-(período em revisão), e diz o estado em texto oculto (`lx-visually-hidden`): o estado nunca é só cor — `mine`
-preenchido, `unavailable` riscado, `closed` sublinhado pontilhado, `past` lavado, Alta com filete superior, 29/02 com
-losango. `ul.lx-calendar__legend` com `lx-calendar__swatch`; dois meses lado a lado a partir de `lg`
-(`lx-calendar__months`). "Noites", nunca "diárias" (REQ-100).
+**Calendar · `lx-calendar`** — Seletor de período da Área do Titular (W12, spec `booking` §7; Lab:
+`produto-calendario.html` + `calendario.js`, protótipo com dados fictícios). **Híbrido**: os campos de data nativos
+(entrada e saída) estão sempre presentes e funcionam sem JavaScript; o calendário interativo fica sincronizado com eles nos
+dois sentidos — 1º toque escolhe a entrada, 2º a saída; tocar a entrada de novo desfaz; tocar antes da entrada recomeça.
+O calendário **só sugere**: disponibilidade, janela, saldo e prévia vêm do servidor, que confere tudo de novo ao confirmar
+(`03` §13). Conflito é explicado (lista de motivos no resumo), nunca corrigido em silêncio. A data de saída não consome
+noite (PD-002): uma noite indisponível pode ser a saída, e o nome acessível diz "pode ser a data de saída".
+
+Estrutura: `.lx-calendar` (container) > `.lx-calendar__months` > um `.lx-calendar__month` por mês, com
+`.lx-calendar__header` (anterior · `h3` com `aria-live` · próximo; os botões ficam no primeiro e no último mês) e
+`table.lx-calendar__table` (`caption`, `thead th[abbr]`, `tbody td[data-state][data-season][data-range]` >
+`button.lx-calendar__day` > `.lx-calendar__number` + `.lx-calendar__mark` opcional). Dois meses lado a lado quando o
+container passa de 41rem (container query); senão, um. Teclado conforme o APG (date picker dialog, grade): uma parada de
+Tab na grade (tabindex móvel), setas, Home/End, PageUp/PageDown (mês), Shift+PageUp/PageDown (ano), Enter/Espaço
+escolhem; dia sem ação continua focável com `aria-disabled="true"`. Sem dependência de hover.
+
+Hierarquia de estados, de fora para dentro: (1) situação — passada, janela ainda não aberta, fora do calendário aberto:
+número esmaecido com `--lx-opacity-disabled`, sem ação; (2) disponibilidade — `available` · `unavailable` (número riscado)
+· `mine` (hachura); (3) seleção — `data-range="start"` preenchida, `night` em faixa, `end` só contornada (não consome
+noite); (4) sazonal — `data-season="alta"` com filete superior (só Co-Owner: no Owner a categoria não altera o uso) e
+29/02 com losango só para a Ação que tem o direito no exercício. Nenhum estado é só cor: cada dia diz data, categoria,
+estado e papel na seleção no nome acessível. `ul.lx-calendar__legend` mostra só o que está em tela (seleção quando
+existe, "sem ação" quando há dias assim, 29/02 quando aparece e a Ação tem o direito).
+
+Alvos: sete colunas desde 320 px com dias ≥ 44 × 48 px; quando a coluna não comporta sete alvos mínimos mais as bordas, a
+tabela sangra a margem da página — centrada, até 2 px da borda da janela — em vez de comprimir as células. Layout da
+página: `.lx-booking` (período + `aside.lx-booking__summary` com `role="status"`, resumo, motivos e "Confirmar reserva",
+habilitado só depois de prévia válida para as mesmas datas; resumo fixo ao lado a partir de 64rem),
+`.lx-booking__intro`, `.lx-booking__dates`. Sem preço por noite. "Noites", nunca "diárias" (REQ-100).
 
 **Record List · `lx-record-list`** — React: `RecordList` (`items`, `label`). A lista das superfícies de produto
 (ADR-0010 §9): um item por registro, título em Newsreader que leva ao detalhe (link esticado: o item inteiro é o alvo
