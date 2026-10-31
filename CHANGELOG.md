@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Reserva de uso próprio (W12, spec `booking`, ADR-0026): na Área do Titular, Owner e Co-Owner reservam noites de uso
+  próprio num período contínuo — o Co-Owner dentro da própria janela e do saldo do Direito de Uso por categoria, em
+  permanências de até 14 noites seguidas, somando as reservas adjacentes; o Owner sobre a própria capacidade, sem janela,
+  rotação nem limite. A confirmação revalida tudo e notifica quem reservou. **Ainda fechada:** só abre depois do
+  cancelamento (W13) e de autorização do fundador, por uma ativação no banco.
 - Sorteio auditável da ordem inicial (W9, spec `ownership` §16, ADR-0022): toda formalização Co-Owner tem a ordem
   inicial das Ações definida por sorteio verificável — compromisso SHA-256 da seed e rodada futura da rede pública
   drand quicknet gravados antes do beacon, rodada verificada pela assinatura, algoritmo `fy-v1` e resultado por Ação.

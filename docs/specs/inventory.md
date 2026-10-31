@@ -88,3 +88,14 @@ UPDATE trava a linha-alvo antes de rodar, e travar a noite ali inverteria a orde
   luxtory/inventory` auditáveis; bifurcação e transição concorrente da mesma custódia recusadas.
 - [TECH-053] duas conexões reais, nas duas ordens: sem dupla custódia e sem ocupação sobre custódia fechada.
 - Consultas de invariantes (`app.inventory_invariant_breaches`) vazias após todo teste db.
+
+## W12 — custódia e ocupação da reserva de uso próprio
+
+Spec [`booking`](booking.md), [ADR-0026](../adr/0026-reserva-de-uso-proprio-autorizacao-no-banco-e-ativacao.md). O gate
+da W10 (`app.assert_inventory_transition_enabled`) continua intocado e vale para tudo, exceto dois casos do papel da
+aplicação, ambos presos à reserva da mesma operação e só com a ativação privilegiada presente: fechar `spe_pool` e abrir
+`use_right/reserved_right` da Ação da reserva (o fechamento é carimbado pelo banco), e a ocupação `own_use` da reserva
+(Owner sobre `owner`; Co-Owner sobre a `reserved_right` aberta pela mesma operação — a devolvida segue fechada até a W22,
+D4). A FK `date_occupancy_booking_fk` liga a ocupação à reserva. Privilégios novos do `luxtory_app`: UPDATE só em
+`closed_at`/`closed_by_operation` e INSERT em `date_occupancy`; a liberação continua sem UPDATE. Leitura do Titular por
+RLS e privilégio de coluna: a custódia e a ocupação ativas como fato de disponibilidade, sem Ação, reserva nem operação.

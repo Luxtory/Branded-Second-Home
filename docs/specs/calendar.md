@@ -124,3 +124,13 @@ Luxtory (W14), telas e leituras do Titular (W12), catálogo de notificações (W
   cumulativa · [REQ-033] exercício parcial usa só a alocação; janelas contam da formalização · [PD-004][EC-4] o 29/02
   abre na base e expira sem transporte nem Inventário · [REQ-039] capacidade não reservada fica coletiva até o fim do
   exercício · [TECH-110] correção nunca altera concessão.
+
+## 7. Consumo pela reserva de uso próprio (W12)
+
+Spec [`booking`](booking.md), [ADR-0026](../adr/0026-reserva-de-uso-proprio-autorizacao-no-banco-e-ativacao.md). O
+`consume` deixa o gate da W11 para o papel da aplicação só quando segue a `reserved_right` da Ação aberta pela reserva da
+mesma operação, na mesma noite, com a ativação presente; um consumo por (operação, Ação, noite). `restore` e `correction`
+seguem fechados (W13). A abertura da janela tem gêmea SQL (`app.use_window_opens_at`, com `app.local_instant` recusando
+horário local inexistente ou ambíguo como o Temporal), equivalência testada; a superfície de servidor para o booking é
+`@/features/calendar/booking`. Leitura do Titular: o próprio saldo (`use_right_balance`) e as noites seladas da Second
+Home (RLS + privilégio de coluna).

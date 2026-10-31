@@ -39,6 +39,8 @@ channels:
         $ref: '#/components/messages/UseWindowOpened'
       leapDayGranted:
         $ref: '#/components/messages/LeapDayGranted'
+      ownUseBookingConfirmed:
+        $ref: '#/components/messages/OwnUseBookingConfirmed'
 
 operations:
   publishOutboxEvent:
@@ -151,6 +153,25 @@ components:
                 const: calendar.leap_day_granted
               payload:
                 $ref: '#/components/schemas/LeapDayGrantedPayload'
+    OwnUseBookingConfirmed:
+      name: booking.own_use_confirmed
+      title: Reserva de uso próprio confirmada (REQ-097, W12)
+      description: |
+        Gravado pelo `create_own_use_booking` na transação da reserva (`dedup_key` =
+        `booking.own_use_confirmed:<booking_id>`), entrega imediata. Consumido por
+        `booking_own_use_confirmation_notification`, que registra a notificação à party que reservou — fixada no evento
+        no COMMIT, não aos titulares vigentes na entrega: a confirmação é um ato, e continua de quem reservou numa
+        transferência futura (ADR-0026 D6). Alcança também Titular sem Membership. Só ids, datas e número de noites.
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/OutboxEnvelope'
+          - type: object
+            properties:
+              type:
+                const: booking.own_use_confirmed
+              payload:
+                $ref: '#/components/schemas/OwnUseBookingConfirmedPayload'
     OutboxEvent:
       name: OutboxEvent
       title: Envelope de evento do outbox
@@ -244,6 +265,31 @@ components:
           type: string
           format: date-time
           description: Fim efetivo do 29/02 (00:00 de 01/03 no fuso da Second Home), em UTC.
+    OwnUseBookingConfirmedPayload:
+      type: object
+      additionalProperties: false
+      required: [booking_id, second_home_id, recipient_party_id, checkin_date, checkout_date, nights]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+        second_home_id:
+          type: string
+          format: uuid
+        recipient_party_id:
+          type: string
+          format: uuid
+          description: Pessoa ou empresa que reservou (pseudônimo interno, nunca documento).
+        checkin_date:
+          type: string
+          format: date
+        checkout_date:
+          type: string
+          format: date
+          description: Data de saída; não consome Direito de Uso (PD-002).
+        nights:
+          type: integer
+          minimum: 1
     OutboxEnvelope:
       type: object
       additionalProperties: false
