@@ -355,6 +355,17 @@ de volta no celular); `actions` vai em `lx-page-header__actions`, depois do text
 largura. Uma confirmação (`lx-message` com `role="status"`) logo depois do cabeçalho ganha a mesma distância do
 conteúdo. Aviso fixo da página não é região viva: sem `role`.
 
+**Calendar · `lx-calendar`** — Calendário de noites da Área do Titular (W12, spec `booking` §7; Lab:
+`produto-calendario.html`). **Só exibe**: o período é escolhido por campos de data nativos e conferido no servidor — o
+calendário nunca decide disponibilidade (`03` §13). Um mês por `section.lx-calendar` (`h3.lx-calendar__month`,
+`ol.lx-calendar__weekdays` decorativo, `ol.lx-calendar__grid`), sete colunas a partir de 320 px, semanas sempre inteiras
+(`li.lx-calendar__gap` antes do dia 1 e depois do último). Cada noite (`li.lx-calendar__night`) leva `data-state`
+(`available` · `mine` · `unavailable` · `closed` · `past`), `data-season="alta"`, `data-leap` (29/02) e `data-selected`
+(período em revisão), e diz o estado em texto oculto (`lx-visually-hidden`): o estado nunca é só cor — `mine`
+preenchido, `unavailable` riscado, `closed` sublinhado pontilhado, `past` lavado, Alta com filete superior, 29/02 com
+losango. `ul.lx-calendar__legend` com `lx-calendar__swatch`; dois meses lado a lado a partir de `lg`
+(`lx-calendar__months`). "Noites", nunca "diárias" (REQ-100).
+
 **Record List · `lx-record-list`** — React: `RecordList` (`items`, `label`). A lista das superfícies de produto
 (ADR-0010 §9): um item por registro, título em Newsreader que leva ao detalhe (link esticado: o item inteiro é o alvo
 e mostra o foco) e atributos em `dl` ao lado a partir de `md`. Atributo sem valor não é passado (TECH-001). Serve de

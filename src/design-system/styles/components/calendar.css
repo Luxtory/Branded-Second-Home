@@ -1,0 +1,158 @@
+/* Calendar — calendário de noites da Área do Titular (W12; ADR-0009, ADR-0026). Só exibe: a escolha do período é feita
+ * por campos de data nativos e conferida no servidor — o calendário nunca decide disponibilidade (03 §13). Um mês por
+ * bloco, sete colunas a partir de 320 px; cada noite diz o próprio estado em texto (oculto à vista, lido pelo leitor de
+ * tela), nunca só por cor. Estados: available · mine · unavailable · closed · past; período em revisão: selected.
+ * section.lx-calendar > h3.lx-calendar__month + ol.lx-calendar__weekdays + ol.lx-calendar__grid > li.lx-calendar__night
+ *   [data-state][data-season="alta"][data-leap][data-selected] > span.lx-calendar__date + span.lx-visually-hidden
+ * A grade sempre fecha semanas inteiras: células `li.lx-calendar__gap` antes do dia 1 e depois do último dia. */
+@layer lx.components {
+  .lx-calendar {
+    display: grid;
+    gap: var(--lx-space-3);
+    min-width: 0;
+  }
+
+  .lx-calendar__month {
+    margin: 0;
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-text-lead);
+    font-weight: var(--lx-weight-display-strong);
+    line-height: var(--lx-leading-heading);
+  }
+
+  .lx-calendar__weekdays,
+  .lx-calendar__grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--lx-border-hairline);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .lx-calendar__weekdays {
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-marker);
+    font-weight: var(--lx-weight-medium);
+    letter-spacing: var(--lx-tracking-label);
+    text-transform: uppercase;
+    color: var(--lx-color-fg-muted);
+    text-align: center;
+  }
+
+  .lx-calendar__grid {
+    background-color: var(--lx-color-rule);
+    border: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  .lx-calendar__gap {
+    background-color: var(--lx-color-bg);
+  }
+
+  .lx-calendar__night {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: var(--lx-space-12);
+    background-color: var(--lx-color-bg);
+    color: var(--lx-color-fg);
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-small);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Alta/Super Alta: filete superior; Média/Baixa sem marca. */
+  .lx-calendar__night[data-season="alta"] {
+    box-shadow: inset 0 var(--lx-space-1) 0 var(--lx-color-rule-strong);
+  }
+
+  /* 29/02: capacidade extraordinária (REQ-031), marcada por um losango junto da data. */
+  .lx-calendar__night[data-leap] .lx-calendar__date::after {
+    content: "◆";
+    margin-inline-start: var(--lx-space-1);
+    font-size: var(--lx-text-marker);
+    color: var(--lx-color-marker);
+  }
+
+  .lx-calendar__night[data-state="mine"] {
+    background-color: var(--lx-color-action-bg);
+    color: var(--lx-color-action-fg);
+    font-weight: var(--lx-weight-semibold);
+  }
+
+  .lx-calendar__night[data-state="mine"] .lx-calendar__date::after {
+    color: inherit;
+  }
+
+  .lx-calendar__night[data-state="unavailable"] .lx-calendar__date {
+    color: var(--lx-color-fg-muted);
+    text-decoration-line: line-through;
+    text-decoration-thickness: var(--lx-border-hairline);
+  }
+
+  .lx-calendar__night[data-state="closed"] .lx-calendar__date {
+    color: var(--lx-color-fg-muted);
+    text-decoration-line: underline;
+    text-decoration-style: dotted;
+    text-decoration-thickness: var(--lx-border-hairline);
+    text-underline-offset: 0.25em;
+  }
+
+  /* Noite passada: fundo lavado e número discreto — encerrada, sem decoração de estado. */
+  .lx-calendar__night[data-state="past"] {
+    background-color: var(--lx-color-surface);
+    color: var(--lx-color-fg-muted);
+  }
+
+  /* Período em revisão (prévia do servidor): superfície e contorno forte, por cima do estado. */
+  .lx-calendar__night[data-selected] {
+    background-color: var(--lx-color-surface);
+    outline: var(--lx-border-outline) solid var(--lx-color-rule-strong);
+    outline-offset: calc(-1 * var(--lx-border-outline));
+    z-index: var(--lx-z-raised);
+  }
+
+  .lx-calendar__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lx-space-2) var(--lx-space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-small);
+    color: var(--lx-color-fg);
+  }
+
+  .lx-calendar__legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lx-space-2);
+  }
+
+  .lx-calendar__swatch {
+    min-height: 0;
+    display: inline-grid;
+    place-items: center;
+    inline-size: var(--lx-space-8);
+    block-size: var(--lx-space-6);
+    border: var(--lx-border-hairline) solid var(--lx-color-rule);
+    background-color: var(--lx-color-bg);
+    font-size: var(--lx-text-marker);
+  }
+
+  .lx-calendar__months {
+    display: grid;
+    gap: var(--lx-space-8);
+  }
+
+  @media (min-width: 64rem) {
+    .lx-calendar__months {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .lx-calendar__grid .lx-calendar__night {
+      min-height: var(--lx-space-16);
+    }
+  }
+}
