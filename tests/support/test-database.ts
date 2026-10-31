@@ -53,9 +53,22 @@ async function inventoryBreaches(url: string): Promise<readonly string[]> {
       second_home_id: string;
       detail: string;
     }>(`SELECT invariant, second_home_id, detail FROM app.use_right_invariant_breaches() LIMIT 10`);
-    return [
+    const useRightBreaches = [
       ...breaches,
       ...ledger.rows.map((row) => `${row.invariant}@${row.second_home_id}/${row.detail}`),
+    ];
+    const bookings = await client.query<{ present: boolean }>(
+      `SELECT to_regprocedure('app.booking_invariant_breaches()') IS NOT NULL AS present`,
+    );
+    if (bookings.rows[0]?.present !== true) return useRightBreaches;
+    const booking = await client.query<{
+      invariant: string;
+      second_home_id: string;
+      detail: string;
+    }>(`SELECT invariant, second_home_id, detail FROM app.booking_invariant_breaches() LIMIT 10`);
+    return [
+      ...useRightBreaches,
+      ...booking.rows.map((row) => `${row.invariant}@${row.second_home_id}/${row.detail}`),
     ];
   } finally {
     await client.end();

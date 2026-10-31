@@ -306,9 +306,20 @@ describe('recusas pelo executor (W10) [TECH-056]', () => {
 
   const custodyOf = (stayDate: string) =>
     `(SELECT id FROM app.date_custody WHERE second_home_id = '${home}' AND stay_date = '${stayDate}' AND closed_at IS NULL)`;
-  const occupancy = (operationId: string, stayDate: string, channel: string) =>
+  // W12: a ocupação aponta para uma reserva — reserva-fixture da operação, pelo dono em modo réplica (sealing-support).
+  const occupancy = (operationId: string, stayDate: string, channel: string) => [
+    'SET LOCAL session_replication_role = replica',
+    `INSERT INTO app.booking (id, second_home_id, channel, holding_id, checkin_date, checkout_date, state,
+       opened_by_operation, confirmed_at)
+     SELECT '${randomUUID()}', '${home}', '${channel}', (SELECT id FROM app.holding WHERE second_home_id = '${home}' LIMIT 1),
+            '${stayDate}', DATE '${stayDate}' + 1, 'confirmed', '${operationId}', now()
+     ON CONFLICT (opened_by_operation) DO NOTHING`,
+    'SET LOCAL session_replication_role = origin',
     `INSERT INTO app.date_occupancy (id, second_home_id, stay_date, booking_id, channel, custody_id, opened_by_operation)
-     VALUES ('${randomUUID()}', '${home}', '${stayDate}', '${randomUUID()}', '${channel}', ${custodyOf(stayDate)}, '${operationId}')`;
+     VALUES ('${randomUUID()}', '${home}', '${stayDate}',
+             (SELECT id FROM app.booking WHERE opened_by_operation = '${operationId}'), '${channel}',
+             ${custodyOf(stayDate)}, '${operationId}')`,
+  ];
 
   it('[TECH-090] selagem única pelo estado: já selado, anterior à data-base ou sem formalização → ERR_STATE_TRANSITION', async () => {
     const executor = createCommandExecutor({
@@ -366,7 +377,7 @@ describe('recusas pelo executor (W10) [TECH-056]', () => {
 
   it('[INV-2] par ocupação/custódia fora da matriz falha com ERR_CAPACITY_UNAVAILABLE', async () => {
     await expect(
-      attempt((op) => [occupancy(op, nextYear('05-05'), 'luxtory_use')]),
+      attempt((op) => occupancy(op, nextYear('05-05'), 'luxtory_use')),
     ).resolves.toMatchObject({
       status: 'rejected',
       code: 'ERR_CAPACITY_UNAVAILABLE',
@@ -376,8 +387,8 @@ describe('recusas pelo executor (W10) [TECH-056]', () => {
   it('[TECH-056] segunda ocupação ativa da noite falha com ERR_BOOKING_CONFLICT (uq_occupancy_active)', async () => {
     await expect(
       attempt((op) => [
-        occupancy(op, nextYear('05-06'), 'own_use'),
-        occupancy(op, nextYear('05-06'), 'rental_external'),
+        ...occupancy(op, nextYear('05-06'), 'own_use'),
+        ...occupancy(op, nextYear('05-06'), 'rental_external'),
       ]),
     ).resolves.toMatchObject({ status: 'rejected', code: 'ERR_BOOKING_CONFLICT' });
   });

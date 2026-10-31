@@ -19,3 +19,9 @@ export {
   stakeHolders,
   type UseRightFacts,
 } from './infrastructure/use-right-facts';
+// W12: holding vigente da party representada, para o guard e a revalidação do uso próprio (spec booking).
+export {
+  createHoldingDirectory,
+  currentHolding,
+  type CurrentHolding,
+} from './infrastructure/holding-directory';

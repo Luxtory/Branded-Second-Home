@@ -3,6 +3,7 @@ import {
   createOpenExerciseJob,
   createUseRightConsumers,
 } from '@/features/calendar/jobs';
+import { createOwnUseBookingConsumers } from '@/features/booking/jobs';
 import { createInitialDrawConsumers } from '@/features/ownership';
 import type { Clock } from '../../application/clock';
 import { JobRegistry, type JobRunner } from '../../application/jobs/registry';
@@ -34,6 +35,8 @@ export function createOutboxConsumers({
     ...createInitialDrawConsumers({ source, clock }),
     // W11 — janelas e notificações do Direito de Uso (spec calendar §6).
     ...createUseRightConsumers({ clock }),
+    // W12 — notificação da confirmação da reserva de uso próprio (spec booking).
+    ...createOwnUseBookingConsumers({ clock }),
   ]);
 }
 

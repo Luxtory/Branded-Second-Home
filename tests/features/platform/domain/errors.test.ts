@@ -24,6 +24,14 @@ describe('códigos de erro (TECH-056)', () => {
     expect(rejectionForConstraint('balance_non_negative')).toBe('ERR_USE_RIGHT_BALANCE');
     expect(rejectionForConstraint('credits_lot_balance')).toBe('ERR_CREDITS_INSUFFICIENT');
     expect(rejectionForConstraint('operation_actor_check')).toBeNull();
+    // W12 (ADR-0026): janela, duração/adjacência e representação no instante da escrita.
+    expect(rejectionForConstraint('window_not_open')).toBe('ERR_WINDOW_NOT_OPEN');
+    expect(rejectionForConstraint('stay_length_maximum')).toBe('ERR_STAY_LENGTH');
+    expect(rejectionForConstraint('stay_minimum_one_night')).toBe('ERR_STAY_LENGTH');
+    expect(rejectionForConstraint('permission_representation')).toBe('ERR_PERMISSION');
+    // Vínculo e ativação só falham por bug ou forja: não são recusa funcional.
+    expect(rejectionForConstraint('booking_write_binding')).toBeNull();
+    expect(rejectionForConstraint('booking_not_activated')).toBeNull();
   });
 
   it('[TECH-056] os índices do 03 §3.2 mapeiam pelo nome exato: ocupação e custódia (W10)', () => {

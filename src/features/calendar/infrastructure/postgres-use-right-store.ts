@@ -5,7 +5,7 @@ import type { ExpirableBalance, UseRightGrant, UseRightStore } from '../applicat
 import type { UseRightBucket } from '../domain/use-right';
 
 /** Formato estável do bucket lido do banco (CHECK do ledger e da projeção). */
-function bucketOf(value: string): UseRightBucket {
+export function bucketOf(value: string): UseRightBucket {
   if (value === 'alta' || value === 'media' || value === 'leap') return value;
   throw new RangeError(`Unexpected use right bucket: ${value}`);
 }

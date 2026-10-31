@@ -10,7 +10,7 @@ import type {
 import { grantCovers } from '../domain/grant';
 import type { VerifiedSession } from '../domain/session';
 import { isStaffRole, type StaffRole } from '../domain/staff';
-import type { DelegationDirectory } from './party-ports';
+import type { DelegationDirectory, HoldingDirectory } from './party-ports';
 import type { GrantDirectory, StaffDirectory } from './ports';
 
 export interface GuardDependencies {
@@ -20,6 +20,8 @@ export interface GuardDependencies {
   readonly grants: GrantDirectory;
   /** Delegações usuário → party (W7), lidas a cada decisão. */
   readonly delegations: DelegationDirectory;
+  /** Holdings da party representada (W12); ausente = nenhum command do Titular é autorizado. */
+  readonly holdings?: HoldingDirectory;
   readonly clock: Clock;
 }
 
@@ -36,7 +38,8 @@ const DENY: AuthorizationDecision = { allowed: false };
  * Guard do TECH-050/051, que nega por padrão: staff com sessão AAL2 e papel ativo aceito pela autoridade; parceiro
  * só com delegação vigente para a party representada **e** `authorization_grant` vigente que liste o command e cubra o
  * escopo (cadeia `user → party_delegation → party → authorization_grant`, REQ-014); convidado só sobre a própria
- * delegação (ativação, W7). Titular (holding, W8) e sistema (jobs que executam commands, W10+) ainda negados.
+ * delegação (ativação, W7); Titular só com delegação vigente para a party representada **e** holding vigente dela na
+ * Second Home do command (W12). Sistema (jobs, W10+) tem guard próprio no platform.
  */
 export function createAuthorizationGuard(deps: GuardDependencies): CommandGuard {
   return {
@@ -56,7 +59,31 @@ async function authorize(
   if (accepted !== undefined) return authorizeStaff(deps, session, accepted, actor);
   if (spec.authority === 'grantee') return authorizeGrantee(deps, spec, actor, scope);
   if (spec.authority === 'invitee') return authorizeInvitee(deps, actor, scope);
+  if (spec.authority === 'titular') return authorizeTitular(deps, actor, scope);
   return DENY;
+}
+
+/**
+ * Command do Titular (TECH-050, TECH-051; W12): `user → party_delegation → party → holding`, tudo vigente no instante. O
+ * Membership não entra (uso próprio independe dele). A decisão é revalidada dentro da transação (ADR-0021, ADR-0026).
+ */
+async function authorizeTitular(
+  deps: GuardDependencies,
+  actor: Extract<Actor, { kind: 'user' }>,
+  scope: CommandScope | null,
+): Promise<AuthorizationDecision> {
+  if (actor.role !== 'titular' || actor.actingPartyId === null || deps.holdings === undefined)
+    return DENY;
+  if (scope === null || scope.type !== 'second_home') return DENY;
+  const now = deps.clock.now();
+  const delegation = await deps.delegations.currentDelegation(
+    actor.userId,
+    actor.actingPartyId,
+    now,
+  );
+  if (delegation === null) return DENY;
+  const holding = await deps.holdings.currentHolding(actor.actingPartyId, scope.id, now);
+  return holding === null ? DENY : { allowed: true, authorizationRef: `holding:${holding.id}` };
 }
 
 async function authorizeStaff(
