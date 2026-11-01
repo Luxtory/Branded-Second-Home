@@ -264,6 +264,9 @@
         },
         [el('span', { class: 'lx-calendar__number', text: String(d + 1) })],
       );
+      // 29/02: marca só quando o direito extraordinário é da Ação representada (Co-Owner contemplada no exercício).
+      if (sc.role === 'co_owner' && sc.leapBeneficiary && isLeapDay(s))
+        button.append(el('span', { class: 'lx-calendar__mark', 'aria-hidden': 'true' }));
       row.append(
         el('td', { 'data-state': status === 'available' ? null : status, 'data-season': showSeason ? 'alta' : null, 'data-range': range }, [button]),
       );
@@ -292,13 +295,13 @@
     ]);
   }
 
-  // Legenda mínima: quatro estados por cor; o traço de Alta/Super Alta só quando aparece nos meses exibidos (Co-Owner).
+  // Legenda mínima: quatro estados por cor; Alta/Super Alta e o 29/02 da Ação contemplada só quando aparecem (Co-Owner).
   function legend(months) {
     const item = (text, attrs = {}) =>
       el('li', { class: 'lx-calendar__legend-item' }, [el('span', { class: 'lx-calendar__swatch', 'aria-hidden': 'true', ...attrs }), text]);
     const items = [
       item('Disponível'),
-      item('Indisponível', { 'data-state': 'unavailable' }),
+      item('Noite indisponível', { 'data-state': 'unavailable' }),
       item('Sua reserva', { 'data-state': 'mine' }),
       item('Selecionado', { 'data-range': 'start' }),
     ];
@@ -308,6 +311,8 @@
     });
     if (sc.role === 'co_owner' && visible.some((s) => season(s) === 'alta' && !isLeapDay(s)))
       items.push(item('Alta/Super Alta', { 'data-season': 'alta' }));
+    if (sc.role === 'co_owner' && sc.leapBeneficiary && visible.some(isLeapDay))
+      items.push(item('29/02: direito extraordinário', { 'data-mark': 'leap' }));
     return items;
   }
 

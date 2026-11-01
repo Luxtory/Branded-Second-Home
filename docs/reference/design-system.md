@@ -374,24 +374,27 @@ Estrutura: `.lx-calendar` (container) > `.lx-calendar__grid` (meses: `.lx-calend
 própria quando o container tem menos de 16rem, como com texto ampliado no celular — e `table.lx-calendar__table` com
 `caption`, `thead th[abbr]`, `tbody td[data-state][data-season][data-range]` > `button.lx-calendar__day`) +
 `.lx-calendar__selection` (região viva com o retorno da seleção, o próximo passo, o motivo de um dia sem ação, a oferta de
-nova entrada e "Limpar datas") + `ul.lx-calendar__legend` (mínima: Disponível · Indisponível · Sua reserva · Selecionado,
-amostras de cor sem número; Alta/Super Alta só quando aparece, no Co-Owner). Dois meses lado a lado quando o container passa de 41rem; senão, um. Teclado adaptado do APG
+nova entrada e "Limpar datas") + `ul.lx-calendar__legend` (mínima: Disponível · Noite indisponível · Sua reserva ·
+Selecionado, amostras de cor sem número; Alta/Super Alta e "29/02: direito extraordinário" só quando aparecem, no
+Co-Owner; duas colunas alinhadas no celular, uma com texto ampliado, linha corrida com dois meses). Dois meses lado a lado quando o container passa de 41rem; senão, um. Teclado adaptado do APG
 (grade de datas) a um calendário inline: uma parada de Tab (tabindex móvel), setas, Home/End, PageUp/PageDown (mês),
 Shift+PageUp/PageDown (ano), Enter/Espaço escolhem, Tab sai; sem Esc (não há diálogo). Dia sem ação continua focável com
 `aria-disabled="true"`. Sem dependência de hover. Anel de foco interno ao botão (`outline-offset` negativo): não é cortado
 na borda da janela.
 
-Linguagem cromática (E5a v2.2): a cor é o reconhecimento principal e cada estado tem também uma marca de forma (WCAG
-1.4.1). Tons derivados dos tokens por `color-mix`, em propriedades locais do componente (sem paleta nem token novo):
-**disponível** — `--lx-color-bg`; **indisponível** — `--lx-calendar-unavailable` (sand-wash levemente esfriado pelo
-`fg-muted`), número riscado, nunca diz quem ocupa; **sua reserva** — `--lx-calendar-mine` (40% do Warm Sand) e um ponto
-sob o número; **selecionado** — entrada em `--lx-color-accent` (Moroccan Blue) com número `--lx-color-action-fg`, noites
-em `--lx-calendar-range` (15% do accent), saída só contornada no accent sobre o estado que a data já tem (a noite da saída
-não é usada). **Sem ação** (já passou, janela ainda não abriu, fora do calendário, não serve de saída): número com
-`--lx-opacity-disabled` sobre o fundo claro; o motivo vem no nome acessível e, ao tocar, na linha de retorno.
-**Alta/Super Alta** (só Co-Owner): traço curto no alto da célula. **29/02** não tem marca na célula: o direito
-extraordinário aparece no Direito de Uso, no nome acessível e na prévia, só para a Ação contemplada. Foco: anel interno
-no `--lx-color-focus`; branco sobre a entrada preenchida; por dentro do contorno da saída, com folga.
+Linguagem cromática (E5a v2.2/v2.3): a cor é o reconhecimento principal e cada estado tem também uma marca de forma
+(WCAG 1.4.1). Tons derivados dos tokens por `color-mix`, em propriedades locais do componente (sem paleta nem token
+novo): **disponível** — `--lx-color-bg`; **noite indisponível** — `--lx-calendar-unavailable` (sand-wash levemente
+esfriado pelo `fg-muted`), número riscado, nunca diz quem ocupa — a data pode ser a saída, porque a noite da saída não é
+usada; **sua reserva** — `--lx-calendar-mine` (40% do Warm Sand) e um ponto sob o número; **selecionado** — entrada em
+`--lx-color-accent` (Moroccan Blue) com número `--lx-color-action-fg`; noites em `--lx-calendar-range` (15% do accent)
+delimitadas por filetes de accent no alto e embaixo (a faixa se lê sem a cor e de um mês ao outro); saída só contornada no
+accent sobre o estado que a data já tem. **Sem ação** (já passou, janela ainda não abriu, fora do calendário, não serve de
+saída): continuam focáveis (`aria-disabled="true"`) e explicam o motivo ao tocar ou com Enter — são controles
+informativos, não inativos —, então o número mantém contraste de texto: 75% do `fg-muted` (4,7:1 no branco).
+**Alta/Super Alta** (só Co-Owner): traço curto no alto da célula. **29/02** da Ação contemplada no exercício: losango
+pequeno no canto e explicação contextual na legenda; nunca no Owner nem para outra Ação. Foco: anel interno no
+`--lx-color-focus`; branco sobre a entrada preenchida; por dentro do contorno da saída, com folga.
 
 Alvos: sete colunas desde 320 px com dias ≥ 44 × 48 px; quando a coluna não comporta sete alvos mínimos mais as bordas, a
 tabela sangra a margem da página — centrada, até 2 px da borda da janela — em vez de comprimir as células. Página:

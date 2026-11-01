@@ -203,18 +203,16 @@
     --lx-calendar-range: color-mix(in srgb, var(--lx-color-accent) 15%, var(--lx-color-bg));
   }
 
-  /* Sem ação por regra ou tempo (já passou, janela ainda não abriu, fora do calendário, não serve de saída): número
-     esmaecido sobre o fundo claro. O motivo vem no nome acessível e, ao tocar, na linha de retorno. */
+  /* Sem ação por regra ou tempo (já passou, janela ainda não abriu, fora do calendário, não serve de saída): número mais
+     claro sobre o fundo claro. Estas datas continuam focáveis e, tocadas, explicam o motivo — são controles informativos,
+     não inativos —, então o número mantém contraste de texto: 75% do fg-muted é o tom mais claro com ≥ 4,5:1 no branco
+     (medido 4,7:1). */
   .lx-calendar__day[aria-disabled="true"] {
     cursor: default;
   }
 
   td:not([data-state="unavailable"], [data-state="mine"]) > .lx-calendar__day[aria-disabled="true"] {
-    color: var(--lx-color-fg-muted);
-  }
-
-  td:not([data-state="unavailable"], [data-state="mine"]) > .lx-calendar__day[aria-disabled="true"] .lx-calendar__number {
-    opacity: var(--lx-opacity-disabled);
+    color: color-mix(in srgb, var(--lx-color-fg-muted) 75%, var(--lx-color-bg));
   }
 
   /* Indisponível: superfície neutra e número riscado (nunca diz quem ocupa). */
@@ -245,8 +243,13 @@
 
   /* Seleção, uma família: entrada preenchida em Moroccan Blue; noites no tom claro; saída só contornada (a noite da
      saída não é usada, PD-002), sobre o estado que a data já tem. */
+  /* Noites: tom claro delimitado por filetes de accent no alto e embaixo — a faixa se lê sem a cor (escala de cinza,
+     baixa visão) e continua de um mês ao outro mesmo sem a entrada ou a saída em tela (WCAG 1.4.1/1.4.11). */
   td[data-range="night"] {
     background-color: var(--lx-calendar-range);
+    box-shadow:
+      inset 0 var(--lx-border-outline) 0 var(--lx-color-accent),
+      inset 0 calc(-1 * var(--lx-border-outline)) 0 var(--lx-color-accent);
   }
 
   td[data-range="start"] {
@@ -293,6 +296,22 @@
     background-color: var(--lx-color-action-fg);
   }
 
+  /* 29/02 com direito extraordinário da Ação representada (nunca no Owner, nunca para outra Ação): losango pequeno no
+     canto. A explicação aparece na legenda só quando o dia está em tela. */
+  .lx-calendar__mark {
+    position: absolute;
+    inset-block-start: var(--lx-space-2);
+    inset-inline-end: var(--lx-space-2);
+    inline-size: var(--lx-space-2);
+    block-size: var(--lx-space-2);
+    background-color: var(--lx-color-accent);
+    transform: rotate(45deg);
+  }
+
+  td[data-range="start"] .lx-calendar__mark {
+    background-color: var(--lx-color-action-fg);
+  }
+
   /* Carregando: a mesma grade, sem números, até a disponibilidade chegar. */
   .lx-calendar__table[aria-busy="true"] td {
     block-size: var(--lx-target-control);
@@ -301,11 +320,13 @@
 
   /* Legenda mínima: quatro estados por cor (amostras pequenas, rótulos curtos) e, só quando aparece, o traço de Alta/Super
      Alta. O resto se explica na própria data (nome acessível e linha de retorno). */
+  /* Celular: duas colunas alinhadas (os quatro estados em duas linhas; os contextuais numa terceira); com texto ampliado,
+     uma coluna. Com dois meses em tela, uma linha corrida. */
   .lx-calendar__legend {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
-    gap: var(--lx-space-2) var(--lx-space-4);
+    gap: var(--lx-space-2) var(--lx-space-3);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -318,6 +339,19 @@
     display: none;
   }
 
+  @container (min-width: 17rem) {
+    .lx-calendar__legend {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @container (min-width: 41rem) {
+    .lx-calendar__legend {
+      display: flex;
+      flex-wrap: wrap;
+    }
+  }
+
   .lx-calendar__legend-item {
     display: flex;
     align-items: center;
@@ -328,8 +362,8 @@
   .lx-calendar__swatch {
     position: relative;
     flex: none;
-    inline-size: var(--lx-space-4);
-    block-size: var(--lx-space-4);
+    inline-size: var(--lx-space-3);
+    block-size: var(--lx-space-3);
     border: var(--lx-border-hairline) solid var(--lx-color-rule);
     background-color: var(--lx-color-bg);
   }
@@ -354,9 +388,17 @@
     background-color: var(--lx-color-accent);
   }
 
-  .lx-calendar__swatch[data-season="alta"] {
+  .lx-calendar__swatch:is([data-season="alta"], [data-mark="leap"]) {
     border-color: transparent;
     background-color: transparent;
+  }
+
+  .lx-calendar__swatch[data-mark="leap"]::before {
+    content: "";
+    position: absolute;
+    inset: calc(50% - var(--lx-space-2) / 2);
+    background-color: var(--lx-color-accent);
+    transform: rotate(45deg);
   }
 
   .lx-calendar__swatch[data-season="alta"]::before {
