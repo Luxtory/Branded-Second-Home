@@ -105,6 +105,47 @@ completo sem JavaScript não é prometido. Datas civis da Second Home: a E5b rec
 da Second Home, e nunca deriva a data civil do fuso do navegador. Contrato visual e de teclado: `lx-calendar` em
 `docs/reference/design-system.md`.
 
+### Apresentação de reservas e canais (decisão de interface, checkpoint E5a v2.4)
+
+Separação conceitual preservada: **disponibilidade** (a noite está livre ou não — `date_custody`/`date_occupancy`, sem
+dizer de quem), **reserva** (`app.booking` da holding que o usuário representa, com período e estado) e **canal**
+(`booking.channel`, TECH-023). O calendário nunca deduz o tipo de uma reserva pela cor, pela categoria sazonal ou pela
+custódia: mostra canal e estado persistidos.
+
+- **Calendário**: uma só aparência para as reservas da holding representada — "Reserva desta Ação" (Co-Owner) ou
+  "Reserva do Owner": quem usa a tela representa uma party (`identity` §14), então "sua" seria impreciso. Nenhuma cor por
+  canal. Tocar ou dar Enter num desses dias mostra, na linha de retorno, o tipo, o período e a situação (ex.: "Reserva
+  desta Ação · Uso próprio · Direito de Uso · entrada 07/02, saída 10/02 (3 noites) · Confirmada"); a E5b acrescenta o
+  link para o detalhe da reserva. Reservas de terceiros aparecem só como "Noite indisponível" — sem identidade, mecanismo,
+  operação ou valores (as permissões da W12 já não os expõem).
+- **Lista de reservas** (E5b): cada reserva com tipo, período, noites e situação; filtro por tipo só quando houver mais de
+  um canal operando.
+- **Não confirmado não é reserva**: solicitação pendente, oferta, depósito, autorização comercial ou disponibilidade
+  comercial nunca aparecem como reserva confirmada.
+- **Rótulos por canal** (apresentação; nomes do `02`). A W12 produz e exibe só `own_use`; cada canal ganha seu rótulo e
+  sua regra de autorização de leitura na wave que o implementar — nunca exibido antes de operar:
+
+  | Canal persistido | Rótulo | Exibido como reserva da holding |
+  |---|---|---|
+  | `own_use` | "Uso próprio · Direito de Uso" (Co-Owner) · "Uso próprio" (Owner) | W12 |
+  | `luxchange_request` | "Luxchange · Request" | wave do Luxchange, se a party representada for a solicitante |
+  | `luxchange_direct` | "Luxchange · Direct" | idem |
+  | `luxplus` | "Luxplus" | wave do Luxplus, se a party representada for a hóspede |
+  | `rental_external` | "Locação externa" | wave da locação, para a Ação ofertante |
+  | `luxtory_use` | — | nunca: para o Titular é "Noite indisponível" |
+
+  Estados: `confirmed` → "Confirmada" (único produzido na W12); `in_use`, `completed`, `no_show` e `in_exception` ganham
+  rótulo na wave que os produzir; `cancelled` libera a ocupação e não aparece no calendário.
+- **Dependência aberta (não decidida na E5a)**: a permissão de coluna do Titular em `app.booking` (TECH-052) não inclui
+  `channel`. Exibir o tipo persistido exige acrescentar `channel` a esse `GRANT` — as linhas já são restritas pela RLS às
+  holdings que o usuário representa, então o canal só revela o tipo das próprias reservas. É mudança de privilégio e de
+  migration: só com aprovação do fundador. Sem ela, a E5b mostra período e situação, sem o tipo.
+- **29/02** (BR-090 a BR-095, REQ-031, PD-004): para a Ação contemplada no exercício, "29/02/2028 · 1 noite adicional",
+  losango no dia, "29/02: noite adicional" na legenda e a nota "O 29/02/2028 foi atribuído a esta Ação neste ano bissexto e
+  não desconta do saldo anual de Alta/Super Alta nem de Média/Baixa"; na prévia, "29/02/2028 · noite adicional — não
+  desconta do saldo anual". Sem termo de produto novo. Para outra Ação, "não atribuído a esta Ação em 2028" (pode ser a
+  saída); para o Owner, noite comum.
+
 ## 8. Aceite
 
 `[INV-1][CONC-1]` reservas concorrentes na mesma noite → exatamente uma, a outra `ERR_BOOKING_CONFLICT` · `[CONC-2]`

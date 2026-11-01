@@ -60,7 +60,8 @@
     granted: { alta: 48, media: 128 },
     remaining: { 2028: { alta: 41, media: 121, leap: 1 }, 2029: { alta: 48, media: 128, leap: 0 } },
     leapBeneficiary: true,
-    mine: [['2028-02-07', '2028-02-10']],
+    // Reservas da holding como o servidor as devolve: período, canal e estado persistidos (nunca inferidos).
+    mine: [['2028-02-07', '2028-02-10', 'own_use', 'confirmed']],
     others: [['2028-02-14', '2028-02-17'], ['2028-03-20', '2028-03-22']],
   };
   const SCENARIOS = {
@@ -68,7 +69,7 @@
     'co-owner-fechada': { ...coOwner, today: '2027-09-10', windows: { 2028: '2027-09-22', 2029: '2028-09-22' }, mine: [] },
     'co-owner-saldo': { ...coOwner, remaining: { 2028: { alta: 1, media: 121, leap: 1 }, 2029: coOwner.remaining[2029] } },
     'co-owner-29': { ...coOwner, leapBeneficiary: false, remaining: { 2028: { alta: 41, media: 121, leap: 0 }, 2029: coOwner.remaining[2029] } },
-    'co-owner-virada': { ...coOwner, today: '2028-10-02', mine: [['2028-12-20', '2028-12-24']] },
+    'co-owner-virada': { ...coOwner, today: '2028-10-02', mine: [['2028-12-20', '2028-12-24', 'own_use', 'confirmed']] },
     'co-owner-instavel': { ...coOwner, previewFailures: 1 },
     owner: {
       role: 'owner',
@@ -76,7 +77,7 @@
       today: '2028-02-04',
       sealedFrom: '2028-01-01',
       sealedUntil: '2029-12-31',
-      mine: [['2028-04-01', '2028-04-08']],
+      mine: [['2028-04-01', '2028-04-08', 'own_use', 'confirmed']],
       others: [['2028-05-10', '2028-05-13']],
     },
     carregando: { load: 'loading' },
@@ -128,17 +129,31 @@
     }
     return 'available';
   }
+  // Quem usa a tela representa uma party (identity §14): a reserva é "desta Ação" (Co-Owner) ou "do Owner", não "sua".
+  const holder = () => (sc.role === 'owner' ? 'do Owner' : 'desta Ação');
+  // Canal e estado persistidos → rótulo. Só o que a W12 produz; cada canal futuro ganha rótulo na sua wave.
+  const CHANNEL_LABEL = { own_use: (role) => (role === 'owner' ? 'Uso próprio' : 'Uso próprio · Direito de Uso') };
+  const STATE_LABEL = { confirmed: 'Confirmada' };
+  const bookingAt = (s) => sc.mine.find(([a, b]) => s >= a && s < b);
+  function bookingDetail(s) {
+    const [checkinAt, checkoutAt, channel, state] = bookingAt(s);
+    const parts = [`Reserva ${holder()}`];
+    if (CHANNEL_LABEL[channel]) parts.push(CHANNEL_LABEL[channel](sc.role));
+    parts.push(`entrada ${dayMonth(checkinAt)}, saída ${dayMonth(checkoutAt)} (${plural(diff(checkinAt, checkoutAt), 'noite', 'noites')})`);
+    if (STATE_LABEL[state]) parts.push(STATE_LABEL[state]);
+    return `${parts.join(' · ')}.`;
+  }
   // O motivo, na linguagem do Titular — nunca quem ocupa a noite.
   const STATUS_TEXT = {
     available: 'disponível',
     unavailable: 'indisponível',
-    mine: 'sua reserva',
     past: 'já passou',
     outside: 'fora do calendário aberto',
   };
   const statusText = (s, status) => {
-    if (status === 'closed') return `sua janela de ${s.slice(0, 4)} abre em ${fullDate(sc.windows[s.slice(0, 4)])}`;
-    if (status === 'leap-other') return `não faz parte do seu Direito de Uso em ${s.slice(0, 4)}`;
+    if (status === 'mine') return `reserva ${holder()}`;
+    if (status === 'closed') return `a janela de ${s.slice(0, 4)} desta Ação abre em ${fullDate(sc.windows[s.slice(0, 4)])}`;
+    if (status === 'leap-other') return `não atribuído a esta Ação em ${s.slice(0, 4)}`;
     return STATUS_TEXT[status];
   };
   const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
@@ -186,18 +201,20 @@
   function checkoutLimitReason(start, limit) {
     const status = nightStatus(limit);
     if (status === 'available' && sc.role === 'co_owner') return `o máximo é de ${MAX_STAY} noites seguidas`;
-    if (status === 'mine') return `a noite de ${dayMonth(limit)} já é sua reserva`;
+    if (status === 'mine') return `a noite de ${dayMonth(limit)} já é reserva ${holder()}`;
     if (status === 'closed') return `a janela de ${limit.slice(0, 4)} ainda não abriu`;
-    if (status === 'leap-other') return `o 29/02 não faz parte do seu Direito de Uso em ${limit.slice(0, 4)}`;
+    if (status === 'leap-other') return `o 29/02 de ${limit.slice(0, 4)} não está atribuído a esta Ação`;
     if (status === 'outside') return 'o calendário aberto termina aí';
     return `a noite de ${dayMonth(limit)} está indisponível`;
   }
   function explain(s) {
     const status = nightStatus(s);
+    if (status === 'mine') return bookingDetail(s);
     if (phase() === 'checkout' && s > checkin && status !== 'past') {
       const limit = maxCheckout(checkin);
       if (limit) return `Com entrada em ${dayMonth(checkin)}, a saída pode ser até ${dayMonth(limit)}: ${checkoutLimitReason(checkin, limit)}.`;
     }
+    if (status === 'leap-other') return `${dayMonth(s)}: ${statusText(s, status)}; pode ser a data de saída.`;
     return `${dayMonth(s)}: ${statusText(s, status)}.`;
   }
 
@@ -212,7 +229,7 @@
     const status = nightStatus(s);
     const parts = [longDate(s)];
     if (sc.role === 'co_owner' && status !== 'outside') {
-      if (isLeapDay(s) && sc.leapBeneficiary) parts.push('29/02, seu direito extraordinário');
+      if (isLeapDay(s) && sc.leapBeneficiary) parts.push('noite adicional do Direito de Uso desta Ação');
       else parts.push(BUCKET[season(s)]);
     }
     parts.push(statusText(s, status));
@@ -264,7 +281,7 @@
         },
         [el('span', { class: 'lx-calendar__number', text: String(d + 1) })],
       );
-      // 29/02: marca só quando o direito extraordinário é da Ação representada (Co-Owner contemplada no exercício).
+      // 29/02: marca só quando a noite adicional está atribuída à Ação representada (Co-Owner contemplada no exercício).
       if (sc.role === 'co_owner' && sc.leapBeneficiary && isLeapDay(s))
         button.append(el('span', { class: 'lx-calendar__mark', 'aria-hidden': 'true' }));
       row.append(
@@ -283,7 +300,7 @@
     const notes = [];
     const year = month.slice(0, 4);
     if (sc.role === 'co_owner' && sc.today < sc.windows[year])
-      notes.push(el('p', { class: 'lx-calendar__note', text: `Sua janela de ${year} abre em ${fullDate(sc.windows[year])}.` }));
+      notes.push(el('p', { class: 'lx-calendar__note', text: `A janela de ${year} desta Ação abre em ${fullDate(sc.windows[year])}.` }));
     return el('div', { class: 'lx-calendar__month' }, [
       el('div', { class: 'lx-calendar__header' }, [
         nav.prev ?? el('span', { 'aria-hidden': 'true' }),
@@ -302,7 +319,7 @@
     const items = [
       item('Disponível'),
       item('Noite indisponível', { 'data-state': 'unavailable' }),
-      item('Sua reserva', { 'data-state': 'mine' }),
+      item(`Reserva ${holder()}`, { 'data-state': 'mine' }),
       item('Selecionado', { 'data-range': 'start' }),
     ];
     const visible = months.flatMap((month) => {
@@ -312,7 +329,7 @@
     if (sc.role === 'co_owner' && visible.some((s) => season(s) === 'alta' && !isLeapDay(s)))
       items.push(item('Alta/Super Alta', { 'data-season': 'alta' }));
     if (sc.role === 'co_owner' && sc.leapBeneficiary && visible.some(isLeapDay))
-      items.push(item('29/02: direito extraordinário', { 'data-mark': 'leap' }));
+      items.push(item('29/02: noite adicional', { 'data-mark': 'leap' }));
     return items;
   }
 
@@ -458,18 +475,18 @@
     const unavailable = blocked('unavailable');
     if (unavailable.length)
       issues.push(`${dateList(unavailable)} ${unavailable.length === 1 ? 'está indisponível' : 'estão indisponíveis'}.`);
-    if (blocked('mine').length) issues.push(`Você já tem reserva em ${dateList(blocked('mine'))}.`);
+    if (blocked('mine').length) issues.push(`Já há reserva ${holder()} em ${dateList(blocked('mine'))}.`);
     for (const year of new Set(blocked('closed').map((s) => s.slice(0, 4))))
-      issues.push(`Sua janela de ${year} abre em ${fullDate(sc.windows[year])}; até lá, as noites de ${year} não podem ser reservadas.`);
+      issues.push(`A janela de ${year} desta Ação abre em ${fullDate(sc.windows[year])}; até lá, as noites de ${year} não podem ser reservadas.`);
     for (const s of blocked('leap-other'))
-      issues.push(`O 29/02/${s.slice(0, 4)} não faz parte do seu Direito de Uso neste exercício. Ele pode ser a data de saída, mas não uma noite da reserva.`);
+      issues.push(`O 29/02/${s.slice(0, 4)} não está atribuído a esta Ação neste ano bissexto. Ele pode ser a data de saída, mas não uma noite da reserva.`);
     let stay = nights.length;
     if (sc.role === 'co_owner') {
       stay = stayWith(start, end);
       if (stay > MAX_STAY)
         issues.push(stay === nights.length
           ? `Seriam ${stay} noites seguidas; o máximo é ${MAX_STAY}.`
-          : `Somando sua reserva adjacente, seriam ${stay} noites seguidas; o máximo é ${MAX_STAY}.`);
+          : `Somando a reserva adjacente desta Ação, seriam ${stay} noites seguidas; o máximo é ${MAX_STAY}.`);
     }
     // O que fazer: a saída mais distante para esta entrada (uma vez só), ou outra entrada.
     if (issues.length && !past.length) {
@@ -488,7 +505,7 @@
     if (sc.role === 'co_owner' && issues.length === 0)
       for (const u of usage)
         if (u.count > u.left)
-          issues.push(`O período usa ${plural(u.count, 'noite', 'noites')} de ${BUCKET[u.bucket]} de ${u.year}, e você tem ${u.left} ${u.left === 1 ? 'disponível' : 'disponíveis'}. Faltam ${plural(u.count - u.left, 'noite', 'noites')} nessa categoria.`);
+          issues.push(`O período usa ${plural(u.count, 'noite', 'noites')} de ${BUCKET[u.bucket]} de ${u.year}, e esta Ação tem ${u.left} ${u.left === 1 ? 'disponível' : 'disponíveis'}. Faltam ${plural(u.count - u.left, 'noite', 'noites')} nessa categoria.`);
     return { ok: issues.length === 0, issues, nights, usage, stay };
   }
 
@@ -507,9 +524,9 @@
     if (result.ok && sc.role === 'co_owner') {
       for (const u of result.usage)
         rows.push(u.bucket === 'leap'
-          ? fact(`29/02/${u.year}`, 'usa seu direito extraordinário')
+          ? fact(`29/02/${u.year} · noite adicional`, 'não desconta do saldo anual')
           : fact(`${BUCKET[u.bucket]} ${u.year}`, `usa ${plural(u.count, 'noite', 'noites')} · restarão ${u.left - u.count} de ${sc.granted[u.bucket]}`));
-      if (result.stay > n) rows.push(fact('Noites seguidas', `${result.stay} de até ${MAX_STAY}, somando sua reserva adjacente`));
+      if (result.stay > n) rows.push(fact('Noites seguidas', `${result.stay} de até ${MAX_STAY}, somando a reserva adjacente desta Ação`));
     }
     summaryEl.replaceChildren(...rows);
     summaryEl.hidden = false;
@@ -624,20 +641,20 @@
     rights.replaceChildren();
     rights.hidden = true;
     if (sc.load) {
-      title.textContent = 'Seu Direito de Uso';
+      title.textContent = 'Direito de Uso desta Ação';
       note.textContent = { loading: 'Carregando…', error: 'Indisponível no momento.', empty: 'Sem exercício aberto.' }[sc.load];
       return;
     }
     if (sc.role === 'owner') {
       title.textContent = 'Uso próprio';
-      note.textContent = `Você pode reservar qualquer noite livre do calendário, aberto até ${fullDate(sc.sealedUntil)}, sem limite de noites seguidas.`;
+      note.textContent = `O Owner pode reservar qualquer noite livre do calendário, aberto até ${fullDate(sc.sealedUntil)}, sem limite de noites seguidas.`;
       return;
     }
     // Linhas só para o exercício pertinente — os abertos ou, sem nenhum, o próximo a abrir; os demais vão à nota.
     const years = Object.keys(sc.windows).sort();
     const open = years.filter((year) => sc.today >= sc.windows[year]);
     const shown = open.length ? open : years.slice(0, 1);
-    title.textContent = `Seu Direito de Uso em ${shown.join(' e ')}`;
+    title.textContent = `Direito de Uso desta Ação em ${shown.join(' e ')}`;
     for (const year of shown) {
       if (!open.includes(year)) {
         rights.append(fact(`Janela de ${year}`, `abre em ${fullDate(sc.windows[year])}`));
@@ -650,11 +667,17 @@
         fact(`Média/Baixa${suffix}`, `${left.media} ${left.media === 1 ? 'disponível' : 'disponíveis'} de ${sc.granted.media} noites`),
       );
       if (sc.leapBeneficiary && leapYear(Number(year)) && left.leap > 0)
-        rights.append(fact(`29/02/${year}`, '1 noite · seu direito extraordinário'));
+        rights.append(fact(`29/02/${year}`, '1 noite adicional'));
     }
     rights.hidden = false;
     const later = years.filter((year) => !shown.includes(year)).map((year) => `Janela de ${year}: abre em ${fullDate(sc.windows[year])}.`);
-    note.textContent = [`Até ${MAX_STAY} noites seguidas, somando reservas suas adjacentes.`, ...later, `Calendário aberto até ${fullDate(sc.sealedUntil)}.`].join(' ');
+    const leap = shown.find((year) => open.includes(year) && sc.leapBeneficiary && leapYear(Number(year)) && sc.remaining[year].leap > 0);
+    note.textContent = [
+      ...(leap ? [`O 29/02/${leap} foi atribuído a esta Ação neste ano bissexto e não desconta do saldo anual de Alta/Super Alta nem de Média/Baixa.`] : []),
+      `Até ${MAX_STAY} noites seguidas, contando ${leap ? 'o 29/02 e ' : ''}reservas adjacentes desta Ação.`,
+      ...later,
+      `Calendário aberto até ${fullDate(sc.sealedUntil)}.`,
+    ].join(' ');
   }
 
   function load(name) {
