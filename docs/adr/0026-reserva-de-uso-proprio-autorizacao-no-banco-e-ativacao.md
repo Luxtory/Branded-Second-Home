@@ -80,6 +80,20 @@ autenticidade até o selo da W30. Provas: `tests/migrations/booking.db.test.ts` 
 - Fixtures de inventário que gravam ocupação criam uma reserva-fixture pelo dono em modo réplica, fora das invariantes
   da reserva.
 
+## Amendment — leitura do Titular na E5b (2026-11-01)
+
+- **Política de `booking` presa à holding da reserva.** A política da E1 liberava por `stake_id` (e, no Owner, qualquer
+  reserva sem Ação da Second Home). Na auditoria de isolamento pedida pelo fundador para acrescentar `channel`, ela
+  mostrou duas aberturas: o novo titular de uma Ação veria as reservas do anterior, e o Owner veria reservas sem Ação de
+  outra holding da mesma Second Home. A política passa a `EXISTS (holding h WHERE h.id = booking.holding_id)` — a
+  reserva é da "holding da época, imutável", conferida pelo gatilho de abertura. É um aperto, não uma ampliação: a W28
+  (transferência) decide se reservas futuras acompanham a Ação e, se sim, como o novo titular as lê.
+- **`channel` no `GRANT` de coluna do Titular** (decisão do fundador, opção 1): o tipo persistido da própria reserva;
+  holding, Ação e operação continuam sem `GRANT`.
+- **Janela e prévia lidas pelo servidor depois da RLS.** A janela da Ação e a prévia usam as mesmas funções de domínio do
+  command com fatos lidos pelo papel da aplicação, só depois de a RLS provar a representação; a saída é só desta holding.
+  A prévia não trava, não escreve e não decide (a confirmação revalida tudo no banco).
+
 ## Alternatives considered
 
 - **Função `SECURITY DEFINER` como único caminho:** não autentica a intenção (identidade continua parâmetro), duplica o

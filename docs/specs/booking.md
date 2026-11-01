@@ -79,10 +79,30 @@ replay ou recusa antes de executar; chave nova → `ERR_BOOKING_CONFLICT`; no ba
 
 ## 6. Leitura do Titular (TECH-052)
 
-Linhas por RLS (holding vigente representada); campos por privilégio de coluna: `booking` (id, Second Home, datas,
-estado, `confirmed_at`), `use_right_balance` (a própria Ação), `second_home_date` (noites seladas), `date_custody`
+Linhas por RLS (holding vigente representada); campos por privilégio de coluna: `booking` (id, Second Home, canal,
+datas, estado, `confirmed_at`), `use_right_balance` (a própria Ação), `second_home_date` (noites seladas), `date_custody`
 (`holder_kind` e fechamento) e `date_occupancy` (noite e liberação) — disponibilidade como fato, sem Ação nem reserva de
 terceiros —, e `notification` (a party representada).
+
+**Reserva pertence à holding da época (E5b, 2026-11-01).** A política de `booking` é
+`EXISTS (holding h WHERE h.id = booking.holding_id)` sob a RLS da W8 em `app.holding` (delegação ativa e vigente do
+usuário + holding vigente): o Titular lê só as reservas da holding que representa agora — nunca as de outra Ação da mesma
+Second Home, as de um titular anterior da Ação (transferência) nem reservas sem Ação da Second Home do Owner; o ex-titular
+perde o acesso quando a holding termina. `channel` entrou no `GRANT` de coluna por decisão do fundador (opção 1):
+revela só o tipo das próprias reservas. Holding, Ação e operação seguem sem `GRANT` (nem para filtrar). Provas:
+`own-use-booking.db.test.ts` ("o canal persistido aparece só nas reservas da própria holding…": canal, id forjado, SQL
+direto como `authenticated`, filtro por coluna sem `GRANT`, transferência de Co-Owner e de Owner).
+
+**Calendário (E5b).** A página lê sob essa RLS as noites seladas, a custódia aberta, a ocupação ativa, as reservas e os
+saldos da holding e entrega a situação de cada noite já resolvida no servidor (`started` · `mine` · `unavailable` ·
+`closed` · `leap-other` · `available`). A janela da Ação vem da mesma função de domínio do command, com os fatos da
+formalização e do sorteio lidos pelo servidor só depois de a RLS provar a representação; a saída é só a janela desta Ação.
+O 29/02 aparece como noite adicional apenas com saldo `leap` > 0 da Ação, janela aberta e custódia elegível.
+
+**Prévia (E5b).** Server Action `previewOwnUseBookingAction`: a RLS prova a holding; o servidor confere as regras do command
+(`previewOwnUseBooking`, mesmas portas e funções de domínio) numa transação só de leitura, sem travas nem escrita,
+reunindo todos os motivos; intervalo limitado a 800 noites; a chave de idempotência nasce só numa prévia válida. Nunca
+decide: a confirmação revalida tudo no banco.
 
 ## 7. Telas (E5b, depois da revisão E5a)
 
@@ -135,7 +155,9 @@ custódia: mostra canal e estado persistidos.
   | `luxtory_use` | — | nunca: para o Titular é "Noite indisponível" |
 
   Estados: `confirmed` → "Confirmada" (único produzido na W12); `in_use`, `completed`, `no_show` e `in_exception` ganham
-  rótulo na wave que os produzir; `cancelled` libera a ocupação e não aparece no calendário.
+  rótulo na wave que os produzir. Uma reserva cancelada sai da indicação de reserva ativa no calendário, mas permanece
+  no histórico (lista e detalhe); a disponibilidade das noites reflete o estado canônico atualizado (custódia e ocupação
+  que a W13 definir), nunca presumida livre. A W12 não antecipa essas transições.
 - **Dependência aberta (não decidida na E5a)**: a permissão de coluna do Titular em `app.booking` (TECH-052) não inclui
   `channel`. Exibir o tipo persistido exige acrescentar `channel` a esse `GRANT` — as linhas já são restritas pela RLS às
   holdings que o usuário representa, então o canal só revela o tipo das próprias reservas. É mudança de privilégio e de
@@ -145,6 +167,15 @@ custódia: mostra canal e estado persistidos.
   não desconta do saldo anual de Alta/Super Alta nem de Média/Baixa"; na prévia, "29/02/2028 · noite adicional — não
   desconta do saldo anual". Sem termo de produto novo. Para outra Ação, "não atribuído a esta Ação em 2028" (pode ser a
   saída); para o Owner, noite comum.
+
+### Telas implementadas (E5b)
+
+`/titular/calendario/[holdingId]` (Direito de Uso ou uso próprio, seletor híbrido, prévia do servidor, confirmação pela
+Server Action), `/titular/reservas` (tipo, período, noites e situação), `/titular/reservas/[bookingId]` (detalhe, 404
+sem oráculo) e `/titular/notificacoes` (central só leitura). Entrada pela Área do Titular ("Uso próprio": Second Homes
+que o usuário representa). Componente `OwnUseCalendar` (cliente) sobre o contrato `lx-calendar`; textos em
+`presentation/i18n/own-use-pt-br.ts`. Sem a ativação (ADR-0026), a confirmação volta "As reservas de uso próprio ainda
+não estão abertas." — provado no E2E `tests/e2e/own-use-booking.spec.ts`.
 
 ## 8. Aceite
 

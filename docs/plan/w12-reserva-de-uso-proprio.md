@@ -62,9 +62,9 @@ canônicos. Spec: [`booking`](../specs/booking.md) (e notas em `inventory`, `cal
 | E2 | Domínio: noites (PD-002), permanência (BR-111/112), janela TS gêmea do SQL | ✅ |
 | E3 | Handler `create_own_use_booking`, portas de calendar/inventory/ownership, guard do Titular | ✅ |
 | E4 | Server Action, evento e consumidor da notificação | ✅ |
-| E5a | `lx-calendar` no Lab renderizado (320/390/1440, axe, overflow) → **revisão do fundador** | checkpoint |
-| E5b | Telas: calendário, reservas, central de notificações, i18n | após E5a |
-| E6 | Testes db (command e fronteira), unitários, E2E | db/unit ✅; E2E após E5b |
+| E5a | `lx-calendar` no Lab renderizado (320/390/1440, axe, overflow) → **revisão do fundador** | ✅ aprovada (v2.4, 2026-11-01) |
+| E5b | Telas: calendário, reservas, central de notificações, i18n; `channel` no GRANT do Titular e RLS por holding (opção 1) | ✅ |
+| E6 | Testes db (command, fronteira, RLS com identidades diferentes, leitura e prévia), unitários, E2E | ✅ |
 | E7 | Gates: `npm run verify`, `npm run test:e2e` (`--workers=2`), `npm run trace -- --expect REQ-034,REQ-035,REQ-037,PD-002,INV-1` | pendente |
 | E8 | Commit, push, PR draft, checkpoint | pendente |
 

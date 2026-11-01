@@ -73,21 +73,39 @@ só com a ativação privilegiada presente. Dados: ids pseudônimos (party, hold
 ### T-1205 [MEDIUM] Information disclosure — reservas, saldos ou notificações de outro Titular
 
 - **Vector**: consulta direta como `authenticated`, com ids de terceiros ou colunas internas.
-- **Mitigation**: RLS por holding vigente representada; privilégio de coluna sem Ação, reserva, operação ou party de
-  terceiros; `app.notification` com RLS por party representada. As claims vêm do servidor: protegem contra bug, não
-  contra servidor comprometido (que lê as tabelas diretamente).
-- **Tracking**: `own-use-booking.db.test.ts` (dois Titulares, revogação, expiração, colunas negadas)
+- **Mitigation**: RLS por holding vigente representada; a reserva só é lida pela holding que a abriu
+  (`h.id = booking.holding_id`, E5b) — nem outra Ação da mesma Second Home, nem titular anterior da Ação, nem reservas sem
+  Ação de outra holding no Owner; privilégio de coluna sem Ação, holding, operação ou party (nem para filtrar); `channel`
+  só da própria reserva; `app.notification` com RLS por party representada. As claims vêm do servidor: protegem contra
+  bug, não contra servidor comprometido (que lê as tabelas diretamente). O calendário recebe a situação de cada noite já
+  resolvida (sem Ação, reserva, operação ou valor de terceiros); a prévia e a página de reserva respondem 404/"proibido"
+  para holding não representada, sem oráculo.
+- **Tracking**: `own-use-booking.db.test.ts` (dois Titulares, revogação, expiração, colunas negadas; canal, id forjado,
+  SQL direto como `authenticated`, transferência de Co-Owner e Owner; calendário sob RLS); E2E
+  `own-use-booking.spec.ts` (outro Titular → 404 no calendário)
 
 ### T-1206 [LOW] Repudiation — autoria da reserva depois de uma transferência
 
 - **Mitigation**: `booking.holding_id` imutável (party da época) e `operation.actor_user_id`; notificação à party que
   reservou, fixada no evento. Operação e auditoria são gravadas pelo mesmo papel (R5): sinal, não prova, até a W30.
 
+### T-1208 [LOW] Information disclosure/Tampering — janela e prévia lidas pelo papel da aplicação (E5b)
+
+- **Vector**: a janela da Ação e a prévia leem fatos da formalização, do sorteio, da custódia e do saldo com o papel da
+  aplicação (o Titular não lê as posições de outras Ações nem a custódia de terceiros por RLS).
+- **Mitigation**: só depois de a RLS provar a holding (delegação ativa + holding vigente); a saída é só desta holding
+  (data de abertura da própria janela; motivos com datas, nunca quem ocupa); a prévia roda em transação só de leitura,
+  sem travas, e não decide — a confirmação revalida tudo no banco (ADR-0026).
+- **Tracking**: `preview-own-use-booking.test.ts`, `own-use-booking.db.test.ts` (prévia concorda com o command)
+
 ### T-1207 [LOW] Denial of service — reservas em massa ou travas longas
 
 - **Mitigation**: idempotência por chave; teto pelas noites seladas (≤ 2 exercícios) e, no Co-Owner, saldo e 14 noites;
   travas com `lock_timeout` do executor. Sem rate limit no command autenticado (decisão registrada no ADR-0026): o
   domínio limita o efeito. Uma sessão pendurada pode atrasar a desativação (runbook: `lock_timeout` e encerrar sessões).
+  Prévia (E5b): só Titular autenticado com holding autorizada pela RLS, intervalo validado (≤ 800 noites, saídas antes
+  de qualquer consulta para datas fora do calendário), uma transação só de leitura sem travas; sem rate limit próprio
+  (o limitador do projeto é para escritas públicas por origem de rede) — endurecimento possível com a W30.
 
 ## 5. Out of scope
 

@@ -294,11 +294,14 @@ GRANT EXECUTE ON FUNCTION app.assert_booking_complete(uuid), app.booking_invaria
 -- Leituras do Titular (TECH-052): a RLS restringe linhas à holding vigente que o usuário representa (política da W8 em
 -- `app.holding`); o privilégio de coluna restringe campos — nunca Ação, reserva, operação ou party de terceiros. A
 -- disponibilidade de uma noite aparece só como fato (custódia e ocupação ativas), sem dizer de quem.
-GRANT SELECT (id, second_home_id, checkin_date, checkout_date, state, confirmed_at) ON app.booking TO authenticated;
+-- A reserva pertence à holding que a abriu ("holding da época, imutável", conferida pelo gatilho de abertura): o Titular
+-- lê só as reservas da holding vigente que representa — nunca as de outra Ação da mesma Second Home, de um titular
+-- anterior da Ação (transferência) nem reservas sem Ação da Second Home do Owner. `channel` é o tipo persistido da
+-- própria reserva (spec booking §7, aprovado pelo fundador em 2026-11-01); holding, Ação e operação seguem sem GRANT.
+GRANT SELECT (id, second_home_id, channel, checkin_date, checkout_date, state, confirmed_at)
+  ON app.booking TO authenticated;
 CREATE POLICY booking_holder_read ON app.booking FOR SELECT TO authenticated USING (
-  EXISTS (SELECT 1 FROM app.holding h
-           WHERE (booking.stake_id IS NOT NULL AND h.stake_id = booking.stake_id)
-              OR (booking.stake_id IS NULL AND h.role = 'owner' AND h.second_home_id = booking.second_home_id))
+  EXISTS (SELECT 1 FROM app.holding h WHERE h.id = booking.holding_id)
 );
 GRANT SELECT (stake_id, exercise_year, bucket, granted, consumed, expired, remaining)
   ON app.use_right_balance TO authenticated;
@@ -351,7 +354,8 @@ DROP POLICY use_right_balance_holder_read ON app.use_right_balance;
 REVOKE SELECT (stake_id, exercise_year, bucket, granted, consumed, expired, remaining)
   ON app.use_right_balance FROM authenticated;
 DROP POLICY booking_holder_read ON app.booking;
-REVOKE SELECT (id, second_home_id, checkin_date, checkout_date, state, confirmed_at) ON app.booking FROM authenticated;
+REVOKE SELECT (id, second_home_id, channel, checkin_date, checkout_date, state, confirmed_at)
+  ON app.booking FROM authenticated;
 
 DROP FUNCTION app.booking_invariant_breaches();
 DROP TRIGGER use_right_ledger_booking_constraint ON app.use_right_ledger;

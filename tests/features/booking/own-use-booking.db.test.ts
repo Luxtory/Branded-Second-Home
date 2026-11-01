@@ -1,12 +1,22 @@
 import { randomUUID } from 'node:crypto';
+import { sql } from 'kysely';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { OwnUseBookingNotActivatedError } from '@/features/booking/application/create-own-use-booking';
 import { createOwnUseBookingConsumers } from '@/features/booking/jobs';
+import { readOwnUseCalendar } from '@/features/booking/presentation/own-use-calendar-read';
+import {
+  previewOwnUseBooking,
+  type PreviewHolding,
+} from '@/features/booking/application/preview-own-use-booking';
+import { createPostgresBookingStore } from '@/features/booking/infrastructure/postgres-booking-store';
+import { createPostgresOwnUseRights, createUseWindowResolver } from '@/features/calendar/booking';
+import { createOwnUseInventory } from '@/features/inventory';
+import { findUseRightFacts } from '@/features/ownership';
 import { systemClock, withUserRead, type DatabaseTransaction } from '@/features/platform';
 import { ConsumerRegistry } from '@/features/platform/application/outbox/consumers';
 import { dispatchOutbox } from '@/features/platform/application/outbox/dispatcher';
 import { createPostgresOutboxStore } from '@/features/platform/infrastructure/outbox/postgres-outbox-store';
-import { ownerDelegation } from '../../support/party-fixtures';
+import { ownerDelegation, ownerParty } from '../../support/party-fixtures';
 import { NEXT_YEAR } from '../calendar/sealing-support';
 import {
   formalizeCoOwnerAt,
@@ -413,6 +423,115 @@ describe('W12 — reserva de uso próprio pelo command (PostgreSQL real, relógi
     }, 120_000);
   });
 
+  describe('calendário e prévia do Titular (E5b, TECH-052, ADR-0026)', () => {
+    /** Primeira sequência de noites sem ocupação ativa (e sem 29/02) no exercício reservável, a partir de `from`. */
+    const freeRun = async (homeId: string, from: string, length: number) => {
+      const { rows } = await h.database.pool.query<{ stay_date: string }>(
+        `SELECT d.stay_date::text AS stay_date FROM app.second_home_date d
+          WHERE d.second_home_id = $1 AND d.stay_date >= $2 AND d.stay_date + $4::int <= $3
+            AND NOT EXISTS (SELECT 1 FROM app.date_occupancy o
+                             WHERE o.second_home_id = d.second_home_id AND o.released_at IS NULL
+                               AND o.stay_date >= d.stay_date AND o.stay_date < d.stay_date + $4::int)
+            AND NOT EXISTS (SELECT 1 FROM app.second_home_date e
+                             WHERE e.second_home_id = d.second_home_id AND e.is_leap_day
+                               AND e.stay_date >= d.stay_date AND e.stay_date < d.stay_date + $4::int)
+          ORDER BY d.stay_date LIMIT 1`,
+        [homeId, from, endOfYear(), length],
+      );
+      const found = rows[0]?.stay_date;
+      if (found === undefined) throw new Error(`no free run of ${length} nights`);
+      return found;
+    };
+    // Base com duas noites livres antes: a permanência medida é só a do teste (sem adjacência alheia ao cenário).
+    let base = '';
+    const day = (offset: number) => addDays(base, offset);
+
+    it('[TECH-052][PD-002] o calendário da holding sob RLS: canal e estado das próprias reservas, noites de terceiros só como indisponíveis', async () => {
+      base = addDays(await freeRun(co.homeId, at(0), 16), 2);
+      const booked = await h.book(a, input(co.homeId, day(0), day(2)));
+      const theirs = await h.book(b, input(co.homeId, day(8), day(10)));
+      if (booked.status !== 'committed' || theirs.status !== 'committed') throw new Error('setup');
+      const data = await readOwnUseCalendar(a.userId, a.holdingId, new Date(), h.db);
+      if (data === null) throw new Error('holding should be visible');
+      const status = (date: string) => data.nights.find((night) => night.date === date)?.status;
+      expect(data).toMatchObject({ role: 'co_owner', partyId: a.partyId, secondHomeId: co.homeId });
+      expect([status(day(0)), status(day(1))]).toEqual(['mine', 'mine']);
+      // A data de saída não consome noite (PD-002): a noite da saída não é da reserva.
+      expect(status(day(2))).toBe('available');
+      expect([status(day(8)), status(day(9))]).toEqual(['unavailable', 'unavailable']);
+      expect(data.bookings).toContainEqual({
+        id: booked.result.booking_id,
+        checkinDate: day(0),
+        checkoutDate: day(2),
+        channel: 'own_use',
+        state: 'confirmed',
+      });
+      expect(data.bookings.map((row) => row.id)).not.toContain(theirs.result.booking_id);
+      expect(
+        data.balances.some((row) => row.exerciseYear === co.year && row.bucket === 'media'),
+      ).toBe(true);
+      expect(data.windows).toContainEqual(
+        expect.objectContaining({ exerciseYear: co.year, isLeapDay: false, open: true }),
+      );
+      // Quem não representa a holding não a lê (sem oráculo).
+      expect(await readOwnUseCalendar(b.userId, a.holdingId, new Date(), h.db)).toBeNull();
+    });
+
+    it('[ADR-0026][REQ-034][REQ-037] a prévia com os adaptadores reais concorda com o command, Co-Owner e Owner', async () => {
+      const deps = {
+        store: createPostgresBookingStore(),
+        inventory: createOwnUseInventory(),
+        rights: createPostgresOwnUseRights(),
+        findFacts: findUseRightFacts,
+        windowOpensAt: createUseWindowResolver(),
+      };
+      const run = (holding: PreviewHolding, checkin: string, checkout: string) =>
+        h.db.transaction().execute(async (tx) => {
+          await sql`SET TRANSACTION READ ONLY`.execute(tx);
+          return previewOwnUseBooking(deps, tx, {
+            holding,
+            checkinDate: checkin,
+            checkoutDate: checkout,
+            now: new Date(),
+          });
+        });
+      const holdingA: PreviewHolding = {
+        secondHomeId: co.homeId,
+        role: 'co_owner',
+        stakeId: a.stakeId,
+      };
+      const conflict = await run(holdingA, day(7), day(11));
+      expect(conflict.issues).toContainEqual({ code: 'unavailable', dates: [day(8), day(9)] });
+      expect(await h.book(a, input(co.homeId, day(7), day(11)))).toEqual(
+        rejected('ERR_BOOKING_CONFLICT'),
+      );
+      const own = await run(holdingA, day(1), day(3));
+      expect(own.issues).toContainEqual({ code: 'own_booking', dates: [day(1)] });
+      const valid = await run(holdingA, day(2), day(3));
+      expect(valid).toMatchObject({ ok: true, nights: [day(2)], stay: 3 });
+      expect(await h.book(a, input(co.homeId, day(2), day(3)))).toMatchObject({
+        status: 'committed',
+      });
+
+      const ownerBase = await freeRun(owner.homeId, at(0), 6);
+      const holdingOwner: PreviewHolding = {
+        secondHomeId: owner.homeId,
+        role: 'owner',
+        stakeId: null,
+      };
+      const ownerPreview = await run(holdingOwner, ownerBase, addDays(ownerBase, 6));
+      expect(ownerPreview).toMatchObject({ ok: true, stay: 6, usage: [] });
+      expect(
+        await h.book(owner.titular, input(owner.homeId, ownerBase, addDays(ownerBase, 6))),
+      ).toMatchObject({
+        status: 'committed',
+      });
+      expect((await run(holdingOwner, ownerBase, addDays(ownerBase, 2))).issues).toEqual([
+        { code: 'unavailable', dates: [ownerBase, addDays(ownerBase, 1)] },
+      ]);
+    });
+  });
+
   describe('notificação e leitura do Titular (REQ-097, TECH-052)', () => {
     it('[REQ-097][D6] a confirmação notifica a party que reservou, uma vez, mesmo com a varredura repetida', async () => {
       const outcome = await h.book(
@@ -558,6 +677,102 @@ describe('W12 — reserva de uso próprio pelo command (PostgreSQL real, relógi
           async (tx) => (await tx.selectFrom('app.booking').select('id').execute()).length,
         ),
       ).toBe(0);
+    });
+
+    it('[TECH-052] o canal persistido aparece só nas reservas da própria holding; ids forjados e transferência não ampliam a leitura', async () => {
+      const claims = (userId: string) => ({ sub: userId, role: 'authenticated' as const });
+      const mine = await h.book(a, input(co.homeId, at(70), at(72)));
+      const owned = await h.book(owner.titular, input(owner.homeId, at(80), at(82)));
+      if (mine.status !== 'committed' || owned.status !== 'committed') throw new Error('setup');
+      const aBooking = mine.result.booking_id;
+      const ownerBooking = owned.result.booking_id;
+
+      // Canal e estado persistidos da própria reserva (spec booking §7).
+      expect(
+        await withUserRead(h.db, claims(a.userId), (tx) =>
+          tx
+            .selectFrom('app.booking')
+            .select(['channel', 'state'])
+            .where('id', '=', aBooking)
+            .execute(),
+        ),
+      ).toEqual([{ channel: 'own_use', state: 'confirmed' }]);
+
+      // Outra Ação da mesma Second Home: o id forjado não devolve nada, nem pelo SQL direto como `authenticated`.
+      const forged = (userId: string, bookingId: string) =>
+        withUserRead(h.db, claims(userId), async (tx) => ({
+          query: await tx
+            .selectFrom('app.booking')
+            .select('id')
+            .where('id', '=', bookingId)
+            .execute(),
+          raw: (
+            await sql<{
+              id: string;
+            }>`SELECT id, channel FROM app.booking WHERE id = ${bookingId} OR second_home_id = ${co.homeId}`.execute(
+              tx,
+            )
+          ).rows.filter((row) => row.id === bookingId),
+        }));
+      expect(await forged(b.userId, aBooking)).toEqual({ query: [], raw: [] });
+      expect(await forged(a.userId, ownerBooking)).toEqual({ query: [], raw: [] });
+      // Filtrar por coluna sem GRANT também é negado (nenhum oráculo por Ação ou holding).
+      for (const column of ['stake_id', 'holding_id']) {
+        await expect(
+          withUserRead(h.db, claims(b.userId), (tx) =>
+            tx
+              .selectFrom('app.booking')
+              .select('id')
+              .where(column as 'id', '=', a.stakeId!)
+              .execute(),
+          ),
+        ).rejects.toMatchObject({ code: '42501' });
+      }
+
+      // Transferência (fixture direta: a W12 não transfere): a holding de A termina e outra party assume a mesma Ação.
+      // A reserva é da holding da época — o novo titular não vê as reservas do anterior, e o anterior perde o acesso.
+      const transfer = async (titular: Titular) => {
+        const party = await ownerParty(h.database.pool);
+        const userId = randomUUID();
+        await h.database.pool.query('INSERT INTO auth.users(id) VALUES ($1)', [userId]);
+        await ownerDelegation(h.database.pool, { partyId: party, userId });
+        const client = await h.database.pool.connect();
+        try {
+          await client.query('BEGIN');
+          await client.query("SET LOCAL session_replication_role = 'replica'");
+          await client.query(
+            "UPDATE app.holding SET valid_until = now() - interval '1 second' WHERE id = $1",
+            [titular.holdingId],
+          );
+          await client.query(
+            `INSERT INTO app.holding (id, acquisition_id, second_home_id, party_id, role, stake_id, participation_bps,
+                                      valid_from, valid_until, operation_id)
+             SELECT gen_random_uuid(), acquisition_id, second_home_id, $2, role, stake_id, participation_bps,
+                    now() - interval '1 second', NULL, operation_id
+               FROM app.holding WHERE id = $1`,
+            [titular.holdingId, party],
+          );
+          await client.query('COMMIT');
+        } catch (error) {
+          await client.query('ROLLBACK');
+          throw error;
+        } finally {
+          client.release();
+        }
+        return userId;
+      };
+      const ids = (userId: string) =>
+        withUserRead(h.db, claims(userId), async (tx) =>
+          (await tx.selectFrom('app.booking').select('id').execute()).map((row) => row.id),
+        );
+      const heir = await transfer(a);
+      expect(await ids(heir)).toEqual([]);
+      expect(await ids(a.userId)).toEqual([]);
+      const ownerHeir = await transfer(owner.titular);
+      expect(await ids(ownerHeir)).toEqual([]);
+      expect(await ids(owner.titular.userId)).toEqual([]);
+      // A outra Ação continua vendo as próprias reservas.
+      expect((await ids(b.userId)).length).toBeGreaterThan(0);
     });
   });
 });

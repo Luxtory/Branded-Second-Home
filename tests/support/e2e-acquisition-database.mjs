@@ -35,3 +35,28 @@ export async function registerE2eInstitution(partyId) {
     ]),
   );
 }
+
+/**
+ * A identidade jurídica da Luxtory é única no ambiente: o primeiro spec a chegar a registra com a sua party e os demais
+ * recebem essa mesma party (corrida entre workers resolvida pela chave primária). Use a party devolvida.
+ */
+export async function ensureE2eInstitution(partyId) {
+  const source = process.env;
+  if (source.VERCEL || source.VERCEL_ENV) throw new Error('E2E fixture is local/CI only');
+  if (!/^[0-9a-f-]{36}$/i.test(partyId)) throw new Error('Invalid fixture party id');
+  const config = JSON.parse(readFileSync(E2E_ACQUISITION_DATABASE_FILE, 'utf8'));
+  const url = validateE2eAcquisitionDatabase(config.ownerUrl);
+  return withClient(url, async (client) => {
+    try {
+      await client.query('SELECT app.register_luxtory_legal_identity($1,$2)', [
+        partyId,
+        'Synthetic W8 E2E institutional act',
+      ]);
+      return partyId;
+    } catch (error) {
+      if (error?.code !== '23505') throw error;
+    }
+    const { rows } = await client.query('SELECT party_id FROM app.luxtory_legal_identity');
+    return rows[0].party_id;
+  });
+}

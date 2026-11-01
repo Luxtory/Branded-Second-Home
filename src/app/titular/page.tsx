@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { titularMessages } from '@/features/identity/presentation/i18n/titular-pt-br';
 import { TitularAreaPage } from '@/features/identity/presentation/titular-pages';
+import { TitularOwnUseSection } from '@/features/booking/presentation/own-use-pages';
 import { TitularInitialDrawList } from '@/features/ownership/presentation/initial-draw-titular';
 
 export const metadata: Metadata = {
@@ -17,7 +18,12 @@ export default async function Page({
   return (
     <TitularAreaPage
       activated={status === 'activated'}
-      extra={(session) => <TitularInitialDrawList userId={session.userId} />}
+      extra={(session) => (
+        <>
+          <TitularOwnUseSection userId={session.userId} />
+          <TitularInitialDrawList userId={session.userId} />
+        </>
+      )}
     />
   );
 }

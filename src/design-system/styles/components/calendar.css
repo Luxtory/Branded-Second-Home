@@ -585,6 +585,21 @@
     line-height: var(--lx-leading-heading);
   }
 
+  /* Confirmação (E5b): o botão ocupa a coluna do resumo como os demais itens; o desfecho do servidor fica logo acima. */
+  .lx-booking__confirm {
+    display: grid;
+    gap: var(--lx-space-3);
+  }
+
+  .lx-booking__outcome {
+    margin: 0;
+    padding-inline-start: var(--lx-space-3);
+    border-inline-start: var(--lx-border-outline) solid var(--lx-color-rule-strong);
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-body);
+    color: var(--lx-color-fg);
+  }
+
   /* Motivos da recusa: cada um com o filete do token de erro, sem recuo de lista. */
   .lx-booking__issues {
     display: grid;

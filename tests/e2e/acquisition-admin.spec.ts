@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
-import { registerE2eInstitution } from '../support/e2e-acquisition-database.mjs';
+import { ensureE2eInstitution } from '../support/e2e-acquisition-database.mjs';
 import { completeE2eInitialDraw, e2eCronSecret } from '../support/e2e-initial-draw';
 import { randomCpf, validCnpj } from '../support/documents';
 import { partialAcquisitionScenario } from '../support/acquisition-scenario';
@@ -141,8 +141,8 @@ test.describe('W8 Admin 390 px com toque e PostgreSQL real', () => {
       const page = await browser.newPage({ baseURL });
       try {
         const home = await enter(page, 'Second Home sintética Co-Owner');
-        const institution = await party(page, cnpj());
-        await registerE2eInstitution(institution);
+        // Identidade jurídica única no ambiente: outro spec pode tê-la registrado antes (ver ensureE2eInstitution).
+        const institution = await ensureE2eInstitution(await party(page, cnpj()));
         fixture = {
           home,
           institution,
@@ -403,7 +403,10 @@ test.describe('W8 Admin 390 px com toque e PostgreSQL real', () => {
           titular.getByRole('heading', { level: 2, name: 'Sorteio da ordem inicial' }),
         ).toBeVisible();
         await gate(titular, titularErrors, '12-titular-sorteios');
-        await titular.getByRole('link', { name: /Second Home sintética Co-Owner/ }).tap();
+        await titular
+          .getByRole('list', { name: 'Sorteio da ordem inicial' })
+          .getByRole('link', { name: /Second Home sintética Co-Owner/ })
+          .tap();
         await expect(titular.getByRole('heading', { level: 1 })).toHaveText(
           'Sorteio da ordem inicial',
         );
