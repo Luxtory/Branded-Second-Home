@@ -33,6 +33,7 @@
             <option value="co-owner-saldo">Co-Owner — saldo de Alta/Super Alta insuficiente</option>
             <option value="co-owner-29">Co-Owner — sem o direito ao 29/02 em 2028</option>
             <option value="co-owner-virada">Co-Owner — virada de exercício (2028 → 2029)</option>
+            <option value="co-owner-instavel">Co-Owner — servidor indisponível na prévia</option>
             <option value="owner">Owner — propriedade integral</option>
             <option value="carregando">Carregando disponibilidade</option>
             <option value="erro">Falha ao carregar</option>
@@ -45,16 +46,17 @@
           <p class="lx-lead lx-page-header__lead" data-context></p>
         </header>
 
-        <section class="lx-page-section" aria-labelledby="direito">
-          <h2 id="direito" class="lx-display-s" data-rights-title>Seu Direito de Uso</h2>
-          <dl class="lx-evidence lx-evidence--inline" data-rights></dl>
+        <section class="lx-booking__rights" aria-labelledby="direito">
+          <h2 id="direito" class="lx-title" data-rights-title>Seu Direito de Uso</h2>
+          <dl class="lx-booking__facts" data-rights></dl>
+          <p class="lx-booking__footnote" data-rights-note></p>
         </section>
 
         <div class="lx-booking">
           <section class="lx-booking__period" aria-labelledby="periodo">
             <div class="lx-booking__intro">
               <h2 id="periodo" class="lx-display-s">Escolha o período</h2>
-              <p class="lx-hint" id="periodo-hint">Escolha no calendário a entrada e depois a saída, ou digite as datas. A data de saída não consome noite: você sai às 10h.</p>
+              <p class="lx-hint" id="periodo-hint">Escolha a entrada e depois a saída no calendário, ou digite as datas. A noite da data de saída não é usada.</p>
             </div>
             <div class="lx-booking__dates">
               <div class="lx-field">
@@ -66,17 +68,26 @@
                 <input class="lx-input" id="saida" name="checkout_date" type="date" aria-describedby="periodo-hint">
               </div>
             </div>
-            <div class="lx-calendar" data-calendar>
-              <noscript><p class="lx-body">O calendário precisa de JavaScript; as datas podem ser digitadas acima.</p></noscript>
+            <div class="lx-calendar">
+              <div class="lx-calendar__grid" data-calendar>
+                <noscript><p class="lx-body">O calendário precisa de JavaScript. Você ainda pode digitar as datas acima.</p></noscript>
+              </div>
+              <div class="lx-calendar__selection">
+                <p role="status" data-selection-text></p>
+                <button class="lx-calendar__clear" type="button" data-clear hidden>Limpar datas</button>
+              </div>
+              <div class="lx-calendar__legend" data-legend></div>
             </div>
           </section>
 
           <aside class="lx-booking__summary" aria-labelledby="resumo">
             <h2 id="resumo" class="lx-title">Resumo</h2>
-            <p class="lx-booking__status" role="status" data-status>Escolha a data de entrada.</p>
-            <dl class="lx-evidence" data-summary hidden></dl>
+            <p class="lx-booking__status" role="status" data-status>Escolha a entrada e a saída.</p>
+            <dl class="lx-booking__facts" data-summary hidden></dl>
             <ul class="lx-booking__issues" data-issues hidden></ul>
-            <p class="lx-hint">Até você confirmar, nenhuma noite fica reservada. Ao confirmar, a Luxtory confere de novo disponibilidade, janela e saldo.</p>
+            <button class="lx-button lx-button--quiet" type="button" data-retry hidden>Verificar de novo</button>
+            <noscript><p class="lx-hint">Neste protótipo, a prévia e a confirmação precisam de JavaScript.</p></noscript>
+            <p class="lx-hint">Nada fica reservado até você confirmar. A disponibilidade é conferida de novo nesse momento.</p>
             <button class="lx-button lx-button--primary" type="button" data-confirm disabled>Confirmar reserva</button>
           </aside>
         </div>

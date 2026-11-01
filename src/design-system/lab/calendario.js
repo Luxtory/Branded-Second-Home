@@ -1,8 +1,10 @@
 // Lab — protótipo E5a do seletor híbrido de período (W12). Dados FICTÍCIOS; a "prévia" aqui imita a do servidor só para
 // demonstrar a interface. No app (E5b), o componente React recebe a disponibilidade do servidor e a prévia é calculada
 // e conferida no servidor — o calendário nunca decide disponibilidade, janela ou saldo (03 §13).
-// Interação: 1º toque = entrada; 2º = saída (posterior; a saída não consome noite, PD-002); novo toque recomeça. Campos
-// de data nativos sempre sincronizados. Teclado no padrão WAI-ARIA APG (setas, Home/End, PageUp/PageDown, Shift+Page).
+// Interação: 1º toque = entrada; 2º = saída (posterior; a noite da saída não é usada, PD-002). Com a entrada escolhida,
+// datas posteriores que não servem de saída ficam sem ação e, tocadas, explicam o limite — nada é ajustado em silêncio.
+// Campos de data nativos sempre sincronizados. Teclado adaptado do WAI-ARIA APG (grade de datas) a um calendário inline:
+// setas, Home/End, PageUp/PageDown (mês), Shift+PageUp/PageDown (ano), Enter/Espaço escolhem; Tab sai da grade.
 (() => {
   const DAY = 86_400_000;
   const MAX_STAY = 14; // BR-111, TECH-045 (Co-Owner)
@@ -25,6 +27,7 @@
   const longDate = (s) => fmt({ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(toDate(s));
   const shortDate = (s) => fmt({ weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(toDate(s));
   const compactDate = (s) => fmt({ weekday: 'short', day: 'numeric', month: 'short' }).format(toDate(s));
+  const weekdayDay = (s) => `${fmt({ weekday: 'short' }).format(toDate(s))}, ${dayMonth(s)}`;
   const dayMonth = (s) => fmt({ day: '2-digit', month: '2-digit' }).format(toDate(s));
   const fullDate = (s) => fmt({ day: '2-digit', month: '2-digit', year: 'numeric' }).format(toDate(s));
   const monthName = (month) => fmt({ month: 'long', year: 'numeric' }).format(toDate(`${month}-01`));
@@ -65,6 +68,7 @@
     'co-owner-saldo': { ...coOwner, remaining: { 2028: { alta: 1, media: 121, leap: 1 }, 2029: coOwner.remaining[2029] } },
     'co-owner-29': { ...coOwner, leapBeneficiary: false, remaining: { 2028: { alta: 41, media: 121, leap: 0 }, 2029: coOwner.remaining[2029] } },
     'co-owner-virada': { ...coOwner, today: '2028-10-02', mine: [['2028-12-20', '2028-12-24']] },
+    'co-owner-instavel': { ...coOwner, previewFailures: 1 },
     owner: {
       role: 'owner',
       context: 'Casa Jacarandá · Owner · propriedade integral de Bruno Lima, que você representa',
@@ -87,6 +91,10 @@
   const summaryEl = document.querySelector('[data-summary]');
   const issuesEl = document.querySelector('[data-issues]');
   const confirmEl = document.querySelector('[data-confirm]');
+  const retryEl = document.querySelector('[data-retry]');
+  const selectionTextEl = document.querySelector('[data-selection-text]');
+  const clearEl = document.querySelector('[data-clear]');
+  const legendEl = document.querySelector('[data-legend]');
 
   let sc;
   let checkin = null;
@@ -95,6 +103,8 @@
   let focusDate = null;
   let preview = null; // { checkin, checkout, ok, … }
   let previewToken = 0;
+  let previewFailures = 0; // cenário de servidor indisponível na prévia
+  let guidance = null; // explicação de um dia sem ação tocado; some na próxima ação
 
   const inRanges = (ranges, s) => ranges.some(([a, b]) => s >= a && s < b);
   const firstMonth = () => ym(sc.today > sc.sealedFrom ? sc.today : sc.sealedFrom);
@@ -115,16 +125,27 @@
     }
     return 'available';
   }
+  // O motivo, na linguagem do Titular — nunca quem ocupa a noite.
   const STATUS_TEXT = {
     available: 'disponível',
     unavailable: 'indisponível',
     mine: 'sua reserva',
-    past: 'noite passada',
+    past: 'já passou',
     outside: 'fora do calendário aberto',
-    'leap-other': 'direito extraordinário de outra Ação neste exercício',
   };
-  const statusText = (s, status) =>
-    status === 'closed' ? `sua janela de ${s.slice(0, 4)} abre em ${fullDate(sc.windows[s.slice(0, 4)])}` : STATUS_TEXT[status];
+  const statusText = (s, status) => {
+    if (status === 'closed') return `sua janela de ${s.slice(0, 4)} abre em ${fullDate(sc.windows[s.slice(0, 4)])}`;
+    if (status === 'leap-other') return `não faz parte do seu Direito de Uso em ${s.slice(0, 4)}`;
+    return STATUS_TEXT[status];
+  };
+  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+  // "20/03", "20/03 e 21/03", "20/03, 21/03 e 22/03"; sequência longa vira "de 01/03 a 20/03".
+  function dateList(dates) {
+    if (dates.length > 3 && diff(dates[0], dates.at(-1)) === dates.length - 1)
+      return `de ${dayMonth(dates[0])} a ${dayMonth(dates.at(-1))}`;
+    const parts = dates.map(dayMonth);
+    return parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(', ')} e ${parts.at(-1)}`;
+  }
 
   // Reservas próprias adjacentes contam para a permanência (BR-112).
   function mineRunBefore(s) {
@@ -149,9 +170,38 @@
   }
   const phase = () => (checkin !== null && checkout === null ? 'checkout' : 'checkin');
 
+  // Saída mais distante para uma entrada — para orientar o Titular, nunca para ajustar a escolha.
+  function maxCheckout(start) {
+    let best = null;
+    for (let end = add(start, 1); end <= add(sc.sealedUntil, 1); end = add(end, 1)) {
+      if (nightStatus(add(end, -1)) !== 'available') break;
+      if (sc.role === 'co_owner' && stayWith(start, end) > MAX_STAY) break;
+      best = end;
+    }
+    return best;
+  }
+  function checkoutLimitReason(start, limit) {
+    const status = nightStatus(limit);
+    if (status === 'available' && sc.role === 'co_owner') return `o máximo é de ${MAX_STAY} noites seguidas`;
+    if (status === 'mine') return `a noite de ${dayMonth(limit)} já é sua reserva`;
+    if (status === 'closed') return `a janela de ${limit.slice(0, 4)} ainda não abriu`;
+    if (status === 'leap-other') return `o 29/02 não faz parte do seu Direito de Uso em ${limit.slice(0, 4)}`;
+    if (status === 'outside') return 'o calendário aberto termina aí';
+    return `a noite de ${dayMonth(limit)} está indisponível`;
+  }
+  function explain(s) {
+    const status = nightStatus(s);
+    if (phase() === 'checkout' && s > checkin && status !== 'past') {
+      const limit = maxCheckout(checkin);
+      if (limit) return `Com entrada em ${dayMonth(checkin)}, a saída pode ser até ${dayMonth(limit)}: ${checkoutLimitReason(checkin, limit)}.`;
+    }
+    return `${dayMonth(s)}: ${statusText(s, status)}.`;
+  }
+
+  // Com a entrada escolhida: ela mesma (desfaz), uma saída válida ou uma data anterior disponível (nova entrada).
   function selectable(s) {
     const status = nightStatus(s);
-    if (phase() === 'checkout') return s === checkin || validCheckout(checkin, s) || status === 'available';
+    if (phase() === 'checkout') return s === checkin || validCheckout(checkin, s) || (s < checkin && status === 'available');
     return status === 'available';
   }
 
@@ -164,6 +214,8 @@
     }
     parts.push(statusText(s, status));
     if (phase() === 'checkout' && status !== 'available' && validCheckout(checkin, s)) parts.push('pode ser a data de saída');
+    if (phase() === 'checkout' && s > checkin && status === 'available' && !validCheckout(checkin, s))
+      parts.push('não pode ser a saída desta entrada');
     if (s === checkin) parts.push('entrada selecionada');
     else if (s === checkout) parts.push('saída selecionada');
     else if (checkin && checkout && s > checkin && s < checkout) parts.push('noite do período selecionado');
@@ -242,25 +294,40 @@
   function legend(months) {
     const item = (text, attrs, sample = '8') =>
       el('li', { class: 'lx-calendar__legend-item' }, [el('span', { class: 'lx-calendar__swatch', 'aria-hidden': 'true', ...attrs, text: sample }), text]);
-    // Só o que está em tela: seleção quando existe; 29/02 quando aparece e a Ação tem o direito.
-    const items = [
-      item('Disponível', {}),
-      item('Indisponível', { 'data-state': 'unavailable' }),
-      item('Sua reserva', { 'data-state': 'mine' }),
-    ];
-    if (sc.role === 'co_owner') items.push(item('Alta/Super Alta', { 'data-season': 'alta' }));
+    const group = (title, items) =>
+      el('ul', { class: 'lx-calendar__legend-group', 'aria-label': title }, [
+        el('li', { class: 'lx-calendar__legend-title', 'aria-hidden': 'true', text: title }),
+        ...items,
+      ]);
     const visible = months.flatMap((month) => {
       const first = `${month}-01`;
       return Array.from({ length: diff(first, add(lastDay(month), 1)) }, (_, i) => add(first, i));
     });
-    const inactive = new Set(visible.map(nightStatus).filter((status) => status === 'past' || status === 'closed'));
-    if (inactive.size)
-      items.push(item(inactive.has('closed') ? 'Sem ação: janela ainda não aberta' : 'Sem ação: noite passada', { 'data-inactive': 'true' }));
-    if (sc.role === 'co_owner' && sc.leapBeneficiary && months.some((month) => month.endsWith('-02') && leapYear(Number(month.slice(0, 4)))))
-      items.push(item('29/02: seu direito extraordinário', {}, '29◆'));
-    if (checkin) items.push(item('Entrada', { 'data-range': 'start' }));
-    if (checkin && checkout) items.push(item('Noites do período', { 'data-range': 'night' }), item('Saída (não consome noite)', { 'data-range': 'end' }));
-    return el('ul', { class: 'lx-calendar__legend', 'aria-label': 'Legenda do calendário' }, items);
+    const statuses = new Set(visible.map(nightStatus));
+    // Só o que está em tela: seleção quando existe; temporada, 29/02 e situações quando aparecem nos meses exibidos.
+    const groups = [
+      group('Disponibilidade', [
+        item('Disponível', {}),
+        item('Indisponível', { 'data-state': 'unavailable' }),
+        item('Sua reserva', { 'data-state': 'mine' }),
+      ]),
+    ];
+    if (checkin) {
+      const chosen = [item('Entrada', { 'data-range': 'start' })];
+      if (checkout) chosen.push(item('Noites selecionadas', { 'data-range': 'night' }), item('Saída', { 'data-range': 'end' }));
+      groups.push(group('Sua seleção', chosen));
+    }
+    const special = [];
+    if (sc.role === 'co_owner' && visible.some((s) => season(s) === 'alta' && !isLeapDay(s)))
+      special.push(item('Alta/Super Alta', { 'data-season': 'alta' }));
+    if (sc.role === 'co_owner' && sc.leapBeneficiary && visible.some(isLeapDay))
+      special.push(item('29/02: seu direito extraordinário', {}, '29◆'));
+    if (statuses.has('past')) special.push(item('Já passou', { 'data-inactive': 'true' }));
+    if (statuses.has('closed')) special.push(item('Janela ainda não abriu', { 'data-inactive': 'true' }));
+    if (phase() === 'checkout' && visible.some((s) => s > checkin && nightStatus(s) === 'available' && !validCheckout(checkin, s)))
+      special.push(item('Não pode ser a saída desta entrada', { 'data-inactive': 'true' }));
+    if (special.length) groups.push(group('Temporada e situações', special));
+    return groups;
   }
 
   function navButton(direction, disabled) {
@@ -269,6 +336,7 @@
     button.innerHTML = `<svg aria-hidden="true" focusable="false"><use href="#i-${direction < 0 ? 'prev' : 'next'}"/></svg>`;
     button.addEventListener('click', () => {
       anchor = addMonths(anchor, direction);
+      guidance = null;
       render();
     });
     return button;
@@ -284,6 +352,8 @@
 
   function render() {
     root.replaceChildren();
+    legendEl.replaceChildren();
+    renderSelection();
     if (sc.load === 'loading') {
       const month = el('div', { class: 'lx-calendar__month' }, [
         el('h3', { class: 'lx-calendar__title', text: 'Carregando disponibilidade…' }),
@@ -297,7 +367,7 @@
     if (sc.load === 'error') {
       const retry = el('button', { class: 'lx-button lx-button--quiet', type: 'button', text: 'Tentar de novo' });
       retry.addEventListener('click', () => load('co-owner'));
-      root.append(messageBox('error', 'Não foi possível carregar a disponibilidade.', 'As datas digitadas acima ainda podem ser verificadas.', retry));
+      root.append(messageBox('error', 'Não foi possível carregar a disponibilidade.', 'Tente de novo em instantes.', retry));
       return;
     }
     if (sc.load === 'empty') {
@@ -324,17 +394,26 @@
     root.append(
       el('p', { class: 'lx-visually-hidden', 'aria-live': 'polite', text: `Mostrando ${months.map(monthName).join(' e ')}` }),
       el('div', { class: 'lx-calendar__months' }, tables),
-      legend(months),
-      el('p', { class: 'lx-calendar__note', text: `Calendário ${sc.role === 'owner' ? 'disponível' : 'aberto'} até ${fullDate(sc.sealedUntil)}.` }),
     );
-    if (checkin) {
-      const clear = el('button', { class: 'lx-calendar__clear', type: 'button', text: 'Limpar datas' });
-      clear.addEventListener('click', () => setSelection(null, null, true));
-      root.append(clear);
-    }
+    legendEl.replaceChildren(...legend(months));
+  }
+
+  // Retorno logo abaixo da grade: o que foi escolhido e o próximo passo (com o limite da saída, quando há).
+  function renderSelection() {
+    clearEl.hidden = Boolean(sc.load) || !(checkin || checkout);
+    if (sc.load) selectionTextEl.textContent = '';
+    else if (guidance) selectionTextEl.textContent = guidance;
+    else if (checkin && !checkout) {
+      const limit = maxCheckout(checkin);
+      const bounded = limit && limit < add(sc.sealedUntil, 1);
+      selectionTextEl.textContent = `Entrada em ${weekdayDay(checkin)}. Agora escolha a saída${bounded ? `, até ${dayMonth(limit)}` : ''}.`;
+    } else if (checkin && checkout && checkout > checkin)
+      selectionTextEl.textContent = `Entrada ${dayMonth(checkin)}, saída ${dayMonth(checkout)}: ${plural(diff(checkin, checkout), 'noite', 'noites')}.`;
+    else selectionTextEl.textContent = '';
   }
 
   function focusDay(s) {
+    guidance = null;
     const visibleFirst = `${anchor}-01`;
     const visibleLast = lastDay(addMonths(anchor, visibleCount() - 1));
     if (s < `${firstMonth()}-01` || s > lastDay(lastMonth())) return;
@@ -346,6 +425,7 @@
   }
 
   function setSelection(start, end, announce) {
+    guidance = null;
     checkin = start;
     checkout = end;
     checkinInput.value = start ?? '';
@@ -357,33 +437,52 @@
 
   function choose(s) {
     if (!selectable(s)) {
-      statusEl.textContent = `${dayMonth(s)}: ${statusText(s, nightStatus(s))}.`;
+      guidance = explain(s);
+      renderSelection();
       return;
     }
     if (phase() === 'checkout') {
       if (s === checkin) setSelection(null, null, true);
       else if (validCheckout(checkin, s)) setSelection(checkin, s, true);
-      else setSelection(s, null, true);
+      else setSelection(s, null, true); // anterior à entrada: nova entrada
     } else setSelection(s, null, true);
     focusDate = s;
     root.querySelector(`[data-date="${s}"]`)?.focus();
   }
 
-  // Prévia simulada (no app: do servidor). Nunca ajusta datas: aponta o problema.
+  // Prévia simulada (no app: do servidor). Nunca ajusta datas: diz o motivo e o que fazer. Período impossível não mostra
+  // saldo projetado.
   function computePreview(start, end) {
-    const issues = [];
     if (end <= start) return { ok: false, issues: ['A saída precisa ser depois da entrada.'], nights: [] };
+    const issues = [];
     const nights = [];
     for (let s = start; s < end; s = add(s, 1)) nights.push(s);
     const blocked = (kind) => nights.filter((s) => nightStatus(s) === kind);
-    const list = (dates) => dates.map(dayMonth).join(', ');
-    if (blocked('past').length) issues.push(`Noite que já começou: ${list(blocked('past'))}.`);
-    if (blocked('outside').length) issues.push(`Fora do calendário aberto: ${list(blocked('outside'))}.`);
-    if (blocked('unavailable').length) issues.push(`Noite indisponível: ${list(blocked('unavailable'))}.`);
-    if (blocked('mine').length) issues.push(`Você já tem reserva em: ${list(blocked('mine'))}.`);
+    const past = blocked('past');
+    if (past.length)
+      issues.push(`${dateList(past)} já ${past.length === 1 ? 'passou' : 'passaram'}. Escolha uma entrada a partir de ${dayMonth(sc.today)}.`);
+    if (blocked('outside').length) issues.push(`O calendário está aberto até ${fullDate(sc.sealedUntil)}.`);
+    const unavailable = blocked('unavailable');
+    if (unavailable.length)
+      issues.push(`${dateList(unavailable)} ${unavailable.length === 1 ? 'está indisponível' : 'estão indisponíveis'}.`);
+    if (blocked('mine').length) issues.push(`Você já tem reserva em ${dateList(blocked('mine'))}.`);
     for (const year of new Set(blocked('closed').map((s) => s.slice(0, 4))))
-      issues.push(`Sua janela de ${year} abre em ${fullDate(sc.windows[year])}.`);
-    if (blocked('leap-other').length) issues.push('O 29/02 de 2028 é direito extraordinário de outra Ação neste exercício.');
+      issues.push(`Sua janela de ${year} abre em ${fullDate(sc.windows[year])}; até lá, as noites de ${year} não podem ser reservadas.`);
+    for (const s of blocked('leap-other'))
+      issues.push(`O 29/02/${s.slice(0, 4)} não faz parte do seu Direito de Uso neste exercício. Ele pode ser a data de saída, mas não uma noite da reserva.`);
+    let stay = nights.length;
+    if (sc.role === 'co_owner') {
+      stay = stayWith(start, end);
+      if (stay > MAX_STAY)
+        issues.push(stay === nights.length
+          ? `Seriam ${stay} noites seguidas; o máximo é ${MAX_STAY}.`
+          : `Somando sua reserva adjacente, seriam ${stay} noites seguidas; o máximo é ${MAX_STAY}.`);
+    }
+    // O que fazer: a saída mais distante para esta entrada (uma vez só), ou outra entrada.
+    if (issues.length && !past.length) {
+      const limit = nightStatus(start) === 'available' ? maxCheckout(start) : null;
+      issues.push(limit ? `Com entrada em ${dayMonth(start)}, a saída pode ser até ${dayMonth(limit)}.` : 'Escolha outra data de entrada.');
+    }
     const byBucket = new Map();
     for (const s of nights) {
       const key = `${s.slice(0, 4)}:${bucketOf(s)}`;
@@ -391,52 +490,35 @@
     }
     const usage = [...byBucket].map(([key, count]) => {
       const [year, bucket] = key.split(':');
-      const left = sc.remaining?.[year]?.[bucket] ?? 0;
-      return { year, bucket, count, left };
+      return { year, bucket, count, left: sc.remaining?.[year]?.[bucket] ?? 0 };
     });
-    let stay = nights.length;
-    if (sc.role === 'co_owner') {
-      stay = stayWith(start, end);
-      if (stay > MAX_STAY)
-        issues.push(stay === nights.length
-          ? `A permanência teria ${stay} noites seguidas; o máximo é ${MAX_STAY}.`
-          : `Com suas reservas adjacentes, a permanência teria ${stay} noites seguidas; o máximo é ${MAX_STAY}.`);
+    if (sc.role === 'co_owner' && issues.length === 0)
       for (const u of usage)
         if (u.count > u.left)
-          issues.push(`Saldo de ${BUCKET[u.bucket]} em ${u.year}: ${u.left} ${u.left === 1 ? 'noite' : 'noites'}; o período usa ${u.count}.`);
-    }
+          issues.push(`O período usa ${plural(u.count, 'noite', 'noites')} de ${BUCKET[u.bucket]} de ${u.year}, e você tem ${u.left} ${u.left === 1 ? 'disponível' : 'disponíveis'}. Faltam ${plural(u.count - u.left, 'noite', 'noites')} nessa categoria.`);
     return { ok: issues.length === 0, issues, nights, usage, stay };
   }
 
-  function summaryRow(label, value) {
-    return el('div', { class: 'lx-evidence__item' }, [el('dt', { class: 'lx-evidence__label', text: label }), el('dd', { class: 'lx-evidence__value', text: value })]);
+  function fact(label, value) {
+    return el('div', { class: 'lx-booking__fact' }, [el('dt', { text: label }), el('dd', { text: value })]);
   }
 
   function showPreview(result) {
-    summaryEl.replaceChildren();
-    const nightsText = result.nights.length === 0 ? '0' : result.nights.length === 1
-      ? `1 (${dayMonth(result.nights[0])})`
-      : result.nights.length === 2
-        ? `2 (${dayMonth(result.nights[0])} e ${dayMonth(result.nights[1])})`
-        : `${result.nights.length} (${dayMonth(result.nights[0])} a ${dayMonth(result.nights.at(-1))})`;
-    summaryEl.append(
-      summaryRow(
-        'Período',
-        checkin.slice(0, 4) === checkout.slice(0, 4)
-          ? `${compactDate(checkin)}, 14h → ${compactDate(checkout)}, 10h · ${checkin.slice(0, 4)}`
-          : `${shortDate(checkin)}, 14h → ${shortDate(checkout)}, 10h`,
-      ),
-      summaryRow('Noites', nightsText),
-    );
-    if (sc.role === 'co_owner' && result.usage?.length) {
-      // Categorias e impacto no saldo, por exercício.
-      for (const u of result.usage) {
-        const granted = u.bucket === 'leap' ? 1 : sc.granted[u.bucket];
-        const after = Math.max(u.left - u.count, 0);
-        summaryEl.append(summaryRow(`${BUCKET[u.bucket]} ${u.year}`, `${u.count} ${u.count === 1 ? 'noite' : 'noites'} · saldo ${u.left} → ${after} de ${granted}`));
-      }
-      summaryEl.append(summaryRow('Permanência', `${result.stay} de ${MAX_STAY} noites seguidas`));
+    const n = result.nights.length;
+    const period = checkin.slice(0, 4) === checkout.slice(0, 4)
+      ? `${compactDate(checkin)}, 14h → ${compactDate(checkout)}, 10h · ${checkin.slice(0, 4)}`
+      : `${shortDate(checkin)}, 14h → ${shortDate(checkout)}, 10h`;
+    const rows = [fact('Período', period)];
+    if (n > 0) rows.push(fact('Noites', `${n} · ${dateList(result.nights)}`));
+    // Consumo e saldo que restará: só quando o período é possível.
+    if (result.ok && sc.role === 'co_owner') {
+      for (const u of result.usage)
+        rows.push(u.bucket === 'leap'
+          ? fact(`29/02/${u.year}`, 'usa seu direito extraordinário')
+          : fact(`${BUCKET[u.bucket]} ${u.year}`, `usa ${plural(u.count, 'noite', 'noites')} · restarão ${u.left - u.count} de ${sc.granted[u.bucket]}`));
+      if (result.stay > n) rows.push(fact('Noites seguidas', `${result.stay} de até ${MAX_STAY}, somando sua reserva adjacente`));
     }
+    summaryEl.replaceChildren(...rows);
     summaryEl.hidden = false;
     issuesEl.replaceChildren(...result.issues.map((text) => el('li', { text })));
     issuesEl.hidden = result.issues.length === 0;
@@ -446,38 +528,46 @@
     const token = ++previewToken;
     preview = null;
     confirmEl.disabled = true;
-    if (!checkin && !checkout) {
-      statusEl.textContent = sc.load ? '—' : 'Escolha a data de entrada.';
-      summaryEl.hidden = true;
-      issuesEl.hidden = true;
-      return;
-    }
-    if (checkin && !checkout) {
-      statusEl.textContent = `Entrada em ${shortDate(checkin)}. Agora escolha a saída.`;
-      summaryEl.hidden = true;
-      issuesEl.hidden = true;
-      return;
-    }
-    if (!checkin) {
-      statusEl.textContent = 'Escolha também a data de entrada.';
-      return;
-    }
-    statusEl.textContent = 'Verificando disponibilidade…';
+    retryEl.hidden = true;
+    summaryEl.hidden = true;
     issuesEl.hidden = true;
+    if (sc.load) {
+      statusEl.textContent = { error: 'Não foi possível verificar agora.', loading: 'Carregando…', empty: 'Ainda não há noites abertas.' }[sc.load];
+      return;
+    }
+    if (!checkin || !checkout) {
+      statusEl.textContent = checkin ? 'Escolha a saída para ver a prévia.' : checkout ? 'Escolha também a entrada.' : 'Escolha a entrada e a saída.';
+      return;
+    }
+    statusEl.textContent = 'Verificando o período…';
     const start = checkin;
     const end = checkout;
     window.setTimeout(() => {
       if (token !== previewToken) return; // datas mudaram: a prévia antiga não vale
+      if (previewFailures < (sc.previewFailures ?? 0)) {
+        previewFailures += 1;
+        statusEl.textContent = 'Não foi possível verificar o período agora.';
+        issuesEl.replaceChildren(el('li', { text: 'Suas datas foram mantidas. Tente de novo em instantes.' }));
+        issuesEl.hidden = false;
+        retryEl.hidden = false;
+        return;
+      }
       const result = computePreview(start, end);
       preview = { ...result, checkin: start, checkout: end };
       showPreview(result);
-      statusEl.textContent = result.ok ? 'Período disponível para reserva.' : 'Não é possível reservar este período.';
+      statusEl.textContent = result.ok ? 'Período disponível.' : 'Não é possível reservar este período.';
       confirmEl.disabled = !(result.ok && preview.checkin === checkin && preview.checkout === checkout);
     }, PREVIEW_DELAY_MS);
   }
+  retryEl.addEventListener('click', () => updateSummary());
+  clearEl.addEventListener('click', () => {
+    setSelection(null, null, true);
+    checkinInput.focus();
+  });
 
   // Entrada direta: mesmas regras, sem ajuste silencioso.
   function fromInputs() {
+    guidance = null;
     const start = checkinInput.value || null;
     const end = checkoutInput.value || null;
     checkin = start;
@@ -526,38 +616,46 @@
     statusEl.textContent = 'Demonstração do Lab: no app, a confirmação vai ao servidor, que confere tudo de novo antes de reservar.';
   });
 
+  // Estável durante a escolha (não muda ao navegar nem ao selecionar): a grade não se move sob o dedo.
   function renderRights() {
     const title = document.querySelector('[data-rights-title]');
     const rights = document.querySelector('[data-rights]');
+    const note = document.querySelector('[data-rights-note]');
     document.querySelector('[data-context]').textContent = sc.context ?? 'Dados de demonstração';
     rights.replaceChildren();
+    rights.hidden = true;
     if (sc.load) {
       title.textContent = 'Seu Direito de Uso';
-      rights.append(summaryRow('Situação', sc.load === 'loading' ? 'Carregando…' : '—'));
+      note.textContent = { loading: 'Carregando…', error: 'Indisponível no momento.', empty: 'Sem exercício aberto.' }[sc.load];
       return;
     }
     if (sc.role === 'owner') {
-      title.textContent = 'Sua Second Home';
-      rights.append(
-        summaryRow('Capacidade', 'Todas as noites livres do calendário'),
-        summaryRow('Calendário', `Disponível até ${fullDate(sc.sealedUntil)}; novos exercícios entram a cada ano`),
-      );
+      title.textContent = 'Uso próprio';
+      note.textContent = `Você pode reservar qualquer noite livre do calendário, aberto até ${fullDate(sc.sealedUntil)}, sem limite de noites seguidas.`;
       return;
     }
-    title.textContent = 'Seu Direito de Uso';
-    for (const year of Object.keys(sc.windows)) {
-      if (sc.today < sc.windows[year]) {
-        rights.append(summaryRow(`Janela de ${year}`, `Abre em ${fullDate(sc.windows[year])}`));
+    // Linhas só para o exercício pertinente — os abertos ou, sem nenhum, o próximo a abrir; os demais vão à nota.
+    const years = Object.keys(sc.windows).sort();
+    const open = years.filter((year) => sc.today >= sc.windows[year]);
+    const shown = open.length ? open : years.slice(0, 1);
+    title.textContent = `Seu Direito de Uso em ${shown.join(' e ')}`;
+    for (const year of shown) {
+      if (!open.includes(year)) {
+        rights.append(fact(`Janela de ${year}`, `abre em ${fullDate(sc.windows[year])}`));
         continue;
       }
+      const suffix = shown.length > 1 ? ` ${year}` : '';
       const left = sc.remaining[year];
       rights.append(
-        summaryRow(`Alta/Super Alta ${year}`, `${left.alta} de ${sc.granted.alta} noites`),
-        summaryRow(`Média/Baixa ${year}`, `${left.media} de ${sc.granted.media} noites`),
+        fact(`Alta/Super Alta${suffix}`, `${left.alta} ${left.alta === 1 ? 'disponível' : 'disponíveis'} de ${sc.granted.alta} noites`),
+        fact(`Média/Baixa${suffix}`, `${left.media} ${left.media === 1 ? 'disponível' : 'disponíveis'} de ${sc.granted.media} noites`),
       );
-      if (year === '2028' && sc.leapBeneficiary && left.leap > 0)
-        rights.append(summaryRow('29/02/2028 · seu direito extraordinário', '1 noite'));
+      if (sc.leapBeneficiary && leapYear(Number(year)) && left.leap > 0)
+        rights.append(fact(`29/02/${year}`, '1 noite · seu direito extraordinário'));
     }
+    rights.hidden = false;
+    const later = years.filter((year) => !shown.includes(year)).map((year) => `Janela de ${year}: abre em ${fullDate(sc.windows[year])}.`);
+    note.textContent = [`Até ${MAX_STAY} noites seguidas, somando reservas suas adjacentes.`, ...later, `Calendário aberto até ${fullDate(sc.sealedUntil)}.`].join(' ');
   }
 
   function load(name) {
@@ -574,6 +672,8 @@
     }
     anchor = live ? firstMonth() : null;
     focusDate = null;
+    previewFailures = 0;
+    guidance = null;
     renderRights();
     const start = params.get('entrada');
     const end = params.get('saida');
@@ -582,7 +682,10 @@
     checkout = live ? end : null;
     checkinInput.value = checkin ?? '';
     checkoutInput.value = checkout ?? '';
-    if (checkin) focusDate = checkin;
+    if (checkin) {
+      focusDate = checkin;
+      if (!params.get('mes')) anchor = ym(checkin);
+    }
     render();
     updateSummary();
   }

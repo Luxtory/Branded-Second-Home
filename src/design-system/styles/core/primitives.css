@@ -4,7 +4,8 @@
   /* Button — uppercase utility label, 48px (large 56px), 2px corners, no shadow. One primary action per block. */
   [data-lx="core"] .lx-button {
     min-height: var(--lx-target-control);
-    padding: var(--lx-space-3) var(--lx-space-6);
+    /* Mesmo limite do button.css: 24 px a 320 px com texto padrão; não dobra com texto ampliado. */
+    padding: var(--lx-space-3) min(var(--lx-space-6), 7.5vw);
     border: var(--lx-border-outline) solid transparent;
     border-radius: var(--lx-radius-hairline);
     background-color: transparent;

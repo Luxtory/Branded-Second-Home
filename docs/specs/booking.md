@@ -92,12 +92,17 @@ prévia calculada no servidor → confirmação; lista de reservas e detalhe; ce
 `lx-calendar` no Design System. Mobile-first a partir de 320 px (ADR-0009). Terminologia: "noites", "Direito de Uso"
 (Co-Owner), "uso próprio" (Owner); nunca "diária(s)" nem "cota" (REQ-100).
 
-Seletor de período proposto no checkpoint E5a (aguarda aprovação do fundador): **híbrido** — os campos de data nativos
-continuam a entrada canônica do formulário, e o calendário interativo, sincronizado com eles, escolhe entrada (1º toque) e
-saída (2º toque). Um período contínuo por reserva (D5). A saída não consome noite (PD-002), então uma noite indisponível
-pode ser a data de saída. Conflitos (noite indisponível, passada, fora do calendário, janela não aberta, saldo,
-permanência) são explicados no resumo, nunca ajustados automaticamente; "Confirmar reserva" só habilita depois de uma
-prévia válida do servidor para as mesmas datas; sem preço por noite. Contrato visual e de teclado: `lx-calendar` em
+Seletor de período (checkpoint E5a; modelo híbrido, linguagem visual, grade de 44 px, Owner sem classificação sazonal e
+legenda condicional aprovados pelo fundador em 2026-10-31; refinamentos da v2.1 aguardam a revisão visual final antes da
+E5b): os campos de data nativos continuam a entrada canônica do formulário, e o calendário interativo, sincronizado com
+eles, escolhe entrada (1º toque) e saída (2º toque). Um período contínuo por reserva (D5). A noite da data de saída não é
+usada (PD-002), então uma noite indisponível pode ser a data de saída; com a entrada escolhida, datas posteriores que não
+servem de saída ficam sem ação e explicam o limite. Conflitos (noite indisponível, passada, fora do calendário, janela não
+aberta, 29/02 sem o direito, saldo, permanência) são explicados no resumo com o que fazer, nunca ajustados
+automaticamente; período impossível não mostra saldo projetado; "Confirmar reserva" só habilita depois de uma prévia
+válida do servidor para as mesmas datas; sem preço por noite. Sem JavaScript, só os campos de data funcionam — o fluxo
+completo sem JavaScript não é prometido. Datas civis da Second Home: a E5b recebe "hoje" e as noites do servidor, no fuso
+da Second Home, e nunca deriva a data civil do fuso do navegador. Contrato visual e de teclado: `lx-calendar` em
 `docs/reference/design-system.md`.
 
 ## 8. Aceite
