@@ -187,47 +187,70 @@
 
   @media (hover: hover) {
     .lx-calendar__day:not([aria-disabled="true"]):hover {
-      background-color: var(--lx-color-surface);
+      background-color: var(--lx-calendar-range);
     }
   }
 
-  /* 1. Situação: passada, janela não aberta, fora do calendário — sem ação, número esmaecido (token de desabilitado;
-     no papel, fg-muted quase não se distingue de fg). Continua focável e com nome acessível completo. */
+  /* Linguagem cromática (E5a v2.2): a cor é o reconhecimento principal e cada estado tem também uma marca de forma
+     (WCAG 1.4.1) — indisponível riscado, sua reserva com um ponto, seleção preenchida/contornada. Tons derivados dos
+     tokens existentes por mistura (sem paleta nova): */
+  .lx-calendar {
+    /* indisponível: superfície neutra atenuada (o sand-wash do DS levemente esfriado pelo azul) */
+    --lx-calendar-unavailable: color-mix(in srgb, var(--lx-color-fg-muted) 8%, var(--lx-color-surface));
+    /* sua reserva: tom suave do Warm Sand */
+    --lx-calendar-mine: color-mix(in srgb, var(--lx-color-rule) 40%, var(--lx-color-bg));
+    /* noites selecionadas: tom claro do Moroccan Blue; entrada e saída no próprio Moroccan Blue */
+    --lx-calendar-range: color-mix(in srgb, var(--lx-color-accent) 15%, var(--lx-color-bg));
+  }
+
+  /* Sem ação por regra ou tempo (já passou, janela ainda não abriu, fora do calendário, não serve de saída): número
+     esmaecido sobre o fundo claro. O motivo vem no nome acessível e, ao tocar, na linha de retorno. */
   .lx-calendar__day[aria-disabled="true"] {
-    color: var(--lx-color-fg-muted);
     cursor: default;
   }
 
-  .lx-calendar__day[aria-disabled="true"] .lx-calendar__number {
+  td:not([data-state="unavailable"], [data-state="mine"]) > .lx-calendar__day[aria-disabled="true"] {
+    color: var(--lx-color-fg-muted);
+  }
+
+  td:not([data-state="unavailable"], [data-state="mine"]) > .lx-calendar__day[aria-disabled="true"] .lx-calendar__number {
     opacity: var(--lx-opacity-disabled);
   }
 
-  /* 2. Disponibilidade. */
+  /* Indisponível: superfície neutra e número riscado (nunca diz quem ocupa). */
+  td[data-state="unavailable"] {
+    background-color: var(--lx-calendar-unavailable);
+  }
+
   td[data-state="unavailable"] .lx-calendar__number {
     color: var(--lx-color-fg-muted);
     text-decoration-line: line-through;
     text-decoration-thickness: var(--lx-border-hairline);
   }
 
+  /* Sua reserva: tom de Warm Sand e um ponto sob o número. */
   td[data-state="mine"] {
-    background-image: repeating-linear-gradient(
-      135deg,
-      var(--lx-color-rule) 0 var(--lx-border-outline),
-      transparent var(--lx-border-outline) var(--lx-space-2)
-    );
+    background-color: var(--lx-calendar-mine);
   }
 
-  /* 3. Seleção: faixa nas noites do período; entrada preenchida; saída só contornada (não consome noite). */
+  td[data-state="mine"] .lx-calendar__day::after {
+    content: "";
+    position: absolute;
+    inset-block-end: var(--lx-space-2);
+    inset-inline-start: calc(50% - var(--lx-space-1) / 2);
+    inline-size: var(--lx-space-1);
+    block-size: var(--lx-space-1);
+    background-color: var(--lx-color-fg);
+  }
+
+  /* Seleção, uma família: entrada preenchida em Moroccan Blue; noites no tom claro; saída só contornada (a noite da
+     saída não é usada, PD-002), sobre o estado que a data já tem. */
   td[data-range="night"] {
-    background-color: var(--lx-color-surface);
-    box-shadow:
-      inset 0 var(--lx-border-outline) 0 var(--lx-color-rule-strong),
-      inset 0 calc(-1 * var(--lx-border-outline)) 0 var(--lx-color-rule-strong);
+    background-color: var(--lx-calendar-range);
   }
 
   td[data-range="start"] {
-    background-color: var(--lx-color-action-bg);
-    background-image: none;
+    background-color: var(--lx-color-accent);
   }
 
   td[data-range="start"] .lx-calendar__day,
@@ -238,9 +261,7 @@
   }
 
   td[data-range="end"] {
-    background-color: var(--lx-color-bg);
-    background-image: none;
-    box-shadow: inset 0 0 0 var(--lx-focus-width) var(--lx-color-rule-strong);
+    box-shadow: inset 0 0 0 var(--lx-focus-width) var(--lx-color-accent);
   }
 
   td[data-range="end"] .lx-calendar__day {
@@ -248,28 +269,28 @@
     font-weight: var(--lx-weight-semibold);
   }
 
-  /* 4. Sazonal: Alta/Super Alta com filete superior, visível sobre qualquer estado. */
+  /* Foco sobre a seleção: anel branco dentro da entrada azul; na saída, anel por dentro do contorno, com uma folga, para
+     não se confundir com ele. */
+  td[data-range="start"] .lx-calendar__day:focus-visible {
+    outline-color: var(--lx-color-action-fg);
+  }
+
+  td[data-range="end"] .lx-calendar__day:focus-visible {
+    outline-offset: calc(-2 * var(--lx-focus-width) - var(--lx-border-hairline));
+  }
+
+  /* Alta/Super Alta (só Co-Owner): traço curto no alto da célula, discreto e sobre qualquer estado. */
   td[data-season="alta"] .lx-calendar__day::before {
     content: "";
     position: absolute;
-    inset-block-start: 0;
-    inset-inline: 0;
-    block-size: var(--lx-space-1);
-    background-color: var(--lx-color-rule-strong);
+    inset-block-start: var(--lx-space-1);
+    inset-inline: 35%;
+    block-size: var(--lx-focus-width);
+    background-color: var(--lx-color-fg-muted);
   }
 
   td[data-season="alta"][data-range="start"] .lx-calendar__day::before {
     background-color: var(--lx-color-action-fg);
-  }
-
-  .lx-calendar__mark {
-    margin-inline-start: var(--lx-space-1);
-    font-size: var(--lx-text-marker);
-    color: var(--lx-color-marker);
-  }
-
-  td[data-range="start"] .lx-calendar__mark {
-    color: inherit;
   }
 
   /* Carregando: a mesma grade, sem números, até a disponibilidade chegar. */
@@ -278,11 +299,16 @@
     background-color: var(--lx-color-skeleton);
   }
 
-  /* Legenda em grupos — disponibilidade · sua seleção · temporada e outras situações —, só com o que está em tela. */
+  /* Legenda mínima: quatro estados por cor (amostras pequenas, rótulos curtos) e, só quando aparece, o traço de Alta/Super
+     Alta. O resto se explica na própria data (nome acessível e linha de retorno). */
   .lx-calendar__legend {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--lx-space-2);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--lx-space-2) var(--lx-space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
     font-family: var(--lx-font-utility);
     font-size: var(--lx-text-small);
     color: var(--lx-color-fg);
@@ -290,25 +316,6 @@
 
   .lx-calendar__legend:empty {
     display: none;
-  }
-
-  /* Cada grupo é uma lista que quebra linha; o nome do grupo é o primeiro item (oculto para leitores de tela, que
-     recebem o nome por aria-label). Tudo pode encolher: nada força a largura da coluna com texto ampliado. */
-  .lx-calendar__legend-group {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--lx-space-2) var(--lx-space-4);
-    min-inline-size: 0;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .lx-calendar__legend-title {
-    min-inline-size: 0;
-    font-weight: var(--lx-weight-medium);
-    color: var(--lx-color-fg-muted);
   }
 
   .lx-calendar__legend-item {
@@ -321,54 +328,44 @@
   .lx-calendar__swatch {
     position: relative;
     flex: none;
-    display: inline-grid;
-    place-items: center;
-    inline-size: var(--lx-space-8);
-    block-size: var(--lx-space-6);
+    inline-size: var(--lx-space-4);
+    block-size: var(--lx-space-4);
     border: var(--lx-border-hairline) solid var(--lx-color-rule);
     background-color: var(--lx-color-bg);
-    font-size: var(--lx-text-marker);
-    font-variant-numeric: tabular-nums;
+  }
+
+  .lx-calendar__swatch[data-state="unavailable"] {
+    background-color: var(--lx-calendar-unavailable);
+  }
+
+  .lx-calendar__swatch[data-state="mine"] {
+    background-color: var(--lx-calendar-mine);
+  }
+
+  .lx-calendar__swatch[data-state="mine"]::after {
+    content: "";
+    position: absolute;
+    inset: calc(50% - var(--lx-space-1) / 2);
+    background-color: var(--lx-color-fg);
+  }
+
+  .lx-calendar__swatch[data-range="start"] {
+    border-color: var(--lx-color-accent);
+    background-color: var(--lx-color-accent);
+  }
+
+  .lx-calendar__swatch[data-season="alta"] {
+    border-color: transparent;
+    background-color: transparent;
   }
 
   .lx-calendar__swatch[data-season="alta"]::before {
     content: "";
     position: absolute;
-    inset-block-start: 0;
-    inset-inline: 0;
-    block-size: var(--lx-space-1);
-    background-color: var(--lx-color-rule-strong);
-  }
-
-  /* Amostras como a grade as mostra fora da escolha da saída: número esmaecido (indisponível, além disso, riscado). */
-  .lx-calendar__swatch:is([data-state="unavailable"], [data-inactive="true"]) {
-    color: color-mix(in srgb, var(--lx-color-fg-muted) calc(var(--lx-opacity-disabled) * 100%), var(--lx-color-bg));
-  }
-
-  .lx-calendar__swatch[data-state="unavailable"] {
-    text-decoration-line: line-through;
-  }
-
-  .lx-calendar__swatch[data-state="mine"] {
-    background-image: repeating-linear-gradient(
-      135deg,
-      var(--lx-color-rule) 0 var(--lx-border-outline),
-      transparent var(--lx-border-outline) var(--lx-space-2)
-    );
-  }
-
-  .lx-calendar__swatch[data-range="start"] {
-    background-color: var(--lx-color-action-bg);
-    color: var(--lx-color-action-fg);
-  }
-
-  .lx-calendar__swatch[data-range="night"] {
-    background-color: var(--lx-color-surface);
-    border-color: var(--lx-color-rule-strong);
-  }
-
-  .lx-calendar__swatch[data-range="end"] {
-    box-shadow: inset 0 0 0 var(--lx-focus-width) var(--lx-color-rule-strong);
+    inset-block-start: calc(50% - var(--lx-focus-width) / 2);
+    inset-inline: 15%;
+    block-size: var(--lx-focus-width);
+    background-color: var(--lx-color-fg-muted);
   }
 
   /* Mensagem no lugar da grade (erro ao carregar, sem noites): a ação fica na coluna do texto, não na do ícone, e uma

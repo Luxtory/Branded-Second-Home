@@ -363,7 +363,7 @@ conteúdo. Aviso fixo da página não é região viva: sem `role`.
 2026-10-31): os campos de data nativos (entrada e saída) estão sempre presentes; o calendário interativo fica
 sincronizado com eles nos dois sentidos — 1º toque escolhe a entrada, 2º a saída; tocar a entrada de novo desfaz; tocar
 antes da entrada recomeça. Com a entrada escolhida, as datas posteriores que não servem de saída ficam sem ação e, tocadas,
-explicam o limite ("a saída pode ser até 20/03: …") — nada é ajustado em silêncio. O calendário **só sugere**:
+explicam o limite ("a saída pode ser até 20/03: …") e oferecem "Usar 25/03 como entrada" — nada é ajustado em silêncio. O calendário **só sugere**:
 disponibilidade, janela, saldo e prévia vêm do servidor, que confere tudo de novo ao confirmar (`03` §13). A noite da data
 de saída não é usada (PD-002): uma noite indisponível pode ser a saída, e o nome acessível diz "pode ser a data de saída".
 **Sem JavaScript só os campos funcionam** (digitação); calendário, prévia e confirmação do protótipo dependem de
@@ -373,20 +373,25 @@ Estrutura: `.lx-calendar` (container) > `.lx-calendar__grid` (meses: `.lx-calend
 `.lx-calendar__header` — anterior · `h3` · próximo, botões no primeiro e no último mês; o título sobe para uma linha
 própria quando o container tem menos de 16rem, como com texto ampliado no celular — e `table.lx-calendar__table` com
 `caption`, `thead th[abbr]`, `tbody td[data-state][data-season][data-range]` > `button.lx-calendar__day`) +
-`.lx-calendar__selection` (região viva com o retorno da seleção, o próximo passo, o motivo de um dia sem ação e "Limpar
-datas") + `.lx-calendar__legend` (grupos `ul.lx-calendar__legend-group[aria-label]`: disponibilidade · sua seleção ·
-temporada e situações). Dois meses lado a lado quando o container passa de 41rem; senão, um. Teclado adaptado do APG
+`.lx-calendar__selection` (região viva com o retorno da seleção, o próximo passo, o motivo de um dia sem ação, a oferta de
+nova entrada e "Limpar datas") + `ul.lx-calendar__legend` (mínima: Disponível · Indisponível · Sua reserva · Selecionado,
+amostras de cor sem número; Alta/Super Alta só quando aparece, no Co-Owner). Dois meses lado a lado quando o container passa de 41rem; senão, um. Teclado adaptado do APG
 (grade de datas) a um calendário inline: uma parada de Tab (tabindex móvel), setas, Home/End, PageUp/PageDown (mês),
 Shift+PageUp/PageDown (ano), Enter/Espaço escolhem, Tab sai; sem Esc (não há diálogo). Dia sem ação continua focável com
 `aria-disabled="true"`. Sem dependência de hover. Anel de foco interno ao botão (`outline-offset` negativo): não é cortado
 na borda da janela.
 
-Hierarquia de estados, de fora para dentro: (1) situação — já passou, janela ainda não abriu, fora do calendário, não
-pode ser a saída desta entrada: número com `--lx-opacity-disabled`, sem ação; (2) disponibilidade — `available` ·
-`unavailable` (número riscado; nunca diz quem ocupa) · `mine` (hachura); (3) seleção — `data-range="start"` preenchida,
-`night` em faixa, `end` só contornada; (4) sazonal — `data-season="alta"` com filete superior (só Co-Owner) e 29/02 com
-losango só para a Ação que tem o direito no exercício. Nenhum estado é só cor: cada dia diz data, categoria, estado e
-papel na seleção no nome acessível. A legenda mostra só o que está em tela.
+Linguagem cromática (E5a v2.2): a cor é o reconhecimento principal e cada estado tem também uma marca de forma (WCAG
+1.4.1). Tons derivados dos tokens por `color-mix`, em propriedades locais do componente (sem paleta nem token novo):
+**disponível** — `--lx-color-bg`; **indisponível** — `--lx-calendar-unavailable` (sand-wash levemente esfriado pelo
+`fg-muted`), número riscado, nunca diz quem ocupa; **sua reserva** — `--lx-calendar-mine` (40% do Warm Sand) e um ponto
+sob o número; **selecionado** — entrada em `--lx-color-accent` (Moroccan Blue) com número `--lx-color-action-fg`, noites
+em `--lx-calendar-range` (15% do accent), saída só contornada no accent sobre o estado que a data já tem (a noite da saída
+não é usada). **Sem ação** (já passou, janela ainda não abriu, fora do calendário, não serve de saída): número com
+`--lx-opacity-disabled` sobre o fundo claro; o motivo vem no nome acessível e, ao tocar, na linha de retorno.
+**Alta/Super Alta** (só Co-Owner): traço curto no alto da célula. **29/02** não tem marca na célula: o direito
+extraordinário aparece no Direito de Uso, no nome acessível e na prévia, só para a Ação contemplada. Foco: anel interno
+no `--lx-color-focus`; branco sobre a entrada preenchida; por dentro do contorno da saída, com folga.
 
 Alvos: sete colunas desde 320 px com dias ≥ 44 × 48 px; quando a coluna não comporta sete alvos mínimos mais as bordas, a
 tabela sangra a margem da página — centrada, até 2 px da borda da janela — em vez de comprimir as células. Página:

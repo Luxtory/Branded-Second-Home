@@ -2,7 +2,8 @@
 // demonstrar a interface. No app (E5b), o componente React recebe a disponibilidade do servidor e a prévia é calculada
 // e conferida no servidor — o calendário nunca decide disponibilidade, janela ou saldo (03 §13).
 // Interação: 1º toque = entrada; 2º = saída (posterior; a noite da saída não é usada, PD-002). Com a entrada escolhida,
-// datas posteriores que não servem de saída ficam sem ação e, tocadas, explicam o limite — nada é ajustado em silêncio.
+// datas posteriores que não servem de saída ficam sem ação e, tocadas, explicam o limite e oferecem "Usar dd/mm como
+// entrada" — nada é ajustado em silêncio.
 // Campos de data nativos sempre sincronizados. Teclado adaptado do WAI-ARIA APG (grade de datas) a um calendário inline:
 // setas, Home/End, PageUp/PageDown (mês), Shift+PageUp/PageDown (ano), Enter/Espaço escolhem; Tab sai da grade.
 (() => {
@@ -94,6 +95,7 @@
   const retryEl = document.querySelector('[data-retry]');
   const selectionTextEl = document.querySelector('[data-selection-text]');
   const clearEl = document.querySelector('[data-clear]');
+  const restartEl = document.querySelector('[data-restart]');
   const legendEl = document.querySelector('[data-legend]');
 
   let sc;
@@ -105,6 +107,7 @@
   let previewToken = 0;
   let previewFailures = 0; // cenário de servidor indisponível na prévia
   let guidance = null; // explicação de um dia sem ação tocado; some na próxima ação
+  let restartDate = null; // data tocada além do limite da saída: oferecida como nova entrada, nunca aplicada sozinha
 
   const inRanges = (ranges, s) => ranges.some(([a, b]) => s >= a && s < b);
   const firstMonth = () => ym(sc.today > sc.sealedFrom ? sc.today : sc.sealedFrom);
@@ -261,8 +264,6 @@
         },
         [el('span', { class: 'lx-calendar__number', text: String(d + 1) })],
       );
-      if (sc.role === 'co_owner' && isLeapDay(s) && sc.leapBeneficiary)
-        button.append(el('span', { class: 'lx-calendar__mark', 'aria-hidden': 'true', text: '◆' }));
       row.append(
         el('td', { 'data-state': status === 'available' ? null : status, 'data-season': showSeason ? 'alta' : null, 'data-range': range }, [button]),
       );
@@ -291,43 +292,23 @@
     ]);
   }
 
+  // Legenda mínima: quatro estados por cor; o traço de Alta/Super Alta só quando aparece nos meses exibidos (Co-Owner).
   function legend(months) {
-    const item = (text, attrs, sample = '8') =>
-      el('li', { class: 'lx-calendar__legend-item' }, [el('span', { class: 'lx-calendar__swatch', 'aria-hidden': 'true', ...attrs, text: sample }), text]);
-    const group = (title, items) =>
-      el('ul', { class: 'lx-calendar__legend-group', 'aria-label': title }, [
-        el('li', { class: 'lx-calendar__legend-title', 'aria-hidden': 'true', text: title }),
-        ...items,
-      ]);
+    const item = (text, attrs = {}) =>
+      el('li', { class: 'lx-calendar__legend-item' }, [el('span', { class: 'lx-calendar__swatch', 'aria-hidden': 'true', ...attrs }), text]);
+    const items = [
+      item('Disponível'),
+      item('Indisponível', { 'data-state': 'unavailable' }),
+      item('Sua reserva', { 'data-state': 'mine' }),
+      item('Selecionado', { 'data-range': 'start' }),
+    ];
     const visible = months.flatMap((month) => {
       const first = `${month}-01`;
       return Array.from({ length: diff(first, add(lastDay(month), 1)) }, (_, i) => add(first, i));
     });
-    const statuses = new Set(visible.map(nightStatus));
-    // Só o que está em tela: seleção quando existe; temporada, 29/02 e situações quando aparecem nos meses exibidos.
-    const groups = [
-      group('Disponibilidade', [
-        item('Disponível', {}),
-        item('Indisponível', { 'data-state': 'unavailable' }),
-        item('Sua reserva', { 'data-state': 'mine' }),
-      ]),
-    ];
-    if (checkin) {
-      const chosen = [item('Entrada', { 'data-range': 'start' })];
-      if (checkout) chosen.push(item('Noites selecionadas', { 'data-range': 'night' }), item('Saída', { 'data-range': 'end' }));
-      groups.push(group('Sua seleção', chosen));
-    }
-    const special = [];
     if (sc.role === 'co_owner' && visible.some((s) => season(s) === 'alta' && !isLeapDay(s)))
-      special.push(item('Alta/Super Alta', { 'data-season': 'alta' }));
-    if (sc.role === 'co_owner' && sc.leapBeneficiary && visible.some(isLeapDay))
-      special.push(item('29/02: seu direito extraordinário', {}, '29◆'));
-    if (statuses.has('past')) special.push(item('Já passou', { 'data-inactive': 'true' }));
-    if (statuses.has('closed')) special.push(item('Janela ainda não abriu', { 'data-inactive': 'true' }));
-    if (phase() === 'checkout' && visible.some((s) => s > checkin && nightStatus(s) === 'available' && !validCheckout(checkin, s)))
-      special.push(item('Não pode ser a saída desta entrada', { 'data-inactive': 'true' }));
-    if (special.length) groups.push(group('Temporada e situações', special));
-    return groups;
+      items.push(item('Alta/Super Alta', { 'data-season': 'alta' }));
+    return items;
   }
 
   function navButton(direction, disabled) {
@@ -337,6 +318,7 @@
     button.addEventListener('click', () => {
       anchor = addMonths(anchor, direction);
       guidance = null;
+      restartDate = null;
       render();
     });
     return button;
@@ -401,6 +383,8 @@
   // Retorno logo abaixo da grade: o que foi escolhido e o próximo passo (com o limite da saída, quando há).
   function renderSelection() {
     clearEl.hidden = Boolean(sc.load) || !(checkin || checkout);
+    restartEl.hidden = Boolean(sc.load) || !restartDate;
+    restartEl.textContent = restartDate ? `Usar ${dayMonth(restartDate)} como entrada` : '';
     if (sc.load) selectionTextEl.textContent = '';
     else if (guidance) selectionTextEl.textContent = guidance;
     else if (checkin && !checkout) {
@@ -414,6 +398,7 @@
 
   function focusDay(s) {
     guidance = null;
+    restartDate = null;
     const visibleFirst = `${anchor}-01`;
     const visibleLast = lastDay(addMonths(anchor, visibleCount() - 1));
     if (s < `${firstMonth()}-01` || s > lastDay(lastMonth())) return;
@@ -426,6 +411,7 @@
 
   function setSelection(start, end, announce) {
     guidance = null;
+    restartDate = null;
     checkin = start;
     checkout = end;
     checkinInput.value = start ?? '';
@@ -438,6 +424,8 @@
   function choose(s) {
     if (!selectable(s)) {
       guidance = explain(s);
+      // Entrada errada: a data tocada além do limite vira uma oferta explícita de nova entrada (um toque), não um reinício.
+      restartDate = phase() === 'checkout' && s > checkin && nightStatus(s) === 'available' ? s : null;
       renderSelection();
       return;
     }
@@ -560,6 +548,11 @@
     }, PREVIEW_DELAY_MS);
   }
   retryEl.addEventListener('click', () => updateSummary());
+  restartEl.addEventListener('click', () => {
+    const s = restartDate;
+    setSelection(s, null, true);
+    root.querySelector(`[data-date="${s}"]`)?.focus();
+  });
   clearEl.addEventListener('click', () => {
     setSelection(null, null, true);
     checkinInput.focus();
@@ -568,6 +561,7 @@
   // Entrada direta: mesmas regras, sem ajuste silencioso.
   function fromInputs() {
     guidance = null;
+    restartDate = null;
     const start = checkinInput.value || null;
     const end = checkoutInput.value || null;
     checkin = start;
@@ -674,6 +668,7 @@
     focusDate = null;
     previewFailures = 0;
     guidance = null;
+    restartDate = null;
     renderRights();
     const start = params.get('entrada');
     const end = params.get('saida');
