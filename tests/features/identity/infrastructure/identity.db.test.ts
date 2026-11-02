@@ -5,6 +5,7 @@ import {
   createCommandExecutor,
   recordAdminRead,
   withUserRead,
+  withUserThenServerRead,
   type CommandHandler,
   type Database,
   type DatabaseTransaction,
@@ -250,6 +251,39 @@ describe('leituras sob RLS e leitura administrativa auditada (TECH-052, TECH-092
       db,
     );
     expect(rows[0]).toEqual({ role: 'luxtory_app', claims: null });
+  });
+
+  it('[TECH-052][ADR-0026] RLS e depois o papel da aplicação na mesma transação só de leitura; sem prova, nada é lido', async () => {
+    const roleAndClaims = sql<{ role: string; claims: string | null }>`
+      SELECT current_user AS role, nullif(current_setting('request.jwt.claims', true), '') AS claims`;
+    const server = vi.fn(async (tx: DatabaseTransaction, note: string) => {
+      const { rows } = await roleAndClaims.execute(tx);
+      await expect(
+        sql`INSERT INTO app.rls_fixture VALUES (${STAFF_USER}, 'x')`.execute(tx),
+      ).rejects.toThrow(/read-only transaction/);
+      return { note, ...rows[0] };
+    });
+    const proved = await withUserThenServerRead(
+      db,
+      claims(STAFF_USER),
+      async (tx) => {
+        const { rows } = await roleAndClaims.execute(tx);
+        expect(rows[0]?.role).toBe('authenticated');
+        const own = await tx
+          .selectFrom('app.rls_fixture' as never)
+          .select('note' as never)
+          .execute();
+        return (own as { note: string }[])[0]?.note ?? null;
+      },
+      server,
+    );
+    // A fase do servidor roda sem as claims do usuário e com o papel da aplicação, ainda só de leitura.
+    expect(proved).toEqual({ note: 'minha', role: 'luxtory_app', claims: null });
+    server.mockClear();
+    await expect(
+      withUserThenServerRead(db, claims(STAFF_USER), async () => null, server),
+    ).resolves.toBeNull();
+    expect(server).not.toHaveBeenCalled();
   });
 
   it('[TECH-092] leitura administrativa grava audit_log do tipo admin_read com ator, papel e base', async () => {

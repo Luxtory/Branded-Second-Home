@@ -1,16 +1,17 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { partialAcquisitionScenario } from '../support/acquisition-scenario';
-import { ensureE2eInstitution } from '../support/e2e-acquisition-database.mjs';
+import { ensureE2eInstitution, setE2eOwnUseBooking } from '../support/e2e-acquisition-database.mjs';
 import { completeE2eInitialDraw, e2eCronSecret } from '../support/e2e-initial-draw';
 import { randomCpf, validCnpj } from '../support/documents';
 import { signIn, STAFF_EMAIL, TEST_CODE } from './support/auth';
 import { readSeed } from './support/discovery';
 import { captureForReview, collectConsoleErrors, expectResponsive } from './support/ui';
 
-// W12 (spec booking §7): calendário de uso próprio do Owner pelos contratos reais — Admin formaliza, os jobs reais
-// selam o exercício, o Titular ativa a representação e reserva. A ativação das reservas (ADR-0026) não existe neste
-// banco: a confirmação chega ao command e volta "reservas ainda não abertas" — nada é reservado.
+// W12 (spec booking §7): calendário de uso próprio pelos contratos reais — Admin formaliza, os jobs reais selam o
+// exercício, o Titular ativa a representação e reserva. Sem a ativação (ADR-0026), a interface informa que as reservas
+// não estão abertas e não oferece confirmação; um teste liga a ativação só neste banco descartável para provar a
+// confirmação na interface real e a desliga em seguida. Em série: a ativação é estado global do banco.
 const FLOW_TIMEOUT_MS = 300_000;
 const MOBILE = {
   viewport: { width: 390, height: 844 },
@@ -176,9 +177,10 @@ async function gate(page: Page, errors: readonly string[], name: string) {
 
 test.describe('W12 — reserva de uso próprio a 390 px com toque e PostgreSQL real', () => {
   test.skip(gateMode === 'closed', 'Open acquisition gate variant not selected');
+  test.describe.configure({ mode: 'serial' });
   test.use(MOBILE);
 
-  test('[REQ-037][REQ-035][PD-002][TECH-052] Owner: calendário, prévia do servidor e confirmação fechada sem ativação', async ({
+  test('[REQ-037][REQ-035][PD-002][TECH-052][ADR-0026] Owner com reservas fechadas: calendário e prévia para consulta, sem confirmação', async ({
     page,
     browser,
   }) => {
@@ -202,6 +204,9 @@ test.describe('W12 — reserva de uso próprio a 390 px com toque e PostgreSQL r
         'Reserva do Owner',
       );
       await expect(titular.getByText('Alta/Super Alta')).toHaveCount(0);
+      await expect(titular.locator('.lx-booking__closed')).toContainText(
+        'Novas reservas de uso próprio ainda não estão abertas.',
+      );
       await gate(titular, errors, 'w12-01-owner-calendario');
 
       // Campos nativos → grade sincronizada → prévia do servidor.
@@ -214,22 +219,17 @@ test.describe('W12 — reserva de uso próprio a 390 px com toque e PostgreSQL r
         `Entrada ${dayMonth(checkin)}, saída ${dayMonth(checkout)}: 3 noites.`,
       );
       const summary = titular.locator('.lx-booking__status');
-      await expect(summary).toHaveText('Período disponível.');
+      // Prévia do servidor para consulta; sem a ativação, nenhuma confirmação é oferecida (o banco recusaria).
+      await expect(summary).toHaveText('Noites livres. Novas reservas ainda não estão abertas.');
       await expect(titular.locator(`[data-date="${checkin}"]`).locator('..')).toHaveAttribute(
         'data-range',
         'start',
       );
-      await expect(titular.getByRole('button', { name: 'Confirmar reserva' })).toBeEnabled();
-      await gate(titular, errors, 'w12-02-owner-previa');
-
-      // Confirmação: o command responde que as reservas ainda não estão abertas (sem ativação neste banco).
-      await titular.getByRole('button', { name: 'Confirmar reserva' }).tap();
-      // (o anunciador de rotas do Next também é role=alert: o desfecho é o do formulário)
-      await expect(titular.locator('.lx-booking__outcome')).toContainText(
-        'As reservas de uso próprio ainda não estão abertas.',
+      await expect(titular.getByRole('button', { name: 'Confirmar reserva' })).toHaveCount(0);
+      await expect(titular.locator('.lx-booking__summary')).toContainText(
+        'A confirmação abre quando a Luxtory habilitar as reservas de uso próprio.',
       );
-      await expect(titular.locator('.lx-booking__outcome')).toHaveAttribute('role', 'alert');
-      await gate(titular, errors, 'w12-03-owner-fechado');
+      await gate(titular, errors, 'w12-02-owner-previa-fechada');
 
       // Toque na grade: entrada pelo calendário e "Limpar datas".
       await titular.getByRole('button', { name: 'Limpar datas' }).tap();
@@ -249,7 +249,7 @@ test.describe('W12 — reserva de uso próprio a 390 px com toque e PostgreSQL r
     }
   });
 
-  test('[REQ-034][REQ-031][TECH-042][TECH-052] Co-Owner: Direito de Uso desta Ação, prévia do servidor e confirmação fechada', async ({
+  test('[REQ-034][REQ-031][TECH-042][TECH-052][ADR-0026] Co-Owner com reservas fechadas: Direito de Uso desta Ação e prévia do servidor para consulta', async ({
     page,
     browser,
   }) => {
@@ -292,21 +292,17 @@ test.describe('W12 — reserva de uso próprio a 390 px com toque e PostgreSQL r
       await titular.getByLabel('Saída', { exact: true }).fill(addDays(checkin, 1));
       const summary = titular.locator('.lx-booking__status');
       await expect(summary).toHaveText(
-        /Período disponível\.|Não é possível reservar este período\./,
+        /Noites livres\. Novas reservas ainda não estão abertas\.|Não é possível reservar este período\./,
       );
-      if ((await summary.textContent()) === 'Período disponível.') {
+      if ((await summary.textContent())?.startsWith('Noites livres')) {
         await expect(titular.locator('.lx-booking__summary .lx-booking__facts')).toContainText(
           'restarão',
         );
-        await titular.getByRole('button', { name: 'Confirmar reserva' }).tap();
-        await expect(titular.locator('.lx-booking__outcome')).toContainText(
-          'As reservas de uso próprio ainda não estão abertas.',
-        );
       } else {
-        // Saldo da categoria esgotado nesta posição: o motivo vem do servidor e confirmar fica bloqueado.
+        // Saldo da categoria esgotado nesta posição: o motivo vem do servidor.
         await expect(titular.locator('.lx-booking__issues')).toBeVisible();
-        await expect(titular.getByRole('button', { name: 'Confirmar reserva' })).toBeDisabled();
       }
+      await expect(titular.getByRole('button', { name: 'Confirmar reserva' })).toHaveCount(0);
       await gate(titular, errors, 'w12-06-co-owner-previa');
     } finally {
       await context.close();
@@ -337,6 +333,90 @@ test.describe('W12 — reserva de uso próprio a 390 px com toque e PostgreSQL r
       ).toHaveCount(0);
     } finally {
       await other.context.close();
+    }
+  });
+  test('[REQ-037][PD-002][INV-1][REQ-097][ADR-0026] Owner com as reservas ligadas só nesta base: confirma, revalida, notifica e volta a fechar', async ({
+    page,
+    browser,
+  }) => {
+    test.setTimeout(FLOW_TIMEOUT_MS);
+    const label = `Second Home sintética Confirmação ${randomUUID().slice(0, 6)}`;
+    const { acquirer } = await formalizedOwner(page, label);
+    const { titular, context } = await titularFor(page, browser, acquirer);
+    const errors = collectConsoleErrors(titular);
+    const openCalendar = async () => {
+      await titular.goto('/titular');
+      await titular
+        .locator('section[aria-labelledby="titular-own-use"]')
+        .getByRole('link', { name: new RegExp(label) })
+        .tap();
+      await expect(titular.getByRole('heading', { level: 1 })).toHaveText('Reservar uso próprio');
+    };
+    const checkin = addDays(civilToday(), 3);
+    const checkout = addDays(checkin, 2);
+    const summary = titular.locator('.lx-booking__status');
+    const selection = titular.locator('.lx-calendar__selection [role="status"]');
+    try {
+      await setE2eOwnUseBooking(true);
+      try {
+        await openCalendar();
+        await expect(titular.locator('.lx-booking__closed')).toHaveCount(0);
+        await titular.getByLabel('Entrada', { exact: true }).fill(checkin);
+        await titular.getByLabel('Saída', { exact: true }).fill(checkout);
+        await expect(summary).toHaveText('Período disponível.');
+        await titular.getByRole('button', { name: 'Confirmar reserva' }).tap();
+
+        // Confirmada pelo command real (TECH-054): página da reserva com tipo e situação persistidos.
+        await expect(titular).toHaveURL(/\/titular\/reservas\/[0-9a-f-]{36}$/);
+        await expect(titular.getByRole('heading', { level: 1 })).toHaveText('Reserva');
+        const detail = titular.locator('.lx-booking__facts');
+        for (const fact of ['Uso próprio', 'Confirmada', '2 noites'])
+          await expect(detail).toContainText(fact);
+        await gate(titular, errors, 'w12-03-owner-confirmada');
+
+        // Notificação à party que reservou, pelo consumidor real do outbox (REQ-097).
+        await job(page, 'outbox');
+        await titular.goto('/titular/notificacoes');
+        await expect(titular.getByText(new RegExp(`Reserva confirmada em ${label}`))).toBeVisible();
+        await gate(titular, errors, 'w12-07-owner-notificacao');
+        await titular.goto('/titular/reservas');
+        await expect(titular.getByRole('list', { name: 'Reservas' })).toContainText('Uso próprio');
+        await expect(titular.getByRole('list', { name: 'Reservas' })).toContainText('Confirmada');
+        await gate(titular, errors, 'w12-10-owner-reservas-com-item');
+
+        // Calendário revalidado: as noites são reserva do Owner (detalhe por toque) e a prévia aponta a causa.
+        await openCalendar();
+        if ((await titular.locator(`[data-date="${checkin}"]`).count()) === 0)
+          await titular.getByRole('button', { name: 'Próximo mês' }).tap();
+        await expect(titular.locator(`[data-date="${checkin}"]`).locator('..')).toHaveAttribute(
+          'data-state',
+          'mine',
+        );
+        // Noite da própria reserva: `aria-disabled` (não selecionável como entrada), mas o toque explica a reserva.
+        await titular.locator(`[data-date="${checkin}"]`).tap({ force: true });
+        await expect(selection).toHaveText(
+          `Reserva do Owner · Uso próprio · entrada ${dayMonth(checkin)}, saída ${dayMonth(checkout)} (2 noites) · Confirmada.`,
+        );
+        await titular.getByLabel('Entrada', { exact: true }).fill(checkin);
+        await titular.getByLabel('Saída', { exact: true }).fill(checkout);
+        await expect(summary).toHaveText('Não é possível reservar este período.');
+        await expect(titular.locator('.lx-booking__issues')).toContainText(
+          `Já há reserva do Owner em ${dayMonth(checkin)} e ${dayMonth(addDays(checkin, 1))}.`,
+        );
+        await gate(titular, errors, 'w12-08-owner-reserva-propria');
+      } finally {
+        await setE2eOwnUseBooking(false);
+      }
+
+      // Ativação desligada: a mesma página, recarregada, informa e não oferece confirmação.
+      await titular.reload();
+      await expect(titular.locator('.lx-booking__closed')).toContainText(
+        'Novas reservas de uso próprio ainda não estão abertas.',
+      );
+      await expect(titular.getByRole('button', { name: 'Confirmar reserva' })).toHaveCount(0);
+      await gate(titular, errors, 'w12-09-owner-fechado-de-novo');
+    } finally {
+      await context.close();
     }
   });
 });

@@ -96,7 +96,19 @@ só com a ativação privilegiada presente. Dados: ids pseudônimos (party, hold
 - **Mitigation**: só depois de a RLS provar a holding (delegação ativa + holding vigente); a saída é só desta holding
   (data de abertura da própria janela; motivos com datas, nunca quem ocupa); a prévia roda em transação só de leitura,
   sem travas, e não decide — a confirmação revalida tudo no banco (ADR-0026).
-- **Tracking**: `preview-own-use-booking.test.ts`, `own-use-booking.db.test.ts` (prévia concorda com o command)
+- **Perda de representação entre etapas (auditoria do PR #78)**: prova e leitura privilegiada acontecem na mesma
+  transação `REPEATABLE READ` só de leitura (`withUserThenServerRead`: RLS como `authenticated`, depois `RESET ROLE` e
+  claims limpas, no mesmo snapshot). Uma revogação confirmada antes do snapshot faz a RLS devolver nada (→ "proibido");
+  uma confirmada depois não é vista por nenhuma das duas fases — a resposta corresponde a um instante em que a
+  representação valia. A confirmação confere a representação de novo no guard e no gatilho (T-1203).
+- **Enumeração**: holding não representada, inexistente ou de outro Titular → a mesma resposta "proibido" (sem oráculo;
+  ids UUID). Para a holding representada, a prévia não diz nada que o calendário da mesma holding já não mostre: noites
+  indisponíveis como fato, sem Ação, reserva ou pessoa; janela, saldo, 29/02 e adjacência só desta Ação. Residual,
+  aceito pela regra: no Co-Owner a adjacência conta por Ação (TECH-045), então depois de uma transferência a mensagem de
+  permanência indica que noites vizinhas indisponíveis são desta Ação — sem expor quem as reservou (W28 revisa).
+- **Tracking**: `preview-own-use-booking.test.ts`; `own-use-booking.db.test.ts` (prévia concorda com o command;
+  calendário de holding alheia → nada; transferência); `identity.db.test.ts` (`withUserThenServerRead`: papel e claims
+  de cada fase, só leitura, sem prova a fase do servidor não roda)
 
 ### T-1207 [LOW] Denial of service — reservas em massa ou travas longas
 
@@ -106,6 +118,12 @@ só com a ativação privilegiada presente. Dados: ids pseudônimos (party, hold
   Prévia (E5b): só Titular autenticado com holding autorizada pela RLS, intervalo validado (≤ 800 noites, saídas antes
   de qualquer consulta para datas fora do calendário), uma transação só de leitura sem travas; sem rate limit próprio
   (o limitador do projeto é para escritas públicas por origem de rede) — endurecimento possível com a W30.
+  Proporcionalidade (auditoria do PR #78): o teto de 800 noites cobre o calendário aberto (≤ 2 exercícios) e cada prévia
+  faz um número fixo de leituras indexadas por intervalo, sem escrita, trava, chamada externa nem custo por terceiro — o
+  mesmo volume que a página do calendário já lê a cada carga. Quem pode chamar é um conjunto fechado (Titulares
+  convidados pelo Admin, sessão verificada); o cliente só pede prévia para um período completo. Um limitador por usuário
+  exigiria estado novo no Redis para um custo que não excede o de recarregar a página; fica fora da W12 e não é
+  ratificado aqui (risco residual).
 
 ## 5. Out of scope
 

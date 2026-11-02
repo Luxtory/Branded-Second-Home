@@ -471,6 +471,11 @@
     margin-block-start: var(--lx-space-8);
   }
 
+  /* Reservas fechadas (ativação ausente, ADR-0026): aviso logo abaixo do cabeçalho, antes do Direito de Uso. */
+  .lx-booking__closed {
+    margin-block-start: var(--lx-space-8);
+  }
+
   /* Direito de Uso: compacto, rótulo e valor na mesma linha quando cabem (quebra para baixo quando não). Só o exercício
      pertinente aparece em linhas; os demais ficam na nota. Estável durante a escolha: não muda ao navegar nem ao
      selecionar, para a grade não se mover sob o dedo. */

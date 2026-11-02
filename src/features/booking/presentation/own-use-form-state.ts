@@ -8,7 +8,6 @@ export type OwnUseBookingMessage =
   | 'conflict'
   | 'window'
   | 'balance'
-  | 'already_confirmed'
   | 'invalid'
   | 'unexpected';
 
@@ -19,6 +18,4 @@ export type OwnUseBookingMessage =
 export interface OwnUseBookingState {
   readonly key: string;
   readonly message: OwnUseBookingMessage | null;
-  /** Reserva confirmada encontrada pela consulta de recuperação (resultado incerto), visível ao Titular por RLS. */
-  readonly bookingId?: string;
 }

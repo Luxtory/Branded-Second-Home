@@ -626,7 +626,9 @@ recusada no banco (inclusive por SQL direto do papel da aplicação).
    ```
 
    O `LOCK` espera as reservas em curso (que seguram a tabela em modo compartilhado) e barra as novas; depois do COMMIT,
-   toda escrita de reserva é recusada. A leitura do Titular e a recuperação de resultado incerto continuam (RLS). Se o
+   toda escrita de reserva é recusada. A leitura do Titular continua (RLS): calendário e prévia passam a mostrar o aviso
+   de reservas fechadas, sem confirmação; o reenvio com a chave de uma reserva já confirmada segue devolvendo o replay
+   (idempotência do executor). Se o
    `lock_timeout` vencer por sessão pendurada, encerrar as sessões do papel da aplicação (passo 5) e repetir.
 5. **Break-glass — documentado, NÃO autorizado previamente.** Usar só com decisão expressa do fundador, específica do
    incidente, quando o caminho da CI não servir. O dono do schema executa no editor SQL do Supabase o bloco do passo 4

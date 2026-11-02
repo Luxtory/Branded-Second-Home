@@ -2,6 +2,7 @@ import { sql } from 'kysely';
 import { currentHolding } from '@/features/ownership';
 import type { DatabaseTransaction } from '@/features/platform';
 import type { BookingStore, SealedOwnUseNight } from '../application/create-own-use-booking';
+import type { HoldingNightsPort } from '../application/preview-own-use-booking';
 
 /** Capacidade de reserva de uso próprio na tabela de ativação privilegiada (ADR-0026). */
 export const OWN_USE_BOOKING_CAPABILITY = 'own_use_booking';
@@ -35,7 +36,8 @@ async function advisoryLocks(tx: DatabaseTransaction, keys: readonly string[]): 
  * Reserva de uso próprio por SQL direto do servidor (ADR-002 do `03`). As chaves das travas consultivas são as mesmas que
  * o gatilho do banco usa (`app.stake:<uuid>`), então a trava do gatilho é reentrante para o command.
  */
-export function createPostgresBookingStore(): BookingStore<DatabaseTransaction> {
+export function createPostgresBookingStore(): BookingStore<DatabaseTransaction> &
+  HoldingNightsPort<DatabaseTransaction> {
   return {
     async isActivated(tx) {
       const row = await tx
@@ -88,6 +90,20 @@ export function createPostgresBookingStore(): BookingStore<DatabaseTransaction> 
         isLeapDay: Boolean(row.is_leap_day),
         checkInAt: new Date(row.checkin_at),
       }));
+    },
+    /** Noites ocupadas por reservas de uso próprio da própria holding (pela reserva, não pela Ação). */
+    async holdingOwnUseNights(tx, holdingId, from, to) {
+      const rows = await tx
+        .selectFrom('app.date_occupancy as o')
+        .innerJoin('app.booking as b', 'b.id', 'o.booking_id')
+        .select(sql<string>`o.stay_date::text`.as('stay_date'))
+        .where('b.holding_id', '=', holdingId)
+        .where('o.channel', '=', 'own_use')
+        .where('o.released_at', 'is', null)
+        .where('o.stay_date', '>=', civil(from))
+        .where('o.stay_date', '<', civil(to))
+        .execute();
+      return rows.map((row) => row.stay_date);
     },
     async ownUseNights(tx, stakeId, from, to) {
       const rows = await tx

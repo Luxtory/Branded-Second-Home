@@ -94,6 +94,21 @@ autenticidade até o selo da W30. Provas: `tests/migrations/booking.db.test.ts` 
   command com fatos lidos pelo papel da aplicação, só depois de a RLS provar a representação; a saída é só desta holding.
   A prévia não trava, não escreve e não decide (a confirmação revalida tudo no banco).
 
+## Amendment — auditoria do PR #78 (2026-11-02)
+
+- **Resultado incerto (D6) só pela idempotência do executor.** A recuperação por Second Home e datas (E4) foi retirada:
+  com um usuário representando duas holdings, ela apresentava como confirmada a reserva de outra holding numa tentativa
+  que colidiu. A action mantém a chave quando o resultado é incerto ou a funcionalidade está fechada; o reenvio é replay
+  da mesma operação, com o guard conferindo a autoridade vigente antes (executor e fronteira inalterados).
+- **Snapshot único para os fatos lidos pelo servidor.** Calendário e prévia leem numa transação `REPEATABLE READ` só de
+  leitura (`withUserThenServerRead`): a RLS prova a holding como `authenticated` e, no mesmo snapshot, o papel da
+  aplicação lê janela e ativação. Não há intervalo entre a prova e a leitura em que a representação possa cair.
+- **A ativação é a fonte da apresentação.** O servidor lê a mesma linha privilegiada (`isActivated`) e devolve
+  `bookingOpen`; sem ela, a interface mantém calendário e consulta, avisa que novas reservas ainda não estão abertas e
+  não oferece confirmação. A ativação continua sendo conferida pelo handler dentro da transação; a interface não decide.
+- **Transferência.** A política por `booking.holding_id` permanece. A mudança de holding não altera reserva, ocupação nem
+  consumo (BR-344); visibilidade e exercício das reservas que sobrevivem ficam com a W28 (roadmap, nota W12).
+
 ## Alternatives considered
 
 - **Função `SECURITY DEFINER` como único caminho:** não autentica a intenção (identidade continua parâmetro), duplica o

@@ -406,13 +406,16 @@ calendário) · `aside.lx-booking__summary` (no celular, seção aberta com file
 situação (`role="status"`), período (14h → 10h, o único lugar dos horários), noites, consumo e saldo que restará só com
 prévia válida, motivos da recusa (`.lx-booking__issues`, cada um com o que fazer) e "Confirmar reserva", habilitado só
 depois de prévia válida para as mesmas datas (`form.lx-booking__confirm`, com o desfecho do servidor em
-`.lx-booking__outcome`, `role="alert"`). Sem preço por noite. "Noites", nunca "diárias" (REQ-100). React (E5b):
+`.lx-booking__outcome`, `role="alert"`). Com as reservas fechadas (o servidor informa), não há formulário de confirmação:
+aviso `.lx-message--info.lx-booking__closed` antes do Direito de Uso e uma dica no resumo. Sem preço por noite. "Noites", nunca "diárias" (REQ-100). React (E5b):
 `OwnUseCalendar` no slice `booking` compõe estas classes.
 
 **Record List · `lx-record-list`** — React: `RecordList` (`items`, `label`). A lista das superfícies de produto
 (ADR-0010 §9): um item por registro, título em Newsreader que leva ao detalhe (link esticado: o item inteiro é o alvo
 e mostra o foco) e atributos em `dl` ao lado a partir de `md`. Atributo sem valor não é passado (TECH-001). Serve de
-320 a 1920 px sem tabela; tabela e filtros só quando houver comparação densa ou volume que peça filtro.
+320 a 1920 px sem tabela; tabela e filtros só quando houver comparação densa ou volume que peça filtro. Os títulos dos
+itens são `h3`: a seção que recebe a lista precisa de um `h2` antes (visível ou `.lx-visually-hidden`), senão o axe
+acusa `heading-order`.
 
 ```tsx
 <RecordList

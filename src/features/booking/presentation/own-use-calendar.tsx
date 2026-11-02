@@ -15,7 +15,6 @@ import type { OwnUsePreview, OwnUsePreviewIssue } from '../application/preview-o
 import { createOwnUseBookingAction } from './own-use-actions';
 import type { CalendarNight, HoldingBooking, OwnUseCalendarData } from './own-use-calendar-read';
 import type { OwnUseBookingMessage, OwnUseBookingState } from './own-use-form-state';
-import { ownUsePaths } from './own-use-paths';
 import { previewOwnUseBookingAction, type OwnUsePreviewResponse } from './own-use-preview-action';
 import { bookingLabels, calendarMessages as text, ownUseMessages } from './i18n/own-use-pt-br';
 
@@ -150,12 +149,7 @@ function ConfirmForm(props: {
       <input type="hidden" name="checkout_date" value={props.checkout ?? ''} />
       {message === null ? null : (
         <p className="lx-booking__outcome" role="alert">
-          {ownUseMessages.outcome[message]}{' '}
-          {state.bookingId === undefined ? null : (
-            <a className="lx-link" href={ownUsePaths.booking(state.bookingId)}>
-              {text.summary.viewBooking}
-            </a>
-          )}
+          {ownUseMessages.outcome[message]}
         </p>
       )}
       <Submit disabled={!props.enabled || props.idempotencyKey === null} />
@@ -629,13 +623,19 @@ export function OwnUseCalendar({ data }: { readonly data: OwnUseCalendarData }) 
         : null;
     const response = done?.response;
     const result = response?.status === 'ok' ? response.preview : null;
+    // Estado da ativação: o da prévia mais recente (mesmo instantâneo das regras) ou o da página.
+    const open = response?.status === 'ok' ? response.bookingOpen : data.bookingOpen;
     let headline: string = text.summary.idle;
     if (checkin !== null && checkout === null) headline = text.summary.needCheckout;
     else if (checkin === null && checkout !== null) headline = text.summary.needCheckin;
     else if (checkin !== null && checkout !== null) {
       if (response === undefined) headline = text.summary.checking;
       else if (response.status === 'ok')
-        headline = response.preview.ok ? text.summary.ok : text.summary.notOk;
+        headline = !response.preview.ok
+          ? text.summary.notOk
+          : open
+            ? text.summary.ok
+            : text.summary.okClosed;
       else if (response.status === 'forbidden') headline = text.summary.forbidden;
       else if (response.status === 'unauthenticated') headline = text.summary.signIn;
       else if (response.status === 'invalid') headline = text.issues.order;
@@ -672,16 +672,23 @@ export function OwnUseCalendar({ data }: { readonly data: OwnUseCalendarData }) 
             </button>
           </>
         ) : null}
-        <p className="lx-hint">{text.summary.note}</p>
-        <ConfirmForm
-          key={response?.status === 'ok' ? (response.key ?? 'invalid') : 'none'}
-          idempotencyKey={response?.status === 'ok' ? response.key : null}
-          secondHomeId={data.secondHomeId}
-          partyId={data.partyId}
-          checkin={checkin}
-          checkout={checkout}
-          enabled={result?.ok === true}
-        />
+        {open ? (
+          <>
+            <p className="lx-hint">{text.summary.note}</p>
+            <ConfirmForm
+              key={response?.status === 'ok' ? (response.key ?? 'invalid') : 'none'}
+              idempotencyKey={response?.status === 'ok' ? response.key : null}
+              secondHomeId={data.secondHomeId}
+              partyId={data.partyId}
+              checkin={checkin}
+              checkout={checkout}
+              enabled={result?.ok === true}
+            />
+          </>
+        ) : (
+          // Reservas fechadas (ADR-0026): nada de confirmação que se sabe impossível; o banco recusa de qualquer forma.
+          <p className="lx-hint">{text.summary.closedHint}</p>
+        )}
       </aside>
     );
   }

@@ -1,9 +1,10 @@
 import { sql } from 'kysely';
 import { createUseWindowResolver } from '@/features/calendar/booking';
 import { findUseRightFacts } from '@/features/ownership';
+import { createPostgresBookingStore } from '../infrastructure/postgres-booking-store';
 import {
   getDatabase,
-  withUserRead,
+  withUserThenServerRead,
   type Database,
   type DatabaseTransaction,
 } from '@/features/platform';
@@ -58,7 +59,11 @@ export interface OwnUseCalendarData {
   readonly bookings: readonly HoldingBooking[];
   readonly balances: readonly UseRightBalanceView[];
   readonly windows: readonly UseWindowView[];
+  /** Novas reservas habilitadas (ativação privilegiada, ADR-0026); `false` = consulta sem confirmação. */
+  readonly bookingOpen: boolean;
 }
+
+const bookingStore = createPostgresBookingStore();
 
 /** Estados em que a reserva ocupa a noite; cancelada sai da indicação ativa (fica no histórico) — W13. */
 const ACTIVE_BOOKING_STATES = new Set(['confirmed', 'in_use']);
@@ -160,25 +165,35 @@ export async function readOwnUseCalendar(
   now: Date = new Date(),
   db: Database = getDatabase(),
 ): Promise<OwnUseCalendarData | null> {
-  const read = await withUserRead(db, { sub: userId, role: 'authenticated' }, async (tx) => {
-    const holding = await readRepresentedHolding(tx, holdingId);
-    if (holding === null) return null;
-    return { holding, ...(await userFacts(tx, holding.second_home_id, holding.stake_id)) };
-  });
-  if (read === null) return null;
+  const result = await withUserThenServerRead(
+    db,
+    { sub: userId, role: 'authenticated' },
+    async (tx) => {
+      const holding = await readRepresentedHolding(tx, holdingId);
+      if (holding === null) return null;
+      return { holding, ...(await userFacts(tx, holding.second_home_id, holding.stake_id)) };
+    },
+    async (tx, read) => ({
+      read,
+      // Estado de apresentação da ativação privilegiada (ADR-0026): o banco continua recusando toda escrita fechada.
+      bookingOpen: await bookingStore.isActivated(tx),
+      windows:
+        read.holding.stake_id === null
+          ? []
+          : await windowsOf(
+              tx,
+              read.holding.timezone,
+              read.holding.second_home_id,
+              read.holding.stake_id,
+              read.dates,
+              now,
+            ),
+    }),
+  );
+  if (result === null) return null;
+  const { read, windows, bookingOpen } = result;
   const { holding } = read;
   const role = holding.role === 'owner' ? 'owner' : 'co_owner';
-  const windows =
-    holding.stake_id === null
-      ? []
-      : await windowsOf(
-          db,
-          holding.timezone,
-          holding.second_home_id,
-          holding.stake_id,
-          read.dates,
-          now,
-        );
   const balances = read.balances.map((row) => ({
     exerciseYear: row.exercise_year,
     bucket: row.bucket as UseRightBalanceView['bucket'],
@@ -198,11 +213,12 @@ export async function readOwnUseCalendar(
     bookings,
     balances,
     windows,
+    bookingOpen,
   };
 }
 
 async function windowsOf(
-  db: Database,
+  db: Database | DatabaseTransaction,
   timezone: string,
   secondHomeId: string,
   stakeId: string,

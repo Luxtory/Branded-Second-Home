@@ -72,10 +72,17 @@ de cada escrita (T3); o COMMIT não é reavaliado.
 A chave nasce na prévia e acompanha o formulário (padrão W7): duplo clique e reenvio na mesma página devolvem o mesmo
 resultado; recusa gravada troca a chave; datas alteradas voltam à prévia, que emite chave nova. O guard continua antes do
 replay (executor intocado): com a representação perdida, a mesma chave devolve `ERR_PERMISSION`. A ativação é conferida
-dentro da transação, então o replay de chave confirmada funciona mesmo depois de uma desativação. Quando o resultado é
-incerto (indisponível, fechado ou conflito com chave nova), a action consulta, sob RLS e com a autorização vigente, a
-reserva confirmada da mesma Second Home e das mesmas datas. Nenhum caminho cria uma segunda reserva: mesma chave →
-replay ou recusa antes de executar; chave nova → `ERR_BOOKING_CONFLICT`; no banco, ocupação única e consumo único.
+dentro da transação, então o replay de chave confirmada funciona mesmo depois de uma desativação.
+
+**Resultado incerto (corrigido na auditoria do PR #78, 2026-11-02).** A recuperação é só a idempotência do executor,
+presa à chave da operação e à autoridade vigente: resposta perdida, indisponibilidade ou funcionalidade fechada mantêm a
+chave no formulário, e o reenvio é replay da mesma reserva (redireciona ao detalhe) ou recusa do guard antes do replay
+(representação revogada → `ERR_PERMISSION`). Recusa gravada troca a chave. Não há consulta por Second Home e datas: a
+versão anterior a fazia e, com um usuário representando duas holdings, apresentava como "já confirmada" a reserva de
+outra holding numa tentativa que colidiu (reproduzido em `own-use-booking.db.test.ts`, "resultado incerto: só a
+idempotência do executor"). Tradução pura em `presentation/own-use-outcome.ts`. Nenhum caminho cria uma segunda reserva:
+mesma chave → replay ou recusa antes de executar; chave nova → `ERR_BOOKING_CONFLICT`; no banco, ocupação única e consumo
+único.
 
 ## 6. Leitura do Titular (TECH-052)
 
@@ -93,16 +100,35 @@ revela só o tipo das próprias reservas. Holding, Ação e operação seguem se
 `own-use-booking.db.test.ts` ("o canal persistido aparece só nas reservas da própria holding…": canal, id forjado, SQL
 direto como `authenticated`, filtro por coluna sem `GRANT`, transferência de Co-Owner e de Owner).
 
-**Calendário (E5b).** A página lê sob essa RLS as noites seladas, a custódia aberta, a ocupação ativa, as reservas e os
+**Transferência e dependência da W28 (BR-344 a BR-346, REQ-093).** A W12 não transfere; a política acima só decide
+leitura. A mudança de holding não toca reserva, ocupação nem consumo (BR-344: a reserva não se extingue): o teste de
+transferência confere reserva `confirmed`, noites ocupadas e consumo da operação intactos, e o calendário do adquirente
+mostra essas noites como indisponíveis — sem expor a reserva nem dados do transmitente. O saldo remanescente já é líquido
+do consumido (BR-345), e as posições de rotação seguem na Ação (BR-346), sem mudança na W12. Fica para a W28 (registrado
+no roadmap): quem vê e exerce, depois da transferência, as reservas futuras que sobrevivem (REQ-093), sem expor dados
+pessoais do transmitente ao adquirente; até lá, nenhuma tela da W12 promete esse acesso.
+
+**Calendário (E5b).** Uma única transação só de leitura, `REPEATABLE READ` (`withUserThenServerRead`): primeiro, como
+`authenticated` e com as claims do usuário, a RLS prova a holding; depois, no mesmo snapshot, o papel da aplicação lê só
+o que a RLS não alcança (janela, ativação). A página lê sob essa RLS as noites seladas, a custódia aberta, a ocupação ativa, as reservas e os
 saldos da holding e entrega a situação de cada noite já resolvida no servidor (`started` · `mine` · `unavailable` ·
 `closed` · `leap-other` · `available`). A janela da Ação vem da mesma função de domínio do command, com os fatos da
 formalização e do sorteio lidos pelo servidor só depois de a RLS provar a representação; a saída é só a janela desta Ação.
 O 29/02 aparece como noite adicional apenas com saldo `leap` > 0 da Ação, janela aberta e custódia elegível.
 
-**Prévia (E5b).** Server Action `previewOwnUseBookingAction`: a RLS prova a holding; o servidor confere as regras do command
-(`previewOwnUseBooking`, mesmas portas e funções de domínio) numa transação só de leitura, sem travas nem escrita,
-reunindo todos os motivos; intervalo limitado a 800 noites; a chave de idempotência nasce só numa prévia válida. Nunca
-decide: a confirmação revalida tudo no banco.
+**Reservas fechadas (ADR-0026, auditoria do PR #78).** A fonte da apresentação é a própria ativação privilegiada
+(`BookingStore.isActivated`), lida pelo servidor no mesmo snapshot (`bookingOpen`); a interface nunca decide. Sem a
+ativação, calendário, disponibilidade, prévia e reservas seguem consultáveis; um aviso informa que novas reservas ainda
+não estão abertas e nenhuma confirmação é oferecida ("Noites livres. Novas reservas ainda não estão abertas."). A prévia
+devolve `bookingOpen` a cada pedido, então uma mudança da ativação aparece na próxima prévia ou recarga. O command
+continua conferindo a ativação dentro da transação (fechada → nada gravado).
+
+**Prévia (E5b).** Server Action `previewOwnUseBookingAction`: a RLS prova a holding e o servidor confere as regras do
+command (`previewOwnUseBooking`, mesmas portas e funções de domínio) no mesmo snapshot `REPEATABLE READ` só de leitura
+(`withUserThenServerRead`), sem travas nem escrita, reunindo todos os motivos; intervalo limitado a 800 noites; a chave de
+idempotência nasce só numa prévia válida com as reservas abertas. A reserva já existente da própria holding é motivo
+específico ("Já há reserva do Owner/desta Ação em …"), não "indisponível". Nunca decide: a confirmação revalida tudo no
+banco. Risco e custo: STRIDE T-1208.
 
 ## 7. Telas (E5b, depois da revisão E5a)
 
@@ -174,8 +200,12 @@ custódia: mostra canal e estado persistidos.
 Server Action), `/titular/reservas` (tipo, período, noites e situação), `/titular/reservas/[bookingId]` (detalhe, 404
 sem oráculo) e `/titular/notificacoes` (central só leitura). Entrada pela Área do Titular ("Uso próprio": Second Homes
 que o usuário representa). Componente `OwnUseCalendar` (cliente) sobre o contrato `lx-calendar`; textos em
-`presentation/i18n/own-use-pt-br.ts`. Sem a ativação (ADR-0026), a confirmação volta "As reservas de uso próprio ainda
-não estão abertas." — provado no E2E `tests/e2e/own-use-booking.spec.ts`.
+`presentation/i18n/own-use-pt-br.ts`. Sem a ativação (ADR-0026), a página informa que novas reservas ainda não estão
+abertas e não oferece confirmação (§6, "Reservas fechadas"); se a ativação cair entre a prévia e o envio, o command
+recusa e a action volta "As reservas de uso próprio ainda não estão abertas." com a mesma chave. Provas no E2E
+`tests/e2e/own-use-booking.spec.ts`: Owner e Co-Owner com as reservas fechadas; e confirmação bem-sucedida com a ativação
+ligada só no banco descartável do teste (`setE2eOwnUseBooking`) → detalhe, notificação, lista, calendário com a própria
+reserva e prévia com o motivo específico → ativação desligada, aviso de volta e nenhuma confirmação.
 
 ## 8. Aceite
 

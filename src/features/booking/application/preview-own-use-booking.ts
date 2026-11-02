@@ -16,6 +16,7 @@ import type {
 
 /** Holding já autorizada pela leitura do Titular sob RLS (delegação ativa + holding vigente). */
 export interface PreviewHolding {
+  readonly holdingId: string;
   readonly secondHomeId: string;
   readonly role: 'owner' | 'co_owner';
   readonly stakeId: string | null;
@@ -55,8 +56,18 @@ export interface OwnUsePreview {
   readonly issues: readonly OwnUsePreviewIssue[];
 }
 
+/** Noites ocupadas por reservas de uso próprio da holding (Owner e Co-Owner: a reserva é da holding que a abriu). */
+export interface HoldingNightsPort<Tx> {
+  holdingOwnUseNights(
+    tx: Tx,
+    holdingId: string,
+    from: string,
+    to: string,
+  ): Promise<readonly string[]>;
+}
+
 export interface PreviewOwnUseDependencies<Tx> {
-  readonly store: Pick<BookingStore<Tx>, 'sealedNights' | 'ownUseNights'>;
+  readonly store: Pick<BookingStore<Tx>, 'sealedNights' | 'ownUseNights'> & HoldingNightsPort<Tx>;
   readonly inventory: Pick<OwnUseInventoryPort<Tx>, 'nightStates'>;
   readonly rights: Pick<OwnUseRightsPort<Tx>, 'remaining'>;
   readonly findFacts: (tx: Tx, secondHomeId: string) => Promise<OwnUseFacts | null>;
@@ -91,17 +102,15 @@ async function availabilityIssues<Tx>(
   nights: readonly string[],
 ): Promise<OwnUsePreviewIssue[]> {
   const states = await deps.inventory.nightStates(tx, holding.secondHomeId, nights);
-  const own =
-    holding.stakeId === null
-      ? new Set<string>()
-      : new Set(
-          await deps.store.ownUseNights(
-            tx,
-            holding.stakeId,
-            nights[0]!,
-            addCivilDays(nights.at(-1)!, 1),
-          ),
-        );
+  // Reserva da própria holding (Owner e Co-Owner): motivo funcional específico; de outra holding, só indisponível.
+  const own = new Set(
+    await deps.store.holdingOwnUseNights(
+      tx,
+      holding.holdingId,
+      nights[0]!,
+      addCivilDays(nights.at(-1)!, 1),
+    ),
+  );
   const root = holding.role === 'owner' ? 'owner' : 'spe_pool';
   const mine = nights.filter((night) => own.has(night));
   const blocked = nights.filter((night) => {

@@ -14,8 +14,18 @@ import { stayNights } from '@/features/booking/domain/own-use-stay';
 const NOW = new Date('2027-03-01T12:00:00.000Z');
 const HOME = 'home-1';
 const STAKE = 'stake-1';
-const coOwner: PreviewHolding = { secondHomeId: HOME, role: 'co_owner', stakeId: STAKE };
-const owner: PreviewHolding = { secondHomeId: HOME, role: 'owner', stakeId: null };
+const coOwner: PreviewHolding = {
+  holdingId: 'holding-1',
+  secondHomeId: HOME,
+  role: 'co_owner',
+  stakeId: STAKE,
+};
+const owner: PreviewHolding = {
+  holdingId: 'holding-o',
+  secondHomeId: HOME,
+  role: 'owner',
+  stakeId: null,
+};
 const facts: OwnUseFacts = {
   acquisitionId: 'acq-1',
   operationStartDate: '2027-01-01',
@@ -61,7 +71,10 @@ function preview(
           stayNights(from, to)
             .filter((date) => date >= sealedFrom && date <= sealedUntil)
             .map(night),
+        // Adjacência pela Ação (BR-112) e reserva da própria holding (motivo específico): o mesmo cenário nos dublês.
         ownUseNights: async (_tx, _stake, from, to) =>
+          (scenario.own ?? []).filter((date) => date >= from && date < to),
+        holdingOwnUseNights: async (_tx, _holding, from, to) =>
           (scenario.own ?? []).filter((date) => date >= from && date < to),
       },
       inventory: {
@@ -193,5 +206,10 @@ describe('prévia da reserva de uso próprio (spec booking §7)', () => {
       holder: (date) => (date === '2027-03-02' ? 'spe_pool' : 'owner'),
     });
     expect(blocked.issues).toEqual([{ code: 'unavailable', dates: ['2027-03-02'] }]);
+    // Sobre a própria reserva: motivo funcional específico, não indisponibilidade genérica.
+    const own = await preview(owner, '2027-04-10', '2027-04-12', {
+      own: ['2027-04-10', '2027-04-11'],
+    });
+    expect(own.issues).toEqual([{ code: 'own_booking', dates: ['2027-04-10', '2027-04-11'] }]);
   });
 });

@@ -65,8 +65,9 @@ canônicos. Spec: [`booking`](../specs/booking.md) (e notas em `inventory`, `cal
 | E5a | `lx-calendar` no Lab renderizado (320/390/1440, axe, overflow) → **revisão do fundador** | ✅ aprovada (v2.4, 2026-11-01) |
 | E5b | Telas: calendário, reservas, central de notificações, i18n; `channel` no GRANT do Titular e RLS por holding (opção 1) | ✅ |
 | E6 | Testes db (command, fronteira, RLS com identidades diferentes, leitura e prévia), unitários, E2E | ✅ |
-| E7 | Gates: `npm run verify`, `npm run test:e2e` (`--workers=2`), `npm run trace -- --expect REQ-034,REQ-035,REQ-037,PD-002,INV-1` | pendente |
-| E8 | Commit, push, PR draft, checkpoint | pendente |
+| E7 | Gates: `npm run verify`, `npm run test:e2e` (`--workers=2`), `npm run trace -- --expect REQ-034,REQ-035,REQ-037,PD-002,INV-1` | ✅ (c4ad879, 2026-11-02); refeitos depois da auditoria (E9) |
+| E8 | Commit, push, PR draft, checkpoint | ✅ PR draft #78 (c4ad879, CI verde); merge **não autorizado** |
+| E9 | Correções da auditoria independente do PR #78 (2026-11-02): resultado incerto só pela idempotência do executor; aviso e nenhuma confirmação com as reservas fechadas (`bookingOpen` da ativação); prévia e calendário num snapshot único; motivo "reserva do Owner"; nota W28; E2E de confirmação com ativação só no banco descartável | ✅ no mesmo PR draft #78; aguarda nova auditoria |
 
 ## Riscos residuais declarados (ratificação pendente)
 

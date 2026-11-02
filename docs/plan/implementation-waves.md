@@ -1396,6 +1396,12 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   - **Nota W12 (ADR-0026):** serializar a transferência contra a reserva de uso próprio (classe 4 do TECH-053 para
     Co-Owner; definir a trava do Owner, cuja reserva não trava Ação) e decidir se o novo titular é avisado das reservas
     herdadas (a notificação de confirmação fica com a party que reservou).
+  - **Dependência W12 — leitura das reservas que sobrevivem (auditoria do PR #78, 2026-11-02):** na W12 a reserva é lida
+    só pela holding que a abriu (`h.id = booking.holding_id`); numa transferência, adquirente e transmitente deixam de
+    vê-la na Área do Titular, enquanto reserva, ocupação e consumo seguem íntegros no banco (BR-344) e as noites aparecem
+    ao adquirente como indisponíveis. A W28 decide quem vê e exerce as reservas futuras que sobrevivem (REQ-093,
+    BR-344 a BR-346) — sem expor dados pessoais do transmitente ao adquirente — e ajusta RLS e telas com teste de
+    transferência real (`transfer_holding`), mantendo o saldo remanescente líquido do consumido ou comprometido (BR-345).
 - **Acceptance criteria**: `[REQ-093][EC-11] Co-Owner: o adquirente recebe a Ação, o saldo remanescente e as
   posições e histórico das rotações; reservas e compromissos futuros permanecem; Membership e Créditos do
   transmitente não se transferem; Owner: Membership não segue`.

@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { OwnUseBookingNotActivatedError } from '@/features/booking/application/create-own-use-booking';
 import { createOwnUseBookingConsumers } from '@/features/booking/jobs';
 import { readOwnUseCalendar } from '@/features/booking/presentation/own-use-calendar-read';
+import { translateOwnUseOutcome } from '@/features/booking/presentation/own-use-outcome';
 import {
   previewOwnUseBooking,
   type PreviewHolding,
@@ -61,6 +62,25 @@ describe('W12 — reserva de uso próprio pelo command (PostgreSQL real, relógi
   });
   const at = (offset: number) => addDays(first, offset);
   const endOfYear = () => `${co.year + 1}-01-01`;
+
+  /** Primeira sequência de noites sem ocupação ativa (e sem 29/02) no exercício reservável, a partir de `from`. */
+  const freeRun = async (homeId: string, from: string, length: number) => {
+    const { rows } = await h.database.pool.query<{ stay_date: string }>(
+      `SELECT d.stay_date::text AS stay_date FROM app.second_home_date d
+        WHERE d.second_home_id = $1 AND d.stay_date >= $2 AND d.stay_date + $4::int <= $3
+          AND NOT EXISTS (SELECT 1 FROM app.date_occupancy o
+                           WHERE o.second_home_id = d.second_home_id AND o.released_at IS NULL
+                             AND o.stay_date >= d.stay_date AND o.stay_date < d.stay_date + $4::int)
+          AND NOT EXISTS (SELECT 1 FROM app.second_home_date e
+                           WHERE e.second_home_id = d.second_home_id AND e.is_leap_day
+                             AND e.stay_date >= d.stay_date AND e.stay_date < d.stay_date + $4::int)
+        ORDER BY d.stay_date LIMIT 1`,
+      [homeId, from, endOfYear(), length],
+    );
+    const found = rows[0]?.stay_date;
+    if (found === undefined) throw new Error(`no free run of ${length} nights`);
+    return found;
+  };
 
   beforeAll(async () => {
     h = await bookingHarness();
@@ -402,6 +422,75 @@ describe('W12 — reserva de uso próprio pelo command (PostgreSQL real, relógi
     });
   });
 
+  describe('resultado incerto: só a idempotência do executor (ADR-0026 D6, auditoria do PR #78)', () => {
+    it('[ADR-0026][D6] um usuário representa duas Ações: a tentativa da B colide com a reserva da A e uma consulta por imóvel e datas a confundiria', async () => {
+      const userId = randomUUID();
+      await h.database.pool.query('INSERT INTO auth.users(id) VALUES ($1)', [userId]);
+      await ownerDelegation(h.database.pool, { partyId: a.partyId, userId });
+      await ownerDelegation(h.database.pool, { partyId: b.partyId, userId });
+      const viaA = { ...a, userId };
+      const viaB = { ...b, userId };
+      const start = addDays(await freeRun(co.homeId, at(0), 6), 2);
+      const booked = await h.book(viaA, input(co.homeId, start, addDays(start, 2)));
+      if (booked.status !== 'committed') throw new Error('setup');
+      const attempt = await h.book(viaB, input(co.homeId, start, addDays(start, 2)));
+      expect(attempt).toEqual(rejected('ERR_BOOKING_CONFLICT'));
+      // A consulta por Second Home e datas, sob a RLS desse usuário, devolve a reserva da A para a tentativa da B.
+      const byDates = await withUserRead(h.db, { sub: userId, role: 'authenticated' }, (tx) =>
+        tx
+          .selectFrom('app.booking')
+          .select('id')
+          .where('second_home_id', '=', co.homeId)
+          .where('checkin_date', '=', sql<Date>`${start}::date`)
+          .where('checkout_date', '=', sql<Date>`${addDays(start, 2)}::date`)
+          .where('state', '=', 'confirmed')
+          .execute(),
+      );
+      expect(byDates).toEqual([{ id: booked.result.booking_id }]);
+      // Reproduzido no PR #78 (c4ad879): a recuperação por Second Home e datas devolvia essa reserva da A e a action
+      // respondia "already_confirmed" para a operação B, que nunca foi confirmada. Agora o conflito é conflito.
+      expect(translateOwnUseOutcome({ key: 'k-b', message: null }, attempt, () => 'k-new')).toEqual(
+        {
+          kind: 'state',
+          state: { key: 'k-new', message: 'conflict' },
+        },
+      );
+    });
+  });
+
+  describe('resultado incerto — retry com a mesma chave (ADR-0026 D6)', () => {
+    it('[ADR-006][TECH-050] resposta perdida: a mesma chave é replay da mesma reserva; com a representação revogada, o guard recusa antes do replay', async () => {
+      const userId = randomUUID();
+      await h.database.pool.query('INSERT INTO auth.users(id) VALUES ($1)', [userId]);
+      await ownerDelegation(h.database.pool, { partyId: a.partyId, userId });
+      const via = { ...a, userId };
+      const start = addDays(await freeRun(co.homeId, at(0), 6), 2);
+      const key = randomUUID();
+      const first = await h.book(via, input(co.homeId, start, addDays(start, 2)), key);
+      if (first.status !== 'committed') throw new Error('setup');
+      // Resposta perdida: o retry com a mesma chave devolve o resultado original, que a action traduz em ir à reserva.
+      const retry = await h.book(via, input(co.homeId, start, addDays(start, 2)), key);
+      expect(retry).toMatchObject({ status: 'committed', replayed: true, result: first.result });
+      expect(translateOwnUseOutcome({ key, message: null }, retry, () => 'k-new')).toEqual({
+        kind: 'redirect',
+        to: `/titular/reservas/${first.result.booking_id}`,
+      });
+      // Autoridade perdida: o guard vem antes da idempotência — nada é revelado, a reserva continua íntegra.
+      await revokeDelegation(h, userId);
+      const revoked = await h.book(via, input(co.homeId, start, addDays(start, 2)), key);
+      expect(revoked).toEqual(rejected('ERR_PERMISSION'));
+      expect(translateOwnUseOutcome({ key, message: null }, revoked, () => 'k-new')).toEqual({
+        kind: 'state',
+        state: { key, message: 'permission' },
+      });
+      const { rows } = await h.database.pool.query<{ state: string }>(
+        'SELECT state FROM app.booking WHERE id = $1',
+        [first.result.booking_id],
+      );
+      expect(rows).toEqual([{ state: 'confirmed' }]);
+    });
+  });
+
   describe('janela (REQ-032, TECH-042)', () => {
     it('[REQ-034][TECH-042] posição cuja janela não abriu → ERR_WINDOW_NOT_OPEN', async () => {
       // Formalizada agora para o exercício seguinte: a posição 2 abre 7 dias depois da base (≥ agora).
@@ -424,24 +513,6 @@ describe('W12 — reserva de uso próprio pelo command (PostgreSQL real, relógi
   });
 
   describe('calendário e prévia do Titular (E5b, TECH-052, ADR-0026)', () => {
-    /** Primeira sequência de noites sem ocupação ativa (e sem 29/02) no exercício reservável, a partir de `from`. */
-    const freeRun = async (homeId: string, from: string, length: number) => {
-      const { rows } = await h.database.pool.query<{ stay_date: string }>(
-        `SELECT d.stay_date::text AS stay_date FROM app.second_home_date d
-          WHERE d.second_home_id = $1 AND d.stay_date >= $2 AND d.stay_date + $4::int <= $3
-            AND NOT EXISTS (SELECT 1 FROM app.date_occupancy o
-                             WHERE o.second_home_id = d.second_home_id AND o.released_at IS NULL
-                               AND o.stay_date >= d.stay_date AND o.stay_date < d.stay_date + $4::int)
-            AND NOT EXISTS (SELECT 1 FROM app.second_home_date e
-                             WHERE e.second_home_id = d.second_home_id AND e.is_leap_day
-                               AND e.stay_date >= d.stay_date AND e.stay_date < d.stay_date + $4::int)
-          ORDER BY d.stay_date LIMIT 1`,
-        [homeId, from, endOfYear(), length],
-      );
-      const found = rows[0]?.stay_date;
-      if (found === undefined) throw new Error(`no free run of ${length} nights`);
-      return found;
-    };
     // Base com duas noites livres antes: a permanência medida é só a do teste (sem adjacência alheia ao cenário).
     let base = '';
     const day = (offset: number) => addDays(base, offset);
@@ -477,6 +548,23 @@ describe('W12 — reserva de uso próprio pelo command (PostgreSQL real, relógi
       expect(await readOwnUseCalendar(b.userId, a.holdingId, new Date(), h.db)).toBeNull();
     });
 
+    it('[ADR-0026] o calendário segue legível com as reservas fechadas e informa o estado da ativação', async () => {
+      expect((await readOwnUseCalendar(a.userId, a.holdingId, new Date(), h.db))?.bookingOpen).toBe(
+        true,
+      );
+      await h.deactivate();
+      try {
+        const closed = await readOwnUseCalendar(a.userId, a.holdingId, new Date(), h.db);
+        expect(closed).toMatchObject({ bookingOpen: false, holdingId: a.holdingId });
+        expect(closed?.nights.length).toBeGreaterThan(0);
+      } finally {
+        await h.activate();
+      }
+      expect((await readOwnUseCalendar(a.userId, a.holdingId, new Date(), h.db))?.bookingOpen).toBe(
+        true,
+      );
+    });
+
     it('[ADR-0026][REQ-034][REQ-037] a prévia com os adaptadores reais concorda com o command, Co-Owner e Owner', async () => {
       const deps = {
         store: createPostgresBookingStore(),
@@ -496,6 +584,7 @@ describe('W12 — reserva de uso próprio pelo command (PostgreSQL real, relógi
           });
         });
       const holdingA: PreviewHolding = {
+        holdingId: a.holdingId,
         secondHomeId: co.homeId,
         role: 'co_owner',
         stakeId: a.stakeId,
@@ -515,6 +604,7 @@ describe('W12 — reserva de uso próprio pelo command (PostgreSQL real, relógi
 
       const ownerBase = await freeRun(owner.homeId, at(0), 6);
       const holdingOwner: PreviewHolding = {
+        holdingId: owner.titular.holdingId,
         secondHomeId: owner.homeId,
         role: 'owner',
         stakeId: null,
@@ -526,8 +616,9 @@ describe('W12 — reserva de uso próprio pelo command (PostgreSQL real, relógi
       ).toMatchObject({
         status: 'committed',
       });
+      // Owner sobre a própria reserva: motivo funcional específico (auditoria do PR #78), não indisponibilidade genérica.
       expect((await run(holdingOwner, ownerBase, addDays(ownerBase, 2))).issues).toEqual([
-        { code: 'unavailable', dates: [ownerBase, addDays(ownerBase, 1)] },
+        { code: 'own_booking', dates: [ownerBase, addDays(ownerBase, 1)] },
       ]);
     });
   });
@@ -766,8 +857,32 @@ describe('W12 — reserva de uso próprio pelo command (PostgreSQL real, relógi
           (await tx.selectFrom('app.booking').select('id').execute()).map((row) => row.id),
         );
       const heir = await transfer(a);
+      // BR-344: a mudança de holding não extingue a reserva — reserva, ocupação e consumo seguem íntegros no banco (só a
+      // leitura muda; a W28 decide como o adquirente vê e exerce os compromissos que sobrevivem, BR-344 a BR-346).
+      const kept = await h.database.pool.query<{ state: string; nights: number; consumed: number }>(
+        `SELECT b.state,
+                (SELECT count(*)::int FROM app.date_occupancy o WHERE o.booking_id = b.id AND o.released_at IS NULL) AS nights,
+                (SELECT count(*)::int FROM app.use_right_ledger l WHERE l.operation_id = b.opened_by_operation) AS consumed
+           FROM app.booking b WHERE b.id = $1`,
+        [aBooking],
+      );
+      expect(kept.rows).toEqual([{ state: 'confirmed', nights: 2, consumed: 2 }]);
       expect(await ids(heir)).toEqual([]);
       expect(await ids(a.userId)).toEqual([]);
+      // Disponibilidade intacta: no calendário do adquirente, as noites da reserva que sobrevive são indisponíveis (fato),
+      // não "sua reserva" — ninguém reserva a mesma noite de novo e nada da reserva do transmitente é exposto.
+      const heirHolding = (
+        await h.database.pool.query<{ id: string }>(
+          `SELECT n.id FROM app.holding n JOIN app.holding o ON o.stake_id = n.stake_id
+            WHERE o.id = $1 AND n.valid_until IS NULL`,
+          [a.holdingId],
+        )
+      ).rows[0]!.id;
+      const heirCalendar = await readOwnUseCalendar(heir, heirHolding, new Date(), h.db);
+      const heirStatus = (date: string) =>
+        heirCalendar?.nights.find((night) => night.date === date)?.status;
+      expect([heirStatus(at(70)), heirStatus(at(71))]).toEqual(['unavailable', 'unavailable']);
+      expect(heirCalendar?.bookings).toEqual([]);
       const ownerHeir = await transfer(owner.titular);
       expect(await ids(ownerHeir)).toEqual([]);
       expect(await ids(owner.titular.userId)).toEqual([]);

@@ -20,7 +20,6 @@ export const ownUseMessages = {
     conflict: 'Uma ou mais noites já foram reservadas.',
     window: 'A janela desta Ação para estas datas ainda não abriu.',
     balance: 'O saldo do Direito de Uso desta Ação nesta categoria não cobre todas as noites.',
-    already_confirmed: 'Já existe uma reserva confirmada para estas datas nesta Second Home.',
     invalid: 'Confira as datas de entrada e saída.',
     unexpected: 'Algo deu errado. Tente de novo.',
   },
@@ -44,6 +43,11 @@ export const bookingLabels = {
 
 export const calendarMessages = {
   metadataTitle: 'Reservar uso próprio',
+  /** Ativação privilegiada ausente (ADR-0026): calendário e consultas seguem; confirmação não é oferecida. */
+  closed: {
+    title: 'Novas reservas de uso próprio ainda não estão abertas.',
+    body: 'Você pode consultar o calendário, a disponibilidade e as reservas. A confirmação abre quando a Luxtory habilitar as reservas.',
+  },
   title: 'Reservar uso próprio',
   backToArea: 'Área do Titular',
   context: (label: string, role: Role) =>
@@ -143,6 +147,9 @@ export const calendarMessages = {
     needCheckin: 'Escolha também a entrada.',
     checking: 'Verificando o período…',
     ok: 'Período disponível.',
+    okClosed: 'Noites livres. Novas reservas ainda não estão abertas.',
+    closedHint:
+      'A confirmação abre quando a Luxtory habilitar as reservas de uso próprio. Você pode consultar o calendário e as reservas.',
     notOk: 'Não é possível reservar este período.',
     failed: 'Não foi possível verificar o período agora.',
     failedDetail: 'Suas datas foram mantidas. Tente de novo em instantes.',
@@ -166,7 +173,6 @@ export const calendarMessages = {
     note: 'Nada fica reservado até você confirmar. A disponibilidade é conferida de novo nesse momento.',
     noScript: 'A prévia e a confirmação precisam de JavaScript.',
     confirm: 'Confirmar reserva',
-    viewBooking: 'Ver reserva',
   },
   issues: {
     order: 'A saída precisa ser depois da entrada.',

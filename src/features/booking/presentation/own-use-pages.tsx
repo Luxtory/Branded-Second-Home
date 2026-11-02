@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { sql } from 'kysely';
-import { PageHeader, RecordList } from '@/design-system/react';
+import { Icon, PageHeader, RecordList } from '@/design-system/react';
 import { AuthUnavailable, TitularShell, requireTitularSession } from '@/features/identity';
 import { getDatabase, unavailableKeys, withUserRead } from '@/features/platform';
 import {
@@ -54,6 +54,13 @@ export async function TitularOwnUseCalendarPage({ holdingId }: { readonly holdin
         lead={calendarMessages.context(data.secondHomeLabel, data.role)}
         context={{ href: AREA, label: calendarMessages.backToArea }}
       />
+      {data.bookingOpen ? null : (
+        <div className="lx-message lx-message--info lx-booking__closed" role="status">
+          <Icon name="alert" className="lx-message__icon" />
+          <p className="lx-message__title">{calendarMessages.closed.title}</p>
+          <p className="lx-message__body">{calendarMessages.closed.body}</p>
+        </div>
+      )}
       <OwnUseRights data={data} />
       <OwnUseCalendar data={data} />
     </TitularShell>
@@ -103,6 +110,13 @@ const typeOf = (row: BookingRow) =>
   bookingLabels.channel(row.channel, roleOf(row.modality)) ?? bookingLabels.missing;
 const stateOf = (row: BookingRow) => bookingLabels.state(row.state) ?? bookingLabels.missing;
 
+/** Título da seção de lista: os itens do `RecordList` são `h3`; sem um `h2` antes, a ordem dos títulos salta do `h1`. */
+const ListHeading = ({ id, children }: { readonly id: string; readonly children: string }) => (
+  <h2 className="lx-visually-hidden" id={id}>
+    {children}
+  </h2>
+);
+
 /** `/titular/reservas`: tipo, período, noites e situação de cada reserva (canceladas ficam no histórico, W13). */
 export async function TitularBookingsPage() {
   const session = await requireTitularSession();
@@ -117,7 +131,8 @@ export async function TitularBookingsPage() {
         lead={text.lead}
         context={{ href: AREA, label: text.backToArea }}
       />
-      <section className="lx-page-section" aria-label={text.title}>
+      <section className="lx-page-section" aria-labelledby="titular-bookings">
+        <ListHeading id="titular-bookings">{text.title}</ListHeading>
         {rows.length === 0 ? (
           <p className="lx-body">{text.empty}</p>
         ) : (
@@ -258,7 +273,8 @@ export async function TitularNotificationsPage() {
         lead={text.lead}
         context={{ href: AREA, label: text.backToArea }}
       />
-      <section className="lx-page-section" aria-label={text.title}>
+      <section className="lx-page-section" aria-labelledby="titular-notifications">
+        <ListHeading id="titular-notifications">{text.title}</ListHeading>
         {items.length === 0 ? (
           <p className="lx-body">{text.empty}</p>
         ) : (

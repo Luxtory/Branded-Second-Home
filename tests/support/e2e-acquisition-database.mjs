@@ -60,3 +60,22 @@ export async function ensureE2eInstitution(partyId) {
     return rows[0].party_id;
   });
 }
+
+/**
+ * Ativação das reservas de uso próprio (ADR-0026) só no banco descartável do E2E: liga para provar a confirmação na
+ * interface real e desliga em seguida. Nunca em Production (a validação recusa qualquer banco não descartável).
+ */
+export async function setE2eOwnUseBooking(open) {
+  const source = process.env;
+  if (source.VERCEL || source.VERCEL_ENV) throw new Error('E2E fixture is local/CI only');
+  const config = JSON.parse(readFileSync(E2E_ACQUISITION_DATABASE_FILE, 'utf8'));
+  const url = validateE2eAcquisitionDatabase(config.ownerUrl);
+  await withClient(url, (client) =>
+    client.query(
+      open
+        ? `INSERT INTO app.capability_activation VALUES ('own_use_booking', now(), 'e2e:fixture')
+           ON CONFLICT DO NOTHING`
+        : `DELETE FROM app.capability_activation WHERE capability = 'own_use_booking'`,
+    ),
+  );
+}

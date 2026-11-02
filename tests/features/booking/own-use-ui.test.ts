@@ -84,6 +84,7 @@ function coOwner(overrides: Partial<OwnUseCalendarData> = {}): OwnUseCalendarDat
         open: false,
       },
     ],
+    bookingOpen: true,
     ...overrides,
   };
 }
@@ -94,6 +95,17 @@ const rights = (data: OwnUseCalendarData) =>
   renderToStaticMarkup(createElement(OwnUseRights, { data }));
 
 describe('telas de uso próprio (W12, spec booking §7)', () => {
+  it('[ADR-0026] reservas fechadas: o calendário segue para consulta e não há confirmação a oferecer', () => {
+    const open = render(coOwner());
+    expect(open).toContain('Confirmar reserva');
+    const closed = render(coOwner({ bookingOpen: false }));
+    expect(closed).not.toContain('Confirmar reserva');
+    expect(closed).toContain(
+      'A confirmação abre quando a Luxtory habilitar as reservas de uso próprio.',
+    );
+    expect(closed).toContain('lx-calendar__table');
+  });
+
   it('[REQ-034][TECH-052] Co-Owner: estados da grade vêm dos fatos do servidor; legenda mínima "Reserva desta Ação"', () => {
     const html = render(coOwner());
     expect(html).toContain('data-state="past"');
