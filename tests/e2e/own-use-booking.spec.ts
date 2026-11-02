@@ -333,7 +333,10 @@ test.describe('W12 — reserva de uso próprio a 390 px com toque e PostgreSQL r
         const other = bucket === 'Alta/Super Alta' ? 'Média/Baixa' : 'Alta/Super Alta';
         const rightsRow = (name: string) =>
           titular.locator('.lx-booking__rights .lx-booking__fact').filter({
-            has: titular.locator('dt', { hasText: new RegExp(`^${name}( ${year})?$`) }),
+            // Rótulo sem o ano quando só um exercício aparece; com o ano quando há dois.
+            has: titular
+              .getByText(name, { exact: true })
+              .or(titular.getByText(`${name} ${year}`, { exact: true })),
           });
         const available = (left: number) =>
           `${left} ${left === 1 ? 'disponível' : 'disponíveis'} de ${granted} noites`;
