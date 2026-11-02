@@ -92,10 +92,14 @@ canônicos. Spec: [`booking`](../specs/booking.md) (e notas em `inventory`, `cal
   fronteira de confiança já vigente em toda a plataforma (dono do schema/superusuário; trilhas sem selo até a W30), sem
   exposição nova enquanto não houver reserva. Operacionais em A: a superfície nova de leitura do Titular (T-1205,
   isolamento provado) e a prévia sem limitador por usuário (T-1207, custo medido menor que uma carga da página); a
-  migration em si (rollback `down` provado por `db:check`; recusa descartar uma ativação existente).
-- **B — ativação de reservas reais depois da W13.** Exigem decisão expressa antes da ativação: R1 (aceitar, ou exigir
-  mitigação adicional — monitoração de criação de reservas, rotação e menor privilégio da credencial `luxtory_app`); R2
-  (aceitar, ou ligar `track_commit_timestamp`, mudança de configuração do banco); R5 (aceitar até o selo da W30, ou
+  migration em si (rollback `down` provado por `db:check`; recusa descartar uma ativação existente). Preflight somente
+  leitura de Production (2026-11-02): 52/0 migrations (md5 das versões = `main`), 0 aquisições, holdings, noites,
+  custódias e ocupações, nenhum objeto W12, outbox vazio, 24 nomes de env sem gates — sem holding, nenhum Titular chega
+  às telas novas até uma formalização real.
+- **B — ativação de reservas reais depois da W13.** Pré-requisito: cancelamento e restauração da W13 em Production.
+  Exigem decisão expressa antes da ativação: R1 (aceitar, ou exigir mitigação adicional — monitoração de criação de
+  reservas, rotação e menor privilégio da credencial `luxtory_app`); R2 (aceitar — `track_commit_timestamp` não previne:
+  só daria evidência posterior do instante do COMMIT, com reinício do banco); R5 (aceitar até o selo da W30, ou
   antecipá-lo). Exigem prova operacional: R3 (ensaio da desativação do runbook — `LOCK` + `DELETE` com `lock_timeout` e
   encerramento de sessões — fora de Production, e procedimento de troca de senha); R4 (a W13 define exceção ou correção
   para reserva forjada a menos de 15 dias do check-in, como já previsto); notificação (depende do job `outbox`, cron

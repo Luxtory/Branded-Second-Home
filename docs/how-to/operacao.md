@@ -609,7 +609,11 @@ recusada no banco (inclusive por SQL direto do papel da aplicação).
 
 1. **Antes do merge:** conferência agregada e somente leitura no Production: `SELECT count(*) FROM app.date_occupancy;`.
    Esperado `0` — a migration falha fechada se houver ocupação anterior à reserva.
-2. Depois do merge autorizado, só o pipeline aplica as três migrations W12 (52 → 55). Conferir em leitura:
+2. Depois do merge autorizado, só o pipeline aplica as três migrations W12 (52 → 55). Falha parcial: cada migration é
+   uma transação do `dbmate`, então a que falhou não deixa nada; as anteriores ficam aplicadas, o `deploy` não roda e a
+   aplicação anterior segue no ar (não usa objetos W12). Sem rollback automático, DDL manual nem break-glass: conferir
+   em leitura (log do `migrate`, versões aplicadas) e corrigir por PR — migration nova ou correção das ainda não
+   aplicadas — com autorização do fundador. Conferir em leitura:
    `SELECT count(*) FROM app.capability_activation;` = `0`; `luxtory_app` com SELECT (sem escrita) na ativação, SELECT e
    INSERT em `app.booking`, UPDATE só em `closed_at`/`closed_by_operation` de `app.date_custody` e INSERT em
    `app.date_occupancy`; `authenticated` só com SELECT por coluna nas leituras do Titular.
