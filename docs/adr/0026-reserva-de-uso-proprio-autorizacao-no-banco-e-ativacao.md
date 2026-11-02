@@ -102,7 +102,9 @@ autenticidade até o selo da W30. Provas: `tests/migrations/booking.db.test.ts` 
   da mesma operação, com o guard conferindo a autoridade vigente antes (executor e fronteira inalterados).
 - **Snapshot único para os fatos lidos pelo servidor.** Calendário e prévia leem numa transação `REPEATABLE READ` só de
   leitura (`withUserThenServerRead`): a RLS prova a holding como `authenticated` e, no mesmo snapshot, o papel da
-  aplicação lê janela e ativação. Não há intervalo entre a prova e a leitura em que a representação possa cair.
+  aplicação lê janela e ativação. Isso dá uma visão consistente (autorização e fatos do mesmo instante); não impede que
+  a representação seja revogada depois do snapshot, e a resposta pode refletir uma representação que acabou de cair. A
+  prévia não vincula: a confirmação revalida a representação no guard (`FOR SHARE`) e no gatilho, no instante da escrita.
 - **A ativação é a fonte da apresentação.** O servidor lê a mesma linha privilegiada (`isActivated`) e devolve
   `bookingOpen`; sem ela, a interface mantém calendário e consulta, avisa que novas reservas ainda não estão abertas e
   não oferece confirmação. A ativação continua sendo conferida pelo handler dentro da transação; a interface não decide.

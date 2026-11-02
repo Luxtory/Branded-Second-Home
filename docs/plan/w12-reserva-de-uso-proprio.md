@@ -67,7 +67,8 @@ canônicos. Spec: [`booking`](../specs/booking.md) (e notas em `inventory`, `cal
 | E6 | Testes db (command, fronteira, RLS com identidades diferentes, leitura e prévia), unitários, E2E | ✅ |
 | E7 | Gates: `npm run verify`, `npm run test:e2e` (`--workers=2`), `npm run trace -- --expect REQ-034,REQ-035,REQ-037,PD-002,INV-1` | ✅ (c4ad879, 2026-11-02); refeitos depois da auditoria (E9) |
 | E8 | Commit, push, PR draft, checkpoint | ✅ PR draft #78 (c4ad879, CI verde); merge **não autorizado** |
-| E9 | Correções da auditoria independente do PR #78 (2026-11-02): resultado incerto só pela idempotência do executor; aviso e nenhuma confirmação com as reservas fechadas (`bookingOpen` da ativação); prévia e calendário num snapshot único; motivo "reserva do Owner"; nota W28; E2E de confirmação com ativação só no banco descartável | ✅ no mesmo PR draft #78; aguarda nova auditoria |
+| E9 | Correções da auditoria independente do PR #78 (2026-11-02): resultado incerto só pela idempotência do executor; aviso e nenhuma confirmação com as reservas fechadas (`bookingOpen` da ativação); prévia e calendário num snapshot único; motivo "reserva do Owner"; nota W28; E2E de confirmação com ativação só no banco descartável | ✅ no mesmo PR draft #78; aprovadas tecnicamente pelo fundador (2026-11-02) |
+| E10 | Verificações finais (2026-11-02): E2E de confirmação do Co-Owner com a ativação só no banco descartável (saldo da categoria cai, a outra não muda, noite ocupada); precisão do snapshot (consistência, não vigência) e limite da perda da chave; custo da prévia medido (STRIDE T-1207); aplicabilidade de R1–R5 por estado | ✅ no PR draft #78; merge aguarda decisão do fundador |
 
 ## Riscos residuais declarados (ratificação pendente)
 
@@ -81,3 +82,22 @@ canônicos. Spec: [`booking`](../specs/booking.md) (e notas em `inventory`, `cal
 - **R4 — remédio**: reserva forjada a menos de 15 dias do check-in não volta por cancelamento tempestivo (W13 decide
   exceção ou correção antes da ativação).
 - **R5 — trilhas**: operação, auditoria e notificação não provam autenticidade até o selo da W30.
+
+### Aplicabilidade por estado (recomendação técnica, não ratificação — 2026-11-02)
+
+- **A — merge com a ativação vazia.** O merge na `main` dispara a CI: `migrate` aplica as 3 migrations da W12 em
+  Production (tabelas, gatilhos, RLS e `app.capability_activation` vazia; nenhuma migration insere ativação) e `deploy`
+  publica as telas de consulta. R1, R2 e R4 não são operacionais: dependem de uma reserva gravada, e o banco recusa toda
+  escrita de reserva sem a ativação, que o papel da aplicação não pode criar (só `SELECT`). R3 e R5 existem só como a
+  fronteira de confiança já vigente em toda a plataforma (dono do schema/superusuário; trilhas sem selo até a W30), sem
+  exposição nova enquanto não houver reserva. Operacionais em A: a superfície nova de leitura do Titular (T-1205,
+  isolamento provado) e a prévia sem limitador por usuário (T-1207, custo medido menor que uma carga da página); a
+  migration em si (rollback `down` provado por `db:check`; recusa descartar uma ativação existente).
+- **B — ativação de reservas reais depois da W13.** Exigem decisão expressa antes da ativação: R1 (aceitar, ou exigir
+  mitigação adicional — monitoração de criação de reservas, rotação e menor privilégio da credencial `luxtory_app`); R2
+  (aceitar, ou ligar `track_commit_timestamp`, mudança de configuração do banco); R5 (aceitar até o selo da W30, ou
+  antecipá-lo). Exigem prova operacional: R3 (ensaio da desativação do runbook — `LOCK` + `DELETE` com `lock_timeout` e
+  encerramento de sessões — fora de Production, e procedimento de troca de senha); R4 (a W13 define exceção ou correção
+  para reserva forjada a menos de 15 dias do check-in, como já previsto); notificação (depende do job `outbox`, cron
+  diário 06:17 UTC: confirmar que a latência é aceitável e observar execuções em Production); prévia (reavaliar o
+  limitador com métricas reais de uso). A ativação continua sendo só por migration pela CI, com autorização expressa.

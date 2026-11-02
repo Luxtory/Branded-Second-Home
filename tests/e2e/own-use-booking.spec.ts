@@ -249,7 +249,7 @@ test.describe('W12 — reserva de uso próprio a 390 px com toque e PostgreSQL r
     }
   });
 
-  test('[REQ-034][REQ-031][TECH-042][TECH-052][ADR-0026] Co-Owner com reservas fechadas: Direito de Uso desta Ação e prévia do servidor para consulta', async ({
+  test('[REQ-034][REQ-030][REQ-031][TECH-042][TECH-052][ADR-0026] Co-Owner: fechadas, consulta sem confirmação; ligadas só nesta base, confirma e o saldo da categoria cai', async ({
     page,
     browser,
   }) => {
@@ -304,6 +304,79 @@ test.describe('W12 — reserva de uso próprio a 390 px com toque e PostgreSQL r
       }
       await expect(titular.getByRole('button', { name: 'Confirmar reserva' })).toHaveCount(0);
       await gate(titular, errors, 'w12-06-co-owner-previa');
+
+      // Reservas ligadas só neste banco descartável: a confirmação do Co-Owner pela interface real consome o Direito de
+      // Uso na categoria da noite (a outra não muda), ocupa a noite e o saldo apresentado ao Titular cai.
+      await setE2eOwnUseBooking(true);
+      try {
+        await titular.reload();
+        await expect(titular.locator('.lx-booking__closed')).toHaveCount(0);
+        let night = checkin;
+        for (let tries = 0; tries < 20; tries += 1) {
+          await titular.getByLabel('Entrada', { exact: true }).fill(night);
+          await titular.getByLabel('Saída', { exact: true }).fill(addDays(night, 1));
+          await expect(summary).toHaveText(
+            /Período disponível\.|Não é possível reservar este período\./,
+          );
+          if ((await summary.textContent()) === 'Período disponível.') break;
+          night = addDays(night, 1);
+        }
+        await expect(summary).toHaveText('Período disponível.');
+        const usage = titular
+          .locator('.lx-booking__summary .lx-booking__fact')
+          .filter({ hasText: 'restarão' });
+        const usageLabel = (await usage.locator('dt').textContent())!;
+        const [, after, granted] = (await usage.locator('dd').textContent())!.match(
+          /restarão (\d+) de (\d+)/,
+        )!;
+        const [bucket, year] = [usageLabel.slice(0, -5), usageLabel.slice(-4)];
+        const other = bucket === 'Alta/Super Alta' ? 'Média/Baixa' : 'Alta/Super Alta';
+        const rightsRow = (name: string) =>
+          titular.locator('.lx-booking__rights .lx-booking__fact').filter({
+            has: titular.locator('dt', { hasText: new RegExp(`^${name}( ${year})?$`) }),
+          });
+        const available = (left: number) =>
+          `${left} ${left === 1 ? 'disponível' : 'disponíveis'} de ${granted} noites`;
+        await expect(rightsRow(bucket)).toContainText(available(Number(after) + 1));
+        const otherBefore = await rightsRow(other).textContent();
+        await titular.getByRole('button', { name: 'Confirmar reserva' }).tap();
+
+        await expect(titular).toHaveURL(/\/titular\/reservas\/[0-9a-f-]{36}$/);
+        const detail = titular.locator('.lx-booking__facts');
+        for (const fact of ['Uso próprio · Direito de Uso', 'Confirmada', '1 noite'])
+          await expect(detail).toContainText(fact);
+        await gate(titular, errors, 'w12-11-co-owner-confirmada');
+
+        await titular.goto('/titular');
+        await titular
+          .locator('section[aria-labelledby="titular-own-use"]')
+          .getByRole('link', { name: new RegExp(label) })
+          .tap();
+        await expect(rightsRow(bucket)).toContainText(available(Number(after)));
+        expect(await rightsRow(other).textContent()).toBe(otherBefore);
+        for (
+          let month = 0;
+          month < 14 && (await titular.locator(`[data-date="${night}"]`).count()) === 0;
+          month += 1
+        )
+          await next.tap();
+        await expect(titular.locator(`[data-date="${night}"]`).locator('..')).toHaveAttribute(
+          'data-state',
+          'mine',
+        );
+        await titular.locator(`[data-date="${night}"]`).tap({ force: true });
+        await expect(titular.locator('.lx-calendar__selection [role="status"]')).toHaveText(
+          `Reserva desta Ação · Uso próprio · Direito de Uso · entrada ${dayMonth(night)}, saída ${dayMonth(addDays(night, 1))} (1 noite) · Confirmada.`,
+        );
+        await titular.getByLabel('Entrada', { exact: true }).fill(night);
+        await titular.getByLabel('Saída', { exact: true }).fill(addDays(night, 1));
+        await expect(titular.locator('.lx-booking__issues')).toContainText(
+          `Já há reserva desta Ação em ${dayMonth(night)}.`,
+        );
+        await gate(titular, errors, 'w12-12-co-owner-saldo-atualizado');
+      } finally {
+        await setE2eOwnUseBooking(false);
+      }
     } finally {
       await context.close();
     }

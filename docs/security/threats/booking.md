@@ -100,7 +100,10 @@ só com a ativação privilegiada presente. Dados: ids pseudônimos (party, hold
   transação `REPEATABLE READ` só de leitura (`withUserThenServerRead`: RLS como `authenticated`, depois `RESET ROLE` e
   claims limpas, no mesmo snapshot). Uma revogação confirmada antes do snapshot faz a RLS devolver nada (→ "proibido");
   uma confirmada depois não é vista por nenhuma das duas fases — a resposta corresponde a um instante em que a
-  representação valia. A confirmação confere a representação de novo no guard e no gatilho (T-1203).
+  representação valia. Limite: o snapshot dá consistência, não vigência — não impede revogação posterior, e a resposta
+  pode chegar a quem acabou de perder a representação (só a regra desta holding, sem escrita). Por isso a prévia não
+  vincula: a confirmação confere a representação de novo no guard e no gatilho (T-1203). Travar a delegação na prévia
+  não daria garantia útil a uma leitura não vinculante.
 - **Enumeração**: holding não representada, inexistente ou de outro Titular → a mesma resposta "proibido" (sem oráculo;
   ids UUID). Para a holding representada, a prévia não diz nada que o calendário da mesma holding já não mostre: noites
   indisponíveis como fato, sem Ação, reserva ou pessoa; janela, saldo, 29/02 e adjacência só desta Ação. Residual,
@@ -124,6 +127,13 @@ só com a ativação privilegiada presente. Dados: ids pseudônimos (party, hold
   convidados pelo Admin, sessão verificada); o cliente só pede prévia para um período completo. Um limitador por usuário
   exigiria estado novo no Redis para um custo que não excede o de recarregar a página; fica fora da W12 e não é
   ratificado aqui (risco residual).
+  Medição (2026-11-02, PostgreSQL local do harness de testes, Co-Owner com 730 noites seladas e reservas existentes,
+  40 execuções depois de aquecer): prévia no pior intervalo aberto (423 noites) = 12 consultas, p50 31 ms, p95 36 ms,
+  máx. 43 ms; carga da página do calendário = 13 consultas, p50 41 ms, p95 79 ms. A prévia custa menos que recarregar a
+  página. Limites vigentes: sessão verificada de Titular convidado, datas validadas antes de qualquer consulta, teto de
+  800 noites, número fixo de consultas indexadas, transação só de leitura sem travas, duração da função na Vercel. Sem
+  `statement_timeout` próprio nas leituras: com esse custo, não muda o caso típico; endurecimento opcional (W30) se a
+  medição em produção mostrar cauda longa. Resposta a abuso: revogar a delegação, que vale na hora (TECH-050).
 
 ## 5. Out of scope
 

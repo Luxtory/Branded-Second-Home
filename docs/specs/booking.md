@@ -84,6 +84,15 @@ idempotência do executor"). Tradução pura em `presentation/own-use-outcome.ts
 mesma chave → replay ou recusa antes de executar; chave nova → `ERR_BOOKING_CONFLICT`; no banco, ocupação única e consumo
 único.
 
+**Limite: perda completa do estado da página.** A chave vive só no formulário. Se ela se perde (aba fechada, recarga,
+outro aparelho), não há replay automático garantido, e nada a recupera por coincidência de datas nem por estado
+persistido novo. A consulta substitui o replay: a página nova lê o banco, então uma reserva que chegou a ser confirmada já
+aparece no calendário como reserva do Owner/desta Ação (o toque mostra tipo, período e situação), em `/titular/reservas`
+e no detalhe, e a prévia sobre as mesmas noites diz "Já há reserva … em …" e não oferece confirmação. Uma tentativa
+nova, numa aba antiga, só pode receber `ERR_BOOKING_CONFLICT` ("Uma ou mais noites já foram reservadas."), sem segunda
+reserva. Se a primeira não chegou a gravar, as noites seguem livres e a prévia oferece a confirmação de novo. Prova: E2E
+de confirmação (`own-use-booking.spec.ts`): a página reaberta, sem a chave, mostra a reserva e a prévia com o motivo.
+
 ## 6. Leitura do Titular (TECH-052)
 
 Linhas por RLS (holding vigente representada); campos por privilégio de coluna: `booking` (id, Second Home, canal,
@@ -128,7 +137,9 @@ command (`previewOwnUseBooking`, mesmas portas e funções de domínio) no mesmo
 (`withUserThenServerRead`), sem travas nem escrita, reunindo todos os motivos; intervalo limitado a 800 noites; a chave de
 idempotência nasce só numa prévia válida com as reservas abertas. A reserva já existente da própria holding é motivo
 específico ("Já há reserva do Owner/desta Ação em …"), não "indisponível". Nunca decide: a confirmação revalida tudo no
-banco. Risco e custo: STRIDE T-1208.
+banco. O snapshot dá consistência (autorização e fatos do mesmo instante), não vigência: uma revogação posterior a ele não
+é vista pela prévia, e o command confere a representação de novo no instante da confirmação. Risco e custo: STRIDE
+T-1208.
 
 ## 7. Telas (E5b, depois da revisão E5a)
 
@@ -205,7 +216,10 @@ abertas e não oferece confirmação (§6, "Reservas fechadas"); se a ativação
 recusa e a action volta "As reservas de uso próprio ainda não estão abertas." com a mesma chave. Provas no E2E
 `tests/e2e/own-use-booking.spec.ts`: Owner e Co-Owner com as reservas fechadas; e confirmação bem-sucedida com a ativação
 ligada só no banco descartável do teste (`setE2eOwnUseBooking`) → detalhe, notificação, lista, calendário com a própria
-reserva e prévia com o motivo específico → ativação desligada, aviso de volta e nenhuma confirmação.
+reserva e prévia com o motivo específico → ativação desligada, aviso de volta e nenhuma confirmação. No Co-Owner, o
+mesmo teste das reservas fechadas liga a ativação só nesse banco e confirma uma noite: detalhe "Uso próprio · Direito de
+Uso", saldo da categoria da noite uma noite menor no Direito de Uso desta Ação, a outra categoria intacta (REQ-030), noite
+como reserva desta Ação e prévia com o motivo.
 
 ## 8. Aceite
 

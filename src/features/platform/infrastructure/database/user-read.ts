@@ -33,8 +33,9 @@ export async function withUserRead<T>(
 /**
  * Leitura em duas fases num único instantâneo (REPEATABLE READ, só leitura): `asUser` roda como `authenticated` sob a
  * RLS e prova a autorização (devolve `null` quando não há); depois o papel volta ao da aplicação e `asServer` lê, com o
- * autorizado em mãos, fatos que a RLS não expõe ao usuário (W12: janela, prévia, ativação). A mesma transação fecha a
- * janela entre provar a representação e ler os fatos; nada aqui escreve.
+ * autorizado em mãos, fatos que a RLS não expõe ao usuário (W12: janela, prévia, ativação). Garante visão consistente
+ * (autorização e fatos do mesmo instante), não autorização vigente: uma revogação posterior ao instantâneo não é vista.
+ * Só para leituras não vinculantes — toda escrita revalida a autorização no próprio instante. Nada aqui escreve.
  */
 export async function withUserThenServerRead<A, T>(
   db: Database,
