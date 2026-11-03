@@ -518,3 +518,15 @@ acrescentados abaixo, reverificados no mesmo PR.
   reavaliação da D3; base legal/aviso aplicáveis aos dados de Titulares (fora do escopo técnico).
 - Rollback: `vercel rollback`; as migrations só acrescentam objetos, exceto a remoção do gatilho transitório (o `down`
   o recria).
+
+## 14. W12 — guard do Titular
+
+Spec [`booking`](booking.md), [ADR-0026](../adr/0026-reserva-de-uso-proprio-autorizacao-no-banco-e-ativacao.md). Commands
+de autoridade `titular` (TECH-051) passam a ser autorizados com sessão verificada (AAL1 basta; MFA só para staff,
+TECH-050), papel `titular`, party representada no ator, escopo `second_home`, delegação ativa e vigente do usuário para a
+party e holding vigente dela na Second Home — `authorizationRef = holding:<id>`. O diretório de holdings é porta do
+identity (`HoldingDirectory`), implementada pela superfície pública do ownership e injetada por quem executa
+(`executeTitularCommand(handler, input, key, { partyId, holdings })`): o identity não importa o ownership. Sem o
+diretório, nenhum command do Titular é autorizado (a ativação da delegação, W7, segue com a autoridade `invitee`). O
+handler revalida na transação com `FOR SHARE` na delegação (ADR-0021), e o banco repete a conferência no gatilho da
+reserva.

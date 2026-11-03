@@ -1,0 +1,637 @@
+/* Calendar — seletor de período da Área do Titular (W12; ADR-0009, ADR-0026). Híbrido: campos de data nativos sempre
+ * presentes (entrada direta, sem depender de JavaScript) e calendário interativo sincronizado, que mostra a
+ * disponibilidade e permite escolher entrada e saída. O calendário só sugere: quem decide é o servidor (03 §13).
+ *
+ * Hierarquia de estados, de fora para dentro (spec booking §7):
+ *   1. situação da noite — passada, janela ainda não aberta, fora do calendário aberto  → número discreto, sem ação;
+ *   2. disponibilidade — disponível · indisponível (número riscado) · sua reserva (hachura);
+ *   3. seleção — entrada (preenchida) · noites do período (faixa) · saída (contorno: a saída não consome noite, PD-002);
+ *   4. informação sazonal — Alta/Super Alta (filete superior), sobreposta a qualquer estado; 29/02 (losango) só para quem
+ *      tem o direito naquele exercício.
+ * Nenhum estado depende só de cor: cada dia diz o próprio estado no nome acessível.
+ *
+ * .lx-calendar (container) > .lx-calendar__header (h3 aria-live + navegação) + table.lx-calendar__table
+ *   > caption + thead th[abbr] + tbody td[data-state][data-season][data-range] > button.lx-calendar__day
+ * A grade tem sete colunas desde 320 px com alvos ≥ 44 × 48 px: quando a coluna não comporta sete alvos mínimos e as
+ * bordas, a tabela sangra a margem da página — centrada, até 2 px da borda da janela — em vez de comprimir as células. */
+@layer lx.components {
+  .lx-calendar {
+    container-type: inline-size;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--lx-space-4);
+    min-width: 0;
+  }
+
+  .lx-calendar__months {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--lx-space-8);
+  }
+
+  .lx-calendar__month {
+    display: grid;
+    align-content: start;
+    gap: var(--lx-space-3);
+    min-width: 0;
+  }
+
+  /* Cabeçalho do mês: anterior · nome · próximo (as setas só no primeiro e no último mês visíveis). */
+  /* Anterior · mês · próximo numa linha quando cabem; com pouco espaço (texto ampliado no celular), o mês sobe para uma
+     linha própria e os botões ficam embaixo, nas pontas — o título nunca é espremido entre alvos de 48 px. */
+  .lx-calendar__header {
+    display: grid;
+    grid-template-columns: var(--lx-target-control) minmax(0, 1fr) var(--lx-target-control);
+    grid-template-areas:
+      "title title title"
+      "prev . next";
+    align-items: center;
+    gap: var(--lx-space-2);
+    text-align: center;
+  }
+
+  .lx-calendar__header > :first-child {
+    grid-area: prev;
+  }
+
+  .lx-calendar__header > .lx-calendar__title {
+    grid-area: title;
+  }
+
+  .lx-calendar__header > :last-child {
+    grid-area: next;
+  }
+
+  @container (min-width: 16rem) {
+    .lx-calendar__header {
+      grid-template-areas: "prev title next";
+    }
+  }
+
+  .lx-calendar__title {
+    margin: 0;
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-text-lead);
+    font-weight: var(--lx-weight-display-strong);
+    line-height: var(--lx-leading-heading);
+  }
+
+  .lx-calendar__title::first-letter {
+    text-transform: uppercase;
+  }
+
+  .lx-calendar__nav {
+    display: inline-flex;
+    gap: var(--lx-space-1);
+  }
+
+  .lx-calendar__nav-button {
+    display: inline-grid;
+    place-items: center;
+    inline-size: var(--lx-target-control);
+    block-size: var(--lx-target-control);
+    padding: 0;
+    border: var(--lx-border-hairline) solid var(--lx-color-rule);
+    background-color: var(--lx-color-bg);
+    color: var(--lx-color-fg);
+    cursor: pointer;
+  }
+
+  .lx-calendar__nav-button:disabled {
+    color: var(--lx-color-fg-muted);
+    border-style: dashed;
+    cursor: not-allowed;
+  }
+
+  .lx-calendar__nav-button:focus-visible,
+  .lx-calendar__clear:focus-visible {
+    outline: var(--lx-focus-width) solid var(--lx-color-focus);
+    outline-offset: var(--lx-focus-offset);
+  }
+
+  .lx-calendar__nav-button > svg {
+    inline-size: var(--lx-space-6);
+    block-size: var(--lx-space-6);
+  }
+
+  .lx-calendar__note {
+    margin: 0;
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-small);
+    color: var(--lx-color-fg);
+  }
+
+  /* Largura: a da coluna; abaixo de sete alvos mínimos, sangra a margem da página (centrada, sem passar da janela). */
+  .lx-calendar__table {
+    justify-self: unsafe center;
+    inline-size: max(
+      100%,
+      min(calc(7 * var(--lx-target-min) + 8 * var(--lx-border-hairline)), calc(100vw - var(--lx-space-1)))
+    );
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  .lx-calendar__table caption {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .lx-calendar__table th {
+    padding-block: var(--lx-space-2);
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-marker);
+    font-weight: var(--lx-weight-medium);
+    letter-spacing: var(--lx-tracking-label);
+    text-transform: uppercase;
+    color: var(--lx-color-fg-muted);
+    text-align: center;
+  }
+
+  .lx-calendar__table td {
+    position: relative;
+    padding: 0;
+    border: var(--lx-border-hairline) solid var(--lx-color-rule);
+    background-color: var(--lx-color-bg);
+  }
+
+  .lx-calendar__table td:empty {
+    background-color: var(--lx-color-bg);
+  }
+
+  .lx-calendar__day {
+    position: relative;
+    display: grid;
+    place-items: center;
+    inline-size: 100%;
+    min-block-size: var(--lx-target-control);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--lx-color-fg);
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-small);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+
+  .lx-calendar__day:focus-visible {
+    z-index: var(--lx-z-raised);
+    outline: var(--lx-focus-width) solid var(--lx-color-focus);
+    outline-offset: calc(-1 * var(--lx-focus-width));
+  }
+
+  @media (hover: hover) {
+    .lx-calendar__day:not([aria-disabled="true"]):hover {
+      background-color: var(--lx-calendar-range);
+    }
+  }
+
+  /* Linguagem cromática (E5a v2.2): a cor é o reconhecimento principal e cada estado tem também uma marca de forma
+     (WCAG 1.4.1) — indisponível riscado, sua reserva com um ponto, seleção preenchida/contornada. Tons derivados dos
+     tokens existentes por mistura (sem paleta nova): */
+  .lx-calendar {
+    /* indisponível: superfície neutra atenuada (o sand-wash do DS levemente esfriado pelo azul) */
+    --lx-calendar-unavailable: color-mix(in srgb, var(--lx-color-fg-muted) 8%, var(--lx-color-surface));
+    /* sua reserva: tom suave do Warm Sand */
+    --lx-calendar-mine: color-mix(in srgb, var(--lx-color-rule) 40%, var(--lx-color-bg));
+    /* noites selecionadas: tom claro do Moroccan Blue; entrada e saída no próprio Moroccan Blue */
+    --lx-calendar-range: color-mix(in srgb, var(--lx-color-accent) 15%, var(--lx-color-bg));
+  }
+
+  /* Sem ação por regra ou tempo (já passou, janela ainda não abriu, fora do calendário, não serve de saída): número mais
+     claro sobre o fundo claro. Estas datas continuam focáveis e, tocadas, explicam o motivo — são controles informativos,
+     não inativos —, então o número mantém contraste de texto: 75% do fg-muted é o tom mais claro com ≥ 4,5:1 no branco
+     (medido 4,7:1). */
+  .lx-calendar__day[aria-disabled="true"] {
+    cursor: default;
+  }
+
+  td:not([data-state="unavailable"], [data-state="mine"]) > .lx-calendar__day[aria-disabled="true"] {
+    color: color-mix(in srgb, var(--lx-color-fg-muted) 75%, var(--lx-color-bg));
+  }
+
+  /* Indisponível: superfície neutra e número riscado (nunca diz quem ocupa). */
+  td[data-state="unavailable"] {
+    background-color: var(--lx-calendar-unavailable);
+  }
+
+  td[data-state="unavailable"] .lx-calendar__number {
+    color: var(--lx-color-fg-muted);
+    text-decoration-line: line-through;
+    text-decoration-thickness: var(--lx-border-hairline);
+  }
+
+  /* Sua reserva: tom de Warm Sand e um ponto sob o número. */
+  td[data-state="mine"] {
+    background-color: var(--lx-calendar-mine);
+  }
+
+  td[data-state="mine"] .lx-calendar__day::after {
+    content: "";
+    position: absolute;
+    inset-block-end: var(--lx-space-2);
+    inset-inline-start: calc(50% - var(--lx-space-1) / 2);
+    inline-size: var(--lx-space-1);
+    block-size: var(--lx-space-1);
+    background-color: var(--lx-color-fg);
+  }
+
+  /* Seleção, uma família: entrada preenchida em Moroccan Blue; noites no tom claro; saída só contornada (a noite da
+     saída não é usada, PD-002), sobre o estado que a data já tem. */
+  /* Noites: tom claro delimitado por filetes de accent no alto e embaixo — a faixa se lê sem a cor (escala de cinza,
+     baixa visão) e continua de um mês ao outro mesmo sem a entrada ou a saída em tela (WCAG 1.4.1/1.4.11). */
+  td[data-range="night"] {
+    background-color: var(--lx-calendar-range);
+    box-shadow:
+      inset 0 var(--lx-border-outline) 0 var(--lx-color-accent),
+      inset 0 calc(-1 * var(--lx-border-outline)) 0 var(--lx-color-accent);
+  }
+
+  td[data-range="start"] {
+    background-color: var(--lx-color-accent);
+  }
+
+  td[data-range="start"] .lx-calendar__day,
+  td[data-range="start"] .lx-calendar__number {
+    color: var(--lx-color-action-fg);
+    font-weight: var(--lx-weight-semibold);
+    text-decoration-line: none;
+  }
+
+  td[data-range="end"] {
+    box-shadow: inset 0 0 0 var(--lx-focus-width) var(--lx-color-accent);
+  }
+
+  td[data-range="end"] .lx-calendar__day {
+    color: var(--lx-color-fg);
+    font-weight: var(--lx-weight-semibold);
+  }
+
+  /* Foco sobre a seleção: anel branco dentro da entrada azul; na saída, anel por dentro do contorno, com uma folga, para
+     não se confundir com ele. */
+  td[data-range="start"] .lx-calendar__day:focus-visible {
+    outline-color: var(--lx-color-action-fg);
+  }
+
+  td[data-range="end"] .lx-calendar__day:focus-visible {
+    outline-offset: calc(-2 * var(--lx-focus-width) - var(--lx-border-hairline));
+  }
+
+  /* Alta/Super Alta (só Co-Owner): traço curto no alto da célula, discreto e sobre qualquer estado. */
+  td[data-season="alta"] .lx-calendar__day::before {
+    content: "";
+    position: absolute;
+    inset-block-start: var(--lx-space-1);
+    inset-inline: 35%;
+    block-size: var(--lx-focus-width);
+    background-color: var(--lx-color-fg-muted);
+  }
+
+  td[data-season="alta"][data-range="start"] .lx-calendar__day::before {
+    background-color: var(--lx-color-action-fg);
+  }
+
+  /* 29/02 com direito extraordinário da Ação representada (nunca no Owner, nunca para outra Ação): losango pequeno no
+     canto. A explicação aparece na legenda só quando o dia está em tela. */
+  .lx-calendar__mark {
+    position: absolute;
+    inset-block-start: var(--lx-space-2);
+    inset-inline-end: var(--lx-space-2);
+    inline-size: var(--lx-space-2);
+    block-size: var(--lx-space-2);
+    background-color: var(--lx-color-accent);
+    transform: rotate(45deg);
+  }
+
+  td[data-range="start"] .lx-calendar__mark {
+    background-color: var(--lx-color-action-fg);
+  }
+
+  /* Carregando: a mesma grade, sem números, até a disponibilidade chegar. */
+  .lx-calendar__table[aria-busy="true"] td {
+    block-size: var(--lx-target-control);
+    background-color: var(--lx-color-skeleton);
+  }
+
+  /* Legenda mínima: quatro estados por cor (amostras pequenas, rótulos curtos) e, só quando aparece, o traço de Alta/Super
+     Alta. O resto se explica na própria data (nome acessível e linha de retorno). */
+  /* Celular: duas colunas alinhadas (os quatro estados em duas linhas; os contextuais numa terceira); com texto ampliado,
+     uma coluna. Com dois meses em tela, uma linha corrida. */
+  .lx-calendar__legend {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: var(--lx-space-2) var(--lx-space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-small);
+    color: var(--lx-color-fg);
+  }
+
+  .lx-calendar__legend:empty {
+    display: none;
+  }
+
+  @container (min-width: 17rem) {
+    .lx-calendar__legend {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @container (min-width: 41rem) {
+    .lx-calendar__legend {
+      display: flex;
+      flex-wrap: wrap;
+    }
+  }
+
+  .lx-calendar__legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--lx-space-2);
+    min-inline-size: 0;
+  }
+
+  .lx-calendar__swatch {
+    position: relative;
+    flex: none;
+    inline-size: var(--lx-space-3);
+    block-size: var(--lx-space-3);
+    border: var(--lx-border-hairline) solid var(--lx-color-rule);
+    background-color: var(--lx-color-bg);
+  }
+
+  .lx-calendar__swatch[data-state="unavailable"] {
+    background-color: var(--lx-calendar-unavailable);
+  }
+
+  .lx-calendar__swatch[data-state="mine"] {
+    background-color: var(--lx-calendar-mine);
+  }
+
+  .lx-calendar__swatch[data-state="mine"]::after {
+    content: "";
+    position: absolute;
+    inset: calc(50% - var(--lx-space-1) / 2);
+    background-color: var(--lx-color-fg);
+  }
+
+  .lx-calendar__swatch[data-range="start"] {
+    border-color: var(--lx-color-accent);
+    background-color: var(--lx-color-accent);
+  }
+
+  .lx-calendar__swatch:is([data-season="alta"], [data-mark="leap"]) {
+    border-color: transparent;
+    background-color: transparent;
+  }
+
+  .lx-calendar__swatch[data-mark="leap"]::before {
+    content: "";
+    position: absolute;
+    inset: calc(50% - var(--lx-space-2) / 2);
+    background-color: var(--lx-color-accent);
+    transform: rotate(45deg);
+  }
+
+  .lx-calendar__swatch[data-season="alta"]::before {
+    content: "";
+    position: absolute;
+    inset-block-start: calc(50% - var(--lx-focus-width) / 2);
+    inset-inline: 15%;
+    block-size: var(--lx-focus-width);
+    background-color: var(--lx-color-fg-muted);
+  }
+
+  /* Mensagem no lugar da grade (erro ao carregar, sem noites): a ação fica na coluna do texto, não na do ícone, e uma
+     palavra longa quebra em vez de alargar a coluna com texto ampliado. */
+  .lx-calendar .lx-message {
+    grid-template-columns: auto minmax(0, 1fr);
+    overflow-wrap: break-word;
+  }
+
+  .lx-calendar .lx-message > .lx-button {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  /* Retorno da seleção logo abaixo da grade: o que foi escolhido, o próximo passo, o motivo de um dia sem ação e como
+     desfazer. A região viva fica sempre no DOM (vazia quando não há o que dizer). */
+  .lx-calendar__selection {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 var(--lx-space-4);
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-body);
+    color: var(--lx-color-fg);
+  }
+
+  .lx-calendar__selection > p {
+    flex: 1 1 min(100%, 16rem);
+    margin: 0;
+  }
+
+  .lx-calendar__clear {
+    justify-self: start;
+    min-block-size: var(--lx-target-min);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--lx-color-link);
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-small);
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--lx-border-hairline);
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  /* Dois meses lado a lado só quando cabem sete alvos folgados em cada um. */
+  @container (min-width: 41rem) {
+    .lx-calendar__months {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}
+
+/* Página de reserva: no desktop, a escolha à esquerda e o resumo fixo à direita; no celular, um embaixo do outro. */
+@layer lx.components {
+  .lx-booking {
+    display: grid;
+    gap: var(--lx-space-8);
+    align-items: start;
+    margin-block-start: var(--lx-space-8);
+  }
+
+  /* Reservas fechadas (ativação ausente, ADR-0026): aviso logo abaixo do cabeçalho, antes do Direito de Uso. */
+  .lx-booking__closed {
+    margin-block-start: var(--lx-space-8);
+  }
+
+  /* Direito de Uso: compacto, rótulo e valor na mesma linha quando cabem (quebra para baixo quando não). Só o exercício
+     pertinente aparece em linhas; os demais ficam na nota. Estável durante a escolha: não muda ao navegar nem ao
+     selecionar, para a grade não se mover sob o dedo. */
+  .lx-booking__rights {
+    display: grid;
+    gap: var(--lx-space-3);
+    margin-block-start: var(--lx-space-8);
+  }
+
+  .lx-booking__rights > * {
+    margin: 0;
+  }
+
+  .lx-booking__facts {
+    display: grid;
+    margin: 0;
+  }
+
+  /* Rótulo sobre o valor, alinhados à esquerda (a quebra não muda o alinhamento). */
+  .lx-booking__fact {
+    display: grid;
+    align-content: start;
+    gap: var(--lx-space-1);
+    padding-block: var(--lx-space-2);
+    border-block-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+
+  /* Direito de Uso: quando o bloco comporta, rótulo e valor na mesma linha, com os valores alinhados numa coluna (a
+     largura acompanha o texto: com texto ampliado, volta a empilhar). */
+  .lx-booking__rights {
+    container-type: inline-size;
+  }
+
+  @container (min-width: 20rem) {
+    .lx-booking__rights .lx-booking__fact {
+      grid-template-columns: minmax(0, 6.5rem) minmax(0, 1fr);
+      align-items: baseline;
+      column-gap: var(--lx-space-4);
+    }
+  }
+
+  .lx-booking__fact > dt {
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-small);
+    color: var(--lx-color-fg-muted);
+  }
+
+  .lx-booking__fact > dd {
+    margin: 0;
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-body);
+    font-weight: var(--lx-weight-medium);
+    font-variant-numeric: tabular-nums lining-nums;
+    color: var(--lx-color-fg);
+  }
+
+  .lx-booking__footnote {
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-small);
+    color: var(--lx-color-fg-muted);
+  }
+
+  .lx-booking > * {
+    min-width: 0;
+  }
+
+  .lx-booking__period {
+    display: grid;
+    gap: var(--lx-space-6);
+  }
+
+  .lx-booking__intro {
+    display: grid;
+    gap: var(--lx-space-2);
+  }
+
+  .lx-booking__intro > * {
+    margin: 0;
+  }
+
+  /* Entrada e saída lado a lado; com pouca largura ou texto ampliado, uma embaixo da outra. */
+  .lx-booking__dates {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    gap: var(--lx-space-3);
+  }
+
+  .lx-booking__dates .lx-input {
+    min-inline-size: 0;
+    inline-size: 100%;
+  }
+
+  /* Celular: seção aberta logo depois do calendário, com o filete de abertura (sem caixa — a caixa e seu padding
+     tiravam largura do botão com texto ampliado). Desktop: caixa fixa ao lado. */
+  .lx-booking__summary {
+    display: grid;
+    gap: var(--lx-space-4);
+    padding-block-start: var(--lx-space-6);
+    border-block-start: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+    background-color: var(--lx-color-bg);
+  }
+
+  .lx-booking__summary > * {
+    margin: 0;
+  }
+
+  .lx-booking__status {
+    margin: 0;
+    font-family: var(--lx-font-display);
+    font-size: var(--lx-text-lead);
+    font-weight: var(--lx-weight-display-strong);
+    line-height: var(--lx-leading-heading);
+  }
+
+  /* Confirmação (E5b): o botão ocupa a coluna do resumo como os demais itens; o desfecho do servidor fica logo acima. */
+  .lx-booking__confirm {
+    display: grid;
+    gap: var(--lx-space-3);
+  }
+
+  .lx-booking__outcome {
+    margin: 0;
+    padding-inline-start: var(--lx-space-3);
+    border-inline-start: var(--lx-border-outline) solid var(--lx-color-rule-strong);
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-body);
+    color: var(--lx-color-fg);
+  }
+
+  /* Motivos da recusa: cada um com o filete do token de erro, sem recuo de lista. */
+  .lx-booking__issues {
+    display: grid;
+    gap: var(--lx-space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-body);
+    color: var(--lx-color-fg);
+  }
+
+  .lx-booking__issues > li {
+    padding-inline-start: var(--lx-space-3);
+    border-inline-start: var(--lx-border-outline) solid var(--lx-color-error);
+  }
+
+  @media (min-width: 64rem) {
+    .lx-booking {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+
+    .lx-booking__summary {
+      position: sticky;
+      inset-block-start: var(--lx-space-6);
+      padding: var(--lx-space-6);
+      border: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+  }
+}

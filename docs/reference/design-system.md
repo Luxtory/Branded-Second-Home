@@ -200,6 +200,9 @@ nunca classes. A cor vem do ground.
 - `--block`: largura total.
 - `--destructive` (W3, superfícies de produto): ação irreversível (encerrar, revogar). Contorno e texto no token de
   erro, sem preenchimento; no hover, só o fundo `surface`. Discreta: não concorre com a ação principal da página.
+- Padding lateral `min(space-6, 7.5vw)` (W12, E5a v2.1): 24 px a partir de 320 px com texto padrão (nada muda); com
+  texto ampliado, o padding deixa de dobrar e o rótulo não força rolagem horizontal em coluna estreita. Medido nos
+  consumidores do Lab: nenhuma caixa de botão muda com texto padrão em 320/390/1440 px.
 
 Altura 48px. Os estados `:hover`, `:active`, `:focus-visible`, `disabled` e `aria-busy="true"` (spinner) já estão
 estilizados.
@@ -355,10 +358,64 @@ de volta no celular); `actions` vai em `lx-page-header__actions`, depois do text
 largura. Uma confirmação (`lx-message` com `role="status"`) logo depois do cabeçalho ganha a mesma distância do
 conteúdo. Aviso fixo da página não é região viva: sem `role`.
 
+**Calendar · `lx-calendar`** — Seletor de período da Área do Titular (W12, spec `booking` §7; Lab:
+`produto-calendario.html` + `calendario.js`, protótipo com dados fictícios). **Híbrido** (aprovado pelo fundador em
+2026-10-31): os campos de data nativos (entrada e saída) estão sempre presentes; o calendário interativo fica
+sincronizado com eles nos dois sentidos — 1º toque escolhe a entrada, 2º a saída; tocar a entrada de novo desfaz; tocar
+antes da entrada recomeça. Com a entrada escolhida, as datas posteriores que não servem de saída ficam sem ação e, tocadas,
+explicam o limite ("a saída pode ser até 20/03: …") e oferecem "Usar 25/03 como entrada" — nada é ajustado em silêncio. O calendário **só sugere**:
+disponibilidade, janela, saldo e prévia vêm do servidor, que confere tudo de novo ao confirmar (`03` §13). A noite da data
+de saída não é usada (PD-002): uma noite indisponível pode ser a saída, e o nome acessível diz "pode ser a data de saída".
+**Sem JavaScript só os campos funcionam** (digitação); calendário, prévia e confirmação do protótipo dependem de
+JavaScript — o fluxo completo sem JavaScript não está provado.
+
+Estrutura: `.lx-calendar` (container) > `.lx-calendar__grid` (meses: `.lx-calendar__months` > `.lx-calendar__month`, com
+`.lx-calendar__header` — anterior · `h3` · próximo, botões no primeiro e no último mês; o título sobe para uma linha
+própria quando o container tem menos de 16rem, como com texto ampliado no celular — e `table.lx-calendar__table` com
+`caption`, `thead th[abbr]`, `tbody td[data-state][data-season][data-range]` > `button.lx-calendar__day`) +
+`.lx-calendar__selection` (região viva com o retorno da seleção, o próximo passo, o motivo de um dia sem ação, a oferta de
+nova entrada e "Limpar datas") + `ul.lx-calendar__legend` (mínima: Disponível · Noite indisponível · Reserva desta Ação
+(Co-Owner) ou Reserva do Owner · Selecionado, amostras de cor sem número; Alta/Super Alta e "29/02: noite adicional" só
+quando aparecem, no Co-Owner; duas colunas alinhadas no celular, uma com texto ampliado, linha corrida com dois meses). Dois meses lado a lado quando o container passa de 41rem; senão, um. Teclado adaptado do APG
+(grade de datas) a um calendário inline: uma parada de Tab (tabindex móvel), setas, Home/End, PageUp/PageDown (mês),
+Shift+PageUp/PageDown (ano), Enter/Espaço escolhem, Tab sai; sem Esc (não há diálogo). Dia sem ação continua focável com
+`aria-disabled="true"`. Sem dependência de hover. Anel de foco interno ao botão (`outline-offset` negativo): não é cortado
+na borda da janela.
+
+Linguagem cromática (E5a v2.2/v2.3): a cor é o reconhecimento principal e cada estado tem também uma marca de forma
+(WCAG 1.4.1). Tons derivados dos tokens por `color-mix`, em propriedades locais do componente (sem paleta nem token
+novo): **disponível** — `--lx-color-bg`; **noite indisponível** — `--lx-calendar-unavailable` (sand-wash levemente
+esfriado pelo `fg-muted`), número riscado, nunca diz quem ocupa — a data pode ser a saída, porque a noite da saída não é
+usada; **reserva desta Ação / do Owner** (a holding representada) — `--lx-calendar-mine` (40% do Warm Sand) e um ponto sob o
+número; tocada, mostra tipo (canal persistido), período e situação, nunca cor por canal; **selecionado** — entrada em
+`--lx-color-accent` (Moroccan Blue) com número `--lx-color-action-fg`; noites em `--lx-calendar-range` (15% do accent)
+delimitadas por filetes de accent no alto e embaixo (a faixa se lê sem a cor e de um mês ao outro); saída só contornada no
+accent sobre o estado que a data já tem. **Sem ação** (já passou, janela ainda não abriu, fora do calendário, não serve de
+saída): continuam focáveis (`aria-disabled="true"`) e explicam o motivo ao tocar ou com Enter — são controles
+informativos, não inativos —, então o número mantém contraste de texto: 75% do `fg-muted` (4,7:1 no branco).
+**Alta/Super Alta** (só Co-Owner): traço curto no alto da célula. **29/02** da Ação contemplada no exercício ("noite adicional",
+spec `booking` §7): losango pequeno no canto e explicação contextual na legenda; nunca no Owner nem para outra Ação. Foco: anel interno no
+`--lx-color-focus`; branco sobre a entrada preenchida; por dentro do contorno da saída, com folga.
+
+Alvos: sete colunas desde 320 px com dias ≥ 44 × 48 px; quando a coluna não comporta sete alvos mínimos mais as bordas, a
+tabela sangra a margem da página — centrada, até 2 px da borda da janela — em vez de comprimir as células. Página:
+`.lx-booking` > `.lx-booking__rights` (Direito de Uso compacto: `dl.lx-booking__facts` com `.lx-booking__fact`, rótulo e
+valor na mesma linha a partir de 20rem de container, empilhados abaixo; só o exercício pertinente em linhas, os demais na
+`.lx-booking__footnote`; estável durante a escolha) · `.lx-booking__period` (`.lx-booking__intro`, `.lx-booking__dates`,
+calendário) · `aside.lx-booking__summary` (no celular, seção aberta com filete; a partir de 64rem, caixa fixa ao lado):
+situação (`role="status"`), período (14h → 10h, o único lugar dos horários), noites, consumo e saldo que restará só com
+prévia válida, motivos da recusa (`.lx-booking__issues`, cada um com o que fazer) e "Confirmar reserva", habilitado só
+depois de prévia válida para as mesmas datas (`form.lx-booking__confirm`, com o desfecho do servidor em
+`.lx-booking__outcome`, `role="alert"`). Com as reservas fechadas (o servidor informa), não há formulário de confirmação:
+aviso `.lx-message--info.lx-booking__closed` antes do Direito de Uso e uma dica no resumo. Sem preço por noite. "Noites", nunca "diárias" (REQ-100). React (E5b):
+`OwnUseCalendar` no slice `booking` compõe estas classes.
+
 **Record List · `lx-record-list`** — React: `RecordList` (`items`, `label`). A lista das superfícies de produto
 (ADR-0010 §9): um item por registro, título em Newsreader que leva ao detalhe (link esticado: o item inteiro é o alvo
 e mostra o foco) e atributos em `dl` ao lado a partir de `md`. Atributo sem valor não é passado (TECH-001). Serve de
-320 a 1920 px sem tabela; tabela e filtros só quando houver comparação densa ou volume que peça filtro.
+320 a 1920 px sem tabela; tabela e filtros só quando houver comparação densa ou volume que peça filtro. Os títulos dos
+itens são `h3`: a seção que recebe a lista precisa de um `h2` antes (visível ou `.lx-visually-hidden`), senão o axe
+acusa `heading-order`.
 
 ```tsx
 <RecordList

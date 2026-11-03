@@ -309,14 +309,15 @@ describe('W11 — ledger do Direito de Uso: banco, privilégios reais e estrutur
       await expect(runner.close(old.homeId, SEALING_YEAR - 2)).resolves.toMatchObject({ status: 'committed' });
     });
 
-    it('[INV-4][INV-5] consumo e restauração fechados ao papel da aplicação na W11, mesmo com o privilégio de INSERT', async () => {
+    it('[INV-4][INV-5] consumo fechado sem a ativação da W12 e restauração fechada até a W13, mesmo com o privilégio de INSERT', async () => {
       const { rows } = await h.database.pool.query<{ insert: boolean }>(
         `SELECT has_table_privilege('luxtory_app', 'app.use_right_ledger', 'INSERT') AS insert`,
       );
       expect(rows[0]!.insert).toBe(true);
       const consume = { home: future, stake: future.stakes[0]!, year: NEXT_YEAR, bucket: 'alta', movement: 'consume', quantity: 1, stayDate: `${NEXT_YEAR}-01-10` } as const;
+      // W12 (ADR-0026): o consumo pelo papel da aplicação exige a ativação privilegiada e a reserva da mesma operação.
       await expect(app('test_consume', (c, op) => insertMovement(c, op, consume))).rejects.toEqual(
-        constraint('use_right_consumption_not_enabled'),
+        constraint('booking_not_activated'),
       );
       await expect(
         app('test_consume', (c, op) => insertMovement(c, op, { ...consume, movement: 'restore', refersTo: randomUUID() })),

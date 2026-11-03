@@ -149,6 +149,25 @@ export interface DelegationDirectory {
   delegation(delegationId: string): Promise<PartyDelegation | null>;
 }
 
+/** Holding vigente de uma party numa Second Home (W8): Owner sem Ação; Co-Owner com a Ação. */
+export interface RepresentedHolding {
+  readonly id: string;
+  readonly role: 'owner' | 'co_owner';
+  readonly stakeId: string | null;
+}
+
+/**
+ * Holdings lidas pelo guard do Titular (W12, TECH-050): `user → party_delegation → party → holding`. Implementada pela
+ * superfície pública do ownership e injetada por quem executa o command (o identity não importa o ownership).
+ */
+export interface HoldingDirectory {
+  currentHolding(
+    partyId: string,
+    secondHomeId: string,
+    at: Date,
+  ): Promise<RepresentedHolding | null>;
+}
+
 /**
  * A conta foi confirmada entre a busca e o convite (o Supabase recusa convite para conta confirmada): o command busca de
  * novo e segue sem convite.

@@ -72,6 +72,19 @@ export interface AppAuthorizationGrant {
   valid_until: Timestamp;
 }
 
+export interface AppBooking {
+  channel: string;
+  checkin_date: Timestamp;
+  checkout_date: Timestamp;
+  confirmed_at: Timestamp;
+  holding_id: string;
+  id: string;
+  opened_by_operation: string;
+  second_home_id: string;
+  stake_id: string | null;
+  state: string;
+}
+
 export interface AppBrandPartner {
   brand_name: string;
   created_at: Timestamp;
@@ -82,6 +95,12 @@ export interface AppBrandPartner {
   terminated_effective_at: Timestamp | null;
   termination_basis: string | null;
   termination_registered_at: Timestamp | null;
+}
+
+export interface AppCapabilityActivation {
+  activated_at: Timestamp;
+  authorization_ref: string;
+  capability: string;
 }
 
 export interface AppCatalogTerm {
@@ -664,7 +683,9 @@ export interface DB {
   'app.acquisition': AppAcquisition;
   'app.audit_log': AppAuditLog;
   'app.authorization_grant': AppAuthorizationGrant;
+  'app.booking': AppBooking;
   'app.brand_partner': AppBrandPartner;
+  'app.capability_activation': AppCapabilityActivation;
   'app.catalog_term': AppCatalogTerm;
   'app.central_inventory': AppCentralInventory;
   'app.date_custody': AppDateCustody;

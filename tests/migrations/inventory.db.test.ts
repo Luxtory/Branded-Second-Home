@@ -6,6 +6,7 @@ import { waitForLockWaiter } from '../support/platform-fixtures';
 import {
   activeCustody,
   asOwner,
+  fixtureBooking,
   NEXT_YEAR,
   nextYear,
   occupy,
@@ -524,11 +525,11 @@ describe('custódia e selagem: barreiras do banco (W10)', () => {
           const opA = await openOperation(a, 'test_inventory_transition', h.userId);
           const opB = await openOperation(b, 'test_inventory_transition', h.userId);
           const custody = await activeCustody(h.database.pool, owner, night);
-          const insertOccupancy = (client: pg.Client, op: string) =>
+          const insertOccupancy = async (client: pg.Client, op: string) =>
             client.query(
               `INSERT INTO app.date_occupancy (id, second_home_id, stay_date, booking_id, channel, custody_id, opened_by_operation)
                VALUES ($1, $2, $3, $4, 'own_use', $5, $6)`,
-              [randomUUID(), owner, night, randomUUID(), custody.id, op],
+              [randomUUID(), owner, night, await fixtureBooking(client, op, owner, night, 'own_use', null), custody.id, op],
             );
           const close = (client: pg.Client, op: string) =>
             client.query(`UPDATE app.date_custody SET closed_at = now(), closed_by_operation = $2 WHERE id = $1`, [custody.id, op]);
@@ -796,15 +797,23 @@ describe('custódia e selagem: barreiras do banco (W10)', () => {
       ).rejects.toMatchObject({ code: '42501' });
     });
 
-    it('[REQ-040] conceder privilégio não basta: transição e ocupação seguem recusadas no banco até a wave dona substituir o gate', async () => {
-      // Simula uma wave futura que só concede privilégio, sem reavaliar a autorização no banco.
+    it('[REQ-040][ADR-0026] W12: a aplicação só fecha spe_pool e grava own_use presos à reserva; o resto segue no gate da W10', async () => {
+      // A W12 concede o UPDATE de fechamento e o INSERT de ocupação; a regra no banco decide. Com a ativação presente,
+      // para isolar a regra da ativação (que a W12 prova em tests/migrations/booking.db.test.ts).
       await h.database.pool.query(
-        `GRANT UPDATE (closed_at, closed_by_operation) ON app.date_custody TO luxtory_app;
-         GRANT INSERT, UPDATE ON app.date_occupancy TO luxtory_app;
-         CREATE POLICY test_custody_update ON app.date_custody FOR UPDATE TO luxtory_app USING (true);
-         CREATE POLICY test_occupancy_write ON app.date_occupancy FOR INSERT TO luxtory_app WITH CHECK (true);`,
+        `INSERT INTO app.capability_activation VALUES ('own_use_booking', now(), 'test:inventory-boundary')`,
       );
       try {
+        await expect(
+          asApp(async (client) =>
+            transition(client, await openOperation(client, 'select_luxtory_capacity', h.userId), owner, nextYear('08-03'), {
+              holder_kind: 'luxtory',
+              purpose: 'inventory',
+              inventory_origin: 'luxchange_cession',
+              authorization_ref: 'base:forged',
+            }),
+          ),
+        ).rejects.toMatchObject({ code: '42501', constraint: 'inventory_transition_not_enabled' });
         await expect(
           asApp(async (client) =>
             transition(client, await openOperation(client, 'select_luxtory_capacity', h.userId), coOwner, nextYear('08-03'), {
@@ -814,23 +823,35 @@ describe('custódia e selagem: barreiras do banco (W10)', () => {
               authorization_ref: 'base:forged',
             }),
           ),
+        ).rejects.toEqual(constraint('booking_write_binding'));
+        await expect(
+          asApp(async (client) => {
+            const op = await openOperation(client, 'create_own_use_booking', h.userId);
+            const custody = await activeCustody(client, owner, nextYear('08-03'));
+            await client.query(
+              `INSERT INTO app.date_occupancy (id, second_home_id, stay_date, booking_id, channel, custody_id, opened_by_operation)
+               VALUES ($1, $2, $3, $4, 'rental_external', $5, $6)`,
+              [randomUUID(), owner, nextYear('08-03'), randomUUID(), custody.id, op],
+            );
+          }),
         ).rejects.toMatchObject({ code: '42501', constraint: 'inventory_transition_not_enabled' });
         await expect(
-          asApp(async (client) =>
-            occupy(client, await openOperation(client, 'create_own_use_booking', h.userId), owner, nextYear('08-03'), 'own_use'),
-          ),
-        ).rejects.toMatchObject({ code: '42501', constraint: 'inventory_transition_not_enabled' });
+          asApp(async (client) => {
+            const op = await openOperation(client, 'create_own_use_booking', h.userId);
+            const custody = await activeCustody(client, owner, nextYear('08-03'));
+            await client.query(
+              `INSERT INTO app.date_occupancy (id, second_home_id, stay_date, booking_id, channel, custody_id, opened_by_operation)
+               VALUES ($1, $2, $3, $4, 'own_use', $5, $6)`,
+              [randomUUID(), owner, nextYear('08-03'), randomUUID(), custody.id, op],
+            );
+          }),
+        ).rejects.toEqual(constraint('booking_write_binding'));
       } finally {
-        await h.database.pool.query(
-          `DROP POLICY test_custody_update ON app.date_custody;
-           DROP POLICY test_occupancy_write ON app.date_occupancy;
-           REVOKE UPDATE (closed_at, closed_by_operation) ON app.date_custody FROM luxtory_app;
-           REVOKE INSERT, UPDATE ON app.date_occupancy FROM luxtory_app;`,
-        );
+        await h.database.pool.query(`DELETE FROM app.capability_activation`);
       }
     });
 
-    it('[TECH-052] privilégios exatos da W10: a aplicação só lê e insere noites e raízes; Titular e anônimo, nada', async () => {
+    it('[TECH-052] privilégios exatos (W10 + W12): a aplicação lê e insere noites e custódias, fecha custódia e grava ocupação; Titular e anônimo, nada na tabela inteira', async () => {
       const { rows } = await h.database.pool.query<{ role: string; object: string; privileges: string }>(
         `SELECT r.role, o.object,
                 concat_ws(',',
@@ -847,8 +868,8 @@ describe('custódia e selagem: barreiras do banco (W10)', () => {
       const app = rows.filter((row) => row.role === 'luxtory_app');
       expect(Object.fromEntries(app.map((row) => [row.object, row.privileges]))).toEqual({
         'app.central_inventory': 'SELECT',
-        'app.date_custody': 'SELECT,INSERT',
-        'app.date_occupancy': 'SELECT',
+        'app.date_custody': 'SELECT,INSERT,UPDATE',
+        'app.date_occupancy': 'SELECT,INSERT',
         'app.luxtory_inventory': 'SELECT',
         'app.second_home_date': 'SELECT,INSERT',
       });
@@ -864,13 +885,18 @@ describe('custódia e selagem: barreiras do banco (W10)', () => {
       ).rejects.toMatchObject({ code: '42501' });
     });
 
-    it.each(['authenticated', 'anon'])('[TECH-052] %s não lê noites, custódias, ocupações nem projeções', async (role) => {
-      for (const table of ['second_home_date', 'date_custody', 'date_occupancy', 'central_inventory', 'luxtory_inventory']) {
+    it.each(['authenticated', 'anon'])('[TECH-052] %s não lê projeções nem campos fora da leitura do Titular (W12)', async (role) => {
+      const denied: readonly string[] =
+        role === 'anon'
+          ? ['SELECT 1 FROM app.second_home_date', 'SELECT 1 FROM app.date_custody', 'SELECT 1 FROM app.date_occupancy']
+          : ['SELECT sealed_at FROM app.second_home_date', 'SELECT stake_id FROM app.date_custody',
+             'SELECT booking_id FROM app.date_occupancy', 'SELECT stake_id FROM app.date_occupancy'];
+      for (const query of [...denied, 'SELECT 1 FROM app.central_inventory', 'SELECT 1 FROM app.luxtory_inventory']) {
         const client = new pg.Client({ connectionString: h.database.url });
         await client.connect();
         try {
           await client.query(`SET ROLE ${role}`);
-          await expect(client.query(`SELECT 1 FROM app.${table} LIMIT 1`)).rejects.toMatchObject({ code: '42501' });
+          await expect(client.query(`${query} LIMIT 1`)).rejects.toMatchObject({ code: '42501' });
         } finally {
           await client.end();
         }

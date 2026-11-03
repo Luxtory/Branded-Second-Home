@@ -214,7 +214,38 @@ export async function transition(
   return id;
 }
 
-/** Ocupação de teste (nenhum command a grava na W10): o `booking` só nasce na W12. */
+/**
+ * Reserva-fixture da operação (W12: a ocupação aponta para uma reserva). Inserida pelo dono em modo réplica — sem os
+ * gatilhos da reserva, que só aceitam o command `create_own_use_booking` —, uma por operação; o modo volta ao normal
+ * antes da ocupação, cujos gatilhos são o que o teste prova. Fora das consultas de invariantes da reserva (ADR-0026).
+ */
+export async function fixtureBooking(
+  client: pg.Client,
+  operationId: string,
+  home: string,
+  stayDate: string,
+  channel: string,
+  stakeId: string | null,
+): Promise<string> {
+  const existing = await client.query<{ id: string }>(
+    'SELECT id FROM app.booking WHERE opened_by_operation = $1',
+    [operationId],
+  );
+  if (existing.rows[0] !== undefined) return existing.rows[0].id;
+  const id = randomUUID();
+  await client.query('SET LOCAL session_replication_role = replica');
+  await client.query(
+    `INSERT INTO app.booking (id, second_home_id, channel, holding_id, stake_id, checkin_date, checkout_date, state,
+       opened_by_operation, confirmed_at)
+     SELECT $1, $2, $3, (SELECT h.id FROM app.holding h WHERE h.second_home_id = $2 LIMIT 1), $4, $5::date,
+            $5::date + 1, 'confirmed', $6, now()`,
+    [id, home, channel, stakeId, stayDate, operationId],
+  );
+  await client.query('SET LOCAL session_replication_role = origin');
+  return id;
+}
+
+/** Ocupação de teste fora do command de reserva (canais e pares da TECH-023), sobre uma reserva-fixture. */
 export async function occupy(
   client: pg.Client,
   operationId: string,
@@ -224,12 +255,13 @@ export async function occupy(
   stakeId: string | null = null,
 ): Promise<string> {
   const custody = await activeCustody(client, home, stayDate);
+  const bookingId = await fixtureBooking(client, operationId, home, stayDate, channel, stakeId);
   const id = randomUUID();
   await client.query(
     `INSERT INTO app.date_occupancy (id, second_home_id, stay_date, booking_id, channel, custody_id, stake_id,
        opened_by_operation)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-    [id, home, stayDate, randomUUID(), channel, custody.id, stakeId, operationId],
+    [id, home, stayDate, bookingId, channel, custody.id, stakeId, operationId],
   );
   return id;
 }

@@ -31,3 +31,10 @@ export {
   readPartySummary,
   type PartySummary,
 } from './presentation/party-admin-read';
+// W12 — command do Titular que representa uma party (uso próprio): o slice que executa injeta as holdings do ownership.
+export {
+  executeTitularCommand,
+  type TitularCommandResult,
+  type TitularRepresentation,
+} from './presentation/titular-command';
+export type { HoldingDirectory, RepresentedHolding } from './application/party-ports';

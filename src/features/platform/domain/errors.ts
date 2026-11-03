@@ -77,6 +77,10 @@ const CONSTRAINT_PREFIXES: readonly (readonly [string, RejectionCode])[] = [
   ['credits_', 'ERR_CREDITS_INSUFFICIENT'],
   // Unicidade de estado (W7, ADR-0020 §10): documento de party já cadastrado, delegação aberta para o mesmo par.
   ['conflict_', 'ERR_STATE_TRANSITION'],
+  // Reserva de uso próprio (W12, ADR-0026): janela da Ação, duração ou adjacência, representação no instante da escrita.
+  ['window_', 'ERR_WINDOW_NOT_OPEN'],
+  ['stay_', 'ERR_STAY_LENGTH'],
+  ['permission_', 'ERR_PERMISSION'],
 ];
 
 /** Índices com o nome exato do 03 §3.2 (W10), fora da convenção de prefixos. */

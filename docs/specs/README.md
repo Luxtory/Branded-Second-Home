@@ -32,6 +32,7 @@ citing the canonical IDs):
 - [ownership](ownership.md) — módulo `ownership`: manifestação de interesse a partir da Home Edition e visão agrupada do Admin (W5, W4.2 §13)
 - [calendar](calendar.md) — módulo `calendar`: classificação civil (W8) e selagem do exercício com o job `open_exercise` (W10)
 - [inventory](inventory.md) — módulo `inventory`: custódia por noite, ocupação, matriz da TECH-023 e Inventário Central (W10)
+- [booking](booking.md) — módulo `booking`: reserva de uso próprio do Owner e do Co-Owner, autorização no banco presa à reserva e ativação privilegiada (W12)
 
 **Cross-cutting specs** (not a `src/features/` slice):
 

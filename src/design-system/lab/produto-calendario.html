@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Luxtory — Lab: Reservar uso próprio</title>
+  <link rel="stylesheet" href="../styles/index.css">
+  <script src="calendario.js" defer></script>
+</head>
+<body data-ground="paper">
+  <!-- Protótipo E5a da W12 (seletor híbrido de período). Dados FICTÍCIOS de demonstração, nunca fonte de copy nem de
+       regra: no app, disponibilidade, janela, saldo e prévia vêm do servidor, que confere tudo de novo na confirmação.
+       O comportamento aqui (calendario.js) demonstra a interação; na E5b ele vira componente React com prévia do
+       servidor. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="i-alert" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M12 3L22 20H2L12 3z"/><path d="M12 10v5M12 17.5v.5"/></g></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+  </svg>
+  <div class="lx-app" data-expression="product">
+    <a class="lx-skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <header class="lx-app__bar" data-ground="night">
+      <a class="lx-logo" href="index.html#produto" aria-label="Luxtory — voltar ao Lab"><picture><source media="(min-width: 22.5rem)" srcset="../brand/logo/Logo-Luxtory-Warm-Sand-Horizontal.svg" width="1474" height="230"><img src="../brand/logo/Logo-Luxtory-Warm-Sand-Icone.png.svg" alt="" width="370" height="324"></picture></a>
+    </header>
+    <main class="lx-app__main" id="conteudo" tabindex="-1">
+      <div class="lx-container">
+        <div class="lx-field" data-lab-scenario style="margin-block-end: var(--lx-space-8)">
+          <label class="lx-label" for="cenario">Cenário de demonstração (dados fictícios)</label>
+          <select class="lx-input" id="cenario">
+            <option value="co-owner">Co-Owner — janela aberta, com saldo</option>
+            <option value="co-owner-fechada">Co-Owner — janela ainda não aberta</option>
+            <option value="co-owner-saldo">Co-Owner — saldo de Alta/Super Alta insuficiente</option>
+            <option value="co-owner-29">Co-Owner — sem o direito ao 29/02 em 2028</option>
+            <option value="co-owner-virada">Co-Owner — virada de exercício (2028 → 2029)</option>
+            <option value="co-owner-instavel">Co-Owner — servidor indisponível na prévia</option>
+            <option value="owner">Owner — propriedade integral</option>
+            <option value="carregando">Carregando disponibilidade</option>
+            <option value="erro">Falha ao carregar</option>
+            <option value="vazio">Sem noites abertas</option>
+          </select>
+        </div>
+
+        <header class="lx-page-header">
+          <h1 class="lx-display-m">Reservar uso próprio</h1>
+          <p class="lx-lead lx-page-header__lead" data-context></p>
+        </header>
+
+        <section class="lx-booking__rights" aria-labelledby="direito">
+          <h2 id="direito" class="lx-title" data-rights-title>Direito de Uso</h2>
+          <dl class="lx-booking__facts" data-rights></dl>
+          <p class="lx-booking__footnote" data-rights-note></p>
+        </section>
+
+        <div class="lx-booking">
+          <section class="lx-booking__period" aria-labelledby="periodo">
+            <div class="lx-booking__intro">
+              <h2 id="periodo" class="lx-display-s">Escolha o período</h2>
+              <p class="lx-hint" id="periodo-hint">Escolha a entrada e depois a saída no calendário, ou digite as datas. A noite da data de saída não é usada.</p>
+            </div>
+            <div class="lx-booking__dates">
+              <div class="lx-field">
+                <label class="lx-label" for="entrada">Entrada</label>
+                <input class="lx-input" id="entrada" name="checkin_date" type="date" aria-describedby="periodo-hint">
+              </div>
+              <div class="lx-field">
+                <label class="lx-label" for="saida">Saída</label>
+                <input class="lx-input" id="saida" name="checkout_date" type="date" aria-describedby="periodo-hint">
+              </div>
+            </div>
+            <div class="lx-calendar">
+              <div class="lx-calendar__grid" data-calendar>
+                <noscript><p class="lx-body">O calendário precisa de JavaScript. Você ainda pode digitar as datas acima.</p></noscript>
+              </div>
+              <div class="lx-calendar__selection">
+                <p role="status" data-selection-text></p>
+                <button class="lx-calendar__clear" type="button" data-restart hidden></button>
+                <button class="lx-calendar__clear" type="button" data-clear hidden>Limpar datas</button>
+              </div>
+              <ul class="lx-calendar__legend" aria-label="Legenda do calendário" data-legend></ul>
+            </div>
+          </section>
+
+          <aside class="lx-booking__summary" aria-labelledby="resumo">
+            <h2 id="resumo" class="lx-title">Resumo</h2>
+            <p class="lx-booking__status" role="status" data-status>Escolha a entrada e a saída.</p>
+            <dl class="lx-booking__facts" data-summary hidden></dl>
+            <ul class="lx-booking__issues" data-issues hidden></ul>
+            <button class="lx-button lx-button--quiet" type="button" data-retry hidden>Verificar de novo</button>
+            <noscript><p class="lx-hint">Neste protótipo, a prévia e a confirmação precisam de JavaScript.</p></noscript>
+            <p class="lx-hint">Nada fica reservado até você confirmar. A disponibilidade é conferida de novo nesse momento.</p>
+            <button class="lx-button lx-button--primary" type="button" data-confirm disabled>Confirmar reserva</button>
+          </aside>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

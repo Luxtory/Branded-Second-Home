@@ -599,3 +599,51 @@ Merge só depois do checkpoint do fundador; a entrega não abre gates nem cria c
    ativação, não regra canônica).
 6. **Rollback:** os `down` recusam descartar movimentos além das concessões da formalização. Com fatos, preservar o banco
    e corrigir por migration nova; nunca desabilitar gatilhos.
+
+## Preparar a W12 em produção (reserva de uso próprio)
+
+Spec [`booking`](../specs/booking.md), [ADR-0026](../adr/0026-reserva-de-uso-proprio-autorizacao-no-banco-e-ativacao.md),
+ameaças [`booking`](../security/threats/booking.md). Merge só depois do checkpoint do fundador; a W12 **não ativa**
+reservas: a tabela `app.capability_activation` nasce vazia e, sem a linha `own_use_booking`, toda escrita de reserva é
+recusada no banco (inclusive por SQL direto do papel da aplicação).
+
+1. **Antes do merge:** conferência agregada e somente leitura no Production: `SELECT count(*) FROM app.date_occupancy;`.
+   Esperado `0` — a migration falha fechada se houver ocupação anterior à reserva.
+2. Depois do merge autorizado, só o pipeline aplica as três migrations W12 (52 → 55). Falha parcial: cada migration é
+   uma transação do `dbmate`, então a que falhou não deixa nada; as anteriores ficam aplicadas, o `deploy` não roda e a
+   aplicação anterior segue no ar (não usa objetos W12). Sem rollback automático, DDL manual nem break-glass: conferir
+   em leitura (log do `migrate`, versões aplicadas) e corrigir por PR — migration nova ou correção das ainda não
+   aplicadas — com autorização do fundador. Conferir em leitura:
+   `SELECT count(*) FROM app.capability_activation;` = `0`; `luxtory_app` com SELECT (sem escrita) na ativação, SELECT e
+   INSERT em `app.booking`, UPDATE só em `closed_at`/`closed_by_operation` de `app.date_custody` e INSERT em
+   `app.date_occupancy`; `authenticated` só com SELECT por coluna nas leituras do Titular.
+3. **Ativação (não autorizada na W12).** Só depois de a W13 estar em Production e de autorização específica do fundador:
+   PR com **uma** migration que confere a pré-condição da W13 (falha fechada) e insere
+   `INSERT INTO app.capability_activation VALUES ('own_use_booking', now(), '<referência da autorização>')`, com `down`
+   que desativa (passo 4). Aplicada só pela CI (ADR-0006 item 4).
+4. **Desativação (padrão).** PR com migration de desativação, aplicada pela CI depois de autorização do fundador:
+
+   ```sql
+   SET lock_timeout = '10s';
+   LOCK TABLE app.capability_activation IN ACCESS EXCLUSIVE MODE;
+   DELETE FROM app.capability_activation WHERE capability = 'own_use_booking';
+   ```
+
+   O `LOCK` espera as reservas em curso (que seguram a tabela em modo compartilhado) e barra as novas; depois do COMMIT,
+   toda escrita de reserva é recusada. A leitura do Titular continua (RLS): calendário e prévia passam a mostrar o aviso
+   de reservas fechadas, sem confirmação; o reenvio com a chave de uma reserva já confirmada segue devolvendo o replay
+   (idempotência do executor). Se o
+   `lock_timeout` vencer por sessão pendurada, encerrar as sessões do papel da aplicação (passo 5) e repetir.
+5. **Break-glass — documentado, NÃO autorizado previamente.** Usar só com decisão expressa do fundador, específica do
+   incidente, quando o caminho da CI não servir. O dono do schema executa no editor SQL do Supabase o bloco do passo 4
+   (e, se preciso, `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE usename = 'luxtory_app' AND state <> 'idle'`).
+   Registro obrigatório: a exceção ao ADR-0006 item 4, o motivo, a linha do tempo, quem executou (papel), o SQL exato e
+   as evidências (estado da tabela antes e depois, sessões encerradas, `dbmate status`). Reconciliação: migration espelho
+   com o mesmo `DELETE` (idempotente) pela CI, e conferência de que banco e repositório batem (versões aplicadas e
+   conteúdo da tabela). Credencial comprometida: desativar não basta — trocar a senha do `luxtory_app` (também sob
+   decisão expressa).
+6. **Leitura dos resultados.** A Server Action registra `own use booking not activated` (info) quando a ativação falta —
+   funcionalidade fechada, não falha. Recusas funcionais seguem os códigos do TECH-056 (spec booking §3). Erros de
+   vínculo (`booking_*`) só aparecem por bug ou escrita forjada: investigar.
+7. **Rollback:** os `down` recusam descartar reservas ou uma decisão de ativação. Com fatos, preservar o banco e corrigir
+   por migration nova; nunca desabilitar gatilhos.

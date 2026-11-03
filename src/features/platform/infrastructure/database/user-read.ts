@@ -29,3 +29,33 @@ export async function withUserRead<T>(
     return read(tx);
   });
 }
+
+/**
+ * Leitura em duas fases num único instantâneo (REPEATABLE READ, só leitura): `asUser` roda como `authenticated` sob a
+ * RLS e prova a autorização (devolve `null` quando não há); depois o papel volta ao da aplicação e `asServer` lê, com o
+ * autorizado em mãos, fatos que a RLS não expõe ao usuário (W12: janela, prévia, ativação). Garante visão consistente
+ * (autorização e fatos do mesmo instante), não autorização vigente: uma revogação posterior ao instantâneo não é vista.
+ * Só para leituras não vinculantes — toda escrita revalida a autorização no próprio instante. Nada aqui escreve.
+ */
+export async function withUserThenServerRead<A, T>(
+  db: Database,
+  claims: VerifiedClaims,
+  asUser: (tx: DatabaseTransaction) => Promise<A | null>,
+  asServer: (tx: DatabaseTransaction, authorized: A) => Promise<T>,
+): Promise<T | null> {
+  return db
+    .transaction()
+    .setIsolationLevel('repeatable read')
+    .setAccessMode('read only')
+    .execute(async (tx) => {
+      await sql`SELECT set_config('request.jwt.claims', ${JSON.stringify(claims)}, true)`.execute(
+        tx,
+      );
+      await sql`SET LOCAL ROLE authenticated`.execute(tx);
+      const authorized = await asUser(tx);
+      await sql`RESET ROLE`.execute(tx);
+      await sql`SELECT set_config('request.jwt.claims', '', true)`.execute(tx);
+      if (authorized === null) return null;
+      return asServer(tx, authorized);
+    });
+}

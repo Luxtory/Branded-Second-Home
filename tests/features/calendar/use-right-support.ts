@@ -84,7 +84,8 @@ export async function formalizeCoOwnerAt(
       ...(await h.coOwner(home.id, n)),
       operation_start_date: start,
     });
-    if (outcome.status !== 'committed') throw new Error(`co-owner formalization ${outcome.status}`);
+    if (outcome.status !== 'committed')
+      throw new Error(`co-owner formalization ${outcome.status}: ${outcome.code}`);
     const acquisition = await h.db
       .selectFrom('app.acquisition')
       .select(['id', 'formalized_at'])

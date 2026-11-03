@@ -7,7 +7,10 @@
     justify-content: center;
     gap: var(--lx-space-3);
     min-height: var(--lx-target-control);
-    padding: var(--lx-space-3) var(--lx-space-6);
+    /* Padding lateral limitado pela janela: 7.5vw = 24 px (space-6) a 320 px, então nada muda com o texto padrão a partir
+       da menor largura suportada; com texto ampliado, o padding deixa de dobrar e o rótulo não força rolagem horizontal
+       em colunas estreitas (W12, E5a v2.1). */
+    padding: var(--lx-space-3) min(var(--lx-space-6), 7.5vw);
     border: var(--lx-border-hairline) solid transparent;
     border-radius: var(--lx-radius-none);
     background-color: transparent;

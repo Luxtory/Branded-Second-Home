@@ -1097,6 +1097,20 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   noites são recusadas` · `[REQ-031][EC-4] o 29/02 conta para permanência e adjacência` · `[REQ-035] o limite vale
   só no uso próprio do Co-Owner` · `[REQ-037] Owner sem janela nem rotação` · E2E com axe 0.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-034,REQ-035,REQ-037,PD-002,INV-1 exits 0, stop after 5 tries`
+- **Execução (2026-10-31): em andamento até PR draft.** Plano aprovado pelo fundador após quatro rodadas de auditoria:
+  [`w12-reserva-de-uso-proprio.md`](w12-reserva-de-uso-proprio.md), [ADR-0026](../adr/0026-reserva-de-uso-proprio-autorizacao-no-banco-e-ativacao.md).
+  Decisões: D1 autorização no banco presa à reserva + ativação privilegiada (`app.capability_activation`, vazia na W12)
+  + instante de aceite no momento de cada escrita (T3); risco residual pendente de ratificação. **Emenda D6:** a entrada
+  é só a Server Action da Área do Titular — `POST /v1/bookings` sai do escopo até haver consumidor fora da web (adaptador
+  fino sobre o mesmo handler); a idempotência por chave continua no executor. **Emenda D4:** a reserva sobre
+  `reserved_right` devolvido sai da W12 (fechada no banco) e vai para a W22, que produz validamente esse estado e já
+  tem o critério da TECH-023. D3 resolve a P-14 para a W12 (noites seladas, limite técnico transitório). Aceite
+  acrescentado: `[TECH-053]` travas em ordem com duas conexões · `[TECH-050]` representação revogada ou expirada no
+  ponto de decisão → ERR_PERMISSION · `[TECH-045]` preenchimento de intervalo acima de 14 → ERR_STAY_LENGTH, também
+  concorrente · `[TECH-052]` isolamento de leitura entre Titulares · `[REQ-097]` notificação à party que reservou ·
+  escrita direta sem ativação recusada pelo banco. Oportunidade futura, sem wave: seleção de múltiplos períodos numa
+  única ação (spec booking §9). Restrição operacional mantida: nenhuma reserva real antes da W13 em Production e de
+  autorização específica; a ativação é migration própria, posterior.
 
 ### Wave 13 — Cancelamento, no-show, recuperação e exceção
 
@@ -1114,6 +1128,10 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
     autorização no banco antes de abrir o gate do movimento (ADR-0024 §3, ADR-0025 §8).
   - API `POST /v1/bookings/{id}/cancel`, `POST /v1/admin/bookings/{id}/{no-show,recover-future-capacity,exceptions}`,
     `POST /v1/admin/exceptions/{id}/resolve`; telas do Titular e do Admin; notificações.
+  - **Emenda W12 (2026-10-31, ADR-0026):** o cancelamento substitui, para o próprio caso, o gate de `restore` e a
+    liberação da ocupação; decidir o remédio de uma reserva forjada a menos de 15 dias do check-in (R4) e definir a
+    pré-condição da migration de ativação das reservas (`app.capability_activation`), que só entra depois desta wave em
+    Production e de autorização específica do fundador.
 - **Depends on / parallel with**: W12; sequencial.
 - **Acceptance criteria**: `[REQ-080] com 15 dias o saldo volta; com 14 o consumo fica; a classificação gravada não
   é recalculada` · E2E `[REQ-080] a consequência aparece antes de confirmar` · `[EC-10] após início parcial, só as
@@ -1279,6 +1297,8 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   Request (TECH-055); API `POST /v1/luxchange/requests/{id}/accept` e `…/reject`; telas do detentor; notificação do
   resultado.
 - **Depends on / parallel with**: W21; sequencial.
+  - **Emenda D4 (W12, 2026-10-31):** habilitar no command e no banco a ocupação `own_use` sobre `reserved_right`
+    devolvido (fechada desde a W12, `custody_reserved_right_reuse`), com o critério da TECH-023 abaixo.
 - **Acceptance criteria**: `[REQ-061] sem aceite tácito; o solicitante não aceita a própria Request` ·
   `[REQ-063][EC-8] confirmar uma encerra as concorrentes sem penalidade` · `[REQ-064] revalida capacidade,
   Membership dos dois e Garantia` · `[PD-006][CONC-4][CONC-5] vale o primeiro aceite válido; aceite contra retirada
@@ -1373,6 +1393,15 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   reservas e compromissos continuam; Membership e Créditos não se transferem; adesão do adquirente registrada;
   Requests e ofertas pendentes tratadas pelo TECH-024; notificação de transferência concluída.
 - **Depends on / parallel with**: W26; sequencial depois da W27.
+  - **Nota W12 (ADR-0026):** serializar a transferência contra a reserva de uso próprio (classe 4 do TECH-053 para
+    Co-Owner; definir a trava do Owner, cuja reserva não trava Ação) e decidir se o novo titular é avisado das reservas
+    herdadas (a notificação de confirmação fica com a party que reservou).
+  - **Dependência W12 — leitura das reservas que sobrevivem (auditoria do PR #78, 2026-11-02):** na W12 a reserva é lida
+    só pela holding que a abriu (`h.id = booking.holding_id`); numa transferência, adquirente e transmitente deixam de
+    vê-la na Área do Titular, enquanto reserva, ocupação e consumo seguem íntegros no banco (BR-344) e as noites aparecem
+    ao adquirente como indisponíveis. A W28 decide quem vê e exerce as reservas futuras que sobrevivem (REQ-093,
+    BR-344 a BR-346) — sem expor dados pessoais do transmitente ao adquirente — e ajusta RLS e telas com teste de
+    transferência real (`transfer_holding`), mantendo o saldo remanescente líquido do consumido ou comprometido (BR-345).
 - **Acceptance criteria**: `[REQ-093][EC-11] Co-Owner: o adquirente recebe a Ação, o saldo remanescente e as
   posições e histórico das rotações; reservas e compromissos futuros permanecem; Membership e Créditos do
   transmitente não se transferem; Owner: Membership não segue`.
@@ -1486,7 +1515,7 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 | P-11 | **Lacuna normativa**: o `02` exige cancelamento de Request aceita, Direct, Luxplus e locação pela política (PD-006, PD-009, REQ-082), mas a tabela fechada do TECH-051 só tem `cancel_own_use_booking` | cancelamento pelo usuário nesses mecanismos (W18, W22–W25) | nenhum command criado; avaliação só no domínio; no-show e exceção seguem pelos commands existentes; exige nova versão do `03` (D6) |
 | P-12 | **Lacuna normativa (W10)**: a TECH-022 não tem saída de `luxtory/{maintenance, marketing, promotion, production}` — capacidade selecionada pela Luxtory para finalidade fora do inventário não volta à SPE nem muda de finalidade | liberação ou troca de finalidade da seleção Luxtory (W14) | gatilho recusa a transição (tabela fechada); nenhuma saída presumida; exige nova versão do `03` (D7) |
 | P-13 | **Lacuna normativa (W10)**: a TECH-022 não tem saída de `use_right/delinquency` — fim da inadimplência ou da autorização não devolve a custódia | encerramento da autorização de inadimplência (W27) | gatilho recusa a transição; nenhuma saída presumida; exige nova versão do `03` (D7) |
-| P-14 | Horizonte de reserva do Owner (W10): a selagem cobre o exercício corrente e o seguinte para as duas modalidades; o `01`/`02` não fixam até quando o Owner pode reservar à frente (REQ-037) | reserva do Owner além do exercício seguinte (W12) | noite não selada recusa a operação (falha fechada); decidir na W12 com o fundador, sem diferença Owner/Co-Owner presumida |
+| P-14 | Horizonte de reserva do Owner (W10): a selagem cobre o exercício corrente e o seguinte para as duas modalidades; o `01`/`02` não fixam até quando o Owner pode reservar à frente (REQ-037) | reserva do Owner além do exercício seguinte (W12) | noite não selada recusa a operação (falha fechada); decidir na W12 com o fundador, sem diferença Owner/Co-Owner presumida → **resolvida para a W12 (D3, 2026-10-31):** o Owner reserva noites seladas (corrente e seguinte), limite técnico transitório da selagem, não regra de produto nem restrição contratual; ir além exige decisão do fundador e emenda do ADR-0024 |
 
 ### Riscos
 

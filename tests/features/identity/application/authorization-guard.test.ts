@@ -335,3 +335,67 @@ describe('guard: ativação pelo próprio convidado (invitee, W7)', () => {
     ).resolves.toEqual({ allowed: false });
   });
 });
+
+describe('guard do Titular (W12, TECH-050/051)', () => {
+  const OWN_USE = spec('create_own_use_booking');
+  const HOME = '00000000-0000-4000-8000-0000000000d1';
+  const titular: Actor = {
+    kind: 'user',
+    userId: PARTNER_USER,
+    actingPartyId: PARTY,
+    role: 'titular',
+  };
+  const aal1: VerifiedSession = { userId: PARTNER_USER, assurance: 'aal1' };
+  const holdings = (
+    rows: Record<string, { id: string; role: 'owner' | 'co_owner'; stakeId: string | null }>,
+  ) => ({
+    currentHolding: async (partyId: string, secondHomeId: string) =>
+      rows[`${partyId}:${secondHomeId}`] ?? null,
+  });
+  const titularGuard = (
+    holdingRows: Parameters<typeof holdings>[0] | undefined,
+    delegations = [delegation({ userId: PARTNER_USER })],
+  ) =>
+    createAuthorizationGuard({
+      session: aal1,
+      staff: staffDirectory(roles),
+      grants: grantDirectory([]),
+      delegations: delegationDirectory(delegations),
+      ...(holdingRows === undefined ? {} : { holdings: holdings(holdingRows) }),
+      clock,
+    });
+  const held = {
+    [`${PARTY}:${HOME}`]: { id: 'holding-1', role: 'co_owner' as const, stakeId: 'stake-1' },
+  };
+
+  it('[TECH-050][TECH-051] delegação vigente + holding vigente na Second Home → autorizado com a base holding (AAL1 basta)', async () => {
+    await expect(
+      titularGuard(held).authorize(OWN_USE, titular, {}, { type: 'second_home', id: HOME }),
+    ).resolves.toEqual({ allowed: true, authorizationRef: 'holding:holding-1' });
+  });
+
+  it('[TECH-050] sem holding na Second Home, sem delegação, sem party, escopo errado ou sem diretório → negado', async () => {
+    const scope = { type: 'second_home', id: HOME };
+    await expect(titularGuard({}).authorize(OWN_USE, titular, {}, scope)).resolves.toEqual({
+      allowed: false,
+    });
+    await expect(titularGuard(held, []).authorize(OWN_USE, titular, {}, scope)).resolves.toEqual({
+      allowed: false,
+    });
+    await expect(
+      titularGuard(held).authorize(OWN_USE, { ...titular, actingPartyId: null }, {}, scope),
+    ).resolves.toEqual({ allowed: false });
+    await expect(
+      titularGuard(held).authorize(OWN_USE, titular, {}, { type: 'home_concept', id: HOME }),
+    ).resolves.toEqual({ allowed: false });
+    await expect(titularGuard(held).authorize(OWN_USE, titular, {}, null)).resolves.toEqual({
+      allowed: false,
+    });
+    await expect(titularGuard(undefined).authorize(OWN_USE, titular, {}, scope)).resolves.toEqual({
+      allowed: false,
+    });
+    await expect(
+      titularGuard(held).authorize(OWN_USE, { ...titular, role: 'grantee' }, {}, scope),
+    ).resolves.toEqual({ allowed: false });
+  });
+});
