@@ -31,8 +31,8 @@ conflict, 01 prevails (BR-380, REQ-104).
 | Doc | Path | Defines | IDs |
 |---|---|---|---|
 | 01 — Business Model & Business Rules v10.2 | `docs/specs/canonical/01-business-model-business-rules.md` | what the business is; structural rules | 192 `BR-xxx` |
-| 02 — Product Spec v4.3 | `docs/specs/canonical/02-product-spec.md` | functional behavior, invariants, product decisions | 65 `REQ-xxx` · 6 `INV-n` · 11 `PD-xxx` |
-| 03 — Technical Spec v3.15 | `docs/specs/canonical/03-technical-spec.md` | how to build: data model, locks, ledgers, API, QA | 51 `TECH-xxx` · `ADR-001…008` |
+| 02 — Product Spec v4.4 | `docs/specs/canonical/02-product-spec.md` | functional behavior, invariants, product decisions | 66 `REQ-xxx` · 6 `INV-n` · 11 `PD-xxx` |
+| 03 — Technical Spec v3.16 | `docs/specs/canonical/03-technical-spec.md` | how to build: data model, locks, ledgers, API, QA | 51 `TECH-xxx` · `ADR-001…008` |
 
 - **Never edit them.** Changes only via a new version issued by Luxtory, followed by impact
   analysis and traceability update.
@@ -58,7 +58,7 @@ conflict, 01 prevails (BR-380, REQ-104).
   reopens the material definition. The commercial interest always starts from a Home Edition (`home_edition_id`, `desired_location`).
   Never Residence, residência or residencial to name or frame the product; "identidade da marca", never "Brand DNA";
   "imóvel de lazer" only descriptively and "casa" only as narrative language.
-- **Gate:** 65/65 REQ · 11/11 PD · 6/6 INV covered by tests (03 §12).
+- **Gate:** 66/66 REQ · 11/11 PD · 6/6 INV covered by tests (03 §12).
 
 ## Instance constraints (Luxtory)
 
