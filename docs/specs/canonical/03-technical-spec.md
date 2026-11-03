@@ -1,8 +1,16 @@
 # 03 — Technical Spec — Luxtory Branded Second Home
 
-2026-10-19 · **Versão 3.15 — FINAL** · Base normativa: `01` v10.2 final · `02` v4.3 final
+2026-11-03 · **Versão 3.16 — FINAL** · Base normativa: `01` v10.2 final · `02` v4.4 final
 
-Cobertura normativa: **65 REQ · 6 INV · 11 PD**
+Cobertura normativa: **66 REQ · 6 INV · 11 PD**
+
+Revisão W13 autorizada pelo fundador (2026-11-03): implementa o REQ-084 do `02` v4.4. A TECH-022 distingue a
+invalidação de reserva não autorizada do cancelamento; a TECH-026 delimita a `correction` à reversão do consumo de
+data não iniciada de reserva invalidada; a TECH-051 exige autorização independente do papel da aplicação para os
+atos Admin que cancelam ou invalidam reserva, declaram no-show ou transferem capacidade à Luxtory; o §7 ganha os
+fluxos de invalidação. Demais regras da v3.15 preservadas. Emitida com o merge do PR documental da E0 da W13 (#80);
+rastreabilidade normativa não equivale a cobertura executada. Decisão em [ADR-0027](../../adr/0027-ciclo-da-reserva-de-uso-proprio-e-autorizacao-independente.md); aceite em
+[`booking`](../booking.md).
 
 Revisão M0 autorizada pelo fundador: aplica a ontologia Home Concept → Home Edition → Second Home do `01` v10.2 e
 do `02` v4.3 — §3.1 e §3.2 revistos, identificadores renomeados, `home_edition_projected_investment`,
@@ -206,6 +214,7 @@ Inventário Luxtory:
 | `use_right/reserved_right` | `use_right/forfeited_right` | futuro de cancelamento tardio/no-show |
 | `owner` ou `use_right/reserved_right` | `luxtory/inventory/luxchange_cession` | depósito ou Request aceita |
 | `use_right/forfeited_right` | `luxtory/inventory/recovered_future_capacity` | BR-283 |
+| `use_right/reserved_right` | `spe_pool` | invalidação de reserva não autorizada (REQ-084), na operação de `correct_use_right` |
 | `luxtory/inventory` | pai | regra/política aplicável ou correção compensatória válida |
 
 Na seleção Luxtory:
@@ -217,6 +226,10 @@ Outras finalidades usam `inventory_origin=NULL`.
 `authorization_ref` sozinho nunca autoriza reversão.
 
 `forfeited_right` representa Direito consumido e não reutilizável; somente capacidade futura pode seguir BR-283.
+
+Invalidação (REQ-084) não é cancelamento. O cancelamento — do Titular, por exceção ou por política comercial — segue
+BR-280 a BR-284 e PD-009/PD-010; a invalidação restabelece, nas datas não iniciadas, a situação anterior a reserva
+comprovadamente não autorizada (BR-163) e nunca alcança `forfeited_right`.
 
 **TECH-023 — INV-2.**
 
@@ -279,6 +292,10 @@ Média/Baixa = 262.
 `consume` aumenta consumo; `restore` desfaz consumo previamente registrado. Projeções nunca ficam negativas.
 
 `correction` só corrige consumo/expiração comprovados e nunca altera `grant`.
+
+Consumo comprovadamente indevido é o de data não iniciada de reserva invalidada (REQ-084): a `correction` aponta o
+`consume` dessa data, com `quantity` positiva igual à dele e efeito `consumed − quantity`. Há no máximo uma reversão
+por consumo, `restore` ou `correction`. A `correction` nunca alcança `forfeited_right` e não é meio de cancelamento.
 
 Buckets não se compensam. Saldo de um exercício nunca atende outro.
 
@@ -435,6 +452,11 @@ Suspensão/encerramento afetam prospectivamente novos commands dependentes; não
 
 A tabela é fechada para commands econômicos/estado crítico.
 
+Além de Admin + base registrada, exigem autorização independente do papel da aplicação — expressa, de uso único e
+vinculada à reserva, ao incidente, à finalidade, às datas afetadas e a uma validade —: `declare_no_show`,
+`recover_future_capacity`, `resolve_exception` quando cancela a reserva e a invalidação do REQ-084
+(`correct_use_right` no Co-Owner; `resolve_exception` no Owner).
+
 Demais operações do REQ-095 usam o mesmo guard, base registrada e auditoria, sem criar efeito econômico novo.
 
 Brand Partner, Investor e parceiros só executam o que constar em `authorization_grant`.
@@ -579,6 +601,8 @@ Todos seguem TECH-053/054.
 | Locação | oferta → reserva externa + settlement Titular |
 | Transferência | holding muda; Ação, saldo remanescente, rotações, reservas/compromissos e obrigações do Home Concept permanecem; Membership/Créditos não se transferem |
 | Exceção | `in_exception`; nenhuma restituição, Crédito, indenização, compensação ou transferência econômica não prevista |
+| Invalidação Co-Owner (REQ-084) | `correct_use_right`: apuração → `cancelled`; libera ocupações futuras; `reserved_right → spe_pool`; `correction` por data não iniciada |
+| Invalidação Owner (REQ-084) | `resolve_exception`: apuração → `cancelled`; libera ocupações futuras; permanece `owner` |
 
 **TECH-060 — Capacidade perdida.** `forfeited_right` não é reservável, depositável ou locável. Direito permanece consumido. Capacidade futura só entra no Inventário Luxtory por `recover_future_capacity`; caso contrário encerra com o exercício.
 
@@ -807,7 +831,7 @@ Auditoria: commits concorrentes → exatamente um seal por evento, cadeia válid
 
 Sorteio: vetor fixo reproduz exatamente `fy-v1`.
 
-**Gate global do produto:** 65/65 REQ cobertos · 11/11 PD cobertos · 6/6 INV protegidos/testados · migrations esperadas · reconciliação sem drift.
+**Gate global do produto:** 66/66 REQ cobertos · 11/11 PD cobertos · 6/6 INV protegidos/testados · migrations esperadas · reconciliação sem drift.
 
 Esse é o alvo global de implementação, não uma declaração de testes já aprovados. BP0 usa somente gates
 documentais; BP1 comprova REQ-028/TECH-057; REQ-029/TECH-058 só recebe evidência de implementação na BP2.
@@ -872,6 +896,7 @@ Números sem prefixo = `TECH-xxx`.
 | 032 | 042, 093 | 081 | §7 |
 | 033 | §3.1, 020, 042 | 082 | 032 |
 | 034 | 040, 045 | 083 | §7 Exceção |
+|  |  | 084 | 022, 026, 051, §7 Invalidação |
 | 035 | 045 | 090 | 062 |
 | 036 | 022, 026 | 091 | §3.1, 020 |
 | 037 | ADR-004, §7 | 092 | 030, §3.1 |
@@ -900,7 +925,7 @@ Números sem prefixo = `TECH-xxx`.
 |  |  | PD-010 | §7 Exceção |
 |  |  | PD-011 | 002, 092, 093 |
 
-**Rastreabilidade normativa: 65/65 REQ · 6/6 INV · 11/11 PD.** Não equivale à cobertura executada de testes.
+**Rastreabilidade normativa: 66/66 REQ · 6/6 INV · 11/11 PD.** Não equivale à cobertura executada de testes.
 
 ---
 

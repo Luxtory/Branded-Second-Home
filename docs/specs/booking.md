@@ -13,7 +13,7 @@ Dona: REQ-034, REQ-035, REQ-037, PD-002, INV-1 (com TECH-023, TECH-045, TECH-051
 estado `confirmed`; EC-1, EC-2, EC-4 na parte de reserva; CONC-1, CONC-2, CONC-3). Fora: cancelamento, no-show,
 `restore`, liberação de ocupação, `advance_booking_states` e `correct_use_right` (W13); seleção Luxtory e convidados
 (W14); fechar ofertas e Requests concorrentes (TECH-024, W17+); `reserved_right` devolvido (W21/W22, D4); transferência
-(W28); reconciliação (W30); telas Admin de reserva.
+(W28); reconciliação (W30); telas Admin de reserva. W13: §10.
 
 ## 2. Modelo
 
@@ -238,3 +238,155 @@ entra antes como decisão de produto (atômica ou parcial), reutilizando o comma
 se copiam: saldo pelo ano do primeiro período (contraria EC-1), limites com valor padrão técnico (TECH-001), limite de 14
 por período sem considerar reservas adjacentes, dia passado por `CURRENT_DATE` (não pelo check-in das 14:00 locais) e
 campo de convidado na reserva (P-6, W14).
+
+## 10. W13 — cancelamento, no-show, recuperação, exceção e invalidação
+
+### 10.1. Fontes e escopo
+
+Fontes: 01 BR-123, BR-160–BR-163, BR-280–BR-284; 02 v4.4 REQ-080, REQ-081, REQ-083, REQ-084, REQ-096–REQ-098, PD-010,
+§15 itens 10, 12 e 16; 03 v3.16 TECH-022, TECH-023, TECH-026, TECH-040, TECH-043, TECH-046, TECH-051–TECH-056,
+TECH-060, TECH-090, TECH-091, TECH-110, §7, §13. Decisão: [ADR-0027](../adr/0027-ciclo-da-reserva-de-uso-proprio-e-autorizacao-independente.md);
+plano: [`docs/plan/w13-cancelamento-no-show-recuperacao-e-excecao.md`](../plan/w13-cancelamento-no-show-recuperacao-e-excecao.md);
+ameaças: [`booking`](../security/threats/booking.md) (W13). Esta seção aplica os canônicos; não os substitui.
+
+Dona: REQ-080, REQ-081, REQ-083, REQ-084, PD-010; EC-10, EC-12, EC-16; commands `cancel_own_use_booking`,
+`declare_no_show`, `open_exception`, `resolve_exception`, `recover_future_capacity`, `correct_use_right` (emenda D2 da
+W11); jobs `advance_booking_states` e `flag_no_show_candidates`. Fora: ativação das reservas (migration própria, depois
+da W13 em Production e de autorização específica); `reserved_right` devolvido (W21/W22); mecanismos do Club (W18+);
+transferência (W28); selo e reconciliação (W30); correção de expiração (fechada, emenda do roadmap); rotas REST (adiadas).
+
+### 10.2. Estados e transições (TECH-055)
+
+| Transição | Quem | Condição no instante do banco |
+|---|---|---|
+| `confirmed → in_use` | sistema (`advance_booking_states`) | `at ≥ 1º checkin_at` |
+| `in_use → completed` | sistema | `at ≥ checkout_at` (10:00 locais do `checkout_date`, fuso IANA); job atrasado faz `confirmed → in_use → completed` na mesma execução |
+| `confirmed`/`in_use → cancelled` | Titular | ≥ 1 noite não iniciada; termos esperados = termos calculados |
+| `in_exception → cancelled` | Titular | P-A: regras normais; P-B: Co-Owner só tempestivo, Owner a qualquer tempo |
+| `confirmed`/`in_use → no_show` | Admin + autorização `no_show` | `1º checkin_at ≤ at < checkout_at` |
+| `confirmed`/`in_use → in_exception` | Admin | `at < checkout_at`; tipo P-A (motivo da PD-010) ou P-B (apuração do REQ-084) |
+| `in_exception → confirmed`/`completed` | Admin | resolução única; `confirmed` só com `at < checkout_at` e `completed` só com `at ≥ checkout_at` (P-A e P-B sem comprovação) |
+| `in_exception → cancelled` | Admin + autorização | P-A: `exception_cancellation`; P-B: `invalidation` |
+
+Histórico em `app.booking_state_transition` (só-inserção, cadeia linear provada no banco) e estado projetado em
+`app.booking` por gatilho (ADR-0027 §2). Uma exceção aberta por reserva; `in_exception` ⇔ exatamente uma aberta.
+
+### 10.3. Matriz econômica
+
+"Não iniciada" = `at < checkin_at` da noite, no instante de cada escrita (TECH-043). Noite iniciada ou passada nunca muda.
+
+| Evento | Co-Owner | Owner |
+|---|---|---|
+| Cancelamento tempestivo (Titular) | `cancelled`, `timely`; libera todas; `reserved_right → spe_pool`; `restore` por noite (bucket e exercício da noite) | `cancelled`, sem classe; libera; `owner` |
+| Cancelamento tardio (Titular) | `cancelled`, `late`; libera as não iniciadas; elas `→ forfeited_right`; consumo mantido | `cancelled`; libera as não iniciadas; `owner` (REQ-081) |
+| No-show (Admin) | `no_show`; libera as não iniciadas; elas `→ forfeited_right`; consumo mantido | `no_show`; libera as não iniciadas; `owner` |
+| P-A aberta / resolvida `confirmed` ou `completed` | só estado; ocupação e custódia inalteradas | idem |
+| P-A resolvida `cancelled` (Admin) | classificação no instante (REQ-080): tempestiva = efeitos da BR-280; tardia = não iniciadas `→ forfeited_right`, consumo mantido; nenhuma entrada no Inventário | libera as não iniciadas; `owner` |
+| Recuperação (Admin) | `forfeited_right` futura `→ luxtory/inventory/recovered_future_capacity`, com `authorization_ref`; sem `restore`, Crédito ou remuneração (BR-284); origem P-A exige atestação de disponibilidade e compatibilidade com a situação do bloqueio | não se aplica |
+| P-B: invalidação | `correct_use_right`: `cancelled`; não iniciadas: libera, `reserved_right → spe_pool`, `correction` (`quantity` = a do consumo; `consumed − quantity`) | `resolve_exception`: `cancelled`; libera as não iniciadas; `owner` |
+| P-B: sem comprovação | `confirmed` ou `completed` (§10.2) | idem |
+
+Nada nesta matriz cria Crédito, indenização, compensação, restituição não prevista ou entrada automática no Inventário
+Luxtory (PD-010, BR-123, BR-284).
+
+### 10.4. Prazo de 15 dias (decisão funcional expressa do fundador, 2026-11-03)
+
+Tempestivo ⇔ `cancelled_at ≤ checkin_at − 360 h`, inclusive. `checkin_at` é o instante gravado na selagem da primeira
+noite (14:00 locais, fuso IANA); 360 h = 15 × 24 h sobre instantes (TECH-040; precedente TECH-044); `cancelled_at` é o
+instante do banco na escrita da transição (T3). Implementação: `interval '360 hours'` (nunca `'15 days'`, que usa o fuso
+da sessão) e `Temporal.Instant.subtract({ hours: 360 })`; função SQL pura com o instante como parâmetro e gêmea
+TypeScript com equivalência testada. Exibição no fuso da Second Home ("até DD/MM às HH:MM"); em fusos com horário de
+verão pode aparecer 13:00 ou 15:00; no Brasil, sempre 14:00.
+
+### 10.5. Commands
+
+- **`cancel_own_use_booking`** (Titular, sem Membership; Server Action). Autorizado por representação, command, K2,
+  prazo e guard no banco; não exige autorização independente. Entrada: reserva e termos esperados da prévia
+  (classificação no Co-Owner e primeira noite afetada). Ordem: guard → idempotência → `BEGIN` → K2 → representação
+  (`FOR SHARE`) → classe 4 (Co-Owner) → classe 5 (noites, crescente) → transição (trava a reserva) → por noite:
+  liberação, custódia, `restore` → auditoria → `COMMIT` → outbox. Termos diferentes dos esperados →
+  `ERR_CANCELLATION_TERMS_CHANGED`, sem efeito; a prévia emite chave nova. Sem noite não iniciada → `ERR_STATE_TRANSITION`.
+  Cancelamento só da reserva inteira. Durante exceção, grava a resolução (`titular_cancellation`) na mesma transação.
+- **`declare_no_show`** (Admin + base registrada + autorização `no_show`). Janela `[1º checkin_at, checkout_at)`;
+  evidência mínima: referência a registro verificável de não comparecimento (administração profissional ou party),
+  atestada pelo Admin. Reserva de uma noite ou ausência constatada na última noite: zero noites afetadas, só o estado.
+- **`open_exception`** (Admin + base): P-A com motivo da lista fechada da PD-010 (manutenção emergencial, segurança,
+  sinistro, caso fortuito, força maior) ou P-B (apuração do REQ-084, com referência do incidente). Notifica a party; na
+  P-A, com o prazo local de 360 h.
+- **`resolve_exception`** (Admin + base): `confirmed` (`at < checkout_at`) ou `completed` (`at ≥ checkout_at`), sem efeito
+  sobre saldo ou custódia; `cancelled` só com autorização
+  (P-A `exception_cancellation`; P-B Owner `invalidation`). P-B Co-Owner `cancelled` → recusado (usa `correct_use_right`).
+- **`recover_future_capacity`** (Admin + base + autorização `recovery`): só as custódias gravadas na autorização, ainda
+  futuras e ativas; emitida depois do no-show ou do cancelamento tardio commitado, nunca em conjunto.
+- **`correct_use_right`** (Admin + base + autorização `invalidation`; só P-B de Co-Owner): uma operação resolve a
+  apuração, libera, devolve a custódia e corrige cada consumo das noites não iniciadas. Correção de expiração recusada.
+
+Recusas (REQ-098, TECH-056): `ERR_VALIDATION` · `ERR_PERMISSION` · indisponível (K2 ausente) · `ERR_STATE_TRANSITION`
+(transição fora da TECH-055, janela do no-show, sem noite afetada, tardio em P-B) · `ERR_CANCELLATION_TERMS_CHANGED` ·
+`ERR_CAPACITY_UNAVAILABLE` (custódia fora da regra) · autorização ausente, expirada, revogada, usada ou fora do escopo →
+`ERR_PERMISSION`. Constraints do banco mapeadas por prefixo, como na W12.
+
+### 10.6. Banco
+
+| Escrita do `luxtory_app` | Regra |
+|---|---|
+| `booking_state_transition` (INSERT) | operação pendente do command certo; papel, delegação/`staff_role`; `previous = last_transition_id`; par TECH-055; tempo; K2 |
+| Liberação de ocupação (UPDATE de `released_at`, `release_reason`, `released_by_operation`) | transição `cancelled`/`no_show` da mesma operação; motivo coerente (`cancelled`, `no_show`, `exception`, `invalidation`); noite não iniciada; instante do banco; uma vez |
+| `reserved_right → spe_pool` | cancelamento tempestivo (Titular ou P-A) da reserva que abriu a custódia, ou invalidação Co-Owner |
+| `reserved_right → forfeited_right` | cancelamento tardio (Titular ou P-A) ou no-show; noite não iniciada; ocupação liberada na mesma operação |
+| `forfeited_right → recovered_future_capacity` | `recover_future_capacity` com uso de autorização `recovery` que grava essa custódia |
+| `restore` | cancelamento tempestivo; aponta o `consume` da operação de criação, mesma noite |
+| `correction` | invalidação Co-Owner; aponta o `consume` da noite; uma reversão por consumo (índice único sobre `restore`/`correction`) |
+| `booking_exception`, `…_resolution`, `booking_no_show_candidate`, `booking_authorization_request`, `booking_authorization_use` (INSERT) | só pela operação do command dono; uso de autorização validado pelo gatilho |
+
+`app.capability_activation`: `CHECK` aceita `own_use_lifecycle`; nenhuma linha. Sem `UPDATE` em `app.booking`; sem
+`EXECUTE` em funções de autorização ou de projeção.
+
+### 10.7. Autorização independente
+
+Fluxo: o Admin registra a solicitação (id opaco) → o fundador dispara o workflow no GitHub Environment com o id e aprova
+→ o papel `luxtory_booking_authorizer` chama `app.authorize_booking_action`, que deriva o escopo dos fatos, confere o
+esperado e grava a autorização → o Admin executa o command; o banco exige o uso na mesma operação. Escopo, emissão,
+validade e execução por finalidade: tabela do ADR-0027 §4. A solicitação registrada não prova legitimidade: o aprovador
+verifica os fundamentos por fontes próprias (ADR-0027 §4; roteiro no runbook do autorizador). Criar o Environment, a senha e qualquer acesso a Production
+são decisões futuras do fundador, fora da W13.
+
+### 10.8. Chaves, jobs e notificações
+
+- K1 `own_use_booking` (criação) e K2 `own_use_lifecycle` (os seis commands acima); contenção em três degraus (ADR-0027
+  §5). Jobs fora da K2.
+- `advance_booking_states` e `flag_no_show_candidates`: `SYSTEM_COMMANDS`, `/api/jobs/[job]`, cron diário 17:00 UTC
+  (Hobby: uma vez por dia, ±59 min). A cadência é do runbook (TECH-001); nenhum command depende do estado do job.
+- Notificações pelo outbox (TECH-091), à party da reserva: cancelamento, exceção aberta e resolvida, invalidação,
+  no-show e correção. Recuperação não notifica (BR-284). Contratos AsyncAPI no início da E2, antes do primeiro handler
+  que emite evento.
+
+### 10.9. Telas
+
+- Titular: detalhe da reserva → "Cancelar reserva" → prévia (classificação, prazo local, noites afetadas, efeito por
+  categoria; Owner: "as noites voltam ao calendário do Owner"; em exceção, a situação e o que muda) → confirmação →
+  resultado. Estados no vocabulário da REQ-096 ("Em exceção" como "Em apuração" na P-B). Copy "desta Ação"/"do Owner".
+- Admin: `/admin/reservas` (lista por Second Home e estado; "A verificar comparecimento" com o prazo do checkout;
+  apurações com o prazo do 1º check-in) e `/admin/reservas/[id]` (noites com custódia e ocupação, histórico, ações com
+  prévia, base registrada e solicitação de autorização). MFA; leituras auditadas. Revisão renderizada (E4a) antes da
+  integração.
+
+### 10.10. Aceite
+
+`[REQ-080]` 15 dias (360 h) devolve o saldo noite a noite; 14 mantém o consumo; classificação gravada não muda ·
+`[REQ-080]` E2E: a consequência aparece antes de confirmar; termos alterados → recusa sem efeito · `[EC-10]` início
+parcial: só as não iniciadas viram `forfeited_right` e são recuperáveis · `[REQ-081]` Owner: nenhum movimento de ledger,
+custódia `owner`, nada no Inventário · `[TECH-060]` `forfeited_right` não reservável, depositável nem locável ·
+`[PD-010][REQ-083][EC-12]` P-A sem restituição não prevista, Crédito ou compensação; resolução auditada; tardia em
+`forfeited_right` sem entrada automática · `[REQ-084][EC-16]` invalidação Owner e Co-Owner com autorização; noites
+iniciadas inalteradas; sem comprovação → `confirmed`/`completed` conforme o período; Co-Owner tardio e no-show suspensos na
+apuração; Owner cancela sem efeito retroativo · `[TECH-110]` correção nunca altera concessão, não duplica `restore`, não
+alcança `forfeited_right`; correção de expiração recusada · `[TECH-046]` no-show recusado antes do 1º check-in e em
+`checkout_at`; aceito em `checkout_at − 1 µs`, na última noite e em reserva de uma noite · `[TECH-055]` matriz de
+transições inválidas · cadeia: duas raízes, anterior desatualizada, bifurcação e anterior de outra reserva recusadas;
+transições concorrentes → exatamente uma · resolução `completed` antes de `checkout_at` e `confirmed` depois recusadas ·
+cancelamento do Titular aceito sem autorização independente (com representação, K2 e prazo) · P-B forjada com K2: só
+suspende tardio do Co-Owner e no-show; Owner e tempestivo seguem; saldo, custódia e ocupação inalterados · autorização: os critérios do plano W13 (§ "Autorização independente") ·
+K2 ausente → os seis commands recusados; jobs limitados pelo instante · tabela de ativação com 0 linhas · prazo: −1 µs e
+exato tempestivos, +1 µs tardio, fusos com e sem horário de verão · consultas de invariantes vazias após todo teste `db` ·
+E2E com axe 0 a 390 e 1440 px, sem overflow de 320 a 1920 px, fluxo por toque a 390 px.

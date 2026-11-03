@@ -19,8 +19,8 @@ or alongside its implementation.
 **Canonical documents** (frozen, source of truth; see `CLAUDE.md`):
 
 - [01 — Business Model & Business Rules](canonical/01-business-model-business-rules.md) — v10.2 · 192 BR
-- [02 — Product Spec](canonical/02-product-spec.md) — v4.3 · 65 REQ · 11 PD · 6 INV
-- [03 — Technical Spec](canonical/03-technical-spec.md) — v3.15 · 51 TECH · ADR-001…008
+- [02 — Product Spec](canonical/02-product-spec.md) — v4.4 · 66 REQ · 11 PD · 6 INV
+- [03 — Technical Spec](canonical/03-technical-spec.md) — v3.16 · 51 TECH · ADR-001…008
 
 **Module specs** (one per `src/features/<module>/`, created in the wave that implements it,
 citing the canonical IDs):
@@ -32,7 +32,7 @@ citing the canonical IDs):
 - [ownership](ownership.md) — módulo `ownership`: manifestação de interesse a partir da Home Edition e visão agrupada do Admin (W5, W4.2 §13)
 - [calendar](calendar.md) — módulo `calendar`: classificação civil (W8) e selagem do exercício com o job `open_exercise` (W10)
 - [inventory](inventory.md) — módulo `inventory`: custódia por noite, ocupação, matriz da TECH-023 e Inventário Central (W10)
-- [booking](booking.md) — módulo `booking`: reserva de uso próprio do Owner e do Co-Owner, autorização no banco presa à reserva e ativação privilegiada (W12)
+- [booking](booking.md) — módulo `booking`: reserva de uso próprio do Owner e do Co-Owner, autorização no banco presa à reserva e ativação privilegiada (W12); cancelamento, no-show, recuperação, exceção e invalidação com autorização independente (W13, §10)
 
 **Cross-cutting specs** (not a `src/features/` slice):
 

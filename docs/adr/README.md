@@ -34,6 +34,7 @@ described by Michael Nygard. The ADR process itself is established in
 | 0024 | [Selagem por exercício, custódia em camadas e fronteira de confiança do inventário](0024-custodia-selagem-e-fronteira-de-confianca.md) | Accepted |
 | 0025 | [Direito de Uso: ledger único conferido pelos fatos, rotação derivada e fronteira de confiança da W11](0025-direito-de-uso-ledger-rotacao-derivada-e-fronteira.md) | Accepted (risco residual ratificado, exclusivo da W11) |
 | 0026 | [Reserva de uso próprio: autorização no banco presa à reserva, ativação privilegiada e instante de aceite](0026-reserva-de-uso-proprio-autorizacao-no-banco-e-ativacao.md) | Accepted (arquitetura; risco residual pendente de ratificação) |
+| 0027 | [Ciclo da reserva de uso próprio: transições só-inserção, chaves K1/K2 e autorização independente](0027-ciclo-da-reserva-de-uso-proprio-e-autorizacao-independente.md) | Proposed (E0 em auditoria; E1 não autorizada) |
 
 The technical decisions ADR-001…008 of the canonical
 [03 — Technical Spec](../specs/canonical/03-technical-spec.md) also apply, by reference.

@@ -99,3 +99,22 @@ aplicação, ambos presos à reserva da mesma operação e só com a ativação 
 D4). A FK `date_occupancy_booking_fk` liga a ocupação à reserva. Privilégios novos do `luxtory_app`: UPDATE só em
 `closed_at`/`closed_by_operation` e INSERT em `date_occupancy`; a liberação continua sem UPDATE. Leitura do Titular por
 RLS e privilégio de coluna: a custódia e a ocupação ativas como fato de disponibilidade, sem Ação, reserva nem operação.
+
+## W13 — liberação, transições do ciclo da reserva e recuperação
+
+Spec [`booking` §10](booking.md#10-w13--cancelamento-no-show-recuperação-exceção-e-invalidação),
+[ADR-0027](../adr/0027-ciclo-da-reserva-de-uso-proprio-e-autorizacao-independente.md). O gate da W10 continua valendo
+para tudo, exceto as escritas presas à transição de estado da mesma operação (ADR-0027 §1 e §3):
+
+- liberação da ocupação (`released_at`, `release_reason` ∈ `ceded`, `cancelled`, `no_show`, `exception`,
+  `invalidation`; `released_by_operation`), carimbada pelo banco, só em noite não iniciada, uma vez;
+- `reserved_right → spe_pool` (cancelamento tempestivo do Titular ou da P-A; invalidação Co-Owner, REQ-084);
+- `reserved_right → forfeited_right` da mesma Ação (cancelamento tardio do Titular ou da P-A; no-show), noite não
+  iniciada, ocupação liberada na mesma operação;
+- `forfeited_right → luxtory/inventory/recovered_future_capacity` só por `recover_future_capacity` com o uso de uma
+  autorização `recovery` que grava a custódia; `authorization_ref` da autorização; nenhuma compensação (BR-284). Origem em
+  exceção operacional exige atestação de disponibilidade e de compatibilidade com a situação do bloqueio: indisponibilidade
+  do imóvel nunca autoriza monetização (BR-123).
+
+Prova econômica (camada 3 do ADR-0024): a recuperação não grava `restore`, Crédito nem remuneração; P-A e invalidação
+nunca criam entrada no Inventário Luxtory. Privilégio novo do `luxtory_app`: `UPDATE` só das três colunas de liberação.

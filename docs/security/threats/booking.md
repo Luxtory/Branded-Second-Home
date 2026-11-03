@@ -142,3 +142,118 @@ só com a ativação privilegiada presente. Dados: ids pseudônimos (party, hold
 
 Cancelamento, restauração, liberação e correção (W13); `reserved_right` devolvido (W21/W22); transferência (W28); selo
 da auditoria e reconciliação (W30).
+
+---
+
+# W13 — ciclo da reserva: cancelamento, no-show, recuperação, exceção e invalidação
+
+- **Date**: 2026-11-03
+- **Status**: Draft (E0; riscos residuais sem ratificação)
+- **Scope**: os seis commands da W13 (spec `booking` §10), transições só-inserção, liberação, custódia, `restore`,
+  `correction`, jobs `advance_booking_states`/`flag_no_show_candidates`, papel `luxtory_booking_authorizer` e workflow
+  de autorização num GitHub Environment (repositório público)
+- **Linked ADR(s)**: ADR-0024, ADR-0025, ADR-0026, ADR-0027
+
+## W13.1. Assets e atores novos
+
+Assets: estadias já pagas com consumo (não iniciadas), saldo do Direito de Uso, capacidade que pode entrar no Inventário
+Luxtory, autorizações de uso único, histórico de estados. Atores: Titular (cancela a própria reserva); Admin com MFA;
+papel autorizador (só duas funções); aprovador no GitHub Environment (fundador); `luxtory_app` (fronteira confiável; se
+comprometido, forja operações Admin — tem `INSERT` em `app.operation` e `SELECT` em `app.staff_role`).
+
+## W13.2. Threats (STRIDE)
+
+### T-1301 [HIGH] Tampering — cancelamento forjado (R6)
+
+- **Vector**: com a credencial e a K2 presente, transição de cancelamento em nome de Titular vigente.
+- **Mitigation**: transição presa à operação, delegação e holding da reserva; K2; contenção em três degraus.
+- **Residual**: tardio leva noites a `forfeited_right` de forma irreversível (TECH-060); tempestivo devolve o saldo e
+  libera as noites a terceiros. Sem ratificação.
+
+### T-1302 [HIGH] Elevation — ato Admin com efeito econômico sem decisão legítima (R7, R8)
+
+- **Vector**: operação Admin forjada pelo `luxtory_app` ou Admin interno: no-show, recuperação, cancelamento P-A,
+  invalidação.
+- **Mitigation**: autorização independente do `luxtory_app` (papel dedicado + aprovação no GitHub Environment), de uso
+  único, com escopo e validade por finalidade; o banco exige o uso na mesma operação.
+- **Residual**: abertura de exceção e resolução `confirmed`/`completed` ficam com Admin + K2, sem autorização
+  independente. Não alteram saldo nem custódia, mas não são inofensivas: uma P-B indevida suspende o cancelamento
+  tardio do Co-Owner e o no-show enquanto durar (o Owner e o cancelamento tempestivo seguem disponíveis). Mitigação:
+  evento de notificação enfileirado no outbox no COMMIT da abertura (a entrega depende do job `outbox`, hoje cron
+  diário: até cerca de um dia de atraso; latência adequada a comprovar antes da ativação), prazo do 1º check-in visível
+  ao Admin, `completed` só com o período
+  encerrado. Teste: a abertura forjada pelo `luxtory_app` com K2 produz só essas restrições; sem K2 ou sem operação
+  Admin, recusada.
+
+### T-1303 [MEDIUM] Tampering — uso indevido de autorização legítima
+
+- **Vector**: execução antecipada pelo `luxtory_app` comprometido; reuso; ampliação de escopo; corrida com a revogação.
+- **Mitigation**: escopo derivado dos fatos e gravado (reserva, finalidade, noites/custódias, classificação esperada,
+  validade); uso único (PK); trava consultiva por reserva; uso `FOR SHARE` × revogação `FOR UPDATE`.
+- **Residual**: o atacante só antecipa exatamente o ato autorizado, uma vez.
+- **Procedure**: a solicitação gravada pelo papel da aplicação não prova legitimidade; o aprovador verifica os
+  fundamentos por fontes próprias (no-show: registro da administração profissional ou da party; invalidação:
+  declaração da party por canal verificado e logs do Vercel/Supabase Auth) antes de aprovar.
+
+### T-1304 [HIGH] Tampering/Elevation — workflow do autorizador
+
+- **Vector**: alteração do workflow, disparo de outra ref, injeção por entrada, exposição do secret.
+- **Mitigation**: arquivo versionado com PR revisado; Environment só da `main` com revisor obrigatório; secret do
+  Environment; entradas por `env:` com schema fechado; SQL parametrizado; `permissions: contents: read`; actions por SHA.
+
+### T-1305 [MEDIUM] Information disclosure — logs públicos do GitHub
+
+- **Vector**: reserva, datas ou evidência em entradas e logs de um repositório público.
+- **Mitigation**: só o id opaco da solicitação e a referência do run; saída com código e id da autorização; o detalhe
+  fica na área Admin protegida.
+
+### T-1306 [MEDIUM] Spoofing — tela do aprovador com o servidor inteiro comprometido
+
+- **Residual**: com o servidor da aplicação comprometido (não só a credencial do banco), o detalhe exibido deixa de ser
+  confiável. Limite da fronteira existente (ADR-0024 §3, T-1201).
+
+### T-1307 [MEDIUM] Tampering — cadeia de estados
+
+- **Vector**: bifurcação, segunda raiz, `UPDATE` direto do estado, projeção por outra via.
+- **Mitigation**: índice parcial de raiz única, FK composta, `UNIQUE(previous_transition_id)`, gatilho com trava e
+  `previous = last_transition_id`; projeção `SECURITY DEFINER` só de gatilho (molde W11); guarda de `UPDATE` para todos os
+  papéis; `luxtory_app` sem `UPDATE` em `app.booking`.
+
+### T-1308 [MEDIUM] Repudiation — consequência diferente da exibida
+
+- **Mitigation**: termos esperados da prévia; divergência → `ERR_CANCELLATION_TERMS_CHANGED`, sem efeito; na P-A de
+  Co-Owner, a classificação esperada fica gravada na autorização.
+
+### T-1309 [MEDIUM] Information disclosure — cancelar reserva de outra party (IDOR)
+
+- **Mitigation**: guard do Titular, RLS por `booking.holding_id` e regra do banco presa à delegação e à holding.
+
+### T-1310 [LOW] Tampering/DoS — jobs forjados ou atrasados
+
+- **Mitigation**: o job só faz o que o instante permite; nenhum command depende do estado do job; idempotência por item.
+
+### T-1311 [MEDIUM] Denial of service — prazo perdido durante indisponibilidade (C1)
+
+- **Residual**: com a K2 desligada, a senha trocada ou o serviço fora do ar, o Titular não cancela e o prazo de 360 h pode
+  vencer. Sem compensação automática e sem a PD-010 como exclusão genérica: decisão operacional/contratual pendente antes
+  da ativação (comunicação, coleta de evidência, escalonamento administrativo).
+
+## W13.3. Risco por estado operacional
+
+A = hoje, sem reservas e sem ativação; B = ativada; C = reservas existentes com a criação (K1) desligada.
+
+| Risco | Controle | A | B | C |
+|---|---|---|---|---|
+| R1 reserva forjada | K1; contenção | — | sim | — |
+| R2 COMMIT depois do instante validado (criação e cancelamento) | T3 | — | sim | sim |
+| R3 dono/superusuário, sessão pendurada, troca de senha | ensaio fora de Production; término de sessões | estrutural | sim | sim |
+| R4a reserva não autorizada remediável | invalidação (REQ-084) | — | sim | sim |
+| R4b reserva não autorizada já cancelada com atraso, com no-show ou com datas iniciadas | detecção rápida, monitoração, runbook | — | sim | sim |
+| R5 trilhas sem autenticidade | selo W30 | estrutural | sim | sim |
+| R6 cancelamento forjado | K2; contenção | — | sim | sim |
+| R7 Admin forjado sem autorização independente (abertura de exceção; P-B indevida suspende tardio e no-show) | K2; evento enfileirado no COMMIT (entrega pelo cron diário do `outbox`; latência a comprovar antes da ativação); atos econômicos exigem autorização | — | sim | sim |
+| R8 Admin interno | autorização independente; auditoria | — | sim | sim |
+| C1 prazo perdido por indisponibilidade | decisão operacional/contratual pendente | — | sim | sim |
+| T-1207 prévia sem limitador | reavaliar com métricas | leitura | sim | sim |
+
+Nenhum desses riscos está ratificado para operação real. Reconhecer o R4b como residual não equivale a aceitá-lo.

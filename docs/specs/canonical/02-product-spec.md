@@ -1,6 +1,13 @@
 # 02 — Product Spec — Luxtory Branded Second Home
 
-2026-10-19 · Luxtory (fundador) · Versão 4.3 — final · Base normativa: 01 v10.2 (192 BRs) · PD-001 a PD-011 ratificados
+2026-11-03 · Luxtory (fundador) · Versão 4.4 — final · Base normativa: 01 v10.2 (192 BRs) · PD-001 a PD-011 ratificados
+
+Revisão W13 autorizada pelo fundador (2026-11-03): acrescenta à v4.3 o REQ-084 — invalidação de reserva de uso
+próprio comprovadamente não autorizada, distinta de cancelamento — e o edge case 16, sem alterar Business Rules,
+PDs ou invariantes; a matriz BR → REQ registra o REQ-084 nas BR-163 e BR-280 a BR-284. Rastreabilidade técnica em
+`03` v3.16; decisão em [ADR-0027](../../adr/0027-ciclo-da-reserva-de-uso-proprio-e-autorizacao-independente.md); aceite em [`booking`](../booking.md).
+Total normativo: **66 REQ · 6 INV · 11 PD**. Emitida com o merge do PR documental da E0 da W13 (#80);
+a cobertura executada do REQ-084 depende da implementação da W13.
 
 Revisão M0 autorizada pelo fundador: aplica a ontologia Home Concept → Home Edition → Second Home do `01` v10.2 —
 revisa §1, §2, REQ-020 a REQ-022, REQ-024, REQ-025, REQ-028, REQ-033, REQ-100 e os edge cases 14 e 15 —, sem
@@ -262,6 +269,8 @@ O acesso respeita REQ-014 e os direitos sobreviventes aplicáveis; não decorre 
 
 **REQ-083 \[BR-123, PD-010\]** — Indisponibilidade extraordinária é tratada como exceção auditável, sem transferência econômica nem compensação automática não prevista.
 
+**REQ-084 \[BR-163, BR-280 a BR-284, PD-010\]** — Invalidação de reserva de uso próprio não autorizada. Reserva de uso próprio, de Owner ou de Co-Owner, cuja realização não é reconhecida pela party titular PODE ser posta em apuração pelo Admin, com base registrada, no estado Em exceção. A invalidação é a reversão de ato comprovadamente não autorizado e não se confunde com cancelamento: não decorre de ato do Titular, de política comercial nem de indisponibilidade extraordinária. Exige apuração com evidência proporcional — declaração da party e registros são insumos, não prova — e autorização expressa, independente do Admin executor e do sistema que executa a operação, de uso único, vinculada à reserva, ao incidente, à finalidade e a uma validade, que cubra todas as datas ainda não iniciadas no momento da execução. Durante a apuração, o no-show fica suspenso; o Co-Owner PODE cancelar tempestivamente, encerrando a apuração, e o cancelamento tardio fica suspenso; o Owner PODE cancelar a qualquer tempo, encerrando a apuração, com efeito apenas sobre as datas ainda não iniciadas (REQ-081). Autorizada, a invalidação cancela a reserva numa única operação e, somente para as datas não iniciadas no momento da execução, restabelece a situação imediatamente anterior (BR-163): no Co-Owner, ocupação liberada, capacidade devolvida à capacidade coletiva da SPE e consumo do Direito de Uso corrigido; no Owner, ocupação liberada, com a capacidade permanecendo com ele. A invalidação não cria Crédito, indenização, compensação nem direito novo, não alcança datas iniciadas ou transcorridas nem capacidade já perdida por cancelamento tardio ou no-show, e é notificada à party. Encerrada a apuração sem comprovação, a reserva retoma o estado compatível com o período: Confirmada, se o período não terminou; Concluída, se já terminou.
+
 ## 13. Inadimplência, convidados, transferência e Design & Build
 
 **REQ-090 \[BR-290 a BR-298\]** — A inadimplência **PODE** suspender novas reservas e mecanismos do Club conforme os instrumentos aplicáveis; não é automática pela simples existência de débito, e reservas confirmadas permanecem. A comercialização de Direito de Uso exige autorização expressa registrada sobre débito vencido e exigível, limita-se ao exercício atual, aos saldos e limites disponíveis e ao necessário ao débito, e não gera Créditos ao inadimplente. A receita líquida quita primeiro débitos e custos; o excedente pertence ao Co-Owner; quitado o débito, a autorização cessa e o acesso é restabelecido. A posição na rotação nunca é afetada.
@@ -313,6 +322,7 @@ Tratados sem criar regra econômica nova:
 13. Second Home suspensa por não conformidade com reservas de terceiros confirmadas;
 14. média projetada alterada entre a apresentação e a manifestação: a pré-qualificação permanece vinculada à referência apresentada;
 15. Home Edition que deixa de ser pública entre a página e o envio: a manifestação não é registrada.
+16. reserva não reconhecida pela party, em apuração, com datas que se iniciam ou terminam antes da autorização ou da execução da invalidação.
 
 Toda confirmação revalida as condições aplicáveis. Falhando qualquer uma, a operação não confirma e aplica apenas consequências já definidas no `01`, em PD ou em política vigente.
 
@@ -377,11 +387,11 @@ As 192 BRs do `01` v10.2, uma a uma. Serve como mecanismo de auditoria contra om
 | BR-061 | REQ-025 | BR-260 | REQ-072 |
 | BR-062 | REQ-025 | BR-261 | REQ-072, 012 |
 | BR-063 | REQ-025 | BR-270 | REQ-073, INV-2 |
-| BR-064 | REQ-025 | BR-280 | REQ-080 |
-| BR-065 | REQ-025 | BR-281 | REQ-080 |
-| BR-070 | REQ-026 | BR-282 | REQ-080 |
-| BR-071 | REQ-026 | BR-283 | REQ-080, 081 |
-| BR-072 | REQ-026 | BR-284 | REQ-080 |
+| BR-064 | REQ-025 | BR-280 | REQ-080, 084 |
+| BR-065 | REQ-025 | BR-281 | REQ-080, 084 |
+| BR-070 | REQ-026 | BR-282 | REQ-080, 084 |
+| BR-071 | REQ-026 | BR-283 | REQ-080, 081, 084 |
+| BR-072 | REQ-026 | BR-284 | REQ-080, 084 |
 | BR-073 | REQ-026 | BR-290 | REQ-090 |
 | BR-074 | REQ-030 | BR-291 | REQ-090 |
 | BR-075 | REQ-030, INV-5 | BR-292 | REQ-090 |
@@ -432,7 +442,7 @@ As 192 BRs do `01` v10.2, uma a uma. Serve como mecanismo de auditoria contra om
 | BR-160 | REQ-040 |  |  |
 | BR-161 | REQ-040, 041, INV-3 |  |  |
 | BR-162 | REQ-039, 040 |  |  |
-| BR-163 | REQ-040, 081, PD-009 |  |  |
+| BR-163 | REQ-040, 081, 084, PD-009 |  |  |
 | BR-164 | REQ-042 |  |  |
 | BR-165 | REQ-042, INV-1 |  |  |
 | BR-166 | REQ-042 |  |  |

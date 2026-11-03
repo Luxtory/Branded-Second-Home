@@ -134,3 +134,18 @@ seguem fechados (W13). A abertura da janela tem gêmea SQL (`app.use_window_open
 horário local inexistente ou ambíguo como o Temporal), equivalência testada; a superfície de servidor para o booking é
 `@/features/calendar/booking`. Leitura do Titular: o próprio saldo (`use_right_balance`) e as noites seladas da Second
 Home (RLS + privilégio de coluna).
+
+## 8. Restauração e correção (W13)
+
+Spec [`booking` §10](booking.md#10-w13--cancelamento-no-show-recuperação-exceção-e-invalidação),
+[ADR-0027](../adr/0027-ciclo-da-reserva-de-uso-proprio-e-autorizacao-independente.md), `03` v3.16 TECH-026.
+
+- **`restore`** sai do gate da W11 só no cancelamento tempestivo — do Titular ou da resolução P-A tempestiva —: aponta o
+  `consume` da operação que criou a reserva, na mesma noite e no bucket e exercício dela (REQ-080); uma reversão por
+  consumo.
+- **`correction`** sai do gate da W11 só na invalidação Co-Owner (REQ-084), pelo `correct_use_right` com o uso de uma
+  autorização `invalidation`: aponta o `consume` de noite não iniciada, `quantity` igual à dele, efeito `consumed −
+  quantity` no saldo, na mesma operação que devolve a custódia a `spe_pool`. Índice único de reversão por consumo
+  (`restore` ou `correction`). Nunca sobre `grant` nem sobre noite em `forfeited_right`.
+- **Correção de expiração** continua estrutural e fechada (emenda de escopo do roadmap, W13): recusa explícita.
+- Consulta de invariantes da TECH-026 passa a aceitar só a `correction` nessa forma.

@@ -110,7 +110,7 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 | 10 | Custódia e selagem | calendar, inventory | REQ-040, INV-2, INV-3 | 8 | 9 | R2 | ⬜ → próxima executável (W9 ✅ em 2026-10-29), em sequência (D3); ainda não iniciada → 🔄 em execução (plano aprovado em 2026-10-29; [`w10-custodia-e-selagem.md`](w10-custodia-e-selagem.md), PR draft) → ✅ concluída (#74, squash `25f668c`, 2026-10-30; 4 migrations aplicadas, 49 no total; Production sincronizada, sem aquisição, custódia ou ocupação, gates operacionais fechados; REQ-040 e INV-2 na parte estrutural, INV-3 completo) |
 | 11 | Direito de Uso, janelas e rotações | calendar | REQ-030, REQ-031, REQ-032, REQ-033, REQ-039, PD-004, INV-4, INV-5 | 9, 10 | — | R2 | ⬜ → próxima executável (W9 e W10 ✅); ainda não iniciada → ✅ concluída (#76, squash `3a989e6`, 2026-10-30; 3 migrations aplicadas, 52 no total; Production sincronizada, sem aquisição nem movimento de Direito de Uso, gates operacionais fechados; risco residual ratificado, exclusivo da W11; `correct_use_right` para a W13 pela emenda D2) |
 | 12 | Reserva de uso próprio | booking | REQ-034, REQ-035, REQ-037, PD-002, INV-1 | 11 | — | R2 | ⬜ → próxima executável (W11 ✅ em 2026-10-30); ainda não iniciada → ✅ concluída como infraestrutura implantada com as reservas desativadas (#78, squash `57015e1`, 2026-11-02; 3 migrations aplicadas, 55 no total; `app.capability_activation` vazia; nenhuma reserva real autorizada) |
-| 13 | Cancelamento, no-show, recuperação e exceção | booking, inventory | REQ-080, REQ-081, REQ-083, PD-010 | 12 | — | R2 | ⬜ → próxima executável (W12 ✅ em 2026-11-02, reservas desativadas); ainda não iniciada |
+| 13 | Cancelamento, no-show, recuperação e exceção | booking, inventory | REQ-080, REQ-081, REQ-083, REQ-084, PD-010 | 12 | — | R2 | ⬜ → próxima executável (W12 ✅ em 2026-11-02, reservas desativadas); ainda não iniciada · E0 documental em PR draft (2026-11-03); E1 não autorizada |
 | 14 | Seleção Luxtory, parâmetros e convidados | calendar, admin, booking | REQ-016, REQ-036, REQ-092, REQ-095 | 12 | — | R2 | ⬜ |
 | 15 | Membership | identity | REQ-011, REQ-050, PD-001 | 7 | — | R3 | ⬜ |
 | 16 | PRL, parâmetros econômicos e snapshot | pricing | REQ-013, REQ-052 | 10, 14 | — | R3 | ⬜ |
@@ -169,6 +169,9 @@ ainda não iniciada.
 aplicadas / 0 pendentes, 0 reservas, ocupações e aquisições, e os gates operacionais fechados. R1–R5 seguem pendentes de
 ratificação; T-1207 aceito provisoriamente só neste estado. A W13 passa a ser a próxima wave funcional executável, ainda
 não iniciada.
+**Atualização 2026-11-03 (W13, E0):** plano revisto em quatro rodadas de auditoria do fundador; E0 documental em PR
+draft, sem merge: `02` v4.4 (REQ-084, EC-16), `03` v3.16 (TECH-022, TECH-026, TECH-051, §7), ADR-0027, specs, plano e
+STRIDE. Total normativo passa a 66 REQ no merge. E1 não autorizada; nenhuma reserva ativada.
 
 Paralelismo na retomada do B2C: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
 canal do AsyncAPI, telas e `CHANGELOG.md`, e o STRIDE do beacon. A W10 toca migrations de `calendar`/`inventory`,
@@ -1153,7 +1156,33 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   Luxtory` · `[TECH-060] forfeited_right não é reservável, depositável nem locável` · `[PD-010][REQ-083][EC-12]
   exceção sem restituição, Crédito ou compensação; resolução auditada` · `[TECH-110] correção nunca altera concessão;
   correção sem prova é recusada; não duplica restauração nem desfaz forfeited_right` (emenda D2).
-- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-080,REQ-081,REQ-083,PD-010 exits 0, stop after 4 tries`
+- **Emenda E0 (2026-11-03, ADR-0027; `02` v4.4 e `03` v3.16 em auditoria no PR documental):**
+  - **IDs (dona) acrescidos:** REQ-084 (invalidação de reserva de uso próprio não autorizada, distinta de
+    cancelamento) e EC-16. Spec: [`booking` §10](../specs/booking.md); plano: [`w13-cancelamento-no-show-recuperacao-e-excecao.md`](w13-cancelamento-no-show-recuperacao-e-excecao.md).
+  - **Entradas:** só Server Actions sobre handlers de `application/`. Adiadas até existir consumidor externo as seis
+    rotas REST previstas acima (`POST /v1/bookings/{id}/cancel`, `POST /v1/admin/bookings/{id}/no-show`,
+    `POST /v1/admin/bookings/{id}/recover-future-capacity`, `POST /v1/admin/bookings/{id}/exceptions`,
+    `POST /v1/admin/exceptions/{id}/resolve`, `POST /v1/admin/use-right-corrections`); o domínio fica reutilizável.
+  - **Correção de expiração (emenda de escopo da D2):** permanece estrutural e fechada — o banco grava `expire` exato
+    só depois do fim efetivo, recusa `consume`/`restore`/`correction` depois dele, a reversão deixaria saldo
+    inutilizável e o aumento é impossível; reabrir exige caso concreto e decisão do fundador. A `correction` da W13 é
+    só a reversão de consumo da invalidação Co-Owner.
+  - **Chaves:** K1 `own_use_booking` (criação) e K2 `own_use_lifecycle` (os seis commands da W13); jobs fora; a W13 só
+    amplia o `CHECK` de `app.capability_activation`, que continua vazia. Contenção em três degraus (ADR-0027 §5).
+  - **Autorização independente do `luxtory_app`** (papel `luxtory_booking_authorizer` + aprovação num GitHub
+    Environment, solicitação com id opaco, uso único) para no-show, recuperação, resolução de exceção como
+    cancelada e invalidação. Configuração real (Environment, senha) fora da W13.
+  - **Prazo:** tempestivo ⇔ `cancelled_at ≤ checkin_at − 360 h` (decisão funcional expressa, D11).
+  - **Exceção operacional (P-A):** resolução `cancelled` classificada no instante; tardia em `forfeited_right`, sem
+    entrada automática no Inventário; recuperação de origem P-A só com autorização e atestação de disponibilidade.
+  - **No-show:** janela `[1º checkin_at, checkout_at)`; recuperação só depois do no-show commitado.
+  - **Acceptance criteria (emenda E0):** `[REQ-084][EC-16] invalidação de Owner e de Co-Owner só com autorização
+    independente; datas iniciadas inalteradas; sem comprovação → confirmed ou completed conforme o período` ·
+    `[TECH-051] sem autorização, no-show, recuperação, exceção cancelada e invalidação são recusados no banco` ·
+    `[TECH-055] cadeia de estados linear sob SQL direto e concorrência` · `[TECH-043] 360 h exatas, fusos com e sem
+    horário de verão` · `[TECH-046] no-show em reserva de uma noite e na última noite; recusado em checkout_at` ·
+    K2 ausente → os seis commands recusados · tabela de ativação com 0 linhas.
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-080,REQ-081,REQ-083,REQ-084,PD-010 exits 0, stop after 4 tries`
 
 ### Wave 14 — Seleção Luxtory, parâmetros e convidados
 
@@ -1450,12 +1479,12 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
 - **Depends on / parallel with**: W28, W29 e D2; sequencial (última).
 - **Acceptance criteria**: `[TECH-092] commits concorrentes → um selo por evento e cadeia válida` · `[REQ-097] todo
   evento listado sai pelo outbox, sem duplicata; Titular sem Membership recebe os de calendário` · conciliação sem
-  divergência · migrations up/down · `npm run trace -- --gate` = 65/65 REQ · 11/11 PD · 6/6 INV · 13/13 EC · 12/12
+  divergência · migrations up/down · `npm run trace -- --gate` = 66/66 REQ · 11/11 PD · 6/6 INV · 16/16 EC · 12/12
   CONC.
 - **Gate global após BP0:** a aprovação integral também depende das entregas BP1/REQ-028 e BP2/REQ-029.
   Enquanto BP2 estiver condicionada, o gate global permanece incompleto; não antecipar o portal para satisfazê-lo.
   Esse gate não bloqueia o marco de prospecção BP1.
-- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0, npm run trace -- --expect REQ-097 exits 0, and npm run trace -- --gate reports 65/65 REQ, 11/11 PD, 6/6 INV, 13/13 edge cases and 12/12 concurrency pairs, stop after 5 tries`
+- **Goal command**: `/goal npm run verify && npm run test:e2e exit 0, npm run trace -- --expect REQ-097 exits 0, and npm run trace -- --gate reports 66/66 REQ, 11/11 PD, 6/6 INV, 16/16 edge cases and 12/12 concurrency pairs, stop after 5 tries`
 
 ### Matriz de cobertura (uma wave dona por ID)
 
@@ -1473,7 +1502,7 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
 | W10 | REQ-040 | — | INV-2, INV-3 |
 | W11 | REQ-030, REQ-031, REQ-032, REQ-033, REQ-039 | PD-004 | INV-4, INV-5 |
 | W12 | REQ-034, REQ-035, REQ-037 | PD-002 | INV-1 |
-| W13 | REQ-080, REQ-081, REQ-083 | PD-010 | — |
+| W13 | REQ-080, REQ-081, REQ-083, REQ-084 | PD-010 | — |
 | W14 | REQ-016, REQ-036, REQ-092, REQ-095 | — | — |
 | W15 | REQ-011, REQ-050 | PD-001 | — |
 | W16 | REQ-013, REQ-052 | — | — |
@@ -1492,7 +1521,7 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
 | W29 | REQ-021, REQ-038, REQ-091 | — | — |
 | W30 | REQ-097 | — | — |
 
-**Total planejado: 65/65 REQ · 11/11 PD · 6/6 INV.** BP0 só especifica; BP1/BP2 ainda não entregam cobertura de software.
+**Total planejado: 66/66 REQ · 11/11 PD · 6/6 INV.** BP0 só especifica; BP1/BP2 ainda não entregam cobertura de software.
 W0, W6 e W7 não são donas de REQ; justificam-se por TECH-010/011/100/110,
 pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 
@@ -1504,7 +1533,7 @@ pela superfície Interesse (`02` §2) e por TECH-050 + ADR-0002.
 - **INV como regressão transversal**: as consultas de INV-1…INV-6 rodam após todo teste `db` a partir da wave em que
   as tabelas nascem (W10, W11, W17); a conciliação da W30 reusa as mesmas consultas.
 - **Edge cases (`02` §15)**: EC-1 e EC-2 → W12 · EC-3 → W8 · EC-4 → W11/W12 · EC-5 → W14 · EC-6, EC-7 e EC-9 → W21 ·
-  EC-8 → W22 · EC-10 e EC-12 → W13 · EC-11 → W28 · EC-13 → W29.
+  EC-8 → W22 · EC-10, EC-12 e EC-16 → W13 · EC-11 → W28 · EC-13 → W29.
 - **Concorrência (TECH-110)**: CONC-1, CONC-2 e CONC-3 → W12 · CONC-4 e CONC-5 → W22 · CONC-6 → W25 · CONC-7 → W24 ·
   CONC-8 → W17/W23 · CONC-9 → W23 · CONC-10 → W20 · CONC-11 → W14 · CONC-12 → W0/W1.
 - **Commands e jobs**: todo command do TECH-051 e todo job do TECH-090 têm wave (W1 `outbox`; W10 `open_exercise`;
