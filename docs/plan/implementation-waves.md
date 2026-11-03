@@ -109,8 +109,8 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 | 9 | Sorteio auditável | ownership | PD-011 | 8 | 10 | R2 | ⬜ próxima executável (W8 ✅ em 2026-10-27); ainda não iniciada → ✅ concluída (#71, squash `a6a1f6b`, 2026-10-29; 2 migrations aplicadas, 44 no total; Production sincronizada com os gates operacionais fechados; executada em sequência, sem paralelismo com a W10 — D3) |
 | 10 | Custódia e selagem | calendar, inventory | REQ-040, INV-2, INV-3 | 8 | 9 | R2 | ⬜ → próxima executável (W9 ✅ em 2026-10-29), em sequência (D3); ainda não iniciada → 🔄 em execução (plano aprovado em 2026-10-29; [`w10-custodia-e-selagem.md`](w10-custodia-e-selagem.md), PR draft) → ✅ concluída (#74, squash `25f668c`, 2026-10-30; 4 migrations aplicadas, 49 no total; Production sincronizada, sem aquisição, custódia ou ocupação, gates operacionais fechados; REQ-040 e INV-2 na parte estrutural, INV-3 completo) |
 | 11 | Direito de Uso, janelas e rotações | calendar | REQ-030, REQ-031, REQ-032, REQ-033, REQ-039, PD-004, INV-4, INV-5 | 9, 10 | — | R2 | ⬜ → próxima executável (W9 e W10 ✅); ainda não iniciada → ✅ concluída (#76, squash `3a989e6`, 2026-10-30; 3 migrations aplicadas, 52 no total; Production sincronizada, sem aquisição nem movimento de Direito de Uso, gates operacionais fechados; risco residual ratificado, exclusivo da W11; `correct_use_right` para a W13 pela emenda D2) |
-| 12 | Reserva de uso próprio | booking | REQ-034, REQ-035, REQ-037, PD-002, INV-1 | 11 | — | R2 | ⬜ → próxima executável (W11 ✅ em 2026-10-30); ainda não iniciada |
-| 13 | Cancelamento, no-show, recuperação e exceção | booking, inventory | REQ-080, REQ-081, REQ-083, PD-010 | 12 | — | R2 | ⬜ |
+| 12 | Reserva de uso próprio | booking | REQ-034, REQ-035, REQ-037, PD-002, INV-1 | 11 | — | R2 | ⬜ → próxima executável (W11 ✅ em 2026-10-30); ainda não iniciada → ✅ concluída como infraestrutura implantada com as reservas desativadas (#78, squash `57015e1`, 2026-11-02; 3 migrations aplicadas, 55 no total; `app.capability_activation` vazia; nenhuma reserva real autorizada) |
+| 13 | Cancelamento, no-show, recuperação e exceção | booking, inventory | REQ-080, REQ-081, REQ-083, PD-010 | 12 | — | R2 | ⬜ → próxima executável (W12 ✅ em 2026-11-02, reservas desativadas); ainda não iniciada |
 | 14 | Seleção Luxtory, parâmetros e convidados | calendar, admin, booking | REQ-016, REQ-036, REQ-092, REQ-095 | 12 | — | R2 | ⬜ |
 | 15 | Membership | identity | REQ-011, REQ-050, PD-001 | 7 | — | R3 | ⬜ |
 | 16 | PRL, parâmetros econômicos e snapshot | pricing | REQ-013, REQ-052 | 10, 14 | — | R3 | ⬜ |
@@ -163,6 +163,12 @@ pendentes, cron `close_exercise` registrado (`41 5 * * *`), 0 aquisições e 0 m
 operacionais fechados. Risco residual ratificado pelo fundador, exclusivo da W11 e condicionado às barreiras verificadas
 (ADR-0025). Emenda D2: `correct_use_right` passa para a W13. A W12 passa a ser a próxima wave funcional executável,
 ainda não iniciada.
+**Atualização 2026-11-02 (W12):** W12 ✅ como infraestrutura implantada, **não como reservas reais ativadas** (PR #78,
+`57015e1`): reserva de uso próprio com autorização no banco presa à reserva, telas de consulta do Titular e
+`app.capability_activation` vazia — sem a ativação, o banco recusa toda escrita de reserva. Production com 55 migrations
+aplicadas / 0 pendentes, 0 reservas, ocupações e aquisições, e os gates operacionais fechados. R1–R5 seguem pendentes de
+ratificação; T-1207 aceito provisoriamente só neste estado. A W13 passa a ser a próxima wave funcional executável, ainda
+não iniciada.
 
 Paralelismo na retomada do B2C: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
 canal do AsyncAPI, telas e `CHANGELOG.md`, e o STRIDE do beacon. A W10 toca migrations de `calendar`/`inventory`,
@@ -1111,6 +1117,14 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   escrita direta sem ativação recusada pelo banco. Oportunidade futura, sem wave: seleção de múltiplos períodos numa
   única ação (spec booking §9). Restrição operacional mantida: nenhuma reserva real antes da W13 em Production e de
   autorização específica; a ativação é migration própria, posterior.
+- **Encerramento (2026-11-02): ✅ — infraestrutura implantada com as reservas desativadas.** PR #78, squash merge
+  `57015e1d9d2ac9257b028655c311ba3ba2effe16` (HEAD auditado `2c33033`, merge fixado nesse SHA; árvore idêntica),
+  autorizado pelo fundador exclusivamente para a implantação fechada. CI do PR (run 41538065617) e CI da `main` run
+  41556251722: lint, typecheck, test, e2e, security, migrate e deploy verdes. As três migrations W12
+  (`20261031164128`, `20261031164132`, `20261031164135`) foram aplicadas pelo pipeline sobre as 52 anteriores:
+  **55 aplicadas / 0 pendentes**. Registro das verificações de Production e das limitações de observabilidade no
+  [plano](w12-reserva-de-uso-proprio.md#encerramento-2026-11-02). `app.capability_activation` vazia. Este encerramento
+  não autoriza reservas reais, não ratifica R1–R5, não autoriza a execução de outra wave nem abre os gates operacionais.
 
 ### Wave 13 — Cancelamento, no-show, recuperação e exceção
 
