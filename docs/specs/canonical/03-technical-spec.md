@@ -8,7 +8,8 @@ Revisão W13 autorizada pelo fundador (2026-11-03): implementa o REQ-084 do `02`
 invalidação de reserva não autorizada do cancelamento; a TECH-026 delimita a `correction` à reversão do consumo de
 data não iniciada de reserva invalidada; a TECH-051 exige autorização independente do papel da aplicação para os
 atos Admin que cancelam ou invalidam reserva, declaram no-show ou transferem capacidade à Luxtory; o §7 ganha os
-fluxos de invalidação. Demais regras da v3.15 preservadas. Decisão em [ADR-0027](../../adr/0027-ciclo-da-reserva-de-uso-proprio-e-autorizacao-independente.md); aceite em
+fluxos de invalidação. Demais regras da v3.15 preservadas. Emitida com o merge do PR documental da E0 da W13 (#80);
+rastreabilidade normativa não equivale a cobertura executada. Decisão em [ADR-0027](../../adr/0027-ciclo-da-reserva-de-uso-proprio-e-autorizacao-independente.md); aceite em
 [`booking`](../booking.md).
 
 Revisão M0 autorizada pelo fundador: aplica a ontologia Home Concept → Home Edition → Second Home do `01` v10.2 e

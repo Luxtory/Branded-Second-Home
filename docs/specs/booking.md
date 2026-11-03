@@ -265,7 +265,7 @@ transferência (W28); selo e reconciliação (W30); correção de expiração (f
 | `in_exception → cancelled` | Titular | P-A: regras normais; P-B: Co-Owner só tempestivo, Owner a qualquer tempo |
 | `confirmed`/`in_use → no_show` | Admin + autorização `no_show` | `1º checkin_at ≤ at < checkout_at` |
 | `confirmed`/`in_use → in_exception` | Admin | `at < checkout_at`; tipo P-A (motivo da PD-010) ou P-B (apuração do REQ-084) |
-| `in_exception → confirmed`/`completed` | Admin | resolução única; sem comprovação na P-B: `confirmed` se o período não terminou, `completed` se terminou |
+| `in_exception → confirmed`/`completed` | Admin | resolução única; `confirmed` só com `at < checkout_at` e `completed` só com `at ≥ checkout_at` (P-A e P-B sem comprovação) |
 | `in_exception → cancelled` | Admin + autorização | P-A: `exception_cancellation`; P-B: `invalidation` |
 
 Histórico em `app.booking_state_transition` (só-inserção, cadeia linear provada no banco) e estado projetado em
@@ -300,7 +300,8 @@ verão pode aparecer 13:00 ou 15:00; no Brasil, sempre 14:00.
 
 ### 10.5. Commands
 
-- **`cancel_own_use_booking`** (Titular, sem Membership; Server Action). Entrada: reserva e termos esperados da prévia
+- **`cancel_own_use_booking`** (Titular, sem Membership; Server Action). Autorizado por representação, command, K2,
+  prazo e guard no banco; não exige autorização independente. Entrada: reserva e termos esperados da prévia
   (classificação no Co-Owner e primeira noite afetada). Ordem: guard → idempotência → `BEGIN` → K2 → representação
   (`FOR SHARE`) → classe 4 (Co-Owner) → classe 5 (noites, crescente) → transição (trava a reserva) → por noite:
   liberação, custódia, `restore` → auditoria → `COMMIT` → outbox. Termos diferentes dos esperados →
@@ -312,7 +313,8 @@ verão pode aparecer 13:00 ou 15:00; no Brasil, sempre 14:00.
 - **`open_exception`** (Admin + base): P-A com motivo da lista fechada da PD-010 (manutenção emergencial, segurança,
   sinistro, caso fortuito, força maior) ou P-B (apuração do REQ-084, com referência do incidente). Notifica a party; na
   P-A, com o prazo local de 360 h.
-- **`resolve_exception`** (Admin + base): `confirmed`/`completed` sem efeito econômico; `cancelled` só com autorização
+- **`resolve_exception`** (Admin + base): `confirmed` (`at < checkout_at`) ou `completed` (`at ≥ checkout_at`), sem efeito
+  sobre saldo ou custódia; `cancelled` só com autorização
   (P-A `exception_cancellation`; P-B Owner `invalidation`). P-B Co-Owner `cancelled` → recusado (usa `correct_use_right`).
 - **`recover_future_capacity`** (Admin + base + autorização `recovery`): só as custódias gravadas na autorização, ainda
   futuras e ativas; emitida depois do no-show ou do cancelamento tardio commitado, nunca em conjunto.
@@ -345,7 +347,8 @@ Recusas (REQ-098, TECH-056): `ERR_VALIDATION` · `ERR_PERMISSION` · indisponív
 Fluxo: o Admin registra a solicitação (id opaco) → o fundador dispara o workflow no GitHub Environment com o id e aprova
 → o papel `luxtory_booking_authorizer` chama `app.authorize_booking_action`, que deriva o escopo dos fatos, confere o
 esperado e grava a autorização → o Admin executa o command; o banco exige o uso na mesma operação. Escopo, emissão,
-validade e execução por finalidade: tabela do ADR-0027 §4. Criar o Environment, a senha e qualquer acesso a Production
+validade e execução por finalidade: tabela do ADR-0027 §4. A solicitação registrada não prova legitimidade: o aprovador
+verifica os fundamentos por fontes próprias (ADR-0027 §4; roteiro no runbook do autorizador). Criar o Environment, a senha e qualquer acesso a Production
 são decisões futuras do fundador, fora da W13.
 
 ### 10.8. Chaves, jobs e notificações
@@ -355,7 +358,8 @@ são decisões futuras do fundador, fora da W13.
 - `advance_booking_states` e `flag_no_show_candidates`: `SYSTEM_COMMANDS`, `/api/jobs/[job]`, cron diário 17:00 UTC
   (Hobby: uma vez por dia, ±59 min). A cadência é do runbook (TECH-001); nenhum command depende do estado do job.
 - Notificações pelo outbox (TECH-091), à party da reserva: cancelamento, exceção aberta e resolvida, invalidação,
-  no-show e correção. Recuperação não notifica (BR-284). Eventos no AsyncAPI antes dos handlers.
+  no-show e correção. Recuperação não notifica (BR-284). Contratos AsyncAPI no início da E2, antes do primeiro handler
+  que emite evento.
 
 ### 10.9. Telas
 
@@ -380,7 +384,9 @@ apuração; Owner cancela sem efeito retroativo · `[TECH-110]` correção nunca
 alcança `forfeited_right`; correção de expiração recusada · `[TECH-046]` no-show recusado antes do 1º check-in e em
 `checkout_at`; aceito em `checkout_at − 1 µs`, na última noite e em reserva de uma noite · `[TECH-055]` matriz de
 transições inválidas · cadeia: duas raízes, anterior desatualizada, bifurcação e anterior de outra reserva recusadas;
-transições concorrentes → exatamente uma · autorização: os critérios do plano W13 (§ "Autorização independente") ·
+transições concorrentes → exatamente uma · resolução `completed` antes de `checkout_at` e `confirmed` depois recusadas ·
+cancelamento do Titular aceito sem autorização independente (com representação, K2 e prazo) · P-B forjada com K2: só
+suspende tardio do Co-Owner e no-show; Owner e tempestivo seguem; saldo, custódia e ocupação inalterados · autorização: os critérios do plano W13 (§ "Autorização independente") ·
 K2 ausente → os seis commands recusados; jobs limitados pelo instante · tabela de ativação com 0 linhas · prazo: −1 µs e
 exato tempestivos, +1 µs tardio, fusos com e sem horário de verão · consultas de invariantes vazias após todo teste `db` ·
 E2E com axe 0 a 390 e 1440 px, sem overflow de 320 a 1920 px, fluxo por toque a 390 px.

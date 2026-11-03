@@ -71,8 +71,15 @@ Forças:
 
    - `resolve_exception → cancelled` em P-B de Co-Owner é sempre recusado (a invalidação reverte o consumo na mesma
      operação); `correct_use_right` fora de P-B de Co-Owner autorizada é recusado.
-   - Nenhuma liberação, transição de custódia, `restore` administrativo ou `correction` é aceita sem a linha de uso da
-     autorização da mesma operação, com a noite no escopo autorizado e ainda não iniciada.
+   - Dois regimes, ambos conferidos no banco. **Cancelamento pelo Titular**: representação (delegação ativa e holding da
+     reserva), command `cancel_own_use_booking`, K2, prazo e guard — **sem** autorização independente. **Operações
+     administrativas com efeito econômico** (`declare_no_show`, `recover_future_capacity`, `resolve_exception →
+     cancelled`, invalidação): as proteções aplicáveis (command, `staff_role`, K2, instante) **mais** a linha de uso da
+     autorização da mesma operação, com a noite no escopo autorizado e ainda não iniciada. A exigência da linha de uso
+     depende do command e do desfecho da operação e nunca alcança o cancelamento do Titular.
+   - `resolve_exception → completed` só com `at ≥ checkout_at` e `→ confirmed` só com `at < checkout_at`, como o job e
+     "Concluída = período encerrado" (item 7): uma resolução não encerra estadia em curso nem retira do Titular o
+     cancelamento.
    - Uma única transação por operação: falha desfaz tudo, inclusive o uso da autorização; replay pela chave do executor
      devolve o resultado gravado; a auditoria registra cada noite como revertida, liberada ou mantida (iniciada).
    - Cancelamento do Titular durante exceção grava, na mesma transação, a resolução (`resolution_source =
@@ -109,6 +116,12 @@ Forças:
    - Credencial comprometida com autorização legítima: o atacante só consegue executar exatamente o ato autorizado, no
      escopo e na validade gravados, e uma única vez. A classificação esperada impede que a escolha do instante piore a
      P-A do Co-Owner.
+   - A solicitação, gravada pelo papel da aplicação, não é evidência de legitimidade. O aprovador verifica os
+     fundamentos por fontes próprias antes de aprovar: no-show — registro de não comparecimento da administração
+     profissional ou contato com a party por canal próprio; invalidação — declaração da party por canal verificado e
+     análise de fontes que o `luxtory_app` não escreve (logs do Vercel e do Supabase Auth); cancelamento P-A — o evento
+     extraordinário; recuperação de origem P-A — disponibilidade e compatibilidade com o bloqueio. O workflow só confere
+     escopo e validade; o roteiro por finalidade fica no runbook do autorizador.
    - Com o servidor da aplicação inteiro comprometido, a tela que o aprovador consulta deixa de ser confiável: limite da
      fronteira existente (ADR-0024 §3, R1), não resolvido por este mecanismo.
 
@@ -135,7 +148,8 @@ Forças:
    `correction` depois dele, a reversão deixaria saldo inutilizável e o aumento é impossível.
 
 9. **Entradas.** Só Server Actions sobre handlers de `application/`; as seis rotas REST previstas no roadmap ficam
-   adiadas até existir consumidor externo (emenda do roadmap). AsyncAPI atualizado antes dos handlers (E1/E2).
+   adiadas até existir consumidor externo (emenda do roadmap). Contratos AsyncAPI dos eventos dos commands no início da
+   E2, antes do primeiro handler que emite evento; a E3 fica com jobs e consumidores.
 
 10. **Prontidão.** `app.assert_own_use_activation_ready()` (W13) verifica invariantes: gatilhos presentes e habilitados,
     privilégios efetivos (`has_*_privilege`), RLS, consultas de violação vazias e nenhuma chave presente. Referências de
@@ -147,8 +161,9 @@ Forças:
 ## Risco residual (sem ratificação)
 
 R1–R5 do ADR-0026 seguem pendentes. Acrescentam-se R6 (cancelamento forjado com K2 presente: tardio irreversível), R7
-(atos Admin forjados sem efeito econômico — abertura de exceção e resolução `confirmed`/`completed`; os demais exigem
-autorização independente), R8 (Admin interno: mitigado pela autorização independente), R4b (reserva não autorizada já
+(atos Admin forjados sem autorização independente — abertura de exceção e resolução `confirmed`/`completed`: não alteram
+saldo nem custódia, mas uma P-B indevida suspende o cancelamento tardio do Co-Owner e o no-show enquanto durar; os atos
+econômicos exigem autorização independente), R8 (Admin interno: mitigado pela autorização independente), R4b (reserva não autorizada já
 cancelada com atraso, com no-show ou com datas iniciadas: irremediável sem alterar BR-281/282 e TECH-060) e C1 (prazo
 vencido durante indisponibilidade ou contenção: pendente de decisão operacional/contratual antes da ativação; nenhuma
 compensação automática; a PD-010 não é exclusão genérica). Detalhe por estado operacional no STRIDE `booking` (W13).

@@ -176,7 +176,12 @@ comprometido, forja operações Admin — tem `INSERT` em `app.operation` e `SEL
   invalidação.
 - **Mitigation**: autorização independente do `luxtory_app` (papel dedicado + aprovação no GitHub Environment), de uso
   único, com escopo e validade por finalidade; o banco exige o uso na mesma operação.
-- **Residual**: abertura de exceção e resolução `confirmed`/`completed` (sem efeito econômico) ficam só com Admin + K2.
+- **Residual**: abertura de exceção e resolução `confirmed`/`completed` ficam com Admin + K2, sem autorização
+  independente. Não alteram saldo nem custódia, mas não são inofensivas: uma P-B indevida suspende o cancelamento
+  tardio do Co-Owner e o no-show enquanto durar (o Owner e o cancelamento tempestivo seguem disponíveis). Mitigação:
+  notificação imediata à party na abertura, prazo do 1º check-in visível ao Admin, `completed` só com o período
+  encerrado. Teste: a abertura forjada pelo `luxtory_app` com K2 produz só essas restrições; sem K2 ou sem operação
+  Admin, recusada.
 
 ### T-1303 [MEDIUM] Tampering — uso indevido de autorização legítima
 
@@ -184,6 +189,9 @@ comprometido, forja operações Admin — tem `INSERT` em `app.operation` e `SEL
 - **Mitigation**: escopo derivado dos fatos e gravado (reserva, finalidade, noites/custódias, classificação esperada,
   validade); uso único (PK); trava consultiva por reserva; uso `FOR SHARE` × revogação `FOR UPDATE`.
 - **Residual**: o atacante só antecipa exatamente o ato autorizado, uma vez.
+- **Procedure**: a solicitação gravada pelo papel da aplicação não prova legitimidade; o aprovador verifica os
+  fundamentos por fontes próprias (no-show: registro da administração profissional ou da party; invalidação:
+  declaração da party por canal verificado e logs do Vercel/Supabase Auth) antes de aprovar.
 
 ### T-1304 [HIGH] Tampering/Elevation — workflow do autorizador
 
@@ -241,7 +249,7 @@ A = hoje, sem reservas e sem ativação; B = ativada; C = reservas existentes co
 | R4b reserva não autorizada já cancelada com atraso, com no-show ou com datas iniciadas | detecção rápida, monitoração, runbook | — | sim | sim |
 | R5 trilhas sem autenticidade | selo W30 | estrutural | sim | sim |
 | R6 cancelamento forjado | K2; contenção | — | sim | sim |
-| R7 Admin forjado sem efeito econômico | K2; atos econômicos exigem autorização | — | sim | sim |
+| R7 Admin forjado sem autorização independente (abertura de exceção; P-B indevida suspende tardio e no-show) | K2; notificação imediata; atos econômicos exigem autorização | — | sim | sim |
 | R8 Admin interno | autorização independente; auditoria | — | sim | sim |
 | C1 prazo perdido por indisponibilidade | decisão operacional/contratual pendente | — | sim | sim |
 | T-1207 prévia sem limitador | reavaliar com métricas | leitura | sim | sim |

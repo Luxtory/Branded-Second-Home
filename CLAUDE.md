@@ -58,7 +58,9 @@ conflict, 01 prevails (BR-380, REQ-104).
   reopens the material definition. The commercial interest always starts from a Home Edition (`home_edition_id`, `desired_location`).
   Never Residence, residência or residencial to name or frame the product; "identidade da marca", never "Brand DNA";
   "imóvel de lazer" only descriptively and "casa" only as narrative language.
-- **Gate:** 66/66 REQ · 11/11 PD · 6/6 INV covered by tests (03 §12).
+- **Gate (target, 03 §12):** 66/66 REQ · 11/11 PD · 6/6 INV covered by tests. 66 REQ is the normative count of
+  `02` v4.4 (REQ-084, W13), issued with the merge of the W13 E0 docs PR; traceability is updated, but executed
+  coverage of REQ-084 is pending the W13 implementation stages.
 
 ## Instance constraints (Luxtory)
 

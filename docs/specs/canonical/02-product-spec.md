@@ -6,7 +6,8 @@ Revisão W13 autorizada pelo fundador (2026-11-03): acrescenta à v4.3 o REQ-084
 próprio comprovadamente não autorizada, distinta de cancelamento — e o edge case 16, sem alterar Business Rules,
 PDs ou invariantes; a matriz BR → REQ registra o REQ-084 nas BR-163 e BR-280 a BR-284. Rastreabilidade técnica em
 `03` v3.16; decisão em [ADR-0027](../../adr/0027-ciclo-da-reserva-de-uso-proprio-e-autorizacao-independente.md); aceite em [`booking`](../booking.md).
-Total normativo: **66 REQ · 6 INV · 11 PD**.
+Total normativo: **66 REQ · 6 INV · 11 PD**. Emitida com o merge do PR documental da E0 da W13 (#80);
+a cobertura executada do REQ-084 depende da implementação da W13.
 
 Revisão M0 autorizada pelo fundador: aplica a ontologia Home Concept → Home Edition → Second Home do `01` v10.2 —
 revisa §1, §2, REQ-020 a REQ-022, REQ-024, REQ-025, REQ-028, REQ-033, REQ-100 e os edge cases 14 e 15 —, sem

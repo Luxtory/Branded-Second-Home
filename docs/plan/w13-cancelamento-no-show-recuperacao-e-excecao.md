@@ -34,8 +34,8 @@ Ameaças: [`booking`](../security/threats/booking.md) (W13).
 |---|---|---|
 | E0 | Canônicos `02` v4.4 e `03` v3.16 (REQ-084, EC-16, TECH-022/026/051, §7); roadmap; ADR-0027; specs; plano; STRIDE | PR draft documental; sem merge |
 | E1 | Migrations: transições, projeção, exceção, candidatos, solicitação/autorização/revogação/uso, papel autorizador, regras de liberação, custódia, `restore` e `correction`, chave K2 no `CHECK`, prontidão; `db:check`; testes com privilégios reais | não autorizada |
-| E2 | Domínio e commands (classificação TS + gêmea SQL; máquina da TECH-055; seis commands); idempotência; concorrência | não autorizada |
-| E3 | Jobs, consumidores de notificação, AsyncAPI antes dos handlers | não autorizada |
+| E2 | Contratos AsyncAPI dos eventos dos commands, antes do primeiro handler que emite evento; domínio e commands (classificação TS + gêmea SQL; máquina da TECH-055; seis commands); idempotência; concorrência | não autorizada |
+| E3 | Jobs e consumidores de notificação | não autorizada |
 | E4a | Revisão renderizada com o fundador: prévia do cancelamento (tempestivo, tardio, iniciada, Owner, prazo vencido na revisão, em exceção) e telas Admin, 390/1440 px | não autorizada |
 | E4b | Integração das telas e E2E | não autorizada |
 | E5 | Workflow do autorizador comprovado num Environment isolado apontando para banco descartável | não autorizada |
@@ -73,6 +73,13 @@ Ameaças: [`booking`](../security/threats/booking.md) (W13).
     variação é recusada.
 13. **Cobertura das finalidades.** Sem autorização, mesmo com operação Admin válida e K2 presente: P-A `cancelled`,
     invalidação (Owner e Co-Owner), no-show e recuperação recusados.
+14. **Regimes distintos.** O cancelamento do Titular, com representação, K2 e prazo, é aceito sem autorização
+    independente; a exigência da linha de uso depende do command e do desfecho.
+15. **Fundamentos verificados.** O runbook do autorizador lista, por finalidade, as fontes que o aprovador consulta
+    antes de aprovar; a solicitação registrada pelo papel da aplicação não basta. O workflow só confere escopo e validade.
+16. **Atos sem autorização independente.** Abertura de P-B forjada com K2 produz só a suspensão do cancelamento tardio
+    do Co-Owner e do no-show (saldo, custódia e ocupação inalterados); sem K2 ou sem operação Admin, recusada;
+    `completed` antes de `checkout_at` e `confirmed` depois, recusados.
 
 ## Gates
 
