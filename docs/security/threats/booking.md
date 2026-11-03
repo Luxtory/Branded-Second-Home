@@ -179,7 +179,9 @@ comprometido, forja operações Admin — tem `INSERT` em `app.operation` e `SEL
 - **Residual**: abertura de exceção e resolução `confirmed`/`completed` ficam com Admin + K2, sem autorização
   independente. Não alteram saldo nem custódia, mas não são inofensivas: uma P-B indevida suspende o cancelamento
   tardio do Co-Owner e o no-show enquanto durar (o Owner e o cancelamento tempestivo seguem disponíveis). Mitigação:
-  notificação imediata à party na abertura, prazo do 1º check-in visível ao Admin, `completed` só com o período
+  evento de notificação enfileirado no outbox no COMMIT da abertura (a entrega depende do job `outbox`, hoje cron
+  diário: até cerca de um dia de atraso; latência adequada a comprovar antes da ativação), prazo do 1º check-in visível
+  ao Admin, `completed` só com o período
   encerrado. Teste: a abertura forjada pelo `luxtory_app` com K2 produz só essas restrições; sem K2 ou sem operação
   Admin, recusada.
 
@@ -249,7 +251,7 @@ A = hoje, sem reservas e sem ativação; B = ativada; C = reservas existentes co
 | R4b reserva não autorizada já cancelada com atraso, com no-show ou com datas iniciadas | detecção rápida, monitoração, runbook | — | sim | sim |
 | R5 trilhas sem autenticidade | selo W30 | estrutural | sim | sim |
 | R6 cancelamento forjado | K2; contenção | — | sim | sim |
-| R7 Admin forjado sem autorização independente (abertura de exceção; P-B indevida suspende tardio e no-show) | K2; notificação imediata; atos econômicos exigem autorização | — | sim | sim |
+| R7 Admin forjado sem autorização independente (abertura de exceção; P-B indevida suspende tardio e no-show) | K2; evento enfileirado no COMMIT (entrega pelo cron diário do `outbox`; latência a comprovar antes da ativação); atos econômicos exigem autorização | — | sim | sim |
 | R8 Admin interno | autorização independente; auditoria | — | sim | sim |
 | C1 prazo perdido por indisponibilidade | decisão operacional/contratual pendente | — | sim | sim |
 | T-1207 prévia sem limitador | reavaliar com métricas | leitura | sim | sim |

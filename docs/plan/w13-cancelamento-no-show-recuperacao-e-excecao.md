@@ -91,8 +91,9 @@ operacionais, secrets, Environment real, migrations fora da CI, merge sem autori
 ## Pendências preservadas
 
 - **Ativação** (estado B): migration própria depois da W13 em Production; prontidão + impressões digitais; ensaio da
-  desativação (R3) fora de Production; execuções do `outbox`, `open_exercise` e `close_exercise` observadas; notificação
-  imediata para detecção (R4); decisões expressas sobre R1–R8; reavaliação do T-1207; configuração do Environment, do
+  desativação (R3) fora de Production; execuções do `outbox`, `open_exercise` e `close_exercise` observadas; latência de
+  entrega das notificações adequada à detecção (R4, R7), comprovada em Production — hoje o evento é enfileirado no
+  COMMIT e entregue pelo cron diário do `outbox`, sem serviço novo na W13; decisões expressas sobre R1–R8; reavaliação do T-1207; configuração do Environment, do
   revisor e da senha do autorizador.
 - **C1** — prazo vencido durante indisponibilidade ou contenção: decisão operacional/contratual antes da ativação, com
   comunicação, coleta de evidência e escalonamento administrativo; sem compensação automática; a PD-010 não é exclusão

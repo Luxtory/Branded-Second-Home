@@ -75,8 +75,11 @@ Forças:
      reserva), command `cancel_own_use_booking`, K2, prazo e guard — **sem** autorização independente. **Operações
      administrativas com efeito econômico** (`declare_no_show`, `recover_future_capacity`, `resolve_exception →
      cancelled`, invalidação): as proteções aplicáveis (command, `staff_role`, K2, instante) **mais** a linha de uso da
-     autorização da mesma operação, com a noite no escopo autorizado e ainda não iniciada. A exigência da linha de uso
-     depende do command e do desfecho da operação e nunca alcança o cancelamento do Titular.
+     autorização da mesma operação, sempre exigida. Cada escrita que movimenta uma noite (liberação, custódia,
+     `restore`, `correction`) exige também a noite no escopo autorizado e ainda não iniciada. Um `declare_no_show` sem
+     noite futura (reserva de uma noite, ausência constatada na última noite) usa a autorização do evento de ausência
+     (finalidade `no_show`, item 4) sem exigir noite. A exigência da linha de uso depende do command e do desfecho da
+     operação e nunca alcança o cancelamento do Titular.
    - `resolve_exception → completed` só com `at ≥ checkout_at` e `→ confirmed` só com `at < checkout_at`, como o job e
      "Concluída = período encerrado" (item 7): uma resolução não encerra estadia em curso nem retira do Titular o
      cancelamento.
