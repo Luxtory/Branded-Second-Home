@@ -66,9 +66,9 @@ canônicos. Spec: [`booking`](../specs/booking.md) (e notas em `inventory`, `cal
 | E5b | Telas: calendário, reservas, central de notificações, i18n; `channel` no GRANT do Titular e RLS por holding (opção 1) | ✅ |
 | E6 | Testes db (command, fronteira, RLS com identidades diferentes, leitura e prévia), unitários, E2E | ✅ |
 | E7 | Gates: `npm run verify`, `npm run test:e2e` (`--workers=2`), `npm run trace -- --expect REQ-034,REQ-035,REQ-037,PD-002,INV-1` | ✅ (c4ad879, 2026-11-02); refeitos depois da auditoria (E9) |
-| E8 | Commit, push, PR draft, checkpoint | ✅ PR draft #78 (c4ad879, CI verde); merge **não autorizado** |
+| E8 | Commit, push, PR draft, checkpoint | ✅ PR draft #78 (c4ad879, CI verde); merge **não autorizado** → autorizado e concluído em 2026-11-02 (squash `57015e1`, implantação fechada) |
 | E9 | Correções da auditoria independente do PR #78 (2026-11-02): resultado incerto só pela idempotência do executor; aviso e nenhuma confirmação com as reservas fechadas (`bookingOpen` da ativação); prévia e calendário num snapshot único; motivo "reserva do Owner"; nota W28; E2E de confirmação com ativação só no banco descartável | ✅ no mesmo PR draft #78; aprovadas tecnicamente pelo fundador (2026-11-02) |
-| E10 | Verificações finais (2026-11-02): E2E de confirmação do Co-Owner com a ativação só no banco descartável (saldo da categoria cai, a outra não muda, noite ocupada); precisão do snapshot (consistência, não vigência) e limite da perda da chave; custo da prévia medido (STRIDE T-1207); aplicabilidade de R1–R5 por estado | ✅ no PR draft #78; merge aguarda decisão do fundador |
+| E10 | Verificações finais (2026-11-02): E2E de confirmação do Co-Owner com a ativação só no banco descartável (saldo da categoria cai, a outra não muda, noite ocupada); precisão do snapshot (consistência, não vigência) e limite da perda da chave; custo da prévia medido (STRIDE T-1207); aplicabilidade de R1–R5 por estado | ✅ no PR draft #78; merge aguarda decisão do fundador → preflight de Production somente leitura (2026-11-02) e merge autorizado |
 
 ## Riscos residuais declarados (ratificação pendente)
 
@@ -105,3 +105,59 @@ canônicos. Spec: [`booking`](../specs/booking.md) (e notas em `inventory`, `cal
   para reserva forjada a menos de 15 dias do check-in, como já previsto); notificação (depende do job `outbox`, cron
   diário 06:17 UTC: confirmar que a latência é aceitável e observar execuções em Production); prévia (reavaliar o
   limitador com métricas reais de uso). A ativação continua sendo só por migration pela CI, com autorização expressa.
+
+## Encerramento (2026-11-02)
+
+- **Concluída como infraestrutura implantada com as reservas desativadas — não como reservas reais ativadas.** O
+  fundador aprovou a W12 tecnicamente e autorizou o squash merge exclusivamente para a implantação fechada, sem
+  autorizar reservas reais nem ratificar R1–R5.
+- Preflight de Production somente leitura antes do merge: projeto Supabase `fpuzepugueidglbceglz` ACTIVE_HEALTHY;
+  52 aplicadas / 0 pendentes com as versões idênticas às da `main`; 0 aquisições, holdings, Ações, noites, custódias,
+  ocupações, movimentos e saldos de Direito de Uso e sorteios; operações só as 2 `assign_staff_role` do bootstrap
+  (2026-09-27); outbox sem pendência; nenhum objeto W12; `track_commit_timestamp` desligado; 24 nomes de env, sem gates;
+  deployment de produção em `a3802d3`.
+- PR #78 → squash `57015e1d9d2ac9257b028655c311ba3ba2effe16` (HEAD `2c33033`, merge fixado nesse SHA; árvore
+  idêntica; CI do PR 41538065617). CI da `main` 41556251722 verde: lint, typecheck, test, e2e, security, migrate
+  (Applied 52 / Pending 3 → as três migrations W12, `20261031164128`, `20261031164132` e `20261031164135`) e deploy,
+  este só depois do `migrate`.
+- Production, conferida somente em leitura, conforme observado:
+  - Vercel: deployment `dpl_CNvSH2GTgruiKNhihRRiKdbUny7N` READY em `57015e1`. `branded-second-home.vercel.app`:
+    `/v1/version` = `57015e1`, `/v1/health` 200; smoke: `/` e `/brand-partner` 200; `/admin` → `/entrar`; `/titular`,
+    `/titular/reservas`, `/titular/notificacoes` e `/titular/calendario/<id>` → `/titular/entrar`; os três jobs 401 sem
+    o segredo; `/privacidade` 404. `luxtory.club`: alias configurado (auditoria do fundador); a resposta HTTP desse
+    domínio não foi observada deste ambiente, onde o nome resolve para o endereço local.
+  - Banco: 55 aplicadas / 0 pendentes, versões idênticas às do repositório. O `dbmate` não guarda checksum; as
+    definições do schema `app` foram comparadas com um PostgreSQL descartável montado com as migrations do repositório:
+    gatilhos, políticas, colunas, constraints e privilégios de tabela e de coluna idênticos; as 81 funções com md5
+    idêntico uma a uma.
+  - Ativação e dados: `app.capability_activation` vazia; 0 reservas, ocupações, aquisições, holdings e notificações.
+  - Privilégios: `luxtory_app` com SELECT na ativação, sem INSERT, UPDATE ou DELETE; INSERT em `app.booking`, sem
+    UPDATE nem DELETE; INSERT em `app.date_occupancy`; UPDATE em `app.date_custody` só nas colunas `closed_at` e
+    `closed_by_operation` (`GRANT` da migration `20261031164132`; consultado diretamente: `closed_at` com UPDATE e
+    `holder_kind` sem; demais colunas pela igualdade dos privilégios de coluna com o repositório). `authenticated` lê
+    `channel` de `app.booking`, não `holding_id`, sem INSERT; `anon` sem acesso; RLS ativa em `app.booking`,
+    `app.capability_activation` e `app.notification`; políticas `booking_app_insert`, `booking_app_read` e
+    `booking_holder_read`.
+  - Operação: três crons inalterados (`close_exercise 41 5 * * *`, `open_exercise 23 4 * * *`, `outbox 17 6 * * *`);
+    24 nomes de env idênticos aos do preflight, sem gates; `track_commit_timestamp` desligado. Nenhum cron manual,
+    segredo, flag ou gate alterado.
+  - Interface fechada: sem holding em Production, nenhum Titular alcança as telas novas; a apresentação lê a mesma
+    ativação vazia; nenhuma confirmação real foi executada. O estado fechado e a confirmação (só no banco descartável)
+    foram provados no E2E do mesmo código.
+- Limitação de observabilidade: nenhum agrupamento de erro de runtime na janela de 1 h e nenhum registro de log de
+  runtime na janela de 40 min consultadas (o plano Hobby retém 1 h); a CLI não devolveu registros de requisição deste
+  ambiente; o smoke direto não teve 5xx. Essas janelas limitadas não provam ausência absoluta de erros.
+
+## Pendências preservadas
+
+- **Ativação:** a linha `own_use_booking` em `app.capability_activation` continua proibida. Depende da W13 em
+  Production, dos ensaios operacionais (desativação emergencial, credenciais), da verificação operacional do `outbox`
+  (execuções observadas e latência das notificações aceita) e de nova autorização do fundador; só por migration pela CI.
+- **Riscos:** R1–R5 pendentes de ratificação específica para a ativação. T-1207 aceito provisoriamente só para o estado
+  atual de reservas fechadas, com reavaliação antes da operação real (STRIDE `booking`).
+- **W13:** cancelamento, restauração e tratamento de reservas indevidas (inclusive a reserva forjada a menos de 15 dias
+  do check-in, R4), e `correct_use_right` (emenda D2).
+- **W22:** reserva sobre `reserved_right` devolvido (emenda D4).
+- **W28:** visibilidade e exercício dos compromissos que sobrevivem à transferência (BR-344 a BR-346, nota W12 no roadmap).
+- **W30:** selo de auditoria (R5), reconciliação e endurecimento (limitador da prévia e `statement_timeout`, se as
+  métricas pedirem).

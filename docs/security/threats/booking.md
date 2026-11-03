@@ -134,6 +134,9 @@ só com a ativação privilegiada presente. Dados: ids pseudônimos (party, hold
   800 noites, número fixo de consultas indexadas, transação só de leitura sem travas, duração da função na Vercel. Sem
   `statement_timeout` próprio nas leituras: com esse custo, não muda o caso típico; endurecimento opcional (W30) se a
   medição em produção mostrar cauda longa. Resposta a abuso: revogar a delegação, que vale na hora (TECH-050).
+- **Aceitação provisória (fundador, 2026-11-02):** T-1207 aceito exclusivamente para a W12 implantada com as reservas
+  desativadas (`app.capability_activation` vazia). Antes da operação real, reavaliar com métricas reais de uso (volume
+  de prévias por Titular, latência, cauda longa) e decidir de novo; a aceitação não se estende à ativação.
 
 ## 5. Out of scope
 
