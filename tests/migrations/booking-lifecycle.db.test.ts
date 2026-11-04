@@ -23,6 +23,7 @@ import {
   connect,
   deactivate,
   historicBooking,
+  historicException,
   insertTransition,
   lastStartedNight,
   lifecycleFacts,
@@ -220,6 +221,11 @@ describe('W13 E1 — ciclo da reserva no banco com os privilégios reais (luxtor
         restores: 0,
         consumed: before.consumed,
       });
+      // TECH-060: `forfeited_right` não é reservável — nem pelo command da W12, nem pela outra Ação.
+      for (const t of co.titulares)
+        await expect(h.book(t, { second_home_id: co.homeId, checkin_date: s(2), checkout_date: s(3) })).resolves.toEqual(
+          expect.objectContaining({ status: 'rejected', code: 'ERR_CAPACITY_UNAVAILABLE' }),
+        );
     });
 
     it('[EC-10][TECH-055][TECH-046] reserva em curso: job avança e sinaliza; Titular cancela só as noites não iniciadas', async () => {
@@ -684,6 +690,81 @@ describe('W13 E1 — ciclo da reserva no banco com os privilégios reais (luxtor
           }),
         ).rejects.toEqual(constraint('booking_exception_binding'));
       expect((await bookingRow(h.database.pool, id)).state).toBe('in_exception');
+    });
+  });
+
+  describe('período encerrado, operação única e consultas de invariantes', () => {
+    it('[REQ-084][EC-16] exceção com o período encerrado: `confirmed` recusado, `completed` aceito, sem efeito econômico', async () => {
+      const a = co.titulares[1]!;
+      const id = await historicBooking(h, { homeId: co.homeId, titular: a, checkin: s(-23), checkout: s(-21) });
+      await historicException(h, id, admin, 'unauthorized_booking');
+      const before = await lifecycleFacts(h, id);
+      expect(before.state).toBe('in_exception');
+      await expect(
+        app('resolve_exception', asAdmin(), (c, op) => resolveWithoutEffect(c, op, id, 'confirmed')),
+      ).rejects.toEqual(constraint('conflict_booking_resolution_period'));
+      // Sem noite não iniciada, nem o Titular cancela (P-B do Co-Owner: só tempestivo, e aqui nem há noite futura).
+      await expect(
+        app('cancel_own_use_booking', titular(a), (c, op) =>
+          closeBooking(c, op, id, { kind: 'cancellation', expected: { cancellationClass: 'late', firstAffectedDate: null } }),
+        ),
+      ).rejects.toEqual(constraint('conflict_booking_no_unstarted_night'));
+      await app('resolve_exception', asAdmin(), (c, op) => resolveWithoutEffect(c, op, id, 'completed'));
+      expect(await lifecycleFacts(h, id)).toEqual({ ...before, state: 'completed', transitions: before.transitions + 1 });
+    });
+
+    it('[TECH-002] uma operação grava no máximo um evento de reserva fora do avanço do sistema', async () => {
+      const a = co.titulares[1]!;
+      const x = await bookNow(h, a, co.homeId, at(72), at(73));
+      const y = await bookNow(h, a, co.homeId, at(75), at(76));
+      await expect(
+        app('cancel_own_use_booking', titular(a), async (c, op) => {
+          await closeBooking(c, op, x, { kind: 'cancellation', expected: { cancellationClass: 'timely', firstAffectedDate: at(72) } });
+          await closeBooking(c, op, y, { kind: 'cancellation', expected: { cancellationClass: 'timely', firstAffectedDate: at(75) } });
+        }),
+      ).rejects.toEqual(constraint('booking_transition_one_event_per_operation'));
+      expect((await bookingRow(h.database.pool, x)).state).toBe('confirmed');
+      expect((await bookingRow(h.database.pool, y)).state).toBe('confirmed');
+    });
+
+    it('[ADR-0027 §2] as consultas de invariantes acusam estado sem transição e ocupação ativa depois do fechamento', async () => {
+      const a = co.titulares[1]!;
+      const id = await bookNow(h, a, co.homeId, at(78), at(79));
+      const client = await connect(h.database.url);
+      try {
+        await client.query('BEGIN');
+        await client.query('ALTER TABLE app.booking DISABLE TRIGGER booking_state_guard');
+        await client.query(`UPDATE app.booking SET state = 'cancelled' WHERE id = $1`, [id]);
+        const { rows } = await client.query<{ invariant: string; detail: string }>(
+          `SELECT invariant, detail FROM app.booking_invariant_breaches() WHERE detail = $1`,
+          [id],
+        );
+        expect(rows).toEqual([{ invariant: 'booking_state_projection', detail: id }]);
+      } finally {
+        await client.query('ROLLBACK').catch(() => undefined);
+        await client.end();
+      }
+      await app('cancel_own_use_booking', titular(a), (c, op) =>
+        closeBooking(c, op, id, { kind: 'cancellation', expected: { cancellationClass: 'timely', firstAffectedDate: at(78) } }),
+      );
+      const forged = await connect(h.database.url);
+      try {
+        await forged.query('BEGIN');
+        await forged.query('ALTER TABLE app.date_occupancy DISABLE TRIGGER date_occupancy_release');
+        await forged.query(
+          `UPDATE app.date_occupancy SET released_at = NULL, release_reason = NULL, released_by_operation = NULL
+            WHERE booking_id = $1`,
+          [id],
+        );
+        const { rows } = await forged.query<{ invariant: string }>(
+          `SELECT invariant FROM app.booking_invariant_breaches() WHERE detail = $1`,
+          [id],
+        );
+        expect(rows.map((row) => row.invariant)).toContain('booking_closure_occupancy');
+      } finally {
+        await forged.query('ROLLBACK').catch(() => undefined);
+        await forged.end();
+      }
     });
   });
 

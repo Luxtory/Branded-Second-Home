@@ -393,6 +393,17 @@ describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, pl
       await expect(
         app('declare_no_show', asAdmin(), (c, op) => closeBooking(c, op, other, { kind: 'no_show', authorizationId: expired })),
       ).rejects.toEqual(constraint('permission_authorization_expired'));
+      // Mesmo com uma autorização válida (gravada pelo dono), o no-show antes do 1º check-in é recusado pelo instante.
+      const valid = randomUUID();
+      await h.database.pool.query(
+        `INSERT INTO app.booking_authorization (id, request_id, booking_id, purpose, scope_dates, scope_custody_ids,
+           valid_until, approval_ref, authorized_at)
+         VALUES ($1, $2, $3, 'no_show', $4::date[], '{}', now() + interval '1 day', 'github-run:6:2', now())`,
+        [valid, await requestAuthorization(h, admin, { bookingId: other, purpose: 'no_show', expectedDates: [] }), other, [at(84)]],
+      );
+      await expect(
+        app('declare_no_show', asAdmin(), (c, op) => closeBooking(c, op, other, { kind: 'no_show', authorizationId: valid })),
+      ).rejects.toEqual(constraint('conflict_booking_no_show_window'));
     });
   });
 

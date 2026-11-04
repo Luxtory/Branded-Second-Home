@@ -309,7 +309,7 @@ describe('W11 — ledger do Direito de Uso: banco, privilégios reais e estrutur
       await expect(runner.close(old.homeId, SEALING_YEAR - 2)).resolves.toMatchObject({ status: 'committed' });
     });
 
-    it('[INV-4][INV-5] consumo fechado sem a ativação da W12 e restauração fechada até a W13, mesmo com o privilégio de INSERT', async () => {
+    it('[INV-4][INV-5] consumo fechado sem a ativação da W12 e restauração fechada sem a K2 da W13, mesmo com o privilégio de INSERT', async () => {
       const { rows } = await h.database.pool.query<{ insert: boolean }>(
         `SELECT has_table_privilege('luxtory_app', 'app.use_right_ledger', 'INSERT') AS insert`,
       );
@@ -319,9 +319,10 @@ describe('W11 — ledger do Direito de Uso: banco, privilégios reais e estrutur
       await expect(app('test_consume', (c, op) => insertMovement(c, op, consume))).rejects.toEqual(
         constraint('booking_not_activated'),
       );
+      // W13 (ADR-0027 §3): restauração só presa ao cancelamento tempestivo, com a K2 — ausente aqui.
       await expect(
         app('test_consume', (c, op) => insertMovement(c, op, { ...consume, movement: 'restore', refersTo: randomUUID() })),
-      ).rejects.toEqual(constraint('use_right_consumption_not_enabled'));
+      ).rejects.toEqual(constraint('booking_lifecycle_not_activated'));
     });
 
     it('[TECH-026][TECH-110] correção nunca altera concessão e não existe antes da W13 (nem para o dono do schema)', async () => {

@@ -62,17 +62,30 @@ export async function activate(h: Harness, ...capabilities: readonly Capability[
     );
 }
 
-export async function deactivate(h: Harness, ...capabilities: readonly Capability[]): Promise<void> {
-  await h.database.pool.query(`DELETE FROM app.capability_activation WHERE capability = ANY($1::text[])`, [
-    [...capabilities],
-  ]);
+export async function deactivate(
+  h: Harness,
+  ...capabilities: readonly Capability[]
+): Promise<void> {
+  await h.database.pool.query(
+    `DELETE FROM app.capability_activation WHERE capability = ANY($1::text[])`,
+    [[...capabilities]],
+  );
 }
 
-export async function openOperation(client: Queryable, command: string, actor: OperationActor): Promise<string> {
+export async function openOperation(
+  client: Queryable,
+  command: string,
+  actor: OperationActor,
+): Promise<string> {
   const op = randomUUID();
   const [userId, partyId, role, authorizationRef] =
     actor.kind === 'titular'
-      ? [actor.titular.userId, actor.titular.partyId, 'titular', `holding:${actor.titular.holdingId}`]
+      ? [
+          actor.titular.userId,
+          actor.titular.partyId,
+          'titular',
+          `holding:${actor.titular.holdingId}`,
+        ]
       : actor.kind === 'admin'
         ? [actor.admin.userId, null, 'admin', `staff_role:${actor.admin.roleId}`]
         : [null, null, 'system', 'system:job'];
@@ -137,7 +150,8 @@ export async function lastStartedNight(h: Harness, homeId: string): Promise<stri
       WHERE second_home_id = $1 AND checkin_at <= now() ORDER BY stay_date DESC LIMIT 1`,
     [homeId],
   );
-  if (rows[0] === undefined) throw new Error('No started sealed night: the fixture needs a sealed past night');
+  if (rows[0] === undefined)
+    throw new Error('No started sealed night: the fixture needs a sealed past night');
   return rows[0].stay_date;
 }
 
@@ -148,12 +162,20 @@ export async function lastStartedNight(h: Harness, homeId: string): Promise<stri
  */
 export async function historicBooking(
   h: Harness,
-  b: { readonly homeId: string; readonly titular: Titular; readonly checkin: string; readonly checkout: string },
+  b: {
+    readonly homeId: string;
+    readonly titular: Titular;
+    readonly checkin: string;
+    readonly checkout: string;
+  },
 ): Promise<string> {
   const client = await connect(h.database.url);
   try {
     await client.query('BEGIN');
-    const op = await openOperation(client, 'create_own_use_booking', { kind: 'titular', titular: b.titular });
+    const op = await openOperation(client, 'create_own_use_booking', {
+      kind: 'titular',
+      titular: b.titular,
+    });
     const id = randomUUID();
     await client.query('ALTER TABLE app.booking DISABLE TRIGGER booking_open');
     await client.query(
@@ -249,14 +271,21 @@ export async function insertTransition(
       op,
       t.cancellationClass ?? null,
       t.firstAffectedDate ?? null,
-      t.basis === undefined ? (t.kind === 'advance' || t.kind === 'cancellation' ? null : 'Base registrada de teste') : t.basis,
+      t.basis === undefined
+        ? t.kind === 'advance' || t.kind === 'cancellation'
+          ? null
+          : 'Base registrada de teste'
+        : t.basis,
     ],
   );
   return rows[0]!;
 }
 
 /** Exceção aberta da reserva (ou `undefined`). */
-export async function openExceptionId(db: Queryable, bookingId: string): Promise<string | undefined> {
+export async function openExceptionId(
+  db: Queryable,
+  bookingId: string,
+): Promise<string | undefined> {
   const { rows } = await db.query<{ id: string }>(
     `SELECT e.id FROM app.booking_exception e
       WHERE e.booking_id = $1 AND NOT EXISTS (SELECT 1 FROM app.booking_exception_resolution r WHERE r.exception_id = e.id)`,
@@ -285,7 +314,10 @@ export interface ClosingOptions {
   readonly kind: ClosingKind;
   readonly toState?: 'cancelled' | 'no_show';
   /** Termos esperados da prévia (cancelamento do Titular). */
-  readonly expected?: { readonly cancellationClass: string | null; readonly firstAffectedDate: string | null };
+  readonly expected?: {
+    readonly cancellationClass: string | null;
+    readonly firstAffectedDate: string | null;
+  };
   readonly authorizationId?: string;
   /** Sobrescritas para forjar efeitos fora da regra. */
   readonly nights?: readonly string[];
@@ -306,7 +338,12 @@ const RELEASE_REASON: Record<ClosingKind, string> = {
  * Evento que libera noites, na ordem do command: uso da autorização → transição (trava a reserva) → resolução da
  * exceção → por noite não iniciada, crescente: liberação, custódia, `restore`/`correction`.
  */
-export async function closeBooking(client: Queryable, op: string, bookingId: string, o: ClosingOptions) {
+export async function closeBooking(
+  client: Queryable,
+  op: string,
+  bookingId: string,
+  o: ClosingOptions,
+) {
   const b = await bookingRow(client, bookingId);
   if (o.authorizationId !== undefined)
     await client.query(
@@ -323,11 +360,18 @@ export async function closeBooking(client: Queryable, op: string, bookingId: str
     firstAffectedDate: o.expected?.firstAffectedDate ?? null,
   });
   if (b.state === 'in_exception' && o.skipResolution !== true)
-    await recordResolution(client, bookingId, transition.id, toState, o.kind === 'cancellation' ? 'titular_cancellation' : 'admin');
+    await recordResolution(
+      client,
+      bookingId,
+      transition.id,
+      toState,
+      o.kind === 'cancellation' ? 'titular_cancellation' : 'admin',
+    );
   const nights = o.nights ?? (await unstartedNights(client, bookingId));
   const toSpePool = o.kind === 'invalidation' || transition.cancellation_class === 'timely';
   const successor = o.successor ?? (toSpePool ? 'spe_pool' : 'forfeited_right');
-  const reversal = o.reversal ?? (toSpePool ? (o.kind === 'invalidation' ? 'correction' : 'restore') : 'none');
+  const reversal =
+    o.reversal ?? (toSpePool ? (o.kind === 'invalidation' ? 'correction' : 'restore') : 'none');
   for (const night of nights) {
     await client.query(
       `UPDATE app.date_occupancy SET released_at = now(), release_reason = $3, released_by_operation = $4
@@ -378,7 +422,11 @@ export async function openException(
   bookingId: string,
   type: 'operational' | 'unauthorized_booking',
 ): Promise<string> {
-  const transition = await insertTransition(client, op, { bookingId, kind: 'exception_opening', toState: 'in_exception' });
+  const transition = await insertTransition(client, op, {
+    bookingId,
+    kind: 'exception_opening',
+    toState: 'in_exception',
+  });
   const id = randomUUID();
   await client.query(
     `INSERT INTO app.booking_exception (id, booking_id, exception_type, reason, incident_ref, opened_by_transition_id,
@@ -402,7 +450,11 @@ export async function resolveWithoutEffect(
   bookingId: string,
   outcome: 'confirmed' | 'completed',
 ): Promise<void> {
-  const transition = await insertTransition(client, op, { bookingId, kind: 'exception_resolution', toState: outcome });
+  const transition = await insertTransition(client, op, {
+    bookingId,
+    kind: 'exception_resolution',
+    toState: outcome,
+  });
   await recordResolution(client, bookingId, transition.id, outcome, 'admin');
 }
 
@@ -417,26 +469,34 @@ export interface RequestInput {
 }
 
 /** Solicitação opaca registrada pelo Admin (`request_booking_authorization`, sem efeito econômico). */
-export async function requestAuthorization(h: Harness, admin: Admin, r: RequestInput): Promise<string> {
+export async function requestAuthorization(
+  h: Harness,
+  admin: Admin,
+  r: RequestInput,
+): Promise<string> {
   const id = randomUUID();
-  await asOperation(h.database.appUrl, 'request_booking_authorization', { kind: 'admin', admin }, (client, op) =>
-    client.query(
-      `INSERT INTO app.booking_authorization_request (id, booking_id, purpose, exception_id, expected_dates,
+  await asOperation(
+    h.database.appUrl,
+    'request_booking_authorization',
+    { kind: 'admin', admin },
+    (client, op) =>
+      client.query(
+        `INSERT INTO app.booking_authorization_request (id, booking_id, purpose, exception_id, expected_dates,
          expected_custody_ids, expected_cancellation_class, availability_attested, basis, requested_by_operation,
          requested_at)
        VALUES ($1, $2, $3, $4, $5::date[], $6::uuid[], $7, $8, 'Registro verificável de teste', $9, now())`,
-      [
-        id,
-        r.bookingId,
-        r.purpose,
-        r.exceptionId ?? null,
-        [...(r.expectedDates ?? [])],
-        [...(r.expectedCustodyIds ?? [])],
-        r.expectedClass ?? null,
-        r.attested ?? false,
-        op,
-      ],
-    ),
+        [
+          id,
+          r.bookingId,
+          r.purpose,
+          r.exceptionId ?? null,
+          [...(r.expectedDates ?? [])],
+          [...(r.expectedCustodyIds ?? [])],
+          r.expectedClass ?? null,
+          r.attested ?? false,
+          op,
+        ],
+      ),
   );
   return id;
 }
@@ -445,7 +505,10 @@ export async function requestAuthorization(h: Harness, admin: Admin, r: RequestI
  * O papel autorizador chama a função, como o workflow fará. `SET ROLE` a partir do dono prova os privilégios do papel
  * sem gastar a única conexão permitida (`CONNECTION LIMIT 1`, do cluster); o login real é provado em teste próprio.
  */
-export async function asAuthorizer<T>(h: Harness, work: (client: pg.Client) => Promise<T>): Promise<T> {
+export async function asAuthorizer<T>(
+  h: Harness,
+  work: (client: pg.Client) => Promise<T>,
+): Promise<T> {
   const client = await connect(h.database.url);
   try {
     await client.query('SET ROLE luxtory_booking_authorizer');
@@ -455,17 +518,25 @@ export async function asAuthorizer<T>(h: Harness, work: (client: pg.Client) => P
   }
 }
 
-export async function authorize(h: Harness, requestId: string, approvalRef = 'github-run:1001:1'): Promise<string> {
+export async function authorize(
+  h: Harness,
+  requestId: string,
+  approvalRef = 'github-run:1001:1',
+): Promise<string> {
   return asAuthorizer(h, async (client) => {
-    const { rows } = await client.query<{ id: string }>(`SELECT app.authorize_booking_action($1, $2) AS id`, [
-      requestId,
-      approvalRef,
-    ]);
+    const { rows } = await client.query<{ id: string }>(
+      `SELECT app.authorize_booking_action($1, $2) AS id`,
+      [requestId, approvalRef],
+    );
     return rows[0]!.id;
   });
 }
 
-export async function revoke(h: Harness, authorizationId: string, approvalRef = 'github-run:1002:1'): Promise<void> {
+export async function revoke(
+  h: Harness,
+  authorizationId: string,
+  approvalRef = 'github-run:1002:1',
+): Promise<void> {
   await asAuthorizer(h, (client) =>
     client.query(`SELECT app.revoke_booking_authorization($1, $2)`, [authorizationId, approvalRef]),
   );
@@ -500,10 +571,10 @@ export async function recover(
     [authorizationId, bookingId, op],
   );
   for (const custodyId of custodyIds) {
-    await client.query(`UPDATE app.date_custody SET closed_at = now(), closed_by_operation = $2 WHERE id = $1`, [
-      custodyId,
-      op,
-    ]);
+    await client.query(
+      `UPDATE app.date_custody SET closed_at = now(), closed_by_operation = $2 WHERE id = $1`,
+      [custodyId, op],
+    );
     await client.query(
       `INSERT INTO app.date_custody (id, second_home_id, stay_date, holder_kind, purpose, inventory_origin,
          authorization_ref, parent_custody_id, opened_by_operation)
@@ -560,7 +631,64 @@ export async function bookNow(
   checkin: string,
   checkout: string,
 ): Promise<string> {
-  const outcome = await h.book(titular, { second_home_id: homeId, checkin_date: checkin, checkout_date: checkout });
-  if (outcome.status !== 'committed') throw new Error(`booking fixture: ${JSON.stringify(outcome)}`);
+  const outcome = await h.book(titular, {
+    second_home_id: homeId,
+    checkin_date: checkin,
+    checkout_date: checkout,
+  });
+  if (outcome.status !== 'committed')
+    throw new Error(`booking fixture: ${JSON.stringify(outcome)}`);
   return outcome.result.booking_id;
+}
+
+/**
+ * Exceção aberta no passado (fato histórico): a regra de abertura recusa depois do check-out pelo relógio, então o
+ * gatilho de regras fica desligado só nesta transação de fixture do dono; projeção, exceção e constraint seguem ativas.
+ */
+export async function historicException(
+  h: Harness,
+  bookingId: string,
+  admin: Admin,
+  type: 'operational' | 'unauthorized_booking',
+): Promise<void> {
+  const client = await connect(h.database.url);
+  try {
+    await client.query('BEGIN');
+    const op = await openOperation(client, 'open_exception', { kind: 'admin', admin });
+    const b = await bookingRow(client, bookingId);
+    const transition = randomUUID();
+    await client.query(
+      'ALTER TABLE app.booking_state_transition DISABLE TRIGGER booking_state_transition_check',
+    );
+    await client.query(
+      `INSERT INTO app.booking_state_transition (id, booking_id, previous_transition_id, from_state, to_state, kind,
+         operation_id, recorded_at, basis)
+       VALUES ($1, $2, $3, $4, 'in_exception', 'exception_opening', $5, now() - interval '10 days', 'Base histórica')`,
+      [transition, bookingId, b.last_transition_id, b.state, op],
+    );
+    await client.query(
+      `INSERT INTO app.booking_exception (id, booking_id, exception_type, reason, incident_ref, opened_by_transition_id,
+         opened_at)
+       VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, now())`,
+      [
+        bookingId,
+        type,
+        type === 'operational' ? 'casualty' : null,
+        type === 'unauthorized_booking' ? 'INC-HIST-1' : null,
+        transition,
+      ],
+    );
+    await client.query('SET CONSTRAINTS ALL IMMEDIATE');
+    await client.query('SET CONSTRAINTS ALL DEFERRED');
+    await client.query(
+      'ALTER TABLE app.booking_state_transition ENABLE TRIGGER booking_state_transition_check',
+    );
+    await client.query(`UPDATE app.operation SET state = 'committed' WHERE id = $1`, [op]);
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => undefined);
+    throw error;
+  } finally {
+    await client.end();
+  }
 }
