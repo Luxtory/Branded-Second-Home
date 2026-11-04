@@ -1,7 +1,8 @@
 # 0027. Ciclo da reserva de uso próprio: transições só-inserção, chaves K1/K2 e autorização independente
 
 - **Date**: 2026-11-03
-- **Status**: Proposed (E0 documental aprovada pelo fundador para auditoria; aceite no merge; E1 não autorizada)
+- **Status**: Accepted (2026-11-03, no merge do PR documental da E0, #80 → `5d9b636`). Antes: Proposed (E0 documental
+  aprovada pelo fundador para auditoria; aceite no merge; E1 não autorizada). E1 autorizada pelo fundador em 2026-11-03.
 - **Deciders**: Luxtory (fundador), Engenharia
 - **Tags**: booking, inventory, calendar, identity, postgresql, security, github-actions
 

@@ -110,7 +110,7 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 | 10 | Custódia e selagem | calendar, inventory | REQ-040, INV-2, INV-3 | 8 | 9 | R2 | ⬜ → próxima executável (W9 ✅ em 2026-10-29), em sequência (D3); ainda não iniciada → 🔄 em execução (plano aprovado em 2026-10-29; [`w10-custodia-e-selagem.md`](w10-custodia-e-selagem.md), PR draft) → ✅ concluída (#74, squash `25f668c`, 2026-10-30; 4 migrations aplicadas, 49 no total; Production sincronizada, sem aquisição, custódia ou ocupação, gates operacionais fechados; REQ-040 e INV-2 na parte estrutural, INV-3 completo) |
 | 11 | Direito de Uso, janelas e rotações | calendar | REQ-030, REQ-031, REQ-032, REQ-033, REQ-039, PD-004, INV-4, INV-5 | 9, 10 | — | R2 | ⬜ → próxima executável (W9 e W10 ✅); ainda não iniciada → ✅ concluída (#76, squash `3a989e6`, 2026-10-30; 3 migrations aplicadas, 52 no total; Production sincronizada, sem aquisição nem movimento de Direito de Uso, gates operacionais fechados; risco residual ratificado, exclusivo da W11; `correct_use_right` para a W13 pela emenda D2) |
 | 12 | Reserva de uso próprio | booking | REQ-034, REQ-035, REQ-037, PD-002, INV-1 | 11 | — | R2 | ⬜ → próxima executável (W11 ✅ em 2026-10-30); ainda não iniciada → ✅ concluída como infraestrutura implantada com as reservas desativadas (#78, squash `57015e1`, 2026-11-02; 3 migrations aplicadas, 55 no total; `app.capability_activation` vazia; nenhuma reserva real autorizada) |
-| 13 | Cancelamento, no-show, recuperação e exceção | booking, inventory | REQ-080, REQ-081, REQ-083, REQ-084, PD-010 | 12 | — | R2 | ⬜ → próxima executável (W12 ✅ em 2026-11-02, reservas desativadas); ainda não iniciada · E0 documental em PR draft (2026-11-03); E1 não autorizada |
+| 13 | Cancelamento, no-show, recuperação e exceção | booking, inventory | REQ-080, REQ-081, REQ-083, REQ-084, PD-010 | 12 | — | R2 | ⬜ → próxima executável (W12 ✅ em 2026-11-02, reservas desativadas); ainda não iniciada · E0 documental em PR draft (2026-11-03); E1 não autorizada → em andamento: E0 concluída (#80, squash `5d9b636`, 2026-11-03; `02` v4.4 e `03` v3.16 emitidos); E1 autorizada pelo fundador em 2026-11-03 só em ambiente isolado (PR draft, sem merge, sem Production) |
 | 14 | Seleção Luxtory, parâmetros e convidados | calendar, admin, booking | REQ-016, REQ-036, REQ-092, REQ-095 | 12 | — | R2 | ⬜ |
 | 15 | Membership | identity | REQ-011, REQ-050, PD-001 | 7 | — | R3 | ⬜ |
 | 16 | PRL, parâmetros econômicos e snapshot | pricing | REQ-013, REQ-052 | 10, 14 | — | R3 | ⬜ |
@@ -172,6 +172,10 @@ não iniciada.
 **Atualização 2026-11-03 (W13, E0):** plano revisto em quatro rodadas de auditoria do fundador; E0 documental em PR
 draft, sem merge: `02` v4.4 (REQ-084, EC-16), `03` v3.16 (TECH-022, TECH-026, TECH-051, §7), ADR-0027, specs, plano e
 STRIDE. Total normativo passa a 66 REQ no merge. E1 não autorizada; nenhuma reserva ativada.
+**Atualização 2026-11-03 (W13, E0 mergeada; E1 iniciada):** a E0 foi mergeada pelo #80 (squash `5d9b636`, CI da main
+verde, Production 55/0 sem migration nova): `02` v4.4 e `03` v3.16 emitidos (66 REQ), ADR-0027 aceito; as menções "em
+auditoria no PR documental" acima referem-se a esse PR. A E1 (migrations e segurança no banco) começou só depois da
+autorização expressa do fundador (2026-11-03), em ambiente isolado, sem merge, deploy, Production ou ativação.
 
 Paralelismo na retomada do B2C: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
 canal do AsyncAPI, telas e `CHANGELOG.md`, e o STRIDE do beacon. A W10 toca migrations de `calendar`/`inventory`,
