@@ -5,6 +5,11 @@
 
 import type { ColumnType } from 'kysely';
 
+export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
+
+export type ArrayTypeImpl<T> =
+  T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S[], I[], U[]> : T[];
+
 export type Generated<T> =
   T extends ColumnType<infer S, infer I, infer U>
     ? ColumnType<S, I | undefined, U>
@@ -73,16 +78,98 @@ export interface AppAuthorizationGrant {
 }
 
 export interface AppBooking {
+  cancellation_class: string | null;
   channel: string;
   checkin_date: Timestamp;
   checkout_date: Timestamp;
   confirmed_at: Timestamp;
   holding_id: string;
   id: string;
+  last_transition_id: string | null;
   opened_by_operation: string;
   second_home_id: string;
   stake_id: string | null;
   state: string;
+}
+
+export interface AppBookingAuthorization {
+  approval_ref: string;
+  authorized_at: Timestamp;
+  booking_id: string;
+  exception_id: string | null;
+  expected_cancellation_class: string | null;
+  id: string;
+  purpose: string;
+  request_id: string;
+  scope_custody_ids: string[];
+  scope_dates: ArrayType<Timestamp>;
+  valid_until: Timestamp;
+}
+
+export interface AppBookingAuthorizationRequest {
+  availability_attested: Generated<boolean>;
+  basis: string;
+  booking_id: string;
+  exception_id: string | null;
+  expected_cancellation_class: string | null;
+  expected_custody_ids: Generated<string[]>;
+  expected_dates: Generated<ArrayType<Timestamp>>;
+  id: string;
+  purpose: string;
+  requested_at: Timestamp;
+  requested_by_operation: string;
+}
+
+export interface AppBookingAuthorizationRevocation {
+  approval_ref: string;
+  authorization_id: string;
+  revoked_at: Timestamp;
+}
+
+export interface AppBookingAuthorizationUse {
+  authorization_id: string;
+  booking_id: string;
+  operation_id: string;
+  used_at: Timestamp;
+}
+
+export interface AppBookingException {
+  booking_id: string;
+  exception_type: string;
+  id: string;
+  incident_ref: string | null;
+  opened_at: Timestamp;
+  opened_by_transition_id: string;
+  reason: string | null;
+}
+
+export interface AppBookingExceptionResolution {
+  booking_id: string;
+  exception_id: string;
+  outcome: string;
+  resolution_source: string;
+  resolved_at: Timestamp;
+  transition_id: string;
+}
+
+export interface AppBookingNoShowCandidate {
+  booking_id: string;
+  flagged_at: Timestamp;
+  operation_id: string;
+}
+
+export interface AppBookingStateTransition {
+  basis: string | null;
+  booking_id: string;
+  cancellation_class: string | null;
+  first_affected_date: Timestamp | null;
+  from_state: string;
+  id: string;
+  kind: string;
+  operation_id: string;
+  previous_transition_id: string | null;
+  recorded_at: Timestamp;
+  to_state: string;
 }
 
 export interface AppBrandPartner {
@@ -684,6 +771,14 @@ export interface DB {
   'app.audit_log': AppAuditLog;
   'app.authorization_grant': AppAuthorizationGrant;
   'app.booking': AppBooking;
+  'app.booking_authorization': AppBookingAuthorization;
+  'app.booking_authorization_request': AppBookingAuthorizationRequest;
+  'app.booking_authorization_revocation': AppBookingAuthorizationRevocation;
+  'app.booking_authorization_use': AppBookingAuthorizationUse;
+  'app.booking_exception': AppBookingException;
+  'app.booking_exception_resolution': AppBookingExceptionResolution;
+  'app.booking_no_show_candidate': AppBookingNoShowCandidate;
+  'app.booking_state_transition': AppBookingStateTransition;
   'app.brand_partner': AppBrandPartner;
   'app.capability_activation': AppCapabilityActivation;
   'app.catalog_term': AppCatalogTerm;
