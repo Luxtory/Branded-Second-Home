@@ -86,6 +86,25 @@ BEGIN
      OR has_function_privilege('luxtory_app', 'app.assert_own_use_activation_ready()', 'EXECUTE') THEN
     v_failures := v_failures || 'app_function_privilege'::text;
   END IF;
+  -- Funções privilegiadas pela ACL, beneficiário a beneficiário (inclusive PUBLIC): além do dono, só o autorizador
+  -- executa as duas funções de autorização; ninguém executa as projeções nem a prontidão. O `luxtory_app` é membro de
+  -- `anon` e `authenticated` com SET e sem herança: `has_function_privilege('luxtory_app', …)` não enxerga um grant a
+  -- esses papéis, que ele alcançaria por `SET ROLE`.
+  IF EXISTS (
+       SELECT 1
+         FROM pg_catalog.pg_proc p,
+              LATERAL pg_catalog.aclexplode(coalesce(p.proacl, pg_catalog.acldefault('f', p.proowner))) AS acl
+        WHERE p.oid IN ('app.authorize_booking_action(uuid, text)'::pg_catalog.regprocedure,
+                        'app.revoke_booking_authorization(uuid, text)'::pg_catalog.regprocedure,
+                        'app.booking_state_apply()'::pg_catalog.regprocedure,
+                        'app.use_right_balance_apply()'::pg_catalog.regprocedure,
+                        'app.assert_own_use_activation_ready()'::pg_catalog.regprocedure)
+          AND acl.privilege_type = 'EXECUTE' AND acl.grantee <> p.proowner
+          AND NOT (acl.grantee = (SELECT r.oid FROM pg_catalog.pg_roles r WHERE r.rolname = 'luxtory_booking_authorizer')
+                   AND p.oid IN ('app.authorize_booking_action(uuid, text)'::pg_catalog.regprocedure,
+                                 'app.revoke_booking_authorization(uuid, text)'::pg_catalog.regprocedure))) THEN
+    v_failures := v_failures || 'privileged_function_grantee'::text;
+  END IF;
 
   -- Papel autorizador: nenhum privilégio em nenhuma relação de `app` (tabela, coluna ou sequência), sem CREATE no schema
   -- ou no banco.

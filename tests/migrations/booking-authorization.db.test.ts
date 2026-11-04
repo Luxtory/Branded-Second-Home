@@ -864,6 +864,19 @@ describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, pl
         await expect(ready()).rejects.toEqual(notReady('authorizer_role'));
         await fresh.pool.query('DROP FUNCTION app.authorize_booking_action(text)');
         await ready();
+        // A4: EXECUTE das funções privilegiadas a `anon`/`authenticated` (alcançáveis pelo `luxtory_app` por `SET ROLE`,
+        // sem herança) ou a PUBLIC.
+        for (const fn of [
+          'app.authorize_booking_action(uuid, text)',
+          'app.revoke_booking_authorization(uuid, text)',
+          'app.booking_state_apply()',
+        ])
+          for (const grantee of ['anon', 'authenticated', 'PUBLIC']) {
+            await fresh.pool.query(`GRANT EXECUTE ON FUNCTION ${fn} TO ${grantee}`);
+            await expect(ready(), `${fn} → ${grantee}`).rejects.toEqual(notReady('privileged_function_grantee'));
+            await fresh.pool.query(`REVOKE EXECUTE ON FUNCTION ${fn} FROM ${grantee}`);
+          }
+        await ready();
       } finally {
         await fresh.drop();
       }

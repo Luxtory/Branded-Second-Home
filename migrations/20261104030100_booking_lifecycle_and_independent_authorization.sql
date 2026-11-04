@@ -761,8 +761,16 @@ BEGIN
     CREATE ROLE luxtory_booking_authorizer LOGIN NOINHERIT CONNECTION LIMIT 1;
   END IF;
 END $$;
-ALTER ROLE luxtory_booking_authorizer
-  LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT CONNECTION LIMIT 1;
+-- Só os atributos que um dono não superusuário (o `postgres` da Supabase) pode declarar: citar SUPERUSER, REPLICATION
+-- ou BYPASSRLS num ALTER ROLE exige superusuário, mesmo para negá-los. Esses três são conferidos (falha fechada).
+ALTER ROLE luxtory_booking_authorizer LOGIN NOCREATEDB NOCREATEROLE NOINHERIT CONNECTION LIMIT 1;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_catalog.pg_roles
+              WHERE rolname = 'luxtory_booking_authorizer' AND (rolsuper OR rolreplication OR rolbypassrls)) THEN
+    RAISE EXCEPTION 'luxtory_booking_authorizer must not be superuser, replication or bypassrls';
+  END IF;
+END $$;
 GRANT USAGE ON SCHEMA app TO luxtory_booking_authorizer;
 
 -- Escopo derivado dos fatos no instante, conferido contra o esperado da solicitação (ADR-0027 §4, tabela por finalidade).
