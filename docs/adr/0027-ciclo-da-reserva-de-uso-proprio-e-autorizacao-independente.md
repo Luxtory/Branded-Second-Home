@@ -204,3 +204,23 @@ A W13 não ativa reservas.
   uma aprovação.
 - **Fila de cancelamentos durante a contenção:** instante forjável com a credencial comprometida.
 - **Rotas REST agora:** sem consumidor; mais superfície e contrato.
+
+## Notas de implementação da E1 (2026-11-04, ambiente isolado; sem mudança de decisão)
+
+1. **Trava da reserva (§2).** O `luxtory_app` não tem `UPDATE` em `app.booking`, e o PostgreSQL exige esse privilégio
+   para `SELECT … FOR NO KEY UPDATE`. O gatilho trava a reserva por trava consultiva `app.booking:<id>` (precedida da
+   `app.stake:<id>` no Co-Owner, reentrante), na mesma posição da ordem; a linha é travada em `NO KEY UPDATE` pela
+   projeção na mesma transação. Autorizar, revogar e usar usam a mesma chave consultiva; a revogação ainda trava a linha
+   da autorização em `FOR UPDATE`, e o uso a referencia por FK (`KEY SHARE`). Com os gatilhos contornados (R3), o índice de
+   raiz única, a FK composta e o `UNIQUE (previous_transition_id)` seguem protegendo a cadeia.
+2. **Papel autorizador e `USAGE` no schema `app` (§4).** Para chamar as duas funções, o papel recebe `USAGE` no schema.
+   Com isso enxerga funções que as waves anteriores deixaram executáveis por `PUBLIC`: 18 funções de gatilho (o
+   PostgreSQL recusa a chamada direta) e o validador `app.is_text_list` (IMMUTABLE, sem acesso a dados). Nenhuma lê ou
+   grava dados; a prontidão e os testes conferem que as únicas funções chamáveis com acesso a dados são as duas. Revogar
+   `EXECUTE` de `PUBLIC` nessas funções antigas é endurecimento separado, fora da E1 (mexe em privilégios das W1–W7).
+3. **Solicitação (§4).** Gravada pelo command Admin não crítico `request_booking_authorization`, fora da K2 (o §5 lista
+   só os seis commands; a solicitação não tem efeito sem a autorização, e a execução exige a K2).
+4. **Natureza do evento e efeitos no COMMIT (§2, §3).** A transição registra a natureza econômica (`advance`,
+   `cancellation`, `no_show`, `exception_opening`, `exception_resolution`, `invalidation`); constraints diferidas conferem
+   no COMMIT os efeitos completos do fechamento e da recuperação e que todo uso de autorização acompanha o ato da mesma
+   operação. Detalhes e nomes de recusa: spec `booking` §10.11.

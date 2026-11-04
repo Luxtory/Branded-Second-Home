@@ -105,6 +105,17 @@ describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, pl
         'app.authorize_booking_action(uuid,text)',
         'app.revoke_booking_authorization(uuid,text)',
       ]);
+      const exposed = await h.database.pool.query<{ fn: string; trigger: boolean; immutable: boolean }>(
+        `SELECT p.oid::regprocedure::text AS fn, p.prorettype = 'trigger'::regtype AS trigger,
+                p.provolatile = 'i' AND NOT p.prosecdef AS immutable
+           FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+          WHERE n.nspname = 'app' AND has_function_privilege('luxtory_booking_authorizer', p.oid, 'EXECUTE')
+            AND p.proname NOT IN ('authorize_booking_action', 'revoke_booking_authorization')`,
+      );
+      expect(exposed.rows.filter((row) => row.trigger)).toHaveLength(18);
+      expect(exposed.rows.filter((row) => !row.trigger)).toEqual([
+        { fn: 'app.is_text_list(text[],integer,integer)', trigger: false, immutable: true },
+      ]);
       await expect(
         asAuthorizer(h, (client) => client.query(`SELECT app.forbid_change()`)),
       ).rejects.toMatchObject({ code: '0A000' });
@@ -263,6 +274,22 @@ describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, pl
         h,
         await requestAuthorization(h, admin, { bookingId: id, purpose: 'recovery', expectedCustodyIds: forfeited }),
       );
+      const recoveryValidity = await h.database.pool.query<{ ok: boolean }>(
+        `SELECT a.valid_until = (SELECT max(d.checkin_at) FROM app.second_home_date d
+                                  WHERE d.second_home_id = $2 AND d.stay_date = ANY($3::date[])) AS ok
+           FROM app.booking_authorization a WHERE a.id = $1`,
+        [recovery, co.homeId, nights],
+      );
+      expect(recoveryValidity.rows[0]!.ok).toBe(true);
+      // Critério 13: sem o uso da autorização na mesma operação, a custódia perdida não sai.
+      await expect(
+        app('recover_future_capacity', asAdmin(), (c, op) =>
+          c.query(`UPDATE app.date_custody SET closed_at = now(), closed_by_operation = $2 WHERE id = $1`, [
+            forfeited[0],
+            op,
+          ]),
+        ),
+      ).rejects.toEqual(constraint('permission_authorization_missing'));
       // Recuperar só parte das custódias autorizadas é recusado no COMMIT (o ato é exatamente o autorizado).
       await expect(
         app('recover_future_capacity', asAdmin(), (c, op) => recover(c, op, id, recovery, forfeited.slice(0, 1))),
@@ -602,10 +629,19 @@ describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, pl
       const id = await bookNow(h, t, owner.homeId, at(5), at(7));
       const exceptionId = await app('open_exception', asAdmin(), (c, op) => openException(c, op, id, 'unauthorized_booking'));
       const nights = await unstartedNights(h.database.pool, id);
+      await expect(
+        app('resolve_exception', asAdmin(), (c, op) => closeBooking(c, op, id, { kind: 'invalidation' })),
+      ).rejects.toEqual(constraint('permission_authorization_missing'));
       const authorization = await authorize(
         h,
         await requestAuthorization(h, admin, { bookingId: id, purpose: 'invalidation', exceptionId, expectedDates: nights }),
       );
+      const validity = await h.database.pool.query<{ ok: boolean }>(
+        `SELECT a.valid_until = i.last_checkin_at AS ok
+           FROM app.booking_authorization a, app.booking_period_instants($2) AS i WHERE a.id = $1`,
+        [authorization, id],
+      );
+      expect(validity.rows[0]!.ok).toBe(true);
       await expect(
         app('correct_use_right', asAdmin(), (c, op) =>
           closeBooking(c, op, id, { kind: 'invalidation', authorizationId: authorization }),

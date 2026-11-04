@@ -47,6 +47,15 @@ ou ativação); E2 em diante dependem de nova autorização expressa.
 | E6 | Gates locais | não autorizada |
 | E7 | PR draft da implementação; parar antes do merge | não autorizada |
 
+## E1 — resultado no banco (2026-11-04, ambiente isolado)
+
+Quatro migrations (spec `booking` §10.11), `db:check` up → down → up, testes `db` com os privilégios reais em
+`tests/migrations/booking-lifecycle.db.test.ts` e `booking-authorization.db.test.ts`. Critérios abaixo cobertos no banco:
+4 (entrada da função em schema fechado: UUID e `github-run:<id>:<tentativa>`, SQL parametrizado), 5 (só id opaco e
+referência do run chegam à função; saída = id da autorização), 6, 7, 8, 9, 10 (incluindo login real e `CONNECTION LIMIT
+1`), 11 (no banco: PK, reuso recusado, falha → rollback e autorização utilizável), 12, 13, 14 e 16. Pendentes por etapa:
+1–3 e a varredura de log do 5 (workflow, E5); o replay pela chave do executor do 11 (E2); o roteiro do 15 (runbook, E5).
+
 ## Autorização independente — critérios de aceite
 
 1. **Workflow protegido.** Arquivo versionado, mudança só por PR revisado; `permissions: contents: read`; actions

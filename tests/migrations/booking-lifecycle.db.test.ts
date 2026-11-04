@@ -159,6 +159,22 @@ describe('W13 E1 — ciclo da reserva no banco com os privilégios reais (luxtor
         corrections: 0,
       });
       expect(after.consumed).toBe(before.consumed - 3);
+      // TECH-026: no máximo uma reversão por consumo — a correção sobre um consumo já restaurado é recusada, inclusive
+      // para o dono do schema.
+      await expect(
+        asOperation(h.database.url, 'test_correction', asAdmin(), (c, op) =>
+          c.query(
+            `INSERT INTO app.use_right_ledger (id, second_home_id, acquisition_id, stake_id, exercise_year, bucket,
+               movement, quantity, refers_to_id, operation_id, created_at)
+             SELECT gen_random_uuid(), l.second_home_id, l.acquisition_id, l.stake_id, l.exercise_year, l.bucket,
+                    'correction', l.quantity, l.id, $2, now()
+               FROM app.use_right_ledger l
+              WHERE l.operation_id = (SELECT opened_by_operation FROM app.booking WHERE id = $1)
+                AND l.movement = 'consume' AND l.stay_date = $3`,
+            [id, op, at(20)],
+          ),
+        ),
+      ).rejects.toEqual(constraint('conflict_use_right_reversal'));
       // Classificação gravada uma vez; nada mais muda a reserva cancelada.
       await expect(
         app('cancel_own_use_booking', titular(a), (c, op) =>

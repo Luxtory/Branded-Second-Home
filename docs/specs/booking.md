@@ -390,3 +390,47 @@ suspende tardio do Co-Owner e no-show; Owner e tempestivo seguem; saldo, custód
 K2 ausente → os seis commands recusados; jobs limitados pelo instante · tabela de ativação com 0 linhas · prazo: −1 µs e
 exato tempestivos, +1 µs tardio, fusos com e sem horário de verão · consultas de invariantes vazias após todo teste `db` ·
 E2E com axe 0 a 390 e 1440 px, sem overflow de 320 a 1920 px, fluxo por toque a 390 px.
+
+### 10.11. E1 — implementação no banco (2026-11-04, ambiente isolado)
+
+Autorizada pelo fundador em 2026-11-03 só em ambiente isolado; nada em Production. Migrations (dono: agente principal):
+`20261104030100_booking_lifecycle_and_independent_authorization` (K2 no `CHECK`, instantes puros, transições, projeção,
+guarda, exceção, resolução, candidatos, solicitação/autorização/revogação/uso, papel `luxtory_booking_authorizer`,
+regras por transição, efeitos completos no COMMIT, invariantes), `20261104030102_inventory_own_use_lifecycle` (motivos e
+regra da liberação; custódia `reserved_right → spe_pool | forfeited_right` e `forfeited_right → recovered_future_capacity`),
+`20261104030104_calendar_own_use_restore_and_correction` (`restore`/`correction` presos ao evento, reversão única,
+`consumed − quantity` na projeção, invariantes do ledger) e `20261104030106_booking_activation_readiness`
+(`app.assert_own_use_activation_ready()`). `db:check` up → down → up; o `down` recusa descartar fatos.
+
+Detalhes de implementação (não mudam decisão; ADR-0027, "Notas de implementação da E1"):
+
+- **Natureza do evento** em `booking_state_transition.kind`: `advance` (job), `cancellation` (Titular), `no_show`,
+  `exception_opening`, `exception_resolution` (P-A, qualquer desfecho; P-B sem comprovação) e `invalidation` (P-B
+  cancelada: `correct_use_right` no Co-Owner, `resolve_exception` no Owner). O `CHECK` amarra natureza e par da TECH-055;
+  a classe e a primeira noite afetada só existem nos eventos que as têm; a base registrada só nos atos Admin. Motivo da
+  liberação por natureza: `cancelled`, `no_show`, `exception`, `invalidation`.
+- **Termos (D7):** o Titular grava na transição a classe e a primeira noite afetada esperadas; o gatilho calcula no
+  instante e recusa a diferença (`cancellation_terms_changed`). Nos atos Admin o banco grava os termos calculados, e a
+  classe da P-A de Co-Owner tem de ser igual à da autorização.
+- **Efeitos completos no COMMIT:** para `cancelled`/`no_show`, exatamente as noites não iniciadas no instante da
+  transição são liberadas pela operação, com o motivo do evento; no Co-Owner cada `reserved_right` aberta pela criação é
+  sucedida por `spe_pool` (tempestivo, invalidação) ou `forfeited_right` (tardio, no-show), com `restore` (tempestivo) ou
+  `correction` (invalidação) do consumo da criação; no Owner nada se move. A recuperação move exatamente as custódias
+  autorizadas ainda futuras no instante do uso. O uso de autorização sem o ato da mesma operação é recusado.
+- **Uma operação, um evento:** índice único de `operation_id` fora do avanço do sistema (o job atrasado grava dois avanços).
+- **Solicitação:** command Admin não crítico `request_booking_authorization` (sem efeito econômico; fora da K2, como a
+  ADR-0027 §5 lista só os seis commands). Referência de aprovação no formato `github-run:<id>:<tentativa>`; referência de
+  incidente da P-B com charset restrito (sem dado pessoal).
+- **`correction`:** mantém a forma da W11 (`stay_date` nulo, `refers_to_id` no `consume`, `quantity` igual); a de
+  expiração continua recusada a todos (`use_right_correction_not_enabled`), a de concessão pela regra da W11.
+- **Recusas para a E2 mapear (prefixos):** `conflict_booking_*` → `ERR_STATE_TRANSITION`; `permission_*` (incluindo
+  `permission_authorization_missing|scope|revoked|used|expired`) → `ERR_PERMISSION`; `custody_*` →
+  `ERR_CAPACITY_UNAVAILABLE`; `cancellation_terms_changed` → `ERR_CANCELLATION_TERMS_CHANGED` (prefixo novo);
+  `booking_lifecycle_not_activated` → indisponível (K2 ausente), como `booking_not_activated` na W12. Nomes sem prefixo
+  funcional (`booking_write_binding`, `booking_operation_provenance`, `booking_closure_*`, `booking_exception_*`) são
+  erros de programação ou forjamento, não recusa funcional.
+- **Testes (PostgreSQL real, `luxtory_app` com os privilégios reais):** `tests/migrations/booking-lifecycle.db.test.ts`
+  e `tests/migrations/booking-authorization.db.test.ts`; fixtures em `tests/features/booking/lifecycle-support.ts`
+  (reserva e exceção históricas gravadas pelo dono com o gatilho temporal desligado só na transação de fixture; o papel
+  autorizador por `SET ROLE` e um teste com login real). Expectativas da W10–W12 ajustadas só onde a W13 muda o
+  comportamento.

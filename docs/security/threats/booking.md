@@ -257,3 +257,16 @@ A = hoje, sem reservas e sem ativação; B = ativada; C = reservas existentes co
 | T-1207 prévia sem limitador | reavaliar com métricas | leitura | sim | sim |
 
 Nenhum desses riscos está ratificado para operação real. Reconhecer o R4b como residual não equivale a aceitá-lo.
+
+## W13.4. E1 — mitigações no banco verificadas (2026-11-04, ambiente isolado)
+
+Comprovadas por testes `db` com os privilégios reais (`tests/migrations/booking-lifecycle.db.test.ts`,
+`booking-authorization.db.test.ts`): T-1301 (cancelamento só com delegação ativa e holding da reserva, K2 e prazo no
+instante), T-1302 (no-show, P-A cancelada, invalidação e recuperação recusados sem o uso da autorização da mesma
+operação, mesmo com Admin ativo e K2; P-B forjada só suspende), T-1303 (escopo derivado e gravado, uso único, uso ×
+revogação e autorizações simultâneas: exatamente um vence), T-1307 (cadeia com raiz única, FK composta, sem bifurcação,
+também com os gatilhos contornados; `UPDATE` direto recusado para a aplicação e para o dono), T-1308 (termos diferentes →
+recusa sem efeito), T-1309 (outra party recusada) e T-1310 (job limitado pelo instante, fora da K2). T-1304/T-1305
+(workflow e logs) ficam para a E5. Nota: o papel autorizador recebe `USAGE` no schema `app` e por isso enxerga funções
+executáveis por `PUBLIC` desde as W1–W7 — 18 de gatilho (chamada direta recusada) e um validador IMMUTABLE —, sem acesso
+a dados (ADR-0027, notas da E1). Nenhuma ativação; riscos R1–R8, R4b e C1 seguem sem ratificação.
