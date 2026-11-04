@@ -232,5 +232,9 @@ A W13 não ativa reservas.
    (`auth_account_by_email`, `auth_account_labels`, `*_is_public`) continuam com `''`: por inspeção, não declaram nem
    convertem tipos sombreáveis (`integer` é palavra-chave e resolve em `pg_catalog`); as `auth_account_*`, executáveis
    pelo `luxtory_app`, também passam no teste com seis tipos sombreados; as `*_is_public` só o `anon` executa, pelas
-   políticas de RLS. Ficam como dívida técnica documentada, sem alterar waves anteriores.
-6. **Ordem de travas obrigatória para os handlers (E2).** Spec `booking` §10.11.1, provada com o command real da W12.
+   políticas de RLS — testado com o `anon` sombreando os mesmos tipos. Ficam como dívida técnica documentada, sem alterar
+   waves anteriores; a prontidão só as aceita com `''` por uma lista finita e auditada (assinatura, md5 do corpo revisado
+   e configuração exata) e recusa qualquer outra `SECURITY DEFINER` sem `pg_catalog, pg_temp`.
+6. **Ordem de travas obrigatória para os handlers (E2).** Spec `booking` §10.11.1, provada com o command real da W12; a
+   E2 adquire as travas de forma determinística (uma instrução por chave, na ordem calculada), sem depender da ordem de
+   avaliação de uma consulta SQL.

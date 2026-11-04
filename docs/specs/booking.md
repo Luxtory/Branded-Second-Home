@@ -466,3 +466,12 @@ Detalhes de implementação (não mudam decisão; ADR-0027, "Notas de implementa
   registra consumo de exercício já encerrado com o gatilho de consumo desligado só na fixture. Regressão da virada do
   ano: exercício anterior inteiro selado, noites passadas sempre existentes e reserva que cruza a próxima virada com o
   efeito de cada noite no bucket do próprio exercício.
+- **2ª auditoria do PR #82 (2026-11-04).** (1) A prontidão exige `search_path = pg_catalog, pg_temp` em toda `SECURITY
+  DEFINER`; a única exceção é uma lista finita e auditada das cinco legadas com `''` (assinatura + md5 do corpo
+  revisado + configuração exata): `auth_account_by_email`, `auth_account_labels` (executadas pelo `luxtory_app`) e
+  `brand_partner_is_public`, `catalog_term_is_public`, `home_concept_is_public` (executadas pelo `anon`). Cada uma é
+  justificada por inspeção e por teste com seis tipos sombreados pelo papel que a executa. Teste negativo: função nova
+  com `''`, `public`, `pg_temp` primeiro ou sem `search_path`, e legada com corpo alterado, são recusadas.
+  (2) **Aquisição determinística das travas na E2:** a ordem das chaves é calculada antes e cada chave é travada numa
+  instrução própria (laço no handler); não reproduzir o padrão de uma única consulta com `LATERAL` sobre subconsulta
+  ordenada, que depende da ordem de avaliação do SQL.

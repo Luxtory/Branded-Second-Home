@@ -279,5 +279,7 @@ a dados (ADR-0027, notas da E1). Nenhuma ativação; riscos R1–R8, R4b e C1 se
   autorizador como `postgres`.
 - **Mitigation**: `SET search_path = pg_catalog, pg_temp` em toda função da W13; prontidão exige nas `SECURITY DEFINER`
   acionáveis; regressões com seis tipos sombreados (autorizador e `luxtory_app`).
-- **Residual**: `SECURITY DEFINER` anteriores com `''` sem nome de tipo sombreável (dívida técnica documentada no
-  ADR-0027, nota 5); 18 funções de gatilho e `app.is_text_list` executáveis por PUBLIC (nota 2), sem acesso a dados.
+- **Residual**: cinco `SECURITY DEFINER` anteriores com `''`, sem nome de tipo sombreável, aceitas pela prontidão só por
+  lista finita e auditada (assinatura + md5 do corpo + configuração) e testadas com tipos sombreados pelos papéis que as
+  executam (dívida técnica documentada no ADR-0027, nota 5); 18 funções de gatilho e `app.is_text_list` executáveis por
+  PUBLIC (nota 2), sem acesso a dados.

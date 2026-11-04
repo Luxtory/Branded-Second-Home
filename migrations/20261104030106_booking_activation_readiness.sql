@@ -92,17 +92,25 @@ BEGIN
                  WHERE r.rolname = 'luxtory_booking_authorizer') THEN
     v_failures := v_failures || 'authorizer_role'::text;
   END IF;
-  -- SECURITY DEFINER com `search_path` fixo, sem schema gravável por terceiros; as acionáveis pelo papel da aplicação
-  -- (projeções por gatilho) ou pelo autorizador, com `pg_temp` explicitamente por último (sem sombrear tipos).
-  IF EXISTS (SELECT 1 FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
-              WHERE n.nspname = 'app' AND p.prosecdef
-                AND NOT coalesce(p.proconfig && ARRAY['search_path=""', 'search_path=pg_catalog, pg_temp'], false))
-     OR EXISTS (SELECT 1 FROM pg_catalog.pg_proc p
-                 WHERE p.oid IN ('app.authorize_booking_action(uuid, text)'::pg_catalog.regprocedure,
-                                 'app.revoke_booking_authorization(uuid, text)'::pg_catalog.regprocedure,
-                                 'app.booking_state_apply()'::pg_catalog.regprocedure,
-                                 'app.use_right_balance_apply()'::pg_catalog.regprocedure)
-                   AND NOT coalesce(p.proconfig @> ARRAY['search_path=pg_catalog, pg_temp'], false)) THEN
+  -- SECURITY DEFINER sempre com `search_path = pg_catalog, pg_temp` (T-1312: com `''`, tipos sombreados em `pg_temp`
+  -- venceriam os de `pg_catalog` e o CHECK de um domínio rodaria como o dono). Exceção finita e auditada: as cinco
+  -- legadas abaixo (W2–W7), com `''`, só com o corpo revisado (md5 do `prosrc`) — por inspeção, nenhuma declara ou
+  -- converte tipo sombreável, e os testes as executam com tipos sombreados pelos papéis que as executam (`luxtory_app`
+  -- nas `auth_account_*`, `anon` nas `*_is_public`). Função nova, ou legada com corpo alterado, com `''` falha.
+  IF EXISTS (
+       SELECT 1 FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
+        WHERE n.nspname = 'app' AND p.prosecdef
+          AND p.proconfig IS DISTINCT FROM ARRAY['search_path=pg_catalog, pg_temp']
+          AND NOT EXISTS (
+            SELECT 1 FROM (VALUES
+                ('app.auth_account_by_email(text)', 'e16988c03f7cc7fa69b8920d036b887b'),
+                ('app.auth_account_labels(uuid[])', 'f073f71337a8a60c5a867af22f450636'),
+                ('app.brand_partner_is_public(uuid)', '0c74e3da1d167a0f4a3fa119fb6c2ab6'),
+                ('app.catalog_term_is_public(uuid)', '817fc4d02d1ea5598db61c13ff8f93ac'),
+                ('app.home_concept_is_public(uuid)', 'eb15107b413108918fa7f47021b40593')
+              ) AS legacy(fn, body)
+             WHERE p.oid = pg_catalog.to_regprocedure(legacy.fn) AND pg_catalog.md5(p.prosrc) = legacy.body
+               AND p.proconfig = ARRAY['search_path=""'])) THEN
     v_failures := v_failures || 'security_definer_search_path'::text;
   END IF;
 

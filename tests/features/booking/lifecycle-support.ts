@@ -352,20 +352,24 @@ export interface ClosingOptions {
   readonly lockOrder?: boolean;
 }
 
-/** Travas consultivas com as mesmas chaves da W12 (`app.stake:<id>`, `app.second_home_date:<casa>:<data>`). */
+/**
+ * Travas consultivas com as mesmas chaves da W12 (`app.stake:<id>`, `app.second_home_date:<casa>:<data>`), adquiridas de
+ * forma determinística: a ordem é calculada antes e cada chave é travada numa instrução própria, sem depender da ordem
+ * de avaliação de uma consulta SQL (exigência da auditoria para os handlers da E2).
+ */
 export async function lockStakeAndNights(client: Queryable, bookingId: string): Promise<void> {
-  await client.query(
-    `SELECT count(*) FROM (
-       SELECT k FROM (
-         SELECT 0 AS n, 'app.stake:' || b.stake_id::text AS k FROM app.booking b WHERE b.id = $1 AND b.stake_id IS NOT NULL
-         UNION ALL
-         SELECT 1, 'app.second_home_date:' || b.second_home_id::text || ':' || d::date::text
-           FROM app.booking b, generate_series(b.checkin_date, b.checkout_date - 1, interval '1 day') AS d
-          WHERE b.id = $1
-       ) AS keys ORDER BY n, k
-     ) AS ordered, LATERAL (SELECT pg_advisory_xact_lock(hashtextextended(ordered.k, 0))) AS taken`,
+  const { rows } = await client.query<{ k: string }>(
+    `SELECT k FROM (
+       SELECT 0 AS n, 'app.stake:' || b.stake_id::text AS k FROM app.booking b WHERE b.id = $1 AND b.stake_id IS NOT NULL
+       UNION ALL
+       SELECT 1, 'app.second_home_date:' || b.second_home_id::text || ':' || d::date::text
+         FROM app.booking b, generate_series(b.checkin_date, b.checkout_date - 1, interval '1 day') AS d
+        WHERE b.id = $1
+     ) AS keys ORDER BY n, k`,
     [bookingId],
   );
+  for (const { k } of rows)
+    await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [k]);
 }
 
 /** Termos do cancelamento calculados pelo banco agora (o que a prévia da E2 mostrará). */

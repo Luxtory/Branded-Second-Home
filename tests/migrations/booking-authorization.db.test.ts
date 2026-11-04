@@ -790,6 +790,62 @@ describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, pl
   });
 
   describe('prontidão para a ativação futura (ADR-0027 §10, D10)', () => {
+    it('[T-1312][D10] prontidão recusa SECURITY DEFINER com search_path inseguro fora da lista auditada', async () => {
+      const fresh = await createTestDatabase();
+      const ready = () => fresh.pool.query('SELECT app.assert_own_use_activation_ready()');
+      const insecure = expect.objectContaining({
+        constraint: 'booking_activation_not_ready',
+        message: expect.stringContaining('security_definer_search_path'),
+      });
+      try {
+        await ready();
+        for (const config of ["SET search_path = ''", 'SET search_path = public', 'SET search_path = pg_temp, pg_catalog', '']) {
+          await fresh.pool.query(
+            `CREATE FUNCTION app.zz_insecure_probe() RETURNS boolean LANGUAGE sql SECURITY DEFINER ${config}
+             AS 'SELECT true'`,
+          );
+          await expect(ready()).rejects.toEqual(insecure);
+          await fresh.pool.query('DROP FUNCTION app.zz_insecure_probe()');
+        }
+        await ready();
+        // Legada da lista com o corpo alterado (mesmo `''`): sai da exceção auditada.
+        await fresh.pool.query(
+          `CREATE OR REPLACE FUNCTION app.brand_partner_is_public(p_brand_partner_id uuid) RETURNS boolean
+             LANGUAGE sql STABLE SECURITY DEFINER SET search_path = ''
+           AS $$ SELECT p_brand_partner_id IS NOT NULL $$`,
+        );
+        await expect(ready()).rejects.toEqual(insecure);
+      } finally {
+        await fresh.drop();
+      }
+    });
+
+    it('[T-1312] legadas com search_path vazio: tipos sombreados pelo anon não rodam como o dono', async () => {
+      const client = await connect(h.database.url);
+      try {
+        await client.query('SET ROLE anon');
+        await client.query(
+          `CREATE FUNCTION pg_temp.escalated() RETURNS boolean LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $$
+           BEGIN
+             IF current_user <> 'anon' THEN
+               RAISE EXCEPTION 'escalated as %', current_user;
+             END IF;
+             RETURN true;
+           END $$`,
+        );
+        for (const type of ['text', 'uuid', 'date', 'timestamptz', 'jsonb', 'name'])
+          await client.query(`CREATE DOMAIN pg_temp.${type} AS pg_catalog.${type} CHECK (pg_temp.escalated())`);
+        const { rows } = await client.query(
+          `SELECT app.brand_partner_is_public(gen_random_uuid()) AS partner,
+                  app.catalog_term_is_public(gen_random_uuid()) AS term,
+                  app.home_concept_is_public(gen_random_uuid()) AS concept`,
+        );
+        expect(rows[0]).toEqual({ partner: false, term: false, concept: false });
+      } finally {
+        await client.end();
+      }
+    });
+
     it('[D10] banco recém-migrado pronto; chave presente ou gatilho desligado falham; a aplicação não executa', async () => {
       const fresh = await createTestDatabase();
       try {
