@@ -46,7 +46,9 @@ Forças:
      pela TECH-055. Os índices protegem mesmo com os gatilhos contornados (R3).
    - Projeção por gatilho `AFTER INSERT` `SECURITY DEFINER` com as restrições de `app.use_right_balance_apply` (W11):
      confere `TG_TABLE_NAME`/`TG_WHEN`/`TG_OP`/`TG_LEVEL`, deriva só de `NEW`, sem parâmetro nem SQL dinâmico,
-     `search_path` vazio, `REVOKE ALL FROM PUBLIC` (sem `EXECUTE`, ninguém cria outro gatilho com ela; o PostgreSQL recusa
+     **`SET search_path = pg_catalog, pg_temp`** (corrigido na E1, nota 5: o texto original dizia "`search_path`
+     vazio", padrão vulnerável a tipo sombreado em `pg_temp`, T-1312 — não usar), `REVOKE ALL FROM PUBLIC` (sem
+     `EXECUTE`, ninguém cria outro gatilho com ela; o PostgreSQL recusa
      chamada direta de função de gatilho). Guarda `BEFORE UPDATE` em `app.booking` para todos os papéis: só `state`,
      `last_transition_id` e `cancellation_class` mudam, coerentes com a transição referenciada; classe gravada uma vez.
      `luxtory_app` continua sem `UPDATE` em `app.booking`.
@@ -95,7 +97,8 @@ Forças:
 4. **Autorização independente do `luxtory_app`.**
    - Papel `luxtory_booking_authorizer`: criado por migration, `LOGIN` sem senha, `NOINHERIT`, `CONNECTION LIMIT 1`,
      nenhum privilégio em tabela; `EXECUTE` só em `app.authorize_booking_action(...)` e
-     `app.revoke_booking_authorization(...)` (`SECURITY DEFINER`, `search_path` vazio, `REVOKE ALL FROM PUBLIC`). A senha
+     `app.revoke_booking_authorization(...)` (`SECURITY DEFINER`, **`SET search_path = pg_catalog, pg_temp`** — corrigido
+     na E1, nota 5; o original "`search_path` vazio" permitiu a escalada T-1312 —, `REVOKE ALL FROM PUBLIC`). A senha
      é definida pelo fundador pelo procedimento já usado para o `luxtory_app` (`docs/how-to/operacao.md`) e fica só num
      GitHub Environment com revisor obrigatório, restrito à `main`. Nunca no Vercel.
    - Solicitação opaca: o Admin registra `app.booking_authorization_request` (só-inserção, operação Admin não crítica,

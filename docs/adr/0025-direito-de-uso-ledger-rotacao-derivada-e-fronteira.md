@@ -32,7 +32,9 @@ aceitação do risco residual da W10 vale só para a W10.
    `balance_` → `ERR_USE_RIGHT_BALANCE`): duas reduções concorrentes se serializam na linha e a segunda falha. Mantida
    por um único gatilho AFTER INSERT `SECURITY DEFINER`: o papel da aplicação não tem escrita no saldo, e `FOR UPDATE`
    exigiria `UPDATE` para ele. Restrições: só como gatilho AFTER INSERT ROW do ledger (conferido dentro da função),
-   efeito derivado apenas da linha já validada, sem parâmetro nem SQL dinâmico, `search_path` vazio, sem `EXECUTE`
+   efeito derivado apenas da linha já validada, sem parâmetro nem SQL dinâmico, `search_path` vazio (W13: substituído
+   por `SET search_path = pg_catalog, pg_temp` — com `''`, tipos sombreados em `pg_temp` venceriam os de `pg_catalog`;
+   ADR-0027 nota 5, T-1312; não usar `''` em código novo), sem `EXECUTE`
    para ninguém (sem ele não se cria outro gatilho com a função). Toda validação e o gate ficam em gatilhos INVOKER:
    o gate decide por `current_user`, que dentro de uma função DEFINER seria o dono. `granted` e a chave são imutáveis.
 4. **Rotação e janelas derivadas, sem tabela.** Posição ordinária `((p₀ − 1 − (Y − Y₀)) mod N) + 1` (módulo não

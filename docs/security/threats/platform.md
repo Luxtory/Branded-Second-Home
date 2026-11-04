@@ -301,7 +301,8 @@ Decisão: ADR-0025.
   criando um gatilho próprio que a chame com uma linha forjada —, ou contornar o gate de dentro dela.
 - **Mitigation**: sem `EXECUTE` para ninguém (requisito para criar gatilho com a função); `luxtory_app` sem `CREATE` em
   esquema algum; a função confere que roda como gatilho AFTER INSERT ROW de `app.use_right_ledger`, deriva o efeito só
-  da linha já validada, não tem parâmetro nem SQL dinâmico e usa `search_path` vazio; gate e validações ficam em
+  da linha já validada, não tem parâmetro nem SQL dinâmico e usa `search_path` vazio (W13: `pg_catalog, pg_temp` —
+  ver `booking` T-1312); gate e validações ficam em
   funções INVOKER (o gate decide por `current_user`); `granted` e chave imutáveis na projeção (inclusive para o dono);
   sem INSERT/UPDATE/DELETE no saldo para `luxtory_app`.
 - **Owner**: Engenharia · **Tracking**: `use-right.db.test.ts`

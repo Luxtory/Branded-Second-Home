@@ -541,7 +541,8 @@ CREATE TRIGGER booking_state_transition_no_truncate BEFORE TRUNCATE ON app.booki
 
 -- Projeção (molde de `app.use_right_balance_apply`, W11). SECURITY DEFINER só aqui: o `luxtory_app` não tem UPDATE em
 -- `app.booking`. Só como gatilho AFTER INSERT da transição (conferido abaixo), efeito derivado apenas de NEW — linha já
--- validada pelo gatilho INVOKER —, sem parâmetro, sem SQL dinâmico, `search_path` vazio e sem EXECUTE para ninguém.
+-- validada pelo gatilho INVOKER —, sem parâmetro, sem SQL dinâmico, `search_path = pg_catalog, pg_temp` (nunca `''`,
+-- T-1312) e sem EXECUTE para ninguém.
 CREATE FUNCTION app.booking_state_apply() RETURNS trigger
   LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, pg_temp
 AS $$

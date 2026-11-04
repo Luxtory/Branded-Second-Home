@@ -113,7 +113,8 @@ describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, pl
                 p.provolatile = 'i' AND NOT p.prosecdef AS immutable
            FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
           WHERE n.nspname = 'app' AND has_function_privilege('luxtory_booking_authorizer', p.oid, 'EXECUTE')
-            AND p.proname NOT IN ('authorize_booking_action', 'revoke_booking_authorization')`,
+            AND p.oid NOT IN ('app.authorize_booking_action(uuid, text)'::regprocedure,
+                              'app.revoke_booking_authorization(uuid, text)'::regprocedure)`,
       );
       expect(exposed.rows.filter((row) => row.trigger)).toHaveLength(18);
       expect(exposed.rows.filter((row) => !row.trigger)).toEqual([
@@ -186,7 +187,8 @@ describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, pl
                            'SELECT, INSERT, UPDATE, REFERENCES'))) AS relations_with_privilege,
                 (SELECT count(*)::int FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
                   WHERE n.nspname = 'app' AND p.prosecdef
-                    AND p.proname NOT IN ('authorize_booking_action', 'revoke_booking_authorization')
+                    AND p.oid NOT IN ('app.authorize_booking_action(uuid, text)'::regprocedure,
+                                      'app.revoke_booking_authorization(uuid, text)'::regprocedure)
                     AND has_function_privilege('luxtory_booking_authorizer', p.oid, 'EXECUTE')) AS other_definers`,
       );
       expect(rows[0]).toEqual({
@@ -815,6 +817,53 @@ describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, pl
            AS $$ SELECT p_brand_partner_id IS NOT NULL $$`,
         );
         await expect(ready()).rejects.toEqual(insecure);
+      } finally {
+        await fresh.drop();
+      }
+    });
+
+    it('[ADR-0027 §4][D10] prontidão recusa grant de coluna, REFERENCES/TRIGGER, CREATE e homônimo das funções do autorizador', async () => {
+      const fresh = await createTestDatabase();
+      const ready = () => fresh.pool.query('SELECT app.assert_own_use_activation_ready()');
+      const notReady = (tag: string) =>
+        expect.objectContaining({ constraint: 'booking_activation_not_ready', message: expect.stringContaining(tag) });
+      try {
+        // Os privilégios legítimos (UPDATE de colunas da custódia e da liberação para o `luxtory_app`, SELECT de colunas
+        // para o Titular) não fazem a prontidão falhar.
+        await ready();
+        const cases: readonly (readonly [string, string, string])[] = [
+          // Grant só de coluna: `has_table_privilege` não o enxerga; `has_any_column_privilege`, sim.
+          ['GRANT SELECT (id) ON app.booking TO luxtory_booking_authorizer', 'REVOKE SELECT (id) ON app.booking FROM luxtory_booking_authorizer', 'authorizer_table:app.booking'],
+          ['GRANT UPDATE (read_at) ON app.notification TO luxtory_booking_authorizer', 'REVOKE UPDATE (read_at) ON app.notification FROM luxtory_booking_authorizer', 'authorizer_table:app.notification'],
+          ['GRANT REFERENCES ON app.booking_authorization TO luxtory_booking_authorizer', 'REVOKE REFERENCES ON app.booking_authorization FROM luxtory_booking_authorizer', 'authorizer_table:app.booking_authorization'],
+          ['GRANT TRIGGER ON app.date_custody TO luxtory_booking_authorizer', 'REVOKE TRIGGER ON app.date_custody FROM luxtory_booking_authorizer', 'authorizer_table:app.date_custody'],
+          ['GRANT CREATE ON SCHEMA app TO luxtory_booking_authorizer', 'REVOKE CREATE ON SCHEMA app FROM luxtory_booking_authorizer', 'authorizer_schema'],
+          ['GRANT INSERT (id) ON app.booking TO authenticated', 'REVOKE INSERT (id) ON app.booking FROM authenticated', 'client_write:app.booking'],
+          ['GRANT UPDATE (released_at) ON app.date_occupancy TO anon', 'REVOKE UPDATE (released_at) ON app.date_occupancy FROM anon', 'client_write:app.date_occupancy'],
+          ['GRANT TRIGGER ON app.booking TO authenticated', 'REVOKE TRIGGER ON app.booking FROM authenticated', 'client_write:app.booking'],
+          ['GRANT UPDATE (state) ON app.booking TO luxtory_app', 'REVOKE UPDATE (state) ON app.booking FROM luxtory_app', 'app_table_privilege'],
+          ['GRANT INSERT (id) ON app.booking_authorization TO luxtory_app', 'REVOKE INSERT (id) ON app.booking_authorization FROM luxtory_app', 'app_table_privilege'],
+          ['GRANT TRIGGER ON app.booking_state_transition TO luxtory_app', 'REVOKE TRIGGER ON app.booking_state_transition FROM luxtory_app', 'app_table_privilege'],
+          ['GRANT CREATE ON SCHEMA app TO luxtory_app', 'REVOKE CREATE ON SCHEMA app FROM luxtory_app', 'app_schema'],
+        ];
+        for (const [grant, revoke, tag] of cases) {
+          await fresh.pool.query(grant);
+          await expect(ready(), grant).rejects.toEqual(notReady(tag));
+          await fresh.pool.query(revoke);
+        }
+        await ready();
+        // Homônimo com outra assinatura, executável pelo autorizador: fora das duas funções exatas.
+        await fresh.pool.query(
+          `CREATE FUNCTION app.authorize_booking_action(p_request text) RETURNS uuid
+             LANGUAGE sql SECURITY DEFINER SET search_path = pg_catalog, pg_temp AS 'SELECT NULL::uuid'`,
+        );
+        await fresh.pool.query('REVOKE ALL ON FUNCTION app.authorize_booking_action(text) FROM PUBLIC');
+        await fresh.pool.query(
+          'GRANT EXECUTE ON FUNCTION app.authorize_booking_action(text) TO luxtory_booking_authorizer',
+        );
+        await expect(ready()).rejects.toEqual(notReady('authorizer_role'));
+        await fresh.pool.query('DROP FUNCTION app.authorize_booking_action(text)');
+        await ready();
       } finally {
         await fresh.drop();
       }
