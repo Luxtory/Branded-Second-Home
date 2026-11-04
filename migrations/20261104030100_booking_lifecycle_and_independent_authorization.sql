@@ -5,6 +5,10 @@
 -- no-show, solicitação/autorização/revogação/uso da autorização independente e o papel `luxtory_booking_authorizer`
 -- (§4), regras por transição (§1, §3) e a chave K2 `own_use_lifecycle` no `CHECK` (§5) — a tabela de ativação continua
 -- vazia. Condições temporais no instante de cada escrita (`clock_timestamp()`, T3).
+-- `search_path = pg_catalog, pg_temp` em toda função desta wave: com `''`, o schema temporário da sessão ainda é buscado
+-- PRIMEIRO para nomes de tipo, e um papel com TEMP (o `luxtory_app` ou o autorizador) sombrearia `text`/`uuid`/`date`
+-- com um domínio cujo CHECK roda como o dono dentro de função SECURITY DEFINER (escalada comprovada no PR #82). Com
+-- `pg_temp` explicitamente por último, tipos resolvem em `pg_catalog`; relações e funções são sempre qualificadas.
 
 -- K2 (ADR-0027 §5): a W13 só amplia o CHECK. Nenhuma linha.
 ALTER TABLE app.capability_activation
@@ -15,7 +19,7 @@ ALTER TABLE app.capability_activation
 -- Toda escrita do papel da aplicação nos seis commands da W13 passa por aqui: sem a linha, recusa — inclusive SQL direto.
 -- A leitura mantém a tabela travada em modo compartilhado até o fim da transação (mesma contenção da K1).
 CREATE FUNCTION app.assert_own_use_lifecycle_active() RETURNS void
-  LANGUAGE plpgsql STABLE SET search_path = ''
+  LANGUAGE plpgsql STABLE SET search_path = pg_catalog, pg_temp
 AS $$
 BEGIN
   IF NOT app.acts_as_schema_owner()
@@ -30,30 +34,30 @@ END $$;
 -- Check-out: 10:00 locais do `checkout_date` no fuso da Second Home (03 §3.1; `checkOutAt` da spec calendar). NULL
 -- quando o horário local não existe ou é ambíguo — quem chama falha fechado.
 CREATE FUNCTION app.booking_checkout_at(p_checkout_date date, p_timezone text) RETURNS timestamptz
-  LANGUAGE sql STABLE STRICT PARALLEL SAFE SET search_path = ''
+  LANGUAGE sql STABLE STRICT PARALLEL SAFE SET search_path = pg_catalog, pg_temp
 AS $$ SELECT app.local_instant(p_checkout_date + time '10:00', p_timezone) $$;
 
 -- TECH-043, D11: tempestivo ⇔ `cancelled_at ≤ checkin_at − 360 h`, sobre instantes (nunca `'15 days'`, que usa o fuso
 -- da sessão; precedente TECH-044).
 CREATE FUNCTION app.own_use_cancellation_timely(p_first_checkin timestamptz, p_at timestamptz) RETURNS boolean
-  LANGUAGE sql STABLE STRICT PARALLEL SAFE SET search_path = ''
+  LANGUAGE sql STABLE STRICT PARALLEL SAFE SET search_path = pg_catalog, pg_temp
 AS $$ SELECT p_at <= p_first_checkin - interval '360 hours' $$;
 
 -- TECH-046, D8: janela estrita do no-show `[1º checkin_at, checkout_at)`.
 CREATE FUNCTION app.booking_no_show_window_open(p_first_checkin timestamptz, p_checkout_at timestamptz,
     p_at timestamptz) RETURNS boolean
-  LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE SET search_path = ''
+  LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE SET search_path = pg_catalog, pg_temp
 AS $$ SELECT p_first_checkin <= p_at AND p_at < p_checkout_at $$;
 
 -- TECH-044 (precedente): uso exige `now < valid_until`.
 CREATE FUNCTION app.booking_authorization_usable(p_valid_until timestamptz, p_at timestamptz) RETURNS boolean
-  LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE SET search_path = ''
+  LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE SET search_path = pg_catalog, pg_temp
 AS $$ SELECT p_at < p_valid_until $$;
 
 -- Primeiro e último check-in das noites da reserva e o check-out, ou falha fechada.
 CREATE FUNCTION app.booking_period_instants(p_booking uuid, OUT first_checkin_at timestamptz,
     OUT last_checkin_at timestamptz, OUT checkout_at timestamptz)
-  LANGUAGE plpgsql STABLE SET search_path = ''
+  LANGUAGE plpgsql STABLE SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE b app.booking; v_timezone text;
 BEGIN
@@ -71,7 +75,7 @@ END $$;
 
 -- TECH-043: noites da reserva ainda não iniciadas no instante (`at < checkin_at`), em ordem crescente.
 CREATE FUNCTION app.booking_unstarted_nights(p_booking uuid, p_at timestamptz) RETURNS date[]
-  LANGUAGE sql STABLE SET search_path = ''
+  LANGUAGE sql STABLE SET search_path = pg_catalog, pg_temp
 AS $$
   SELECT coalesce(array_agg(d.stay_date ORDER BY d.stay_date), '{}')
     FROM app.booking b
@@ -82,7 +86,7 @@ $$;
 
 -- Motivo de liberação da ocupação por evento (spec booking §10.6).
 CREATE FUNCTION app.booking_release_reason(p_kind text) RETURNS text
-  LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE SET search_path = ''
+  LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE SET search_path = pg_catalog, pg_temp
 AS $$
   SELECT CASE p_kind WHEN 'cancellation' THEN 'cancelled' WHEN 'no_show' THEN 'no_show'
     WHEN 'exception_resolution' THEN 'exception' WHEN 'invalidation' THEN 'invalidation' END
@@ -92,7 +96,7 @@ $$;
 -- compartilhado contra a revogação concorrente (mesma chave de `app.revoke_staff_role`) e ativa no instante.
 -- Consistência, não autenticidade: o `luxtory_app` lê `staff_role` e grava `operation` (ADR-0027 §1, §4).
 CREATE FUNCTION app.lock_own_use_admin_authority(p_operation app.operation) RETURNS void
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE v_role uuid;
 BEGIN
@@ -113,7 +117,7 @@ END $$;
 -- TECH-050: o Titular da operação representa, por delegação ativa travada, a party da holding vigente da reserva.
 CREATE FUNCTION app.lock_own_use_titular(p_operation app.operation, p_booking app.booking, p_at timestamptz)
   RETURNS void
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 BEGIN
   IF p_operation.role <> 'titular' OR p_operation.acting_party_id IS NULL THEN
@@ -133,7 +137,7 @@ END $$;
 -- autorização, autorização e revogação se serializam por reserva. Consultiva: o `luxtory_app` não tem `UPDATE` em
 -- `app.booking`, que o `FOR NO KEY UPDATE` exigiria; a projeção trava a linha nessa mesma posição da ordem.
 CREATE FUNCTION app.lock_own_use_booking(p_booking app.booking) RETURNS void
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 BEGIN
   IF p_booking.stake_id IS NOT NULL THEN
@@ -339,7 +343,7 @@ CREATE TABLE app.booking_authorization_use (
 -- Autorização usada pela operação para a reserva (ou nenhuma).
 CREATE FUNCTION app.booking_authorization_of_operation(p_operation uuid, p_booking uuid)
   RETURNS app.booking_authorization
-  LANGUAGE sql STABLE SET search_path = ''
+  LANGUAGE sql STABLE SET search_path = pg_catalog, pg_temp
 AS $$
   SELECT a.* FROM app.booking_authorization_use u JOIN app.booking_authorization a ON a.id = u.authorization_id
    WHERE u.operation_id = p_operation AND u.booking_id = p_booking
@@ -347,7 +351,7 @@ $$;
 
 -- Regras por transição (ADR-0027 §1, §3; spec booking §10.2). INVOKER: os gates enxergam o papel real.
 CREATE FUNCTION app.booking_state_transition_check() RETURNS trigger
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE
   v_at timestamptz;
@@ -539,7 +543,7 @@ CREATE TRIGGER booking_state_transition_no_truncate BEFORE TRUNCATE ON app.booki
 -- `app.booking`. Só como gatilho AFTER INSERT da transição (conferido abaixo), efeito derivado apenas de NEW — linha já
 -- validada pelo gatilho INVOKER —, sem parâmetro, sem SQL dinâmico, `search_path` vazio e sem EXECUTE para ninguém.
 CREATE FUNCTION app.booking_state_apply() RETURNS trigger
-  LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
+  LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, pg_temp
 AS $$
 BEGIN
   IF TG_TABLE_SCHEMA <> 'app' OR TG_TABLE_NAME <> 'booking_state_transition' OR TG_WHEN <> 'AFTER'
@@ -564,7 +568,7 @@ CREATE TRIGGER booking_state_apply AFTER INSERT ON app.booking_state_transition
 -- Guarda de UPDATE em `app.booking` para todos os papéis (ADR-0027 §2): só estado, folha e classe mudam, coerentes com a
 -- transição referenciada; a classe é gravada uma vez. A W12 proibia todo UPDATE; DELETE e TRUNCATE seguem proibidos.
 CREATE FUNCTION app.booking_state_guard() RETURNS trigger
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE t app.booking_state_transition;
 BEGIN
@@ -595,7 +599,7 @@ CREATE TRIGGER booking_state_guard BEFORE UPDATE ON app.booking
 
 -- Abertura: presa à transição de abertura da mesma operação.
 CREATE FUNCTION app.booking_exception_open() RETURNS trigger
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE t app.booking_state_transition;
 BEGIN
@@ -614,7 +618,7 @@ CREATE TRIGGER booking_exception_open BEFORE INSERT ON app.booking_exception
 
 -- Resolução: presa à transição da mesma operação que sai de `in_exception`, sobre a exceção aberta da reserva.
 CREATE FUNCTION app.booking_exception_resolve() RETURNS trigger
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE t app.booking_state_transition; e app.booking_exception;
 BEGIN
@@ -643,7 +647,7 @@ CREATE TRIGGER booking_exception_resolve BEFORE INSERT ON app.booking_exception_
 
 -- Candidato: o job de sistema, só na janela do no-show e uma vez por reserva.
 CREATE FUNCTION app.booking_no_show_candidate_flag() RETURNS trigger
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE v_at timestamptz := clock_timestamp(); b app.booking; i record;
 BEGIN
@@ -669,7 +673,7 @@ CREATE TRIGGER booking_no_show_candidate_flag BEFORE INSERT ON app.booking_no_sh
 
 -- Solicitação: operação Admin não crítica (`request_booking_authorization`), sem efeito econômico.
 CREATE FUNCTION app.booking_authorization_request_record() RETURNS trigger
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE op app.operation;
 BEGIN
@@ -689,7 +693,7 @@ CREATE TRIGGER booking_authorization_request_record BEFORE INSERT ON app.booking
 
 -- Uso: K2, Admin ativo, command da finalidade, trava da reserva, não revogada, não usada, dentro da validade.
 CREATE FUNCTION app.booking_authorization_use_record() RETURNS trigger
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE v_at timestamptz; op app.operation; a app.booking_authorization; b app.booking;
 BEGIN
@@ -764,7 +768,7 @@ GRANT USAGE ON SCHEMA app TO luxtory_booking_authorizer;
 -- SECURITY DEFINER: o papel autorizador não lê nem grava tabela; a função grava a autorização como o dono. Recusa por
 -- exceção nomeada (o workflow devolve só o código).
 CREATE FUNCTION app.authorize_booking_action(p_request_id uuid, p_approval_ref text) RETURNS uuid
-  LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
+  LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE
   v_at timestamptz;
@@ -876,7 +880,7 @@ END $$;
 
 -- Revogação de autorização ainda não usada; corrida com o uso: exatamente um vence (trava da reserva + FOR UPDATE).
 CREATE FUNCTION app.revoke_booking_authorization(p_authorization_id uuid, p_approval_ref text) RETURNS void
-  LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
+  LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE v_booking uuid;
 BEGIN
@@ -913,7 +917,7 @@ GRANT EXECUTE ON FUNCTION app.authorize_booking_action(uuid, text), app.revoke_b
 -- iniciada no instante da escrita, autoridade revalidada e, nos atos com autorização, noite no escopo gravado.
 CREATE FUNCTION app.own_use_lifecycle_write(p_operation uuid, p_booking uuid, p_stay_date date)
   RETURNS app.booking_state_transition
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE
   v_at timestamptz := clock_timestamp();
@@ -957,7 +961,7 @@ END $$;
 -- Escrita da recuperação (BR-283): K2, Admin ativo, command `recover_future_capacity`, uso da autorização `recovery` da
 -- mesma operação, custódia gravada no escopo e noite ainda futura.
 CREATE FUNCTION app.own_use_recovery_write(p_operation uuid, p_custody uuid) RETURNS app.booking_authorization
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE
   v_at timestamptz := clock_timestamp();
@@ -998,7 +1002,7 @@ END $$;
 -- pela criação da reserva sucedida conforme o evento, com `restore` (tempestivo) ou `correction` (invalidação) do consumo
 -- da criação; no Owner, nenhum movimento de custódia ou de Direito de Uso (REQ-081).
 CREATE FUNCTION app.assert_booking_closure_complete(p_transition uuid) RETURNS void
-  LANGUAGE plpgsql STABLE SET search_path = ''
+  LANGUAGE plpgsql STABLE SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE
   t app.booking_state_transition;
@@ -1059,7 +1063,7 @@ END $$;
 -- Recuperação completa, no COMMIT: exatamente as custódias gravadas ainda futuras no instante do uso, cada uma sucedida
 -- por `luxtory/inventory/recovered_future_capacity` com a referência da autorização; nada mais pela operação.
 CREATE FUNCTION app.assert_booking_recovery_complete(p_authorization uuid) RETURNS void
-  LANGUAGE plpgsql STABLE SET search_path = ''
+  LANGUAGE plpgsql STABLE SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE u app.booking_authorization_use; a app.booking_authorization; v_n integer;
 BEGIN
@@ -1089,7 +1093,7 @@ END $$;
 -- No COMMIT (`SET CONSTRAINTS … IMMEDIATE` só antecipa e falha diante do estado incompleto): projeção na folha,
 -- exceção registrada na abertura, resolução registrada na saída, efeitos completos do fechamento.
 CREATE FUNCTION app.booking_state_transition_constraint() RETURNS trigger
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE b app.booking;
 BEGIN
@@ -1122,7 +1126,7 @@ CREATE CONSTRAINT TRIGGER booking_state_transition_constraint AFTER INSERT ON ap
 -- Uso único ⇔ ato: o uso de no-show, cancelamento P-A ou invalidação acompanha a transição da mesma operação; o de
 -- recuperação, a recuperação completa.
 CREATE FUNCTION app.booking_authorization_use_constraint() RETURNS trigger
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE a app.booking_authorization;
 BEGIN
@@ -1146,7 +1150,7 @@ CREATE CONSTRAINT TRIGGER booking_authorization_use_constraint AFTER INSERT ON a
 -- Consultas de invariantes da reserva (W12 + W13), após todo teste db e para a reconciliação da W30.
 CREATE OR REPLACE FUNCTION app.booking_invariant_breaches()
   RETURNS TABLE (invariant text, second_home_id uuid, detail text)
-  LANGUAGE sql STABLE SET search_path = ''
+  LANGUAGE sql STABLE SET search_path = pg_catalog, pg_temp
 AS $$
   WITH own AS (
     SELECT b.* FROM app.booking b JOIN app.operation o ON o.id = b.opened_by_operation

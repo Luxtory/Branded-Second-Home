@@ -434,3 +434,35 @@ Detalhes de implementação (não mudam decisão; ADR-0027, "Notas de implementa
   (reserva e exceção históricas gravadas pelo dono com o gatilho temporal desligado só na transação de fixture; o papel
   autorizador por `SET ROLE` e um teste com login real). Expectativas da W10–W12 ajustadas só onde a W13 muda o
   comportamento.
+
+#### 10.11.1. Auditoria do PR #82 (2026-11-04) — complementos da E1
+
+- **Ordem obrigatória de travas para os handlers da E2** (TECH-053; a mesma da W12, que a E1 só estende). Leitura da
+  K2 (`app.capability_activation`, modo compartilhado) → autoridade: Titular, delegação ativa `FOR SHARE`; Admin, trava
+  compartilhada `app.staff_role:<id>` → classe 4 `app.stake:<id>` (Co-Owner) → classe 5
+  `app.second_home_date:<casa>:<data>` de todas as noites da reserva, em ordem crescente → uso da autorização (Admin)
+  → transição (trava consultiva `app.booking:<id>`, tomada pelo gatilho) → por noite, em ordem crescente: liberação,
+  custódia, `restore`/`correction` (classe 6) → auditoria → COMMIT → outbox. Recuperação: autoridade → classe 4 →
+  classe 5 das noites das custódias → uso → custódias em ordem crescente. Abertura e resolução sem efeito: autoridade →
+  transição. Autorizador: só `app.booking:<id>`. Jobs: uma transação por reserva (o gatilho trava Ação e reserva);
+  nunca reservas de Ações diferentes na mesma transação. Provado com o command real da W12 (testes "ordem de travas" e
+  "noites liberadas"): na mesma Ação, criação e cancelamento se serializam sem deadlock; com a classe 5, a outra Ação
+  reserva as noites logo depois do COMMIT; sem ela, a leitura concorrente recusa (`ERR_BOOKING_CONFLICT`), nunca dupla
+  ocupação.
+- **Solicitação na E2** (`request_booking_authorization`, TECH-051 "demais operações do REQ-095"): fora da lista fechada
+  de commands críticos e da K2, mas com guard Admin com MFA, base registrada, `audit_log`, idempotência e o mesmo
+  limitador dos commands Admin; o escopo esperado é derivado no servidor pelos fatos (nunca datas vindas do cliente); o
+  id opaco é gerado no servidor e é a única saída; sem evento de outbox. Provado no banco: a solicitação não cria
+  autorização, não muda estado, saldo, custódia nem ocupação, e o id dela não vale como autorização.
+- **`search_path` (vulnerabilidade achada e corrigida na E1).** Com `SET search_path = ''`, o PostgreSQL ainda busca o
+  schema temporário da sessão primeiro para nomes de tipo; o papel autorizador (privilégio TEMP, padrão de PUBLIC)
+  criou `pg_temp.uuid` com `CHECK` chamando função própria e, dentro de `app.authorize_booking_action`, ela rodou como o
+  dono (`postgres`). Correção: toda função criada ou redefinida pela W13 usa `SET search_path = pg_catalog, pg_temp`
+  (o schema temporário explicitamente por último, como recomenda a documentação do PostgreSQL); a prontidão exige isso
+  nas `SECURITY DEFINER` acionáveis pelo autorizador ou pelo papel da aplicação. Regressões: autorizador e
+  `luxtory_app` com `text`, `uuid`, `date`, `timestamptz`, `jsonb` e `name` sombreados não executam nada como o dono.
+- **Testes independentes da data real:** os cenários da W13 selam também o exercício anterior (o do `open_exercise`
+  quando era o corrente; só a regra de horizonte fica de fora, na transação de fixture do dono) e a reserva histórica
+  registra consumo de exercício já encerrado com o gatilho de consumo desligado só na fixture. Regressão da virada do
+  ano: exercício anterior inteiro selado, noites passadas sempre existentes e reserva que cruza a próxima virada com o
+  efeito de cada noite no bucket do próprio exercício.

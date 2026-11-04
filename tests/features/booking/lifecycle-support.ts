@@ -1,6 +1,21 @@
 import { randomUUID } from 'node:crypto';
 import pg from 'pg';
-import { addDays, type BookingHarness, type Titular } from './booking-support';
+import { ordinaryOrder } from '@/features/calendar/domain/use-right';
+import { SEALING_YEAR } from '../calendar/sealing-support';
+import {
+  completeDrawWithCalendar,
+  drawnPositions,
+  formalizeCoOwnerAt,
+} from '../calendar/use-right-support';
+import {
+  addDays,
+  addTitular,
+  bookableStart,
+  type BookingHarness,
+  type CoOwnerScenario,
+  type OwnerScenario,
+  type Titular,
+} from './booking-support';
 
 /**
  * W13 E1 — fixtures do ciclo da reserva no banco. As escritas dos commands (cancelamento, no-show, exceção,
@@ -142,7 +157,9 @@ export async function unstartedNights(db: Queryable, bookingId: string): Promise
 
 /**
  * Última noite já iniciada da Second Home (check-in 14:00 locais antes de agora). A partir dela os testes escolhem
- * períodos iniciados, em curso ou ainda futuros pelo relógio real — o banco decide pelo relógio do servidor (T3).
+ * períodos iniciados, em curso ou ainda futuros pelo relógio real — o banco decide pelo relógio do servidor (T3). Com o
+ * exercício anterior selado pelos cenários abaixo, existe sempre, inclusive em 1º de janeiro antes das 14:00, com pelo
+ * menos um ano de noites passadas antes dela.
  */
 export async function lastStartedNight(h: Harness, homeId: string): Promise<string> {
   const { rows } = await h.database.pool.query<{ stay_date: string }>(
@@ -156,9 +173,11 @@ export async function lastStartedNight(h: Harness, homeId: string): Promise<stri
 }
 
 /**
- * Reserva gravada pelo dono do schema como se tivesse sido criada antes de as noites começarem (fato histórico): o
- * gatilho de abertura da W12 recusa noite passada pelo relógio, então ele fica desligado só nesta transação de fixture.
- * Os demais fatos (custódia, consumo, ocupação) seguem as regras estruturais; as consultas de invariantes conferem.
+ * Reserva gravada pelo dono do schema como se tivesse sido criada antes de as noites começarem (fato histórico). As
+ * regras que dependem do relógio de hoje — abertura da W12 (noite futura, janela) e consumo antes do fim efetivo do
+ * exercício (W11), que recusaria consumo histórico do exercício anterior — ficam desligadas só nesta transação de
+ * fixture. Custódia e ocupação seguem os gatilhos; as constraints de tabela e as consultas de invariantes (inclusive
+ * INV-5, bucket e exercício da noite) conferem tudo depois.
  */
 export async function historicBooking(
   h: Harness,
@@ -179,15 +198,14 @@ export async function historicBooking(
     const id = randomUUID();
     await client.query('ALTER TABLE app.booking DISABLE TRIGGER booking_open');
     await client.query(
+      'ALTER TABLE app.use_right_ledger DISABLE TRIGGER use_right_ledger_movement',
+    );
+    await client.query(
       `INSERT INTO app.booking (id, second_home_id, channel, holding_id, stake_id, checkin_date, checkout_date, state,
          opened_by_operation, confirmed_at)
        VALUES ($1, $2, 'own_use', $3, $4, $5, $6, 'confirmed', $7, now() - interval '30 days')`,
       [id, b.homeId, b.titular.holdingId, b.titular.stakeId, b.checkin, b.checkout, op],
     );
-    // A constraint diferida da W12 (o dono passa por ela) roda agora: sem evento pendente, o gatilho volta a ligar.
-    await client.query('SET CONSTRAINTS ALL IMMEDIATE');
-    await client.query('SET CONSTRAINTS ALL DEFERRED');
-    await client.query('ALTER TABLE app.booking ENABLE TRIGGER booking_open');
     for (let date = b.checkin; date < b.checkout; date = addDays(date, 1)) {
       if (b.titular.stakeId !== null) {
         const { rows } = await client.query<{ id: string }>(
@@ -219,6 +237,11 @@ export async function historicBooking(
         [b.homeId, date, id, b.titular.stakeId, op],
       );
     }
+    // As constraints diferidas da W12 (o dono passa por elas) rodam agora: sem evento pendente, os gatilhos religam.
+    await client.query('SET CONSTRAINTS ALL IMMEDIATE');
+    await client.query('SET CONSTRAINTS ALL DEFERRED');
+    await client.query('ALTER TABLE app.use_right_ledger ENABLE TRIGGER use_right_ledger_movement');
+    await client.query('ALTER TABLE app.booking ENABLE TRIGGER booking_open');
     await client.query(`UPDATE app.operation SET state = 'committed' WHERE id = $1`, [op]);
     await client.query('COMMIT');
     return id;
@@ -325,6 +348,46 @@ export interface ClosingOptions {
   readonly reversal?: 'restore' | 'correction' | 'none';
   readonly releaseReason?: string;
   readonly skipResolution?: boolean;
+  /** Ordem obrigatória da E2 (spec booking §10.11): classe 4 (Ação) e classe 5 (noites, crescente) antes da reserva. */
+  readonly lockOrder?: boolean;
+}
+
+/** Travas consultivas com as mesmas chaves da W12 (`app.stake:<id>`, `app.second_home_date:<casa>:<data>`). */
+export async function lockStakeAndNights(client: Queryable, bookingId: string): Promise<void> {
+  await client.query(
+    `SELECT count(*) FROM (
+       SELECT k FROM (
+         SELECT 0 AS n, 'app.stake:' || b.stake_id::text AS k FROM app.booking b WHERE b.id = $1 AND b.stake_id IS NOT NULL
+         UNION ALL
+         SELECT 1, 'app.second_home_date:' || b.second_home_id::text || ':' || d::date::text
+           FROM app.booking b, generate_series(b.checkin_date, b.checkout_date - 1, interval '1 day') AS d
+          WHERE b.id = $1
+       ) AS keys ORDER BY n, k
+     ) AS ordered, LATERAL (SELECT pg_advisory_xact_lock(hashtextextended(ordered.k, 0))) AS taken`,
+    [bookingId],
+  );
+}
+
+/** Termos do cancelamento calculados pelo banco agora (o que a prévia da E2 mostrará). */
+export async function cancellationTerms(
+  db: Queryable,
+  bookingId: string,
+): Promise<{ cancellationClass: string | null; firstAffectedDate: string | null }> {
+  const { rows } = await db.query<{
+    cancellation_class: string | null;
+    first_affected_date: string | null;
+  }>(
+    `SELECT CASE WHEN b.stake_id IS NULL THEN NULL
+                 WHEN app.own_use_cancellation_timely(i.first_checkin_at, clock_timestamp()) THEN 'timely'
+                 ELSE 'late' END AS cancellation_class,
+            (app.booking_unstarted_nights(b.id, clock_timestamp()))[1]::text AS first_affected_date
+       FROM app.booking b, app.booking_period_instants(b.id) AS i WHERE b.id = $1`,
+    [bookingId],
+  );
+  return {
+    cancellationClass: rows[0]!.cancellation_class,
+    firstAffectedDate: rows[0]!.first_affected_date,
+  };
 }
 
 const RELEASE_REASON: Record<ClosingKind, string> = {
@@ -344,6 +407,7 @@ export async function closeBooking(
   bookingId: string,
   o: ClosingOptions,
 ) {
+  if (o.lockOrder === true) await lockStakeAndNights(client, bookingId);
   const b = await bookingRow(client, bookingId);
   if (o.authorizationId !== undefined)
     await client.query(
@@ -691,4 +755,89 @@ export async function historicException(
   } finally {
     await client.end();
   }
+}
+
+/** Exercício anterior ao corrente: sempre passado, qualquer que seja a data real. */
+export const PREVIOUS_YEAR = SEALING_YEAR - 1;
+
+/**
+ * Sela o exercício anterior inteiro como o `open_exercise` o teria selado quando era o corrente: noites com a temporada
+ * canônica (`app.canonical_season`, conferida pelo CHECK) e o check-in das 14:00 locais, uma custódia raiz por noite
+ * aberta por operação `open_exercise` de sistema. Só a regra de horizonte (relógio de hoje) fica de fora, desligando o
+ * gatilho de selagem nesta transação de fixture do dono; a constraint diferida do exercício inteiro (TECH-041) e a de
+ * custódia ativa por noite (TECH-021) rodam no fim.
+ */
+export async function sealPreviousExercise(h: Harness, homeId: string): Promise<void> {
+  const client = await connect(h.database.url);
+  try {
+    await client.query('BEGIN');
+    const op = await openOperation(client, 'open_exercise', { kind: 'system' });
+    await client.query('ALTER TABLE app.second_home_date DISABLE TRIGGER second_home_date_seal');
+    await client.query(
+      `INSERT INTO app.second_home_date (second_home_id, stay_date, season, checkin_at)
+       SELECT h.id, d::date, app.canonical_season(d::date), (d::date + time '14:00') AT TIME ZONE h.timezone
+         FROM app.second_home h, generate_series(make_date($2, 1, 1), make_date($2, 12, 31), interval '1 day') AS d
+        WHERE h.id = $1`,
+      [homeId, PREVIOUS_YEAR],
+    );
+    await client.query(
+      `INSERT INTO app.date_custody (id, second_home_id, stay_date, holder_kind, opened_by_operation)
+       SELECT gen_random_uuid(), d.second_home_id, d.stay_date,
+              CASE a.modality WHEN 'owner' THEN 'owner' ELSE 'spe_pool' END, $3
+         FROM app.second_home_date d JOIN app.acquisition a ON a.second_home_id = d.second_home_id
+        WHERE d.second_home_id = $1 AND d.exercise_year = $2`,
+      [homeId, PREVIOUS_YEAR, op],
+    );
+    await client.query('SET CONSTRAINTS ALL IMMEDIATE');
+    await client.query('SET CONSTRAINTS ALL DEFERRED');
+    await client.query('ALTER TABLE app.second_home_date ENABLE TRIGGER second_home_date_seal');
+    await client.query(`UPDATE app.operation SET state = 'committed' WHERE id = $1`, [op]);
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => undefined);
+    throw error;
+  } finally {
+    await client.end();
+  }
+}
+
+/**
+ * Co-Owner com o exercício anterior como o primeiro (formalizado em 01/11 de dois anos atrás): concessões da
+ * formalização no exercício anterior, corrente e seguinte selados pelo job real (com as concessões da configuração) e o
+ * anterior selado pela fixture. Noites passadas existem sempre, independentemente da data real.
+ */
+export async function historicCoOwnerScenario(h: BookingHarness, n = 2): Promise<CoOwnerScenario> {
+  const home = await formalizeCoOwnerAt(
+    h,
+    n,
+    `${PREVIOUS_YEAR}-01-01`,
+    new Date(`${PREVIOUS_YEAR - 1}-11-01T12:00:00Z`),
+  );
+  h.clock.set(new Date());
+  const job = await h.runJob();
+  if (job.failed !== 0) throw new Error('open_exercise fixture failed');
+  await sealPreviousExercise(h, home.homeId);
+  await completeDrawWithCalendar(h, home.acquisitionId);
+  const { year } = bookableStart();
+  const order = ordinaryOrder(
+    await drawnPositions(h, home.acquisitionId),
+    `${PREVIOUS_YEAR}-01-01`,
+    year,
+  );
+  const byStake = new Map((await h.holdings(home.homeId)).map((row) => [row.stake_id, row]));
+  const titulares: Titular[] = [];
+  for (const stakeId of order) titulares.push(await addTitular(h, byStake.get(stakeId)!));
+  return { homeId: home.homeId, acquisitionId: home.acquisitionId, year, titulares };
+}
+
+/** Owner com data-base no exercício anterior: anterior selado pela fixture; corrente e seguinte pelo job real. */
+export async function historicOwnerScenario(h: BookingHarness): Promise<OwnerScenario> {
+  h.clock.set(new Date(`${PREVIOUS_YEAR - 1}-11-01T12:00:00Z`));
+  const homeId = await h.formalizeOwner(`${PREVIOUS_YEAR}-01-01`);
+  h.clock.set(new Date());
+  const job = await h.runJob();
+  if (job.failed !== 0) throw new Error('open_exercise fixture failed');
+  await sealPreviousExercise(h, homeId);
+  const [holding] = await h.holdings(homeId);
+  return { homeId, titular: await addTitular(h, holding!) };
 }

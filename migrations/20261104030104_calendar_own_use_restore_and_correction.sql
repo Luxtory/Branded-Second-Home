@@ -6,7 +6,7 @@
 -- continua fechada a todos (emenda de escopo da D2).
 
 CREATE OR REPLACE FUNCTION app.use_right_ledger_movement() RETURNS trigger
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE
   a app.acquisition;
@@ -201,7 +201,7 @@ CREATE UNIQUE INDEX conflict_use_right_reversal ON app.use_right_ledger (refers_
 -- Projeção: a correção desfaz o consumo que reverte (`consumed − quantity`). O resto é o da W11. CREATE OR REPLACE mantém
 -- dono e privilégios (sem EXECUTE para ninguém).
 CREATE OR REPLACE FUNCTION app.use_right_balance_apply() RETURNS trigger
-  LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
+  LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE v_remaining integer;
 BEGIN
@@ -247,7 +247,7 @@ END $$;
 -- correção; expiração); toda correção reverte exatamente um consumo, nunca expiração ou concessão.
 CREATE OR REPLACE FUNCTION app.use_right_invariant_breaches()
   RETURNS TABLE (invariant text, second_home_id uuid, detail text)
-  LANGUAGE sql STABLE SET search_path = ''
+  LANGUAGE sql STABLE SET search_path = pg_catalog, pg_temp
 AS $$
   WITH ledger AS (
     SELECT l.second_home_id, l.stake_id, l.exercise_year, l.bucket,

@@ -24,6 +24,8 @@ import {
   connect,
   futureForfeited,
   historicBooking,
+  historicCoOwnerScenario,
+  historicOwnerScenario,
   lastStartedNight,
   lifecycleFacts,
   openException,
@@ -59,9 +61,10 @@ describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, pl
 
   beforeAll(async () => {
     h = await bookingHarness();
-    co = await h.coOwnerScenario(2);
-    co2 = await h.coOwnerScenario(2);
-    owner = await h.ownerScenario();
+    // Exercício anterior selado: noites passadas existem em qualquer data real (inclusive 1º/01 antes das 14:00).
+    co = await historicCoOwnerScenario(h);
+    co2 = await historicCoOwnerScenario(h);
+    owner = await historicOwnerScenario(h);
     admin = await addAdmin(h);
     S1 = await lastStartedNight(h, co.homeId);
     S2 = await lastStartedNight(h, co2.homeId);
@@ -167,6 +170,131 @@ describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, pl
         await authorizer.end();
         await h.database.pool.query(`ALTER ROLE luxtory_booking_authorizer WITH PASSWORD NULL`);
       }
+    });
+
+    it('[ADR-0027 §4] isolamento: sem CREATE, sem TRIGGER/REFERENCES nem coluna; gatilhos só com os próprios privilégios', async () => {
+      const { rows } = await h.database.pool.query<Record<string, unknown>>(
+        `SELECT has_schema_privilege('luxtory_booking_authorizer', 'app', 'USAGE') AS app_usage,
+                has_schema_privilege('luxtory_booking_authorizer', 'app', 'CREATE') AS app_create,
+                has_schema_privilege('luxtory_booking_authorizer', 'public', 'CREATE') AS public_create,
+                has_database_privilege('luxtory_booking_authorizer', current_database(), 'CREATE') AS database_create,
+                (SELECT count(*)::int FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+                  WHERE n.nspname = 'app' AND c.relkind IN ('r', 'v', 'm', 'p', 'S', 'f')
+                    AND (has_table_privilege('luxtory_booking_authorizer', c.oid,
+                           'SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER')
+                         OR has_any_column_privilege('luxtory_booking_authorizer', c.oid,
+                           'SELECT, INSERT, UPDATE, REFERENCES'))) AS relations_with_privilege,
+                (SELECT count(*)::int FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+                  WHERE n.nspname = 'app' AND p.prosecdef
+                    AND p.proname NOT IN ('authorize_booking_action', 'revoke_booking_authorization')
+                    AND has_function_privilege('luxtory_booking_authorizer', p.oid, 'EXECUTE')) AS other_definers`,
+      );
+      expect(rows[0]).toEqual({
+        app_usage: true,
+        app_create: false,
+        public_create: false,
+        database_create: false,
+        relations_with_privilege: 0,
+        other_definers: 0,
+      });
+      // Chamada direta de cada função de gatilho exposta por PUBLIC: recusada pelo PostgreSQL.
+      const triggers = await h.database.pool.query<{ fn: string }>(
+        `SELECT p.oid::regproc::text AS fn FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+          WHERE n.nspname = 'app' AND p.prorettype = 'trigger'::regtype
+            AND has_function_privilege('luxtory_booking_authorizer', p.oid, 'EXECUTE')`,
+      );
+      expect(triggers.rows).toHaveLength(18);
+      await asAuthorizer(h, async (client) => {
+        for (const { fn } of triggers.rows)
+          await expect(client.query(`SELECT ${fn}()`)).rejects.toMatchObject({ code: '0A000' });
+        // Uso indireto: só num objeto próprio (tabela temporária) e com os privilégios do próprio papel (INVOKER).
+        await client.query('CREATE TEMP TABLE probe (id int)');
+        await client.query(
+          'CREATE TRIGGER probe_guard BEFORE INSERT ON probe FOR EACH ROW EXECUTE FUNCTION app.forbid_change()',
+        );
+        await expect(client.query('INSERT INTO probe VALUES (1)')).rejects.toMatchObject({ code: '42501' });
+        await expect(
+          client.query(
+            'CREATE TRIGGER forged BEFORE INSERT ON app.booking FOR EACH ROW EXECUTE FUNCTION app.forbid_change()',
+          ),
+        ).rejects.toMatchObject({ code: '42501' });
+        // `app.is_text_list`: IMMUTABLE, sem SECURITY DEFINER, sem referência a tabela; só calcula.
+        const pure = await client.query<{ ok: boolean; bad: boolean }>(
+          `SELECT app.is_text_list(ARRAY['a', 'b'], 2, 5) AS ok, app.is_text_list(ARRAY['abcdef'], 2, 5) AS bad`,
+        );
+        expect(pure.rows[0]).toEqual({ ok: true, bad: false });
+      });
+      const helper = await h.database.pool.query<{ volatility: string; definer: boolean; touches_app: boolean }>(
+        `SELECT provolatile AS volatility, prosecdef AS definer, prosrc ~ 'app[.]' AS touches_app
+           FROM pg_proc WHERE oid = 'app.is_text_list(text[], integer, integer)'::regprocedure`,
+      );
+      expect(helper.rows[0]).toEqual({ volatility: 'i', definer: false, touches_app: false });
+    });
+
+    it('[ADR-0027 §4] tipos sombreados em pg_temp pelo autorizador não rodam como o dono (escalada corrigida)', async () => {
+      const id = await bookNow(h, co.titulares[0]!, co.homeId, at(92), at(93));
+      const exceptionId = await app('open_exception', asAdmin(), (c, op) => openException(c, op, id, 'operational'));
+      const nights = await unstartedNights(h.database.pool, id);
+      const request = await requestAuthorization(h, admin, {
+        bookingId: id,
+        purpose: 'exception_cancellation',
+        exceptionId,
+        expectedDates: nights,
+        expectedClass: 'timely',
+      });
+      const authorization = await asAuthorizer(h, async (client) => {
+        await client.query(
+          `CREATE FUNCTION pg_temp.escalated() RETURNS boolean LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $$
+           BEGIN
+             IF current_user <> 'luxtory_booking_authorizer' THEN
+               RAISE EXCEPTION 'escalated as %', current_user;
+             END IF;
+             RETURN true;
+           END $$`,
+        );
+        for (const type of ['text', 'uuid', 'date', 'timestamptz', 'jsonb', 'name'])
+          await client.query(`CREATE DOMAIN pg_temp.${type} AS pg_catalog.${type} CHECK (pg_temp.escalated())`);
+        await expect(
+          client.query(`SELECT app.authorize_booking_action(gen_random_uuid(), 'github-run:9:1')`),
+        ).rejects.toEqual(constraint('authorization_request_unknown'));
+        const { rows } = await client.query<{ id: string }>(
+          `SELECT app.authorize_booking_action($1, 'github-run:9:2') AS id`,
+          [request],
+        );
+        await expect(
+          client.query(`SELECT app.revoke_booking_authorization(gen_random_uuid(), 'github-run:9:3')`),
+        ).rejects.toEqual(constraint('authorization_unknown'));
+        return rows[0]!.id;
+      });
+      const config = await h.database.pool.query<{ fn: string; config: string[] }>(
+        `SELECT p.oid::regproc::text AS fn, p.proconfig AS config FROM pg_proc p
+          WHERE p.oid IN ('app.authorize_booking_action(uuid, text)'::regprocedure,
+                          'app.revoke_booking_authorization(uuid, text)'::regprocedure,
+                          'app.booking_state_apply()'::regprocedure, 'app.use_right_balance_apply()'::regprocedure,
+                          'app.booking_period_instants(uuid)'::regprocedure)
+          ORDER BY 1`,
+      );
+      expect(config.rows).toHaveLength(5);
+      expect(config.rows.every((row) => row.config.includes('search_path=pg_catalog, pg_temp'))).toBe(true);
+      await revoke(h, authorization);
+    });
+
+    it('[TECH-051][REQ-095] a solicitação é preparatória: sem autorização, estado, efeito econômico nem uso possível', async () => {
+      const id = await bookNow(h, co.titulares[1]!, co.homeId, at(95), at(96));
+      const before = await lifecycleFacts(h, id);
+      const request = await requestAuthorization(h, admin, { bookingId: id, purpose: 'no_show', expectedDates: [] });
+      expect(await lifecycleFacts(h, id)).toEqual(before);
+      const authorizations = await h.database.pool.query(
+        `SELECT 1 FROM app.booking_authorization WHERE request_id = $1`,
+        [request],
+      );
+      expect(authorizations.rows).toEqual([]);
+      // O id da solicitação não vale como autorização.
+      await expect(
+        app('declare_no_show', asAdmin(), (c, op) =>
+          closeBooking(c, op, id, { kind: 'no_show', authorizationId: request }),
+        ),
+      ).rejects.toEqual(constraint('permission_authorization_scope'));
     });
 
     it('[A4][ADR-0027 §4] solicitação só pelo Admin ativo no command de solicitação', async () => {

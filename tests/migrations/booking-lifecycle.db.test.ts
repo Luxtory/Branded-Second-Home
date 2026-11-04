@@ -19,13 +19,17 @@ import {
   asOperation,
   bookingRow,
   bookNow,
+  cancellationTerms,
   closeBooking,
   connect,
   deactivate,
   historicBooking,
+  historicCoOwnerScenario,
   historicException,
+  historicOwnerScenario,
   insertTransition,
   lastStartedNight,
+  PREVIOUS_YEAR,
   lifecycleFacts,
   openException,
   openOperation,
@@ -42,6 +46,8 @@ describe('W13 E1 — ciclo da reserva no banco com os privilégios reais (luxtor
   let h: BookingHarness;
   let co: CoOwnerScenario;
   let owner: OwnerScenario;
+  /** Casa só para as viradas de ano (sem colidir com as noites em volta de S). */
+  let turn: CoOwnerScenario;
   let admin: Admin;
   /** Última noite iniciada (Co-Owner e Owner) e primeira noite reservável pelo command da W12. */
   let S: string;
@@ -58,14 +64,16 @@ describe('W13 E1 — ciclo da reserva no banco com os privilégios reais (luxtor
 
   beforeAll(async () => {
     h = await bookingHarness();
-    co = await h.coOwnerScenario(2);
-    owner = await h.ownerScenario();
+    // Exercício anterior selado: noites passadas existem em qualquer data real (inclusive 1º/01 antes das 14:00).
+    co = await historicCoOwnerScenario(h);
+    owner = await historicOwnerScenario(h);
+    turn = await historicCoOwnerScenario(h);
     admin = await addAdmin(h);
     S = await lastStartedNight(h, co.homeId);
     So = await lastStartedNight(h, owner.homeId);
     first = bookableStart().first;
     await activate(h, 'own_use_booking', 'own_use_lifecycle');
-  }, 240_000);
+  }, 300_000);
   afterAll(() => h.close());
 
   describe('chave K2 e privilégios (ADR-0027 §5)', () => {
@@ -781,6 +789,191 @@ describe('W13 E1 — ciclo da reserva no banco com os privilégios reais (luxtor
         await forged.query('ROLLBACK').catch(() => undefined);
         await forged.end();
       }
+    });
+  });
+
+  describe('virada do ano, disciplina de travas e tipos sombreados (auditoria do PR #82)', () => {
+    it('[TECH-110] virada do ano: noites passadas sempre existem; exercício anterior e reserva que cruza exercícios', async () => {
+      // O exercício anterior inteiro está selado nas três casas, e S − 30 existe — em qualquer data e hora reais.
+      for (const homeId of [co.homeId, owner.homeId, turn.homeId]) {
+        const { rows } = await h.database.pool.query<{ previous: number; back: boolean }>(
+          `SELECT (SELECT count(*)::int FROM app.second_home_date WHERE second_home_id = $1 AND exercise_year = $2)
+                    AS previous,
+                  EXISTS (SELECT 1 FROM app.second_home_date
+                           WHERE second_home_id = $1 AND stay_date = $3::date - 30) AS back`,
+          [homeId, PREVIOUS_YEAR, await lastStartedNight(h, homeId)],
+        );
+        const leap = PREVIOUS_YEAR % 4 === 0 && (PREVIOUS_YEAR % 100 !== 0 || PREVIOUS_YEAR % 400 === 0);
+        expect(rows[0]!.previous).toBe(leap ? 366 : 365);
+        expect(rows[0]!.back).toBe(true);
+      }
+      // Reserva inteira no exercício anterior (sempre encerrada): consumo histórico registrado no bucket daquele
+      // exercício; o Titular não cancela; o job conclui.
+      const a = turn.titulares[0]!;
+      const past = await historicBooking(h, {
+        homeId: turn.homeId,
+        titular: a,
+        checkin: `${PREVIOUS_YEAR}-12-29`,
+        checkout: `${PREVIOUS_YEAR}-12-31`,
+      });
+      const consumed = await h.database.pool.query<{ consumed: number }>(
+        `SELECT sum(consumed)::int AS consumed FROM app.use_right_balance WHERE stake_id = $1 AND exercise_year = $2`,
+        [a.stakeId, PREVIOUS_YEAR],
+      );
+      expect(consumed.rows[0]!.consumed).toBe(2);
+      await expect(
+        app('cancel_own_use_booking', titular(a), (c, op) =>
+          closeBooking(c, op, past, {
+            kind: 'cancellation',
+            expected: { cancellationClass: 'late', firstAffectedDate: null },
+          }),
+        ),
+      ).rejects.toEqual(constraint('conflict_booking_no_unstarted_night'));
+      await app('advance_booking_states', system, async (c, op) => {
+        await insertTransition(c, op, { bookingId: past, kind: 'advance', toState: 'in_use' });
+        await insertTransition(c, op, { bookingId: past, kind: 'advance', toState: 'completed' });
+      });
+      expect((await bookingRow(h.database.pool, past)).state).toBe('completed');
+
+      // Reserva que cruza a próxima virada: cada noite não iniciada volta ao bucket do próprio exercício (tempestivo)
+      // ou fica `forfeited_right` com o consumo mantido (tardio) — a classe vem do banco, no instante.
+      const b = turn.titulares[1]!;
+      const year = PREVIOUS_YEAR + 1;
+      const crossing = await historicBooking(h, {
+        homeId: turn.homeId,
+        titular: b,
+        checkin: `${year}-12-30`,
+        checkout: `${year + 1}-01-02`,
+      });
+      const balances = async () =>
+        Object.fromEntries(
+          (
+            await h.database.pool.query<{ exercise_year: number; consumed: number }>(
+              `SELECT exercise_year, sum(consumed)::int AS consumed FROM app.use_right_balance
+                WHERE stake_id = $1 GROUP BY exercise_year`,
+              [b.stakeId],
+            )
+          ).rows.map((row) => [row.exercise_year, row.consumed]),
+        );
+      const before = await balances();
+      const terms = await cancellationTerms(h.database.pool, crossing);
+      const nights = await unstartedNights(h.database.pool, crossing);
+      await app('cancel_own_use_booking', titular(b), (c, op) =>
+        closeBooking(c, op, crossing, { kind: 'cancellation', expected: terms }),
+      );
+      const after = await balances();
+      const back = (exercise: number) =>
+        terms.cancellationClass === 'timely' ? nights.filter((n) => n.startsWith(String(exercise))).length : 0;
+      expect(after[year]).toBe(before[year]! - back(year));
+      expect(after[year + 1]).toBe(before[year + 1]! - back(year + 1));
+      const restores = await h.database.pool.query<{ exercise_year: number; stay_date: string }>(
+        `SELECT l.exercise_year, l.stay_date::text AS stay_date FROM app.use_right_ledger l
+           JOIN app.use_right_ledger c ON c.id = l.refers_to_id
+          WHERE l.movement = 'restore' AND c.operation_id = (SELECT opened_by_operation FROM app.booking WHERE id = $1)
+          ORDER BY l.stay_date`,
+        [crossing],
+      );
+      expect(restores.rows).toEqual(
+        terms.cancellationClass === 'timely'
+          ? nights.map((n) => ({ exercise_year: Number(n.slice(0, 4)), stay_date: n }))
+          : [],
+      );
+    });
+
+    it('[TECH-053][ADR-0027 §2] ordem de travas: criação da W12 e cancelamento da W13 na mesma Ação se serializam', async () => {
+      const a = co.titulares[0]!;
+      const x = await bookNow(h, a, co.homeId, at(12), at(13));
+      const holder = await connect(h.database.appUrl);
+      try {
+        await holder.query('BEGIN');
+        const op = await openOperation(holder, 'cancel_own_use_booking', titular(a));
+        await closeBooking(holder, op, x, {
+          kind: 'cancellation',
+          expected: await cancellationTerms(holder, x),
+          lockOrder: true,
+        });
+        // O command real da W12 (delegação → Ação → noites) espera a Ação travada pelo cancelamento; sem deadlock.
+        const booking = h.book(a, { second_home_id: co.homeId, checkin_date: at(15), checkout_date: at(16) });
+        await waitForLockWaiter(h.database.pool);
+        await holder.query(`UPDATE app.operation SET state = 'committed' WHERE id = $1`, [op]);
+        await holder.query('COMMIT');
+        await expect(booking).resolves.toMatchObject({ status: 'committed' });
+      } finally {
+        await holder.end();
+      }
+      expect((await bookingRow(h.database.pool, x)).state).toBe('cancelled');
+    });
+
+    it('[TECH-053][BR-162] noites liberadas: com a ordem da E2, a outra Ação reserva logo depois; sem ela, falha fechada', async () => {
+      const [a, b] = co.titulares;
+      for (const [offset, ordered] of [
+        [25, true],
+        [33, false],
+      ] as const) {
+        const z = await bookNow(h, a!, co.homeId, at(offset), at(offset + 2));
+        const holder = await connect(h.database.appUrl);
+        try {
+          await holder.query('BEGIN');
+          const op = await openOperation(holder, 'cancel_own_use_booking', titular(a!));
+          const terms = await cancellationTerms(holder, z);
+          expect(terms.cancellationClass).toBe('timely');
+          await closeBooking(holder, op, z, { kind: 'cancellation', expected: terms, lockOrder: ordered });
+          const booking = h.book(b!, {
+            second_home_id: co.homeId,
+            checkin_date: at(offset),
+            checkout_date: at(offset + 2),
+          });
+          if (ordered) {
+            // A outra Ação espera as noites (classe 5) e, depois do COMMIT, as encontra de volta na SPE.
+            await waitForLockWaiter(h.database.pool);
+            await holder.query(`UPDATE app.operation SET state = 'committed' WHERE id = $1`, [op]);
+            await holder.query('COMMIT');
+            await expect(booking).resolves.toMatchObject({ status: 'committed' });
+          } else {
+            // Sem a trava das noites, a leitura concorrente ainda vê a ocupação ativa: recusa, nunca dupla ocupação.
+            await expect(booking).resolves.toEqual(
+              expect.objectContaining({ status: 'rejected', code: 'ERR_BOOKING_CONFLICT' }),
+            );
+            await holder.query(`UPDATE app.operation SET state = 'committed' WHERE id = $1`, [op]);
+            await holder.query('COMMIT');
+          }
+        } finally {
+          await holder.end();
+        }
+      }
+    });
+
+    it('[ADR-0027 §2] tipos sombreados em pg_temp pelo luxtory_app não rodam como o dono (projeções e funções antigas)', async () => {
+      const a = co.titulares[1]!;
+      const id = await bookNow(h, a, co.homeId, at(45), at(47));
+      // Termos e noites lidos por outra sessão: na sessão sombreada, `::text[]` do cliente voltaria como domínio.
+      const terms = await cancellationTerms(h.database.pool, id);
+      const nights = await unstartedNights(h.database.pool, id);
+      const client = await connect(h.database.appUrl);
+      try {
+        // Detector: a função só falha quando executada com outra identidade (dentro de SECURITY DEFINER).
+        await client.query(
+          `CREATE FUNCTION pg_temp.escalated() RETURNS boolean LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $$
+           BEGIN
+             IF current_user <> session_user THEN
+               RAISE EXCEPTION 'escalated as %', current_user;
+             END IF;
+             RETURN true;
+           END $$`,
+        );
+        for (const type of ['text', 'uuid', 'date', 'timestamptz', 'jsonb', 'name'])
+          await client.query(`CREATE DOMAIN pg_temp.${type} AS pg_catalog.${type} CHECK (pg_temp.escalated())`);
+        await client.query('BEGIN');
+        const op = await openOperation(client, 'cancel_own_use_booking', titular(a));
+        await closeBooking(client, op, id, { kind: 'cancellation', expected: terms, nights });
+        await client.query(`UPDATE app.operation SET state = 'committed' WHERE id = $1`, [op]);
+        await client.query('COMMIT');
+        await client.query(`SELECT * FROM app.auth_account_by_email('ninguem@example.com')`);
+        await client.query(`SELECT * FROM app.auth_account_labels(ARRAY[gen_random_uuid()])`);
+      } finally {
+        await client.end();
+      }
+      expect(await lifecycleFacts(h, id)).toMatchObject({ state: 'cancelled', restores: 2 });
     });
   });
 

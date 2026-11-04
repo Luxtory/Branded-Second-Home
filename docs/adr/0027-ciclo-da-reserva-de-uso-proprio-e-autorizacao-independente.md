@@ -224,3 +224,13 @@ A W13 não ativa reservas.
    `cancellation`, `no_show`, `exception_opening`, `exception_resolution`, `invalidation`); constraints diferidas conferem
    no COMMIT os efeitos completos do fechamento e da recuperação e que todo uso de autorização acompanha o ato da mesma
    operação. Detalhes e nomes de recusa: spec `booking` §10.11.
+5. **`search_path` das funções (auditoria do PR #82).** `SET search_path = ''` não basta em `SECURITY DEFINER`: o schema
+   temporário da sessão continua sendo buscado primeiro para nomes de tipo, e um papel com TEMP sombreia `text`/`uuid`
+   com um domínio cujo `CHECK` roda como o dono (escalada do papel autorizador a `postgres` comprovada antes da
+   correção). Toda função da W13 usa `SET search_path = pg_catalog, pg_temp`; a prontidão confere. Convenção para as
+   próximas waves: `SECURITY DEFINER` sempre com `pg_temp` explicitamente por último. As `SECURITY DEFINER` anteriores
+   (`auth_account_by_email`, `auth_account_labels`, `*_is_public`) continuam com `''`: por inspeção, não declaram nem
+   convertem tipos sombreáveis (`integer` é palavra-chave e resolve em `pg_catalog`); as `auth_account_*`, executáveis
+   pelo `luxtory_app`, também passam no teste com seis tipos sombreados; as `*_is_public` só o `anon` executa, pelas
+   políticas de RLS. Ficam como dívida técnica documentada, sem alterar waves anteriores.
+6. **Ordem de travas obrigatória para os handlers (E2).** Spec `booking` §10.11.1, provada com o command real da W12.

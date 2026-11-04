@@ -270,3 +270,14 @@ recusa sem efeito), T-1309 (outra party recusada) e T-1310 (job limitado pelo in
 (workflow e logs) ficam para a E5. Nota: o papel autorizador recebe `USAGE` no schema `app` e por isso enxerga funções
 executáveis por `PUBLIC` desde as W1–W7 — 18 de gatilho (chamada direta recusada) e um validador IMMUTABLE —, sem acesso
 a dados (ADR-0027, notas da E1). Nenhuma ativação; riscos R1–R8, R4b e C1 seguem sem ratificação.
+
+### T-1312 [HIGH → mitigada na E1] Elevation — tipo sombreado em `pg_temp` dentro de `SECURITY DEFINER`
+
+- **Vector**: papel com TEMP (autorizador ou `luxtory_app`) cria `pg_temp.uuid`/`pg_temp.text` com `CHECK` que chama
+  função própria; com `search_path = ''`, o tipo temporário vence o de `pg_catalog` e o `CHECK` roda como o dono.
+- **Evidência**: sonda descartável no PR #82 (antes da correção) — `app.authorize_booking_action` executou a função do
+  autorizador como `postgres`.
+- **Mitigation**: `SET search_path = pg_catalog, pg_temp` em toda função da W13; prontidão exige nas `SECURITY DEFINER`
+  acionáveis; regressões com seis tipos sombreados (autorizador e `luxtory_app`).
+- **Residual**: `SECURITY DEFINER` anteriores com `''` sem nome de tipo sombreável (dívida técnica documentada no
+  ADR-0027, nota 5); 18 funções de gatilho e `app.is_text_list` executáveis por PUBLIC (nota 2), sem acesso a dados.

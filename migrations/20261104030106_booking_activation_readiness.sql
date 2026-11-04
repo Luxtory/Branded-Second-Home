@@ -3,7 +3,7 @@
 -- habilitados, privilégios efetivos, RLS, consultas de violação vazias e nenhuma chave presente. Só verifica; não ativa.
 -- Impressões digitais (SHA-256 das funções críticas) ficam para o PR de ativação, geradas pela CI.
 CREATE FUNCTION app.assert_own_use_activation_ready() RETURNS void
-  LANGUAGE plpgsql STABLE SET search_path = ''
+  LANGUAGE plpgsql STABLE SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE
   v_failures text[] := '{}';
@@ -92,10 +92,17 @@ BEGIN
                  WHERE r.rolname = 'luxtory_booking_authorizer') THEN
     v_failures := v_failures || 'authorizer_role'::text;
   END IF;
-  -- SECURITY DEFINER com `search_path` fixo.
+  -- SECURITY DEFINER com `search_path` fixo, sem schema gravável por terceiros; as acionáveis pelo papel da aplicação
+  -- (projeções por gatilho) ou pelo autorizador, com `pg_temp` explicitamente por último (sem sombrear tipos).
   IF EXISTS (SELECT 1 FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
               WHERE n.nspname = 'app' AND p.prosecdef
-                AND NOT coalesce(p.proconfig @> ARRAY['search_path=""'], false)) THEN
+                AND NOT coalesce(p.proconfig && ARRAY['search_path=""', 'search_path=pg_catalog, pg_temp'], false))
+     OR EXISTS (SELECT 1 FROM pg_catalog.pg_proc p
+                 WHERE p.oid IN ('app.authorize_booking_action(uuid, text)'::pg_catalog.regprocedure,
+                                 'app.revoke_booking_authorization(uuid, text)'::pg_catalog.regprocedure,
+                                 'app.booking_state_apply()'::pg_catalog.regprocedure,
+                                 'app.use_right_balance_apply()'::pg_catalog.regprocedure)
+                   AND NOT coalesce(p.proconfig @> ARRAY['search_path=pg_catalog, pg_temp'], false)) THEN
     v_failures := v_failures || 'security_definer_search_path'::text;
   END IF;
 

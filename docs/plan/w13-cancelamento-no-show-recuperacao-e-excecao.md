@@ -55,6 +55,12 @@ Quatro migrations (spec `booking` §10.11), `db:check` up → down → up, teste
 referência do run chegam à função; saída = id da autorização), 6, 7, 8, 9, 10 (incluindo login real e `CONNECTION LIMIT
 1`), 11 (no banco: PK, reuso recusado, falha → rollback e autorização utilizável), 12, 13, 14 e 16. Pendentes por etapa:
 1–3 e a varredura de log do 5 (workflow, E5); o replay pela chave do executor do 11 (E2); o roteiro do 15 (runbook, E5).
+Auditoria do PR #82 (2026-11-04): escalada por tipo sombreado em `pg_temp` achada e corrigida (`search_path =
+pg_catalog, pg_temp`, T-1312); isolamento do autorizador provado (sem CREATE, TRIGGER, REFERENCES, coluna ou outra
+`SECURITY DEFINER`; gatilhos só com os próprios privilégios); testes independentes da data real (exercício anterior
+selado; regressão da virada do ano); ordem de travas obrigatória para a E2 e proteção da solicitação documentadas
+(spec `booking` §10.11.1). Dependem da E2: handlers na ordem documentada, mapeamento de recusas, idempotência do
+executor, guard/MFA/auditoria da solicitação, AsyncAPI.
 
 ## Autorização independente — critérios de aceite
 

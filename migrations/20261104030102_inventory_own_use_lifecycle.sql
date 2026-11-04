@@ -15,7 +15,7 @@ ALTER TABLE app.date_occupancy
 -- Liberação: a aplicação só libera a ocupação `own_use` de noite não iniciada da reserva cuja transição `cancelled` ou
 -- `no_show` a mesma operação gravou, com o motivo do evento, uma vez; o instante é carimbado pelo banco.
 CREATE OR REPLACE FUNCTION app.date_occupancy_release() RETURNS trigger
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE t app.booking_state_transition;
 BEGIN
@@ -59,14 +59,14 @@ END $$;
 -- Sucessora esperada da `reserved_right` no evento (TECH-022, §7): tempestivo e invalidação devolvem à SPE; tardio e
 -- no-show a mantêm consumida como `forfeited_right` da mesma Ação.
 CREATE FUNCTION app.own_use_reserved_right_successor(p_transition app.booking_state_transition) RETURNS text
-  LANGUAGE sql IMMUTABLE SET search_path = ''
+  LANGUAGE sql IMMUTABLE SET search_path = pg_catalog, pg_temp
 AS $$
   SELECT CASE WHEN p_transition.kind = 'invalidation' OR p_transition.cancellation_class = 'timely' THEN 'spe_pool'
     ELSE 'forfeited_right' END
 $$;
 
 CREATE OR REPLACE FUNCTION app.date_custody_open() RETURNS trigger
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE
   v_parent app.date_custody;
@@ -158,7 +158,7 @@ END $$;
 -- fecha `spe_pool` da reserva Co-Owner da mesma operação (W12), `reserved_right` da reserva cuja transição de fechamento
 -- a operação gravou e `forfeited_right` autorizada para recuperação (W13).
 CREATE OR REPLACE FUNCTION app.date_custody_close() RETURNS trigger
-  LANGUAGE plpgsql SET search_path = ''
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE b app.booking; t app.booking_state_transition; a app.booking_authorization;
 BEGIN
