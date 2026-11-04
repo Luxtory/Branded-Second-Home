@@ -375,7 +375,13 @@ describe('W11 — ledger do Direito de Uso: banco, privilégios reais e estrutur
                 p.proconfig AS path, pg_has_role('luxtory_app', p.proowner, 'USAGE') AS owner_is_app
            FROM pg_proc p WHERE p.oid = 'app.use_right_balance_apply()'::regprocedure`,
       );
-      expect(rows[0]).toEqual({ execute: false, definer: true, path: ['search_path=""'], owner_is_app: false });
+      // W13 (ADR-0027, nota 5): `pg_temp` explicitamente por último — com `''`, tipos sombreados em `pg_temp` venceriam.
+      expect(rows[0]).toEqual({
+        execute: false,
+        definer: true,
+        path: ['search_path=pg_catalog, pg_temp'],
+        owner_is_app: false,
+      });
       // Só esta função é DEFINER na W11; validação e gate rodam como o papel real (INVOKER).
       const { rows: invokers } = await h.database.pool.query<{ name: string; definer: boolean }>(
         `SELECT p.proname AS name, p.prosecdef AS definer FROM pg_proc p
