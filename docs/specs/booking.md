@@ -483,3 +483,10 @@ Detalhes de implementação (não mudam decisão; ADR-0027, "Notas de implementa
   papel autorizador é criado e reafirmado só com atributos permitidos, e uma verificação falha fechada se ele tiver um
   desses três. Provado por emulação (dono não superusuário com os atributos lidos de Production): a versão anterior
   falhava com `42501`; a corrigida aplica up → down → up e passa na prontidão.
+- **5ª auditoria do PR #82 (2026-11-04) — fronteira do autorizador.** A prontidão também recusa: qualquer associação
+  entrante no papel autorizador além do vínculo administrativo do dono (ADMIN, sem SET e sem herança, criado pelo
+  PostgreSQL 16+ para o dono não superusuário); qualquer cadeia de `luxtory_app`, `anon` ou `authenticated` até o
+  autorizador ou até o dono do schema; GRANT OPTION de EXECUTE nas cinco funções privilegiadas fora do dono; e dono
+  dessas funções diferente do dono do schema. Provado em PostgreSQL 17: SET, INHERIT, ADMIN (autoconcessão), cadeia por
+  papel intermediário, `anon` membro, `luxtory_app` membro do dono e GRANT OPTION davam ao `luxtory_app` a função de
+  autorização e passavam na prontidão; agora são recusados, e o vínculo administrativo legítimo continua aceito.

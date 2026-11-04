@@ -882,6 +882,53 @@ describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, pl
       }
     });
 
+    it('[ADR-0027 §4][D10] prontidão recusa delegação do autorizador (SET, INHERIT, ADMIN, transitiva, dono) e GRANT OPTION', async () => {
+      const fresh = await createTestDatabase();
+      const ready = () => fresh.pool.query('SELECT app.assert_own_use_activation_ready()');
+      const notReady = (tag: string) =>
+        expect.objectContaining({ constraint: 'booking_activation_not_ready', message: expect.stringContaining(tag) });
+      // Papéis são do cluster: sondas com nome próprio (sem tocar `luxtory_app`), removidas no fim; o caminho até o dono
+      // usa `authenticated` sem herança, que não muda privilégio efetivo de ninguém nos testes paralelos.
+      const suffix = randomUUID().replaceAll('-', '').slice(0, 12);
+      const probe = `w13_probe_${suffix}`;
+      const bridge = `w13_bridge_${suffix}`;
+      const { rows } = await fresh.pool.query<{ owner: string }>(
+        `SELECT relowner::regrole::text AS owner FROM pg_class WHERE oid = 'app.date_custody'::regclass`,
+      );
+      const owner = rows[0]!.owner;
+      try {
+        await fresh.pool.query(`CREATE ROLE ${probe} NOLOGIN`);
+        await fresh.pool.query(`CREATE ROLE ${bridge} NOLOGIN`);
+        await ready();
+        const cases: readonly (readonly [readonly string[], readonly string[], string])[] = [
+          [[`GRANT luxtory_booking_authorizer TO ${probe} WITH SET TRUE, INHERIT FALSE`], [`REVOKE luxtory_booking_authorizer FROM ${probe}`], 'authorizer_membership'],
+          [[`GRANT luxtory_booking_authorizer TO ${probe} WITH INHERIT TRUE, SET FALSE`], [`REVOKE luxtory_booking_authorizer FROM ${probe}`], 'authorizer_membership'],
+          [[`GRANT luxtory_booking_authorizer TO ${probe} WITH ADMIN TRUE, SET FALSE, INHERIT FALSE`], [`REVOKE luxtory_booking_authorizer FROM ${probe} CASCADE`], 'authorizer_membership'],
+          [
+            [`GRANT luxtory_booking_authorizer TO ${bridge} WITH SET TRUE`, `GRANT ${bridge} TO ${probe} WITH SET TRUE`],
+            [`REVOKE ${bridge} FROM ${probe}`, `REVOKE luxtory_booking_authorizer FROM ${bridge}`],
+            'authorizer_membership',
+          ],
+          [[`GRANT ${owner} TO authenticated WITH SET TRUE, INHERIT FALSE`], [`REVOKE ${owner} FROM authenticated`], 'authorizer_membership'],
+          [
+            ['GRANT EXECUTE ON FUNCTION app.authorize_booking_action(uuid, text) TO luxtory_booking_authorizer WITH GRANT OPTION'],
+            ['REVOKE GRANT OPTION FOR EXECUTE ON FUNCTION app.authorize_booking_action(uuid, text) FROM luxtory_booking_authorizer'],
+            'privileged_function_grantee',
+          ],
+        ];
+        for (const [grants, revokes, tag] of cases) {
+          for (const grant of grants) await fresh.pool.query(grant);
+          await expect(ready(), grants.join('; ')).rejects.toEqual(notReady(tag));
+          for (const revoke of revokes) await fresh.pool.query(revoke);
+          await ready();
+        }
+      } finally {
+        await fresh.pool.query(`DROP ROLE IF EXISTS ${bridge}`);
+        await fresh.pool.query(`DROP ROLE IF EXISTS ${probe}`);
+        await fresh.drop();
+      }
+    });
+
     it('[T-1312] legadas com search_path vazio: tipos sombreados pelo anon não rodam como o dono', async () => {
       const client = await connect(h.database.url);
       try {

@@ -245,3 +245,7 @@ A W13 não ativa reservas.
    REPLICATION e BYPASSRLS, mas não SUPERUSER: `ALTER ROLE` não cita SUPERUSER, REPLICATION ou BYPASSRLS; a ausência
    deles é conferida por consulta e falha fechada. A prontidão confere a ACL das funções privilegiadas (o `luxtory_app`
    alcança `anon`/`authenticated` por `SET ROLE`).
+8. **Grafo de papéis e GRANT OPTION.** Ninguém assume, herda ou administra o autorizador além do dono (vínculo ADMIN
+   automático do PostgreSQL 16+, sem SET e sem herança); `luxtory_app`, `anon` e `authenticated` não alcançam o
+   autorizador nem o dono por cadeia alguma; ninguém além do dono tem GRANT OPTION nas funções privilegiadas, que são do
+   dono do schema. Conferido pela prontidão.

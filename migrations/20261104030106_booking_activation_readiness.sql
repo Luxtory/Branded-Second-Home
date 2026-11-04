@@ -10,6 +10,8 @@ DECLARE
   v_trigger record;
   v_relation record;
   v_table text;
+  v_owner oid := (SELECT c.relowner FROM pg_catalog.pg_class c WHERE c.oid = 'app.date_custody'::pg_catalog.regclass);
+  v_authorizer oid := (SELECT r.oid FROM pg_catalog.pg_roles r WHERE r.rolname = 'luxtory_booking_authorizer');
 BEGIN
   FOR v_trigger IN
     SELECT * FROM (VALUES
@@ -100,10 +102,23 @@ BEGIN
                         'app.use_right_balance_apply()'::pg_catalog.regprocedure,
                         'app.assert_own_use_activation_ready()'::pg_catalog.regprocedure)
           AND acl.privilege_type = 'EXECUTE' AND acl.grantee <> p.proowner
-          AND NOT (acl.grantee = (SELECT r.oid FROM pg_catalog.pg_roles r WHERE r.rolname = 'luxtory_booking_authorizer')
-                   AND p.oid IN ('app.authorize_booking_action(uuid, text)'::pg_catalog.regprocedure,
-                                 'app.revoke_booking_authorization(uuid, text)'::pg_catalog.regprocedure))) THEN
+          AND (acl.is_grantable
+               OR NOT (acl.grantee = (SELECT r.oid FROM pg_catalog.pg_roles r
+                                       WHERE r.rolname = 'luxtory_booking_authorizer')
+                       AND p.oid IN ('app.authorize_booking_action(uuid, text)'::pg_catalog.regprocedure,
+                                     'app.revoke_booking_authorization(uuid, text)'::pg_catalog.regprocedure)))) THEN
+    -- Também a GRANT OPTION: quem não é o dono nunca redistribui EXECUTE.
     v_failures := v_failures || 'privileged_function_grantee'::text;
+  END IF;
+  -- As cinco são do dono do schema (o mesmo critério de `app.acts_as_schema_owner`).
+  IF EXISTS (SELECT 1 FROM pg_catalog.pg_proc p
+              WHERE p.oid IN ('app.authorize_booking_action(uuid, text)'::pg_catalog.regprocedure,
+                              'app.revoke_booking_authorization(uuid, text)'::pg_catalog.regprocedure,
+                              'app.booking_state_apply()'::pg_catalog.regprocedure,
+                              'app.use_right_balance_apply()'::pg_catalog.regprocedure,
+                              'app.assert_own_use_activation_ready()'::pg_catalog.regprocedure)
+                AND p.proowner <> v_owner) THEN
+    v_failures := v_failures || 'privileged_function_owner'::text;
   END IF;
 
   -- Papel autorizador: nenhum privilégio em nenhuma relação de `app` (tabela, coluna ou sequência), sem CREATE no schema
@@ -143,6 +158,20 @@ BEGIN
      OR EXISTS (SELECT 1 FROM pg_catalog.pg_auth_members m JOIN pg_catalog.pg_roles r ON r.oid = m.member
                  WHERE r.rolname = 'luxtory_booking_authorizer') THEN
     v_failures := v_failures || 'authorizer_role'::text;
+  END IF;
+  -- Ninguém assume nem herda o autorizador: a única associação entrante aceita é o vínculo administrativo que o
+  -- PostgreSQL 16+ cria para o dono que não é superusuário ao criar o papel (ADMIN, sem SET e sem herança). E os papéis
+  -- que a aplicação ou os clientes alcançam não chegam, por cadeia alguma, ao autorizador nem ao dono do schema.
+  IF EXISTS (SELECT 1 FROM pg_catalog.pg_auth_members m
+              WHERE m.roleid = v_authorizer
+                AND NOT (m.member = v_owner AND m.admin_option AND NOT m.inherit_option AND NOT m.set_option))
+     OR EXISTS (SELECT 1 FROM pg_catalog.pg_roles r
+                 WHERE r.rolname IN ('luxtory_app', 'anon', 'authenticated')
+                   AND (pg_catalog.pg_has_role(r.oid, v_authorizer, 'MEMBER')
+                        OR pg_catalog.pg_has_role(r.oid, v_authorizer, 'USAGE')
+                        OR pg_catalog.pg_has_role(r.oid, v_owner, 'MEMBER')
+                        OR pg_catalog.pg_has_role(r.oid, v_owner, 'USAGE'))) THEN
+    v_failures := v_failures || 'authorizer_membership'::text;
   END IF;
   -- SECURITY DEFINER sempre com `search_path = pg_catalog, pg_temp` (T-1312: com `''`, tipos sombreados em `pg_temp`
   -- venceriam os de `pg_catalog` e o CHECK de um domínio rodaria como o dono). Exceção finita e auditada: as cinco
