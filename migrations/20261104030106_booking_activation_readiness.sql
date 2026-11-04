@@ -75,12 +75,15 @@ BEGIN
      OR has_function_privilege('luxtory_app', 'app.assert_own_use_activation_ready()', 'EXECUTE') THEN
     v_failures := v_failures || 'app_function_privilege'::text;
   END IF;
-  -- Papel autorizador: só as duas funções; atributos mínimos.
+  -- Papel autorizador: só as duas funções com acesso a dados; atributos mínimos. Funções de gatilho (o PostgreSQL recusa
+  -- a chamada direta) e funções IMMUTABLE sem SECURITY DEFINER executáveis por PUBLIC desde as waves anteriores não dão
+  -- acesso a dados e não contam.
   IF NOT has_function_privilege('luxtory_booking_authorizer', 'app.authorize_booking_action(uuid, text)', 'EXECUTE')
      OR NOT has_function_privilege('luxtory_booking_authorizer', 'app.revoke_booking_authorization(uuid, text)', 'EXECUTE')
      OR EXISTS (SELECT 1 FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
                  WHERE n.nspname = 'app' AND p.proname NOT IN ('authorize_booking_action', 'revoke_booking_authorization')
-                   AND has_function_privilege('luxtory_booking_authorizer', p.oid, 'EXECUTE'))
+                   AND has_function_privilege('luxtory_booking_authorizer', p.oid, 'EXECUTE')
+                   AND (p.prosecdef OR (p.prorettype <> 'pg_catalog.trigger'::pg_catalog.regtype AND p.provolatile <> 'i')))
      OR NOT EXISTS (SELECT 1 FROM pg_catalog.pg_roles r
                      WHERE r.rolname = 'luxtory_booking_authorizer' AND r.rolcanlogin AND NOT r.rolinherit
                        AND NOT r.rolsuper AND NOT r.rolcreatedb AND NOT r.rolcreaterole AND NOT r.rolreplication
