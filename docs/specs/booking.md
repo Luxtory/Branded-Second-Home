@@ -475,3 +475,11 @@ Detalhes de implementação (não mudam decisão; ADR-0027, "Notas de implementa
   (2) **Aquisição determinística das travas na E2:** a ordem das chaves é calculada antes e cada chave é travada numa
   instrução própria (laço no handler); não reproduzir o padrão de uma única consulta com `LATERAL` sobre subconsulta
   ordenada, que depende da ordem de avaliação do SQL.
+- **4ª auditoria e preflight do PR #82 (2026-11-04).** (1) A prontidão confere a ACL das cinco funções privilegiadas,
+  beneficiário a beneficiário (inclusive PUBLIC): o `luxtory_app` é membro de `anon` e `authenticated` com SET e sem
+  herança, então um EXECUTE concedido a esses papéis escapava de `has_function_privilege('luxtory_app', …)` e era
+  alcançável por `SET ROLE`. (2) Em Production as migrations rodam como o `postgres` da Supabase, que não é
+  superusuário: citar SUPERUSER, REPLICATION ou BYPASSRLS num `ALTER ROLE` exige superusuário, mesmo para negá-los. O
+  papel autorizador é criado e reafirmado só com atributos permitidos, e uma verificação falha fechada se ele tiver um
+  desses três. Provado por emulação (dono não superusuário com os atributos lidos de Production): a versão anterior
+  falhava com `42501`; a corrigida aplica up → down → up e passa na prontidão.

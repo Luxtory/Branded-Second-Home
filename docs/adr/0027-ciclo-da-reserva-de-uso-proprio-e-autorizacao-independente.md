@@ -241,3 +241,7 @@ A W13 não ativa reservas.
 6. **Ordem de travas obrigatória para os handlers (E2).** Spec `booking` §10.11.1, provada com o command real da W12; a
    E2 adquire as travas de forma determinística (uma instrução por chave, na ordem calculada), sem depender da ordem de
    avaliação de uma consulta SQL.
+7. **Papéis em migrations rodadas por dono não superusuário.** O `postgres` da Supabase tem CREATEROLE, CREATEDB,
+   REPLICATION e BYPASSRLS, mas não SUPERUSER: `ALTER ROLE` não cita SUPERUSER, REPLICATION ou BYPASSRLS; a ausência
+   deles é conferida por consulta e falha fechada. A prontidão confere a ACL das funções privilegiadas (o `luxtory_app`
+   alcança `anon`/`authenticated` por `SET ROLE`).
