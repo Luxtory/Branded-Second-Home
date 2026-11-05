@@ -40,6 +40,17 @@ export const CANCELLATION_NOTICE_HOURS = 360n;
 /** Instante de um relógio em milissegundos (o `Clock` do servidor), sem perda: só tem precisão menor. */
 export const microsFromMillis = (millis: number): Micros => BigInt(millis) * MICROS_PER_MILLI;
 
+const MICROS_PER_SECOND = 1_000_000n;
+const ISO_SECONDS = 19; // `YYYY-MM-DDTHH:MM:SS`
+
+/** ISO 8601 em UTC com 6 casas (`…SS.ffffffZ`): o `timestamptz` guarda e devolve sem arredondar. */
+export function isoFromMicros(value: Micros): string {
+  const seconds = value / MICROS_PER_SECOND - (value % MICROS_PER_SECOND < 0n ? 1n : 0n);
+  const fraction = value - seconds * MICROS_PER_SECOND;
+  const whole = new Date(Number(seconds) * 1000).toISOString().slice(0, ISO_SECONDS);
+  return `${whole}.${fraction.toString().padStart(6, '0')}Z`;
+}
+
 /** TECH-055: pares permitidos por natureza (o `CHECK conflict_booking_transition_pair` repete a regra no banco). */
 const TRANSITIONS: Readonly<
   Record<TransitionKind, readonly (readonly [BookingState, BookingState])[]>
