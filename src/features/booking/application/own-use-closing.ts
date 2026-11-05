@@ -99,7 +99,7 @@ export async function titularTarget<I extends BookingTarget, Tx>(
  * concorrente que venceu já está visível).
  */
 export async function lockTarget<I, Tx>(
-  deps: LifecycleDependencies<Tx>,
+  deps: Pick<LifecycleDependencies<Tx>, 'store'>,
   context: CommandContext<I, Tx>,
   booking: LifecycleBooking,
   nights: readonly string[],

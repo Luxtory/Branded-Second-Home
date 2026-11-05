@@ -181,6 +181,24 @@ export const SYSTEM_COMMANDS: readonly CommandSpec[] = [
     critical: false,
     job: 'close_exercise',
   },
+  // TECH-055/TECH-090 (W13 E3; spec booking §10.14): avança o estado informativo da reserva de uso próprio pelo instante.
+  {
+    name: 'advance_booking_states',
+    module: 'booking',
+    authority: 'system',
+    membership: 'not_applicable',
+    critical: false,
+    job: 'advance_booking_states',
+  },
+  // TECH-046/TECH-090 (W13 E3; spec booking §10.14): só identifica candidatas a no-show; nunca declara.
+  {
+    name: 'flag_no_show_candidates',
+    module: 'booking',
+    authority: 'system',
+    membership: 'not_applicable',
+    critical: false,
+    job: 'flag_no_show_candidates',
+  },
 ];
 
 export class CommandRegistryError extends Error {

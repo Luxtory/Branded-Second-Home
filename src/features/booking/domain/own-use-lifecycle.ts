@@ -107,6 +107,25 @@ export const resolutionAllowed = (
   at: Micros,
 ): boolean => (outcome === 'confirmed' ? at < checkoutAt : at >= checkoutAt);
 
+/** Estados que o job `advance_booking_states` alcança, na ordem da TECH-055. */
+export type AdvanceTarget = 'in_use' | 'completed';
+
+/**
+ * Gêmea da regra temporal do gatilho para o avanço (spec booking §10.2, §10.14): em uso a partir do 1º check-in;
+ * concluída a partir do check-out; atrasada, as duas transições na mesma operação. Exceção e estados terminais nunca
+ * avançam (TECH-055: a saída de `in_exception` é só a resolução do Admin).
+ */
+export function advanceSteps(
+  state: BookingState,
+  firstCheckinAt: Micros,
+  checkoutAt: Micros,
+  at: Micros,
+): readonly AdvanceTarget[] {
+  if (state === 'in_use') return at >= checkoutAt ? ['completed'] : [];
+  if (state !== 'confirmed' || at < firstCheckinAt) return [];
+  return at >= checkoutAt ? ['in_use', 'completed'] : ['in_use'];
+}
+
 export interface LifecycleNight {
   readonly stayDate: string;
   readonly checkinAt: Micros;

@@ -1,6 +1,7 @@
 import { Temporal } from 'temporal-polyfill';
 import { describe, expect, it } from 'vitest';
 import {
+  advanceSteps,
   cancellationTerms,
   closingEffect,
   isAllowedTransition,
@@ -187,5 +188,32 @@ describe('ciclo da reserva — domínio (W13 E2)', () => {
     });
     for (const kind of ['cancellation', 'no_show', 'exception_resolution', 'invalidation'] as const)
       expect(closingEffect('owner', kind, null)).toMatchObject({ successor: null, reversal: null });
+  });
+});
+
+describe('ciclo da reserva — avanço do job (W13 E3)', () => {
+  const first = 1_800_000_000_000_000n;
+  const checkout = first + 20n * 3_600_000_000n;
+
+  it('[TECH-055][spec booking §10.14] em uso a partir do 1º check-in; concluída a partir do check-out; fronteiras em µs', () => {
+    expect(advanceSteps('confirmed', first, checkout, first - 1n)).toEqual([]);
+    expect(advanceSteps('confirmed', first, checkout, first)).toEqual(['in_use']);
+    expect(advanceSteps('confirmed', first, checkout, checkout - 1n)).toEqual(['in_use']);
+    expect(advanceSteps('in_use', first, checkout, checkout - 1n)).toEqual([]);
+    expect(advanceSteps('in_use', first, checkout, checkout)).toEqual(['completed']);
+  });
+
+  it('[TECH-055] atrasada: confirmed → in_use → completed na mesma passada', () => {
+    expect(advanceSteps('confirmed', first, checkout, checkout)).toEqual(['in_use', 'completed']);
+    expect(advanceSteps('confirmed', first, checkout, checkout + 86_400_000_000n)).toEqual([
+      'in_use',
+      'completed',
+    ]);
+  });
+
+  it('[TECH-055][REQ-084] exceção e estados terminais nunca avançam, em qualquer instante', () => {
+    for (const state of ['in_exception', 'completed', 'cancelled', 'no_show'] as const)
+      for (const at of [first - 1n, first, checkout, checkout + 1n])
+        expect(advanceSteps(state, first, checkout, at), `${state} ${at}`).toEqual([]);
   });
 });

@@ -3,7 +3,11 @@ import {
   createOpenExerciseJob,
   createUseRightConsumers,
 } from '@/features/calendar/jobs';
-import { createOwnUseBookingConsumers } from '@/features/booking/jobs';
+import {
+  createAdvanceBookingStatesJob,
+  createFlagNoShowCandidatesJob,
+  createOwnUseBookingConsumers,
+} from '@/features/booking/jobs';
 import { createInitialDrawConsumers } from '@/features/ownership';
 import type { Clock } from '../../application/clock';
 import { JobRegistry, type JobRunner } from '../../application/jobs/registry';
@@ -67,5 +71,9 @@ export function createJobRegistry(environment: JobEnvironment): JobRegistry {
     open_exercise: createOpenExerciseJob(environment),
     // W11 — expiração do Direito de Uso no fim efetivo (spec calendar §6).
     close_exercise: createCloseExerciseJob(environment),
+    // W13 — estado informativo da reserva de uso próprio pelo instante (spec booking §10.14).
+    advance_booking_states: createAdvanceBookingStatesJob(environment),
+    // W13 — candidatas a no-show; nunca declara (spec booking §10.14).
+    flag_no_show_candidates: createFlagNoShowCandidatesJob(environment),
   });
 }
