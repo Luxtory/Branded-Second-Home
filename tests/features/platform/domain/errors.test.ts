@@ -5,6 +5,7 @@ import {
   ERROR_CODES,
   REQ_098_CAUSES,
   rejectionForConstraint,
+  PRODUCT_ERROR_CODES,
   TECH_056_ERROR_CODES,
 } from '@/features/platform/domain/errors';
 
@@ -39,6 +40,10 @@ describe('códigos de erro (TECH-056)', () => {
     expect(rejectionForConstraint('uq_custody_active')).toBe('ERR_CAPACITY_UNAVAILABLE');
     expect(rejectionForConstraint('custody_occupancy_matrix')).toBe('ERR_CAPACITY_UNAVAILABLE');
     expect(rejectionForConstraint('uq_other_index')).toBeNull();
+    // W13 (D7): termos da prévia, pelo nome exato (código de produto).
+    expect(rejectionForConstraint('cancellation_terms_changed')).toBe(
+      'ERR_CANCELLATION_TERMS_CHANGED',
+    );
     // Proveniência da operação é erro de código, não recusa funcional.
     expect(rejectionForConstraint('inventory_operation_provenance')).toBeNull();
   });
@@ -49,6 +54,12 @@ describe('códigos de erro (TECH-056)', () => {
       expect(codes.length).toBeGreaterThan(0);
       for (const code of codes) expect(TECH_056_ERROR_CODES).toContain(code);
     }
+  });
+
+  it('[TECH-056] códigos de produto vêm depois dos gerais e nunca entram nos mínimos', () => {
+    expect(PRODUCT_ERROR_CODES).toEqual(['ERR_CANCELLATION_TERMS_CHANGED']);
+    expect(ERROR_CODES.slice(-PRODUCT_ERROR_CODES.length)).toEqual([...PRODUCT_ERROR_CODES]);
+    for (const code of PRODUCT_ERROR_CODES) expect(TECH_056_ERROR_CODES).not.toContain(code);
   });
 
   it('códigos são únicos e seguem o padrão ERR_*', () => {

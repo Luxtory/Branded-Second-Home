@@ -1,7 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import type { ZodType } from 'zod';
 import {
+  CapabilityNotActivatedError,
+  CLOSED_CAPABILITIES,
   CommandRejection,
+  PRIVILEGE_REFUSALS,
   rejectionForConstraint,
   type ErrorCode,
   type RejectionCode,
@@ -265,10 +268,25 @@ async function settle<R, Tx>(
     deps.log.error('command retries exhausted', fields);
     return early('ERR_UNAVAILABLE');
   }
-  const constraint = deps.store.violatedConstraint(error);
-  const code = constraint === null ? null : rejectionForConstraint(constraint);
+  const code = functionalRefusal(deps.store, error);
   if (code !== null) return reject<R, Tx>(deps, draft, code);
   throw error;
+}
+
+/**
+ * Recusa do banco que é causa funcional (spec booking §10.12, D1): integridade (classe 23) pelo nome da constraint;
+ * privilégio (`42501`) só pelos nomes exatos de `PRIVILEGE_REFUSALS`. Capability fechada no banco (K1/K2) não é recusa:
+ * a transação já foi desfeita e nada é gravado. Qualquer outro erro segue como falha técnica.
+ */
+function functionalRefusal<Tx>(store: CommandStore<Tx>, error: unknown): RejectionCode | null {
+  const privilege = store.refusedPrivilege(error);
+  if (privilege !== null) {
+    const capability = CLOSED_CAPABILITIES.get(privilege);
+    if (capability !== undefined) throw new CapabilityNotActivatedError(capability);
+    return PRIVILEGE_REFUSALS.get(privilege) ?? null;
+  }
+  const constraint = store.violatedConstraint(error);
+  return constraint === null ? null : rejectionForConstraint(constraint);
 }
 
 async function reject<R, Tx>(

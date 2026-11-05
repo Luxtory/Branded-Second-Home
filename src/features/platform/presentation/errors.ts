@@ -30,6 +30,7 @@ export const ERROR_STATUS: Readonly<Record<ErrorCode, number>> = {
   ERR_PAYLOAD_TOO_LARGE: 413,
   ERR_UNSUPPORTED_MEDIA_TYPE: 415,
   ERR_RATE_LIMITED: 429,
+  ERR_CANCELLATION_TERMS_CHANGED: 409,
 };
 
 /** Resposta no schema `Error` do OpenAPI, com a causa funcional em pt-BR (REQ-098). */

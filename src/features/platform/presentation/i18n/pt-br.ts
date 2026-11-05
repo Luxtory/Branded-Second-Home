@@ -46,6 +46,8 @@ export const messages = {
     ERR_PAYLOAD_TOO_LARGE: 'O conteúdo enviado passa do tamanho permitido.',
     ERR_UNSUPPORTED_MEDIA_TYPE: 'O formato do conteúdo enviado não é aceito.',
     ERR_RATE_LIMITED: 'Muitas tentativas em pouco tempo. Tente novamente mais tarde.',
+    ERR_CANCELLATION_TERMS_CHANGED:
+      'As condições do cancelamento mudaram desde a prévia. Revise a nova prévia antes de confirmar.',
   },
   // Notificação de staff dos alertas operacionais (W10, TECH-101): só identificadores e códigos, nunca PII.
   operationalAlert: {

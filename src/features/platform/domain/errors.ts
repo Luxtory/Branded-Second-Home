@@ -36,7 +36,18 @@ export const PLATFORM_ERROR_CODES = [
   'ERR_RATE_LIMITED',
 ] as const;
 
-export const ERROR_CODES = [...TECH_056_ERROR_CODES, ...PLATFORM_ERROR_CODES] as const;
+/**
+ * Códigos de produto, fora dos mínimos do TECH-056 (que dizem "mínimos") e depois dos gerais (enum `ErrorCode` do
+ * OpenAPI): `ERR_CANCELLATION_TERMS_CHANGED` — os termos esperados da prévia do cancelamento diferem dos calculados no
+ * instante da escrita (W13, D7; spec booking §10.5, §10.12).
+ */
+export const PRODUCT_ERROR_CODES = ['ERR_CANCELLATION_TERMS_CHANGED'] as const;
+
+export const ERROR_CODES = [
+  ...TECH_056_ERROR_CODES,
+  ...PLATFORM_ERROR_CODES,
+  ...PRODUCT_ERROR_CODES,
+] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
 /**
@@ -45,7 +56,10 @@ export type ErrorCode = (typeof ERROR_CODES)[number];
  * imagem, ADR-0015).
  */
 export type RejectionCode =
-  (typeof TECH_056_ERROR_CODES)[number] | 'ERR_NOT_FOUND' | 'ERR_VALIDATION';
+  | (typeof TECH_056_ERROR_CODES)[number]
+  | (typeof PRODUCT_ERROR_CODES)[number]
+  | 'ERR_NOT_FOUND'
+  | 'ERR_VALIDATION';
 
 /**
  * Causas funcionais do REQ-098 e os códigos do TECH-056 que as comunicam. Os códigos técnicos pertencem ao `03`; a
@@ -87,6 +101,8 @@ const CONSTRAINT_PREFIXES: readonly (readonly [string, RejectionCode])[] = [
 const CONSTRAINT_NAMES: ReadonlyMap<string, RejectionCode> = new Map([
   ['uq_occupancy_active', 'ERR_BOOKING_CONFLICT'],
   ['uq_custody_active', 'ERR_CAPACITY_UNAVAILABLE'],
+  // W13 (D7): termos esperados da prévia ≠ termos calculados no instante da escrita.
+  ['cancellation_terms_changed', 'ERR_CANCELLATION_TERMS_CHANGED'],
 ]);
 
 export function rejectionForConstraint(constraint: string): RejectionCode | null {
@@ -95,6 +111,50 @@ export function rejectionForConstraint(constraint: string): RejectionCode | null
     CONSTRAINT_PREFIXES.find(([prefix]) => constraint.startsWith(prefix))?.[1] ??
     null
   );
+}
+
+/**
+ * Recusas por privilégio (SQLSTATE `42501`) que o banco nomeia e que são recusa funcional (W12, W13; spec booking
+ * §10.12, D1): só estes nomes exatos. Todo outro `42501` — sem nome ou com nome técnico — é falha técnica.
+ */
+export const PRIVILEGE_REFUSALS: ReadonlyMap<string, RejectionCode> = new Map([
+  ['permission_representation', 'ERR_PERMISSION'],
+  ['permission_staff_role', 'ERR_PERMISSION'],
+  ['permission_authorization_missing', 'ERR_PERMISSION'],
+  ['permission_authorization_scope', 'ERR_PERMISSION'],
+  ['permission_authorization_revoked', 'ERR_PERMISSION'],
+  ['permission_authorization_used', 'ERR_PERMISSION'],
+  ['permission_authorization_expired', 'ERR_PERMISSION'],
+]);
+
+/** Capabilities fechadas pela tabela de ativação privilegiada (`42501` nomeado): K1 (ADR-0026) e K2 (ADR-0027). */
+export const CLOSED_CAPABILITIES: ReadonlyMap<string, string> = new Map([
+  ['booking_not_activated', 'own_use_booking'],
+  ['booking_lifecycle_not_activated', 'own_use_lifecycle'],
+]);
+
+/**
+ * `42501` nomeados que não são recusa funcional: só falham por bug, forja ou regra ainda fechada (falha técnica). A
+ * lista existe para que todo `42501` nomeado das migrations esteja classificado (teste estático).
+ */
+export const TECHNICAL_PRIVILEGE_ERRORS: readonly string[] = [
+  'booking_channel_not_enabled',
+  'booking_state_projection',
+  'inventory_transition_not_enabled',
+  'use_right_balance_maintenance',
+  'use_right_consumption_not_enabled',
+  'use_right_correction_not_enabled',
+];
+
+/**
+ * Funcionalidade intencionalmente fechada (linha ausente em `app.capability_activation`): não é recusa nem falha. O
+ * executor desfaz a transação sem gravar operação, recusa ou evento, e quem chama mostra o estado fechado.
+ */
+export class CapabilityNotActivatedError extends Error {
+  constructor(readonly capability: string) {
+    super(`Capability is not activated: ${capability}`);
+    this.name = 'CapabilityNotActivatedError';
+  }
 }
 
 /** Recusa funcional lançada por um handler dentro da transação: o executor faz ROLLBACK e grava a recusa. */

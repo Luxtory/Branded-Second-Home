@@ -19,7 +19,13 @@ export { CORRELATION_HEADER, resolveCorrelationId } from './presentation/correla
 
 // W1 — núcleo de commands (TECH-054), erros (TECH-056), outbox (TECH-091) e banco (ADR-0006).
 export type { JsonObject, JsonValue } from './domain/json';
-export { CommandRejection, ERROR_CODES, type ErrorCode, type RejectionCode } from './domain/errors';
+export {
+  CapabilityNotActivatedError,
+  CommandRejection,
+  ERROR_CODES,
+  type ErrorCode,
+  type RejectionCode,
+} from './domain/errors';
 export {
   LockSequence,
   LockOrderViolation,

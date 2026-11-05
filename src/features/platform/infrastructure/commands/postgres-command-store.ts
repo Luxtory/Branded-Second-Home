@@ -12,7 +12,7 @@ import type {
 import type { RejectionCode } from '../../domain/errors';
 import type { JsonValue } from '../../domain/json';
 import type { Database, DatabaseTransaction } from '../database/connection';
-import { isTransientDatabaseError, violatedConstraint } from '../database/errors';
+import { isTransientDatabaseError, refusedPrivilege, violatedConstraint } from '../database/errors';
 import { notBefore } from '../outbox/available-at';
 
 // jsonb sempre como texto JSON: o `pg` converteria arrays JavaScript em arrays do PostgreSQL.
@@ -170,5 +170,6 @@ export function createPostgresCommandStore(db: Database): CommandStore<DatabaseT
 
     isTransient: isTransientDatabaseError,
     violatedConstraint,
+    refusedPrivilege,
   };
 }
