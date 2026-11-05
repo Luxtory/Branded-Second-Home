@@ -1,4 +1,5 @@
 import { randomBytes, randomUUID } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { scramVerifier } from '../../scripts/lib/scram.mjs';
@@ -11,6 +12,7 @@ import {
   type BookingHarness,
   type CoOwnerScenario,
   type OwnerScenario,
+  type Titular,
 } from '../features/booking/booking-support';
 import {
   activate,
@@ -20,6 +22,7 @@ import {
   authorize,
   bookingRow,
   bookNow,
+  cancellationTerms,
   closeBooking,
   connect,
   futureForfeited,
@@ -788,6 +791,119 @@ describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, pl
         [id],
       );
       expect(reason.rows).toEqual([{ reason: 'invalidation', holder_kind: 'owner' }]);
+    });
+  });
+
+  describe('origem P-A na recuperação (bloqueio B-A3; spec booking §10.13; A3, BR-123)', () => {
+    const FIX = 'migrations/20261105174225_booking_recovery_operational_exception_origin.sql';
+    const titular = (t: Titular): OperationActor => ({ kind: 'titular', titular: t });
+
+    /** Cancelamento tardio pelo Titular na própria reserva (com ou sem exceção aberta), com os termos do instante. */
+    async function titularLateCancel(t: Titular, id: string) {
+      const expected = await cancellationTerms(h.database.pool, id);
+      expect(expected.cancellationClass).toBe('late');
+      await app('cancel_own_use_booking', titular(t), (c, op) => closeBooking(c, op, id, { kind: 'cancellation', expected }));
+    }
+
+    it('[A3][BR-123][B-A3] cancelamento tardio do Titular durante P-A: sem atestação o autorizador recusa; com ela autoriza', async () => {
+      const a = co2.titulares[0]!;
+      const id = await historicBooking(h, { homeId: co2.homeId, titular: a, checkin: s2(4), checkout: s2(6) });
+      await app('open_exception', asAdmin(), (c, op) => openException(c, op, id, 'operational'));
+      await titularLateCancel(a, id);
+      const resolution = await h.database.pool.query(
+        `SELECT r.resolution_source AS source, x.exception_type AS type, t.kind
+           FROM app.booking_exception_resolution r JOIN app.booking_exception x ON x.id = r.exception_id
+           JOIN app.booking_state_transition t ON t.id = r.transition_id
+          WHERE r.booking_id = $1`,
+        [id],
+      );
+      expect(resolution.rows).toEqual([{ source: 'titular_cancellation', type: 'operational', kind: 'cancellation' }]);
+      expect(await lifecycleFacts(h, id)).toMatchObject({ state: 'cancelled', cancellation_class: 'late', forfeited: 2 });
+      const forfeited = await futureForfeited(h, id);
+
+      // A solicitação vai direto ao banco (sem o TypeScript): a exigência é do autorizador.
+      await expect(
+        authorize(h, await requestAuthorization(h, admin, { bookingId: id, purpose: 'recovery', expectedCustodyIds: forfeited })),
+      ).rejects.toEqual(constraint('authorization_attestation_missing'));
+      const recovery = await authorize(
+        h,
+        await requestAuthorization(h, admin, { bookingId: id, purpose: 'recovery', expectedCustodyIds: forfeited, attested: true }),
+      );
+      await app('recover_future_capacity', asAdmin(), (c, op) => recover(c, op, id, recovery, forfeited));
+      expect(await lifecycleFacts(h, id)).toMatchObject({ forfeited: 0, restores: 0 });
+    });
+
+    it('[A3][BR-283] controle: cancelamento tardio comum (sem exceção) recupera sem atestação; o no-show também (teste acima)', async () => {
+      const b = co2.titulares[1]!;
+      const id = await historicBooking(h, { homeId: co2.homeId, titular: b, checkin: s2(8), checkout: s2(9) });
+      await titularLateCancel(b, id);
+      const forfeited = await futureForfeited(h, id);
+      expect(forfeited).toHaveLength(1);
+      const recovery = await authorize(
+        h,
+        await requestAuthorization(h, admin, { bookingId: id, purpose: 'recovery', expectedCustodyIds: forfeited }),
+      );
+      await app('recover_future_capacity', asAdmin(), (c, op) => recover(c, op, id, recovery, forfeited));
+      expect(await lifecycleFacts(h, id)).toMatchObject({ state: 'cancelled', forfeited: 0, restores: 0 });
+    });
+
+    it('[T-1312][ADR-0027 §4] a redefinição preserva SECURITY DEFINER, search_path, dono e ACL; o corpo vigente é o corrigido', async () => {
+      const { rows } = await h.database.pool.query<{
+        definer: boolean;
+        config: string[];
+        owner_is_schema_owner: boolean;
+        acl: string[];
+        fixed: boolean;
+      }>(
+        `SELECT p.prosecdef AS definer, p.proconfig AS config, p.proowner = n.nspowner AS owner_is_schema_owner,
+                (SELECT array_agg(coalesce(g.rolname, 'PUBLIC') || ':' || a.privilege_type || ':' || a.is_grantable
+                           ORDER BY coalesce(g.rolname, 'PUBLIC'))
+                   FROM aclexplode(p.proacl) a LEFT JOIN pg_roles g ON g.oid = a.grantee
+                  WHERE a.grantee <> p.proowner) AS acl,
+                position('booking_exception_resolution' IN p.prosrc) > 0
+                  AND position('bool_or(t.kind = ''exception_resolution'')' IN p.prosrc) = 0 AS fixed
+           FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+          WHERE p.oid = 'app.authorize_booking_action(uuid, text)'::regprocedure`,
+      );
+      expect(rows[0]).toEqual({
+        definer: true,
+        config: ['search_path=pg_catalog, pg_temp'],
+        owner_is_schema_owner: true,
+        acl: ['luxtory_booking_authorizer:EXECUTE:false'],
+        fixed: true,
+      });
+    });
+
+    it('[B-A3] down recusado com ativação ou com fatos; sem eles devolve exatamente o corpo da E1', async () => {
+      const down = (await readFile(FIX, 'utf8')).split('-- migrate:down')[1]!;
+      const attempt = async (pool: pg.Pool, before: string | null) => {
+        const client = await pool.connect();
+        try {
+          await client.query('BEGIN');
+          if (before !== null) await client.query(before);
+          await client.query(down);
+          const { rows } = await client.query<{ e1: boolean }>(
+            `SELECT position('bool_or(t.kind = ''exception_resolution'')' IN prosrc) > 0 AS e1
+               FROM pg_proc WHERE oid = 'app.authorize_booking_action(uuid, text)'::regprocedure`,
+          );
+          return rows[0]!.e1;
+        } finally {
+          await client.query('ROLLBACK');
+          client.release();
+        }
+      };
+      // Este banco tem K1/K2 e reservas: a reversão reabriria o defeito.
+      await expect(attempt(h.database.pool, null)).rejects.toThrow(/activation decision/);
+      await expect(
+        attempt(h.database.pool, `DELETE FROM app.capability_activation`),
+      ).rejects.toThrow(/existing booking facts/);
+      // Banco recém-migrado, sem fatos nem ativação (o caso do `db:check`): volta o corpo da E1.
+      const fresh = await createTestDatabase();
+      try {
+        expect(await attempt(fresh.pool, null)).toBe(true);
+      } finally {
+        await fresh.drop();
+      }
     });
   });
 

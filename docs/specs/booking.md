@@ -583,3 +583,46 @@ Sem mudança de decisão. Escolhas de implementação dentro dos contratos:
   `own-use-admin-acts.db.test.ts` e `own-use-lifecycle-concurrency.db.test.ts`; unidade em
   `own-use-lifecycle.test.ts`, catálogo de erros, executor e `isNonPersonalReference`. Cada evento é validado contra o
   AsyncAPI (`tests/support/asyncapi.ts`).
+
+### 10.13. Bloqueio B-A3 — origem P-A na recuperação (2026-11-05)
+
+**Bloqueio formal (decisão do fundador, 2026-11-05):** nenhuma ativação de reserva (K1, K2), recuperação (`recover_future_capacity`) ou autorização independente (senha, Environment ou uso do papel `luxtory_booking_authorizer`) antes de a correção da origem P-A na recuperação estar integrada na `main`, aplicada pela CI e validada.
+
+**Defeito** (auditoria independente do #83; reproduzido em PostgreSQL descartável com os privilégios reais).
+`app.authorize_booking_action` (E1) reconhece a origem P-A da recuperação só por `t.kind = 'exception_resolution'` — a
+exceção operacional cancelada pelo Admin. O cancelamento tardio do Titular durante uma exceção operacional aberta
+(transição `cancellation` a partir de `in_exception`, resolução `titular_cancellation`) gera as mesmas `forfeited_right`
+futuras, e a autorização `recovery` foi emitida com `availability_attested = false`; as noites foram ao Inventário
+Luxtory. Descumpre A3 (plano W13), o ADR-0027 §3–§4, o §10.3 desta spec e a spec `inventory` ("origem em exceção
+operacional exige atestação … indisponibilidade do imóvel nunca autoriza monetização"), com fundamento na BR-123.
+Nenhuma fonte distingue quem cancela: as "regras normais" do Titular (D5) tratam de prazo e classe (REQ-080). O
+`requestFacts` da E2 repete o critério.
+
+**Correção (E2b, PR separado).** Origem P-A ⇔ a transição que abriu a `forfeited_right` resolveu uma exceção
+`operational` (`booking_exception_resolution.transition_id` → `booking_exception.exception_type`), quem quer que tenha
+cancelado. Migration incremental com `CREATE OR REPLACE` da função, sem tocar migration aplicada; o `requestFacts` repete
+o critério só para recusar cedo — a garantia é do banco.
+
+**Alcance antes da correção:** nenhum em Production — K1 e K2 com 0 linhas, papel autorizador sem senha nem Environment,
+nenhuma Server Action da solicitação (conferido somente por leitura em 2026-11-05: 0 reservas, solicitações,
+autorizações e operações do ciclo).
+
+#### 10.13.1. Implementação da E2b (2026-11-05, PR draft; sem merge nem Production)
+
+- **Migration** `20261105174225_booking_recovery_operational_exception_origin`: `CREATE OR REPLACE` de
+  `app.authorize_booking_action` com o corpo da E1 e só o critério de origem trocado por
+  `bool_or(EXISTS (… booking_exception_resolution z JOIN booking_exception x … WHERE z.transition_id = t.id AND
+  x.exception_type = 'operational'))`. Mantidos: assinatura, `SECURITY DEFINER`, `SET search_path = pg_catalog,
+  pg_temp` (T-1312), dono e ACL (só EXECUTE do papel autorizador, sem PUBLIC) — a redefinição não mexe em privilégios e a
+  prontidão continua passando. Exclusões por construção: no-show nunca parte de `in_exception`; a apuração (P-B) tem
+  outro tipo e, nela, o Co-Owner só cancela tempestivamente (sem `forfeited_right`).
+- **`down`:** recusado com K1/K2 presentes ou com reserva, solicitação ou autorização existentes (a reversão reabriria o
+  defeito); sem eles — o banco vazio do `db:check` — devolve exatamente o corpo da E1.
+- **Espelho:** `requestFacts` usa o mesmo critério só para recusar cedo (`ERR_VALIDATION`); a garantia é do autorizador.
+- **Testes:** `tests/migrations/booking-authorization.db.test.ts` (solicitação gravada direto no banco: Titular tardio em
+  P-A sem atestação → `authorization_attestation_missing`; com atestação → autorizada e recuperada; controle do
+  cancelamento tardio comum sem atestação; atributos da função; guarda do `down` e retorno ao corpo da E1) e
+  `tests/features/booking/own-use-admin-acts.db.test.ts` (pelo handler: recusa antecipada sem nada gravado; servidor
+  forçado a errar a origem → o autorizador real recusa; com atestação, solicitação e recuperação com replay idêntico;
+  controle comum). Controles preexistentes: P-A cancelada pelo Admin exige atestação; no-show recupera sem ela.
+- **Bloqueio B-A3** segue até este PR estar integrado na `main`, aplicado pela CI e validado.
