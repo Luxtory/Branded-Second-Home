@@ -24,6 +24,7 @@ import {
   authorize,
   bookNow,
   bookingRow,
+  cancellationTerms,
   deactivate,
   historicBooking,
   historicCoOwnerScenario,
@@ -651,6 +652,116 @@ describe('W13 E2 — atos Admin do ciclo da reserva', () => {
           basis: BASIS,
         }),
       ).toMatchObject({ status: 'committed', result: { recovered_dates: [s(7)] } });
+    });
+  });
+
+  describe('origem P-A na recuperação (bloqueio B-A3; spec booking §10.13)', () => {
+    async function titularLateCancel(titular: (typeof co.titulares)[number], id: string) {
+      const terms = await cancellationTerms(h.database.pool, id);
+      expect(terms.cancellationClass).toBe('late');
+      return committed(
+        run.asTitular(titular, run.handlers.cancelOwnUseBooking, {
+          ...target(co.homeId, id),
+          expected_cancellation_class: terms.cancellationClass,
+          expected_first_affected_date: terms.firstAffectedDate,
+        }),
+      );
+    }
+
+    const requestsOf = async (id: string) =>
+      (
+        await h.database.pool.query<{ n: number }>(
+          `SELECT count(*)::int AS n FROM app.booking_authorization_request WHERE booking_id = $1`,
+          [id],
+        )
+      ).rows[0]!.n;
+
+    it('[A3][BR-123][B-A3] Titular cancela tarde durante P-A: sem atestação recusada cedo e pelo banco; com ela recupera, com replay', async () => {
+      const a = co.titulares[0]!;
+      const id = await historicBooking(h, {
+        homeId: co.homeId,
+        titular: a,
+        checkin: s(10),
+        checkout: s(12),
+      });
+      await openException(co.homeId, id, 'operational');
+      await titularLateCancel(a, id);
+      const recoveryInput = { ...target(co.homeId, id), purpose: 'recovery', basis: BASIS };
+
+      // Recusa antecipada (espelho no requestFacts): nada gravado.
+      expect(
+        await run.asAdmin(admin, run.handlers.requestBookingAuthorization, recoveryInput),
+      ).toMatchObject({ status: 'rejected', code: 'ERR_VALIDATION' });
+      expect(await requestsOf(id)).toBe(0);
+
+      // Mesmo com o servidor errando a origem, o autorizador real recusa: a garantia é do banco.
+      const real = createPostgresBookingLifecycleStore();
+      const lenient = createOwnUseLifecycleHandlers({
+        store: {
+          ...real,
+          requestFacts: async (tx, booking) => ({
+            ...(await real.requestFacts(tx, booking)),
+            recoverableFromException: false,
+          }),
+        },
+      });
+      const forged = await committed<{ request_id: string }>(
+        run.asAdmin(admin, lenient.requestBookingAuthorization, recoveryInput),
+      );
+      await expect(authorize(h, forged.request_id, 'github-run:7001:1')).rejects.toEqual(
+        expect.objectContaining({ constraint: 'authorization_attestation_missing' }),
+      );
+
+      // Com a atestação: solicitação idempotente, autorização real e recuperação das noites futuras.
+      const key = randomUUID();
+      const attested = { ...recoveryInput, availability_attested: true };
+      const requested = await run.asAdmin(
+        admin,
+        run.handlers.requestBookingAuthorization,
+        attested,
+        key,
+      );
+      expect(requested).toMatchObject({ status: 'committed', replayed: false });
+      if (requested.status !== 'committed') return;
+      expect(
+        await run.asAdmin(admin, run.handlers.requestBookingAuthorization, attested, key),
+      ).toEqual({ ...requested, replayed: true });
+      await authorize(h, requested.result.request_id, 'github-run:7002:1');
+      const recoverKey = randomUUID();
+      const recoverInput = { ...target(co.homeId, id), basis: BASIS };
+      const recovered = await run.asAdmin(
+        admin,
+        run.handlers.recoverFutureCapacity,
+        recoverInput,
+        recoverKey,
+      );
+      expect(recovered).toMatchObject({
+        status: 'committed',
+        result: { recovered_dates: [s(10), s(11)] },
+      });
+      expect(
+        await run.asAdmin(admin, run.handlers.recoverFutureCapacity, recoverInput, recoverKey),
+      ).toEqual({ ...recovered, replayed: true });
+      expect(await lifecycleFacts(h, id)).toMatchObject({ forfeited: 0, restores: 0 });
+      await expectNoEvent(h, recovered.operationId!);
+    });
+
+    it('[A3][BR-283] controle: cancelamento tardio comum do Titular solicita e recupera sem atestação', async () => {
+      const b = co.titulares[1]!;
+      const id = await historicBooking(h, {
+        homeId: co.homeId,
+        titular: b,
+        checkin: s(13),
+        checkout: s(14),
+      });
+      await titularLateCancel(b, id);
+      await requestAndAuthorize(co.homeId, id, 'recovery');
+      expect(
+        await run.asAdmin(admin, run.handlers.recoverFutureCapacity, {
+          ...target(co.homeId, id),
+          basis: BASIS,
+        }),
+      ).toMatchObject({ status: 'committed', result: { recovered_dates: [s(13)] } });
     });
   });
 
