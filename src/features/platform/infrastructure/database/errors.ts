@@ -1,5 +1,6 @@
 // SQLSTATEs que o núcleo trata (https://www.postgresql.org/docs/17/errcodes-appendix.html).
 const DEADLOCK_DETECTED = '40P01';
+const INSUFFICIENT_PRIVILEGE = '42501';
 const LOCK_NOT_AVAILABLE = '55P03'; // lock_timeout esgotado
 const INTEGRITY_CONSTRAINT_CLASS = '23';
 
@@ -20,6 +21,14 @@ export function violatedConstraint(error: unknown): string | null {
   return field(error, 'code')?.startsWith(INTEGRITY_CONSTRAINT_CLASS)
     ? field(error, 'constraint')
     : null;
+}
+
+/**
+ * Nome da regra de um `42501` levantado com `CONSTRAINT` (`RAISE … USING ERRCODE = 'insufficient_privilege',
+ * CONSTRAINT = …`); `null` para todo o resto, inclusive o "permission denied" do PostgreSQL, que não traz nome.
+ */
+export function refusedPrivilege(error: unknown): string | null {
+  return field(error, 'code') === INSUFFICIENT_PRIVILEGE ? field(error, 'constraint') : null;
 }
 
 // Banco inalcançável ou recusando conexões: classe 08 (connection exception), desligamento ou partida (57P01–57P03),

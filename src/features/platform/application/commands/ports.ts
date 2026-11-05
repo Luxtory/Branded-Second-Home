@@ -88,4 +88,6 @@ export interface CommandStore<Tx> {
   isTransient(error: unknown): boolean;
   /** Nome da constraint violada, se o erro for de integridade. */
   violatedConstraint(error: unknown): string | null;
+  /** Nome da regra de uma recusa por privilégio (`42501` nomeado); `null` para qualquer outro erro. */
+  refusedPrivilege(error: unknown): string | null;
 }

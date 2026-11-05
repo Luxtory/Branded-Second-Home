@@ -12,6 +12,8 @@ aceito); as situações "em auditoria neste PR" da tabela abaixo referem-se a es
 em 2026-11-03 só em ambiente isolado (PR draft para auditoria, sem merge, deploy, Production, secrets, Environment real
 ou ativação); E2 em diante dependem de nova autorização expressa.
 
+**Atualização 2026-11-04:** a E1 foi mergeada pelo #82 (squash `26dd58d`; 4 migrations em Production, 59/0; ativação 0 linhas; reservas desativadas). Em 2026-11-05 o fundador aprovou o plano v2 da E2 e autorizou a implementação em PR draft (sem merge, deploy, Production, migration nova ou ativação); E3–E5 seguem não autorizadas.
+
 ## Decisões do fundador (2026-11-03)
 
 | # | Decisão | Situação |
@@ -38,11 +40,11 @@ ou ativação); E2 em diante dependem de nova autorização expressa.
 | Etapa | Entrega | Situação |
 |---|---|---|
 | E0 | Canônicos `02` v4.4 e `03` v3.16 (REQ-084, EC-16, TECH-022/026/051, §7); roadmap; ADR-0027; specs; plano; STRIDE | PR draft documental; sem merge → mergeada (#80, `5d9b636`, 2026-11-03) |
-| E1 | Migrations: transições, projeção, exceção, candidatos, solicitação/autorização/revogação/uso, papel autorizador, regras de liberação, custódia, `restore` e `correction`, chave K2 no `CHECK`, prontidão; `db:check`; testes com privilégios reais | não autorizada → em andamento (autorizada em 2026-11-03; ambiente isolado) |
-| E2 | Contratos AsyncAPI dos eventos dos commands, antes do primeiro handler que emite evento; domínio e commands (classificação TS + gêmea SQL; máquina da TECH-055; seis commands); idempotência; concorrência | não autorizada |
+| E1 | Migrations: transições, projeção, exceção, candidatos, solicitação/autorização/revogação/uso, papel autorizador, regras de liberação, custódia, `restore` e `correction`, chave K2 no `CHECK`, prontidão; `db:check`; testes com privilégios reais | não autorizada → em andamento (autorizada em 2026-11-03; ambiente isolado) → concluída (#82 → `26dd58d`, 2026-11-04; Production 59/0, ativação 0) |
+| E2 | Contratos AsyncAPI dos eventos dos commands, antes do primeiro handler que emite evento; domínio e commands (classificação TS + gêmea SQL; máquina da TECH-055; seis commands); idempotência; concorrência | não autorizada → autorizada (2026-11-05, plano v2; PR draft, sem merge) → implementada em PR draft (spec `booking` §10.12.1), aguardando auditoria |
 | E3 | Jobs e consumidores de notificação | não autorizada |
 | E4a | Revisão renderizada com o fundador: prévia do cancelamento (tempestivo, tardio, iniciada, Owner, prazo vencido na revisão, em exceção) e telas Admin, 390/1440 px | não autorizada |
-| E4b | Integração das telas e E2E | não autorizada |
+| E4b | Integração das telas e E2E; gate G-E4-1 (limitador da solicitação, spec `booking` §10.12) testado antes de expor a solicitação | não autorizada |
 | E5 | Workflow do autorizador comprovado num Environment isolado apontando para banco descartável | não autorizada |
 | E6 | Gates locais | não autorizada |
 | E7 | PR draft da implementação; parar antes do merge | não autorizada |

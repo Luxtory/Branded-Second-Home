@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { redirect } from 'next/navigation';
 import { executeTitularCommand } from '@/features/identity';
 import { createHoldingDirectory } from '@/features/ownership';
-import { getDatabase, rootLogger } from '@/features/platform';
+import { CapabilityNotActivatedError, getDatabase, rootLogger } from '@/features/platform';
 import { OwnUseBookingNotActivatedError } from '../application/create-own-use-booking';
 import type { OwnUseBookingState } from './own-use-form-state';
 import { createOwnUseBookingHandler } from './own-use-handler';
@@ -39,7 +39,12 @@ export async function createOwnUseBookingAction(
       holdings: createHoldingDirectory(() => getDatabase()),
     });
   } catch (error) {
-    if (!(error instanceof OwnUseBookingNotActivatedError)) throw error;
+    // Fechada no handler (leitura da K1) ou no banco (gatilho da K1, W13 D1): o mesmo estado fechado, nada gravado.
+    if (
+      !(error instanceof OwnUseBookingNotActivatedError) &&
+      !(error instanceof CapabilityNotActivatedError)
+    )
+      throw error;
     rootLogger.info('own use booking not activated', { command: 'create_own_use_booking' });
     attempt = 'not_activated';
   }

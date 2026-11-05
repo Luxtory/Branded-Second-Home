@@ -152,6 +152,9 @@ export const NON_CRITICAL_OPERATIONS: readonly CommandSpec[] = [
   nonCritical('set_home_concept_curation', 'catalog'),
   nonCritical('register_home_edition_projected_investment', 'catalog'),
   nonCritical('end_home_edition_projected_investment', 'catalog'),
+  // W13 (ADR-0027 §4, nota 3; spec booking §10.11.1): solicitação opaca de autorização independente, sem efeito
+  // econômico e fora da K2; a autorização em si só o papel autorizador grava.
+  nonCritical('request_booking_authorization', 'booking'),
 ];
 
 /**

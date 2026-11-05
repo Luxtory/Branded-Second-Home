@@ -16,6 +16,19 @@ export const LOCK_CLASSES = [
 export type LockClass = (typeof LOCK_CLASSES)[number];
 
 /**
+ * Extensão do ADR-0027 §2 (a TECH-053 não lista a reserva): a trava da reserva de uso próprio (`app.booking:<id>`, a
+ * mesma chave dos gatilhos da W13) fica entre `second_home_date` (classe 5) e `balance_and_custody` (classe 6).
+ * `LOCK_CLASSES` continua o espelho exato da TECH-053; commands que não travam reserva não mudam.
+ */
+export const LOCK_ORDER = [
+  ...LOCK_CLASSES.slice(0, 5),
+  'booking',
+  ...LOCK_CLASSES.slice(5),
+] as const;
+
+export type OrderedLockClass = (typeof LOCK_ORDER)[number];
+
+/**
  * Chave de uma linha: um valor ou uma tupla, sempre em texto comparável na mesma ordem do PostgreSQL (uuid em hexa
  * minúsculo, datas `YYYY-MM-DD`, instantes ISO 8601 em UTC com a mesma precisão).
  */
@@ -47,10 +60,10 @@ export class LockSequence {
   private lastKey: LockKey | null = null;
 
   /** Registra o lock de `keys` em `lockClass` e devolve as chaves, sem repetição, na ordem em que devem ser travadas. */
-  claim<K extends LockKey>(lockClass: LockClass, keys: readonly K[]): K[] {
-    const index = LOCK_CLASSES.indexOf(lockClass);
+  claim<K extends LockKey>(lockClass: OrderedLockClass, keys: readonly K[]): K[] {
+    const index = LOCK_ORDER.indexOf(lockClass);
     if (index < this.classIndex) {
-      throw new LockOrderViolation(`${lockClass} after ${LOCK_CLASSES[this.classIndex]}`);
+      throw new LockOrderViolation(`${lockClass} after ${LOCK_ORDER[this.classIndex]}`);
     }
     const sorted = [...keys]
       .sort(compareKeys)

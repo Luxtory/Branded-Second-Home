@@ -16,7 +16,11 @@ import type {
   OutboxEventDraft,
 } from '@/features/platform/application/commands/ports';
 import { CommandRegistry } from '@/features/platform/application/commands/registry';
-import { CommandRejection, type RejectionCode } from '@/features/platform/domain/errors';
+import {
+  CapabilityNotActivatedError,
+  CommandRejection,
+  type RejectionCode,
+} from '@/features/platform/domain/errors';
 import type { JsonValue } from '@/features/platform/domain/json';
 
 const NOW = new Date('2026-09-26T12:00:00.000Z');
@@ -35,6 +39,11 @@ class TransientError extends Error {}
 class ConstraintError extends Error {
   constructor(readonly constraint: string) {
     super(constraint);
+  }
+}
+class PrivilegeError extends Error {
+  constructor(readonly constraint: string | null) {
+    super(constraint ?? 'permission denied');
   }
 }
 
@@ -120,6 +129,10 @@ class FakeStore implements CommandStore<string> {
 
   violatedConstraint(error: unknown) {
     return error instanceof ConstraintError ? error.constraint : null;
+  }
+
+  refusedPrivilege(error: unknown) {
+    return error instanceof PrivilegeError ? error.constraint : null;
   }
 }
 
@@ -340,6 +353,50 @@ describe('executor de commands (TECH-054)', () => {
     await expect(executor.execute(unknown, request({ n: 1 }, 'key-2'))).rejects.toThrow(
       ConstraintError,
     );
+  });
+
+  it('[TECH-056] 42501 só vira recusa pelo nome exato da lista fechada; o resto é falha técnica (spec booking §10.12)', async () => {
+    const { executor, store } = setup();
+    const refused = handler(() =>
+      Promise.reject(new PrivilegeError('permission_authorization_expired')),
+    );
+    const prefixOnly = handler(() => Promise.reject(new PrivilegeError('permission_other')));
+    const technical = handler(() =>
+      Promise.reject(new PrivilegeError('use_right_correction_not_enabled')),
+    );
+    const unnamed = handler(() => Promise.reject(new PrivilegeError(null)));
+
+    expect(await executor.execute(refused, request({ n: 1 }))).toMatchObject({
+      status: 'rejected',
+      code: 'ERR_PERMISSION',
+      replayed: false,
+    });
+    expect(await executor.execute(refused, request({ n: 1 }))).toMatchObject({
+      code: 'ERR_PERMISSION',
+      replayed: true,
+    });
+    for (const [i, failing] of [prefixOnly, technical, unnamed].entries())
+      await expect(executor.execute(failing, request({ n: 1 }, `tech-${i}`))).rejects.toThrow(
+        PrivilegeError,
+      );
+    expect(store.rejected).toHaveLength(1);
+  });
+
+  it('[ADR-0027 §5] capability fechada no banco: erro tipado, sem operação, recusa ou evento; a chave fica livre', async () => {
+    const { executor, store } = setup();
+    const closed = handler(() =>
+      Promise.reject(new PrivilegeError('booking_lifecycle_not_activated')),
+    );
+
+    await expect(executor.execute(closed, request({ n: 1 }))).rejects.toEqual(
+      new CapabilityNotActivatedError('own_use_lifecycle'),
+    );
+    expect(store.rejected).toHaveLength(0);
+    expect(store.committed).toHaveLength(0);
+    expect(store.records.size).toBe(0);
+    expect(await executor.execute(handler(), request({ n: 1 }))).toMatchObject({
+      status: 'committed',
+    });
   });
 
   it('[TECH-053] deadlock/timeout refaz com a mesma chave até o limite', async () => {

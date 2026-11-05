@@ -2723,6 +2723,9 @@ components:
       description: |
         Códigos mínimos do TECH-056 e, depois deles, os códigos gerais da plataforma. Cada causa do REQ-098 corresponde
         a ao menos um código; a mensagem pt-BR vem da camada i18n. Código novo entra aqui antes do código-fonte.
+        Depois dos gerais, os códigos de produto (fora dos mínimos do TECH-056): `ERR_CANCELLATION_TERMS_CHANGED` — os
+        termos esperados da prévia do cancelamento (classificação e primeira noite afetada) diferem dos calculados no
+        instante da escrita; nada acontece e a prévia emite chave nova (W13, D7; spec booking §10.5).
       enum:
         - ERR_PERMISSION
         - ERR_MEMBERSHIP_INELIGIBLE
@@ -2751,6 +2754,7 @@ components:
         - ERR_PAYLOAD_TOO_LARGE
         - ERR_UNSUPPORTED_MEDIA_TYPE
         - ERR_RATE_LIMITED
+        - ERR_CANCELLATION_TERMS_CHANGED
 
     BrandPartnerContactRequest:
       type: object

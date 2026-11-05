@@ -41,6 +41,16 @@ channels:
         $ref: '#/components/messages/LeapDayGranted'
       ownUseBookingConfirmed:
         $ref: '#/components/messages/OwnUseBookingConfirmed'
+      ownUseBookingCancelled:
+        $ref: '#/components/messages/OwnUseBookingCancelled'
+      ownUseNoShowDeclared:
+        $ref: '#/components/messages/OwnUseNoShowDeclared'
+      ownUseExceptionOpened:
+        $ref: '#/components/messages/OwnUseExceptionOpened'
+      ownUseExceptionResolved:
+        $ref: '#/components/messages/OwnUseExceptionResolved'
+      ownUseBookingInvalidated:
+        $ref: '#/components/messages/OwnUseBookingInvalidated'
 
 operations:
   publishOutboxEvent:
@@ -172,6 +182,116 @@ components:
                 const: booking.own_use_confirmed
               payload:
                 $ref: '#/components/schemas/OwnUseBookingConfirmedPayload'
+    OwnUseBookingCancelled:
+      name: booking.own_use_cancelled
+      title: Reserva de uso próprio cancelada (REQ-080, REQ-081, PD-010)
+      description: |
+        Ciclo da reserva de uso próprio (W13, REQ-097, TECH-091; spec booking §10.12). Um evento por transição de estado
+        que notifica, gravado na transação do command (`dedup_key` = `<tipo>:<id da transição>`: o id é PK de
+        `app.booking_state_transition`, gravado na mesma transação, e cada operação grava no máximo uma transição — o
+        `ON CONFLICT (dedup_key) DO NOTHING` nunca descarta outro evento). Destinatário: a party da `holding_id` da
+        reserva, fixada no COMMIT (como na confirmação, ADR-0026 D6). Só ids, datas, contagens e enums: nunca a base
+        registrada, a referência do incidente ou dado pessoal.
+        Produtores: `cancel_own_use_booking` (`cause = titular`; durante exceção, com o `exception_id` que o cancelamento
+        encerra — sem evento de resolução separado) e `resolve_exception → cancelled` na exceção operacional
+        (`cause = exception`).
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/OutboxEnvelope'
+          - type: object
+            properties:
+              type:
+                const: booking.own_use_cancelled
+              payload:
+                $ref: '#/components/schemas/OwnUseBookingCancelledPayload'
+    OwnUseNoShowDeclared:
+      name: booking.own_use_no_show_declared
+      title: No-show declarado (BR-282, TECH-046)
+      description: |
+        Ciclo da reserva de uso próprio (W13, REQ-097, TECH-091; spec booking §10.12). Um evento por transição de estado
+        que notifica, gravado na transação do command (`dedup_key` = `<tipo>:<id da transição>`: o id é PK de
+        `app.booking_state_transition`, gravado na mesma transação, e cada operação grava no máximo uma transição — o
+        `ON CONFLICT (dedup_key) DO NOTHING` nunca descarta outro evento). Destinatário: a party da `holding_id` da
+        reserva, fixada no COMMIT (como na confirmação, ADR-0026 D6). Só ids, datas, contagens e enums: nunca a base
+        registrada, a referência do incidente ou dado pessoal.
+        Produtor: `declare_no_show`. Reserva de uma noite ou ausência constatada na última noite: zero noites liberadas.
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/OutboxEnvelope'
+          - type: object
+            properties:
+              type:
+                const: booking.own_use_no_show_declared
+              payload:
+                $ref: '#/components/schemas/OwnUseNoShowDeclaredPayload'
+    OwnUseExceptionOpened:
+      name: booking.own_use_exception_opened
+      title: Reserva posta em exceção (PD-010, REQ-083, REQ-084)
+      description: |
+        Ciclo da reserva de uso próprio (W13, REQ-097, TECH-091; spec booking §10.12). Um evento por transição de estado
+        que notifica, gravado na transação do command (`dedup_key` = `<tipo>:<id da transição>`: o id é PK de
+        `app.booking_state_transition`, gravado na mesma transação, e cada operação grava no máximo uma transição — o
+        `ON CONFLICT (dedup_key) DO NOTHING` nunca descarta outro evento). Destinatário: a party da `holding_id` da
+        reserva, fixada no COMMIT (como na confirmação, ADR-0026 D6). Só ids, datas, contagens e enums: nunca a base
+        registrada, a referência do incidente ou dado pessoal.
+        Produtor: `open_exception` (exceção operacional ou apuração de reserva não autorizada). `timely_until` só no
+        Co-Owner em exceção operacional: o instante até o qual o cancelamento é tempestivo (1º check-in − 360 h).
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/OutboxEnvelope'
+          - type: object
+            properties:
+              type:
+                const: booking.own_use_exception_opened
+              payload:
+                $ref: '#/components/schemas/OwnUseExceptionOpenedPayload'
+    OwnUseExceptionResolved:
+      name: booking.own_use_exception_resolved
+      title: Exceção resolvida sem cancelamento (PD-010, REQ-084)
+      description: |
+        Ciclo da reserva de uso próprio (W13, REQ-097, TECH-091; spec booking §10.12). Um evento por transição de estado
+        que notifica, gravado na transação do command (`dedup_key` = `<tipo>:<id da transição>`: o id é PK de
+        `app.booking_state_transition`, gravado na mesma transação, e cada operação grava no máximo uma transição — o
+        `ON CONFLICT (dedup_key) DO NOTHING` nunca descarta outro evento). Destinatário: a party da `holding_id` da
+        reserva, fixada no COMMIT (como na confirmação, ADR-0026 D6). Só ids, datas, contagens e enums: nunca a base
+        registrada, a referência do incidente ou dado pessoal.
+        Produtor: `resolve_exception → confirmed | completed`. A resolução que cancela emite
+        `booking.own_use_cancelled` (exceção operacional) ou `booking.own_use_invalidated` (apuração).
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/OutboxEnvelope'
+          - type: object
+            properties:
+              type:
+                const: booking.own_use_exception_resolved
+              payload:
+                $ref: '#/components/schemas/OwnUseExceptionResolvedPayload'
+    OwnUseBookingInvalidated:
+      name: booking.own_use_invalidated
+      title: Reserva não autorizada invalidada (REQ-084, TECH-022, TECH-026)
+      description: |
+        Ciclo da reserva de uso próprio (W13, REQ-097, TECH-091; spec booking §10.12). Um evento por transição de estado
+        que notifica, gravado na transação do command (`dedup_key` = `<tipo>:<id da transição>`: o id é PK de
+        `app.booking_state_transition`, gravado na mesma transação, e cada operação grava no máximo uma transição — o
+        `ON CONFLICT (dedup_key) DO NOTHING` nunca descarta outro evento). Destinatário: a party da `holding_id` da
+        reserva, fixada no COMMIT (como na confirmação, ADR-0026 D6). Só ids, datas, contagens e enums: nunca a base
+        registrada, a referência do incidente ou dado pessoal.
+        Produtores: `correct_use_right` (Co-Owner; `corrected` = consumo revertido por categoria) e
+        `resolve_exception → cancelled` na apuração de reserva de Owner (`corrected = null`).
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/OutboxEnvelope'
+          - type: object
+            properties:
+              type:
+                const: booking.own_use_invalidated
+              payload:
+                $ref: '#/components/schemas/OwnUseBookingInvalidatedPayload'
     OutboxEvent:
       name: OutboxEvent
       title: Envelope de evento do outbox
@@ -290,6 +410,170 @@ components:
         nights:
           type: integer
           minimum: 1
+    OwnUseLifecycleNights:
+      type: object
+      additionalProperties: false
+      description: Noites por categoria do Direito de Uso (TECH-027), uma por data.
+      required: [alta, media, leap]
+      properties:
+        alta:
+          type: integer
+          minimum: 0
+        media:
+          type: integer
+          minimum: 0
+        leap:
+          type: integer
+          minimum: 0
+    OwnUseBookingCancelledPayload:
+      type: object
+      additionalProperties: false
+      required: [booking_id, second_home_id, recipient_party_id, cause, exception_id, exception_type,
+        cancellation_class, released_nights, first_released_date, restored, forfeited_nights]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+        second_home_id:
+          type: string
+          format: uuid
+        recipient_party_id:
+          type: string
+          format: uuid
+          description: Pessoa ou empresa da holding da reserva (pseudônimo interno, nunca documento).
+        cause:
+          type: string
+          enum: [titular, exception]
+        exception_id:
+          type: [string, 'null']
+          format: uuid
+        exception_type:
+          type: [string, 'null']
+          enum: [operational, unauthorized_booking, null]
+        cancellation_class:
+          type: [string, 'null']
+          enum: [timely, late, null]
+          description: Classificação gravada (REQ-080); nula no Owner, que não tem classe (REQ-081).
+        released_nights:
+          type: integer
+          minimum: 1
+        first_released_date:
+          type: string
+          format: date
+        restored:
+          oneOf:
+            - $ref: '#/components/schemas/OwnUseLifecycleNights'
+            - type: 'null'
+          description: Direito de Uso devolvido (Co-Owner tempestivo); nulo nos demais casos.
+        forfeited_nights:
+          type: [integer, 'null']
+          minimum: 0
+          description: Noites futuras que viram `forfeited_right` (Co-Owner tardio); nulo nos demais casos.
+    OwnUseNoShowDeclaredPayload:
+      type: object
+      additionalProperties: false
+      required: [booking_id, second_home_id, recipient_party_id, released_nights, first_released_date,
+        forfeited_nights]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+        second_home_id:
+          type: string
+          format: uuid
+        recipient_party_id:
+          type: string
+          format: uuid
+        released_nights:
+          type: integer
+          minimum: 0
+        first_released_date:
+          type: [string, 'null']
+          format: date
+        forfeited_nights:
+          type: [integer, 'null']
+          minimum: 0
+          description: Noites futuras que viram `forfeited_right` (Co-Owner); nulo no Owner.
+    OwnUseExceptionOpenedPayload:
+      type: object
+      additionalProperties: false
+      required: [booking_id, second_home_id, recipient_party_id, exception_id, exception_type, reason, timely_until]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+        second_home_id:
+          type: string
+          format: uuid
+        recipient_party_id:
+          type: string
+          format: uuid
+        exception_id:
+          type: string
+          format: uuid
+        exception_type:
+          type: string
+          enum: [operational, unauthorized_booking]
+        reason:
+          type: [string, 'null']
+          enum: [emergency_maintenance, security, casualty, fortuitous_event, force_majeure, null]
+          description: Motivo da lista fechada da PD-010 (exceção operacional); nulo na apuração.
+        timely_until:
+          type: [string, 'null']
+          format: date-time
+          description: 1º check-in − 360 h (TECH-043), com microssegundos; só no Co-Owner em exceção operacional.
+    OwnUseExceptionResolvedPayload:
+      type: object
+      additionalProperties: false
+      required: [booking_id, second_home_id, recipient_party_id, exception_id, exception_type, outcome]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+        second_home_id:
+          type: string
+          format: uuid
+        recipient_party_id:
+          type: string
+          format: uuid
+        exception_id:
+          type: string
+          format: uuid
+        exception_type:
+          type: string
+          enum: [operational, unauthorized_booking]
+        outcome:
+          type: string
+          enum: [confirmed, completed]
+    OwnUseBookingInvalidatedPayload:
+      type: object
+      additionalProperties: false
+      required: [booking_id, second_home_id, recipient_party_id, exception_id, released_nights, first_released_date,
+        corrected]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+        second_home_id:
+          type: string
+          format: uuid
+        recipient_party_id:
+          type: string
+          format: uuid
+        exception_id:
+          type: string
+          format: uuid
+        released_nights:
+          type: integer
+          minimum: 1
+        first_released_date:
+          type: string
+          format: date
+        corrected:
+          oneOf:
+            - $ref: '#/components/schemas/OwnUseLifecycleNights'
+            - type: 'null'
+          description: Consumo revertido por `correction` (Co-Owner, TECH-026); nulo no Owner.
     OutboxEnvelope:
       type: object
       additionalProperties: false

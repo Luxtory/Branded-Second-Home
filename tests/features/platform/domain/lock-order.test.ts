@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   LOCK_CLASSES,
+  LOCK_ORDER,
   LockOrderViolation,
   LockSequence,
 } from '@/features/platform/domain/lock-order';
@@ -19,6 +20,22 @@ const TECH_053_ORDER = [
 describe('LockSequence (TECH-053)', () => {
   it('[TECH-053] as classes seguem a ordem total do 03', () => {
     expect(LOCK_CLASSES).toEqual(TECH_053_ORDER);
+  });
+
+  it('[ADR-0027 §2] a trava da reserva é uma extensão entre a classe 5 e a classe 6; a TECH-053 fica intacta', () => {
+    expect(LOCK_ORDER).toEqual([
+      ...TECH_053_ORDER.slice(0, 5),
+      'booking',
+      ...TECH_053_ORDER.slice(5),
+    ]);
+    const locks = new LockSequence();
+    locks.claim('stake', ['s']);
+    locks.claim('second_home_date', [['h', '2026-12-01']]);
+    expect(locks.claim('booking', ['b'])).toEqual(['b']);
+    expect(locks.claim('balance_and_custody', [['h', '2026-12-01']])).toHaveLength(1);
+    const late = new LockSequence();
+    late.claim('booking', ['b']);
+    expect(() => late.claim('second_home_date', [['h', '2026-12-01']])).toThrow(LockOrderViolation);
   });
 
   it('[TECH-053] lock de classe anterior depois de uma posterior é rejeitado', () => {
