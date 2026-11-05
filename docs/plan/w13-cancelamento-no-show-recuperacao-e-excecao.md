@@ -7,6 +7,11 @@ documento organiza a execução, sem substituir os canônicos. Spec: [`booking` 
 `inventory` e `calendar` §8). Decisão: [ADR-0027](../adr/0027-ciclo-da-reserva-de-uso-proprio-e-autorizacao-independente.md).
 Ameaças: [`booking`](../security/threats/booking.md) (W13).
 
+**Atualização 2026-11-03:** a E0 foi mergeada pelo #80 (squash `5d9b636`; `02` v4.4 e `03` v3.16 emitidos; ADR-0027
+aceito); as situações "em auditoria neste PR" da tabela abaixo referem-se a esse PR. A E1 foi autorizada pelo fundador
+em 2026-11-03 só em ambiente isolado (PR draft para auditoria, sem merge, deploy, Production, secrets, Environment real
+ou ativação); E2 em diante dependem de nova autorização expressa.
+
 ## Decisões do fundador (2026-11-03)
 
 | # | Decisão | Situação |
@@ -32,8 +37,8 @@ Ameaças: [`booking`](../security/threats/booking.md) (W13).
 
 | Etapa | Entrega | Situação |
 |---|---|---|
-| E0 | Canônicos `02` v4.4 e `03` v3.16 (REQ-084, EC-16, TECH-022/026/051, §7); roadmap; ADR-0027; specs; plano; STRIDE | PR draft documental; sem merge |
-| E1 | Migrations: transições, projeção, exceção, candidatos, solicitação/autorização/revogação/uso, papel autorizador, regras de liberação, custódia, `restore` e `correction`, chave K2 no `CHECK`, prontidão; `db:check`; testes com privilégios reais | não autorizada |
+| E0 | Canônicos `02` v4.4 e `03` v3.16 (REQ-084, EC-16, TECH-022/026/051, §7); roadmap; ADR-0027; specs; plano; STRIDE | PR draft documental; sem merge → mergeada (#80, `5d9b636`, 2026-11-03) |
+| E1 | Migrations: transições, projeção, exceção, candidatos, solicitação/autorização/revogação/uso, papel autorizador, regras de liberação, custódia, `restore` e `correction`, chave K2 no `CHECK`, prontidão; `db:check`; testes com privilégios reais | não autorizada → em andamento (autorizada em 2026-11-03; ambiente isolado) |
 | E2 | Contratos AsyncAPI dos eventos dos commands, antes do primeiro handler que emite evento; domínio e commands (classificação TS + gêmea SQL; máquina da TECH-055; seis commands); idempotência; concorrência | não autorizada |
 | E3 | Jobs e consumidores de notificação | não autorizada |
 | E4a | Revisão renderizada com o fundador: prévia do cancelamento (tempestivo, tardio, iniciada, Owner, prazo vencido na revisão, em exceção) e telas Admin, 390/1440 px | não autorizada |
@@ -41,6 +46,21 @@ Ameaças: [`booking`](../security/threats/booking.md) (W13).
 | E5 | Workflow do autorizador comprovado num Environment isolado apontando para banco descartável | não autorizada |
 | E6 | Gates locais | não autorizada |
 | E7 | PR draft da implementação; parar antes do merge | não autorizada |
+
+## E1 — resultado no banco (2026-11-04, ambiente isolado)
+
+Quatro migrations (spec `booking` §10.11), `db:check` up → down → up, testes `db` com os privilégios reais em
+`tests/migrations/booking-lifecycle.db.test.ts` e `booking-authorization.db.test.ts`. Critérios abaixo cobertos no banco:
+4 (entrada da função em schema fechado: UUID e `github-run:<id>:<tentativa>`, SQL parametrizado), 5 (só id opaco e
+referência do run chegam à função; saída = id da autorização), 6, 7, 8, 9, 10 (incluindo login real e `CONNECTION LIMIT
+1`), 11 (no banco: PK, reuso recusado, falha → rollback e autorização utilizável), 12, 13, 14 e 16. Pendentes por etapa:
+1–3 e a varredura de log do 5 (workflow, E5); o replay pela chave do executor do 11 (E2); o roteiro do 15 (runbook, E5).
+Auditoria do PR #82 (2026-11-04): escalada por tipo sombreado em `pg_temp` achada e corrigida (`search_path =
+pg_catalog, pg_temp`, T-1312); isolamento do autorizador provado (sem CREATE, TRIGGER, REFERENCES, coluna ou outra
+`SECURITY DEFINER`; gatilhos só com os próprios privilégios); testes independentes da data real (exercício anterior
+selado; regressão da virada do ano); ordem de travas obrigatória para a E2 e proteção da solicitação documentadas
+(spec `booking` §10.11.1). Dependem da E2: handlers na ordem documentada, mapeamento de recusas, idempotência do
+executor, guard/MFA/auditoria da solicitação, AsyncAPI.
 
 ## Autorização independente — critérios de aceite
 

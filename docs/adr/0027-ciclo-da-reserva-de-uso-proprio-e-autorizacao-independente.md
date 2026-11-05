@@ -1,7 +1,8 @@
 # 0027. Ciclo da reserva de uso próprio: transições só-inserção, chaves K1/K2 e autorização independente
 
 - **Date**: 2026-11-03
-- **Status**: Proposed (E0 documental aprovada pelo fundador para auditoria; aceite no merge; E1 não autorizada)
+- **Status**: Accepted (2026-11-03, no merge do PR documental da E0, #80 → `5d9b636`). Antes: Proposed (E0 documental
+  aprovada pelo fundador para auditoria; aceite no merge; E1 não autorizada). E1 autorizada pelo fundador em 2026-11-03.
 - **Deciders**: Luxtory (fundador), Engenharia
 - **Tags**: booking, inventory, calendar, identity, postgresql, security, github-actions
 
@@ -45,7 +46,9 @@ Forças:
      pela TECH-055. Os índices protegem mesmo com os gatilhos contornados (R3).
    - Projeção por gatilho `AFTER INSERT` `SECURITY DEFINER` com as restrições de `app.use_right_balance_apply` (W11):
      confere `TG_TABLE_NAME`/`TG_WHEN`/`TG_OP`/`TG_LEVEL`, deriva só de `NEW`, sem parâmetro nem SQL dinâmico,
-     `search_path` vazio, `REVOKE ALL FROM PUBLIC` (sem `EXECUTE`, ninguém cria outro gatilho com ela; o PostgreSQL recusa
+     **`SET search_path = pg_catalog, pg_temp`** (corrigido na E1, nota 5: o texto original dizia "`search_path`
+     vazio", padrão vulnerável a tipo sombreado em `pg_temp`, T-1312 — não usar), `REVOKE ALL FROM PUBLIC` (sem
+     `EXECUTE`, ninguém cria outro gatilho com ela; o PostgreSQL recusa
      chamada direta de função de gatilho). Guarda `BEFORE UPDATE` em `app.booking` para todos os papéis: só `state`,
      `last_transition_id` e `cancellation_class` mudam, coerentes com a transição referenciada; classe gravada uma vez.
      `luxtory_app` continua sem `UPDATE` em `app.booking`.
@@ -94,7 +97,8 @@ Forças:
 4. **Autorização independente do `luxtory_app`.**
    - Papel `luxtory_booking_authorizer`: criado por migration, `LOGIN` sem senha, `NOINHERIT`, `CONNECTION LIMIT 1`,
      nenhum privilégio em tabela; `EXECUTE` só em `app.authorize_booking_action(...)` e
-     `app.revoke_booking_authorization(...)` (`SECURITY DEFINER`, `search_path` vazio, `REVOKE ALL FROM PUBLIC`). A senha
+     `app.revoke_booking_authorization(...)` (`SECURITY DEFINER`, **`SET search_path = pg_catalog, pg_temp`** — corrigido
+     na E1, nota 5; o original "`search_path` vazio" permitiu a escalada T-1312 —, `REVOKE ALL FROM PUBLIC`). A senha
      é definida pelo fundador pelo procedimento já usado para o `luxtory_app` (`docs/how-to/operacao.md`) e fica só num
      GitHub Environment com revisor obrigatório, restrito à `main`. Nunca no Vercel.
    - Solicitação opaca: o Admin registra `app.booking_authorization_request` (só-inserção, operação Admin não crítica,
@@ -203,3 +207,45 @@ A W13 não ativa reservas.
   uma aprovação.
 - **Fila de cancelamentos durante a contenção:** instante forjável com a credencial comprometida.
 - **Rotas REST agora:** sem consumidor; mais superfície e contrato.
+
+## Notas de implementação da E1 (2026-11-04, ambiente isolado; sem mudança de decisão)
+
+1. **Trava da reserva (§2).** O `luxtory_app` não tem `UPDATE` em `app.booking`, e o PostgreSQL exige esse privilégio
+   para `SELECT … FOR NO KEY UPDATE`. O gatilho trava a reserva por trava consultiva `app.booking:<id>` (precedida da
+   `app.stake:<id>` no Co-Owner, reentrante), na mesma posição da ordem; a linha é travada em `NO KEY UPDATE` pela
+   projeção na mesma transação. Autorizar, revogar e usar usam a mesma chave consultiva; a revogação ainda trava a linha
+   da autorização em `FOR UPDATE`, e o uso a referencia por FK (`KEY SHARE`). Com os gatilhos contornados (R3), o índice de
+   raiz única, a FK composta e o `UNIQUE (previous_transition_id)` seguem protegendo a cadeia.
+2. **Papel autorizador e `USAGE` no schema `app` (§4).** Para chamar as duas funções, o papel recebe `USAGE` no schema.
+   Com isso enxerga funções que as waves anteriores deixaram executáveis por `PUBLIC`: 18 funções de gatilho (o
+   PostgreSQL recusa a chamada direta) e o validador `app.is_text_list` (IMMUTABLE, sem acesso a dados). Nenhuma lê ou
+   grava dados; a prontidão e os testes conferem que as únicas funções chamáveis com acesso a dados são as duas. Revogar
+   `EXECUTE` de `PUBLIC` nessas funções antigas é endurecimento separado, fora da E1 (mexe em privilégios das W1–W7).
+3. **Solicitação (§4).** Gravada pelo command Admin não crítico `request_booking_authorization`, fora da K2 (o §5 lista
+   só os seis commands; a solicitação não tem efeito sem a autorização, e a execução exige a K2).
+4. **Natureza do evento e efeitos no COMMIT (§2, §3).** A transição registra a natureza econômica (`advance`,
+   `cancellation`, `no_show`, `exception_opening`, `exception_resolution`, `invalidation`); constraints diferidas conferem
+   no COMMIT os efeitos completos do fechamento e da recuperação e que todo uso de autorização acompanha o ato da mesma
+   operação. Detalhes e nomes de recusa: spec `booking` §10.11.
+5. **`search_path` das funções (auditoria do PR #82).** `SET search_path = ''` não basta em `SECURITY DEFINER`: o schema
+   temporário da sessão continua sendo buscado primeiro para nomes de tipo, e um papel com TEMP sombreia `text`/`uuid`
+   com um domínio cujo `CHECK` roda como o dono (escalada do papel autorizador a `postgres` comprovada antes da
+   correção). Toda função da W13 usa `SET search_path = pg_catalog, pg_temp`; a prontidão confere. Convenção para as
+   próximas waves: `SECURITY DEFINER` sempre com `pg_temp` explicitamente por último. As `SECURITY DEFINER` anteriores
+   (`auth_account_by_email`, `auth_account_labels`, `*_is_public`) continuam com `''`: por inspeção, não declaram nem
+   convertem tipos sombreáveis (`integer` é palavra-chave e resolve em `pg_catalog`); as `auth_account_*`, executáveis
+   pelo `luxtory_app`, também passam no teste com seis tipos sombreados; as `*_is_public` só o `anon` executa, pelas
+   políticas de RLS — testado com o `anon` sombreando os mesmos tipos. Ficam como dívida técnica documentada, sem alterar
+   waves anteriores; a prontidão só as aceita com `''` por uma lista finita e auditada (assinatura, md5 do corpo revisado
+   e configuração exata) e recusa qualquer outra `SECURITY DEFINER` sem `pg_catalog, pg_temp`.
+6. **Ordem de travas obrigatória para os handlers (E2).** Spec `booking` §10.11.1, provada com o command real da W12; a
+   E2 adquire as travas de forma determinística (uma instrução por chave, na ordem calculada), sem depender da ordem de
+   avaliação de uma consulta SQL.
+7. **Papéis em migrations rodadas por dono não superusuário.** O `postgres` da Supabase tem CREATEROLE, CREATEDB,
+   REPLICATION e BYPASSRLS, mas não SUPERUSER: `ALTER ROLE` não cita SUPERUSER, REPLICATION ou BYPASSRLS; a ausência
+   deles é conferida por consulta e falha fechada. A prontidão confere a ACL das funções privilegiadas (o `luxtory_app`
+   alcança `anon`/`authenticated` por `SET ROLE`).
+8. **Grafo de papéis e GRANT OPTION.** Ninguém assume, herda ou administra o autorizador além do dono (vínculo ADMIN
+   automático do PostgreSQL 16+, sem SET e sem herança); `luxtory_app`, `anon` e `authenticated` não alcançam o
+   autorizador nem o dono por cadeia alguma; ninguém além do dono tem GRANT OPTION nas funções privilegiadas, que são do
+   dono do schema. Conferido pela prontidão.

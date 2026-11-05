@@ -468,7 +468,8 @@ describe('W12 — reserva de uso próprio: fronteira no banco com os privilégio
                FROM app.use_right_ledger WHERE id = $1`,
             [rows[0]!.id, op],
           ),
-        ).rejects.toEqual(constraint('use_right_consumption_not_enabled'));
+          // W13 (ADR-0027 §3): a restauração só no cancelamento tempestivo, com a K2 — ausente aqui.
+        ).rejects.toEqual(constraint('booking_lifecycle_not_activated'));
         await app.query('ROLLBACK');
         for (const statement of [
           `UPDATE app.date_occupancy SET released_at = now(), release_reason = 'ceded', released_by_operation = '${op}'`,

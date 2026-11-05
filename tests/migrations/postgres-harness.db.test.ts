@@ -111,6 +111,10 @@ describe('PostgreSQL real (ADR-0005)', () => {
       await a.query('BEGIN');
       await a.query(INSERT_ACTIVE_RUN, ['committed_job']);
       const afterCommit = b.query(INSERT_ACTIVE_RUN, ['committed_job']);
+      // O PostgreSQL libera as travas de A antes de responder ao COMMIT: sob carga, o erro de B chega ao Node antes, e a
+      // promessa ficaria sem handler nessa janela (rejeição não tratada, embora a asserção abaixo passe). O handler na
+      // criação só marca a rejeição como tratada; a asserção segue a mesma.
+      afterCommit.catch(() => undefined);
       await waitUntilWaitingForLock(bPid);
       await a.query('COMMIT');
       await expect(afterCommit).rejects.toMatchObject({ code: UNIQUE_VIOLATION });

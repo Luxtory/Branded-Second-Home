@@ -1,0 +1,985 @@
+import { randomBytes, randomUUID } from 'node:crypto';
+import pg from 'pg';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { scramVerifier } from '../../scripts/lib/scram.mjs';
+import { waitForLockWaiter } from '../support/platform-fixtures';
+import { createTestDatabase } from '../support/test-database';
+import {
+  addDays,
+  bookableStart,
+  bookingHarness,
+  type BookingHarness,
+  type CoOwnerScenario,
+  type OwnerScenario,
+} from '../features/booking/booking-support';
+import {
+  activate,
+  addAdmin,
+  asAuthorizer,
+  asOperation,
+  authorize,
+  bookingRow,
+  bookNow,
+  closeBooking,
+  connect,
+  futureForfeited,
+  historicBooking,
+  historicCoOwnerScenario,
+  historicOwnerScenario,
+  lastStartedNight,
+  lifecycleFacts,
+  openException,
+  openOperation,
+  recover,
+  requestAuthorization,
+  resolveWithoutEffect,
+  revoke,
+  unstartedNights,
+  type Admin,
+  type OperationActor,
+} from '../features/booking/lifecycle-support';
+
+const constraint = (name: string) => expect.objectContaining({ constraint: name });
+
+describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, plano W13 critérios 1–16)', () => {
+  let h: BookingHarness;
+  let co: CoOwnerScenario;
+  let co2: CoOwnerScenario;
+  let owner: OwnerScenario;
+  let admin: Admin;
+  let S1: string;
+  let S2: string;
+  let So: string;
+  let first: string;
+  const s1 = (offset: number) => addDays(S1, offset);
+  const s2 = (offset: number) => addDays(S2, offset);
+  const so = (offset: number) => addDays(So, offset);
+  const at = (offset: number) => addDays(first, offset);
+  const asAdmin = (): OperationActor => ({ kind: 'admin', admin });
+  const app = <T>(command: string, actor: OperationActor, work: (client: pg.Client, op: string) => Promise<T>) =>
+    asOperation(h.database.appUrl, command, actor, work);
+
+  beforeAll(async () => {
+    h = await bookingHarness();
+    // Exercício anterior selado: noites passadas existem em qualquer data real (inclusive 1º/01 antes das 14:00).
+    co = await historicCoOwnerScenario(h);
+    co2 = await historicCoOwnerScenario(h);
+    owner = await historicOwnerScenario(h);
+    admin = await addAdmin(h);
+    S1 = await lastStartedNight(h, co.homeId);
+    S2 = await lastStartedNight(h, co2.homeId);
+    So = await lastStartedNight(h, owner.homeId);
+    first = bookableStart().first;
+    await activate(h, 'own_use_booking', 'own_use_lifecycle');
+  }, 300_000);
+  afterAll(() => h.close());
+
+  describe('papel autorizador e privilégios (critério 10)', () => {
+    it('[ADR-0027 §4] papel sem herança, uma conexão, nenhum privilégio em tabela; EXECUTE só nas duas funções', async () => {
+      const role = await h.database.pool.query(
+        `SELECT rolcanlogin, rolinherit, rolsuper, rolcreatedb, rolcreaterole, rolreplication, rolbypassrls, rolconnlimit
+           FROM pg_roles WHERE rolname = 'luxtory_booking_authorizer'`,
+      );
+      expect(role.rows[0]).toEqual({
+        rolcanlogin: true,
+        rolinherit: false,
+        rolsuper: false,
+        rolcreatedb: false,
+        rolcreaterole: false,
+        rolreplication: false,
+        rolbypassrls: false,
+        rolconnlimit: 1,
+      });
+      const tables = await h.database.pool.query<{ object: string }>(
+        `SELECT c.oid::regclass::text AS object FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+          WHERE n.nspname = 'app' AND c.relkind IN ('r', 'v', 'm', 'p')
+            AND has_table_privilege('luxtory_booking_authorizer', c.oid, 'SELECT, INSERT, UPDATE, DELETE, TRUNCATE')`,
+      );
+      expect(tables.rows).toEqual([]);
+      // Funções chamáveis com acesso a dados: só as duas. As de gatilho (chamada direta recusada) e as IMMUTABLE sem
+      // SECURITY DEFINER executáveis por PUBLIC desde as waves anteriores não leem nem gravam.
+      const functions = await h.database.pool.query<{ fn: string }>(
+        `SELECT p.oid::regprocedure::text AS fn FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+          WHERE n.nspname = 'app' AND has_function_privilege('luxtory_booking_authorizer', p.oid, 'EXECUTE')
+            AND (p.prosecdef OR (p.prorettype <> 'trigger'::regtype AND p.provolatile <> 'i'))
+          ORDER BY 1`,
+      );
+      expect(functions.rows.map((row) => row.fn)).toEqual([
+        'app.authorize_booking_action(uuid,text)',
+        'app.revoke_booking_authorization(uuid,text)',
+      ]);
+      const exposed = await h.database.pool.query<{ fn: string; trigger: boolean; immutable: boolean }>(
+        `SELECT p.oid::regprocedure::text AS fn, p.prorettype = 'trigger'::regtype AS trigger,
+                p.provolatile = 'i' AND NOT p.prosecdef AS immutable
+           FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+          WHERE n.nspname = 'app' AND has_function_privilege('luxtory_booking_authorizer', p.oid, 'EXECUTE')
+            AND p.oid NOT IN ('app.authorize_booking_action(uuid, text)'::regprocedure,
+                              'app.revoke_booking_authorization(uuid, text)'::regprocedure)`,
+      );
+      expect(exposed.rows.filter((row) => row.trigger)).toHaveLength(18);
+      expect(exposed.rows.filter((row) => !row.trigger)).toEqual([
+        { fn: 'app.is_text_list(text[],integer,integer)', trigger: false, immutable: true },
+      ]);
+      await expect(
+        asAuthorizer(h, (client) => client.query(`SELECT app.forbid_change()`)),
+      ).rejects.toMatchObject({ code: '0A000' });
+    });
+
+    it('[T-1302] o luxtory_app não autoriza, não revoga e não grava autorização nem revogação (42501)', async () => {
+      const client = await connect(h.database.appUrl);
+      try {
+        for (const statement of [
+          `SELECT app.authorize_booking_action(gen_random_uuid(), 'github-run:1:1')`,
+          `SELECT app.revoke_booking_authorization(gen_random_uuid(), 'github-run:1:1')`,
+          `INSERT INTO app.booking_authorization_revocation VALUES (gen_random_uuid(), 'github-run:1:1', now())`,
+          `UPDATE app.booking_authorization SET valid_until = now() + interval '10 years'`,
+          `DELETE FROM app.booking_authorization_use`,
+        ])
+          await expect(client.query(statement)).rejects.toMatchObject({ code: '42501' });
+      } finally {
+        await client.end();
+      }
+    });
+
+    it('[ADR-0027 §4] login real do papel autorizador: só chama as funções; segunda conexão simultânea recusada', async () => {
+      const id = await bookNow(h, co.titulares[0]!, co.homeId, at(70), at(71));
+      const password = randomBytes(24).toString('base64url');
+      await h.database.pool.query(`ALTER ROLE luxtory_booking_authorizer WITH PASSWORD '${scramVerifier(password)}'`);
+      const url = new URL(h.database.url);
+      url.username = 'luxtory_booking_authorizer';
+      url.password = password;
+      const authorizer = await connect(url.toString());
+      try {
+        await expect(authorizer.query('SELECT id FROM app.booking LIMIT 1')).rejects.toMatchObject({ code: '42501' });
+        await expect(authorizer.query('SELECT id FROM app.booking_authorization_request LIMIT 1')).rejects.toMatchObject({
+          code: '42501',
+        });
+        await expect(connect(url.toString())).rejects.toMatchObject({ code: '53300' });
+        // Entrada fora do schema fechado e solicitação inexistente: recusas nomeadas, sem SQL livre.
+        await expect(
+          authorizer.query(`SELECT app.authorize_booking_action($1, $2)`, [randomUUID(), 'run 1; DROP TABLE x']),
+        ).rejects.toEqual(constraint('authorization_input'));
+        await expect(
+          authorizer.query(`SELECT app.authorize_booking_action($1, $2)`, [randomUUID(), 'github-run:7:1']),
+        ).rejects.toEqual(constraint('authorization_request_unknown'));
+        // Fora da janela do no-show: a emissão é recusada.
+        const request = await requestAuthorization(h, admin, { bookingId: id, purpose: 'no_show', expectedDates: [at(70)] });
+        await expect(
+          authorizer.query(`SELECT app.authorize_booking_action($1, $2)`, [request, 'github-run:7:1']),
+        ).rejects.toEqual(constraint('authorization_emission_window'));
+      } finally {
+        await authorizer.end();
+        await h.database.pool.query(`ALTER ROLE luxtory_booking_authorizer WITH PASSWORD NULL`);
+      }
+    });
+
+    it('[ADR-0027 §4] isolamento: sem CREATE, sem TRIGGER/REFERENCES nem coluna; gatilhos só com os próprios privilégios', async () => {
+      const { rows } = await h.database.pool.query<Record<string, unknown>>(
+        `SELECT has_schema_privilege('luxtory_booking_authorizer', 'app', 'USAGE') AS app_usage,
+                has_schema_privilege('luxtory_booking_authorizer', 'app', 'CREATE') AS app_create,
+                has_schema_privilege('luxtory_booking_authorizer', 'public', 'CREATE') AS public_create,
+                has_database_privilege('luxtory_booking_authorizer', current_database(), 'CREATE') AS database_create,
+                (SELECT count(*)::int FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+                  WHERE n.nspname = 'app' AND c.relkind IN ('r', 'v', 'm', 'p', 'S', 'f')
+                    AND (has_table_privilege('luxtory_booking_authorizer', c.oid,
+                           'SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER')
+                         OR has_any_column_privilege('luxtory_booking_authorizer', c.oid,
+                           'SELECT, INSERT, UPDATE, REFERENCES'))) AS relations_with_privilege,
+                (SELECT count(*)::int FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+                  WHERE n.nspname = 'app' AND p.prosecdef
+                    AND p.oid NOT IN ('app.authorize_booking_action(uuid, text)'::regprocedure,
+                                      'app.revoke_booking_authorization(uuid, text)'::regprocedure)
+                    AND has_function_privilege('luxtory_booking_authorizer', p.oid, 'EXECUTE')) AS other_definers`,
+      );
+      expect(rows[0]).toEqual({
+        app_usage: true,
+        app_create: false,
+        public_create: false,
+        database_create: false,
+        relations_with_privilege: 0,
+        other_definers: 0,
+      });
+      // Chamada direta de cada função de gatilho exposta por PUBLIC: recusada pelo PostgreSQL.
+      const triggers = await h.database.pool.query<{ fn: string }>(
+        `SELECT p.oid::regproc::text AS fn FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+          WHERE n.nspname = 'app' AND p.prorettype = 'trigger'::regtype
+            AND has_function_privilege('luxtory_booking_authorizer', p.oid, 'EXECUTE')`,
+      );
+      expect(triggers.rows).toHaveLength(18);
+      await asAuthorizer(h, async (client) => {
+        for (const { fn } of triggers.rows)
+          await expect(client.query(`SELECT ${fn}()`)).rejects.toMatchObject({ code: '0A000' });
+        // Uso indireto: só num objeto próprio (tabela temporária) e com os privilégios do próprio papel (INVOKER).
+        await client.query('CREATE TEMP TABLE probe (id int)');
+        await client.query(
+          'CREATE TRIGGER probe_guard BEFORE INSERT ON probe FOR EACH ROW EXECUTE FUNCTION app.forbid_change()',
+        );
+        await expect(client.query('INSERT INTO probe VALUES (1)')).rejects.toMatchObject({ code: '42501' });
+        await expect(
+          client.query(
+            'CREATE TRIGGER forged BEFORE INSERT ON app.booking FOR EACH ROW EXECUTE FUNCTION app.forbid_change()',
+          ),
+        ).rejects.toMatchObject({ code: '42501' });
+        // `app.is_text_list`: IMMUTABLE, sem SECURITY DEFINER, sem referência a tabela; só calcula.
+        const pure = await client.query<{ ok: boolean; bad: boolean }>(
+          `SELECT app.is_text_list(ARRAY['a', 'b'], 2, 5) AS ok, app.is_text_list(ARRAY['abcdef'], 2, 5) AS bad`,
+        );
+        expect(pure.rows[0]).toEqual({ ok: true, bad: false });
+      });
+      const helper = await h.database.pool.query<{ volatility: string; definer: boolean; touches_app: boolean }>(
+        `SELECT provolatile AS volatility, prosecdef AS definer, prosrc ~ 'app[.]' AS touches_app
+           FROM pg_proc WHERE oid = 'app.is_text_list(text[], integer, integer)'::regprocedure`,
+      );
+      expect(helper.rows[0]).toEqual({ volatility: 'i', definer: false, touches_app: false });
+    });
+
+    it('[ADR-0027 §4] tipos sombreados em pg_temp pelo autorizador não rodam como o dono (escalada corrigida)', async () => {
+      const id = await bookNow(h, co.titulares[0]!, co.homeId, at(92), at(93));
+      const exceptionId = await app('open_exception', asAdmin(), (c, op) => openException(c, op, id, 'operational'));
+      const nights = await unstartedNights(h.database.pool, id);
+      const request = await requestAuthorization(h, admin, {
+        bookingId: id,
+        purpose: 'exception_cancellation',
+        exceptionId,
+        expectedDates: nights,
+        expectedClass: 'timely',
+      });
+      const authorization = await asAuthorizer(h, async (client) => {
+        await client.query(
+          `CREATE FUNCTION pg_temp.escalated() RETURNS boolean LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $$
+           BEGIN
+             IF current_user <> 'luxtory_booking_authorizer' THEN
+               RAISE EXCEPTION 'escalated as %', current_user;
+             END IF;
+             RETURN true;
+           END $$`,
+        );
+        for (const type of ['text', 'uuid', 'date', 'timestamptz', 'jsonb', 'name'])
+          await client.query(`CREATE DOMAIN pg_temp.${type} AS pg_catalog.${type} CHECK (pg_temp.escalated())`);
+        await expect(
+          client.query(`SELECT app.authorize_booking_action(gen_random_uuid(), 'github-run:9:1')`),
+        ).rejects.toEqual(constraint('authorization_request_unknown'));
+        const { rows } = await client.query<{ id: string }>(
+          `SELECT app.authorize_booking_action($1, 'github-run:9:2') AS id`,
+          [request],
+        );
+        await expect(
+          client.query(`SELECT app.revoke_booking_authorization(gen_random_uuid(), 'github-run:9:3')`),
+        ).rejects.toEqual(constraint('authorization_unknown'));
+        return rows[0]!.id;
+      });
+      const config = await h.database.pool.query<{ fn: string; config: string[] }>(
+        `SELECT p.oid::regproc::text AS fn, p.proconfig AS config FROM pg_proc p
+          WHERE p.oid IN ('app.authorize_booking_action(uuid, text)'::regprocedure,
+                          'app.revoke_booking_authorization(uuid, text)'::regprocedure,
+                          'app.booking_state_apply()'::regprocedure, 'app.use_right_balance_apply()'::regprocedure,
+                          'app.booking_period_instants(uuid)'::regprocedure)
+          ORDER BY 1`,
+      );
+      expect(config.rows).toHaveLength(5);
+      expect(config.rows.every((row) => row.config.includes('search_path=pg_catalog, pg_temp'))).toBe(true);
+      await revoke(h, authorization);
+    });
+
+    it('[TECH-051][REQ-095] a solicitação é preparatória: sem autorização, estado, efeito econômico nem uso possível', async () => {
+      const id = await bookNow(h, co.titulares[1]!, co.homeId, at(95), at(96));
+      const before = await lifecycleFacts(h, id);
+      const request = await requestAuthorization(h, admin, { bookingId: id, purpose: 'no_show', expectedDates: [] });
+      expect(await lifecycleFacts(h, id)).toEqual(before);
+      const authorizations = await h.database.pool.query(
+        `SELECT 1 FROM app.booking_authorization WHERE request_id = $1`,
+        [request],
+      );
+      expect(authorizations.rows).toEqual([]);
+      // O id da solicitação não vale como autorização.
+      await expect(
+        app('declare_no_show', asAdmin(), (c, op) =>
+          closeBooking(c, op, id, { kind: 'no_show', authorizationId: request }),
+        ),
+      ).rejects.toEqual(constraint('permission_authorization_scope'));
+    });
+
+    it('[A4][ADR-0027 §4] solicitação só pelo Admin ativo no command de solicitação', async () => {
+      const id = await bookNow(h, co.titulares[1]!, co.homeId, at(73), at(74));
+      const insert = (client: pg.Client, op: string) =>
+        client.query(
+          `INSERT INTO app.booking_authorization_request (id, booking_id, purpose, expected_dates, basis,
+             requested_by_operation, requested_at)
+           VALUES (gen_random_uuid(), $1, 'no_show', '{}', 'base', $2, now())`,
+          [id, op],
+        );
+      await expect(
+        app('request_booking_authorization', { kind: 'titular', titular: co.titulares[1]! }, insert),
+      ).rejects.toEqual(constraint('permission_staff_role'));
+      await expect(app('declare_no_show', asAdmin(), insert)).rejects.toEqual(constraint('booking_operation_provenance'));
+    });
+  });
+
+  describe('no-show e recuperação (TECH-046, BR-282, BR-283, BR-284; critérios 6–9, 11–13)', () => {
+    it('[TECH-046][A1][T-1303] no-show só com a autorização da mesma operação, no escopo, uma vez; depois a recuperação', async () => {
+      const b = co.titulares[1]!;
+      const id = await historicBooking(h, { homeId: co.homeId, titular: b, checkin: s1(-1), checkout: s1(3) });
+      const decoy = await bookNow(h, b, co.homeId, at(76), at(77));
+      const nights = await unstartedNights(h.database.pool, id);
+      expect(nights).toEqual([s1(1), s1(2)]);
+      // Critério 13: Admin ativo, K2 presente, operação válida — sem autorização, recusado.
+      await expect(app('declare_no_show', asAdmin(), (c, op) => closeBooking(c, op, id, { kind: 'no_show' }))).rejects.toEqual(
+        constraint('permission_authorization_missing'),
+      );
+      // Recuperação antes do no-show commitado: nada a recuperar.
+      const early = await requestAuthorization(h, admin, { bookingId: id, purpose: 'recovery' });
+      await expect(authorize(h, early)).rejects.toEqual(constraint('authorization_emission_recovery'));
+      // Escopo esperado diferente do derivado.
+      const wrong = await requestAuthorization(h, admin, { bookingId: id, purpose: 'no_show', expectedDates: [s1(2)] });
+      await expect(authorize(h, wrong)).rejects.toEqual(constraint('authorization_scope_mismatch'));
+      const request = await requestAuthorization(h, admin, { bookingId: id, purpose: 'no_show', expectedDates: nights });
+      const authorization = await authorize(h, request);
+      // Uma autorização viva por reserva e finalidade.
+      const twin = await requestAuthorization(h, admin, { bookingId: id, purpose: 'no_show', expectedDates: nights });
+      await expect(authorize(h, twin)).rejects.toEqual(constraint('authorization_live_exists'));
+      await expect(authorize(h, request)).rejects.toEqual(constraint('authorization_request_already_authorized'));
+      const scope = await h.database.pool.query(
+        `SELECT purpose, scope_dates::text[] AS dates, valid_until = (SELECT app.booking_checkout_at($2, 'America/Sao_Paulo')) AS until
+           FROM app.booking_authorization WHERE id = $1`,
+        [authorization, s1(3)],
+      );
+      expect(scope.rows[0]).toEqual({ purpose: 'no_show', dates: nights, until: true });
+      // Critério 12: com a autorização legítima, só exatamente o ato autorizado.
+      await expect(
+        app('resolve_exception', asAdmin(), (c, op) =>
+          c.query(
+            `INSERT INTO app.booking_authorization_use (authorization_id, booking_id, operation_id, used_at)
+             VALUES ($1, $2, $3, now())`,
+            [authorization, id, op],
+          ),
+        ),
+      ).rejects.toEqual(constraint('permission_authorization_scope'));
+      await expect(
+        app('declare_no_show', asAdmin(), (c, op) =>
+          c.query(
+            `INSERT INTO app.booking_authorization_use (authorization_id, booking_id, operation_id, used_at)
+             VALUES ($1, $2, $3, now())`,
+            [authorization, decoy, op],
+          ),
+        ),
+      ).rejects.toEqual(constraint('permission_authorization_scope'));
+      // O uso sem o ato não fica: no COMMIT, a autorização só vale com a transição da mesma operação.
+      await expect(
+        app('declare_no_show', asAdmin(), (c, op) =>
+          c.query(
+            `INSERT INTO app.booking_authorization_use (authorization_id, booking_id, operation_id, used_at)
+             VALUES ($1, $2, $3, now())`,
+            [authorization, id, op],
+          ),
+        ),
+      ).rejects.toEqual(constraint('booking_authorization_use_effect'));
+      // Critério 11: falha no meio → rollback integral e autorização utilizável.
+      await expect(
+        app('declare_no_show', asAdmin(), (c, op) =>
+          closeBooking(c, op, id, { kind: 'no_show', authorizationId: authorization, nights: [s1(1)] }),
+        ),
+      ).rejects.toEqual(constraint('booking_closure_occupancy'));
+      expect((await bookingRow(h.database.pool, id)).state).toBe('confirmed');
+      await app('declare_no_show', asAdmin(), (c, op) =>
+        closeBooking(c, op, id, { kind: 'no_show', authorizationId: authorization }),
+      );
+      expect(await lifecycleFacts(h, id)).toMatchObject({
+        state: 'no_show',
+        active_occupancies: 2,
+        released: 2,
+        forfeited: 2,
+        restores: 0,
+      });
+      // Uso único.
+      await expect(
+        app('declare_no_show', asAdmin(), (c, op) =>
+          closeBooking(c, op, id, { kind: 'no_show', authorizationId: authorization }),
+        ),
+      ).rejects.toEqual(constraint('permission_authorization_used'));
+
+      // Recuperação: autorização separada, sobre as custódias efetivamente perdidas.
+      const forfeited = await futureForfeited(h, id);
+      expect(forfeited).toHaveLength(2);
+      const recovery = await authorize(
+        h,
+        await requestAuthorization(h, admin, { bookingId: id, purpose: 'recovery', expectedCustodyIds: forfeited }),
+      );
+      const recoveryValidity = await h.database.pool.query<{ ok: boolean }>(
+        `SELECT a.valid_until = (SELECT max(d.checkin_at) FROM app.second_home_date d
+                                  WHERE d.second_home_id = $2 AND d.stay_date = ANY($3::date[])) AS ok
+           FROM app.booking_authorization a WHERE a.id = $1`,
+        [recovery, co.homeId, nights],
+      );
+      expect(recoveryValidity.rows[0]!.ok).toBe(true);
+      // Critério 13: sem o uso da autorização na mesma operação, a custódia perdida não sai.
+      await expect(
+        app('recover_future_capacity', asAdmin(), (c, op) =>
+          c.query(`UPDATE app.date_custody SET closed_at = now(), closed_by_operation = $2 WHERE id = $1`, [
+            forfeited[0],
+            op,
+          ]),
+        ),
+      ).rejects.toEqual(constraint('permission_authorization_missing'));
+      // Recuperar só parte das custódias autorizadas é recusado no COMMIT (o ato é exatamente o autorizado).
+      await expect(
+        app('recover_future_capacity', asAdmin(), (c, op) => recover(c, op, id, recovery, forfeited.slice(0, 1))),
+      ).rejects.toEqual(constraint('booking_recovery_complete'));
+      await expect(
+        app('recover_future_capacity', asAdmin(), (c, op) => recover(c, op, id, recovery, forfeited, 'base:forged')),
+      ).rejects.toEqual(constraint('custody_recovery_authorization'));
+      await app('recover_future_capacity', asAdmin(), (c, op) => recover(c, op, id, recovery, forfeited));
+      const inventory = await h.database.pool.query<{ origin: string; ref: string }>(
+        `SELECT inventory_origin AS origin, authorization_ref AS ref FROM app.date_custody
+          WHERE second_home_id = $1 AND stay_date = ANY($2::date[]) AND closed_at IS NULL
+            AND holder_kind = 'luxtory' AND purpose = 'inventory'`,
+        [co.homeId, nights],
+      );
+      expect(inventory.rows).toEqual(
+        nights.map(() => ({ origin: 'recovered_future_capacity', ref: `booking_authorization:${recovery}` })),
+      );
+      // BR-284: sem restore, sem mudança de estado nem de saldo.
+      expect(await lifecycleFacts(h, id)).toMatchObject({ state: 'no_show', restores: 0, corrections: 0, forfeited: 0 });
+    });
+
+    it('[TECH-046][A2] no-show sem noite futura (reserva de uma noite) usa a autorização do evento; em `checkout_at` é recusado', async () => {
+      const t = owner.titular;
+      const id = await historicBooking(h, { homeId: owner.homeId, titular: t, checkin: so(0), checkout: so(1) });
+      const nights = await unstartedNights(h.database.pool, id);
+      expect(nights).toEqual([]);
+      const { rows } = await h.database.pool.query<{ open: boolean }>(
+        `SELECT app.booking_no_show_window_open(i.first_checkin_at, i.checkout_at, clock_timestamp()) AS open
+           FROM app.booking_period_instants($1) AS i`,
+        [id],
+      );
+      const request = await requestAuthorization(h, admin, { bookingId: id, purpose: 'no_show', expectedDates: [] });
+      if (rows[0]!.open) {
+        const authorization = await authorize(h, request);
+        await app('declare_no_show', asAdmin(), (c, op) =>
+          closeBooking(c, op, id, { kind: 'no_show', authorizationId: authorization }),
+        );
+        expect(await lifecycleFacts(h, id)).toMatchObject({ state: 'no_show', active_occupancies: 1, released: 0 });
+      } else {
+        // Entre as 10:00 e as 14:00 locais nenhuma reserva de uma noite está na janela: o check-out passou.
+        await expect(authorize(h, request)).rejects.toEqual(constraint('authorization_emission_window'));
+      }
+    });
+
+    it('[T-1303] uso × revogação e autorizações simultâneas: exatamente um vence; revogada e expirada recusadas', async () => {
+      const a = co.titulares[0]!;
+      const id = await bookNow(h, a, co.homeId, at(80), at(82));
+      await app('open_exception', asAdmin(), (c, op) => openException(c, op, id, 'operational'));
+      const exceptionId = (await h.database.pool.query<{ id: string }>(`SELECT id FROM app.booking_exception WHERE booking_id = $1`, [id]))
+        .rows[0]!.id;
+      const nights = await unstartedNights(h.database.pool, id);
+      const request = () =>
+        requestAuthorization(h, admin, {
+          bookingId: id,
+          purpose: 'exception_cancellation',
+          exceptionId,
+          expectedDates: nights,
+          expectedClass: 'timely',
+        });
+      // Duas autorizações simultâneas para a mesma reserva e finalidade.
+      const [r1, r2] = [await request(), await request()];
+      const holder = await connect(h.database.url);
+      const racer = await connect(h.database.url);
+      let revoked: string;
+      try {
+        await holder.query('BEGIN');
+        await holder.query('SET LOCAL ROLE luxtory_booking_authorizer');
+        const held = await holder.query<{ id: string }>(`SELECT app.authorize_booking_action($1, 'github-run:2:1') AS id`, [r1]);
+        revoked = held.rows[0]!.id;
+        await racer.query('SET ROLE luxtory_booking_authorizer');
+        const racing = racer.query(`SELECT app.authorize_booking_action($1, 'github-run:3:1')`, [r2]);
+        await waitForLockWaiter(h.database.pool);
+        await holder.query('COMMIT');
+        await expect(racing).rejects.toEqual(constraint('authorization_live_exists'));
+      } finally {
+        await holder.end();
+        await racer.end();
+      }
+      // Revogação vence o uso que chega depois.
+      const reviver = await connect(h.database.url);
+      const user = await connect(h.database.appUrl);
+      try {
+        await reviver.query('BEGIN');
+        await reviver.query('SET LOCAL ROLE luxtory_booking_authorizer');
+        await reviver.query(`SELECT app.revoke_booking_authorization($1, 'github-run:4:1')`, [revoked]);
+        await user.query('BEGIN');
+        const op = await openOperation(user, 'resolve_exception', asAdmin());
+        const using = closeBooking(user, op, id, { kind: 'exception_resolution', authorizationId: revoked });
+        await waitForLockWaiter(h.database.pool);
+        await reviver.query('COMMIT');
+        await expect(using).rejects.toEqual(constraint('permission_authorization_revoked'));
+        await user.query('ROLLBACK');
+      } finally {
+        await reviver.end();
+        await user.end();
+      }
+      await expect(revoke(h, revoked)).rejects.toEqual(constraint('authorization_already_revoked'));
+      // Uso vence a revogação que chega depois.
+      const authorization = await authorize(h, await request());
+      const user2 = await connect(h.database.appUrl);
+      const late = await connect(h.database.url);
+      try {
+        await user2.query('BEGIN');
+        const op = await openOperation(user2, 'resolve_exception', asAdmin());
+        await closeBooking(user2, op, id, { kind: 'exception_resolution', authorizationId: authorization });
+        await late.query('SET ROLE luxtory_booking_authorizer');
+        const revoking = late.query(`SELECT app.revoke_booking_authorization($1, 'github-run:5:1')`, [authorization]);
+        await waitForLockWaiter(h.database.pool);
+        await user2.query(`UPDATE app.operation SET state = 'committed' WHERE id = $1`, [op]);
+        await user2.query('COMMIT');
+        await expect(revoking).rejects.toEqual(constraint('authorization_already_used'));
+      } finally {
+        await user2.end();
+        await late.end();
+      }
+      expect(await lifecycleFacts(h, id)).toMatchObject({ state: 'cancelled', cancellation_class: 'timely', restores: 2 });
+
+      // Expirada (gravada pelo dono com validade passada, como se o tempo tivesse corrido).
+      const other = await bookNow(h, a, co.homeId, at(84), at(85));
+      const stale = await requestAuthorization(h, admin, { bookingId: other, purpose: 'no_show', expectedDates: [] });
+      const expired = randomUUID();
+      await h.database.pool.query(
+        `INSERT INTO app.booking_authorization (id, request_id, booking_id, purpose, scope_dates, scope_custody_ids,
+           valid_until, approval_ref, authorized_at)
+         VALUES ($1, $2, $3, 'no_show', '{}', '{}', now() - interval '1 microsecond', 'github-run:6:1', now() - interval '1 day')`,
+        [expired, stale, other],
+      );
+      await expect(
+        app('declare_no_show', asAdmin(), (c, op) => closeBooking(c, op, other, { kind: 'no_show', authorizationId: expired })),
+      ).rejects.toEqual(constraint('permission_authorization_expired'));
+      // Mesmo com uma autorização válida (gravada pelo dono), o no-show antes do 1º check-in é recusado pelo instante.
+      const valid = randomUUID();
+      await h.database.pool.query(
+        `INSERT INTO app.booking_authorization (id, request_id, booking_id, purpose, scope_dates, scope_custody_ids,
+           valid_until, approval_ref, authorized_at)
+         VALUES ($1, $2, $3, 'no_show', $4::date[], '{}', now() + interval '1 day', 'github-run:6:2', now())`,
+        [valid, await requestAuthorization(h, admin, { bookingId: other, purpose: 'no_show', expectedDates: [] }), other, [at(84)]],
+      );
+      await expect(
+        app('declare_no_show', asAdmin(), (c, op) => closeBooking(c, op, other, { kind: 'no_show', authorizationId: valid })),
+      ).rejects.toEqual(constraint('conflict_booking_no_show_window'));
+    });
+  });
+
+  describe('cancelamento P-A e invalidação (PD-010, REQ-084; critérios 7, 8, 13)', () => {
+    it('[PD-010][REQ-080] P-A cancelada pelo Admin: classificação no instante, igual à da autorização; exceção exata', async () => {
+      const a = co.titulares[1]!;
+      const id = await bookNow(h, a, co.homeId, at(88), at(90));
+      const exception1 = await app('open_exception', asAdmin(), (c, op) => openException(c, op, id, 'operational'));
+      const nights = await unstartedNights(h.database.pool, id);
+      await expect(
+        app('resolve_exception', asAdmin(), (c, op) => closeBooking(c, op, id, { kind: 'exception_resolution' })),
+      ).rejects.toEqual(constraint('permission_authorization_missing'));
+      // Escopo esperado com a classe errada.
+      const wrongClass = await requestAuthorization(h, admin, {
+        bookingId: id,
+        purpose: 'exception_cancellation',
+        exceptionId: exception1,
+        expectedDates: nights,
+        expectedClass: 'late',
+      });
+      await expect(authorize(h, wrongClass)).rejects.toEqual(constraint('authorization_scope_mismatch'));
+      const first1 = await authorize(
+        h,
+        await requestAuthorization(h, admin, {
+          bookingId: id,
+          purpose: 'exception_cancellation',
+          exceptionId: exception1,
+          expectedDates: nights,
+          expectedClass: 'timely',
+        }),
+      );
+      // A exceção resolvida e reaberta é outra: a autorização da primeira não serve.
+      await app('resolve_exception', asAdmin(), (c, op) => resolveWithoutEffect(c, op, id, 'confirmed'));
+      const exception2 = await app('open_exception', asAdmin(), (c, op) => openException(c, op, id, 'operational'));
+      await expect(
+        app('resolve_exception', asAdmin(), (c, op) =>
+          closeBooking(c, op, id, { kind: 'exception_resolution', authorizationId: first1 }),
+        ),
+      ).rejects.toEqual(constraint('permission_authorization_scope'));
+      await revoke(h, first1);
+      // Classificação divergente e escopo parcial (gravados pelo dono): recusados na execução.
+      for (const [klass, dates] of [
+        ['late', nights],
+        ['timely', nights.slice(0, 1)],
+      ] as const) {
+        const forged = randomUUID();
+        const r = await requestAuthorization(h, admin, {
+          bookingId: id,
+          purpose: 'exception_cancellation',
+          exceptionId: exception2,
+          expectedDates: nights,
+          expectedClass: 'timely',
+        });
+        await h.database.pool.query(
+          `INSERT INTO app.booking_authorization (id, request_id, booking_id, purpose, exception_id, scope_dates,
+             scope_custody_ids, expected_cancellation_class, valid_until, approval_ref, authorized_at)
+           VALUES ($1, $2, $3, 'exception_cancellation', $4, $5::date[], '{}', $6, now() + interval '1 day', 'github-run:8:1', now())`,
+          [forged, r, id, exception2, [...dates], klass],
+        );
+        await expect(
+          app('resolve_exception', asAdmin(), (c, op) =>
+            closeBooking(c, op, id, { kind: 'exception_resolution', authorizationId: forged }),
+          ),
+        ).rejects.toEqual(constraint('permission_authorization_scope'));
+        await revoke(h, forged);
+      }
+      const authorization = await authorize(
+        h,
+        await requestAuthorization(h, admin, {
+          bookingId: id,
+          purpose: 'exception_cancellation',
+          exceptionId: exception2,
+          expectedDates: nights,
+          expectedClass: 'timely',
+        }),
+      );
+      await app('resolve_exception', asAdmin(), (c, op) =>
+        closeBooking(c, op, id, { kind: 'exception_resolution', authorizationId: authorization }),
+      );
+      expect(await lifecycleFacts(h, id)).toMatchObject({
+        state: 'cancelled',
+        cancellation_class: 'timely',
+        released: 2,
+        restores: 2,
+        forfeited: 0,
+      });
+      const reason = await h.database.pool.query<{ reason: string }>(
+        `SELECT DISTINCT release_reason AS reason FROM app.date_occupancy WHERE booking_id = $1`,
+        [id],
+      );
+      expect(reason.rows).toEqual([{ reason: 'exception' }]);
+    });
+
+    it('[PD-010][BR-123][A3] P-A tardia: forfeited_right sem entrada automática; recuperação só com atestação', async () => {
+      const a = co.titulares[0]!;
+      const id = await historicBooking(h, { homeId: co.homeId, titular: a, checkin: s1(5), checkout: s1(7) });
+      const exceptionId = await app('open_exception', asAdmin(), (c, op) => openException(c, op, id, 'operational'));
+      const nights = await unstartedNights(h.database.pool, id);
+      const authorization = await authorize(
+        h,
+        await requestAuthorization(h, admin, {
+          bookingId: id,
+          purpose: 'exception_cancellation',
+          exceptionId,
+          expectedDates: nights,
+          expectedClass: 'late',
+        }),
+      );
+      await app('resolve_exception', asAdmin(), (c, op) =>
+        closeBooking(c, op, id, { kind: 'exception_resolution', authorizationId: authorization }),
+      );
+      expect(await lifecycleFacts(h, id)).toMatchObject({ state: 'cancelled', cancellation_class: 'late', forfeited: 2 });
+      const luxtory = await h.database.pool.query(
+        `SELECT 1 FROM app.luxtory_inventory WHERE second_home_id = $1 AND stay_date = ANY($2::date[])`,
+        [co.homeId, nights],
+      );
+      expect(luxtory.rows).toEqual([]);
+      const forfeited = await futureForfeited(h, id);
+      await expect(
+        authorize(h, await requestAuthorization(h, admin, { bookingId: id, purpose: 'recovery', expectedCustodyIds: forfeited })),
+      ).rejects.toEqual(constraint('authorization_attestation_missing'));
+      const recovery = await authorize(
+        h,
+        await requestAuthorization(h, admin, {
+          bookingId: id,
+          purpose: 'recovery',
+          expectedCustodyIds: forfeited,
+          attested: true,
+        }),
+      );
+      await app('recover_future_capacity', asAdmin(), (c, op) => recover(c, op, id, recovery, forfeited));
+      expect(await lifecycleFacts(h, id)).toMatchObject({ forfeited: 0, restores: 0 });
+    });
+
+    it('[REQ-084][EC-16][TECH-026] invalidação Co-Owner: correct_use_right só nas noites não iniciadas, com correção e volta à SPE', async () => {
+      const b = co2.titulares[0]!;
+      const id = await historicBooking(h, { homeId: co2.homeId, titular: b, checkin: s2(-1), checkout: s2(2) });
+      const before = await lifecycleFacts(h, id);
+      const exceptionId = await app('open_exception', asAdmin(), (c, op) => openException(c, op, id, 'unauthorized_booking'));
+      const nights = await unstartedNights(h.database.pool, id);
+      expect(nights).toEqual([s2(1)]);
+      await expect(
+        app('correct_use_right', asAdmin(), (c, op) => closeBooking(c, op, id, { kind: 'invalidation' })),
+      ).rejects.toEqual(constraint('permission_authorization_missing'));
+      const authorization = await authorize(
+        h,
+        await requestAuthorization(h, admin, { bookingId: id, purpose: 'invalidation', exceptionId, expectedDates: nights }),
+      );
+      // Co-Owner nunca por resolve_exception (a invalidação reverte o consumo na mesma operação).
+      await expect(
+        app('resolve_exception', asAdmin(), (c, op) =>
+          closeBooking(c, op, id, { kind: 'invalidation', authorizationId: authorization }),
+        ),
+      ).rejects.toEqual(constraint('permission_authorization_scope'));
+      // Sem a correção (ou com restore no lugar), o efeito é incompleto ou fora da regra.
+      await expect(
+        app('correct_use_right', asAdmin(), (c, op) =>
+          closeBooking(c, op, id, { kind: 'invalidation', authorizationId: authorization, reversal: 'none' }),
+        ),
+      ).rejects.toEqual(constraint('booking_closure_use_right'));
+      await expect(
+        app('correct_use_right', asAdmin(), (c, op) =>
+          closeBooking(c, op, id, { kind: 'invalidation', authorizationId: authorization, reversal: 'restore' }),
+        ),
+      ).rejects.toEqual(constraint('booking_restore_binding'));
+      await app('correct_use_right', asAdmin(), (c, op) =>
+        closeBooking(c, op, id, { kind: 'invalidation', authorizationId: authorization }),
+      );
+      expect(await lifecycleFacts(h, id)).toMatchObject({
+        state: 'cancelled',
+        cancellation_class: null,
+        active_occupancies: 2,
+        released: 1,
+        reserved: 2,
+        forfeited: 0,
+        corrections: 1,
+        restores: 0,
+        consumed: before.consumed - 1,
+      });
+      const correction = await h.database.pool.query<{ quantity: number; target: string; stay_date: string | null }>(
+        `SELECT l.quantity, t.movement AS target, l.stay_date FROM app.use_right_ledger l
+           JOIN app.use_right_ledger t ON t.id = l.refers_to_id
+          WHERE l.movement = 'correction' AND t.operation_id = (SELECT opened_by_operation FROM app.booking WHERE id = $1)`,
+        [id],
+      );
+      expect(correction.rows).toEqual([{ quantity: 1, target: 'consume', stay_date: null }]);
+      const resolution = await h.database.pool.query(
+        `SELECT outcome, resolution_source FROM app.booking_exception_resolution WHERE booking_id = $1`,
+        [id],
+      );
+      expect(resolution.rows).toEqual([{ outcome: 'cancelled', resolution_source: 'admin' }]);
+    });
+
+    it('[REQ-084][REQ-081] invalidação Owner por resolve_exception: libera as não iniciadas; custódia continua do Owner', async () => {
+      const t = owner.titular;
+      const id = await bookNow(h, t, owner.homeId, at(5), at(7));
+      const exceptionId = await app('open_exception', asAdmin(), (c, op) => openException(c, op, id, 'unauthorized_booking'));
+      const nights = await unstartedNights(h.database.pool, id);
+      await expect(
+        app('resolve_exception', asAdmin(), (c, op) => closeBooking(c, op, id, { kind: 'invalidation' })),
+      ).rejects.toEqual(constraint('permission_authorization_missing'));
+      const authorization = await authorize(
+        h,
+        await requestAuthorization(h, admin, { bookingId: id, purpose: 'invalidation', exceptionId, expectedDates: nights }),
+      );
+      const validity = await h.database.pool.query<{ ok: boolean }>(
+        `SELECT a.valid_until = i.last_checkin_at AS ok
+           FROM app.booking_authorization a, app.booking_period_instants($2) AS i WHERE a.id = $1`,
+        [authorization, id],
+      );
+      expect(validity.rows[0]!.ok).toBe(true);
+      await expect(
+        app('correct_use_right', asAdmin(), (c, op) =>
+          closeBooking(c, op, id, { kind: 'invalidation', authorizationId: authorization }),
+        ),
+      ).rejects.toEqual(constraint('permission_authorization_scope'));
+      await app('resolve_exception', asAdmin(), (c, op) =>
+        closeBooking(c, op, id, { kind: 'invalidation', authorizationId: authorization }),
+      );
+      expect(await lifecycleFacts(h, id)).toMatchObject({ state: 'cancelled', released: 2, restores: 0, corrections: 0 });
+      const reason = await h.database.pool.query(
+        `SELECT DISTINCT o.release_reason AS reason, c.holder_kind FROM app.date_occupancy o
+           JOIN app.date_custody c ON c.second_home_id = o.second_home_id AND c.stay_date = o.stay_date AND c.closed_at IS NULL
+          WHERE o.booking_id = $1`,
+        [id],
+      );
+      expect(reason.rows).toEqual([{ reason: 'invalidation', holder_kind: 'owner' }]);
+    });
+  });
+
+  describe('prontidão para a ativação futura (ADR-0027 §10, D10)', () => {
+    it('[T-1312][D10] prontidão recusa SECURITY DEFINER com search_path inseguro fora da lista auditada', async () => {
+      const fresh = await createTestDatabase();
+      const ready = () => fresh.pool.query('SELECT app.assert_own_use_activation_ready()');
+      const insecure = expect.objectContaining({
+        constraint: 'booking_activation_not_ready',
+        message: expect.stringContaining('security_definer_search_path'),
+      });
+      try {
+        await ready();
+        for (const config of ["SET search_path = ''", 'SET search_path = public', 'SET search_path = pg_temp, pg_catalog', '']) {
+          await fresh.pool.query(
+            `CREATE FUNCTION app.zz_insecure_probe() RETURNS boolean LANGUAGE sql SECURITY DEFINER ${config}
+             AS 'SELECT true'`,
+          );
+          await expect(ready()).rejects.toEqual(insecure);
+          await fresh.pool.query('DROP FUNCTION app.zz_insecure_probe()');
+        }
+        await ready();
+        // Legada da lista com o corpo alterado (mesmo `''`): sai da exceção auditada.
+        await fresh.pool.query(
+          `CREATE OR REPLACE FUNCTION app.brand_partner_is_public(p_brand_partner_id uuid) RETURNS boolean
+             LANGUAGE sql STABLE SECURITY DEFINER SET search_path = ''
+           AS $$ SELECT p_brand_partner_id IS NOT NULL $$`,
+        );
+        await expect(ready()).rejects.toEqual(insecure);
+      } finally {
+        await fresh.drop();
+      }
+    });
+
+    it('[ADR-0027 §4][D10] prontidão recusa grant de coluna, REFERENCES/TRIGGER, CREATE e homônimo das funções do autorizador', async () => {
+      const fresh = await createTestDatabase();
+      const ready = () => fresh.pool.query('SELECT app.assert_own_use_activation_ready()');
+      const notReady = (tag: string) =>
+        expect.objectContaining({ constraint: 'booking_activation_not_ready', message: expect.stringContaining(tag) });
+      try {
+        // Os privilégios legítimos (UPDATE de colunas da custódia e da liberação para o `luxtory_app`, SELECT de colunas
+        // para o Titular) não fazem a prontidão falhar.
+        await ready();
+        const cases: readonly (readonly [string, string, string])[] = [
+          // Grant só de coluna: `has_table_privilege` não o enxerga; `has_any_column_privilege`, sim.
+          ['GRANT SELECT (id) ON app.booking TO luxtory_booking_authorizer', 'REVOKE SELECT (id) ON app.booking FROM luxtory_booking_authorizer', 'authorizer_table:app.booking'],
+          ['GRANT UPDATE (read_at) ON app.notification TO luxtory_booking_authorizer', 'REVOKE UPDATE (read_at) ON app.notification FROM luxtory_booking_authorizer', 'authorizer_table:app.notification'],
+          ['GRANT REFERENCES ON app.booking_authorization TO luxtory_booking_authorizer', 'REVOKE REFERENCES ON app.booking_authorization FROM luxtory_booking_authorizer', 'authorizer_table:app.booking_authorization'],
+          ['GRANT TRIGGER ON app.date_custody TO luxtory_booking_authorizer', 'REVOKE TRIGGER ON app.date_custody FROM luxtory_booking_authorizer', 'authorizer_table:app.date_custody'],
+          ['GRANT CREATE ON SCHEMA app TO luxtory_booking_authorizer', 'REVOKE CREATE ON SCHEMA app FROM luxtory_booking_authorizer', 'authorizer_schema'],
+          ['GRANT INSERT (id) ON app.booking TO authenticated', 'REVOKE INSERT (id) ON app.booking FROM authenticated', 'client_write:app.booking'],
+          ['GRANT UPDATE (released_at) ON app.date_occupancy TO anon', 'REVOKE UPDATE (released_at) ON app.date_occupancy FROM anon', 'client_write:app.date_occupancy'],
+          ['GRANT TRIGGER ON app.booking TO authenticated', 'REVOKE TRIGGER ON app.booking FROM authenticated', 'client_write:app.booking'],
+          ['GRANT UPDATE (state) ON app.booking TO luxtory_app', 'REVOKE UPDATE (state) ON app.booking FROM luxtory_app', 'app_table_privilege'],
+          ['GRANT INSERT (id) ON app.booking_authorization TO luxtory_app', 'REVOKE INSERT (id) ON app.booking_authorization FROM luxtory_app', 'app_table_privilege'],
+          ['GRANT TRIGGER ON app.booking_state_transition TO luxtory_app', 'REVOKE TRIGGER ON app.booking_state_transition FROM luxtory_app', 'app_table_privilege'],
+          ['GRANT CREATE ON SCHEMA app TO luxtory_app', 'REVOKE CREATE ON SCHEMA app FROM luxtory_app', 'app_schema'],
+        ];
+        for (const [grant, revoke, tag] of cases) {
+          await fresh.pool.query(grant);
+          await expect(ready(), grant).rejects.toEqual(notReady(tag));
+          await fresh.pool.query(revoke);
+        }
+        await ready();
+        // Homônimo com outra assinatura, executável pelo autorizador: fora das duas funções exatas.
+        await fresh.pool.query(
+          `CREATE FUNCTION app.authorize_booking_action(p_request text) RETURNS uuid
+             LANGUAGE sql SECURITY DEFINER SET search_path = pg_catalog, pg_temp AS 'SELECT NULL::uuid'`,
+        );
+        await fresh.pool.query('REVOKE ALL ON FUNCTION app.authorize_booking_action(text) FROM PUBLIC');
+        await fresh.pool.query(
+          'GRANT EXECUTE ON FUNCTION app.authorize_booking_action(text) TO luxtory_booking_authorizer',
+        );
+        await expect(ready()).rejects.toEqual(notReady('authorizer_role'));
+        await fresh.pool.query('DROP FUNCTION app.authorize_booking_action(text)');
+        await ready();
+        // A4: EXECUTE das funções privilegiadas a `anon`/`authenticated` (alcançáveis pelo `luxtory_app` por `SET ROLE`,
+        // sem herança) ou a PUBLIC.
+        for (const fn of [
+          'app.authorize_booking_action(uuid, text)',
+          'app.revoke_booking_authorization(uuid, text)',
+          'app.booking_state_apply()',
+        ])
+          for (const grantee of ['anon', 'authenticated', 'PUBLIC']) {
+            await fresh.pool.query(`GRANT EXECUTE ON FUNCTION ${fn} TO ${grantee}`);
+            await expect(ready(), `${fn} → ${grantee}`).rejects.toEqual(notReady('privileged_function_grantee'));
+            await fresh.pool.query(`REVOKE EXECUTE ON FUNCTION ${fn} FROM ${grantee}`);
+          }
+        await ready();
+      } finally {
+        await fresh.drop();
+      }
+    });
+
+    it('[ADR-0027 §4][D10] prontidão recusa delegação do autorizador (SET, INHERIT, ADMIN, transitiva, dono) e GRANT OPTION', async () => {
+      const fresh = await createTestDatabase();
+      const ready = () => fresh.pool.query('SELECT app.assert_own_use_activation_ready()');
+      const notReady = (tag: string) =>
+        expect.objectContaining({ constraint: 'booking_activation_not_ready', message: expect.stringContaining(tag) });
+      // Papéis são do cluster: sondas com nome próprio (sem tocar `luxtory_app`), removidas no fim; o caminho até o dono
+      // usa `authenticated` sem herança, que não muda privilégio efetivo de ninguém nos testes paralelos.
+      const suffix = randomUUID().replaceAll('-', '').slice(0, 12);
+      const probe = `w13_probe_${suffix}`;
+      const bridge = `w13_bridge_${suffix}`;
+      const { rows } = await fresh.pool.query<{ owner: string }>(
+        `SELECT relowner::regrole::text AS owner FROM pg_class WHERE oid = 'app.date_custody'::regclass`,
+      );
+      const owner = rows[0]!.owner;
+      try {
+        await fresh.pool.query(`CREATE ROLE ${probe} NOLOGIN`);
+        await fresh.pool.query(`CREATE ROLE ${bridge} NOLOGIN`);
+        await ready();
+        const cases: readonly (readonly [readonly string[], readonly string[], string])[] = [
+          [[`GRANT luxtory_booking_authorizer TO ${probe} WITH SET TRUE, INHERIT FALSE`], [`REVOKE luxtory_booking_authorizer FROM ${probe}`], 'authorizer_membership'],
+          [[`GRANT luxtory_booking_authorizer TO ${probe} WITH INHERIT TRUE, SET FALSE`], [`REVOKE luxtory_booking_authorizer FROM ${probe}`], 'authorizer_membership'],
+          [[`GRANT luxtory_booking_authorizer TO ${probe} WITH ADMIN TRUE, SET FALSE, INHERIT FALSE`], [`REVOKE luxtory_booking_authorizer FROM ${probe} CASCADE`], 'authorizer_membership'],
+          [
+            [`GRANT luxtory_booking_authorizer TO ${bridge} WITH SET TRUE`, `GRANT ${bridge} TO ${probe} WITH SET TRUE`],
+            [`REVOKE ${bridge} FROM ${probe}`, `REVOKE luxtory_booking_authorizer FROM ${bridge}`],
+            'authorizer_membership',
+          ],
+          [[`GRANT ${owner} TO authenticated WITH SET TRUE, INHERIT FALSE`], [`REVOKE ${owner} FROM authenticated`], 'authorizer_membership'],
+          [
+            ['GRANT EXECUTE ON FUNCTION app.authorize_booking_action(uuid, text) TO luxtory_booking_authorizer WITH GRANT OPTION'],
+            ['REVOKE GRANT OPTION FOR EXECUTE ON FUNCTION app.authorize_booking_action(uuid, text) FROM luxtory_booking_authorizer'],
+            'privileged_function_grantee',
+          ],
+        ];
+        for (const [grants, revokes, tag] of cases) {
+          for (const grant of grants) await fresh.pool.query(grant);
+          await expect(ready(), grants.join('; ')).rejects.toEqual(notReady(tag));
+          for (const revoke of revokes) await fresh.pool.query(revoke);
+          await ready();
+        }
+      } finally {
+        await fresh.pool.query(`DROP ROLE IF EXISTS ${bridge}`);
+        await fresh.pool.query(`DROP ROLE IF EXISTS ${probe}`);
+        await fresh.drop();
+      }
+    });
+
+    it('[T-1312] legadas com search_path vazio: tipos sombreados pelo anon não rodam como o dono', async () => {
+      const client = await connect(h.database.url);
+      try {
+        await client.query('SET ROLE anon');
+        await client.query(
+          `CREATE FUNCTION pg_temp.escalated() RETURNS boolean LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $$
+           BEGIN
+             IF current_user <> 'anon' THEN
+               RAISE EXCEPTION 'escalated as %', current_user;
+             END IF;
+             RETURN true;
+           END $$`,
+        );
+        for (const type of ['text', 'uuid', 'date', 'timestamptz', 'jsonb', 'name'])
+          await client.query(`CREATE DOMAIN pg_temp.${type} AS pg_catalog.${type} CHECK (pg_temp.escalated())`);
+        const { rows } = await client.query(
+          `SELECT app.brand_partner_is_public(gen_random_uuid()) AS partner,
+                  app.catalog_term_is_public(gen_random_uuid()) AS term,
+                  app.home_concept_is_public(gen_random_uuid()) AS concept`,
+        );
+        expect(rows[0]).toEqual({ partner: false, term: false, concept: false });
+      } finally {
+        await client.end();
+      }
+    });
+
+    it('[D10] banco recém-migrado pronto; chave presente ou gatilho desligado falham; a aplicação não executa', async () => {
+      const fresh = await createTestDatabase();
+      try {
+        await fresh.pool.query('SELECT app.assert_own_use_activation_ready()');
+        await fresh.pool.query(`INSERT INTO app.capability_activation VALUES ('own_use_lifecycle', now(), 'test')`);
+        await expect(fresh.pool.query('SELECT app.assert_own_use_activation_ready()')).rejects.toMatchObject({
+          constraint: 'booking_activation_not_ready',
+          message: expect.stringContaining('activation_present'),
+        });
+        await fresh.pool.query(`DELETE FROM app.capability_activation`);
+        await fresh.pool.query('ALTER TABLE app.booking_state_transition DISABLE TRIGGER booking_state_apply');
+        await expect(fresh.pool.query('SELECT app.assert_own_use_activation_ready()')).rejects.toMatchObject({
+          message: expect.stringContaining('trigger:app.booking_state_transition.booking_state_apply'),
+        });
+        await fresh.pool.query('ALTER TABLE app.booking_state_transition ENABLE TRIGGER booking_state_apply');
+        const app = new pg.Client({ connectionString: fresh.appUrl });
+        await app.connect();
+        try {
+          await expect(app.query('SELECT app.assert_own_use_activation_ready()')).rejects.toMatchObject({ code: '42501' });
+        } finally {
+          await app.end();
+        }
+      } finally {
+        await fresh.drop();
+      }
+    });
+  });
+});

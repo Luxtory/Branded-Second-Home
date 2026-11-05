@@ -17,6 +17,9 @@ const LAST_W6_MIGRATION = '20261021030855';
 const LATER_MIGRATIONS = readdirSync(new URL('../../migrations/', import.meta.url)).filter(
   (file) => file.slice(0, LAST_W6_MIGRATION.length) > LAST_W6_MIGRATION,
 );
+// Um processo do dbmate por migration posterior (~1 s cada): o prazo cresce com elas (W13: 57 s isolado, perto dos
+// 60 s padrão do projeto db).
+const ROLLBACK_TIMEOUT_MS = 30_000 + LATER_MIGRATIONS.length * 3_000;
 const CHECK_VIOLATION = '23514';
 const FOREIGN_KEY_VIOLATION = '23503';
 const NOT_NULL_VIOLATION = '23502';
@@ -295,5 +298,5 @@ describe('W6: interest_contact, interest_qualification e esquema do hash no banc
     await expect(dbmate(['rollback'], { url: database.url })).rejects.toThrow(
       /keyed public idempotency records/,
     );
-  });
+  }, ROLLBACK_TIMEOUT_MS);
 });

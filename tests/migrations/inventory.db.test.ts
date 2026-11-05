@@ -851,7 +851,7 @@ describe('custódia e selagem: barreiras do banco (W10)', () => {
       }
     });
 
-    it('[TECH-052] privilégios exatos (W10 + W12): a aplicação lê e insere noites e custódias, fecha custódia e grava ocupação; Titular e anônimo, nada na tabela inteira', async () => {
+    it('[TECH-052] privilégios exatos (W10 + W12 + W13): a aplicação lê e insere noites e custódias, fecha custódia, grava e libera ocupação; Titular e anônimo, nada na tabela inteira', async () => {
       const { rows } = await h.database.pool.query<{ role: string; object: string; privileges: string }>(
         `SELECT r.role, o.object,
                 concat_ws(',',
@@ -869,7 +869,8 @@ describe('custódia e selagem: barreiras do banco (W10)', () => {
       expect(Object.fromEntries(app.map((row) => [row.object, row.privileges]))).toEqual({
         'app.central_inventory': 'SELECT',
         'app.date_custody': 'SELECT,INSERT,UPDATE',
-        'app.date_occupancy': 'SELECT,INSERT',
+        // W13: só as colunas de liberação; a regra no banco decide (ADR-0027 §1).
+        'app.date_occupancy': 'SELECT,INSERT,UPDATE',
         'app.luxtory_inventory': 'SELECT',
         'app.second_home_date': 'SELECT,INSERT',
       });

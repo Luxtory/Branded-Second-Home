@@ -390,3 +390,103 @@ suspende tardio do Co-Owner e no-show; Owner e tempestivo seguem; saldo, custód
 K2 ausente → os seis commands recusados; jobs limitados pelo instante · tabela de ativação com 0 linhas · prazo: −1 µs e
 exato tempestivos, +1 µs tardio, fusos com e sem horário de verão · consultas de invariantes vazias após todo teste `db` ·
 E2E com axe 0 a 390 e 1440 px, sem overflow de 320 a 1920 px, fluxo por toque a 390 px.
+
+### 10.11. E1 — implementação no banco (2026-11-04, ambiente isolado)
+
+Autorizada pelo fundador em 2026-11-03 só em ambiente isolado; nada em Production. Migrations (dono: agente principal):
+`20261104030100_booking_lifecycle_and_independent_authorization` (K2 no `CHECK`, instantes puros, transições, projeção,
+guarda, exceção, resolução, candidatos, solicitação/autorização/revogação/uso, papel `luxtory_booking_authorizer`,
+regras por transição, efeitos completos no COMMIT, invariantes), `20261104030102_inventory_own_use_lifecycle` (motivos e
+regra da liberação; custódia `reserved_right → spe_pool | forfeited_right` e `forfeited_right → recovered_future_capacity`),
+`20261104030104_calendar_own_use_restore_and_correction` (`restore`/`correction` presos ao evento, reversão única,
+`consumed − quantity` na projeção, invariantes do ledger) e `20261104030106_booking_activation_readiness`
+(`app.assert_own_use_activation_ready()`). `db:check` up → down → up; o `down` recusa descartar fatos.
+
+Detalhes de implementação (não mudam decisão; ADR-0027, "Notas de implementação da E1"):
+
+- **Natureza do evento** em `booking_state_transition.kind`: `advance` (job), `cancellation` (Titular), `no_show`,
+  `exception_opening`, `exception_resolution` (P-A, qualquer desfecho; P-B sem comprovação) e `invalidation` (P-B
+  cancelada: `correct_use_right` no Co-Owner, `resolve_exception` no Owner). O `CHECK` amarra natureza e par da TECH-055;
+  a classe e a primeira noite afetada só existem nos eventos que as têm; a base registrada só nos atos Admin. Motivo da
+  liberação por natureza: `cancelled`, `no_show`, `exception`, `invalidation`.
+- **Termos (D7):** o Titular grava na transição a classe e a primeira noite afetada esperadas; o gatilho calcula no
+  instante e recusa a diferença (`cancellation_terms_changed`). Nos atos Admin o banco grava os termos calculados, e a
+  classe da P-A de Co-Owner tem de ser igual à da autorização.
+- **Efeitos completos no COMMIT:** para `cancelled`/`no_show`, exatamente as noites não iniciadas no instante da
+  transição são liberadas pela operação, com o motivo do evento; no Co-Owner cada `reserved_right` aberta pela criação é
+  sucedida por `spe_pool` (tempestivo, invalidação) ou `forfeited_right` (tardio, no-show), com `restore` (tempestivo) ou
+  `correction` (invalidação) do consumo da criação; no Owner nada se move. A recuperação move exatamente as custódias
+  autorizadas ainda futuras no instante do uso. O uso de autorização sem o ato da mesma operação é recusado.
+- **Uma operação, um evento:** índice único de `operation_id` fora do avanço do sistema (o job atrasado grava dois avanços).
+- **Solicitação:** command Admin não crítico `request_booking_authorization` (sem efeito econômico; fora da K2, como a
+  ADR-0027 §5 lista só os seis commands). Referência de aprovação no formato `github-run:<id>:<tentativa>`; referência de
+  incidente da P-B com charset restrito (sem dado pessoal).
+- **`correction`:** mantém a forma da W11 (`stay_date` nulo, `refers_to_id` no `consume`, `quantity` igual); a de
+  expiração continua recusada a todos (`use_right_correction_not_enabled`), a de concessão pela regra da W11.
+- **Recusas para a E2 mapear (prefixos):** `conflict_booking_*` → `ERR_STATE_TRANSITION`; `permission_*` (incluindo
+  `permission_authorization_missing|scope|revoked|used|expired`) → `ERR_PERMISSION`; `custody_*` →
+  `ERR_CAPACITY_UNAVAILABLE`; `cancellation_terms_changed` → `ERR_CANCELLATION_TERMS_CHANGED` (prefixo novo);
+  `booking_lifecycle_not_activated` → indisponível (K2 ausente), como `booking_not_activated` na W12. Nomes sem prefixo
+  funcional (`booking_write_binding`, `booking_operation_provenance`, `booking_closure_*`, `booking_exception_*`) são
+  erros de programação ou forjamento, não recusa funcional.
+- **Testes (PostgreSQL real, `luxtory_app` com os privilégios reais):** `tests/migrations/booking-lifecycle.db.test.ts`
+  e `tests/migrations/booking-authorization.db.test.ts`; fixtures em `tests/features/booking/lifecycle-support.ts`
+  (reserva e exceção históricas gravadas pelo dono com o gatilho temporal desligado só na transação de fixture; o papel
+  autorizador por `SET ROLE` e um teste com login real). Expectativas da W10–W12 ajustadas só onde a W13 muda o
+  comportamento.
+
+#### 10.11.1. Auditoria do PR #82 (2026-11-04) — complementos da E1
+
+- **Ordem obrigatória de travas para os handlers da E2** (TECH-053; a mesma da W12, que a E1 só estende). Leitura da
+  K2 (`app.capability_activation`, modo compartilhado) → autoridade: Titular, delegação ativa `FOR SHARE`; Admin, trava
+  compartilhada `app.staff_role:<id>` → classe 4 `app.stake:<id>` (Co-Owner) → classe 5
+  `app.second_home_date:<casa>:<data>` de todas as noites da reserva, em ordem crescente → uso da autorização (Admin)
+  → transição (trava consultiva `app.booking:<id>`, tomada pelo gatilho) → por noite, em ordem crescente: liberação,
+  custódia, `restore`/`correction` (classe 6) → auditoria → COMMIT → outbox. Recuperação: autoridade → classe 4 →
+  classe 5 das noites das custódias → uso → custódias em ordem crescente. Abertura e resolução sem efeito: autoridade →
+  transição. Autorizador: só `app.booking:<id>`. Jobs: uma transação por reserva (o gatilho trava Ação e reserva);
+  nunca reservas de Ações diferentes na mesma transação. Provado com o command real da W12 (testes "ordem de travas" e
+  "noites liberadas"): na mesma Ação, criação e cancelamento se serializam sem deadlock; com a classe 5, a outra Ação
+  reserva as noites logo depois do COMMIT; sem ela, a leitura concorrente recusa (`ERR_BOOKING_CONFLICT`), nunca dupla
+  ocupação.
+- **Solicitação na E2** (`request_booking_authorization`, TECH-051 "demais operações do REQ-095"): fora da lista fechada
+  de commands críticos e da K2, mas com guard Admin com MFA, base registrada, `audit_log`, idempotência e o mesmo
+  limitador dos commands Admin; o escopo esperado é derivado no servidor pelos fatos (nunca datas vindas do cliente); o
+  id opaco é gerado no servidor e é a única saída; sem evento de outbox. Provado no banco: a solicitação não cria
+  autorização, não muda estado, saldo, custódia nem ocupação, e o id dela não vale como autorização.
+- **`search_path` (vulnerabilidade achada e corrigida na E1).** Com `SET search_path = ''`, o PostgreSQL ainda busca o
+  schema temporário da sessão primeiro para nomes de tipo; o papel autorizador (privilégio TEMP, padrão de PUBLIC)
+  criou `pg_temp.uuid` com `CHECK` chamando função própria e, dentro de `app.authorize_booking_action`, ela rodou como o
+  dono (`postgres`). Correção: toda função criada ou redefinida pela W13 usa `SET search_path = pg_catalog, pg_temp`
+  (o schema temporário explicitamente por último, como recomenda a documentação do PostgreSQL); a prontidão exige isso
+  nas `SECURITY DEFINER` acionáveis pelo autorizador ou pelo papel da aplicação. Regressões: autorizador e
+  `luxtory_app` com `text`, `uuid`, `date`, `timestamptz`, `jsonb` e `name` sombreados não executam nada como o dono.
+- **Testes independentes da data real:** os cenários da W13 selam também o exercício anterior (o do `open_exercise`
+  quando era o corrente; só a regra de horizonte fica de fora, na transação de fixture do dono) e a reserva histórica
+  registra consumo de exercício já encerrado com o gatilho de consumo desligado só na fixture. Regressão da virada do
+  ano: exercício anterior inteiro selado, noites passadas sempre existentes e reserva que cruza a próxima virada com o
+  efeito de cada noite no bucket do próprio exercício.
+- **2ª auditoria do PR #82 (2026-11-04).** (1) A prontidão exige `search_path = pg_catalog, pg_temp` em toda `SECURITY
+  DEFINER`; a única exceção é uma lista finita e auditada das cinco legadas com `''` (assinatura + md5 do corpo
+  revisado + configuração exata): `auth_account_by_email`, `auth_account_labels` (executadas pelo `luxtory_app`) e
+  `brand_partner_is_public`, `catalog_term_is_public`, `home_concept_is_public` (executadas pelo `anon`). Cada uma é
+  justificada por inspeção e por teste com seis tipos sombreados pelo papel que a executa. Teste negativo: função nova
+  com `''`, `public`, `pg_temp` primeiro ou sem `search_path`, e legada com corpo alterado, são recusadas.
+  (2) **Aquisição determinística das travas na E2:** a ordem das chaves é calculada antes e cada chave é travada numa
+  instrução própria (laço no handler); não reproduzir o padrão de uma única consulta com `LATERAL` sobre subconsulta
+  ordenada, que depende da ordem de avaliação do SQL.
+- **4ª auditoria e preflight do PR #82 (2026-11-04).** (1) A prontidão confere a ACL das cinco funções privilegiadas,
+  beneficiário a beneficiário (inclusive PUBLIC): o `luxtory_app` é membro de `anon` e `authenticated` com SET e sem
+  herança, então um EXECUTE concedido a esses papéis escapava de `has_function_privilege('luxtory_app', …)` e era
+  alcançável por `SET ROLE`. (2) Em Production as migrations rodam como o `postgres` da Supabase, que não é
+  superusuário: citar SUPERUSER, REPLICATION ou BYPASSRLS num `ALTER ROLE` exige superusuário, mesmo para negá-los. O
+  papel autorizador é criado e reafirmado só com atributos permitidos, e uma verificação falha fechada se ele tiver um
+  desses três. Provado por emulação (dono não superusuário com os atributos lidos de Production): a versão anterior
+  falhava com `42501`; a corrigida aplica up → down → up e passa na prontidão.
+- **5ª auditoria do PR #82 (2026-11-04) — fronteira do autorizador.** A prontidão também recusa: qualquer associação
+  entrante no papel autorizador além do vínculo administrativo do dono (ADMIN, sem SET e sem herança, criado pelo
+  PostgreSQL 16+ para o dono não superusuário); qualquer cadeia de `luxtory_app`, `anon` ou `authenticated` até o
+  autorizador ou até o dono do schema; GRANT OPTION de EXECUTE nas cinco funções privilegiadas fora do dono; e dono
+  dessas funções diferente do dono do schema. Provado em PostgreSQL 17: SET, INHERIT, ADMIN (autoconcessão), cadeia por
+  papel intermediário, `anon` membro, `luxtory_app` membro do dono e GRANT OPTION davam ao `luxtory_app` a função de
+  autorização e passavam na prontidão; agora são recusados, e o vínculo administrativo legítimo continua aceito.
