@@ -1,11 +1,14 @@
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
+import { parse } from 'yaml';
 import { JobRegistry } from '@/features/platform/application/jobs/registry';
 import {
   DatabaseEnvironmentError,
   parseDatabaseUrl,
 } from '@/features/platform/infrastructure/database/connection';
 import { ConfigurationMissingError } from '@/features/platform/infrastructure/env';
+import { createJobRegistry } from '@/features/platform/infrastructure/jobs/job-registry';
 import { createJobRoute } from '@/features/platform/presentation/jobs';
 import { withRoute } from '@/features/platform/presentation/route';
 import { captureLogger } from '../../../support/capture-logger';
@@ -112,5 +115,23 @@ describe('GET /api/jobs/{job} (TECH-090)', () => {
 
     expect(result.status).toBe(500);
     expect(await result.json()).toMatchObject({ code: 'ERR_INTERNAL' });
+  });
+
+  it('[TECH-090] o enum do runJob no OpenAPI é exatamente o registro de jobs de produção (W13: dois jobs novos)', () => {
+    const document = parse(readFileSync('docs/api/openapi.yaml', 'utf8')) as {
+      paths: Record<
+        string,
+        { get: { parameters: { name?: string; schema?: { enum?: string[] } }[] } }
+      >;
+    };
+    const job = document.paths['/api/jobs/{job}']!.get.parameters.find(
+      (parameter) => parameter.name === 'job',
+    );
+    const registered = createJobRegistry({ log: captureLogger().logger }).names();
+
+    expect([...(job?.schema?.enum ?? [])].sort()).toEqual([...registered].sort());
+    expect(registered).toEqual(
+      expect.arrayContaining(['advance_booking_states', 'flag_no_show_candidates']),
+    );
   });
 });
