@@ -13,6 +13,20 @@ export {
   type BalanceKey,
   type OwnUseConsumption,
 } from './infrastructure/postgres-own-use-rights';
+// W13: reversão do consumo da criação (`restore`, `correction`) e o command `correct_use_right` (TECH-026), montado
+// pelo booking com a porta da invalidação (spec booking §10.12, D3).
+export {
+  correctUseRightInput,
+  createCorrectUseRightHandler,
+  UseRightCorrectionTargetError,
+  type CoOwnerInvalidationPort,
+  type CorrectUseRightInput,
+  type CorrectUseRightResult,
+  type CreationConsumptionReversal,
+  type NightCorrection,
+  type UseRightReversal,
+} from './application/correct-use-right';
+export { createPostgresOwnUseReversal } from './infrastructure/postgres-own-use-reversal';
 
 export type UseWindowResolver = (
   facts: UseWindowFacts,

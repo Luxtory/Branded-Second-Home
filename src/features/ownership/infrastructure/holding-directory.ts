@@ -42,6 +42,19 @@ export async function currentHolding(
   return row === undefined ? null : { id: row.id, role: roleOf(row.role), stakeId: row.stake_id };
 }
 
+/**
+ * Party de uma holding, vigente ou não (W13): a reserva fica presa à holding da época (`booking.holding_id`), e as
+ * notificações do ciclo dela vão a essa party (spec booking §10.12, como na confirmação, ADR-0026 D6).
+ */
+export async function holdingParty(db: Executor, holdingId: string): Promise<string | null> {
+  const row = await db
+    .selectFrom('app.holding')
+    .select('party_id')
+    .where('id', '=', holdingId)
+    .executeTakeFirst();
+  return row?.party_id ?? null;
+}
+
 /** Diretório para o guard do Titular (porta `HoldingDirectory` do identity), lido a cada decisão. */
 export function createHoldingDirectory(database: () => Database) {
   return {

@@ -23,5 +23,6 @@ export {
 export {
   createHoldingDirectory,
   currentHolding,
+  holdingParty,
   type CurrentHolding,
 } from './infrastructure/holding-directory';
