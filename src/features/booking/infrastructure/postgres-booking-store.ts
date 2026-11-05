@@ -22,8 +22,9 @@ function seasonOf(value: string): SealedOwnUseNight['season'] {
 /** Data civil `YYYY-MM-DD` como `date` do PostgreSQL (o driver lê `date` como `Date`; aqui só se compara). */
 const civil = (date: string) => sql<Date>`${date}::date`;
 
-/** Travas consultivas na ordem dada, uma instrução por chave (W13 E2, D6): mesmas chaves e mesma ordem da W12. */
-const advisoryLocks = lockAdvisoryKeys;
+// Travas consultivas: `lockAdvisoryKeys` (uma instrução por chave, W13 E2 D6), chamada direto — nunca guardada numa
+// constante no carregamento: o registro de jobs do platform importa este módulo durante a inicialização do índice do
+// platform (ciclo `platform → jobs → booking`), quando a importação ainda não tem valor (W13 E3).
 
 /**
  * Reserva de uso próprio por SQL direto do servidor (ADR-002 do `03`). As chaves das travas consultivas são as mesmas que
@@ -53,10 +54,10 @@ export function createPostgresBookingStore(): BookingStore<DatabaseTransaction> 
         : { holdingId: holding.id, role: holding.role, stakeId: holding.stakeId };
     },
     async lockStake(tx, stakeId) {
-      await advisoryLocks(tx, [`app.stake:${stakeId.toLowerCase()}`]);
+      await lockAdvisoryKeys(tx, [`app.stake:${stakeId.toLowerCase()}`]);
     },
     async lockNights(tx, secondHomeId, stayDates) {
-      await advisoryLocks(
+      await lockAdvisoryKeys(
         tx,
         stayDates.map((date) => `app.second_home_date:${secondHomeId.toLowerCase()}:${date}`),
       );
