@@ -283,3 +283,17 @@ a dados (ADR-0027, notas da E1). Nenhuma ativação; riscos R1–R8, R4b e C1 se
   lista finita e auditada (assinatura + md5 do corpo + configuração) e testadas com tipos sombreados pelos papéis que as
   executam (dívida técnica documentada no ADR-0027, nota 5); 18 funções de gatilho e `app.is_text_list` executáveis por
   PUBLIC (nota 2), sem acesso a dados.
+
+## W13.5. E2 — commands (2026-11-05, PR draft)
+
+- **T-1313 [MEDIUM] Repudiation/DoS — solicitações em massa e fadiga de aprovação.** Sessão Admin comprometida registra
+  muitas solicitações para cansar o aprovador. Mitigação: gate G-E4-1 (limitador antes de expor a solicitação, spec
+  `booking` §10.12); a solicitação não autoriza nada e o aprovador verifica os fundamentos por fontes próprias (ADR-0027
+  §4). Residual: credencial do banco comprometida insere solicitações direto (fronteira R1); o limitador não alcança.
+- **T-1314 [MEDIUM] Information disclosure — dado pessoal na base registrada.** `basis` e `incident_ref` são referências
+  não pessoais por contrato (D11); ficam só nas linhas de domínio e na auditoria, nunca em logs, outbox, resultados ou
+  erros (provado por testes da E2). Residual **não ratificado**: um Admin pode digitar dado pessoal numa linha
+  só-inserção; decisão pendente antes da ativação.
+- **Recusas do banco (D1):** `permission_*` de forjamento ou corrida chegam como `ERR_PERMISSION` gravado, e K1/K2
+  fechadas como capability fechada (sem operação, recusa ou evento) — antes da E2 viravam erro 500 (W12 inclusive).
+

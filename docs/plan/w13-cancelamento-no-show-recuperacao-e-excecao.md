@@ -44,7 +44,7 @@ ou ativação); E2 em diante dependem de nova autorização expressa.
 | E2 | Contratos AsyncAPI dos eventos dos commands, antes do primeiro handler que emite evento; domínio e commands (classificação TS + gêmea SQL; máquina da TECH-055; seis commands); idempotência; concorrência | não autorizada → autorizada (2026-11-05, plano v2; PR draft, sem merge) |
 | E3 | Jobs e consumidores de notificação | não autorizada |
 | E4a | Revisão renderizada com o fundador: prévia do cancelamento (tempestivo, tardio, iniciada, Owner, prazo vencido na revisão, em exceção) e telas Admin, 390/1440 px | não autorizada |
-| E4b | Integração das telas e E2E | não autorizada |
+| E4b | Integração das telas e E2E; gate G-E4-1 (limitador da solicitação, spec `booking` §10.12) testado antes de expor a solicitação | não autorizada |
 | E5 | Workflow do autorizador comprovado num Environment isolado apontando para banco descartável | não autorizada |
 | E6 | Gates locais | não autorizada |
 | E7 | PR draft da implementação; parar antes do merge | não autorizada |

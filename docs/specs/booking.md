@@ -490,3 +490,68 @@ Detalhes de implementação (não mudam decisão; ADR-0027, "Notas de implementa
   dessas funções diferente do dono do schema. Provado em PostgreSQL 17: SET, INHERIT, ADMIN (autoconcessão), cadeia por
   papel intermediário, `anon` membro, `luxtory_app` membro do dono e GRANT OPTION davam ao `luxtory_app` a função de
   autorização e passavam na prontidão; agora são recusados, e o vínculo administrativo legítimo continua aceito.
+
+### 10.12. E2 — commands, contratos e recusas (plano v2 aprovado pelo fundador em 2026-11-05)
+
+Decisões aprovadas (D1–D12), sem mudança de regra canônica, migration ou ativação:
+
+- **D1 — Recusas do banco.** `42501` só vira recusa funcional pela combinação SQLSTATE + nome exato de uma lista fechada
+  (`permission_representation`, `permission_staff_role`, `permission_authorization_missing|scope|revoked|used|expired`
+  → `ERR_PERMISSION`). `booking_not_activated` (K1) e `booking_lifecycle_not_activated` (K2) viram o desfecho tipado
+  "capability fechada": sem operação, recusa gravada ou evento, e a chave de idempotência continua livre. Todo outro
+  `42501` (sem nome ou com nome técnico) segue falha técnica. Um teste estático classifica todo `42501` nomeado das
+  migrations. Classe 23: inalterada, mais o nome exato `cancellation_terms_changed`.
+- **D2 — `ERR_CANCELLATION_TERMS_CHANGED`** (D7 da W13): código de produto depois dos gerais (`PRODUCT_ERROR_CODES`),
+  recusa de command, HTTP 409, mensagem pt-BR, enum do OpenAPI; os mínimos do TECH-056 e as causas do REQ-098 ficam
+  intactos.
+- **D3 — Módulos.** O motor de fechamento e os commands `cancel_own_use_booking`, `declare_no_show`, `open_exception`,
+  `resolve_exception` e `request_booking_authorization` ficam no `booking`; `correct_use_right` é definido no `calendar`
+  e `recover_future_capacity` no `inventory`, cada um com os próprios ports, montados pelo `booking` (direção de
+  dependência existente; nenhuma aresta nova entre slices). Registro fechado inalterado.
+- **D4 — Autorização resolvida pelo servidor:** a única viva (não usada, não revogada, `now < valid_until`) para reserva,
+  finalidade e exceção; o Admin não informa id de autorização.
+- **D5 — Limitador:** fora da E2 (não há entrada). Gate **G-E4-1**, abaixo.
+- **D6 — Travas:** `LOCK_CLASSES` continua o espelho da TECH-053; a ordem do ADR-0027 §2 é uma extensão separada com a
+  trava `booking` entre a classe 5 e a classe 6. Cada trava consultiva numa instrução própria, na ordem calculada antes
+  (também na criação da W12, mesmas chaves e ordem).
+- **D7 — Eventos:** matriz abaixo; `dedup_key = <tipo>:<id da transição>`.
+- **D8 — Fronteira:** E2 = domínio, commands, adaptadores e testes; Server Actions e telas na E4b; jobs e consumidores
+  na E3; PR draft sem merge.
+- **D9 — Datas locais** nos documentos (E1 mergeada em 2026-11-04).
+- **D10 — Precisão:** instantes do ciclo da reserva em microssegundos inteiros (resolução do `timestamptz`), lidos do
+  banco sem `Date`; 360 h = `360 × 3.600.000.000` µs. Os efeitos usam só o que o banco devolve na transição (instante,
+  classe, primeira noite afetada); o relógio do servidor serve só para recusar cedo — o banco é a autoridade.
+- **D11 — Privacidade:** a base registrada (`basis`) e a referência do incidente (`incident_ref`) são **referências não
+  pessoais** a registros verificáveis (protocolo, ticket, documento interno), nunca nome, documento, contato ou relato
+  pessoal. Ficam só nas linhas de domínio da E1 e na auditoria; nunca em logs, outbox, resultado de command ou mensagem
+  de erro. O hash de idempotência segue SHA-256 do input (sem chave HMAC nova: a base já está em texto na linha de
+  domínio). Risco de inserção indevida de dado pessoal: **não ratificado**, decisão pendente antes da ativação.
+- **D12 — K2:** os seis commands exigem a K2 (`own_use_lifecycle`) no handler e no banco; `request_booking_authorization`
+  é operação Admin não crítica fora da K2, com MFA, `staff_role` revalidado, base, auditoria e idempotência.
+
+**Matriz operação/desfecho → evento** (contratos em `docs/api/asyncapi.yaml`; destinatário = party da `holding_id` da
+reserva, fixada no COMMIT):
+
+| Operação → desfecho | Evento |
+|---|---|
+| `cancel_own_use_booking` (confirmada, em uso ou em exceção) | `booking.own_use_cancelled` (`cause = titular`; em exceção, com `exception_id`) |
+| `resolve_exception → cancelled`, exceção operacional | `booking.own_use_cancelled` (`cause = exception`) |
+| `declare_no_show` | `booking.own_use_no_show_declared` |
+| `open_exception` | `booking.own_use_exception_opened` |
+| `resolve_exception → confirmed`/`completed` | `booking.own_use_exception_resolved` |
+| `resolve_exception → cancelled`, apuração de Owner; `correct_use_right` | `booking.own_use_invalidated` |
+| `recover_future_capacity`, `request_booking_authorization`, recusa, capability fechada | nenhum |
+
+Unicidade: cada operação grava no máximo uma transição (índice único de `operation_id` fora do avanço) e emite no máximo
+um evento; o id da transição é PK gravada na mesma transação; replay não reexecuta o handler e o retry desfaz a
+tentativa — duas linhas com a mesma chave só poderiam ser o mesmo evento.
+
+**G-E4-1 — limitador obrigatório antes de expor a solicitação (E4).** A E4 não expõe `request_booking_authorization`
+sem: limitador depois do guard e antes da idempotência; chave pseudônima sem segredo novo (SHA-256 de
+`luxtory:booking-authorization-request:<staff_role_id>`); limites explícitos no runbook (TECH-001; parâmetro ausente →
+recusa); falha do limitador → recusa (falha fechada, como na TECH-057); excesso → `ERR_RATE_LIMITED` sem operação nem
+chave de idempotência gravadas; **o limitador não quebra a semântica de replay**: a mesma chave de um pedido já
+concluído devolve o resultado gravado (a consulta de idempotência vem antes de consumir cota, ou o replay não consome
+cota), e uma recusa por limite não grava resposta na chave, que continua utilizável. Teste de aceite na E4b: limite
+estourado sem nada gravado; limitador indisponível → recusa; replay de chave concluída com a cota esgotada → resultado
+gravado.
