@@ -1,8 +1,8 @@
 # 01 — Business Model & Business Rules — Luxtory Branded Second Home
 
-2026-11-05 · Luxtory (fundador) · Versão 10.3 — revisão autorizada; emissão condicionada ao merge aprovado
+2026-11-05 · Luxtory (fundador) · Versão 10.3 — Status: final
 
-Revisão GTM autorizada pelo fundador (2026-11-05): explicita o desenvolvimento e a gestão contínua de produto como função principal da Luxtory; complementa os §1 e §35 e substitui somente as BR-035, BR-040 e BR-041. Esta versão permanece em revisão até o merge autorizado do PR normativo; não declara publicação ou prestação de serviços em Production. Mantém os demais direitos, regras e funcionalidades.
+Revisão GTM autorizada pelo fundador (2026-11-05): explicita o desenvolvimento e a gestão contínua de produto como função principal da Luxtory; complementa os §1 e §35 e substitui somente as BR-035, BR-040 e BR-041. Esta revisão é normativa e não implica, por si só, disponibilidade operacional ou prestação efetiva de serviços. Mantém os demais direitos, regras e funcionalidades.
 
 Compatibilidade verificada com `02` v4.4 (REQ-022, REQ-023, REQ-026, REQ-027, REQ-028, REQ-038 e REQ-094) e `03` v3.16 (TECH-020 e TECH-083): esses documentos já distinguem produto, administração profissional, serviços facultativos, Investor e separação econômica das demais receitas. Não há mudança funcional nem necessidade de nova entidade, API, parâmetro, cobrança ou migration. Suas versões e bases históricas permanecem preservadas. Rastreabilidade e gates em [plano GTM](../../plan/gtm-reposicionamento.md).
 
