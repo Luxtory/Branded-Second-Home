@@ -4,7 +4,23 @@ import {
   createAdvanceBookingStatesJob,
   createFlagNoShowCandidatesJob,
 } from '@/features/booking/jobs';
-import type { JobRunner } from '@/features/platform';
+import {
+  OWN_USE_BOOKING_CANCELLED,
+  OWN_USE_BOOKING_INVALIDATED,
+  OWN_USE_EXCEPTION_OPENED,
+  OWN_USE_EXCEPTION_RESOLVED,
+  OWN_USE_NO_SHOW_DECLARED,
+} from '@/features/booking';
+import { createOwnUseBookingConsumers } from '@/features/booking/jobs';
+import {
+  systemClock,
+  type DatabaseTransaction,
+  type JobRunner,
+  type OutboxConsumer,
+} from '@/features/platform';
+import { ConsumerRegistry } from '@/features/platform/application/outbox/consumers';
+import { dispatchOutbox } from '@/features/platform/application/outbox/dispatcher';
+import { createPostgresOutboxStore } from '@/features/platform/infrastructure/outbox/postgres-outbox-store';
 import { appDatabase } from '../../support/platform-fixtures';
 import { createTestDatabase } from '../../support/test-database';
 import { JOB_SOURCE } from '../calendar/sealing-support';
@@ -472,6 +488,168 @@ describe('W13 E3 — jobs do ciclo da reserva', () => {
       expect(await isFlagged(closed)).toBe(false);
       expect(await stateOf(closed)).toBe('confirmed');
       for (const row of inException.rows) expect(await isFlagged(row.id)).toBe(false);
+    });
+  });
+
+  describe('consumidores do outbox — entrega real pelo dispatcher (REQ-097, TECH-091)', () => {
+    const TYPES = [
+      OWN_USE_BOOKING_CANCELLED,
+      OWN_USE_NO_SHOW_DECLARED,
+      OWN_USE_EXCEPTION_OPENED,
+      OWN_USE_EXCEPTION_RESOLVED,
+      OWN_USE_BOOKING_INVALIDATED,
+    ];
+    const quiet = { info: () => undefined, warn: () => undefined, error: () => undefined };
+    const sweep = (consumers: readonly OutboxConsumer<DatabaseTransaction>[]) =>
+      dispatchOutbox({
+        store: createPostgresOutboxStore(h.db),
+        consumers: new ConsumerRegistry<DatabaseTransaction>(consumers),
+        clock: systemClock,
+        batchSize: 200,
+        log: quiet,
+      });
+    const booking = () => createOwnUseBookingConsumers({ clock: systemClock });
+
+    async function lifecycleEvents() {
+      const { rows } = await h.database.pool.query<{
+        id: string;
+        event_type: string;
+        payload: { recipient_party_id: string };
+        delivered_at: Date | null;
+        last_error: string | null;
+      }>(
+        `SELECT id, event_type, payload, delivered_at, last_error FROM app.outbox WHERE event_type = ANY($1::text[])`,
+        [TYPES],
+      );
+      return rows;
+    }
+
+    const notificationsOf = async (eventId: string) =>
+      (
+        await h.database.pool.query<{
+          recipient_party_id: string;
+          kind: string;
+          data: Record<string, unknown>;
+        }>(`SELECT recipient_party_id, kind, data FROM app.notification WHERE event_id = $1`, [
+          eventId,
+        ])
+      ).rows;
+
+    it('[REQ-097][TECH-091] os cinco eventos reais viram uma notificação cada, à party fixada; falha parcial e redespacho sem duplicata', async () => {
+      // Os dois eventos que faltam neste banco: a resolução sem cancelamento e a invalidação de Owner.
+      const { rows: open } = await h.database.pool.query<{ booking: string; exception: string }>(
+        `SELECT b.id AS booking, x.id AS exception FROM app.booking b
+           JOIN app.booking_exception x ON x.booking_id = b.id
+          WHERE b.second_home_id = $1 AND b.state = 'in_exception'`,
+        [owner2.homeId],
+      );
+      expect(
+        await run.asAdmin(admin, run.handlers.resolveException, {
+          second_home_id: owner2.homeId,
+          booking_id: open[0]!.booking,
+          exception_id: open[0]!.exception,
+          outcome: 'confirmed',
+          basis: BASIS,
+        }),
+      ).toMatchObject({ status: 'committed' });
+      const unauthorized = await historicBooking(h, {
+        homeId: owner.homeId,
+        titular: owner.titular,
+        checkin: so(5),
+        checkout: so(6),
+      });
+      const target = { second_home_id: owner.homeId, booking_id: unauthorized };
+      const opened = await run.asAdmin(admin, run.handlers.openException, {
+        ...target,
+        exception_type: 'unauthorized_booking',
+        incident_ref: 'INC-2027-777',
+        basis: BASIS,
+      });
+      if (opened.status !== 'committed') throw new Error(JSON.stringify(opened));
+      const requested = await run.asAdmin(admin, run.handlers.requestBookingAuthorization, {
+        ...target,
+        purpose: 'invalidation',
+        basis: BASIS,
+      });
+      if (requested.status !== 'committed') throw new Error(JSON.stringify(requested));
+      await authorize(h, requested.result.request_id, 'github-run:8201:1');
+      expect(
+        await run.asAdmin(admin, run.handlers.resolveException, {
+          ...target,
+          exception_id: opened.result.exception_id,
+          outcome: 'cancelled',
+          basis: BASIS,
+        }),
+      ).toMatchObject({ status: 'committed' });
+
+      // Falha parcial: outro consumidor do no-show cai; o evento fica pendente, a notificação já gravada não repete.
+      const failing: OutboxConsumer<DatabaseTransaction> = {
+        name: 'test_failing_no_show_consumer',
+        eventTypes: [OWN_USE_NO_SHOW_DECLARED],
+        handle: () => Promise.reject(new Error('consumer down')),
+      };
+      await sweep([...booking(), failing]);
+      const pending = (await lifecycleEvents()).filter(
+        (e) => e.event_type === OWN_USE_NO_SHOW_DECLARED,
+      );
+      expect(pending.length).toBeGreaterThan(0);
+      for (const event of pending) {
+        expect(event).toMatchObject({ delivered_at: null, last_error: 'Error' });
+        expect(await notificationsOf(event.id)).toHaveLength(1);
+      }
+
+      await sweep(booking());
+      await sweep(booking());
+
+      const events = await lifecycleEvents();
+      expect(new Set(events.map((e) => e.event_type))).toEqual(new Set(TYPES));
+      for (const event of events) {
+        expect(event.delivered_at, event.event_type).not.toBeNull();
+        const notifications = await notificationsOf(event.id);
+        expect(notifications, event.event_type).toHaveLength(1);
+        expect(notifications[0]).toMatchObject({
+          recipient_party_id: event.payload.recipient_party_id,
+          kind: event.event_type,
+        });
+        const text = JSON.stringify(notifications[0]!.data);
+        for (const forbidden of [
+          'basis',
+          'incident_ref',
+          'INC-2027-777',
+          'ADM-2027-11',
+          'recipient_party_id',
+        ])
+          expect(text, `${event.event_type} ${forbidden}`).not.toContain(forbidden);
+      }
+    });
+
+    it('[TECH-091] payload fora do contrato: só aquele evento fica pendente com o nome do erro, sem notificação', async () => {
+      const { rows } = await h.database.pool.query<{ id: string }>(
+        `SELECT id FROM app.operation LIMIT 1`,
+      );
+      const id = randomUUID();
+      await h.database.pool.query(
+        `INSERT INTO app.outbox (id, operation_id, event_type, dedup_key, payload, occurred_at)
+         VALUES ($1, $2, $3, $4, $5, now())`,
+        [id, rows[0]!.id, OWN_USE_BOOKING_CANCELLED, `test:${id}`, JSON.stringify({ basis: 'x' })],
+      );
+
+      await sweep(booking());
+
+      const { rows: after } = await h.database.pool.query<{
+        delivered_at: Date | null;
+        last_error: string | null;
+      }>(`SELECT delivered_at, last_error FROM app.outbox WHERE id = $1`, [id]);
+      expect(after[0]).toEqual({ delivered_at: null, last_error: 'ZodError' });
+      expect(await notificationsOf(id)).toEqual([]);
+    });
+
+    it('[BR-284] solicitação de autorização não emite evento, logo não notifica', async () => {
+      const { rows } = await h.database.pool.query<{ n: number }>(
+        `SELECT count(*)::int AS n FROM app.outbox o JOIN app.operation op ON op.id = o.operation_id
+          WHERE op.command IN ('request_booking_authorization', 'recover_future_capacity')`,
+      );
+      expect(rows[0]!.n).toBe(0);
     });
   });
 });

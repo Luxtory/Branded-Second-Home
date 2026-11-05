@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { Clock, OutboxConsumer } from '@/features/platform';
 import { OWN_USE_BOOKING_CONFIRMED } from './create-own-use-booking';
+import { buildOwnUseLifecycleConsumers } from './own-use-lifecycle-consumers';
 
 /** Tipo da notificação de confirmação na central do Titular (REQ-097). */
 export const OWN_USE_BOOKING_CONFIRMED_NOTIFICATION = 'booking.own_use_confirmed';
@@ -61,5 +62,6 @@ function confirmation<Tx>(deps: OwnUseConsumerDependencies<Tx>): OutboxConsumer<
 export function buildOwnUseConsumers<Tx>(
   deps: OwnUseConsumerDependencies<Tx>,
 ): readonly OutboxConsumer<Tx>[] {
-  return [confirmation(deps)];
+  // W13 E3: as cinco notificações do ciclo da reserva.
+  return [confirmation(deps), ...buildOwnUseLifecycleConsumers(deps)];
 }
