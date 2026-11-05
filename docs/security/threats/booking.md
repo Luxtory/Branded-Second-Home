@@ -302,3 +302,12 @@ a dados (ADR-0027, notas da E1). Nenhuma ativação; riscos R1–R8, R4b e C1 se
   T-1308 (termos da prévia), T-1309 (reserva de outra party = inexistente) — provados em
   `own-use-cancellation.db.test.ts`, `own-use-admin-acts.db.test.ts` e `own-use-lifecycle-concurrency.db.test.ts`.
   Nenhuma ativação; riscos residuais seguem não ratificados.
+
+## W13.6. Bloqueio B-A3 — origem P-A na recuperação (2026-11-05)
+
+- **T-1315 [HIGH] Tampering/Elevation — monetização de capacidade bloqueada sem atestação.** O cancelamento tardio do
+  Titular durante exceção operacional aberta não era reconhecido como origem P-A por `app.authorize_booking_action` (E1):
+  a autorização `recovery` saía sem a atestação de disponibilidade e compatibilidade com o bloqueio (A3, BR-123), e a
+  capacidade do imóvel bloqueado ia ao Inventário Luxtory. Mitigação: correção no banco (spec `booking` §10.13) e
+  **bloqueio B-A3** — nenhuma ativação, recuperação ou autorização independente antes da correção integrada e validada.
+  Alcance até lá: nenhum em Production (K1/K2 com 0 linhas, autorizador sem senha nem Environment).

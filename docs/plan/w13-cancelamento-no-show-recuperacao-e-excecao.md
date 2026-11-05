@@ -14,6 +14,8 @@ ou ativação); E2 em diante dependem de nova autorização expressa.
 
 **Atualização 2026-11-04:** a E1 foi mergeada pelo #82 (squash `26dd58d`; 4 migrations em Production, 59/0; ativação 0 linhas; reservas desativadas). Em 2026-11-05 o fundador aprovou o plano v2 da E2 e autorizou a implementação em PR draft (sem merge, deploy, Production, migration nova ou ativação); E3–E5 seguem não autorizadas.
 
+**Atualização 2026-11-05 (E2 mergeada; bloqueio B-A3):** o #83 foi mergeado (squash `65223a9`, sem migration; K1 e K2 com 0 linhas). **Bloqueio B-A3 (decisão do fundador):** nenhuma ativação de reserva (K1, K2), recuperação (`recover_future_capacity`) ou autorização independente (senha, Environment ou uso do papel `luxtory_booking_authorizer`) antes de a correção da origem P-A na recuperação estar integrada na `main`, aplicada pela CI e validada. Motivo: a função `app.authorize_booking_action` da E1 não reconhece como origem P-A o cancelamento tardio do Titular durante exceção operacional aberta e emite a autorização `recovery` sem a atestação exigida por A3 (spec `booking` §10.13). A correção (E2b) foi autorizada só em PR draft, sem merge nem Production; E3–E5 seguem não autorizadas.
+
 ## Decisões do fundador (2026-11-03)
 
 | # | Decisão | Situação |
@@ -41,7 +43,8 @@ ou ativação); E2 em diante dependem de nova autorização expressa.
 |---|---|---|
 | E0 | Canônicos `02` v4.4 e `03` v3.16 (REQ-084, EC-16, TECH-022/026/051, §7); roadmap; ADR-0027; specs; plano; STRIDE | PR draft documental; sem merge → mergeada (#80, `5d9b636`, 2026-11-03) |
 | E1 | Migrations: transições, projeção, exceção, candidatos, solicitação/autorização/revogação/uso, papel autorizador, regras de liberação, custódia, `restore` e `correction`, chave K2 no `CHECK`, prontidão; `db:check`; testes com privilégios reais | não autorizada → em andamento (autorizada em 2026-11-03; ambiente isolado) → concluída (#82 → `26dd58d`, 2026-11-04; Production 59/0, ativação 0) |
-| E2 | Contratos AsyncAPI dos eventos dos commands, antes do primeiro handler que emite evento; domínio e commands (classificação TS + gêmea SQL; máquina da TECH-055; seis commands); idempotência; concorrência | não autorizada → autorizada (2026-11-05, plano v2; PR draft, sem merge) → implementada em PR draft (spec `booking` §10.12.1), aguardando auditoria |
+| E2 | Contratos AsyncAPI dos eventos dos commands, antes do primeiro handler que emite evento; domínio e commands (classificação TS + gêmea SQL; máquina da TECH-055; seis commands); idempotência; concorrência | não autorizada → autorizada (2026-11-05, plano v2; PR draft, sem merge) → implementada em PR draft (spec `booking` §10.12.1), aguardando auditoria → concluída (#83 → `65223a9`, 2026-11-05) |
+| E2b | Correção da origem P-A na recuperação (A3, BR-123; spec `booking` §10.13): migration incremental com `CREATE OR REPLACE` de `app.authorize_booking_action`, espelho no `requestFacts`, testes de regressão; bloqueio B-A3 até integrada e validada | autorizada (2026-11-05; PR draft, sem merge nem Production) |
 | E3 | Jobs e consumidores de notificação | não autorizada |
 | E4a | Revisão renderizada com o fundador: prévia do cancelamento (tempestivo, tardio, iniciada, Owner, prazo vencido na revisão, em exceção) e telas Admin, 390/1440 px | não autorizada |
 | E4b | Integração das telas e E2E; gate G-E4-1 (limitador da solicitação, spec `booking` §10.12) testado antes de expor a solicitação | não autorizada |
@@ -112,6 +115,7 @@ operacionais, secrets, Environment real, migrations fora da CI, merge sem autori
 
 ## Pendências preservadas
 
+- **Bloqueio B-A3** (2026-11-05): nenhuma ativação de reserva (K1, K2), recuperação (`recover_future_capacity`) ou autorização independente (senha, Environment ou uso do papel `luxtory_booking_authorizer`) antes de a correção da origem P-A na recuperação estar integrada na `main`, aplicada pela CI e validada (spec `booking` §10.13).
 - **Ativação** (estado B): migration própria depois da W13 em Production; prontidão + impressões digitais; ensaio da
   desativação (R3) fora de Production; execuções do `outbox`, `open_exercise` e `close_exercise` observadas; latência de
   entrega das notificações adequada à detecção (R4, R7), comprovada em Production — hoje o evento é enfileirado no
