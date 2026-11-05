@@ -659,3 +659,42 @@ por reserva). Jobs fora da K2 (ADR-0027 §5).
   única). Nulos omitidos com a distinção explícita: `modality` (`owner`/`co_owner`) onde o contrato a define, `cause`,
   `cancellation_class`, `exception_type`, `reason`, `timely_until`, `outcome` e contagens por categoria preservados. Copy e
   telas: E4.
+
+#### 10.14.1. Implementação da E3 (2026-11-05, PR draft; sem merge, deploy, Production ou ativação)
+
+Sem mudança de decisão, migration ou regra canônica.
+
+- **Arquivos.** Regra pura `advanceSteps` em `domain/own-use-lifecycle.ts`; handlers em
+  `application/advance-booking-states.ts` e `application/flag-no-show-candidates.ts`; varredura comum em
+  `application/own-use-lifecycle-jobs.ts`; consultas pelo relógio do banco em `infrastructure/postgres-booking-job-store.ts`;
+  composição em `presentation/lifecycle-jobs.ts` (exportada por `jobs.ts`); consumidores em
+  `application/own-use-lifecycle-consumers.ts`. Platform: duas entradas em `SYSTEM_COMMANDS` e no `JobRegistry`.
+- **Chave por estado, não por execução.** `<job>:<reserva>:<folha da cadeia | root>`: Vercel pode repetir ou perder um
+  disparo; repetição e corrida sobre o mesmo estado são replay (nenhuma operação nova, nenhuma recusa gravada), e toda
+  mudança de estado grava transição e muda a chave — sem a recusa presa que uma chave fixa por reserva produziria e sem
+  as operações extras de uma chave por execução (precedente do `close_exercise`, aqui desnecessário).
+- **Travas.** Avanço: Ação (se houver) → reserva, como os commands da E2 (sem noites: não há efeito por noite).
+  Candidatos: só `app.booking:<id>` — evita a corrida com o `declare_no_show` e o `23505` da PK em execuções
+  concorrentes, que viraria falha técnica.
+- **Cadência.** `vercel.json`: avanço `11 17 * * *`; candidatos `29 5 * * *` e `29 17 * * *` (mesmo caminho, permitido
+  pela Vercel). O teste `lifecycle-cron-coverage.test.ts` lê o `vercel.json` e prova, no modelo do Hobby, a cobertura da
+  janela de 1 noite em São Paulo, Manaus, Nova York, Lisboa, Tóquio e Auckland o ano inteiro (com horário de verão), e
+  demonstra os limites: um único disparo às 17 UTC perderia Manaus; o avanço pode sair no dia seguinte fora do Brasil.
+  "Garantido" supõe a entrega da plataforma (best effort, sem nova tentativa).
+- **Notificações.** Tipo = tipo do evento; dados planos (a central guarda `string | number`): `cause`,
+  `cancellation_class`, `exception_type`, `reason`, `timely_until`, `outcome`, contagens e `restored_*`/`corrected_*` por
+  categoria; `modality` derivada só onde o contrato fixa o nulo do Owner (cancelamento, no-show, invalidação). A central
+  mostra o aviso genérico com link para a reserva até a copy da E4.
+- **Referência do legado (Luxtory2.0), só conceitos.** Aproveitado: contagens e falha por item com log estruturado,
+  retomada de atraso, navegação contextual da notificação (link da reserva). Não replicado: `UPDATE` de status por
+  `CURRENT_DATE` (aqui transições só-inserção pelo instante do banco), funções `SECURITY DEFINER` com `service_role`
+  (aqui o executor com o papel da aplicação e guard de sistema), notificação por `user_id` resolvida na entrega e texto
+  gravado (aqui party fixada no evento e dados estruturados), mensagem de erro no log (aqui só o nome) e execução
+  monolítica de vários jobs (aqui um job por rota).
+- **Testes.** Unidade: `own-use-lifecycle.test.ts` (fronteiras em µs do avanço), `own-use-lifecycle-jobs.test.ts`
+  (varredura, contagens, orçamento, chave), `own-use-lifecycle-consumers.test.ts` (mapeamento, paridade de recusa com o
+  AsyncAPI, registro de produção), `lifecycle-cron-coverage.test.ts`, `registry.test.ts`, `jobs.test.ts` (enum do
+  `runJob`). PostgreSQL real: `own-use-lifecycle-jobs.db.test.ts` (duas transições na mesma operação, exceção e terminal,
+  repetição sem operação nova, concorrência job × job/cancelamento/exceção/no-show, ordem dos jobs, K1/K2 fechadas,
+  banco vazio sem operação, nenhum rastro econômico ou evento, entrega real dos cinco eventos com falha parcial,
+  redespacho e payload inválido).
