@@ -48,6 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Brand Partners: desenvolvimento e gestão contínua de produto, papéis contratados, privacidade, investimento e evolução
+  nas seções existentes (D-BP-29); preservados Hero, identidade visual, licenciamento, Luxchange, CTAs e formulário.
+
 - Ontologia Home Concept → Home Edition → Second Home (W4.2, `01` v10.2, ADR-0019): a Home Edition passa a ser uma
   configuração específica e replicável de Second Home — nome, descrição, tipologia, configuração dos espaços, área
   projetada, suítes, capacidade, ambientes, amenidades, características, imagens, renders e plantas —, sem localização,

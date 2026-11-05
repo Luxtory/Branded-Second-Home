@@ -100,10 +100,10 @@ describe('comunicação — ontologia da W4.2 na copy vigente (regressões semâ
     for (const line of [
       'É pesquisa de descoberta, não manifestação de interesse comercial nem aquisição. O resultado orienta se o Home Concept segue, é refinado ou não avança.',
       'Não é manifestação de interesse comercial nem aquisição: o resultado orienta se o Home Concept segue para uma Home Edition, é refinado ou não avança.',
-      'A marca apresenta a Home Edition principalmente por seus próprios canais.',
+      'A Home Edition é apresentada pelos canais definidos na parceria, incluindo os da marca quando acordado.',
       'A Luxtory conversa com os interessados, que indicam onde gostariam de ter aquela Home Edition e se seu interesse é Owner ou Co-Owner.',
       'A manifestação ajuda a avaliar a oportunidade, mas não constitui aquisição.',
-      'Quando demanda e viabilidade justificam avançar, a Luxtory estrutura uma Second Home para uma localização concreta, definindo sua modalidade, estrutura patrimonial e condições comerciais.',
+      'Quando demanda e viabilidade justificam avançar, a Luxtory conduz a estratégia e a definição do produto; os parceiros executam a estruturação imobiliária.',
     ]) {
       expect(SURFACES.brandPartners).toContain(line);
     }

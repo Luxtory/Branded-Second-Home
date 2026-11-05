@@ -133,7 +133,7 @@ export const brandPartnersMessages = {
         result: 'Uma conexão mais profunda e duradoura com sua marca.',
       },
       body: [
-        'Cada decisão transforma códigos de marca em uma experiência que pode ser vivida, compartilhada e lembrada.',
+        'A Luxtory conduz o desenvolvimento e a gestão contínua de produto, da descoberta de oportunidades à evolução do portfólio.',
         'No universo dos imóveis de lazer, essa lógica ganha forma em uma **Branded Second Home**.',
         'A Luxtory traduz a identidade da marca em um **Home Concept** — o conceito que orienta espaços, experiências e os elementos essenciais que tornam a identidade da marca reconhecível em cada detalhe.',
       ],
@@ -187,7 +187,7 @@ export const brandPartnersMessages = {
           {
             title: 'Demanda antes da estruturação',
             text: [
-              'A marca apresenta a Home Edition à sua comunidade, e o interesse pode ser conhecido antes de estruturar cada Second Home.',
+              'A apresentação da Home Edition permite conhecer o interesse do público antes de estruturar cada Second Home.',
               'Manifestar interesse não é aquisição.',
             ],
           },
@@ -228,7 +228,7 @@ export const brandPartnersMessages = {
           name: 'Pertencimento',
           title: 'Um universo para compartilhar.',
           text: [
-            'Um lugar que expressa o universo com o qual a pessoa se identifica — e que ela vive com família, amigos e convidados, conforme as regras da Second Home.',
+            'Um lugar que expressa o universo com o qual a pessoa se identifica — onde pode viver momentos de privacidade com família, amigos e convidados, conforme as regras da Second Home.',
           ],
         },
       ],
@@ -266,7 +266,7 @@ export const brandPartnersMessages = {
         {
           title: 'Apresentar a Home Edition e captar interesse.',
           text: [
-            'A marca apresenta a Home Edition principalmente por seus próprios canais.',
+            'A Home Edition é apresentada pelos canais definidos na parceria, incluindo os da marca quando acordado.',
             'A Luxtory conversa com os interessados, que indicam onde gostariam de ter aquela Home Edition e se seu interesse é Owner ou Co-Owner.',
             'A manifestação ajuda a avaliar a oportunidade, mas não constitui aquisição.',
           ],
@@ -274,7 +274,8 @@ export const brandPartnersMessages = {
         {
           title: 'Estruturar cada Second Home.',
           text: [
-            'Quando demanda e viabilidade justificam avançar, a Luxtory estrutura uma Second Home para uma localização concreta, definindo sua modalidade, estrutura patrimonial e condições comerciais.',
+            'Quando demanda e viabilidade justificam avançar, a Luxtory conduz a estratégia e a definição do produto; os parceiros executam a estruturação imobiliária.',
+            'Cada Second Home tem localização concreta, modalidade, estrutura patrimonial e condições comerciais próprias.',
             'Os direitos de cada pessoa nascem da formalização da aquisição.',
           ],
         },
@@ -285,9 +286,10 @@ export const brandPartnersMessages = {
           ],
         },
         {
-          title: 'A Second Home e o Luxtory Club.',
+          title: 'A Second Home e sua evolução.',
           text: [
             'A Second Home materializa o Home Concept aprovado.',
+            'Após o lançamento, a Luxtory acompanha resultados e experiências para orientar melhorias e o desenvolvimento de novas Home Editions.',
             'O modelo prevê que ela possa integrar o Luxtory Club, quando disponível e atendidas as condições aplicáveis.',
           ],
         },
@@ -430,7 +432,7 @@ export const brandPartnersMessages = {
             {
               title: 'Apresentar a Home Edition e captar interesse.',
               paragraphs: [
-                'A marca apresenta a Home Edition principalmente por seus próprios canais.',
+                'A Home Edition é apresentada pelos canais definidos na parceria, incluindo os da marca quando acordado.',
                 'A Luxtory conversa com os interessados, que indicam onde gostariam de ter aquela Home Edition e se seu interesse é Owner ou Co-Owner.',
                 'A manifestação ajuda a avaliar a oportunidade, mas não constitui aquisição.',
               ],
@@ -438,7 +440,9 @@ export const brandPartnersMessages = {
             {
               title: 'Estruturar cada Second Home.',
               paragraphs: [
-                'Quando demanda e viabilidade justificam avançar, a Luxtory estrutura uma Second Home para uma localização concreta, definindo sua modalidade, estrutura patrimonial e condições comerciais.',
+                'Quando demanda e viabilidade justificam avançar, a Luxtory conduz a estratégia e a definição do produto; os parceiros executam a estruturação imobiliária.',
+                'A análise de viabilidade cabe aos responsáveis contratados, como uma incorporadora ou outro desenvolvedor autorizado.',
+                'Cada Second Home tem localização concreta, modalidade, estrutura patrimonial e condições comerciais próprias.',
                 'Enquanto essa estrutura estiver aberta, a Second Home pode contemplar Owner, Co-Owner ou ambos.',
               ],
               modalities: {
@@ -452,6 +456,8 @@ export const brandPartnersMessages = {
                 },
               },
               after: [
+                'A Luxtory planeja o lançamento e prepara a equipe comercial ao longo do desenvolvimento do produto.',
+                'A comercialização formal cabe à equipe contratada, com a Second Home estruturada, condições comerciais definidas e autorizações aplicáveis.',
                 'Os respectivos direitos nascem da formalização da aquisição, respeitando as condições e os compromissos aplicáveis.',
                 'Uma manifestação de interesse não os constitui.',
               ],
@@ -464,7 +470,8 @@ export const brandPartnersMessages = {
             {
               title: 'Reunir competências para realizar.',
               paragraphs: [
-                'Levar essa visão à Second Home exige conectar projeto, fornecedores e execução.',
+                'A Luxtory orienta os conceitos de arquitetura, interiores e experiência e acompanha a fidelidade ao produto.',
+                'Os projetos técnicos cabem aos profissionais de arquitetura, interiores e engenharia. A construtora executa a obra.',
                 'A Luxtory pode coordenar o **Design & Build**, conforme o escopo contratado, preservando os elementos essenciais do Home Concept.',
                 'No modelo atual, as Second Homes são desenvolvidas do zero a partir de um Home Concept.',
               ],
@@ -472,10 +479,10 @@ export const brandPartnersMessages = {
             {
               title: 'Cuidar da continuidade da experiência.',
               paragraphs: [
-                'Depois da entrega, a preservação do Home Concept continua orientando a relação da Second Home com a marca.',
-                'A administração segue o escopo contratado: a gestão pela Luxtory é obrigatória no Co-Owner e opcional para o Owner.',
-                'O modelo prevê que a integração ao Luxtory Club possa fazer parte dessa continuidade, quando disponível e desde que atendidas as condições aplicáveis.',
-                'Ela não é automática.',
+                'Após o lançamento, a Luxtory mantém a gestão do produto: acompanha resultados e experiências para orientar melhorias e novas Home Editions.',
+                'A administração profissional é obrigatória no Co-Owner; no Owner, os serviços de administração são facultativos, conforme as regras aplicáveis.',
+                'A operação pode ser realizada pelos prestadores contratados, inclusive pela própria marca. As locações, quando permitidas, seguem os direitos dos titulares e as autorizações aplicáveis.',
+                'O modelo prevê a integração ao Luxtory Club, quando disponível e atendidas as condições aplicáveis; ela não é automática.',
               ],
             },
           ],
@@ -502,12 +509,12 @@ export const brandPartnersMessages = {
         },
         {
           decision: 'Apresentar a Home Edition e gerar interesse',
-          who: 'Principalmente a Brand Partner, por seus canais e sua audiência.',
+          who: 'A Luxtory conduz a estratégia de apresentação. Marca e parceiros participam pelos canais acordados.',
         },
         {
           decision:
             'Qualificar a demanda e estruturar cada Second Home, com localização, modalidade, estrutura patrimonial e condições comerciais',
-          who: 'Luxtory.',
+          who: 'A Luxtory coordena a qualificação e integra os responsáveis contratados para a estruturação imobiliária.',
         },
         {
           decision: 'Coordenar o Design & Build',
@@ -515,7 +522,7 @@ export const brandPartnersMessages = {
         },
       ],
       responsibilities:
-        'As responsabilidades de cada parte ficam definidas nos contratos da parceria.',
+        'As responsabilidades ficam definidas em contrato. A marca pode participar sem financiar a implantação quando outro parceiro assumir esse investimento.',
       answers: [
         {
           question: 'Como funciona o licenciamento?',
@@ -639,7 +646,7 @@ export const brandPartnersMessages = {
         {
           question: 'Como essa experiência pode chegar a outros lugares?',
           answer: [
-            'O Home Concept permite levar a proposta a novas regiões, preservando aquilo que a torna reconhecível.',
+            'Uma mesma Home Edition pode originar Second Homes em diferentes destinos, inclusive próximos de onde seu público vive.',
             'Cada expansão depende dos direitos de uso da marca, da estratégia da parceria, da demanda e da viabilidade.',
             'Parceiros locais autorizados pela Luxtory podem participar, respeitando o Home Concept, os padrões Luxtory e os direitos da Brand Partner.',
           ],
@@ -647,8 +654,7 @@ export const brandPartnersMessages = {
         {
           question: 'O que precisa acontecer para uma oportunidade avançar?',
           answer: [
-            'Cada oportunidade precisa encontrar interesse e condições reais para ser realizada.',
-            'A estrutura ajuda a avaliar essas condições, mas não elimina as incertezas do mercado.',
+            'Primeiro investigamos se faz sentido desenvolver. Com evidências e viabilidade, quem assume o investimento decide se vale avançar.',
             'Demanda, vendas, receita, retorno, escala e replicação não são garantidos.',
           ],
         },
