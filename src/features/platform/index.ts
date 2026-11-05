@@ -31,6 +31,7 @@ export {
   LockOrderViolation,
   type LockClass,
   type LockKey,
+  type OrderedLockClass,
 } from './domain/lock-order';
 export type { Actor, UserRole } from './application/commands/actor';
 export type {
@@ -156,3 +157,4 @@ export {
   PublicIdempotencyError,
 } from './infrastructure/idempotency/public-idempotency';
 export { isDatabaseUnavailable, violatedConstraint } from './infrastructure/database/errors';
+export { lockAdvisoryKeys } from './infrastructure/database/advisory-locks';

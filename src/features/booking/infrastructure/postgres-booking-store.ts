@@ -1,6 +1,6 @@
 import { sql } from 'kysely';
 import { currentHolding } from '@/features/ownership';
-import type { DatabaseTransaction } from '@/features/platform';
+import { lockAdvisoryKeys, type DatabaseTransaction } from '@/features/platform';
 import type { BookingStore, SealedOwnUseNight } from '../application/create-own-use-booking';
 import type { HoldingNightsPort } from '../application/preview-own-use-booking';
 
@@ -22,15 +22,8 @@ function seasonOf(value: string): SealedOwnUseNight['season'] {
 /** Data civil `YYYY-MM-DD` como `date` do PostgreSQL (o driver lê `date` como `Date`; aqui só se compara). */
 const civil = (date: string) => sql<Date>`${date}::date`;
 
-/** Travas consultivas em uma instrução, na ordem dada (a junção lateral itera a subconsulta já ordenada). */
-async function advisoryLocks(tx: DatabaseTransaction, keys: readonly string[]): Promise<void> {
-  if (keys.length === 0) return;
-  await sql`SELECT count(*) FROM (
-      SELECT k FROM unnest(${[...keys]}::text[]) WITH ORDINALITY AS t(k, n) ORDER BY n
-    ) AS ordered, LATERAL (SELECT pg_advisory_xact_lock(hashtextextended(ordered.k, 0))) AS taken`.execute(
-    tx,
-  );
-}
+/** Travas consultivas na ordem dada, uma instrução por chave (W13 E2, D6): mesmas chaves e mesma ordem da W12. */
+const advisoryLocks = lockAdvisoryKeys;
 
 /**
  * Reserva de uso próprio por SQL direto do servidor (ADR-002 do `03`). As chaves das travas consultivas são as mesmas que
