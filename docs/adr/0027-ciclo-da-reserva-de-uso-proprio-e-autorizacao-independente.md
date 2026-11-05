@@ -249,3 +249,9 @@ A W13 não ativa reservas.
    automático do PostgreSQL 16+, sem SET e sem herança); `luxtory_app`, `anon` e `authenticated` não alcançam o
    autorizador nem o dono por cadeia alguma; ninguém além do dono tem GRANT OPTION nas funções privilegiadas, que são do
    dono do schema. Conferido pela prontidão.
+9. **Origem P-A na recuperação (E2b, 2026-11-05; bloqueio B-A3).** "Origem P-A" (§3, §4; A3; spec `inventory`, BR-123)
+   é a `forfeited_right` aberta por uma transição que resolveu uma exceção operacional — cancelamento do Admin
+   (`exception_resolution`) ou do Titular durante a exceção aberta (`cancellation`, resolução `titular_cancellation`). A
+   E1 reconhecia só o primeiro caso; a migration `20261105174225_booking_recovery_operational_exception_origin` redefine
+   `app.authorize_booking_action` (`CREATE OR REPLACE`: dono, ACL, `SECURITY DEFINER` e `search_path` preservados; o
+   `down` recusa reabrir o defeito com ativação ou fatos). Nenhuma decisão muda.
