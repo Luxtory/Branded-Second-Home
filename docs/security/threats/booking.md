@@ -296,4 +296,9 @@ a dados (ADR-0027, notas da E1). Nenhuma ativação; riscos R1–R8, R4b e C1 se
   só-inserção; decisão pendente antes da ativação.
 - **Recusas do banco (D1):** `permission_*` de forjamento ou corrida chegam como `ERR_PERMISSION` gravado, e K1/K2
   fechadas como capability fechada (sem operação, recusa ou evento) — antes da E2 viravam erro 500 (W12 inclusive).
-
+- **Cobertura pelos handlers (E2):** T-1301 (cancelamento só com delegação ativa, holding da reserva, K2 e prazo),
+  T-1302 (atos econômicos sem o uso da autorização da mesma operação → `ERR_PERMISSION`; P-B só suspende), T-1303
+  (autorização resolvida pelo servidor, uso único, uso × revogação), T-1307 (transições concorrentes: exatamente uma),
+  T-1308 (termos da prévia), T-1309 (reserva de outra party = inexistente) — provados em
+  `own-use-cancellation.db.test.ts`, `own-use-admin-acts.db.test.ts` e `own-use-lifecycle-concurrency.db.test.ts`.
+  Nenhuma ativação; riscos residuais seguem não ratificados.

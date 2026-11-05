@@ -555,3 +555,31 @@ concluído devolve o resultado gravado (a consulta de idempotência vem antes de
 cota), e uma recusa por limite não grava resposta na chave, que continua utilizável. Teste de aceite na E4b: limite
 estourado sem nada gravado; limitador indisponível → recusa; replay de chave concluída com a cota esgotada → resultado
 gravado.
+
+#### 10.12.1. Implementação da E2 (2026-11-05, PR draft; sem merge, Production, migration ou ativação)
+
+Sem mudança de decisão. Escolhas de implementação dentro dos contratos:
+
+- **Arquivos.** Motor e commands em `src/features/booking/application/` (`own-use-closing.ts`,
+  `cancel-own-use-booking.ts`, `declare-no-show.ts`, `own-use-exceptions.ts`, `request-booking-authorization.ts`, e as
+  portas da reserva `own-use-invalidation.ts`/`own-use-recovery.ts`); `correct_use_right` em
+  `src/features/calendar/application/correct-use-right.ts` e `recover_future_capacity` em
+  `src/features/inventory/application/recover-future-capacity.ts`; composição em
+  `src/features/booking/presentation/own-use-lifecycle-handlers.ts` (sem Server Action: E4).
+- **Entradas.** Todas levam `second_home_id` e `booking_id` (o guard do Titular confere a holding na casa; o servidor
+  confere que a reserva é da casa). Reserva inexistente: `ERR_PERMISSION` para o Titular (igual à de outra party,
+  T-1309) e `ERR_NOT_FOUND` para o Admin (ADR-0010 §10). `resolve_exception` e `correct_use_right` levam o
+  `exception_id` que o Admin viu (outra exceção → `ERR_STATE_TRANSITION`). Base e `incident_ref` passam por
+  `isNonPersonalReference` (forma de e-mail, CPF, CNPJ, telefone ou caractere de controle → `ERR_VALIDATION`).
+- **Travas.** Os handlers tomam também a trava da reserva (`booking`, ADR-0027 §2) antes de reler o estado, para que a
+  revalidação veja a transição concorrente que venceu; os gatilhos a retomam de forma reentrante.
+- **Solicitação.** Condições de emissão conferidas antes de gravar (fora delas a solicitação seria inútil):
+  `ERR_STATE_TRANSITION` (estado, janela do no-show, exceção do tipo errado, sem noite não iniciada),
+  `ERR_CAPACITY_UNAVAILABLE` (nada a recuperar) e `ERR_VALIDATION` (recuperação de origem P-A sem atestação).
+- **Recuperação.** Não grava transição: a base registrada fica na auditoria (imutável), ligada à solicitação pela
+  `authorization_ref` da custódia (achado A9; sem migration).
+- **Testes (PostgreSQL real, executor e guards de produção).** `database-refusals.db.test.ts` (D1 na W12),
+  `own-use-lifecycle-parity.db.test.ts` (gêmeas × SQL em µs), `own-use-cancellation.db.test.ts`,
+  `own-use-admin-acts.db.test.ts` e `own-use-lifecycle-concurrency.db.test.ts`; unidade em
+  `own-use-lifecycle.test.ts`, catálogo de erros, executor e `isNonPersonalReference`. Cada evento é validado contra o
+  AsyncAPI (`tests/support/asyncapi.ts`).
