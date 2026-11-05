@@ -212,6 +212,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ...
 
 ### Fixed
+- B2C: disponibilidade prevista do Club, prestadores de gestão/manutenção, locações por canais autorizados e exceção do
+  Owner após encerramento do Membership (D-B2C-29); Luxplus sem pressupor insuficiência de Créditos. Narrativa e UI preservadas.
+
 - Brand Partners — formulário "Vamos começar pela sua marca.": durante o envio os campos ficam somente leitura e o
   botão "Enviar mensagem" desabilitado; um aceite (202) não apaga mais edições feitas enquanto a requisição estava em
   curso (spec catalog §14.8).
