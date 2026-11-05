@@ -228,7 +228,7 @@ export const brandPartnersMessages = {
           name: 'Pertencimento',
           title: 'Um universo para compartilhar.',
           text: [
-            'Um lugar que expressa o universo com o qual a pessoa se identifica — onde pode viver momentos de privacidade com família, amigos e convidados, conforme as regras da Second Home.',
+            'Um lugar que expressa o universo com o qual a pessoa se identifica — para viver com privacidade, com família, amigos e convidados, conforme as regras da Second Home.',
           ],
         },
       ],
