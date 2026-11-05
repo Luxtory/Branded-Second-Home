@@ -626,3 +626,4 @@ autorizações e operações do ciclo).
   forçado a errar a origem → o autorizador real recusa; com atestação, solicitação e recuperação com replay idêntico;
   controle comum). Controles preexistentes: P-A cancelada pelo Admin exige atestação; no-show recupera sem ela.
 - **Bloqueio B-A3** segue até este PR estar integrado na `main`, aplicado pela CI e validado.
+- **Situação (2026-11-05):** a correção foi mergeada pelo #84 (squash `afa2d12`); a CI da `main` (42091427441) aplicou só a migration `20261105174225_booking_recovery_operational_exception_origin` (60/0) e a validação somente leitura em Production confirmou o critério novo em `app.authorize_booking_action` (md5 do corpo igual ao do repositório), `SECURITY DEFINER`, `search_path = pg_catalog, pg_temp`, dono e ACL preservados e `app.assert_own_use_activation_ready()` sem erro, com ativação 0 e nenhuma reserva, solicitação ou autorização. B-A3 **resolvido tecnicamente**; não autoriza ativação.

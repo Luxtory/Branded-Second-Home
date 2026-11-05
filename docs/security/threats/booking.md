@@ -311,3 +311,5 @@ a dados (ADR-0027, notas da E1). Nenhuma ativação; riscos R1–R8, R4b e C1 se
   capacidade do imóvel bloqueado ia ao Inventário Luxtory. Mitigação: correção no banco (spec `booking` §10.13) e
   **bloqueio B-A3** — nenhuma ativação, recuperação ou autorização independente antes da correção integrada e validada.
   Alcance até lá: nenhum em Production (K1/K2 com 0 linhas, autorizador sem senha nem Environment).
+  **Situação (2026-11-05):** mitigado — correção mergeada (#84 → `afa2d12`), aplicada pela CI e validada somente
+  leitura em Production; ativação segue não autorizada.
