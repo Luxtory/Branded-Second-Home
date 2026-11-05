@@ -16,6 +16,8 @@ ou ativação); E2 em diante dependem de nova autorização expressa.
 
 **Atualização 2026-11-05 (E2 mergeada; bloqueio B-A3):** o #83 foi mergeado (squash `65223a9`, sem migration; K1 e K2 com 0 linhas). **Bloqueio B-A3 (decisão do fundador):** nenhuma ativação de reserva (K1, K2), recuperação (`recover_future_capacity`) ou autorização independente (senha, Environment ou uso do papel `luxtory_booking_authorizer`) antes de a correção da origem P-A na recuperação estar integrada na `main`, aplicada pela CI e validada. Motivo: a função `app.authorize_booking_action` da E1 não reconhece como origem P-A o cancelamento tardio do Titular durante exceção operacional aberta e emite a autorização `recovery` sem a atestação exigida por A3 (spec `booking` §10.13). A correção (E2b) foi autorizada só em PR draft, sem merge nem Production; E3–E5 seguem não autorizadas.
 
+**Atualização 2026-11-05 (E2b mergeada; B-A3 resolvido tecnicamente):** a correção foi mergeada pelo #84 (squash `afa2d12`); a CI da `main` (42091427441) aplicou só a migration `20261105174225_booking_recovery_operational_exception_origin` (60/0) e a validação somente leitura em Production confirmou o critério novo em `app.authorize_booking_action` (md5 do corpo igual ao do repositório), `SECURITY DEFINER`, `search_path = pg_catalog, pg_temp`, dono e ACL preservados e `app.assert_own_use_activation_ready()` sem erro, com ativação 0 e nenhuma reserva, solicitação ou autorização. O bloqueio B-A3 está tecnicamente resolvido; **isso não autoriza ativação** — K1, K2, a autorização independente (senha, Environment) e as demais pendências da ativação seguem fechadas. A E3 (jobs e consumidores) foi autorizada só em branch isolada e PR draft (sem merge, deploy, Production ou ativação).
+
 ## Decisões do fundador (2026-11-03)
 
 | # | Decisão | Situação |
@@ -44,8 +46,8 @@ ou ativação); E2 em diante dependem de nova autorização expressa.
 | E0 | Canônicos `02` v4.4 e `03` v3.16 (REQ-084, EC-16, TECH-022/026/051, §7); roadmap; ADR-0027; specs; plano; STRIDE | PR draft documental; sem merge → mergeada (#80, `5d9b636`, 2026-11-03) |
 | E1 | Migrations: transições, projeção, exceção, candidatos, solicitação/autorização/revogação/uso, papel autorizador, regras de liberação, custódia, `restore` e `correction`, chave K2 no `CHECK`, prontidão; `db:check`; testes com privilégios reais | não autorizada → em andamento (autorizada em 2026-11-03; ambiente isolado) → concluída (#82 → `26dd58d`, 2026-11-04; Production 59/0, ativação 0) |
 | E2 | Contratos AsyncAPI dos eventos dos commands, antes do primeiro handler que emite evento; domínio e commands (classificação TS + gêmea SQL; máquina da TECH-055; seis commands); idempotência; concorrência | não autorizada → autorizada (2026-11-05, plano v2; PR draft, sem merge) → implementada em PR draft (spec `booking` §10.12.1), aguardando auditoria → concluída (#83 → `65223a9`, 2026-11-05) |
-| E2b | Correção da origem P-A na recuperação (A3, BR-123; spec `booking` §10.13): migration incremental com `CREATE OR REPLACE` de `app.authorize_booking_action`, espelho no `requestFacts`, testes de regressão; bloqueio B-A3 até integrada e validada | autorizada (2026-11-05; PR draft, sem merge nem Production) |
-| E3 | Jobs e consumidores de notificação | não autorizada |
+| E2b | Correção da origem P-A na recuperação (A3, BR-123; spec `booking` §10.13): migration incremental com `CREATE OR REPLACE` de `app.authorize_booking_action`, espelho no `requestFacts`, testes de regressão; bloqueio B-A3 até integrada e validada | autorizada (2026-11-05; PR draft, sem merge nem Production) → concluída (#84 → `afa2d12`, 2026-11-05; Production 60/0, validada somente leitura) |
+| E3 | Jobs e consumidores de notificação | não autorizada → autorizada (2026-11-05; branch isolada e PR draft, sem merge, deploy, Production ou ativação) → implementada em PR draft (spec `booking` §10.14.1), aguardando auditoria |
 | E4a | Revisão renderizada com o fundador: prévia do cancelamento (tempestivo, tardio, iniciada, Owner, prazo vencido na revisão, em exceção) e telas Admin, 390/1440 px | não autorizada |
 | E4b | Integração das telas e E2E; gate G-E4-1 (limitador da solicitação, spec `booking` §10.12) testado antes de expor a solicitação | não autorizada |
 | E5 | Workflow do autorizador comprovado num Environment isolado apontando para banco descartável | não autorizada |
@@ -115,7 +117,7 @@ operacionais, secrets, Environment real, migrations fora da CI, merge sem autori
 
 ## Pendências preservadas
 
-- **Bloqueio B-A3** (2026-11-05): nenhuma ativação de reserva (K1, K2), recuperação (`recover_future_capacity`) ou autorização independente (senha, Environment ou uso do papel `luxtory_booking_authorizer`) antes de a correção da origem P-A na recuperação estar integrada na `main`, aplicada pela CI e validada (spec `booking` §10.13).
+- **Bloqueio B-A3** (2026-11-05; **resolvido tecnicamente** em 2026-11-05 pelo #84 → `afa2d12`, sem autorizar ativação): nenhuma ativação de reserva (K1, K2), recuperação (`recover_future_capacity`) ou autorização independente (senha, Environment ou uso do papel `luxtory_booking_authorizer`) antes de a correção da origem P-A na recuperação estar integrada na `main`, aplicada pela CI e validada (spec `booking` §10.13).
 - **Ativação** (estado B): migration própria depois da W13 em Production; prontidão + impressões digitais; ensaio da
   desativação (R3) fora de Production; execuções do `outbox`, `open_exercise` e `close_exercise` observadas; latência de
   entrega das notificações adequada à detecção (R4, R7), comprovada em Production — hoje o evento é enfileirado no

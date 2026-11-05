@@ -20,6 +20,18 @@
     {
       "path": "/api/jobs/close_exercise",
       "schedule": "41 5 * * *"
+    },
+    {
+      "path": "/api/jobs/advance_booking_states",
+      "schedule": "11 17 * * *"
+    },
+    {
+      "path": "/api/jobs/flag_no_show_candidates",
+      "schedule": "29 5 * * *"
+    },
+    {
+      "path": "/api/jobs/flag_no_show_candidates",
+      "schedule": "29 17 * * *"
     }
   ]
 }

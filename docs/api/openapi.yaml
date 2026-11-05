@@ -2145,7 +2145,8 @@ paths:
       description: |
         Chamado pelo Vercel Cron, que só faz `GET`, com `Authorization: Bearer <CRON_SECRET>`. Cada execução e cada
         item são idempotentes (TECH-090); execuções em paralelo produzem um único efeito. Só existem os jobs do
-        registro de jobs implementados (W1: `outbox`; W10: `open_exercise`; W11: `close_exercise`).
+        registro de jobs implementados (W1: `outbox`; W10: `open_exercise`; W11: `close_exercise`; W13:
+        `advance_booking_states`, `flag_no_show_candidates`).
 
         `open_exercise` (spec calendar §5–§6, ADR-0024, ADR-0025): sela o exercício corrente e o seguinte de cada
         Second Home formalizada, um exercício por transação, com a custódia raiz de cada noite e, no Co-Owner, as
@@ -2161,6 +2162,21 @@ paths:
         em qualquer exercício anterior — recupera atrasos. Contagens: `candidates`, `due`, `closed`, `not_due`,
         `failed` (só log estruturado: o TECH-101 não tem alerta deste job) e `deferred`. Falha de item não muda o
         status 200.
+
+        `advance_booking_states` (TECH-055, TECH-090; spec booking §10.14): avança, pelo instante do banco, as reservas
+        de uso próprio `confirmed` a partir do 1º check-in (`in_use`) e `in_use` a partir do check-out (`completed`);
+        reserva atrasada vai de `confirmed` a `completed` pelas duas transições na mesma operação. Nunca toca reserva em
+        exceção ou em estado terminal; nenhum efeito econômico, de ocupação ou de custódia; nenhum evento.
+
+        `flag_no_show_candidates` (TECH-046, TECH-090; spec booking §10.14): registra uma vez a reserva `confirmed` ou
+        `in_use` dentro da janela `[1º check-in, check-out)` como candidata a no-show. Nunca declara no-show (ato do
+        Admin com autorização independente, que não depende deste registro); nenhum evento. Fora da janela o registro
+        não é feito depois (a lista do Admin é calculada na hora, ADR-0027 §7).
+
+        Os dois: uma transação por reserva; repetição ou execução concorrente não cria efeito novo; varredura sem
+        reserva elegível não grava operação. Contagens: `candidates`, `processed`, `skipped` (já feito, estado ou
+        instante mudou), `failed` (só log estruturado) e `deferred` (orçamento de tempo esgotado; a próxima execução
+        continua); no `advance_booking_states`, também `transitions`.
       operationId: runJob
       security:
         - cronSecret: []
@@ -2172,7 +2188,7 @@ paths:
           description: Nome do job no TECH-090.
           schema:
             type: string
-            enum: [outbox, open_exercise, close_exercise]
+            enum: [outbox, open_exercise, close_exercise, advance_booking_states, flag_no_show_candidates]
       responses:
         '200':
           description: Execução concluída

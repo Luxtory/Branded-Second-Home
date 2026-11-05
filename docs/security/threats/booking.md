@@ -311,3 +311,19 @@ a dados (ADR-0027, notas da E1). Nenhuma ativação; riscos R1–R8, R4b e C1 se
   capacidade do imóvel bloqueado ia ao Inventário Luxtory. Mitigação: correção no banco (spec `booking` §10.13) e
   **bloqueio B-A3** — nenhuma ativação, recuperação ou autorização independente antes da correção integrada e validada.
   Alcance até lá: nenhum em Production (K1/K2 com 0 linhas, autorizador sem senha nem Environment).
+  **Situação (2026-11-05):** mitigado — correção mergeada (#84 → `afa2d12`), aplicada pela CI e validada somente
+  leitura em Production; ativação segue não autorizada.
+
+## W13.7. E3 — jobs e consumidores (2026-11-05, PR draft)
+
+- **Superfície:** duas rotas novas em `/api/jobs/[job]`, sob o mesmo `CRON_SECRET` (comparação em tempo constante,
+  401 sem revelar o job); sem entrada além do nome do job. Os jobs não têm efeito econômico, ficam fora da K2 e o banco
+  confere cada escrita (E1). Sem segredo, papel, migration ou serviço novo.
+- **T-1316 [LOW] Denial of service / repetição — disparo duplicado ou concorrente.** A Vercel pode repetir um disparo e
+  o endpoint pode ser chamado à mão. Mitigação: chave idempotente pelo estado da reserva (replay sem operação nova),
+  travas da reserva e orçamento de 240 s; provado por testes concorrentes.
+- **T-1317 [LOW] Information disclosure — notificação.** Dados escolhidos campo a campo, sem base registrada, referência
+  de incidente ou dado pessoal; destinatário = party fixada no evento (RLS da central); log do dispatcher só com nome
+  do erro. Provado pela entrega real com marcadores.
+- **Residual:** cadência best effort (Hobby, sem nova tentativa); registro de candidata perdido não se recupera depois do
+  check-out — a lista do Admin e o `declare_no_show` não dependem dele.

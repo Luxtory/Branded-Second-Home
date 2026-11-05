@@ -626,3 +626,75 @@ autorizações e operações do ciclo).
   forçado a errar a origem → o autorizador real recusa; com atestação, solicitação e recuperação com replay idêntico;
   controle comum). Controles preexistentes: P-A cancelada pelo Admin exige atestação; no-show recupera sem ela.
 - **Bloqueio B-A3** segue até este PR estar integrado na `main`, aplicado pela CI e validado.
+- **Situação (2026-11-05):** a correção foi mergeada pelo #84 (squash `afa2d12`); a CI da `main` (42091427441) aplicou só a migration `20261105174225_booking_recovery_operational_exception_origin` (60/0) e a validação somente leitura em Production confirmou o critério novo em `app.authorize_booking_action` (md5 do corpo igual ao do repositório), `SECURITY DEFINER`, `search_path = pg_catalog, pg_temp`, dono e ACL preservados e `app.assert_own_use_activation_ready()` sem erro, com ativação 0 e nenhuma reserva, solicitação ou autorização. B-A3 **resolvido tecnicamente**; não autoriza ativação.
+
+### 10.14. E3 — jobs e consumidores de notificação (autorizada em 2026-11-05; PR draft, sem merge nem Production)
+
+Sem migration nem mudança de regra: o banco da E1 já confere os dois jobs (avanço só por `advance_booking_states` com
+papel `system`, duas transições na mesma operação quando atrasado; candidato só por `flag_no_show_candidates`, uma linha
+por reserva). Jobs fora da K2 (ADR-0027 §5).
+
+- **`advance_booking_states`:** `confirmed → in_use` a partir do 1º check-in; `in_use → completed` a partir do check-out;
+  atrasada, `confirmed → in_use → completed` na mesma operação. Reserva em exceção ou terminal nunca avança. Sem evento,
+  sem ledger, custódia ou ocupação.
+- **`flag_no_show_candidates`:** reserva `confirmed`/`in_use` com a janela `[1º check-in, check-out)` aberta, registrada uma
+  vez; trava `app.booking:<id>` (a mesma das transições) antes de reler estado, janela e registro. Nunca declara no-show:
+  o `declare_no_show` (Admin + autorização independente) e a lista "A verificar comparecimento" (consulta na hora,
+  ADR-0027 §7) não dependem do registro.
+- **Execução:** uma transação por reserva pelo executor de produção (guard de sistema); candidatos e instantes pelo
+  relógio do banco; chave idempotente `<job>:<booking_id>:<last_transition_id | root>` — repetição ou corrida com o mesmo
+  estado é replay sem operação nova, e qualquer mudança de estado gera transição e, portanto, chave nova (retomada sem
+  recusa presa). Varredura sem candidato não grava nada. Contagens `candidates`, `processed`, `skipped`, `failed`,
+  `deferred` (+ `transitions` no avanço); falha de item só no log estruturado. Candidatos ordenados pelo fim da janela
+  (o mais próximo do check-out primeiro).
+- **Cadência (runbook, TECH-001):** avanço 1×/dia na hora 17 UTC; candidatos 2×/dia, horas 05 e 17 UTC (Vercel Hobby:
+  qualquer minuto da hora marcada, entrega best effort, pode faltar ou repetir, sem nova tentativa). Dois disparos a 12 h
+  cobrem por desenho toda janela ≥ 13 h — a de 1 noite tem 19–21 h em qualquer fuso, com ou sem horário de verão —, salvo
+  falha da plataforma; um único disparo às 17 UTC deixaria, por exemplo, Manaus (UTC−4) sem disparo na janela. O avanço
+  1×/dia pode sair no dia seguinte fora do Brasil; só atrasa a exibição. Cobertura temporal para ativação comercial em
+  outros fusos: decisão antes da ativação.
+- **Consumidores** dos cinco eventos (AsyncAPI): um por tipo, validação zod igual ao contrato, campos escolhidos (nunca o
+  payload inteiro; nunca `basis`, `incident_ref` ou dado pessoal), destinatário = `recipient_party_id` gravado no COMMIT,
+  tipo da notificação = tipo do evento, uma notificação por evento, destinatário e tipo (recibo por consumidor e chave
+  única). Nulos omitidos com a distinção explícita: `modality` (`owner`/`co_owner`) onde o contrato a define, `cause`,
+  `cancellation_class`, `exception_type`, `reason`, `timely_until`, `outcome` e contagens por categoria preservados. Copy e
+  telas: E4.
+
+#### 10.14.1. Implementação da E3 (2026-11-05, PR draft; sem merge, deploy, Production ou ativação)
+
+Sem mudança de decisão, migration ou regra canônica.
+
+- **Arquivos.** Regra pura `advanceSteps` em `domain/own-use-lifecycle.ts`; handlers em
+  `application/advance-booking-states.ts` e `application/flag-no-show-candidates.ts`; varredura comum em
+  `application/own-use-lifecycle-jobs.ts`; consultas pelo relógio do banco em `infrastructure/postgres-booking-job-store.ts`;
+  composição em `presentation/lifecycle-jobs.ts` (exportada por `jobs.ts`); consumidores em
+  `application/own-use-lifecycle-consumers.ts`. Platform: duas entradas em `SYSTEM_COMMANDS` e no `JobRegistry`.
+- **Chave por estado, não por execução.** `<job>:<reserva>:<folha da cadeia | root>`: Vercel pode repetir ou perder um
+  disparo; repetição e corrida sobre o mesmo estado são replay (nenhuma operação nova, nenhuma recusa gravada), e toda
+  mudança de estado grava transição e muda a chave — sem a recusa presa que uma chave fixa por reserva produziria e sem
+  as operações extras de uma chave por execução (precedente do `close_exercise`, aqui desnecessário).
+- **Travas.** Avanço: Ação (se houver) → reserva, como os commands da E2 (sem noites: não há efeito por noite).
+  Candidatos: só `app.booking:<id>` — evita a corrida com o `declare_no_show` e o `23505` da PK em execuções
+  concorrentes, que viraria falha técnica.
+- **Cadência.** `vercel.json`: avanço `11 17 * * *`; candidatos `29 5 * * *` e `29 17 * * *` (mesmo caminho, permitido
+  pela Vercel). O teste `lifecycle-cron-coverage.test.ts` lê o `vercel.json` e prova, no modelo do Hobby, a cobertura da
+  janela de 1 noite em São Paulo, Manaus, Nova York, Lisboa, Tóquio e Auckland o ano inteiro (com horário de verão), e
+  demonstra os limites: um único disparo às 17 UTC perderia Manaus; o avanço pode sair no dia seguinte fora do Brasil.
+  "Garantido" supõe a entrega da plataforma (best effort, sem nova tentativa).
+- **Notificações.** Tipo = tipo do evento; dados planos (a central guarda `string | number`): `cause`,
+  `cancellation_class`, `exception_type`, `reason`, `timely_until`, `outcome`, contagens e `restored_*`/`corrected_*` por
+  categoria; `modality` derivada só onde o contrato fixa o nulo do Owner (cancelamento, no-show, invalidação). A central
+  mostra o aviso genérico com link para a reserva até a copy da E4.
+- **Referência do legado (Luxtory2.0), só conceitos.** Aproveitado: contagens e falha por item com log estruturado,
+  retomada de atraso, navegação contextual da notificação (link da reserva). Não replicado: `UPDATE` de status por
+  `CURRENT_DATE` (aqui transições só-inserção pelo instante do banco), funções `SECURITY DEFINER` com `service_role`
+  (aqui o executor com o papel da aplicação e guard de sistema), notificação por `user_id` resolvida na entrega e texto
+  gravado (aqui party fixada no evento e dados estruturados), mensagem de erro no log (aqui só o nome) e execução
+  monolítica de vários jobs (aqui um job por rota).
+- **Testes.** Unidade: `own-use-lifecycle.test.ts` (fronteiras em µs do avanço), `own-use-lifecycle-jobs.test.ts`
+  (varredura, contagens, orçamento, chave), `own-use-lifecycle-consumers.test.ts` (mapeamento, paridade de recusa com o
+  AsyncAPI, registro de produção), `lifecycle-cron-coverage.test.ts`, `registry.test.ts`, `jobs.test.ts` (enum do
+  `runJob`). PostgreSQL real: `own-use-lifecycle-jobs.db.test.ts` (duas transições na mesma operação, exceção e terminal,
+  repetição sem operação nova, concorrência job × job/cancelamento/exceção/no-show, ordem dos jobs, K1/K2 fechadas,
+  banco vazio sem operação, nenhum rastro econômico ou evento, entrega real dos cinco eventos com falha parcial,
+  redespacho e payload inválido).
