@@ -229,7 +229,9 @@ export function createPostgresBookingLifecycleStore(): BookingLifecycleStore<Dat
       return microsFromText(row.used_us);
     },
     async requestFacts(tx, booking) {
-      // As mesmas funções e a mesma linhagem de `app.authorize_booking_action`, no instante do banco.
+      // As mesmas funções e a mesma linhagem de `app.authorize_booking_action`, no instante do banco. Origem P-A (A3,
+      // spec booking §10.13): a transição que abriu a `forfeited_right` resolveu uma exceção operacional — Admin ou
+      // Titular. Só recusa cedo; a garantia é da função do banco.
       const { rows } = await sql<{
         window_open: boolean;
         unstarted: string[];
@@ -247,7 +249,10 @@ export function createPostgresBookingLifecycleStore(): BookingLifecycleStore<Dat
           FROM app.booking b
           CROSS JOIN app.booking_period_instants(b.id) AS i
           LEFT JOIN LATERAL (
-            SELECT array_agg(f.id::text ORDER BY f.id) AS ids, bool_or(t.kind = 'exception_resolution') AS from_exception
+            SELECT array_agg(f.id::text ORDER BY f.id) AS ids,
+                   bool_or(EXISTS (SELECT 1 FROM app.booking_exception_resolution z
+                                     JOIN app.booking_exception x ON x.id = z.exception_id
+                                    WHERE z.transition_id = t.id AND x.exception_type = 'operational')) AS from_exception
               FROM app.date_custody f
               JOIN app.date_custody p ON p.id = f.parent_custody_id
               JOIN app.second_home_date d ON d.second_home_id = f.second_home_id AND d.stay_date = f.stay_date
