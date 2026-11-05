@@ -1254,6 +1254,28 @@ System; o merge do PR e a abertura do portão seguem autorizações separadas do
 ativos aprovados (`P-BP-03`) e autorização expressa do fundador; CI verde não autoriza merge nem go-live.
 
 
+### 14.10 Revisão cirúrgica GTM autorizada (2026-11-05)
+
+`D-BP-29`. Base examinada: main `26dd58d`; `01` v10.2, `02` v4.4, `03` v3.16. O fundador autorizou a Master Copy
+definitiva para implementação em PR de revisão, preservando o site existente. A revisão normativa do `01` v10.3 segue
+em PR independente; a publicação da nova comunicação depende de sua emissão e de autorização expressa de merge.
+
+- **Brief preservado:** oportunidade emocional e comercial da marca na Home; aprofundamento de processo, papéis e
+  condições no Como funciona. Mesmas seções, ordem, componentes, tipografia, cores, mídia, CTA, formulário e navegação.
+- **Escopo literal:** H02/H03/H04/H08/H09/H11/H12 na Home; H14/H15/H16/H17/H18/H19/H20/H22/H23/H24 no Como funciona.
+  Copy em `src/features/catalog/presentation/i18n/brand-partners-pt-br.ts`; nenhum outro campo está autorizado.
+- **Fatos e limites:** `01` §1/§35 e BR-030/035/040/041, BR-072/130/146, BR-250 a BR-260; REQ-022/026/027/028/038/094.
+  Interesse não é aquisição; GTM e preparação comercial acompanham o desenvolvimento; comercialização formal segue
+  estruturação, condições e autorizações. Sem incorporadora universal ou alteração das possibilidades do Investor.
+- **Preservação:** Hero bilateral, dilema, equação D-BP-25/26, escada, governança, titularidade, licenciamento e Luxchange
+  D-BP-21 intactos. H22 usa o parágrafo aberto de responsabilidades; nenhuma FAQ nova. H12 preserva materialização e Club.
+- **Visual:** a copy literal aprovada prevalece sobre encurtamentos de versões anteriores. Medir quebras e ritmo em
+  390/768/1440 px com fontes carregadas; registrar eventuais blocos acima da meta de concisão para o aceite visual.
+  Isso não autoriza reescrita, CSS, TSX ou alteração do Design System.
+- **QA e publicação:** testes de comunicação/ontologia/terminologia/copy, E2E pertinentes, acessibilidade, teclado,
+  formulário sintético, links, privacidade, SEO, imagens e overflow. Gates existentes preservados. Merge em main dispara
+  CI → migrate → deploy; nenhum merge ou Production autorizado nesta etapa. Co-Owner exclusivo e funcionalidades fora.
+
 ## 15. Sobre a Luxtory
 
 ### 15.1 Contrato e brief aprovado (2026-10-15)
