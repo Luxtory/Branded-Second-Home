@@ -16,8 +16,10 @@
     color: var(--lx-color-fg);
   }
 
+  /* R-DS-3 (W13 E4b): trilhas com mínimo zero — rótulo longo com texto ampliado quebra a linha em vez de alargar. */
   .lx-choice-group__options {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--lx-space-3);
   }
 
@@ -27,7 +29,7 @@
 
   .lx-choice {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
     gap: var(--lx-space-1) var(--lx-space-3);
     align-items: start;
     align-content: start;

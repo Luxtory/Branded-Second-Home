@@ -23,6 +23,17 @@
     border-bottom: var(--lx-border-hairline) solid var(--lx-color-rule);
   }
 
+  /* R-DS-1 (W13 E4b): com texto ampliado (200%), o logo encolhe na barra — mantendo a proporção pelo object-fit do
+     lx-logo — e o botão de menu nunca sai da janela. */
+  .lx-app__bar > .lx-logo {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  .lx-app__bar > .lx-app__menu-button {
+    flex: none;
+  }
+
   .lx-app__nav,
   .lx-app__account {
     display: none;

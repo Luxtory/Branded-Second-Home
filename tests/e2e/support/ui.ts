@@ -93,6 +93,64 @@ export async function expectNoDocumentOverflow(page: Page) {
   if (original !== null) await page.setViewportSize(original);
 }
 
+/** Larguras do zoom só de texto (200%) das correções R-DS-1 a R-DS-3 (W13 E4b). */
+export const TEXT_ZOOM_WIDTHS = [320, 360, 390, 430] as const;
+const TEXT_ZOOM_STYLE = 'lx-e2e-text-zoom';
+const MIN_TARGET_PX = 44;
+
+/**
+ * R-DS-1 a R-DS-3 (W13 E4b): com texto a 200%, o botão de menu do App Shell e o `lx-choice` cabem na janela de 320 a
+ * 430 px; o link de contexto do PageHeader tem alvo ≥ 44 px com texto normal e ampliado. Mede os componentes — não o
+ * documento inteiro — para provar exatamente as três correções.
+ */
+export async function expectSharedComponentFixes(page: Page) {
+  const original = page.viewportSize();
+  const measure = () =>
+    page.evaluate(() => {
+      const width = document.documentElement.clientWidth;
+      const visible = (selector: string) =>
+        [...document.querySelectorAll(selector)].filter((element) => element.checkVisibility());
+      const beyond = (selector: string) =>
+        Math.max(
+          0,
+          ...visible(selector).map((element) => element.getBoundingClientRect().right - width),
+        );
+      return {
+        menu: beyond('.lx-app__menu-button'),
+        choice: beyond('.lx-choice'),
+        context: visible('.lx-page-header__context .lx-link').map(
+          (element) => element.getBoundingClientRect().height,
+        ),
+      };
+    });
+  for (const height of (await measure()).context)
+    expect(height, 'alvo do link de contexto').toBeGreaterThanOrEqual(MIN_TARGET_PX);
+  await page.evaluate((id) => {
+    const style = document.createElement('style');
+    style.id = id;
+    style.textContent = 'html { font-size: 200% !important; }';
+    document.head.append(style);
+  }, TEXT_ZOOM_STYLE);
+  for (const width of TEXT_ZOOM_WIDTHS) {
+    await page.setViewportSize({ width, height: SWEEP_HEIGHT });
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+        }),
+    );
+    const sizes = await measure();
+    expect(sizes.menu, `menu do App Shell fora da janela em ${width}px (texto 200%)`).toBe(0);
+    expect(sizes.choice, `lx-choice fora da janela em ${width}px (texto 200%)`).toBe(0);
+    for (const height of sizes.context)
+      expect(height, `alvo do link de contexto em ${width}px (texto 200%)`).toBeGreaterThanOrEqual(
+        MIN_TARGET_PX,
+      );
+  }
+  await page.evaluate((id) => document.getElementById(id)?.remove(), TEXT_ZOOM_STYLE);
+  if (original !== null) await page.setViewportSize(original);
+}
+
 /** Gate completo de uma tela: overflow de 320 a 1920 px, console limpo e axe 0 a 390 e 1440 px. */
 export async function expectResponsive(page: Page, consoleErrors: readonly string[]) {
   await expectNoDocumentOverflow(page);

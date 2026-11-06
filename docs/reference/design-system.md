@@ -239,7 +239,8 @@ principal primeiro ("Continuar" ou o envio), "Voltar" como `lx-button--secondary
 
 `fieldset` + `legend.lx-label` + `lx-choice-group__options` com `label.lx-choice`
 (`input` radio/checkbox + `lx-choice__title` + `lx-choice__desc`). O card inteiro é alvo. Owner e Co-Owner têm
-peso visual idêntico (REQ-103).
+peso visual idêntico (REQ-103). Trilhas com mínimo zero (`minmax(0, 1fr)`, R-DS-3, W13 E4b): rótulo longo com texto
+ampliado quebra a linha em vez de alargar a página.
 
 ### Inline Message · `lx-message--{info,success,warning,error}`
 
@@ -337,6 +338,8 @@ Luxplus. Componente, estado ou token novo só entra quando uma tela o consome (*
 - Fundo da navegação: `navGround` = `night` (padrão, logo Warm Sand) ou `paper` (logo Moroccan Blue).
 - O shell aplica `data-expression="product"`: rótulos de interface em Hanken Grotesk (o `lx-evidence__label` deixa o
   Courier); Courier Prime só para metadata real e curta (ids, códigos, timestamps).
+- Texto ampliado (R-DS-1, W13 E4b): na barra, o logo encolhe mantendo a proporção (`object-fit`) e o botão de menu
+  não encolhe — com texto a 200% o menu não sai da janela de 320 a 430 px.
 - Gaveta: `showModal()` (foco preso, Esc fecha, foco volta ao botão). Ao cruzar o `lg` aberta, fecha e o foco vai ao
   `<main id="conteudo">`. Página atual: `aria-current="page"`.
 
@@ -354,7 +357,8 @@ Luxplus. Componente, estado ou token novo só entra quando uma tela o consome (*
 efeito editorial (como a data de hoje).
 
 Com contexto e ações (W3): `context={{ href, label }}` vira o link `lx-page-header__context` antes do `h1` (o caminho
-de volta no celular); `actions` vai em `lx-page-header__actions`, depois do texto — no celular os botões dividem a
+de volta no celular; alvo ≥ 44 px pelo preenchimento vertical compensado por margem negativa — R-DS-2, W13 E4b — sem
+mover o `h1`); `actions` vai em `lx-page-header__actions`, depois do texto — no celular os botões dividem a
 largura. Uma confirmação (`lx-message` com `role="status"`) logo depois do cabeçalho ganha a mesma distância do
 conteúdo. Aviso fixo da página não é região viva: sem `role`.
 
