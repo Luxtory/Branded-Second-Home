@@ -8,7 +8,7 @@ import { messages } from './i18n/pt-br';
  * papel exercido que a seção exige (sem hierarquia, ADR-0008); sem ele o item não aparece.
  */
 const SECTIONS: readonly {
-  readonly id: 'home' | 'catalog' | 'interests' | 'parties';
+  readonly id: 'home' | 'catalog' | 'interests' | 'parties' | 'bookings';
   readonly href: string;
   readonly label: string;
   readonly role?: StaffRole;
@@ -17,6 +17,8 @@ const SECTIONS: readonly {
   { id: 'catalog', href: '/admin/catalogo', label: messages.nav.catalog, role: 'admin' },
   { id: 'interests', href: '/admin/interesses', label: messages.nav.interests, role: 'admin' },
   { id: 'parties', href: '/admin/pessoas-e-empresas', label: messages.nav.parties, role: 'admin' },
+  // W13 E4b: reservas de uso próprio (spec booking §10.15).
+  { id: 'bookings', href: '/admin/reservas', label: messages.nav.bookings, role: 'admin' },
 ];
 
 export type AdminSection = (typeof SECTIONS)[number]['id'];

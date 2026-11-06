@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { notFound, redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { Icon, PageHeader, RecordList } from '@/design-system/react';
+import { PageHeader, RecordList } from '@/design-system/react';
 import { AuthUnavailable, TitularShell, requireTitularSession } from '@/features/identity';
 import { getDatabase, unavailableKeys, withUserRead } from '@/features/platform';
 import { BOOKING_SECTIONS } from '../application/own-use-booking-sections';
@@ -43,6 +43,7 @@ import {
 } from './own-use-lifecycle-read';
 import { notificationCopy } from './own-use-notification-copy';
 import { ownUsePaths } from './own-use-paths';
+import { Disclosure, Facts, Message, Section } from './own-use-ui';
 
 /**
  * Telas do ciclo da reserva na Área do Titular (W13 E4b; spec booking §10.15; referência visual E4a v2.1): lista por
@@ -65,77 +66,6 @@ async function orUnavailable<T>(read: () => Promise<T>): Promise<T | 'unavailabl
     if (unavailableKeys(error) === null) throw error;
     return 'unavailable';
   }
-}
-
-function Message(props: {
-  readonly kind: 'info' | 'success' | 'warning' | 'error';
-  readonly title: string;
-  readonly body?: ReactNode;
-  readonly live?: 'status' | 'alert';
-}) {
-  return (
-    <div className={`lx-message lx-message--${props.kind}`} role={props.live}>
-      <Icon name={props.kind === 'success' ? 'check' : 'alert'} className="lx-message__icon" />
-      <p className="lx-message__title">{props.title}</p>
-      {props.body === undefined ? null : <p className="lx-message__body">{props.body}</p>}
-    </div>
-  );
-}
-
-function Facts({ rows }: { readonly rows: readonly (readonly [string, ReactNode])[] }) {
-  return (
-    <dl className="lx-booking__facts">
-      {rows.map(([label, value]) => (
-        <div className="lx-booking__fact" key={label}>
-          <dt>{label}</dt>
-          <dd>{value}</dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
-
-function Section(props: {
-  readonly id: string;
-  readonly title: string;
-  readonly hidden?: boolean;
-  readonly children: ReactNode;
-}) {
-  return (
-    <section className="lx-page-section" aria-labelledby={props.id}>
-      <h2 className={props.hidden ? 'lx-visually-hidden' : 'lx-display-s'} id={props.id}>
-        {props.title}
-      </h2>
-      {props.children}
-    </section>
-  );
-}
-
-function Disclosure(props: { readonly summary: string; readonly children: ReactNode }) {
-  return (
-    <div className="lx-disclosure">
-      <details className="lx-disclosure__item">
-        <summary className="lx-disclosure__summary">
-          {props.summary}
-          <svg
-            className="lx-disclosure__icon"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <path
-              d="M3 12h17M14 6l6 6-6 6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="square"
-            />
-          </svg>
-        </summary>
-        <div className="lx-disclosure__body">{props.children}</div>
-      </details>
-    </div>
-  );
 }
 
 const nightsOf = (booking: TitularBookingDetail) => booking.nights.length;
