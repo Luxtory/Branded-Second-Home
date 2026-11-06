@@ -4,5 +4,6 @@ export const ownUsePaths = {
   calendar: (holdingId: string) => `/titular/calendario/${holdingId}`,
   bookings: '/titular/reservas',
   booking: (bookingId: string) => `/titular/reservas/${bookingId}`,
+  cancellation: (bookingId: string) => `/titular/reservas/${bookingId}/cancelamento`,
   notifications: '/titular/notificacoes',
 };

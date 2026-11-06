@@ -61,6 +61,8 @@ export interface TitularBookingDetail extends TitularBookingItem {
   } | null;
   readonly cancellationClass: CancellationClass | null;
   readonly cancelledAt: Date | null;
+  /** Noites liberadas pelo fechamento (cancelamento, no-show ou invalidação); 0 enquanto ativa. */
+  readonly releasedNights: number;
   readonly nights: readonly PreviewNight[];
   readonly balances: readonly PreviewBalance[];
   readonly lifecycleOpen: boolean;
@@ -231,7 +233,7 @@ async function detail(
     ])
     .where('b.id', '=', row.id)
     .executeTakeFirstOrThrow();
-  const [facts, nights, balances, cancelledAt, activation] = await Promise.all([
+  const [facts, nights, balances, cancelledAt, activation, released] = await Promise.all([
     serverFacts(tx, [row.id]),
     tx
       .selectFrom('app.second_home_date')
@@ -267,6 +269,12 @@ async function detail(
       .select('capability')
       .where('capability', '=', LIFECYCLE_CAPABILITY)
       .executeTakeFirst(),
+    tx
+      .selectFrom('app.date_occupancy')
+      .select((eb) => eb.fn.countAll<string>().as('n'))
+      .where('booking_id', '=', row.id)
+      .where('released_at', 'is not', null)
+      .executeTakeFirstOrThrow(),
   ]);
   const fact = facts.get(row.id)!;
   return {
@@ -276,6 +284,7 @@ async function detail(
     exception: fact.exception,
     cancellationClass: fact.cancellationClass,
     cancelledAt: cancelledAt === undefined ? null : new Date(cancelledAt.recorded_at),
+    releasedNights: Number(released.n),
     nights: nights.map((night) => ({
       stayDate: night.stay_date,
       checkinAt: BigInt(night.checkin_us),
