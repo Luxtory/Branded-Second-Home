@@ -14,7 +14,7 @@ import {
 } from '@/features/platform';
 
 /**
- * Cota do `request_booking_authorization` (G-E4-1, W13 E4b; spec booking §10.15). Chamada pelo executor depois do guard
+ * Limite do `request_booking_authorization` (G-E4-1, W13 E4b; spec booking §10.15). Chamada pelo executor depois do guard
  * e da consulta de idempotência: o replay de uma chave concluída nunca chega aqui. Chave pseudônima sem segredo novo —
  * SHA-256 de `luxtory:booking-authorization-request:<staff_role_id>`, com o `staff_role` da decisão do guard. Limites do
  * runbook (TECH-001): ausente → `parameter_missing`; limitador sem resposta segura → `unavailable` (falha fechada).

@@ -31,7 +31,7 @@ import { lifecycleRunner } from './own-use-lifecycle-support';
 /**
  * Admin do ciclo (W13 E4b, spec booking §10.15) sobre o PostgreSQL com os privilégios reais: leituras auditadas com os
  * fatos do store da E2, disponibilidade dos atos, e o G-E4-1 pelo executor de produção — limite excedido sem operação
- * nem solicitação gravadas, limitador indisponível recusado, replay de chave concluída com a cota esgotada e a chave
+ * nem solicitação gravadas, limitador indisponível recusado, replay de chave concluída com o limite esgotado e a chave
  * recusada por limite ainda utilizável.
  */
 const LIMITS = {

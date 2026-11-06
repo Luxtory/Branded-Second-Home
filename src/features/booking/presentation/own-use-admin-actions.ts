@@ -18,7 +18,7 @@ import { createOwnUseLifecycleHandlers } from './own-use-lifecycle-handlers';
  * Server Actions dos atos do Admin no ciclo da reserva (W13 E4b; spec booking §10.15): sessão verificada → guard
  * (AAL2 e `staff_role` revalidados) → executor (TECH-054) → handler da E2 (K2 e autorização independente no handler e no
  * banco). A action valida os campos para associar o erro ao campo e traduz o desfecho — nada de regra aqui. A
- * solicitação de autorização passa pela cota do G-E4-1, consumida pelo executor depois da idempotência.
+ * solicitação de autorização passa pelo limite do G-E4-1, consumida pelo executor depois da idempotência.
  */
 const handlers = createOwnUseLifecycleHandlers();
 const quota = createBookingAuthorizationQuota();
@@ -209,7 +209,7 @@ export async function recoverFutureCapacityAction(
   );
 }
 
-/** `request_booking_authorization` (fora da K2, D12) com a cota do G-E4-1; o resultado é o id opaco da solicitação. */
+/** `request_booking_authorization` (fora da K2, D12) com o limite do G-E4-1; o resultado é o id opaco da solicitação. */
 export async function requestBookingAuthorizationAction(
   state: AdminActState,
   form: FormData,

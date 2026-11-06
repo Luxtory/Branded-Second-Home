@@ -56,7 +56,7 @@ export interface InputFingerprint<I> {
   payload(input: I, keyId: string): unknown;
 }
 
-/** Decisão da cota de um command (G-E4-1). */
+/** Decisão do limite de um command (G-E4-1). */
 export type QuotaDecision = 'allowed' | 'limited' | 'unavailable' | 'parameter_missing';
 
 /** Handler de um command do registro: revalida tudo dentro da transação e lança `CommandRejection` para recusar. */
@@ -66,8 +66,8 @@ export interface CommandHandler<I, R extends JsonValue, Tx> {
   /** Optional server policy: after authorization, before any idempotency lookup or effect (ADR-0021). */
   assertAvailable?(): void | Promise<void>;
   /**
-   * Cota opcional (G-E4-1, W13 E4b; spec booking §10.15): consumida depois do guard e da consulta de idempotência e antes
-   * da operação — o replay de uma chave concluída nunca consome cota. `limited` → `ERR_RATE_LIMITED` e `unavailable`
+   * Limite opcional (G-E4-1, W13 E4b; spec booking §10.15): consumida depois do guard e da consulta de idempotência e antes
+   * da operação — o replay de uma chave concluída nunca consome o limite. `limited` → `ERR_RATE_LIMITED` e `unavailable`
    * (limitador sem resposta segura) → `ERR_UNAVAILABLE` e `parameter_missing` (limite ausente, TECH-001) →
    * `ERR_PARAMETER_MISSING`, sempre sem operação nem chave gravadas (falha fechada).
    */

@@ -250,7 +250,7 @@ describe('executor de commands (TECH-054)', () => {
     expect(order).toEqual(['available', 'lookup']);
   });
 
-  it('[G-E4-1] cota depois do guard e da consulta de idempotência; replay de chave concluída não consome cota', async () => {
+  it('[G-E4-1] limite depois do guard e da consulta de idempotência; replay de chave concluída não consome o limite', async () => {
     const { store, executor } = setup();
     const order: string[] = [];
     const lookup = store.findIdempotency.bind(store);
@@ -277,7 +277,7 @@ describe('executor de commands (TECH-054)', () => {
     expect(limited).not.toHaveBeenCalled();
   });
 
-  it('[G-E4-1] cota esgotada → ERR_RATE_LIMITED; limitador indisponível → ERR_UNAVAILABLE; nada gravado, chave livre', async () => {
+  it('[G-E4-1] limite esgotado → ERR_RATE_LIMITED; limitador indisponível → ERR_UNAVAILABLE; nada gravado, chave livre', async () => {
     const { store, executor } = setup();
     const reserve = vi.spyOn(store, 'reserve');
     const before = { committed: store.committed.length, rejected: store.rejected.length };

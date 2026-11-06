@@ -26,7 +26,7 @@ const recording = (allowed: boolean): RateLimiter & { readonly keys: string[] } 
   };
 };
 
-describe('W13 E4b — cota do request_booking_authorization (G-E4-1)', () => {
+describe('W13 E4b — limite do request_booking_authorization (G-E4-1)', () => {
   it('[G-E4-1] chave = SHA-256 de luxtory:booking-authorization-request:<staff_role_id>, sem segredo', async () => {
     const staffRole = randomUUID();
     const limiter = recording(true);
