@@ -16,6 +16,9 @@ const WEBKIT_SMOKE = process.env.PLAYWRIGHT_WEBKIT === '1';
 const WEBKIT_SPECS = '**/*.webkit.spec.ts';
 const SETUP_SPECS = '**/*.setup.ts';
 const SEED_SPECS = '**/*.seed.ts';
+// Specs que ligam e desligam K1/K2 (`app.capability_activation`, estado global do banco descartável): nunca dois ao
+// mesmo tempo — o `finally` de um fecharia a capability no meio do fluxo do outro (W13 E4b).
+const OWN_USE_SPECS = '**/own-use-*.spec.ts';
 
 // E2E sobre o build de produção (npm run test:e2e = next build && playwright test), com o Chrome do sistema. O
 // servidor sobe o PostgreSQL embutido com as migrations e a autenticação de teste (tests/support/e2e-server.mjs).
@@ -32,8 +35,17 @@ export default defineConfig({
     { name: 'seed', testMatch: [SEED_SPECS], dependencies: ['setup'], use: { channel: 'chrome' } },
     {
       name: 'chrome',
-      testIgnore: [IGNORED, WEBKIT_SPECS],
+      testIgnore: [IGNORED, WEBKIT_SPECS, OWN_USE_SPECS],
       dependencies: ['seed'],
+      use: { channel: 'chrome' },
+    },
+    // Um worker só para este projeto (os demais seguem em paralelo): os specs de K1/K2 rodam um de cada vez.
+    {
+      name: 'chrome-own-use',
+      testMatch: [OWN_USE_SPECS],
+      testIgnore: [IGNORED],
+      dependencies: ['seed'],
+      workers: 1,
       use: { channel: 'chrome' },
     },
     ...(WEBKIT_SMOKE
