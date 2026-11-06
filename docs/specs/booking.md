@@ -750,7 +750,7 @@ Titular", "quem representa a reserva"; identificadores técnicos só no código.
 log, notificação, resultado de command ou mensagem de erro.
 
 **G-E4-1 (gate do `request_booking_authorization`).** O limitador roda depois do guard e da consulta de idempotência e
-antes da operação: replay de chave concluída devolve o resultado gravado sem consumir cota; excesso → `ERR_RATE_LIMITED`
+antes da operação: replay de chave concluída devolve o resultado gravado sem consumir o limite; excesso → `ERR_RATE_LIMITED`
 sem operação nem chave gravadas (a chave continua utilizável); limitador indisponível → recusa (falha fechada, como na
 TECH-057). Chave pseudônima sem segredo novo: SHA-256 de `luxtory:booking-authorization-request:<staff_role_id>` (o
 `staff_role` vem da decisão do guard). Limites por papel e global no runbook (TECH-001): parâmetro ausente → recusa.
@@ -764,3 +764,46 @@ confirmada, concluída, apuração sem comprovação; invalidação — Co-Owner
 **Design System (consumer-driven).** R-DS-1: o botão de menu do App Shell não sai da barra com texto a 200%. R-DS-2: o
 link de contexto do PageHeader com alvo ≥ 44 px. R-DS-3: o rótulo longo do `lx-choice` sem rolagem com texto a 200%.
 Regressão nas superfícies que compartilham os componentes (Admin, Área do Titular, Lab).
+
+#### 10.15.1. Implementação da E4b (2026-11-06, PR draft; sem merge, deploy, Production, migration ou ativação)
+
+Sem mudança de regra canônica, contrato de evento, migration ou permissão. Escolhas de implementação:
+
+- **Arquivos.** Regras puras em `application/`: `own-use-cancellation-preview.ts` (prévia: mesma `cancellationTerms` do
+  command, noites iniciadas e afetadas, saldo depois; tipos `actionable`, `closed`, `suspended`, `nothing_left`,
+  `not_cancellable`), `own-use-booking-sections.ts` (seção e situação da lista) e `own-use-admin-availability.ts` (atos do
+  Admin com o motivo de cada indisponível; finalidades solicitáveis). Leituras em `presentation/`:
+  `own-use-lifecycle-read.ts` (Titular, `withUserThenServerRead`) e `own-use-admin-read.ts` (Admin, auditadas, com o
+  store da E2: `findBooking`, `period`, `openException`, `requestFacts`, `liveAuthorization`). Telas:
+  `own-use-lifecycle-pages.tsx` (Titular), `own-use-admin-pages.tsx` (Admin), formulários de cliente
+  `own-use-cancel-form.tsx` e `own-use-admin-form.tsx`, Server Actions `own-use-cancel-action.ts` e
+  `own-use-admin-actions.ts`, textos em `i18n/own-use-lifecycle-pt-br.ts` e `i18n/own-use-admin-pt-br.ts`, avisos em
+  `own-use-notification-copy.ts`; peças comuns em `own-use-ui.tsx` (só classes `lx-*`).
+- **Rotas.** `src/app/titular/reservas/[bookingId]/cancelamento`, `src/app/admin/reservas`, `[bookingId]` e
+  `[bookingId]/[acao]` (`excecao`, `resolucao`, `no-show`, `invalidacao`, `recuperacao`, `autorizacao`). Item
+  "Reservas" no Admin (papel `admin`).
+- **Desfechos da confirmação do Titular.** Confirmada → detalhe com "Reserva cancelada"; termos alterados → a mesma rota
+  com `?condicoes=mudaram` (o que mudou, sem formulário; "Revisar as novas condições" abre prévia e chave novas);
+  `ERR_STATE_TRANSITION` → detalhe com "Nada foi cancelado"; K2 ausente, indisponível, permissão → mensagem no formulário
+  (indisponível mantém a chave: replay). Apuração com Co-Owner fora do prazo e estado terminal → a rota leva ao detalhe.
+- **G-E4-1.** Gancho opcional `consumeQuota` no `CommandHandler` do executor da plataforma, chamado depois do guard e da
+  consulta de idempotência e antes da operação (`limited` → `ERR_RATE_LIMITED`; `unavailable` → `ERR_UNAVAILABLE`;
+  `parameter_missing` → `ERR_PARAMETER_MISSING`; sempre sem operação nem chave). Limite em
+  `presentation/booking-authorization-quota.ts` com o `RateLimiter` existente (Upstash, ou em memória só local/CI),
+  parâmetros `BOOKING_AUTHORIZATION_*` no runbook, sem default.
+- **Design System.** R-DS-1 (`app.css`: logo encolhe na barra, botão de menu não), R-DS-2 (`page-header.css`: alvo do
+  link de contexto por preenchimento compensado), R-DS-3 (`choice.css`: trilhas `minmax(0, 1fr)`; `choice.css` e
+  `message.css`: `overflow-wrap: anywhere` — com texto a 200% em 320 px a data do aviso de autorização, mais larga que a
+  coluna, alargava a trilha do `lx-form` e empurrava o `lx-choice` para fora da janela; só as trilhas faziam a palavra
+  vazar do card); regressão `expectSharedComponentFixes` (caixa e texto do `lx-choice` e do `lx-message`, zoom aplicado
+  por CSSOM e conferido) no Lab, no Admin e nas telas novas.
+- **Testes.** Unidade: prévia (fronteira de 360 h em µs, matriz Owner/Co-Owner e P-A/P-B, paridade com o command),
+  seções, disponibilidade dos atos, os 20 textos dos avisos (19 variações + confirmação), limite e executor. PostgreSQL
+  real: leituras do Titular (RLS, mínimo, acesso cruzado, revogação, transferência, K2), Admin (auditoria, atos, autorização
+  viva) e G-E4-1 pelo executor de produção. E2E (390 px com toque no Titular): Owner (termos alterados, cancelamento,
+  apuração, solicitação + autorização + resolução, no-show em estadia começada, avisos) e Co-Owner (exceção operacional
+  encerrada pelo cancelamento, fora do prazo, recuperação).
+- **Fixtures E2E** (só banco descartável, dono do schema): K2, autorização pelo papel autorizador, estadia começada do
+  Owner e reserva de Co-Owner dentro de 15 dias (a janela do cenário abre meses à frente), com o mesmo SQL do fixture
+  histórico dos testes db. K1/K2 são estado global desse banco: os specs `own-use-*` rodam no projeto Playwright
+  `chrome-own-use` com um worker (um de cada vez; os demais seguem em paralelo).

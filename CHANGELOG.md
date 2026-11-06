@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Ciclo da reserva de uso próprio nas telas (W13 E4b, spec `booking` §10.15): na Área do Titular, lista por situação
+  (em andamento, em exceção ou em apuração, próximas e histórico), detalhe com a situação gravada, e cancelamento com
+  prévia pela consequência — o que volta ao Direito de Uso desta Ação ou ao calendário do Owner, o que deixa a reserva,
+  o prazo de 15 dias no horário da Second Home e o detalhe noite a noite — antes de confirmar; condições alteradas durante a
+  revisão nunca são confirmadas. Avisos da central com título curto e "O que mudou" para os seis eventos de reserva. No
+  Admin, a seção Reservas com filas (comparecimento, exceções e apurações, capacidade recuperável, próximas), detalhe
+  auditado e os atos — exceção, resolução, no-show, invalidação, recuperação e solicitação de autorização independente
+  com limite por papel —, cada um com a consequência antes do formulário. Correções do Design System: menu do App Shell,
+  campos de escolha e avisos com texto ampliado e alvo do link de volta. **Continua fechado:** os atos só executam com a ativação
+  do ciclo, ainda não autorizada.
 - Reserva de uso próprio (W12, spec `booking`, ADR-0026): na Área do Titular, Owner e Co-Owner reservam noites de uso
   próprio num período contínuo — o Co-Owner dentro da própria janela e do saldo do Direito de Uso por categoria, em
   permanências de até 14 noites seguidas, somando as reservas adjacentes; o Owner sobre a própria capacidade, sem janela,

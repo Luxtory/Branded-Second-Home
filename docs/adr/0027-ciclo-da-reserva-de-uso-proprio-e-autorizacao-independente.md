@@ -255,3 +255,14 @@ A W13 não ativa reservas.
    E1 reconhecia só o primeiro caso; a migration `20261105174225_booking_recovery_operational_exception_origin` redefine
    `app.authorize_booking_action` (`CREATE OR REPLACE`: dono, ACL, `SECURITY DEFINER` e `search_path` preservados; o
    `down` recusa reabrir o defeito com ativação ou fatos). Nenhuma decisão muda.
+
+## Nota de implementação da E4b (2026-11-06, PR draft; sem mudança de decisão)
+
+- O gate G-E4-1 entrou como gancho opcional `consumeQuota` do executor da plataforma, depois da consulta de idempotência
+  (o replay de uma chave concluída nunca consome o limite) e antes da operação; recusas por limite, limitador indisponível
+  ou limite ausente não gravam operação nem chave. Nenhum command existente opta pelo gancho além do
+  `request_booking_authorization`.
+- As telas do Titular leem os campos fora do `GRANT` de coluna (exceção aberta, classificação, instante do
+  cancelamento) pelo padrão `withUserThenServerRead` da W12, depois da prova da RLS e no mesmo instantâneo; nenhuma
+  permissão nova. O Admin lê pelo store da E2, com leitura auditada.
+

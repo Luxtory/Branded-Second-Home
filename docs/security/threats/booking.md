@@ -327,3 +327,19 @@ a dados (ADR-0027, notas da E1). Nenhuma ativação; riscos R1–R8, R4b e C1 se
   do erro. Provado pela entrega real com marcadores.
 - **Residual:** cadência best effort (Hobby, sem nova tentativa); registro de candidata perdido não se recupera depois do
   check-out — a lista do Admin e o `declare_no_show` não dependem dele.
+
+## W13.8. E4b — telas, Server Actions e G-E4-1 (2026-11-06, PR draft)
+
+Superfície nova: a Server Action do Titular (`cancel_own_use_booking`), as seis Server Actions do Admin (cinco commands
+do ciclo e `request_booking_authorization`) e as leituras das telas. Nenhuma rota REST, migration ou permissão nova.
+
+| Ameaça | Mitigação na E4b | Teste |
+|---|---|---|
+| T-1308 Repudiation — consequência diferente da exibida | A prévia usa a mesma função do command (`cancellationTerms`) no instante do servidor; a confirmação leva a classe e a primeira noite da prévia; termos diferentes → `ERR_CANCELLATION_TERMS_CHANGED` sem efeito e página sem ação destrutiva ("Revisar as novas condições", chave nova) | unidade (paridade em µs), db (prévia → command), E2E (termos adulterados no formulário) |
+| T-1309 IDOR — reserva de outra party | Detalhe, prévia e lista provados pela RLS (holding vigente) antes da leitura do servidor, no mesmo instantâneo `repeatable read`; outra holding, revogação ou transferência → 404 sem oráculo; o command revalida representação | db (acesso cruzado, revogação, transferência), E2E |
+| T-1317 [MEDIUM] Information disclosure — campos fora da RLS lidos pelo servidor | Leitura do servidor só depois da prova da RLS e só dos campos mínimos (tipo e motivo da exceção, classificação, instante, noites); nunca `incident_ref`, base, autorização ou custódia para o Titular | db (serialização sem dado privado), unidade dos avisos |
+| T-1314 [MEDIUM] Information disclosure — dado pessoal na base registrada | Validação no campo pela regra atual (`isNonPersonalReference`), erro associado ao campo, valor nunca em log, aviso ou mensagem de erro; **M1 e T-1314 continuam pendentes** (não ratificados) | E2E (erro no campo), unidade |
+| T-1313 Repudiation/DoS — solicitações em massa (G-E4-1) | Limite por papel de staff e global, chave SHA-256 sem segredo novo, consumida pelo executor **depois** da idempotência (replay não consome) e antes da operação; excesso → `ERR_RATE_LIMITED`, limitador indisponível → `ERR_UNAVAILABLE`, limite ausente → `ERR_PARAMETER_MISSING`, sempre sem operação nem chave gravadas | unidade (executor e limite), db (executor de produção) |
+| T-1315 Tampering/Elevation — recuperação de origem P-A sem atestação | Na solicitação de recuperação de origem P-A, a atestação é obrigatória no formulário (erro no campo) e o handler e a função do banco a exigem (A3, E2b) | E2E (fluxo de recuperação), db (E2b) |
+| T-1302 Elevation — ato Admin sem decisão legítima | Gate da página (AAL2, papel exercido) e guard do executor (AAL2 e `staff_role` revalidados); K2 no handler e no banco; autorização viva resolvida pelo servidor e exigida pelo banco; "Cancelar" só aparece com autorização viva e o aviso depende do desfecho escolhido | db (E2 e E4b), E2E |
+| T-1318 [LOW] Information disclosure — leitura do Admin | Leituras auditadas (`admin_read`, `booking_directory`/`booking`, só ids) na mesma transação | db (`audit_log`) |
