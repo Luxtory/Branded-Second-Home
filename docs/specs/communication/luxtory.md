@@ -60,6 +60,10 @@ Só os que as duas jornadas usam; o restante é citado direto na aplicação de 
    do investimento total projetado para materializar uma Second Home dela —, nunca preço, proposta, condição ou valor
    individual `[F: BR-034, REQ-022]`.
 
+7. Posicionamento e responsabilidades na revisão GTM autorizada (`D-LX-12`): consultar diretamente `01` §1,
+   BR-035, BR-040 e BR-041; serviços adicionais em BR-130, BR-131 e BR-300; remuneração contratual de PM em `01`
+   §35. A publicação da comunicação depende da emissão autorizada dessa revisão.
+
 ## 6. Nomenclatura pública — `D-LX-06`
 
 - Termos canônicos em inglês como nomes próprios, explicados em português na primeira menção da página: Branded Second
@@ -81,6 +85,7 @@ Só os que as duas jornadas usam; o restante é citado direto na aplicação de 
 
 | ID | Decisão | Status | Base |
 |---|---|---|---|
+| D-LX-12 | Revisão GTM: desenvolvimento e gestão contínua de produto como função principal; execução especializada e serviços adicionais conforme instrumentos; preservar narrativa, Frameworks, direitos e controles. O B2C continua centrado no consumidor. | aprovada pelo fundador em 2026-11-05 para implementação em PRs de revisão; sem merge ou Production; emissão do 01 v10.3 pendente de autorização do merge | `01` §1/§35, BR-035, BR-040, BR-041; [plano GTM](../../plan/gtm-reposicionamento.md) |
 | D-LX-01 | Jornadas B2C e Brand Partners separadas: nenhuma navegação, CTA ou link de uma leva à outra | aprovada em 2026-09-29 | decisão da Luxtory no planejamento da W3B |
 | D-LX-02 | Papel do Mentor e princípios globais (§1 da versão anterior) | substituída em 2026-10-01 → `[FW-B2C: §1, §5]` · `[FW-BP: §1, §5]` | `01` §1, BR-041; DS spec §1; DS ref §8, §11 |
 | D-LX-03 | Personalidade: curadora e arquiteta de experiências (§2 da versão anterior) | substituída em 2026-10-01 → `[FW-B2C: §10]` · `[FW-BP: §10]` | DS spec §1; DS ref §11, §14 |

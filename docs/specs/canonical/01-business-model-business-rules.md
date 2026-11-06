@@ -1,6 +1,10 @@
 # 01 — Business Model & Business Rules — Luxtory Branded Second Home
 
-2026-10-19 · @Someone · Versão 10.2 — Status: final
+2026-11-05 · Luxtory (fundador) · Versão 10.3 — Status: final
+
+Revisão GTM autorizada pelo fundador (2026-11-05): explicita o desenvolvimento e a gestão contínua de produto como função principal da Luxtory; complementa os §1 e §35 e substitui somente as BR-035, BR-040 e BR-041. Esta revisão é normativa e não implica, por si só, disponibilidade operacional ou prestação efetiva de serviços. Mantém os demais direitos, regras e funcionalidades.
+
+Compatibilidade verificada com `02` v4.4 (REQ-022, REQ-023, REQ-026, REQ-027, REQ-028, REQ-038 e REQ-094) e `03` v3.16 (TECH-020 e TECH-083): esses documentos já distinguem produto, administração profissional, serviços facultativos, Investor e separação econômica das demais receitas. Não há mudança funcional nem necessidade de nova entidade, API, parâmetro, cobrança ou migration. Suas versões e bases históricas permanecem preservadas. Rastreabilidade e gates em [plano GTM](../../plan/gtm-reposicionamento.md).
 
 Revisão M0 (fundador): ontologia Home Concept → Home Edition → Second Home; localização concreta, modalidade definitiva, estrutura patrimonial e condições comerciais pertencem à Second Home. BR-030 distingue a Pesquisa de Descoberta & Validação do Home Concept, antes da Home Edition, da manifestação de interesse comercial, que parte de uma Home Edition.
 
@@ -19,6 +23,8 @@ A Luxtory desenvolve Branded Second Homes a partir do universo de marcas desejad
 **Brand Partner → identidade da marca → Home Concept → Home Edition → interesse e pré-qualificação → estruturação da Second Home → aquisição e formalização → Design & Build → operação da Second Home → Luxtory Club**
 
 A Brand Partner aporta a identidade da marca, seu lifestyle, desejo e comunidade. A Luxtory traduz esse universo em um Home Concept replicável, que estabelece os princípios reconhecíveis em toda Home Edition dele derivada. Cada Home Edition é uma configuração específica e replicável de Second Home; cada Second Home é uma instância específica de uma Home Edition, destinada a uma localização concreta. O cliente final pode adquirir a Second Home integralmente, como Owner, ou em copropriedade, como Co-Owner. A Luxtory pode coordenar o Design & Build, administrar a Second Home e integrá-la ao Luxtory Club.
+
+A função principal da Luxtory é o desenvolvimento e a gestão contínua de produto das Branded Second Homes, abrangendo Discovery, desenvolvimento conceitual, direção de produto, Go-to-Market, Sales Enablement, acompanhamento de resultados e evolução do portfólio de Home Editions. A execução especializada cabe aos responsáveis contratados, conforme competências, alçadas e instrumentos. Serviços executivos adicionais PODEM ser assumidos pela Luxtory mediante contratação expressa de escopo, responsabilidades, custeio e remuneração; NÃO constituem obrigação padrão. Essas disposições NÃO modificam automaticamente contratos, obrigações ou direitos já constituídos.
 
 **BR-001** — Home Concept, Home Edition e Second Home são conceitos distintos.
 
@@ -113,7 +119,7 @@ A sequência comercial é: Home Concept → Home Edition → manifestação de i
 
 **BR-034** — A Home Edition PODE possuir uma média projetada de investimento vigente, registrada pela Luxtory, que representa uma referência aproximada da ordem de grandeza do investimento total projetado necessário para materializar uma Second Home daquela Home Edition, exclusivamente para que o interessado compreenda sua escala econômica. Ela NÃO representa quanto um interessado individual investirá, preço de aquisição Owner, preço de Ação, parcela individual, proposta comercial nem condição comercial definitiva; NÃO se vincula a modalidade, configuração Co-Owner, participação ou Ação; NÃO garante custo; PODE mudar ao longo do tempo; e NÃO é derivada automaticamente de outro valor. O investimento efetivo de cada Second Home PODE variar conforme localização, escopo, fornecedores, momento, configuração, modalidade e demais condições da operação. Nenhum valor individual de Co-Owner é derivado automaticamente dessa referência.
 
-**BR-035** — Quando demanda e viabilidade comercial o justificarem, a Luxtory estrutura uma Second Home a partir de uma Home Edition, para uma localização concreta, definindo modalidade, estrutura patrimonial, configuração Co-Owner quando aplicável e condições comerciais. Uma mesma Home Edition PODE originar Second Homes de modalidades diferentes, em localizações diferentes.
+**BR-035** — Quando demanda e viabilidade comercial o justificarem, a Luxtory conduz a definição do produto e articula a estruturação de uma Second Home a partir de uma Home Edition, com localização concreta, modalidade, estrutura patrimonial, configuração Co-Owner quando aplicável e condições comerciais próprias. A análise de viabilidade e a execução da estruturação imobiliária cabem aos responsáveis contratados para essas funções. Uma mesma Home Edition PODE originar Second Homes de modalidades diferentes, em localizações diferentes.
 
 **BR-036** — Depois de publicada, a definição material de uma Home Edition é imutável; alteração material exige uma nova Home Edition. São materiais, entre outros, tipologia, configuração espacial, área projetada, suítes, capacidade, programa, atributos centrais e características que definem a Home Edition. Correções editoriais que não alterem o produto, gestão de mídia, atualização da média projetada de investimento e outros dados explicitamente não materiais definidos na especificação de produto seguem mecanismos próprios, controlados e auditáveis.
 
@@ -121,9 +127,9 @@ A sequência comercial é: Home Concept → Home Edition → manifestação de i
 
 O modelo é predominantemente orientado por demanda.
 
-**BR-040** — A Brand Partner atua principalmente na geração de demanda por meio de seus canais e audiência.
+**BR-040** — A Brand Partner PODE participar da geração de demanda por meio de seus canais e audiência, conforme o plano de uso da marca e a participação acordada contratualmente.
 
-**BR-041** — A Luxtory atua principalmente na qualificação, estruturação e conversão comercial dessa demanda.
+**BR-041** — A Luxtory conduz a estratégia de Go-to-Market e o Sales Enablement ao longo do desenvolvimento do produto e coordena a qualificação e a conversão da demanda. A execução das atividades comerciais segue o escopo contratado de cada responsável. A comercialização formal de cada Second Home pressupõe sua estruturação, condições comerciais definidas e autorizações aplicáveis. A manifestação de interesse permanece distinta da aquisição.
 
 **BR-042** — Home Concepts PODEM ser replicados regionalmente com participação de parceiros locais autorizados pela Luxtory.
 
@@ -568,6 +574,8 @@ O Investor NÃO constitui terceira modalidade de propriedade.
 ## 35. Revenue Model Luxtory
 
 As fontes de monetização atualmente previstas incluem: Membership; Taxa de Administração; Design & Build; Property Services; Luxchange Fee; receita Luxplus; taxas e comissões de locação externa; e remuneração pela estruturação, desenvolvimento ou comercialização das Second Homes, quando aplicável.
+
+A remuneração contratual da Luxtory PODE incluir Fee de Product Management pela gestão contínua de produto e eventual variável por resultados definidos em contrato. Essa remuneração é separada da administração operacional, das despesas do imóvel e da remuneração da Brand Partner. Valores, percentuais e cobranças NÃO são presumidos. Remuneração vinculada à comercialização depende de revisão jurídica prévia. Permanecem preservadas as demais receitas e os direitos econômicos existentes.
 
 **BR-350** — A remuneração da Brand Partner permanece contratualmente separada.
 
