@@ -56,7 +56,8 @@ describe('W13 E4b — cota do request_booking_authorization (G-E4-1)', () => {
 
   it('[TECH-001] limite ausente no ambiente → parameter_missing, sem consumir', async () => {
     const limiter = recording(true);
-    const { BOOKING_AUTHORIZATION_GLOBAL_LIMIT: _omitted, ...partial } = LIMITS;
+    const partial: Record<string, string> = { ...LIMITS };
+    delete partial['BOOKING_AUTHORIZATION_GLOBAL_LIMIT'];
     expect(
       await createBookingAuthorizationQuota({ source: partial, limiter })(
         `staff_role:${randomUUID()}`,
