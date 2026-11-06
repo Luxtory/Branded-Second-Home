@@ -27,6 +27,9 @@ const envShape = {
   INTEREST_WRITES: z.enum(['open', 'closed']).optional(),
   // Limitador do interesse. Ausente = Upstash real. `fake` (contadores em memória) só local e na CI: recusado na Vercel.
   INTEREST_LIMITER_MODE: z.literal('fake').optional(),
+  // Limitador da solicitação de autorização independente (W13 E4b, G-E4-1). Ausente = Upstash real. `fake` (contadores
+  // em memória) só local e na CI: recusado na Vercel.
+  BOOKING_AUTHORIZATION_LIMITER_MODE: z.literal('fake').optional(),
   // Notificação de staff dos alertas operacionais (W10, TECH-101). Ausente = Resend real, se configurado. `fake`
   // (transporte em memória) só local e na CI: recusado na Vercel, inclusive em Preview.
   OPS_ALERT_MODE: z.literal('fake').optional(),
@@ -51,6 +54,13 @@ const envSchema = z.object(envShape).superRefine((env, context) => {
       code: 'custom',
       path: ['OPS_ALERT_MODE'],
       message: 'fake staff notification on Vercel',
+    });
+  }
+  if (env.BOOKING_AUTHORIZATION_LIMITER_MODE === 'fake' && env.VERCEL_ENV !== undefined) {
+    context.addIssue({
+      code: 'custom',
+      path: ['BOOKING_AUTHORIZATION_LIMITER_MODE'],
+      message: 'fake booking authorization limiter on Vercel',
     });
   }
   if (env.INTEREST_LIMITER_MODE === 'fake' && env.VERCEL_ENV !== undefined) {
@@ -171,6 +181,13 @@ const runtimeSchema = z.object({
   INTEREST_GLOBAL_LIMIT: positiveInteger,
   INTEREST_GLOBAL_WINDOW_SECONDS: positiveInteger,
   INTEREST_LIMITER_TIMEOUT_MS: positiveInteger,
+  // Solicitação de autorização independente (W13 E4b, G-E4-1; valores no runbook, nenhum default — TECH-001): limite
+  // por papel de staff e global, com o Upstash acima em namespace próprio. Ausente → a solicitação é recusada.
+  BOOKING_AUTHORIZATION_REQUEST_LIMIT: positiveInteger,
+  BOOKING_AUTHORIZATION_REQUEST_WINDOW_SECONDS: positiveInteger,
+  BOOKING_AUTHORIZATION_GLOBAL_LIMIT: positiveInteger,
+  BOOKING_AUTHORIZATION_GLOBAL_WINDOW_SECONDS: positiveInteger,
+  BOOKING_AUTHORIZATION_LIMITER_TIMEOUT_MS: positiveInteger,
   // W6 (ADR-0018): segredos próprios, um por finalidade — HMAC do hash de idempotência (o conteúdo inclui contato e
   // pré-qualificação) e assinatura do contexto de apresentação da Home Edition. Nunca o segredo da pseudonimização.
   INTEREST_REQUEST_HMAC_SECRET: z.string().min(32),

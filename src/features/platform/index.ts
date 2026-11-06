@@ -58,6 +58,7 @@ export {
   type InputFingerprint,
   type CommandOutcome,
   type CommandRequest,
+  type QuotaDecision,
 } from './application/commands/executor';
 export type { OutboxConsumer, OutboxEvent } from './application/outbox/consumers';
 export type { JobName } from './application/jobs/names';

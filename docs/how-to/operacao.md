@@ -649,3 +649,21 @@ recusada no banco (inclusive por SQL direto do papel da aplicação).
    vínculo (`booking_*`) só aparecem por bug ou escrita forjada: investigar.
 7. **Rollback:** os `down` recusam descartar reservas ou uma decisão de ativação. Com fatos, preservar o banco e corrigir
    por migration nova; nunca desabilitar gatilhos.
+
+## Preparar a W13 E4b em produção (telas do ciclo da reserva e solicitação de autorização)
+
+Nada a ativar nesta etapa: as telas existem, mas os commands continuam fechados pela K2 (`own_use_lifecycle`) e pela
+K1 (`own_use_booking`), e a tabela de ativação segue vazia (ADR-0027 §5). A solicitação de autorização independente
+(`request_booking_authorization`) só fica disponível com os limites do G-E4-1 configurados; sem eles, é recusada com
+`ERR_PARAMETER_MISSING` (falha fechada, só os nomes das chaves no log):
+
+| Variável | Formato validado | Sensitive |
+|---|---|---|
+| `BOOKING_AUTHORIZATION_REQUEST_LIMIT` / `BOOKING_AUTHORIZATION_REQUEST_WINDOW_SECONDS` | inteiros positivos (solicitações por papel de staff por janela, em segundos) | não |
+| `BOOKING_AUTHORIZATION_GLOBAL_LIMIT` / `BOOKING_AUTHORIZATION_GLOBAL_WINDOW_SECONDS` | inteiros positivos (solicitações totais por janela) | não |
+| `BOOKING_AUTHORIZATION_LIMITER_TIMEOUT_MS` | inteiro positivo (prazo do Upstash; sem resposta → recusa) | não |
+
+Reaproveitadas: `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` (namespace próprio
+`luxtory:booking-authorization-request:<ambiente>`; chave = SHA-256 do id do papel de staff, sem segredo novo). Os
+valores são decisão da operação (TECH-001: o código não tem default). Nunca criar `BOOKING_AUTHORIZATION_LIMITER_MODE`
+na Vercel. Configurar essas variáveis, o Environment do autorizador (E5) e a ativação são decisões futuras do fundador.
