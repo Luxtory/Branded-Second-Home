@@ -240,12 +240,14 @@ principal primeiro ("Continuar" ou o envio), "Voltar" como `lx-button--secondary
 `fieldset` + `legend.lx-label` + `lx-choice-group__options` com `label.lx-choice`
 (`input` radio/checkbox + `lx-choice__title` + `lx-choice__desc`). O card inteiro é alvo. Owner e Co-Owner têm
 peso visual idêntico (REQ-103). Trilhas com mínimo zero (`minmax(0, 1fr)`, R-DS-3, W13 E4b): rótulo longo com texto
-ampliado quebra a linha em vez de alargar a página.
+ampliado quebra a linha em vez de alargar a página; `overflow-wrap: anywhere` quebra a palavra ou data mais larga que
+a coluna dentro do card (texto normal não muda).
 
 ### Inline Message · `lx-message--{info,success,warning,error}`
 
 Ícone (`lx-message__icon`) + `lx-message__title` + `lx-message__body`. Use `role="status"` ou, para erro que
-bloqueia, `role="alert"`.
+bloqueia, `role="alert"`. `overflow-wrap: anywhere` (R-DS-3, W13 E4b): com texto a 200% em 320 px, a palavra mais larga
+do aviso não alarga o `lx-form` nem empurra os campos irmãos para fora da janela.
 
 ### States
 

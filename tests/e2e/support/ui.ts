@@ -95,13 +95,13 @@ export async function expectNoDocumentOverflow(page: Page) {
 
 /** Larguras do zoom só de texto (200%) das correções R-DS-1 a R-DS-3 (W13 E4b). */
 export const TEXT_ZOOM_WIDTHS = [320, 360, 390, 430] as const;
-const TEXT_ZOOM_STYLE = 'lx-e2e-text-zoom';
 const MIN_TARGET_PX = 44;
 
 /**
- * R-DS-1 a R-DS-3 (W13 E4b): com texto a 200%, o botão de menu do App Shell e o `lx-choice` cabem na janela de 320 a
- * 430 px; o link de contexto do PageHeader tem alvo ≥ 44 px com texto normal e ampliado. Mede os componentes — não o
- * documento inteiro — para provar exatamente as três correções.
+ * R-DS-1 a R-DS-3 (W13 E4b): com texto a 200%, o botão de menu do App Shell, o `lx-choice` e o `lx-message` cabem na
+ * janela de 320 a 430 px — a caixa e o texto: uma palavra mais larga que a coluna não pode vazar do card nem alargar o
+ * formulário; o link de contexto do PageHeader tem alvo ≥ 44 px com texto normal e ampliado. Mede os componentes — não
+ * o documento inteiro — para provar exatamente as correções.
  */
 export async function expectSharedComponentFixes(page: Page) {
   const original = page.viewportSize();
@@ -110,14 +110,44 @@ export async function expectSharedComponentFixes(page: Page) {
       const width = document.documentElement.clientWidth;
       const visible = (selector: string) =>
         [...document.querySelectorAll(selector)].filter((element) => element.checkVisibility());
-      const beyond = (selector: string) =>
+      // Borda direita do texto: o que vaza do card não muda a caixa dele, só os retângulos das linhas.
+      const textRight = (element: Element) => {
+        let right = -Infinity;
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        const range = document.createRange();
+        while (walker.nextNode()) {
+          range.selectNodeContents(walker.currentNode);
+          for (const rect of range.getClientRects()) right = Math.max(right, rect.right);
+        }
+        return right;
+      };
+      // O botão de menu tem o rótulo visualmente oculto (retângulos de texto fora da caixa): mede só a caixa.
+      const boxBeyond = (selector: string) =>
         Math.max(
           0,
           ...visible(selector).map((element) => element.getBoundingClientRect().right - width),
         );
+      const beyond = (selector: string) =>
+        Math.max(
+          0,
+          ...visible(selector).map(
+            (element) =>
+              Math.max(element.getBoundingClientRect().right, textRight(element)) - width,
+          ),
+        );
+      const spill = (selector: string) =>
+        Math.max(
+          0,
+          ...visible(selector).map(
+            (element) => textRight(element) - element.getBoundingClientRect().right,
+          ),
+        );
       return {
-        menu: beyond('.lx-app__menu-button'),
+        menu: boxBeyond('.lx-app__menu-button'),
         choice: beyond('.lx-choice'),
+        choiceSpill: spill('.lx-choice'),
+        message: beyond('.lx-message'),
+        messageSpill: spill('.lx-message'),
         context: visible('.lx-page-header__context .lx-link').map(
           (element) => element.getBoundingClientRect().height,
         ),
@@ -125,12 +155,15 @@ export async function expectSharedComponentFixes(page: Page) {
     });
   for (const height of (await measure()).context)
     expect(height, 'alvo do link de contexto').toBeGreaterThanOrEqual(MIN_TARGET_PX);
-  await page.evaluate((id) => {
-    const style = document.createElement('style');
-    style.id = id;
-    style.textContent = 'html { font-size: 200% !important; }';
-    document.head.append(style);
-  }, TEXT_ZOOM_STYLE);
+  // CSSOM (que a CSP do app permite), nunca `<style>` inline: a CSP com nonce bloquearia o elemento e o zoom não
+  // aconteceria. A raiz precisa dobrar de verdade — sem isso a regressão passaria sem medir nada.
+  const [before, zoomed] = await page.evaluate(() => {
+    const root = document.documentElement;
+    const base = Number.parseFloat(getComputedStyle(root).fontSize);
+    root.style.setProperty('font-size', '200%', 'important');
+    return [base, Number.parseFloat(getComputedStyle(root).fontSize)];
+  });
+  expect(zoomed, 'texto a 200% aplicado na raiz').toBeCloseTo(before * 2, 1);
   for (const width of TEXT_ZOOM_WIDTHS) {
     await page.setViewportSize({ width, height: SWEEP_HEIGHT });
     await page.evaluate(
@@ -142,12 +175,15 @@ export async function expectSharedComponentFixes(page: Page) {
     const sizes = await measure();
     expect(sizes.menu, `menu do App Shell fora da janela em ${width}px (texto 200%)`).toBe(0);
     expect(sizes.choice, `lx-choice fora da janela em ${width}px (texto 200%)`).toBe(0);
+    expect(sizes.choiceSpill, `texto vazando do lx-choice em ${width}px (texto 200%)`).toBe(0);
+    expect(sizes.message, `lx-message fora da janela em ${width}px (texto 200%)`).toBe(0);
+    expect(sizes.messageSpill, `texto vazando do lx-message em ${width}px (texto 200%)`).toBe(0);
     for (const height of sizes.context)
       expect(height, `alvo do link de contexto em ${width}px (texto 200%)`).toBeGreaterThanOrEqual(
         MIN_TARGET_PX,
       );
   }
-  await page.evaluate((id) => document.getElementById(id)?.remove(), TEXT_ZOOM_STYLE);
+  await page.evaluate(() => document.documentElement.style.removeProperty('font-size'));
   if (original !== null) await page.setViewportSize(original);
 }
 

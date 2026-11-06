@@ -27,9 +27,12 @@
     .lx-choice-group__options { grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
   }
 
+  /* R-DS-3 (W13 E4b): palavra ou data mais larga que a coluna de texto (texto a 200% em 320 px) quebra dentro do card
+   * em vez de vazar dele ou alargar o formulário; com texto normal nada muda (toda palavra cabe). */
   .lx-choice {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
+    overflow-wrap: anywhere;
     gap: var(--lx-space-1) var(--lx-space-3);
     align-items: start;
     align-content: start;
