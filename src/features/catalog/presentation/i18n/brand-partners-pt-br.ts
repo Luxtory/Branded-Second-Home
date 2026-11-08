@@ -407,6 +407,7 @@ export const brandPartnersMessages = {
                 'A Luxtory conduz o Discovery com participantes mobilizados pela marca.',
                 'Desenvolve Home Concepts e um Opportunity Brief, que reúne evidências e oportunidades.',
                 'A pesquisa é exploratória: não comprova demanda de compra, não constitui manifestação de interesse comercial nem representa promessa de vendas.',
+                'A pesquisa não constitui aquisição nem gera direitos sobre uma Second Home.',
               ],
             },
             {
@@ -444,7 +445,8 @@ export const brandPartnersMessages = {
               title: 'Aprovação, lançamento e realização.',
               paragraphs: [
                 'A marca aprova o uso de sua identidade no produto e nos materiais de lançamento.',
-                'Após a publicação da Home Edition, o consumidor pode manifestar interesse, indicando localização pretendida e Owner ou Co-Owner. Essa manifestação não constitui aquisição.',
+                'Após a publicação da Home Edition, o consumidor pode manifestar interesse, indicando localização pretendida e Owner ou Co-Owner.',
+                'Essa manifestação não constitui aquisição.',
                 'A comercialização formal de cada Second Home exige sua estruturação, condições comerciais definidas e autorizações aplicáveis.',
                 'A incorporadora investe, estrutura, comercializa e executa as Second Homes com seus responsáveis habilitados.',
                 'A Luxtory supervisiona a fidelidade ao produto aprovado.',
@@ -516,7 +518,8 @@ export const brandPartnersMessages = {
           question: 'Como funciona o licenciamento?',
           answer: [
             'A marca continua sendo sua. A licença pode autorizar múltiplas Second Homes de uma Home Edition, com território, prazo e escopo definidos em contrato.',
-            'A Luxtory articula a negociação entre marca e incorporadora. Eventual exclusividade depende de formalização e limita-se ao escopo contratado, sem abranger automaticamente toda a marca ou o Home Concept.',
+            'A Luxtory articula a negociação entre marca e incorporadora.',
+            'Eventual exclusividade depende de formalização e limita-se ao escopo contratado, sem abranger automaticamente toda a marca ou o Home Concept.',
           ],
         },
         {

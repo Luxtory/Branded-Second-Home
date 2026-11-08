@@ -87,6 +87,9 @@ describe('comunicação — ontologia da W4.2 na copy vigente (regressões semâ
     expect(discovery).toContain('não comprova demanda de compra');
     expect(discovery).toContain('não constitui manifestação de interesse comercial');
     expect(discovery).toContain('nem representa promessa de vendas');
+    expect(discovery).toContain(
+      'A pesquisa não constitui aquisição nem gera direitos sobre uma Second Home.',
+    );
     expect(bp.home.mechanism.steps[3].text.join(' ')).toContain(
       'O licenciamento é contratado antes do desenvolvimento definitivo da Home Edition.',
     );
@@ -103,7 +106,9 @@ describe('comunicação — ontologia da W4.2 na copy vigente (regressões semâ
     expect(formalSale).toBeGreaterThan(interest);
     expect(execution).toBeGreaterThan(formalSale);
     expect(paragraphs[interest]).toContain('localização pretendida e Owner ou Co-Owner');
-    expect(paragraphs[interest]).toContain('não constitui aquisição');
+    expect(paragraphs.slice(interest, formalSale).join(' ')).toContain(
+      'Essa manifestação não constitui aquisição.',
+    );
     expect(paragraphs[formalSale]).toContain('estruturação');
     expect(paragraphs[formalSale]).toContain(
       'condições comerciais definidas e autorizações aplicáveis',
