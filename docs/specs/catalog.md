@@ -1254,6 +1254,48 @@ System; o merge do PR e a abertura do portão seguem autorizações separadas do
 ativos aprovados (`P-BP-03`) e autorização expressa do fundador; CI verde não autoriza merge nem go-live.
 
 
+### 14.10 GTM Brand Partners — licenciamento e direção de produto (2026-11-08)
+
+Plano e refinamentos aprovados pelo fundador na conversa para implementação local, em branch isolada da `main`
+`09680b6`. Aplicação: `D-BP-31`; revisão normativa mínima do `01` v10.4 §1, §3–§4 e §35, com emissão pendente de
+merge autorizado. `02` v4.4, `03` v3.16, BRs e Frameworks congelados preservados. Este brief complementa §14.9 somente
+nos trechos indicados; o restante permanece aprovado.
+
+- **Home:** manter as nove seções, os IDs, CTA, formulário, estados, mídia, componentes e Design System. Ajustar
+  somente Hero e metadescrição, primeiro parágrafo de PROMISE, três benefícios, Pertencimento, mecanismo, primeira
+  resposta de Governança. Copy exata em `catalog/presentation/i18n/brand-partners-pt-br.ts`. O card "Discovery
+  orientando o produto" mantém a pesquisa antes de compromissos imobiliários significativos; a ressalva exploratória
+  pertence à explicação detalhada.
+- **Percurso B2B, nas duas páginas:** representação → Discovery → aprovação dos conceitos → licenciamento →
+  desenvolvimento da Home Edition → aprovação, lançamento e realização → operação. Os títulos e a ordem são
+  compartilhados semanticamente; não criar componente ou abstração para deduplicar a copy.
+- **Como funciona — mudanças indispensáveis:** preservar as oito seções e o índice. Em `path.phases`, passar de
+  3 + 3 + 2 para **3 + 2 + 2**: Início e conceito (01–03), Licenciamento e Home Edition (04–05), Realização e
+  continuidade (06–07). `modalities` e `after` saem da antiga sexta etapa e ficam integralmente na nova sexta
+  (`phases[2].steps[0]`), preservando Owner, Co-Owner, direitos patrimoniais e ressalvas. O componente calcula a
+  numeração a partir do tamanho dos grupos; nenhum TSX/CSS precisa mudar. Ajustar apenas as atribuições em Decisões,
+  licenciamento, primeira resposta de Governança e as duas primeiras respostas de Condições. Operação distingue
+  administração obrigatória no Co-Owner e facultativa no Owner; Luxtory Club continua como modelo previsto.
+- **Separação das jornadas e aprovações:** pesquisa exploratória não comprova demanda de compra. Contrato B2B
+  identifica Home Concept aprovado, Home Edition a desenvolver, direitos e critérios de aprovação posterior; não
+  aprova definitivamente produto ainda não detalhado. Interesse comercial do consumidor só após Home Edition
+  publicada e antes da comercialização formal da Second Home, sem constituir aquisição. Manter aprovação prévia do
+  plano estratégico, inclusive exposição pública, aprovações do produto e materiais, propriedade intelectual e
+  alterações materiais. Replicação e exclusividade seguem os direitos e limites contratados, sem exclusividade
+  automática sobre toda a marca ou o Home Concept.
+- **Reaproveitamento e escopo:** do #86, somente Pertencimento e a distinção da administração Owner/Co-Owner;
+  não incorporar seus demais textos, histórico ou branch. #85 já está na base; #87 não é dependência. Sem B2C,
+  portal, APIs, backend, migrations, flags, pacotes ou disponibilidade operacional nova. Não publicar percentuais,
+  metas, parâmetros de piloto, condições não confirmadas ou participação da marca no Luxplus (`P-BP-05`).
+- **Aceite integrado:** testes de comunicação/terminologia mantêm hashes e guardas semânticas; novas regressões
+  verificam sete etapas na ordem aprovada, interesse após publicação, governança e Hero. No navegador, provar listas
+  semânticas com inícios 1/4/6, ordinais 01–07, comparação Owner/Co-Owner de mesmo peso e textos preservados; confirmar
+  reflow desde 320 px, tipografia, contraste, navegação por teclado, axe, formulário e portão fechado. Gate local
+  `npm run verify` e E2E Brand Partners, com evidências visuais das duas páginas.
+- **Permissões:** implementação e validação locais autorizadas. Push e abertura de PR exigem autorização específica;
+  o fechamento posterior do #86 também. Merge e publicação não autorizados: push em `main` pode acionar CI,
+  migrations e deploy, e push de branch pode gerar Preview. CI verde não supre essas autorizações.
+
 ## 15. Sobre a Luxtory
 
 ### 15.1 Contrato e brief aprovado (2026-10-15)

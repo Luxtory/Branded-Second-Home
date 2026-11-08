@@ -65,50 +65,49 @@ const EDITION_WITH_MODALITY =
   /\bHome Editions?\b[^.;]*\b(?:apresenta|apresentam|oferece|oferecem|define|definem|contempla|contemplam|pode ser|podem ser|permite|permitem)\b[^.;]*\b(?:Owner|Co-Owner|modalidades?|formas de aquisição)\b/i;
 
 describe('comunicação — ontologia da W4.2 na copy vigente (regressões semânticas)', () => {
-  it('[BR-030] [D-BP-28] Brand Partners: descobrir e validar o Home Concept → criar a Home Edition → captar interesse sobre ela → estruturar a Second Home', () => {
+  it('[BR-030] [D-BP-31] Brand Partners: representação e Discovery → aprovação → licenciamento → Home Edition → realização → operação', () => {
+    const stages = [
+      'Parceria e representação.',
+      'Discovery e Home Concepts.',
+      'Aprovação dos conceitos.',
+      'Prospecção e licenciamento.',
+      'Desenvolvimento da Home Edition.',
+      'Aprovação, lançamento e realização.',
+      'Operação e evolução.',
+    ];
     const mechanism = bp.home.mechanism.steps.map((step) => step.title);
-    expect(
-      ascending(
-        order(mechanism, [
-          'Da identidade da marca ao Home Concept.',
-          'Descobrir e validar o Home Concept.',
-          'Criar a Home Edition.',
-          'Apresentar a Home Edition e captar interesse.',
-          'Estruturar cada Second Home.',
-          'Design & Build.',
-        ]),
-      ),
-    ).toBe(true);
-
     const path = bp.howItWorks.path.phases.flatMap((phase) =>
       phase.steps.map((step) => step.title),
     );
-    expect(
-      ascending(
-        order(path, [
-          'Da identidade da marca ao Home Concept.',
-          'Descobrir e validar o Home Concept.',
-          'Nasce uma Home Edition.',
-          'Apresentar a Home Edition e captar interesse.',
-          'Estruturar cada Second Home.',
-        ]),
-      ),
-    ).toBe(true);
-
-    // A descoberta se declara não comercial; o interesse comercial traz localização pretendida e modalidade desejada; a
-    // Second Home recebe a modalidade definitiva na estruturação.
-    for (const line of [
-      'É pesquisa de descoberta, não manifestação de interesse comercial nem aquisição. O resultado orienta se o Home Concept segue, é refinado ou não avança.',
-      'Não é manifestação de interesse comercial nem aquisição: o resultado orienta se o Home Concept segue para uma Home Edition, é refinado ou não avança.',
-      'A marca apresenta a Home Edition principalmente por seus próprios canais.',
-      'A Luxtory conversa com os interessados, que indicam onde gostariam de ter aquela Home Edition e se seu interesse é Owner ou Co-Owner.',
-      'A manifestação ajuda a avaliar a oportunidade, mas não constitui aquisição.',
-      'Quando demanda e viabilidade justificam avançar, a Luxtory estrutura uma Second Home para uma localização concreta, definindo sua modalidade, estrutura patrimonial e condições comerciais.',
-    ]) {
-      expect(SURFACES.brandPartners).toContain(line);
-    }
+    expect(mechanism).toEqual(stages);
+    expect(path).toEqual(stages);
+    const discovery = bp.howItWorks.path.phases[0].steps[1].paragraphs.join(' ');
+    expect(discovery).toMatch(/participantes mobilizados pela marca/);
+    expect(discovery).toMatch(/pesquisa é exploratória/i);
+    expect(discovery).toContain('não comprova demanda de compra');
+    expect(discovery).toContain('não constitui manifestação de interesse comercial');
+    expect(discovery).toContain('nem representa promessa de vendas');
+    expect(bp.home.mechanism.steps[3].text.join(' ')).toContain(
+      'O licenciamento é contratado antes do desenvolvimento definitivo da Home Edition.',
+    );
     // O mesmo verbo não nomeia as duas etapas.
     expect(ALL).not.toContain('Apresentar e validar a demanda.');
+  });
+
+  it('[BR-030] [BR-041] o interesse do consumidor parte da Home Edition publicada e antecede a comercialização formal da Second Home', () => {
+    const paragraphs = bp.howItWorks.path.phases[2].steps[0].paragraphs;
+    const interest = paragraphs.findIndex((line) => /Após a publicação da Home Edition/.test(line));
+    const formalSale = paragraphs.findIndex((line) => /A comercialização formal/.test(line));
+    const execution = paragraphs.findIndex((line) => /A incorporadora investe/.test(line));
+    expect(interest).toBeGreaterThanOrEqual(0);
+    expect(formalSale).toBeGreaterThan(interest);
+    expect(execution).toBeGreaterThan(formalSale);
+    expect(paragraphs[interest]).toContain('localização pretendida e Owner ou Co-Owner');
+    expect(paragraphs[interest]).toContain('não constitui aquisição');
+    expect(paragraphs[formalSale]).toContain('estruturação');
+    expect(paragraphs[formalSale]).toContain(
+      'condições comerciais definidas e autorizações aplicáveis',
+    );
   });
 
   it('[BR-030] [D-B2C-27] B2C: a jornada da Coleção conhece as Home Editions antes de manifestar interesse e estrutura a Second Home depois', () => {

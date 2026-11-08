@@ -48,6 +48,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Brand Partners (`D-BP-31`, `catalog` §14.10): proposta de valor para a marca, Discovery orientando Home Concepts,
+  licenciamento com incorporadoras antes da Home Edition definitiva e percurso B2B em sete etapas. Governança,
+  direitos Owner/Co-Owner, formulário e Design System preservados. Revisão normativa mínima do `01` v10.4 preparada
+  para aprovação do diff; emissão e publicação dependem de autorização específica.
+
 - Ontologia Home Concept → Home Edition → Second Home (W4.2, `01` v10.2, ADR-0019): a Home Edition passa a ser uma
   configuração específica e replicável de Second Home — nome, descrição, tipologia, configuração dos espaços, área
   projetada, suítes, capacidade, ambientes, amenidades, características, imagens, renders e plantas —, sem localização,

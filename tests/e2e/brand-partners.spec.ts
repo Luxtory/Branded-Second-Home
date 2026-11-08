@@ -549,8 +549,56 @@ test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalo
       .evaluateAll((links) => links.map((link) => link.getAttribute('href') ?? ''));
     expect(anchors).toEqual(BRAND_PARTNERS_HOW_SECTIONS.slice(1).map((id) => `#${id}`));
     for (const anchor of anchors) await expect(page.locator(anchor)).toHaveCount(1);
+
+    // O percurso B2B tem sete etapas; a numeração nativa continua entre os três grupos.
+    const lists = page.locator('#percurso .lx-answers--phases .lx-answers__content > ol');
+    expect(
+      await lists.evaluateAll((nodes) =>
+        nodes.map((node) => ({
+          start: (node as HTMLOListElement).start,
+          count: node.children.length,
+        })),
+      ),
+    ).toEqual([
+      { start: 1, count: 3 },
+      { start: 4, count: 2 },
+      { start: 6, count: 2 },
+    ]);
+    const steps = lists.locator(':scope > li');
+    await expect(steps.locator(':scope > .lx-ordinal')).toHaveText([
+      '01',
+      '02',
+      '03',
+      '04',
+      '05',
+      '06',
+      '07',
+    ]);
+    const realization = steps.nth(5);
+    await expect(realization.locator('[data-pair="modality"]')).toHaveCount(1);
+    const paragraphs = await realization.locator('.lx-numbered__text > p').allTextContents();
+    const interest = paragraphs.findIndex((line) => /Após a publicação da Home Edition/.test(line));
+    const formalSale = paragraphs.findIndex((line) => /A comercialização formal/.test(line));
+    const execution = paragraphs.findIndex((line) => /A incorporadora investe/.test(line));
+    expect(interest).toBeGreaterThanOrEqual(0);
+    expect(formalSale).toBeGreaterThan(interest);
+    expect(execution).toBeGreaterThan(formalSale);
+    expect(paragraphs.slice(-2)).toEqual([
+      'Os respectivos direitos nascem da formalização da aquisição, respeitando as condições e os compromissos aplicáveis.',
+      'Uma manifestação de interesse não os constitui.',
+    ]);
+    await expect(
+      realization.getByText(
+        'Enquanto essa estrutura estiver aberta, a Second Home pode contemplar Owner, Co-Owner ou ambos.',
+        { exact: true },
+      ),
+    ).toBeVisible();
     const sides = page.locator('[data-pair="modality"] .lx-comparison__item');
     await expect(sides).toHaveCount(2);
+    await expect(sides.locator('p')).toHaveText([
+      'Adquire a propriedade integral da Second Home.',
+      'Adquire uma participação societária na SPE proprietária da Second Home, com Direito de Uso conforme as regras aplicáveis.',
+    ]);
     const fonts = await sides
       .locator('h5')
       .evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).fontSize));
