@@ -45,6 +45,37 @@ function Modalities({ step }: { readonly step: Step }) {
   );
 }
 
+/** Aprovação → interesse e aquisição → realização, dentro da etapa 06, com direitos sempre abertos. */
+function StepContent({ step }: { readonly step: Step }) {
+  if (!('acquisition' in step)) return <Paragraphs lines={step.paragraphs} />;
+  return (
+    <>
+      <Paragraphs lines={step.paragraphs} className="lx-body lx-bp-realization__approval" />
+      <div
+        className="lx-stack lx-bp-realization__group"
+        role="group"
+        aria-labelledby="percurso-interesse"
+      >
+        <p id="percurso-interesse" className="lx-eyebrow">
+          {step.acquisition.label}
+        </p>
+        <Paragraphs lines={step.acquisition.paragraphs} />
+        <Modalities step={step} />
+      </div>
+      <div
+        className="lx-stack lx-bp-realization__group"
+        role="group"
+        aria-labelledby="percurso-realizacao"
+      >
+        <p id="percurso-realizacao" className="lx-eyebrow">
+          {step.realization.label}
+        </p>
+        <Paragraphs lines={step.realization.paragraphs} />
+      </div>
+    </>
+  );
+}
+
 /** Numeração corrida das sete etapas, através das três fases (01 → 07). */
 const PHASE_OFFSETS = path.phases.map((_, index) =>
   path.phases.slice(0, index).reduce((total, phase) => total + phase.steps.length, 0),
@@ -62,7 +93,7 @@ export function BrandPartnersHowItWorksPage() {
       {/* Abertura — Cinematic Hero (M4) com o índice da página como âncoras reais. */}
       <section
         id={OPENING}
-        className="lx-hero lx-hero--uniform"
+        className="lx-hero lx-hero--uniform lx-bp-opening"
         data-surface="blue"
         aria-labelledby={titleOf(OPENING)}
       >
@@ -87,10 +118,10 @@ export function BrandPartnersHowItWorksPage() {
         </div>
       </section>
 
-      {/* Percurso — White: três fases (rótulo | etapas numeradas 01 → 07); Owner | Co-Owner com o mesmo peso. */}
+      {/* Percurso — White: três fases acima das etapas numeradas 01 → 07; Owner | Co-Owner com o mesmo peso. */}
       <section
         id={PATH}
-        className="lx-section"
+        className="lx-section lx-bp-journey"
         data-surface="white"
         aria-labelledby={titleOf(PATH)}
       >
@@ -104,20 +135,21 @@ export function BrandPartnersHowItWorksPage() {
           <div className="lx-answers lx-answers--phases">
             {path.phases.map((phase, phaseIndex) => (
               <div className="lx-answers__row" key={phase.name}>
-                <h3 className="lx-answers__label lx-eyebrow">{phase.name}</h3>
-                <div className="lx-answers__content">
+                <h3 className="lx-answers__label lx-answers__full lx-eyebrow">{phase.name}</h3>
+                <div className="lx-answers__content lx-answers__full">
                   <ol className="lx-numbered" start={(PHASE_OFFSETS[phaseIndex] ?? 0) + 1}>
                     {phase.steps.map((step, index) => (
                       <li className="lx-numbered__item" key={step.title}>
                         <span className="lx-ordinal lx-numbered__number" aria-hidden="true">
                           {ordinal((PHASE_OFFSETS[phaseIndex] ?? 0) + index)}
                         </span>
-                        <h4 className="lx-display-s">
+                        <h4 className="lx-display-s lx-numbered__text--wide">
                           <Rich value={step.title} />
                         </h4>
-                        <div className="lx-numbered__text lx-stack">
-                          <Paragraphs lines={step.paragraphs} />
-                          <Modalities step={step} />
+                        <div
+                          className={`lx-numbered__text lx-stack${'acquisition' in step ? ' lx-bp-realization' : ''}`}
+                        >
+                          <StepContent step={step} />
                         </div>
                       </li>
                     ))}
@@ -129,7 +161,7 @@ export function BrandPartnersHowItWorksPage() {
         </div>
       </section>
 
-      {/* Decisões e remuneração — Sand: decisão | quem decide; depois licenciamento e remuneração (sem valores). */}
+      {/* Decisões e remuneração — Sand: três papéis abertos; depois licenciamento e remuneração (sem valores). */}
       <section
         id={DECISIONS}
         className="lx-section"
@@ -144,9 +176,15 @@ export function BrandPartnersHowItWorksPage() {
             </h2>
           </div>
           <div className="lx-stack">
-            <AnswerRows
-              answers={decisions.rows.map((row) => ({ question: row.decision, answer: [row.who] }))}
-            />
+            <ul className="lx-siblings lx-siblings--trio lx-bp-parties">
+              {decisions.parties.map((party) => (
+                <li className="lx-siblings__item" key={party.name}>
+                  <h3 className="lx-display-s">{party.name}</h3>
+                  <Paragraphs lines={party.paragraphs} />
+                </li>
+              ))}
+            </ul>
+            <p className="lx-body">{decisions.operation}</p>
             <p className="lx-body">{decisions.responsibilities}</p>
           </div>
           <div className="lx-section-group">

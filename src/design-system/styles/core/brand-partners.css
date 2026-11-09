@@ -1,0 +1,114 @@
+/* Brand Partners (catalog §14.11, D-BP-32). Opt-in compositions, with the existing Core roles and tokens. */
+@layer lx.components {
+  /* Enlarged text must not make implicit grid tracks wider than the available reading column. */
+  [data-lx="core"] main:has(> .lx-bp-opening) {
+    overflow-wrap: anywhere;
+  }
+  [data-lx="core"] main:has(> .lx-bp-opening) :is(
+    .lx-stack, .lx-hero__copy, .lx-section-head, .lx-equation, .lx-hero__actions,
+    h1, h2, h3, h4, h5, p, .lx-button
+  ) {
+    min-width: 0;
+  }
+  /* Phone: a reserved photographic frame brings the headline into short screens without clipping the copy. */
+  [data-lx="core"] .lx-bp-opening .lx-hero__slides {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: var(--lx-ratio-media-sm);
+  }
+  /* Intrinsic columns: 10rem is the local minimum for a chapter label; 320px keeps one column, 390px fits two. */
+  [data-lx="core"] .lx-bp-opening .lx-anchors {
+    width: 100%;
+  }
+  [data-lx="core"] .lx-bp-opening .lx-anchors > ul {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+    column-gap: var(--lx-space-4);
+  }
+
+  /* The existing --wide title occupies the row above the explanation; the phone keeps its full body width. */
+  [data-lx="core"] .lx-bp-journey {
+    container: lx-bp-journey / inline-size;
+  }
+  [data-lx="core"] .lx-bp-journey .lx-numbered__text {
+    grid-column: 1 / -1;
+  }
+  [data-lx="core"] .lx-bp-realization {
+    gap: var(--lx-space-8);
+  }
+  [data-lx="core"] .lx-bp-realization__approval {
+    grid-column: 1 / -1;
+    max-width: var(--lx-layout-measure);
+  }
+  [data-lx="core"] .lx-bp-realization__group {
+    container: lx-bp-group / inline-size;
+    gap: var(--lx-space-3);
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+    padding-top: var(--lx-space-6);
+    max-width: var(--lx-layout-measure);
+  }
+  /* Available width in rem tracks enlarged text too. A narrow group keeps the phone's open comparison. */
+  [data-lx="core"] .lx-bp-realization__group .lx-comparison {
+    grid-template-columns: minmax(0, 1fr);
+    border-top: 0;
+  }
+  [data-lx="core"] .lx-bp-realization__group .lx-comparison__item {
+    padding-inline: 0;
+    border-inline-start: 0;
+    border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  }
+  [data-lx="core"] .lx-bp-realization__group .lx-comparison__item + .lx-comparison__item {
+    padding-inline: 0;
+    border-inline-start: 0;
+  }
+  [data-lx="core"] .lx-bp-parties {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @media (min-width: 48rem) {
+    [data-lx="core"] .lx-bp-opening .lx-hero__slides {
+      aspect-ratio: auto;
+    }
+    [data-lx="core"] .lx-bp-journey .lx-numbered__text {
+      grid-column: 2 / -1;
+    }
+  }
+  @media (min-width: 64rem) {
+    [data-lx="core"] .lx-bp-parties {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  /* Core sm: both modalities fit only when the group offers enough width relative to the text size. */
+  @container lx-bp-group (min-width: 30rem) {
+    [data-lx="core"] .lx-bp-realization__group .lx-comparison {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+    [data-lx="core"] .lx-bp-realization__group .lx-comparison__item {
+      padding-inline: 0 calc(var(--lx-layout-gutter) * 2);
+      border-top: 0;
+    }
+    [data-lx="core"] .lx-bp-realization__group .lx-comparison__item + .lx-comparison__item {
+      padding-inline: calc(var(--lx-layout-gutter) * 2) 0;
+      border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+  }
+  /* Core xl: retain 8/4 at normal size; enlarged text needs proportionally more room before splitting. */
+  @container lx-bp-journey (min-width: 80rem) {
+    [data-lx="core"] .lx-bp-journey .lx-bp-realization {
+      grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+      align-items: start;
+      max-width: none;
+    }
+  }
+}
+
+@layer lx.utilities {
+  /* Keep compounds whole when they fit. At enlarged sizes, a term wider than its parent may wrap in full view.
+   * This opt-in stays in the same layer as lx-nowrap; no !important or unlayered rule changes Core precedence. */
+  [data-lx="core"] main:has(> .lx-bp-opening) .lx-nowrap {
+    display: inline-block;
+    width: max-content;
+    max-width: 100%;
+    white-space: normal;
+  }
+}

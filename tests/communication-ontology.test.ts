@@ -83,13 +83,14 @@ describe('comunicação — ontologia da W4.2 na copy vigente (regressões semâ
     expect(path).toEqual(stages);
     const discovery = bp.howItWorks.path.phases[0].steps[1].paragraphs.join(' ');
     expect(discovery).toMatch(/participantes mobilizados pela marca/);
-    expect(discovery).toMatch(/pesquisa é exploratória/i);
+    expect(discovery).toMatch(/pesquisa(?: é)? exploratória/i);
     expect(discovery).toContain('não comprova demanda de compra');
-    expect(discovery).toContain('não constitui manifestação de interesse comercial');
-    expect(discovery).toContain('nem representa promessa de vendas');
-    expect(discovery).toContain(
-      'A pesquisa não constitui aquisição nem gera direitos sobre uma Second Home.',
+    expect(discovery).toMatch(
+      /não (?:constitui manifestação de interesse comercial|é interesse comercial)/i,
     );
+    expect(discovery).toMatch(/nem (?:representa promessa de vendas|promete vendas)/);
+    expect(discovery).toMatch(/não (?:constitui aquisição|é interesse comercial ou aquisição)/i);
+    expect(discovery).toContain('nem gera direitos');
     expect(bp.home.mechanism.steps[3].text.join(' ')).toContain(
       'O licenciamento é contratado antes do desenvolvimento definitivo da Home Edition.',
     );
@@ -98,16 +99,23 @@ describe('comunicação — ontologia da W4.2 na copy vigente (regressões semâ
   });
 
   it('[BR-030] [BR-041] o interesse do consumidor parte da Home Edition publicada e antecede a comercialização formal da Second Home', () => {
-    const paragraphs = bp.howItWorks.path.phases[2].steps[0].paragraphs;
+    const step = bp.howItWorks.path.phases[2].steps[0];
+    const paragraphs = [
+      ...step.paragraphs,
+      ...step.acquisition.paragraphs,
+      ...step.realization.paragraphs,
+    ];
     const interest = paragraphs.findIndex((line) => /Após a publicação da Home Edition/.test(line));
-    const formalSale = paragraphs.findIndex((line) => /A comercialização formal/.test(line));
+    const formalSale = paragraphs.findIndex((line) =>
+      /A (?:comercialização|venda) formal/.test(line),
+    );
     const execution = paragraphs.findIndex((line) => /A incorporadora investe/.test(line));
     expect(interest).toBeGreaterThanOrEqual(0);
     expect(formalSale).toBeGreaterThan(interest);
     expect(execution).toBeGreaterThan(formalSale);
     expect(paragraphs[interest]).toContain('localização pretendida e Owner ou Co-Owner');
-    expect(paragraphs.slice(interest, formalSale).join(' ')).toContain(
-      'Essa manifestação não constitui aquisição.',
+    expect(paragraphs.slice(interest, formalSale + 1).join(' ')).toMatch(
+      /Essa manifestação não constitui aquisição|Interesse não é aquisição/,
     );
     expect(paragraphs[formalSale]).toContain('estruturação');
     expect(paragraphs[formalSale]).toContain(

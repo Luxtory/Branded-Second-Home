@@ -76,6 +76,10 @@ describe('copy Brand Partners BP1.1 (catalog §14.9)', () => {
     expect(strings({ hero, problem }).filter((line) => product.test(line))).toEqual([]);
     expect(strings(problem).filter((line) => /Luxtory/.test(line))).toEqual([]);
     expect(hero.body.join(' ')).toContain('licenciamento com incorporadoras');
+    expect(hero.body.join(' ')).toContain('sem exigir que sua marca financie a construção');
+    expect(strings({ hero, promise }).join(' ')).not.toMatch(
+      /sem custos?|gratuit|isenção de taxas|sem investimento inicial/i,
+    );
     expect(strings(promise).some((line) => line.includes('Branded Second Home'))).toBe(true);
     expect(strings(promise).some((line) => line.includes('Home Concept'))).toBe(true);
   });

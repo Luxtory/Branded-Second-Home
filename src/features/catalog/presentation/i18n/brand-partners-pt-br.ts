@@ -7,7 +7,9 @@
  * frases: uma lista de strings é um bloco da copy, um `<p>` por item. `**termo**` marca o destaque tipográfico previsto na copy (renderizado como `<strong>`), não é conteúdo.
  * Headlines: `lead` + `turn` (a virada em itálico da copy). Identificadores internos (funções 5P, M1–M5) ficam só nos
  * comentários. Revisão GTM aprovada em 2026-11-08 (`D-BP-31`, catalog §14.10): valor para a marca, Discovery,
- * licenciamento com incorporadoras e jornada B2B em sete etapas; demais decisões e componentes preservados.
+ * licenciamento com incorporadoras e jornada B2B em sete etapas. Refinamento visual local autorizado em 2026-11-09
+ * (`D-BP-32`): concisão, direção de produto, conceito de casa replicável e áreas abertas de interesse/aquisição e
+ * realização; sete etapas, governança e direitos preservados. Sem promessa de gratuidade geral.
  */
 
 /** Rótulos do formulário (catalog §14.3) e do e-mail interno: os mesmos cinco campos autorizados pelo REQ-028. */
@@ -77,8 +79,8 @@ export const brandPartnersMessages = {
       },
       // Valor para a Brand Partner e explicação breve do licenciamento (D-BP-31).
       body: [
-        'Transformamos a identidade da sua marca em conceitos de casas de lazer desenvolvidos a partir das preferências do seu público.',
-        'A Luxtory estrutura o licenciamento com incorporadoras e acompanha a fidelidade ao produto aprovado, sem exigir que sua marca financie a construção.',
+        'Criamos conceitos de casas de lazer com a identidade da sua marca e o estilo de vida do seu público.',
+        'A Luxtory articula o licenciamento com incorporadoras, sem exigir que sua marca financie a construção.',
       ],
       action: 'Conheça essa possibilidade',
     },
@@ -123,7 +125,7 @@ export const brandPartnersMessages = {
       marker: 'Uma nova lógica',
       title: { lead: 'A melhor experiência do seu público pode nascer ', turn: 'da sua marca.' },
       intro:
-        'Quando a experiência nasce da identidade da marca, a marca não entra no final como uma camada estética. Ela orienta desde o início aquilo que as pessoas vão sentir, fazer e lembrar.',
+        'Quando a experiência nasce da identidade da marca, ela orienta o que as pessoas sentem, fazem e lembram.',
       // Equação de valor (fundador, `D-BP-21`): momento emocional + identidade compartilhada = vínculo com a marca.
       equation: {
         premises: [
@@ -134,9 +136,9 @@ export const brandPartnersMessages = {
         result: 'Uma conexão mais profunda e duradoura com sua marca.',
       },
       body: [
-        'A Luxtory conecta marcas e incorporadoras, desenvolve conceitos de casas de lazer e estrutura o licenciamento, com direção de produto e preservação da identidade da marca.',
+        'A Luxtory estrutura o licenciamento e dirige o desenvolvimento do produto, preservando a identidade da marca.',
         'No universo dos imóveis de lazer, essa lógica ganha forma em uma **Branded Second Home**.',
-        'A Luxtory traduz a identidade da marca em um **Home Concept** — o conceito que orienta espaços, experiências e os elementos essenciais que tornam a identidade da marca reconhecível em cada detalhe.',
+        'O **Home Concept** é um conceito de casa replicável, com ambientes e experiências orientados pela identidade da marca.',
       ],
     },
     // PROMISE → PROOF · Para a sua marca (tese): escada, cadeia causal, possibilidades × mecanismos (a nota de limite
@@ -182,19 +184,19 @@ export const brandPartnersMessages = {
           {
             title: 'Remuneração pelo uso da marca',
             text: [
-              'O uso autorizado da marca é remunerado pelo licenciamento, com condições definidas em contrato e separadas das demais receitas da Luxtory.',
+              'O licenciamento remunera a marca, conforme contrato e de forma separada das demais receitas da Luxtory.',
             ],
           },
           {
             title: 'Discovery orientando o produto',
             text: [
-              'A pesquisa com o público da marca orienta o desenvolvimento dos Home Concepts antes de compromissos imobiliários significativos.',
+              'A pesquisa com seu público orienta os Home Concepts antes de compromissos imobiliários significativos.',
             ],
           },
           {
             title: 'Expansão quando fizer sentido',
             text: [
-              'Uma Home Edition pode originar várias Second Homes e ser licenciada para outros destinos, conforme os direitos autorizados e os limites de cada contrato.',
+              'Uma Home Edition pode originar várias Second Homes e ser licenciada em outros destinos, conforme os direitos contratados.',
             ],
           },
         ],
@@ -228,7 +230,7 @@ export const brandPartnersMessages = {
           name: 'Pertencimento',
           title: 'Um universo para compartilhar.',
           text: [
-            'Um lugar que expressa o universo com o qual a pessoa se identifica — para viver com privacidade, com família, amigos e convidados, conforme as regras da Second Home.',
+            'O lugar combina identidade e privacidade para receber família, amigos e convidados, conforme as regras da Second Home.',
           ],
         },
       ],
@@ -247,7 +249,7 @@ export const brandPartnersMessages = {
         {
           title: 'Parceria e representação.',
           text: [
-            'A parceria de representação começa de forma não exclusiva, com direitos e responsabilidades definidos em contrato.',
+            'A representação começa sem exclusividade, com direitos e responsabilidades definidos em contrato.',
           ],
         },
         {
@@ -260,13 +262,13 @@ export const brandPartnersMessages = {
         {
           title: 'Aprovação dos conceitos.',
           text: [
-            'A Brand Partner aprova os Home Concepts, os padrões de identidade e sua apresentação a incorporadoras.',
+            'A marca aprova os Home Concepts, os padrões de identidade e a apresentação às incorporadoras.',
           ],
         },
         {
           title: 'Prospecção e licenciamento.',
           text: [
-            'A Luxtory prospecta incorporadoras e articula a contratação do licenciamento, com aprovação da marca.',
+            'A Luxtory busca incorporadoras e articula o licenciamento, com aprovação da marca.',
             'O licenciamento é contratado antes do desenvolvimento definitivo da Home Edition.',
           ],
         },
@@ -281,7 +283,7 @@ export const brandPartnersMessages = {
           title: 'Aprovação, lançamento e realização.',
           text: [
             'A marca aprova o uso de sua identidade no produto e nos materiais de lançamento.',
-            'A incorporadora investe, estrutura, comercializa e executa as Second Homes com seus responsáveis habilitados.',
+            'A incorporadora investe, estrutura, comercializa e constrói com seus responsáveis habilitados.',
             'A Luxtory supervisiona a fidelidade ao produto aprovado.',
           ],
         },
@@ -339,9 +341,8 @@ export const brandPartnersMessages = {
       marker: 'Para quem faz sentido',
       title: 'Você reconhece sua marca nessa possibilidade?',
       paragraphs: [
-        'Faz sentido para marcas com um universo próprio e uma comunidade que se reconhece nele.',
-        'E com interesse em transformar essa relação em novas experiências e fontes de valor, com governança sobre o uso da marca.',
-        'O primeiro passo é uma conversa para avaliar o fit entre a identidade da sua marca, a sua comunidade e uma expressão da marca em Second Homes.',
+        'Faz sentido para marcas com identidade própria e um público que se reconhece nela.',
+        'O primeiro passo é uma conversa para avaliar essa possibilidade juntos.',
       ],
       action: CTA,
       limit:
@@ -371,10 +372,7 @@ export const brandPartnersMessages = {
     opening: {
       marker: 'Como funciona',
       title: 'Entenda o caminho antes de dar o próximo passo.',
-      body: [
-        'Como a parceria começa, quem decide e quem faz cada etapa.',
-        'Como a marca é protegida e remunerada, e o que precisa acontecer para uma oportunidade avançar.',
-      ],
+      body: ['Veja quem faz o quê, como a marca é protegida e como funciona sua remuneração.'],
       // Nome acessível do índice (não visível).
       indexLabel: 'Índice da página',
       index: {
@@ -398,7 +396,7 @@ export const brandPartnersMessages = {
             {
               title: 'Parceria e representação.',
               paragraphs: [
-                'A parceria de representação começa de forma não exclusiva, com direitos e responsabilidades definidos em contrato.',
+                'A representação começa sem exclusividade, com direitos e responsabilidades definidos em contrato.',
               ],
             },
             {
@@ -406,14 +404,13 @@ export const brandPartnersMessages = {
               paragraphs: [
                 'A Luxtory conduz o Discovery com participantes mobilizados pela marca.',
                 'Desenvolve Home Concepts e um Opportunity Brief, que reúne evidências e oportunidades.',
-                'A pesquisa é exploratória: não comprova demanda de compra, não constitui manifestação de interesse comercial nem representa promessa de vendas.',
-                'A pesquisa não constitui aquisição nem gera direitos sobre uma Second Home.',
+                'Pesquisa exploratória não comprova demanda de compra nem promete vendas. Não é interesse comercial ou aquisição, nem gera direitos.',
               ],
             },
             {
               title: 'Aprovação dos conceitos.',
               paragraphs: [
-                'A Brand Partner aprova os Home Concepts, os padrões de identidade e sua apresentação a incorporadoras.',
+                'A marca aprova os Home Concepts, os padrões de identidade e a apresentação às incorporadoras.',
               ],
             },
           ],
@@ -424,7 +421,7 @@ export const brandPartnersMessages = {
             {
               title: 'Prospecção e licenciamento.',
               paragraphs: [
-                'A Luxtory prospecta incorporadoras e articula a contratação do licenciamento, com aprovação da marca.',
+                'A Luxtory busca incorporadoras e articula o licenciamento, com aprovação da marca.',
                 'O licenciamento é contratado antes do desenvolvimento definitivo da Home Edition.',
               ],
             },
@@ -445,13 +442,15 @@ export const brandPartnersMessages = {
               title: 'Aprovação, lançamento e realização.',
               paragraphs: [
                 'A marca aprova o uso de sua identidade no produto e nos materiais de lançamento.',
-                'Após a publicação da Home Edition, o consumidor pode manifestar interesse, indicando localização pretendida e Owner ou Co-Owner.',
-                'Essa manifestação não constitui aquisição.',
-                'A comercialização formal de cada Second Home exige sua estruturação, condições comerciais definidas e autorizações aplicáveis.',
-                'A incorporadora investe, estrutura, comercializa e executa as Second Homes com seus responsáveis habilitados.',
-                'A Luxtory supervisiona a fidelidade ao produto aprovado.',
-                'Enquanto essa estrutura estiver aberta, a Second Home pode contemplar Owner, Co-Owner ou ambos.',
               ],
+              acquisition: {
+                label: 'Interesse e aquisição',
+                paragraphs: [
+                  'Após a publicação da Home Edition, o consumidor pode manifestar interesse, indicando localização pretendida e Owner ou Co-Owner.',
+                  'Interesse não é aquisição. A venda formal exige estruturação, condições comerciais definidas e autorizações aplicáveis.',
+                  'Enquanto essa estrutura estiver aberta, a Second Home pode contemplar Owner, Co-Owner ou ambos.',
+                ],
+              },
               modalities: {
                 owner: {
                   name: 'Owner',
@@ -466,6 +465,13 @@ export const brandPartnersMessages = {
                 'Os respectivos direitos nascem da formalização da aquisição, respeitando as condições e os compromissos aplicáveis.',
                 'Uma manifestação de interesse não os constitui.',
               ],
+              realization: {
+                label: 'Realização imobiliária',
+                paragraphs: [
+                  'A incorporadora investe, estrutura, comercializa e constrói com seus responsáveis habilitados.',
+                  'A Luxtory supervisiona a fidelidade ao produto aprovado.',
+                ],
+              },
             },
             {
               title: 'Operação e evolução.',
@@ -473,53 +479,49 @@ export const brandPartnersMessages = {
                 'Operação e manutenção cabem aos responsáveis contratados.',
                 'A Luxtory acompanha a conformidade e a evolução do produto no escopo acordado.',
                 'O Luxtory Club é previsto, quando disponível e atendidas as condições aplicáveis.',
-                'A administração profissional é obrigatória no Co-Owner; no Owner, os serviços de administração são facultativos, conforme as regras aplicáveis.',
+                'A administração profissional é obrigatória no Co-Owner e facultativa no Owner, conforme as regras aplicáveis.',
               ],
             },
           ],
         },
       ],
     },
-    // PROOF · Decisões e remuneração: seis decisões (alteração de elementos essenciais fica em Governança e replicação
-    // em Condições e expansão — ajuste do Checkpoint 1, 2026-10-12).
+    // PROOF · Decisões e remuneração: papéis abertos; aprovações completas em Governança e replicação em Condições.
     decisions: {
       marker: 'Decisões e remuneração',
       title: 'Quem decide, quem faz e como a marca participa.',
-      rows: [
+      parties: [
         {
-          decision: 'Aprovar o plano estratégico de uso da marca, inclusive a exposição pública',
-          who: 'Brand Partner, antes do uso. Mudanças materiais exigem nova aprovação.',
+          name: 'Sua marca',
+          paragraphs: [
+            'Mobiliza a pesquisa, autoriza o uso da marca e aprova conceitos, licenciamento e materiais.',
+          ],
         },
         {
-          decision: 'Conduzir o Discovery e desenvolver Home Concepts',
-          who: 'Luxtory conduz; a marca mobiliza os participantes da pesquisa.',
+          name: 'Luxtory',
+          paragraphs: [
+            'Representa a marca, conduz o Discovery e desenvolve os Home Concepts.',
+            'Articula o licenciamento, dirige o produto e acompanha sua conformidade.',
+          ],
         },
         {
-          decision: 'Prospectar incorporadoras e contratar o licenciamento',
-          who: 'Luxtory articula a negociação; marca e incorporadora formalizam os direitos.',
-        },
-        {
-          decision: 'Desenvolver a Home Edition e acompanhar a fidelidade ao produto',
-          who: 'Luxtory dirige o produto com a incorporadora e os especialistas.',
-        },
-        {
-          decision: 'Investir, estruturar, projetar, construir e comercializar',
-          who: 'Incorporadora, por seus responsáveis habilitados.',
-        },
-        {
-          decision: 'Operar e manter a Second Home',
-          who: 'Operadora e prestadores contratados, conforme os instrumentos aplicáveis.',
+          name: 'Incorporadora',
+          paragraphs: [
+            'Investe, avalia a viabilidade e assume a realização imobiliária.',
+            'Seus responsáveis habilitados conduzem os projetos técnicos, a construção e as vendas.',
+          ],
         },
       ],
+      operation: 'Operação e manutenção cabem aos responsáveis contratados.',
       responsibilities:
         'As responsabilidades de cada parte ficam definidas nos contratos da parceria.',
       answers: [
         {
           question: 'Como funciona o licenciamento?',
           answer: [
-            'A marca continua sendo sua. A licença pode autorizar múltiplas Second Homes de uma Home Edition, com território, prazo e escopo definidos em contrato.',
+            'A marca continua sendo sua. A licença define território, prazo e direitos para Second Homes de uma Home Edition.',
             'A Luxtory articula a negociação entre marca e incorporadora.',
-            'Eventual exclusividade depende de formalização e limita-se ao escopo contratado, sem abranger automaticamente toda a marca ou o Home Concept.',
+            'Eventual exclusividade fica no escopo contratado, sem abranger automaticamente toda a marca ou o Home Concept.',
           ],
         },
         {
@@ -638,7 +640,7 @@ export const brandPartnersMessages = {
         {
           question: 'Como essa experiência pode chegar a outros lugares?',
           answer: [
-            'Uma Home Edition pode originar várias Second Homes e ser licenciada para outros destinos, conforme os direitos autorizados e os limites de cada contrato.',
+            'Uma Home Edition pode originar várias Second Homes e ser licenciada em outros destinos, conforme os direitos contratados.',
             'Cada expansão depende dos direitos de uso da marca, da estratégia da parceria, da demanda e da viabilidade.',
             'Parceiros locais autorizados pela Luxtory podem participar, respeitando o Home Concept, os padrões Luxtory e os direitos da Brand Partner.',
           ],

@@ -1296,6 +1296,43 @@ nos trechos indicados; o restante permanece aprovado.
   o fechamento posterior do #86 também. Merge e publicação não autorizados: push em `main` pode acionar CI,
   migrations e deploy, e push de branch pode gerar Preview. CI verde não supre essas autorizações.
 
+### 14.11 Refinamento visual Brand Partners (2026-11-09)
+
+Refinamento aprovado pelo fundador sobre o HEAD `a5e482a` do PR #89 (`D-BP-32`).
+Complementa a §14.10 somente na composição e nos trechos de copy aprovados; não altera funcionalidades ou regras.
+As sete etapas, grupos 3 + 2 + 2, ordinais e numeração nativa continuam. Frameworks, canônicos, fórmula, diagrama,
+fotografias, logo, textos patrimoniais, aprovações da marca, ressalvas, navegação e formulário são preservados.
+
+- **Copy:** estilo de vida no Hero; ausência de obrigação padrão de financiar a construção, sem gratuidade geral;
+  licenciamento e direção do desenvolvimento do produto pela Luxtory, com execução técnica pelos responsáveis
+  habilitados; Home Concept como conceito de casa replicável orientado pela identidade da marca. Pesquisa continua
+  exploratória, sem comprovar demanda de compra, prometer vendas ou constituir interesse comercial, aquisição ou
+  direitos. Redações exatas no i18n; nenhuma condição comercial ou disponibilidade nova.
+- **Composição:** Heros de abertura com fotografia 5:4 abaixo de `md`, reservando sua proporção; comparação com o
+  enquadramento anterior inclui 320 × 568. Índice com colunas intrínsecas e alvos do Core: uma em 320, duas em 390.
+  No percurso, rótulos de fase em largura integral e títulos acima das explicações. Etapa 06: aprovação, área
+  “Interesse e aquisição” com modalidades/direitos sempre abertos, depois “Realização imobiliária”. A publicação
+  antecede interesse, venda formal e realização; não condiciona a licença B2B. No tamanho normal, uma coluna de até
+  45rem abaixo de 1280 px; desde 1280 px, grade 8/4 com essa medida aplicada a cada grupo, não ao conjunto. Consultas
+  de container em 80rem/30rem, valores dos breakpoints Core, adaptam áreas/modalidades à largura relativa à fonte:
+  texto ampliado empilha quando necessário. Owner/Co-Owner mantêm mesma hierarquia e largura; no celular, Owner
+  vem primeiro. Decisões reúne três papéis abertos e mantém os FAQs.
+- **Estilos:** opt-ins `lx-bp-*` em `styles/core/brand-partners.css`, pelo entrypoint existente, como `core/about.css`.
+  Composição em `lx.components`; adaptação de `lx-nowrap` em `lx.utilities`, restrita ao corpo dessas duas páginas:
+  termos ficam inteiros quando cabem e podem quebrar se excederem a coluna com texto ampliado. Mínimos das grades
+  permitem reflow sem comprimir fontes. Somente tokens, breakpoints e dimensões locais justificadas; scanner do DS
+  cobre o arquivo. Sem CSS Module, token novo ou alteração de consumidores sem opt-in.
+- **Aceite proporcional:** testes semânticos preservam ontologia, revelação da solução, aprovações e direitos.
+  No layout normal, novos blocos preferencialmente até três linhas, quatro no máximo, com fontes reais em
+  320/390/768/1024/1440 e transições; ampliação de texto prioriza leitura integral e reflow. Comparar capturas
+  completas antes/depois, com foco em 390/1440, mais 320/768, 1920 e tela curta; confirmar alvos, teclado, foco,
+  contraste, axe e ausência de overflow. Sem execução de migrations ou repetição dos gates DB/backend já auditados.
+
+Autorização posterior do fundador, em 2026-11-09: correção final de acessibilidade, um commit e push sem force
+exclusivamente para atualizar o #89 draft, com CI e Preview automáticas, após validar base local e remota, escopo
+e gates proporcionais. Sem merge, Production, emissão definitiva do 01 v10.4 ou alterações nos PRs #86/#87;
+aceite da Preview e integração dependem de aprovação específica.
+
 ## 15. Sobre a Luxtory
 
 ### 15.1 Contrato e brief aprovado (2026-10-15)
