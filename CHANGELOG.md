@@ -48,6 +48,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Brand Partners (`D-BP-33`, `catalog` §14.12): headlines com mais protagonismo em `/brand-partner` e
+  `/brand-partner/como-funciona` — o título de abertura das duas páginas passa a ser o maior texto da jornada (até
+  56 px no desktop e 40 px no celular) e os títulos de seção ficam logo abaixo (até 44 px), em até duas linhas do
+  tablet em diante. Copy, fotografia, composição, formulário e demais textos preservados. Revisão `01` v10.4 emitida
+  com esta publicação, sem nova regra, funcionalidade ou disponibilidade operacional.
+- Brand Partners (`D-BP-32`, `catalog` §14.11): Heros de abertura com enquadramento mobile mais curto, percurso com
+  explicações mais largas e áreas abertas de interesse/aquisição e realização na etapa 06; Owner/Co-Owner e direitos
+  preservados. Copy mais concisa sobre estilo de vida, direção de produto, licenciamento e responsabilidades, sem
+  promessa de gratuidade geral. Ajustes de composição exclusivos da jornada, com as fontes e os tokens existentes.
+- Brand Partners (`D-BP-31`, `catalog` §14.10): proposta de valor para a marca, Discovery orientando Home Concepts,
+  licenciamento com incorporadoras antes da Home Edition definitiva e percurso B2B em sete etapas. Governança,
+  direitos Owner/Co-Owner, formulário e Design System preservados. Revisão normativa mínima do `01` v10.4 preparada
+  para aprovação do diff; emissão e publicação dependem de autorização específica.
+
 - Ontologia Home Concept → Home Edition → Second Home (W4.2, `01` v10.2, ADR-0019): a Home Edition passa a ser uma
   configuração específica e replicável de Second Home — nome, descrição, tipologia, configuração dos espaços, área
   projetada, suítes, capacidade, ambientes, amenidades, características, imagens, renders e plantas —, sem localização,

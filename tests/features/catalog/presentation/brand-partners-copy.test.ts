@@ -69,13 +69,32 @@ describe('copy Brand Partners BP1.1 (catalog §14.9)', () => {
     expect(PLANNED.test(text.howItWorks.club.limit.join(' '))).toBe(true);
   });
 
-  it('[REQ-028] Home: o Hero e o PROBLEM criam a tensão sem nomear a solução; Branded Second Home aparece primeiro no PROMISE (D-BP-20)', () => {
-    const solution = /Branded Second Home|Home Concept|Luxtory/;
+  it('[REQ-028] Hero situa Luxtory e licenciamento; nomes formais do produto só no PROMISE e PROBLEM sem a solução (D-BP-31)', () => {
+    const product = /Branded Second Home|Home Concept/;
     const { hero, problem, promise } = text.home;
 
-    expect(strings({ hero, problem }).filter((line) => solution.test(line))).toEqual([]);
+    expect(strings({ hero, problem }).filter((line) => product.test(line))).toEqual([]);
+    expect(strings(problem).filter((line) => /Luxtory/.test(line))).toEqual([]);
+    expect(hero.body.join(' ')).toContain('licenciamento com incorporadoras');
+    expect(hero.body.join(' ')).toContain('sem exigir que sua marca financie a construção');
+    expect(strings({ hero, promise }).join(' ')).not.toMatch(
+      /sem custos?|gratuit|isenção de taxas|sem investimento inicial/i,
+    );
     expect(strings(promise).some((line) => line.includes('Branded Second Home'))).toBe(true);
     expect(strings(promise).some((line) => line.includes('Home Concept'))).toBe(true);
+  });
+
+  it('[BR-010] [BR-011] plano estratégico, exposição pública e alterações materiais mantêm aprovação prévia da marca', () => {
+    for (const governance of [text.home.governance, text.howItWorks.governance]) {
+      const answer = governance.answers[0].answer.join(' ');
+      expect(answer).toContain('plano estratégico');
+      expect(answer).toContain('exposição pública');
+      expect(answer).toMatch(/aprovação prévia|previamente aprovado/);
+      expect(answer).toContain(
+        'aprova os Home Concepts, os direitos licenciados e os materiais de lançamento',
+      );
+      expect(answer).toMatch(/Mudanças materiais (?:exigem|precisam de) nova aprovação/);
+    }
   });
 
   it('[REQ-028] Luxchange na redação determinada pelo fundador, sem ressalva própria (D-BP-21)', () => {

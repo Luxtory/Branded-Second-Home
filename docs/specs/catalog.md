@@ -1254,6 +1254,113 @@ System; o merge do PR e a abertura do portão seguem autorizações separadas do
 ativos aprovados (`P-BP-03`) e autorização expressa do fundador; CI verde não autoriza merge nem go-live.
 
 
+### 14.10 GTM Brand Partners — licenciamento e direção de produto (2026-11-08)
+
+Plano e refinamentos aprovados pelo fundador na conversa para implementação local, em branch isolada da `main`
+`09680b6`. Aplicação: `D-BP-31`; revisão normativa mínima do `01` v10.4 §1, §3–§4 e §35, com emissão pendente de
+merge autorizado. `02` v4.4, `03` v3.16, BRs e Frameworks congelados preservados. Este brief complementa §14.9 somente
+nos trechos indicados; o restante permanece aprovado.
+
+- **Home:** manter as nove seções, os IDs, CTA, formulário, estados, mídia, componentes e Design System. Ajustar
+  somente Hero e metadescrição, primeiro parágrafo de PROMISE, três benefícios, Pertencimento, mecanismo, primeira
+  resposta de Governança. Copy exata em `catalog/presentation/i18n/brand-partners-pt-br.ts`. O card "Discovery
+  orientando o produto" mantém a pesquisa antes de compromissos imobiliários significativos; a ressalva exploratória
+  pertence à explicação detalhada.
+- **Percurso B2B, nas duas páginas:** representação → Discovery → aprovação dos conceitos → licenciamento →
+  desenvolvimento da Home Edition → aprovação, lançamento e realização → operação. Os títulos e a ordem são
+  compartilhados semanticamente; não criar componente ou abstração para deduplicar a copy.
+- **Como funciona — mudanças indispensáveis:** preservar as oito seções e o índice. Em `path.phases`, passar de
+  3 + 3 + 2 para **3 + 2 + 2**: Início e conceito (01–03), Licenciamento e Home Edition (04–05), Realização e
+  continuidade (06–07). `modalities` e `after` saem da antiga sexta etapa e ficam integralmente na nova sexta
+  (`phases[2].steps[0]`), preservando Owner, Co-Owner, direitos patrimoniais e ressalvas. O componente calcula a
+  numeração a partir do tamanho dos grupos; nenhum TSX/CSS precisa mudar. Ajustar apenas as atribuições em Decisões,
+  licenciamento, primeira resposta de Governança e as duas primeiras respostas de Condições. Operação distingue
+  administração obrigatória no Co-Owner e facultativa no Owner; Luxtory Club continua como modelo previsto.
+- **Separação das jornadas e aprovações:** pesquisa exploratória não comprova demanda de compra. Contrato B2B
+  identifica Home Concept aprovado, Home Edition a desenvolver, direitos e critérios de aprovação posterior; não
+  aprova definitivamente produto ainda não detalhado. Interesse comercial do consumidor só após Home Edition
+  publicada e antes da comercialização formal da Second Home, sem constituir aquisição. Manter aprovação prévia do
+  plano estratégico, inclusive exposição pública, aprovações do produto e materiais, propriedade intelectual e
+  alterações materiais. Replicação e exclusividade seguem os direitos e limites contratados, sem exclusividade
+  automática sobre toda a marca ou o Home Concept.
+- **Reaproveitamento e escopo:** do #86, somente Pertencimento e a distinção da administração Owner/Co-Owner;
+  não incorporar seus demais textos, histórico ou branch. #85 já está na base; #87 não é dependência. Sem B2C,
+  portal, APIs, backend, migrations, flags, pacotes ou disponibilidade operacional nova. Não publicar percentuais,
+  metas, parâmetros de piloto, condições não confirmadas ou participação da marca no Luxplus (`P-BP-05`).
+- **Aceite integrado:** testes de comunicação/terminologia mantêm hashes e guardas semânticas; novas regressões
+  verificam sete etapas na ordem aprovada, interesse após publicação, governança e Hero. No navegador, provar listas
+  semânticas com inícios 1/4/6, ordinais 01–07, comparação Owner/Co-Owner de mesmo peso e textos preservados; confirmar
+  reflow desde 320 px, tipografia, contraste, navegação por teclado, axe, formulário e portão fechado. Gate local
+  `npm run verify` e E2E Brand Partners, com evidências visuais das duas páginas.
+- **Permissões:** implementação e validação locais autorizadas. Push e abertura de PR exigem autorização específica;
+  o fechamento posterior do #86 também. Merge e publicação não autorizados: push em `main` pode acionar CI,
+  migrations e deploy, e push de branch pode gerar Preview. CI verde não supre essas autorizações.
+
+### 14.11 Refinamento visual Brand Partners (2026-11-09)
+
+Refinamento aprovado pelo fundador sobre o HEAD `a5e482a` do PR #89 (`D-BP-32`).
+Complementa a §14.10 somente na composição e nos trechos de copy aprovados; não altera funcionalidades ou regras.
+As sete etapas, grupos 3 + 2 + 2, ordinais e numeração nativa continuam. Frameworks, canônicos, fórmula, diagrama,
+fotografias, logo, textos patrimoniais, aprovações da marca, ressalvas, navegação e formulário são preservados.
+
+- **Copy:** estilo de vida no Hero; ausência de obrigação padrão de financiar a construção, sem gratuidade geral;
+  licenciamento e direção do desenvolvimento do produto pela Luxtory, com execução técnica pelos responsáveis
+  habilitados; Home Concept como conceito de casa replicável orientado pela identidade da marca. Pesquisa continua
+  exploratória, sem comprovar demanda de compra, prometer vendas ou constituir interesse comercial, aquisição ou
+  direitos. Redações exatas no i18n; nenhuma condição comercial ou disponibilidade nova.
+- **Composição:** Heros de abertura com fotografia 5:4 abaixo de `md`, reservando sua proporção; comparação com o
+  enquadramento anterior inclui 320 × 568. Índice com colunas intrínsecas e alvos do Core: uma em 320, duas em 390.
+  No percurso, rótulos de fase em largura integral e títulos acima das explicações. Etapa 06: aprovação, área
+  “Interesse e aquisição” com modalidades/direitos sempre abertos, depois “Realização imobiliária”. A publicação
+  antecede interesse, venda formal e realização; não condiciona a licença B2B. No tamanho normal, uma coluna de até
+  45rem abaixo de 1280 px; desde 1280 px, grade 8/4 com essa medida aplicada a cada grupo, não ao conjunto. Consultas
+  de container em 80rem/30rem, valores dos breakpoints Core, adaptam áreas/modalidades à largura relativa à fonte:
+  texto ampliado empilha quando necessário. Owner/Co-Owner mantêm mesma hierarquia e largura; no celular, Owner
+  vem primeiro. Decisões reúne três papéis abertos e mantém os FAQs.
+- **Estilos:** opt-ins `lx-bp-*` em `styles/core/brand-partners.css`, pelo entrypoint existente, como `core/about.css`.
+  Composição em `lx.components`; adaptação de `lx-nowrap` em `lx.utilities`, restrita ao corpo dessas duas páginas:
+  termos ficam inteiros quando cabem e podem quebrar se excederem a coluna com texto ampliado. Mínimos das grades
+  permitem reflow sem comprimir fontes. Somente tokens, breakpoints e dimensões locais justificadas; scanner do DS
+  cobre o arquivo. Sem CSS Module, token novo ou alteração de consumidores sem opt-in.
+- **Aceite proporcional:** testes semânticos preservam ontologia, revelação da solução, aprovações e direitos.
+  No layout normal, novos blocos preferencialmente até três linhas, quatro no máximo, com fontes reais em
+  320/390/768/1024/1440 e transições; ampliação de texto prioriza leitura integral e reflow. Comparar capturas
+  completas antes/depois, com foco em 390/1440, mais 320/768, 1920 e tela curta; confirmar alvos, teclado, foco,
+  contraste, axe e ausência de overflow. Sem execução de migrations ou repetição dos gates DB/backend já auditados.
+
+Autorização posterior do fundador, em 2026-11-09: correção final de acessibilidade, um commit e push sem force
+exclusivamente para atualizar o #89 draft, com CI e Preview automáticas, após validar base local e remota, escopo
+e gates proporcionais. Sem merge, Production, emissão definitiva do 01 v10.4 ou alterações nos PRs #86/#87;
+aceite da Preview e integração dependem de aprovação específica.
+
+### 14.12 Escala das headlines e publicação (2026-11-10)
+
+Autorização do fundador em 2026-11-10 (`D-BP-33`): refinamento final das headlines, emissão do `01` v10.4 com o
+merge do #89 e publicação em Production pelo workflow oficial. Complementa a §14.11; copy, composição, etapa 06,
+formulário, regras e funcionalidades não mudam. PRs #86 e #87 permanecem fora do escopo.
+
+- **Hierarquia:** o H1 de abertura das duas páginas é o maior papel do B2B e passa a ter a mesma escala, local a
+  `/brand-partner` e `/brand-partner/como-funciona`: 32–40 px abaixo de `md` e 42–56 px a partir de `md`. Headlines
+  de seção e statements de fechamento ficam abaixo dele: 28–31 px abaixo de `lg` e até 44 px a partir de 1440 px.
+  Medido a 390 / 768 / 1440 px: Hero 37,4 / 43,1 / 56 px e Headline de seção 28 / 31 / 43,9 px (antes, 35,1 / 28 /
+  39,6 px e 28 / 28 / 39,6 px). Heading interno, lead, corpo, ordinal, eyebrow e fórmula não mudam.
+- **Contratos:** o teto tipográfico de `D-BP-23` continua, com o valor de `--lx-type-home-hero` próprio deste escopo;
+  a taxonomia de `D-BP-22` continua, com o H1 de abertura como exceção nas duas páginas. Substitui somente, de
+  `D-BP-18`, a paridade do H1 do Hero da Home com o B2C; CTAs, Owner | Co-Owner, rótulo de fase e os demais papéis
+  seguem a paridade. Cada abertura mantém a entrelinha aprovada. Sem token novo, sem mudança no B2C, no Sobre ou em
+  consumidores sem opt-in: regras em `styles/core/brand-partners.css`.
+- **Linhas:** com as fontes reais, as aberturas ficam em uma ou duas linhas a partir de `md` e em até três no
+  celular; as Headlines de seção, em até duas linhas a partir de `md` e com as mesmas quebras de antes no celular.
+  O H1 de abertura respeita a medida de leitura (`--lx-layout-measure`), o que o mantém em linhas equilibradas e
+  fora do assunto da fotografia em `lg`. Sem quebra rígida, truncamento ou redução de entrelinha; texto ampliado e
+  reflow preservados.
+- **Aceite:** capturas antes/depois das duas páginas em 320 × 568, 390, 768, 1024, 1440 e 1920 px, mais as
+  transições entre 1024 e 1536 px; E2E Brand Partners com a paridade, a taxonomia e o teto atualizados — o teto
+  passa a exigir a mesma escala nas duas aberturas e Headlines de seção estritamente abaixo dela.
+- **Publicação:** `BRAND_PARTNERS_SITE=open` já vigora em Production desde o go-live de 2026-10-13 (`D-BP-24`), com
+  as variáveis do formulário do checklist de `docs/how-to/operacao.md`; nenhuma variável, flag ou capability é
+  alterada. Sem migrations.
+
 ## 15. Sobre a Luxtory
 
 ### 15.1 Contrato e brief aprovado (2026-10-15)
