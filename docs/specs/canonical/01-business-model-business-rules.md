@@ -1,8 +1,8 @@
 # 01 — Business Model & Business Rules — Luxtory Branded Second Home
 
-2026-11-08 · Luxtory (fundador) · Versão 10.4 — Status: revisão local para aprovação do diff; emissão pendente de merge autorizado
+2026-11-10 · Luxtory (fundador) · Versão 10.4 — Status: final
 
-Revisão Brand Partners autorizada pelo fundador para implementação (2026-11-08): harmoniza exclusivamente os §1, §3, §4 e §35 com a representação de marcas, o licenciamento com incorporadoras e a direção de produto. Preserva as 192 Business Rules, os direitos constituídos e as funcionalidades vigentes. Não autoriza publicação, abertura de PR, merge ou efeitos operacionais. O `02` v4.4 e o `03` v3.16 permanecem intactos; não há nova entidade, API, cobrança, parâmetro ou migration. Impacto, rastreabilidade e aceite em [catalog §14.10](../catalog.md#1410-gtm-brand-partners--licenciamento-e-direção-de-produto-2026-11-08).
+Revisão Brand Partners autorizada pelo fundador para implementação (2026-11-08): harmoniza exclusivamente os §1, §3, §4 e §35 com a representação de marcas, o licenciamento com incorporadoras e a direção de produto. Preserva as 192 Business Rules, os direitos constituídos e as funcionalidades vigentes. A autorização de 2026-11-08 não abrangia publicação, abertura de PR, merge ou efeitos operacionais; a emissão desta versão foi autorizada pelo fundador em 2026-11-10 e vigora com a integração do PR #89 na `main`. Esta revisão é normativa e não implica, por si só, disponibilidade operacional ou prestação efetiva de serviços. O `02` v4.4 e o `03` v3.16 permanecem intactos; não há nova entidade, API, cobrança, parâmetro ou migration. Impacto, rastreabilidade e aceite em [catalog §14.10](../catalog.md#1410-gtm-brand-partners--licenciamento-e-direção-de-produto-2026-11-08).
 
 Histórico preservado — versão 10.3, emitida em 2026-11-05:
 

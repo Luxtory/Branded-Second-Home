@@ -1333,6 +1333,34 @@ exclusivamente para atualizar o #89 draft, com CI e Preview automáticas, após 
 e gates proporcionais. Sem merge, Production, emissão definitiva do 01 v10.4 ou alterações nos PRs #86/#87;
 aceite da Preview e integração dependem de aprovação específica.
 
+### 14.12 Escala das headlines e publicação (2026-11-10)
+
+Autorização do fundador em 2026-11-10 (`D-BP-33`): refinamento final das headlines, emissão do `01` v10.4 com o
+merge do #89 e publicação em Production pelo workflow oficial. Complementa a §14.11; copy, composição, etapa 06,
+formulário, regras e funcionalidades não mudam. PRs #86 e #87 permanecem fora do escopo.
+
+- **Hierarquia:** o H1 de abertura das duas páginas é o maior papel do B2B e passa a ter a mesma escala, local a
+  `/brand-partner` e `/brand-partner/como-funciona`: 32–40 px abaixo de `md` e 42–56 px a partir de `md`. Headlines
+  de seção e statements de fechamento ficam abaixo dele: 28–31 px abaixo de `lg` e até 44 px a partir de 1440 px.
+  Medido a 390 / 768 / 1440 px: Hero 37,4 / 43,1 / 56 px e Headline de seção 28 / 31 / 43,9 px (antes, 35,1 / 28 /
+  39,6 px e 28 / 28 / 39,6 px). Heading interno, lead, corpo, ordinal, eyebrow e fórmula não mudam.
+- **Contratos:** o teto tipográfico de `D-BP-23` continua, com o valor de `--lx-type-home-hero` próprio deste escopo;
+  a taxonomia de `D-BP-22` continua, com o H1 de abertura como exceção nas duas páginas. Substitui somente, de
+  `D-BP-18`, a paridade do H1 do Hero da Home com o B2C; CTAs, Owner | Co-Owner, rótulo de fase e os demais papéis
+  seguem a paridade. Cada abertura mantém a entrelinha aprovada. Sem token novo, sem mudança no B2C, no Sobre ou em
+  consumidores sem opt-in: regras em `styles/core/brand-partners.css`.
+- **Linhas:** com as fontes reais, as aberturas ficam em uma ou duas linhas a partir de `md` e em até três no
+  celular; as Headlines de seção, em até duas linhas a partir de `md` e com as mesmas quebras de antes no celular.
+  O H1 de abertura respeita a medida de leitura (`--lx-layout-measure`), o que o mantém em linhas equilibradas e
+  fora do assunto da fotografia em `lg`. Sem quebra rígida, truncamento ou redução de entrelinha; texto ampliado e
+  reflow preservados.
+- **Aceite:** capturas antes/depois das duas páginas em 320 × 568, 390, 768, 1024, 1440 e 1920 px, mais as
+  transições entre 1024 e 1536 px; E2E Brand Partners com a paridade, a taxonomia e o teto atualizados — o teto
+  passa a exigir a mesma escala nas duas aberturas e Headlines de seção estritamente abaixo dela.
+- **Publicação:** `BRAND_PARTNERS_SITE=open` já vigora em Production desde o go-live de 2026-10-13 (`D-BP-24`), com
+  as variáveis do formulário do checklist de `docs/how-to/operacao.md`; nenhuma variável, flag ou capability é
+  alterada. Sem migrations.
+
 ## 15. Sobre a Luxtory
 
 ### 15.1 Contrato e brief aprovado (2026-10-15)

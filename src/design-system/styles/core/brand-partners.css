@@ -10,6 +10,22 @@
   ) {
     min-width: 0;
   }
+  /* Headline scale (catalog §14.12, D-BP-33), local to these two pages. Both opening H1s take the Hero scale, which
+   * stays the Core type ceiling of the journey: 32–40px below md, 42–56px from md. Section headlines and closing
+   * statements follow below it, up to 44px, and keep to two lines from md, also in the narrow columns at lg.
+   * Values chosen on the rendered pages; each opening keeps its approved leading. */
+  [data-lx="core"] main.lx-type-ceiling:has(> .lx-bp-opening),
+  [data-lx="core"] main.lx-type-ceiling:has(> .lx-bp-opening) .lx-headline--home-hero {
+    --lx-type-home-hero: clamp(2rem, 9.6vw, 2.5rem);
+  }
+  [data-lx="core"] main.lx-type-ceiling:has(> .lx-bp-opening) .lx-headline {
+    font-size: min(var(--lx-type-headline), clamp(1.9375rem, 3.05vw, 2.75rem));
+  }
+  /* The reading measure keeps the opening in balanced lines, clear of the photograph's subject at lg. */
+  [data-lx="core"] main.lx-type-ceiling:has(> .lx-bp-opening) .lx-bp-opening h1.lx-headline {
+    font-size: var(--lx-type-home-hero);
+    max-width: var(--lx-layout-measure);
+  }
   /* Phone: a reserved photographic frame brings the headline into short screens without clipping the copy. */
   [data-lx="core"] .lx-bp-opening .lx-hero__slides {
     height: auto;
@@ -65,6 +81,10 @@
   }
 
   @media (min-width: 48rem) {
+    [data-lx="core"] main.lx-type-ceiling:has(> .lx-bp-opening),
+    [data-lx="core"] main.lx-type-ceiling:has(> .lx-bp-opening) .lx-headline--home-hero {
+      --lx-type-home-hero: clamp(2.625rem, 1.77rem + 1.92vw, 3.5rem);
+    }
     [data-lx="core"] .lx-bp-opening .lx-hero__slides {
       aspect-ratio: auto;
     }

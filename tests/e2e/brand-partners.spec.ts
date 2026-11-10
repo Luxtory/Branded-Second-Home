@@ -306,10 +306,11 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     test.slow();
     // [papel, página B2C, seletor B2C, página BP, seletor BP] — o B2C é a referência (catalog §14.9). No B2B, perguntas e
     // títulos de mecanismo são heading interno (`display-s`, `D-BP-22`): saem as linhas "pergunta" e "display-m". As
-    // Headlines (H1 do Como funciona, H2) seguem o teto do Hero da Home (`D-BP-23`), não a escala do B2C.
+    // Headlines (H1 do Como funciona, H2) seguem o teto do Hero da Home (`D-BP-23`), não a escala do B2C. Desde
+    // `D-BP-33`, o H1 do Hero da Home também: a escala das aberturas é local ao B2B e sai desta paridade (era `D-BP-18`);
+    // o teste do teto abaixo prova a nova hierarquia.
     // B2C closings have a separate italic scale (D-B2C-22); compare the shared roles outside those closings.
     const roles = [
-      ['H1 do Hero da Home', '/', '.lx-home-hero__title', HOME, '#inicio h1'],
       ['CTA do Hero da Home', '/', '.lx-home-hero__action', HOME, '#inicio .lx-button'],
       [
         'CTA sobre o fechamento',
@@ -530,10 +531,11 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     page,
   }) => {
     test.slow();
-    // Papéis editoriais (`D-BP-22`); a exceção aprovada é o H1 do Hero da Home (`D-BP-18`). As três linhas da fórmula são
-    // heading interno (`D-BP-23`). Eyebrow, ordinal, rótulo de fase e os operadores + e = têm papéis próprios.
+    // Papéis editoriais (`D-BP-22`); a exceção aprovada é o H1 de abertura das duas páginas (`D-BP-33`; antes, só o do
+    // Hero da Home, `D-BP-18`), provado no teste do teto. As três linhas da fórmula são heading interno (`D-BP-23`).
+    // Eyebrow, ordinal, rótulo de fase e os operadores + e = têm papéis próprios.
     const ROLES = {
-      'Section Headline': 'main :is(h1, h2).lx-headline:not(.lx-headline--home-hero)',
+      'Section Headline': 'main h2.lx-headline',
       'Internal Heading': 'main :is(h3, h4, h5, h6):not(.lx-eyebrow), main .lx-equation__term',
       'Lead/Subheadline': 'main p.lx-subheadline:not(.lx-section-closing *)',
       Body: 'main :is(p, li).lx-body',
@@ -567,6 +569,7 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
   }) => {
     test.slow();
     // `D-BP-23`: o Hero da Home é o maior papel do site. Cobre os papéis editoriais, a fórmula e qualquer outro texto.
+    // `D-BP-33`: o H1 do Como funciona tem a mesma escala, e as Headlines de seção ficam estritamente abaixo.
     const ROLES = {
       'Hero Headline': 'main #inicio h1',
       'Section Headline': 'main :is(h1, h2).lx-headline:not(.lx-headline--home-hero)',
@@ -596,6 +599,15 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
           for (const size of found)
             expect(size, `${role} em ${path} a ${width}px`).toBeLessThanOrEqual(hero!);
         }
+        // `D-BP-33`: as duas aberturas têm a escala do Hero, e toda Headline de seção ou statement fica abaixo dela.
+        const openings = await sizes('main .lx-bp-opening h1');
+        expect(openings, `H1 de abertura em ${path} a ${width}px`).toEqual([hero]);
+        const headlines = await sizes(
+          'main h2.lx-headline, main .lx-section-closing p.lx-headline',
+        );
+        expect(headlines.length, `Headlines de seção em ${path}`).toBeGreaterThan(0);
+        for (const size of headlines)
+          expect(size, `Headline de seção em ${path} a ${width}px`).toBeLessThan(hero!);
         // Qualquer outro texto: todo elemento com texto próprio no <main>.
         const largest = await page
           .locator('main')

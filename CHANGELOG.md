@@ -48,6 +48,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Brand Partners (`D-BP-33`, `catalog` §14.12): headlines com mais protagonismo em `/brand-partner` e
+  `/brand-partner/como-funciona` — o título de abertura das duas páginas passa a ser o maior texto da jornada (até
+  56 px no desktop e 40 px no celular) e os títulos de seção ficam logo abaixo (até 44 px), em até duas linhas do
+  tablet em diante. Copy, fotografia, composição, formulário e demais textos preservados. Revisão `01` v10.4 emitida
+  com esta publicação, sem nova regra, funcionalidade ou disponibilidade operacional.
 - Brand Partners (`D-BP-32`, `catalog` §14.11): Heros de abertura com enquadramento mobile mais curto, percurso com
   explicações mais largas e áreas abertas de interesse/aquisição e realização na etapa 06; Owner/Co-Owner e direitos
   preservados. Copy mais concisa sobre estilo de vida, direção de produto, licenciamento e responsabilidades, sem
