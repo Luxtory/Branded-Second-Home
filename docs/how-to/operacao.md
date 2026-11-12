@@ -164,6 +164,21 @@ valor de segredo entra em código, migration, log, issue ou artifact.
    ficam indisponíveis (`ConfigurationMissingError` → 503), sem gravar nada; o código nunca cria bucket nem muda a
    visibilidade dele. O resto da Coleção (cards com o quadro tipográfico) continua no ar.
 
+## Preparar a SHP1 (Second Home Partners público)
+
+Contrato: spec `catalog` §18 (TECH-057 estendida, ADR-0028). O contato reaproveita a configuração da BP1 abaixo
+(Resend, Upstash, remetente, origens, segredo, limites e timeouts), com namespace próprio
+(`luxtory:second-home-partner-contact:<VERCEL_ENV>`). Só duas chaves são novas:
+
+1. `SECOND_HOME_PARTNERS_CONTACT_TO` — caixa de teste no Preview; caixa corporativa da jornada em Production (pode ser a
+   mesma da BP1). Sem ela, só o contato Second Home Partners recusa (503); a página e a BP1 seguem funcionando.
+2. `SECOND_HOME_PARTNERS_SITE` — `open` em Production só com autorização expressa do fundador, depois da aprovação no
+   Preview e da confirmação de quem executa o apoio comercial (`P-SHP-02`). Redeploy depois da mudança.
+
+Smoke em Production: página 200 com metadados; um envio real de teste aceito (202) e recebido na caixa; Brand Partners
+inalterada. Rollback: `SECOND_HOME_PARTNERS_SITE=closed` + redeploy fecha página e endpoint. As chaves `BRAND_PARTNERS_*`
+compartilhadas não podem ser removidas enquanto a página existir.
+
 ## Preparar a BP1 (Brand Partners público)
 
 Contrato: spec `catalog` §14 (TECH-057). Nenhum valor de segredo entra em código, issue, PR, log ou chat — o fundador

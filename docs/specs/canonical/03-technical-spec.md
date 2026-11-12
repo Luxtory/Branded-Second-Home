@@ -1,8 +1,14 @@
 # 03 — Technical Spec — Luxtory Branded Second Home
 
-2026-11-03 · **Versão 3.16 — FINAL** · Base normativa: `01` v10.2 final · `02` v4.4 final
+2026-11-12 · **Versão 3.17 — FINAL** · Base normativa: `01` v10.5 final · `02` v4.5 final
 
-Cobertura normativa: **66 REQ · 6 INV · 11 PD**
+Cobertura normativa: **67 REQ · 6 INV · 11 PD**
+
+Revisão Second Home Partners autorizada pelo fundador (2026-11-12): a TECH-057 passa a cobrir também o contato público
+Second Home Partners do REQ-105 (`POST /v1/second-home-partner-contacts`), com portão, contrato, destinatário e
+namespace próprios; transporte, controles e semântica de sucesso inalterados. Demais regras da v3.16 preservadas.
+Decisão em [ADR-0028](../../adr/0028-jornada-second-home-partners.md); aceite em
+[`catalog` §18](../catalog.md#18-second-home-partners-público-shp1).
 
 Revisão W13 autorizada pelo fundador (2026-11-03): implementa o REQ-084 do `02` v4.4. A TECH-022 distingue a
 invalidação de reserva não autorizada do cancelamento; a TECH-026 delimita a `correction` à reversão do consumo de
@@ -560,6 +566,13 @@ pseudonimizados. Dados do formulário permanecem apenas na memória da interaç�
 provedor e pela caixa corporativa, com acesso/retenção definidos antes do go-live.
 
 Não há migration, CRM, `interest`, `brand_partner`, conta, `operation` ou outbox criado por essa submissão.
+
+**Second Home Partners (REQ-105, SHP1).** O mesmo contrato vale para `POST /v1/second-home-partner-contacts`, com os
+campos do REQ-105, portão `SECOND_HOME_PARTNERS_SITE`, destinatário próprio (`SECOND_HOME_PARTNERS_CONTACT_TO`) e
+namespace próprio nas chaves do limitador e da idempotência do provedor. Remetente, origens permitidas, segredo de
+pseudonimização, limites e timeouts podem ser compartilhados com o contato Brand Partners, sem compartilhar contadores,
+chaves ou estados; falta de configuração exclusiva de uma jornada não afeta a outra. Nenhum dado do contato é
+persistido.
 É envio sem mutação econômica/estado crítico; TECH-054 e as notificações do TECH-091 não se aplicam a esse fluxo.
 Não altera o registro fechado de TECH-051. As páginas `/brand-partner` e `/brand-partner/como-funciona` recebem
 CSP/nonce pelo proxy; a exclusão atual de prefixos `brand` deve ser restringida aos assets reais de branding na
@@ -831,10 +844,10 @@ Auditoria: commits concorrentes → exatamente um seal por evento, cadeia válid
 
 Sorteio: vetor fixo reproduz exatamente `fy-v1`.
 
-**Gate global do produto:** 66/66 REQ cobertos · 11/11 PD cobertos · 6/6 INV protegidos/testados · migrations esperadas · reconciliação sem drift.
+**Gate global do produto:** 67/67 REQ cobertos · 11/11 PD cobertos · 6/6 INV protegidos/testados · migrations esperadas · reconciliação sem drift.
 
 Esse é o alvo global de implementação, não uma declaração de testes já aprovados. BP0 usa somente gates
-documentais; BP1 comprova REQ-028/TECH-057; REQ-029/TECH-058 só recebe evidência de implementação na BP2.
+documentais; BP1 comprova REQ-028/TECH-057; SHP1 comprova REQ-105/TECH-057; REQ-029/TECH-058 só recebe evidência de implementação na BP2.
 Critérios do envio incluem validação, abuso, falhas, idempotência, ausência de PII nos logs e sucesso apenas
 após aceite. Os critérios de isolamento do portal não são satisfeitos por testes do catálogo público.
 

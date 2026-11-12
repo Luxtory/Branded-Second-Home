@@ -10,7 +10,8 @@ const CONTRACT = join('docs', 'specs', 'communication.md');
 const BASE = join(DIR, 'luxtory.md');
 const B2C = join(DIR, 'b2c.md');
 const BRAND_PARTNERS = join(DIR, 'brand-partners.md');
-const DOCUMENTS = [CONTRACT, BASE, B2C, BRAND_PARTNERS];
+const SECOND_HOME_PARTNERS = join(DIR, 'second-home-partners.md');
+const DOCUMENTS = [CONTRACT, BASE, B2C, BRAND_PARTNERS, SECOND_HOME_PARTNERS];
 const CANONICAL = [
   '01-business-model-business-rules.md',
   '02-product-spec.md',
@@ -54,14 +55,23 @@ const JOURNEYS = [
     sections: APPLICATION_SECTIONS,
     anchors: ['Explore o potencial da sua marca em Second Homes.', 'Unaware → Product Aware'],
   },
+  {
+    mark: 'FW-SHP',
+    framework: join(DIR, 'framework-second-home-partners.md'),
+    // Versão de 2026-11-12 (fundador; plano v3.3 da página /second-home-partner, ADR-0028).
+    sha256: 'd7ce75f66f3c43b1abc3b4eb88384394b4260f0eee65e2382e85c3ccc3dc79de',
+    application: SECOND_HOME_PARTNERS,
+    sections: APPLICATION_SECTIONS,
+    anchors: ['Conversar sobre seu empreendimento', 'Problem Aware → Product Aware'],
+  },
 ];
 
 const CANONICAL_ID = /\b(?:BR|REQ|PD|TECH)-\d{3}\b|\bINV-\d+\b/g;
-const REGISTER_REFERENCE = /\b[DHP]-(?:LX|B2C|BP)-\d{2}\b/g;
-const REGISTER_ROW = /^\| ([DHP]-(?:LX|B2C|BP)-\d{2}) \|/gm;
-const REGISTER_ROW_START = /^\| [DHP]-(?:LX|B2C|BP)-\d{2} \|/;
+const REGISTER_REFERENCE = /\b[DHP]-(?:LX|B2C|BP|SHP)-\d{2}\b/g;
+const REGISTER_ROW = /^\| ([DHP]-(?:LX|B2C|BP|SHP)-\d{2}) \|/gm;
+const REGISTER_ROW_START = /^\| [DHP]-(?:LX|B2C|BP|SHP)-\d{2} \|/;
 const RELATIVE_LINK = /\]\((?!https?:|mailto:|#)([^)\s]+)\)/g;
-const FRAMEWORK_REFERENCE = /\[(FW-B2C|FW-BP): ([^\]]+)\]/g;
+const FRAMEWORK_REFERENCE = /\[(FW-B2C|FW-BP|FW-SHP): ([^\]]+)\]/g;
 const FRAMEWORK_TOKEN = /§(\d+(?:\.\d+)?)|\b(P[1-5])\b/g;
 const FRAMEWORK_NUMBERED_HEADING = /^# (\d+(?:\.\d+)?)\.?\s/gm;
 const FRAMEWORK_STAGE_HEADING = /^# (P[1-5]) —/gm;

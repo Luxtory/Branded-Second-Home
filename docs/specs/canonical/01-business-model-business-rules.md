@@ -1,6 +1,10 @@
 # 01 — Business Model & Business Rules — Luxtory Branded Second Home
 
-2026-11-10 · Luxtory (fundador) · Versão 10.4 — Status: final
+2026-11-12 · Luxtory (fundador) · Versão 10.5 — Status: final
+
+Revisão Second Home Partners autorizada pelo fundador (2026-11-12): complementa exclusivamente os §1 e §35 com a frente comercial com incorporadoras de empreendimentos de lazer próprios. Preserva as 192 Business Rules, os direitos constituídos e as funcionalidades existentes; não cria obrigação econômica nem funcionalidade de software. Esta revisão é normativa e não implica, por si só, disponibilidade operacional ou prestação efetiva de serviços.
+
+Histórico preservado — versão 10.4, emitida em 2026-11-10:
 
 Revisão Brand Partners autorizada pelo fundador para implementação (2026-11-08): harmoniza exclusivamente os §1, §3, §4 e §35 com a representação de marcas, o licenciamento com incorporadoras e a direção de produto. Preserva as 192 Business Rules, os direitos constituídos e as funcionalidades vigentes. A autorização de 2026-11-08 não abrangia publicação, abertura de PR, merge ou efeitos operacionais; a emissão desta versão foi autorizada pelo fundador em 2026-11-10 e vigora com a integração do PR #89 na `main`. Esta revisão é normativa e não implica, por si só, disponibilidade operacional ou prestação efetiva de serviços. O `02` v4.4 e o `03` v3.16 permanecem intactos; não há nova entidade, API, cobrança, parâmetro ou migration. Impacto, rastreabilidade e aceite em [catalog §14.10](../catalog.md#1410-gtm-brand-partners--licenciamento-e-direção-de-produto-2026-11-08).
 
@@ -31,6 +35,8 @@ A Brand Partner aporta a identidade da marca, seu lifestyle, desejo e comunidade
 A atuação da Luxtory na jornada Brand Partners concentra-se na representação de marcas, no Discovery, no desenvolvimento de Home Concepts, na estruturação do licenciamento com incorporadoras e na direção de produto, com acompanhamento da fidelidade ao produto aprovado (Brand Assurance). A gestão contínua de produto, o Go-to-Market, o Sales Enablement, o acompanhamento de resultados e a evolução do portfólio de Home Editions seguem o escopo contratado. A execução especializada cabe aos responsáveis contratados, conforme competências, alçadas e instrumentos. Serviços executivos adicionais PODEM ser assumidos pela Luxtory mediante contratação expressa de escopo, responsabilidades, custeio e remuneração; NÃO constituem obrigação padrão. Essas disposições NÃO modificam automaticamente contratos, obrigações ou direitos já constituídos.
 
 A sequência B2B é: **representação → Discovery → aprovação dos Home Concepts → licenciamento → desenvolvimento da Home Edition → aprovação, lançamento e desenvolvimento das Second Homes → operação**. A contratação do licenciamento pela incorporadora antecede o desenvolvimento definitivo da Home Edition; NÃO é aquisição imobiliária pelo consumidor nem depende de manifestação prévia de interesse comercial. A pesquisa exploratória orienta o desenvolvimento dos Home Concepts antes de compromissos imobiliários significativos, mas NÃO comprova demanda de compra nem garante vendas.
+
+Na frente **Second Home Partners**, a Luxtory PODE firmar parcerias comerciais com incorporadoras de empreendimentos de lazer com marca, conceito e projeto próprios, para apoiar a proposta ao comprador e a comercialização, mediante contratação expressa de escopo, responsabilidades e remuneração. Os imóveis desses empreendimentos NÃO são Second Homes nem Branded Second Homes e NÃO derivam de Home Edition; a frente não altera as BR-053 e BR-054. O nome da frente não denomina esses imóveis. A participação futura deles no Luxtory Club — inclusive Membership de seus proprietários, Luxchange, Luxplus, locação e inventário — depende de regras próprias, ainda não definidas por este documento; até lá, nenhuma capacidade, origem econômica ou direito é presumido (BR-161, BR-352). A parceria NÃO altera direitos de Owner e Co-Owner nem as regras das Second Homes.
 
 **BR-001** — Home Concept, Home Edition e Second Home são conceitos distintos.
 
@@ -594,6 +600,8 @@ As fontes de monetização atualmente previstas incluem: Membership; Taxa de Adm
 Na jornada B2B, a remuneração da Luxtory PODE incluir representação, agenciamento ou estruturação do licenciamento, conforme contratação expressa e direitos autorizados. Permanece separada da remuneração da Brand Partner pelo uso da marca, do Fee de Product Management e das demais receitas. Valores, percentuais, condições e cobranças NÃO são presumidos; esta previsão NÃO cria cobrança ou funcionalidade de software nem comprova disponibilidade operacional.
 
 A remuneração contratual da Luxtory PODE incluir Fee de Product Management pela gestão contínua de produto e eventual variável por resultados definidos em contrato. Essa remuneração é separada da administração operacional, das despesas do imóvel e da remuneração da Brand Partner. Valores, percentuais e cobranças NÃO são presumidos. Remuneração vinculada à comercialização depende de revisão jurídica prévia. Permanecem preservadas as demais receitas e os direitos econômicos existentes.
+
+Na frente Second Home Partners, a relação contratual com a incorporadora PODE prever remuneração variável à incorporadora, vinculada a serviços da Luxtory associados ao empreendimento, mediante contratação expressa e validação jurídica e econômica prévias. Bases, percentuais, prazos e cobranças NÃO são presumidos. Essa possibilidade NÃO envolve receitas pertencentes a Titulares ou a proprietários, NÃO constitui participação societária e permanece separada da remuneração da Brand Partner e das demais receitas.
 
 **BR-350** — A remuneração da Brand Partner permanece contratualmente separada.
 
