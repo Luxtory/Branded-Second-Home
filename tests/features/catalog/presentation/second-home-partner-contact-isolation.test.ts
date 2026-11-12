@@ -23,7 +23,7 @@ vi.mock('@/features/platform', async (importOriginal) => {
 });
 
 const ORIGIN = 'https://luxtory.test';
-const KEY = '0f8b8a4e-3c1d-4f6a-9b2e-7d5c4b3a2f10';
+const ATTEMPT_ID = '0f8b8a4e-3c1d-4f6a-9b2e-7d5c4b3a2f10';
 
 const FAKE_ENV = {
   BRAND_PARTNERS_CONTACT_MODE: 'fake',
@@ -69,7 +69,7 @@ interface Adapters {
   readonly limiter?: ReturnType<typeof createMemoryRateLimiter>;
 }
 
-function request(path: string, body: object, key = KEY) {
+function request(path: string, body: object, key = ATTEMPT_ID) {
   return new Request(`${ORIGIN}/v1${path}`, {
     method: 'POST',
     headers: { origin: ORIGIN, 'content-type': 'application/json', 'idempotency-key': key },
@@ -181,8 +181,8 @@ describe('isolamento entre os contatos Brand Partners e Second Home Partners (AD
       (await secondHomePartners(env, { mailer: provider.mailer, limiter: fresh() })()).status,
     ).toBe(202);
     expect(provider.keys()).toEqual([
-      `luxtory:brand-partner-contact:local:${KEY}`,
-      `luxtory:second-home-partner-contact:local:${KEY}`,
+      `luxtory:brand-partner-contact:local:${ATTEMPT_ID}`,
+      `luxtory:second-home-partner-contact:local:${ATTEMPT_ID}`,
     ]);
   });
 
