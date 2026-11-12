@@ -1856,7 +1856,10 @@ final, verbatim, em `catalog/presentation/i18n/second-home-partners-pt-br.ts` (f
 
 Concisão: cada parágrafo, card, etapa, linha do Club e resposta com no máximo 3 linhas a 390 e a 1440 px e 4 a 320 px,
 medido na página real; textos legais seguem a própria hierarquia. Sem `line-clamp`, reticências ou fonte reduzida.
-Nenhum CSS, token ou componente novo.
+Nenhum CSS, token ou componente novo. Exceção registrada (medida no E2E, 2026-11-12): a introdução do Luxtory Club,
+texto da aprovação final do fundador, ocupa 4 linhas a 390 px no papel de subheadline da abertura de seção (3 a 320 e
+a 1440 px). Fica assim por clareza: separa a rede planejada de Second Homes da entrada, ainda em estruturação, dos
+imóveis parceiros.
 
 ### 18.3 Formulário
 

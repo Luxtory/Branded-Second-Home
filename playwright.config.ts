@@ -51,7 +51,13 @@ export default defineConfig({
     {
       command: `npx next start --port ${CLOSED_PUBLIC_PORT} --hostname 127.0.0.1`,
       url: `http://127.0.0.1:${CLOSED_PUBLIC_PORT}/favicon.ico`,
-      env: { VERCEL_ENV: 'production', PUBLIC_SITE: '', BRAND_PARTNERS_SITE: 'open' },
+      // Production com a SHP1 aberta: prova a indexação da página publicada (spec catalog §18.1).
+      env: {
+        VERCEL_ENV: 'production',
+        PUBLIC_SITE: '',
+        BRAND_PARTNERS_SITE: 'open',
+        SECOND_HOME_PARTNERS_SITE: 'open',
+      },
       reuseExistingServer: false,
       timeout: SERVER_START_TIMEOUT_MS,
       gracefulShutdown: { signal: 'SIGTERM', timeout: SERVER_STOP_TIMEOUT_MS },
@@ -68,7 +74,8 @@ export default defineConfig({
       // `BRAND_PARTNERS_SITE=closed`, sem banco: só para provar que o 404 fechado não carrega a BP1 (spec catalog §14.1).
       command: `npx next start --port ${CLOSED_PORT} --hostname 127.0.0.1`,
       url: `http://127.0.0.1:${CLOSED_PORT}/favicon.ico`,
-      env: { BRAND_PARTNERS_SITE: 'closed' },
+      // Também `SECOND_HOME_PARTNERS_SITE=closed`: o 404 fechado não carrega a SHP1 (spec catalog §18.1).
+      env: { BRAND_PARTNERS_SITE: 'closed', SECOND_HOME_PARTNERS_SITE: 'closed' },
       reuseExistingServer: false,
       timeout: SERVER_START_TIMEOUT_MS,
       gracefulShutdown: { signal: 'SIGTERM', timeout: SERVER_STOP_TIMEOUT_MS },
