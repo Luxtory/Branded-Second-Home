@@ -20,6 +20,17 @@ export function isBrandPartnersSiteOpen(source?: EnvSource): boolean {
 }
 
 /**
+ * Portão da jornada Second Home Partners (SHP1, spec catalog §18.1), independente de `PUBLIC_SITE` e do portão Brand
+ * Partners: `closed` fecha em qualquer ambiente; ausente, só Production fica fechada (go-live com `open`). Fechado,
+ * página, metadados e endpoint respondem 404.
+ */
+export function isSecondHomePartnersSiteOpen(source?: EnvSource): boolean {
+  const env = source === undefined ? loadEnv() : loadEnv(source);
+  if (env.SECOND_HOME_PARTNERS_SITE !== undefined) return env.SECOND_HOME_PARTNERS_SITE === 'open';
+  return env.VERCEL_ENV !== 'production';
+}
+
+/**
  * Escrita pública de interesse (W5, spec ownership §5): exige o site público aberto e `INTEREST_WRITES` — `closed` fecha
  * em qualquer ambiente; ausente, só Production fica fechada (ativação com `open`). Fechada, o endpoint responde 404.
  */
