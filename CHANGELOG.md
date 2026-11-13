@@ -56,6 +56,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Design System: `lx-siblings--trio` fica empilhado abaixo do `lg`, como o contrato do componente define — a regra
+  `auto-fill` do `md` deixava o terceiro item sozinho numa linha de dois (2 + 1) entre 768 e 1023 px. Vale para
+  Second Home Partners, Sobre e Como funciona do Brand Partners.
 - Brand Partners (`D-BP-33`, `catalog` §14.12): headlines com mais protagonismo em `/brand-partner` e
   `/brand-partner/como-funciona` — o título de abertura das duas páginas passa a ser o maior texto da jornada (até
   56 px no desktop e 40 px no celular) e os títulos de seção ficam logo abaixo (até 44 px), em até duas linhas do

@@ -1820,7 +1820,7 @@ da elegibilidade é relido depois de todos os locks, conservando a versão origi
 Plano v3.3 aprovado pelo fundador em 2026-11-12; modelo comercial definido pelo fundador em 2026-11-13 (gestão digital
 de locações e participação da incorporadora nos resultados). Comportamento e limites: `02` REQ-105; arquitetura: `03`
 TECH-057 (estendida); decisão: [ADR-0028](../adr/0028-jornada-second-home-partners.md). Comunicação:
-[aplicação Second Home Partners](communication/second-home-partners.md) (L1–L7, `D-SHP-01`–`D-SHP-09`) e
+[aplicação Second Home Partners](communication/second-home-partners.md) (L1–L7, `D-SHP-01`–`D-SHP-11`) e
 [Framework congelado](communication/framework-second-home-partners.md). Fatos da frente: `01` §1 e §35. Nada desta
 seção afilia imóveis, cria Membership para proprietários parceiros ou ativa mecanismo do Luxtory Club (Escopo B).
 Numerada §20 porque §18 e §19 são da W6 e da W8.

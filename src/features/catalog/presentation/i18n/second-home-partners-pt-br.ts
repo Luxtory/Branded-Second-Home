@@ -58,10 +58,11 @@ export const secondHomePartnersMessages = {
       lead: 'Mais valor para seu empreendimento. ',
       turn: 'Mais liberdade para seus clientes.',
     },
-    body: 'Uma parceria para diferenciar seu empreendimento, apoiar suas vendas e gerar novas receitas para sua incorporadora.',
+    body: 'Uma parceria para diferenciar seu empreendimento, apoiar suas vendas e criar novas oportunidades de receita.',
     action: CTA,
     secondary: 'Conheça a parceria',
-    note: 'Estamos estruturando o programa e buscando os primeiros parceiros. O intercâmbio ainda não está disponível.',
+    // A indisponibilidade de Luxchange e Luxplus fica na nota das soluções, sem repetição no hero.
+    note: 'Estamos estruturando o programa e buscando os primeiros parceiros.',
   },
 
   // PROBLEM · A oportunidade (White): a objeção da ociosidade vira argumento de venda. "Acelerar a decisão de compra" é
@@ -73,13 +74,13 @@ export const secondHomePartnersMessages = {
       turn: 'Um argumento a mais para vender.',
     },
     paragraphs: [
-      'Imagine seu cliente comprando um imóvel de lazer sabendo que poderá alugá-lo nos períodos sem uso e conhecer outros destinos.',
+      'Imagine seu cliente comprando um imóvel de lazer podendo alugá-lo nos períodos sem uso e, futuramente, descobrir outros destinos.',
       'Esse diferencial pode ajudar sua equipe a superar objeções e acelerar a decisão de compra.',
     ],
   },
 
-  // PROMISE · Benefícios (Wash): três benefícios com o mesmo peso (`D-SHP-07`). A participação incide sobre a receita de
-  // gestão das locações (`D-SHP-08`), nunca sobre lucro ou a parte dos proprietários; o Club só como possibilidade.
+  // PROMISE · Benefícios (Wash): três benefícios com o mesmo peso (`D-SHP-07`). A participação é parte da comissão da
+  // Luxtory pela gestão das locações (`D-SHP-08`), nunca lucro nem a parte dos proprietários; o Club só como possibilidade.
   benefits: {
     marker: 'Para sua incorporadora',
     title: {
@@ -99,7 +100,7 @@ export const secondHomePartnersMessages = {
       },
       {
         title: 'Participação nos resultados',
-        text: 'Sua incorporadora participa da receita de gestão das locações do empreendimento. No Luxtory Club, a participação poderá vir depois.',
+        text: 'Sua incorporadora recebe parte da comissão da Luxtory pelas locações e poderá participar dos resultados do Luxtory Club.',
       },
     ],
     note: 'Os benefícios dependem das condições da parceria. Não há garantia de vendas, receitas ou estadias.',
@@ -178,7 +179,7 @@ export const secondHomePartnersMessages = {
       {
         question: 'Como minha incorporadora participa dos resultados?',
         answer:
-          'Ela recebe parte da comissão da Luxtory pela gestão das locações do empreendimento. O Luxtory Club poderá entrar depois.',
+          'Ela recebe parte da comissão da Luxtory pela gestão das locações e, futuramente, poderá participar dos resultados do Luxtory Club.',
       },
       {
         question: 'Minha incorporadora precisa administrar as locações?',

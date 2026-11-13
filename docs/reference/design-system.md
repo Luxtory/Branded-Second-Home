@@ -663,7 +663,8 @@ Mesmo Core, sem paleta, escala ou biblioteca B2B (spec `catalog` §14.8). Comple
   negativo), sem `lx-hero__slides`, sem scrim, sob o header sólido.
 - Uma batida a mais antes do fechamento de uma passagem: `p.lx-stack__pause` dentro de um `lx-stack` (mesmo papel de
   tipo). Coluna editorial de ~8 das 12 colunas, alinhada ao início: `div.lx-stack.lx-stack--editorial`.
-- Três unidades iguais lado a lado a partir do `lg` (4/4/4): `ol.lx-siblings.lx-siblings--trio` > `li.lx-siblings__item`.
+- Três unidades iguais lado a lado a partir do `lg` (4/4/4), empilhadas abaixo dele (nunca 2 + 1):
+  `ol.lx-siblings.lx-siblings--trio` > `li.lx-siblings__item`.
 - Limite ou condição que fecha uma composição, em largura ampla e tamanho de corpo: `div.lx-section-note > p.lx-body`.
 - Split 5/7 cuja coluna inicial continua depois da principal (ex.: introdução | formulário, finalidade abaixo da
   introdução): `div.lx-columns.lx-columns--aside` com três filhos — ordem do DOM e do celular cabeça → principal → aside.

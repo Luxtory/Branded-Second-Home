@@ -28,7 +28,7 @@ const answerTo = (question: RegExp) =>
   text.faq.items.find((item) => question.test(item.question))?.answer ?? '';
 
 describe('copy Second Home Partners (catalog §20.2)', () => {
-  it('[REQ-105] três benefícios com o mesmo peso; a participação incide sobre a receita de gestão das locações (D-SHP-07, D-SHP-08)', () => {
+  it('[REQ-105] três benefícios com o mesmo peso; a participação é parte da comissão da Luxtory pelas locações (D-SHP-07, D-SHP-08)', () => {
     const [, , participation] = text.benefits.items;
 
     expect(text.benefits.items.map((item) => item.title)).toEqual([
@@ -36,9 +36,11 @@ describe('copy Second Home Partners (catalog §20.2)', () => {
       'Marketing e vendas',
       'Participação nos resultados',
     ]);
-    expect(participation?.text).toMatch(/receita de gestão das locações/);
+    expect(participation?.text).toMatch(
+      /parte da comissão da Luxtory pel[ao]s? (?:gestão das )?locações/,
+    );
     // Modelo B: o Club entra só como possibilidade, sem herdar a base do modelo A.
-    expect(participation?.text).toMatch(/Luxtory Club[^.]*poderá/);
+    expect(participation?.text).toMatch(/poderá[^.]*Luxtory Club/);
     expect(answerTo(/participa dos resultados/)).toMatch(/parte da comissão da Luxtory/);
   });
 
@@ -75,7 +77,8 @@ describe('copy Second Home Partners (catalog §20.2)', () => {
     expect(mentions.length).toBeGreaterThan(0);
     // Rótulos curtos só nomeiam o mecanismo; as frases é que afirmam.
     expect(assertive.filter((line) => line.split(' ').length > 6)).toEqual([]);
-    expect(text.hero.note).toMatch(/intercâmbio ainda não está disponível/);
+    // O hero diz que o programa está em estruturação; a indisponibilidade do Club fica na nota das soluções.
+    expect(text.hero.note).toMatch(/estruturando/);
     expect(text.solutions.note.join(' ')).toMatch(
       /Luxchange e Luxplus[^.]*Luxtory Club[^.]*ainda não/,
     );

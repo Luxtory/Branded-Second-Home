@@ -22,7 +22,7 @@
 
 | # | Frase do Framework | Âncora | Limite na copy |
 |---|---|---|---|
-| L1 | mais liberdade para os clientes `[FW-SHP: §2, §8 P1]` | `01` §1, §2; REQ-105 | o Luxtory Club e o intercâmbio aparecem sempre como futuros (“poderão”, “previstos”), com “ainda não está disponível” no hero e “ainda não disponíveis” na nota das soluções, sem destaque no FAQ |
+| L1 | mais liberdade para os clientes `[FW-SHP: §2, §8 P1]` | `01` §1, §2; REQ-105 | o Luxtory Club e o intercâmbio aparecem sempre como futuros (“poderão”, “previstos”), com “ainda não disponíveis” na nota das soluções; o hero diz que o programa está em estruturação, sem repetir a indisponibilidade nem destacá-la no FAQ |
 | L2 | Luxchange `[FW-SHP: §8 P4]` | BR-146, BR-190, REQ-060 | associados disponibilizam períodos e recebem créditos para solicitar estadias; créditos não são dinheiro nem garantia de disponibilidade |
 | L3 | Luxplus `[FW-SHP: §8 P4]` | BR-146, BR-240, BR-241, REQ-070 | estadias disponíveis pagas pela hospedagem, sem usar créditos |
 | L4 | locação de temporada e gestão das locações `[FW-SHP: §8 P3, P4, §14]` | `01` §1, §35; BR-352, BR-374 | serviço da Luxtory aos proprietários que o contratam, independente do Luxtory Club e sem Membership (`D-SHP-09`); cada proprietário decide se contrata e quais períodos disponibiliza; a incorporadora não precisa operar e pode oferecer Concierge e Facilities; responde à objeção da ociosidade sem promessa de receita, ocupação ou valor aos proprietários; sem plataforma nomeada; não altera a locação das Branded Second Homes na jornada B2C |
@@ -105,6 +105,7 @@ Tom, vocabulário e o que evitar: `[FW-SHP: §11]`. Testes de validação e regr
 | D-SHP-08 | Modelo A (prioritário para validação comercial): a participação incide sobre a comissão bruta de gestão efetivamente auferida pela Luxtory nas locações dos imóveis do empreendimento, depois de estornos e ajustes contratuais; não sobre o lucro líquido nem sobre a parte do proprietário; operador local, tributos e despesas são custos da Luxtory. Percentual e demais condições ficam só no contrato (repositório público: nenhum número aqui) | aprovada pelo fundador em 2026-11-13 | `01` §35 |
 | D-SHP-09 | Soluções para os proprietários na lista numerada da Home B2C, com o mesmo peso: Luxchange e Luxplus (mecanismos planejados do Luxtory Club, para associados) e locação de temporada (gestão da Luxtory, independente do Club, contratada por cada proprietário); uma nota separa os dois casos | aprovada pelo fundador em 2026-11-13 (refinamento de copy e UX; substitui a versão do mesmo dia que tirava a locação da seção) | `01` §1, BR-146 |
 | D-SHP-10 | FAQ só com as dúvidas de uma incorporadora interessada: vendas e ociosidade, participação, operação das locações, decisão dos proprietários e fase; parceria em qualquer fase, sem prioridade para lançamentos | aprovada pelo fundador em 2026-11-13 | REQ-105 |
+| D-SHP-11 | A página é de prospecção: publica-se com o aceite do fundador e a configuração de Production, sem esperar a operação. Revisão jurídica bloqueia contratos (`P-SHP-01`); definição operacional bloqueia a prestação dos serviços (`P-SHP-02`); definição do modelo B bloqueia sua contratação (`P-SHP-04`). O hero diz só que o programa está em estruturação; a indisponibilidade de Luxchange e Luxplus fica na nota das soluções | aprovada pelo fundador em 2026-11-13 | REQ-105 |
 
 | ID | Hipótese | Como validar |
 |---|---|---|
@@ -114,7 +115,7 @@ Tom, vocabulário e o que evitar: `[FW-SHP: §11]`. Testes de validação e regr
 
 | ID | Pendência | Bloqueia |
 |---|---|---|
-| P-SHP-01 | ~~Validação jurídica e econômica da participação nos resultados~~ — economia do modelo A definida pelo fundador em 2026-11-13 (`D-SHP-08`); resta a revisão jurídica do contrato do modelo A (apuração, estornos, prazo e forma de pagamento, vigência) | contratos com incorporadoras; recomendada antes da abertura do portão em Production |
-| P-SHP-02 | Confirmação de quem executa estratégia, materiais e capacitação comercial, e de como a gestão das locações será entregue aos primeiros parceiros | a abertura do portão em Production |
+| P-SHP-01 | ~~Validação jurídica e econômica da participação nos resultados~~ — economia do modelo A definida pelo fundador em 2026-11-13 (`D-SHP-08`); resta a revisão jurídica do contrato do modelo A (apuração, estornos, prazo e forma de pagamento, vigência) | a formalização de contratos com incorporadoras; não bloqueia a página de prospecção (`D-SHP-11`) |
+| P-SHP-02 | Definição operacional: quem executa estratégia, materiais e capacitação comercial, e como a gestão das locações é entregue aos primeiros parceiros | a prestação dos serviços; não bloqueia a página nem a captação de incorporadoras (`D-SHP-11`) |
 | P-SHP-03 | Regras da participação de imóveis parceiros no Luxtory Club (Escopo B) | qualquer claim além de “previsto” sobre o Club |
-| P-SHP-04 | Modelo B: percentual, atribuição dos associados e receitas ao empreendimento, apuração do resultado líquido e pagamento; o percentual do modelo A não se aplica automaticamente | qualquer claim além de “poderá” sobre a participação no Club e contratos que a incluam |
+| P-SHP-04 | Modelo B: percentual, atribuição dos associados e receitas ao empreendimento, apuração do resultado líquido e pagamento; o percentual do modelo A não se aplica automaticamente | a contratação e a execução do modelo B e qualquer claim além de “poderá”; não bloqueia a menção da possibilidade futura (`D-SHP-11`) |

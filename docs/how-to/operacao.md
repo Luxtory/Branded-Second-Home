@@ -173,9 +173,9 @@ Contrato: spec `catalog` §20 (TECH-057 estendida, ADR-0028). O contato reaprove
 1. `SECOND_HOME_PARTNERS_CONTACT_TO` — caixa de teste no Preview; caixa corporativa da jornada em Production (pode ser a
    mesma da BP1). Sem ela, só o contato Second Home Partners recusa (503); a página e a BP1 seguem funcionando.
 2. `SECOND_HOME_PARTNERS_SITE` — `open` em Production só com autorização expressa do fundador, depois da aprovação no
-   Preview, da confirmação de quem executa o apoio comercial e de como a gestão das locações será entregue aos primeiros
-   parceiros (`P-SHP-02`); revisão jurídica do contrato do modelo A recomendada antes (`P-SHP-01`). Redeploy depois da
-   mudança.
+   Preview. A página é de prospecção (`D-SHP-11`): a revisão jurídica do contrato (`P-SHP-01`) precede a assinatura com
+   incorporadoras e a definição operacional (`P-SHP-02`) precede a prestação dos serviços, sem bloquear a publicação.
+   Redeploy depois da mudança.
 
 Smoke em Production: página 200 com metadados; um envio real de teste aceito (202) e recebido na caixa; Brand Partners
 inalterada. Rollback: `SECOND_HOME_PARTNERS_SITE=closed` + redeploy fecha página e endpoint. As chaves `BRAND_PARTNERS_*`
