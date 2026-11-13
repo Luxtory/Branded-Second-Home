@@ -40,6 +40,11 @@ tags:
     description: |
       Jornada pública Brand Partners (REQ-028, TECH-057; `docs/specs/catalog.md` §14): contato para iniciar uma conversa
       com a Luxtory. Sem conta, sem persistência do contato e sem CRM; não cria Brand Partner, grant nem vínculo.
+  - name: second-home-partners
+    description: |
+      Jornada pública Second Home Partners (REQ-105, TECH-057; `docs/specs/catalog.md` §20, ADR-0028): contato de
+      incorporadoras para iniciar uma conversa com a Luxtory. Sem conta, sem persistência e sem CRM; não cria parceria,
+      afiliação nem adesão ao Luxtory Club.
   - name: ownership
     description: |
       Manifestação de interesse (REQ-022–REQ-025; `docs/specs/ownership.md`, ADR-0017): registro público, sem conta,
@@ -1961,6 +1966,170 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+
+  /second-home-partner-contacts:
+    post:
+      tags: [second-home-partners]
+      summary: Envia a mensagem do formulário Second Home Partners à caixa corporativa (REQ-105)
+      description: |
+        Público e sem conta (TECH-057 estendida pelo REQ-105, spec `catalog` §20, ADR-0028). Mesma ordem, controles e
+        semântica do `createBrandPartnerContact`: publicação (`SECOND_HOME_PARTNERS_SITE`) e configuração → `Origin`
+        exata de um domínio permitido do ambiente → tipo de conteúdo e corpo de até 32 KiB efetivos → limite distribuído
+        por origem de rede e global, em namespace próprio → schema fechado, `Idempotency-Key` e honeypot → envio pelo
+        provedor → resposta. Sem CORS.
+
+        **Sucesso só com aceite confirmado do provedor** (Resend): `202` não comprova entrega, leitura, aprovação nem
+        prazo de resposta, e a submissão não constitui parceria, afiliação nem adesão ao Luxtory Club. Destinatário e
+        assunto próprios da jornada; contadores e chave de idempotência do provedor separados dos de Brand Partners.
+        Nada do contato é persistido.
+      operationId: createSecondHomePartnerContact
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/ContactIdempotencyKey'
+        - name: Origin
+          in: header
+          required: true
+          description: |
+            Origem do formulário (enviada pelo navegador). Comparada exatamente aos domínios permitidos do ambiente
+            (`BRAND_PARTNERS_ALLOWED_ORIGINS`, compartilhada — ADR-0028); ausente, `null` ou diferente → `403`.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: |
+          JSON (`application/json`, UTF-8) de até 32 KiB. Limites em pontos de código Unicode depois de remover os
+          espaços das pontas; texto simples, sem HTML interpretado. Nenhum campo além dos listados é aceito.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecondHomePartnerContactRequest'
+      responses:
+        '202':
+          description: Envio aceito pelo provedor (inclusive repetição da mesma tentativa)
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecondHomePartnerContactAccepted'
+        '400':
+          description: |
+            `ERR_VALIDATION`: JSON inválido, schema fechado violado, campo fora do limite ou `Idempotency-Key` ausente ou
+            fora do formato UUID. `fields` traz só nomes e códigos dos campos, nunca valores.
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecondHomePartnerContactValidationError'
+        '403':
+          description: |
+            `ERR_PERMISSION`: `Origin` ausente ou não permitida, ou envio recusado pela proteção. A resposta não diz
+            qual proteção recusou.
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: '`ERR_NOT_FOUND`: superfície Second Home Partners fechada neste ambiente (`SECOND_HOME_PARTNERS_SITE`).'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: |
+            `ERR_IDEMPOTENCY_CONFLICT`: a mesma `Idempotency-Key` já foi usada com outro conteúdo dentro da janela do
+            provedor. Uma nova submissão é uma tentativa explícita, com outra chave.
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: '`ERR_PAYLOAD_TOO_LARGE`: corpo acima de 32 KiB.'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: '`ERR_UNSUPPORTED_MEDIA_TYPE`: o corpo não é `application/json`.'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: '`ERR_RATE_LIMITED`: limite por origem de rede ou global excedido.'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+            retry-after:
+              description: Segundos até a próxima tentativa poder ser aceita.
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: '`ERR_INTERNAL`: erro inesperado; resposta genérica e log sanitizado.'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: |
+            `ERR_UNAVAILABLE`: configuração ausente ou inválida (TECH-001), limitador indisponível, timeout ou envio sem
+            aceite confirmado do provedor (inclusive limitação do provedor). Não afirma que nada foi enviado: repetir
+            com a mesma `Idempotency-Key` e o mesmo conteúdo.
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /interests:
     post:
       tags: [ownership]
@@ -2836,6 +3005,81 @@ components:
                   field:
                     type: string
                     enum: [name, brand, email, message, website]
+                  code:
+                    type: string
+                    enum: [required, too_long, invalid]
+
+    SecondHomePartnerContactRequest:
+      type: object
+      description: |
+        Campos autorizados pelo REQ-105 (spec `catalog` §20.3). Sem CNPJ, telefone, valores, documentos ou dados de
+        compradores. `_trap` é o honeypot técnico: ausente ou vazio; preenchido → `403` sem envio.
+      additionalProperties: false
+      required: [name, company, email, development, stage]
+      properties:
+        name:
+          type: string
+          description: Nome — 1 a 120 caracteres.
+          minLength: 1
+          maxLength: 120
+        company:
+          type: string
+          description: Incorporadora — 1 a 200 caracteres.
+          minLength: 1
+          maxLength: 200
+        email:
+          type: string
+          description: E-mail — válido, até 254 caracteres, sem CR/LF. Usado só como `Reply-To`.
+          format: email
+          maxLength: 254
+        development:
+          type: string
+          description: Empreendimento e localização — 1 a 200 caracteres.
+          minLength: 1
+          maxLength: 200
+        stage:
+          type: string
+          description: Fase do empreendimento.
+          enum: [planning_or_launch, construction_or_sales, delivered_or_operating]
+        message:
+          type: string
+          description: Mensagem — opcional, até 4.000 caracteres; vazio = ausente.
+          maxLength: 4000
+        website:
+          type: string
+          description: |
+            Site — opcional; vazio = ausente. URL `http`/`https` de até 500 caracteres, sem credenciais. O servidor nunca
+            acessa o endereço.
+          maxLength: 500
+        _trap:
+          type: string
+          description: Honeypot técnico, sem campo de negócio.
+
+    SecondHomePartnerContactAccepted:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [accepted]
+
+    SecondHomePartnerContactValidationError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          properties:
+            fields:
+              type: array
+              description: Campos recusados — só nome e código, nunca o valor enviado.
+              items:
+                type: object
+                additionalProperties: false
+                required: [field, code]
+                properties:
+                  field:
+                    type: string
+                    enum: [name, company, email, development, stage, message, website]
                   code:
                     type: string
                     enum: [required, too_long, invalid]

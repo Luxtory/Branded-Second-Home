@@ -164,6 +164,63 @@ valor de segredo entra em código, migration, log, issue ou artifact.
    ficam indisponíveis (`ConfigurationMissingError` → 503), sem gravar nada; o código nunca cria bucket nem muda a
    visibilidade dele. O resto da Coleção (cards com o quadro tipográfico) continua no ar.
 
+## Preparar a SHP1 (Second Home Partners público)
+
+Contrato: spec `catalog` §20 (TECH-057 estendida, ADR-0028). O contato reaproveita a configuração da BP1 abaixo
+(Resend, Upstash, remetente, origens, segredo, limites e timeouts), com namespace próprio
+(`luxtory:second-home-partner-contact:<VERCEL_ENV>`). Só duas chaves são novas:
+
+1. `SECOND_HOME_PARTNERS_CONTACT_TO` — caixa de teste no Preview; caixa corporativa da jornada em Production (pode ser a
+   mesma da BP1). Sem ela, só o contato Second Home Partners recusa (503); a página e a BP1 seguem funcionando.
+2. `SECOND_HOME_PARTNERS_SITE` — `open` em Production só com autorização expressa do fundador, depois da aprovação no
+   Preview. A página é de prospecção (`D-SHP-11`): a revisão jurídica do contrato (`P-SHP-01`) precede a assinatura com
+   incorporadoras e a definição operacional (`P-SHP-02`) precede a prestação dos serviços, sem bloquear a publicação.
+
+Merge e ativação são etapas separadas, cada uma com autorização própria do fundador. **Merge:** a CI de `main` roda
+inteira, inclusive `migrate` e `deploy`; sem `SECOND_HOME_PARTNERS_SITE` em Production, página e endpoint seguem em 404.
+
+**Refazer só o deploy.** Production recebe deploy prebuilt só pela CI (`vercel pull` → `vercel build` → `vercel deploy
+--prebuilt`); o Redeploy do painel da Vercel não funciona neste projeto. Variável alterada só vale num deployment novo:
+
+1. Conferir antes:
+   - SHA de `main`: `git ls-remote origin refs/heads/main`;
+   - última execução do workflow `ci` em `main`: `gh run list --workflow ci --branch main --event push --limit 1 --json
+     databaseId,headSha,status,conclusion,createdAt` — mesmo SHA, `completed`/`success` e criada há menos de 30 dias
+     (limite do GitHub para reexecutar). Sem `--workflow ci`, a lista traz também as execuções do Dependabot;
+   - commit publicado: o deployment de produção atual na Vercel aponta para o mesmo SHA;
+   - nenhuma execução em andamento ou na fila em `main` (`gh run list --branch main --status in_progress` e
+     `--status queued` vazios): o grupo de concorrência `production` troca um job pendente por outro.
+2. Reexecutar só o job `deploy` dessa execução:
+   `gh run view <id> --json jobs --jq '.jobs[] | select(.name=="deploy") | .databaseId'` e depois
+   `gh run rerun <id> --job <id do job deploy>` (ou "Re-run job" no `deploy`, na interface). O GitHub reexecuta o job
+   escolhido e os que dependem dele; o `deploy` não tem dependentes e depende só do `migrate`, que mantém o resultado da
+   execução original (assim foi nas reexecuções só do `deploy` das execuções #33, #35 e #101 do `ci`). A reexecução usa
+   o mesmo commit, e o `vercel pull` lê as variáveis atuais.
+3. Esperar o `deploy` ✅ (cerca de 2 min) e conferir, sem presumir, os jobs que rodaram de fato na nova tentativa
+   (`<n>` = `gh api repos/Luxtory/Branded-Second-Home/actions/runs/<id> --jq .run_attempt`):
+   `gh api repos/Luxtory/Branded-Second-Home/actions/runs/<id>/attempts/<n>/jobs --jq '.jobs[]|[.name,.started_at]|@tsv'`
+   — só o `deploy` com início novo; os demais mantêm o horário da tentativa anterior. Se outro job tiver rodado, pare e
+   avalie antes do smoke. Conferir também na Vercel um deployment de produção novo, do mesmo SHA.
+
+Se a execução não for do SHA atual de `main` ou tiver falhado, não reexecute nada: o deploy de uma execução antiga
+republicaria código desatualizado. Passados 30 dias, o GitHub não permite reexecutar. Nesses casos, com o workflow atual
+(sem disparo manual), o deploy depende de um novo push em `main`, ou seja, um novo merge com a CI inteira. É uma
+limitação deste workflow, não uma regra: um procedimento manual independente e seguro pode ser criado depois, se for
+necessário.
+
+**Ativação** (autorização específica do fundador):
+
+1. Em Production: `SECOND_HOME_PARTNERS_CONTACT_TO` (caixa corporativa) e `SECOND_HOME_PARTNERS_SITE=open`.
+2. Refazer só o deploy (acima).
+3. Smoke em Production: `/second-home-partner` 200 com título, descrição, canonical e cabeçalhos de segurança;
+   `POST /v1/second-home-partner-contacts` com JSON inválido e o `Origin` do site → 400 (passa pelo limitador sem
+   enviar) e com origem alheia → 403; um envio sintético → 202 e o e-mail recebido na caixa; Brand Partners
+   (`/brand-partner` 200, a mesma sonda inválida no contato dela → 400) e B2C (Home 200) inalterados; logs sem erro.
+
+**Rollback:** `SECOND_HOME_PARTNERS_SITE=closed` e refazer só o deploy (acima); conferir 404 em `/second-home-partner` e
+no endpoint, com Brand Partners e B2C inalterados. Não é instantâneo: vale a partir do deployment novo. As chaves
+`BRAND_PARTNERS_*` compartilhadas não podem ser removidas enquanto a página existir.
+
 ## Preparar a BP1 (Brand Partners público)
 
 Contrato: spec `catalog` §14 (TECH-057). Nenhum valor de segredo entra em código, issue, PR, log ou chat — o fundador
@@ -545,6 +602,13 @@ entrega não abre gates nem cria configuração produtiva.
 - `/entrar` ou `/admin` em Production dizem "O acesso não está disponível neste ambiente": o log `auth unavailable`
   traz as chaves (`keys`) — variável de Auth ausente ou fora do formato (ex.: a chave `anon` legada no lugar da
   `sb_publishable_…`). Corrija na Vercel (Production) e refaça o deploy pela CI (passo 6 da W1).
+- Contato Brand Partners ou Second Home Partners com 503 e log `stage=limiter`, `reason=backend`: o cliente Upstash
+  falhou — por exemplo, a base foi excluída por inatividade (no plano gratuito, 14 dias sem uso segundo o painel da
+  conta, em 2026-11-13) ou as credenciais não conferem. O limitador continua recusando (nunca deixa passar). Recrie ou
+  restaure a base, troque `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` em Production, refaça só o deploy (SHP1)
+  e sonde: JSON inválido com o `Origin` do site → 400. O plano pago por uso reduz o risco de exclusão por inatividade,
+  mas não é garantia absoluta contra desativação ou indisponibilidade; cadastrar um meio de pagamento converte os
+  recursos gratuitos da conta para planos pagos.
 - `command retries exhausted` nos logs: contenção de locks acima do `COMMAND_LOCK_TIMEOUT_MS` em
   `COMMAND_MAX_ATTEMPTS` tentativas; o cliente pode repetir com a mesma `Idempotency-Key`.
 

@@ -5,6 +5,7 @@ import { aboutMessages } from '../src/features/catalog/presentation/i18n/about-p
 import { brandPartnersMessages as bp } from '../src/features/catalog/presentation/i18n/brand-partners-pt-br';
 import { collectionMessages } from '../src/features/catalog/presentation/i18n/collection-pt-br';
 import { discoveryMessages as b2c } from '../src/features/catalog/presentation/i18n/discovery-pt-br';
+import { secondHomePartnersMessages as shp } from '../src/features/catalog/presentation/i18n/second-home-partners-pt-br';
 import { messages as admin } from '../src/features/catalog/presentation/i18n/pt-br';
 
 // Regressões semânticas da W4.2 (`D-LX-11`, `D-B2C-27`, `D-BP-28`; `01` v10.2 BR-030 a BR-032) na copy vigente e nas
@@ -25,6 +26,7 @@ function strings(value: unknown): string[] {
 const SURFACES = {
   b2c: strings(b2c),
   brandPartners: strings(bp),
+  secondHomePartners: strings(shp),
   about: strings(aboutMessages),
   admin: [...strings(admin), ...strings(collectionMessages)],
 };

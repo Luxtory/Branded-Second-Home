@@ -306,3 +306,31 @@ executor / leitura ──TLS verify-full──> PostgreSQL (schema app, RLS, gat
 - Semântica dos textos editoriais (C-42-3) depende de revisão humana.
 - Janela curta entre `migrate` e deploy em que o app anterior não lê o catálogo renomeado (sem dados em Production;
   ADR-0019).
+
+## SHP1 — Contato público Second Home Partners (2026-11-12)
+
+Superfície nova: `POST /v1/second-home-partner-contacts` (REQ-105, TECH-057 estendida, ADR-0028), público e sem
+conta. Mesma cadeia de controles do contato Brand Partners: portão, origem exata, tipo e corpo limitados, limitador por
+rede e global, schema fechado, `Idempotency-Key`, honeypot, envio ao destinatário fixo e logs sem PII.
+
+### C-SHP-1 [MEDIUM] Denial of service — Abuso de uma jornada esgotando a outra
+
+- **Vector**: o contato Second Home Partners reaproveita Upstash, segredo e valores de limite do Brand Partners.
+- **Mitigação**: namespace próprio nos contadores e na chave de idempotência do provedor; teste prova que esgotar o
+  limite de uma jornada não gera 429 na outra e que a mesma chave nos dois endpoints não gera 409.
+
+### C-SHP-2 [MEDIUM] Spoofing / Tampering — Relay de e-mail ou injeção de cabeçalho
+
+- **Mitigação**: destinatário e remetente vêm do servidor; o e-mail do visitante é só `Reply-To`; controles C0 recusados
+  nos campos de linha; texto simples determinístico; schema fechado.
+
+### C-SHP-3 [LOW] Information disclosure — Dados do contato em logs ou no payload fechado
+
+- **Mitigação**: log com etapa, status, duração e motivo técnico; portão fechado devolve 404 sem copy nem metadados;
+  nada é persistido.
+
+### Residual risk
+
+- As chaves `BRAND_PARTNERS_*` compartilhadas são dependência das duas jornadas: removê-las recusa os dois contatos
+  (falha fechada e explícita), registrada no ADR-0028 e no runbook.
+

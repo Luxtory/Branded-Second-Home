@@ -1814,3 +1814,105 @@ a revalidação de origem; `recordFormalization` registra a extensão 1:1 `app.a
 registra `app.second_home_operation_start`. O command de ownership conduz a mesma transação e seu store registra
 SPE, Ações, holdings e grants; nenhuma dessas etapas atualiza a raiz ou cria segunda persistência dos fatos. O relógio
 da elegibilidade é relido depois de todos os locks, conservando a versão original aprovada e a Home Edition finalizada.
+
+## 20. Second Home Partners público (SHP1)
+
+Plano v3.3 aprovado pelo fundador em 2026-11-12; modelo comercial definido pelo fundador em 2026-11-13 (gestão digital
+de locações e participação da incorporadora nos resultados). Comportamento e limites: `02` REQ-105; arquitetura: `03`
+TECH-057 (estendida); decisão: [ADR-0028](../adr/0028-jornada-second-home-partners.md). Comunicação:
+[aplicação Second Home Partners](communication/second-home-partners.md) (L1–L7, `D-SHP-01`–`D-SHP-12`) e
+[Framework congelado](communication/framework-second-home-partners.md). Fatos da frente: `01` §1 e §35. Nada desta
+seção afilia imóveis, cria Membership para proprietários parceiros ou ativa mecanismo do Luxtory Club (Escopo B).
+Numerada §20 porque §18 e §19 são da W6 e da W8.
+
+### 20.1 Jornada, navegação e publicação
+
+| Rota | Conteúdo | Destino do CTA |
+|---|---|---|
+| `/second-home-partner` | página única + formulário | `#conversa` |
+
+Grupo de rotas `(second-home-partners)` e shell próprios (`SiteShell` com `navAlign="end"`, `menuTrigger="mark"`,
+`titleRole="headline"`, `typeCeiling="home-hero"`, header sólido). Navegação e rodapé: Benefícios, Como funciona,
+Perguntas e a ação Conversar; nenhum link para B2C, Brand Partners ou Sobre (`D-LX-13`).
+
+Portão `SECOND_HOME_PARTNERS_SITE=open|closed`, independente de `PUBLIC_SITE` e `BRAND_PARTNERS_SITE`: ausente, só
+Production fica fechada. Fechado → página, metadados e endpoint 404, sem copy nem metadados no corpo. Indexação
+(`D-SHP-05`): Preview e local `noindex`; Production aberta indexável, com canonical, title, description e Open Graph,
+sem imagem social nem dados estruturados.
+
+### 20.2 Brief da página
+
+Protagonista, conscientização e 5Ps: [aplicação §7](communication/second-home-partners.md#7-jornada-e-5ps). Copy
+final, verbatim, em `catalog/presentation/i18n/second-home-partners-pt-br.ts` (fonte única). Desde 2026-11-13 a página
+comunica a participação nos resultados (`D-SHP-07`, substitui `D-SHP-04`): três benefícios com o mesmo peso; a
+participação nas receitas de gestão das locações é parte da proposta e a do Luxtory Club é possibilidade condicionada.
+Sem percentual, fórmula, valor, exemplo, plataforma nomeada ou garantia de pagamento. Refinamento do mesmo dia
+(`D-SHP-09`, `D-SHP-10`): a objeção da ociosidade orienta a oportunidade, o card de diferenciação e o FAQ; a quarta
+seção apresenta três soluções para os proprietários; o FAQ fica com as cinco dúvidas de uma incorporadora interessada;
+a parceria vale para qualquer fase do empreendimento. Superfícies da paleta institucional (`D-SHP-12`): Deep → White →
+Blue → Deep → Wash → Blue → White, só com `data-surface` do Core (títulos Warm Sand e corpo branco nas escuras; títulos
+Moroccan Blue e corpo Dark Moroccan Blue nas claras); Benefícios → Soluções repetem a passagem Blue → Deep do Como
+funciona do Brand Partners.
+
+| Seção | Função · pergunta respondida | Composição (Core DS) | Fatos |
+|---|---|---|---|
+| Hero `#inicio` · Deep | PICTURE · o que é e por que importa | `lx-hero--typographic`, H1 `lx-headline--home-hero`, CTA primário, link para `#oportunidade`, nota de programa em estruturação | REQ-105; L1 |
+| A oportunidade `#oportunidade` · White | PROBLEM · por que isso ajuda a vender | `lx-section-head` + `lx-stack--editorial` | L1, L4; `H-SHP-01` como hipótese |
+| Benefícios `#beneficios` · Blue | PROMISE · o que a incorporadora ganha | `lx-siblings--trio` (diferenciação, marketing e vendas, participação) + `lx-section-note` | `01` §1, §35; L4, L5 |
+| Soluções para os proprietários `#solucoes` · Deep | PROOF · como os proprietários poderão aproveitar o imóvel | `lx-numbered` como na Home B2C (01 Luxchange, 02 Luxplus, 03 Locação de temporada) + nota em dois parágrafos num `lx-section-group` (a lista já fecha com hairline): Club planejado × gestão de locações independente (`D-SHP-09`) | L1–L4 |
+| Como funciona `#como-funciona` · Wash | PROOF · o que acontece depois do contato | `lx-steps--four` + CTA | REQ-105 |
+| Perguntas `#perguntas` · Blue | PROOF · objeções O1, O3, O7, O8, O6 (`D-SHP-10`) | `lx-faq` + `lx-disclosure` | L1, L4, L5 |
+| Conversa `#conversa` · White | PUSH · como começar | `lx-columns--aside`: introdução → formulário → aviso e privacidade | REQ-105 |
+
+Concisão: cada parágrafo, card, solução, etapa, nota e resposta com no máximo 3 linhas a 390 e a 1440 px e 4 a 320
+px, medido na página real; textos legais seguem a própria hierarquia. Sem `line-clamp`, reticências ou fonte reduzida.
+Nenhum CSS, token ou componente novo. Sem exceções registradas desde 2026-11-13 (a de 2026-11-12, da introdução do
+Luxtory Club, saiu com a nova introdução das soluções).
+
+Fora do escopo da SHP1 (especificação e aprovação próprias, `02` §18): gestão das locações em software, apuração e
+pagamento da participação, split financeiro, taxa de limpeza, integração com plataformas de locação, cadastro de
+parceiros e qualquer mecanismo do Luxtory Club para imóveis parceiros.
+
+### 20.3 Formulário
+
+| Campo | Tipo | Regra |
+|---|---|---|
+| `name` · Nome | texto | obrigatório; 1–120 pontos de código depois do trim; sem controles C0 |
+| `company` · Incorporadora | texto | obrigatório; 1–200 |
+| `email` · E-mail | e-mail | obrigatório; válido; até 254; só `Reply-To` |
+| `development` · Empreendimento e localização | texto | obrigatório; 1–200 |
+| `stage` · Fase do empreendimento | escolha única | obrigatório; `planning_or_launch` · `construction_or_sales` · `delivered_or_operating` |
+| `message` · Mensagem | texto longo | opcional; até 4.000; quebras de linha preservadas |
+| `website` · Site | URL | opcional; `http`/`https` com host, sem credenciais; até 500; o servidor nunca acessa |
+| `_trap` | honeypot | ausente ou vazio; preenchido → 403 sem envio |
+
+Schema Zod fechado, o mesmo no servidor e no navegador. Estados acessíveis, retry, conflito e mensagens como em §14.5;
+mensagem própria para a fase: “Selecione a fase do empreendimento.” O e-mail interno tem assunto “Second Home Partners
+— mensagem pelo site”, rótulos do formulário e texto simples determinístico.
+
+### 20.4 Processamento, configuração e isolamento
+
+`POST /v1/second-home-partner-contacts` (OpenAPI `createSecondHomePartnerContact`) segue a ordem e as respostas de
+§14.4: portão e configuração → origem → tipo e corpo de até 32 KiB → limitador → schema, chave e honeypot → envio.
+Chave nova obrigatória no modo real: `SECOND_HOME_PARTNERS_CONTACT_TO`. Reaproveitadas (ADR-0028): `RESEND_API_KEY`,
+`UPSTASH_*`, `BRAND_PARTNERS_CONTACT_FROM`, `BRAND_PARTNERS_ALLOWED_ORIGINS`, `BRAND_PARTNERS_CONTACT_HMAC_SECRET`,
+limites, janelas, timeouts e `BRAND_PARTNERS_CONTACT_MODE=fake` (local e CI). Namespace
+`luxtory:second-home-partner-contact:<env>` nos contadores e na chave de idempotência do provedor. Log
+`second_home_partner_contact` só com etapa, status, duração e motivo técnico.
+
+Isolamento provado em teste: portões independentes; esgotar o limite de uma jornada não gera 429 na outra; a mesma
+`Idempotency-Key` nos dois endpoints não gera 409 cruzado; assunto e destinatário próprios; falta de
+`SECOND_HOME_PARTNERS_CONTACT_TO` recusa só o endpoint novo (503), com a página e Brand Partners funcionando.
+
+### 20.5 Critérios de aceite SHP1
+
+- Copy renderizada idêntica ao i18n e na ordem do §20.2; três benefícios em trio; participação sem percentual, número
+  ou valor; três soluções numeradas com a nota que separa o Club da gestão de locações; FAQ sem prioridade de fase;
+  varreduras de terminologia, ontologia e claims verdes.
+- axe 0 a 390 e 1440 px; sem overflow horizontal de 320 a 1920 px; H1 inteiro a 320 × 568; contraste AA dos títulos
+  em Deep e Blue; formulário completo com teclado e com toque a 390 px; reflow a 200%.
+- Endpoint: origem 403, tipo 415, corpo 413, schema 400, honeypot 403, limite 429, provedor 503, replay 202, conflito
+  409; sem PII nos logs; sem CORS; CSP com nonce.
+- Portão fechado = 404 sem copy; Preview `noindex`; Production aberta indexável.
+- `npm run verify`, E2E (nova suíte + B2C + Brand Partners) e CI verdes; revisão visual do fundador no Preview a 320,
+  390, 768, 1024, 1440 e 1920 px.

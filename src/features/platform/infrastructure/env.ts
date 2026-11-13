@@ -19,6 +19,9 @@ const envShape = {
   // Portão da jornada Brand Partners (BP1, spec catalog §14.1), independente de `PUBLIC_SITE`: em Production só abre
   // com `open`; `closed` fecha em qualquer ambiente.
   BRAND_PARTNERS_SITE: z.enum(['open', 'closed']).optional(),
+  // Portão da jornada Second Home Partners (SHP1, spec catalog §20.1), independente de `PUBLIC_SITE` e de
+  // `BRAND_PARTNERS_SITE`: em Production só abre com `open`; `closed` fecha em qualquer ambiente.
+  SECOND_HOME_PARTNERS_SITE: z.enum(['open', 'closed']).optional(),
   // Contato Brand Partners (spec catalog §14.6). Ausente = Resend + Upstash reais. `fake` (envio e limitador
   // determinísticos em memória) só local e na CI: recusado na Vercel, inclusive em Preview.
   BRAND_PARTNERS_CONTACT_MODE: z.literal('fake').optional(),
@@ -153,6 +156,9 @@ const runtimeSchema = z.object({
   RESEND_API_KEY: z.string().regex(/^re_[A-Za-z0-9_-]+$/),
   BRAND_PARTNERS_CONTACT_FROM: sender,
   BRAND_PARTNERS_CONTACT_TO: mailbox,
+  // Contato Second Home Partners (SHP1, spec catalog §20.4, ADR-0028): só o destinatário é próprio; as demais chaves do
+  // contato são as do Brand Partners, com namespace próprio nos contadores e na chave de idempotência do provedor.
+  SECOND_HOME_PARTNERS_CONTACT_TO: mailbox,
   UPSTASH_REDIS_REST_URL: z.url({ protocol: /^https$/ }),
   UPSTASH_REDIS_REST_TOKEN: z.string().regex(/^\S{20,}$/),
   // Segredo do HMAC que pseudonimiza a origem de rede nas chaves do limitador; separado de qualquer outro segredo.
