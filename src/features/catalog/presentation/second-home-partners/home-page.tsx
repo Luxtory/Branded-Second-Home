@@ -7,9 +7,9 @@ import { SecondHomePartnerContactForm } from './contact-form';
 import { SECOND_HOME_PARTNERS_SECTIONS, titleOf } from './paths';
 import { SecondHomePartnersSite } from './site';
 
-const { hero, opportunity, benefits, club, process, faq, conversation } = text;
+const { hero, opportunity, benefits, solutions, process, faq, conversation } = text;
 
-const [HERO, OPPORTUNITY, BENEFITS, CLUB, PROCESS, FAQ, CONVERSATION] =
+const [HERO, OPPORTUNITY, BENEFITS, SOLUTIONS, PROCESS, FAQ, CONVERSATION] =
   SECOND_HOME_PARTNERS_SECTIONS;
 
 /** Parágrafos da copy, um `<p>` por item, com os termos compostos (Second Home…) sem quebra. */
@@ -23,7 +23,7 @@ function Paragraphs({ lines }: { readonly lines: readonly string[] }) {
 
 /**
  * Página Second Home Partners `/second-home-partner` (REQ-105, spec catalog §20.2): PICTURE → PROBLEM → PROMISE → PROOF
- * (Luxtory Club, processo, perguntas) → PUSH sobre o Core. Três benefícios com o mesmo peso, incluindo a participação
+ * (soluções para os proprietários, processo, perguntas) → PUSH sobre o Core. Três benefícios com o mesmo peso, incluindo a participação
  * nos resultados (`D-SHP-07`). Nada aqui é prova, case ou parceria real; o Luxtory Club aparece só como modelo previsto.
  */
 export function SecondHomePartnersHomePage() {
@@ -101,33 +101,40 @@ export function SecondHomePartnersHomePage() {
         </div>
       </section>
 
-      {/* PROOF — White: como o Luxtory Club deve funcionar, em linhas rótulo + texto; nada disponível hoje. */}
+      {/* PROOF — White: as três soluções para os proprietários na lista numerada da Home B2C, com o mesmo peso; a nota
+          separa os serviços planejados do Club da gestão de locações independente (`D-SHP-09`). */}
       <section
-        id={CLUB}
+        id={SOLUTIONS}
         className="lx-section"
         data-surface="white"
-        aria-labelledby={titleOf(CLUB)}
+        aria-labelledby={titleOf(SOLUTIONS)}
       >
         <div className="lx-container">
           <div className="lx-section-head">
-            <Eyebrow>{club.marker}</Eyebrow>
-            <h2 id={titleOf(CLUB)} className="lx-headline">
-              <HeadlineText headline={club.title} />
+            <Eyebrow>{solutions.marker}</Eyebrow>
+            <h2 id={titleOf(SOLUTIONS)} className="lx-headline">
+              <HeadlineText headline={solutions.title} />
             </h2>
-            <p className="lx-subheadline">{nb(club.intro)}</p>
+            <p className="lx-subheadline">{solutions.intro}</p>
           </div>
-          <div className="lx-answers">
-            {club.items.map((item) => (
-              <div className="lx-answers__row" key={item.label}>
-                <h3 className="lx-answers__label lx-display-s">{item.label}</h3>
-                <div className="lx-answers__content">
+          <ol className="lx-numbered">
+            {solutions.items.map((item, index) => (
+              <li className="lx-numbered__item" key={item.label}>
+                <span className="lx-ordinal lx-numbered__number" aria-hidden="true">
+                  {ordinal(index)}
+                </span>
+                <h3 className="lx-display-s">{item.label}</h3>
+                <div className="lx-numbered__text">
                   <p className="lx-body">{item.text}</p>
                 </div>
-              </div>
+              </li>
             ))}
-          </div>
-          <div className="lx-section-note">
-            <p className="lx-body">{club.note}</p>
+          </ol>
+          {/* A nota sem hairline própria: a lista numerada já fecha com uma (mesma composição do Club no Brand Partners). */}
+          <div className="lx-section-group">
+            <div className="lx-stack">
+              <Paragraphs lines={solutions.note} />
+            </div>
           </div>
         </div>
       </section>

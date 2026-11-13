@@ -1846,24 +1846,25 @@ Protagonista, conscientização e 5Ps: [aplicação §7](communication/second-ho
 final, verbatim, em `catalog/presentation/i18n/second-home-partners-pt-br.ts` (fonte única). Desde 2026-11-13 a página
 comunica a participação nos resultados (`D-SHP-07`, substitui `D-SHP-04`): três benefícios com o mesmo peso; a
 participação nas receitas de gestão das locações é parte da proposta e a do Luxtory Club é possibilidade condicionada.
-Sem percentual, fórmula, valor, exemplo, plataforma nomeada ou garantia de pagamento.
+Sem percentual, fórmula, valor, exemplo, plataforma nomeada ou garantia de pagamento. Refinamento do mesmo dia
+(`D-SHP-09`, `D-SHP-10`): a objeção da ociosidade orienta a oportunidade, o card de diferenciação e o FAQ; a quarta
+seção apresenta três soluções para os proprietários; o FAQ fica com as cinco dúvidas de uma incorporadora interessada;
+a parceria vale para qualquer fase do empreendimento.
 
 | Seção | Função · pergunta respondida | Composição (Core DS) | Fatos |
 |---|---|---|---|
 | Hero `#inicio` · Deep | PICTURE · o que é e por que importa | `lx-hero--typographic`, H1 `lx-headline--home-hero`, CTA primário, link para `#oportunidade`, nota de programa em estruturação | REQ-105; L1 |
-| A oportunidade `#oportunidade` · White | PROBLEM · por que isso ajuda a vender | `lx-section-head` + `lx-stack--editorial` | L1; `H-SHP-01` como hipótese |
+| A oportunidade `#oportunidade` · White | PROBLEM · por que isso ajuda a vender | `lx-section-head` + `lx-stack--editorial` | L1, L4; `H-SHP-01` como hipótese |
 | Benefícios `#beneficios` · Wash | PROMISE · o que a incorporadora ganha | `lx-siblings--trio` (diferenciação, marketing e vendas, participação) + `lx-section-note` | `01` §1, §35; L4, L5 |
-| Luxtory Club `#luxtory-club` · White | PROOF · como o Club deve funcionar | `lx-answers` (Luxchange e Luxplus) + `lx-section-note`; a locação dos imóveis parceiros não aparece aqui (`D-SHP-09`) | L1–L3 |
+| Soluções para os proprietários `#solucoes` · White | PROOF · como os proprietários poderão aproveitar o imóvel | `lx-numbered` como na Home B2C (01 Luxchange, 02 Luxplus, 03 Locação de temporada) + nota em dois parágrafos num `lx-section-group` (a lista já fecha com hairline): Club planejado × gestão de locações independente (`D-SHP-09`) | L1–L4 |
 | Como funciona `#como-funciona` · Blue | PROOF · o que acontece depois do contato | `lx-steps--four` + CTA | REQ-105 |
-| Perguntas `#perguntas` · Wash | PROOF · objeções O1–O7 | `lx-faq` + `lx-disclosure` | L1, L4–L6 |
+| Perguntas `#perguntas` · Wash | PROOF · objeções O1, O3, O7, O8, O6 (`D-SHP-10`) | `lx-faq` + `lx-disclosure` | L1, L4, L5 |
 | Conversa `#conversa` · White | PUSH · como começar | `lx-columns--aside`: introdução → formulário → aviso e privacidade | REQ-105 |
 
-Concisão: cada parágrafo, card, etapa, linha do Club e resposta com no máximo 3 linhas a 390 e a 1440 px e 4 a 320 px,
-medido na página real; textos legais seguem a própria hierarquia. Sem `line-clamp`, reticências ou fonte reduzida.
-Nenhum CSS, token ou componente novo. Exceção registrada (medida no E2E, 2026-11-12): a introdução do Luxtory Club,
-texto da aprovação final do fundador, ocupa 4 linhas a 390 px no papel de subheadline da abertura de seção (3 a 320 e
-a 1440 px). Fica assim por clareza: separa a rede planejada de Second Homes da entrada, ainda em estruturação, dos
-imóveis parceiros.
+Concisão: cada parágrafo, card, solução, etapa, nota e resposta com no máximo 3 linhas a 390 e a 1440 px e 4 a 320
+px, medido na página real; textos legais seguem a própria hierarquia. Sem `line-clamp`, reticências ou fonte reduzida.
+Nenhum CSS, token ou componente novo. Sem exceções registradas desde 2026-11-13 (a de 2026-11-12, da introdução do
+Luxtory Club, saiu com a nova introdução das soluções).
 
 Fora do escopo da SHP1 (especificação e aprovação próprias, `02` §18): gestão das locações em software, apuração e
 pagamento da participação, split financeiro, taxa de limpeza, integração com plataformas de locação, cadastro de
@@ -1903,7 +1904,8 @@ Isolamento provado em teste: portões independentes; esgotar o limite de uma jor
 ### 20.5 Critérios de aceite SHP1
 
 - Copy renderizada idêntica ao i18n e na ordem do §20.2; três benefícios em trio; participação sem percentual, número
-  ou valor; nenhuma locação na seção do Club; varreduras de terminologia, ontologia e claims verdes.
+  ou valor; três soluções numeradas com a nota que separa o Club da gestão de locações; FAQ sem prioridade de fase;
+  varreduras de terminologia, ontologia e claims verdes.
 - axe 0 a 390 e 1440 px; sem overflow horizontal de 320 a 1920 px; H1 inteiro a 320 × 568; contraste AA dos títulos
   em Deep e Blue; formulário completo com teclado e com toque a 390 px; reflow a 200%.
 - Endpoint: origem 403, tipo 415, corpo 413, schema 400, honeypot 403, limite 429, provedor 503, replay 202, conflito

@@ -1,7 +1,8 @@
 /**
  * Jornada pública Second Home Partners (REQ-105, spec catalog §20): Master Copy do plano v3.3 aprovado pelo fundador em
- * 2026-11-12, atualizada com o modelo comercial de 2026-11-13 (`D-SHP-07`–`D-SHP-09`): três benefícios com o mesmo peso,
- * participação nas receitas de gestão das locações como parte da proposta e no Luxtory Club só como possibilidade.
+ * 2026-11-12, atualizada com o modelo comercial de 2026-11-13 (`D-SHP-07`–`D-SHP-10`): três benefícios com o mesmo peso,
+ * participação nas receitas de gestão das locações como parte da proposta e no Luxtory Club só como possibilidade; três
+ * soluções para os proprietários (Luxchange e Luxplus planejados no Club; locação de temporada independente).
  * Sem percentual, fórmula, valor, exemplo ou plataforma nomeada. Os textos são VERBATIM — não reescrever, resumir nem
  * acrescentar claim. Headlines: `lead` + `turn` (a virada em itálico da copy). Identificadores internos (funções 5P)
  * ficam só nos comentários.
@@ -47,7 +48,7 @@ export const secondHomePartnersMessages = {
     siteName: 'Luxtory',
     title: 'Second Home Partners — Luxtory',
     description:
-      'Parcerias para incorporadoras de empreendimentos de lazer, com apoio comercial, participação nos resultados e novas experiências de viagem em estruturação.',
+      'Parcerias para incorporadoras de empreendimentos de lazer: gestão de locações para os proprietários, apoio comercial e participação nos resultados.',
   },
 
   // PICTURE · Hero tipográfico (Deep): o corpo nomeia os três benefícios; a liberdade dos clientes está na headline.
@@ -63,7 +64,8 @@ export const secondHomePartnersMessages = {
     note: 'Estamos estruturando o programa e buscando os primeiros parceiros. O intercâmbio ainda não está disponível.',
   },
 
-  // PROBLEM · A oportunidade (White). "Acelerar a decisão de compra" é hipótese (`H-SHP-01`), nunca resultado.
+  // PROBLEM · A oportunidade (White): a objeção da ociosidade vira argumento de venda. "Acelerar a decisão de compra" é
+  // hipótese (`H-SHP-01`), nunca resultado.
   opportunity: {
     marker: 'Uma oportunidade para sua incorporadora',
     title: {
@@ -71,7 +73,7 @@ export const secondHomePartnersMessages = {
       turn: 'Um argumento a mais para vender.',
     },
     paragraphs: [
-      'Imagine seu cliente comprando um imóvel de lazer e tendo a possibilidade de aproveitar outros destinos.',
+      'Imagine seu cliente comprando um imóvel de lazer sabendo que poderá alugá-lo nos períodos sem uso e conhecer outros destinos.',
       'Esse diferencial pode ajudar sua equipe a superar objeções e acelerar a decisão de compra.',
     ],
   },
@@ -89,7 +91,7 @@ export const secondHomePartnersMessages = {
     items: [
       {
         title: 'Diferenciação comercial',
-        text: 'Ofereça aos compradores a perspectiva de aproveitar outros destinos por meio do futuro intercâmbio da Luxtory.',
+        text: 'Ofereça aos compradores novas formas de aproveitar o imóvel: locação de temporada e, no futuro, intercâmbio de estadias.',
       },
       {
         title: 'Marketing e vendas',
@@ -103,27 +105,36 @@ export const secondHomePartnersMessages = {
     note: 'Os benefícios dependem das condições da parceria. Não há garantia de vendas, receitas ou estadias.',
   },
 
-  // PROOF · Luxtory Club (White): modelo previsto, nunca disponibilidade atual. Créditos e estadias pagas não se
-  // confundem (aplicação L2–L3). A locação dos imóveis parceiros é a gestão da Luxtory, fora do Club (`D-SHP-09`, L4).
-  club: {
+  // PROOF · Soluções para os proprietários (White), na lista numerada da Home B2C: equilíbrio visual sem atribuir tudo ao
+  // Club (`D-SHP-09`). Luxchange e Luxplus são mecanismos planejados do Club, para associados (BR-146, L2–L3); a
+  // locação de temporada é a gestão da Luxtory, independente do Club e contratada por cada proprietário (L4).
+  // Espaço inseparável antes do travessão: o rótulo nunca começa uma linha com ele.
+  solutions: {
     marker: 'Mais liberdade para seus clientes',
     title: {
       lead: 'Um imóvel para chamar de seu. ',
-      turn: 'E outros destinos para descobrir.',
+      turn: 'E mais formas de aproveitá-lo.',
     },
     intro:
-      'O Luxtory Club é a rede planejada de Second Homes da Luxtory. A entrada de imóveis parceiros ainda está sendo estruturada.',
+      'Três possibilidades para os proprietários aproveitarem melhor o imóvel, inclusive nos períodos sem uso.',
     items: [
       {
-        label: 'Luxchange — Intercâmbio de estadias',
-        text: 'Os associados poderão disponibilizar períodos do seu imóvel e receber créditos para solicitar estadias em outros destinos.',
+        label: 'Luxchange\u00a0— Intercâmbio de estadias',
+        text: 'Os associados poderão disponibilizar períodos de seus imóveis e receber créditos para solicitar estadias em outros destinos da rede.',
       },
       {
-        label: 'Luxplus — Estadias adicionais',
+        label: 'Luxplus\u00a0— Estadias adicionais',
         text: 'Os associados poderão reservar estadias disponíveis em outros imóveis da rede, pagando pela hospedagem, sem usar créditos.',
       },
+      {
+        label: 'Locação de temporada\u00a0— Monetização de períodos ociosos',
+        text: 'Nos períodos sem uso, os proprietários poderão autorizar locações, com gestão digital da Luxtory e apoio de operadores locais.',
+      },
     ],
-    note: 'O Luxtory Club ainda não está disponível. A participação dos imóveis parceiros dependerá de regras próprias.',
+    note: [
+      'Luxchange e Luxplus são serviços planejados do Luxtory Club, ainda não disponíveis, com regras próprias para imóveis parceiros.',
+      'A gestão de locações é independente e contratada diretamente com cada proprietário.',
+    ],
   },
 
   // PROOF · Como funciona a parceria (Blue): quatro etapas reais, em ordem.
@@ -154,44 +165,35 @@ export const secondHomePartnersMessages = {
     action: CTA,
   },
 
-  // PROOF · Perguntas (Wash): objeções O1, O3, O7, O2, O4, O5 e O6 da aplicação, nessa ordem.
+  // PROOF · Perguntas (Wash): só as dúvidas de uma incorporadora interessada (`D-SHP-10`) — O1, O3, O7, O8 e O6. A
+  // disponibilidade do Club fica na nota das soluções; a etapa inicial, em Como funciona.
   faq: {
     title: 'O que você precisa saber.',
     items: [
       {
         question: 'Como a parceria pode ajudar minhas vendas?',
         answer:
-          'Ela pode agregar valor ao empreendimento e dar à sua equipe novos argumentos de venda.',
+          'Ela ajuda a enfrentar a objeção da ociosidade: o comprador poderá alugar os períodos sem uso e, no futuro, intercambiar estadias.',
       },
       {
-        question: 'Como funciona a participação nos resultados?',
+        question: 'Como minha incorporadora participa dos resultados?',
         answer:
-          'Ela sai da comissão da Luxtory pela gestão das locações, sem reduzir a parte dos proprietários. O contrato define as condições.',
+          'Ela recebe parte da comissão da Luxtory pela gestão das locações do empreendimento. O Luxtory Club poderá entrar depois.',
       },
       {
-        question: 'Minha incorporadora precisa operar as locações?',
+        question: 'Minha incorporadora precisa administrar as locações?',
         answer:
-          'Não. A Luxtory faz a gestão e contrata prestadores locais. Se sua incorporadora tiver estrutura, a operação pode ser combinada.',
+          'Não. A Luxtory faz a gestão digital e coordena os prestadores locais. Sua incorporadora pode oferecer Concierge e Facilities, se quiser.',
       },
       {
-        question: 'O Luxtory Club já está funcionando?',
+        question: 'Os proprietários precisam disponibilizar seus imóveis?',
         answer:
-          'Ainda não. O intercâmbio e os demais serviços do Club estão previstos, mas ainda não estão disponíveis.',
+          'Não. Cada proprietário decide se contrata a gestão das locações e quais períodos quer disponibilizar.',
       },
       {
-        question: 'Preciso mudar a marca ou o projeto do meu empreendimento?',
+        question: 'Meu empreendimento precisa estar em alguma fase específica?',
         answer:
-          'Não. Marca, conceito e projeto continuam os mesmos. Branded Second Homes são outra proposta da Luxtory, para novos projetos.',
-      },
-      {
-        question: 'Já tenho parceria com outra intercambiadora. Posso conversar com a Luxtory?',
-        answer:
-          'Claro. Vamos avaliar se as propostas podem funcionar juntas, respeitando os contratos que sua incorporadora já possui.',
-      },
-      {
-        question: 'Meu empreendimento já está pronto. Posso participar?',
-        answer:
-          'Podemos conversar. A prioridade são projetos em lançamento, mas também avaliamos obras e empreendimentos entregues.',
+          'Não. A parceria pode começar em qualquer fase, do planejamento ao empreendimento entregue e em operação.',
       },
     ],
   },

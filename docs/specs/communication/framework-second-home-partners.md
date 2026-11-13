@@ -1,7 +1,7 @@
 # FRAMEWORK DE COMUNICAÇÃO — SECOND HOME PARTNERS
 
-Luxtory · versão de 2026-11-13, com o modelo comercial definido pelo fundador; substitui a versão de 2026-11-12, que não
-chegou à `main`. Documento congelado: uma nova versão substitui o arquivo inteiro. Fatos de negócio vêm sempre do `01`, do `02` e do `03`; este
+Luxtory · versão de 2026-11-13, com o modelo comercial e o refinamento de copy do fundador; substitui a versão de
+2026-11-12, que não chegou à `main`. Documento congelado: uma nova versão substitui o arquivo inteiro. Fatos de negócio vêm sempre do `01`, do `02` e do `03`; este
 Framework orienta o que dizer e como dizer.
 
 # 1. OBJETIVO
@@ -29,11 +29,11 @@ exclusividade, e concorrentes não são comparados sem evidência.
 # 3. PROTAGONISTA + CONTEXTO
 
 Diretor de incorporadora — fundador, CEO, incorporação, produto ou comercial — com empreendimento de lazer de alto
-padrão em destino turístico. Prioridade: projetos em planejamento ou lançamento; obras, empreendimentos em
-comercialização e entregues também podem conversar.
+padrão em destino turístico, em qualquer fase: planejamento, lançamento, obra, comercialização, entregue ou em
+operação.
 
-Contexto: lançamentos parecidos em projeto e amenidades; o comprador hesita em concentrar tempo e patrimônio num
-único destino.
+Contexto: empreendimentos parecidos em projeto e amenidades; o comprador hesita em concentrar tempo e patrimônio num
+único destino e teme a ociosidade do imóvel nos períodos sem uso.
 
 # 3.1 DISPOSIÇÃO PARA MUDANÇA
 
@@ -58,9 +58,9 @@ comprador, para vender com mais força e continuar gerando receita depois da ven
 - Vilão: a lógica de que um imóvel de lazer prende o comprador a um único lugar. É uma lógica, nunca uma empresa;
   concorrentes não são nomeados.
 
-Objeções esperadas: a rede ainda não funciona; o que a incorporadora ganha agora; como a participação é calculada;
-quem opera as locações; mudança de marca ou de projeto; parceria com outra intercambiadora; empreendimento já
-entregue.
+Objeções esperadas: como a parceria ajuda a vender; como a incorporadora participa dos resultados; quem opera as
+locações; se os proprietários são obrigados a disponibilizar o imóvel; se o empreendimento precisa estar numa fase
+específica. A comunicação não cria objeções que o Protagonista não tem.
 
 # 6. MATRIZ DE COMPETÊNCIA RELACIONAL — MCR
 
@@ -70,6 +70,7 @@ entregue.
 - A Luxtory diz com clareza o que existe hoje e o que ainda virá.
 - Ganho argumentos de venda e participo das receitas de gestão das locações do meu empreendimento; o Luxtory Club
   poderá ampliar essa participação.
+- Meus compradores terão como aproveitar o imóvel nos períodos sem uso, e cada um decide se quer alugar.
 
 # 6.2 CRENÇAS NÃO DESEJADAS
 
@@ -106,8 +107,8 @@ como possibilidade condicionada.
 
 # P4 — PROOF
 
-A prova é a clareza: como o Luxtory Club deve funcionar (Luxchange e Luxplus), como a parceria acontece e respostas
-diretas às objeções, inclusive sobre a participação e a operação das locações. Depoimentos, números e cases só quando existirem e forem autorizados.
+A prova é a clareza: as soluções para os proprietários — Luxchange e Luxplus, planejados no Luxtory Club, e a locação
+de temporada com gestão da Luxtory, independente do Club —, como a parceria acontece e respostas diretas às objeções. Depoimentos, números e cases só quando existirem e forem autorizados.
 
 # P5 — PUSH
 
@@ -137,8 +138,8 @@ interpretação equivocada.
 
 # 12. BRIEF NARRATIVO POR CONTEXTO
 
-Uma página, um Protagonista, sete seções: Hero, A oportunidade, Benefícios, Luxtory Club, Como funciona, Perguntas e
-Conversa.
+Uma página, um Protagonista, sete seções: Hero, A oportunidade, Benefícios, Soluções para os proprietários, Como
+funciona, Perguntas e Conversa.
 
 # 13. TESTES DE VALIDAÇÃO
 

@@ -24,16 +24,16 @@ const BLOCKS = [
   text.benefits.intro,
   ...text.benefits.items.map((item) => item.text),
   text.benefits.note,
-  text.club.intro,
-  ...text.club.items.map((item) => item.text),
-  text.club.note,
+  text.solutions.intro,
+  ...text.solutions.items.map((item) => item.text),
+  ...text.solutions.note,
   ...text.process.steps.map((step) => step.text),
   ...text.faq.items.map((item) => item.answer),
   conversation.intro,
 ];
 
-/** Exceções registradas no catalog §20.2: quatro linhas por clareza, a 390 e 1440 px. */
-const FOUR_LINE_EXCEPTIONS: readonly string[] = [text.club.intro];
+/** Exceções registradas no catalog §20.2: quatro linhas por clareza, a 390 e 1440 px (nenhuma desde 2026-11-13). */
+const FOUR_LINE_EXCEPTIONS: readonly string[] = [];
 
 /** Toda a copy visível da página (a das perguntas fica dentro dos disclosures). */
 const VISIBLE = [
@@ -44,8 +44,8 @@ const VISIBLE = [
   `${text.opportunity.title.lead}${text.opportunity.title.turn}`,
   text.benefits.marker,
   ...text.benefits.items.map((item) => item.title),
-  text.club.marker,
-  ...text.club.items.map((item) => item.label),
+  text.solutions.marker,
+  ...text.solutions.items.map((item) => item.label),
   text.process.marker,
   ...text.process.steps.map((step) => step.title),
   text.faq.title,
@@ -76,7 +76,7 @@ async function fillContact(page: Page) {
 const submitButton = (page: Page) => page.getByRole('button', { name: conversation.submit });
 
 test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, catalog §20.1–20.2)', () => {
-  test('[REQ-105] Master Copy verbatim, seções na ordem e três benefícios com o mesmo peso (D-SHP-07)', async ({
+  test('[REQ-105] Master Copy verbatim, seções na ordem, três benefícios e três soluções com o mesmo peso (D-SHP-07, D-SHP-09)', async ({
     page,
   }) => {
     const response = await page.goto(PAGE);
@@ -102,7 +102,11 @@ test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, 
     await expect(page.locator('#beneficios .lx-siblings--trio > .lx-siblings__item')).toHaveCount(
       3,
     );
-    await expect(page.locator('#luxtory-club')).not.toContainText(/loca[çc]/i);
+    // Três soluções com o mesmo peso na lista numerada; a nota separa o Club da gestão de locações (D-SHP-09).
+    await expect(page.locator('#solucoes .lx-numbered > .lx-numbered__item')).toHaveCount(3);
+    for (const line of text.solutions.note) {
+      await expect(page.locator('#solucoes .lx-section-group')).toContainText(line);
+    }
   });
 
   test('[REQ-105] CTA único leva ao formulário; o link secundário leva à oportunidade', async ({
@@ -348,7 +352,7 @@ test.describe('Second Home Partners — endpoint e portão fechado (TECH-057, ca
   }) => {
     const markers = [
       text.hero.title.lead.trim(),
-      text.club.note,
+      text.solutions.note[0] ?? '',
       conversation.title,
       text.metadata.title,
       text.metadata.description,

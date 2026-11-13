@@ -22,12 +22,12 @@
 
 | # | Frase do Framework | Âncora | Limite na copy |
 |---|---|---|---|
-| L1 | mais liberdade para os clientes `[FW-SHP: §2, §8 P1]` | `01` §1, §2; REQ-105 | o Luxtory Club e o intercâmbio aparecem sempre como futuros (“poderão”, “previstos”), com “ainda não está disponível” no hero, na nota do Club e no FAQ |
+| L1 | mais liberdade para os clientes `[FW-SHP: §2, §8 P1]` | `01` §1, §2; REQ-105 | o Luxtory Club e o intercâmbio aparecem sempre como futuros (“poderão”, “previstos”), com “ainda não está disponível” no hero e “ainda não disponíveis” na nota das soluções, sem destaque no FAQ |
 | L2 | Luxchange `[FW-SHP: §8 P4]` | BR-146, BR-190, REQ-060 | associados disponibilizam períodos e recebem créditos para solicitar estadias; créditos não são dinheiro nem garantia de disponibilidade |
 | L3 | Luxplus `[FW-SHP: §8 P4]` | BR-146, BR-240, BR-241, REQ-070 | estadias disponíveis pagas pela hospedagem, sem usar créditos |
-| L4 | gestão das locações `[FW-SHP: §8 P3, §14]` | `01` §1, §35; BR-352, BR-374 | serviço da Luxtory aos proprietários que o contratam, fora do Luxtory Club e sem Membership (`D-SHP-09`); a incorporadora não precisa operar; sem promessa de receita, ocupação ou valor aos proprietários; sem plataforma nomeada |
+| L4 | locação de temporada e gestão das locações `[FW-SHP: §8 P3, P4, §14]` | `01` §1, §35; BR-352, BR-374 | serviço da Luxtory aos proprietários que o contratam, independente do Luxtory Club e sem Membership (`D-SHP-09`); cada proprietário decide se contrata e quais períodos disponibiliza; a incorporadora não precisa operar e pode oferecer Concierge e Facilities; responde à objeção da ociosidade sem promessa de receita, ocupação ou valor aos proprietários; sem plataforma nomeada; não altera a locação das Branded Second Homes na jornada B2C |
 | L5 | participação nos resultados `[FW-SHP: §8 P3, §14]` | `01` §35, BR-352, BR-374 | benefício explícito (`D-SHP-07`): nas locações, parte da receita (comissão) de gestão da Luxtory, nunca lucro nem a parte dos proprietários (`D-SHP-08`); no Luxtory Club, só “poderá”; sem percentual, fórmula, valor, exemplo, “recorrente” ou pagamento garantido |
-| L6 | o empreendimento continua da incorporadora `[FW-SHP: §6.2]` | `01` §1, BR-053, BR-054 | marca, conceito e projeto continuam os mesmos; Branded Second Homes são outra proposta, para novos projetos |
+| L6 | o empreendimento continua da incorporadora `[FW-SHP: §6.2]` | `01` §1, BR-053, BR-054 | a página nunca chama imóveis parceiros de Second Homes nem de Branded Second Homes (“Second Home” só no nome do programa); o tema não vira pergunta no FAQ (`D-SHP-10`) |
 | L7 | CTA e destino `[FW-SHP: §8 P5]` | REQ-105 | CTA → formulário `/second-home-partner#conversa`; o envio não formaliza parceria nem garante entrada no Luxtory Club |
 
 ## 3. Posicionamento — fatos ancorados
@@ -54,17 +54,19 @@ Personagens: `[FW-SHP: §5]`. Respostas às objeções (FAQ da página):
 
 | ID | Objeção | Resposta |
 |---|---|---|
-| O1 | Como a parceria ajuda as vendas? | valor ao empreendimento e novos argumentos de venda (possibilidade, não resultado) |
-| O2 | O Luxtory Club já funciona? | não; os serviços estão previstos e ainda não disponíveis (L1) |
-| O3 | Como funciona a participação? | sai da comissão da Luxtory pela gestão das locações, sem reduzir a parte dos proprietários; o contrato define as condições (L5) |
-| O4 | Preciso mudar marca ou projeto? | não; Branded Second Homes são outra proposta, para novos projetos (L6) |
-| O5 | Já tenho outra intercambiadora | avaliação conjunta, respeitando contratos e exclusividades existentes |
-| O6 | O empreendimento já está pronto | prioridade para lançamentos; obras e entregues também são avaliados |
-| O7 | A incorporadora precisa operar as locações? | não; a Luxtory faz a gestão e contrata prestadores locais; com estrutura própria, a operação pode ser combinada (L4) |
+| O1 | Como a parceria ajuda as vendas? | ajuda a enfrentar a objeção da ociosidade: locação nos períodos sem uso e, no futuro, intercâmbio (possibilidade, não resultado; L1, L4) |
+| O3 | Como a incorporadora participa dos resultados? | parte da comissão da Luxtory pela gestão das locações do empreendimento; o Club poderá entrar depois (L5) |
+| O7 | A incorporadora precisa administrar as locações? | não; a Luxtory faz a gestão digital e coordena os prestadores locais; a incorporadora pode oferecer Concierge e Facilities (L4) |
+| O8 | Os proprietários precisam disponibilizar os imóveis? | não; cada proprietário decide se contrata a gestão e quais períodos disponibiliza (L4) |
+| O6 | O empreendimento precisa estar numa fase específica? | não; qualquer fase, do planejamento ao empreendimento entregue e em operação (`D-SHP-10`) |
+
+Fora do FAQ desde 2026-11-13 (`D-SHP-10`), respondidas na conversa comercial: O2 (o Club já funciona? — a
+indisponibilidade fica na nota das soluções), O4 (mudança de marca ou projeto — L6) e O5 (outra intercambiadora). A
+etapa inicial da parceria fica em Como funciona, sem pergunta repetida.
 
 ## 6. Crenças — MCR
 
-Crenças desejadas e não desejadas: `[FW-SHP: §6.1, §6.2]`. A nota do hero, a nota do Club e o FAQ O2 existem para
+Crenças desejadas e não desejadas: `[FW-SHP: §6.1, §6.2]`. A nota do hero e a nota das soluções existem para
 impedir a crença de acesso automático ao Club; o FAQ O3 e a nota de Benefícios impedem a leitura de lucro, valor
 garantido ou desconto na parte dos proprietários.
 
@@ -78,7 +80,7 @@ Uma página: `/second-home-partner`. Conscientização: Problem Aware → Produc
 | Hero | PICTURE `[FW-SHP: P1]` | `#inicio` |
 | A oportunidade | PROBLEM `[FW-SHP: P2]` | `#oportunidade` |
 | Benefícios | PROMISE `[FW-SHP: P3]` | `#beneficios` |
-| Luxtory Club · Como funciona · Perguntas | PROOF `[FW-SHP: P4]` | `#luxtory-club` · `#como-funciona` · `#perguntas` |
+| Soluções para os proprietários · Como funciona · Perguntas | PROOF `[FW-SHP: P4]` | `#solucoes` · `#como-funciona` · `#perguntas` |
 | Conversa | PUSH `[FW-SHP: P5]` | `#conversa` |
 
 ## 8. Tom e expressão
@@ -95,18 +97,19 @@ Tom, vocabulário e o que evitar: `[FW-SHP: §11]`. Testes de validação e regr
 |---|---|---|---|
 | D-SHP-01 | Hero “Mais valor para seu empreendimento. Mais liberdade para seus clientes.” com nota de programa em estruturação | aprovada pelo fundador em 2026-11-12 (plano v3.3) | REQ-105 |
 | D-SHP-02 | CTA único “Conversar sobre seu empreendimento” | aprovada em 2026-11-12 | REQ-105 |
-| D-SHP-03 | Sete seções: Hero, A oportunidade, Benefícios, Luxtory Club, Como funciona, Perguntas, Conversa | aprovada em 2026-11-12 | `[FW-SHP: §12]` |
+| D-SHP-03 | Sete seções: Hero, A oportunidade, Benefícios, Soluções para os proprietários (antes Luxtory Club), Como funciona, Perguntas, Conversa | aprovada em 2026-11-12; quarta seção renomeada em 2026-11-13 (`D-SHP-09`) | `[FW-SHP: §12]` |
 | D-SHP-04 | Variantes: A com participação nos resultados, B sem claims econômicos; publica-se só a autorizada, sem flag | substituída em 2026-11-13 → `D-SHP-07` | `01` §35 |
 | D-SHP-05 | Indexação: Preview e local sem indexação; fechada = 404; aberta em Production = indexável | aprovada em 2026-11-12 | REQ-105 |
 | D-SHP-06 | Hero tipográfico, sem fotografia de banco | aprovada em 2026-11-12 | `P-LX-02` |
 | D-SHP-07 | Três benefícios com o mesmo peso — diferenciação comercial, marketing e vendas, participação nos resultados —; participação nas locações como parte da proposta e no Club como possibilidade condicionada; sem percentual, fórmula, valor ou exemplo; nenhuma variante no código | aprovada pelo fundador em 2026-11-13 (modelo comercial) | `01` §35, BR-352 |
 | D-SHP-08 | Modelo A (prioritário para validação comercial): a participação incide sobre a comissão bruta de gestão efetivamente auferida pela Luxtory nas locações dos imóveis do empreendimento, depois de estornos e ajustes contratuais; não sobre o lucro líquido nem sobre a parte do proprietário; operador local, tributos e despesas são custos da Luxtory. Percentual e demais condições ficam só no contrato (repositório público: nenhum número aqui) | aprovada pelo fundador em 2026-11-13 | `01` §35 |
-| D-SHP-09 | A locação dos imóveis parceiros é a gestão digital da Luxtory, fora do Luxtory Club: a seção do Club apresenta só Luxchange e Luxplus | aprovada em 2026-11-13 (consequência do modelo A) | `01` §1, BR-146 |
+| D-SHP-09 | Soluções para os proprietários na lista numerada da Home B2C, com o mesmo peso: Luxchange e Luxplus (mecanismos planejados do Luxtory Club, para associados) e locação de temporada (gestão da Luxtory, independente do Club, contratada por cada proprietário); uma nota separa os dois casos | aprovada pelo fundador em 2026-11-13 (refinamento de copy e UX; substitui a versão do mesmo dia que tirava a locação da seção) | `01` §1, BR-146 |
+| D-SHP-10 | FAQ só com as dúvidas de uma incorporadora interessada: vendas e ociosidade, participação, operação das locações, decisão dos proprietários e fase; parceria em qualquer fase, sem prioridade para lançamentos | aprovada pelo fundador em 2026-11-13 | REQ-105 |
 
 | ID | Hipótese | Como validar |
 |---|---|---|
 | H-SHP-01 | A possibilidade de outros destinos ajuda a superar objeções e acelerar a decisão de compra | objeções registradas nos diagnósticos com incorporadoras e equipes de venda |
-| H-SHP-02 | Incorporadoras em lançamento valorizam o apoio comercial antes de o intercâmbio existir | conversão de conversas em parcerias-piloto |
+| H-SHP-02 | Incorporadoras valorizam o apoio comercial e a gestão das locações antes de o intercâmbio existir | conversão de conversas em parcerias-piloto |
 | H-SHP-03 | A participação nas receitas de gestão leva a incorporadora a apresentar a gestão das locações aos compradores (Partner-Led Growth) | adesão dos proprietários dos empreendimentos parceiros à gestão |
 
 | ID | Pendência | Bloqueia |
