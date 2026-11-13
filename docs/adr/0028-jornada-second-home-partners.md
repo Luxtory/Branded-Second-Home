@@ -33,8 +33,9 @@ permitida, `Idempotency-Key`, honeypot e logs sem PII. O fundador pediu reaprove
 5. **Porta de envio própria.** A aplicação nova declara a própria porta, com a mesma forma da porta Brand Partners; os
    adaptadores existentes (Resend e fake) são ligados só na rota. O contrato novo não importa nada de Brand Partners, e
    uma mudança incompatível no adaptador quebra o typecheck.
-6. **Variantes de copy sem flag.** O i18n leva só a variante autorizada (`D-SHP-04`): a versão sem participação nos
-   resultados até a validação jurídica e econômica (`P-SHP-01`).
+6. **Copy sem flag.** O i18n leva só a copy autorizada, sem variante no código. Em 2026-11-13 o fundador definiu o
+   modelo comercial e a página passou a comunicar a participação nos resultados (`D-SHP-07`, que substitui
+   `D-SHP-04`); nada mudou na arquitetura, no contrato ou na configuração.
 
 ## Consequences
 

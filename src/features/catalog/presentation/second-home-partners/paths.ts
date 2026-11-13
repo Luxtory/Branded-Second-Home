@@ -1,4 +1,4 @@
-/** Rota da jornada Second Home Partners (REQ-105, spec catalog §18.1) — nenhuma leva às jornadas B2C ou Brand Partners. */
+/** Rota da jornada Second Home Partners (REQ-105, spec catalog §20.1) — nenhuma leva às jornadas B2C ou Brand Partners. */
 export const secondHomePartnersPaths = {
   home: '/second-home-partner',
   /** Âncora do formulário: destino do CTA do REQ-105. */
@@ -6,7 +6,7 @@ export const secondHomePartnersPaths = {
 } as const;
 
 /**
- * Seções na ordem da Master Copy (catalog §18.2): PICTURE → PROBLEM → PROMISE → PROOF (Club, processo, perguntas) →
+ * Seções na ordem da Master Copy (catalog §20.2): PICTURE → PROBLEM → PROMISE → PROOF (Club, processo, perguntas) →
  * PUSH; o E2E lê a ordem pelos `id`.
  */
 export const SECOND_HOME_PARTNERS_SECTIONS = [

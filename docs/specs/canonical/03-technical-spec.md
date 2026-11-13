@@ -8,7 +8,7 @@ Revisão Second Home Partners autorizada pelo fundador (2026-11-12): a TECH-057 
 Second Home Partners do REQ-105 (`POST /v1/second-home-partner-contacts`), com portão, contrato, destinatário e
 namespace próprios; transporte, controles e semântica de sucesso inalterados. Demais regras da v3.16 preservadas.
 Decisão em [ADR-0028](../../adr/0028-jornada-second-home-partners.md); aceite em
-[`catalog` §18](../catalog.md#18-second-home-partners-público-shp1).
+[`catalog` §20](../catalog.md#20-second-home-partners-público-shp1).
 
 Revisão W13 autorizada pelo fundador (2026-11-03): implementa o REQ-084 do `02` v4.4. A TECH-022 distingue a
 invalidação de reserva não autorizada do cancelamento; a TECH-026 delimita a `correction` à reversão do consumo de

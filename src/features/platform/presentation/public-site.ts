@@ -20,7 +20,7 @@ export function isBrandPartnersSiteOpen(source?: EnvSource): boolean {
 }
 
 /**
- * Portão da jornada Second Home Partners (SHP1, spec catalog §18.1), independente de `PUBLIC_SITE` e do portão Brand
+ * Portão da jornada Second Home Partners (SHP1, spec catalog §20.1), independente de `PUBLIC_SITE` e do portão Brand
  * Partners: `closed` fecha em qualquer ambiente; ausente, só Production fica fechada (go-live com `open`). Fechado,
  * página, metadados e endpoint respondem 404.
  */

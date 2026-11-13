@@ -4,7 +4,7 @@ import { secondHomePartnersMessages as text } from '../i18n/second-home-partners
 import { secondHomePartnersPaths } from './paths';
 
 /**
- * SEO da página (spec catalog §18.1, `D-SHP-05`): canonical, title, description e metadados sociais da copy aprovada;
+ * SEO da página (spec catalog §20.1, `D-SHP-05`): canonical, title, description e metadados sociais da copy aprovada;
  * sem imagem social nem dados estruturados (não há prova, case ou parceiro para declarar). Fora de Production — Preview,
  * local e CI — a página não é indexável; fechada, o portão responde 404 antes de qualquer metadado.
  */

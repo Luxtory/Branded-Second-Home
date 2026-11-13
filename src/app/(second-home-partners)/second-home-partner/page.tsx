@@ -4,7 +4,7 @@ import { secondHomePartnersMetadata } from '@/features/catalog/presentation/seco
 import { isSecondHomePartnersSiteOpen } from '@/features/platform';
 
 // O layout do grupo renderiza em paralelo com a página e com os metadados: sem o portão aqui também, o 404 fechado
-// levaria a copy e os metadados da SHP1 no payload (spec catalog §18.1).
+// levaria a copy e os metadados da SHP1 no payload (spec catalog §20.1).
 export default function SecondHomePartnersRoute() {
   if (!isSecondHomePartnersSiteOpen()) notFound();
   return <SecondHomePartnersHomePage />;

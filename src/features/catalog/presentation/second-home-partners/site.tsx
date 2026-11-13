@@ -6,7 +6,7 @@ import { secondHomePartnersPaths } from './paths';
 const anchor = (section: string) => `${secondHomePartnersPaths.home}#${section}`;
 
 /**
- * Casca da jornada Second Home Partners (REQ-105, spec catalog §18.1): o mesmo `SiteShell` do Core, com logo, menu e
+ * Casca da jornada Second Home Partners (REQ-105, spec catalog §20.1): o mesmo `SiteShell` do Core, com logo, menu e
  * rodapé só para a própria página — Benefícios, Como funciona, Perguntas e a ação Conversar. Sem links para B2C, Brand
  * Partners ou Sobre (`D-LX-13`). Header sólido (Hero tipográfico); títulos no papel de headline da superfície (Warm Sand
  * em Deep e Blue) e o Hero da página como teto tipográfico, como no B2B.

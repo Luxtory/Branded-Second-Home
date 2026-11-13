@@ -14,10 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Second Home Partners (SHP1, REQ-105, spec `catalog` §18, ADR-0028): página `/second-home-partner` para incorporadoras
-  de empreendimentos de lazer, com benefícios comerciais, explicação do Luxtory Club como modelo previsto (Luxchange,
-  Luxplus e locação, ainda não disponíveis) e formulário próprio de contato, separado do Brand Partners. Publicada a
-  versão sem participação nos resultados, até a validação jurídica e econômica. **Fechada em Production** até a
+- Second Home Partners (SHP1, REQ-105, spec `catalog` §20, ADR-0028): página `/second-home-partner` para incorporadoras
+  de empreendimentos de lazer, com três benefícios — diferenciação comercial, marketing e vendas e participação nos
+  resultados (nas receitas de gestão das locações do empreendimento e, como possibilidade, no Luxtory Club), sem
+  percentuais nem valores —, explicação do Luxtory Club como modelo previsto (Luxchange e Luxplus, ainda não
+  disponíveis) e formulário próprio de contato, separado do Brand Partners. **Fechada em Production** até a
   autorização do fundador.
 - Reserva de uso próprio (W12, spec `booking`, ADR-0026): na Área do Titular, Owner e Co-Owner reservam noites de uso
   próprio num período contínuo — o Co-Owner dentro da própria janela e do saldo do Direito de Uso por categoria, em

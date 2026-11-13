@@ -1815,15 +1815,17 @@ registra `app.second_home_operation_start`. O command de ownership conduz a mesm
 SPE, Ações, holdings e grants; nenhuma dessas etapas atualiza a raiz ou cria segunda persistência dos fatos. O relógio
 da elegibilidade é relido depois de todos os locks, conservando a versão original aprovada e a Home Edition finalizada.
 
-## 18. Second Home Partners público (SHP1)
+## 20. Second Home Partners público (SHP1)
 
-Plano v3.3 aprovado pelo fundador em 2026-11-12. Comportamento e limites: `02` REQ-105; arquitetura: `03` TECH-057
-(estendida); decisão: [ADR-0028](../adr/0028-jornada-second-home-partners.md). Comunicação:
-[aplicação Second Home Partners](communication/second-home-partners.md) (L1–L7, `D-SHP-01`–`D-SHP-06`) e
+Plano v3.3 aprovado pelo fundador em 2026-11-12; modelo comercial definido pelo fundador em 2026-11-13 (gestão digital
+de locações e participação da incorporadora nos resultados). Comportamento e limites: `02` REQ-105; arquitetura: `03`
+TECH-057 (estendida); decisão: [ADR-0028](../adr/0028-jornada-second-home-partners.md). Comunicação:
+[aplicação Second Home Partners](communication/second-home-partners.md) (L1–L7, `D-SHP-01`–`D-SHP-09`) e
 [Framework congelado](communication/framework-second-home-partners.md). Fatos da frente: `01` §1 e §35. Nada desta
 seção afilia imóveis, cria Membership para proprietários parceiros ou ativa mecanismo do Luxtory Club (Escopo B).
+Numerada §20 porque §18 e §19 são da W6 e da W8.
 
-### 18.1 Jornada, navegação e publicação
+### 20.1 Jornada, navegação e publicação
 
 | Rota | Conteúdo | Destino do CTA |
 |---|---|---|
@@ -1838,20 +1840,22 @@ Production fica fechada. Fechado → página, metadados e endpoint 404, sem copy
 (`D-SHP-05`): Preview e local `noindex`; Production aberta indexável, com canonical, title, description e Open Graph,
 sem imagem social nem dados estruturados.
 
-### 18.2 Brief da página
+### 20.2 Brief da página
 
 Protagonista, conscientização e 5Ps: [aplicação §7](communication/second-home-partners.md#7-jornada-e-5ps). Copy
-final, verbatim, em `catalog/presentation/i18n/second-home-partners-pt-br.ts` (fonte única). A versão publicada é a B
-(`D-SHP-04`): sem menção a receita ou participação até `P-SHP-01`.
+final, verbatim, em `catalog/presentation/i18n/second-home-partners-pt-br.ts` (fonte única). Desde 2026-11-13 a página
+comunica a participação nos resultados (`D-SHP-07`, substitui `D-SHP-04`): três benefícios com o mesmo peso; a
+participação nas receitas de gestão das locações é parte da proposta e a do Luxtory Club é possibilidade condicionada.
+Sem percentual, fórmula, valor, exemplo, plataforma nomeada ou garantia de pagamento.
 
 | Seção | Função · pergunta respondida | Composição (Core DS) | Fatos |
 |---|---|---|---|
 | Hero `#inicio` · Deep | PICTURE · o que é e por que importa | `lx-hero--typographic`, H1 `lx-headline--home-hero`, CTA primário, link para `#oportunidade`, nota de programa em estruturação | REQ-105; L1 |
 | A oportunidade `#oportunidade` · White | PROBLEM · por que isso ajuda a vender | `lx-section-head` + `lx-stack--editorial` | L1; `H-SHP-01` como hipótese |
-| Benefícios `#beneficios` · Wash | PROMISE · o que a incorporadora ganha | `lx-siblings--pair` (versão B) ou `--trio` (versão A) + `lx-section-note` | `01` §1; L5 |
-| Luxtory Club `#luxtory-club` · White | PROOF · como o Club deve funcionar | `lx-answers` (rótulo + texto) + `lx-section-note` | L1–L4 |
+| Benefícios `#beneficios` · Wash | PROMISE · o que a incorporadora ganha | `lx-siblings--trio` (diferenciação, marketing e vendas, participação) + `lx-section-note` | `01` §1, §35; L4, L5 |
+| Luxtory Club `#luxtory-club` · White | PROOF · como o Club deve funcionar | `lx-answers` (Luxchange e Luxplus) + `lx-section-note`; a locação dos imóveis parceiros não aparece aqui (`D-SHP-09`) | L1–L3 |
 | Como funciona `#como-funciona` · Blue | PROOF · o que acontece depois do contato | `lx-steps--four` + CTA | REQ-105 |
-| Perguntas `#perguntas` · Wash | PROOF · objeções O1–O6 | `lx-faq` + `lx-disclosure` | L1, L5, L6 |
+| Perguntas `#perguntas` · Wash | PROOF · objeções O1–O7 | `lx-faq` + `lx-disclosure` | L1, L4–L6 |
 | Conversa `#conversa` · White | PUSH · como começar | `lx-columns--aside`: introdução → formulário → aviso e privacidade | REQ-105 |
 
 Concisão: cada parágrafo, card, etapa, linha do Club e resposta com no máximo 3 linhas a 390 e a 1440 px e 4 a 320 px,
@@ -1861,7 +1865,11 @@ texto da aprovação final do fundador, ocupa 4 linhas a 390 px no papel de subh
 a 1440 px). Fica assim por clareza: separa a rede planejada de Second Homes da entrada, ainda em estruturação, dos
 imóveis parceiros.
 
-### 18.3 Formulário
+Fora do escopo da SHP1 (especificação e aprovação próprias, `02` §18): gestão das locações em software, apuração e
+pagamento da participação, split financeiro, taxa de limpeza, integração com plataformas de locação, cadastro de
+parceiros e qualquer mecanismo do Luxtory Club para imóveis parceiros.
+
+### 20.3 Formulário
 
 | Campo | Tipo | Regra |
 |---|---|---|
@@ -1878,7 +1886,7 @@ Schema Zod fechado, o mesmo no servidor e no navegador. Estados acessíveis, ret
 mensagem própria para a fase: “Selecione a fase do empreendimento.” O e-mail interno tem assunto “Second Home Partners
 — mensagem pelo site”, rótulos do formulário e texto simples determinístico.
 
-### 18.4 Processamento, configuração e isolamento
+### 20.4 Processamento, configuração e isolamento
 
 `POST /v1/second-home-partner-contacts` (OpenAPI `createSecondHomePartnerContact`) segue a ordem e as respostas de
 §14.4: portão e configuração → origem → tipo e corpo de até 32 KiB → limitador → schema, chave e honeypot → envio.
@@ -1892,10 +1900,10 @@ Isolamento provado em teste: portões independentes; esgotar o limite de uma jor
 `Idempotency-Key` nos dois endpoints não gera 409 cruzado; assunto e destinatário próprios; falta de
 `SECOND_HOME_PARTNERS_CONTACT_TO` recusa só o endpoint novo (503), com a página e Brand Partners funcionando.
 
-### 18.5 Critérios de aceite SHP1
+### 20.5 Critérios de aceite SHP1
 
-- Copy renderizada idêntica ao i18n e na ordem do §18.2; nada da versão A; varreduras de terminologia, ontologia e
-  claims verdes.
+- Copy renderizada idêntica ao i18n e na ordem do §20.2; três benefícios em trio; participação sem percentual, número
+  ou valor; nenhuma locação na seção do Club; varreduras de terminologia, ontologia e claims verdes.
 - axe 0 a 390 e 1440 px; sem overflow horizontal de 320 a 1920 px; H1 inteiro a 320 × 568; contraste AA dos títulos
   em Deep e Blue; formulário completo com teclado e com toque a 390 px; reflow a 200%.
 - Endpoint: origem 403, tipo 415, corpo 413, schema 400, honeypot 403, limite 429, provedor 503, replay 202, conflito

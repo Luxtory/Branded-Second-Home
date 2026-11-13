@@ -123,7 +123,7 @@ function requestBody(values: Values, trap: string) {
 }
 
 /**
- * Formulário “Seu empreendimento pode fazer parte dessa história.” (REQ-105, spec catalog §18.3). Estados: inicial →
+ * Formulário “Seu empreendimento pode fazer parte dessa história.” (REQ-105, spec catalog §20.3). Estados: inicial →
  * validação → enviando → aceite confirmado ou erro. O mesmo schema do servidor dá o feedback; foco no primeiro erro,
  * resumo acessível e região viva. Os dados e a `Idempotency-Key` ficam só na memória desta interação — nunca em URL,
  * cookie ou storage: falha preserva ambos (retry com a mesma chave e o mesmo conteúdo); sucesso limpa e encerra.

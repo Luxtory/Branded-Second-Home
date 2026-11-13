@@ -42,7 +42,7 @@ tags:
       com a Luxtory. Sem conta, sem persistência do contato e sem CRM; não cria Brand Partner, grant nem vínculo.
   - name: second-home-partners
     description: |
-      Jornada pública Second Home Partners (REQ-105, TECH-057; `docs/specs/catalog.md` §18, ADR-0028): contato de
+      Jornada pública Second Home Partners (REQ-105, TECH-057; `docs/specs/catalog.md` §20, ADR-0028): contato de
       incorporadoras para iniciar uma conversa com a Luxtory. Sem conta, sem persistência e sem CRM; não cria parceria,
       afiliação nem adesão ao Luxtory Club.
   - name: ownership
@@ -1972,7 +1972,7 @@ paths:
       tags: [second-home-partners]
       summary: Envia a mensagem do formulário Second Home Partners à caixa corporativa (REQ-105)
       description: |
-        Público e sem conta (TECH-057 estendida pelo REQ-105, spec `catalog` §18, ADR-0028). Mesma ordem, controles e
+        Público e sem conta (TECH-057 estendida pelo REQ-105, spec `catalog` §20, ADR-0028). Mesma ordem, controles e
         semântica do `createBrandPartnerContact`: publicação (`SECOND_HOME_PARTNERS_SITE`) e configuração → `Origin`
         exata de um domínio permitido do ambiente → tipo de conteúdo e corpo de até 32 KiB efetivos → limite distribuído
         por origem de rede e global, em namespace próprio → schema fechado, `Idempotency-Key` e honeypot → envio pelo
@@ -3012,7 +3012,7 @@ components:
     SecondHomePartnerContactRequest:
       type: object
       description: |
-        Campos autorizados pelo REQ-105 (spec `catalog` §18.3). Sem CNPJ, telefone, valores, documentos ou dados de
+        Campos autorizados pelo REQ-105 (spec `catalog` §20.3). Sem CNPJ, telefone, valores, documentos ou dados de
         compradores. `_trap` é o honeypot técnico: ausente ou vazio; preenchido → `403` sem envio.
       additionalProperties: false
       required: [name, company, email, development, stage]

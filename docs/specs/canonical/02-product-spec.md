@@ -1,12 +1,13 @@
 # 02 — Product Spec — Luxtory Branded Second Home
 
-2026-11-12 · Luxtory (fundador) · Versão 4.5 — final · Base normativa: 01 v10.5 (192 BRs) · PD-001 a PD-011 ratificados
+2026-11-13 · Luxtory (fundador) · Versão 4.5 — final · Base normativa: 01 v10.5 (192 BRs) · PD-001 a PD-011 ratificados
 
-Revisão Second Home Partners autorizada pelo fundador (2026-11-12): acrescenta o REQ-105 — jornada pública Second Home
-Partners e formulário de incorporadoras — e a linha correspondente no §2, sem alterar Business Rules, PDs ou
-invariantes; a matriz BR → REQ registra o REQ-105 nas BR-040, BR-041 e BR-374. Numeração sequencial depois do REQ-104,
-porque a faixa do §6 está completa. Rastreabilidade técnica em `03` v3.17 (TECH-057); aceite em
-[`catalog` §18](../catalog.md#18-second-home-partners-público-shp1). Total normativo: **67 REQ · 6 INV · 11 PD**.
+Revisão Second Home Partners autorizada pelo fundador (2026-11-12; comunicação do modelo comercial em 2026-11-13, antes
+da emissão): acrescenta o REQ-105 — jornada pública Second Home Partners e formulário de incorporadoras — e a linha
+correspondente no §2, sem alterar Business Rules, PDs ou invariantes; a matriz BR → REQ registra o REQ-105 nas BR-040,
+BR-041 e BR-374. Numeração sequencial depois do REQ-104, porque a faixa do §6 está completa. Rastreabilidade técnica em
+`03` v3.17 (TECH-057); aceite em [`catalog` §20](../catalog.md#20-second-home-partners-público-shp1). Total normativo:
+**67 REQ · 6 INV · 11 PD**.
 Emitida com o merge do PR da SHP1.
 
 Revisão W13 autorizada pelo fundador (2026-11-03): acrescenta à v4.3 o REQ-084 — invalidação de reserva de uso
@@ -213,8 +214,10 @@ entregue ou em operação. Não solicita CNPJ, telefone, valores, documentos ou 
 condições de aceite, falha e nova tentativa do REQ-028. A submissão inicia conversa: não constitui parceria,
 afiliação, adesão ao Luxtory Club, conta ou cadastro, e não cria CRM nem histórico na aplicação. O propósito
 comunicado é: **“Usaremos seus dados somente para responder ao contato e avaliar uma possível parceria.”** Não há uso
-de marketing sem autorização. Remuneração, percentuais e condições econômicas só aparecem na página depois de
-validação jurídica e econômica (`01` §35).
+de marketing sem autorização. A página PODE comunicar, como benefício, a participação da incorporadora nas receitas de
+gestão das locações originadas pelo empreendimento e, como possibilidade condicionada, nos resultados de serviços do
+Luxtory Club (`01` §1 e §35), sem percentuais, fórmulas, valores, exemplos ou garantia de pagamento; as condições
+econômicas ficam no contrato.
 
 ## 7. Direito de Uso, calendário e capacidade
 
@@ -497,7 +500,9 @@ não declara nenhum dos dois requisitos entregue em software. O restante do B2C 
 pausado no roadmap, sem remover seu escopo normativo.
 
 **Recorte SHP1 (2026-11-12):** REQ-105 entra em software na SHP1. Não autoriza afiliação de imóveis, Membership de
-proprietários parceiros nem qualquer mecanismo do Luxtory Club para esses imóveis.
+proprietários parceiros nem qualquer mecanismo do Luxtory Club para esses imóveis. A gestão digital de locações e a
+participação da incorporadora (`01` §1 e §35) não são executadas por software na SHP1: apuração, pagamento, split e
+integração com plataformas de locação dependem de requisito próprio.
 
 **Recorte M0 (2026-10-19):** a ontologia Home Concept → Home Edition → Second Home, o modelo da Home Edition, a
 média projetada de investimento e a correção estrutural da manifestação de interesse do REQ-022 entram em software

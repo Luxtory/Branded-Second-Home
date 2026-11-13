@@ -161,7 +161,7 @@ describe('POST /v1/second-home-partner-contacts — aceite (REQ-105, TECH-057)',
   });
 });
 
-describe('POST /v1/second-home-partner-contacts — publicação e configuração (catalog §18.1, §18.4)', () => {
+describe('POST /v1/second-home-partner-contacts — publicação e configuração (catalog §20.1, §20.4)', () => {
   it('[REQ-105] superfície fechada = 404, independente de PUBLIC_SITE e do portão Brand Partners', async () => {
     for (const env of [
       { ...ENV, SECOND_HOME_PARTNERS_SITE: 'closed', BRAND_PARTNERS_SITE: 'open' },
@@ -187,7 +187,7 @@ describe('POST /v1/second-home-partner-contacts — publicação e configuraçã
   });
 });
 
-describe('POST /v1/second-home-partner-contacts — borda e abuso (catalog §18.3–18.4)', () => {
+describe('POST /v1/second-home-partner-contacts — borda e abuso (catalog §20.3–20.4)', () => {
   it('[TECH-057] Origin ausente ou de outro domínio = 403; tipo diferente de JSON = 415; corpo acima de 32 KiB = 413', async () => {
     const { call, mailer } = setup();
 

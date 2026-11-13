@@ -30,7 +30,7 @@ describe('portão da escrita de interesse (W5)', () => {
   });
 });
 
-// Portão da jornada Second Home Partners (SHP1, spec catalog §18.1): independente do site público e do Brand Partners.
+// Portão da jornada Second Home Partners (SHP1, spec catalog §20.1): independente do site público e do Brand Partners.
 describe('portão da jornada Second Home Partners (SHP1)', () => {
   it('[REQ-105] Production fica fechada sem SECOND_HOME_PARTNERS_SITE=open, mesmo com os outros portões abertos', () => {
     const production = {

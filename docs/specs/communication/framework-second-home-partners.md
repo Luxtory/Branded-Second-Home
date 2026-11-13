@@ -1,7 +1,7 @@
 # FRAMEWORK DE COMUNICAÇÃO — SECOND HOME PARTNERS
 
-Luxtory · versão de 2026-11-12, aprovada pelo fundador com o plano da página `/second-home-partner`. Documento
-congelado: uma nova versão substitui o arquivo inteiro. Fatos de negócio vêm sempre do `01`, do `02` e do `03`; este
+Luxtory · versão de 2026-11-13, com o modelo comercial definido pelo fundador; substitui a versão de 2026-11-12, que não
+chegou à `main`. Documento congelado: uma nova versão substitui o arquivo inteiro. Fatos de negócio vêm sempre do `01`, do `02` e do `03`; este
 Framework orienta o que dizer e como dizer.
 
 # 1. OBJETIVO
@@ -11,14 +11,20 @@ vende Membership, não anuncia imóveis, não opera reservas e não apresenta um
 
 # 2. POSICIONAMENTO DA MARCA
 
-Para incorporadoras de empreendimentos de lazer de alto padrão, a Luxtory é a parceira que acrescenta valor percebido
-ao empreendimento e força à venda, com a perspectiva futura de mais liberdade para os compradores pelo Luxtory Club.
+Para incorporadoras de empreendimentos de lazer de alto padrão, a Luxtory é a parceira de longo prazo que acrescenta
+valor percebido ao empreendimento e força à venda, e que divide com a incorporadora as receitas que os clientes e os
+empreendimentos conectados geram depois da venda, com a perspectiva futura de mais liberdade para os compradores pelo
+Luxtory Club.
+
+Tese: incorporadoras como parceiras de distribuição, com incentivos econômicos alinhados. O crescimento combina a
+distribuição pelas incorporadoras (Partner-Led Growth) com a adoção futura dos serviços (Product-Led Growth).
 
 Proposta de valor: “Mais valor para seu empreendimento. Mais liberdade para seus clientes.”
 
 Diferenciais defensáveis: profundidade de produto e narrativa, foco no Brasil, caminho para Branded Second Homes em
-novos projetos e clareza sobre o que existe hoje e o que ainda será construído. Intercâmbio, materiais de venda e
-operação existem em outras redes: nada disso é apresentado como exclusividade.
+novos projetos e clareza sobre o que existe hoje e o que ainda será construído. Intercâmbio, materiais de venda,
+gestão de locações, operação e participação de parceiros existem em outras redes: nada disso é apresentado como
+exclusividade, e concorrentes não são comparados sem evidência.
 
 # 3. PROTAGONISTA + CONTEXTO
 
@@ -42,7 +48,7 @@ endereço, e a Luxtory ajuda a transformar isso em argumento de venda.
 # 4.1 JOB TO BE DONE — JTBD
 
 Quando lanço um empreendimento de lazer, quero argumentos que diferenciem o produto e respondam às objeções do
-comprador, para vender com mais força e, se possível, criar uma nova fonte de receita.
+comprador, para vender com mais força e continuar gerando receita depois da venda.
 
 # 5. PERSONAGENS
 
@@ -52,8 +58,9 @@ comprador, para vender com mais força e, se possível, criar uma nova fonte de 
 - Vilão: a lógica de que um imóvel de lazer prende o comprador a um único lugar. É uma lógica, nunca uma empresa;
   concorrentes não são nomeados.
 
-Objeções esperadas: a rede ainda não funciona; o que a incorporadora ganha agora; como a Luxtory é remunerada;
-mudança de marca ou de projeto; parceria com outra intercambiadora; empreendimento já entregue.
+Objeções esperadas: a rede ainda não funciona; o que a incorporadora ganha agora; como a participação é calculada;
+quem opera as locações; mudança de marca ou de projeto; parceria com outra intercambiadora; empreendimento já
+entregue.
 
 # 6. MATRIZ DE COMPETÊNCIA RELACIONAL — MCR
 
@@ -61,12 +68,15 @@ mudança de marca ou de projeto; parceria com outra intercambiadora; empreendime
 
 - A parceria acrescenta valor ao meu empreendimento sem mudar marca, conceito ou projeto.
 - A Luxtory diz com clareza o que existe hoje e o que ainda virá.
-- Posso ganhar argumentos de venda e uma possível nova fonte de receita.
+- Ganho argumentos de venda e participo das receitas de gestão das locações do meu empreendimento; o Luxtory Club
+  poderá ampliar essa participação.
 
 # 6.2 CRENÇAS NÃO DESEJADAS
 
 - Meus compradores já terão acesso automático ao Luxtory Club.
 - A Luxtory garante vendas, receitas ou estadias.
+- A participação é sobre o lucro da Luxtory ou sai da parte dos proprietários.
+- Minha incorporadora terá de operar as locações.
 - Meu empreendimento vira uma Branded Second Home.
 
 # 7. CONSCIENTIZAÇÃO — EUGENE SCHWARTZ
@@ -90,13 +100,14 @@ na decisão.
 
 # P3 — PROMISE
 
-Três benefícios: diferenciação comercial, marketing e vendas, participação nos resultados. O último só aparece depois
-da validação jurídica e econômica do modelo.
+Três benefícios com o mesmo peso: diferenciação comercial, marketing e vendas, participação nos resultados. A
+participação é explícita: nas receitas de gestão das locações, como parte da proposta; nos serviços do Luxtory Club,
+como possibilidade condicionada.
 
 # P4 — PROOF
 
-A prova é a clareza: como o Luxtory Club deve funcionar (Luxchange, Luxplus e locação), como a parceria acontece e
-respostas diretas às objeções. Depoimentos, números e cases só quando existirem e forem autorizados.
+A prova é a clareza: como o Luxtory Club deve funcionar (Luxchange e Luxplus), como a parceria acontece e respostas
+diretas às objeções, inclusive sobre a participação e a operação das locações. Depoimentos, números e cases só quando existirem e forem autorizados.
 
 # P5 — PUSH
 
@@ -117,10 +128,11 @@ Como uma pessoa experiente explicaria a oportunidade numa reunião com um direto
 elegante e persuasivo, sem jargão jurídico ou técnico e sem exagero comercial.
 
 Vocabulário: “associados” para quem participa do Luxtory Club; “proprietários” quando o assunto são direitos sobre o
-imóvel; “compradores” ou “clientes” na venda; “participação nos resultados”; “novas possibilidades de viagem”.
+imóvel; “compradores” ou “clientes” na venda; “participação nos resultados”; “receita de gestão das locações”;
+“novas possibilidades de viagem”.
 
 Evitar: “proprietários elegíveis”, “resultados elegíveis”, “ativação futura”, “capacidade de inventário”,
-“comunidade” e “recorrente” como promessa de pagamento. Condições como “conforme contrato” aparecem só onde evitam uma
+“comunidade”, “lucro”, “renda” e “recorrente” como promessa de pagamento. Condições como “conforme contrato” aparecem só onde evitam uma
 interpretação equivocada.
 
 # 12. BRIEF NARRATIVO POR CONTEXTO
@@ -130,7 +142,7 @@ Conversa.
 
 # 13. TESTES DE VALIDAÇÃO
 
-1. Em poucos segundos, o diretor entende o valor para os compradores, para as vendas e a possível receita?
+1. Em poucos segundos, o diretor entende o valor para os compradores, para as vendas e a participação nos resultados?
 2. Algum benefício futuro parece disponível hoje?
 3. Alguma frase promete vendas, receitas, valorização ou estadias?
 4. A diferença entre imóvel parceiro e Branded Second Home está clara?
@@ -140,10 +152,11 @@ Conversa.
 # 14. REGRAS DE EXECUÇÃO
 
 - Benefícios futuros sempre como possibilidade (“poderá”, “futuro”, “previsto”).
-- Participação econômica só depois da validação jurídica e econômica; nunca percentual, fórmula ou pagamento
-  garantido.
+- Participação econômica explícita, sem percentual, fórmula, valor, exemplo, plataforma nomeada ou pagamento
+  garantido; receita de gestão nunca é chamada de lucro; a participação no Club só como possibilidade.
 - “Acelerar a decisão de compra” é hipótese (“pode ajudar”), nunca resultado.
-- Créditos (Luxchange), estadias pagas (Luxplus) e locação são mecanismos diferentes e não se confundem.
+- Créditos (Luxchange), estadias pagas (Luxplus) e gestão das locações são mecanismos diferentes e não se confundem;
+  a gestão das locações dos imóveis parceiros não é mecanismo do Luxtory Club.
 - Sem truncamento, fonte reduzida ou quebra forçada para caber.
 
 # 15. INPUT MÍNIMO

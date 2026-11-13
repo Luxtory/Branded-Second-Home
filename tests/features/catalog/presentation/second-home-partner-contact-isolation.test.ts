@@ -5,7 +5,7 @@ import { createSecondHomePartnerContactRoute } from '@/features/catalog/presenta
 import { createMemoryRateLimiter, withRoute } from '@/features/platform';
 import { captureLogger } from '../../../support/capture-logger';
 
-// Isolamento entre os contatos Brand Partners e Second Home Partners (ADR-0028, catalog §18.4): as chaves de
+// Isolamento entre os contatos Brand Partners e Second Home Partners (ADR-0028, catalog §20.4): as chaves de
 // configuração são compartilhadas, mas portões, contadores, chaves de idempotência, destinatários e falhas não.
 
 const upstashNamespaces = vi.hoisted(() => [] as string[]);

@@ -1,5 +1,5 @@
 /**
- * Contato público Second Home Partners (REQ-105, TECH-057, spec catalog §18.3–18.4): os campos autorizados e o e-mail
+ * Contato público Second Home Partners (REQ-105, TECH-057, spec catalog §20.3–20.4): os campos autorizados e o e-mail
  * determinístico enviado à caixa corporativa da jornada. Nenhum dado é persistido; a submissão não cria parceria,
  * afiliação, adesão ao Luxtory Club, conta ou cadastro.
  */
@@ -24,7 +24,7 @@ export type DevelopmentStage = (typeof DEVELOPMENT_STAGES)[number];
 
 type TextField = Exclude<SecondHomePartnerContactField, 'stage'>;
 
-/** Limites em pontos de código Unicode, depois do trim (§18.3). */
+/** Limites em pontos de código Unicode, depois do trim (§20.3). */
 export const SECOND_HOME_PARTNER_CONTACT_LIMITS: Readonly<Record<TextField, number>> = {
   name: 120,
   company: 200,
@@ -34,7 +34,7 @@ export const SECOND_HOME_PARTNER_CONTACT_LIMITS: Readonly<Record<TextField, numb
   website: 500,
 };
 
-/** Corpo efetivo máximo do request (§18.4): 32 KiB. */
+/** Corpo efetivo máximo do request (§20.4): 32 KiB. */
 export const SECOND_HOME_PARTNER_CONTACT_BODY_MAX_BYTES = 32 * 1024;
 
 export interface SecondHomePartnerContact {

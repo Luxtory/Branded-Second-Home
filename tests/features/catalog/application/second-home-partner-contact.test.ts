@@ -6,7 +6,7 @@ import {
 import { composeSecondHomePartnerContactEmail } from '@/features/catalog/domain/second-home-partner-contact';
 import { secondHomePartnersMessages } from '@/features/catalog/presentation/i18n/second-home-partners-pt-br';
 
-// Contrato do formulário Second Home Partners (REQ-105, spec catalog §18.3): bordas que a rota não isola.
+// Contrato do formulário Second Home Partners (REQ-105, spec catalog §20.3): bordas que a rota não isola.
 
 const VALID = {
   name: 'Ana',

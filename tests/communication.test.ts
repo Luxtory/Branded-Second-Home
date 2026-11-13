@@ -58,8 +58,8 @@ const JOURNEYS = [
   {
     mark: 'FW-SHP',
     framework: join(DIR, 'framework-second-home-partners.md'),
-    // Versão de 2026-11-12 (fundador; plano v3.3 da página /second-home-partner, ADR-0028).
-    sha256: 'd7ce75f66f3c43b1abc3b4eb88384394b4260f0eee65e2382e85c3ccc3dc79de',
+    // Versão de 2026-11-13 (fundador; plano v3.3 + modelo comercial da página /second-home-partner, ADR-0028).
+    sha256: '2f7c2a2c39d98294f4ad4e66ea18e51e247d92c221a55eeb628120346d961e28',
     application: SECOND_HOME_PARTNERS,
     sections: APPLICATION_SECTIONS,
     anchors: ['Conversar sobre seu empreendimento', 'Problem Aware → Product Aware'],

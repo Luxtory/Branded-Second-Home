@@ -68,7 +68,7 @@ pendência (`P-*`) e só a parte dependente fica bloqueada.
 | [`communication/b2c.md`](communication/b2c.md) | aplicação do Framework B2C: limites canônicos, objeções com IDs, mapa de páginas e registro (Owner e Co-Owner como modalidades do mesmo Protagonista) |
 | [`communication/framework-brand-partners.md`](communication/framework-brand-partners.md) | Framework Mestre de Estratégia de Comunicação Brand Partners — Luxtory Branded Second Home, recebido em 2026-10-01, cópia byte a byte (sha256 `b97c8ae37dc911d7fa17d947f7fa5f622c17bd30e913bd672f46bd68ac2364a7`, fixado em teste). Congelado: nunca é editado |
 | [`communication/brand-partners.md`](communication/brand-partners.md) | aplicação do Framework Brand Partners: limites canônicos, objeções com IDs, mapa de páginas e registro |
-| [`communication/framework-second-home-partners.md`](communication/framework-second-home-partners.md) | Framework de Comunicação Second Home Partners, aprovado pelo fundador em 2026-11-12 com o plano da página `/second-home-partner` (sha256 fixado em teste). Congelado: nova versão troca o arquivo inteiro ([ADR-0028](../adr/0028-jornada-second-home-partners.md)) |
+| [`communication/framework-second-home-partners.md`](communication/framework-second-home-partners.md) | Framework de Comunicação Second Home Partners, aprovado pelo fundador em 2026-11-12 com o plano da página `/second-home-partner`; versão de 2026-11-13 com o modelo comercial (sha256 fixado em teste). Congelado: nova versão troca o arquivo inteiro ([ADR-0028](../adr/0028-jornada-second-home-partners.md)) |
 | [`communication/second-home-partners.md`](communication/second-home-partners.md) | aplicação do Framework Second Home Partners: limites canônicos, objeções com IDs, mapa da página e registro |
 | [`communication/luxtory.md`](communication/luxtory.md) | guardrails, fatos e nomenclatura de todas as jornadas |
 | [`communication/framework-mestre.md`](communication/framework-mestre.md) | método genérico da W3B, substituído pelos Frameworks das jornadas (ADR-0013); não vale para nenhuma jornada |
@@ -102,7 +102,7 @@ arranjo (Framework congelado + aplicação), sem tocar nos demais. Até lá, nad
 - **B2C é um único Protagonista:** Owner e Co-Owner são modalidades do mesmo adquirente final (BR-005), com peso
   equivalente (REQ-103).
 - **Jornada Second Home Partners** (incorporadoras): separada das demais (`D-LX-13`); superfície autorizada pelo `02`
-  v4.5 §2/REQ-105; contrato e brief em [`catalog.md` §18](catalog.md#18-second-home-partners-público-shp1).
+  v4.5 §2/REQ-105; contrato e brief em [`catalog.md` §20](catalog.md#20-second-home-partners-público-shp1).
 - Superfície nova entra no `02` antes do código. Brand Partners está autorizada pelo `02` v4.2 §2/REQ-028
   (`P-BP-01` resolvida); contrato funcional em [`catalog.md` §14](catalog.md#14-discovery-público-b2b-brand-partners-bp1).
 

@@ -12,7 +12,7 @@ import {
 } from '../domain/second-home-partner-contact';
 
 /**
- * Contrato do formulário Second Home Partners (REQ-105, spec catalog §18.3): o mesmo schema Zod valida no servidor
+ * Contrato do formulário Second Home Partners (REQ-105, spec catalog §20.3): o mesmo schema Zod valida no servidor
  * (decisão) e no navegador (feedback). Fechado — campo extra é recusado —, limites em pontos de código depois do trim.
  */
 export type SecondHomePartnerContactFieldCode = 'required' | 'too_long' | 'invalid';
