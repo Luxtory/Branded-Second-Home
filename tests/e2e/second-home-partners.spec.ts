@@ -5,7 +5,7 @@ import { SECOND_HOME_PARTNERS_SECTIONS } from '../../src/features/catalog/presen
 import { messages as platformText } from '../../src/features/platform/presentation/i18n/pt-br';
 import { captureForReview, collectConsoleErrors, expectResponsive } from './support/ui';
 
-// Jornada pública Second Home Partners (REQ-105, TECH-057; spec catalog §18). O servidor de E2E usa o envio e o
+// Jornada pública Second Home Partners (REQ-105, TECH-057; spec catalog §20). O servidor de E2E usa o envio e o
 // limitador determinísticos (tests/support/e2e-server.mjs): nenhum e-mail real. Falhas são simuladas por interceptação.
 
 const PAGE = '/second-home-partner';
@@ -17,7 +17,7 @@ const { conversation, form } = text;
 
 const normalized = (value: string) => value.replace(/\s+/g, ' ').trim();
 
-/** Parágrafos, cards, etapas, linhas do Club e respostas: os blocos com limite de linhas (catalog §18.2). */
+/** Parágrafos, cards, etapas, linhas do Club e respostas: os blocos com limite de linhas (catalog §20.2). */
 const BLOCKS = [
   text.hero.body,
   ...text.opportunity.paragraphs,
@@ -32,7 +32,7 @@ const BLOCKS = [
   conversation.intro,
 ];
 
-/** Exceções registradas no catalog §18.2: quatro linhas por clareza, a 390 e 1440 px. */
+/** Exceções registradas no catalog §20.2: quatro linhas por clareza, a 390 e 1440 px. */
 const FOUR_LINE_EXCEPTIONS: readonly string[] = [text.club.intro];
 
 /** Toda a copy visível da página (a das perguntas fica dentro dos disclosures). */
@@ -75,8 +75,8 @@ async function fillContact(page: Page) {
 
 const submitButton = (page: Page) => page.getByRole('button', { name: conversation.submit });
 
-test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, catalog §18.1–18.2)', () => {
-  test('[REQ-105] Master Copy verbatim, seções na ordem e nada da versão com participação', async ({
+test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, catalog §20.1–20.2)', () => {
+  test('[REQ-105] Master Copy verbatim, seções na ordem e três benefícios com o mesmo peso (D-SHP-07)', async ({
     page,
   }) => {
     const response = await page.goto(PAGE);
@@ -91,9 +91,18 @@ test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, 
 
     const main = normalized((await page.locator('main').textContent()) ?? '');
     for (const line of VISIBLE) expect(main, line).toContain(normalized(line));
-    expect(main).not.toMatch(
-      /participação nos resultados|nova fonte de receita|receitas? para sua/i,
+    // Participação sem percentual, valor ou número (D-SHP-08), fora os ordinais decorativos das etapas; a gestão das
+    // locações fica fora do Club (D-SHP-09).
+    const copy = await page.locator('main').evaluate((node) => {
+      const clone = node.cloneNode(true) as HTMLElement;
+      for (const ordinal of clone.querySelectorAll('.lx-ordinal')) ordinal.remove();
+      return clone.textContent ?? '';
+    });
+    expect(copy).not.toMatch(/%|R\$|\d/);
+    await expect(page.locator('#beneficios .lx-siblings--trio > .lx-siblings__item')).toHaveCount(
+      3,
     );
+    await expect(page.locator('#luxtory-club')).not.toContainText(/loca[çc]/i);
   });
 
   test('[REQ-105] CTA único leva ao formulário; o link secundário leva à oportunidade', async ({
@@ -149,7 +158,7 @@ test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, 
   });
 });
 
-test.describe('Second Home Partners — gate de UI (ADR-0009, catalog §18.5)', () => {
+test.describe('Second Home Partners — gate de UI (ADR-0009, catalog §20.5)', () => {
   test('[REQ-105] axe 0 a 390 e 1440 px, sem overflow de 320 a 1920 px, console limpo, CSP com nonce', async ({
     page,
   }) => {
@@ -253,7 +262,7 @@ test.describe('Second Home Partners — gate de UI (ADR-0009, catalog §18.5)', 
   });
 });
 
-test.describe('Second Home Partners — formulário (REQ-105, TECH-057, catalog §18.3)', () => {
+test.describe('Second Home Partners — formulário (REQ-105, TECH-057, catalog §20.3)', () => {
   test('[REQ-105] validação acessível: resumo, foco no primeiro erro e a fase com mensagem própria; sem envio', async ({
     page,
   }) => {
@@ -312,7 +321,7 @@ test.describe('Second Home Partners — formulário (REQ-105, TECH-057, catalog 
   });
 });
 
-test.describe('Second Home Partners — endpoint e portão fechado (TECH-057, catalog §18.1)', () => {
+test.describe('Second Home Partners — endpoint e portão fechado (TECH-057, catalog §20.1)', () => {
   test('[TECH-057] a própria origem = 202 no-store; outra origem = 403', async ({
     request,
     baseURL,

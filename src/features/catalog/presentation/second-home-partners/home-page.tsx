@@ -22,9 +22,9 @@ function Paragraphs({ lines }: { readonly lines: readonly string[] }) {
 }
 
 /**
- * Página Second Home Partners `/second-home-partner` (REQ-105, spec catalog §18.2): PICTURE → PROBLEM → PROMISE → PROOF
- * (Luxtory Club, processo, perguntas) → PUSH sobre o Core. Versão B (`D-SHP-04`): sem receita nem participação nos
- * resultados. Nada aqui é prova, case ou parceria real; o Luxtory Club aparece só como modelo previsto.
+ * Página Second Home Partners `/second-home-partner` (REQ-105, spec catalog §20.2): PICTURE → PROBLEM → PROMISE → PROOF
+ * (Luxtory Club, processo, perguntas) → PUSH sobre o Core. Três benefícios com o mesmo peso, incluindo a participação
+ * nos resultados (`D-SHP-07`). Nada aqui é prova, case ou parceria real; o Luxtory Club aparece só como modelo previsto.
  */
 export function SecondHomePartnersHomePage() {
   return (
@@ -72,7 +72,7 @@ export function SecondHomePartnersHomePage() {
         </div>
       </section>
 
-      {/* PROMISE — Wash: os benefícios autorizados, com o mesmo peso, e o limite legível. */}
+      {/* PROMISE — Wash: os três benefícios, com o mesmo peso, e o limite legível. */}
       <section
         id={BENEFITS}
         className="lx-section"
@@ -87,7 +87,7 @@ export function SecondHomePartnersHomePage() {
             </h2>
             <p className="lx-subheadline">{benefits.intro}</p>
           </div>
-          <ul className="lx-siblings lx-siblings--pair">
+          <ul className="lx-siblings lx-siblings--trio">
             {benefits.items.map((item) => (
               <li className="lx-siblings__item" key={item.title}>
                 <h3 className="lx-display-s">{item.title}</h3>

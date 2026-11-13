@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { secondHomePartnersMessages as text } from '../../../../src/features/catalog/presentation/i18n/second-home-partners-pt-br';
 
-// Limites da copy Second Home Partners (spec catalog §18.2; aplicação L1–L7; Framework §14). Versão B (`D-SHP-04`):
-// nenhuma menção a receita ou participação nos resultados até `P-SHP-01`.
+// Limites da copy Second Home Partners (spec catalog §20.2; aplicação L1–L7; Framework §14). Modelo comercial de
+// 2026-11-13 (`D-SHP-07`–`D-SHP-09`): participação explícita, sem percentual, fórmula, valor nem confusão com lucro.
 
 /** Todos os textos de um nó do i18n. */
 function strings(value: unknown): string[] {
@@ -24,18 +24,31 @@ const PAGE = strings({
 });
 const ALL = strings(text);
 
-describe('copy Second Home Partners (catalog §18.2)', () => {
-  it('[REQ-105] versão B: nenhuma menção a receita, participação nos resultados, percentual ou remuneração', () => {
-    const economic =
-      /receita|participa(?:ção|r|m)? (?:nos|dos) resultados|remunera|percentual|%|\blucro|recorrente/i;
-    const allowed = 'Não há garantia de vendas, receitas ou estadias.';
-    const hits = PAGE.filter((line) => economic.test(line.replace(allowed, '')));
+describe('copy Second Home Partners (catalog §20.2)', () => {
+  it('[REQ-105] três benefícios com o mesmo peso; a participação é explícita e incide sobre a receita de gestão (D-SHP-07, D-SHP-08)', () => {
+    const [, , participation] = text.benefits.items;
 
-    expect(hits).toEqual([]);
     expect(text.benefits.items.map((item) => item.title)).toEqual([
       'Diferenciação comercial',
       'Marketing e vendas',
+      'Participação nos resultados',
     ]);
+    expect(participation?.text).toMatch(
+      /^Sua incorporadora participa da receita de gestão das locações do empreendimento\./,
+    );
+    // O Club entra só como possibilidade (Modelo B), nunca com o percentual ou a base do Modelo A.
+    expect(participation?.text).toMatch(/No Luxtory Club, a participação poderá vir depois\.$/);
+    const answer = text.faq.items.find((item) => /participação nos resultados/.test(item.question));
+    expect(answer?.answer).toMatch(
+      /comissão da Luxtory pela gestão das locações, sem reduzir a parte dos proprietários/,
+    );
+  });
+
+  it('[REQ-105] [BR-352] sem percentual, número, fórmula, lucro, "recorrente" nem plataforma de locação nomeada', () => {
+    const economic =
+      /%|\d|R\$|percentual|fórmula|\blucr|líquid|brut[ao]|recorrente|mínim|airbnb|booking|\bOTA\b/i;
+
+    expect(PAGE.filter((line) => economic.test(line))).toEqual([]);
   });
 
   it('[REQ-105] [BR-374] nenhuma promessa de vendas, renda, valorização, ocupação ou disponibilidade', () => {
@@ -55,7 +68,7 @@ describe('copy Second Home Partners (catalog §18.2)', () => {
   it('[REQ-105] o Luxtory Club e o intercâmbio aparecem só como futuros, nunca como disponíveis', () => {
     const future = /poderá|poderão|futur|planejad|previst|ainda não|ainda está|estruturando/i;
     const mentions = PAGE.filter((line) =>
-      /Luxtory Club|intercâmbio|Luxchange|Luxplus|locação/i.test(line),
+      /Luxtory Club|intercâmbio|Luxchange|Luxplus/i.test(line),
     );
     // O aviso do formulário nega a entrada no Club; não afirma disponibilidade.
     const assertive = mentions.filter(
@@ -72,12 +85,18 @@ describe('copy Second Home Partners (catalog §18.2)', () => {
     );
   });
 
-  it('[REQ-105] créditos, estadias pagas e locação não se confundem (L2–L4)', () => {
-    const [luxchange, luxplus, rental] = text.club.items;
+  it('[REQ-105] créditos e estadias pagas não se confundem (L2–L3); a gestão das locações fica fora do Club (L4, D-SHP-09)', () => {
+    const [luxchange, luxplus, ...others] = text.club.items;
 
     expect(luxchange?.text).toMatch(/créditos para solicitar estadias/);
     expect(luxplus?.text).toMatch(/pagando pela hospedagem, sem usar créditos/);
-    expect(rental?.text).toMatch(/autorização dos proprietários[^.]*locação ao público/);
+    expect(others).toEqual([]);
+    expect(strings(text.club).filter((line) => /loca[çc]/i.test(line))).toEqual([]);
+    // A incorporadora não precisa operar: a Luxtory faz a gestão e contrata a operação local.
+    const operation = text.faq.items.find((item) => /operar as locações/.test(item.question));
+    expect(operation?.answer).toMatch(
+      /^Não\. A Luxtory faz a gestão e contrata prestadores locais\./,
+    );
   });
 
   it('[REQ-105] [BR-053] [BR-054] o empreendimento parceiro nunca vira Branded Second Home', () => {

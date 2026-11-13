@@ -1,14 +1,15 @@
 /**
- * Jornada pública Second Home Partners (REQ-105, spec catalog §18): Master Copy do plano v3.3 aprovado pelo fundador em
- * 2026-11-12, com os dois ajustes da aprovação final (introdução do Luxtory Club; o parágrafo de receita da oportunidade
- * pertence à versão A). Versão B (`D-SHP-04`): nenhuma menção a receita ou participação nos resultados até a validação
- * jurídica e econômica (`P-SHP-01`). Os textos são VERBATIM — não reescrever, resumir nem acrescentar claim.
- * Headlines: `lead` + `turn` (a virada em itálico da copy). Identificadores internos (funções 5P) ficam só nos comentários.
+ * Jornada pública Second Home Partners (REQ-105, spec catalog §20): Master Copy do plano v3.3 aprovado pelo fundador em
+ * 2026-11-12, atualizada com o modelo comercial de 2026-11-13 (`D-SHP-07`–`D-SHP-09`): três benefícios com o mesmo peso,
+ * participação nas receitas de gestão das locações como parte da proposta e no Luxtory Club só como possibilidade.
+ * Sem percentual, fórmula, valor, exemplo ou plataforma nomeada. Os textos são VERBATIM — não reescrever, resumir nem
+ * acrescentar claim. Headlines: `lead` + `turn` (a virada em itálico da copy). Identificadores internos (funções 5P)
+ * ficam só nos comentários.
  */
 
 import type { DevelopmentStage } from '../../domain/second-home-partner-contact';
 
-/** Rótulos do formulário (catalog §18.3) e do e-mail interno: os campos autorizados pelo REQ-105. */
+/** Rótulos do formulário (catalog §20.3) e do e-mail interno: os campos autorizados pelo REQ-105. */
 const fieldLabels = {
   name: 'Nome',
   company: 'Incorporadora',
@@ -46,17 +47,17 @@ export const secondHomePartnersMessages = {
     siteName: 'Luxtory',
     title: 'Second Home Partners — Luxtory',
     description:
-      'Parcerias para incorporadoras de empreendimentos de lazer, com apoio comercial e novas experiências de viagem em estruturação.',
+      'Parcerias para incorporadoras de empreendimentos de lazer, com apoio comercial, participação nos resultados e novas experiências de viagem em estruturação.',
   },
 
-  // PICTURE · Hero tipográfico (Deep).
+  // PICTURE · Hero tipográfico (Deep): o corpo nomeia os três benefícios; a liberdade dos clientes está na headline.
   hero: {
     marker: 'Second Home Partners',
     title: {
       lead: 'Mais valor para seu empreendimento. ',
       turn: 'Mais liberdade para seus clientes.',
     },
-    body: 'Uma parceria para diferenciar seu empreendimento, apoiar suas vendas e oferecer novas possibilidades aos seus clientes.',
+    body: 'Uma parceria para diferenciar seu empreendimento, apoiar suas vendas e gerar novas receitas para sua incorporadora.',
     action: CTA,
     secondary: 'Conheça a parceria',
     note: 'Estamos estruturando o programa e buscando os primeiros parceiros. O intercâmbio ainda não está disponível.',
@@ -75,14 +76,16 @@ export const secondHomePartnersMessages = {
     ],
   },
 
-  // PROMISE · Benefícios (Wash). Versão B: dois benefícios; o terceiro (participação nos resultados) é da versão A.
+  // PROMISE · Benefícios (Wash): três benefícios com o mesmo peso (`D-SHP-07`). A participação incide sobre a receita de
+  // gestão das locações (`D-SHP-08`), nunca sobre lucro ou a parte dos proprietários; o Club só como possibilidade.
   benefits: {
     marker: 'Para sua incorporadora',
     title: {
       lead: 'Mais valor para oferecer. ',
       turn: 'Mais oportunidades para crescer.',
     },
-    intro: 'Uma parceria que combina diferenciação comercial e apoio às vendas.',
+    intro:
+      'Uma parceria que combina diferenciação comercial, apoio às vendas e novas oportunidades de receita.',
     items: [
       {
         title: 'Diferenciação comercial',
@@ -90,14 +93,18 @@ export const secondHomePartnersMessages = {
       },
       {
         title: 'Marketing e vendas',
-        text: 'Apoiamos sua equipe com materiais de venda, treinamento e argumentos que valorizam o empreendimento.',
+        text: 'Apoiamos sua equipe com estratégia, materiais e argumentos de venda, conforme o escopo contratado.',
+      },
+      {
+        title: 'Participação nos resultados',
+        text: 'Sua incorporadora participa da receita de gestão das locações do empreendimento. No Luxtory Club, a participação poderá vir depois.',
       },
     ],
     note: 'Os benefícios dependem das condições da parceria. Não há garantia de vendas, receitas ou estadias.',
   },
 
-  // PROOF · Luxtory Club (White): modelo previsto, nunca disponibilidade atual. Créditos, estadias pagas e locação não
-  // se confundem (aplicação L2–L4).
+  // PROOF · Luxtory Club (White): modelo previsto, nunca disponibilidade atual. Créditos e estadias pagas não se
+  // confundem (aplicação L2–L3). A locação dos imóveis parceiros é a gestão da Luxtory, fora do Club (`D-SHP-09`, L4).
   club: {
     marker: 'Mais liberdade para seus clientes',
     title: {
@@ -114,10 +121,6 @@ export const secondHomePartnersMessages = {
       {
         label: 'Luxplus — Estadias adicionais',
         text: 'Os associados poderão reservar estadias disponíveis em outros imóveis da rede, pagando pela hospedagem, sem usar créditos.',
-      },
-      {
-        label: 'Locação — Aproveite os períodos disponíveis',
-        text: 'Com autorização dos proprietários, períodos disponíveis também poderão ser oferecidos para locação ao público.',
       },
     ],
     note: 'O Luxtory Club ainda não está disponível. A participação dos imóveis parceiros dependerá de regras próprias.',
@@ -151,7 +154,7 @@ export const secondHomePartnersMessages = {
     action: CTA,
   },
 
-  // PROOF · Perguntas (Wash): objeções O1, O2, O4, O5 e O6 da aplicação; O3 (participação) é da versão A.
+  // PROOF · Perguntas (Wash): objeções O1, O3, O7, O2, O4, O5 e O6 da aplicação, nessa ordem.
   faq: {
     title: 'O que você precisa saber.',
     items: [
@@ -159,6 +162,16 @@ export const secondHomePartnersMessages = {
         question: 'Como a parceria pode ajudar minhas vendas?',
         answer:
           'Ela pode agregar valor ao empreendimento e dar à sua equipe novos argumentos de venda.',
+      },
+      {
+        question: 'Como funciona a participação nos resultados?',
+        answer:
+          'Ela sai da comissão da Luxtory pela gestão das locações, sem reduzir a parte dos proprietários. O contrato define as condições.',
+      },
+      {
+        question: 'Minha incorporadora precisa operar as locações?',
+        answer:
+          'Não. A Luxtory faz a gestão e contrata prestadores locais. Se sua incorporadora tiver estrutura, a operação pode ser combinada.',
       },
       {
         question: 'O Luxtory Club já está funcionando?',
@@ -198,7 +211,7 @@ export const secondHomePartnersMessages = {
     success: 'Envio confirmado. Obrigado por apresentar seu empreendimento.',
   },
 
-  /** Formulário (catalog §18.3): rótulos do contrato e microcopy funcional de validação e estado. */
+  /** Formulário (catalog §20.3): rótulos do contrato e microcopy funcional de validação e estado. */
   form: {
     labels: fieldLabels,
     stages,
