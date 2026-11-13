@@ -175,11 +175,43 @@ Contrato: spec `catalog` §20 (TECH-057 estendida, ADR-0028). O contato reaprove
 2. `SECOND_HOME_PARTNERS_SITE` — `open` em Production só com autorização expressa do fundador, depois da aprovação no
    Preview. A página é de prospecção (`D-SHP-11`): a revisão jurídica do contrato (`P-SHP-01`) precede a assinatura com
    incorporadoras e a definição operacional (`P-SHP-02`) precede a prestação dos serviços, sem bloquear a publicação.
-   Redeploy depois da mudança.
 
-Smoke em Production: página 200 com metadados; um envio real de teste aceito (202) e recebido na caixa; Brand Partners
-inalterada. Rollback: `SECOND_HOME_PARTNERS_SITE=closed` + redeploy fecha página e endpoint. As chaves `BRAND_PARTNERS_*`
-compartilhadas não podem ser removidas enquanto a página existir.
+Merge e ativação são etapas separadas, cada uma com autorização própria do fundador. **Merge:** a CI de `main` roda
+inteira, inclusive `migrate` e `deploy`; sem `SECOND_HOME_PARTNERS_SITE` em Production, página e endpoint seguem em 404.
+
+**Refazer só o deploy.** Production recebe deploy prebuilt só pela CI (`vercel pull` → `vercel build` → `vercel deploy
+--prebuilt`); o Redeploy do painel da Vercel não funciona neste projeto. Variável alterada só vale num deployment novo:
+
+1. Conferir antes:
+   - SHA de `main`: `git ls-remote origin refs/heads/main`;
+   - última execução do workflow `ci` em `main`: `gh run list --workflow ci --branch main --event push --limit 1 --json
+     databaseId,headSha,status,conclusion,createdAt` — mesmo SHA, `completed`/`success` e criada há menos de 30 dias
+     (limite do GitHub para reexecutar). Sem `--workflow ci`, a lista traz também as execuções do Dependabot;
+   - commit publicado: o deployment de produção atual na Vercel aponta para o mesmo SHA;
+   - nenhuma execução em andamento ou na fila em `main` (`gh run list --branch main --status in_progress` e
+     `--status queued` vazios): o grupo de concorrência `production` troca um job pendente por outro.
+2. Reexecutar só o job `deploy` dessa execução:
+   `gh run view <id> --json jobs --jq '.jobs[] | select(.name=="deploy") | .databaseId'` e depois
+   `gh run rerun <id> --job <id do job deploy>` (ou "Re-run job" no `deploy`, na interface). O `deploy` depende só do
+   `migrate`, que não roda de novo (vale o resultado da execução original), e nenhum job depende dele; a reexecução usa o
+   mesmo commit, e o `vercel pull` lê as variáveis atuais.
+3. Esperar o `deploy` ✅ (cerca de 2 min) e conferir na Vercel um deployment de produção novo, do mesmo SHA.
+
+Se a execução não for do SHA atual de `main`, tiver falhado ou passar de 30 dias, não reexecute nada: o deploy de uma
+execução antiga republicaria código desatualizado. Nesse caso, o deploy exige um novo merge em `main`, com a CI inteira.
+
+**Ativação** (autorização específica do fundador):
+
+1. Em Production: `SECOND_HOME_PARTNERS_CONTACT_TO` (caixa corporativa) e `SECOND_HOME_PARTNERS_SITE=open`.
+2. Refazer só o deploy (acima).
+3. Smoke em Production: `/second-home-partner` 200 com título, descrição, canonical e cabeçalhos de segurança;
+   `POST /v1/second-home-partner-contacts` com JSON inválido e o `Origin` do site → 400 (passa pelo limitador sem
+   enviar) e com origem alheia → 403; um envio sintético → 202 e o e-mail recebido na caixa; Brand Partners
+   (`/brand-partner` 200, a mesma sonda inválida no contato dela → 400) e B2C (Home 200) inalterados; logs sem erro.
+
+**Rollback:** `SECOND_HOME_PARTNERS_SITE=closed` e refazer só o deploy (acima); conferir 404 em `/second-home-partner` e
+no endpoint, com Brand Partners e B2C inalterados. Não é instantâneo: vale a partir do deployment novo. As chaves
+`BRAND_PARTNERS_*` compartilhadas não podem ser removidas enquanto a página existir.
 
 ## Preparar a BP1 (Brand Partners público)
 
@@ -562,6 +594,13 @@ entrega não abre gates nem cria configuração produtiva.
 - `/entrar` ou `/admin` em Production dizem "O acesso não está disponível neste ambiente": o log `auth unavailable`
   traz as chaves (`keys`) — variável de Auth ausente ou fora do formato (ex.: a chave `anon` legada no lugar da
   `sb_publishable_…`). Corrija na Vercel (Production) e refaça o deploy pela CI (passo 6 da W1).
+- Contato Brand Partners ou Second Home Partners com 503 e log `stage=limiter`, `reason=backend`: o cliente Upstash
+  falhou — por exemplo, a base foi excluída por inatividade (no plano gratuito, 14 dias sem uso segundo o painel da
+  conta, em 2026-11-13) ou as credenciais não conferem. O limitador continua recusando (nunca deixa passar). Recrie ou
+  restaure a base, troque `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` em Production, refaça só o deploy (SHP1)
+  e sonde: JSON inválido com o `Origin` do site → 400. O plano pago por uso reduz o risco de exclusão por inatividade,
+  mas não é garantia absoluta contra desativação ou indisponibilidade; cadastrar um meio de pagamento converte os
+  recursos gratuitos da conta para planos pagos.
 - `command retries exhausted` nos logs: contenção de locks acima do `COMMAND_LOCK_TIMEOUT_MS` em
   `COMMAND_MAX_ATTEMPTS` tentativas; o cliente pode repetir com a mesma `Idempotency-Key`.
 
