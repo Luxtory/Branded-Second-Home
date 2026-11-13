@@ -1820,7 +1820,7 @@ da elegibilidade é relido depois de todos os locks, conservando a versão origi
 Plano v3.3 aprovado pelo fundador em 2026-11-12; modelo comercial definido pelo fundador em 2026-11-13 (gestão digital
 de locações e participação da incorporadora nos resultados). Comportamento e limites: `02` REQ-105; arquitetura: `03`
 TECH-057 (estendida); decisão: [ADR-0028](../adr/0028-jornada-second-home-partners.md). Comunicação:
-[aplicação Second Home Partners](communication/second-home-partners.md) (L1–L7, `D-SHP-01`–`D-SHP-11`) e
+[aplicação Second Home Partners](communication/second-home-partners.md) (L1–L7, `D-SHP-01`–`D-SHP-12`) e
 [Framework congelado](communication/framework-second-home-partners.md). Fatos da frente: `01` §1 e §35. Nada desta
 seção afilia imóveis, cria Membership para proprietários parceiros ou ativa mecanismo do Luxtory Club (Escopo B).
 Numerada §20 porque §18 e §19 são da W6 e da W8.
@@ -1849,16 +1849,19 @@ participação nas receitas de gestão das locações é parte da proposta e a d
 Sem percentual, fórmula, valor, exemplo, plataforma nomeada ou garantia de pagamento. Refinamento do mesmo dia
 (`D-SHP-09`, `D-SHP-10`): a objeção da ociosidade orienta a oportunidade, o card de diferenciação e o FAQ; a quarta
 seção apresenta três soluções para os proprietários; o FAQ fica com as cinco dúvidas de uma incorporadora interessada;
-a parceria vale para qualquer fase do empreendimento.
+a parceria vale para qualquer fase do empreendimento. Superfícies da paleta institucional (`D-SHP-12`): Deep → White →
+Blue → Deep → Wash → Blue → White, só com `data-surface` do Core (títulos Warm Sand e corpo branco nas escuras; títulos
+Moroccan Blue e corpo Dark Moroccan Blue nas claras); Benefícios → Soluções repetem a passagem Blue → Deep do Como
+funciona do Brand Partners.
 
 | Seção | Função · pergunta respondida | Composição (Core DS) | Fatos |
 |---|---|---|---|
 | Hero `#inicio` · Deep | PICTURE · o que é e por que importa | `lx-hero--typographic`, H1 `lx-headline--home-hero`, CTA primário, link para `#oportunidade`, nota de programa em estruturação | REQ-105; L1 |
 | A oportunidade `#oportunidade` · White | PROBLEM · por que isso ajuda a vender | `lx-section-head` + `lx-stack--editorial` | L1, L4; `H-SHP-01` como hipótese |
-| Benefícios `#beneficios` · Wash | PROMISE · o que a incorporadora ganha | `lx-siblings--trio` (diferenciação, marketing e vendas, participação) + `lx-section-note` | `01` §1, §35; L4, L5 |
-| Soluções para os proprietários `#solucoes` · White | PROOF · como os proprietários poderão aproveitar o imóvel | `lx-numbered` como na Home B2C (01 Luxchange, 02 Luxplus, 03 Locação de temporada) + nota em dois parágrafos num `lx-section-group` (a lista já fecha com hairline): Club planejado × gestão de locações independente (`D-SHP-09`) | L1–L4 |
-| Como funciona `#como-funciona` · Blue | PROOF · o que acontece depois do contato | `lx-steps--four` + CTA | REQ-105 |
-| Perguntas `#perguntas` · Wash | PROOF · objeções O1, O3, O7, O8, O6 (`D-SHP-10`) | `lx-faq` + `lx-disclosure` | L1, L4, L5 |
+| Benefícios `#beneficios` · Blue | PROMISE · o que a incorporadora ganha | `lx-siblings--trio` (diferenciação, marketing e vendas, participação) + `lx-section-note` | `01` §1, §35; L4, L5 |
+| Soluções para os proprietários `#solucoes` · Deep | PROOF · como os proprietários poderão aproveitar o imóvel | `lx-numbered` como na Home B2C (01 Luxchange, 02 Luxplus, 03 Locação de temporada) + nota em dois parágrafos num `lx-section-group` (a lista já fecha com hairline): Club planejado × gestão de locações independente (`D-SHP-09`) | L1–L4 |
+| Como funciona `#como-funciona` · Wash | PROOF · o que acontece depois do contato | `lx-steps--four` + CTA | REQ-105 |
+| Perguntas `#perguntas` · Blue | PROOF · objeções O1, O3, O7, O8, O6 (`D-SHP-10`) | `lx-faq` + `lx-disclosure` | L1, L4, L5 |
 | Conversa `#conversa` · White | PUSH · como começar | `lx-columns--aside`: introdução → formulário → aviso e privacidade | REQ-105 |
 
 Concisão: cada parágrafo, card, solução, etapa, nota e resposta com no máximo 3 linhas a 390 e a 1440 px e 4 a 320

@@ -74,18 +74,19 @@ export const secondHomePartnersMessages = {
       turn: 'Um argumento a mais para vender.',
     },
     paragraphs: [
-      'Imagine seu cliente comprando um imóvel de lazer podendo alugá-lo nos períodos sem uso e, futuramente, descobrir outros destinos.',
+      'Imagine seu cliente comprando um imóvel de lazer que poderá alugar quando não estiver usando e, no futuro, conhecer outros destinos.',
       'Esse diferencial pode ajudar sua equipe a superar objeções e acelerar a decisão de compra.',
     ],
   },
 
-  // PROMISE · Benefícios (Wash): três benefícios com o mesmo peso (`D-SHP-07`). A participação é parte da comissão da
+  // PROMISE · Benefícios (Blue): três benefícios com o mesmo peso (`D-SHP-07`). A participação é parte da comissão da
   // Luxtory pela gestão das locações (`D-SHP-08`), nunca lucro nem a parte dos proprietários; o Club só como possibilidade.
   benefits: {
     marker: 'Para sua incorporadora',
     title: {
       lead: 'Mais valor para oferecer. ',
-      turn: 'Mais oportunidades para crescer.',
+      // Espaço inseparável: a virada não deixa um "Mais" sozinho no fim da primeira linha.
+      turn: 'Mais\u00a0oportunidades para crescer.',
     },
     intro:
       'Uma parceria que combina diferenciação comercial, apoio às vendas e novas oportunidades de receita.',
@@ -106,7 +107,7 @@ export const secondHomePartnersMessages = {
     note: 'Os benefícios dependem das condições da parceria. Não há garantia de vendas, receitas ou estadias.',
   },
 
-  // PROOF · Soluções para os proprietários (White), na lista numerada da Home B2C: equilíbrio visual sem atribuir tudo ao
+  // PROOF · Soluções para os proprietários (Deep), na lista numerada da Home B2C: equilíbrio visual sem atribuir tudo ao
   // Club (`D-SHP-09`). Luxchange e Luxplus são mecanismos planejados do Club, para associados (BR-146, L2–L3); a
   // locação de temporada é a gestão da Luxtory, independente do Club e contratada por cada proprietário (L4).
   // Espaço inseparável antes do travessão: o rótulo nunca começa uma linha com ele.
@@ -138,7 +139,7 @@ export const secondHomePartnersMessages = {
     ],
   },
 
-  // PROOF · Como funciona a parceria (Blue): quatro etapas reais, em ordem.
+  // PROOF · Como funciona a parceria (Wash): quatro etapas reais, em ordem.
   process: {
     marker: 'Simples desde o primeiro contato',
     title: {
@@ -160,13 +161,13 @@ export const secondHomePartnersMessages = {
       },
       {
         title: 'Parceria',
-        text: 'Começamos o trabalho combinado. A entrada no Luxtory Club poderá vir depois.',
+        text: 'Iniciamos os serviços acordados. Depois, o Luxtory Club poderá integrar a parceria.',
       },
     ],
     action: CTA,
   },
 
-  // PROOF · Perguntas (Wash): só as dúvidas de uma incorporadora interessada (`D-SHP-10`) — O1, O3, O7, O8 e O6. A
+  // PROOF · Perguntas (Blue): só as dúvidas de uma incorporadora interessada (`D-SHP-10`) — O1, O3, O7, O8 e O6. A
   // disponibilidade do Club fica na nota das soluções; a etapa inicial, em Como funciona.
   faq: {
     title: 'O que você precisa saber.',

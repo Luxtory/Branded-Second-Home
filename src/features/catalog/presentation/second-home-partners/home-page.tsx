@@ -24,7 +24,8 @@ function Paragraphs({ lines }: { readonly lines: readonly string[] }) {
 /**
  * Página Second Home Partners `/second-home-partner` (REQ-105, spec catalog §20.2): PICTURE → PROBLEM → PROMISE → PROOF
  * (soluções para os proprietários, processo, perguntas) → PUSH sobre o Core. Três benefícios com o mesmo peso, incluindo a participação
- * nos resultados (`D-SHP-07`). Nada aqui é prova, case ou parceria real; o Luxtory Club aparece só como modelo previsto.
+ * nos resultados (`D-SHP-07`). Superfícies da paleta institucional (`D-SHP-12`): Deep → White → Blue → Deep → Wash → Blue
+ * → White. Nada aqui é prova, case ou parceria real; o Luxtory Club aparece só como modelo previsto.
  */
 export function SecondHomePartnersHomePage() {
   return (
@@ -72,11 +73,11 @@ export function SecondHomePartnersHomePage() {
         </div>
       </section>
 
-      {/* PROMISE — Wash: os três benefícios, com o mesmo peso, e o limite legível. */}
+      {/* PROMISE — Blue: os três benefícios, com o mesmo peso, e o limite legível. */}
       <section
         id={BENEFITS}
         className="lx-section"
-        data-surface="wash"
+        data-surface="blue"
         aria-labelledby={titleOf(BENEFITS)}
       >
         <div className="lx-container">
@@ -101,12 +102,12 @@ export function SecondHomePartnersHomePage() {
         </div>
       </section>
 
-      {/* PROOF — White: as três soluções para os proprietários na lista numerada da Home B2C, com o mesmo peso; a nota
+      {/* PROOF — Deep: as três soluções para os proprietários na lista numerada da Home B2C, com o mesmo peso; a nota
           separa os serviços planejados do Club da gestão de locações independente (`D-SHP-09`). */}
       <section
         id={SOLUTIONS}
         className="lx-section"
-        data-surface="white"
+        data-surface="deep"
         aria-labelledby={titleOf(SOLUTIONS)}
       >
         <div className="lx-container">
@@ -139,11 +140,11 @@ export function SecondHomePartnersHomePage() {
         </div>
       </section>
 
-      {/* PROOF — Blue: as quatro etapas reais, em ordem, e o CTA único. */}
+      {/* PROOF — Wash: as quatro etapas reais, em ordem, e o CTA único. */}
       <section
         id={PROCESS}
         className="lx-section"
-        data-surface="blue"
+        data-surface="wash"
         aria-labelledby={titleOf(PROCESS)}
       >
         <div className="lx-container">
@@ -172,8 +173,8 @@ export function SecondHomePartnersHomePage() {
         </div>
       </section>
 
-      {/* PROOF — Wash: objeções em disclosures nativos. */}
-      <section id={FAQ} className="lx-section" data-surface="wash" aria-labelledby={titleOf(FAQ)}>
+      {/* PROOF — Blue: objeções em disclosures nativos. */}
+      <section id={FAQ} className="lx-section" data-surface="blue" aria-labelledby={titleOf(FAQ)}>
         <div className="lx-container">
           <div className="lx-section-head">
             <h2 id={titleOf(FAQ)} className="lx-headline">
