@@ -823,6 +823,25 @@ de teste e nunca rodam contra produção).
 **Fora do escopo.** Design & Build como caminho alternativo à Home Edition e estimativa de valor de Home Concept sem Home Edition (exigem
 nova versão do `02`); amenidades (sem vocabulário); formulário de interesse (W6, ⛔ P-3).
 
+### 13.13 Harmonização focal B2C para GTM (2026-11-05)
+
+`D-B2C-29`. O fundador autorizou somente a correção complementar de definição institucional, disponibilidade dos
+mecanismos do Club, responsabilidades operacionais e locações na Home e no Como funciona, com a narrativa do consumidor
+preservada. Base: main `26dd58d`; `01` v10.2, `02` v4.4, `03` v3.16; revisão normativa pertinente em PR independente.
+
+- **Campos:** C01/C02/C04/C05/C06/C07/C08/C09a/C09b/C10/C11/C13/C14/C15/C16/C17/C18, literalmente em
+  `src/features/catalog/presentation/i18n/discovery-pt-br.ts`. C09b é o terceiro parágrafo da resposta, após o texto
+  preservado de ausência de resultado garantido; sua hipótese é encerramento do Membership (BR-254 a BR-256).
+- **Limites:** BR-130/146/148/149, BR-240/241 e BR-250 a BR-260; REQ-038/070/071. Luxplus não pressupõe insuficiência
+  de Créditos; o detalhe explícito fica no Como funciona. Canais e operadores continuam sujeitos à autorização aplicável.
+- **Preservação:** C03/C12/C19 e todos os campos não enumerados, Hero, Patrimônio/Liberdade/Pertencimento, modalidades,
+  calendário e quatro configurações Co-Owner intactos. Nenhuma regra exclusiva de oito Ações, interface, função ou API nova.
+- **QA:** comunicação, ontologia, terminologia e regressão pertinente de Discovery; antes/depois e Preview em
+  390/768/1440 px, acessibilidade, teclado, links, CTAs, privacidade, SEO e ausência de overflow. Nenhum TSX, estilo ou
+  componente autorizado. A revisão editorial não abre funcionalidades do Club nem gates operacionais.
+- **Publicação:** PR separado; CI e aceite visual no SHA exato. Merge em main implica migrate e deploy automáticos e
+  depende de autorização expressa posterior. Nenhuma configuração, migration, permissão ou dado compartilhado alterado.
+
 ## 14. Discovery público B2B Brand Partners (BP1)
 
 Contrato BP0 aprovado pelo fundador (2026-10-09); BP1 não implementada na BP0 — implementação registrada em §14.8;
