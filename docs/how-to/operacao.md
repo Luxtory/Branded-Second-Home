@@ -192,13 +192,21 @@ inteira, inclusive `migrate` e `deploy`; sem `SECOND_HOME_PARTNERS_SITE` em Prod
      `--status queued` vazios): o grupo de concorrência `production` troca um job pendente por outro.
 2. Reexecutar só o job `deploy` dessa execução:
    `gh run view <id> --json jobs --jq '.jobs[] | select(.name=="deploy") | .databaseId'` e depois
-   `gh run rerun <id> --job <id do job deploy>` (ou "Re-run job" no `deploy`, na interface). O `deploy` depende só do
-   `migrate`, que não roda de novo (vale o resultado da execução original), e nenhum job depende dele; a reexecução usa o
-   mesmo commit, e o `vercel pull` lê as variáveis atuais.
-3. Esperar o `deploy` ✅ (cerca de 2 min) e conferir na Vercel um deployment de produção novo, do mesmo SHA.
+   `gh run rerun <id> --job <id do job deploy>` (ou "Re-run job" no `deploy`, na interface). O GitHub reexecuta o job
+   escolhido e os que dependem dele; o `deploy` não tem dependentes e depende só do `migrate`, que mantém o resultado da
+   execução original (assim foi nas reexecuções só do `deploy` das execuções #33, #35 e #101 do `ci`). A reexecução usa
+   o mesmo commit, e o `vercel pull` lê as variáveis atuais.
+3. Esperar o `deploy` ✅ (cerca de 2 min) e conferir, sem presumir, os jobs que rodaram de fato na nova tentativa
+   (`<n>` = `gh api repos/Luxtory/Branded-Second-Home/actions/runs/<id> --jq .run_attempt`):
+   `gh api repos/Luxtory/Branded-Second-Home/actions/runs/<id>/attempts/<n>/jobs --jq '.jobs[]|[.name,.started_at]|@tsv'`
+   — só o `deploy` com início novo; os demais mantêm o horário da tentativa anterior. Se outro job tiver rodado, pare e
+   avalie antes do smoke. Conferir também na Vercel um deployment de produção novo, do mesmo SHA.
 
-Se a execução não for do SHA atual de `main`, tiver falhado ou passar de 30 dias, não reexecute nada: o deploy de uma
-execução antiga republicaria código desatualizado. Nesse caso, o deploy exige um novo merge em `main`, com a CI inteira.
+Se a execução não for do SHA atual de `main` ou tiver falhado, não reexecute nada: o deploy de uma execução antiga
+republicaria código desatualizado. Passados 30 dias, o GitHub não permite reexecutar. Nesses casos, com o workflow atual
+(sem disparo manual), o deploy depende de um novo push em `main`, ou seja, um novo merge com a CI inteira. É uma
+limitação deste workflow, não uma regra: um procedimento manual independente e seguro pode ser criado depois, se for
+necessário.
 
 **Ativação** (autorização específica do fundador):
 
