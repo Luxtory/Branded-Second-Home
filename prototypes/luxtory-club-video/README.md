@@ -170,6 +170,25 @@ irregulares (8 atrasados durante o movimento em 12 s, intervalo máximo de 245 m
 composição sobre vídeo, a automatizada é a escolha; a prévia ao vivo continua útil para revisão e gravação informal.
 O `zoompan` do ffmpeg foi descartado para a placa: anda em pixels inteiros (saltos de até 2,69 de luma).
 
+## Evidências das Etapas B e C
+
+Mesma régua da Etapa A (`out/etapa-a/check.json`, `validation-<seq>.json`; folhas de contato e zoom de borda
+`*-direct-*`, `*-luxplus-*` em `evidencias/etapa-a/`). A Request refatorada (peças comuns em `shared.js`) gera os
+mesmos bytes da aprovada: 14 quadros de referência idênticos por sha256.
+
+| Verificação | Direct | Luxplus | Assinatura |
+|---|---|---|---|
+| Testes (`prototype.test.mjs`, total 23) | Créditos 11.500, Fee mínimo R$ 120, FEFO L-0003, 39.000 → 27.500, sem Garantia nem aceite | R$ 2.480 ilustrativo, Créditos 27.500 intocados, sem Fee/PRL/desconto | logo do manifest (chave + sha256), `<img>`, fade puro 900 ms, linha legal |
+| `check.mjs` (16:9 e 9:16) | 5 instantes, axe 0, sobreposição 0 | 5 instantes, axe 0, sobreposição 0 | axe 0, sobreposição 0 |
+| Prévia H.264 | 420 quadros · 14,0 s · 30 fps | 465 quadros · 15,5 s · 30 fps | 180 quadros · 6,0 s |
+| ProRes 4444 (trecho) | pagamento → confirmação, 5 s, 67–73 MB | pagamento → confirmação, 5 s, 65–66 MB | 6 s, 27–35 MB (opaco) |
+| Alfa decodificado (PSNR R/G/B/A) | ≥ 50 / 55 / 52 / 77 dB | ≥ 50 / 55 / 52 / 75 dB | ≥ 50 dB (RGB) |
+| Cor Deep `#003D52` no cartão (ProRes) · fora do cartão | (0,61–62,82,255) · alfa 0 | (0,61,82,255) · alfa 0 | (0,61,82,255) |
+| Transição de entrada da reserva | nenhum quadro repetido | nenhum quadro repetido | — |
+
+Placa de teste de Direct e Luxplus: a mesma imagem de interior (espaço negativo, sem pessoas) para *Pátio · Campo* —
+continuidade de uma só Second Home nas duas modalidades. Só teste interno.
+
 ## Integração na pós (Etapa A)
 
 - **Alfa straight** (não premultiplicado) nos PNG e no ProRes 4444; interpretar como *Straight* no editor.
