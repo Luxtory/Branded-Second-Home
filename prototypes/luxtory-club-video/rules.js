@@ -74,8 +74,13 @@ export function holdCreditsFefo(lots, amount, { now, requestExpiresAt: limit }) 
     parts.push({ lotId: lot.id, quantity: take });
     missing -= take;
   }
-  if (missing > 0) throw new Error(`Créditos insuficientes para a Garantia: faltam ${missing}`);
+  if (missing > 0) throw new Error(`Créditos insuficientes: faltam ${missing}`);
   return parts;
+}
+
+/** PD-008 — consumo no Direct (BR-221): o mesmo FEFO, só com lotes válidos agora (sem o limite de uma Request). */
+export function consumeCreditsFefo(lots, amount, { now }) {
+  return holdCreditsFefo(lots, amount, { now, requestExpiresAt: now });
 }
 
 /** TECH-043 — depósito exige now ≤ checkin_at − antecedência (BR-200). */

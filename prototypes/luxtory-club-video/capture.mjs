@@ -1,9 +1,10 @@
-// Demonstração conceitual — captura determinística, exportação e validação dos arquivos codificados (Etapa A).
+// Demonstração conceitual — captura determinística, exportação e validação dos arquivos codificados.
 // Etapas: quadros RGBA (transparência + resolução pelos pixels do dispositivo) → prévias H.264 leves (sobre Sand Wash e
 // compostas sobre placas com movimento) → um asset curto ProRes 4444 com alfa → stills 4K → validação do que foi
 // codificado (codec, alfa, dimensões, fps, duração, quadros, PSNR das bordas e cores) → comparação com captura em
-// tempo real na mesma resolução.
-// Uso: node prototypes/luxtory-club-video/capture.mjs [--fps=30]   (saída em out/etapa-a/, fora do Git)
+// tempo real na mesma resolução (opcional). Instantes, trechos, placas e cartões amostrados vêm do `qa` de cada sequência.
+// Uso: node prototypes/luxtory-club-video/capture.mjs [--seq=request,direct,luxplus] [--fps=30] [--realtime]
+// (saída em out/etapa-a/, fora do Git)
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -14,6 +15,9 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const OUT = fileURLToPath(new URL('./out/etapa-a/', import.meta.url));
 const EVIDENCE = fileURLToPath(new URL('./evidencias/etapa-a/', import.meta.url));
 const FPS = Number(process.argv.find((a) => a.startsWith('--fps='))?.slice(6) ?? 30);
+const SEQS = (
+  process.argv.find((a) => a.startsWith('--seq='))?.slice(6) ?? 'request,direct,luxplus'
+).split(',');
 const tokens = JSON.parse(readFileSync(`${ROOT}src/design-system/tokens/tokens.json`, 'utf8'));
 const hex = (value) => value.replace('#', '');
 const DEEP = hex(tokens.palette['dark-moroccan-blue'].$value);
@@ -35,19 +39,6 @@ const FORMATS = {
     focusX: 0.62,
   },
 };
-const PLATES = {
-  claro: 'public/images/home/hero/hero-lifestyle.jpg',
-  escuro: 'public/images/home/hero/luxury-property-facade-hero.jpg',
-};
-const STILLS = {
-  calendario: 4_800,
-  revisao: 9_000,
-  pendente: 13_800,
-  revalidacao: 20_100,
-  confirmacao: 22_000,
-};
-// Trecho do aceite: toque em Aceitar, revalidação, saída do cartão e Request Aceita + Reserva Confirmada.
-const ALPHA = { from: 18_300, seconds: 4 };
 const H264 = [
   '-c:v',
   'libx264',
@@ -193,12 +184,14 @@ const motion = (file, [w, h, x, y], from = 0, to = Infinity) => {
 
 const failures = [];
 const check = (ok, msg) => ok || failures.push(msg);
-const report = { fps: FPS, formats: {} };
+let report;
 mkdirSync(OUT, { recursive: true });
 mkdirSync(EVIDENCE, { recursive: true });
 const { origin, close } = await startServer();
 const browser = await chromium.launch();
-const stageUrl = (fmt, extra = '') => `${origin}/prototypes/luxtory-club-video/?fmt=${fmt}${extra}`;
+let SEQ = 'request';
+const stageUrl = (fmt, extra = '') =>
+  `${origin}/prototypes/luxtory-club-video/?seq=${SEQ}&fmt=${fmt}${extra}`;
 
 async function openStage(fmt, [width], extra) {
   const { viewport } = FORMATS[fmt];
@@ -209,307 +202,331 @@ async function openStage(fmt, [width], extra) {
   return { context, page };
 }
 
-for (const [fmt, spec] of Object.entries(FORMATS)) {
-  const [W, H] = spec.preview;
-  const dir = `${OUT}frames-${fmt}/`;
-  rmSync(dir, { recursive: true, force: true });
-  mkdirSync(dir, { recursive: true });
-  mkdirSync(`${OUT}stills/`, { recursive: true });
+for (const seq of SEQS) {
+  SEQ = seq;
+  const { qa } = await import(`./sequence-${seq}.js`);
+  const { stills: STILLS, alpha: ALPHA } = qa;
+  const PLATES = qa.plates;
+  const edgeCard = qa.edge ?? qa.sample;
+  report = { seq, fps: FPS, formats: {} };
+  for (const [fmt, spec] of Object.entries(FORMATS)) {
+    const [W, H] = spec.preview;
+    // A Request mantém os nomes da Etapa A nas evidências versionadas; as outras sequências levam o nome no prefixo.
+    const tag = seq === 'request' ? fmt : `${seq}-${fmt}`;
+    const dir = `${OUT}frames-${seq}-${fmt}/`;
+    rmSync(dir, { recursive: true, force: true });
+    mkdirSync(dir, { recursive: true });
+    mkdirSync(`${OUT}stills/`, { recursive: true });
 
-  // 1. Quadros RGBA na resolução da prévia (transparência explícita: omitBackground).
-  const { context, page } = await openStage(fmt, spec.preview);
-  const duration = await page.evaluate(() => window.__demo.duration);
-  const total = Math.round((duration / 1000) * FPS);
-  const started = performance.now();
-  for (let i = 0; i < total; i++) {
-    await page.evaluate((t) => window.__demo.seek(t), (i * 1000) / FPS);
-    await page.screenshot({
-      path: `${dir}f${String(i).padStart(5, '0')}.png`,
-      omitBackground: true,
-    });
-  }
-  const msPerFrame = (performance.now() - started) / total;
-  // Pontos de amostragem: interior de um cartão (fundo Deep) e um canto vazio do palco.
-  await page.evaluate((t) => window.__demo.seek(t), STILLS.confirmacao);
-  const card = await page.evaluate(() =>
-    document.querySelector('#accepted').getBoundingClientRect().toJSON(),
-  );
-  const corner = await page.evaluate(() =>
-    document.querySelector('#booking').getBoundingClientRect().toJSON(),
-  );
-  await page.evaluate((t) => window.__demo.seek(t), 17_500);
-  const holder = await page.evaluate(() =>
-    document.querySelector('#holder').getBoundingClientRect().toJSON(),
-  );
-  await context.close();
-  const dpr = W / spec.viewport.width;
-  const even = (v) => Math.max(2, Math.floor((v * dpr) / 2) * 2);
-  const holderBox = [even(holder.width), even(holder.height), even(holder.left), even(holder.top)];
-  const inCard = [Math.round((card.left + 4) * dpr), Math.round((card.top + 4) * dpr)];
-  const empty = [4, 4];
+    // 1. Quadros RGBA na resolução da prévia (transparência explícita: omitBackground).
+    const { context, page } = await openStage(fmt, spec.preview);
+    const duration = await page.evaluate(() => window.__demo.duration);
+    const total = Math.round((duration / 1000) * FPS);
+    const started = performance.now();
+    for (let i = 0; i < total; i++) {
+      await page.evaluate((t) => window.__demo.seek(t), (i * 1000) / FPS);
+      await page.screenshot({
+        path: `${dir}f${String(i).padStart(5, '0')}.png`,
+        omitBackground: true,
+      });
+    }
+    const msPerFrame = (performance.now() - started) / total;
+    // Pontos de amostragem: interior de um cartão (fundo Deep) e um canto vazio do palco.
+    const rectAt = async (sel, t) => {
+      await page.evaluate((x) => window.__demo.seek(x), t);
+      return page.evaluate((q) => document.querySelector(q).getBoundingClientRect().toJSON(), sel);
+    };
+    const card = await rectAt(qa.sample.card, qa.sample.at);
+    const corner = await rectAt(edgeCard.card, edgeCard.at);
+    const holder = await rectAt(qa.motion.card, qa.motion.at);
+    await context.close();
+    const dpr = W / spec.viewport.width;
+    const even = (v) => Math.max(2, Math.floor((v * dpr) / 2) * 2);
+    const holderBox = [
+      even(holder.width),
+      even(holder.height),
+      even(holder.left),
+      even(holder.top),
+    ];
+    const inCard = [Math.round((card.left + 4) * dpr), Math.round((card.top + 4) * dpr)];
+    const empty = [4, 4];
 
-  // 2. Stills 4K (master) nos instantes-chave, com alfa.
-  const master = await openStage(fmt, spec.master);
-  for (const [name, t] of Object.entries(STILLS)) {
-    await master.page.evaluate((x) => window.__demo.seek(x), t);
-    await master.page.screenshot({ path: `${OUT}stills/${fmt}-${name}.png`, omitBackground: true });
-  }
-  await master.context.close();
+    // 2. Stills 4K (master) nos instantes-chave, com alfa.
+    const master = await openStage(fmt, spec.master);
+    for (const [name, t] of Object.entries(STILLS)) {
+      await master.page.evaluate((x) => window.__demo.seek(x), t);
+      await master.page.screenshot({
+        path: `${OUT}stills/${seq}-${fmt}-${name}.png`,
+        omitBackground: true,
+      });
+    }
+    await master.context.close();
 
-  // 3. Prévias leves H.264: sobre Sand Wash e compostas sobre placas com push-in suave.
-  const frames = ['-framerate', String(FPS), '-i', `${dir}f%05d.png`];
-  const files = {
-    preview: `${OUT}request-${fmt}-preview.mp4`,
-    claro: `${OUT}request-${fmt}-comp-claro.mp4`,
-    escuro: `${OUT}request-${fmt}-comp-escuro.mp4`,
-    alpha: `${OUT}request-${fmt}-alpha-prores4444.mov`,
-  };
-  ffmpeg([
-    '-f',
-    'lavfi',
-    '-i',
-    `color=c=0x${SAND_WASH}:s=${W}x${H}:r=${FPS},format=rgb24`,
-    ...frames,
-    '-filter_complex',
-    `[0][1]overlay=shortest=1:format=rgb,${TO_709},format=yuv420p`,
-    ...H264,
-    ...BT709,
-    files.preview,
-  ]);
-  const plateMotion = {};
-  for (const kind of ['claro', 'escuro']) {
-    // Placa de teste com push-in subpixel: perspective com coordenadas em ponto flutuante (zoompan anda em pixels
-    // inteiros e trava — medido). Vira um vídeo intermediário, como o footage real, e o alfa é composto sobre ele.
-    const still = `${OUT}plate-${fmt}-${kind}.png`;
-    const plate = `${OUT}plate-${fmt}-${kind}.mp4`;
+    // 3. Prévias leves H.264: sobre Sand Wash e compostas sobre placas com push-in suave.
+    const frames = ['-framerate', String(FPS), '-i', `${dir}f%05d.png`];
+    const files = {
+      preview: `${OUT}${seq}-${fmt}-preview.mp4`,
+      ...Object.fromEntries(
+        Object.keys(PLATES).map((kind) => [kind, `${OUT}${seq}-${fmt}-comp-${kind}.mp4`]),
+      ),
+      alpha: `${OUT}${seq}-${fmt}-alpha-prores4444.mov`,
+    };
     ffmpeg([
+      '-f',
+      'lavfi',
       '-i',
-      `${ROOT}${PLATES[kind]}`,
-      '-vf',
-      `scale=${W}:${H}:force_original_aspect_ratio=increase:flags=lanczos,crop=${W}:${H}:(iw-ow)*${spec.focusX}:(ih-oh)/2`,
-      still,
-    ]);
-    const z = `(0.03*in/${total})`;
-    const push = `perspective=x0=W*${z}:y0=H*${z}:x1=W*(1-${z}):y1=H*${z}:x2=W*${z}:y2=H*(1-${z}):x3=W*(1-${z}):y3=H*(1-${z}):interpolation=cubic:sense=source:eval=frame`;
-    ffmpeg([
-      '-loop',
-      '1',
-      '-framerate',
-      String(FPS),
-      '-i',
-      still,
-      '-frames:v',
-      String(total),
-      '-vf',
-      `${push},${TO_709},format=yuv444p`,
-      '-c:v',
-      'libx264',
-      '-crf',
-      '12',
-      // Um único keyframe: os I-frames periódicos do x264 criavam pulsos de diferença (quadros 250 e 500, medido).
-      '-g',
-      String(total),
-      ...BT709,
-      plate,
-    ]);
-    plateMotion[kind] = motion(plate, [
-      Math.round(W * 0.4),
-      Math.round(H * 0.3),
-      Math.round(W * 0.3),
-      Math.round(H * 0.35),
-    ]);
-    // Composição em RGB (alfa straight), como num editor: placa decodificada pela mesma matriz BT.709.
-    ffmpeg([
-      '-i',
-      plate,
+      `color=c=0x${SAND_WASH}:s=${W}x${H}:r=${FPS},format=rgb24`,
       ...frames,
       '-filter_complex',
-      `[0]${FROM_709},format=rgb24[bg];[bg][1]overlay=shortest=1:format=rgb,${TO_709},format=yuv420p`,
+      `[0][1]overlay=shortest=1:format=rgb,${TO_709},format=yuv420p`,
       ...H264,
       ...BT709,
-      files[kind],
-    ]);
-  }
-  // 4. Um asset curto com alfa (ProRes 4444, 10 bits, alfa de 16 bits), só do trecho R4. qscale 8 = metade do peso do
-  //    padrão com RGB ≥ 50 dB e alfa idêntico (medido); os masters da Etapa C usam a qualidade padrão.
-  const startFrame = Math.round((ALPHA.from / 1000) * FPS);
-  ffmpeg([
-    '-framerate',
-    String(FPS),
-    '-start_number',
-    String(startFrame),
-    '-i',
-    `${dir}f%05d.png`,
-    '-frames:v',
-    String(ALPHA.seconds * FPS),
-    '-vf',
-    `${TO_709},format=yuva444p10le`,
-    '-c:v',
-    'prores_ks',
-    '-profile:v',
-    '4444',
-    '-qscale:v',
-    '8',
-    '-alpha_bits',
-    '16',
-    '-vendor',
-    'apl0',
-    ...BT709,
-    files.alpha,
-  ]);
-
-  // 5. Validação dos arquivos codificados.
-  const probes = Object.fromEntries(Object.entries(files).map(([k, f]) => [k, probe(f)]));
-  for (const k of ['preview', 'claro', 'escuro']) {
-    const p = probes[k];
-    check(
-      p.codec === 'h264' && p.pixFmt === 'yuv420p',
-      `${fmt} ${k}: codec/pix_fmt ${p.codec}/${p.pixFmt}`,
-    );
-    check(p.width === W && p.height === H, `${fmt} ${k}: dimensões ${p.width}x${p.height}`);
-    check(
-      p.fps === `${FPS}/1` && p.frames === total && Math.abs(p.duration - duration / 1000) < 0.05,
-      `${fmt} ${k}: fps/quadros/duração ${p.fps}/${p.frames}/${p.duration}`,
-    );
-    check(p.colorSpace === 'bt709', `${fmt} ${k}: espaço de cor ${p.colorSpace}`);
-  }
-  const a = probes.alpha;
-  check(
-    a.codec === 'prores' && /4444/.test(a.profile) && a.pixFmt.startsWith('yuva444p'),
-    `${fmt} alpha: ${a.codec}/${a.profile}/${a.pixFmt}`,
-  );
-  check(
-    a.width === W && a.height === H && a.fps === `${FPS}/1` && a.frames === ALPHA.seconds * FPS,
-    `${fmt} alpha: ${a.width}x${a.height} ${a.fps} ${a.frames}`,
-  );
-  // Fidelidade do alfa e das bordas: quadro do meio do trecho, decodificado, contra o PNG de origem (RGBA).
-  // PSNR no quadro do meio (em plena transição: alfa parcial); cores num quadro já assentado da confirmação.
-  const mid = Math.floor((ALPHA.seconds * FPS) / 2);
-  const settled = Math.round((STILLS.confirmacao / 1000) * FPS) - startFrame;
-  const decoded = `${OUT}alpha-${fmt}-decoded.png`;
-  ffmpeg([
-    '-i',
-    files.alpha,
-    '-vf',
-    `select=eq(n\\,${mid}),${FROM_709},format=rgba`,
-    '-frames:v',
-    '1',
-    decoded,
-  ]);
-  const source = `${dir}f${String(startFrame + mid).padStart(5, '0')}.png`;
-  const fidelity = psnr(source, decoded);
-  check(
-    Math.min(fidelity.r, fidelity.g, fidelity.b) >= 40 && fidelity.a >= 50,
-    `${fmt} alpha: PSNR ${JSON.stringify(fidelity)}`,
-  );
-  const colors = {
-    alphaCard: pixel(files.alpha, settled, ...inCard),
-    alphaEmpty: pixel(files.alpha, settled, ...empty),
-    previewCard: pixel(files.preview, Math.round((STILLS.confirmacao / 1000) * FPS), ...inCard),
-    previewBackground: pixel(
       files.preview,
-      Math.round((STILLS.confirmacao / 1000) * FPS),
-      ...empty,
-    ),
-  };
-  check(
-    near(colors.alphaCard, rgb(DEEP), 2) && colors.alphaCard[3] === 255,
-    `${fmt} alpha: cor do cartão ${colors.alphaCard}`,
-  );
-  check(
-    colors.alphaEmpty[3] === 0,
-    `${fmt} alpha: palco vazio não transparente ${colors.alphaEmpty}`,
-  );
-  check(
-    near(colors.previewCard, rgb(DEEP), 4),
-    `${fmt} preview: cor do cartão ${colors.previewCard}`,
-  );
-  check(
-    near(colors.previewBackground, rgb(SAND_WASH), 4),
-    `${fmt} preview: Sand Wash ${colors.previewBackground}`,
-  );
-  // Continuidade: placa sem travada (nenhum quadro parado; nenhum salto > 3× a mediana que também passe de 0,25 nível
-  // de luma, limiar de visibilidade — o zoompan media 2,69) e entrada do cartão do detentor sem quadro repetido.
-  for (const [kind, m] of Object.entries(plateMotion))
-    check(
-      m.still === 0 && m.max <= Math.max(3 * m.median, 0.25),
-      `${fmt} placa ${kind}: movimento irregular ${JSON.stringify(m)}`,
-    );
-  const enterFrom = Math.round((16_100 / 1000) * FPS) + 1;
-  const enterTo = Math.round((16_580 / 1000) * FPS);
-  const uiMotion = motion(files.preview, holderBox, enterFrom, enterTo);
-  check(
-    uiMotion.still === 0,
-    `${fmt} interface: quadro repetido durante a transição ${JSON.stringify(uiMotion)}`,
-  );
-
-  // 6. Evidências versionáveis: folha de contato das composições e zoom de borda do alfa sobre as duas placas.
-  const at = (t) => Math.round((t / 1000) * FPS);
-  const tiles = [];
-  for (const kind of ['claro', 'escuro']) {
-    for (const [name, t] of Object.entries(STILLS)) {
-      const tile = `${OUT}tile-${fmt}-${kind}-${name}.png`;
+    ]);
+    const plateMotion = {};
+    for (const kind of Object.keys(PLATES)) {
+      // Placa de teste com push-in subpixel: perspective com coordenadas em ponto flutuante (zoompan anda em pixels
+      // inteiros e trava — medido). Vira um vídeo intermediário, como o footage real, e o alfa é composto sobre ele.
+      const still = `${OUT}plate-${fmt}-${kind}.png`;
+      const plate = `${OUT}plate-${fmt}-${kind}.mp4`;
       ffmpeg([
         '-i',
-        files[kind],
+        `${ROOT}${PLATES[kind]}`,
         '-vf',
-        `select=eq(n\\,${at(t)}),${FROM_709},scale=${fmt === '16x9' ? '640:-2' : '-2:640'}:flags=lanczos`,
-        '-frames:v',
-        '1',
-        tile,
+        `scale=${W}:${H}:force_original_aspect_ratio=increase:flags=lanczos,crop=${W}:${H}:(iw-ow)*${spec.focusX}:(ih-oh)/2`,
+        still,
       ]);
-      tiles.push(tile);
+      const z = `(0.03*in/${total})`;
+      const push = `perspective=x0=W*${z}:y0=H*${z}:x1=W*(1-${z}):y1=H*${z}:x2=W*${z}:y2=H*(1-${z}):x3=W*(1-${z}):y3=H*(1-${z}):interpolation=cubic:sense=source:eval=frame`;
+      ffmpeg([
+        '-loop',
+        '1',
+        '-framerate',
+        String(FPS),
+        '-i',
+        still,
+        '-frames:v',
+        String(total),
+        '-vf',
+        `${push},${TO_709},format=yuv444p`,
+        '-c:v',
+        'libx264',
+        '-crf',
+        '12',
+        // Um único keyframe: os I-frames periódicos do x264 criavam pulsos de diferença (quadros 250 e 500, medido).
+        '-g',
+        String(total),
+        ...BT709,
+        plate,
+      ]);
+      plateMotion[kind] = motion(plate, [
+        Math.round(W * 0.4),
+        Math.round(H * 0.3),
+        Math.round(W * 0.3),
+        Math.round(H * 0.35),
+      ]);
+      // Composição em RGB (alfa straight), como num editor: placa decodificada pela mesma matriz BT.709.
+      ffmpeg([
+        '-i',
+        plate,
+        ...frames,
+        '-filter_complex',
+        `[0]${FROM_709},format=rgb24[bg];[bg][1]overlay=shortest=1:format=rgb,${TO_709},format=yuv420p`,
+        ...H264,
+        ...BT709,
+        files[kind],
+      ]);
     }
-  }
-  // Uma linha por placa (clara em cima, escura embaixo), os instantes-chave da esquerda para a direita.
-  const n = Object.keys(STILLS).length;
-  const row = (r) =>
-    `${Array.from({ length: n }, (_, i) => `[${r * n + i}]`).join('')}hstack=inputs=${n}[r${r}]`;
-  ffmpeg([
-    ...tiles.flatMap((t) => ['-i', t]),
-    '-filter_complex',
-    `${row(0)};${row(1)};[r0][r1]vstack`,
-    '-frames:v',
-    '1',
-    '-q:v',
-    '4',
-    `${EVIDENCE}contato-${fmt}.jpg`,
-  ]);
-  const cx = Math.max(0, Math.round((corner.left - 16) * dpr));
-  const cy = Math.max(0, Math.round((corner.top - 12) * dpr));
-  const zoom = (file) =>
-    `[${file}]select=eq(n\\,${at(STILLS.confirmacao)}),${FROM_709},crop=200:120:${cx}:${cy},scale=800:480:flags=neighbor`;
-  ffmpeg([
-    '-i',
-    files.claro,
-    '-i',
-    files.escuro,
-    '-filter_complex',
-    `${zoom(0)}[a];${zoom(1)}[b];[a][b]hstack`,
-    '-frames:v',
-    '1',
-    `${EVIDENCE}borda-${fmt}.png`,
-  ]);
-  for (const t of tiles) rmSync(t);
+    // 4. Um asset curto com alfa (ProRes 4444, 10 bits, alfa de 16 bits), só do trecho R4. qscale 8 = metade do peso do
+    //    padrão com RGB ≥ 50 dB e alfa idêntico (medido); os masters da Etapa C usam a qualidade padrão.
+    const startFrame = Math.round((ALPHA.from / 1000) * FPS);
+    ffmpeg([
+      '-framerate',
+      String(FPS),
+      '-start_number',
+      String(startFrame),
+      '-i',
+      `${dir}f%05d.png`,
+      '-frames:v',
+      String(ALPHA.seconds * FPS),
+      '-vf',
+      `${TO_709},format=yuva444p10le`,
+      '-c:v',
+      'prores_ks',
+      '-profile:v',
+      '4444',
+      '-qscale:v',
+      '8',
+      '-alpha_bits',
+      '16',
+      '-vendor',
+      'apl0',
+      ...BT709,
+      files.alpha,
+    ]);
 
-  report.formats[fmt] = {
-    viewport: spec.viewport,
-    devicePixelRatio: { preview: dpr, master: spec.master[0] / spec.viewport.width },
-    frames: total,
-    msPerFramePreview: +msPerFrame.toFixed(1),
-    probes,
-    alphaFidelityPsnrDb: fidelity,
-    colors,
-    expected: { deep: rgb(DEEP), sandWash: rgb(SAND_WASH) },
-    plateMotion,
-    uiTransitionMotion: uiMotion,
-  };
+    // 5. Validação dos arquivos codificados.
+    const probes = Object.fromEntries(Object.entries(files).map(([k, f]) => [k, probe(f)]));
+    for (const k of ['preview', ...Object.keys(PLATES)]) {
+      const p = probes[k];
+      check(
+        p.codec === 'h264' && p.pixFmt === 'yuv420p',
+        `${fmt} ${k}: codec/pix_fmt ${p.codec}/${p.pixFmt}`,
+      );
+      check(p.width === W && p.height === H, `${fmt} ${k}: dimensões ${p.width}x${p.height}`);
+      check(
+        p.fps === `${FPS}/1` && p.frames === total && Math.abs(p.duration - duration / 1000) < 0.05,
+        `${fmt} ${k}: fps/quadros/duração ${p.fps}/${p.frames}/${p.duration}`,
+      );
+      check(p.colorSpace === 'bt709', `${fmt} ${k}: espaço de cor ${p.colorSpace}`);
+    }
+    const a = probes.alpha;
+    check(
+      a.codec === 'prores' && /4444/.test(a.profile) && a.pixFmt.startsWith('yuva444p'),
+      `${fmt} alpha: ${a.codec}/${a.profile}/${a.pixFmt}`,
+    );
+    check(
+      a.width === W && a.height === H && a.fps === `${FPS}/1` && a.frames === ALPHA.seconds * FPS,
+      `${fmt} alpha: ${a.width}x${a.height} ${a.fps} ${a.frames}`,
+    );
+    // Fidelidade do alfa e das bordas: quadro do meio do trecho, decodificado, contra o PNG de origem (RGBA).
+    // PSNR no quadro do meio (em plena transição: alfa parcial); cores num quadro já assentado da confirmação.
+    const mid = Math.floor((ALPHA.seconds * FPS) / 2);
+    const settled = Math.round((qa.sample.at / 1000) * FPS) - startFrame;
+    const decoded = `${OUT}alpha-${seq}-${fmt}-decoded.png`;
+    ffmpeg([
+      '-i',
+      files.alpha,
+      '-vf',
+      `select=eq(n\\,${mid}),${FROM_709},format=rgba`,
+      '-frames:v',
+      '1',
+      decoded,
+    ]);
+    const source = `${dir}f${String(startFrame + mid).padStart(5, '0')}.png`;
+    const fidelity = psnr(source, decoded);
+    check(
+      Math.min(fidelity.r, fidelity.g, fidelity.b) >= 40 && fidelity.a >= 50,
+      `${fmt} alpha: PSNR ${JSON.stringify(fidelity)}`,
+    );
+    const colors = {
+      alphaCard: pixel(files.alpha, settled, ...inCard),
+      alphaEmpty: pixel(files.alpha, settled, ...empty),
+      previewCard: pixel(files.preview, Math.round((qa.sample.at / 1000) * FPS), ...inCard),
+      previewBackground: pixel(files.preview, Math.round((qa.sample.at / 1000) * FPS), ...empty),
+    };
+    check(
+      near(colors.alphaCard, rgb(DEEP), 2) && colors.alphaCard[3] === 255,
+      `${fmt} alpha: cor do cartão ${colors.alphaCard}`,
+    );
+    check(
+      colors.alphaEmpty[3] === 0,
+      `${fmt} alpha: palco vazio não transparente ${colors.alphaEmpty}`,
+    );
+    check(
+      near(colors.previewCard, rgb(DEEP), 4),
+      `${fmt} preview: cor do cartão ${colors.previewCard}`,
+    );
+    check(
+      near(colors.previewBackground, rgb(SAND_WASH), 4),
+      `${fmt} preview: Sand Wash ${colors.previewBackground}`,
+    );
+    // Continuidade: placa sem travada (nenhum quadro parado; nenhum salto > 3× a mediana que também passe de 0,25 nível
+    // de luma, limiar de visibilidade — o zoompan media 2,69) e entrada do cartão do detentor sem quadro repetido.
+    for (const [kind, m] of Object.entries(plateMotion))
+      check(
+        m.still === 0 && m.max <= Math.max(3 * m.median, 0.25),
+        `${fmt} placa ${kind}: movimento irregular ${JSON.stringify(m)}`,
+      );
+    const enterFrom = Math.round((qa.motion.enter[0] / 1000) * FPS) + 1;
+    const enterTo = Math.round((qa.motion.enter[1] / 1000) * FPS);
+    const uiMotion = motion(files.preview, holderBox, enterFrom, enterTo);
+    check(
+      uiMotion.still === 0,
+      `${fmt} interface: quadro repetido durante a transição ${JSON.stringify(uiMotion)}`,
+    );
+
+    // 6. Evidências versionáveis: folha de contato das composições e zoom de borda do alfa sobre as duas placas.
+    const at = (t) => Math.round((t / 1000) * FPS);
+    const tiles = [];
+    for (const kind of Object.keys(PLATES)) {
+      for (const [name, t] of Object.entries(STILLS)) {
+        const tile = `${OUT}tile-${seq}-${fmt}-${kind}-${name}.png`;
+        ffmpeg([
+          '-i',
+          files[kind],
+          '-vf',
+          `select=eq(n\\,${at(t)}),${FROM_709},scale=${fmt === '16x9' ? '640:-2' : '-2:640'}:flags=lanczos`,
+          '-frames:v',
+          '1',
+          tile,
+        ]);
+        tiles.push(tile);
+      }
+    }
+    // Uma linha por placa, os instantes-chave da esquerda para a direita.
+    const n = Object.keys(STILLS).length;
+    const rows = Object.keys(PLATES).length;
+    const row = (r) =>
+      `${Array.from({ length: n }, (_, i) => `[${r * n + i}]`).join('')}hstack=inputs=${n}${rows > 1 ? `[r${r}]` : ''}`;
+    const sheet = Array.from({ length: rows }, (_, r) => row(r)).join(';');
+    ffmpeg([
+      ...tiles.flatMap((t) => ['-i', t]),
+      '-filter_complex',
+      rows > 1
+        ? `${sheet};${Array.from({ length: rows }, (_, r) => `[r${r}]`).join('')}vstack=inputs=${rows}`
+        : sheet,
+      '-frames:v',
+      '1',
+      '-q:v',
+      '4',
+      `${EVIDENCE}contato-${tag}.jpg`,
+    ]);
+    const cx = Math.max(0, Math.round((corner.left - 16) * dpr));
+    const cy = Math.max(0, Math.round((corner.top - 12) * dpr));
+    const kinds = Object.keys(PLATES);
+    const zoom = (i) =>
+      `[${i}]select=eq(n\\,${at(edgeCard.at)}),${FROM_709},crop=200:120:${cx}:${cy},scale=800:480:flags=neighbor`;
+    ffmpeg([
+      ...kinds.flatMap((kind) => ['-i', files[kind]]),
+      '-filter_complex',
+      kinds.length > 1
+        ? `${kinds.map((_, i) => `${zoom(i)}[z${i}]`).join(';')};${kinds.map((_, i) => `[z${i}]`).join('')}hstack=inputs=${kinds.length}`
+        : zoom(0),
+      '-frames:v',
+      '1',
+      `${EVIDENCE}borda-${tag}.png`,
+    ]);
+    for (const t of tiles) rmSync(t);
+
+    report.formats[fmt] = {
+      viewport: spec.viewport,
+      devicePixelRatio: { preview: dpr, master: spec.master[0] / spec.viewport.width },
+      frames: total,
+      msPerFramePreview: +msPerFrame.toFixed(1),
+      probes,
+      alphaFidelityPsnrDb: fidelity,
+      colors,
+      expected: { deep: rgb(DEEP), sandWash: rgb(SAND_WASH) },
+      plateMotion,
+      uiTransitionMotion: uiMotion,
+    };
+  }
+  writeFileSync(`${OUT}validation-${seq}.json`, JSON.stringify({ ...report, failures }, null, 2));
+  for (const [fmt, r] of Object.entries(report.formats)) {
+    const { preview, alpha } = r.probes;
+    console.log(
+      `${seq} ${fmt}: ${r.frames} quadros a ${r.msPerFramePreview} ms/quadro · prévia ${preview.width}x${preview.height} ${preview.fps} ${preview.duration}s ${preview.mb} MB · alfa ${alpha.pixFmt} ${alpha.frames} quadros ${alpha.mb} MB · PSNR ${JSON.stringify(r.alphaFidelityPsnrDb)}`,
+    );
+  }
 }
 
 // 7. Comparação: captura em tempo real (screencast do Chromium, como uma gravação de tela) na MESMA resolução 1920×1080.
 //    O screencast entrega pixels CSS (com DPR 1,5 saía 1280×720, medido); por isso a viewport aqui é 1920×1080 a
 //    DPR 1 — 1920×1080 pixels reais, como gravar um monitor 1080p a 100%. Mede tempo, quedas e alfa, não a composição.
-{
+//    Feita na Etapa A; só roda de novo com --realtime.
+if (process.argv.includes('--realtime')) {
+  SEQ = 'request';
   const context = await browser.newContext({
     viewport: { width: 1920, height: 1080 },
     deviceScaleFactor: 1,
@@ -561,19 +578,12 @@ for (const [fmt, spec] of Object.entries(FORMATS)) {
     resolution: `${p.width}x${p.height}`,
     hasTransparency: minAlpha < 255,
   };
+  writeFileSync(`${OUT}realtime.json`, JSON.stringify(report.realtime, null, 2));
+  console.log(`tempo real: ${JSON.stringify(report.realtime)}`);
 }
 
 await browser.close();
 await close();
-report.failures = failures;
-writeFileSync(`${OUT}validation.json`, JSON.stringify(report, null, 2));
-for (const [fmt, r] of Object.entries(report.formats)) {
-  const { preview, alpha } = r.probes;
-  console.log(
-    `${fmt}: ${r.frames} quadros a ${r.msPerFramePreview} ms/quadro · prévia ${preview.width}x${preview.height} ${preview.fps} ${preview.duration}s ${preview.mb} MB · alfa ${alpha.pixFmt} ${alpha.frames} quadros ${alpha.mb} MB · PSNR ${JSON.stringify(r.alphaFidelityPsnrDb)}`,
-  );
-}
-console.log(`tempo real: ${JSON.stringify(report.realtime)}`);
 if (failures.length) {
   console.error(`FALHAS (${failures.length}):\n- ${failures.join('\n- ')}`);
   process.exit(1);

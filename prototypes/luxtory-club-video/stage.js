@@ -1,10 +1,12 @@
 // Demonstração conceitual — motor de tempo do palco. O estado de cada quadro é função pura de t (ms), o que torna a
 // captura determinística (capture.mjs chama __demo.seek(t) quadro a quadro) e a prévia ao vivo igual ao render.
 // Parâmetros: ?fmt=16x9|9x16 · ?t=<ms> (quadro fixo) · ?bg=plate (placa de prévia, só no navegador) ·
-// ?play=1 (reprodução em tempo real também sob automação, usada só na comparação com gravação de tela).
-import { build, timeline } from './sequence-request.js';
-
+// ?play=1 (reprodução em tempo real também sob automação, usada só na comparação com gravação de tela) ·
+// ?seq=request|direct|luxplus (sequência; Request por padrão).
+const SEQUENCES = ['request', 'direct', 'luxplus'];
 const query = new URLSearchParams(location.search);
+const seq = SEQUENCES.includes(query.get('seq')) ? query.get('seq') : 'request';
+const { build, timeline } = await import(`./sequence-${seq}.js`);
 const fmt = query.get('fmt') === '9x16' ? '9x16' : '16x9';
 document.documentElement.dataset.fmt = fmt;
 const stage = document.querySelector('[data-stage]');
@@ -151,7 +153,7 @@ document.addEventListener('keydown', (event) => {
 });
 
 await document.fonts.ready;
-window.__demo = { seek, fmt, duration: tl.duration, marks: tl.marks, ready: true };
+window.__demo = { seek, seq, fmt, duration: tl.duration, marks: tl.marks, ready: true };
 if (query.has('t')) seek(Number(query.get('t')));
 else if (navigator.webdriver && !query.has('play')) seek(0);
 else play(0);

@@ -10,7 +10,10 @@ import {
   cssFromHtml,
   scanCss,
 } from '../../src/design-system/scripts/check-hardcodes.mjs';
-import { CANONICAL, FICTITIOUS, requestScenario } from './data.js';
+import { CANONICAL, FICTITIOUS, directScenario, luxplusScenario, requestScenario } from './data.js';
+import * as directSeq from './sequence-direct.js';
+import * as luxplusSeq from './sequence-luxplus.js';
+import * as requestSeq from './sequence-request.js';
 import {
   REQUEST_STATES,
   addMonthsUTC,
@@ -247,6 +250,92 @@ for (const fmt of ['16x9', '9x16']) {
     );
   });
 }
+
+/** HTML que a sequência insere no palco (build sem DOM: o palco só recebe a marcação). */
+const markup = (seq, fmt = '16x9') => {
+  const stage = { dataset: {}, insertAdjacentHTML: (_, html) => (stage.html = html) };
+  seq.build(stage, fmt);
+  return stage.html.replace(/<[^>]+>/g, ' ');
+};
+
+test('[BR-220][BR-221][PD-008][01 §24] Direct: Inventário Luxtory, Créditos por FEFO na confirmação, Fee mínimo', () => {
+  const d = directScenario();
+  assert.deepEqual(d.nights, ['2027-05-28']);
+  assert.equal(d.credits, 11_500, 'PRL R$ 1.150,00 × 10');
+  assert.equal(d.feeCents, 12_000, '10% = R$ 115,00 < mínimo de R$ 120,00');
+  assert.deepEqual(
+    d.consumption,
+    [{ lotId: 'L-0003', quantity: 11_500 }],
+    'L-0001/L-0002 já consumidos na Request',
+  );
+  assert.deepEqual(d.balances, {
+    before: { available: 39_000, consumed: 0 },
+    after: { available: 27_500, consumed: 11_500 },
+  });
+  assert.equal(d.booking.channel, 'Luxchange Direct');
+  const text = markup(directSeq);
+  assert.match(text, /Não exigido/, 'sem aceite de outro Titular');
+  assert.match(text, /não reserva as noites/, 'pagamento não reserva (ADR-008)');
+  assert.doesNotMatch(
+    text,
+    /Garantia|Pendente|Request recebida/,
+    'Direct não tem Garantia nem espera por terceiro',
+  );
+});
+
+test('[BR-240][BR-241][BR-244][BR-230] Luxplus: dinheiro, sem Créditos, sem Fee, valor só ilustrativo', () => {
+  const l = luxplusScenario();
+  assert.deepEqual(l.nights, ['2027-08-13', '2027-08-14']);
+  assert.deepEqual(l.credits, { available: 27_500, used: 0 }, 'saldo do fim do Direct, intocado');
+  assert.equal(l.booking.channel, 'Luxplus');
+  const text = markup(luxplusSeq);
+  assert.match(text, /R\$\s*2\.480,00\s+ilustrativo/);
+  assert.match(text, /Não utilizados/);
+  assert.doesNotMatch(text, /Fee|desconto|PRL|Garantia/, 'sem Fee, desconto, PRL ou Garantia');
+  assert.equal(luxplusSeq.timeline('16x9').tween.length, 0, 'nenhum movimento de Créditos');
+});
+
+for (const [name, seq] of [
+  ['direct', directSeq],
+  ['luxplus', luxplusSeq],
+]) {
+  for (const fmt of ['16x9', '9x16']) {
+    test(`[PD-009][TECH-080] ${name} ${fmt}: política → pagamento → revalidação → confirmação, sem crossfade`, () => {
+      const tl = seq.timeline(fmt);
+      const enter = (sel) => tl.enter.find((e) => e.sel === sel);
+      const set = (sel, attr) => tl.set.filter((e) => e.sel === sel && e.attr === attr);
+      const pay = set('#send', 'data-pressed')[0].at;
+      assert.ok(set('#policy', 'checked')[0].at < pay, 'política aceita antes do pagamento');
+      assert.ok(pay < enter('#reval').in, 'revalidação depois do pagamento');
+      const lastCheck = Math.max(...tl.enter.filter((e) => /^#rv-/.test(e.sel)).map((e) => e.in));
+      assert.ok(lastCheck < enter('#booking').in, 'confirmação depois da revalidação');
+      assert.ok(
+        tl.tween.every((tw) => tw.at === enter('#booking').in),
+        'Créditos só na confirmação',
+      );
+      assert.ok(!tl.set.some((e) => e.sel === '#accept'), 'nenhum aceite de terceiro');
+      const exit = parseFloat(TOKENS.duration.moderate.$value);
+      const pairs = [
+        ['#cal', '#review'],
+        ['#review', '#reval'],
+        ['#reval', '#booking'],
+        ...(fmt === '9x16' ? [['#home', '#cal']] : [['#home', '#credits']]),
+      ];
+      for (const [before, after] of pairs)
+        assert.ok(
+          enter(after).in >= enter(before).out + exit,
+          `${after} entra antes de ${before} sair`,
+        );
+    });
+  }
+}
+
+test('a Request aprovada continua com Garantia, Pendente e aceite do detentor', () => {
+  const text = markup(requestSeq);
+  assert.match(text, /Créditos em Garantia/);
+  assert.match(text, /Pendente/);
+  assert.match(text, /Request recebida/);
+});
 
 const SOURCES = readdirSync(DIR).filter((f) => /\.(js|mjs|css|html|md)$/.test(f));
 

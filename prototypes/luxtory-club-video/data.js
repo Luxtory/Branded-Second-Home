@@ -8,6 +8,7 @@ import {
   cessionEffect,
   creditExpiresAt,
   creditsForPrl,
+  consumeCreditsFefo,
   holdCreditsFefo,
   luxchangeFee,
   nightsOf,
@@ -160,6 +161,66 @@ export function requestScenario(data = FICTITIOUS, params = CANONICAL) {
     request: { states: ['pending', 'accepted'], acceptedAt },
     // Mesma operação: a reserva nasce confirmada no instante do aceite válido (REQ-064); nunca antes.
     booking: { state: 'Confirmada', channel: 'Luxchange Request', confirmedAt: acceptedAt },
+    policy: data.policy,
+  };
+}
+
+/** Lotes de quem solicitou depois do aceite da Request: a Garantia consumida sai de cada lote (held → consumed). */
+function lotsAfterRequest(data, params) {
+  const r = requestScenario(data, params);
+  return r.lots.map((lot) => ({
+    ...lot,
+    available: lot.available - (r.hold.find((h) => h.lotId === lot.id)?.quantity ?? 0),
+  }));
+}
+
+/**
+ * Cenário do Luxchange Direct (Inventário Luxtory): sem aceite de terceiro (BR-220); Créditos consumidos por FEFO
+ * na confirmação (BR-221, PD-008); Fee pago antes da confirmação (TECH-082) — aqui, o ramo do mínimo (01 §24).
+ */
+export function directScenario(data = FICTITIOUS, params = CANONICAL) {
+  const d = data.direct;
+  const now = at(d.at);
+  const lots = lotsAfterRequest(data, params);
+  const available = lots.reduce((sum, lot) => sum + lot.available, 0);
+  const prlPeriodCents = prlOfPeriod(d.prlCents);
+  const credits = creditsForPrl(prlPeriodCents, params);
+  return {
+    requesterName: data.requester.name,
+    secondHome: data.secondHomes[d.secondHome],
+    nights: nightsOf(d.checkin, d.checkout),
+    checkin: d.checkin,
+    checkout: d.checkout,
+    prlPeriodCents,
+    credits,
+    feeCents: luxchangeFee(prlPeriodCents, params),
+    lots,
+    consumption: consumeCreditsFefo(lots, credits, { now }),
+    balances: {
+      before: { available, consumed: 0 },
+      after: { available: available - credits, consumed: credits },
+    },
+    booking: { state: 'Confirmada', channel: 'Luxchange Direct', confirmedAt: now },
+    policy: data.policy,
+  };
+}
+
+/**
+ * Cenário do Luxplus (Inventário Luxtory, em dinheiro): não usa Créditos (BR-241); sem Fee (BR-230 só alcança Request e
+ * Direct); valor ilustrativo da estadia, sem PRL nem desconto (BR-244, P-5).
+ */
+export function luxplusScenario(data = FICTITIOUS, params = CANONICAL) {
+  const l = data.luxplus;
+  const direct = directScenario(data, params);
+  return {
+    requesterName: data.requester.name,
+    secondHome: data.secondHomes[l.secondHome],
+    nights: nightsOf(l.checkin, l.checkout),
+    checkin: l.checkin,
+    checkout: l.checkout,
+    stayValueCents: l.stayValueCents,
+    credits: { available: direct.balances.after.available, used: 0 },
+    booking: { state: 'Confirmada', channel: 'Luxplus', confirmedAt: at(l.at) },
     policy: data.policy,
   };
 }

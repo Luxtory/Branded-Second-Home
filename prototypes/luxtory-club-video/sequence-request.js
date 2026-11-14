@@ -2,63 +2,12 @@
 // Todo valor exibido vem de requestScenario() (data.js → rules.js). Os textos são da demonstração, não copy aprovada.
 // Hipótese visual (não especificada no 02): quem solicita escolhe o período e recebe a rota; não vê calendário,
 // disponibilidade nem identidade de outro Titular.
-import { CANONICAL, requestScenario } from './data.js';
-import { brl, civilFull, civilShort, credits, instant } from './format.js';
+import { requestScenario } from './data.js';
+import { brl, credits, instant } from './format.js';
+import { ALWAYS, ICONS, calendarMonth, hours, icon, periodOf, press, seal } from './shared.js';
 
 const s = requestScenario();
-const period = `${civilShort(s.checkin)} a ${civilFull(s.checkout)}`;
-const SEAL = 'Demonstração conceitual · dados fictícios';
-const hours = `entrada ${CANONICAL.checkinHour}h, saída ${CANONICAL.checkoutHour}h`; // PD-002
-
-const ICONS = `
-  <svg width="0" height="0" class="lx-visually-hidden" aria-hidden="true" focusable="false">
-    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
-    <symbol id="i-info" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></g></symbol>
-    <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></g></symbol>
-  </svg>`;
-const icon = (id, cls = 'demo-icon') =>
-  `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#${id}"/></svg>`;
-const seal = `<p class="demo-seal">${SEAL}</p>`;
-
-function calendarMonth(year, month, context) {
-  const weekdays = [
-    ['dom', 'domingo'],
-    ['seg', 'segunda-feira'],
-    ['ter', 'terça-feira'],
-    ['qua', 'quarta-feira'],
-    ['qui', 'quinta-feira'],
-    ['sex', 'sexta-feira'],
-    ['sáb', 'sábado'],
-  ];
-  const first = new Date(Date.UTC(year, month - 1, 1));
-  const days = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  const cells = [...Array(first.getUTCDay()).fill('<td></td>')];
-  for (let d = 1; d <= days; d++) {
-    const iso = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    cells.push(
-      `<td data-day="${iso}"><span class="lx-calendar__day"><span class="lx-calendar__number">${d}</span></span></td>`,
-    );
-  }
-  while (cells.length % 7) cells.push('<td></td>');
-  const rows = [];
-  for (let i = 0; i < cells.length; i += 7) rows.push(`<tr>${cells.slice(i, i + 7).join('')}</tr>`);
-  const title = new Intl.DateTimeFormat('pt-BR', {
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(first);
-  return `
-    <div class="lx-calendar">
-      <div class="lx-calendar__month">
-        <div class="lx-calendar__header demo-cal-head"><h2 class="lx-calendar__title">${title}</h2><span class="demo-sub demo-only-9x16">${context}</span></div>
-        <table class="lx-calendar__table">
-          <caption>${title}: período escolhido de ${period}</caption>
-          <thead><tr>${weekdays.map(([short, long]) => `<th scope="col" abbr="${long}">${short}</th>`).join('')}</tr></thead>
-          <tbody>${rows.join('')}</tbody>
-        </table>
-      </div>
-    </div>`;
-}
+const period = periodOf(s.checkin, s.checkout);
 
 const [lotA, lotB, lotC] = s.lots;
 const holdOf = (id) => s.hold.find((h) => h.lotId === id)?.quantity ?? 0;
@@ -85,7 +34,7 @@ export function build(stage, fmt) {
     </section>
 
     <section class="demo-card demo-card--task" id="cal" data-surface="deep" aria-label="Escolha das noites">
-      ${calendarMonth(year, month, s.secondHome.name)}
+      ${calendarMonth(year, month, s.secondHome.name, period)}
       <div class="demo-summary" id="cal-summary">
         <span class="lx-ordinal">${s.nights.length} noites</span>
         <span class="demo-sub">${period} · ${hours}</span>
@@ -183,7 +132,6 @@ export function build(stage, fmt) {
   stage.dataset.fmt = fmt;
 }
 
-const ALWAYS = -10_000;
 const share = (part) => part / s.balances.beforeSend.available;
 
 export function timeline(fmt) {
@@ -201,10 +149,6 @@ export function timeline(fmt) {
   // Aceite válido: o cartão do detentor sai e, na mesma operação, entram Request Aceita e Reserva Confirmada.
   const holderOut = 20_300;
   const result = 20_600;
-  const press = (sel, at) => [
-    { sel, attr: 'data-pressed', at, value: true },
-    { sel, attr: 'data-pressed', at: at + 200, value: null },
-  ];
   return {
     duration: 25_000,
     enter: [
@@ -287,3 +231,89 @@ export function timeline(fmt) {
     ],
   };
 }
+
+/** Pontos de verificação (check.mjs) e de captura (capture.mjs), nos dois formatos — os mesmos da Etapa A. */
+export const qa = {
+  checkpoints: [
+    { t: 1_000, name: 'inicio', expect: [s.secondHome.name] },
+    {
+      t: 4_800,
+      name: 'calendario',
+      expect: ['3 noites', 'Noites de outro Titular', 'Luxchange Request'],
+    },
+    {
+      t: 9_000,
+      name: 'revisao',
+      expect: [
+        credits(s.credits),
+        brl(s.feeCents),
+        'ilustrativo',
+        '24 horas',
+        'política comercial aplicável',
+        'Etapa conceitual',
+      ],
+    },
+    {
+      t: 13_800,
+      name: 'pendente',
+      expect: [
+        'Pendente',
+        `Enviada ${instant(s.sentAt)}`,
+        `Expira ${instant(s.expiresAt)}`,
+        'não ficam bloqueadas',
+        credits(s.balances.afterSend.available),
+        credits(s.balances.afterSend.held),
+      ],
+    },
+    {
+      t: 17_500,
+      name: 'recebida',
+      expect: ['Request recebida', 'Co-Owner', 'seguem consumidas do Direito de Uso'],
+    },
+    {
+      t: 20_100,
+      name: 'revalidacao',
+      expect: [
+        'Revalidando antes de confirmar',
+        'Membership dos dois Titulares',
+        'Créditos em Garantia',
+      ],
+    },
+    {
+      t: 22_000,
+      name: 'confirmacao',
+      expect: [
+        'Request aceita',
+        'Reserva confirmada',
+        `Mesma operação · ${instant(s.acceptedAt)}`,
+        s.holder.lot.id,
+        `Vence ${instant(s.holder.lot.expiresAt)}`,
+        credits(s.balances.afterAccept.consumed),
+      ],
+    },
+  ],
+  calendar: {
+    t: 4_800,
+    range: Object.fromEntries([
+      [s.nights[0], 'start'],
+      ...s.nights.slice(1).map((d) => [d, 'night']),
+      [s.checkout, 'end'],
+    ]),
+  },
+  stills: {
+    calendario: 4_800,
+    revisao: 9_000,
+    pendente: 13_800,
+    revalidacao: 20_100,
+    confirmacao: 22_000,
+  },
+  // Trecho do aceite: toque em Aceitar, revalidação, saída do cartão e Request Aceita + Reserva Confirmada.
+  alpha: { from: 18_300, seconds: 4 },
+  sample: { card: '#accepted', at: 22_000 },
+  edge: { card: '#booking', at: 22_000 },
+  motion: { card: '#holder', at: 17_500, enter: [16_100, 16_580] },
+  plates: {
+    claro: 'public/images/home/hero/hero-lifestyle.jpg',
+    escuro: 'public/images/home/hero/luxury-property-facade-hero.jpg',
+  },
+};
