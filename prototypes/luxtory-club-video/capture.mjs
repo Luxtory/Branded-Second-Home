@@ -305,6 +305,9 @@ for (const [fmt, spec] of Object.entries(FORMATS)) {
       'libx264',
       '-crf',
       '12',
+      // Um único keyframe: os I-frames periódicos do x264 criavam pulsos de diferença (quadros 250 e 500, medido).
+      '-g',
+      String(total),
       ...BT709,
       plate,
     ]);
@@ -500,8 +503,16 @@ for (const [fmt, spec] of Object.entries(FORMATS)) {
 }
 
 // 7. Comparação: captura em tempo real (screencast do Chromium, como uma gravação de tela) na MESMA resolução 1920×1080.
+//    O screencast entrega pixels CSS (com DPR 1,5 saía 1280×720, medido); por isso a viewport aqui é 1920×1080 a
+//    DPR 1 — 1920×1080 pixels reais, como gravar um monitor 1080p a 100%. Mede tempo, quedas e alfa, não a composição.
 {
-  const { context, page } = await openStage('16x9', FORMATS['16x9'].preview, '&play=1');
+  const context = await browser.newContext({
+    viewport: { width: 1920, height: 1080 },
+    deviceScaleFactor: 1,
+  });
+  const page = await context.newPage();
+  await page.goto(stageUrl('16x9', '&play=1'));
+  await page.waitForFunction(() => window.__demo?.ready);
   const cdp = await context.newCDPSession(page);
   const stamps = [];
   let firstFrame = null;
@@ -519,10 +530,10 @@ for (const [fmt, spec] of Object.entries(FORMATS)) {
   await page.waitForTimeout(12_000);
   await cdp.send('Page.stopScreencast');
   await context.close();
-  const gaps = stamps
-    .slice(1)
-    .map((t, i) => (t - stamps[i]) * 1000)
-    .sort((x, y) => x - y);
+  // O screencast só envia quadro quando a tela muda: intervalos > 250 ms são pausas da coreografia, não quedas.
+  // Durante o movimento, um intervalo > 40 ms é um quadro atrasado ou perdido em relação a 30 fps.
+  const intervals = stamps.slice(1).map((t, i) => (t - stamps[i]) * 1000);
+  const gaps = intervals.filter((ms) => ms <= 250).sort((x, y) => x - y);
   const frame = `${OUT}realtime-frame.png`;
   writeFileSync(frame, Buffer.from(firstFrame, 'base64'));
   const p = probe(frame);
@@ -536,8 +547,9 @@ for (const [fmt, spec] of Object.entries(FORMATS)) {
   report.realtime = {
     method: 'CDP Page.startScreencast durante a reprodução ao vivo (12 s)',
     frames: stamps.length,
-    meanFps: +(stamps.length / (stamps.at(-1) - stamps[0])).toFixed(1),
-    intervalMs: {
+    idlePauses: intervals.length - gaps.length,
+    lateDuringMotion: gaps.filter((ms) => ms > 40).length,
+    intervalMsDuringMotion: {
       median: +gaps[Math.floor(gaps.length / 2)].toFixed(1),
       p95: +gaps[Math.floor(gaps.length * 0.95)].toFixed(1),
       max: +gaps.at(-1).toFixed(1),
