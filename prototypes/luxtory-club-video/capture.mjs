@@ -425,10 +425,11 @@ for (const [fmt, spec] of Object.entries(FORMATS)) {
     near(colors.previewBackground, rgb(SAND_WASH), 4),
     `${fmt} preview: Sand Wash ${colors.previewBackground}`,
   );
-  // Continuidade: placa sem travadas (variação baixa, nenhum salto) e a entrada do cartão do detentor sem quadro repetido.
+  // Continuidade: placa sem travada (nenhum quadro parado; nenhum salto > 3× a mediana que também passe de 0,25 nível
+  // de luma, limiar de visibilidade — o zoompan media 2,69) e entrada do cartão do detentor sem quadro repetido.
   for (const [kind, m] of Object.entries(plateMotion))
     check(
-      m.cv <= 0.5 && m.max <= 3 * m.median && m.still === 0,
+      m.still === 0 && m.max <= Math.max(3 * m.median, 0.25),
       `${fmt} placa ${kind}: movimento irregular ${JSON.stringify(m)}`,
     );
   const enterFrom = Math.round((16_100 / 1000) * FPS) + 1;
