@@ -126,19 +126,22 @@ textos diferentes; `check.mjs` varre os 750 quadros de cada formato.
 
 ## Evidências da Etapa A
 
-Medidas pelos scripts acima (`out/etapa-a/check.json` e `validation.json`; folhas de contato e zoom de borda em
-`evidencias/etapa-a/`).
+Medidas pelos scripts acima (`out/etapa-a/check.json` e `validation.json`). Em `evidencias/etapa-a/`: folhas de
+contato, zoom de borda do alfa e `transicao-*.jpg` — a confirmação antes (linha de cima: 20,00 · 20,13 · 20,20 · 20,27 ·
+20,40 s, textos misturados) e depois da correção (linha de baixo: 20,00 · 20,33 · 20,53 · 20,67 · 21,00 s), extraídas
+dos MP4 codificados sobre a placa escura.
 
 | Verificação | 16:9 | 9:16 |
 |---|---|---|
 | Testes (`prototype.test.mjs`) | 15/15 | — |
 | `check.mjs`: 7 instantes, valores e estados, selo, sobreposição, axe | conforme, axe 0 | conforme, axe 0 |
+| Varredura dos 750 quadros: cartões que se cruzam visíveis juntos | 0 (antes da correção: 7) | 0 (antes: 16) |
 | Texto mínimo no arquivo final | 20 px (1080p) | 32 px (1920 de altura) |
 | Determinismo (mesmo quadro, dois caminhos) | bytes idênticos | bytes idênticos |
-| Prévia H.264 | 1920×1080 · 30 fps · 750 quadros · 25,0 s · BT.709 · 1,6 MB | 1080×1920 · idem · 2,1 MB |
-| ProRes 4444 (R4, 3 s) | 1920×1080 · `yuva444p12le` · 90 quadros · 39 MB | 1080×1920 · 54 MB |
-| Fidelidade do alfa decodificado (PSNR R/G/B/A) | 50 / 55 / 52 / 76 dB | 48 / 53 / 50 / 76 dB |
-| Deep `#003D52` (0,61,82) no cartão | ProRes (0,61,81) · MP4 (2,61,84) | ProRes (0,60,81) · MP4 (0,58,79) |
+| Prévia H.264 | 1920×1080 · 30 fps · 750 quadros · 25,0 s · BT.709 · 1,5 MB | 1080×1920 · idem · 1,8 MB |
+| ProRes 4444 (aceite → confirmação, 18,3–22,3 s) | 1920×1080 · `yuva444p12le` · 120 quadros · 4,0 s · 45 MB | 1080×1920 · 64 MB |
+| Fidelidade do alfa num quadro de transição (PSNR R/G/B/A) | 51 / 56 / 54 / 79 dB | 49 / 54 / 51 / 78 dB |
+| Deep `#003D52` (0,61,82) no cartão | ProRes (0,61,81) · MP4 (0,60,83) | ProRes (0,60,81) · MP4 (0,58,79) |
 | Fora dos cartões (alfa) | 0 | 0 |
 | Placa com push-in (salto máx. / mediana, luma) | clara 0,096 / 0,039 · escura 0,176 / 0,157 | clara 0,062 / 0,019 · escura 0,139 / 0,120 |
 | Transição da interface (entrada do cartão) | 13 quadros, nenhum repetido | 13 quadros, nenhum repetido |
@@ -146,7 +149,7 @@ Medidas pelos scripts acima (`out/etapa-a/check.json` e `validation.json`; folha
 **Captura automatizada × tempo real, ambas em 1920×1080 pixels reais.** A automatizada é exata por construção
 (750/750 quadros a 30 fps, `seek(t)`), tem alfa e repete os mesmos bytes; ~100 ms por quadro (25 s em ~75 s). A
 gravação em tempo real (screencast do Chromium, equivalente a gravar a tela) não tem transparência, entrega quadros
-irregulares (8 atrasados durante o movimento em 12 s, intervalo máximo de 225 ms) e não se repete igual. Para
+irregulares (8 atrasados durante o movimento em 12 s, intervalo máximo de 245 ms) e não se repete igual. Para
 composição sobre vídeo, a automatizada é a escolha; a prévia ao vivo continua útil para revisão e gravação informal.
 O `zoompan` do ffmpeg foi descartado para a placa: anda em pixels inteiros (saltos de até 2,69 de luma).
 
