@@ -1,0 +1,357 @@
+/* Demonstração conceitual — composições locais do protótipo do vídeo do Luxtory Club.
+ * Não são componentes do Design System nem contrato de UX (DS §13.7: o Club não cria nada no DS agora). Só consomem
+ * tokens e classes do Core; a validação local roda o scanCss do DS sobre este arquivo (prototype.test.mjs).
+ * Movimento: todo ele vem do motor de tempo (stage.js), por isso as transições CSS ficam desligadas no palco. */
+
+html,
+body {
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.demo-stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.demo-stage *,
+.demo-stage *::before,
+.demo-stage *::after {
+  transition: none;
+}
+
+/* Placa de pré-visualização (só no navegador, ?bg=plate); a composição de vídeo é feita no ffmpeg. */
+.demo-plate {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Cartões: superfície sólida do Core (sem glass, blur ou glow, §13.3), hairline e a única sombra permitida. */
+.demo-card {
+  position: absolute;
+  display: grid;
+  gap: var(--lx-space-3);
+  align-content: start;
+  padding: var(--lx-space-6);
+  border: var(--lx-border-hairline) solid var(--lx-color-rule);
+  box-shadow: var(--lx-shadow-overlay);
+  will-change: opacity, transform;
+}
+
+.demo-card > * {
+  margin: 0;
+}
+
+/* 16:9 — tarefa à direita, contexto embaixo à esquerda; o grid é referência, não restrição. */
+[data-fmt='16x9'] .demo-card--task {
+  top: 46%;
+  inset-inline-end: 6%;
+  width: 30rem;
+  translate: 0 -50%;
+}
+
+[data-fmt='16x9'] .demo-card--ctx {
+  bottom: 17%;
+  inset-inline-start: 6%;
+  width: 23rem;
+}
+
+/* 9:16 — composição própria: contexto no alto, tarefa ancorada embaixo, acima da área das plataformas. */
+[data-fmt='9x16'] .demo-card {
+  inset-inline: var(--lx-space-3);
+  padding: var(--lx-space-4);
+}
+
+[data-fmt='9x16'] .demo-card--ctx {
+  top: 6%;
+}
+
+[data-fmt='9x16'] .demo-card--task {
+  bottom: 13%;
+}
+
+[data-fmt='16x9'] .demo-only-9x16,
+[data-fmt='9x16'] .demo-only-16x9 {
+  display: none;
+}
+
+/* Selo de demonstração: discreto, sempre dentro do cartão para acompanhar o asset na edição. */
+.demo-seal {
+  padding-top: var(--lx-space-3);
+  border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+  font-size: var(--lx-type-label);
+  line-height: var(--lx-leading-tight);
+  color: var(--lx-color-fg-muted);
+}
+
+.demo-name {
+  font-family: var(--lx-font-display);
+  font-size: var(--lx-type-ordinal);
+  line-height: var(--lx-leading-heading);
+  color: var(--lx-color-headline);
+}
+
+.demo-sub {
+  font-size: var(--lx-type-compact);
+  line-height: var(--lx-leading-compact);
+  color: var(--lx-color-fg-muted);
+}
+
+/* Linha com ícone (rota, avisos): ícone na cor do papel, texto na cor do corpo. */
+.demo-note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--lx-space-3);
+  align-items: start;
+  font-size: var(--lx-type-compact);
+  line-height: var(--lx-leading-compact);
+}
+
+.demo-note strong {
+  display: block;
+  font-weight: var(--lx-weight-semibold);
+}
+
+.demo-icon {
+  width: var(--lx-space-6);
+  height: var(--lx-space-6);
+  color: var(--lx-color-marker);
+}
+
+/* Calendário do DS (lx-calendar) sem navegação: só o mês da demonstração, título à esquerda. */
+.demo-card .demo-cal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--lx-space-3);
+  text-align: start;
+}
+
+.demo-card .lx-calendar__title {
+  font-size: var(--lx-type-title);
+}
+
+.demo-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--lx-space-1) var(--lx-space-3);
+}
+
+/* Fatos da revisão (lx-evidence do Core em uma linha: rótulo à esquerda, valor à direita). */
+.demo-card .lx-evidence {
+  gap: 0;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.demo-card .lx-evidence__item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--lx-space-1) var(--lx-space-4);
+  padding-block: var(--lx-space-2);
+}
+
+.demo-card .lx-evidence__value {
+  font-family: var(--lx-font-display);
+  font-size: var(--lx-type-title);
+  line-height: var(--lx-leading-title);
+  margin: 0;
+}
+
+.demo-card .lx-evidence__value--strong {
+  font-size: var(--lx-type-section-title);
+  color: var(--lx-color-headline);
+}
+
+.demo-tag {
+  font-family: var(--lx-font-utility);
+  font-size: var(--lx-type-label);
+  color: var(--lx-color-fg-muted);
+}
+
+.demo-hint {
+  flex-basis: 100%;
+  font-size: var(--lx-type-label);
+  line-height: var(--lx-leading-tight);
+  color: var(--lx-color-fg-muted);
+}
+
+/* Política: etapa conceitual de revisão e aceite (PD-009), sem conteúdo inventado. */
+.demo-card .lx-check {
+  padding: var(--lx-space-3);
+  border: var(--lx-border-hairline) solid var(--lx-color-rule);
+  font-size: var(--lx-type-compact);
+  cursor: default;
+}
+
+/* Botões: estado "tocado" desenhado pelo motor de tempo com os papéis de hover do Core. */
+.demo-card .lx-button {
+  width: 100%;
+}
+
+.demo-card .lx-button--primary[data-pressed] {
+  background-color: var(--lx-color-action-bg-hover);
+  border-color: var(--lx-color-action-bg-hover);
+  color: var(--lx-color-action-fg-hover);
+}
+
+.demo-card .lx-button--secondary[data-pressed] {
+  background-color: var(--lx-color-action-bg);
+  color: var(--lx-color-action-fg);
+}
+
+.demo-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--lx-space-3);
+}
+
+/* Troca no mesmo lugar (ações → revalidação): sem salto de layout. */
+.demo-swap {
+  display: grid;
+}
+
+.demo-swap > * {
+  grid-area: 1 / 1;
+}
+
+/* Estado: cor do papel semântico + ícone + texto, nunca só cor (§13.3). Retangular (radius de controle). */
+.demo-state {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: var(--lx-space-2);
+  padding: var(--lx-space-1) var(--lx-space-3);
+  border: var(--lx-border-outline) solid var(--demo-state-color);
+  border-radius: var(--lx-radius-hairline);
+  color: var(--demo-state-color);
+  font-size: var(--lx-type-label);
+  font-weight: var(--lx-weight-medium);
+  line-height: var(--lx-leading-tight);
+}
+
+.demo-state .demo-icon {
+  width: var(--lx-space-4);
+  height: var(--lx-space-4);
+  color: currentColor;
+}
+
+.demo-state--pending {
+  --demo-state-color: var(--lx-color-warning);
+}
+
+.demo-state--done {
+  --demo-state-color: var(--lx-color-success);
+}
+
+.demo-times {
+  display: grid;
+  gap: var(--lx-space-1);
+}
+
+.demo-times .lx-meta {
+  font-size: var(--lx-type-label);
+}
+
+/* Créditos: número em Newsreader, barra de proporção e legenda com valores (nunca formato monetário, BR-190). */
+.demo-figure {
+  display: grid;
+  align-items: baseline;
+}
+
+.demo-figure > * {
+  grid-area: 1 / 1;
+}
+
+.demo-bar {
+  display: flex;
+  gap: var(--lx-space-1);
+  height: var(--lx-space-2);
+  overflow: hidden;
+}
+
+.demo-bar__seg {
+  flex: 0 0 calc(var(--share, 0) * 100%);
+  background-color: var(--lx-color-accent);
+}
+
+.demo-bar__seg--held {
+  background-color: var(--lx-color-rule);
+}
+
+.demo-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--lx-space-2);
+  margin: 0;
+}
+
+.demo-legend dt {
+  font-size: var(--lx-type-label);
+  color: var(--lx-color-fg-muted);
+}
+
+.demo-legend dd {
+  margin: 0;
+  display: grid;
+  font-family: var(--lx-font-display);
+  font-size: var(--lx-type-title);
+}
+
+.demo-legend dd > * {
+  grid-area: 1 / 1;
+}
+
+.demo-lots {
+  display: grid;
+  gap: var(--lx-space-2);
+  margin: 0;
+  padding: var(--lx-space-3) 0 0;
+  list-style: none;
+  border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+}
+
+.demo-lots__head {
+  font-size: var(--lx-type-label);
+  color: var(--lx-color-fg-muted);
+}
+
+.demo-lots li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--lx-space-3);
+  align-items: baseline;
+  font-size: var(--lx-type-compact);
+}
+
+.demo-lots .lx-meta {
+  font-size: var(--lx-type-label);
+}
+
+.demo-check-list {
+  display: grid;
+  gap: var(--lx-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--lx-type-compact);
+}
+
+.demo-check-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--lx-space-2);
+  align-items: center;
+}
+
+.demo-check-list .demo-icon {
+  width: var(--lx-space-4);
+  height: var(--lx-space-4);
+}
