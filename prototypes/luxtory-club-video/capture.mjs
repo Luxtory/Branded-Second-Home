@@ -419,8 +419,9 @@ for (const seq of SEQS) {
       near(colors.alphaCard, rgb(DEEP), 2) && colors.alphaCard[3] === 255,
       `${fmt} alpha: cor do cartão ${colors.alphaCard}`,
     );
+    // Cartão opaco de quadro inteiro (assinatura): não há palco vazio nem fundo Sand Wash à vista.
     check(
-      colors.alphaEmpty[3] === 0,
+      qa.opaque || colors.alphaEmpty[3] === 0,
       `${fmt} alpha: palco vazio não transparente ${colors.alphaEmpty}`,
     );
     check(
@@ -428,7 +429,7 @@ for (const seq of SEQS) {
       `${fmt} preview: cor do cartão ${colors.previewCard}`,
     );
     check(
-      near(colors.previewBackground, rgb(SAND_WASH), 4),
+      qa.opaque || near(colors.previewBackground, rgb(SAND_WASH), 4),
       `${fmt} preview: Sand Wash ${colors.previewBackground}`,
     );
     // Continuidade: placa sem travada (nenhum quadro parado; nenhum salto > 3× a mediana que também passe de 0,25 nível
@@ -470,33 +471,36 @@ for (const seq of SEQS) {
     const row = (r) =>
       `${Array.from({ length: n }, (_, i) => `[${r * n + i}]`).join('')}hstack=inputs=${n}${rows > 1 ? `[r${r}]` : ''}`;
     const sheet = Array.from({ length: rows }, (_, r) => row(r)).join(';');
-    ffmpeg([
-      ...tiles.flatMap((t) => ['-i', t]),
-      '-filter_complex',
-      rows > 1
-        ? `${sheet};${Array.from({ length: rows }, (_, r) => `[r${r}]`).join('')}vstack=inputs=${rows}`
-        : sheet,
-      '-frames:v',
-      '1',
-      '-q:v',
-      '4',
-      `${EVIDENCE}contato-${tag}.jpg`,
-    ]);
+    // Sem placa (assinatura) não há composição: sem folha de contato nem zoom de borda.
+    if (rows)
+      ffmpeg([
+        ...tiles.flatMap((t) => ['-i', t]),
+        '-filter_complex',
+        rows > 1
+          ? `${sheet};${Array.from({ length: rows }, (_, r) => `[r${r}]`).join('')}vstack=inputs=${rows}`
+          : sheet,
+        '-frames:v',
+        '1',
+        '-q:v',
+        '4',
+        `${EVIDENCE}contato-${tag}.jpg`,
+      ]);
     const cx = Math.max(0, Math.round((corner.left - 16) * dpr));
     const cy = Math.max(0, Math.round((corner.top - 12) * dpr));
     const kinds = Object.keys(PLATES);
     const zoom = (i) =>
       `[${i}]select=eq(n\\,${at(edgeCard.at)}),${FROM_709},crop=200:120:${cx}:${cy},scale=800:480:flags=neighbor`;
-    ffmpeg([
-      ...kinds.flatMap((kind) => ['-i', files[kind]]),
-      '-filter_complex',
-      kinds.length > 1
-        ? `${kinds.map((_, i) => `${zoom(i)}[z${i}]`).join(';')};${kinds.map((_, i) => `[z${i}]`).join('')}hstack=inputs=${kinds.length}`
-        : zoom(0),
-      '-frames:v',
-      '1',
-      `${EVIDENCE}borda-${tag}.png`,
-    ]);
+    if (rows)
+      ffmpeg([
+        ...kinds.flatMap((kind) => ['-i', files[kind]]),
+        '-filter_complex',
+        kinds.length > 1
+          ? `${kinds.map((_, i) => `${zoom(i)}[z${i}]`).join(';')};${kinds.map((_, i) => `[z${i}]`).join('')}hstack=inputs=${kinds.length}`
+          : zoom(0),
+        '-frames:v',
+        '1',
+        `${EVIDENCE}borda-${tag}.png`,
+      ]);
     for (const t of tiles) rmSync(t);
 
     report.formats[fmt] = {

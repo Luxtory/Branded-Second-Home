@@ -2,6 +2,7 @@
 // Uso: node --test prototypes/luxtory-club-video/
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,6 +15,7 @@ import { CANONICAL, FICTITIOUS, directScenario, luxplusScenario, requestScenario
 import * as directSeq from './sequence-direct.js';
 import * as luxplusSeq from './sequence-luxplus.js';
 import * as requestSeq from './sequence-request.js';
+import * as assinaturaSeq from './sequence-assinatura.js';
 import {
   REQUEST_STATES,
   addMonthsUTC,
@@ -330,6 +332,30 @@ for (const [name, seq] of [
   }
 }
 
+test('[DS §5] assinatura: logo oficial do manifest, arquivo intacto, como <img>; linha legal com as condições', () => {
+  const manifest = JSON.parse(
+    readFileSync(join(DIR, '../../src/design-system/brand/logo/manifest.json'), 'utf8'),
+  );
+  const entry = manifest.logos[assinaturaSeq.LOGO.key];
+  assert.equal(entry.file, assinaturaSeq.LOGO.file, 'arquivo da chave do manifest');
+  const bytes = readFileSync(join(DIR, '../../src/design-system/brand/logo', entry.file));
+  assert.equal(
+    createHash('sha256').update(bytes).digest('hex'),
+    entry.sha256,
+    'sha256 do manifest',
+  );
+  const stage = { dataset: {}, insertAdjacentHTML: (_, html) => (stage.html = html) };
+  assinaturaSeq.build(stage, '16x9');
+  assert.match(stage.html, new RegExp(`<img[^>]+src="[^"]*/${entry.file}"`));
+  assert.doesNotMatch(stage.html, /<svg/, 'logo nunca inline');
+  assert.match(assinaturaSeq.LEGAL, /Demonstração conceitual/);
+  assert.match(assinaturaSeq.LEGAL, /Membership vigente/);
+  assert.match(assinaturaSeq.LEGAL, /só datas já reservadas no Direito de Uso/);
+  const logo = assinaturaSeq.timeline().enter.find((e) => e.sel === '#endcard-logo');
+  assert.equal(logo.rise, 0, 'logo só em opacidade, sem deslocamento');
+  assert.equal(logo.dur, parseFloat(TOKENS.duration.cinematic.$value), 'duration.cinematic');
+});
+
 test('a Request aprovada continua com Garantia, Pendente e aceite do detentor', () => {
   const text = markup(requestSeq);
   assert.match(text, /Créditos em Garantia/);
@@ -362,7 +388,9 @@ test('[REQ-100][REQ-101][BR-377] terminologia e nenhuma promessa', () => {
     /por noite/i,
     /R\$\s*[\d.,]+\s*Créditos/i,
   ];
-  const hits = SOURCES.filter((f) => f !== 'prototype.test.mjs').flatMap((f) =>
+  // Inclui os documentos do filme (roteiro, narração, prompts): a mesma terminologia vale para a peça.
+  const FILM = readdirSync(join(DIR, 'filme')).map((f) => `filme/${f}`);
+  const hits = [...SOURCES.filter((f) => f !== 'prototype.test.mjs'), ...FILM].flatMap((f) =>
     readFileSync(join(DIR, f), 'utf8')
       .split('\n')
       .flatMap((line, i) =>

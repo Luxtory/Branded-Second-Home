@@ -4,9 +4,12 @@
 > externa, Supabase, Vercel ou Production, e não implementa nada do R3. Serve só para gerar assets de interface
 > (transparentes, editáveis) que a pós-produção compõe sobre imagens cinematográficas.
 
-**Etapa A — prova de conceito:** Luxchange Request completa — escolha das noites (R1), revisão, política, pagamento
-do Fee e Pendente (R2), aceite do Titular detentor, revalidação e, na mesma operação, Request Aceita + Reserva
-Confirmada (R3/R4 resumidos). 16:9 e 9:16, 25 s cada. Etapas B (biblioteca) e C (pacote de pós) ainda não começaram.
+| Etapa | Conteúdo | Estado |
+|---|---|---|
+| A | Luxchange Request (25 s): escolha das noites, revisão, política, Fee, Pendente, aceite do detentor, revalidação e Request Aceita + Reserva Confirmada na mesma operação | aprovada |
+| B | Luxchange Direct (14 s) e Luxplus (15,5 s) sobre a mesma arquitetura | em avaliação |
+| C | Pré-produção do filme (`filme/ROTEIRO.md`, `filme/PRODUCAO.md`) e prova de composição: assinatura com a logo oficial (6 s) | em avaliação |
+| D | Montagem e finalização | depende de footage, voz, trilha e aprovações |
 
 ## Ver
 
@@ -14,8 +17,9 @@ Confirmada (R3/R4 resumidos). 16:9 e 9:16, 25 s cada. Etapas B (biblioteca) e C 
 node prototypes/luxtory-club-video/serve.mjs
 ```
 
-Abra `http://127.0.0.1:4173/prototypes/luxtory-club-video/?fmt=16x9` (ou `?fmt=9x16`). Toca sozinho; **espaço** pausa
-e continua, **R** reinicia. `&t=13800` congela um instante; `&bg=plate` mostra uma placa de prévia por trás.
+Abra `http://127.0.0.1:4173/prototypes/luxtory-club-video/?seq=request&fmt=16x9`. `seq` = `request`, `direct`,
+`luxplus` ou `assinatura`; `fmt` = `16x9` ou `9x16`. Toca sozinho; **espaço** pausa e continua, **R** reinicia.
+`&t=13800` congela um instante; `&bg=plate` mostra uma placa de prévia por trás.
 
 ## Regenerar e validar
 
@@ -28,16 +32,19 @@ node prototypes/luxtory-club-video/check.mjs
 ```
 
 ```bash
-node prototypes/luxtory-club-video/capture.mjs
+node prototypes/luxtory-club-video/capture.mjs --seq=direct,luxplus
 ```
+
+`--seq=` escolhe as sequências (padrão: `request,direct,luxplus`; a assinatura com `--seq=assinatura`), `--fps=24`
+muda a cadência e `--realtime` refaz a comparação com captura em tempo real.
 
 - `prototype.test.mjs` — fórmulas, datas, FEFO, saldos, estados, ordem da coreografia, tokens (`scanCss` do DS),
   terminologia e isolamento.
-- `check.mjs` — no navegador, nos dois formatos e em 7 instantes: valores exibidos, selo, sobreposição, limites do
-  quadro, texto mínimo no arquivo final, axe (WCAG 2.2 AA), fontes, rede, console, calendário e determinismo.
+- `check.mjs` — no navegador, por sequência, nos dois formatos e nos instantes do `qa` de cada sequência: valores exibidos, selo, sobreposição, limites do
+  quadro, texto mínimo no arquivo final, axe (WCAG 2.2 AA), fontes, rede, console, calendário, varredura de sobreposição em todos os quadros e determinismo.
 - `capture.mjs` — quadros RGBA → prévias H.264, composições sobre placas com movimento, um trecho ProRes 4444 com
   alfa e stills 4K; valida o que foi **codificado** (codec, alfa, dimensões, fps, duração, quadros, PSNR, cores) e
-  compara com captura em tempo real. Saída em `out/etapa-a/` (fora do Git). Requer `npm ci` (Playwright, axe) e ffmpeg.
+  (opcional) compara com captura em tempo real. Saída em `out/etapa-a/<seq>-<fmt>-…` (fora do Git). Requer `npm ci` (Playwright, axe) e ffmpeg.
 
 ## Arquivos
 
@@ -45,11 +52,14 @@ node prototypes/luxtory-club-video/capture.mjs
 |---|---|
 | `index.html` · `demo.css` | Palco transparente; composições locais só com tokens e classes do Core (`data-lx="core"`) |
 | `stage.js` | Motor de tempo: o estado de cada quadro é função de `t`; tokens de movimento do DS |
-| `sequence-request.js` | Coreografia da Request nos dois formatos (cartões, instantes, marcas) |
+| `sequence-request.js` · `sequence-direct.js` · `sequence-luxplus.js` | Coreografia de cada modalidade nos dois formatos (cartões, instantes, marcas) e seu `qa` (pontos de verificação e de captura) |
+| `sequence-assinatura.js` | Assinatura com a logo oficial do manifest (prova de composição da Etapa C) |
+| `shared.js` | Peças comuns: ícones, selo, calendário do DS, toque, faixa de noites |
 | `rules.js` · `data.js` · `format.js` | Fórmulas canônicas · parâmetros canônicos e dados fictícios · formatação pt-BR |
 | `serve.mjs` | Servidor local (127.0.0.1) restrito ao protótipo, ao DS e às fotos públicas usadas como placa |
 | `check.mjs` · `capture.mjs` · `prototype.test.mjs` | Validação no navegador · captura e validação de arquivos · testes |
-| `evidencias/etapa-a/` | Folhas de contato das composições e zoom das bordas do alfa |
+| `evidencias/etapa-a/` | Folhas de contato das composições, zoom das bordas do alfa e antes/depois da confirmação |
+| `filme/` | Roteiro, storyboard, narração, música, motion (`ROTEIRO.md`) e shot list, prompts, inventário, integração (`PRODUCAO.md`) |
 
 ## Fatos, decisões da demonstração e dados fictícios
 
@@ -68,6 +78,11 @@ node prototypes/luxtory-club-video/capture.mjs
   (REQ-064, BR-212, BR-213). Não existe "aceita aguardando confirmação".
 - Detentor Co-Owner só cede data já reservada, que segue consumida do Direito de Uso; Owner cede capacidade própria
   disponível (BR-151, TECH-022, TECH-023). Noites de [entrada, saída), check-in 14h e check-out 10h (PD-002).
+- Direct: capacidade do Inventário Luxtory, sem aceite de outro Titular (BR-220); Fee pago antes da confirmação
+  (TECH-082); pagamento não reserva — revalidação e então confirmação (ADR-008, TECH-080); Créditos consumidos na
+  confirmação, por FEFO (BR-221, PD-008).
+- Luxplus: noites adicionais do Inventário Luxtory pagas em dinheiro (01 §25, BR-240); não usa Créditos (BR-241);
+  sem Luxchange Fee (BR-230 alcança só Request e Direct); política antes da confirmação (PD-009).
 
 **Decisões da demonstração** (hipóteses visuais, não especificação):
 
@@ -89,6 +104,8 @@ desconto), porque o desconto aplicável não está definido (BR-244, P-5).
 | Lotes de Helena | L-0001 30.000 (depósito, 18/01/2027 09:30, vence 18/01/2029 09:30) · L-0002 18.000 (cedente de Request, 22/02/2027 16:05, vence 22/02/2029 16:05) · L-0003 46.000 (depósito, 12/04/2027 10:02, vence 12/04/2029 10:02) |
 | Envio 12/04/2027 10:06 | Varanda · Litoral, 04/06 a 07/06/2027 (3 noites) · PRL R$ 5.500,00 · 55.000 em Garantia (30.000 + 18.000 + 7.000) · Fee R$ 550,00 · expira 13/04/2027 10:06 |
 | Aceite 12/04/2027 10:14 | Request Aceita + Reserva Confirmada (Luxchange Request) · 55.000 consumidos · cedente recebe L-0104, 55.000, vence 12/04/2029 10:14 |
+| Direct 12/04/2027 10:20 | Pátio · Campo, 28/05 a 29/05/2027 (1 noite) · PRL R$ 1.150,00 · 11.500 Créditos do L-0003 (FEFO) · Fee R$ 120,00 (mínimo: 10% seria R$ 115,00) · Créditos 39.000 → 27.500 |
+| Luxplus 12/04/2027 10:24 | Pátio · Campo, 13/08 a 15/08/2027 (2 noites) · valor da estadia R$ 2.480,00 ilustrativo, em dinheiro · Créditos inalterados (27.500) |
 
 ## Coreografia (marcas de tempo)
 

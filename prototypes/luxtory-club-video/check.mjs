@@ -143,9 +143,11 @@ for (const seq of SEQS) {
         calendar: key.name === 'calendario' ? info.ranges : undefined,
       };
     }
-    const cal = states.calendario.calendar;
-    if (JSON.stringify(cal) !== JSON.stringify(qa.calendar.range))
-      fail(`${tag}: faixa do calendário ${JSON.stringify(cal)}`);
+    if (qa.calendar) {
+      const cal = states.calendario.calendar;
+      if (JSON.stringify(cal) !== JSON.stringify(qa.calendar.range))
+        fail(`${tag}: faixa do calendário ${JSON.stringify(cal)}`);
+    }
     // Transições, quadro a quadro (30 fps): dois cartões que se cruzam nunca ficam visíveis ao mesmo tempo
     // (opacidade > 0,05 nos dois) — é o que mistura textos durante uma troca no mesmo lugar.
     const crossings = await page.evaluate(() => {
@@ -169,7 +171,7 @@ for (const seq of SEQS) {
     if (crossings.length)
       fail(`${tag}: cartões sobrepostos em ${crossings.length} quadros: ${crossings.join(', ')}`);
     // Determinismo: o mesmo instante, visitado duas vezes por caminhos diferentes, gera os mesmos bytes.
-    const probeT = qa.checkpoints[3].t;
+    const probeT = qa.checkpoints[Math.min(3, qa.checkpoints.length - 1)].t;
     const shot = async (t) => {
       await page.evaluate((x) => window.__demo.seek(x), t);
       return createHash('sha256')
