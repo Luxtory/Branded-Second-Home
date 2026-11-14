@@ -8,7 +8,7 @@
 |---|---|---|
 | A | Luxchange Request (25 s): escolha das noites, revisão, política, Fee, Pendente, aceite do detentor, revalidação e Request Aceita + Reserva Confirmada na mesma operação | aprovada |
 | B | Luxchange Direct (14 s) e Luxplus (15,5 s) sobre a mesma arquitetura | aprovada (auditoria de 2026-11-14) |
-| C | Pré-produção do filme (`filme/ROTEIRO.md`, `filme/PRODUCAO.md`, v2 após a auditoria), assinatura com a logo oficial (9 s, com tempo limpo) e prova de montagem da Request (`filme/prova/`, ≈ 19,8 s, placeholders) | em avaliação |
+| C | Pré-produção do comercial de lançamento (`filme/ROTEIRO.md`, `filme/PRODUCAO.md`, v3), assinatura só da marca (6 s), painel dos Créditos (C04, 11 s) e prova de montagem da Request (`filme/prova/`, ≈ 19,8 s, placeholders) | em avaliação |
 | D | Montagem e finalização | depende de footage, voz, trilha e aprovações |
 
 ## Ver
@@ -18,7 +18,8 @@ node prototypes/luxtory-club-video/serve.mjs
 ```
 
 Abra `http://127.0.0.1:4173/prototypes/luxtory-club-video/?seq=request&fmt=16x9`. `seq` = `request`, `direct`,
-`luxplus`, `assinatura` ou `prova` (camada editorial da prova de montagem, só 16:9); `fmt` = `16x9` ou `9x16`. Toca sozinho; **espaço** pausa e continua, **R** reinicia.
+`luxplus`, `creditos` (painel dos Créditos, C04), `assinatura` ou `prova` (camada editorial da prova de montagem, só
+16:9); `fmt` = `16x9` ou `9x16`; `&final=1` mostra a versão da exportação final (selo neutro, sem marcas internas). Toca sozinho; **espaço** pausa e continua, **R** reinicia.
 `&t=13800` congela um instante; `&bg=plate` mostra uma placa de prévia por trás.
 
 ## Regenerar e validar
@@ -53,7 +54,8 @@ muda a cadência e `--realtime` refaz a comparação com captura em tempo real.
 | `index.html` · `demo.css` | Palco transparente; composições locais só com tokens e classes do Core (`data-lx="core"`) |
 | `stage.js` | Motor de tempo: o estado de cada quadro é função de `t`; tokens de movimento do DS |
 | `sequence-request.js` · `sequence-direct.js` · `sequence-luxplus.js` | Coreografia de cada modalidade nos dois formatos (cartões, instantes, marcas) e seu `qa` (pontos de verificação e de captura) |
-| `sequence-assinatura.js` | Assinatura com a logo oficial do manifest (prova de composição da Etapa C) |
+| `sequence-assinatura.js` | Assinatura só da marca: logo oficial do manifest e a frase (6 s) |
+| `sequence-creditos.js` | Painel editorial dos Créditos: Carteira + novo depósito = um só saldo → Request ou Direct (números de `data.js`) |
 | `sequence-prova.js` · `filme/prova/edl.js` · `filme/prova/montar.mjs` | Prova de montagem: camada editorial (título, ressalva, etiqueta interna) · EDL em dados (planos, trechos de interface, textos, narração-guia, efeitos) · montagem e validação com ffmpeg |
 | `shared.js` | Peças comuns: ícones, selo, calendário do DS, toque, faixa de noites |
 | `rules.js` · `data.js` · `format.js` | Fórmulas canônicas · parâmetros canônicos e dados fictícios · formatação pt-BR |
@@ -219,6 +221,33 @@ loudness medido (−20 LUFS só com efeitos; −14 LUFS com voz) e true peak ≤
 - **Validação do arquivo codificado:** 1920×1080 (revisão 1920×1200), 30 fps, 594/594 quadros, BT.709, áudio 48 kHz
   estéreo, loudness e true peak. Continuidade por luma: só os três cortes previstos; a interface sai em fade (o teste
   da EDL impede que ela suma num quadro).
+
+## Prévia interna × exportação final
+
+Um único parâmetro separa as duas, sem ambientes nem feature flags. A prévia interna é o padrão e carrega as
+identificações úteis ao QA ("Demonstração conceitual · dados fictícios", "Prova interna", tarja de revisão). A
+exportação final é para o comercial:
+
+```bash
+node prototypes/luxtory-club-video/check.mjs --final --seq=request,direct,luxplus
+```
+
+```bash
+node prototypes/luxtory-club-video/capture.mjs --final --seq=request
+```
+
+```bash
+node prototypes/luxtory-club-video/filme/prova/montar.mjs --final
+```
+
+- **Selo neutro.** "Dados ilustrativos" no lugar do selo interno, numa linha como antes: layout e coreografia
+  aprovados não mudam (`check.mjs --final` conforme nas três modalidades: sobreposição 0, nenhuma marca interna).
+- **Saída separada.** `out/final/`, sem tocar nas evidências.
+- **Recusa de placeholders.** A montagem final para antes de renderizar se algum plano não tiver footage aprovado em
+  `out/entrada/` ou se faltar voz ou trilha.
+
+Exportar não é publicar: a publicação depende da verificação de prontidão do produto e da aprovação da comunicação
+(`filme/PRODUCAO.md` §5).
 
 ## Integração na pós (Etapa A)
 

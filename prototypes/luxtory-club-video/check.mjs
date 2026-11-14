@@ -19,6 +19,9 @@ const SEQS = (
   process.argv.find((a) => a.startsWith('--seq='))?.slice(6) ?? 'request,direct,luxplus'
 ).split(',');
 const MIN_TEXT_OUT_PX = { '16x9': 16, '9x16': 30 };
+// --final: confere a exportação para o comercial — nenhuma marca interna pode aparecer em quadro algum.
+const FINAL = process.argv.includes('--final');
+const INTERNAL_MARKS = ['Demonstração conceitual', 'Prova interna', 'dados fictícios'];
 
 const failures = [];
 const fail = (msg) => failures.push(msg);
@@ -51,7 +54,9 @@ for (const seq of SEQS) {
     );
     page.on('pageerror', (e) => errors.push(String(e)));
     page.on('request', (r) => !r.url().startsWith(origin) && foreign.push(r.url()));
-    await page.goto(`${origin}/prototypes/luxtory-club-video/?seq=${seq}&fmt=${fmt}`);
+    await page.goto(
+      `${origin}/prototypes/luxtory-club-video/?seq=${seq}&fmt=${fmt}${FINAL ? '&final=1' : ''}`,
+    );
     await page.waitForFunction(() => window.__demo?.ready);
     const fonts = await page.evaluate(() => [
       ...new Set(
@@ -106,7 +111,8 @@ for (const seq of SEQS) {
       });
       if (!info.rects.length) fail(`${tag}@${key.t}: nenhum cartão visível`);
       for (const r of info.rects) {
-        if (!r.seal) fail(`${tag}@${key.t}: ${r.id} sem selo de demonstração`);
+        // `qa.seal === false`: só o cartão da assinatura, que por decisão é exclusivamente da marca.
+        if (!r.seal && qa.seal !== false) fail(`${tag}@${key.t}: ${r.id} sem selo de demonstração`);
         if (r.left < 0 || r.top < 0 || r.right > vp.width || r.bottom > vp.height)
           fail(`${tag}@${key.t}: ${r.id} fora do quadro`);
       }
@@ -120,8 +126,8 @@ for (const seq of SEQS) {
       for (const text of key.expect)
         if (!info.text.toLowerCase().includes(text.toLowerCase()))
           fail(`${tag}@${key.t}: texto esperado ausente: ${text}`);
-      // `absent`: textos que ainda não podem estar visíveis naquele instante (ex.: o tempo limpo da assinatura).
-      for (const text of key.absent ?? [])
+      // `absent`: textos que não podem estar visíveis naquele instante; na exportação final, também as marcas internas.
+      for (const text of [...(key.absent ?? []), ...(FINAL ? INTERNAL_MARKS : [])])
         if (info.text.toLowerCase().includes(text.toLowerCase()))
           fail(`${tag}@${key.t}: texto visível antes da hora: ${text}`);
       const minOut = info.minFont * (vp.outHeight / vp.height);
@@ -207,7 +213,10 @@ await browser.close();
 await close();
 report.failures = failures;
 await mkdir(OUT, { recursive: true });
-await writeFile(new URL('check.json', OUT), JSON.stringify(report, null, 2));
+await writeFile(
+  new URL(FINAL ? 'check-final.json' : 'check.json', OUT),
+  JSON.stringify(report, null, 2),
+);
 for (const [seq, formats] of Object.entries(report.sequences))
   for (const [fmt, r] of Object.entries(formats)) {
     const min = Math.min(...Object.values(r.states).map((x) => x.minTextOutputPx));

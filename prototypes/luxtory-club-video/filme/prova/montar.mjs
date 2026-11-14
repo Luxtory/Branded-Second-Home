@@ -12,7 +12,12 @@
 // - legenda-guia .srt, folha de contato e prova.json (o que entrou, medições).
 // Nada sai daqui para serviço externo; nenhum arquivo do repositório é alterado.
 //
-// Uso: node prototypes/luxtory-club-video/filme/prova/montar.mjs [--entrada=<pasta>] [--saida=<pasta>]
+// Prévia interna é o padrão. `--final` é a exportação para o comercial: recusa antes de renderizar se algum plano
+// depender de placeholder ou se faltar voz ou trilha; usa a interface capturada com `capture.mjs --final` (selo neutro
+// "Dados ilustrativos") e a camada editorial sem a etiqueta interna; não gera cópia de revisão. Exportar não é publicar:
+// a publicação depende da verificação de prontidão do produto e da aprovação da comunicação (PRODUCAO.md §5).
+//
+// Uso: node prototypes/luxtory-club-video/filme/prova/montar.mjs [--final] [--entrada=<pasta>] [--saida=<pasta>]
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -24,7 +29,9 @@ import { EDL } from './edl.js';
 const arg = (name) => process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
 const PROTO = fileURLToPath(new URL('../../', import.meta.url));
 const ROOT = fileURLToPath(new URL('../../../../', import.meta.url));
-const OUT = arg('saida') ?? join(PROTO, 'out/prova');
+const FINAL = process.argv.includes('--final');
+const OUT = arg('saida') ?? join(PROTO, FINAL ? 'out/final/montagem' : 'out/prova');
+const FRAMES_DIR = join(PROTO, FINAL ? 'out/final' : 'out/etapa-a');
 const ENTRADA = arg('entrada') ?? join(PROTO, 'out/entrada');
 const FONT = join(ROOT, 'src/design-system/fonts/hanken-grotesk/hanken-grotesk-latin.woff2');
 const { width: W, height: H, fps: FPS } = EDL;
@@ -75,10 +82,10 @@ function linkUiFrames(dir) {
       const frame = Math.round(((item.from + t - item.at) * FPS) / 1000);
       const framesDir =
         item.seq === 'request' ? `frames-${EDL.fmt}` : `frames-${item.seq}-${EDL.fmt}`;
-      src = join(PROTO, 'out/etapa-a', framesDir, `f${String(frame).padStart(5, '0')}.png`);
+      src = join(FRAMES_DIR, framesDir, `f${String(frame).padStart(5, '0')}.png`);
       if (!existsSync(src))
         throw new MontagemError(
-          `Quadro de interface ausente: ${src}. Rode capture.mjs --seq=${item.seq} antes da montagem.`,
+          `Quadro de interface ausente: ${src}. Rode capture.mjs --seq=${item.seq}${FINAL ? ' --final' : ''} antes da montagem.`,
         );
     }
     symlinkSync(src, join(dir, `${String(k).padStart(5, '0')}.png`));
@@ -94,7 +101,9 @@ async function renderEditorial(dir) {
       viewport: { width: 1280, height: 720 },
       deviceScaleFactor: W / 1280,
     });
-    await page.goto(`${origin}/prototypes/luxtory-club-video/?seq=prova&fmt=${EDL.fmt}`);
+    await page.goto(
+      `${origin}/prototypes/luxtory-club-video/?seq=prova&fmt=${EDL.fmt}${FINAL ? '&final=1' : ''}`,
+    );
     await page.waitForFunction(() => window.__demo?.ready);
     for (let k = 0; k < FRAMES; k++) {
       await page.evaluate((t) => window.__demo.seek(t), (k * 1000) / FPS);
@@ -130,9 +139,10 @@ function shotSource(shot, i) {
         '-f',
         'lavfi',
         '-i',
-        `gradients=s=${W}x${H}:c0=0xd2c3ad:c1=0x2b231d:x0=0:y0=${H / 3}:x1=${W}:y1=${H}:d=${dur}:r=${FPS}:n=2:speed=0.004`,
+        // Placeholder sóbrio (luz de janela num interior ao anoitecer), identificado na tarja; nunca footage final.
+        `gradients=s=${W}x${H}:c0=0x5b5147:c1=0x0f1215:type=radial:x0=${Math.round(W * 0.18)}:y0=${Math.round(H * 0.35)}:x1=${W}:y1=${H}:d=${dur}:r=${FPS}:n=2:speed=0.002`,
       ],
-      chain: `[${i}:v]format=rgb24,noise=alls=6:allf=t,gblur=sigma=2,${fit}`,
+      chain: `[${i}:v]format=rgb24,noise=alls=4:allf=t,gblur=sigma=3,${fit}`,
     };
   const [xs, ys, ws] = p.start;
   const [xe, ye, we] = p.end;
@@ -298,7 +308,25 @@ function buildAudio(file) {
   };
 }
 
-/** Composição final: imagem → profundidade → interface → editorial → fade; cópia limpa e cópia de revisão. */
+/** Na exportação final, recusa antes de renderizar: nenhum plano depende de placeholder; voz e trilha existem. */
+function preflightFinal() {
+  const missing = [
+    ...EDL.shots
+      .filter((s) => !entrada(s.asset, ['mov', 'mp4']))
+      .map((s) => `${s.scene} ${s.plan} (footage ${s.asset})`),
+    ...(entrada('vo', ['wav']) ? [] : ['voz (vo.wav)']),
+    ...(entrada('trilha', ['wav']) ? [] : ['trilha (trilha.wav)']),
+  ];
+  if (missing.length)
+    throw new MontagemError(
+      `Exportação final recusada: faltam assets aprovados em ${ENTRADA}: ${missing.join('; ')}.`,
+    );
+}
+
+const cleanFile = () => join(OUT, `${EDL.id}-${EDL.fmt}${FINAL ? '-final' : ''}.mp4`);
+const reviewFile = () => join(OUT, `${EDL.id}-${EDL.fmt}-revisao.mp4`);
+
+/** Composição: imagem → profundidade → interface → editorial → fade; cópia limpa (+ cópia de revisão na prévia). */
 function compose(uiDir, edDir, audio, tmp) {
   const shots = EDL.shots.map(shotSource);
   const n = shots.length;
@@ -313,9 +341,9 @@ function compose(uiDir, edDir, audio, tmp) {
     `[sharp][blur]overlay=format=rgb[bg]`,
     `[${n}:v]format=rgba,fade=t=out:st=${sec(EDL.uiFadeOut.at)}:d=${sec(EDL.uiFadeOut.dur)}:alpha=1[ui]`,
     `[bg][ui]overlay=format=rgb[c1]`,
-    `[c1][${n + 1}:v]overlay=format=rgb,fade=t=out:st=${sec(EDL.fadeOut.at)}:d=${sec(EDL.fadeOut.dur)},split[clean][rev]`,
-    `[clean]${bt709}[vclean]`,
-    `[rev]${reviewStrip(tmp)},${bt709}[vrev]`,
+    `[c1][${n + 1}:v]overlay=format=rgb,fade=t=out:st=${sec(EDL.fadeOut.at)}:d=${sec(EDL.fadeOut.dur)}` +
+      (FINAL ? `,${bt709}[vclean]` : `,split[clean][rev]`),
+    ...(FINAL ? [] : [`[clean]${bt709}[vclean]`, `[rev]${reviewStrip(tmp)},${bt709}[vrev]`]),
   ];
   const script = join(tmp, 'grafo.txt');
   writeFileSync(script, graph.join(';\n'));
@@ -364,8 +392,8 @@ function compose(uiDir, edDir, audio, tmp) {
     audio,
     '-filter_complex_script',
     script,
-    ...enc('[vclean]', join(OUT, `${EDL.id}-${EDL.fmt}.mp4`)),
-    ...enc('[vrev]', join(OUT, `${EDL.id}-${EDL.fmt}-revisao.mp4`)),
+    ...enc('[vclean]', cleanFile()),
+    ...(FINAL ? [] : enc('[vrev]', reviewFile())),
   ]);
   return Object.fromEntries(EDL.shots.map((s, i) => [`${s.scene} ${s.plan}`, shots[i].used]));
 }
@@ -440,6 +468,7 @@ function contactSheet(file, sheet, tmp) {
 }
 
 async function main() {
+  if (FINAL) preflightFinal();
   const tmp = join(OUT, 'tmp');
   const uiDir = join(OUT, 'ui');
   const edDir = join(OUT, 'editorial');
@@ -454,18 +483,15 @@ async function main() {
   const audio = buildAudio(audioFile);
   const plates = compose(uiDir, edDir, audioFile, tmp);
   writeSrt(join(OUT, `${EDL.id}-vo-guia.srt`));
-  const clean = join(OUT, `${EDL.id}-${EDL.fmt}.mp4`);
-  const review = join(OUT, `${EDL.id}-${EDL.fmt}-revisao.mp4`);
+  const clean = cleanFile();
   const { failures, report } = validate(
-    [
-      ['limpa', clean, H],
-      ['revisao', review, H + STRIP],
-    ],
+    [['limpa', clean, H], ...(FINAL ? [] : [['revisao', reviewFile(), H + STRIP]])],
     audioFile,
   );
   contactSheet(clean, join(OUT, `contato-${EDL.id}-${EDL.fmt}.jpg`), tmp);
   const result = {
     edl: EDL.id,
+    export: FINAL ? 'final' : 'prévia interna',
     frames: FRAMES,
     seconds: EDL.duration / 1000,
     plates,

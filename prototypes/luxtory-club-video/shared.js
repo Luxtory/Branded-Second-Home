@@ -3,7 +3,11 @@
 import { CANONICAL } from './data.js';
 import { civilFull, civilShort } from './format.js';
 
-export const SEAL = 'Demonstração conceitual · dados fictícios';
+// Exportação final (?final=1, capture.mjs --final): o selo interno dá lugar a uma indicação neutra de dados
+// ilustrativos, numa linha como antes (layout e coreografia aprovados não mudam). Prévias internas mantêm o selo.
+export const FINAL =
+  typeof location !== 'undefined' && new URLSearchParams(location.search).get('final') === '1';
+export const SEAL = FINAL ? 'Dados ilustrativos' : 'Demonstração conceitual · dados fictícios';
 export const seal = `<p class="demo-seal">${SEAL}</p>`;
 export const hours = `entrada ${CANONICAL.checkinHour}h, saída ${CANONICAL.checkoutHour}h`; // PD-002
 export const periodOf = (checkin, checkout) => `${civilShort(checkin)} a ${civilFull(checkout)}`;

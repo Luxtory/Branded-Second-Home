@@ -12,8 +12,12 @@ import { chromium } from 'playwright';
 import { startServer } from './serve.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
-const OUT = fileURLToPath(new URL('./out/etapa-a/', import.meta.url));
-const EVIDENCE = fileURLToPath(new URL('./evidencias/etapa-a/', import.meta.url));
+// --final: exportação para o comercial (selo neutro, sem marcas internas) em out/final/, sem tocar nas evidências.
+const FINAL = process.argv.includes('--final');
+const OUT = fileURLToPath(new URL(FINAL ? './out/final/' : './out/etapa-a/', import.meta.url));
+const EVIDENCE = FINAL
+  ? `${OUT}evidencias/`
+  : fileURLToPath(new URL('./evidencias/etapa-a/', import.meta.url));
 const FPS = Number(process.argv.find((a) => a.startsWith('--fps='))?.slice(6) ?? 30);
 const SEQS = (
   process.argv.find((a) => a.startsWith('--seq='))?.slice(6) ?? 'request,direct,luxplus'
@@ -191,7 +195,7 @@ const { origin, close } = await startServer();
 const browser = await chromium.launch();
 let SEQ = 'request';
 const stageUrl = (fmt, extra = '') =>
-  `${origin}/prototypes/luxtory-club-video/?seq=${SEQ}&fmt=${fmt}${extra}`;
+  `${origin}/prototypes/luxtory-club-video/?seq=${SEQ}&fmt=${fmt}${FINAL ? '&final=1' : ''}${extra}`;
 
 async function openStage(fmt, [width], extra) {
   const { viewport } = FORMATS[fmt];

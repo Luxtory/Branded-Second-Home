@@ -16,6 +16,7 @@ import * as directSeq from './sequence-direct.js';
 import * as luxplusSeq from './sequence-luxplus.js';
 import * as requestSeq from './sequence-request.js';
 import * as assinaturaSeq from './sequence-assinatura.js';
+import * as creditosSeq from './sequence-creditos.js';
 import { EDL } from './filme/prova/edl.js';
 import {
   REQUEST_STATES,
@@ -333,7 +334,7 @@ for (const [name, seq] of [
   }
 }
 
-test('[DS §5] assinatura: logo oficial do manifest, arquivo intacto, como <img>; tempo limpo e linha legal legível', () => {
+test('[DS §5] assinatura limpa: só a logo oficial do manifest (intacta, como <img>) e a frase, em 6 s', () => {
   const manifest = JSON.parse(
     readFileSync(join(DIR, '../../src/design-system/brand/logo/manifest.json'), 'utf8'),
   );
@@ -349,34 +350,36 @@ test('[DS §5] assinatura: logo oficial do manifest, arquivo intacto, como <img>
   assinaturaSeq.build(stage, '16x9');
   assert.match(stage.html, new RegExp(`<img[^>]+src="[^"]*/${entry.file}"`));
   assert.doesNotMatch(stage.html, /<svg/, 'logo nunca inline');
-  assert.match(assinaturaSeq.LEGAL, /Demonstração conceitual/);
-  assert.match(assinaturaSeq.LEGAL, /ainda não estão disponíveis para reservas/);
+  // Encerramento exclusivo da marca: o único texto é a frase de assinatura.
+  const text = stage.html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  assert.equal(text, assinaturaSeq.TAGLINE);
+  assert.doesNotMatch(stage.html, /demo-seal|Demonstração|disponíve|Prova interna|ilustrativ/);
   const tl = assinaturaSeq.timeline();
-  const at = (sel) => tl.enter.find((e) => e.sel === sel).in;
-  // Tempo limpo: a linha legal só entra ≥ 2 s depois da assinatura (o momento da marca não divide o quadro).
-  assert.ok(
-    at('#endcard-legal') - at('#endcard-line') >= 2_000,
-    'tempo limpo antes da linha legal',
-  );
-  // Legibilidade: ≥ 1 s a cada 3 palavras + 0,5 s até o fim do cartão.
-  const words = assinaturaSeq.LEGAL.split(/\s+/).length;
-  assert.ok(words <= 14, `linha legal curta (${words} palavras)`);
-  assert.ok(tl.duration - at('#endcard-legal') >= (words / 3 + 0.5) * 1000, 'tempo de leitura');
+  assert.equal(tl.duration, 6_000);
   const logo = tl.enter.find((e) => e.sel === '#endcard-logo');
+  const line = tl.enter.find((e) => e.sel === '#endcard-line');
   assert.equal(logo.rise, 0, 'logo só em opacidade, sem deslocamento');
   assert.equal(logo.dur, parseFloat(TOKENS.duration.cinematic.$value), 'duration.cinematic');
+  assert.ok(line.in >= logo.in + logo.dur, 'a frase entra depois da logo assentada');
+  assert.equal(tl.enter.length, 3, 'cartão, logo e frase — nada mais');
 });
 
-test('ressalvas distribuídas: nenhuma condição essencial sai do filme ao encurtar a linha legal', () => {
+test('ressalvas do filme: condições essenciais no roteiro, fora da assinatura e sem aviso de indisponibilidade', () => {
   const roteiro = readFileSync(join(DIR, 'filme/ROTEIRO.md'), 'utf8');
   for (const text of [
-    'Com Membership vigente', // L3: condição na mesma frase dos Créditos (narração)
+    'Com Membership vigente', // L3, BR-195: condição na mesma frase dos Créditos (narração)
     'Créditos não são moeda, investimento nem garantia de disponibilidade.', // BR-190, copy aprovada (C04)
-    'No Co-Owner, só data já reservada é cedida.', // BR-151, frase aprovada do FAQ (C04)
-    'Demonstração conceitual: interfaces, imóveis e valores ilustrativos.', // C05, primeira interface
-    assinaturaSeq.LEGAL, // assinatura
+    'No Co-Owner, só data já reservada é cedida.', // BR-151, REQ-060, frase aprovada do FAQ (C04)
+    'Imagens, interfaces e valores ilustrativos.', // C05, primeira interface (neutro, sem negar o produto)
   ])
     assert.ok(roteiro.includes(text), `ROTEIRO.md sem a ressalva: ${text}`);
+  assert.ok(
+    !roteiro.includes('ainda não estão disponíveis'),
+    'nenhum aviso de indisponibilidade na peça',
+  );
 });
 
 test('prova de montagem: EDL coerente com a interface aprovada e com as regras do roteiro', () => {
@@ -420,6 +423,55 @@ test('prova de montagem: EDL coerente com a interface aprovada e com as regras d
   for (const v of vo)
     assert.ok(words(v.text) / ((v.to - v.from) / 1000) <= 3, `ritmo da narração: ${v.text}`);
   for (const f of sfx) assert.ok(f.at >= 0 && f.at < duration, `efeito ${f.kind} dentro da prova`);
+});
+
+test('[BR-190][BR-191][PD-008][REQ-060] Créditos: Carteira + novo depósito = um só saldo, e a Request combina lotes', () => {
+  const r = requestScenario();
+  const { prior, deposit, total, priorLots } = creditosSeq.FIGURES;
+  // Números do cenário aprovado, derivados de data.js (nada digitado no motion).
+  assert.equal(prior, 48_000);
+  assert.equal(deposit, 46_000);
+  assert.equal(priorLots, 2);
+  assert.equal(total, prior + deposit);
+  assert.equal(total, r.balances.beforeSend.available);
+  // A Garantia da Request (55.000) sai de lotes que já existiam e do lote recém-originado, pelo que vence primeiro.
+  assert.deepEqual(
+    r.hold.map((p) => [p.lotId, p.quantity]),
+    [
+      ['L-0001', 30_000],
+      ['L-0002', 18_000],
+      ['L-0003', 7_000],
+    ],
+  );
+  const text = markup(creditosSeq);
+  const raw = { dataset: {}, insertAdjacentHTML: (_, html) => (raw.html = html) };
+  creditosSeq.build(raw, '16x9');
+  assert.doesNotMatch(
+    raw.html,
+    /<button|<input|<form/,
+    'camada editorial: nenhum controle ou etapa transacional',
+  );
+  assert.doesNotMatch(text, /R\$/, 'Créditos nunca em formato monetário (BR-190)');
+  assert.match(text, /válidos/);
+  for (const sup of Object.values(creditosSeq.SUPERS)) assert.ok(text.includes(sup));
+  // Batidas na ordem da narração e supers com tempo de leitura, um depois do outro no mesmo lugar.
+  const tl = creditosSeq.timeline('16x9');
+  const at = (sel) => tl.enter.find((e) => e.sel === sel);
+  const beats = ['#cr-row-prior', '#cr-row-deposit', '#cr-row-total', '#cr-use'].map(
+    (sel) => at(sel).in,
+  );
+  assert.deepEqual(
+    [...beats].sort((x, y) => x - y),
+    beats,
+  );
+  assert.ok(at('#cr-panel').in < beats[0], 'o painel chega com a primeira batida');
+  const exit = parseFloat(TOKENS.duration.moderate.$value);
+  const words = (t) => t.split(/\s+/).length;
+  const [coOwner, credits] = [at('#cr-legal-coowner'), at('#cr-legal-credits')];
+  assert.ok(coOwner.out - coOwner.in >= (words(creditosSeq.SUPERS.coOwner) / 3 + 0.5) * 1000);
+  assert.ok(credits.out - credits.in >= (words(creditosSeq.SUPERS.credits) / 3 + 0.5) * 1000);
+  assert.ok(credits.in >= coOwner.out + exit, 'troca dos supers sem crossfade');
+  assert.ok(credits.out + exit <= tl.duration, 'o último super sai antes do corte');
 });
 
 test('a Request aprovada continua com Garantia, Pendente e aceite do detentor', () => {

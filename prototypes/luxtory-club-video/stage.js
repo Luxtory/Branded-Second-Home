@@ -2,9 +2,9 @@
 // captura determinística (capture.mjs chama __demo.seek(t) quadro a quadro) e a prévia ao vivo igual ao render.
 // Parâmetros: ?fmt=16x9|9x16 · ?t=<ms> (quadro fixo) · ?bg=plate (placa de prévia, só no navegador) ·
 // ?play=1 (reprodução em tempo real também sob automação, usada só na comparação com gravação de tela) ·
-// ?seq=request|direct|luxplus|assinatura|prova (sequência; Request por padrão; prova = camada editorial da prova de
-// montagem, filme/prova/).
-const SEQUENCES = ['request', 'direct', 'luxplus', 'assinatura', 'prova'];
+// ?seq=request|direct|luxplus|creditos|assinatura|prova (sequência; Request por padrão; creditos = motion dos Créditos,
+// C04; prova = camada editorial da prova de montagem, filme/prova/) · ?final=1 (exportação para o comercial).
+const SEQUENCES = ['request', 'direct', 'luxplus', 'creditos', 'assinatura', 'prova'];
 const query = new URLSearchParams(location.search);
 const seq = SEQUENCES.includes(query.get('seq')) ? query.get('seq') : 'request';
 const { build, timeline } = await import(`./sequence-${seq}.js`);

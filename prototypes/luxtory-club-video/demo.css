@@ -363,13 +363,92 @@ body {
   height: var(--lx-space-4);
 }
 
-/* Assinatura (Etapa C): cartão de quadro inteiro na superfície deep, sem borda nem sombra; logo oficial centrada
-   (arquivo do manifest como <img>, tamanho por largura, proporção preservada); linha legal discreta embaixo. */
+/* Créditos (ROTEIRO.md C04): painel editorial na superfície deep — soma dos Créditos válidos da Carteira com os de um
+   novo depósito, num só saldo de lotes diferentes. Números em Newsreader, rótulos em Hanken, lotes em metadado. */
+[data-fmt='16x9'] .demo-card--creditos {
+  top: 47%;
+  inset-inline-start: 6%;
+  width: 32rem;
+  translate: 0 -50%;
+}
+
+[data-fmt='9x16'] .demo-card--creditos {
+  top: 9%;
+}
+
+.demo-card--creditos {
+  gap: var(--lx-space-4);
+}
+
+.demo-bar--lots {
+  height: var(--lx-space-3);
+}
+
+.demo-bar__seg--prior {
+  background-color: var(--lx-color-rule);
+}
+
+.demo-sum {
+  display: grid;
+  margin: 0;
+}
+
+.demo-sum__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--lx-space-4);
+  padding-block: var(--lx-space-2);
+}
+
+.demo-sum__row--total {
+  margin-top: var(--lx-space-2);
+  padding-top: var(--lx-space-3);
+  border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
+}
+
+.demo-sum__label {
+  font-size: var(--lx-type-compact);
+  line-height: var(--lx-leading-tight);
+  color: var(--lx-color-fg);
+}
+
+.demo-sum__label .lx-meta {
+  display: block;
+  font-size: var(--lx-type-label);
+  color: var(--lx-color-fg-muted);
+}
+
+.demo-sum__figure {
+  margin: 0;
+  font-family: var(--lx-font-display);
+  font-size: var(--lx-type-headline);
+  line-height: var(--lx-leading-display);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.demo-sum__row--total .demo-sum__figure {
+  color: var(--lx-color-headline);
+}
+
+.demo-sum__op {
+  color: var(--lx-color-accent);
+}
+
+/* 9:16: os supers da cena ficam abaixo do painel e acima dos 20% inferiores (interface das plataformas). */
+[data-fmt='9x16'] .demo-ed--legal {
+  bottom: 23%;
+  inset-inline: var(--lx-space-4);
+}
+
+/* Assinatura: cartão de quadro inteiro na superfície deep, sem borda nem sombra; só a logo oficial (arquivo do manifest
+   como <img>, tamanho por largura, proporção preservada) e a frase, centradas como um bloco. */
 [data-fmt] .demo-card.demo-card--endcard {
   inset: 0;
   place-content: center;
   justify-items: center;
-  gap: var(--lx-space-6);
+  gap: var(--lx-space-8);
   padding: var(--lx-space-8);
   border: 0;
   box-shadow: none;
@@ -381,39 +460,20 @@ body {
   height: auto;
 }
 
+/* 16:9: o bloco fica um pouco acima do centro geométrico (centro óptico). */
+[data-fmt='16x9'] .demo-card.demo-card--endcard {
+  padding-block-end: 4%;
+}
+
+/* 9:16: composição própria — logo maior, frase em duas linhas, bloco no centro óptico e longe dos 20% inferiores
+   (interface das plataformas) e dos 8% superiores. */
+[data-fmt='9x16'] .demo-card.demo-card--endcard {
+  gap: var(--lx-space-6);
+  padding-block-end: 8%;
+}
+
 [data-fmt='9x16'] .demo-endcard__logo {
   width: 62%;
-}
-
-/* Linha legal (v2): curta e num segundo tempo, por isso pode ser maior que um selo (type-compact) sem competir com a
-   marca; hierarquia pela cor muted, pela distância da logo e pela entrada depois do tempo limpo. */
-.demo-card--endcard .demo-endcard__legal {
-  position: absolute;
-  inset-inline: var(--lx-space-8);
-  bottom: var(--lx-space-12);
-  max-width: var(--lx-layout-measure);
-  margin-inline: auto;
-  padding-top: 0;
-  border-top: 0;
-  font-size: var(--lx-type-compact);
-  line-height: var(--lx-leading-compact);
-  text-wrap: balance;
-}
-
-/* 9:16: composição própria — linha legal em até três linhas, acima dos 20% inferiores (interface das plataformas),
-   com margens laterais maiores para não encostar nas bordas no celular. */
-[data-fmt='9x16'] .demo-card--endcard .demo-endcard__legal {
-  inset-inline: var(--lx-space-6);
-  bottom: 21%;
-}
-
-[data-fmt='9x16'] .demo-endcard__legal > span {
-  display: block;
-}
-
-/* 9:16: logo e assinatura um pouco acima do centro (centro óptico), afastadas da linha legal. */
-[data-fmt='9x16'] .demo-card.demo-card--endcard {
-  padding-block-end: 18%;
 }
 
 /* Prova de montagem (Etapa C): camada editorial do filme sobre a fotografia — título da modalidade, ressalva e etiqueta
@@ -444,15 +504,17 @@ body {
   background: var(--lx-scrim-color);
   opacity: var(--lx-scrim-max-alpha);
   mask-image: radial-gradient(
-    ellipse 62% 78% at 0% 100%,
-    var(--lx-scrim-color) 38%,
+    ellipse 78% 92% at 0% 100%,
+    var(--lx-scrim-color) 42%,
     transparent 100%
   );
 }
 
-/* Título: terço inferior esquerdo, na coluna do cartão de contexto (sai antes de ele entrar). */
+/* Título: terço inferior esquerdo, perto do canto onde a sombra é mais forte, na coluna do cartão de contexto (sai antes
+   de ele entrar). Sobre fotografia o texto é Pure White, como no Hero do site; o Warm Sand fica na hairline.
+   Contraste medido sobre a placa clara do litoral (prova): título 8,1:1 e descritor 8,5:1 na mediana do fundo. */
 .demo-ed--title {
-  bottom: 22%;
+  bottom: 14%;
   inset-inline-start: 6%;
   display: grid;
   gap: var(--lx-space-2);
@@ -465,7 +527,7 @@ body {
   font-family: var(--lx-font-display);
   font-size: var(--lx-type-headline);
   line-height: var(--lx-leading-display);
-  color: var(--lx-color-headline);
+  color: var(--lx-color-fg);
 }
 
 .demo-ed__desc {

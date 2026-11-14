@@ -97,14 +97,15 @@ export const EDL = {
     title: {
       in: 300,
       out: 2_400,
-      eyebrow: 'Luxtory Club',
       title: 'Luxchange Request',
-      desc: 'noites de outro Titular',
+      // Gramática dos títulos de modalidade: de onde vêm as noites · como se paga (ROTEIRO.md §3).
+      desc: 'noites de outro Titular · Créditos + Fee',
     },
     legal: {
       in: 2_800,
       out: 6_800,
-      text: 'Demonstração conceitual: interfaces, imóveis e valores ilustrativos.',
+      // Indicação neutra de material ilustrativo (não nega o produto); ROTEIRO.md §5.
+      text: 'Imagens, interfaces e valores ilustrativos.',
     },
     tag: 'Prova interna · imagens e sons provisórios',
   },
