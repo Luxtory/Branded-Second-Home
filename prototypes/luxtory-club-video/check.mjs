@@ -60,7 +60,9 @@ for (const seq of SEQS) {
           .map((f) => f.family.replaceAll('"', '')),
       ),
     ]);
-    for (const family of ['Newsreader', 'Hanken Grotesk', 'Courier Prime'])
+    // Courier Prime só existe para metadados técnicos (lx-meta, DS §13.3): é exigida onde há metadados.
+    const hasMeta = await page.evaluate(() => !!document.querySelector('.lx-meta'));
+    for (const family of ['Newsreader', 'Hanken Grotesk', ...(hasMeta ? ['Courier Prime'] : [])])
       if (!fonts.includes(family)) fail(`${tag}: fonte ${family} não carregada`);
     const states = {};
     for (const key of qa.checkpoints) {

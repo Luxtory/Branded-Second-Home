@@ -3,7 +3,7 @@
 // Parâmetros: ?fmt=16x9|9x16 · ?t=<ms> (quadro fixo) · ?bg=plate (placa de prévia, só no navegador) ·
 // ?play=1 (reprodução em tempo real também sob automação, usada só na comparação com gravação de tela) ·
 // ?seq=request|direct|luxplus (sequência; Request por padrão).
-const SEQUENCES = ['request', 'direct', 'luxplus'];
+const SEQUENCES = ['request', 'direct', 'luxplus', 'assinatura'];
 const query = new URLSearchParams(location.search);
 const seq = SEQUENCES.includes(query.get('seq')) ? query.get('seq') : 'request';
 const { build, timeline } = await import(`./sequence-${seq}.js`);
@@ -68,14 +68,15 @@ const $ = (sel) => {
 const progress = (t, start, dur) =>
   dur <= 0 ? (t >= start ? 1 : 0) : Math.min(1, Math.max(0, (t - start) / dur));
 
-function renderEnter(t, { sel, in: tIn, out: tOut, dur }) {
+// `rise: 0` num item = só opacidade (a logo oficial nunca se desloca); sem ele, o fade-up de 8 px do Core.
+function renderEnter(t, { sel, in: tIn, out: tOut, dur, rise }) {
   const el = $(sel);
   const p = MOTION.ease(progress(t, tIn, dur ?? MOTION.enter));
   const q = tOut === undefined ? 0 : MOTION.easeExit(progress(t, tOut, MOTION.exit));
   const opacity = p * (1 - q);
   el.style.visibility = opacity > 0 ? 'visible' : 'hidden';
   el.style.opacity = String(opacity);
-  el.style.transform = `translateY(${((1 - p) * MOTION.rise).toFixed(3)}px)`;
+  el.style.transform = `translateY(${((1 - p) * (reduce ? 0 : (rise ?? MOTION.rise))).toFixed(3)}px)`;
 }
 
 function renderSets(t) {

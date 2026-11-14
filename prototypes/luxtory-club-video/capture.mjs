@@ -393,6 +393,11 @@ for (const seq of SEQS) {
     // PSNR no quadro do meio (em plena transição: alfa parcial); cores num quadro já assentado da confirmação.
     const mid = Math.floor((ALPHA.seconds * FPS) / 2);
     const settled = Math.round((qa.sample.at / 1000) * FPS) - startFrame;
+    // Ponto de amostragem fora do trecho ProRes = configuração errada no `qa`, não amostra vazia silenciosa.
+    check(
+      settled >= 0 && settled < ALPHA.seconds * FPS,
+      `${fmt} alpha: amostra em ${qa.sample.at} ms fora do trecho ${ALPHA.from} ms + ${ALPHA.seconds} s`,
+    );
     const decoded = `${OUT}alpha-${seq}-${fmt}-decoded.png`;
     ffmpeg([
       '-i',

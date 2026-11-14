@@ -242,7 +242,7 @@ export const qa = {
   },
   stills: { calendario: 3_850, revisao: 6_200, revalidacao: 9_050, confirmacao: 11_500 },
   alpha: { from: 6_400, seconds: 5 },
-  sample: { card: '#booking', at: 11_500 },
+  sample: { card: '#booking', at: 11_000 },
   motion: { card: '#booking', at: 11_500, enter: [9_400, 9_880] },
   plates: { campo: 'public/images/home/kaizen/kaizen-k05.jpg' },
 };

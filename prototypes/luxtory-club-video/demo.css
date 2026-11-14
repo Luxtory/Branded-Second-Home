@@ -362,3 +362,40 @@ body {
   width: var(--lx-space-4);
   height: var(--lx-space-4);
 }
+
+/* Assinatura (Etapa C): cartão de quadro inteiro na superfície deep, sem borda nem sombra; logo oficial centrada
+   (arquivo do manifest como <img>, tamanho por largura, proporção preservada); linha legal discreta embaixo. */
+[data-fmt] .demo-card.demo-card--endcard {
+  inset: 0;
+  place-content: center;
+  justify-items: center;
+  gap: var(--lx-space-6);
+  padding: var(--lx-space-8);
+  border: 0;
+  box-shadow: none;
+  text-align: center;
+}
+
+.demo-endcard__logo {
+  width: min(26rem, 32vw);
+  height: auto;
+}
+
+[data-fmt='9x16'] .demo-endcard__logo {
+  width: 62%;
+}
+
+.demo-card--endcard .demo-endcard__legal {
+  position: absolute;
+  inset-inline: var(--lx-space-8);
+  bottom: var(--lx-space-8);
+  max-width: var(--lx-layout-measure);
+  margin-inline: auto;
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* 9:16: a linha legal fica acima dos 20% inferiores (interface das plataformas). */
+[data-fmt='9x16'] .demo-card--endcard .demo-endcard__legal {
+  bottom: 21%;
+}
