@@ -16,6 +16,7 @@ import * as directSeq from './sequence-direct.js';
 import * as luxplusSeq from './sequence-luxplus.js';
 import * as requestSeq from './sequence-request.js';
 import * as assinaturaSeq from './sequence-assinatura.js';
+import { EDL } from './filme/prova/edl.js';
 import {
   REQUEST_STATES,
   addMonthsUTC,
@@ -378,6 +379,49 @@ test('ressalvas distribuídas: nenhuma condição essencial sai do filme ao encu
     assert.ok(roteiro.includes(text), `ROTEIRO.md sem a ressalva: ${text}`);
 });
 
+test('prova de montagem: EDL coerente com a interface aprovada e com as regras do roteiro', () => {
+  const { shots, ui, uiFadeOut, editorial, vo, sfx, duration } = EDL;
+  const exit = parseFloat(TOKENS.duration.moderate.$value);
+  // Planos contíguos cobrindo a prova inteira.
+  shots.forEach((s, i) => assert.equal(s.from, i ? shots[i - 1].to : 0, `${s.scene} contíguo`));
+  assert.equal(shots.at(-1).to, duration);
+  // Interface: trechos dentro da sequência capturada, sem sobreposição, e trocas de trecho só nos cortes de imagem.
+  const request = requestSeq.timeline('16x9');
+  ui.forEach((u, i) => {
+    assert.ok(u.from >= 0 && u.to <= request.duration, `trecho ${i} dentro da Request`);
+    if (i) {
+      assert.equal(u.at, ui[i - 1].at + (ui[i - 1].to - ui[i - 1].from), `trecho ${i} contíguo`);
+      assert.ok(
+        shots.some((s) => s.from === u.at),
+        `troca de trecho ${i} coincide com um corte`,
+      );
+    }
+  });
+  const last = ui.at(-1);
+  assert.ok(
+    last.at + (last.to - last.from) >= uiFadeOut.at + uiFadeOut.dur,
+    'interface presente até o fim do próprio fade (nunca some num quadro)',
+  );
+  // Título sai antes de o cartão de contexto ocupar o mesmo lugar (saída + duration.moderate).
+  const home = request.enter.find((e) => e.sel === '#home').in;
+  assert.ok(
+    editorial.title.out + exit <= ui[0].at + home,
+    'título sai antes do cartão de contexto',
+  );
+  // Ressalva: entra com a primeira interface e respeita o tempo de leitura (1 s a cada 3 palavras + 0,5 s).
+  const words = (text) => text.split(/\s+/).length;
+  const legal = editorial.legal;
+  assert.ok(legal.in >= editorial.title.out + exit, 'ressalva depois do título');
+  assert.ok(
+    legal.out - legal.in >= (words(legal.text) / 3 + 0.5) * 1000,
+    'tempo de leitura da ressalva',
+  );
+  // Narração-guia em ritmo de conversa (≤ 3 palavras/s) e efeitos dentro da prova.
+  for (const v of vo)
+    assert.ok(words(v.text) / ((v.to - v.from) / 1000) <= 3, `ritmo da narração: ${v.text}`);
+  for (const f of sfx) assert.ok(f.at >= 0 && f.at < duration, `efeito ${f.kind} dentro da prova`);
+});
+
 test('a Request aprovada continua com Garantia, Pendente e aceite do detentor', () => {
   const text = markup(requestSeq);
   assert.match(text, /Créditos em Garantia/);
@@ -386,6 +430,10 @@ test('a Request aprovada continua com Garantia, Pendente e aceite do detentor', 
 });
 
 const SOURCES = readdirSync(DIR).filter((f) => /\.(js|mjs|css|html|md)$/.test(f));
+// Documentos e scripts do filme (roteiro, produção, EDL e montagem da prova), em subpastas de filme/.
+const FILM = readdirSync(join(DIR, 'filme'), { recursive: true })
+  .filter((f) => /\.(js|mjs|md)$/.test(f))
+  .map((f) => `filme/${f}`);
 
 test('[DS §13.3] demo.css e index.html só usam tokens (scanCss do check-hardcodes do DS)', () => {
   const breakpoints = breakpointValues();
@@ -410,8 +458,7 @@ test('[REQ-100][REQ-101][BR-377] terminologia e nenhuma promessa', () => {
     /por noite/i,
     /R\$\s*[\d.,]+\s*Créditos/i,
   ];
-  // Inclui os documentos do filme (roteiro, narração, prompts): a mesma terminologia vale para a peça.
-  const FILM = readdirSync(join(DIR, 'filme')).map((f) => `filme/${f}`);
+  // Inclui os documentos do filme (roteiro, narração, prompts, EDL): a mesma terminologia vale para a peça.
   const hits = [...SOURCES.filter((f) => f !== 'prototype.test.mjs'), ...FILM].flatMap((f) =>
     readFileSync(join(DIR, f), 'utf8')
       .split('\n')
@@ -423,18 +470,20 @@ test('[REQ-100][REQ-101][BR-377] terminologia e nenhuma promessa', () => {
 });
 
 test('isolamento: nenhuma URL externa, chamada de rede, credencial ou import do produto', () => {
-  const hits = SOURCES.filter((f) => f !== 'prototype.test.mjs' && f !== 'README.md').flatMap(
-    (f) => {
-      const text = readFileSync(join(DIR, f), 'utf8');
-      return [
-        /https?:\/\/(?!127\.0\.0\.1)/,
-        /\bfetch\(/,
-        /XMLHttpRequest|WebSocket|supabase|vercel|process\.env\.(?!PORT)/i,
-        /src\/features|@\/features/,
-      ]
-        .filter((re) => re.test(text))
-        .map((re) => `${f} ${re}`);
-    },
-  );
+  const code = [
+    ...SOURCES.filter((f) => f !== 'prototype.test.mjs' && f !== 'README.md'),
+    ...FILM.filter((f) => /\.(js|mjs)$/.test(f)),
+  ];
+  const hits = code.flatMap((f) => {
+    const text = readFileSync(join(DIR, f), 'utf8');
+    return [
+      /https?:\/\/(?!127\.0\.0\.1)/,
+      /\bfetch\(/,
+      /XMLHttpRequest|WebSocket|supabase|vercel|process\.env\.(?!PORT)/i,
+      /src\/features|@\/features/,
+    ]
+      .filter((re) => re.test(text))
+      .map((re) => `${f} ${re}`);
+  });
   assert.deepEqual(hits, []);
 });

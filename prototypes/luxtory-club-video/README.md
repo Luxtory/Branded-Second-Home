@@ -7,8 +7,8 @@
 | Etapa | Conteúdo | Estado |
 |---|---|---|
 | A | Luxchange Request (25 s): escolha das noites, revisão, política, Fee, Pendente, aceite do detentor, revalidação e Request Aceita + Reserva Confirmada na mesma operação | aprovada |
-| B | Luxchange Direct (14 s) e Luxplus (15,5 s) sobre a mesma arquitetura | em avaliação |
-| C | Pré-produção do filme (`filme/ROTEIRO.md`, `filme/PRODUCAO.md`) e prova de composição: assinatura com a logo oficial (6 s) | em avaliação |
+| B | Luxchange Direct (14 s) e Luxplus (15,5 s) sobre a mesma arquitetura | aprovada (auditoria de 2026-11-14) |
+| C | Pré-produção do filme (`filme/ROTEIRO.md`, `filme/PRODUCAO.md`, v2 após a auditoria), assinatura com a logo oficial (9 s, com tempo limpo) e prova de montagem da Request (`filme/prova/`, ≈ 19,8 s, placeholders) | em avaliação |
 | D | Montagem e finalização | depende de footage, voz, trilha e aprovações |
 
 ## Ver
@@ -18,7 +18,7 @@ node prototypes/luxtory-club-video/serve.mjs
 ```
 
 Abra `http://127.0.0.1:4173/prototypes/luxtory-club-video/?seq=request&fmt=16x9`. `seq` = `request`, `direct`,
-`luxplus` ou `assinatura`; `fmt` = `16x9` ou `9x16`. Toca sozinho; **espaço** pausa e continua, **R** reinicia.
+`luxplus`, `assinatura` ou `prova` (camada editorial da prova de montagem, só 16:9); `fmt` = `16x9` ou `9x16`. Toca sozinho; **espaço** pausa e continua, **R** reinicia.
 `&t=13800` congela um instante; `&bg=plate` mostra uma placa de prévia por trás.
 
 ## Regenerar e validar
@@ -54,6 +54,7 @@ muda a cadência e `--realtime` refaz a comparação com captura em tempo real.
 | `stage.js` | Motor de tempo: o estado de cada quadro é função de `t`; tokens de movimento do DS |
 | `sequence-request.js` · `sequence-direct.js` · `sequence-luxplus.js` | Coreografia de cada modalidade nos dois formatos (cartões, instantes, marcas) e seu `qa` (pontos de verificação e de captura) |
 | `sequence-assinatura.js` | Assinatura com a logo oficial do manifest (prova de composição da Etapa C) |
+| `sequence-prova.js` · `filme/prova/edl.js` · `filme/prova/montar.mjs` | Prova de montagem: camada editorial (título, ressalva, etiqueta interna) · EDL em dados (planos, trechos de interface, textos, narração-guia, efeitos) · montagem e validação com ffmpeg |
 | `shared.js` | Peças comuns: ícones, selo, calendário do DS, toque, faixa de noites |
 | `rules.js` · `data.js` · `format.js` | Fórmulas canônicas · parâmetros canônicos e dados fictícios · formatação pt-BR |
 | `serve.mjs` | Servidor local (127.0.0.1) restrito ao protótipo, ao DS e às fotos públicas usadas como placa |
@@ -191,7 +192,33 @@ mesmos bytes da aprovada: 14 quadros de referência idênticos por sha256.
 | Transição de entrada da reserva | nenhum quadro repetido | nenhum quadro repetido | — |
 
 Placa de teste de Direct e Luxplus: a mesma imagem de interior (espaço negativo, sem pessoas) para *Pátio · Campo* —
-continuidade de uma só Second Home nas duas modalidades. Só teste interno.
+continuidade de uma só Second Home nas duas modalidades. Só teste interno. Correção da v2: a K05 é do anteprojeto
+Kaizen e **não** representa Pátio · Campo; a referência de cada imóvel fictício passa a ser a imagem-chave mestra
+gerada e aprovada (`filme/PRODUCAO.md` §2).
+
+## Prova de montagem (Etapa C v2)
+
+```bash
+node prototypes/luxtory-club-video/filme/prova/montar.mjs
+```
+
+Monta um trecho da Request como no master (C05, C07, C08, C09 de `filme/ROTEIRO.md`) a partir da EDL
+(`filme/prova/edl.js`). Camadas: imagem → foco suavizado enquanto há interface → interface (quadros de `out/etapa-a`,
+sem reanimar) → camada editorial do DS (`?seq=prova`) → fade. Áudio com efeitos e ambientes sintéticos gerados aqui,
+loudness medido (−20 LUFS só com efeitos; −14 LUFS com voz) e true peak ≤ −1 dBTP.
+
+- **Placeholders identificados:** foto provisória do site para Varanda · Litoral e um fundo neutro para S09; etiqueta
+  "Prova interna · imagens e sons provisórios" em todos os quadros. Não é o filme.
+- **Pronta para receber os assets:** footage aprovado em `out/entrada/<plano>.mp4|.mov` (ex.: `S06.mp4`), voz em
+  `out/entrada/vo.wav` e trilha em `out/entrada/trilha.wav`, alinhadas ao tempo da prova. O script usa o arquivo no
+  lugar do placeholder (cadência, escala e duração ajustadas; trilha com ducking sob a voz). `--entrada=` e `--saida=`
+  trocam as pastas. Caminho testado com arquivos fictícios fora do repositório.
+- **Saídas** (`out/prova/`, fora do Git): `prova-request-16x9.mp4` (limpa), `prova-request-16x9-revisao.mp4` (tarja com
+  plano, status do placeholder, narração-guia e timecode), `prova-request-vo-guia.srt`, folha de contato e
+  `prova.json` (o que entrou e medições).
+- **Validação do arquivo codificado:** 1920×1080 (revisão 1920×1200), 30 fps, 594/594 quadros, BT.709, áudio 48 kHz
+  estéreo, loudness e true peak. Continuidade por luma: só os três cortes previstos; a interface sai em fade (o teste
+  da EDL impede que ela suma num quadro).
 
 ## Integração na pós (Etapa A)
 
