@@ -1,0 +1,74 @@
+/* SHP1 (catalog §20.2): only the three informative photographs in #empreendimentos. */
+@layer lx.components {
+  /* Long architectural terms must reflow when the reader enlarges text. */
+  [data-lx="core"] #empreendimentos {
+    overflow-wrap: anywhere;
+  }
+
+  [data-lx="core"] #empreendimentos .lx-developments {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--lx-layout-gutter);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-lx="core"] #empreendimentos .lx-developments > li {
+    display: grid;
+    min-width: 0;
+  }
+
+  [data-lx="core"] #empreendimentos .lx-development {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(var(--lx-space-48), 1fr) auto;
+    min-width: 0;
+    min-height: calc(var(--lx-space-48) * 2.5);
+  }
+
+  [data-lx="core"] #empreendimentos .lx-development__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 50%;
+  }
+
+  /* Preserve the house on the right and the exposed upper floors of the construction image. */
+  [data-lx="core"] #empreendimentos li:first-child .lx-development__image {
+    object-position: 64% 45%;
+  }
+
+  [data-lx="core"] #empreendimentos li:nth-child(2) .lx-development__image {
+    object-position: 50% 35%;
+  }
+
+  /* Only the text area is scrimmed: the first padding band fades in, then the existing AA scrim covers all text.
+   * Copy stays in normal flow so zoom, long titles and narrow phones grow the card rather than clipping it. */
+  [data-lx="core"] #empreendimentos .lx-development__copy {
+    position: relative;
+    grid-row: 2;
+    display: grid;
+    gap: var(--lx-space-3);
+    padding: var(--lx-space-12) var(--lx-space-6) var(--lx-space-6);
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      color-mix(in srgb, var(--lx-scrim-color) calc(var(--lx-scrim-max-alpha) * 100%), transparent)
+        var(--lx-space-12)
+    );
+  }
+
+  [data-lx="core"] #empreendimentos .lx-development__copy :is(.lx-display-s, .lx-body) {
+    color: var(--lx-palette-pure-white);
+  }
+
+  @media (min-width: 64rem) {
+    [data-lx="core"] #empreendimentos .lx-developments {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+}

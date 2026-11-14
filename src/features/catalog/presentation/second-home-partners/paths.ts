@@ -13,6 +13,7 @@ export const SECOND_HOME_PARTNERS_SECTIONS = [
   'inicio',
   'oportunidade',
   'beneficios',
+  'empreendimentos',
   'solucoes',
   'como-funciona',
   'perguntas',

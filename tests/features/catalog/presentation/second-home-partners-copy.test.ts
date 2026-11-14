@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { secondHomePartnersMessages as text } from '../../../../src/features/catalog/presentation/i18n/second-home-partners-pt-br';
+import { SecondHomePartnersHomePage } from '../../../../src/features/catalog/presentation/second-home-partners/home-page';
 
 // Limites da copy Second Home Partners (spec catalog §20.2; aplicação L1–L7; Framework §14). Verificam regras de negócio
 // e de comunicação — participação explícita sem números, Club só como futuro, locação independente do Club, nada de
@@ -18,6 +21,7 @@ const PAGE = strings({
   hero: text.hero,
   opportunity: text.opportunity,
   benefits: text.benefits,
+  developments: text.developments,
   solutions: text.solutions,
   process: text.process,
   faq: text.faq,
@@ -28,6 +32,43 @@ const answerTo = (question: RegExp) =>
   text.faq.items.find((item) => question.test(item.question))?.answer ?? '';
 
 describe('copy Second Home Partners (catalog §20.2)', () => {
+  it('[REQ-105] oito seções: empreendimentos entre benefícios e soluções, sem alterar a ordem anterior', () => {
+    const html = renderToStaticMarkup(createElement(SecondHomePartnersHomePage));
+    expect([...html.matchAll(/<section id="([^"]+)"/g)].map((match) => match[1])).toEqual([
+      'inicio',
+      'oportunidade',
+      'beneficios',
+      'empreendimentos',
+      'solucoes',
+      'como-funciona',
+      'perguntas',
+      'conversa',
+    ]);
+    const section = html.match(/<section id="empreendimentos"[\s\S]*?<\/section>/)?.[0] ?? '';
+    expect(section).toContain('data-surface="wash"');
+    expect(section.match(/<h2\b/g)).toHaveLength(1);
+    expect(section.match(/<h3\b/g)).toHaveLength(3);
+    expect(section.match(/<article\b/g)).toHaveLength(3);
+    expect(section).not.toMatch(/<(?:a|button)\b|tabindex=/);
+    // A CSP com nonce da plataforma bloqueia também o estilo inline padrão do Next Image.
+    expect(section).not.toMatch(/\sstyle=/);
+    expect(section).toContain(
+      'Da concepção à entrega. <em>Seu empreendimento pode fazer parte.</em>',
+    );
+    for (const line of [
+      'Onde a parceria pode acontecer',
+      'Avaliamos oportunidades em diferentes momentos do projeto, considerando o perfil dos imóveis, dos proprietários e da incorporadora.',
+      'Imóveis sob demanda em condomínios parceiros',
+      'Casas de alto padrão desenvolvidas conforme a demanda, em condomínios com potencial para receber a parceria.',
+      'Empreendimentos em desenvolvimento',
+      'Projetos em planejamento, lançamento ou construção que buscam oferecer novos diferenciais aos futuros proprietários.',
+      'Empreendimentos entregues',
+      'Imóveis prontos ou em operação, cujos proprietários podem escolher novas formas de aproveitar os períodos sem uso.',
+      'A participação depende da avaliação do empreendimento e das condições da parceria. Imagens ilustrativas.',
+    ])
+      expect(section).toContain(line);
+  });
+
   it('[REQ-105] três benefícios com o mesmo peso; a participação é parte da comissão da Luxtory pelas locações (D-SHP-07, D-SHP-08)', () => {
     const [, , participation] = text.benefits.items;
 
