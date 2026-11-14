@@ -80,7 +80,7 @@ Uma página: `/second-home-partner`. Conscientização: Problem Aware → Produc
 | Hero | PICTURE `[FW-SHP: P1]` | `#inicio` |
 | A oportunidade | PROBLEM `[FW-SHP: P2]` | `#oportunidade` |
 | Benefícios | PROMISE `[FW-SHP: P3]` | `#beneficios` |
-| Soluções para os proprietários · Como funciona · Perguntas | PROOF `[FW-SHP: P4]` | `#solucoes` · `#como-funciona` · `#perguntas` |
+| Onde a parceria pode acontecer · Soluções para os proprietários · Como funciona · Perguntas | PROOF `[FW-SHP: P4]` | `#empreendimentos` · `#solucoes` · `#como-funciona` · `#perguntas` |
 | Conversa | PUSH `[FW-SHP: P5]` | `#conversa` |
 
 ## 8. Tom e expressão
@@ -97,7 +97,7 @@ Tom, vocabulário e o que evitar: `[FW-SHP: §11]`. Testes de validação e regr
 |---|---|---|---|
 | D-SHP-01 | Hero “Mais valor para seu empreendimento. Mais liberdade para seus clientes.” com nota de programa em estruturação | aprovada pelo fundador em 2026-11-12 (plano v3.3) | REQ-105 |
 | D-SHP-02 | CTA único “Conversar sobre seu empreendimento” | aprovada em 2026-11-12 | REQ-105 |
-| D-SHP-03 | Sete seções: Hero, A oportunidade, Benefícios, Soluções para os proprietários (antes Luxtory Club), Como funciona, Perguntas, Conversa | aprovada em 2026-11-12; quarta seção renomeada em 2026-11-13 (`D-SHP-09`) | `[FW-SHP: §12]` |
+| D-SHP-03 | Sete seções: Hero, A oportunidade, Benefícios, Soluções para os proprietários (antes Luxtory Club), Como funciona, Perguntas, Conversa | aprovada em 2026-11-12; quarta seção renomeada em 2026-11-13 (`D-SHP-09`); sequência ampliada para oito por `D-SHP-13` | `[FW-SHP: §12]` |
 | D-SHP-04 | Variantes: A com participação nos resultados, B sem claims econômicos; publica-se só a autorizada, sem flag | substituída em 2026-11-13 → `D-SHP-07` | `01` §35 |
 | D-SHP-05 | Indexação: Preview e local sem indexação; fechada = 404; aberta em Production = indexável | aprovada em 2026-11-12 | REQ-105 |
 | D-SHP-06 | Hero tipográfico, sem fotografia de banco | aprovada em 2026-11-12 | `P-LX-02` |
@@ -107,12 +107,14 @@ Tom, vocabulário e o que evitar: `[FW-SHP: §11]`. Testes de validação e regr
 | D-SHP-10 | FAQ só com as dúvidas de uma incorporadora interessada: vendas e ociosidade, participação, operação das locações, decisão dos proprietários e fase; parceria em qualquer fase, sem prioridade para lançamentos | aprovada pelo fundador em 2026-11-13 | REQ-105 |
 | D-SHP-11 | A página é de prospecção: publica-se com o aceite do fundador e a configuração de Production, sem esperar a operação. Revisão jurídica bloqueia contratos (`P-SHP-01`); definição operacional bloqueia a prestação dos serviços (`P-SHP-02`); definição do modelo B bloqueia sua contratação (`P-SHP-04`). O hero diz só que o programa está em estruturação; a indisponibilidade de Luxchange e Luxplus fica na nota das soluções | aprovada pelo fundador em 2026-11-13 | REQ-105 |
 | D-SHP-12 | Identidade visual pela paleta institucional, só com superfícies do Core: Hero Deep, A oportunidade White, Benefícios Blue, Soluções Deep, Como funciona Wash, Perguntas Blue, Conversa White; a passagem Blue → Deep entre Benefícios e Soluções segue o Como funciona do Brand Partners | aprovada pelo fundador em 2026-11-13 | DS §13.3 |
+| D-SHP-13 | Oito seções: acrescentar “Onde a parceria pode acontecer” entre Benefícios e Soluções; Wash, headline “Da concepção à entrega. Seu empreendimento pode fazer parte.”, três fotografias fornecidas (sob demanda em condomínios parceiros, em desenvolvimento e entregues), copy integral aprovada e nota de avaliação e imagens ilustrativas; sem CTA adicional, promessa de aprovação ou adesão obrigatória. CSS exclusivo da seção; demais seções e serviços preservados | aprovada pelo fundador em 2026-11-13 (brief da seção); amplia `D-SHP-03` e a transição de superfícies de `D-SHP-12` | REQ-105; L1, L4; DS §13.3 |
 
 | ID | Hipótese | Como validar |
 |---|---|---|
 | H-SHP-01 | A possibilidade de outros destinos ajuda a superar objeções e acelerar a decisão de compra | objeções registradas nos diagnósticos com incorporadoras e equipes de venda |
 | H-SHP-02 | Incorporadoras valorizam o apoio comercial e a gestão das locações antes de o intercâmbio existir | conversão de conversas em parcerias-piloto |
 | H-SHP-03 | A participação nas receitas de gestão leva a incorporadora a apresentar a gestão das locações aos compradores (Partner-Led Growth) | adesão dos proprietários dos empreendimentos parceiros à gestão |
+| H-SHP-04 | Explicitar os tipos e fases de empreendimentos aumenta a proporção de visitantes qualificados que iniciam contato | proporção de contatos qualificados; hipótese a validar, sem resultado atribuído à seção |
 
 | ID | Pendência | Bloqueia |
 |---|---|---|

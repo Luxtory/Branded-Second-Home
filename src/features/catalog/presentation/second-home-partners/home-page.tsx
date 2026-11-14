@@ -1,3 +1,4 @@
+import { getImageProps } from 'next/image';
 import { Icon } from '@/design-system/react';
 import { HeadlineText } from '../discovery/headline';
 import { nb } from '../discovery/no-break';
@@ -7,9 +8,9 @@ import { SecondHomePartnerContactForm } from './contact-form';
 import { SECOND_HOME_PARTNERS_SECTIONS, titleOf } from './paths';
 import { SecondHomePartnersSite } from './site';
 
-const { hero, opportunity, benefits, solutions, process, faq, conversation } = text;
+const { hero, opportunity, benefits, developments, solutions, process, faq, conversation } = text;
 
-const [HERO, OPPORTUNITY, BENEFITS, SOLUTIONS, PROCESS, FAQ, CONVERSATION] =
+const [HERO, OPPORTUNITY, BENEFITS, DEVELOPMENTS, SOLUTIONS, PROCESS, FAQ, CONVERSATION] =
   SECOND_HOME_PARTNERS_SECTIONS;
 
 /** Parágrafos da copy, um `<p>` por item, com os termos compostos (Second Home…) sem quebra. */
@@ -23,8 +24,8 @@ function Paragraphs({ lines }: { readonly lines: readonly string[] }) {
 
 /**
  * Página Second Home Partners `/second-home-partner` (REQ-105, spec catalog §20.2): PICTURE → PROBLEM → PROMISE → PROOF
- * (soluções para os proprietários, processo, perguntas) → PUSH sobre o Core. Três benefícios com o mesmo peso, incluindo a participação
- * nos resultados (`D-SHP-07`). Superfícies da paleta institucional (`D-SHP-12`): Deep → White → Blue → Deep → Wash → Blue
+ * (empreendimentos, soluções para os proprietários, processo, perguntas) → PUSH sobre o Core. Três benefícios com o mesmo peso, incluindo a participação
+ * nos resultados (`D-SHP-07`). Superfícies da paleta institucional (`D-SHP-12`, `D-SHP-13`): Deep → White → Blue → Wash → Deep → Wash → Blue
  * → White. Nada aqui é prova, case ou parceria real; o Luxtory Club aparece só como modelo previsto.
  */
 export function SecondHomePartnersHomePage() {
@@ -98,6 +99,53 @@ export function SecondHomePartnersHomePage() {
           </ul>
           <div className="lx-section-note">
             <p className="lx-body">{benefits.note}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* PROOF — Wash: três situações ilustrativas de empreendimentos, sem aprovação ou adesão automática. */}
+      <section
+        id={DEVELOPMENTS}
+        className="lx-section"
+        data-surface="wash"
+        aria-labelledby={titleOf(DEVELOPMENTS)}
+      >
+        <div className="lx-container">
+          <div className="lx-section-head">
+            <Eyebrow>{developments.marker}</Eyebrow>
+            <h2 id={titleOf(DEVELOPMENTS)} className="lx-headline">
+              <HeadlineText headline={developments.title} />
+            </h2>
+            <p className="lx-subheadline">{developments.intro}</p>
+          </div>
+          <ul className="lx-developments">
+            {developments.items.map((item) => {
+              const { props } = getImageProps({
+                className: 'lx-development__image',
+                src: `/images/second-home-partners/${item.image}`,
+                alt: item.alt,
+                width: 1448,
+                height: 1086,
+                // Cover scales the 4:3 source to the card height, including in narrow desktop columns.
+                sizes: '(min-width: 1024px) 700px, (min-width: 480px) 100vw, 640px',
+              });
+              // Keep Next's optimized src/srcSet, sizes and lazy loading; omit its inline style at the DOM boundary.
+              return (
+                <li key={item.image}>
+                  <article className="lx-development">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- getImageProps retains Next image optimization; CSS classes preserve the strict CSP. */}
+                    <img {...props} alt={item.alt} style={undefined} />
+                    <div className="lx-development__copy">
+                      <h3 className="lx-display-s">{item.title}</h3>
+                      <p className="lx-body">{item.text}</p>
+                    </div>
+                  </article>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="lx-section-note">
+            <p className="lx-body">{developments.note}</p>
           </div>
         </div>
       </section>

@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Second Home Partners (REQ-105): seção editorial “Onde a parceria pode acontecer” entre Benefícios e Soluções,
+  com três cards para imóveis sob demanda em condomínios parceiros, empreendimentos em desenvolvimento e entregues;
+  avaliação condicionada, imagens ilustrativas e copy aprovada preservada.
 - Second Home Partners (SHP1, REQ-105, spec `catalog` §20, ADR-0028): página `/second-home-partner` para incorporadoras
   de empreendimentos de lazer, com três benefícios — diferenciação comercial, marketing e vendas e participação nos
   resultados (nas receitas de gestão das locações do empreendimento e, como possibilidade, no Luxtory Club), sem

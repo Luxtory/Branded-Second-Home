@@ -3,7 +3,12 @@ import { expect, test, type Page } from '@playwright/test';
 import { secondHomePartnersMessages as text } from '../../src/features/catalog/presentation/i18n/second-home-partners-pt-br';
 import { SECOND_HOME_PARTNERS_SECTIONS } from '../../src/features/catalog/presentation/second-home-partners/paths';
 import { messages as platformText } from '../../src/features/platform/presentation/i18n/pt-br';
-import { captureForReview, collectConsoleErrors, expectResponsive } from './support/ui';
+import {
+  captureForReview,
+  collectConsoleErrors,
+  expectResponsive,
+  worstContrastUnder,
+} from './support/ui';
 
 // Jornada pública Second Home Partners (REQ-105, TECH-057; spec catalog §20). O servidor de E2E usa o envio e o
 // limitador determinísticos (tests/support/e2e-server.mjs): nenhum e-mail real. Falhas são simuladas por interceptação.
@@ -44,6 +49,11 @@ const VISIBLE = [
   `${text.opportunity.title.lead}${text.opportunity.title.turn}`,
   text.benefits.marker,
   ...text.benefits.items.map((item) => item.title),
+  text.developments.marker,
+  `${text.developments.title.lead}${text.developments.title.turn}`,
+  text.developments.intro,
+  ...text.developments.items.flatMap((item) => [item.title, item.text]),
+  text.developments.note,
   text.solutions.marker,
   ...text.solutions.items.map((item) => item.label),
   text.process.marker,
@@ -163,6 +173,155 @@ test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, 
 });
 
 test.describe('Second Home Partners — gate de UI (ADR-0009, catalog §20.5)', () => {
+  test('[REQ-105] nova seção mantém reflow e texto integral com fonte ampliada a 200%', async ({
+    page,
+  }) => {
+    await page.goto(PAGE);
+    await page.evaluate(() => {
+      const enlarged = new CSSStyleSheet();
+      enlarged.replaceSync('html { font-size: 200%; }');
+      document.adoptedStyleSheets.push(enlarged);
+      return document.fonts.ready;
+    });
+    for (const width of [320, 390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      const overflowing = await page.locator('#empreendimentos').evaluate((section) =>
+        [...section.querySelectorAll('.lx-section-head > *, article, article h3, article p')]
+          .filter((node) => {
+            const box = node.getBoundingClientRect();
+            return (
+              box.left < 0 ||
+              box.right > document.documentElement.clientWidth + 0.5 ||
+              node.scrollWidth > node.clientWidth ||
+              node.scrollHeight > node.clientHeight + 1
+            );
+          })
+          .map((node) => node.textContent?.trim().slice(0, 60)),
+      );
+      expect(overflowing, `${width}px com fonte a 200%`).toEqual([]);
+    }
+  });
+
+  test('[REQ-105] três fotografias correspondentes, cards informativos, enquadramento e reflow de 320 a 1920 px', async ({
+    page,
+    browser,
+  }) => {
+    test.slow();
+    await page.setViewportSize({ width: 320, height: 900 });
+    await page.goto(PAGE);
+    const section = page.locator('#empreendimentos');
+    await expect(section.getByRole('heading', { level: 2 })).toHaveText(
+      'Da concepção à entrega. Seu empreendimento pode fazer parte.',
+    );
+    await expect(section.locator('h2 em')).toHaveText('Seu empreendimento pode fazer parte.');
+    await expect(section.getByRole('heading', { level: 3 })).toHaveCount(3);
+    await expect(section.locator('a, button, [tabindex]')).toHaveCount(0);
+    const files = [
+      'second-home-condominio-sob-demanda.webp',
+      'empreendimento-em-desenvolvimento.webp',
+      'empreendimento-entregue.webp',
+    ];
+    await expect(section.getByRole('img')).toHaveCount(3);
+    for (const [index, file] of files.entries()) {
+      const image = section.getByRole('img').nth(index);
+      await expect(image).toHaveAttribute('alt', text.developments.items[index]?.alt ?? '');
+      await expect(image).toHaveAttribute('width', '1448');
+      await expect(image).toHaveAttribute('height', '1086');
+      await expect(image).toHaveAttribute('loading', 'lazy');
+      await expect(image).toHaveAttribute('sizes', /1024px/);
+      const src = new URL((await image.getAttribute('src')) ?? '', 'http://localhost');
+      expect(src.pathname).toBe('/_next/image');
+      expect(src.searchParams.get('url')).toBe(`/images/second-home-partners/${file}`);
+      await image.scrollIntoViewIfNeeded();
+      await expect
+        .poll(() => image.evaluate((node: HTMLImageElement) => node.naturalWidth))
+        .toBeGreaterThan(0);
+    }
+    await page.evaluate(() => document.fonts.ready);
+    for (const width of [320, 390, 768, 1024, 1440, 1920]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const image of await section.getByRole('img').all()) {
+        await image.scrollIntoViewIfNeeded();
+        await image.evaluate((node: HTMLImageElement) => node.decode());
+      }
+      const boxes = await section.locator('article').evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const box = node.getBoundingClientRect();
+          const image = node.querySelector('img');
+          const imageStyle = image === null ? null : getComputedStyle(image);
+          const copy = node.querySelector('.lx-development__copy');
+          const copyBox = copy?.getBoundingClientRect();
+          return {
+            x: box.x,
+            y: box.y,
+            width: box.width,
+            height: box.height,
+            bottom: box.bottom,
+            objectFit: imageStyle?.objectFit,
+            // A cover crop needs enough source pixels for its height, even when the card is narrow.
+            sourceCoversFrame:
+              image instanceof HTMLImageElement &&
+              Number(new URL(image.currentSrc).searchParams.get('w')) >=
+                Math.ceil(Math.max(box.width, box.height * (1448 / 1086))),
+            copyFits:
+              copyBox !== undefined &&
+              copyBox.x >= box.x &&
+              copyBox.right <= box.right + 0.5 &&
+              copyBox.bottom <= box.bottom + 0.5,
+            textFits: [...node.querySelectorAll('h3, p')].every(
+              (text) =>
+                text.scrollWidth <= text.clientWidth && text.scrollHeight <= text.clientHeight + 1,
+            ),
+          };
+        }),
+      );
+      const first = boxes[0];
+      expect(first).toBeDefined();
+      for (const [index, box] of boxes.entries()) {
+        expect(box.objectFit, `${width}px: imagem ${index}`).toBe('cover');
+        expect(box.sourceCoversFrame, `${width}px: nitidez do recorte ${index}`).toBe(true);
+        expect(box.copyFits && box.textFits, `${width}px: texto ${index}`).toBe(true);
+        expect(box.width).toBeCloseTo(first?.width ?? 0, 0);
+        if (width >= 1024) {
+          expect(box.y).toBeCloseTo(first?.y ?? 0, 0);
+          expect(box.height).toBeCloseTo(first?.height ?? 0, 0);
+        } else if (index > 0) {
+          expect(box.y).toBeGreaterThanOrEqual(boxes[index - 1]?.bottom ?? 0);
+        }
+      }
+      if (width === 390 || width === 1440) {
+        for (const index of [1, 2, 3]) {
+          for (const selector of ['h3', 'p']) {
+            expect(
+              await worstContrastUnder(page, `#empreendimentos li:nth-child(${index}) ${selector}`),
+              `${width}px: contraste card ${index} ${selector}`,
+            ).toBeGreaterThanOrEqual(4.5);
+          }
+        }
+        await section.screenshot({ path: test.info().outputPath(`empreendimentos-${width}.png`) });
+      }
+    }
+    // A fresh context prevents a cached, larger tablet image from hiding undersampling below md.
+    const coldPage = await browser.newPage({ viewport: { width: 767, height: 900 } });
+    try {
+      await coldPage.goto(page.url());
+      for (const image of await coldPage.locator('#empreendimentos img').all()) {
+        await image.scrollIntoViewIfNeeded();
+        await image.evaluate((node: HTMLImageElement) => node.decode());
+        expect(
+          await image.evaluate(
+            (node: HTMLImageElement) =>
+              Number(new URL(node.currentSrc).searchParams.get('w')) >=
+              Math.max(node.clientWidth, node.clientHeight * (1448 / 1086)),
+          ),
+          '767px: nitidez em carregamento inicial',
+        ).toBe(true);
+      }
+    } finally {
+      await coldPage.close();
+    }
+  });
+
   test('[REQ-105] axe 0 a 390 e 1440 px, sem overflow de 320 a 1920 px, console limpo, CSP com nonce', async ({
     page,
   }) => {

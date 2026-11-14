@@ -1847,18 +1847,19 @@ final, verbatim, em `catalog/presentation/i18n/second-home-partners-pt-br.ts` (f
 comunica a participação nos resultados (`D-SHP-07`, substitui `D-SHP-04`): três benefícios com o mesmo peso; a
 participação nas receitas de gestão das locações é parte da proposta e a do Luxtory Club é possibilidade condicionada.
 Sem percentual, fórmula, valor, exemplo, plataforma nomeada ou garantia de pagamento. Refinamento do mesmo dia
-(`D-SHP-09`, `D-SHP-10`): a objeção da ociosidade orienta a oportunidade, o card de diferenciação e o FAQ; a quarta
+(`D-SHP-09`, `D-SHP-10`): a objeção da ociosidade orienta a oportunidade, o card de diferenciação e o FAQ; a quinta
 seção apresenta três soluções para os proprietários; o FAQ fica com as cinco dúvidas de uma incorporadora interessada;
 a parceria vale para qualquer fase do empreendimento. Superfícies da paleta institucional (`D-SHP-12`): Deep → White →
-Blue → Deep → Wash → Blue → White, só com `data-surface` do Core (títulos Warm Sand e corpo branco nas escuras; títulos
-Moroccan Blue e corpo Dark Moroccan Blue nas claras); Benefícios → Soluções repetem a passagem Blue → Deep do Como
-funciona do Brand Partners.
+Blue → Wash → Deep → Wash → Blue → White, só com `data-surface` do Core (títulos Warm Sand e corpo branco nas escuras;
+títulos Moroccan Blue e corpo Dark Moroccan Blue nas claras). A seção editorial de empreendimentos (`D-SHP-13`)
+acrescenta respiro Wash entre Benefícios e Soluções, sem mudar as mensagens, os CTAs ou a ordem relativa anterior.
 
 | Seção | Função · pergunta respondida | Composição (Core DS) | Fatos |
 |---|---|---|---|
 | Hero `#inicio` · Deep | PICTURE · o que é e por que importa | `lx-hero--typographic`, H1 `lx-headline--home-hero`, CTA primário, link para `#oportunidade`, nota de programa em estruturação | REQ-105; L1 |
 | A oportunidade `#oportunidade` · White | PROBLEM · por que isso ajuda a vender | `lx-section-head` + `lx-stack--editorial` | L1, L4; `H-SHP-01` como hipótese |
 | Benefícios `#beneficios` · Blue | PROMISE · o que a incorporadora ganha | `lx-siblings--trio` (diferenciação, marketing e vendas, participação) + `lx-section-note` | `01` §1, §35; L4, L5 |
+| Onde a parceria pode acontecer `#empreendimentos` · Wash | PROOF · meu empreendimento pode ser avaliado | H2 com `lead` + `turn`, introdução, três cards fotográficos informativos (sob demanda em condomínios parceiros, em desenvolvimento, entregues), H3 por card e nota de avaliação e imagens ilustrativas; sem CTA adicional (`D-SHP-13`) | REQ-105; L1, L4 |
 | Soluções para os proprietários `#solucoes` · Deep | PROOF · como os proprietários poderão aproveitar o imóvel | `lx-numbered` como na Home B2C (01 Luxchange, 02 Luxplus, 03 Locação de temporada) + nota em dois parágrafos num `lx-section-group` (a lista já fecha com hairline): Club planejado × gestão de locações independente (`D-SHP-09`) | L1–L4 |
 | Como funciona `#como-funciona` · Wash | PROOF · o que acontece depois do contato | `lx-steps--four` + CTA | REQ-105 |
 | Perguntas `#perguntas` · Blue | PROOF · objeções O1, O3, O7, O8, O6 (`D-SHP-10`) | `lx-faq` + `lx-disclosure` | L1, L4, L5 |
@@ -1866,8 +1867,22 @@ funciona do Brand Partners.
 
 Concisão: cada parágrafo, card, solução, etapa, nota e resposta com no máximo 3 linhas a 390 e a 1440 px e 4 a 320
 px, medido na página real; textos legais seguem a própria hierarquia. Sem `line-clamp`, reticências ou fonte reduzida.
-Nenhum CSS, token ou componente novo. Sem exceções registradas desde 2026-11-13 (a de 2026-11-12, da introdução do
-Luxtory Club, saiu com a nova introdução das soluções).
+Os blocos da nova seção `#empreendimentos` preservam a copy integral aprovada, com reflow natural sem teto artificial
+de linhas; a regra de concisão acima continua nos blocos anteriores. CSS novo somente em
+`styles/core/second-home-partners.css`, restrito a `#empreendimentos`, com tokens existentes: uma coluna abaixo de
+1024 px e três colunas iguais a partir daí, sem arranjo 2 + 1, carrossel, animação ou cards clicáveis. Gradiente
+Dark Moroccan localizado no texto, branco com contraste AA; a fotografia fica exposta acima da copy. O texto no
+fluxo faz o card crescer com zoom e títulos longos, sem clipping. Nenhum token, dependência ou componente genérico novo.
+
+Assets fornecidos: `public/images/second-home-partners/second-home-condominio-sob-demanda.webp`,
+`empreendimento-em-desenvolvimento.webp` e `empreendimento-entregue.webp`, nessa ordem, WebP 1448 × 1086 (4:3).
+O ZIP recebido contém os PNG originais (`23_33_22-1`, `23_33_23-2`, `23_33_24-3`, respectivamente), convertidos
+para WebP sem perda: dimensões e pixels RGB idênticos, com hashes dos originais fixados nos testes de assets.
+Usar `getImageProps` de `next/image` com dimensões, `sizes`, lazy loading e `object-fit: cover`, removendo somente
+o estilo inline padrão bloqueado pela CSP; manter `src`/`srcSet` otimizados e a política de segurança. Enquadramento individual para preservar
+casa, obra e entrada concluída. A participação depende de avaliação e condições; as imagens são ilustrativas, nunca
+prova de parcerias reais ou aprovação automática. Sem outros assets ou placeholders; arquivos inacessíveis bloqueiam
+a validação visual e a entrega, sem substituição silenciosa.
 
 Fora do escopo da SHP1 (especificação e aprovação próprias, `02` §18): gestão das locações em software, apuração e
 pagamento da participação, split financeiro, taxa de limpeza, integração com plataformas de locação, cadastro de
@@ -1906,9 +1921,11 @@ Isolamento provado em teste: portões independentes; esgotar o limite de uma jor
 
 ### 20.5 Critérios de aceite SHP1
 
-- Copy renderizada idêntica ao i18n e na ordem do §20.2; três benefícios em trio; participação sem percentual, número
+- Copy renderizada idêntica ao i18n e nas oito seções do §20.2; três benefícios em trio; participação sem percentual, número
   ou valor; três soluções numeradas com a nota que separa o Club da gestão de locações; FAQ sem prioridade de fase;
   varreduras de terminologia, ontologia e claims verdes.
+- Três cards e fotografias no mapeamento acima, arquitetura visível, sem distorção ou corte de texto; três H3 sob um
+  H2; contraste real sobre as fotos AA; sem controles novos. Capturas da página inteira e da seção em desktop e mobile.
 - axe 0 a 390 e 1440 px; sem overflow horizontal de 320 a 1920 px; H1 inteiro a 320 × 568; contraste AA dos títulos
   em Deep e Blue; formulário completo com teclado e com toque a 390 px; reflow a 200%.
 - Endpoint: origem 403, tipo 415, corpo 413, schema 400, honeypot 403, limite 429, provedor 503, replay 202, conflito

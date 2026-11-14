@@ -107,6 +107,38 @@ export const secondHomePartnersMessages = {
     note: 'Os benefícios dependem das condições da parceria. Não há garantia de vendas, receitas ou estadias.',
   },
 
+  // PROOF · Empreendimentos (Wash): situações ilustrativas, sujeitas à avaliação; nenhuma parceria real é afirmada.
+  developments: {
+    marker: 'Onde a parceria pode acontecer',
+    title: {
+      lead: 'Da concepção à entrega. ',
+      turn: 'Seu empreendimento pode fazer parte.',
+    },
+    intro:
+      'Avaliamos oportunidades em diferentes momentos do projeto, considerando o perfil dos imóveis, dos proprietários e da incorporadora.',
+    items: [
+      {
+        title: 'Imóveis sob demanda em condomínios parceiros',
+        text: 'Casas de alto padrão desenvolvidas conforme a demanda, em condomínios com potencial para receber a parceria.',
+        image: 'second-home-condominio-sob-demanda.webp',
+        alt: 'Casa contemporânea com fachada de vidro, madeira e pedra, cercada por jardins.',
+      },
+      {
+        title: 'Empreendimentos em desenvolvimento',
+        text: 'Projetos em planejamento, lançamento ou construção que buscam oferecer novos diferenciais aos futuros proprietários.',
+        image: 'empreendimento-em-desenvolvimento.webp',
+        alt: 'Edifício em construção com guindaste, andaimes e estrutura dos pavimentos superiores exposta.',
+      },
+      {
+        title: 'Empreendimentos entregues',
+        text: 'Imóveis prontos ou em operação, cujos proprietários podem escolher novas formas de aproveitar os períodos sem uso.',
+        image: 'empreendimento-entregue.webp',
+        alt: 'Edifício concluído com varandas, entrada iluminada e paisagismo cuidado.',
+      },
+    ],
+    note: 'A participação depende da avaliação do empreendimento e das condições da parceria. Imagens ilustrativas.',
+  },
+
   // PROOF · Soluções para os proprietários (Deep), na lista numerada da Home B2C: equilíbrio visual sem atribuir tudo ao
   // Club (`D-SHP-09`). Luxchange e Luxplus são mecanismos planejados do Club, para associados (BR-146, L2–L3); a
   // locação de temporada é a gestão da Luxtory, independente do Club e contratada por cada proprietário (L4).
