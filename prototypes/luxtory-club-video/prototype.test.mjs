@@ -332,7 +332,7 @@ for (const [name, seq] of [
   }
 }
 
-test('[DS §5] assinatura: logo oficial do manifest, arquivo intacto, como <img>; linha legal com as condições', () => {
+test('[DS §5] assinatura: logo oficial do manifest, arquivo intacto, como <img>; tempo limpo e linha legal legível', () => {
   const manifest = JSON.parse(
     readFileSync(join(DIR, '../../src/design-system/brand/logo/manifest.json'), 'utf8'),
   );
@@ -349,11 +349,33 @@ test('[DS §5] assinatura: logo oficial do manifest, arquivo intacto, como <img>
   assert.match(stage.html, new RegExp(`<img[^>]+src="[^"]*/${entry.file}"`));
   assert.doesNotMatch(stage.html, /<svg/, 'logo nunca inline');
   assert.match(assinaturaSeq.LEGAL, /Demonstração conceitual/);
-  assert.match(assinaturaSeq.LEGAL, /Membership vigente/);
-  assert.match(assinaturaSeq.LEGAL, /só datas já reservadas no Direito de Uso/);
-  const logo = assinaturaSeq.timeline().enter.find((e) => e.sel === '#endcard-logo');
+  assert.match(assinaturaSeq.LEGAL, /ainda não estão disponíveis para reservas/);
+  const tl = assinaturaSeq.timeline();
+  const at = (sel) => tl.enter.find((e) => e.sel === sel).in;
+  // Tempo limpo: a linha legal só entra ≥ 2 s depois da assinatura (o momento da marca não divide o quadro).
+  assert.ok(
+    at('#endcard-legal') - at('#endcard-line') >= 2_000,
+    'tempo limpo antes da linha legal',
+  );
+  // Legibilidade: ≥ 1 s a cada 3 palavras + 0,5 s até o fim do cartão.
+  const words = assinaturaSeq.LEGAL.split(/\s+/).length;
+  assert.ok(words <= 14, `linha legal curta (${words} palavras)`);
+  assert.ok(tl.duration - at('#endcard-legal') >= (words / 3 + 0.5) * 1000, 'tempo de leitura');
+  const logo = tl.enter.find((e) => e.sel === '#endcard-logo');
   assert.equal(logo.rise, 0, 'logo só em opacidade, sem deslocamento');
   assert.equal(logo.dur, parseFloat(TOKENS.duration.cinematic.$value), 'duration.cinematic');
+});
+
+test('ressalvas distribuídas: nenhuma condição essencial sai do filme ao encurtar a linha legal', () => {
+  const roteiro = readFileSync(join(DIR, 'filme/ROTEIRO.md'), 'utf8');
+  for (const text of [
+    'Com Membership vigente', // L3: condição na mesma frase dos Créditos (narração)
+    'Créditos não são moeda, investimento nem garantia de disponibilidade.', // BR-190, copy aprovada (C04)
+    'No Co-Owner, só data já reservada é cedida.', // BR-151, frase aprovada do FAQ (C04)
+    'Demonstração conceitual: interfaces, imóveis e valores ilustrativos.', // C05, primeira interface
+    assinaturaSeq.LEGAL, // assinatura
+  ])
+    assert.ok(roteiro.includes(text), `ROTEIRO.md sem a ressalva: ${text}`);
 });
 
 test('a Request aprovada continua com Garantia, Pendente e aceite do detentor', () => {

@@ -77,8 +77,10 @@ export const FICTITIOUS = Object.freeze({
     prlCents: [115_000],
     at: '2027-04-12T10:20:00-03:00',
   },
-  // Luxplus: valor ilustrativo da estadia, NÃO derivado de PRL × (1 − desconto aplicável). O desconto aplicável não
-  // está definido (BR-244, pendência P-5); por isso não há PRL nem desconto aqui e a tela não os exibirá.
+  // Luxplus: o PRL do período é a referência de preço (BR-180, BR-243, REQ-070): Preço Luxplus = PRL × (1 − desconto
+  // aplicável) (01 §25), congelado na compra. O desconto aplicável varia por Membership e não está publicado (BR-244,
+  // P-5); presumir 0% seria inventar um parâmetro (TECH-001). Por isso a demonstração usa um valor ilustrativo da
+  // estadia, sem calcular, exibir ou insinuar PRL, desconto ou condição comercial.
   luxplus: {
     secondHome: 'patio',
     checkin: '2027-08-13',
@@ -207,7 +209,8 @@ export function directScenario(data = FICTITIOUS, params = CANONICAL) {
 
 /**
  * Cenário do Luxplus (Inventário Luxtory, em dinheiro): não usa Créditos (BR-241); sem Fee (BR-230 só alcança Request e
- * Direct); valor ilustrativo da estadia, sem PRL nem desconto (BR-244, P-5).
+ * Direct). Canonicamente o preço tem o PRL como referência (BR-243, REQ-070); aqui, valor ilustrativo da estadia, porque
+ * o desconto aplicável não está publicado (BR-244, P-5) e não é presumido (TECH-001).
  */
 export function luxplusScenario(data = FICTITIOUS, params = CANONICAL) {
   const l = data.luxplus;

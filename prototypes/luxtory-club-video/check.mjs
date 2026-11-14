@@ -120,6 +120,10 @@ for (const seq of SEQS) {
       for (const text of key.expect)
         if (!info.text.toLowerCase().includes(text.toLowerCase()))
           fail(`${tag}@${key.t}: texto esperado ausente: ${text}`);
+      // `absent`: textos que ainda não podem estar visíveis naquele instante (ex.: o tempo limpo da assinatura).
+      for (const text of key.absent ?? [])
+        if (info.text.toLowerCase().includes(text.toLowerCase()))
+          fail(`${tag}@${key.t}: texto visível antes da hora: ${text}`);
       const minOut = info.minFont * (vp.outHeight / vp.height);
       if (minOut < MIN_TEXT_OUT_PX[fmt])
         fail(`${tag}@${key.t}: texto de ${minOut.toFixed(1)} px no arquivo final`);

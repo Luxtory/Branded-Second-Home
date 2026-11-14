@@ -1,7 +1,9 @@
 // Demonstração conceitual — coreografia do Luxplus (Etapa B). Noites adicionais do Inventário Luxtory pagas em dinheiro
 // (01 §25, BR-240): Membership elegível; sem consumo de Créditos (BR-241); sem Luxchange Fee (BR-230 só alcança Request e
 // Direct); política aceita antes da confirmação (PD-009); pagamento não reserva — revalidação e confirmação (TECH-080).
-// Valor da estadia ilustrativo, sem PRL nem desconto (BR-244, P-5). Textos da demonstração, não copy aprovada.
+// Preço canônico com referência no PRL (BR-243, REQ-070: PRL × (1 − desconto aplicável), congelado na compra); como o
+// desconto não está publicado (BR-244, P-5), a tela mostra só um valor ilustrativo da estadia, sem PRL nem desconto.
+// Textos da demonstração, não copy aprovada.
 import { luxplusScenario } from './data.js';
 import { brl, credits, instant } from './format.js';
 import {

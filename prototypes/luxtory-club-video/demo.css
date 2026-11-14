@@ -385,17 +385,33 @@ body {
   width: 62%;
 }
 
+/* Linha legal (v2): curta e num segundo tempo, por isso pode ser maior que um selo (type-compact) sem competir com a
+   marca; hierarquia pela cor muted, pela distância da logo e pela entrada depois do tempo limpo. */
 .demo-card--endcard .demo-endcard__legal {
   position: absolute;
   inset-inline: var(--lx-space-8);
-  bottom: var(--lx-space-8);
+  bottom: var(--lx-space-12);
   max-width: var(--lx-layout-measure);
   margin-inline: auto;
   padding-top: 0;
   border-top: 0;
+  font-size: var(--lx-type-compact);
+  line-height: var(--lx-leading-compact);
+  text-wrap: balance;
 }
 
-/* 9:16: a linha legal fica acima dos 20% inferiores (interface das plataformas). */
+/* 9:16: composição própria — linha legal em até três linhas, acima dos 20% inferiores (interface das plataformas),
+   com margens laterais maiores para não encostar nas bordas no celular. */
 [data-fmt='9x16'] .demo-card--endcard .demo-endcard__legal {
+  inset-inline: var(--lx-space-6);
   bottom: 21%;
+}
+
+[data-fmt='9x16'] .demo-endcard__legal > span {
+  display: block;
+}
+
+/* 9:16: logo e assinatura um pouco acima do centro (centro óptico), afastadas da linha legal. */
+[data-fmt='9x16'] .demo-card.demo-card--endcard {
+  padding-block-end: 18%;
 }

@@ -82,7 +82,9 @@ muda a cadência e `--realtime` refaz a comparação com captura em tempo real.
   (TECH-082); pagamento não reserva — revalidação e então confirmação (ADR-008, TECH-080); Créditos consumidos na
   confirmação, por FEFO (BR-221, PD-008).
 - Luxplus: noites adicionais do Inventário Luxtory pagas em dinheiro (01 §25, BR-240); não usa Créditos (BR-241);
-  sem Luxchange Fee (BR-230 alcança só Request e Direct); política antes da confirmação (PD-009).
+  sem Luxchange Fee (BR-230 alcança só Request e Direct); política antes da confirmação (PD-009). O PRL do período é a
+  referência de preço — Preço Luxplus = PRL × (1 − desconto aplicável), congelado na compra (01 §25, BR-180, BR-243,
+  REQ-070); descontos e condições podem variar por Membership (BR-244).
 
 **Decisões da demonstração** (hipóteses visuais, não especificação):
 
@@ -97,7 +99,9 @@ muda a cadência e `--realtime` refaz a comparação com captura em tempo real.
 **Dados fictícios** (`FICTITIOUS` em `data.js`, horário de Brasília): Second Homes "Mirante · Serra", "Varanda ·
 Litoral", "Pátio · Campo"; solicitante "Helena", Co-Owner; PRLs, lotes e instantes sintéticos. Valores monetários
 são **ilustrativos** (PRL fictício). O Luxplus usa um valor ilustrativo de estadia **não derivado** de PRL × (1 −
-desconto), porque o desconto aplicável não está definido (BR-244, P-5).
+desconto), porque o desconto aplicável não está publicado (BR-244, P-5) e presumir 0% seria inventar um parâmetro
+(TECH-001). A tela não exibe PRL, desconto nem condição comercial; o princípio canônico (PRL como referência) fica nesta
+documentação, não no vídeo.
 
 | Instante | Fato fictício derivado |
 |---|---|
