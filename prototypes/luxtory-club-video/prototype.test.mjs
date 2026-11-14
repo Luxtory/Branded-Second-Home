@@ -27,6 +27,9 @@ import {
 import { timeline } from './sequence-request.js';
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));
+const TOKENS = JSON.parse(
+  readFileSync(join(DIR, '../../src/design-system/tokens/tokens.json'), 'utf8'),
+);
 const utc = (iso) => Date.parse(iso);
 const s = requestScenario();
 
@@ -186,9 +189,34 @@ for (const fmt of ['16x9', '9x16']) {
       'Fee pago antes de a Request ficar Pendente (PD-005)',
     );
     assert.ok(
-      tl.tween.every((tw) => tw.at >= enter('#pending').in),
-      'Garantia constituída no envio, nunca antes (PD-006)',
+      tl.tween.every((tw) => tw.at === enter('#pending').in),
+      'Garantia constituída exatamente no commit do envio, quando a Request fica Pendente (PD-005, PD-006)',
     );
+    // Trocas no mesmo lugar: o cartão novo só entra depois da saída do anterior (sem crossfade de textos).
+    const exit = parseFloat(TOKENS.duration.moderate.$value);
+    const handoffs = [
+      ['#cal', '#review'],
+      ['#review', '#pending'],
+      ['#pending', '#holder'],
+      ['#holder', '#accepted'],
+      ['#holder', '#booking'],
+      ...(fmt === '9x16'
+        ? [
+            ['#home', '#cal'],
+            ['#review', '#credits'],
+          ]
+        : [['#home', '#credits']]),
+    ];
+    handoffs.push(
+      ['#cr-before', '#cr-after'],
+      ['#lg-avail-before', '#lg-avail-after'],
+      ['#lg-held-before', '#lg-held-after'],
+    );
+    for (const [before, after] of handoffs)
+      assert.ok(
+        enter(after).in >= enter(before).out + exit,
+        `${after} entra antes de ${before} terminar a saída`,
+      );
     assert.equal(
       enter('#booking').in,
       enter('#accepted').in,

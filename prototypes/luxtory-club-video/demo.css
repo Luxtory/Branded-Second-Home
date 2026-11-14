@@ -220,6 +220,13 @@ body {
 
 .demo-swap > * {
   grid-area: 1 / 1;
+  align-self: start;
+}
+
+/* As ações não herdam a altura da área reservada (antes esticavam até ~160 px): botões na altura do Core (48 px),
+   na base da área, como rodapé de ações; a revalidação ocupa a mesma área a partir do topo. */
+.demo-swap > .demo-actions {
+  align-self: end;
 }
 
 /* Estado: cor do papel semântico + ícone + texto, nunca só cor (§13.3). Retangular (radius de controle). */

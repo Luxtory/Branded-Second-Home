@@ -54,7 +54,7 @@ const KEY = [
     expect: ['Request recebida', 'Co-Owner', 'seguem consumidas do Direito de Uso'],
   },
   {
-    t: 19_800,
+    t: 20_100,
     name: 'revalidacao',
     expect: [
       'Revalidando antes de confirmar',
@@ -206,6 +206,28 @@ for (const [fmt, vp] of Object.entries(FORMATS)) {
   };
   if (JSON.stringify(cal) !== JSON.stringify(expectedRange))
     fail(`${fmt}: faixa do calendário ${JSON.stringify(cal)}`);
+  // Transições, quadro a quadro (30 fps): dois cartões que se cruzam nunca ficam visíveis ao mesmo tempo
+  // (opacidade > 0,05 nos dois) — é o que mistura textos durante uma troca no mesmo lugar.
+  const crossings = await page.evaluate(() => {
+    const found = [];
+    const step = 1000 / 30;
+    for (let t = 0; t <= window.__demo.duration; t += step) {
+      window.__demo.seek(t);
+      const cards = [...document.querySelectorAll('.demo-card')]
+        .filter((c) => c.style.visibility === 'visible' && getComputedStyle(c).display !== 'none')
+        .map((c) => ({ id: c.id, o: Number(c.style.opacity), r: c.getBoundingClientRect() }))
+        .filter((c) => c.o > 0.05);
+      for (let i = 0; i < cards.length; i++)
+        for (let j = i + 1; j < cards.length; j++) {
+          const [a, b] = [cards[i].r, cards[j].r];
+          if (a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom)
+            found.push(`${Math.round(t)} ms ${cards[i].id}×${cards[j].id}`);
+        }
+    }
+    return found;
+  });
+  if (crossings.length)
+    fail(`${fmt}: cartões sobrepostos em ${crossings.length} quadros: ${crossings.join(', ')}`);
   // Determinismo: o mesmo instante, visitado duas vezes por caminhos diferentes, gera os mesmos bytes.
   const shot = async (t) => {
     await page.evaluate((x) => window.__demo.seek(x), t);
@@ -224,6 +246,7 @@ for (const [fmt, vp] of Object.entries(FORMATS)) {
     fonts,
     states,
     deterministic: h1 === h2,
+    overlappingFrames: crossings.length,
     foreignRequests: foreign.length,
     consoleErrors: errors.length,
   };

@@ -118,7 +118,7 @@ export function build(stage, fmt) {
         <div><dt>Em Garantia</dt><dd><span id="lg-held-before">${credits(s.balances.beforeSend.held)}</span><span id="lg-held-after">${credits(s.balances.afterSend.held)}</span></dd></div>
       </dl>
       <ul class="demo-lots demo-only-16x9" id="lots">
-        <li class="demo-lots__head">Garantia pelos lotes que vencem primeiro</li>
+        <li class="demo-lots__head">Garantia no envio, pelos lotes que vencem primeiro</li>
         ${[lotA, lotB, lotC].map(lotRow).join('')}
       </ul>
       ${seal}
@@ -189,9 +189,18 @@ const share = (part) => part / s.balances.beforeSend.available;
 export function timeline(fmt) {
   const v = fmt === '9x16';
   // 9:16 tem composição própria: um cartão de cada vez quando dois não cabem (contexto no alto, tarefa embaixo).
-  const calIn = v ? 1_700 : 1_100;
-  const creditsIn = v ? 11_600 : 6_400;
-  const tweenAt = v ? 12_200 : 11_600;
+  // Troca no mesmo lugar: o cartão novo só entra depois da saída do anterior (duration.moderate, 280 ms) —
+  // nunca um crossfade de textos diferentes (check.mjs varre todos os quadros).
+  const calIn = v ? 1_800 : 1_100;
+  // Commit do envio: a Request aparece Pendente e a Garantia é constituída no mesmo instante (PD-005, PD-006).
+  const sendCommit = 11_700;
+  const creditsIn = v ? sendCommit : 6_400;
+  const tweenAt = sendCommit;
+  // Valor novo só depois da saída do antigo (duration.moderate): nunca "94.000 disponíveis + 55.000 em Garantia".
+  const valueIn = tweenAt + 280;
+  // Aceite válido: o cartão do detentor sai e, na mesma operação, entram Request Aceita e Reserva Confirmada.
+  const holderOut = 20_300;
+  const result = 20_600;
   const press = (sel, at) => [
     { sel, attr: 'data-pressed', at, value: true },
     { sel, attr: 'data-pressed', at: at + 200, value: null },
@@ -212,22 +221,22 @@ export function timeline(fmt) {
       { sel: '#credits', in: creditsIn, out: 15_700 },
       { sel: '#lots', in: 7_000 },
       { sel: '#cr-before', in: ALWAYS, out: tweenAt },
-      { sel: '#cr-after', in: tweenAt + 120 },
+      { sel: '#cr-after', in: valueIn },
       { sel: '#lg-avail-before', in: ALWAYS, out: tweenAt },
-      { sel: '#lg-avail-after', in: tweenAt + 120 },
+      { sel: '#lg-avail-after', in: valueIn },
       { sel: '#lg-held-before', in: ALWAYS, out: tweenAt },
-      { sel: '#lg-held-after', in: tweenAt + 120 },
-      { sel: '#pending', in: 11_600, out: 15_700 },
+      { sel: '#lg-held-after', in: valueIn },
+      { sel: '#pending', in: sendCommit, out: 15_700 },
       // R3/R4 — aceite do detentor, revalidação e, na mesma operação, Request Aceita + Reserva Confirmada
-      { sel: '#holder', in: 16_100, out: 20_000 },
+      { sel: '#holder', in: 16_100, out: holderOut },
       { sel: '#holder-actions', in: ALWAYS, out: 18_600 },
       { sel: '#reval', in: 18_800 },
       { sel: '#rv-1', in: 18_900 },
       { sel: '#rv-2', in: 19_100 },
       { sel: '#rv-3', in: 19_300 },
       { sel: '#rv-4', in: 19_500 },
-      { sel: '#accepted', in: 20_100 },
-      { sel: '#booking', in: 20_100 },
+      { sel: '#accepted', in: result },
+      { sel: '#booking', in: result },
     ],
     set: [
       { sel: '[data-day="2027-06-04"]', attr: 'data-range', at: 2_400, value: 'start' },
@@ -266,10 +275,14 @@ export function timeline(fmt) {
       { at: 5_500, label: 'corte sugerido · início de R2' },
       { at: 8_800, label: 'toque · aceite da política (etapa conceitual)' },
       { at: 10_000, label: 'toque · Pagar Fee e enviar' },
-      { at: 11_600, label: 'Request Pendente; Garantia constituída' },
-      { at: 15_900, label: 'corte sugerido · início de R3/R4' },
+      { at: sendCommit, label: 'Request Pendente; Garantia constituída' },
+      {
+        at: 15_900,
+        label:
+          'corte sugerido · início de R3/R4 (marcador narrativo: o outro Titular recebe a solicitação)',
+      },
       { at: 18_500, label: 'toque · Aceitar (Titular detentor)' },
-      { at: 20_100, label: 'aceite válido: Request Aceita + Reserva Confirmada (mesma operação)' },
+      { at: result, label: 'aceite válido: Request Aceita + Reserva Confirmada (mesma operação)' },
       { at: 25_000, label: 'fim' },
     ],
   };

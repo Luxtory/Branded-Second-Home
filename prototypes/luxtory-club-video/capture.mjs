@@ -43,10 +43,11 @@ const STILLS = {
   calendario: 4_800,
   revisao: 9_000,
   pendente: 13_800,
-  revalidacao: 19_800,
+  revalidacao: 20_100,
   confirmacao: 22_000,
 };
-const ALPHA = { from: 20_100, seconds: 3 }; // R4: Request Aceita + Reserva Confirmada
+// Trecho do aceite: toque em Aceitar, revalidação, saída do cartão e Request Aceita + Reserva Confirmada.
+const ALPHA = { from: 18_300, seconds: 4 };
 const H264 = [
   '-c:v',
   'libx264',
@@ -382,7 +383,9 @@ for (const [fmt, spec] of Object.entries(FORMATS)) {
     `${fmt} alpha: ${a.width}x${a.height} ${a.fps} ${a.frames}`,
   );
   // Fidelidade do alfa e das bordas: quadro do meio do trecho, decodificado, contra o PNG de origem (RGBA).
+  // PSNR no quadro do meio (em plena transição: alfa parcial); cores num quadro já assentado da confirmação.
   const mid = Math.floor((ALPHA.seconds * FPS) / 2);
+  const settled = Math.round((STILLS.confirmacao / 1000) * FPS) - startFrame;
   const decoded = `${OUT}alpha-${fmt}-decoded.png`;
   ffmpeg([
     '-i',
@@ -400,8 +403,8 @@ for (const [fmt, spec] of Object.entries(FORMATS)) {
     `${fmt} alpha: PSNR ${JSON.stringify(fidelity)}`,
   );
   const colors = {
-    alphaCard: pixel(files.alpha, mid, ...inCard),
-    alphaEmpty: pixel(files.alpha, mid, ...empty),
+    alphaCard: pixel(files.alpha, settled, ...inCard),
+    alphaEmpty: pixel(files.alpha, settled, ...empty),
     previewCard: pixel(files.preview, Math.round((STILLS.confirmacao / 1000) * FPS), ...inCard),
     previewBackground: pixel(
       files.preview,

@@ -99,13 +99,30 @@ desconto), porque o desconto aplicável não está definido (BR-244, P-5).
 | 4.200 | rota: noites de outro Titular → Luxchange Request |
 | 5.500 | corte sugerido · início de R2 |
 | 8.800 · 10.000 | toques: aceite da política (conceitual) · Pagar Fee e enviar |
-| 11.600 | Request Pendente; Garantia constituída (barra de Créditos) |
-| 15.900 | corte sugerido · início de R3/R4 |
+| 11.700 | commit do envio: Request Pendente e Garantia constituída no mesmo instante (barra de Créditos) |
+| 15.900 | corte sugerido · início de R3/R4 · **marcador narrativo**: "O outro Titular recebe a solicitação" |
 | 18.500 | toque: Aceitar (Titular detentor) → revalidação |
-| 20.100 | aceite válido: Request Aceita + Reserva Confirmada no mesmo quadro |
-| 25.000 | fim |
+| 20.300 | o cartão do detentor sai (revalidação concluída) |
+| 20.600 | aceite válido: Request Aceita + Reserva Confirmada entram juntas (mesma operação) |
+| 25.000 | fim (pausas estáveis servem a narração, legendas, som e cortes) |
 
-As marcas também estão em `window.__demo.marks`, para sincronizar efeitos de toque e som na pós.
+As marcas também estão em `window.__demo.marks`, para sincronizar efeitos de toque e som na pós. Regra das trocas: num
+mesmo lugar do quadro, o cartão novo só entra depois da saída do anterior (`duration.moderate`), nunca em crossfade de
+textos diferentes; `check.mjs` varre os 750 quadros de cada formato.
+
+## Direção de arte para a pós
+
+- Preservar os elementos principais da fotografia: nenhum cartão sobre rostos, pessoas ou pontos focais. Os assets são
+  quadros inteiros com alfa — mover ou espelhar a camada na montagem resolve o enquadramento sem nova variante.
+- Escolher imagens com espaço negativo do lado do cartão (16:9: terço direito; 9:16: faixa central e inferior). Na placa
+  clara de teste o cartão da direita encobre as pessoas na piscina: é caso de reposicionar a camada ou trocar a foto.
+- Manter a mesma Second Home ao longo da jornada (o nome nos cartões é "Varanda · Litoral" do início ao fim).
+- Cartão `deep` sobre céu azul escuro perde separação (só a hairline Warm Sand marca a borda): preferir zonas mais
+  claras da imagem atrás do cartão.
+- Fotos ilustrativas nunca como prova de imóvel real disponível: identificar como imagem ilustrativa e não usar marca de
+  Brand Partner sem aprovação (BR-015). As placas deste protótipo são só teste interno, não footage aprovado.
+- Mudança de perspectiva (solicitante → detentor): o cartão diz "Visão do Titular detentor · Co-Owner" e "Request
+  recebida"; sem áudio, usar o marcador narrativo de 15,9 s (texto e duração definidos com a narração).
 
 ## Evidências da Etapa A
 
