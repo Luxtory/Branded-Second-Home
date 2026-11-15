@@ -796,7 +796,7 @@ body {
   inset-inline-start: 6%;
   display: grid;
   gap: var(--lx-space-2);
-  width: 28rem;
+  width: 34rem;
   padding-top: var(--lx-space-4);
   border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
 }

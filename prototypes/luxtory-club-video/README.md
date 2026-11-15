@@ -6,9 +6,10 @@
 
 | Etapa | Conteúdo | Estado |
 |---|---|---|
-| A | Luxchange Request (25 s): escolha das noites, revisão, política, Fee, Pendente, aceite do detentor, revalidação e Request Aceita + Reserva Confirmada na mesma operação | aprovada |
+| A | Luxchange Request (25 s): escolha das noites, revisão, política, Fee, Pendente, aceite do detentor, revalidação e Request Aceita + Reserva Confirmada na mesma operação | aprovada; substituída pela revisão de UX (abaixo) |
 | B | Luxchange Direct (14 s) e Luxplus (15,5 s) sobre a mesma arquitetura | aprovada (auditoria de 2026-11-14) |
 | C | Pré-produção do comercial de lançamento (`filme/ROTEIRO.md`, `filme/PRODUCAO.md`, v3), assinatura só da marca (6 s), painel dos Créditos (C04, 11 s) e prova de montagem da Request (`filme/prova/`, ≈ 19,8 s, placeholders) | em avaliação |
+| UX | Revisão de UX e comercial (2026-11-15): passo de Créditos e depósito na Request (35 s) e no Direct (16,7 s), "Taxa de intermediação", cartões sem selo nem jargão, Luxplus e Créditos harmonizados, prova de 24,8 s | em avaliação |
 | D | Montagem e finalização | depende de footage, voz, trilha e aprovações |
 
 ## Ver
@@ -19,7 +20,7 @@ node prototypes/luxtory-club-video/serve.mjs
 
 Abra `http://127.0.0.1:4173/prototypes/luxtory-club-video/?seq=request&fmt=16x9`. `seq` = `request`, `direct`,
 `luxplus`, `creditos` (painel dos Créditos, C04), `assinatura` ou `prova` (camada editorial da prova de montagem, só
-16:9); `fmt` = `16x9` ou `9x16`; `&final=1` mostra a versão da exportação final (selo neutro, sem marcas internas). Toca sozinho; **espaço** pausa e continua, **R** reinicia.
+16:9); `fmt` = `16x9` ou `9x16`; `&final=1` mostra a versão da exportação final (sem etiqueta interna). Toca sozinho; **espaço** pausa e continua, **R** reinicia.
 `&t=13800` congela um instante; `&bg=plate` mostra uma placa de prévia por trás.
 
 ## Regenerar e validar
@@ -57,12 +58,13 @@ muda a cadência e `--realtime` refaz a comparação com captura em tempo real.
 | `sequence-assinatura.js` | Assinatura só da marca: logo oficial do manifest e a frase (6 s) |
 | `sequence-creditos.js` | Painel editorial dos Créditos: Carteira + novo depósito = um só saldo → Request ou Direct (números de `data.js`) |
 | `sequence-prova.js` · `filme/prova/edl.js` · `filme/prova/montar.mjs` | Prova de montagem: camada editorial (título, ressalva, etiqueta interna) · EDL em dados (planos, trechos de interface, textos, narração-guia, efeitos) · montagem e validação com ffmpeg |
-| `shared.js` | Peças comuns: ícones, selo, calendário do DS, toque, faixa de noites |
+| `shared.js` | Peças comuns: ícones, calendário do DS, toque, faixa de noites |
+| `credits-step.js` | Passo de Créditos da Request e do Direct: necessários × saldo, controle "Créditos adicionais desejados", calendário do Direito de Uso (acordeão), depósito confirmado; textos de Owner e Co-Owner |
 | `rules.js` · `data.js` · `format.js` | Fórmulas canônicas · parâmetros canônicos e dados fictícios · formatação pt-BR |
 | `serve.mjs` | Servidor local (127.0.0.1) restrito ao protótipo, ao DS e às fotos públicas usadas como placa |
 | `check.mjs` · `capture.mjs` · `prototype.test.mjs` | Validação no navegador · captura e validação de arquivos · testes |
 | `evidencias/etapa-a/` | Folhas de contato das composições, zoom das bordas do alfa e antes/depois da confirmação |
-| `filme/` | Roteiro, storyboard, narração, música, motion (`ROTEIRO.md`) e shot list, prompts, inventário, integração (`PRODUCAO.md`) |
+| `filme/` | Roteiro, storyboard, narração, música, motion (`ROTEIRO.md`); shot list, prompts, integração (`PRODUCAO.md`); masters atuais e verificações (`INVENTARIO.md`) |
 
 ## Fatos, decisões da demonstração e dados fictícios
 
@@ -70,7 +72,7 @@ muda a cadência e `--realtime` refaz a comparação com captura em tempo real.
 
 - Créditos = PRL do período × 10 (01 §20, BR-201); validade de 24 meses por adição calendárica em UTC (BR-191,
   TECH-044).
-- Luxchange Fee = maior entre 10% do PRL do período e R$ 120 (01 §24, BR-230, BR-231), com HALF_UP no valor final
+- Luxchange Fee (na tela, "Taxa de intermediação") = maior entre 10% do PRL do período e R$ 120 (01 §24, BR-230, BR-231), com HALF_UP no valor final
   (TECH-033).
 - Request: Membership, Créditos em Garantia, Fee pago antes do envio, prazo de 24 h com `expires_at = sent_at + 24 h`
   e snapshot de PRL, Créditos e Fee (PD-005, PD-007, TECH-044). Pendente não bloqueia as noites (PD-005, REQ-063).
@@ -240,14 +242,48 @@ node prototypes/luxtory-club-video/capture.mjs --final --seq=request
 node prototypes/luxtory-club-video/filme/prova/montar.mjs --final
 ```
 
-- **Selo neutro.** "Dados ilustrativos" no lugar do selo interno, numa linha como antes: layout e coreografia
-  aprovados não mudam (`check.mjs --final` conforme nas três modalidades: sobreposição 0, nenhuma marca interna).
+- **Cartões.** Sem selo em modo algum desde a revisão comercial de 2026-11-15; `check.mjs` barra jargões e marcas de
+  protótipo em todos os quadros-chave, e `--final` acrescenta a etiqueta "Prova interna".
 - **Saída separada.** `out/final/`, sem tocar nas evidências.
 - **Recusa de placeholders.** A montagem final para antes de renderizar se algum plano não tiver footage aprovado em
   `out/entrada/` ou se faltar voz ou trilha.
 
 Exportar não é publicar: a publicação depende da verificação de prontidão do produto e da aprovação da comunicação
 (`filme/PRODUCAO.md` §5).
+
+## Revisão de UX e comercial (2026-11-15)
+
+**Passo de Créditos** (`credits-step.js`), na Request e no Direct, depois da escolha da estadia:
+
+1. **Créditos necessários × saldo válido disponível**, e quanto falta. Uma decisão: continuar com o saldo (Direct:
+   39.000 para 11.500) ou complementar (Request: 48.000 para 55.000, faltam 7.000).
+2. **Complementação opcional:**
+   - o controle "Créditos adicionais desejados" só oferece metas possíveis com datas inteiras (0, 16.000, 32.000,
+     46.000; `rules.js#depositStops`);
+   - o calendário navegável "Selecionar datas do meu Direito de Uso" fica num acordeão e mostra elegível, indisponível
+     (menos de 14 dias), comprometida e não reservada, com a classificação do mês e a legenda;
+   - os dois têm uma fonte única de verdade: as datas selecionadas. O controle leva a 16.000 (14/05); os toques em 15 e
+     16/05, a 46.000.
+3. **Depósito confirmado** como operação própria: 46.000 novos Créditos, saldo de 94.000. Só então vem a revisão.
+
+Depois do depósito: Taxa de intermediação de R$ 550,00, envio, Garantia de 55.000 (30.000 + 18.000 + 7.000 do lote novo,
+mostrados por origem), aceite, revalidação e confirmação; restam 39.000. O Owner tem textos e estados próprios (sem
+Direito de Uso), e o Luxplus continua em dinheiro, sem passo de Créditos.
+
+**Revisão comercial.** Nas interfaces:
+- "Taxa de intermediação" no lugar de "Luxchange Fee";
+- sem "PRL do período", "Second Home fictícia", selos, "Pagamento simulado", "Etapa conceitual", IDs de lote nem
+  timestamps;
+- no Luxplus, a menção ao dinheiro sem repetição.
+
+O conceito canônico continua no domínio (`luxchangeFee`). O nome comercial ainda deve ser harmonizado com os documentos
+comerciais e jurídicos.
+
+**Inventário.** `filme/INVENTARIO.md` lista os masters atuais (duração, formato, tamanho, sha256), o que mudou em cada um e as verificações; comparativos antes/depois em `evidencias/revisao-ux/`.
+
+**Versões anteriores.** Os entregáveis do commit `2e6e68c` (vídeos, ProRes, stills, relatórios e evidências) e os
+quadros legados da Etapa A estão em `out/referencia-2e6e68c/`, só como referência de regressão. Os masters atuais
+mantêm os mesmos nomes em `out/etapa-a/` e `out/prova/`.
 
 ## Integração na pós (Etapa A)
 

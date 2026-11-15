@@ -80,8 +80,8 @@ function linkUiFrames(dir) {
     let src = blank;
     if (item) {
       const frame = Math.round(((item.from + t - item.at) * FPS) / 1000);
-      const framesDir =
-        item.seq === 'request' ? `frames-${EDL.fmt}` : `frames-${item.seq}-${EDL.fmt}`;
+      // Mesma convenção da captura (capture.mjs): frames-<seq>-<fmt> para todas as sequências.
+      const framesDir = `frames-${item.seq}-${EDL.fmt}`;
       src = join(FRAMES_DIR, framesDir, `f${String(frame).padStart(5, '0')}.png`);
       if (!existsSync(src))
         throw new MontagemError(
@@ -246,9 +246,11 @@ function buildAudio(file) {
     `[mar1][mar2]join=inputs=2:channel_layout=stereo[mar]`,
     // Interior neutro: tom de sala muito baixo.
     `anoisesrc=c=pink:a=0.03:d=${D}:r=${SR}:seed=3,lowpass=f=400,volume='${windowExpr('interior')}':eval=frame,pan=stereo|c0=c0|c1=c0[sala]`,
+    // Vento na serra: ruído rosa em banda média, com rajadas lentas.
+    `anoisesrc=c=pink:a=0.12:d=${D}:r=${SR}:seed=5,highpass=f=300,lowpass=f=1400,volume='0.5*(0.6+0.4*sin(2*PI*0.17*t))*(${windowExpr('vento') || '0'})':eval=frame,pan=stereo|c0=c0|c1=c0[vento]`,
   );
   const inputs = [];
-  const layers = ['[fx]', '[mar]', '[sala]'];
+  const layers = ['[fx]', '[mar]', '[sala]', '[vento]'];
   const vo = entrada('vo', ['wav']);
   const trilha = entrada('trilha', ['wav']);
   if (vo) {
@@ -439,7 +441,7 @@ function validate(files, audio) {
 }
 
 function contactSheet(file, sheet, tmp) {
-  const times = [1_200, 4_000, 6_400, 8_800, 12_000, 13_600, 15_600, 19_000];
+  const times = EDL.contact;
   const shots = times.map((t, i) => {
     const png = join(tmp, `contato-${i}.png`);
     ffmpeg([

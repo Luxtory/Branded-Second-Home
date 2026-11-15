@@ -1,4 +1,4 @@
-# Filme Luxtory Club: produção, footage e integração (v3, comercial de lançamento · proposta para aprovação)
+# Filme Luxtory Club: produção, footage e integração (v4, UX de Créditos e revisão comercial · proposta para aprovação)
 
 > Complementa `ROTEIRO.md`. Imóveis, pessoas e valores ilustrativos, nunca apresentados como Second Homes reais à venda
 > ou disponíveis. A publicação depende da verificação de prontidão do produto e da aprovação da comunicação (§5).
@@ -149,8 +149,8 @@ fast camera moves, no fisheye, no oversaturated colors, no CGI look, no posed ad
 |---|---|---|---|---|---|
 | S01 ⇕ | 6 s | Mirante · K-MS | — | aberto, drone lento para frente | `Cinematic aerial dolly forward at dawn over a misty mountain valley in southern Brazil, revealing the same contemporary second home of stacked light stone, warm timber and large glass panels with a cantilevered terrace (match reference image), soft cold light turning golden, realistic architecture, 35mm film look, gentle steady movement` |
 | S02 | 5 s | Mirante · K-MS + K-HE | — | médio, travelling lateral | `Helena (match character reference), early forties, light linen, laughing with her partner and two children on the timber terrace of the same stone-and-glass mountain house at golden hour, candid unposed moment, shallow depth of field, slow lateral tracking shot, warm natural light` |
-| S03 | 3 s | Mirante · K-MS-i | — | detalhe, estático | `Close detail of morning light moving across a linen sofa and oak floor inside the same minimalist stone-and-glass mountain house, misty valley soft through the glass, dust particles in sunlight, static camera, photorealistic` |
-| S04 ⇕ | 5 s | Mirante · K-MS + K-HE | — | médio por cima do ombro | `Over-the-shoulder shot of Helena (match character reference) holding a smartphone on the stone house terrace overlooking the misty valley, phone screen softly out of focus, golden light, subtle push-in, cinematic` (a interface entra na pós) |
+| S03 | 8 s (C02 e C05c) | Mirante · K-MS-i | ✓ em C05c | detalhe, estático; na segunda parte, luz no centro e nas bordas, sem objeto sob os cartões | `Close detail of morning light moving across a linen sofa and oak floor inside the same minimalist stone-and-glass mountain house, misty valley soft through the glass, dust particles in sunlight, static camera, photorealistic` |
+| S04 ⇕ | 10 s (C03 e C05b) | Mirante · K-MS + K-HE | ✓ em C05b | médio por cima do ombro; Helena no corredor central, celular fora de foco | `Over-the-shoulder shot of Helena (match character reference) holding a smartphone on the stone house terrace overlooking the misty valley, phone screen softly out of focus, golden light, subtle push-in, cinematic` (a interface entra na pós) |
 | S05 ⇕ | 12 s | Mirante · K-MS + K-HE | ✓ (painel dos Créditos) | aberto e estável; Helena no terço direito, de perfil, olhando o vale; metade esquerda livre para o painel | `Wide steady shot on the stone terrace of the same mountain second home at golden hour, Helena (match character reference) in light linen standing in the right third, seen in profile looking at the misty valley, calm and contemplative, the left half of the frame open to the valley and sky, very slow push-in, photorealistic` |
 | S06 ⇕ | 6 s | Varanda · K-VL | ✓ | aberto, grua descendo; casa no terço superior esquerdo, mar e céu à direita | `Wide crane-down shot of the same coastal second home with white cantilevered volumes, dark timber pergola and an infinity pool facing a calm tropical sea at amber sunset (match reference image), house in the upper-left third, open sea and sky filling the right half, low cliffs, photorealistic, slow elegant movement` |
 | S07 | 4 s | Varanda · K-VL | ✓ | detalhe, travelling | `Slow tracking shot along the edge of the same infinity pool with beige stone deck, sea horizon and warm sunset reflections, no people, calm water texture across the frame, cinematic` |
@@ -163,7 +163,7 @@ fast camera moves, no fisheye, no oversaturated colors, no CGI look, no posed ad
 | S14 ⇕ | 5 s | Pátio · K-PC | ✓ | aberto, noite | `The same contemporary rammed-earth courtyard house on a cold winter blue hour, a low fire bowl glowing in the courtyard, warm windows, grassland and hills in silhouette, slow push-in, cinematic` |
 | S15 | 3 s | Pátio · K-PC | ✓ | detalhe | `Close detail of two wine glasses and hands near a fire bowl on a winter night in a stone courtyard, warm flickering light, faces out of frame, knitwear sleeves` |
 | S16 | 4 s | Pátio · K-PC-i + K-HE | ✓ (3 s) | médio, amanhecer frio | `Cold winter morning in the same rammed-earth courtyard house, Helena (match character reference) in a cream knit sweater with a coffee cup sliding open a glass panel to the golden grassland, breath faintly visible, soft low sun, slow movement` |
-| S17 ⇕ | 13 s | os três | — | montagem de 4 planos | sobras de S01–S16, sem novo imóvel nem nova pessoa |
+| S17 ⇕ | 8 s | os três | — | montagem de 3 planos | sobras de S01–S16, sem novo imóvel nem nova pessoa |
 
 S05 recebe o painel editorial dos Créditos (`sequence-creditos.js`); o gráfico de "três lugares em linhas de luz" da v1
 saiu. S09 muda de perspectiva com clareza: outra pessoa, outro lugar (cidade, anoitecer), sem expor identidade e sem
@@ -173,12 +173,12 @@ usar nenhuma das três Second Homes. O placeholder escuro da prova nunca é foot
 
 | Asset | Estado | Onde |
 |---|---|---|
-| Interfaces Request · Direct · Luxplus (16:9 e 9:16), com alfa, determinísticas | prontas e aprovadas (Etapas A e B) | `node prototypes/luxtory-club-video/capture.mjs --seq=…` |
+| Interfaces Request (35 s, com o passo de Créditos e o depósito) · Direct (16,7 s, saldo suficiente) · Luxplus (15,5 s), 16:9 e 9:16, com alfa, determinísticas | regeneradas na revisão de UX de 2026-11-15; aguardam aprovação | `node prototypes/luxtory-club-video/capture.mjs --seq=…` |
 | Trechos ProRes 4444 por modalidade | um por modalidade e formato; demais trechos sob demanda | `out/etapa-a/<seq>-<fmt>-alpha-prores4444.mov` |
 | Assinatura (6 s, só a marca), 16:9 e 9:16 | pronta para aprovação; igual na prévia e na exportação final | `--seq=assinatura` |
 | Painel dos Créditos (C04, 11 s), 16:9 e 9:16, com alfa | pronto para aprovação | `--seq=creditos` |
 | Marcas de tempo dos toques (efeitos de toque e som) | prontas | `window.__demo.marks` de cada sequência |
-| **Prova de montagem** (Request, ≈ 19 s, placeholders identificados) | pronta para avaliação interna | `node prototypes/luxtory-club-video/filme/prova/montar.mjs` → `out/prova/` |
+| **Prova de montagem** (Request com a complementação, ≈ 24,8 s, placeholders identificados) | pronta para avaliação interna | `node prototypes/luxtory-club-video/filme/prova/montar.mjs` → `out/prova/` |
 | Imagens-chave mestras K-MS, K-VL, K-PC (+ interiores) e folhas de personagem | **a gerar e aprovar** (§2) | — |
 | Footage S01–S17 | **a produzir** (§1, §3) | entra em `out/entrada/S06.mp4` etc. (a prova já usa o arquivo quando existe) |
 | Locução (voz natural, 30–45 anos) | **a gravar**, com cessão de direitos | `out/entrada/vo.wav` |
@@ -186,7 +186,9 @@ usar nenhuma das três Second Homes. O placeholder escuro da prova nunca é foot
 | Efeitos e ambientes | **a licenciar**; na prova, sons sintéticos gerados aqui | — |
 | Legendas pt-BR (SRT/ASS) e supers | texto em `ROTEIRO.md` §4–§5; aprovação pendente | — |
 | Títulos de modalidade | Request pronto na prova (camada do protótipo); Direct e Luxplus seguem a mesma gramática | `sequence-prova.js` |
-| Exportação final das interfaces (selo neutro) | sob demanda, só dos trechos usados | `capture.mjs --final --seq=…` → `out/final/` |
+| Prova curta do passo de Créditos (16:9 e 9:16) | validação feita antes do render completo | `out/prova-curta/` |
+| Versões anteriores (commit `2e6e68c`) | arquivadas só como referência de regressão, nunca como entrega | `out/referencia-2e6e68c/` |
+| Exportação final das interfaces | sob demanda, só dos trechos usados | `capture.mjs --final --seq=…` → `out/final/` |
 
 ## 5. Especificação de integração
 
@@ -222,7 +224,7 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
 
 | | Prévia interna (padrão) | Exportação final (`--final`) |
 |---|---|---|
-| Selo nos cartões | "Demonstração conceitual · dados fictícios" | "Dados ilustrativos", numa linha como antes: layout e coreografia aprovados não mudam |
+| Selo nos cartões | nenhum (revisão comercial) | nenhum |
 | Etiqueta "Prova interna" e tarja de revisão | sim | não |
 | Placeholders | permitidos e identificados | recusados: a montagem para antes de renderizar se algum plano não tiver footage aprovado ou se faltar voz ou trilha |
 | Onde | `out/etapa-a/`, `out/prova/` | `out/final/` (fora do Git) |
@@ -248,8 +250,10 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
 - [ ] Fotos de `public/images/` só como referência de direção de arte e placeholder interno; Kaizen não representa
       imóvel fictício.
 - [ ] Nenhuma marca de Brand Partner sem autorização (BR-015); nenhuma placa ou logo de terceiros.
-- [ ] Supers de C04, lettering de C05, selo neutro nos cartões e texto completo na descrição (`ROTEIRO.md` §5); a
-      assinatura é só a marca.
+- [ ] Supers de C04, lettering de C05 e texto completo na descrição (`ROTEIRO.md` §5); cartões sem selo nem jargão;
+      a assinatura é só a marca.
+- [ ] "Taxa de intermediação" harmonizada com os documentos comerciais e jurídicos (conceito canônico: Luxchange Fee,
+      01 §24).
 - [ ] Exportação final conferida com `check.mjs --final` e montada com `montar.mjs --final` (nenhuma marca interna,
       nenhum placeholder).
 - [ ] Verificação de prontidão do produto feita na data da publicação (§5).
@@ -258,9 +262,9 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
 ## 7. Decisões pendentes (Luxtory)
 
 1. **Footage:** autorizar o teste de viabilidade de A (§1), com a escolha da ferramenta, a licença e o orçamento.
-2. **Créditos e ressalvas:** aprovar a copy dos Créditos e o painel de C04, os supers, o lettering de C05, o selo
-   "Dados ilustrativos" (ou cartões sem selo, com revalidação do layout) e o texto da descrição (`ROTEIRO.md` §4–§5),
-   com revisão jurídica.
+2. **Créditos, nomenclatura e ressalvas:** aprovar a nova experiência de Créditos (Request e Direct), o nome "Taxa de
+   intermediação", a copy da complementação, o painel de C04, os supers, o lettering de C05 e o texto da descrição
+   (`ROTEIRO.md` §1, §4–§5), com revisão jurídica.
 3. **Assinatura:** confirmar o corte *"Seja protagonista de histórias extraordinárias."* (ou a headline aprovada
    completa).
 4. **Voz:** timbre e locutor(a); voz sintética só com licença comercial explícita.
@@ -268,6 +272,14 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
 6. **Cadência:** manter 30 fps, salvo razão criativa para 24 fps decidida antes dos masters.
 
 ## 8. Revisões
+
+**v4 (UX de Créditos e revisão comercial, 2026-11-15):**
+
+- S03 e S04 ganham uma segunda parte (C05c e C05b, a complementação em Mirante · Serra); S17 passa a 8 s. A shot list
+  continua com 17 planos.
+- Inventário com as interfaces regeneradas (Request de 35 s, Direct de 16,7 s), a prova curta, a prova de 24,8 s e o
+  arquivo de referência do commit `2e6e68c`.
+- Cartões sem selo em qualquer modo; checklist com a harmonização de "Taxa de intermediação".
 
 **v3 (direção comercial final):**
 
