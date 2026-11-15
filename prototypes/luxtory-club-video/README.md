@@ -368,6 +368,9 @@ node prototypes/luxtory-club-video/placas.mjs --force
   resumo do acordeão cabe em uma linha e a legenda passa a três colunas.
 - `check.mjs` reprova qualquer instante do 9:16 com conteúdo acima de 8%.
 
+**Evidências.** `evidencias/v5/`: combinações do controle nos dois formatos e antes/depois da v4 para a v5, extraídos
+dos arquivos codificados. Inventário dos masters vigentes em `filme/INVENTARIO.md`.
+
 **Versões anteriores.** Os entregáveis do commit `f5810a6` (v4) estão em `out/referencia-f5810a6/`, com os mesmos nomes.
 
 ## Integração na pós (Etapa A)
