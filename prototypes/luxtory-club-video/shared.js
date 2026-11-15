@@ -11,6 +11,14 @@ export const hours = `entrada ${CANONICAL.checkinHour}h, saída ${CANONICAL.chec
 export const periodOf = (checkin, checkout) => `${civilShort(checkin)} a ${civilFull(checkout)}`;
 /** Elemento sempre visível na linha do tempo (entra antes do início). */
 export const ALWAYS = -10_000;
+/** Saída do Core (duration.moderate, stage.js MOTION.exit). */
+const EXIT_MS = 280;
+const SWAP_MARGIN_MS = 20;
+/**
+ * Troca no mesmo lugar (rótulo do botão → "Processando…", ações → revalidação): instante em que o novo entra, só depois
+ * da saída completa do antigo, nunca em crossfade de textos. `check.mjs` varre os filhos de cada .demo-swap.
+ */
+export const swapIn = (out) => out + EXIT_MS + SWAP_MARGIN_MS;
 
 export const ICONS = `
   <svg width="0" height="0" class="lx-visually-hidden" aria-hidden="true" focusable="false">

@@ -15,8 +15,10 @@ import {
   periodOf,
   press,
   rangeSteps,
+  swapIn,
 } from './shared.js';
 import { needCard } from './credits-step.js';
+import { PLATES } from './placas-caminhos.js';
 
 const s = directScenario();
 const period = periodOf(s.checkin, s.checkout);
@@ -32,7 +34,7 @@ export function build(stage, fmt) {
       <p class="lx-eyebrow">Luxtory Club · Luxchange</p>
       <div>
         <p class="demo-name">${s.secondHome.name}</p>
-        <p class="demo-sub">${s.secondHome.homeEdition}</p>
+        <p class="demo-sub">${s.secondHome.region} · Second Home Luxtory</p>
       </div>
       <p class="demo-note demo-only-16x9" id="home-route">${route}</p>
     </section>
@@ -126,7 +128,7 @@ export function timeline(fmt) {
       { sel: '#need', in: needIn, out: needOut },
       { sel: '#review', in: reviewIn, out: reviewOut },
       { sel: '#send-label', in: ALWAYS, out: 9_300 },
-      { sel: '#send-busy', in: 9_400, dur: 0 },
+      { sel: '#send-busy', in: swapIn(9_300), dur: 0 },
       { sel: '#credits', in: v ? confirmed : reviewIn },
       { sel: '#lots', in: reviewIn + 500 },
       { sel: '#cr-before', in: ALWAYS, out: confirmed },
@@ -259,6 +261,6 @@ export const qa = {
   alpha: { from: 9_100, seconds: 5 },
   sample: { card: '#booking', at: 13_700 },
   motion: { card: '#booking', at: 14_200, enter: [12_100, 12_580] },
-  // Placa de teste de legibilidade (não representa Pátio · Campo; PRODUCAO.md §2.1).
-  plates: { claro: 'public/images/home/hero/hero-lifestyle.jpg' },
+  // Placa interna de teste da Olivar Home (campo neutro de tarde; placas.mjs): não representa o imóvel final.
+  plates: { claro: PLATES.olivarTarde },
 };

@@ -1,4 +1,4 @@
-# Filme Luxtory Club: produção, footage e integração (v4, UX de Créditos e revisão comercial · proposta para aprovação)
+# Filme Luxtory Club: produção, footage e integração (v5, auditoria de UX e identidade das Second Homes · proposta para aprovação)
 
 > Complementa `ROTEIRO.md`. Imóveis, pessoas e valores ilustrativos, nunca apresentados como Second Homes reais à venda
 > ou disponíveis. A publicação depende da verificação de prontidão do produto e da aprovação da comunicação (§5).
@@ -26,7 +26,7 @@ contratado nem gerado fora daqui.
 
 | Plano | O que prova |
 |---|---|
-| S06 | arquitetura e paisagem, continuidade com a imagem-chave de Varanda · Litoral |
+| S06 | arquitetura e paisagem, continuidade com a imagem-chave da Azzura Home |
 | S02 | Helena e a família em plano médio: consistência de rosto, anatomia, expressão natural, movimento |
 | S15 | detalhe com mãos e taças: mãos, luz de fogo, textura |
 
@@ -59,32 +59,45 @@ placeholder interno da prova; nunca como footage final.
 
 | Foto | O que mostra | Leitura para o filme |
 |---|---|---|
-| `luxury-property-facade-hero.jpg` | casa em pedra empilhada clara, madeira e vidro em encosta, terraços e piscina de borda ao entardecer, água ao fundo | **materiais** de Mirante · Serra (a paisagem não: a bíblia pede vale de serra, sem mar) |
-| `hero-lifestyle.jpg` | volumes brancos, vidro, piscina de borda infinita voltada ao mar, pôr do sol, família na água | coerente com **Varanda · Litoral**; placeholder da prova |
-| `home-solucao-firepit-family.jpg` | três gerações ao redor do fogo, casa de pedra e vidro, montanhas | só **tom humano** (calor, espontaneidade); a arquitetura não serve a Pátio · Campo |
-| `kaizen-k05/k07/k09.jpg` | anteprojeto real Kaizen: suíte, pavilhão e fachada com brises de madeira, jardim tropical | **não representa nenhuma Second Home fictícia**. Nos previews de Direct e Luxplus, a K05 foi só placa de teste de legibilidade |
+| `luxury-property-facade-hero.jpg` | casa em pedra empilhada clara, madeira e vidro em encosta, terraços e piscina de borda ao entardecer, água ao fundo | **materiais** da Satori Home (a paisagem não: a bíblia pede vale de serra, sem mar); placa provisória de C04 e C06 |
+| `hero-lifestyle.jpg` | volumes brancos, vidro, piscina de borda infinita voltada ao mar, pôr do sol, família na água | coerente com a **Azzura Home**; placeholder da prova e, escurecida, placa noturna da Request (`out/placas/azzura-noite.jpg`) |
+| `home-solucao-firepit-family.jpg` | três gerações ao redor do fogo, casa de pedra e vidro, montanhas | só **tom humano** (calor, espontaneidade); a arquitetura não serve à Olivar Home |
+| `kaizen-k05/k07/k09.jpg` | anteprojeto real Kaizen: suíte, pavilhão e fachada com brises de madeira, jardim tropical | **não representa nenhuma Second Home fictícia**. Até a v4, a K05 foi placa de teste de legibilidade de Direct e Luxplus; na v5 elas usam campos neutros da Olivar Home (`out/placas/olivar-tarde.png` e `olivar-noite.png`) |
 | `problema-imovel.jpg` | casa mediterrânea com telhas cerâmicas, imagem do "problema" no Como funciona | **nunca** como Second Home |
 
-**Pátio · Campo: incoerência corrigida.** A v1 descrevia uma casa rústica (taipa ou pedra, telhas cerâmicas, portas de
-madeira, oliveiras, vinhedos). Essa descrição:
+**Olivar Home (antes Pátio · Campo): incoerência corrigida.** A v1 descrevia uma casa rústica (taipa ou pedra, telhas
+cerâmicas, portas de madeira, oliveiras, vinhedos). Essa descrição:
 
 - não combina com o interior contemporâneo dos previews;
 - ecoa a imagem do "problema";
 - foge da arquitetura contemporânea de toda a imagem da Luxtory.
 
-A v2 redefine Pátio · Campo como casa contemporânea em torno de um pátio (§2.2). Os vinhedos saem, porque aproximariam o
+A v2 redefine o imóvel do campo como casa contemporânea em torno de um pátio (§2.2). Os vinhedos saem, porque aproximariam o
 lugar da serra, e a K05 deixa de ser referência.
+
+**Placas internas por imóvel (v5).** Para conferir a legibilidade das interfaces sobre imagem, cada sequência usa uma
+placa coerente com o imóvel que mostra: Satori (pedra, `luxury-property-facade-hero.jpg`), Azzura (litoral,
+`hero-lifestyle.jpg` e a variante noturna) e Olivar (campos neutros quentes de tarde e de noite, sem fingir uma
+arquitetura que ainda não existe em imagem). `placas.mjs` gera as placas em `out/placas/` (fora do Git), sem tocar nas
+fotos do repositório. São só placas de teste: não são footage nem representam o imóvel final.
 
 ### 2.2 Bíblias e imagem-chave mestra
 
-Cada imóvel tem uma **imagem-chave mestra exterior** (K-MS, K-VL, K-PC) e uma **interior** (K-MS-i, K-VL-i, K-PC-i), as
-duas geradas e aprovadas antes de qualquer vídeo. Todos os planos daquele imóvel partem delas.
+Cada imóvel tem uma **imagem-chave mestra exterior** (K-SA, K-AZ, K-OL) e uma **interior** (K-SA-i, K-AZ-i, K-OL-i), as
+duas geradas e aprovadas antes de qualquer vídeo. Todos os planos daquele imóvel partem delas. (Até a v4: K-MS, K-VL e
+K-PC.)
+
+**Nomes (v5).** *Satori Home*, *Azzura Home* e *Olivar Home* são propostas, sujeitas à validação comercial e de marca
+(§6, §7); o filme não afirma exclusividade. Nos cartões e títulos, o nome é o protagonista e a região vem em segundo
+plano: "Azzura Home" / "Litoral · Second Home Luxtory". Os cartões não repetem "Home Edition". Os identificadores
+internos dos dados do protótipo não mudam (`mirante`, `varanda`, `patio`), para preservar papéis, datas, Créditos e
+relações.
 
 | Second Home | Arquitetura e materiais | Paisagem e luz | Quem aparece |
 |---|---|---|---|
-| **Mirante · Serra** (de Helena) | casa contemporânea em pedra empilhada clara, madeira quente e grandes panos de vidro; varanda em balanço; cobertura plana com beiral fino | vale de serra com neblina e mata atlântica de altitude, sem mar; amanhecer frio → luz dourada | Helena, o parceiro e os dois filhos |
-| **Varanda · Litoral** | volumes brancos em balanço, vidro sem caixilho aparente, pérgola de madeira escura na varanda, piscina de borda infinita voltada ao mar, deque de pedra bege | litoral tropical, mar calmo, falésia baixa; pôr do sol âmbar | Helena e o parceiro; o outro Titular nunca aqui (interior neutro, S09) |
-| **Pátio · Campo** | casa térrea contemporânea em torno de um pátio; paredes de taipa de pilão ocre; panos de vidro com perfis finos escuros; cobertura plana com beiral fino de madeira; pátio de pedra com uma oliveira antiga | campo ondulado de capim dourado, árvores isoladas, serra baixa e azulada ao longe; tarde de outono dourada (Direct) e noite de inverno com fogo no pátio (Luxplus) | Direct: três gerações (os pais de Helena, Helena, as crianças). Luxplus: Helena e o parceiro |
+| **Satori Home** · Serra (de Helena) | casa contemporânea em pedra empilhada clara, madeira quente e grandes panos de vidro; terraço em balanço; cobertura plana com beiral fino | vale de serra com neblina e mata atlântica de altitude, sem mar; amanhecer frio → luz dourada | Helena, o parceiro e os dois filhos |
+| **Azzura Home** · Litoral | volumes brancos em balanço, vidro sem caixilho aparente, pérgola de madeira escura na varanda, piscina de borda infinita voltada ao mar, deque de pedra bege | litoral tropical, mar calmo, falésia baixa; pôr do sol âmbar | Helena e o parceiro; o outro Titular nunca aqui (interior neutro, S09) |
+| **Olivar Home** · Campo | casa térrea contemporânea em torno de um pátio; paredes de taipa de pilão ocre; panos de vidro com perfis finos escuros; cobertura plana com beiral fino de madeira; pátio de pedra com uma oliveira antiga | campo ondulado de capim dourado, árvores isoladas, serra baixa e azulada ao longe; tarde de outono dourada (Direct) e noite de inverno com fogo no pátio (Luxplus) | Direct: três gerações (os pais de Helena, Helena, as crianças). Luxplus: Helena e o parceiro |
 
 Regras de continuidade:
 
@@ -94,14 +107,14 @@ Regras de continuidade:
 
 Prompts das imagens-chave mestras (ferramenta de imagem; mesmas restrições do §3):
 
-- **K-MS:** `Architectural photograph of a contemporary mountain second home of stacked light stone, warm timber and floor-to-ceiling glass, cantilevered terrace and thin flat roof, set on a slope above a misty Atlantic-forest valley in southern Brazil at golden hour, no sea, realistic materials, 35mm, natural light`
-- **K-VL:** `Architectural photograph of a contemporary coastal second home with white cantilevered volumes, frameless glass, a dark timber pergola on the veranda and an infinity pool facing a calm tropical sea, beige stone deck, low cliffs, amber sunset, realistic, 35mm`
-- **K-PC:** `Architectural photograph of a contemporary single-story countryside second home arranged around a stone courtyard with one old olive tree, ochre rammed-earth walls, slim dark-framed glass panels, thin flat roof with a timber eave, rolling golden grassland and distant bluish hills, autumn afternoon light, realistic, 35mm`
+- **K-SA:** `Architectural photograph of a contemporary mountain second home of stacked light stone, warm timber and floor-to-ceiling glass, cantilevered terrace and thin flat roof, set on a slope above a misty Atlantic-forest valley in southern Brazil at golden hour, no sea, realistic materials, 35mm, natural light`
+- **K-AZ:** `Architectural photograph of a contemporary coastal second home with white cantilevered volumes, frameless glass, a dark timber pergola on the veranda and an infinity pool facing a calm tropical sea, beige stone deck, low cliffs, amber sunset, realistic, 35mm`
+- **K-OL:** `Architectural photograph of a contemporary single-story countryside second home arranged around a stone courtyard with one old olive tree, ochre rammed-earth walls, slim dark-framed glass panels, thin flat roof with a timber eave, rolling golden grassland and distant bluish hills, autumn afternoon light, realistic, 35mm`
 - Os interiores (`-i`) repetem materiais, aberturas e vista do exterior aprovado.
 
 ### 2.3 Personagens
 
-- **Helena.** Co-Owner de Mirante · Serra; cerca de 42 anos; cabelo castanho na altura dos ombros, ondulado;
+- **Helena.** Co-Owner da Satori Home; cerca de 42 anos; cabelo castanho na altura dos ombros, ondulado;
   maquiagem natural; anel fino de ouro (única joia constante).
   - Folha de personagem K-HE (frente, três quartos, perfil e corpo inteiro, luz neutra), gerada antes dos planos e usada
     como referência em todos os planos em que ela aparece.
@@ -109,10 +122,10 @@ Prompts das imagens-chave mestras (ferramenta de imagem; mesmas restrições do 
 
     | Lugar | Figurino |
     |---|---|
-    | Mirante · Serra | linho claro e tricô leve |
-    | Varanda · Litoral | linho branco |
-    | Pátio · Campo, Direct | algodão e cáqui |
-    | Pátio · Campo, Luxplus | suéter de tricô cru e casaco |
+    | Satori Home | linho claro e tricô leve |
+    | Azzura Home | linho branco |
+    | Olivar Home, Direct | algodão e cáqui |
+    | Olivar Home, Luxplus | suéter de tricô cru e casaco |
 
 - **Parceiro** (cerca de 45 anos, barba curta grisalha), **filhos** (cerca de 9 e 13 anos) e **pais de Helena** (cerca
   de 70 anos): uma folha de referência cada, com o mesmo critério.
@@ -147,22 +160,22 @@ fast camera moves, no fisheye, no oversaturated colors, no CGI look, no posed ad
 
 | Plano | Dur. | Lugar · ref. | UI | Enquadramento · câmera | Prompt |
 |---|---|---|---|---|---|
-| S01 ⇕ | 6 s | Mirante · K-MS | — | aberto, drone lento para frente | `Cinematic aerial dolly forward at dawn over a misty mountain valley in southern Brazil, revealing the same contemporary second home of stacked light stone, warm timber and large glass panels with a cantilevered terrace (match reference image), soft cold light turning golden, realistic architecture, 35mm film look, gentle steady movement` |
-| S02 | 5 s | Mirante · K-MS + K-HE | — | médio, travelling lateral | `Helena (match character reference), early forties, light linen, laughing with her partner and two children on the timber terrace of the same stone-and-glass mountain house at golden hour, candid unposed moment, shallow depth of field, slow lateral tracking shot, warm natural light` |
-| S03 | 8 s (C02 e C05c) | Mirante · K-MS-i | ✓ em C05c | detalhe, estático; na segunda parte, luz no centro e nas bordas, sem objeto sob os cartões | `Close detail of morning light moving across a linen sofa and oak floor inside the same minimalist stone-and-glass mountain house, misty valley soft through the glass, dust particles in sunlight, static camera, photorealistic` |
-| S04 ⇕ | 10 s (C03 e C05b) | Mirante · K-MS + K-HE | ✓ em C05b | médio por cima do ombro; Helena no corredor central, celular fora de foco | `Over-the-shoulder shot of Helena (match character reference) holding a smartphone on the stone house terrace overlooking the misty valley, phone screen softly out of focus, golden light, subtle push-in, cinematic` (a interface entra na pós) |
-| S05 ⇕ | 12 s | Mirante · K-MS + K-HE | ✓ (painel dos Créditos) | aberto e estável; Helena no terço direito, de perfil, olhando o vale; metade esquerda livre para o painel | `Wide steady shot on the stone terrace of the same mountain second home at golden hour, Helena (match character reference) in light linen standing in the right third, seen in profile looking at the misty valley, calm and contemplative, the left half of the frame open to the valley and sky, very slow push-in, photorealistic` |
-| S06 ⇕ | 6 s | Varanda · K-VL | ✓ | aberto, grua descendo; casa no terço superior esquerdo, mar e céu à direita | `Wide crane-down shot of the same coastal second home with white cantilevered volumes, dark timber pergola and an infinity pool facing a calm tropical sea at amber sunset (match reference image), house in the upper-left third, open sea and sky filling the right half, low cliffs, photorealistic, slow elegant movement` |
-| S07 | 4 s | Varanda · K-VL | ✓ | detalhe, travelling | `Slow tracking shot along the edge of the same infinity pool with beige stone deck, sea horizon and warm sunset reflections, no people, calm water texture across the frame, cinematic` |
-| S08 | 4 s | Varanda · K-VL | ✓ | médio, estático | `Empty shaded veranda under the same dark timber pergola with white linen loungers at dusk, gentle sea breeze moving light curtains, static camera, serene` |
+| S01 ⇕ | 6 s | Satori · K-SA | — | aberto, drone lento para frente | `Cinematic aerial dolly forward at dawn over a misty mountain valley in southern Brazil, revealing the same contemporary second home of stacked light stone, warm timber and large glass panels with a cantilevered terrace (match reference image), soft cold light turning golden, realistic architecture, 35mm film look, gentle steady movement` |
+| S02 | 5 s | Satori · K-SA + K-HE | — | médio, travelling lateral | `Helena (match character reference), early forties, light linen, laughing with her partner and two children on the timber terrace of the same stone-and-glass mountain house at golden hour, candid unposed moment, shallow depth of field, slow lateral tracking shot, warm natural light` |
+| S03 | 8 s (C02 e C05c) | Satori · K-SA-i | ✓ em C05c | detalhe, estático; na segunda parte, luz no centro e nas bordas, sem objeto sob os cartões | `Close detail of morning light moving across a linen sofa and oak floor inside the same minimalist stone-and-glass mountain house, misty valley soft through the glass, dust particles in sunlight, static camera, photorealistic` |
+| S04 ⇕ | 10 s (C03 e C05b) | Satori · K-SA + K-HE | ✓ em C05b | médio por cima do ombro; Helena no corredor central, celular fora de foco | `Over-the-shoulder shot of Helena (match character reference) holding a smartphone on the stone house terrace overlooking the misty valley, phone screen softly out of focus, golden light, subtle push-in, cinematic` (a interface entra na pós) |
+| S05 ⇕ | 12 s | Satori · K-SA + K-HE | ✓ (painel dos Créditos) | aberto e estável; Helena no terço direito, de perfil, olhando o vale; metade esquerda livre para o painel | `Wide steady shot on the stone terrace of the same mountain second home at golden hour, Helena (match character reference) in light linen standing in the right third, seen in profile looking at the misty valley, calm and contemplative, the left half of the frame open to the valley and sky, very slow push-in, photorealistic` |
+| S06 ⇕ | 6 s | Azzura · K-AZ | ✓ | aberto, grua descendo; casa no terço superior esquerdo, mar e céu à direita | `Wide crane-down shot of the same coastal second home with white cantilevered volumes, dark timber pergola and an infinity pool facing a calm tropical sea at amber sunset (match reference image), house in the upper-left third, open sea and sky filling the right half, low cliffs, photorealistic, slow elegant movement` |
+| S07 | 4 s | Azzura · K-AZ | ✓ | detalhe, travelling | `Slow tracking shot along the edge of the same infinity pool with beige stone deck, sea horizon and warm sunset reflections, no people, calm water texture across the frame, cinematic` |
+| S08 | 4 s | Azzura · K-AZ | ✓ | médio, estático | `Empty shaded veranda under the same dark timber pergola with white linen loungers at dusk, gentle sea breeze moving light curtains, static camera, serene` |
 | S09 | 5 s | apartamento do outro Titular (não é nenhuma das três Second Homes) | ✓ | por cima do ombro, rosto fora de foco; pessoa no terço esquerdo | `Over-the-shoulder shot of a man in his fifties on a sofa in a contemporary city apartment at blue hour, holding a smartphone, the screen softly out of focus, warm lamp light inside and city lights through floor-to-ceiling windows, his face turned away and out of focus, person in the left third, calm and elegant, slow push-in, photorealistic` (interface na pós) |
-| S10 | 5 s | Varanda · K-VL-i + K-HE | ✓ (2,6 s) | aberto → médio; Helena entra pelo terço esquerdo | `Helena (match character reference) and her partner arriving through a timber door into the bright white coastal house with sea view, wide shot that settles into a medium shot as she smiles looking out, warm late light, natural movement` |
-| S11 ⇕ | 5 s | Pátio · K-PC | ✓ | aberto, dolly para dentro do pátio | `Dolly forward through a wooden doorway into the stone courtyard of the same contemporary rammed-earth countryside house with an old olive tree (match reference image), rolling golden grassland and distant hills beyond, autumn golden afternoon light, photorealistic` |
-| S12 | 4 s | Pátio · K-PC | ✓ | detalhe, travelling | `Slow tracking shot over a long outdoor table set with ceramics and linen under the olive tree in the same rammed-earth courtyard, warm autumn afternoon light, no faces` |
-| S13 | 5 s | Pátio · K-PC + K-HE | ✓ (3 s) | aberto; família pequena no terço superior esquerdo | `Wide shot of three generations relaxing in the same rammed-earth courtyard at late autumn afternoon, grandparents, Helena (match character reference) and two children, candid laughter, family small in the upper-left third, warm light` |
-| S14 ⇕ | 5 s | Pátio · K-PC | ✓ | aberto, noite | `The same contemporary rammed-earth courtyard house on a cold winter blue hour, a low fire bowl glowing in the courtyard, warm windows, grassland and hills in silhouette, slow push-in, cinematic` |
-| S15 | 3 s | Pátio · K-PC | ✓ | detalhe | `Close detail of two wine glasses and hands near a fire bowl on a winter night in a stone courtyard, warm flickering light, faces out of frame, knitwear sleeves` |
-| S16 | 4 s | Pátio · K-PC-i + K-HE | ✓ (3 s) | médio, amanhecer frio | `Cold winter morning in the same rammed-earth courtyard house, Helena (match character reference) in a cream knit sweater with a coffee cup sliding open a glass panel to the golden grassland, breath faintly visible, soft low sun, slow movement` |
+| S10 | 5 s | Azzura · K-AZ-i + K-HE | ✓ (2,6 s) | aberto → médio; Helena entra pelo terço esquerdo | `Helena (match character reference) and her partner arriving through a timber door into the bright white coastal house with sea view, wide shot that settles into a medium shot as she smiles looking out, warm late light, natural movement` |
+| S11 ⇕ | 5 s | Olivar · K-OL | ✓ | aberto, dolly para dentro do pátio | `Dolly forward through a wooden doorway into the stone courtyard of the same contemporary rammed-earth countryside house with an old olive tree (match reference image), rolling golden grassland and distant hills beyond, autumn golden afternoon light, photorealistic` |
+| S12 | 4 s | Olivar · K-OL | ✓ | detalhe, travelling | `Slow tracking shot over a long outdoor table set with ceramics and linen under the olive tree in the same rammed-earth courtyard, warm autumn afternoon light, no faces` |
+| S13 | 5 s | Olivar · K-OL + K-HE | ✓ (3 s) | aberto; família pequena no terço superior esquerdo | `Wide shot of three generations relaxing in the same rammed-earth courtyard at late autumn afternoon, grandparents, Helena (match character reference) and two children, candid laughter, family small in the upper-left third, warm light` |
+| S14 ⇕ | 5 s | Olivar · K-OL | ✓ | aberto, noite | `The same contemporary rammed-earth courtyard house on a cold winter blue hour, a low fire bowl glowing in the courtyard, warm windows, grassland and hills in silhouette, slow push-in, cinematic` |
+| S15 | 3 s | Olivar · K-OL | ✓ | detalhe | `Close detail of two wine glasses and hands near a fire bowl on a winter night in a stone courtyard, warm flickering light, faces out of frame, knitwear sleeves` |
+| S16 | 4 s | Olivar · K-OL-i + K-HE | ✓ (3 s) | médio, amanhecer frio | `Cold winter morning in the same rammed-earth courtyard house, Helena (match character reference) in a cream knit sweater with a coffee cup sliding open a glass panel to the golden grassland, breath faintly visible, soft low sun, slow movement` |
 | S17 ⇕ | 8 s | os três | — | montagem de 3 planos | sobras de S01–S16, sem novo imóvel nem nova pessoa |
 
 S05 recebe o painel editorial dos Créditos (`sequence-creditos.js`); o gráfico de "três lugares em linhas de luz" da v1
@@ -173,21 +186,22 @@ usar nenhuma das três Second Homes. O placeholder escuro da prova nunca é foot
 
 | Asset | Estado | Onde |
 |---|---|---|
-| Interfaces Request (35 s, com o passo de Créditos e o depósito) · Direct (16,7 s, saldo suficiente) · Luxplus (15,5 s), 16:9 e 9:16, com alfa, determinísticas | regeneradas na revisão de UX de 2026-11-15; aguardam aprovação | `node prototypes/luxtory-club-video/capture.mjs --seq=…` |
+| Interfaces Request (35 s, com o passo de Créditos e o depósito) · Direct (16,7 s, saldo suficiente) · Luxplus (15,5 s), 16:9 e 9:16, com alfa, determinísticas | regeneradas na v5 (combinações do controle, nomes das Second Homes, calendário do 9:16); aguardam aprovação | `node prototypes/luxtory-club-video/capture.mjs --seq=…` |
 | Trechos ProRes 4444 por modalidade | um por modalidade e formato; demais trechos sob demanda | `out/etapa-a/<seq>-<fmt>-alpha-prores4444.mov` |
 | Assinatura (6 s, só a marca), 16:9 e 9:16 | pronta para aprovação; igual na prévia e na exportação final | `--seq=assinatura` |
-| Painel dos Créditos (C04, 11 s), 16:9 e 9:16, com alfa | pronto para aprovação | `--seq=creditos` |
+| Painel dos Créditos (C04, 10,5 s, conceitual e sem números), 16:9 e 9:16, com alfa | regenerado na v5; aguarda aprovação | `--seq=creditos` |
 | Marcas de tempo dos toques (efeitos de toque e som) | prontas | `window.__demo.marks` de cada sequência |
-| **Prova de montagem** (Request com a complementação, ≈ 24,8 s, placeholders identificados) | pronta para avaliação interna | `node prototypes/luxtory-club-video/filme/prova/montar.mjs` → `out/prova/` |
-| Imagens-chave mestras K-MS, K-VL, K-PC (+ interiores) e folhas de personagem | **a gerar e aprovar** (§2) | — |
+| **Prova de montagem** (Request com a complementação até o depósito e o saldo de 94.000, ≈ 26,4 s, placeholders identificados) | pronta para avaliação interna | `node prototypes/luxtory-club-video/filme/prova/montar.mjs` → `out/prova/` |
+| Imagens-chave mestras K-SA, K-AZ, K-OL (+ interiores) e folhas de personagem | **a gerar e aprovar** (§2) | — |
 | Footage S01–S17 | **a produzir** (§1, §3) | entra em `out/entrada/S06.mp4` etc. (a prova já usa o arquivo quando existe) |
 | Locução (voz natural, 30–45 anos) | **a gravar**, com cessão de direitos | `out/entrada/vo.wav` |
 | Trilha | **a licenciar ou encomendar** | `out/entrada/trilha.wav` |
 | Efeitos e ambientes | **a licenciar**; na prova, sons sintéticos gerados aqui | — |
 | Legendas pt-BR (SRT/ASS) e supers | texto em `ROTEIRO.md` §4–§5; aprovação pendente | — |
 | Títulos de modalidade | Request pronto na prova (camada do protótipo); Direct e Luxplus seguem a mesma gramática | `sequence-prova.js` |
-| Prova curta do passo de Créditos (16:9 e 9:16) | validação feita antes do render completo | `out/prova-curta/` |
-| Versões anteriores (commit `2e6e68c`) | arquivadas só como referência de regressão, nunca como entrega | `out/referencia-2e6e68c/` |
+| Prova curta do passo de Créditos (16:9 e 9:16) | validação dos momentos alterados, feita antes do render completo | `out/prova-curta/` |
+| Placas internas por imóvel (Azzura à noite, Olivar de tarde e de noite) | geradas de forma determinística, fora do Git | `node prototypes/luxtory-club-video/placas.mjs` → `out/placas/` |
+| Versões anteriores (commits `2e6e68c` e `f5810a6`) | arquivadas só como referência de regressão, nunca como entrega | `out/referencia-2e6e68c/`, `out/referencia-f5810a6/` |
 | Exportação final das interfaces | sob demanda, só dos trechos usados | `capture.mjs --final --seq=…` → `out/final/` |
 
 ## 5. Especificação de integração
@@ -199,7 +213,7 @@ usar nenhuma das três Second Homes. O placeholder escuro da prova nunca é foot
 | Alfa | *straight* (não premultiplicado) nos PNG e no ProRes 4444; interpretar como Straight |
 | Cor | Rec.709 (BT.709, faixa limitada) nos MP4/MOV; composição em RGB com matriz BT.709 explícita; cores da marca conferidas por amostragem depois do encode |
 | Interface sobre pessoas | ver a ordem de soluções logo abaixo |
-| Áreas seguras | 16:9: títulos dentro de 90% do quadro; a faixa abaixo de 90% da altura fica livre dos cartões e recebe ressalvas (o 16:9 entrega legenda em arquivo separado). 9:16: interfaces de 6% a 87% da altura; legendas e ressalvas só nos planos sem cartão, entre 60% e 80% da altura, ou omitidas quando o cartão já diz o mesmo |
+| Áreas seguras | 16:9: títulos dentro de 90% do quadro; a faixa abaixo de 90% da altura fica livre dos cartões e recebe ressalvas (o 16:9 entrega legenda em arquivo separado). 9:16: interfaces de 8% a 87% da altura (`check.mjs` reprova conteúdo acima de 8%); legendas e ressalvas só nos planos sem cartão, entre 60% e 80% da altura, ou omitidas quando o cartão já diz o mesmo |
 | Profundidade | quando a interface entra, a imagem suaviza o foco (desfoque leve, transição de 0,5 s) e volta a ficar nítida quando ela sai |
 | Sincronia | a voz conduz; interfaces entram 4–8 quadros depois da palavra-chave; toques e sons alinhados às `marks` |
 | Legendas | pt-BR, até 2 linhas, ≤ 42 caracteres por linha; queimadas no 9:16, arquivo separado no 16:9 |
@@ -250,6 +264,10 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
 - [ ] Fotos de `public/images/` só como referência de direção de arte e placeholder interno; Kaizen não representa
       imóvel fictício.
 - [ ] Nenhuma marca de Brand Partner sem autorização (BR-015); nenhuma placa ou logo de terceiros.
+- [ ] Nomes *Satori Home*, *Azzura Home* e *Olivar Home* validados comercialmente e com busca de anterioridade de marca
+      antes de qualquer uso público; nenhuma afirmação de exclusividade. Atenção: "Azzura" e "Olivar" são grafias
+      criadas (de "azzurra" e "olival"); "Satori" está no mesmo registro de "Kaizen" (palavras japonesas) e não deve
+      sugerir vínculo com aquele projeto.
 - [ ] Supers de C04, lettering de C05 e texto completo na descrição (`ROTEIRO.md` §5); cartões sem selo nem jargão;
       a assinatura é só a marca.
 - [ ] "Taxa de intermediação" harmonizada com os documentos comerciais e jurídicos (conceito canônico: Luxchange Fee,
@@ -270,8 +288,21 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
 4. **Voz:** timbre e locutor(a); voz sintética só com licença comercial explícita.
 5. **Trilha:** encomenda original ou biblioteca licenciada.
 6. **Cadência:** manter 30 fps, salvo razão criativa para 24 fps decidida antes dos masters.
+7. **Nomes das Second Homes:** validar *Satori Home*, *Azzura Home* e *Olivar Home* (comercial e marca) ou indicar
+   outros; a troca é um dado (`data.js`) e não muda papéis, datas nem Créditos.
 
 ## 8. Revisões
+
+**v5 (auditoria final de UX, identidade das Second Homes e consistência audiovisual, 2026-11-15):**
+
+- Nomes: Mirante · Serra → *Satori Home*; Varanda · Litoral → *Azzura Home*; Pátio · Campo → *Olivar Home* (propostas
+  sujeitas à validação comercial e de marca). Bíblias, figurino, shot list e chaves (K-SA, K-AZ, K-OL) atualizados; a
+  arquitetura de cada imóvel não muda.
+- Placas internas por imóvel (`placas.mjs`): Direct e Luxplus deixam a K05 do Kaizen e passam a campos neutros da
+  Olivar Home; a Request usa o litoral da Azzura também no teste escuro.
+- Painel de C04 conceitual, 10,5 s; prova de montagem com a complementação até o depósito, ≈ 26,4 s; arquivo de
+  referência do commit `f5810a6`.
+- 9:16: interfaces a partir de 8% da altura.
 
 **v4 (UX de Créditos e revisão comercial, 2026-11-15):**
 

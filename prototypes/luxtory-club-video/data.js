@@ -10,6 +10,7 @@ import {
   creditsOfSelection,
   depositNightStatus,
   depositStops,
+  minimumCovering,
   creditExpiresAt,
   creditsForPrl,
   consumeCreditsFefo,
@@ -33,12 +34,15 @@ export const CANONICAL = Object.freeze({
 
 export const FICTITIOUS = Object.freeze({
   timeZone: 'America/Sao_Paulo',
+  // Nomes das Second Homes fictícias do filme (propostas criativas, sujeitas a validação comercial e de marca): o nome é
+  // protagonista e a região vem em segundo plano. Identificadores internos estáveis (mirante, varanda, patio). A Home
+  // Edition fica no dado do produto, sem aparecer nos cartões promocionais.
   secondHomes: {
-    mirante: { name: 'Mirante · Serra', homeEdition: 'Home Edition Mirante' },
-    varanda: { name: 'Varanda · Litoral', homeEdition: 'Home Edition Varanda' },
-    patio: { name: 'Pátio · Campo', homeEdition: 'Home Edition Pátio' },
+    mirante: { name: 'Satori Home', region: 'Serra', homeEdition: 'Home Edition Satori' },
+    varanda: { name: 'Azzura Home', region: 'Litoral', homeEdition: 'Home Edition Azzura' },
+    patio: { name: 'Olivar Home', region: 'Campo', homeEdition: 'Home Edition Olivar' },
   },
-  // Quem solicita: Co-Owner de Mirante · Serra. Quem detém as noites pedidas: Co-Owner de Varanda · Litoral, cuja
+  // Quem solicita: Co-Owner de Satori Home. Quem detém as noites pedidas: Co-Owner de Azzura Home, cuja
   // identidade não é exibida a quem solicita (hipótese da demonstração, sem especificação no 02).
   requester: { name: 'Helena', role: 'co_owner', secondHome: 'mirante', membership: 'Vigente' },
   holder: { role: 'co_owner', secondHome: 'varanda', membership: 'Vigente' },
@@ -65,7 +69,7 @@ export const FICTITIOUS = Object.freeze({
     at: '2027-04-12T10:02:00-03:00',
     lotId: 'L-0003',
   },
-  // Calendário do Direito de Uso de Helena em Mirante · Serra (Co-Owner) para o depósito opcional: datas já
+  // Calendário do Direito de Uso de Helena em Satori Home (Co-Owner) para o depósito opcional: datas já
   // reservadas, uma reserva dentro da antecedência mínima (24–25/04, menos de 14 dias antes de 12/04) e uma cessão já
   // comprometida (22–23/05, origem do L-0002). As noites elegíveis são as do depósito acima (14, 15 e 16/05).
   useRight: {
@@ -180,6 +184,9 @@ export function depositScenario(data = FICTITIOUS, params = CANONICAL) {
     days,
     eligible,
     stops: depositStops(eligible),
+    // Menor complemento que cobre a reserva (14.000, só 16/05); Helena escolhe depositar as três datas para manter
+    // Créditos disponíveis para próximas experiências (o saldo de 39.000 depois da Request vai para o Direct).
+    minimum: minimumCovering(eligible, Math.max(0, request - prior)),
     priorAvailable: prior,
     requestCredits: request,
     shortfall: Math.max(0, request - prior),

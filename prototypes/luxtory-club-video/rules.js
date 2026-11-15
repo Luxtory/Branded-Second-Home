@@ -120,20 +120,6 @@ export function depositNightStatus(
   throw new Error(`Modalidade desconhecida: ${role}`);
 }
 
-/**
- * Metas alcançáveis do controle "Créditos adicionais desejados": somas acumuladas das datas elegíveis em ordem
- * cronológica. Só datas inteiras (01 §20: Créditos por data), nunca fração; cada meta é um conjunto real de datas.
- */
-export function depositStops(eligible) {
-  const ordered = [...eligible].sort((a, b) => a.night.localeCompare(b.night));
-  const stops = [{ credits: 0, nights: [] }];
-  for (const date of ordered) {
-    const prev = stops.at(-1);
-    stops.push({ credits: prev.credits + date.credits, nights: [...prev.nights, date.night] });
-  }
-  return stops;
-}
-
 /** Fonte única de verdade: o conjunto de datas selecionadas. O controle mostra a soma; mover o controle escolhe a meta. */
 export function creditsOfSelection(eligible, nights) {
   return nights.reduce((sum, night) => {
@@ -142,10 +128,59 @@ export function creditsOfSelection(eligible, nights) {
     return sum + date.credits;
   }, 0);
 }
-export function selectionForTarget(eligible, target) {
-  const stop = depositStops(eligible).find((s) => s.credits === target);
-  if (!stop) throw new Error(`Meta não alcançável com datas inteiras: ${target}`);
-  return stop.nights;
+
+/** Limite da enumeração direta: o calendário do depósito mostra poucas datas elegíveis por vez. */
+const MAX_ELIGIBLE_DATES = 16;
+
+/**
+ * Todas as seleções possíveis de datas elegíveis inteiras (subconjuntos), cada uma com seus Créditos. Para poucas datas
+ * a enumeração direta é exata e fácil de testar; acima do limite, recusa em vez de presumir.
+ */
+function selectionsOf(eligible) {
+  if (eligible.length > MAX_ELIGIBLE_DATES)
+    throw new Error(`Datas elegíveis demais para enumerar: ${eligible.length}`);
+  const all = [];
+  for (let mask = 0; mask < 1 << eligible.length; mask++) {
+    const nights = eligible
+      .filter((_, i) => mask & (1 << i))
+      .map((d) => d.night)
+      .sort();
+    all.push({ nights, credits: creditsOfSelection(eligible, nights) });
+  }
+  return all;
+}
+
+/**
+ * Sugestão determinística para uma meta, usada quando é o controle que se move: entre as seleções com exatamente
+ * aquela soma, (1) a que mais preserva as datas já escolhidas; (2) a com menos datas; (3) a com as datas mais cedo.
+ * A escolha explícita do Titular no calendário sempre prevalece: o calendário não passa por aqui.
+ */
+export function selectionForTarget(eligible, target, current = []) {
+  const candidates = selectionsOf(eligible).filter((s) => s.credits === target);
+  if (!candidates.length) throw new Error(`Meta não alcançável com datas inteiras: ${target}`);
+  const kept = (s) => s.nights.filter((n) => current.includes(n)).length;
+  candidates.sort(
+    (a, b) =>
+      kept(b) - kept(a) ||
+      a.nights.length - b.nights.length ||
+      a.nights.join().localeCompare(b.nights.join()),
+  );
+  return candidates[0].nights;
+}
+
+/**
+ * Metas do controle "Créditos adicionais desejados": todas as somas distintas de datas elegíveis inteiras (01 §20:
+ * Créditos por data; nunca fração), com a seleção sugerida para cada uma. No cenário: 0, 14.000, 16.000, 30.000,
+ * 32.000 e 46.000.
+ */
+export function depositStops(eligible) {
+  const totals = [...new Set(selectionsOf(eligible).map((s) => s.credits))].sort((a, b) => a - b);
+  return totals.map((credits) => ({ credits, nights: selectionForTarget(eligible, credits) }));
+}
+
+/** Menor meta que cobre o que falta para a reserva; null se nem todas as datas elegíveis bastam. */
+export function minimumCovering(eligible, shortfall) {
+  return depositStops(eligible).find((s) => s.credits > 0 && s.credits >= shortfall) ?? null;
 }
 
 /** PD-002 — noites de [entrada, saída): a data de saída não é usada. Datas civis 'AAAA-MM-DD'. */

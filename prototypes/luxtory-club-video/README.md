@@ -10,6 +10,7 @@
 | B | Luxchange Direct (14 s) e Luxplus (15,5 s) sobre a mesma arquitetura | aprovada (auditoria de 2026-11-14) |
 | C | Pré-produção do comercial de lançamento (`filme/ROTEIRO.md`, `filme/PRODUCAO.md`, v3), assinatura só da marca (6 s), painel dos Créditos (C04, 11 s) e prova de montagem da Request (`filme/prova/`, ≈ 19,8 s, placeholders) | em avaliação |
 | UX | Revisão de UX e comercial (2026-11-15): passo de Créditos e depósito na Request (35 s) e no Direct (16,7 s), "Taxa de intermediação", cartões sem selo nem jargão, Luxplus e Créditos harmonizados, prova de 24,8 s | em avaliação |
+| v5 | Auditoria final de UX e identidade (2026-11-15): todas as combinações do controle de Créditos, depósito uma única vez (C04 conceitual, 10,5 s), Satori/Azzura/Olivar Home, placas por imóvel, calendário do 9:16 na área segura, prova de 26,4 s | em avaliação |
 | D | Montagem e finalização | depende de footage, voz, trilha e aprovações |
 
 ## Ver
@@ -56,7 +57,8 @@ muda a cadência e `--realtime` refaz a comparação com captura em tempo real.
 | `stage.js` | Motor de tempo: o estado de cada quadro é função de `t`; tokens de movimento do DS |
 | `sequence-request.js` · `sequence-direct.js` · `sequence-luxplus.js` | Coreografia de cada modalidade nos dois formatos (cartões, instantes, marcas) e seu `qa` (pontos de verificação e de captura) |
 | `sequence-assinatura.js` | Assinatura só da marca: logo oficial do manifest e a frase (6 s) |
-| `sequence-creditos.js` | Painel editorial dos Créditos: Carteira + novo depósito = um só saldo → Request ou Direct (números de `data.js`) |
+| `sequence-creditos.js` | Painel editorial dos Créditos, conceitual e sem números: Créditos que você já tem + novos Créditos de datas depositadas = um só saldo → Request ou Direct |
+| `placas.mjs` · `placas-caminhos.js` | Placas internas de teste por Second Home (Azzura à noite, Olivar de tarde e de noite), geradas com ffmpeg em `out/placas/` · caminhos usados pelas sequências |
 | `sequence-prova.js` · `filme/prova/edl.js` · `filme/prova/montar.mjs` | Prova de montagem: camada editorial (título, ressalva, etiqueta interna) · EDL em dados (planos, trechos de interface, textos, narração-guia, efeitos) · montagem e validação com ffmpeg |
 | `shared.js` | Peças comuns: ícones, calendário do DS, toque, faixa de noites |
 | `credits-step.js` | Passo de Créditos da Request e do Direct: necessários × saldo, controle "Créditos adicionais desejados", calendário do Direito de Uso (acordeão), depósito confirmado; textos de Owner e Co-Owner |
@@ -101,8 +103,8 @@ muda a cadência e `--realtime` refaz a comparação com captura em tempo real.
 - Lista de revalidação, cartão de Créditos com barra, visões "do Titular detentor" e "de quem solicitou".
 - 9:16 com composição própria: um cartão por vez quando dois não cabem; nem tudo do 16:9 aparece no vertical.
 
-**Dados fictícios** (`FICTITIOUS` em `data.js`, horário de Brasília): Second Homes "Mirante · Serra", "Varanda ·
-Litoral", "Pátio · Campo"; solicitante "Helena", Co-Owner; PRLs, lotes e instantes sintéticos. Valores monetários
+**Dados fictícios** (`FICTITIOUS` em `data.js`, horário de Brasília): Second Homes *Satori Home* (Serra), *Azzura
+Home* (Litoral) e *Olivar Home* (Campo) — até a v4, "Mirante · Serra", "Varanda · Litoral" e "Pátio · Campo"; solicitante "Helena", Co-Owner; PRLs, lotes e instantes sintéticos. Valores monetários
 são **ilustrativos** (PRL fictício). O Luxplus usa um valor ilustrativo de estadia **não derivado** de PRL × (1 −
 desconto), porque o desconto aplicável não está publicado (BR-244, P-5) e presumir 0% seria inventar um parâmetro
 (TECH-001). A tela não exibe PRL, desconto nem condição comercial; o princípio canônico (PRL como referência) fica nesta
@@ -111,10 +113,10 @@ documentação, não no vídeo.
 | Instante | Fato fictício derivado |
 |---|---|
 | Lotes de Helena | L-0001 30.000 (depósito, 18/01/2027 09:30, vence 18/01/2029 09:30) · L-0002 18.000 (cedente de Request, 22/02/2027 16:05, vence 22/02/2029 16:05) · L-0003 46.000 (depósito, 12/04/2027 10:02, vence 12/04/2029 10:02) |
-| Envio 12/04/2027 10:06 | Varanda · Litoral, 04/06 a 07/06/2027 (3 noites) · PRL R$ 5.500,00 · 55.000 em Garantia (30.000 + 18.000 + 7.000) · Fee R$ 550,00 · expira 13/04/2027 10:06 |
+| Envio 12/04/2027 10:06 | Azzura Home, 04/06 a 07/06/2027 (3 noites) · PRL R$ 5.500,00 · 55.000 em Garantia (30.000 + 18.000 + 7.000) · Fee R$ 550,00 · expira 13/04/2027 10:06 |
 | Aceite 12/04/2027 10:14 | Request Aceita + Reserva Confirmada (Luxchange Request) · 55.000 consumidos · cedente recebe L-0104, 55.000, vence 12/04/2029 10:14 |
-| Direct 12/04/2027 10:20 | Pátio · Campo, 28/05 a 29/05/2027 (1 noite) · PRL R$ 1.150,00 · 11.500 Créditos do L-0003 (FEFO) · Fee R$ 120,00 (mínimo: 10% seria R$ 115,00) · Créditos 39.000 → 27.500 |
-| Luxplus 12/04/2027 10:24 | Pátio · Campo, 13/08 a 15/08/2027 (2 noites) · valor da estadia R$ 2.480,00 ilustrativo, em dinheiro · Créditos inalterados (27.500) |
+| Direct 12/04/2027 10:20 | Olivar Home, 28/05 a 29/05/2027 (1 noite) · PRL R$ 1.150,00 · 11.500 Créditos do L-0003 (FEFO) · Fee R$ 120,00 (mínimo: 10% seria R$ 115,00) · Créditos 39.000 → 27.500 |
+| Luxplus 12/04/2027 10:24 | Olivar Home, 13/08 a 15/08/2027 (2 noites) · valor da estadia R$ 2.480,00 ilustrativo, em dinheiro · Créditos inalterados (27.500) |
 
 ## Coreografia (marcas de tempo)
 
@@ -142,7 +144,8 @@ textos diferentes; `check.mjs` varre os 750 quadros de cada formato.
   quadros inteiros com alfa — mover ou espelhar a camada na montagem resolve o enquadramento sem nova variante.
 - Escolher imagens com espaço negativo do lado do cartão (16:9: terço direito; 9:16: faixa central e inferior). Na placa
   clara de teste o cartão da direita encobre as pessoas na piscina: é caso de reposicionar a camada ou trocar a foto.
-- Manter a mesma Second Home ao longo da jornada (o nome nos cartões é "Varanda · Litoral" do início ao fim).
+- Manter a mesma Second Home ao longo da jornada (o nome nos cartões é "Azzura Home" do início ao fim, com "Litoral ·
+  Second Home Luxtory" em segundo plano).
 - Cartão `deep` sobre céu azul escuro perde separação (só a hairline Warm Sand marca a borda): preferir zonas mais
   claras da imagem atrás do cartão.
 - Fotos ilustrativas nunca como prova de imóvel real disponível: identificar como imagem ilustrativa e não usar marca de
@@ -195,10 +198,11 @@ mesmos bytes da aprovada: 14 quadros de referência idênticos por sha256.
 | Cor Deep `#003D52` no cartão (ProRes) · fora do cartão | (0,61–62,82,255) · alfa 0 | (0,61,82,255) · alfa 0 | (0,61,82,255) |
 | Transição de entrada da reserva | nenhum quadro repetido | nenhum quadro repetido | — |
 
-Placa de teste de Direct e Luxplus: a mesma imagem de interior (espaço negativo, sem pessoas) para *Pátio · Campo* —
-continuidade de uma só Second Home nas duas modalidades. Só teste interno. Correção da v2: a K05 é do anteprojeto
-Kaizen e **não** representa Pátio · Campo; a referência de cada imóvel fictício passa a ser a imagem-chave mestra
-gerada e aprovada (`filme/PRODUCAO.md` §2).
+Placa de teste de Direct e Luxplus (até a v4): a mesma imagem de interior (espaço negativo, sem pessoas) para o imóvel
+do campo — continuidade de uma só Second Home nas duas modalidades. Só teste interno. Correção da v2: a K05 é do
+anteprojeto Kaizen e **não** representa o imóvel do campo; a referência de cada imóvel fictício passa a ser a
+imagem-chave mestra gerada e aprovada (`filme/PRODUCAO.md` §2). Na v5, Direct e Luxplus usam campos neutros da *Olivar
+Home* (`placas.mjs`).
 
 ## Prova de montagem (Etapa C v2)
 
@@ -211,7 +215,7 @@ Monta um trecho da Request como no master (C05, C07, C08, C09 de `filme/ROTEIRO.
 sem reanimar) → camada editorial do DS (`?seq=prova`) → fade. Áudio com efeitos e ambientes sintéticos gerados aqui,
 loudness medido (−20 LUFS só com efeitos; −14 LUFS com voz) e true peak ≤ −1 dBTP.
 
-- **Placeholders identificados:** foto provisória do site para Varanda · Litoral e um fundo neutro para S09; etiqueta
+- **Placeholders identificados:** foto provisória do site para a Azzura Home e um fundo neutro para S09; etiqueta
   "Prova interna · imagens e sons provisórios" em todos os quadros. Não é o filme.
 - **Pronta para receber os assets:** footage aprovado em `out/entrada/<plano>.mp4|.mov` (ex.: `S06.mp4`), voz em
   `out/entrada/vo.wav` e trilha em `out/entrada/trilha.wav`, alinhadas ao tempo da prova. O script usa o arquivo no
@@ -258,12 +262,12 @@ Exportar não é publicar: a publicação depende da verificação de prontidão
 1. **Créditos necessários × saldo válido disponível**, e quanto falta. Uma decisão: continuar com o saldo (Direct:
    39.000 para 11.500) ou complementar (Request: 48.000 para 55.000, faltam 7.000).
 2. **Complementação opcional:**
-   - o controle "Créditos adicionais desejados" só oferece metas possíveis com datas inteiras (0, 16.000, 32.000,
-     46.000; `rules.js#depositStops`);
+   - o controle "Créditos adicionais desejados" só oferece metas possíveis com datas inteiras (na v4, por erro, só as
+     somas acumuladas 0, 16.000, 32.000 e 46.000; corrigido na v5 para todas as combinações, abaixo);
    - o calendário navegável "Selecionar datas do meu Direito de Uso" fica num acordeão e mostra elegível, indisponível
      (menos de 14 dias), comprometida e não reservada, com a classificação do mês e a legenda;
-   - os dois têm uma fonte única de verdade: as datas selecionadas. O controle leva a 16.000 (14/05); os toques em 15 e
-     16/05, a 46.000.
+   - os dois têm uma fonte única de verdade: as datas selecionadas. Na v5, o controle leva a 14.000 (16/05, o mínimo);
+     os toques em 14/05 e 15/05, a 30.000 e 46.000.
 3. **Depósito confirmado** como operação própria: 46.000 novos Créditos, saldo de 94.000. Só então vem a revisão.
 
 Depois do depósito: Taxa de intermediação de R$ 550,00, envio, Garantia de 55.000 (30.000 + 18.000 + 7.000 do lote novo,
@@ -284,6 +288,87 @@ comerciais e jurídicos.
 **Versões anteriores.** Os entregáveis do commit `2e6e68c` (vídeos, ProRes, stills, relatórios e evidências) e os
 quadros legados da Etapa A estão em `out/referencia-2e6e68c/`, só como referência de regressão. Os masters atuais
 mantêm os mesmos nomes em `out/etapa-a/` e `out/prova/`.
+
+## Auditoria final de UX e identidade (v5, 2026-11-15)
+
+**Combinações do controle.** As metas são todas as somas distintas de datas elegíveis inteiras (`rules.js#depositStops`,
+por enumeração exata dos subconjuntos; recusa acima de 16 datas em vez de presumir). No cenário (14/05 = 16.000,
+15/05 = 16.000, 16/05 = 14.000): **0, 14.000, 16.000, 30.000, 32.000 e 46.000**. O mínimo que cobre os 7.000 que faltam
+é 14.000, com 16/05 (`rules.js#minimumCovering`, `dep.minimum`).
+
+**Sugestão determinística** (`rules.js#selectionForTarget`), usada só quando é o controle que se move. Entre as seleções
+com exatamente aquela soma, vence:
+
+1. a que mais preserva as datas já escolhidas;
+2. a com menos datas;
+3. a com as datas mais cedo.
+
+A escolha explícita do Titular no calendário sempre prevalece: o calendário não passa pela sugestão. Exemplos testados:
+de [] para 30.000 → 14 e 16/05; de [15/05] para 30.000 → 15 e 16/05; 32.000 → 14 e 15/05; e de volta de 46.000 para
+14.000 → 16/05.
+
+**Coreografia da Request.** Controle a 14.000 (16/05, o mínimo) → toque em 14/05 (30.000) → toque em 15/05 (46.000),
+"para as próximas experiências". A dica no cartão diz: "Mínimo para esta reserva: 14.000 (1 data). O que passar disso
+fica no saldo para as próximas experiências." A trilha tem uma marca por meta e a escala mostra só 0 e o máximo.
+Cada valor troca sem crossfade (saída de 280 ms + entrada de 480 ms), então os toques ficam espaçados para que cada meta
+seja lida. Tempo plenamente visível, medido no navegador:
+
+| Meta | 16:9 | 9:16 |
+|---|---|---|
+| 14.000 | 0,93 s | 2,57 s |
+| 30.000 | 0,83 s (antes ≈ 0,04 s) | 0,77 s (antes nunca chegava à opacidade plena) |
+| 46.000 | 1,47 s | 1,07 s |
+
+O valor final segue visível até a saída do cartão. Tempos: controle em 10,7 s / 9,5 s; toques em 12,2 e 13,6 s /
+12,65 e 14,0 s.
+
+**O controle é coreografado para o vídeo.** No protótipo ele é `role="slider"` com `aria-valuemin/max/now/valuetext`,
+mas `tabindex="-1"`: não recebe foco nem teclado, porque o filme não é interativo e o valor vem da linha do tempo.
+Especificação para o produto, quando existir:
+
+- foco visível do DS (`:focus-visible`), alvo mínimo de toque;
+- setas e Page Up/Page Down andam para a meta alcançável anterior ou seguinte (nunca valores intermediários);
+- Home vai a 0 e End, ao máximo;
+- `aria-valuetext` com Créditos e datas ("30.000 Créditos, 14 e 16 de maio");
+- arrastar solta na meta mais próxima;
+- os dias do calendário são botões com `aria-pressed` e o estado no nome acessível (no protótipo, só rótulos).
+
+A ausência de violações detectadas pelo axe não substitui essa validação de interação, que fica para o produto.
+
+**Depósito uma única vez.** O C04 (`sequence-creditos.js`) passa a ser conceitual e sem números: "Créditos válidos que
+você já tem" + "Novos Créditos, de datas elegíveis depositadas" = "Um só saldo, de lotes diferentes", 10,5 s. O saldo de
+Helena (48.000 + 46.000 = 94.000) se forma só na Request. O teste garante que o markup do C04 não tem dígitos nem
+"Helena".
+
+**Second Homes.** *Satori Home* (Serra), *Azzura Home* (Litoral) e *Olivar Home* (Campo), propostas sujeitas à
+validação comercial e de marca. O nome é o protagonista e a região vem em segundo plano ("Litoral · Second Home
+Luxtory"); os cartões não repetem "Home Edition". Os identificadores internos (`mirante`, `varanda`, `patio`) não
+mudam.
+
+**Placas por imóvel** (`placas.mjs`, `out/placas/`, fora do Git):
+
+| Sequência | Placa |
+|---|---|
+| Request | Azzura: litoral (clara) e a mesma foto escurecida (escura) |
+| Direct | Olivar: campo neutro de tarde |
+| Luxplus | Olivar: campo neutro de noite |
+| Créditos | Satori: pedra (`luxury-property-facade-hero.jpg`) |
+
+```bash
+node prototypes/luxtory-club-video/placas.mjs --force
+```
+
+`capture.mjs` gera as que faltam antes de capturar.
+
+**Estados e área segura.**
+
+- "Selecionada" ganha um traço de check, além da cor. O ponto marca a reserva, e o riscado marca o que está indisponível
+  ou comprometido.
+- No 9:16, o calendário do depósito começa a 8,5% da altura (antes 3,6%), sem reduzir a tipografia do calendário: o
+  resumo do acordeão cabe em uma linha e a legenda passa a três colunas.
+- `check.mjs` reprova qualquer instante do 9:16 com conteúdo acima de 8%.
+
+**Versões anteriores.** Os entregáveis do commit `f5810a6` (v4) estão em `out/referencia-f5810a6/`, com os mesmos nomes.
 
 ## Integração na pós (Etapa A)
 

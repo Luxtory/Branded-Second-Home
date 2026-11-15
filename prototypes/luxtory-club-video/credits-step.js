@@ -116,17 +116,23 @@ export function selectionStates(dep, selections, needed) {
 const swapSpans = (prefix, values) =>
   values.map((v, i) => `<span id="${prefix}-${i}">${v}</span>`).join('');
 
-/** Cartão 2a — controle "Créditos adicionais desejados", saldo projetado e saldo após o uso. */
+/**
+ * Cartão 2a — controle "Créditos adicionais desejados", saldo projetado e saldo após o uso. Neste protótipo o controle
+ * é coreografado para o vídeo (role="slider" fora da ordem de foco, valores acessíveis atualizados pela linha do tempo);
+ * não é um controle interativo. A lógica que ele representa (metas, sugestão, sincronia) está em rules.js e é testada.
+ * No produto: foco visível do DS; setas e Page Up/Down andam entre as metas alcançáveis; Home/End vão a 0 e ao máximo.
+ */
 export function topupCard(dep, states) {
   const max = dep.stops.at(-1).credits;
   const after = (st) =>
     st.afterUse >= 0 ? credits(st.afterUse) : `faltam ${credits(-st.afterUse)}`;
-  const stops = dep.stops
-    .map(
-      (s) =>
-        `<span class="demo-slider__tick" style="--at: ${s.credits / max}"><span>${credits(s.credits)}</span></span>`,
-    )
+  // Uma marca por meta alcançável na trilha; rótulos só nas pontas (as metas próximas não se atropelam).
+  const marks = dep.stops
+    .map((s) => `<span class="demo-slider__stop" style="--at: ${s.credits / max}"></span>`)
     .join('');
+  const hint = dep.minimum
+    ? `Mínimo para esta reserva: ${credits(dep.minimum.credits)} (${dep.minimum.nights.length} ${dep.minimum.nights.length === 1 ? 'data' : 'datas'}). O que passar disso fica no saldo para as próximas experiências.`
+    : 'Valores possíveis com datas inteiras.';
   return `
     <section class="demo-card demo-card--ctx" id="topup" data-surface="deep" aria-label="Complementar saldo">
       <p class="lx-eyebrow">Complementar saldo</p>
@@ -141,11 +147,12 @@ export function topupCard(dep, states) {
         <div class="demo-slider" id="topup-slider" role="slider" tabindex="-1" aria-labelledby="topup-label" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${states[0].added}" aria-valuetext="${credits(states[0].added)} Créditos" style="--pos: 0; --need: ${dep.shortfall / max}">
           <span class="demo-slider__track"></span>
           <span class="demo-slider__fill"></span>
+          ${marks}
           ${dep.shortfall ? '<span class="demo-slider__need" aria-hidden="true"></span>' : ''}
           <span class="demo-slider__thumb"></span>
         </div>
-        <div class="demo-slider-scale" aria-hidden="true">${stops}</div>
-        <p class="demo-hint">Só valores possíveis com datas inteiras${dep.shortfall ? ` · faltam ${credits(dep.shortfall)} para esta reserva` : ''}</p>
+        <div class="demo-slider-scale" aria-hidden="true"><span>0</span><span>${credits(max)}</span></div>
+        <p class="demo-hint">${hint}</p>
       </div>
       <ul class="demo-picks" aria-label="Créditos por data elegível">
         ${dep.eligible.map((d) => `<li data-pick="${d.night}">${icon('i-check')}<span>${civilFull(d.night).slice(0, 5)}</span><span>${credits(d.credits)}</span></li>`).join('')}

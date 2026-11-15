@@ -1,4 +1,4 @@
-# Filme Luxtory Club: roteiro, storyboard e direção (v4, UX de Créditos e revisão comercial · proposta para aprovação)
+# Filme Luxtory Club: roteiro, storyboard e direção (v5, auditoria de UX e identidade das Second Homes · proposta para aprovação)
 
 > **Pré-produção do comercial de lançamento.** O filme apresenta os mecanismos do Luxtory Club (Luxchange Request,
 > Luxchange Direct, Luxplus) como possibilidades reais do modelo, para ser publicado só depois da verificação de
@@ -27,7 +27,10 @@ a mais, não uma exigência a cada reserva. A data nunca paga a reserva diretame
 capacidade entra no Inventário Luxtory (REQ-060, BR-202); depois, os Créditos são usados na Request ou no Direct, com a
 Taxa de intermediação (monetária) de cada modalidade. O Luxplus é a alternativa em dinheiro, que não consome Créditos.
 
-O cenário da Helena mostra isso sem nenhum número novo:
+**Os números aparecem uma única vez.** O painel de C04 explica a lógica sem números: Créditos que você já tem + novos
+Créditos de datas depositadas = um só saldo, de lotes diferentes. O saldo de Helena se forma só na Request (C05b–C06):
+saldo de 48.000, necessidade de 55.000, complementação, depósito de 46.000, saldo de 94.000 e uso de 55.000. O cenário
+completo, para referência da produção (a tabela não vai para a tela):
 
 | Momento | Créditos |
 |---|---|
@@ -43,10 +46,15 @@ O cenário da Helena mostra isso sem nenhum número novo:
 Direct mostram os Créditos necessários e o saldo válido disponível, com uma decisão por momento:
 
 - **Request (saldo insuficiente):** faltam 7.000. Helena escolhe "Complementar saldo". O controle "Créditos adicionais
-  desejados" só oferece metas possíveis com datas inteiras (16.000, 32.000, 46.000), e o calendário "Selecionar datas
-  do meu Direito de Uso" mostra o que é elegível. Os dois andam juntos. Ela deposita 14, 15 e 16/05 (46.000) e, com o
-  depósito confirmado, segue para a revisão com 94.000. A meta mínima de 7.000 não existe como fração de data: a menor
-  combinação real já passa dela, e o excedente fica no saldo (39.000 depois da Request).
+  desejados" só oferece metas possíveis com datas inteiras: todas as combinações das datas elegíveis (0, 14.000, 16.000,
+  30.000, 32.000 e 46.000). O calendário "Selecionar datas do meu Direito de Uso" mostra o que é elegível, e os dois
+  andam juntos. A coreografia:
+  1. o controle vai a **14.000**, o mínimo que cobre os 7.000 (16/05, uma data);
+  2. Helena toca 14/05 no calendário (**30.000**);
+  3. toca 15/05 (**46.000**), para manter Créditos disponíveis para as próximas experiências.
+
+  Com o depósito confirmado, segue para a revisão com 94.000. A meta de 7.000 não existe como fração de data: o
+  excedente fica no saldo (39.000 depois da Request), e é com ele que o Direct acontece.
 - **Direct (saldo suficiente):** 39.000 para 11.500. A ação principal é "Continuar com meu saldo"; a complementação fica
   disponível, fechada.
 - **Luxplus:** em dinheiro, sem controle, depósito ou consumo de Créditos.
@@ -55,12 +63,16 @@ Na tela, a taxa monetária da Request e do Direct se chama **Taxa de intermedia�
 o Luxchange Fee, 01 §24). O nome ainda precisa ser harmonizado com os documentos comerciais e jurídicos antes do
 lançamento.
 
-**Três possibilidades, não uma viagem.** Helena, Co-Owner de *Mirante · Serra*, é o fio humano do filme. Cada
+**Três possibilidades, não uma viagem.** Helena, Co-Owner da *Satori Home* (Serra), é o fio humano do filme. Cada
 modalidade é uma forma possível de usar o Club, com o seu título e o seu lugar:
 
-- Request em *Varanda · Litoral*;
-- Direct em *Pátio · Campo*, numa tarde de outono, com três gerações da família;
-- Luxplus em *Pátio · Campo*, numa estadia separada de inverno, com Helena e o parceiro.
+- Request na *Azzura Home* (Litoral);
+- Direct na *Olivar Home* (Campo), numa tarde de outono, com três gerações da família;
+- Luxplus na *Olivar Home*, numa estadia separada de inverno, com Helena e o parceiro.
+
+**Nomes das Second Homes.** *Satori Home*, *Azzura Home* e *Olivar Home* são propostas, sujeitas à validação comercial
+e de marca; o filme não afirma exclusividade nem disponibilidade dos nomes. O nome é o protagonista e a região vem em
+segundo plano ("Azzura Home / Litoral · Second Home Luxtory"); os cartões não repetem "Home Edition".
 
 As datas aprovadas não mudam: Direct em maio, Request em junho, Luxplus em agosto. A montagem não sugere sequência
 temporal entre elas:
@@ -82,20 +94,22 @@ Cada Second Home tem uma bíblia de continuidade e uma imagem-chave mestra (`PRO
 As três exigem Membership vigente e nenhuma garante disponibilidade. No Luxplus, o preço tem o PRL do período como
 referência (BR-243, REQ-070). O filme não mostra PRL, desconto nem condição comercial: o valor em tela é ilustrativo.
 
-## 2. Estrutura do master 16:9 (≈ 106 s)
+## 2. Estrutura do master 16:9 (≈ 105,5 s)
 
 | Sequência | Tempo | Dur. | Função |
 |---|---|---|---|
-| Abertura | 0:00–0:09 | 9 s | desejo: arquitetura, paisagem e família em Mirante · Serra |
-| Club e Créditos | 0:09–0:24 | 15 s | a Second Home como ponto de partida; Créditos que já tem + novo depósito = um só saldo |
-| Luxchange Request | 0:24–0:58 | 34 s | outro Titular; Créditos que faltam completados por depósito; Taxa de intermediação; Garantia; aceite; mesma operação |
-| Luxchange Direct | 0:58–1:15 | 17 s | Inventário Luxtory; saldo suficiente; sem aceite de outro Titular |
-| Luxplus | 1:15–1:32 | 17 s | noites adicionais em dinheiro, sem Créditos |
-| Celebração | 1:32–1:40 | 8 s | viver: os três lugares e as pessoas |
-| Assinatura | 1:40–1:46 | 6 s | só a marca: logo oficial e a frase de assinatura |
+| Abertura | 0:00–0:09 | 9 s | desejo: arquitetura, paisagem e família na Satori Home |
+| Club e Créditos | 0:09–0:23,5 | 14,5 s | a Second Home como ponto de partida; a liberdade dos Créditos, sem números |
+| Luxchange Request | 0:23,5–0:57,5 | 34 s | outro Titular; saldo, necessidade, complemento por depósito (uma única vez no filme); Taxa de intermediação; Garantia; aceite; mesma operação |
+| Luxchange Direct | 0:57,5–1:14,5 | 17 s | Inventário Luxtory; só o saldo que já existe; sem aceite de outro Titular |
+| Luxplus | 1:14,5–1:31,5 | 17 s | noites adicionais em dinheiro, sem Créditos |
+| Celebração | 1:31,5–1:39,5 | 8 s | viver: os três lugares e as pessoas |
+| Assinatura | 1:39,5–1:45,5 | 6 s | só a marca: logo oficial e a frase de assinatura |
 
-A Request cresce porque passa a mostrar a novidade principal, a complementação do saldo. O filme fica em ≈ 106 s,
-dentro da faixa de 100–120 s.
+Narrativa única: sua Second Home → escolha de outra estadia → Créditos necessários → saldo existente → complemento
+opcional → depósito → Request → aceite → confirmação. Depois, o Direct usa o saldo que ficou; depois, o Luxplus, em
+dinheiro. A Request concentra a novidade principal, a complementação do saldo; o C04 só a contextualiza, sem antecipar
+números, e fica 0,5 s mais curto. O filme fica em ≈ 105,5 s, dentro da faixa de 100–120 s.
 
 Regras de montagem:
 
@@ -123,31 +137,31 @@ fotografia em Pure White (Newsreader no título, Hanken no descritor), com a hai
 
 | Cena | Tempo | Imagem | Interface | Texto em tela | Narração | Som | Transição |
 |---|---|---|---|---|---|---|---|
-| C01 | 0:00–0:04 | S01 vale ao amanhecer, Mirante · Serra ao longe | — | — | — | trilha entra (piano), vento | — |
-| C02 | 0:04–0:09 | S02 Helena e a família na varanda; S03 detalhe de luz no interior | — | — | "Tudo começa na sua Second Home." | trilha, passos na madeira | corte no movimento |
+| C01 | 0:00–0:04 | S01 vale ao amanhecer, a Satori Home ao longe | — | — | — | trilha entra (piano), vento | — |
+| C02 | 0:04–0:09 | S02 Helena e a família no terraço de pedra; S03 detalhe de luz no interior | — | — | "Tudo começa na sua Second Home." | trilha, passos na madeira | corte no movimento |
 | C03 | 0:09–0:13 | S04 Helena com o celular, horizonte ao fundo | — | **Luxtory Club** | "Mas ela pode ser o ponto de partida — não o limite." | toque de UI suave | dissolve 8 quadros |
-| C04 | 0:13–0:24 | S05 terraço de Mirante · Serra e o vale; Helena no terço direito | creditos 0–11: painel à esquerda (Carteira 48.000 → + 46.000 → 94.000 → Request ou Direct, com Membership vigente) | supers: 0:16,6–0:19,8 *No Co-Owner, só data já reservada é cedida.* · 0:20,1–0:23,7 *Créditos não são moeda, investimento nem garantia de disponibilidade.* | "Com Membership vigente, você usa os Créditos válidos que já tem, deposita datas elegíveis para gerar novos — ou combina os dois para viver outras Second Homes." | um toque macio por linha do saldo; pulso da trilha | corte |
-| C05 | 0:24–0:31 | S06 Varanda · Litoral, plano aberto ao entardecer | request 0,0–4,6, a partir de 0:26,4 | **Luxchange Request** · noites de outro Titular · Créditos + Taxa de intermediação (0,3–2,4 s); faixa inferior: *Imagens, interfaces e valores ilustrativos.* | "Quando as noites que você deseja estão com outro Titular, você envia uma Request." | toques nas datas | corte |
-| C05b | 0:31–0:35 | S04 (segunda parte) Helena em Mirante · Serra com o celular | request 6,0–10,0 (Créditos necessários 55.000 × saldo 48.000, faltam 7.000 → Complementar saldo → abril → maio) | — | "Se o saldo não bastar, você completa com datas do seu Direito de Uso." | toques | corte |
-| C05c | 0:35–0:40 | S03 (segunda parte) luz da manhã no interior de Mirante | request 10,6–15,6 (controle → 16.000 com 14/05; 15 e 16/05 → 46.000; saldo projetado 94.000; depositar) | — | — | toques; um tic por data | corte |
-| C06 | 0:40–0:44 | S07 detalhe da piscina de borda infinita | request 17,0–21,0 (depósito confirmado, 94.000 → revisão, Taxa de intermediação R$ 550,00, política, pagar) | — | "Seus Créditos ficam em Garantia, a Taxa de intermediação é paga no envio…" | tic do depósito; toque | corte |
-| C07 | 0:44–0:47 | S08 varanda vazia, luz caindo | request 21,4–24,4 (Pendente + Garantia de três lotes) | — | "…e as noites não ficam bloqueadas enquanto o Titular decide." | tic suave, ambiente do mar | corte |
-| C08 | 0:47–0:51,5 | S09 o outro Titular recebe a solicitação no próprio apartamento, ao anoitecer | request 26,7–31,2 (Request recebida, Aceitar, verificações) | O outro Titular recebe a solicitação (no cartão) | "Do outro lado, o Titular aceita." | toque em Aceitar, tics das verificações | corte no gesto |
-| C09 | 0:51,5–0:58 | S10 Helena chega à Varanda · Litoral | request 31,2–34,2, depois fade da interface | — | "Com o aceite, tudo é verificado de novo — e, estando tudo certo, a reserva se confirma na mesma operação." | acorde de resolução, mar | a interface sai e o plano respira |
-| C10 | 0:58–1:03 | S11 Pátio · Campo, pátio central numa tarde de outono | direct 0,0–2,6, a partir de 1:00,4 | **Luxchange Direct** · noites do Inventário Luxtory · Créditos + Taxa de intermediação (0,3–2,4 s) | "Se as noites já fazem parte do Inventário Luxtory, o caminho é mais curto…" | toques | dissolve de entrada no bloco (sem interface no lado anterior) |
-| C11 | 1:03–1:09 | S12 mesa posta sob a oliveira do pátio | direct 4,2–10,2 (saldo suficiente → continuar com meu saldo → revisão, Taxa de intermediação R$ 120,00, pagar) | — | "…o Luxchange Direct dispensa o aceite de outro Titular." | toque, tics | corte |
-| C12 | 1:09–1:15 | S13 três gerações no pátio, fim de tarde | direct 10,9–13,9 (verificações, Reserva confirmada, Créditos 39.000 → 27.500), depois fade | — | — | acorde curto | o plano respira |
-| C13 | 1:15–1:20 | S14 Pátio · Campo numa noite de inverno, fogo no pátio | luxplus 0,0–2,7, a partir de 1:17,3 | **Luxplus** · noites adicionais · em dinheiro, sem Créditos (0,3–2,4 s) | "Para viver novas experiências, há também o Luxplus…" | crepitar do fogo | dissolve de entrada no bloco |
-| C14 | 1:20–1:26 | S15 detalhe: taças, mãos, luz quente | luxplus 4,7–10,7 (valor da estadia, Créditos não usados, verificações) | — | "…noites adicionais do Inventário Luxtory, pagas em dinheiro, sem usar seus Créditos." | toque, tics | corte |
-| C15 | 1:26–1:32 | S16 manhã fria no pátio, mesma estadia | luxplus 10,6–13,6 (Reserva confirmada, Créditos inalterados), depois fade | — | — | trilha cresce | o plano respira |
-| C16 | 1:32–1:40 | S17 montagem: mar, serra, campo, risos (3 planos de cerca de 2,7 s) | — | — | "Mais lugares para viver com quem você ama." | trilha no ápice | cortes no tempo da trilha |
-| C17 | 1:40–1:46 | cartão Dark Moroccan Blue | assinatura 0–6 | logo vertical Warm Sand · *Seja protagonista de histórias extraordinárias.* | "Luxtory. Seja protagonista de histórias extraordinárias." | resolução final e 1 s de silêncio | dissolve da imagem para o cartão |
+| C04 | 0:13–0:23,5 | S05 terraço da Satori Home e o vale; Helena no terço direito | creditos 0–10,5: painel conceitual à esquerda (Créditos válidos que você já tem + novos Créditos, de datas elegíveis depositadas = um só saldo, de lotes diferentes; para Request ou Direct, com Membership vigente), sem números | supers: 0:16,0–0:19,2 *No Co-Owner, só data já reservada é cedida.* · 0:19,5–0:23,0 *Créditos não são moeda, investimento nem garantia de disponibilidade.* | "Com Membership vigente, você usa os Créditos válidos que já tem, deposita datas elegíveis para gerar novos — ou combina os dois para viver outras Second Homes." | um toque macio por linha do painel; pulso da trilha | corte |
+| C05 | 0:23,5–0:30,5 | S06 Azzura Home, plano aberto ao entardecer | request 0,0–4,6, a partir de 0:25,9 | **Luxchange Request** · noites de outro Titular · Créditos + Taxa de intermediação (0,3–2,4 s); faixa inferior: *Imagens, interfaces e valores ilustrativos.* | "Quando as noites que você deseja estão com outro Titular, você envia uma Request." | toques nas datas | corte |
+| C05b | 0:30,5–0:34,5 | S04 (segunda parte) Helena na Satori Home com o celular | request 6,0–10,0 (Créditos necessários 55.000 × saldo 48.000, faltam 7.000 → Complementar saldo → abril → maio) | — | "Se o saldo não bastar, você completa com datas do seu Direito de Uso — e pode depositar mais, para as próximas experiências." | toques | corte |
+| C05c | 0:34,5–0:39,5 | S03 (segunda parte) luz da manhã no interior da Satori Home | request 10,6–15,6 (controle → 14.000, o mínimo, com 16/05; toque em 14/05 → 30.000; toque em 15/05 → 46.000; saldo projetado 94.000; depositar) | — | (continuação) | toques; um tic por data | corte |
+| C06 | 0:39,5–0:43,5 | S07 detalhe da piscina de borda infinita da Azzura Home | request 17,0–21,0 (depósito confirmado, saldo 94.000 → revisão, Taxa de intermediação R$ 550,00, política, pagar) | — | "Seus Créditos ficam em Garantia, a Taxa de intermediação é paga no envio…" | tic do depósito; toque | corte |
+| C07 | 0:43,5–0:46,5 | S08 terraço sombreado vazio sob a pérgola, o mar ao fundo, luz caindo | request 21,4–24,4 (Pendente + Garantia de três lotes) | — | "…e as noites não ficam bloqueadas enquanto o Titular decide." | tic suave, ambiente do mar | corte |
+| C08 | 0:46,5–0:51 | S09 o outro Titular recebe a solicitação no próprio apartamento, ao anoitecer | request 26,7–31,2 (Request recebida, Aceitar, verificações) | O outro Titular recebe a solicitação (no cartão) | "Do outro lado, o Titular aceita." | toque em Aceitar, tics das verificações | corte no gesto |
+| C09 | 0:51–0:57,5 | S10 Helena chega à Azzura Home | request 31,2–34,2, depois fade da interface | — | "Com o aceite, tudo é verificado de novo — e, estando tudo certo, a reserva se confirma na mesma operação." | acorde de resolução, mar | a interface sai e o plano respira |
+| C10 | 0:57,5–1:02,5 | S11 Olivar Home, pátio central da casa térrea numa tarde de outono | direct 0,0–2,6, a partir de 0:59,9 | **Luxchange Direct** · noites do Inventário Luxtory · Créditos + Taxa de intermediação (0,3–2,4 s) | "Se as noites já fazem parte do Inventário Luxtory, o caminho é mais curto…" | toques | dissolve de entrada no bloco (sem interface no lado anterior) |
+| C11 | 1:02,5–1:08,5 | S12 mesa posta sob a oliveira do pátio | direct 4,2–10,2 (saldo suficiente, 39.000 para 11.500 → continuar com meu saldo → revisão, Taxa de intermediação R$ 120,00, pagar) | — | "…o Luxchange Direct dispensa o aceite de outro Titular." | toque, tics | corte |
+| C12 | 1:08,5–1:14,5 | S13 três gerações no pátio, fim de tarde | direct 10,9–13,9 (verificações, Reserva confirmada, Créditos 39.000 → 27.500), depois fade | — | — | acorde curto | o plano respira |
+| C13 | 1:14,5–1:19,5 | S14 Olivar Home numa noite de inverno, fogo no pátio | luxplus 0,0–2,7, a partir de 1:16,8 | **Luxplus** · noites adicionais · em dinheiro, sem Créditos (0,3–2,4 s) | "Para viver novas experiências, há também o Luxplus…" | crepitar do fogo | dissolve de entrada no bloco |
+| C14 | 1:19,5–1:25,5 | S15 detalhe: taças, mãos, luz quente | luxplus 4,7–10,7 (valor da estadia, Créditos não usados, verificações) | — | "…noites adicionais do Inventário Luxtory, pagas em dinheiro, sem usar seus Créditos." | toque, tics | corte |
+| C15 | 1:25,5–1:31,5 | S16 manhã fria no pátio, mesma estadia | luxplus 10,6–13,6 (Reserva confirmada, Créditos inalterados), depois fade | — | — | trilha cresce | o plano respira |
+| C16 | 1:31,5–1:39,5 | S17 montagem: mar (Azzura), serra (Satori), campo (Olivar), risos (3 planos de cerca de 2,7 s) | — | — | "Mais lugares para viver com quem você ama." | trilha no ápice | cortes no tempo da trilha |
+| C17 | 1:39,5–1:45,5 | cartão Dark Moroccan Blue | assinatura 0–6 | logo vertical Warm Sand · *Seja protagonista de histórias extraordinárias.* | "Luxtory. Seja protagonista de histórias extraordinárias." | resolução final e 1 s de silêncio | dissolve da imagem para o cartão |
 
 Os trechos têm a mesma duração das cenas: nenhum é acelerado nem desacelerado. C04 começa pelo quadro 0 do painel;
 C05, C10 e C13 começam a interface pelo quadro 0 da sequência, para que os cartões entrem com a própria animação do
 Core. Na complementação (C05b e C05c), o controle e o calendário aparecem juntos no 16:9; no 9:16, um cartão por vez.
 
-## 4. Narração (pt-BR, ≈ 155 palavras)
+## 4. Narração (pt-BR, ≈ 184 palavras)
 
 A voz é natural, acolhedora e segura, sem entusiasmo publicitário, com ritmo de conversa e pausas generosas. A narração
 não lê a interface: diz o que ela significa e deixa as confirmações acontecerem em silêncio, com a trilha.
@@ -156,18 +170,19 @@ não lê a interface: diz o que ela significa e deixa as confirmações acontece
 > **0:09** Mas ela pode ser o ponto de partida — não o limite.
 > **0:13,3** Com Membership vigente, você usa os Créditos válidos que já tem, deposita datas elegíveis para gerar novos
 > — ou combina os dois para viver outras Second Homes.
-> **0:24,4** Quando as noites que você deseja estão com outro Titular, você envia uma Request.
-> **0:31,3** Se o saldo não bastar, você completa com datas do seu Direito de Uso.
-> **0:40,4** Seus Créditos ficam em Garantia, a Taxa de intermediação é paga no envio — e as noites não ficam bloqueadas
+> **0:23,9** Quando as noites que você deseja estão com outro Titular, você envia uma Request.
+> **0:30,8** Se o saldo não bastar, você completa com datas do seu Direito de Uso — e pode depositar mais, para as
+> próximas experiências.
+> **0:39,9** Seus Créditos ficam em Garantia, a Taxa de intermediação é paga no envio — e as noites não ficam bloqueadas
 > enquanto o Titular decide.
-> **0:48,6** Do outro lado, o Titular aceita.
-> **0:51,5** Com o aceite, tudo é verificado de novo — e, estando tudo certo, a reserva se confirma na mesma operação.
-> **0:58,3** Se as noites já fazem parte do Inventário Luxtory, o caminho é mais curto: o Luxchange Direct dispensa o
+> **0:48,1** Do outro lado, o Titular aceita.
+> **0:51,0** Com o aceite, tudo é verificado de novo — e, estando tudo certo, a reserva se confirma na mesma operação.
+> **0:57,8** Se as noites já fazem parte do Inventário Luxtory, o caminho é mais curto: o Luxchange Direct dispensa o
 > aceite de outro Titular.
-> **1:15,3** Para viver novas experiências, há também o Luxplus: noites adicionais do Inventário Luxtory, pagas em
+> **1:14,8** Para viver novas experiências, há também o Luxplus: noites adicionais do Inventário Luxtory, pagas em
 > dinheiro, sem usar seus Créditos.
-> **1:33,5** Mais lugares para viver com quem você ama.
-> **1:40,8** Luxtory. Seja protagonista de histórias extraordinárias.
+> **1:33,0** Mais lugares para viver com quem você ama.
+> **1:40,3** Luxtory. Seja protagonista de histórias extraordinárias.
 
 **Créditos: da sugestão à copy proposta.** A sugestão era: "Com o Luxchange, você pode usar os Créditos que já possui,
 depositar datas elegíveis para gerar novos Créditos ou combinar os dois para viver outras Second Homes." Ela tem a ideia
@@ -179,7 +194,7 @@ certa. Os ajustes:
 - **Presente do indicativo.** "Usa, deposita, combina" soa mais humano e direto que "pode usar, depositar, combinar".
 - **"Gerar novos".** Evita repetir "Créditos" três vezes na mesma frase.
 - **Travessão antes de "ou combina os dois".** A pausa marca a ideia principal, a combinação, que o painel fecha com
-  "94.000 · um só saldo, de lotes diferentes".
+  "Um só saldo, de lotes diferentes" — sem números, que ficam para a Request.
 
 Se a Luxtory preferir o nome na voz: "Com Membership vigente, no Luxchange você usa os Créditos válidos que já tem…" (uma
 palavra a mais).
@@ -188,7 +203,10 @@ Outras escolhas de copy:
 
 - **Complementação.** "Se o saldo não bastar, você completa com datas do seu Direito de Uso" diz a condição (só quando
   falta) e a origem (datas elegíveis), sem sugerir que a data paga a reserva. A interface mostra o depósito confirmado
-  antes da revisão, e o painel de C04 já disse que o depósito gera Créditos.
+  antes da revisão, e o painel de C04 já disse que o depósito gera Créditos. "E pode depositar mais, para as próximas
+  experiências" explica por que Helena passa do mínimo (14.000, uma data) e deposita 46.000: o excedente fica no saldo,
+  e é com ele que o Direct acontece. A interface diz o mesmo: "Mínimo para esta reserva: 14.000 (1 data). O que passar
+  disso fica no saldo para as próximas experiências."
 
 - **Direct.** "O caminho é mais curto" e "dispensa o aceite de outro Titular" comunicam a rapidez sem prometer
   confirmação. A interface mostra a condição: pagamento aprovado, "o pagamento não reserva as noites", verificações e só
@@ -224,7 +242,7 @@ geométrico (centro óptico); no 9:16, logo a 62% da largura e frase em duas lin
 | Onde | Ressalva | Tempo |
 |---|---|---|
 | C04, com o depósito | *No Co-Owner, só data já reservada é cedida.* (frase aprovada do FAQ) | 3,2 s · 8 palavras |
-| C04, com o saldo | *Créditos não são moeda, investimento nem garantia de disponibilidade.* (copy aprovada) | 3,55 s · 9 palavras |
+| C04, com o saldo | *Créditos não são moeda, investimento nem garantia de disponibilidade.* (copy aprovada) | 3,5 s · 9 palavras |
 | C05, faixa inferior, na primeira interface | *Imagens, interfaces e valores ilustrativos.* | 4 s · 5 palavras |
 | Cartões de interface | sem selo, em prévia e em exportação: a indicação de material ilustrativo é o lettering de C05 e a descrição | — |
 | Descrição do vídeo e página de destino | texto completo (abaixo) | sem limite |
@@ -245,16 +263,17 @@ Créditos são os 9:16 do protótipo (um cartão por vez).
 
 | Bloco | Tempo | Conteúdo |
 |---|---|---|
-| Gancho | 0–3 s | plano vertical de Varanda · Litoral ao entardecer + *"E se a sua Second Home fosse só o começo?"* |
-| Club e Créditos | 3–14 s | creditos 9:16 sobre S05 vertical: painel com a soma e "com Membership vigente"; os dois supers abaixo do painel |
-| Request | 14–34 s | request 9:16: calendário → faltam 7.000 → controle a 16.000 → calendário de maio (15 e 16/05, "A gerar 46.000 · Saldo projetado 94.000") → depósito confirmado → Pendente → Request recebida → Reserva confirmada, com dois planos de lugar; lettering de C05 na entrada |
+| Gancho | 0–3 s | plano vertical da Azzura Home ao entardecer + *"E se a sua Second Home fosse só o começo?"* |
+| Club e Créditos | 3–13,5 s | creditos 9:16 sobre S05 vertical: painel conceitual, sem números, com "com Membership vigente"; os dois supers abaixo do painel |
+| Request | 13,5–34 s | request 9:16: calendário → faltam 7.000 → controle a 14.000, o mínimo (16/05) → calendário de abril → maio (toque em 14/05 → 30.000; toque em 15/05 → 46.000; "A gerar 46.000 · Saldo projetado 94.000") → depósito confirmado → Pendente → Request recebida → Reserva confirmada, com dois planos de lugar; lettering de C05 na entrada |
 | Direct | 34–43 s | direct 9:16: saldo suficiente → continuar com meu saldo → revisão → verificações → Reserva confirmada |
 | Luxplus | 43–52 s | luxplus 9:16: valor da estadia → Créditos inalterados → Reserva confirmada |
 | Assinatura | 52–58 s | assinatura 9:16, só a marca |
 
 Áreas seguras:
 
-- interfaces e painel entre 6% e 87% da altura, como já renderizados;
+- interfaces e painel a partir de 8% da altura (o calendário do depósito começa a 8,5%; `check.mjs` reprova qualquer
+  quadro do 9:16 com conteúdo acima de 8%) e até 87%;
 - legendas e supers fora dos 20% inferiores (interface das plataformas) e sem cobrir cartões; com cartão visível, o
   próprio cartão carrega a informação e a legenda é omitida;
 - nada importante nos 8% superiores.
@@ -289,27 +308,41 @@ emissora para TV, com true peak ≤ −1 dBTP e sem distorção nem clipping.
 | Momento | Som | Regra |
 |---|---|---|
 | Toques (datas, botões) | clique curto e macio | só nos `marks` de toque de cada sequência, nunca mais de um por segundo |
-| Linhas do saldo dos Créditos | toque macio, mais grave que o de interface | três, um por linha (48.000, + 46.000, 94.000) |
+| Linhas do painel dos Créditos | toque macio, mais grave que o de interface | três, um por linha (Créditos que já tem, novos Créditos, um só saldo) |
 | Mudança de estado (Pendente, pagamento aprovado) | tic suave | um por mudança |
 | Verificações | tics muito leves, decrescentes | um por item, abaixo dos toques |
 | Confirmação | acorde curto: mais aberto na Request, mais seco no Direct e no Luxplus | um por modalidade |
-| Ambientes | vento na serra, mar no litoral, fogo e grilos no campo | sob a trilha, entram e saem com o plano |
+| Ambientes | vento na serra (Satori), mar no litoral (Azzura), fogo e grilos no campo (Olivar) | sob a trilha, entram e saem com o plano |
 
 ## 8. Plano de motion graphics
 
 | Camada | O que é | Regra |
 |---|---|---|
 | Interface | os assets das três sequências, com alfa | movimento só dos tokens do Core; não reanimar a interface na pós; nunca espelhar |
-| Créditos (C04) | painel editorial: Carteira, novo depósito, um só saldo, uso em Request ou Direct; barra da Carteira que enche por lote | sem botões nem etapas transacionais; números do cenário aprovado; fade-up curto por linha, alinhado à voz |
+| Créditos (C04) | painel editorial conceitual: Créditos que já tem + novos Créditos de datas depositadas = um só saldo, de lotes diferentes; uso em Request ou Direct; barra de lotes | sem números (o saldo de Helena se forma só na Request); sem botões nem etapas transacionais; fade-up curto por linha, alinhado à voz |
 | Câmera sobre a interface | push-in lento do conjunto (imagem e interface juntas) ou leve paralaxe entre elas | ≤ 110% de escala sobre render 1080p; acima disso, render maior só daquele trecho |
 | Profundidade | foco da imagem suaviza levemente quando a interface entra e volta quando ela sai | desfoque discreto; nunca blur nos cartões |
-| Passo de Créditos (Request e Direct) | Créditos necessários × saldo; controle "Créditos adicionais desejados"; calendário do Direito de Uso num acordeão; depósito confirmado | uma decisão por momento; controle e calendário com uma fonte única (as datas); só metas com datas inteiras; estados por forma e texto, não só por cor |
+| Passo de Créditos (Request e Direct) | Créditos necessários × saldo; controle "Créditos adicionais desejados"; calendário do Direito de Uso num acordeão; depósito confirmado | uma decisão por momento; controle e calendário com uma fonte única (as datas); todas as metas com datas inteiras (0, 14.000, 16.000, 30.000, 32.000, 46.000), com uma marca por meta na trilha; sugestão determinística quando o controle se move (`rules.js`); estados por forma e texto, não só por cor (ponto = reserva, traço de check = selecionada, riscado = indisponível ou comprometida); no filme, o controle é coreografado (ver `README.md`) |
 | Editorial | título da modalidade, descritor e ressalvas | Pure White sobre fotografia, hairline Warm Sand, sombra de canto do DS (scrim), fade-up curto; contraste medido sobre a imagem real |
 | Indicador de toque | anel fino Warm Sand que se abre no ponto do toque (≈ 280 ms) | só nos `marks` de toque; nunca sobre texto |
 | Transições | corte no movimento, dissolve ≤ 12 quadros, match-cut só dentro do mesmo bloco | sem light leaks, glitches, zoom brusco ou efeito que compita com a fotografia |
 | Assinatura | logo oficial em fade puro (900 ms) e frase em fade-up | arquivo do manifest intacto; sem traço, brilho, máscara, rotação, escala ou texto adicional |
 
 ## 9. Revisões
+
+**v5 (auditoria final de UX, identidade das Second Homes e consistência audiovisual, 2026-11-15):**
+
+- Depósito uma única vez: o C04 vira painel conceitual, sem números (Créditos que você já tem + novos Créditos de datas
+  depositadas = um só saldo); a formação de 94.000 acontece só na Request. C04 passa de 11 s a 10,5 s; filme ≈ 105,5 s.
+- Controle com todas as combinações de datas inteiras (0, 14.000, 16.000, 30.000, 32.000, 46.000) e sugestão
+  determinística; coreografia 14.000 (o mínimo, 16/05) → 30.000 (14/05) → 46.000 (15/05). A decisão final de depositar
+  as três datas não muda.
+- Narração da complementação: "— e pode depositar mais, para as próximas experiências."
+- Second Homes renomeadas (propostas sujeitas à validação comercial e de marca): Mirante · Serra → *Satori Home*;
+  Varanda · Litoral → *Azzura Home*; Pátio · Campo → *Olivar Home*. Nome em primeiro plano e região em segundo; sem
+  "Home Edition" nos cartões. Papéis, datas, Créditos e relações não mudam.
+- Calendário do 9:16 a partir de 8,5% da altura (antes 3,6%), sem reduzir a tipografia do calendário; "Selecionada"
+  com traço de check, além da cor.
 
 **v4 (UX de Créditos e revisão comercial, 2026-11-15):**
 

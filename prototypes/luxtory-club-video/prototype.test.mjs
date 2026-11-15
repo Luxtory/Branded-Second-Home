@@ -462,15 +462,12 @@ test('prova de montagem: EDL coerente com a interface aprovada e com as regras d
   for (const f of sfx) assert.ok(f.at >= 0 && f.at < duration, `efeito ${f.kind} dentro da prova`);
 });
 
-test('[BR-190][BR-191][PD-008][REQ-060] Créditos: Carteira + novo depósito = um só saldo, e a Request combina lotes', () => {
+test('[BR-190][BR-191][PD-008][REQ-060] Créditos: C04 conceitual; o saldo de Helena se forma uma vez, na Request', () => {
   const r = requestScenario();
-  const { prior, deposit, total, priorLots } = creditosSeq.FIGURES;
-  // Números do cenário aprovado, derivados de data.js (nada digitado no motion).
-  assert.equal(prior, 48_000);
-  assert.equal(deposit, 46_000);
-  assert.equal(priorLots, 2);
-  assert.equal(total, prior + deposit);
-  assert.equal(total, r.balances.beforeSend.available);
+  const dep = depositScenario();
+  // A formação do saldo (48.000 + 46.000 = 94.000) acontece só na Request; o C04 não antecipa nenhum número.
+  assert.equal(dep.priorAvailable + dep.originated, r.balances.beforeSend.available);
+  assert.doesNotMatch(markup(creditosSeq) + markup(creditosSeq, '9x16'), /\d|Helena/);
   // A Garantia da Request (55.000) sai de lotes que já existiam e do lote recém-originado, pelo que vence primeiro.
   assert.deepEqual(
     r.hold.map((p) => [p.lotId, p.quantity]),
@@ -551,13 +548,18 @@ test('[BR-151][BR-200][REQ-060] depósito: elegibilidade por modalidade, datas i
       ['2027-05-16', 14_000],
     ],
   );
-  // Metas do controle: só somas de datas inteiras; 7.000 não é meta (não existe fração de data).
+  // Metas do controle: todas as somas distintas de datas inteiras, não só as acumuladas em ordem cronológica;
+  // 7.000 não é meta (não existe fração de data).
   assert.deepEqual(
     dep.stops.map((x) => x.credits),
-    [0, 16_000, 32_000, 46_000],
+    [0, 14_000, 16_000, 30_000, 32_000, 46_000],
   );
   assert.throws(() => selectionForTarget(dep.eligible, 7_000), /não alcançável/);
+  assert.deepEqual(selectionForTarget(dep.eligible, 14_000), ['2027-05-16']);
+  assert.deepEqual(selectionForTarget(dep.eligible, 30_000), ['2027-05-14', '2027-05-16']);
   assert.deepEqual(selectionForTarget(dep.eligible, 32_000), ['2027-05-14', '2027-05-15']);
+  // Mínimo que cobre os 7.000 que faltam: 14.000, só 16/05.
+  assert.deepEqual(dep.minimum, { credits: 14_000, nights: ['2027-05-16'] });
   assert.throws(() => creditsOfSelection(dep.eligible, ['2027-05-22']), /não elegível/);
   assert.equal(dep.originated, 46_000);
   assert.equal(dep.afterDeposit, 94_000);
@@ -584,7 +586,17 @@ for (const fmt of ['16x9', '9x16']) {
     const selected = tl.set
       .filter((x) => x.attr === 'data-selected' && x.sel.startsWith('[data-deposit-day'))
       .map((x) => x.sel.match(/\d{4}-\d{2}-\d{2}/)[0]);
-    assert.deepEqual(selected, dep.selected, 'as datas selecionadas somam o valor do controle');
+    assert.deepEqual(
+      [...selected].sort(),
+      dep.selected,
+      'as datas selecionadas somam o valor do controle',
+    );
+    // O controle vai primeiro ao mínimo que cobre a reserva (14.000, 16/05); depois 30.000 e 46.000.
+    assert.deepEqual(
+      slider.map((tw) => Math.round(tw.to * max)),
+      [14_000, 30_000, 46_000],
+    );
+    assert.equal(selected[0], dep.minimum.nights[0]);
     // O depósito só é pedido depois da última seleção.
     const lastSelect = Math.max(
       ...tl.set.filter((x) => x.attr === 'data-selected').map((x) => x.at),
@@ -592,6 +604,25 @@ for (const fmt of ['16x9', '9x16']) {
     assert.ok(lastSelect < tl.set.find((x) => x.sel === '#deposit-go').at);
   });
 }
+
+test('controle de Créditos: sugestão determinística nos dois sentidos, e a escolha explícita prevalece', () => {
+  const { eligible } = depositScenario();
+  const [d14, d15, d16] = eligible.map((d) => d.night);
+  // Para cima, a partir do mínimo (16/05): mantém 16/05 e soma a data mais cedo.
+  assert.deepEqual(selectionForTarget(eligible, 30_000, [d16]), [d14, d16]);
+  assert.deepEqual(selectionForTarget(eligible, 46_000, [d14, d16]), [d14, d15, d16]);
+  // Para baixo, a partir das três datas: preserva o máximo possível; empate → menos datas → datas mais cedo.
+  assert.deepEqual(selectionForTarget(eligible, 32_000, [d14, d15, d16]), [d14, d15]);
+  assert.deepEqual(selectionForTarget(eligible, 30_000, [d14, d15, d16]), [d14, d16]);
+  assert.deepEqual(selectionForTarget(eligible, 14_000, [d14, d16]), [d16]);
+  assert.deepEqual(selectionForTarget(eligible, 0, [d14, d15, d16]), []);
+  // Escolha explícita prevalece: com 15/05 escolhida, 16.000 é 15/05 (não 14/05) e 30.000 é 15+16.
+  assert.deepEqual(selectionForTarget(eligible, 16_000, [d15]), [d15]);
+  assert.deepEqual(selectionForTarget(eligible, 30_000, [d15]), [d15, d16]);
+  // Toda meta corresponde a datas reais cuja soma é a meta.
+  for (const stop of depositScenario().stops)
+    assert.equal(creditsOfSelection(eligible, stop.nights), stop.credits);
+});
 
 test('Direct: saldo suficiente, continuar sem depósito; complementação disponível e fechada', () => {
   const raw = { dataset: {}, insertAdjacentHTML: (_, html) => (raw.html = html) };
@@ -634,6 +665,13 @@ test('revisão comercial: nenhum jargão ou marca de protótipo nas sequências 
   }
   assert.match(markup(requestSeq), /Taxa de intermediação/);
   assert.match(markup(directSeq), /Taxa de intermediação/);
+  // Nomes das Second Homes: o nome é protagonista, a região secundária; sem os nomes antigos nem "Home Edition".
+  assert.match(markup(requestSeq), /Azzura Home[\s\S]*Litoral · Second Home Luxtory/);
+  assert.match(markup(requestSeq), /Satori Home/, 'datas depositadas da Satori Home de Helena');
+  assert.match(markup(directSeq), /Olivar Home[\s\S]*Campo · Second Home Luxtory/);
+  assert.match(markup(luxplusSeq), /Olivar Home/);
+  for (const seq of [requestSeq, directSeq, luxplusSeq, creditosSeq])
+    assert.doesNotMatch(markup(seq), /Mirante|Varanda|Pátio|Home Edition/);
 });
 
 test('a Request aprovada continua com Garantia, Pendente e aceite do detentor', () => {
@@ -700,4 +738,32 @@ test('isolamento: nenhuma URL externa, chamada de rede, credencial ou import do 
       .map((re) => `${f} ${re}`);
   });
   assert.deepEqual(hits, []);
+});
+
+test('[BR-201][REQ-060] prova: a complementação vai até o depósito confirmado (saldo de 94.000), nomes novos', () => {
+  const t = requestSeq.times('16x9');
+  const complement = EDL.ui[1];
+  // O trecho da complementação contém o controle, os dois toques, o depósito e o cartão do depósito confirmado.
+  for (const at of [t.slider, ...t.taps, t.depositPress, t.depositedIn])
+    assert.ok(at >= complement.from && at < complement.to, `instante ${at} dentro do trecho`);
+  const labels = EDL.shots.map((s) => s.label).join(' ');
+  assert.match(labels, /Azzura Home/);
+  assert.match(labels, /Satori Home/);
+  assert.doesNotMatch(labels, /Mirante|Varanda|Pátio/);
+  assert.match(EDL.vo[1].text, /deposita mais/);
+});
+
+test('estados do calendário do depósito por forma, não só por cor: selecionada leva um traço de check', () => {
+  const css = readFileSync(join(DIR, 'demo.css'), 'utf8');
+  const rule = css.match(/td\[data-selected\] \.lx-calendar__day::after,[^{]*\{([^}]*)\}/);
+  assert.ok(rule, 'regra do traço de check');
+  assert.match(rule[1], /border-inline-start:[^;]+solid/);
+  assert.match(rule[1], /border-block-end:[^;]+solid/);
+  assert.match(rule[1], /rotate:/);
+  // Indisponível e comprometida: riscado; na legenda, a amostra repete a forma.
+  assert.match(
+    css,
+    /data-deposit='reserved_unavailable'\] \.lx-calendar__number \{[^}]*line-through/,
+  );
+  assert.match(css, /\.demo-swatch\[data-swatch='selected'\]::after/);
 });

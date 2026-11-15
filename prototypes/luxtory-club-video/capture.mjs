@@ -10,6 +10,7 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { startServer } from './serve.mjs';
+import { ensurePlates } from './placas.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 // --final: exportação para o comercial (selo neutro, sem marcas internas) em out/final/, sem tocar nas evidências.
@@ -191,6 +192,8 @@ const check = (ok, msg) => ok || failures.push(msg);
 let report;
 mkdirSync(OUT, { recursive: true });
 mkdirSync(EVIDENCE, { recursive: true });
+// Placas internas de teste por Second Home (out/placas/), geradas se faltarem.
+ensurePlates();
 const { origin, close } = await startServer();
 const browser = await chromium.launch();
 let SEQ = 'request';

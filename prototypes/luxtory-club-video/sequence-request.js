@@ -5,8 +5,10 @@
 // Todo valor exibido vem de requestScenario() e depositScenario() (data.js → rules.js). A capacidade pedida não fica
 // bloqueada enquanto a Request está pendente (PD-005). Textos da demonstração, ainda não copy aprovada.
 import { FICTITIOUS, depositScenario, requestScenario } from './data.js';
+import { selectionForTarget } from './rules.js';
+import { PLATES } from './placas-caminhos.js';
 import { brl, credits } from './format.js';
-import { ALWAYS, ICONS, calendarMonth, hours, icon, periodOf, press } from './shared.js';
+import { ALWAYS, ICONS, calendarMonth, hours, icon, periodOf, press, swapIn } from './shared.js';
 import {
   datesCard,
   depositedCard,
@@ -21,10 +23,15 @@ const s = requestScenario();
 const dep = depositScenario();
 const period = periodOf(s.checkin, s.checkout);
 const route = `${icon('i-info')}<span><strong>Noites de outro Titular</strong>A reserva depende do aceite dele: Luxchange Request.</span>`;
-// Etapas da seleção (fonte única: as datas). Primeiro o controle vai à primeira meta (14/05, 16.000); depois os toques
-// em 15/05 e 16/05 levam o controle a 32.000 e 46.000 — metas alcançáveis, nunca fração de data.
+// Etapas da seleção (fonte única: as datas). O controle vai ao mínimo que cobre o que falta (14.000: a sugestão para essa
+// meta é 16/05); depois Helena escolhe no calendário 14/05 (30.000) e 15/05 (46.000) para manter Créditos para as
+// próximas experiências. Todas são metas alcançáveis com datas inteiras (rules.js#depositStops).
 const [d14, d15, d16] = dep.eligible.map((d) => d.night);
-const SELECTION = [[d14], [d14, d15], [d14, d15, d16]];
+const SELECTION = [
+  selectionForTarget(dep.eligible, dep.minimum.credits),
+  [d14, ...selectionForTarget(dep.eligible, dep.minimum.credits)].sort(),
+  [d14, d15, d16],
+];
 
 // Lotes sem códigos internos: origem e quantidade, na ordem de consumo (PD-008). Antes do envio, a composição do saldo
 // (anteriores + novo depósito); no envio, a parcela de cada lote que fica em Garantia.
@@ -53,7 +60,7 @@ export function build(stage, fmt) {
       <p class="lx-eyebrow">Luxtory Club · Luxchange</p>
       <div>
         <p class="demo-name">${s.secondHome.name}</p>
-        <p class="demo-sub">${s.secondHome.homeEdition}</p>
+        <p class="demo-sub">${s.secondHome.region} · Second Home Luxtory</p>
       </div>
       <p class="demo-note demo-only-16x9" id="home-route">${route}</p>
     </section>
@@ -170,11 +177,13 @@ export function times(fmt) {
     stepOut: 8_600,
     topupIn: 8_900,
     // 16:9: controle e calendário lado a lado. 9:16: um cartão por vez — controle, depois calendário.
-    slider: v ? 9_900 : 11_300,
-    topupOut: v ? 11_400 : 15_700,
-    datesIn: v ? 11_700 : 8_900,
-    nav: v ? 12_400 : 10_000,
-    taps: v ? [13_500, 14_100] : [12_900, 13_700],
+    // Cada valor troca sem crossfade (saída 280 ms + entrada 480 ms): os intervalos deixam 14.000, 30.000 e 46.000
+    // legíveis por pelo menos ~0,6 s antes do próximo toque (o valor final segue visível até a saída do cartão).
+    slider: v ? 9_500 : 10_700,
+    topupOut: v ? 10_900 : 15_700,
+    datesIn: v ? 11_200 : 8_900,
+    nav: v ? 11_700 : 9_700,
+    taps: v ? [12_650, 14_000] : [12_200, 13_600],
     depositPress: 14_900,
     depositOut: 15_700,
     depositedIn: 16_000,
@@ -228,14 +237,14 @@ export function timeline(fmt) {
       ...nav.enter,
       ...selection.enter,
       { sel: '#deposit-label', in: ALWAYS, out: t.depositPress + 100 },
-      { sel: '#deposit-busy', in: t.depositPress + 200, dur: 0 },
+      { sel: '#deposit-busy', in: swapIn(t.depositPress + 100), dur: 0 },
       // Depósito confirmado (operação própria) e, no 16:9, o saldo de Créditos ao lado
       { sel: '#deposited', in: t.depositedIn, out: t.reviewOut },
       { sel: '#credits', in: v ? t.sendCommit : t.depositedIn, out: t.pendingOut },
       // Revisão, Taxa de intermediação, pagamento e envio
       { sel: '#review', in: t.reviewIn, out: t.sendOut },
       { sel: '#send-label', in: ALWAYS, out: t.pay + 100 },
-      { sel: '#send-busy', in: t.pay + 200, dur: 0 },
+      { sel: '#send-busy', in: swapIn(t.pay + 100), dur: 0 },
       // Garantia só no envio
       { sel: '#lots-before', in: ALWAYS, out: t.sendCommit },
       { sel: '#lots', in: t.sendCommit + 280 },
@@ -248,7 +257,7 @@ export function timeline(fmt) {
       // Aceite do detentor, revalidação e, na mesma operação, Request Aceita + Reserva Confirmada
       { sel: '#holder', in: t.holderIn, out: t.holderOut },
       { sel: '#holder-actions', in: ALWAYS, out: t.accept + 100 },
-      { sel: '#reval', in: t.accept + 300 },
+      { sel: '#reval', in: swapIn(t.accept + 100) },
       { sel: '#rv-1', in: t.accept + 400 },
       { sel: '#rv-2', in: t.accept + 600 },
       { sel: '#rv-3', in: t.accept + 800 },
@@ -301,9 +310,15 @@ export function timeline(fmt) {
       { at: t.needIn, label: 'Créditos necessários 55.000 × saldo 48.000: faltam 7.000' },
       { at: t.topupPress, label: 'toque · Complementar saldo (datas do meu Direito de Uso)' },
       { at: t.nav, label: 'toque · próximo mês (abril → maio)' },
-      { at: t.slider, label: 'controle · Créditos adicionais desejados → 16.000 (14/05)' },
-      { at: t.taps[0], label: 'toque · 15/05 → 32.000' },
-      { at: t.taps[1], label: 'toque · 16/05 → 46.000 (saldo projetado 94.000)' },
+      {
+        at: t.slider,
+        label: 'controle · Créditos adicionais desejados → 14.000, o mínimo (16/05)',
+      },
+      { at: t.taps[0], label: 'toque · 14/05 → 30.000' },
+      {
+        at: t.taps[1],
+        label: 'toque · 15/05 → 46.000, para as próximas experiências (saldo projetado 94.000)',
+      },
       { at: t.depositPress, label: 'toque · Depositar datas e gerar Créditos' },
       { at: t.depositedIn, label: 'depósito confirmado: 46.000 novos Créditos · saldo 94.000' },
       { at: t.reviewPress, label: 'toque · Revisar Request' },
@@ -431,8 +446,9 @@ export const qa = {
   sample: { card: '#accepted', at: 33_000 },
   edge: { card: '#booking', at: 33_000 },
   motion: { card: '#holder', at: 28_300, enter: [T.holderIn, T.holderIn + 480] },
+  // Placas internas de teste da Azzura Home: a foto provisória do litoral e a mesma foto escurecida (placas.mjs).
   plates: {
     claro: 'public/images/home/hero/hero-lifestyle.jpg',
-    escuro: 'public/images/home/hero/luxury-property-facade-hero.jpg',
+    escuro: PLATES.azzuraNoite,
   },
 };

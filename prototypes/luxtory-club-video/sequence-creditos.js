@@ -1,58 +1,44 @@
-// Motion graphic editorial dos Créditos (ROTEIRO.md C04): Créditos válidos que já estão na
-// Carteira + Créditos de um novo depósito de datas elegíveis → um só saldo, de lotes diferentes → Luxchange Request ou
-// Direct, com a Taxa de intermediação de cada modalidade. Camada editorial da montagem, não interface: nenhum botão, nenhuma etapa
-// transacional. Os números saem do mesmo cenário da Request (data.js), não são digitados aqui.
+// Motion graphic editorial dos Créditos (ROTEIRO.md C04), conceitual: Créditos válidos que você já tem + novos
+// Créditos de datas elegíveis depositadas → um só saldo, de lotes diferentes → Luxchange Request ou Direct, com a Taxa
+// de intermediação de cada modalidade. Sem números nem personagem: a formação do saldo de Helena (48.000 + 46.000 =
+// 94.000) acontece uma única vez no filme, na Request (credits-step.js). Camada editorial da montagem, não interface:
+// nenhum botão, nenhuma etapa transacional.
 //
-// Regras que a composição respeita: Créditos só se usam com Membership vigente (BR-195, dito na narração); valem 24
+// Regras que a composição respeita: Créditos só se usam com Membership vigente (BR-195, escrito no painel); valem 24
 // meses (BR-191: "válidos"); o depósito origina Créditos e a capacidade entra no Inventário Luxtory (REQ-060,
 // BR-202) — a data nunca paga a reserva diretamente; no Co-Owner, só data já reservada é depositada (BR-151, super);
-// lotes diferentes compõem o saldo e o consumo segue o lote que vence primeiro (PD-008, TECH-071, mostrado na Request).
-import { FICTITIOUS, requestScenario } from './data.js';
-import { credits } from './format.js';
+// lotes diferentes compõem o saldo (PD-008, mostrado na Request).
 import { ICONS, icon } from './shared.js';
 
-const s = requestScenario();
-const depositLot = s.lots.find((lot) => lot.id === FICTITIOUS.deposit.lotId);
-const priorLots = s.lots.filter((lot) => lot !== depositLot);
-const sum = (lots) => lots.reduce((total, lot) => total + lot.available, 0);
-export const FIGURES = {
-  prior: sum(priorLots),
-  deposit: depositLot.available,
-  total: s.balances.beforeSend.available,
-  priorLots: priorLots.length,
-};
-const share = (part) => part / FIGURES.total;
+// Proporções da barra só como forma (dois lotes anteriores e um novo); nenhum valor aparece.
+const SEGMENTS = { prior: [0.32, 0.19], fresh: 0.49 };
 
 export const SUPERS = {
   coOwner: 'No Co-Owner, só data já reservada é cedida.',
   credits: 'Créditos não são moeda, investimento nem garantia de disponibilidade.',
 };
 
+export const ROWS = {
+  prior: 'Créditos válidos que você já tem',
+  fresh: 'Novos Créditos, de datas elegíveis depositadas',
+  total: 'Um só saldo, de lotes diferentes',
+};
+
 export function build(stage, fmt) {
-  const lotLabel = (n) => `${n} ${n === 1 ? 'lote' : 'lotes'}`;
   stage.insertAdjacentHTML(
     'beforeend',
     `${ICONS}
-    <section class="demo-card demo-card--creditos" id="cr-panel" data-surface="deep" aria-label="Créditos Luxchange de ${s.requesterName}">
-      <p class="lx-eyebrow">Créditos Luxchange de ${s.requesterName}</p>
+    <section class="demo-card demo-card--creditos" id="cr-panel" data-surface="deep" aria-label="Créditos Luxchange">
+      <p class="lx-eyebrow">Créditos Luxchange</p>
       <div class="demo-bar demo-bar--lots" aria-hidden="true">
-        ${priorLots.map((lot, i) => `<span class="demo-bar__seg demo-bar__seg--prior" id="cr-seg-${i}"></span>`).join('')}
+        ${SEGMENTS.prior.map((_, i) => `<span class="demo-bar__seg demo-bar__seg--prior" id="cr-seg-${i}"></span>`).join('')}
         <span class="demo-bar__seg" id="cr-seg-new"></span>
       </div>
-      <dl class="demo-sum">
-        <div class="demo-sum__row" id="cr-row-prior">
-          <dt class="demo-sum__label">Créditos válidos na Carteira <span class="lx-meta">${lotLabel(FIGURES.priorLots)}</span></dt>
-          <dd class="demo-sum__figure">${credits(FIGURES.prior)}</dd>
-        </div>
-        <div class="demo-sum__row" id="cr-row-deposit">
-          <dt class="demo-sum__label">De um novo depósito de datas elegíveis <span class="lx-meta">${lotLabel(1)}</span></dt>
-          <dd class="demo-sum__figure"><span class="demo-sum__op" aria-hidden="true">+</span> ${credits(FIGURES.deposit)}</dd>
-        </div>
-        <div class="demo-sum__row demo-sum__row--total" id="cr-row-total">
-          <dt class="demo-sum__label">Um só saldo, de lotes diferentes</dt>
-          <dd class="demo-sum__figure">${credits(FIGURES.total)}</dd>
-        </div>
-      </dl>
+      <ol class="demo-equation">
+        <li id="cr-row-prior"><span class="demo-equation__op" aria-hidden="true"></span><span>${ROWS.prior}</span></li>
+        <li id="cr-row-deposit"><span class="demo-equation__op" aria-hidden="true">+</span><span>${ROWS.fresh}</span></li>
+        <li id="cr-row-total" class="demo-equation__total"><span class="demo-equation__op" aria-hidden="true">=</span><span>${ROWS.total}</span></li>
+      </ol>
       <p class="demo-note" id="cr-use">${icon('i-info')}<span><strong>Para Luxchange Request ou Direct, com Membership vigente</strong>Créditos + Taxa de intermediação, em cada modalidade.</span></p>
     </section>
     <p class="demo-ed demo-ed--legal" id="cr-legal-coowner" data-surface="deep"><span>${SUPERS.coOwner}</span></p>
@@ -64,47 +50,47 @@ export function build(stage, fmt) {
 export function timeline() {
   // Batidas alinhadas à narração (ROTEIRO.md §4): "usa os Créditos válidos que já tem" → "deposita datas elegíveis
   // para gerar novos" → "ou combina os dois" → "para viver outras Second Homes".
-  const prior = 1_600;
-  const deposit = 3_800;
-  const total = 6_300;
-  const use = 7_800;
+  const prior = 1_300;
+  const deposit = 3_200;
+  const total = 5_400;
+  const use = 7_000;
   return {
-    duration: 11_000,
+    duration: 10_500,
     enter: [
       // O painel chega com a primeira batida (nunca um cartão vazio na tela).
-      { sel: '#cr-panel', in: prior - 300, out: 10_400 },
+      { sel: '#cr-panel', in: prior - 300, out: 9_900 },
       { sel: '#cr-row-prior', in: prior },
       { sel: '#cr-row-deposit', in: deposit },
       { sel: '#cr-row-total', in: total },
       { sel: '#cr-use', in: use },
       // Supers da cena, cada um com tempo de leitura (≥ 1 s a cada 3 palavras + 0,5 s); o segundo só entra depois da
       // saída do primeiro (duration.moderate), no mesmo lugar.
-      { sel: '#cr-legal-coowner', in: 3_600, out: 6_800 },
-      { sel: '#cr-legal-credits', in: 7_100, out: 10_650 },
+      { sel: '#cr-legal-coowner', in: 3_000, out: 6_200 },
+      { sel: '#cr-legal-credits', in: 6_500, out: 10_000 },
     ],
     set: [],
-    // A barra da Carteira enche: os lotes que já existiam com a primeira batida, o lote novo com a segunda.
+    // A barra enche: os lotes que já existiam com a primeira batida, o lote novo com a segunda.
     tween: [
-      ...priorLots.map((lot, i) => ({
+      ...SEGMENTS.prior.map((share, i) => ({
         sel: `#cr-seg-${i}`,
         prop: '--share',
         at: prior + i * 120,
         from: 0,
-        to: share(lot.available),
+        to: share,
       })),
-      { sel: '#cr-seg-new', prop: '--share', at: deposit, from: 0, to: share(FIGURES.deposit) },
+      { sel: '#cr-seg-new', prop: '--share', at: deposit, from: 0, to: SEGMENTS.fresh },
     ],
     marks: [
-      { at: prior - 300, label: 'painel dos Créditos' },
-      { at: prior, label: `Créditos válidos na Carteira: ${credits(FIGURES.prior)}` },
-      { at: deposit, label: `novo depósito: + ${credits(FIGURES.deposit)} (super do Co-Owner)` },
-      { at: total, label: `um só saldo: ${credits(FIGURES.total)}` },
+      { at: prior - 300, label: 'painel dos Créditos (conceitual, sem números)' },
+      { at: prior, label: 'Créditos válidos que você já tem' },
+      { at: deposit, label: '+ novos Créditos de datas elegíveis depositadas (super do Co-Owner)' },
+      { at: total, label: '= um só saldo, de lotes diferentes' },
       {
         at: use,
         label:
           'Luxchange Request ou Direct · Créditos + Taxa de intermediação (super dos Créditos)',
       },
-      { at: 11_000, label: 'fim (corte para C05)' },
+      { at: 10_500, label: 'fim (corte para C05)' },
     ],
   };
 }
@@ -112,31 +98,34 @@ export function timeline() {
 export const qa = {
   checkpoints: [
     {
-      t: 2_600,
+      t: 2_200,
       name: 'carteira',
-      expect: [`Créditos Luxchange de ${s.requesterName}`, credits(FIGURES.prior)],
-      absent: [credits(FIGURES.total)],
+      expect: ['Créditos Luxchange', ROWS.prior],
+      absent: [ROWS.total],
     },
     {
-      t: 5_200,
+      t: 4_400,
       name: 'deposito',
-      expect: [credits(FIGURES.prior), credits(FIGURES.deposit)],
-      absent: [credits(FIGURES.total)],
+      expect: [ROWS.prior, ROWS.fresh],
+      absent: [ROWS.total],
     },
     {
-      t: 9_200,
+      t: 8_600,
       name: 'saldo',
-      // A condição de Membership fica escrita no painel: a vertical é vista sem som (L3, BR-195).
+      // A condição de Membership fica escrita no painel: a vertical é vista sem som (L3, BR-195). Sem números nem
+      // personagem: o saldo de Helena só se forma na Request.
       expect: [
-        credits(FIGURES.total),
+        ROWS.total,
         'Para Luxchange Request ou Direct, com Membership vigente',
         'Créditos + Taxa de intermediação',
       ],
+      absent: ['48.000', '46.000', '94.000', 'Helena'],
     },
   ],
-  stills: { carteira: 2_600, deposito: 5_200, saldo: 9_200 },
-  alpha: { from: 5_000, seconds: 5 },
-  sample: { card: '#cr-panel', at: 9_200 },
-  motion: { card: '#cr-panel', at: 9_200, enter: [1_300, 1_780] },
+  stills: { carteira: 2_200, deposito: 4_400, saldo: 8_600 },
+  alpha: { from: 4_000, seconds: 5 },
+  sample: { card: '#cr-panel', at: 8_600 },
+  motion: { card: '#cr-panel', at: 8_600, enter: [1_000, 1_480] },
+  // Placa interna de teste da Satori Home (foto provisória de pedra, madeira e vidro), onde Helena está em C03–C04.
   plates: { serra: 'public/images/home/hero/luxury-property-facade-hero.jpg' },
 };

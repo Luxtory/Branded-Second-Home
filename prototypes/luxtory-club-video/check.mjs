@@ -19,6 +19,7 @@ const SEQS = (
   process.argv.find((a) => a.startsWith('--seq='))?.slice(6) ?? 'request,direct,luxplus'
 ).split(',');
 const MIN_TEXT_OUT_PX = { '16x9': 16, '9x16': 30 };
+const SAFE_TOP_9X16 = 0.08;
 // --final: confere a exportação para o comercial — nenhuma marca interna pode aparecer em quadro algum.
 const FINAL = process.argv.includes('--final');
 const INTERNAL_MARKS = ['Prova interna'];
@@ -95,6 +96,12 @@ for (const seq of SEQS) {
         const rects = visible.map((c) => ({
           id: c.id,
           ...c.getBoundingClientRect().toJSON(),
+          // Topo do conteúdo (primeiro filho visível): é o que a área segura superior protege.
+          contentTop: Math.min(
+            ...[...c.children]
+              .filter((el) => el.offsetHeight && getComputedStyle(el).visibility === 'visible')
+              .map((el) => el.getBoundingClientRect().top),
+          ),
         }));
         let minFont = Infinity;
         for (const card of visible) {
@@ -127,6 +134,11 @@ for (const seq of SEQS) {
       for (const r of info.rects) {
         if (r.left < 0 || r.top < 0 || r.right > vp.width || r.bottom > vp.height)
           fail(`${tag}@${key.t}: ${r.id} fora do quadro`);
+        // 9:16: nada importante nos 8% superiores (interface das plataformas).
+        if (fmt === '9x16' && r.contentTop < SAFE_TOP_9X16 * vp.height)
+          fail(
+            `${tag}@${key.t}: ${r.id} com conteúdo acima da área segura (${Math.round(r.contentTop)} px)`,
+          );
       }
       for (let i = 0; i < info.rects.length; i++)
         for (let j = i + 1; j < info.rects.length; j++) {
@@ -175,7 +187,8 @@ for (const seq of SEQS) {
         fail(`${tag}: faixa do calendário ${JSON.stringify(cal)}`);
     }
     // Transições, quadro a quadro (30 fps): dois cartões que se cruzam nunca ficam visíveis ao mesmo tempo
-    // (opacidade > 0,05 nos dois) — é o que mistura textos durante uma troca no mesmo lugar.
+    // (opacidade > 0,05 nos dois) — é o que mistura textos durante uma troca no mesmo lugar. O mesmo vale para os
+    // filhos de um .demo-swap.
     const crossings = await page.evaluate(() => {
       const found = [];
       const step = 1000 / 30;
@@ -191,6 +204,15 @@ for (const seq of SEQS) {
             if (a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom)
               found.push(`${Math.round(t)} ms ${cards[i].id}×${cards[j].id}`);
           }
+        // Trocas no mesmo lugar dentro de um cartão (rótulo do botão → "Processando…", ações → revalidação): os
+        // filhos de um .demo-swap ocupam a mesma área, então dois visíveis ao mesmo tempo é texto sobre texto.
+        for (const swap of document.querySelectorAll('.demo-swap')) {
+          const shown = [...swap.children].filter(
+            (c) => c.id && c.style.visibility === 'visible' && Number(c.style.opacity) > 0.05,
+          );
+          if (shown.length > 1)
+            found.push(`${Math.round(t)} ms ${shown.map((c) => c.id).join('×')}`);
+        }
       }
       return found;
     });

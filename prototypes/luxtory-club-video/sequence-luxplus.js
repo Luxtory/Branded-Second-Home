@@ -6,6 +6,7 @@
 // Textos da demonstração, não copy aprovada.
 import { luxplusScenario } from './data.js';
 import { brl, credits } from './format.js';
+import { PLATES } from './placas-caminhos.js';
 import {
   ALWAYS,
   ICONS,
@@ -15,6 +16,7 @@ import {
   periodOf,
   press,
   rangeSteps,
+  swapIn,
 } from './shared.js';
 
 const s = luxplusScenario();
@@ -31,7 +33,7 @@ export function build(stage, fmt) {
       <p class="lx-eyebrow">Luxtory Club · Luxplus</p>
       <div>
         <p class="demo-name">${s.secondHome.name}</p>
-        <p class="demo-sub">${s.secondHome.homeEdition}</p>
+        <p class="demo-sub">${s.secondHome.region} · Second Home Luxtory</p>
       </div>
       <p class="demo-note demo-only-16x9" id="home-route">${route}</p>
     </section>
@@ -113,7 +115,7 @@ export function timeline(fmt) {
       { sel: '#cal-route', in: endAt + 900 },
       { sel: '#review', in: reviewIn, out: reviewOut },
       { sel: '#send-label', in: ALWAYS, out: 7_700 },
-      { sel: '#send-busy', in: 7_800, dur: 0 },
+      { sel: '#send-busy', in: swapIn(7_700), dur: 0 },
       { sel: '#credits', in: v ? confirmed : 5_300 },
       { sel: '#reval', in: revalIn, out: revalOut },
       { sel: '#rv-1', in: 9_200 },
@@ -203,6 +205,6 @@ export const qa = {
   alpha: { from: 7_400, seconds: 5 },
   sample: { card: '#booking', at: 12_000 },
   motion: { card: '#booking', at: 12_500, enter: [10_700, 11_180] },
-  // Placa de teste de legibilidade (não representa Pátio · Campo; PRODUCAO.md §2.1).
-  plates: { escuro: 'public/images/home/hero/luxury-property-facade-hero.jpg' },
+  // Placa interna de teste da Olivar Home (campo neutro de noite; placas.mjs): não representa o imóvel final.
+  plates: { escuro: PLATES.olivarNoite },
 };

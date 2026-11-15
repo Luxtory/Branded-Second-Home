@@ -449,26 +449,20 @@ body {
 }
 
 .demo-slider-scale {
-  position: relative;
-  height: var(--lx-space-6);
+  display: flex;
+  justify-content: space-between;
   font-family: var(--lx-font-utility);
   font-size: var(--lx-type-label);
   color: var(--lx-color-fg-muted);
 }
 
-.demo-slider__tick {
-  position: absolute;
+/* Metas alcançáveis: marcas curtas sobre a trilha (forma, não só cor). */
+.demo-slider__stop {
   inset-inline-start: calc(var(--at) * 100%);
-  translate: -50% 0;
-  white-space: nowrap;
-}
-
-.demo-slider__tick:first-child {
-  translate: 0 0;
-}
-
-.demo-slider__tick:last-child {
-  translate: -100% 0;
+  width: var(--lx-border-outline);
+  height: var(--lx-space-3);
+  translate: -50% -50%;
+  background-color: var(--lx-color-fg-muted);
 }
 
 /* Datas elegíveis e seus Créditos; a selecionada ganha contorno Warm Sand e o ícone de confirmação. */
@@ -573,8 +567,34 @@ body {
   font-weight: var(--lx-weight-semibold);
 }
 
+/* Selecionada: o ponto da reserva vira um traço de check — o estado se lê sem a cor (WCAG 1.4.1), como nas datas do
+   controle. Na legenda, a amostra leva o mesmo traço. */
+.demo-deposit-cal td[data-selected] .lx-calendar__day::after,
+.demo-swatch[data-swatch='selected']::after {
+  content: '';
+  position: absolute;
+  inline-size: var(--lx-space-3);
+  block-size: calc(var(--lx-space-1) * 1.5);
+  border-inline-start: var(--lx-border-outline) solid var(--lx-color-action-fg);
+  border-block-end: var(--lx-border-outline) solid var(--lx-color-action-fg);
+  background-color: transparent;
+  rotate: -45deg;
+}
+
 .demo-deposit-cal td[data-selected] .lx-calendar__day::after {
-  background-color: var(--lx-color-action-fg);
+  inset-block-end: var(--lx-space-1);
+  inset-inline-start: calc(50% - var(--lx-space-3) / 2);
+}
+
+.demo-swatch[data-swatch='selected'] {
+  position: relative;
+}
+
+.demo-swatch[data-swatch='selected']::after {
+  inset: 18% 12% auto;
+  inline-size: auto;
+  block-size: 40%;
+  border-width: var(--lx-border-hairline);
 }
 
 .demo-swatch[data-swatch='eligible'],
@@ -630,7 +650,7 @@ body {
 }
 
 [data-fmt='9x16'] .demo-deposit-cal {
-  gap: var(--lx-space-2);
+  gap: var(--lx-space-1);
 }
 
 [data-fmt='9x16'] .demo-deposit-cal .lx-calendar__day {
@@ -641,8 +661,22 @@ body {
   gap: var(--lx-space-1);
 }
 
-/* Créditos (ROTEIRO.md C04): painel editorial na superfície deep — soma dos Créditos válidos da Carteira com os de um
-   novo depósito, num só saldo de lotes diferentes. Números em Newsreader, rótulos em Hanken, lotes em metadado. */
+/* 9:16: o cartão do calendário respeita a margem segura superior (8%) sem encolher a tipografia do calendário: o resumo
+   do acordeão cabe numa linha (menos espaço até a seta) e a legenda passa a três colunas (duas linhas). */
+[data-fmt='9x16'] .demo-card--dates .demo-accordion > .lx-disclosure__summary {
+  gap: var(--lx-space-2);
+  min-height: var(--lx-target-min);
+}
+
+[data-fmt='9x16'] .demo-deposit-cal .lx-calendar__legend {
+  grid-template-columns: repeat(3, auto);
+  justify-content: space-between;
+  gap: var(--lx-space-2);
+  font-size: var(--lx-type-label);
+}
+
+/* Créditos (ROTEIRO.md C04): painel editorial conceitual na superfície deep — Créditos que você já tem + novos Créditos
+   de datas depositadas = um só saldo, de lotes diferentes. Sem números: o saldo de Helena se forma só na Request. */
 [data-fmt='16x9'] .demo-card--creditos {
   top: 47%;
   inset-inline-start: 6%;
@@ -666,52 +700,34 @@ body {
   background-color: var(--lx-color-rule);
 }
 
-.demo-sum {
+/* Equação conceitual dos Créditos (C04): sem números; operadores em Warm Sand, texto em Newsreader. */
+.demo-equation {
   display: grid;
   margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.demo-sum__row {
+.demo-equation li {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: var(--lx-space-6) minmax(0, 1fr);
   align-items: baseline;
-  gap: var(--lx-space-4);
+  gap: var(--lx-space-2);
   padding-block: var(--lx-space-2);
+  font-family: var(--lx-font-display);
+  font-size: var(--lx-type-title);
+  line-height: var(--lx-leading-title);
 }
 
-.demo-sum__row--total {
+.demo-equation__op {
+  color: var(--lx-color-accent);
+}
+
+.demo-equation .demo-equation__total {
   margin-top: var(--lx-space-2);
   padding-top: var(--lx-space-3);
   border-top: var(--lx-border-hairline) solid var(--lx-color-rule-strong);
-}
-
-.demo-sum__label {
-  font-size: var(--lx-type-compact);
-  line-height: var(--lx-leading-tight);
-  color: var(--lx-color-fg);
-}
-
-.demo-sum__label .lx-meta {
-  display: block;
-  font-size: var(--lx-type-label);
-  color: var(--lx-color-fg-muted);
-}
-
-.demo-sum__figure {
-  margin: 0;
-  font-family: var(--lx-font-display);
-  font-size: var(--lx-type-headline);
-  line-height: var(--lx-leading-display);
-  font-variant-numeric: tabular-nums;
-  text-align: end;
-}
-
-.demo-sum__row--total .demo-sum__figure {
   color: var(--lx-color-headline);
-}
-
-.demo-sum__op {
-  color: var(--lx-color-accent);
 }
 
 /* 9:16: os supers da cena ficam abaixo do painel e acima dos 20% inferiores (interface das plataformas). */
