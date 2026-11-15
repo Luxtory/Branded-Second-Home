@@ -4,8 +4,12 @@
 //   FICTITIOUS — dados sintéticos: pessoas, Second Homes, PRLs, lotes, instantes. Nada disso existe.
 //   scenario() — valores derivados de FICTITIOUS pelas fórmulas de rules.js (nunca digitados à mão).
 import {
+  DEPOSIT_STATUS,
   canDeposit,
   cessionEffect,
+  creditsOfSelection,
+  depositNightStatus,
+  depositStops,
   creditExpiresAt,
   creditsForPrl,
   consumeCreditsFefo,
@@ -60,6 +64,16 @@ export const FICTITIOUS = Object.freeze({
     prlCents: [160_000, 160_000, 140_000],
     at: '2027-04-12T10:02:00-03:00',
     lotId: 'L-0003',
+  },
+  // Calendário do Direito de Uso de Helena em Mirante · Serra (Co-Owner) para o depósito opcional: datas já
+  // reservadas, uma reserva dentro da antecedência mínima (24–25/04, menos de 14 dias antes de 12/04) e uma cessão já
+  // comprometida (22–23/05, origem do L-0002). As noites elegíveis são as do depósito acima (14, 15 e 16/05).
+  useRight: {
+    secondHome: 'mirante',
+    role: 'co_owner',
+    months: ['2027-04', '2027-05'],
+    reserved: ['2027-04-24', '2027-04-25', '2027-05-14', '2027-05-15', '2027-05-16'],
+    committed: ['2027-05-22', '2027-05-23'],
   },
   request: {
     secondHome: 'varanda',
@@ -116,6 +130,64 @@ function lotsAtRequest(data, params) {
       available: lot.quantity,
     };
   });
+}
+
+/**
+ * Depósito opcional antes da Request (REQ-060, BR-200 a BR-203): calendário do Direito de Uso, situação de cada noite,
+ * Créditos origináveis por data elegível (PRL da data × multiplicador, BR-201), metas alcançáveis do controle e o
+ * resultado do depósito confirmado (lote próprio, antes de os Créditos ficarem disponíveis).
+ */
+export function depositScenario(data = FICTITIOUS, params = CANONICAL) {
+  const u = data.useRight;
+  const d = data.deposit;
+  const now = at(d.at);
+  const depositNights = nightsOf(d.checkin, d.checkout);
+  const prior = data.lots.reduce((sum, lot) => sum + lot.quantity, 0);
+  const days = [];
+  for (const ym of u.months) {
+    const [y, m] = ym.split('-').map(Number);
+    const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    for (let day = 1; day <= last; day++) {
+      const night = `${ym}-${String(day).padStart(2, '0')}`;
+      const status = depositNightStatus(
+        {
+          role: u.role,
+          reserved: u.reserved.includes(night),
+          committed: u.committed.includes(night),
+        },
+        checkinInstant(night, params),
+        now,
+        params,
+      );
+      const i = depositNights.indexOf(night);
+      days.push({
+        night,
+        status,
+        credits: status === DEPOSIT_STATUS.eligible ? creditsForPrl(d.prlCents[i], params) : 0,
+      });
+    }
+  }
+  const eligible = days.filter((day) => day.status === DEPOSIT_STATUS.eligible);
+  if (eligible.map((e) => e.night).join() !== depositNights.join())
+    throw new Error('Calendário fictício incoerente com o depósito');
+  const request = creditsForPrl(prlOfPeriod(data.request.prlCents), params);
+  const selected = depositNights;
+  const originated = creditsOfSelection(eligible, selected);
+  return {
+    secondHome: data.secondHomes[u.secondHome],
+    role: u.role,
+    months: u.months,
+    days,
+    eligible,
+    stops: depositStops(eligible),
+    priorAvailable: prior,
+    requestCredits: request,
+    shortfall: Math.max(0, request - prior),
+    selected,
+    originated,
+    afterDeposit: prior + originated,
+    confirmedAt: now,
+  };
 }
 
 /** Cenário derivado da Request (R1–R4). Tudo o que a tela mostra sai daqui. */

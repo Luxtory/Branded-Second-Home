@@ -1,14 +1,12 @@
-// Demonstração conceitual — peças comuns às sequências (Request, Direct, Luxplus). Markup idêntico ao da Etapa A:
-// a Request aprovada continua gerando os mesmos bytes (regressão conferida por hash dos quadros).
+// Peças comuns às sequências (Request, Direct, Luxplus, Créditos): ícones, toque, calendário do DS e faixa de noites.
 import { CANONICAL } from './data.js';
 import { civilFull, civilShort } from './format.js';
 
-// Exportação final (?final=1, capture.mjs --final): o selo interno dá lugar a uma indicação neutra de dados
-// ilustrativos, numa linha como antes (layout e coreografia aprovados não mudam). Prévias internas mantêm o selo.
+// Exportação final (?final=1, --final): sem etiqueta interna nem tarja de revisão na montagem. Os cartões não levam
+// selo em modo algum (revisão comercial de 2026-11-15): a indicação de material ilustrativo é do filme (lettering de
+// C05), não de cada cartão.
 export const FINAL =
   typeof location !== 'undefined' && new URLSearchParams(location.search).get('final') === '1';
-export const SEAL = FINAL ? 'Dados ilustrativos' : 'Demonstração conceitual · dados fictícios';
-export const seal = `<p class="demo-seal">${SEAL}</p>`;
 export const hours = `entrada ${CANONICAL.checkinHour}h, saída ${CANONICAL.checkoutHour}h`; // PD-002
 export const periodOf = (checkin, checkout) => `${civilShort(checkin)} a ${civilFull(checkout)}`;
 /** Elemento sempre visível na linha do tempo (entra antes do início). */
@@ -19,6 +17,8 @@ export const ICONS = `
     <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></g></symbol>
     <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></g></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
   </svg>`;
 export const icon = (id, cls = 'demo-icon') =>
   `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#${id}"/></svg>`;

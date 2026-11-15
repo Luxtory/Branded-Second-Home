@@ -1,5 +1,5 @@
 // Demonstração conceitual — verificação no navegador. Para cada sequência (Request, Direct, Luxplus), formato e
-// instante-chave do `qa` da sequência confere: valores e estados exibidos (derivados de data.js), selo visível, cartões
+// instante-chave do `qa` da sequência confere: valores e estados exibidos (derivados de data.js), nenhum jargão ou marca de protótipo, cartões
 // sem sobreposição e dentro do quadro, tamanho mínimo de texto no arquivo final, axe (WCAG 2.2 AA), fontes do DS,
 // nenhuma requisição fora de 127.0.0.1, nenhum erro de console, calendário sem dados de outro Titular, varredura de
 // sobreposição em todos os quadros e determinismo do quadro.
@@ -21,7 +21,20 @@ const SEQS = (
 const MIN_TEXT_OUT_PX = { '16x9': 16, '9x16': 30 };
 // --final: confere a exportação para o comercial — nenhuma marca interna pode aparecer em quadro algum.
 const FINAL = process.argv.includes('--final');
-const INTERNAL_MARKS = ['Demonstração conceitual', 'Prova interna', 'dados fictícios'];
+const INTERNAL_MARKS = ['Prova interna'];
+// Revisão comercial (2026-11-15): nenhum jargão técnico ou marca de protótipo nos cartões, em modo algum.
+const JARGON = [
+  'Demonstração',
+  'conceitual',
+  'fictíci',
+  'ilustrativ',
+  'PRL',
+  'Luxchange Fee',
+  'simulad',
+  'L-000',
+  'L-01',
+];
+const FEE_WORD = /\bFee\b/;
 
 const failures = [];
 const fail = (msg) => failures.push(msg);
@@ -82,7 +95,6 @@ for (const seq of SEQS) {
         const rects = visible.map((c) => ({
           id: c.id,
           ...c.getBoundingClientRect().toJSON(),
-          seal: !!c.querySelector('.demo-seal')?.offsetHeight,
         }));
         let minFont = Infinity;
         for (const card of visible) {
@@ -106,13 +118,13 @@ for (const seq of SEQS) {
             td.dataset.range,
           ]),
         );
-        const otherStates = document.querySelectorAll('[data-day][data-state]').length;
+        // Só o calendário da estadia (#cal) não pode expor estado de datas de outros; o do depósito é o do próprio
+        // Titular (Direito de Uso) e mostra os estados por definição.
+        const otherStates = document.querySelectorAll('#cal [data-day][data-state]').length;
         return { rects, minFont, text, ranges, otherStates };
       });
       if (!info.rects.length) fail(`${tag}@${key.t}: nenhum cartão visível`);
       for (const r of info.rects) {
-        // `qa.seal === false`: só o cartão da assinatura, que por decisão é exclusivamente da marca.
-        if (!r.seal && qa.seal !== false) fail(`${tag}@${key.t}: ${r.id} sem selo de demonstração`);
         if (r.left < 0 || r.top < 0 || r.right > vp.width || r.bottom > vp.height)
           fail(`${tag}@${key.t}: ${r.id} fora do quadro`);
       }
@@ -127,9 +139,11 @@ for (const seq of SEQS) {
         if (!info.text.toLowerCase().includes(text.toLowerCase()))
           fail(`${tag}@${key.t}: texto esperado ausente: ${text}`);
       // `absent`: textos que não podem estar visíveis naquele instante; na exportação final, também as marcas internas.
-      for (const text of [...(key.absent ?? []), ...(FINAL ? INTERNAL_MARKS : [])])
+      for (const text of [...JARGON, ...(key.absent ?? []), ...(FINAL ? INTERNAL_MARKS : [])])
         if (info.text.toLowerCase().includes(text.toLowerCase()))
           fail(`${tag}@${key.t}: texto visível antes da hora: ${text}`);
+      if (FEE_WORD.test(info.text))
+        fail(`${tag}@${key.t}: "Fee" visível (rótulo comercial: Taxa de intermediação)`);
       const minOut = info.minFont * (vp.outHeight / vp.height);
       if (minOut < MIN_TEXT_OUT_PX[fmt])
         fail(`${tag}@${key.t}: texto de ${minOut.toFixed(1)} px no arquivo final`);

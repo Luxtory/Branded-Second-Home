@@ -1,11 +1,11 @@
-// Demonstração conceitual — coreografia do Luxplus (Etapa B). Noites adicionais do Inventário Luxtory pagas em dinheiro
+// Coreografia do Luxplus (linguagem harmonizada na revisão comercial de 2026-11-15). Noites adicionais do Inventário Luxtory pagas em dinheiro
 // (01 §25, BR-240): Membership elegível; sem consumo de Créditos (BR-241); sem Luxchange Fee (BR-230 só alcança Request e
 // Direct); política aceita antes da confirmação (PD-009); pagamento não reserva — revalidação e confirmação (TECH-080).
 // Preço canônico com referência no PRL (BR-243, REQ-070: PRL × (1 − desconto aplicável), congelado na compra); como o
 // desconto não está publicado (BR-244, P-5), a tela mostra só um valor ilustrativo da estadia, sem PRL nem desconto.
 // Textos da demonstração, não copy aprovada.
 import { luxplusScenario } from './data.js';
-import { brl, credits, instant } from './format.js';
+import { brl, credits } from './format.js';
 import {
   ALWAYS,
   ICONS,
@@ -15,7 +15,6 @@ import {
   periodOf,
   press,
   rangeSteps,
-  seal,
 } from './shared.js';
 
 const s = luxplusScenario();
@@ -32,10 +31,9 @@ export function build(stage, fmt) {
       <p class="lx-eyebrow">Luxtory Club · Luxplus</p>
       <div>
         <p class="demo-name">${s.secondHome.name}</p>
-        <p class="demo-sub">Second Home fictícia · ${s.secondHome.homeEdition}</p>
+        <p class="demo-sub">${s.secondHome.homeEdition}</p>
       </div>
       <p class="demo-note demo-only-16x9" id="home-route">${route}</p>
-      ${seal}
     </section>
 
     <section class="demo-card demo-card--task" id="cal" data-surface="deep" aria-label="Escolha das noites">
@@ -46,20 +44,18 @@ export function build(stage, fmt) {
       </div>
       <p class="demo-note demo-only-9x16" id="cal-route">${route}</p>
       <button class="lx-button lx-button--primary demo-only-16x9" type="button" id="cal-next" tabindex="-1">Revisar Luxplus</button>
-      ${seal}
     </section>
 
     <section class="demo-card demo-card--task" id="review" data-surface="deep" aria-label="Revisão do Luxplus">
       <p class="lx-eyebrow">Revisar Luxplus</p>
       <p class="lx-title">${s.secondHome.name} · ${period}</p>
       <dl class="lx-evidence">
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Valor da estadia</dt><dd class="lx-evidence__value lx-evidence__value--strong">${brl(s.stayValueCents)} <span class="demo-tag">ilustrativo</span></dd><dd class="demo-hint">Pago em dinheiro</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Valor da estadia</dt><dd class="lx-evidence__value lx-evidence__value--strong">${brl(s.stayValueCents)}</dd><dd class="demo-hint">Pago em dinheiro</dd></div>
         <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos Luxchange</dt><dd class="lx-evidence__value">Não utilizados</dd></div>
         <div class="lx-evidence__item"><dt class="lx-evidence__label">Membership</dt><dd class="lx-evidence__value">Vigente</dd></div>
       </dl>
-      <label class="lx-check"><input type="checkbox" id="policy" tabindex="-1"><span>Li e aceito a política comercial aplicável<span class="lx-check__note">Etapa conceitual. Sem política vigente, nada é confirmado.</span></span></label>
-      <button class="lx-button lx-button--primary" type="button" id="send" tabindex="-1"><span class="demo-swap"><span id="send-label">Pagar e confirmar</span><span id="send-busy">Pagamento simulado</span></span></button>
-      ${seal}
+      <label class="lx-check"><input type="checkbox" id="policy" tabindex="-1"><span>Li e aceito a política comercial aplicável</span></label>
+      <button class="lx-button lx-button--primary" type="button" id="send" tabindex="-1"><span class="demo-swap"><span id="send-label">Pagar e confirmar</span><span id="send-busy">Processando pagamento</span></span></button>
     </section>
 
     <section class="demo-card demo-card--ctx" id="credits" data-surface="deep" aria-label="Créditos Luxchange">
@@ -70,7 +66,6 @@ export function build(stage, fmt) {
         <div><dt>Usados no Luxplus</dt><dd><span>${credits(s.credits.used)}</span></dd></div>
       </dl>
       <p class="demo-note">${icon('i-info')}<span>O Luxplus não usa Créditos: o saldo continua o mesmo.</span></p>
-      ${seal}
     </section>
 
     <section class="demo-card demo-card--task" id="reval" data-surface="deep" aria-label="Revalidação">
@@ -82,7 +77,6 @@ export function build(stage, fmt) {
         <li id="rv-2">${icon('i-check')}Membership vigente</li>
         <li id="rv-3">${icon('i-check')}Política aceita</li>
       </ul>
-      ${seal}
     </section>
 
     <section class="demo-card demo-card--task" id="booking" data-surface="deep" aria-label="Reserva confirmada">
@@ -92,9 +86,7 @@ export function build(stage, fmt) {
         <p class="demo-name">${period}</p>
         <p class="demo-sub">${s.secondHome.name} · ${nightsLabel} · ${hours}</p>
       </div>
-      <p class="demo-sub">${s.booking.channel} · pago em dinheiro · Créditos inalterados</p>
-      <span class="lx-meta">Confirmada · ${instant(s.booking.confirmedAt)}</span>
-      ${seal}
+      <p class="demo-sub">${s.booking.channel} · Créditos inalterados</p>
     </section>`,
   );
   stage.dataset.fmt = fmt;
@@ -147,7 +139,7 @@ export function timeline(fmt) {
         label: 'rota: noites adicionais do Inventário Luxtory, em dinheiro → Luxplus',
       },
       ...(v ? [] : [{ at: 4_100, label: 'toque · Revisar Luxplus' }]),
-      { at: 6_800, label: 'toque · aceite da política (etapa conceitual)' },
+      { at: 6_800, label: 'toque · aceite da política' },
       { at: 7_600, label: 'toque · Pagar e confirmar' },
       { at: revalIn, label: 'pagamento aprovado · revalidação (o pagamento não reserva)' },
       { at: confirmed, label: 'Reserva Confirmada; Créditos inalterados' },
@@ -170,7 +162,6 @@ export const qa = {
       name: 'revisao',
       expect: [
         brl(s.stayValueCents),
-        'ilustrativo',
         'Pago em dinheiro',
         'Não utilizados',
         'Vigente',
@@ -194,8 +185,7 @@ export const qa = {
       expect: [
         'Reserva confirmada',
         period,
-        'Luxplus · pago em dinheiro · Créditos inalterados',
-        `Confirmada · ${instant(s.booking.confirmedAt)}`,
+        'Luxplus · Créditos inalterados',
         credits(s.credits.available),
         'O Luxplus não usa Créditos',
       ],
@@ -213,5 +203,6 @@ export const qa = {
   alpha: { from: 7_400, seconds: 5 },
   sample: { card: '#booking', at: 12_000 },
   motion: { card: '#booking', at: 12_500, enter: [10_700, 11_180] },
-  plates: { campo: 'public/images/home/kaizen/kaizen-k05.jpg' },
+  // Placa de teste de legibilidade (não representa Pátio · Campo; PRODUCAO.md §2.1).
+  plates: { escuro: 'public/images/home/hero/luxury-property-facade-hero.jpg' },
 };

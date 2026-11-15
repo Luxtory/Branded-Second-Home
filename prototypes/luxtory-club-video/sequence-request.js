@@ -1,25 +1,51 @@
-// Demonstração conceitual — coreografia da Luxchange Request (Etapa A: R1 e R2 completos, R3/R4 resumidos).
-// Todo valor exibido vem de requestScenario() (data.js → rules.js). Os textos são da demonstração, não copy aprovada.
-// Hipótese visual (não especificada no 02): quem solicita escolhe o período e recebe a rota; não vê calendário,
-// disponibilidade nem identidade de outro Titular.
-import { requestScenario } from './data.js';
-import { brl, credits, instant } from './format.js';
-import { ALWAYS, ICONS, calendarMonth, hours, icon, periodOf, press, seal } from './shared.js';
+// Coreografia da Luxchange Request (revisão de UX de 2026-11-15): escolha da estadia → Créditos necessários × saldo →
+// complementação opcional por depósito de datas elegíveis (controle + calendário do Direito de Uso) → depósito
+// confirmado → revisão → Taxa de intermediação → pagamento e envio → Garantia (só no envio) → aceite expresso do
+// Titular detentor → revalidação → Request Aceita + Reserva Confirmada na mesma operação (REQ-064).
+// Todo valor exibido vem de requestScenario() e depositScenario() (data.js → rules.js). A capacidade pedida não fica
+// bloqueada enquanto a Request está pendente (PD-005). Textos da demonstração, ainda não copy aprovada.
+import { FICTITIOUS, depositScenario, requestScenario } from './data.js';
+import { brl, credits } from './format.js';
+import { ALWAYS, ICONS, calendarMonth, hours, icon, periodOf, press } from './shared.js';
+import {
+  datesCard,
+  depositedCard,
+  monthNavigation,
+  needCard,
+  selectionChoreography,
+  selectionStates,
+  topupCard,
+} from './credits-step.js';
 
 const s = requestScenario();
+const dep = depositScenario();
 const period = periodOf(s.checkin, s.checkout);
+const route = `${icon('i-info')}<span><strong>Noites de outro Titular</strong>A reserva depende do aceite dele: Luxchange Request.</span>`;
+// Etapas da seleção (fonte única: as datas). Primeiro o controle vai à primeira meta (14/05, 16.000); depois os toques
+// em 15/05 e 16/05 levam o controle a 32.000 e 46.000 — metas alcançáveis, nunca fração de data.
+const [d14, d15, d16] = dep.eligible.map((d) => d.night);
+const SELECTION = [[d14], [d14, d15], [d14, d15, d16]];
 
-const [lotA, lotB, lotC] = s.lots;
-const holdOf = (id) => s.hold.find((h) => h.lotId === id)?.quantity ?? 0;
-const lotRow = (lot) => {
-  const part = holdOf(lot.id);
+// Lotes sem códigos internos: origem e quantidade, na ordem de consumo (PD-008). Antes do envio, a composição do saldo
+// (anteriores + novo depósito); no envio, a parcela de cada lote que fica em Garantia.
+const originOf = (lot) =>
+  lot.id === FICTITIOUS.deposit.lotId ? 'Novo depósito' : 'Créditos anteriores';
+const lotRows = s.lots.map(
+  (lot) => `<li><span>${originOf(lot)}</span><span>${credits(lot.quantity)}</span></li>`,
+);
+const holdRows = s.hold.map((part) => {
+  const lot = s.lots.find((l) => l.id === part.lotId);
+  const origin = originOf(lot);
   const amount =
-    part === lot.quantity ? credits(part) : `${credits(part)} de ${credits(lot.quantity)}`;
-  return `<li><span class="lx-meta">${lot.id}</span><span>${amount}</span><span class="lx-meta">vence ${instant(lot.expiresAt).slice(0, 10)}</span></li>`;
-};
+    part.quantity === lot.quantity
+      ? credits(part.quantity)
+      : `${credits(part.quantity)} de ${credits(lot.quantity)}`;
+  return `<li><span>${origin}</span><span>${amount}</span></li>`;
+});
 
 export function build(stage, fmt) {
   const [year, month] = s.checkin.split('-').map(Number);
+  const states = selectionStates(dep, [[], ...SELECTION], s.credits);
   stage.insertAdjacentHTML(
     'beforeend',
     `${ICONS}
@@ -27,10 +53,9 @@ export function build(stage, fmt) {
       <p class="lx-eyebrow">Luxtory Club · Luxchange</p>
       <div>
         <p class="demo-name">${s.secondHome.name}</p>
-        <p class="demo-sub">Second Home fictícia · ${s.secondHome.homeEdition}</p>
+        <p class="demo-sub">${s.secondHome.homeEdition}</p>
       </div>
-      <p class="demo-note demo-only-16x9" id="home-route">${icon('i-info')}<span><strong>Noites de outro Titular</strong>A reserva depende do aceite dele: Luxchange Request.</span></p>
-      ${seal}
+      <p class="demo-note demo-only-16x9" id="home-route">${route}</p>
     </section>
 
     <section class="demo-card demo-card--task" id="cal" data-surface="deep" aria-label="Escolha das noites">
@@ -39,23 +64,25 @@ export function build(stage, fmt) {
         <span class="lx-ordinal">${s.nights.length} noites</span>
         <span class="demo-sub">${period} · ${hours}</span>
       </div>
-      <p class="demo-note demo-only-9x16" id="cal-route">${icon('i-info')}<span><strong>Noites de outro Titular</strong>A reserva depende do aceite dele: Luxchange Request.</span></p>
-      <button class="lx-button lx-button--primary demo-only-16x9" type="button" id="cal-next" tabindex="-1">Revisar Request</button>
-      ${seal}
+      <p class="demo-note demo-only-9x16" id="cal-route">${route}</p>
+      <button class="lx-button lx-button--primary demo-only-16x9" type="button" id="cal-next" tabindex="-1">Continuar</button>
     </section>
+
+    ${needCard({ title: `${s.secondHome.name} · ${period}`, needed: s.credits, available: dep.priorAvailable, role: dep.role, sufficient: false })}
+    ${topupCard(dep, states)}
+    ${datesCard(dep, states, { action: 'Depositar datas e gerar Créditos' })}
+    ${depositedCard(dep, { next: 'Revisar Request' })}
 
     <section class="demo-card demo-card--task" id="review" data-surface="deep" aria-label="Revisão da Request">
       <p class="lx-eyebrow">Revisar Request</p>
       <p class="lx-title">${s.secondHome.name} · ${period}</p>
       <dl class="lx-evidence">
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos em Garantia</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(s.credits)}</dd></div>
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Luxchange Fee</dt><dd class="lx-evidence__value">${brl(s.feeCents)} <span class="demo-tag">ilustrativo</span></dd><dd class="demo-hint">Pago no envio, em dinheiro, separado dos Créditos</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos necessários</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(s.credits)}</dd><dd class="demo-hint">Reservados no envio; consumidos só com o aceite</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Taxa de intermediação</dt><dd class="lx-evidence__value">${brl(s.feeCents)}</dd><dd class="demo-hint">Paga no envio, separada dos Créditos</dd></div>
         <div class="lx-evidence__item"><dt class="lx-evidence__label">Prazo para o aceite</dt><dd class="lx-evidence__value">24 horas</dd></div>
-        <div class="lx-evidence__item demo-only-16x9"><dt class="lx-evidence__label">PRL do período</dt><dd class="lx-evidence__value">${brl(s.prlPeriodCents)} <span class="demo-tag">fictício</span></dd></div>
       </dl>
-      <label class="lx-check"><input type="checkbox" id="policy" tabindex="-1"><span>Li e aceito a política comercial aplicável<span class="lx-check__note">Etapa conceitual. Sem política vigente, nada é enviado.</span></span></label>
-      <button class="lx-button lx-button--primary" type="button" id="send" tabindex="-1"><span class="demo-swap"><span id="send-label">Pagar Fee e enviar</span><span id="send-busy">Pagamento simulado</span></span></button>
-      ${seal}
+      <label class="lx-check"><input type="checkbox" id="policy" tabindex="-1"><span>Li e aceito a política comercial aplicável</span></label>
+      <button class="lx-button lx-button--primary" type="button" id="send" tabindex="-1"><span class="demo-swap"><span id="send-label">Pagar taxa e enviar</span><span id="send-busy">Processando pagamento</span></span></button>
     </section>
 
     <section class="demo-card demo-card--ctx" id="credits" data-surface="deep" aria-label="Créditos Luxchange">
@@ -64,22 +91,25 @@ export function build(stage, fmt) {
       <div class="demo-bar" aria-hidden="true"><span class="demo-bar__seg" id="bar-avail"></span><span class="demo-bar__seg demo-bar__seg--held" id="bar-held"></span></div>
       <dl class="demo-legend">
         <div><dt>Disponíveis</dt><dd><span id="lg-avail-before">${credits(s.balances.beforeSend.available)}</span><span id="lg-avail-after">${credits(s.balances.afterSend.available)}</span></dd></div>
-        <div><dt>Em Garantia</dt><dd><span id="lg-held-before">${credits(s.balances.beforeSend.held)}</span><span id="lg-held-after">${credits(s.balances.afterSend.held)}</span></dd></div>
+        <div id="lg-held"><dt>Em Garantia</dt><dd>${credits(s.balances.afterSend.held)}</dd></div>
       </dl>
-      <ul class="demo-lots demo-only-16x9" id="lots">
-        <li class="demo-lots__head">Garantia no envio, pelos lotes que vencem primeiro</li>
-        ${[lotA, lotB, lotC].map(lotRow).join('')}
-      </ul>
-      ${seal}
+      <div class="demo-swap demo-only-16x9">
+        <ul class="demo-lots" id="lots-before">
+          <li class="demo-lots__head">Seu saldo, do lote que vence primeiro</li>
+          ${lotRows.join('')}
+        </ul>
+        <ul class="demo-lots" id="lots">
+          <li class="demo-lots__head">Garantia pelos lotes que vencem primeiro</li>
+          ${holdRows.join('')}
+        </ul>
+      </div>
     </section>
 
     <section class="demo-card demo-card--task" id="pending" data-surface="deep" aria-label="Request pendente">
       <p class="demo-state demo-state--pending">${icon('i-clock')}Pendente</p>
       <p class="lx-display-s">Request enviada</p>
-      <div class="demo-times"><span class="lx-meta">Enviada ${instant(s.sentAt)}</span><span class="lx-meta">Expira ${instant(s.expiresAt)}</span></div>
       <p class="demo-note">${icon('i-info')}<span>As noites não ficam bloqueadas enquanto a Request está pendente. A reserva só se confirma com o aceite e a revalidação.</span></p>
-      <p class="demo-sub">Fee de ${brl(s.feeCents)} pago. Sem aceite, ele é revertido integralmente e a Garantia é liberada.</p>
-      ${seal}
+      <p class="demo-sub">O Titular tem até 24 horas para responder. Sem aceite, a Taxa de intermediação é devolvida e a Garantia é liberada.</p>
     </section>
 
     <section class="demo-card demo-card--task" id="holder" data-surface="deep" aria-label="Request recebida pelo Titular detentor">
@@ -88,7 +118,7 @@ export function build(stage, fmt) {
       <p class="demo-sub">${s.secondHome.name} · ${period} · ${s.nights.length} noites da reserva de uso próprio desta Ação</p>
       <dl class="lx-evidence">
         <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos para esta Ação</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(s.holder.lot.quantity)}</dd></div>
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Expira</dt><dd class="lx-evidence__value"><span class="lx-meta">${instant(s.expiresAt)}</span></dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Prazo para responder</dt><dd class="lx-evidence__value">24 horas</dd></div>
       </dl>
       <p class="demo-sub">Ao aceitar, as noites são cedidas e seguem consumidas do Direito de Uso desta Ação.</p>
       <div class="demo-swap">
@@ -106,15 +136,12 @@ export function build(stage, fmt) {
           </ul>
         </div>
       </div>
-      ${seal}
     </section>
 
     <section class="demo-card demo-card--task" id="accepted" data-surface="deep" aria-label="Request aceita">
       <p class="lx-eyebrow">Visão do Titular detentor · Co-Owner</p>
       <p class="demo-state demo-state--done">${icon('i-check')}Request aceita</p>
-      <p><span class="lx-ordinal">${credits(s.holder.lot.quantity)}</span> <span class="demo-sub">Créditos originados para esta Ação</span></p>
-      <div class="demo-times"><span class="lx-meta">Lote ${s.holder.lot.id} · originado ${instant(s.holder.lot.originatedAt)}</span><span class="lx-meta">Vence ${instant(s.holder.lot.expiresAt)}</span></div>
-      ${seal}
+      <p><span class="lx-ordinal">${credits(s.holder.lot.quantity)}</span> <span class="demo-sub">Créditos para esta Ação, válidos por 24 meses</span></p>
     </section>
 
     <section class="demo-card demo-card--ctx" id="booking" data-surface="deep" aria-label="Reserva confirmada">
@@ -124,9 +151,7 @@ export function build(stage, fmt) {
         <p class="demo-name">${period}</p>
         <p class="demo-sub">${s.secondHome.name} · ${s.nights.length} noites · ${hours}</p>
       </div>
-      <p class="demo-sub">${s.booking.channel} · ${credits(s.balances.afterAccept.consumed)} Créditos consumidos da Garantia</p>
-      <span class="lx-meta">Mesma operação · ${instant(s.booking.confirmedAt)}</span>
-      ${seal}
+      <p class="demo-sub">${s.booking.channel} · ${credits(s.balances.afterAccept.consumed)} Créditos consumidos da Garantia, no momento do aceite</p>
     </section>`,
   );
   stage.dataset.fmt = fmt;
@@ -134,53 +159,102 @@ export function build(stage, fmt) {
 
 const share = (part) => part / s.balances.beforeSend.available;
 
-export function timeline(fmt) {
+/** Instantes de cada formato. Depois do depósito confirmado, os dois formatos seguem juntos. */
+export function times(fmt) {
   const v = fmt === '9x16';
-  // 9:16 tem composição própria: um cartão de cada vez quando dois não cabem (contexto no alto, tarefa embaixo).
-  // Troca no mesmo lugar: o cartão novo só entra depois da saída do anterior (duration.moderate, 280 ms) —
-  // nunca um crossfade de textos diferentes (check.mjs varre todos os quadros).
-  const calIn = v ? 1_800 : 1_100;
-  // Commit do envio: a Request aparece Pendente e a Garantia é constituída no mesmo instante (PD-005, PD-006).
-  const sendCommit = 11_700;
-  const creditsIn = v ? sendCommit : 6_400;
-  const tweenAt = sendCommit;
-  // Valor novo só depois da saída do antigo (duration.moderate): nunca "94.000 disponíveis + 55.000 em Garantia".
-  const valueIn = tweenAt + 280;
-  // Aceite válido: o cartão do detentor sai e, na mesma operação, entram Request Aceita e Reserva Confirmada.
-  const holderOut = 20_300;
-  const result = 20_600;
   return {
-    duration: 25_000,
+    v,
+    calIn: v ? 1_800 : 1_100,
+    needIn: 5_800,
+    topupPress: 8_200,
+    stepOut: 8_600,
+    topupIn: 8_900,
+    // 16:9: controle e calendário lado a lado. 9:16: um cartão por vez — controle, depois calendário.
+    slider: v ? 9_900 : 11_300,
+    topupOut: v ? 11_400 : 15_700,
+    datesIn: v ? 11_700 : 8_900,
+    nav: v ? 12_400 : 10_000,
+    taps: v ? [13_500, 14_100] : [12_900, 13_700],
+    depositPress: 14_900,
+    depositOut: 15_700,
+    depositedIn: 16_000,
+    reviewPress: 17_900,
+    reviewOut: 18_300,
+    reviewIn: 18_600,
+    policy: 19_600,
+    pay: 20_800,
+    sendOut: 22_200,
+    // Commit do envio: a Request aparece Pendente e a Garantia é constituída no mesmo instante (PD-005, PD-006).
+    sendCommit: 22_500,
+    pendingOut: 26_500,
+    holderIn: 26_900,
+    accept: 29_300,
+    holderOut: 31_100,
+    // Aceite válido: o cartão do detentor sai e, na mesma operação, entram Request Aceita e Reserva Confirmada.
+    result: 31_400,
+    duration: 35_000,
+  };
+}
+
+export function timeline(fmt) {
+  const t = times(fmt);
+  const { v } = t;
+  const tween = 900; // duration.cinematic (stage.js MOTION.tween)
+  const selection = selectionChoreography(
+    dep,
+    [
+      { at: t.slider, nights: SELECTION[0], via: 'slider' },
+      { at: t.taps[0], nights: SELECTION[1], via: 'calendar' },
+      { at: t.taps[1], nights: SELECTION[2], via: 'calendar' },
+    ],
+    { tween, needed: s.credits },
+  );
+  const nav = monthNavigation(dep, t.nav);
+  const valueIn = t.sendCommit + 280;
+  return {
+    duration: t.duration,
     enter: [
-      // R1 — escolher noites
-      { sel: '#home', in: 400, out: v ? 1_500 : 5_500 },
-      { sel: '#cal', in: calIn, out: 5_500 },
+      // Escolha da estadia
+      { sel: '#home', in: 400, out: v ? 1_500 : t.stepOut },
+      { sel: '#cal', in: t.calIn, out: 5_500 },
       { sel: '#cal-summary', in: 3_700 },
       { sel: '#home-route', in: 4_200 },
       { sel: '#cal-route', in: 4_200 },
-      // R2 — revisão, política, pagamento do Fee, Pendente
-      { sel: '#review', in: 5_800, out: 11_400 },
-      { sel: '#send-label', in: ALWAYS, out: 10_100 },
-      { sel: '#send-busy', in: 10_200, dur: 0 },
-      { sel: '#credits', in: creditsIn, out: 15_700 },
-      { sel: '#lots', in: 7_000 },
-      { sel: '#cr-before', in: ALWAYS, out: tweenAt },
+      // Créditos necessários × saldo: uma decisão (complementar)
+      { sel: '#need', in: t.needIn, out: t.stepOut },
+      // Complementação: controle e calendário, sincronizados
+      { sel: '#topup', in: t.topupIn, out: t.topupOut },
+      { sel: '#dates', in: t.datesIn, out: t.depositOut },
+      ...nav.enter,
+      ...selection.enter,
+      { sel: '#deposit-label', in: ALWAYS, out: t.depositPress + 100 },
+      { sel: '#deposit-busy', in: t.depositPress + 200, dur: 0 },
+      // Depósito confirmado (operação própria) e, no 16:9, o saldo de Créditos ao lado
+      { sel: '#deposited', in: t.depositedIn, out: t.reviewOut },
+      { sel: '#credits', in: v ? t.sendCommit : t.depositedIn, out: t.pendingOut },
+      // Revisão, Taxa de intermediação, pagamento e envio
+      { sel: '#review', in: t.reviewIn, out: t.sendOut },
+      { sel: '#send-label', in: ALWAYS, out: t.pay + 100 },
+      { sel: '#send-busy', in: t.pay + 200, dur: 0 },
+      // Garantia só no envio
+      { sel: '#lots-before', in: ALWAYS, out: t.sendCommit },
+      { sel: '#lots', in: t.sendCommit + 280 },
+      { sel: '#lg-held', in: valueIn },
+      { sel: '#cr-before', in: ALWAYS, out: t.sendCommit },
       { sel: '#cr-after', in: valueIn },
-      { sel: '#lg-avail-before', in: ALWAYS, out: tweenAt },
+      { sel: '#lg-avail-before', in: ALWAYS, out: t.sendCommit },
       { sel: '#lg-avail-after', in: valueIn },
-      { sel: '#lg-held-before', in: ALWAYS, out: tweenAt },
-      { sel: '#lg-held-after', in: valueIn },
-      { sel: '#pending', in: sendCommit, out: 15_700 },
-      // R3/R4 — aceite do detentor, revalidação e, na mesma operação, Request Aceita + Reserva Confirmada
-      { sel: '#holder', in: 16_100, out: holderOut },
-      { sel: '#holder-actions', in: ALWAYS, out: 18_600 },
-      { sel: '#reval', in: 18_800 },
-      { sel: '#rv-1', in: 18_900 },
-      { sel: '#rv-2', in: 19_100 },
-      { sel: '#rv-3', in: 19_300 },
-      { sel: '#rv-4', in: 19_500 },
-      { sel: '#accepted', in: result },
-      { sel: '#booking', in: result },
+      { sel: '#pending', in: t.sendCommit, out: t.pendingOut },
+      // Aceite do detentor, revalidação e, na mesma operação, Request Aceita + Reserva Confirmada
+      { sel: '#holder', in: t.holderIn, out: t.holderOut },
+      { sel: '#holder-actions', in: ALWAYS, out: t.accept + 100 },
+      { sel: '#reval', in: t.accept + 300 },
+      { sel: '#rv-1', in: t.accept + 400 },
+      { sel: '#rv-2', in: t.accept + 600 },
+      { sel: '#rv-3', in: t.accept + 800 },
+      { sel: '#rv-4', in: t.accept + 1_000 },
+      { sel: '#accepted', in: t.result },
+      { sel: '#booking', in: t.result },
     ],
     set: [
       { sel: '[data-day="2027-06-04"]', attr: 'data-range', at: 2_400, value: 'start' },
@@ -188,51 +262,70 @@ export function timeline(fmt) {
       { sel: '[data-day="2027-06-06"]', attr: 'data-range', at: 3_180, value: 'night' },
       { sel: '[data-day="2027-06-07"]', attr: 'data-range', at: 3_260, value: 'end' },
       ...press('#cal-next', 5_200),
-      { sel: '#policy', attr: 'checked', at: 8_800, value: true },
-      ...press('#send', 10_000),
-      { sel: '#send', attr: 'aria-busy', at: 10_100, value: 'true' },
-      { sel: '#send', attr: 'aria-busy', at: 11_400, value: null },
-      ...press('#accept', 18_500),
+      ...press('#need-topup', t.topupPress),
+      ...nav.set,
+      ...selection.set,
+      ...press('#deposit-go', t.depositPress),
+      { sel: '#deposit-go', attr: 'aria-busy', at: t.depositPress + 100, value: 'true' },
+      { sel: '#deposit-go', attr: 'aria-busy', at: t.depositOut, value: null },
+      ...press('#deposited-next', t.reviewPress),
+      { sel: '#policy', attr: 'checked', at: t.policy, value: true },
+      ...press('#send', t.pay),
+      { sel: '#send', attr: 'aria-busy', at: t.pay + 100, value: 'true' },
+      { sel: '#send', attr: 'aria-busy', at: t.sendOut, value: null },
+      ...press('#accept', t.accept),
     ],
     tween: [
+      ...selection.tween,
       {
         sel: '#bar-avail',
         prop: '--share',
-        at: tweenAt,
+        at: t.sendCommit,
         from: 1,
         to: share(s.balances.afterSend.available),
       },
       {
         sel: '#bar-held',
         prop: '--share',
-        at: tweenAt,
+        at: t.sendCommit,
         from: 0,
         to: share(s.balances.afterSend.held),
       },
     ],
     marks: [
-      { at: 0, label: 'R1 · início (palco vazio)' },
+      { at: 0, label: 'Request · início (palco vazio)' },
       { at: 2_400, label: 'toque · entrada 04/06' },
       { at: 3_100, label: 'toque · saída 07/06' },
       { at: 4_200, label: 'rota: noites de outro Titular → Luxchange Request' },
-      ...(v ? [] : [{ at: 5_200, label: 'toque · Revisar Request' }]),
-      { at: 5_500, label: 'corte sugerido · início de R2' },
-      { at: 8_800, label: 'toque · aceite da política (etapa conceitual)' },
-      { at: 10_000, label: 'toque · Pagar Fee e enviar' },
-      { at: sendCommit, label: 'Request Pendente; Garantia constituída' },
+      ...(v ? [] : [{ at: 5_200, label: 'toque · Continuar' }]),
+      { at: t.needIn, label: 'Créditos necessários 55.000 × saldo 48.000: faltam 7.000' },
+      { at: t.topupPress, label: 'toque · Complementar saldo (datas do meu Direito de Uso)' },
+      { at: t.nav, label: 'toque · próximo mês (abril → maio)' },
+      { at: t.slider, label: 'controle · Créditos adicionais desejados → 16.000 (14/05)' },
+      { at: t.taps[0], label: 'toque · 15/05 → 32.000' },
+      { at: t.taps[1], label: 'toque · 16/05 → 46.000 (saldo projetado 94.000)' },
+      { at: t.depositPress, label: 'toque · Depositar datas e gerar Créditos' },
+      { at: t.depositedIn, label: 'depósito confirmado: 46.000 novos Créditos · saldo 94.000' },
+      { at: t.reviewPress, label: 'toque · Revisar Request' },
+      { at: t.policy, label: 'toque · aceite da política' },
+      { at: t.pay, label: 'toque · Pagar taxa e enviar' },
+      { at: t.sendCommit, label: 'Request Pendente; Garantia constituída (55.000)' },
       {
-        at: 15_900,
-        label:
-          'corte sugerido · início de R3/R4 (marcador narrativo: o outro Titular recebe a solicitação)',
+        at: t.holderIn - 400,
+        label: 'corte sugerido · o outro Titular recebe a solicitação',
       },
-      { at: 18_500, label: 'toque · Aceitar (Titular detentor)' },
-      { at: result, label: 'aceite válido: Request Aceita + Reserva Confirmada (mesma operação)' },
-      { at: 25_000, label: 'fim' },
-    ],
+      { at: t.accept, label: 'toque · Aceitar (Titular detentor)' },
+      {
+        at: t.result,
+        label: 'aceite válido: Request Aceita + Reserva Confirmada (mesma operação)',
+      },
+      { at: t.duration, label: 'fim' },
+    ].sort((a, b) => a.at - b.at),
   };
 }
 
-/** Pontos de verificação (check.mjs) e de captura (capture.mjs), nos dois formatos — os mesmos da Etapa A. */
+/** Pontos de verificação (check.mjs) e de captura (capture.mjs), nos dois formatos. */
+const T = times('16x9');
 export const qa = {
   checkpoints: [
     { t: 1_000, name: 'inicio', expect: [s.secondHome.name] },
@@ -242,36 +335,59 @@ export const qa = {
       expect: ['3 noites', 'Noites de outro Titular', 'Luxchange Request'],
     },
     {
-      t: 9_000,
-      name: 'revisao',
+      t: 7_600,
+      name: 'creditos',
       expect: [
+        'Créditos necessários',
         credits(s.credits),
-        brl(s.feeCents),
-        'ilustrativo',
-        '24 horas',
-        'política comercial aplicável',
-        'Etapa conceitual',
+        'Saldo válido disponível',
+        credits(dep.priorAvailable),
+        credits(dep.shortfall),
+        'Complementar saldo',
+        'datas elegíveis do meu Direito de Uso',
       ],
+      absent: ['Em Garantia'],
     },
     {
-      t: 13_800,
+      t: 14_880,
+      name: 'complemento',
+      expect: [
+        credits(dep.originated),
+        credits(dep.afterDeposit),
+        'Depositar datas e gerar Créditos',
+      ],
+      absent: ['Em Garantia'],
+    },
+    {
+      t: 17_200,
+      name: 'deposito',
+      expect: ['Depósito confirmado', credits(dep.originated), credits(dep.afterDeposit)],
+      absent: ['Em Garantia'],
+    },
+    {
+      t: 20_400,
+      name: 'revisao',
+      expect: [credits(s.credits), 'Taxa de intermediação', brl(s.feeCents), '24 horas'],
+      absent: ['Em Garantia'],
+    },
+    {
+      t: 24_600,
       name: 'pendente',
       expect: [
         'Pendente',
-        `Enviada ${instant(s.sentAt)}`,
-        `Expira ${instant(s.expiresAt)}`,
         'não ficam bloqueadas',
         credits(s.balances.afterSend.available),
         credits(s.balances.afterSend.held),
+        'Em Garantia',
       ],
     },
     {
-      t: 17_500,
+      t: 28_300,
       name: 'recebida',
       expect: ['Request recebida', 'Co-Owner', 'seguem consumidas do Direito de Uso'],
     },
     {
-      t: 20_100,
+      t: 30_900,
       name: 'revalidacao',
       expect: [
         'Revalidando antes de confirmar',
@@ -280,14 +396,12 @@ export const qa = {
       ],
     },
     {
-      t: 22_000,
+      t: 33_000,
       name: 'confirmacao',
       expect: [
         'Request aceita',
         'Reserva confirmada',
-        `Mesma operação · ${instant(s.acceptedAt)}`,
-        s.holder.lot.id,
-        `Vence ${instant(s.holder.lot.expiresAt)}`,
+        'no momento do aceite',
         credits(s.balances.afterAccept.consumed),
       ],
     },
@@ -300,18 +414,23 @@ export const qa = {
       [s.checkout, 'end'],
     ]),
   },
+  // Seleção esperada no calendário do depósito, ao fim da complementação (fonte única: as datas).
+  deposit: { t: 14_880, selected: dep.selected },
   stills: {
     calendario: 4_800,
-    revisao: 9_000,
-    pendente: 13_800,
-    revalidacao: 20_100,
-    confirmacao: 22_000,
+    creditos: 7_600,
+    complemento: 14_880,
+    deposito: 17_200,
+    revisao: 20_400,
+    pendente: 24_600,
+    revalidacao: 30_900,
+    confirmacao: 33_000,
   },
   // Trecho do aceite: toque em Aceitar, revalidação, saída do cartão e Request Aceita + Reserva Confirmada.
-  alpha: { from: 18_300, seconds: 4 },
-  sample: { card: '#accepted', at: 22_000 },
-  edge: { card: '#booking', at: 22_000 },
-  motion: { card: '#holder', at: 17_500, enter: [16_100, 16_580] },
+  alpha: { from: T.accept - 200, seconds: 4 },
+  sample: { card: '#accepted', at: 33_000 },
+  edge: { card: '#booking', at: 33_000 },
+  motion: { card: '#holder', at: 28_300, enter: [T.holderIn, T.holderIn + 480] },
   plates: {
     claro: 'public/images/home/hero/hero-lifestyle.jpg',
     escuro: 'public/images/home/hero/luxury-property-facade-hero.jpg',

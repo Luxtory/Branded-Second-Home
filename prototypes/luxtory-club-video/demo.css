@@ -330,16 +330,13 @@ body {
   color: var(--lx-color-fg-muted);
 }
 
+/* Lotes por origem e quantidade (sem códigos internos), na ordem de consumo. */
 .demo-lots li {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--lx-space-3);
   align-items: baseline;
   font-size: var(--lx-type-compact);
-}
-
-.demo-lots .lx-meta {
-  font-size: var(--lx-type-label);
 }
 
 .demo-check-list {
@@ -361,6 +358,287 @@ body {
 .demo-check-list .demo-icon {
   width: var(--lx-space-4);
   height: var(--lx-space-4);
+}
+
+/* Passo de Créditos da Request e do Direct (revisão de UX): Créditos necessários × saldo, controle "Créditos adicionais
+   desejados" (metas alcançáveis com datas inteiras), datas por elegibilidade e o calendário do depósito dentro de um
+   acordeão. Composições locais (DS §13.7), só com tokens e classes do Core; estados nunca só por cor. */
+.demo-accordion {
+  border-bottom: 0;
+}
+
+.demo-card .demo-accordion > .lx-disclosure__summary {
+  min-height: var(--lx-target-control);
+  padding-block: var(--lx-space-2);
+  font-size: var(--lx-type-title);
+  line-height: var(--lx-leading-title);
+}
+
+.demo-accordion[open] > .lx-disclosure__summary .lx-disclosure__icon {
+  transform: rotate(-90deg);
+}
+
+.demo-accordion--closed {
+  border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+}
+
+.demo-slider-field {
+  display: grid;
+  gap: var(--lx-space-2);
+}
+
+.demo-slider-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--lx-space-3);
+}
+
+.demo-slider-value {
+  font-family: var(--lx-font-display);
+  font-size: var(--lx-type-ordinal);
+  line-height: var(--lx-leading-heading);
+  color: var(--lx-color-headline);
+  justify-items: end;
+}
+
+.demo-slider {
+  position: relative;
+  height: var(--lx-target-min);
+}
+
+.demo-slider > * {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+}
+
+.demo-slider__track,
+.demo-slider__fill {
+  inset-inline-start: 0;
+  height: var(--lx-space-1);
+}
+
+.demo-slider__track {
+  inset-inline-end: 0;
+  background-color: var(--lx-color-rule);
+}
+
+.demo-slider__fill {
+  width: calc(var(--pos, 0) * 100%);
+  background-color: var(--lx-color-accent);
+}
+
+/* Marca do que falta para esta reserva: traço vertical sobre a trilha. */
+.demo-slider__need {
+  inset-inline-start: calc(var(--need, 0) * 100%);
+  width: var(--lx-border-outline);
+  height: var(--lx-space-4);
+  background-color: var(--lx-color-fg);
+}
+
+.demo-slider__thumb {
+  inset-inline-start: calc(var(--pos, 0) * 100%);
+  width: var(--lx-space-6);
+  height: var(--lx-space-6);
+  translate: -50% -50%;
+  border: var(--lx-focus-width) solid var(--lx-color-bg);
+  border-radius: var(--lx-radius-hairline);
+  background-color: var(--lx-color-accent);
+  box-shadow: 0 0 0 var(--lx-border-hairline) var(--lx-color-accent);
+}
+
+.demo-slider-scale {
+  position: relative;
+  height: var(--lx-space-6);
+  font-family: var(--lx-font-utility);
+  font-size: var(--lx-type-label);
+  color: var(--lx-color-fg-muted);
+}
+
+.demo-slider__tick {
+  position: absolute;
+  inset-inline-start: calc(var(--at) * 100%);
+  translate: -50% 0;
+  white-space: nowrap;
+}
+
+.demo-slider__tick:first-child {
+  translate: 0 0;
+}
+
+.demo-slider__tick:last-child {
+  translate: -100% 0;
+}
+
+/* Datas elegíveis e seus Créditos; a selecionada ganha contorno Warm Sand e o ícone de confirmação. */
+.demo-picks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--lx-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.demo-picks li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'date icon'
+    'credits credits';
+  gap: 0 var(--lx-space-1);
+  padding: var(--lx-space-2);
+  border: var(--lx-border-hairline) solid var(--lx-color-rule);
+  font-size: var(--lx-type-compact);
+  line-height: var(--lx-leading-tight);
+}
+
+.demo-picks li > span:first-of-type {
+  grid-area: date;
+  font-weight: var(--lx-weight-semibold);
+}
+
+.demo-picks li > span:last-of-type {
+  grid-area: credits;
+  font-family: var(--lx-font-display);
+}
+
+.demo-picks .demo-icon {
+  grid-area: icon;
+  width: var(--lx-space-4);
+  height: var(--lx-space-4);
+  visibility: hidden;
+}
+
+.demo-picks li[data-selected] {
+  border-color: var(--lx-color-accent);
+  box-shadow: inset 0 0 0 var(--lx-border-hairline) var(--lx-color-accent);
+}
+
+.demo-picks li[data-selected] .demo-icon {
+  visibility: visible;
+}
+
+/* Calendário do depósito: o mesmo lx-calendar, com os estados do Direito de Uso. */
+.demo-card--dates {
+  gap: var(--lx-space-2);
+}
+
+.demo-deposit-cal {
+  gap: var(--lx-space-3);
+}
+
+.demo-deposit-cal .lx-calendar__day {
+  min-block-size: calc(var(--lx-space-8) + var(--lx-space-2));
+}
+
+/* 16:9: cartão do calendário mais largo, legenda em três colunas (duas linhas), centrado na altura do quadro. */
+[data-fmt='16x9'] .demo-card--dates {
+  top: 50%;
+  width: 34rem;
+}
+
+[data-fmt='16x9'] .demo-deposit-cal .lx-calendar__legend {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.demo-month-title {
+  display: grid;
+  justify-items: center;
+}
+
+.demo-season {
+  font-family: var(--lx-font-utility);
+  font-size: var(--lx-type-label);
+  font-weight: var(--lx-weight-regular);
+  letter-spacing: var(--lx-tracking-body);
+  color: var(--lx-color-fg-muted);
+}
+
+.demo-deposit-cal td[data-deposit='reserved_unavailable'] .lx-calendar__number {
+  color: var(--lx-color-fg-muted);
+  text-decoration-line: line-through;
+  text-decoration-thickness: var(--lx-border-hairline);
+}
+
+/* Selecionada para depósito: preenchida em Warm Sand (o accent da superfície), número na cor de ação. */
+.demo-deposit-cal td[data-selected] {
+  background-color: var(--lx-color-accent);
+}
+
+.demo-deposit-cal td[data-selected] .lx-calendar__day,
+.demo-deposit-cal td[data-selected] .lx-calendar__number {
+  color: var(--lx-color-action-fg);
+  font-weight: var(--lx-weight-semibold);
+}
+
+.demo-deposit-cal td[data-selected] .lx-calendar__day::after {
+  background-color: var(--lx-color-action-fg);
+}
+
+.demo-swatch[data-swatch='eligible'],
+.demo-swatch[data-swatch='reserved_unavailable'] {
+  background-color: var(--lx-calendar-mine);
+}
+
+.demo-swatch[data-swatch='selected'] {
+  border-color: var(--lx-color-accent);
+  background-color: var(--lx-color-accent);
+}
+
+.demo-swatch[data-swatch='committed'],
+.demo-swatch[data-swatch='unavailable'] {
+  background-color: var(--lx-calendar-unavailable);
+}
+
+/* Riscado também na amostra: o estado se lê sem a cor. */
+.demo-swatch[data-swatch='reserved_unavailable'],
+.demo-swatch[data-swatch='committed'],
+.demo-swatch[data-swatch='unavailable'] {
+  background-image: linear-gradient(
+    to top right,
+    transparent 44%,
+    var(--lx-color-fg-muted) 44% 56%,
+    transparent 56%
+  );
+}
+
+.demo-sync {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--lx-space-1) var(--lx-space-3);
+  margin: 0;
+  font-size: var(--lx-type-compact);
+}
+
+.demo-sync .demo-figure {
+  display: inline-grid;
+  font-family: var(--lx-font-display);
+  color: var(--lx-color-headline);
+}
+
+.demo-evidence-text {
+  margin: 0;
+  font-size: var(--lx-type-compact);
+  text-align: end;
+}
+
+[data-fmt='9x16'] .demo-card--dates {
+  gap: var(--lx-space-1);
+}
+
+[data-fmt='9x16'] .demo-deposit-cal {
+  gap: var(--lx-space-2);
+}
+
+[data-fmt='9x16'] .demo-deposit-cal .lx-calendar__day {
+  min-block-size: calc(var(--lx-space-8) + var(--lx-space-1));
+}
+
+[data-fmt='9x16'] .demo-card--dates .lx-calendar__header {
+  gap: var(--lx-space-1);
 }
 
 /* Créditos (ROTEIRO.md C04): painel editorial na superfície deep — soma dos Créditos válidos da Carteira com os de um

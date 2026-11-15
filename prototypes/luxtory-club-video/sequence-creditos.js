@@ -1,6 +1,6 @@
-// Demonstração conceitual — motion graphic editorial dos Créditos (ROTEIRO.md C04): Créditos válidos que já estão na
+// Motion graphic editorial dos Créditos (ROTEIRO.md C04): Créditos válidos que já estão na
 // Carteira + Créditos de um novo depósito de datas elegíveis → um só saldo, de lotes diferentes → Luxchange Request ou
-// Direct, com o Fee de cada modalidade. Camada editorial da montagem, não interface: nenhum botão, nenhuma etapa
+// Direct, com a Taxa de intermediação de cada modalidade. Camada editorial da montagem, não interface: nenhum botão, nenhuma etapa
 // transacional. Os números saem do mesmo cenário da Request (data.js), não são digitados aqui.
 //
 // Regras que a composição respeita: Créditos só se usam com Membership vigente (BR-195, dito na narração); valem 24
@@ -9,7 +9,7 @@
 // lotes diferentes compõem o saldo e o consumo segue o lote que vence primeiro (PD-008, TECH-071, mostrado na Request).
 import { FICTITIOUS, requestScenario } from './data.js';
 import { credits } from './format.js';
-import { ICONS, icon, seal } from './shared.js';
+import { ICONS, icon } from './shared.js';
 
 const s = requestScenario();
 const depositLot = s.lots.find((lot) => lot.id === FICTITIOUS.deposit.lotId);
@@ -53,8 +53,7 @@ export function build(stage, fmt) {
           <dd class="demo-sum__figure">${credits(FIGURES.total)}</dd>
         </div>
       </dl>
-      <p class="demo-note" id="cr-use">${icon('i-info')}<span><strong>Para Luxchange Request ou Direct, com Membership vigente</strong>Créditos + Fee, em cada modalidade.</span></p>
-      ${seal}
+      <p class="demo-note" id="cr-use">${icon('i-info')}<span><strong>Para Luxchange Request ou Direct, com Membership vigente</strong>Créditos + Taxa de intermediação, em cada modalidade.</span></p>
     </section>
     <p class="demo-ed demo-ed--legal" id="cr-legal-coowner" data-surface="deep"><span>${SUPERS.coOwner}</span></p>
     <p class="demo-ed demo-ed--legal" id="cr-legal-credits" data-surface="deep"><span>${SUPERS.credits}</span></p>`,
@@ -100,7 +99,11 @@ export function timeline() {
       { at: prior, label: `Créditos válidos na Carteira: ${credits(FIGURES.prior)}` },
       { at: deposit, label: `novo depósito: + ${credits(FIGURES.deposit)} (super do Co-Owner)` },
       { at: total, label: `um só saldo: ${credits(FIGURES.total)}` },
-      { at: use, label: 'Luxchange Request ou Direct · Créditos + Fee (super dos Créditos)' },
+      {
+        at: use,
+        label:
+          'Luxchange Request ou Direct · Créditos + Taxa de intermediação (super dos Créditos)',
+      },
       { at: 11_000, label: 'fim (corte para C05)' },
     ],
   };
@@ -127,7 +130,7 @@ export const qa = {
       expect: [
         credits(FIGURES.total),
         'Para Luxchange Request ou Direct, com Membership vigente',
-        'Créditos + Fee',
+        'Créditos + Taxa de intermediação',
       ],
     },
   ],

@@ -50,7 +50,7 @@ function percentHalfUp(cents, percent) {
   return Math.floor((cents * percent + 50) / 100);
 }
 
-/** 01 §24 — Luxchange Fee = maior entre o percentual do PRL do período e o mínimo (BR-230, BR-231). */
+/** 01 §24 — Luxchange Fee (rótulo comercial na tela: "Taxa de intermediação") = maior entre o percentual do PRL do período e o mínimo (BR-230, BR-231). */
 export function luxchangeFee(prlPeriodCents, params) {
   return Math.max(percentHalfUp(prlPeriodCents, params.feePercent), params.feeMinimumCents);
 }
@@ -86,6 +86,66 @@ export function consumeCreditsFefo(lots, amount, { now }) {
 /** TECH-043 — depósito exige now ≤ checkin_at − antecedência (BR-200). */
 export function canDeposit(checkinAt, now, params) {
   return now <= checkinAt - params.depositMinNoticeDays * DAY_MS;
+}
+
+/**
+ * BR-151, BR-200, REQ-060 — situação de uma noite no calendário do depósito, por modalidade.
+ * Co-Owner: só data já reservada no Direito de Uso e ainda não comprometida, com a antecedência mínima.
+ * Owner: capacidade própria disponível e não comprometida, com a mesma antecedência (sem "reservada/não reservada").
+ */
+export const DEPOSIT_STATUS = Object.freeze({
+  eligible: 'eligible',
+  reservedUnavailable: 'reserved_unavailable',
+  notReserved: 'not_reserved',
+  committed: 'committed',
+  unavailable: 'unavailable',
+});
+export function depositNightStatus(
+  { role, reserved, committed, ownAvailable },
+  checkinAt,
+  now,
+  params,
+) {
+  if (committed) return DEPOSIT_STATUS.committed;
+  if (role === 'co_owner') {
+    if (!reserved) return DEPOSIT_STATUS.notReserved;
+    return canDeposit(checkinAt, now, params)
+      ? DEPOSIT_STATUS.eligible
+      : DEPOSIT_STATUS.reservedUnavailable;
+  }
+  if (role === 'owner')
+    return ownAvailable && canDeposit(checkinAt, now, params)
+      ? DEPOSIT_STATUS.eligible
+      : DEPOSIT_STATUS.unavailable;
+  throw new Error(`Modalidade desconhecida: ${role}`);
+}
+
+/**
+ * Metas alcançáveis do controle "Créditos adicionais desejados": somas acumuladas das datas elegíveis em ordem
+ * cronológica. Só datas inteiras (01 §20: Créditos por data), nunca fração; cada meta é um conjunto real de datas.
+ */
+export function depositStops(eligible) {
+  const ordered = [...eligible].sort((a, b) => a.night.localeCompare(b.night));
+  const stops = [{ credits: 0, nights: [] }];
+  for (const date of ordered) {
+    const prev = stops.at(-1);
+    stops.push({ credits: prev.credits + date.credits, nights: [...prev.nights, date.night] });
+  }
+  return stops;
+}
+
+/** Fonte única de verdade: o conjunto de datas selecionadas. O controle mostra a soma; mover o controle escolhe a meta. */
+export function creditsOfSelection(eligible, nights) {
+  return nights.reduce((sum, night) => {
+    const date = eligible.find((d) => d.night === night);
+    if (!date) throw new Error(`Data não elegível para depósito: ${night}`);
+    return sum + date.credits;
+  }, 0);
+}
+export function selectionForTarget(eligible, target) {
+  const stop = depositStops(eligible).find((s) => s.credits === target);
+  if (!stop) throw new Error(`Meta não alcançável com datas inteiras: ${target}`);
+  return stop.nights;
 }
 
 /** PD-002 — noites de [entrada, saída): a data de saída não é usada. Datas civis 'AAAA-MM-DD'. */

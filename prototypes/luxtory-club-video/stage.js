@@ -102,8 +102,18 @@ function renderSets(t) {
   }
 }
 
+// Vários tweens na mesma propriedade (ex.: o controle de Créditos em etapas): vale o último já iniciado; antes do
+// primeiro, o valor inicial dele. Com um tween por propriedade, o comportamento é o de sempre.
 function renderTweens(t) {
-  for (const { sel, prop, at, from, to } of tl.tween) {
+  const groups = new Map();
+  for (const item of tl.tween) {
+    const key = `${item.sel}|${item.prop}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  }
+  for (const items of groups.values()) {
+    const sorted = [...items].sort((a, b) => a.at - b.at);
+    const { sel, prop, at, from, to } = sorted.filter((i) => i.at <= t).at(-1) ?? sorted[0];
     const p = MOTION.ease(progress(t, at, MOTION.tween));
     $(sel).style.setProperty(prop, String(from + (to - from) * p));
   }

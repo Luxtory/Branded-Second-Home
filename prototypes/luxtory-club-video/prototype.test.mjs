@@ -11,12 +11,21 @@ import {
   cssFromHtml,
   scanCss,
 } from '../../src/design-system/scripts/check-hardcodes.mjs';
-import { CANONICAL, FICTITIOUS, directScenario, luxplusScenario, requestScenario } from './data.js';
+import {
+  CANONICAL,
+  FICTITIOUS,
+  depositScenario,
+  directScenario,
+  luxplusScenario,
+  requestScenario,
+} from './data.js';
 import * as directSeq from './sequence-direct.js';
 import * as luxplusSeq from './sequence-luxplus.js';
 import * as requestSeq from './sequence-request.js';
 import * as assinaturaSeq from './sequence-assinatura.js';
 import * as creditosSeq from './sequence-creditos.js';
+import { datesCard, needCard, seasonOf, selectionStates } from './credits-step.js';
+import { creditsOfSelection, depositNightStatus, selectionForTarget } from './rules.js';
 import { EDL } from './filme/prova/edl.js';
 import {
   REQUEST_STATES,
@@ -196,13 +205,29 @@ for (const fmt of ['16x9', '9x16']) {
       'Fee pago antes de a Request ficar Pendente (PD-005)',
     );
     assert.ok(
-      tl.tween.every((tw) => tw.at === enter('#pending').in),
+      tl.tween
+        .filter((tw) => tw.sel.startsWith('#bar-'))
+        .every((tw) => tw.at === enter('#pending').in),
       'Garantia constituída exatamente no commit do envio, quando a Request fica Pendente (PD-005, PD-006)',
+    );
+    // Garantia nunca antes do envio; depósito confirmado (operação própria) antes da revisão.
+    assert.ok(enter('#lg-held').in > sendPress, 'Em Garantia só depois do envio');
+    assert.ok(enter('#lots').in > sendPress, 'lotes da Garantia só depois do envio');
+    assert.ok(
+      set('#deposit-go', 'data-pressed')[0].at < enter('#deposited').in &&
+        enter('#deposited').in < enter('#review').in,
+      'depósito confirmado antes da revisão da Request (REQ-060)',
+    );
+    assert.ok(
+      enter('#need').in < enter('#dates').in,
+      'Créditos necessários antes da complementação',
     );
     // Trocas no mesmo lugar: o cartão novo só entra depois da saída do anterior (sem crossfade de textos).
     const exit = parseFloat(TOKENS.duration.moderate.$value);
     const handoffs = [
-      ['#cal', '#review'],
+      ['#cal', '#need'],
+      ['#dates', '#deposited'],
+      ['#deposited', '#review'],
       ['#review', '#pending'],
       ['#pending', '#holder'],
       ['#holder', '#accepted'],
@@ -210,14 +235,20 @@ for (const fmt of ['16x9', '9x16']) {
       ...(fmt === '9x16'
         ? [
             ['#home', '#cal'],
+            ['#need', '#topup'],
+            ['#topup', '#dates'],
             ['#review', '#credits'],
           ]
-        : [['#home', '#credits']]),
+        : [
+            ['#need', '#dates'],
+            ['#home', '#topup'],
+            ['#topup', '#credits'],
+          ]),
     ];
     handoffs.push(
       ['#cr-before', '#cr-after'],
       ['#lg-avail-before', '#lg-avail-after'],
-      ['#lg-held-before', '#lg-held-after'],
+      ['#lots-before', '#lots'],
     );
     for (const [before, after] of handoffs)
       assert.ok(
@@ -293,9 +324,15 @@ test('[BR-240][BR-241][BR-244][BR-230] Luxplus: dinheiro, sem Créditos, sem Fee
   assert.deepEqual(l.credits, { available: 27_500, used: 0 }, 'saldo do fim do Direct, intocado');
   assert.equal(l.booking.channel, 'Luxplus');
   const text = markup(luxplusSeq);
-  assert.match(text, /R\$\s*2\.480,00\s+ilustrativo/);
+  assert.match(text, /R\$\s*2\.480,00/);
   assert.match(text, /Não utilizados/);
-  assert.doesNotMatch(text, /Fee|desconto|PRL|Garantia/, 'sem Fee, desconto, PRL ou Garantia');
+  // Uma vez na rota (variantes 16:9 e 9:16 no markup) e uma na revisão; a confirmação não repete.
+  assert.equal(text.match(/em dinheiro/gi)?.length, 3);
+  assert.doesNotMatch(
+    text,
+    /Fee|Taxa de intermediação|desconto|PRL|Garantia|depósito|Créditos adicionais/,
+    'sem taxa, desconto, PRL, Garantia ou complementação de Créditos',
+  );
   assert.equal(luxplusSeq.timeline('16x9').tween.length, 0, 'nenhum movimento de Créditos');
 });
 
@@ -472,6 +509,131 @@ test('[BR-190][BR-191][PD-008][REQ-060] Créditos: Carteira + novo depósito = u
   assert.ok(credits.out - credits.in >= (words(creditosSeq.SUPERS.credits) / 3 + 0.5) * 1000);
   assert.ok(credits.in >= coOwner.out + exit, 'troca dos supers sem crossfade');
   assert.ok(credits.out + exit <= tl.duration, 'o último super sai antes do corte');
+});
+
+test('[BR-151][BR-200][REQ-060] depósito: elegibilidade por modalidade, datas inteiras e números do cenário', () => {
+  const now = Date.parse('2027-04-12T10:02:00-03:00');
+  const at = (night) => Date.parse(`${night}T14:00:00-03:00`);
+  const co = (o) => ({ role: 'co_owner', reserved: true, committed: false, ...o });
+  assert.equal(depositNightStatus(co({}), at('2027-05-14'), now, CANONICAL), 'eligible');
+  assert.equal(
+    depositNightStatus(co({}), at('2027-04-24'), now, CANONICAL),
+    'reserved_unavailable',
+    'menos de 14 dias (BR-200)',
+  );
+  assert.equal(
+    depositNightStatus(co({ reserved: false }), at('2027-05-20'), now, CANONICAL),
+    'not_reserved',
+  );
+  assert.equal(
+    depositNightStatus(co({ committed: true }), at('2027-05-22'), now, CANONICAL),
+    'committed',
+  );
+  const owner = { role: 'owner', committed: false, ownAvailable: true };
+  assert.equal(
+    depositNightStatus(owner, at('2027-05-20'), now, CANONICAL),
+    'eligible',
+    'Owner: capacidade própria',
+  );
+  assert.equal(
+    depositNightStatus({ ...owner, ownAvailable: false }, at('2027-05-20'), now, CANONICAL),
+    'unavailable',
+  );
+  const dep = depositScenario();
+  assert.equal(dep.priorAvailable, 48_000);
+  assert.equal(dep.requestCredits, 55_000);
+  assert.equal(dep.shortfall, 7_000);
+  assert.deepEqual(
+    dep.eligible.map((d) => [d.night, d.credits]),
+    [
+      ['2027-05-14', 16_000],
+      ['2027-05-15', 16_000],
+      ['2027-05-16', 14_000],
+    ],
+  );
+  // Metas do controle: só somas de datas inteiras; 7.000 não é meta (não existe fração de data).
+  assert.deepEqual(
+    dep.stops.map((x) => x.credits),
+    [0, 16_000, 32_000, 46_000],
+  );
+  assert.throws(() => selectionForTarget(dep.eligible, 7_000), /não alcançável/);
+  assert.deepEqual(selectionForTarget(dep.eligible, 32_000), ['2027-05-14', '2027-05-15']);
+  assert.throws(() => creditsOfSelection(dep.eligible, ['2027-05-22']), /não elegível/);
+  assert.equal(dep.originated, 46_000);
+  assert.equal(dep.afterDeposit, 94_000);
+  assert.equal(dep.afterDeposit, requestScenario().balances.beforeSend.available);
+  assert.equal(seasonOf('2027-05'), 'Média/Baixa');
+  assert.equal(seasonOf('2027-07'), 'Alta/Super Alta');
+  assert.throws(() => seasonOf('2027-02'), /Carnaval/, 'janela de Carnaval não presumida (PD-003)');
+});
+
+for (const fmt of ['16x9', '9x16']) {
+  test(`Request ${fmt}: controle e calendário com uma fonte única (as datas) e só metas alcançáveis`, () => {
+    const dep = depositScenario();
+    const tl = timeline(fmt);
+    const max = dep.stops.at(-1).credits;
+    const stops = dep.stops.map((x) => x.credits);
+    const slider = tl.tween.filter((tw) => tw.sel === '#topup-slider');
+    assert.ok(slider.length >= 2, 'o controle se move em etapas');
+    for (const tw of slider)
+      assert.ok(stops.includes(Math.round(tw.to * max)), `meta ${tw.to * max}`);
+    const finalValue = tl.set
+      .filter((x) => x.sel === '#topup-slider' && x.attr === 'aria-valuenow')
+      .at(-1);
+    assert.equal(Number(finalValue.value), dep.originated);
+    const selected = tl.set
+      .filter((x) => x.attr === 'data-selected' && x.sel.startsWith('[data-deposit-day'))
+      .map((x) => x.sel.match(/\d{4}-\d{2}-\d{2}/)[0]);
+    assert.deepEqual(selected, dep.selected, 'as datas selecionadas somam o valor do controle');
+    // O depósito só é pedido depois da última seleção.
+    const lastSelect = Math.max(
+      ...tl.set.filter((x) => x.attr === 'data-selected').map((x) => x.at),
+    );
+    assert.ok(lastSelect < tl.set.find((x) => x.sel === '#deposit-go').at);
+  });
+}
+
+test('Direct: saldo suficiente, continuar sem depósito; complementação disponível e fechada', () => {
+  const raw = { dataset: {}, insertAdjacentHTML: (_, html) => (raw.html = html) };
+  directSeq.build(raw, '16x9');
+  assert.match(raw.html, /Saldo suficiente/);
+  assert.match(raw.html, /id="need-continue"/);
+  assert.match(raw.html, /<details class="lx-disclosure demo-accordion demo-accordion--closed">/);
+  assert.doesNotMatch(
+    raw.html,
+    /id="dates"|id="topup"|id="deposit-go"|Créditos adicionais necessários/,
+  );
+  const tl = directSeq.timeline('16x9');
+  const pressAt = (sel) => tl.set.find((x) => x.sel === sel && x.attr === 'data-pressed').at;
+  assert.ok(pressAt('#need-continue') < tl.enter.find((e) => e.sel === '#review').in);
+  assert.equal(directScenario().balances.before.available, 39_000);
+});
+
+test('[BR-150][BR-151] Owner: textos e estados próprios, sem calendário de Direito de Uso', () => {
+  const dep = { ...depositScenario(), role: 'owner' };
+  dep.days = dep.days.map((d) => ({
+    ...d,
+    status:
+      d.status === 'not_reserved' || d.status === 'reserved_unavailable' ? 'unavailable' : d.status,
+  }));
+  const states = selectionStates(dep, [[]], 55_000);
+  const html =
+    needCard({ title: 'x', needed: 55_000, available: 48_000, role: 'owner', sufficient: false }) +
+    datesCard(dep, states, { action: 'Depositar' });
+  assert.match(html, /Selecionar datas da minha Second Home/);
+  assert.doesNotMatch(html, /Direito de Uso|Não reservada/);
+});
+
+test('revisão comercial: nenhum jargão ou marca de protótipo nas sequências do filme', () => {
+  for (const seq of [requestSeq, directSeq, luxplusSeq, creditosSeq, assinaturaSeq]) {
+    const text = markup(seq) + markup(seq, '9x16');
+    assert.doesNotMatch(
+      text,
+      /\bFee\b|PRL|fictíci|ilustrativ|simulad|Demonstração|conceitual|L-0\d{3}|\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}/,
+    );
+  }
+  assert.match(markup(requestSeq), /Taxa de intermediação/);
+  assert.match(markup(directSeq), /Taxa de intermediação/);
 });
 
 test('a Request aprovada continua com Garantia, Pendente e aceite do detentor', () => {
