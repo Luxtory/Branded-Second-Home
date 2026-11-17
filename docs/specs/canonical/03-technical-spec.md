@@ -1,6 +1,10 @@
 # 03 — Technical Spec — Luxtory Branded Second Home
 
-2026-11-12 · **Versão 3.17 — FINAL** · Base normativa: `01` v10.5 final · `02` v4.5 final
+2026-11-17 · **Versão 3.18 — FINAL** · Base normativa: `01` v10.6 final · `02` v4.6 final
+
+Revisão SHP autorizada pelo fundador em 2026-11-17: TECH-057 mantém transporte, portão, destinatário, limites e semântica; o contrato fechado é discriminado pelo perfil obrigatório `developer | agency | broker`, nos termos de REQ-105 / catalog §20.3 e §20.6. Empresa é opcional para corretor; `region` (até 200 pontos de código) substitui empreendimento/fase para intermediadores. Rejeitar campos de outro perfil; nenhum default de perfil. E-mail determinístico inclui perfil e somente os campos aplicáveis. Sem persistência, migration, variável nova ou alteração operacional do Club.
+
+Histórico preservado — versão 3.17:
 
 Cobertura normativa: **67 REQ · 6 INV · 11 PD**
 

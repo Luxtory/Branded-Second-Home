@@ -61,3 +61,8 @@ permitida, `Idempotency-Key`, honeypot e logs sem PII. O fundador pediu reaprove
 - **Reusar o endpoint Brand Partners com um campo de jornada.** Recusada: mistura leads, contratos e portões.
 - **Chaves próprias para tudo (11 variáveis).** Recusada: mais operação sem ganho de isolamento, que o namespace já dá.
 - **Extrair um módulo de contato compartilhado.** Recusada agora: exigiria refatorar Brand Partners sem problema real.
+
+
+## Extensão de 2026-11-17 — perfis no mesmo contato
+
+Aprovada pelo fundador: três perfis na mesma página e no endpoint existente, sem nova jornada. União discriminada por perfil obrigatório, com validação compartilhada, e-mail determinístico por perfil e campos condicionais (catalog §20.3/§20.6). Mesmos portões, adapters, isolamento e controles; não cria contas, afiliados ou serviços do Club. A copy de lançamento substitui o registro editorial anterior; prontidão operacional não é inferida por código ou documentação.

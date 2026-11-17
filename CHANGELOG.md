@@ -12,6 +12,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Second Home Partners (REQ-105, D-SHP-18): participação no faturamento enquanto o imóvel permanecer afiliado,
+  conforme duração definida pelo fundador. Fechamento “A venda termina. Sua participação continua.” com a condição
+  visível no mesmo bloco; benefício e FAQ alinhados. Três fotos por estágio carregam desde a abertura, com prioridade
+  baixa e uma recuperação para o original em caso de falha do otimizador, inclusive antes da hidratação.
+
+- Refinamento Second Home Partners (REQ-105): Hero com frases em blocos sucessivos; oportunidade com narrativa
+  imaginativa e foto contextual do acervo; fechamentos centralizados na tipografia da Home; imóveis já comercializados
+  e futuras vendas sujeitos à avaliação e adesão dos proprietários. Participação descrita como oportunidade de receita
+  depois da venda, sem inventar duração vitalícia ou garantir aceleração de vendas.
+
+- Second Home Partners (REQ-105): página única adaptada a incorporadoras, imobiliárias e corretores de imóveis de
+  lazer de alto padrão, com receita recorrente em destaque, bloco específico para intermediadores, FAQ ampliado e
+  copy de lançamento aprovada. Mesmas três imagens por estágio. Formulário exige perfil e somente os campos
+  correspondentes; empresa é opcional para corretor. E-mail interno identifica o perfil; envio continua sem persistência.
+  A preparação editorial não habilita a operação do Club nem altera o portão de produção.
+
 ### Added
 
 - Second Home Partners (REQ-105): seção editorial “Onde a parceria pode acontecer” entre Benefícios e Soluções,

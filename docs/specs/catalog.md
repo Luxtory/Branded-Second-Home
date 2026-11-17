@@ -1842,6 +1842,8 @@ sem imagem social nem dados estruturados.
 
 ### 20.2 Brief da página
 
+**Brief vigente de 2026-11-17:** a versão editorial anterior abaixo é histórica e fica substituída por §20.6 nos pontos de público, copy, ordem, FAQ, CTA, concisão e formulário. Assets, segurança e isolamento permanecem.
+
 Protagonista, conscientização e 5Ps: [aplicação §7](communication/second-home-partners.md#7-jornada-e-5ps). Copy
 final, verbatim, em `catalog/presentation/i18n/second-home-partners-pt-br.ts` (fonte única). Desde 2026-11-13 a página
 comunica a participação nos resultados (`D-SHP-07`, substitui `D-SHP-04`): três benefícios com o mesmo peso; a
@@ -1892,18 +1894,18 @@ parceiros e qualquer mecanismo do Luxtory Club para imóveis parceiros.
 
 | Campo | Tipo | Regra |
 |---|---|---|
+| `profile` · Qual é o seu perfil? | escolha única | obrigatório; `developer` (Incorporadora), `agency` (Imobiliária), `broker` (Corretor(a)); sem default |
 | `name` · Nome | texto | obrigatório; 1–120 pontos de código depois do trim; sem controles C0 |
-| `company` · Incorporadora | texto | obrigatório; 1–200 |
+| `company` · Empresa | texto | 1–200; obrigatório para incorporadora/imobiliária; opcional para corretor, vazio = ausente |
 | `email` · E-mail | e-mail | obrigatório; válido; até 254; só `Reply-To` |
-| `development` · Empreendimento e localização | texto | obrigatório; 1–200 |
-| `stage` · Fase do empreendimento | escolha única | obrigatório; `planning_or_launch` · `construction_or_sales` · `delivered_or_operating` |
+| `development` · Empreendimento e localização | texto | obrigatório somente para incorporadora; 1–200; recusado nos demais perfis |
+| `stage` · Fase do empreendimento | escolha única | obrigatório somente para incorporadora; `planning_or_launch` · `construction_or_sales` · `delivered_or_operating`; recusado nos demais |
+| `region` · Cidade ou região de atuação | texto | obrigatório somente para imobiliária/corretor; 1–200; recusado para incorporadora |
 | `message` · Mensagem | texto longo | opcional; até 4.000; quebras de linha preservadas |
-| `website` · Site | URL | opcional; `http`/`https` com host, sem credenciais; até 500; o servidor nunca acessa |
+| `website` · Site ou perfil profissional | URL | opcional; HTTP/HTTPS com host, sem credenciais; até 500; nunca acessado pelo servidor |
 | `_trap` | honeypot | ausente ou vazio; preenchido → 403 sem envio |
 
-Schema Zod fechado, o mesmo no servidor e no navegador. Estados acessíveis, retry, conflito e mensagens como em §14.5;
-mensagem própria para a fase: “Selecione a fase do empreendimento.” O e-mail interno tem assunto “Second Home Partners
-— mensagem pelo site”, rótulos do formulário e texto simples determinístico.
+Schema Zod fechado no servidor e navegador; validação condicional sem dados ocultos residuais. Trocar perfil remove desenvolvimento/fase/região e os erros antigos; preserva os campos comuns. Sem coerção de perfil desconhecido/ausente para incorporadora. Estados, retry, foco e erros acessíveis como §14.5; sucesso apenas no aceite 202. E-mail interno determinístico com perfil traduzido e campos aplicáveis, sem HTML do visitante. Resposta 400 inclui novos nomes de campo sem valores. Empresa omitida/vazia do corretor vira nula internamente e não aparece no e-mail.
 
 ### 20.4 Processamento, configuração e isolamento
 
@@ -1933,3 +1935,57 @@ Isolamento provado em teste: portões independentes; esgotar o limite de uma jor
 - Portão fechado = 404 sem copy; Preview `noindex`; Production aberta indexável.
 - `npm run verify`, E2E (nova suíte + B2C + Brand Partners) e CI verdes; revisão visual do fundador no Preview a 320,
   390, 768, 1024, 1440 e 1920 px.
+
+
+### 20.6 Revisão aprovada — três perfis e copy de lançamento (2026-11-17)
+
+O fundador validou a copy integral e autorizou implementar cirurgicamente na página existente. Este brief substitui os pontos editoriais da versão anterior de §20.2 e seus critérios de concisão/ordem em §20.5. Plano: [SHP perfis](../plan/shp-partner-profiles.md). Fontes emitidas: `01` v10.6 §1/§35, `02` v4.6 REQ-105, `03` v3.18 TECH-057. Mesma rota, shell, endpoint e configuração; sem nova landing page ou links cruzados. Os arquivos de imagens permanecem idênticos.
+
+| Ordem e âncora | Superfície | Mensagem / composição |
+|---|---|---|
+| 1 · `#inicio` | Deep | Hero comum: “Mais valor para seu negócio. Mais liberdade para seus clientes.” Dois parágrafos; sem nota de estruturação; CTA comum e secundário para Benefícios |
+| 2 · `#oportunidade` | White | Benefício ao cliente e argumento para vender; períodos sem uso e novas oportunidades |
+| 3 · `#beneficios` | Blue | Três benefícios iguais: Receita recorrente, Diferenciação comercial, Marketing e vendas; nota de faturamento/contrato |
+| 4 · `#empreendimentos` | Wash | Imóveis sob demanda, empreendimentos em desenvolvimento e imóveis entregues; mesmas fotos; avaliação e caráter ilustrativo |
+| 5 · `#solucoes` | Deep | Três soluções numeradas no presente; Luxchange/créditos, Luxplus/pagamento sem créditos, locação independente |
+| 6 · `#imobiliarias-e-corretores` | White | “Seu relacionamento pode gerar receita depois da venda.” Introdução, dois blocos de mesmo peso, CTA para o formulário comum |
+| 7 · `#como-funciona` | Wash | Conversa, Diagnóstico, Proposta (inclui receitas), Parceria |
+| 8 · `#perguntas` | Blue | Sete disclosures: perfis, vendas, faturamento, empreendimento próprio, fase, gestão, decisão do proprietário |
+| 9 · `#conversa` | White | “Vamos conhecer sua atuação.” Formulário por perfil e três parágrafos de privacidade |
+
+CTA único “Conversar sobre uma parceria” → `#conversa`. Nome dos três perfis visível no hero; bloco específico na própria página, sem reduzir a mensagem comum para incorporadoras. Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory, conforme contrato. Sem percentual, prazo ou mínimo; receitas abrangidas e atribuição contratuais. A frase editorial não redefine as bases de `01` §35 nem implementa apuração.
+
+Copy de lançamento no presente por instrução expressa: publicar quando o Club estiver pronto. A implementação editorial não implementa serviços, não afere prontidão nem modifica portões de produção. Não introduzir nota de indisponibilidade na copy aprovada. Cada serviço tem regras próprias; gestão de locações independente e contratação por proprietário.
+
+Parágrafos: uma ideia, até três linhas em leitura normal a 390 e 1440 px; a 320 px, priorizar integridade e reflow. Quando preciso, dividir em parágrafos em pausas naturais mantendo o significado aprovado; sem truncar, reduzir fonte ou inserir quebras forçadas. Títulos, labels e erros seguem sua função, sem limite artificial. Em zoom200%, reflow natural, sem teto de linhas. Usar só classes/tokens Core com CSS restrito à jornada. Dois blocos de intermediadores lado a lado quando houver espaço e empilhados no celular.
+
+Aceite: perfis válidos aceitos até o adapter determinístico; empresa opcional do corretor; incorporação incompleta e campos incompatíveis recusados (400); alternância de perfil sem enviar valores ocultos; retry/idempotência/privacidade e isolamento preservados. axe0 a390/1440, sem overflow320–1920, imagens carregadas e mapeadas, copy inteira/curta, console limpo, capturas reais. Gates de lint, tipos, testes, contratos, DS, build e regressões das jornadas existentes. Segurança: mesmo endpoint/destino e dados profissionais públicos; manter origem, body cap, controles C0, honeypot, rate limit e ausência de persistência/PII em logs. URL profissional é somente texto validado, nunca visitada pelo servidor (sem SSRF).
+
+
+Ajustes de encaixe verificados na implementação de §20.6: as descrições dos três contextos foram condensadas sem mudar o estágio ou a imagem; o limite contratual do primeiro benefício e as condições da etapa Proposta aparecem em parágrafos separados. O processo usa duas colunas de768 a1279 e quatro a partir de1280, mantendo as quatro etapas. O escopo SHP permite encolhimento proporcional do lockup oficial no cabeçalho e quebra natural de ações com fonte ampliada; nenhum asset ou tipografia é alterado. Validação de concisão cobre também768,1024 e1920.
+
+
+### 20.7 Refinamento editorial — Hero, oportunidade e fechamentos (2026-11-17)
+
+Pedido do fundador após o Preview do PR94: as duas frases do Hero devem ocupar blocos sucessivos, segunda em itálico. Um único H1; em telas estreitas cada frase reflui naturalmente, sem encolher fonte ou provocar overflow.
+
+A oportunidade passa ao split6/6 do Core, texto primeiro e fotografia depois no celular, texto à esquerda e imagem à direita no desktop. Reaproveitar `public/images/como-funciona/problema-imovel.jpg` (1024×576, autorizado como asset provisório na §13.11), com getImageProps, dimensões/sizes/alt, imagem lazy e sem estilo inline bloqueado pela CSP. A casa à beira-mar ilustra uso de imóvel de lazer e outros destinos; não comprova afiliação à rede. As três fotografias por estágio permanecem intactas.
+
+Narrativa “Imagine seu cliente adquirindo…” com parágrafos curtos: imóvel afiliado a um clube, locação nos períodos sem uso e intercâmbio em outros destinos. Benefícios comerciais apresentados como argumentos que podem ajudar a superar objeções e encurtar o ciclo, sem garantia. Fechamentos editoriais em Oportunidade, Intermediadores e Processo usam `lx-section-closing` + `lx-headline`, centralizados e com o mesmo tratamento `closingStyle=subtle` da Home. Condições, notas ilustrativas e privacidade mantêm corpo legível, sem virar claims.
+
+Informar no bloco de intermediadores e FAQ que podem apresentar imóveis já comercializados e imóveis que ainda comercializarão. A afiliação depende de avaliação da Luxtory e adesão de cada proprietário; não afilia por ter havido uma venda. “Vitalícia” foi sugerida para análise; a duração não foi definida no modelo/contrato. Julgamento editorial: explorar receita depois da venda e manter recorrente como oportunidade, sem inventar continuidade perpétua (BR-352). Sem revisão econômica, API, formulário, parâmetros ou serviço operacional novo.
+
+Aceite: frases do H1 em linhas independentes no desktop, reflow no celular; foto carregada no split, sem CSP errors; fechamentos centralizados em Newsreader no papel de headline do Core; parágrafos até3linhas nas larguras verificadas≥390 e até4 a320; sem clipping/overflow até1920 e em fonte200%; axe0 a390/1440 e fluxo existente de contato preservado. Atualizar capturas e CI do PR94, mantendo a condição de lançamento de §20.6.
+
+
+### 20.8 Participação enquanto afiliado e confiabilidade das fotos (2026-11-17)
+
+O fundador definiu: enquanto o imóvel estiver afiliado, o parceiro que o afiliou participa do faturamento. Fonte: `01` v10.7 §35; decisão D-SHP-18. Não há novo requisito funcional: REQ-105 já autoriza a comunicação da participação e suas condições;02 v4.6 e03 v3.18 preservados. Não há entidade de afiliação, cálculo, pagamento ou API nova nesta entrega. Bases econômicas, atribuição, percentuais e pagamento seguem o contrato; nenhum valor sem faturamento. A promessa pode ser afirmativa sobre a continuidade da participação, sem estendê-la além da afiliação.
+
+Copy: fechamento da oportunidade “A venda termina. Sua participação continua.” com a condição “Enquanto o imóvel estiver afiliado, você participa do faturamento que ele gera.” visível no mesmo bloco. Primeiro benefício “Receita além da venda”, com a continuidade enquanto afiliado. FAQ explica duração junto à origem da participação. Os três perfis recebem a mesma regra. Preservar a coorte dos primeiros parceiros, as demais condições e a voluntariedade do proprietário. Não presumir cláusulas para sucessão/reafiliação ou encerrar o direito apenas por ter terminado a venda.
+
+Print analisado: dois cards sem fotografia. Diagnóstico local: a captura fullpage, sem rolagem, mantém as três imagens lazy abaixo da dobra sem solicitação; após rolagem, três respostas200, originais válidos e frames iguais480px no desktop. A captura não identifica eventual erro do otimizador remoto; acesso direto ao Preview foi bloqueado pelo transporte. Não atribuir causa remota não observada.
+
+Correção da cadeia de apresentação: solicitar as três fotografias desde o carregamento inicial (`loading=eager`, prioridade baixa), mantendo otimização Next, dimensões/sizes e mapeamento. Se o otimizador falhar, uma recuperação por foto usa seu original local, remove srcSet/sizes e preserva alt/geometria. Verificar também falha anterior à hidratação; se o original falhar, não repetir a recuperação. O frame tem fundo institucional para manter geometria e legibilidade durante falhas; nenhuma foto substituta, CSP relaxada ou dado sensível. Comportamento restrito à SHP; demais imagens permanecem com sua política.
+
+Aceite: testes de duração da participação e ausência de valor garantido; três solicitações/imagens carregadas sem rolagem; falha do otimizador antes da hidratação recupera original; falha dupla não gera loop; três cards iguais e legíveis. Preservar fluxo dos perfis, fontes e alinhamento da Home,3linhas por bloco nas larguras verificadas≥390, reflow200%, seis larguras, axe0, contraste e console sem erros no caminho normal. Capturas e CI no mesmo PR94; condição de lançamento de produção preservada.

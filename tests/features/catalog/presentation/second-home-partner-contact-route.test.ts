@@ -7,7 +7,7 @@ import { createFakeContactMailer } from '@/features/catalog/infrastructure/fake-
 import { createSecondHomePartnerContactRoute } from '@/features/catalog/presentation/second-home-partner-contact-route';
 import { createMemoryRateLimiter, withRoute, type RateLimiter } from '@/features/platform';
 import { captureLogger } from '../../../support/capture-logger';
-import { responseValidator } from '../../../support/openapi';
+import { responseValidator, schemaValidator } from '../../../support/openapi';
 
 const PATH = '/second-home-partner-contacts';
 const ORIGIN = 'https://luxtory.test';
@@ -26,6 +26,7 @@ const ENV = {
 } as const;
 
 const CONTACT = {
+  profile: 'developer',
   name: 'Ana Sigilosa',
   company: 'Incorporadora Confidencial',
   email: 'ana.sigilosa@exemplo.test',
@@ -114,12 +115,13 @@ describe('POST /v1/second-home-partner-contacts — aceite (REQ-105, TECH-057)',
         subject: 'Second Home Partners — mensagem pelo site',
         replyTo: CONTACT.email,
         text: [
+          'Qual é o seu perfil?: Incorporadora',
           'Nome: Ana Sigilosa',
-          'Incorporadora: Incorporadora Confidencial',
+          'Empresa: Incorporadora Confidencial',
           'E-mail: ana.sigilosa@exemplo.test',
           'Empreendimento e localização: Mirante Sigiloso, Trancoso',
           'Fase do empreendimento: Planejamento ou lançamento',
-          'Site: https://incorporadora-confidencial.test',
+          'Site ou perfil profissional: https://incorporadora-confidencial.test',
           '',
           'Mensagem:',
           'Mensagem sigilosa do visitante.',
@@ -281,5 +283,55 @@ describe('POST /v1/second-home-partner-contacts — borda e abuso (catalog §20.
       expect(log).not.toContain(value);
     }
     expect(log).toContain('second_home_partner_contact');
+  });
+});
+
+describe('contato por perfil — contrato HTTP (REQ-105)', () => {
+  it.each(['agency', 'broker'])(
+    '[REQ-105] %s chega ao mailer sem fase nem empreendimento',
+    async (profile) => {
+      const send = vi.fn<SecondHomePartnerContactMailer['send']>(() =>
+        Promise.resolve({ status: 'accepted' }),
+      );
+      const { call } = setup({ mailer: { send } });
+      const body = {
+        profile,
+        name: CONTACT.name,
+        email: CONTACT.email,
+        region: 'Trancoso',
+        ...(profile === 'agency' ? { company: CONTACT.company } : {}),
+      };
+      const valid = schemaValidator('SecondHomePartnerContactRequest');
+      expect(valid(body), JSON.stringify(valid.errors)).toBe(true);
+      expect((await call({ body: JSON.stringify(body) })).status).toBe(202);
+      expect(send).toHaveBeenCalledOnce();
+      expect(send.mock.calls[0]?.[0]).toMatchObject({
+        replyTo: CONTACT.email,
+        text: expect.stringContaining('Cidade ou região de atuação: Trancoso'),
+      });
+      expect(send.mock.calls[0]?.[0].text).not.toMatch(/Empreendimento|Fase|undefined/);
+    },
+  );
+
+  it('[REQ-105] payload de outro perfil é recusado no contrato e no servidor sem envio', async () => {
+    const send = vi.fn<SecondHomePartnerContactMailer['send']>(() =>
+      Promise.resolve({ status: 'accepted' }),
+    );
+    const { call } = setup({ mailer: { send } });
+    const valid = schemaValidator('SecondHomePartnerContactRequest');
+    for (const body of [
+      { ...CONTACT, profile: 'broker', region: 'Trancoso' },
+      {
+        profile: 'agency',
+        name: CONTACT.name,
+        email: CONTACT.email,
+        region: 'Trancoso',
+        company: '',
+      },
+    ]) {
+      expect(valid(body)).toBe(false);
+      expect((await call({ body: JSON.stringify(body) })).status).toBe(400);
+    }
+    expect(send).not.toHaveBeenCalled();
   });
 });
