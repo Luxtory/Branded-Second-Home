@@ -33,7 +33,7 @@
     "@upstash/redis": "1.39.0",
     "drand-client": "1.4.2",
     "kysely": "0.29.6",
-    "next": "16.4.2",
+    "next": "16.4.5",
     "pg": "8.23.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
