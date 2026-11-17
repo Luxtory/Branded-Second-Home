@@ -1,6 +1,10 @@
 # 01 — Business Model & Business Rules — Luxtory Branded Second Home
 
-2026-11-17 · Luxtory (fundador) · Versão 10.6 — Status: final
+2026-11-17 · Luxtory (fundador) · Versão 10.7 — Status: final
+
+Revisão pontual autorizada pelo fundador em 2026-11-17: define expressamente a duração da participação Second Home Partners. Enquanto o imóvel permanecer afiliado à Luxtory, o parceiro responsável pela afiliação participa do faturamento atribuível a esse imóvel, conforme as bases e condições do §35. A regra se aplica aos três perfis parceiros; preserva a oferta aos primeiros parceiros e não fixa percentual, valor mínimo ou pagamento sem faturamento. Não altera as 192 BRs, direitos constituídos ou regras econômicas dos demais mecanismos e não implementa afiliação/apuração financeira em software. Impacto: comunicação do REQ-105, Framework e catalog §20.8; nenhum novo REQ/TECH, entidade ou API.
+
+Histórico preservado — versão10.6, emitida em 2026-11-17:
 
 Revisão SHP autorizada pelo fundador em 2026-11-17, após aprovação da copy completa: estende a frente aos três perfis — incorporadoras, imobiliárias e corretores especialistas em imóveis de lazer de alto padrão — e a oportunidade de participação recorrente dos primeiros parceiros no faturamento dos imóveis afiliados por eles. A expressão pública não redefine as bases econômicas do §35. Contrato define receitas abrangidas, atribuição, percentuais e pagamento; nenhum valor mínimo ou direito automático. Copy preparada no presente para lançamento quando o Club estiver pronto; esta emissão não comprova operação nem habilita mecanismos do Club para imóveis parceiros. Preserva todas as 192 BRs e os direitos constituídos. Impacto e aceite em catalog §20.6.
 
@@ -600,6 +604,8 @@ O Investor NÃO constitui terceira modalidade de propriedade.
 **BR-346** — As posições nas rotações ordinária e bissexta pertencem à participação societária correspondente, e não à pessoa do Co-Owner. Em caso de transferência, o adquirente assume as posições e o histórico rotativo associados à participação.
 
 ## 35. Revenue Model Luxtory
+
+**Duração SHP vigente — definição do fundador em 2026-11-17.** Enquanto o imóvel estiver afiliado à Luxtory, o parceiro que o afiliou tem participação no faturamento gerado por ele, observadas as bases econômicas desta seção. A continuidade da participação está vinculada à afiliação do imóvel, e não ao ato pontual da venda; é aplicável também a imóveis já comercializados que venham a ser afiliados mediante avaliação e adesão do proprietário. O faturamento efetivo é condição para haver valor a distribuir, sem receita fixa ou mínima garantida. Receitas abrangidas, atribuição, percentuais, apuração e pagamento seguem definidos em contrato; não se presume parâmetro ou implementação financeira. Esta definição resolve exclusivamente a duração antes não definida na revisão 10.6, preservando as bases de gestão e Club abaixo. “Vitalícia” não significa participação após o fim da afiliação.
 
 **Extensão SHP vigente (2026-11-17).** Os primeiros parceiros dos três perfis participam do faturamento dos imóveis que afiliarem à Luxtory, conforme contrato. Trata-se de oportunidade recorrente dependente das receitas efetivamente geradas, sem pagamento fixo ou garantido. As bases de gestão e Club abaixo permanecem distintas; a expressão editorial não transfere receita do proprietário nem cria base, percentual, prazo ou sistema de apuração. Para intermediadores, atribuição e eventuais sobreposições de indicação exigem contrato; nada é presumido pelo software (BR-352).
 

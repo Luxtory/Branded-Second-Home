@@ -5,6 +5,7 @@ import { nb } from '../discovery/no-break';
 import { ActionLink, Eyebrow, ordinal } from '../discovery/parts';
 import { secondHomePartnersMessages as text } from '../i18n/second-home-partners-pt-br';
 import { SecondHomePartnerContactForm } from './contact-form';
+import { DevelopmentImage } from './development-image';
 import { SECOND_HOME_PARTNERS_SECTIONS, titleOf } from './paths';
 import { SecondHomePartnersSite } from './site';
 
@@ -107,6 +108,7 @@ export function SecondHomePartnersHomePage() {
             <p className="lx-headline">
               <HeadlineText headline={opportunity.closing} />
             </p>
+            <p className="lx-subheadline">{opportunity.participation}</p>
           </div>
         </div>
       </section>
@@ -159,21 +161,28 @@ export function SecondHomePartnersHomePage() {
           </div>
           <ul className="lx-developments">
             {developments.items.map((item) => {
+              const originalSrc = `/images/second-home-partners/${item.image}`;
               const { props } = getImageProps({
-                className: 'lx-development__image',
-                src: `/images/second-home-partners/${item.image}`,
+                src: originalSrc,
                 alt: item.alt,
                 width: 1448,
                 height: 1086,
+                loading: 'eager',
+                fetchPriority: 'low',
                 // Cover scales the 4:3 source to the card height, including in narrow desktop columns.
                 sizes: '(min-width: 1024px) 700px, (min-width: 480px) 100vw, 640px',
               });
-              // Keep Next's optimized src/srcSet, sizes and lazy loading; omit its inline style at the DOM boundary.
+              // Retain optimization, with one bounded recovery to the supplied original if it fails.
               return (
                 <li key={item.image}>
                   <article className="lx-development">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- getImageProps retains Next image optimization; CSS classes preserve the strict CSP. */}
-                    <img {...props} alt={item.alt} style={undefined} />
+                    <DevelopmentImage
+                      src={props.src}
+                      srcSet={props.srcSet}
+                      sizes={props.sizes}
+                      alt={item.alt}
+                      originalSrc={originalSrc}
+                    />
                     <div className="lx-development__copy">
                       <h3 className="lx-display-s">{item.title}</h3>
                       <p className="lx-body">{item.text}</p>

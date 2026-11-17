@@ -36,7 +36,8 @@ describe('copy Second Home Partners (catalog §20.6)', () => {
     expect(opportunity).toMatch(/Imagine seu cliente/);
     expect(opportunity).toContain('problema-imovel');
     expect(opportunity).toMatch(/lx-section-closing/);
-    expect(text.opportunity.closing.turn).toMatch(/oportunidade|possibilidade|pode/i);
+    expect(opportunity).toMatch(/A venda termina\..*Sua participação continua\./);
+    expect(opportunity).toMatch(/Enquanto o imóvel estiver afiliado.*faturamento/);
     expect(opportunity).not.toMatch(/\sstyle=/);
     expect(answerTo(/já comercializei/)).toMatch(/já comercializou.*ainda vai comercializar/);
     expect(answerTo(/já comercializei/)).toMatch(/avaliação.*adesão.*proprietário/);
@@ -78,15 +79,18 @@ describe('copy Second Home Partners (catalog §20.6)', () => {
     );
   });
 
-  it('[REQ-105] receita recorrente primeiro, dependente de faturamento e contrato; sem inventar valores ou exclusividade', () => {
+  it('[REQ-105] participação continua enquanto afiliado; valores dependem do faturamento e contrato (D-SHP-18)', () => {
     expect(text.benefits.items).toHaveLength(3);
-    expect(text.benefits.items[0].title).toBe('Receita recorrente');
+    expect(text.benefits.items[0].title).toBe('Receita além da venda');
     expect(text.benefits.items[0].paragraphs.join(' ')).toMatch(
-      /primeiros parceiros.*faturamento.*afiliarem.*contrato/,
+      /primeiros parceiros.*faturamento.*afiliarem.*participação continua enquanto o imóvel estiver afiliado/,
     );
     expect(text.benefits.note).toMatch(/depende do faturamento.*condições contratadas/);
     expect(answerTo(/faturamento/)).toMatch(
       /Receitas abrangidas, atribuição, percentuais e pagamento.*contrato/,
+    );
+    expect(answerTo(/faturamento/)).toMatch(
+      /parceiro responsável pela afiliação participa enquanto o imóvel permanecer afiliado/,
     );
     expect(
       PAGE.filter((line) =>

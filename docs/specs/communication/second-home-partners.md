@@ -1,10 +1,10 @@
 # Aplicação do Framework Second Home Partners — parceiro especialista
 
-> Fonte: [Framework Second Home Partners](framework-second-home-partners.md), versão de 2026-11-17, revisão editorial 2 ([ADR-0028](../../adr/0028-jornada-second-home-partners.md)). Contrato: [communication](../communication.md). Guardrails: [luxtory](luxtory.md) §4.
+> Fonte: [Framework Second Home Partners](framework-second-home-partners.md), versão de 2026-11-17, revisão editorial 3 ([ADR-0028](../../adr/0028-jornada-second-home-partners.md)). Contrato: [communication](../communication.md). Guardrails: [luxtory](luxtory.md) §4.
 
 ## 1. Escopo e precedência
 
-Uma página para incorporadoras, imobiliárias e corretores especialistas em imóveis de lazer de alto padrão `[FW-SHP: §3]`. `01` v10.6 §1/§35 → `02` v4.6 REQ-105 → `03` v3.18 TECH-057. Brief e aceite em [catalog §20.6](../catalog.md#206-revisão-aprovada--três-perfis-e-copy-de-lançamento-2026-11-17). Comunicação: Framework > aplicação > brief > i18n. Sem links para B2C/Brand Partners (`D-LX-13`).
+Uma página para incorporadoras, imobiliárias e corretores especialistas em imóveis de lazer de alto padrão `[FW-SHP: §3]`. `01` v10.7 §1/§35 → `02` v4.6 REQ-105 → `03` v3.18 TECH-057. Brief e aceite em [catalog §20.6](../catalog.md#206-revisão-aprovada--três-perfis-e-copy-de-lançamento-2026-11-17). Comunicação: Framework > aplicação > brief > i18n. Sem links para B2C/Brand Partners (`D-LX-13`).
 
 ## 2. Leitura canônica
 
@@ -14,7 +14,7 @@ Uma página para incorporadoras, imobiliárias e corretores especialistas em im�
 | L2 | Luxchange `[FW-SHP: §8 P4]` | BR-146, BR-190, REQ-060 | associados disponibilizam períodos, recebem créditos e solicitam estadias; sem garantia |
 | L3 | Luxplus `[FW-SHP: §8 P4]` | BR-146, BR-240, REQ-070 | estadias disponíveis pagas pela hospedagem, sem créditos |
 | L4 | Locação `[FW-SHP: §8 P4]` | `01` §1/§35, BR-374 | gestão digital com apoio local, independente do Club e contratada por proprietário; decisão voluntária |
-| L5 | Receita recorrente `[FW-SHP: §8 P3]` | `01` v10.6 §35, BR-352 | primeiros parceiros dos três perfis participam do faturamento dos imóveis afiliados; receitas, atribuição, percentuais e pagamento em contrato; sem mínimo ou garantia; expressão pública não redefine bases econômicas |
+| L5 | Receita recorrente `[FW-SHP: §8 P3]` | `01` v10.7 §35, BR-352 | primeiros parceiros dos três perfis participam do faturamento dos imóveis que afiliaram enquanto permanecerem afiliados; receitas, atribuição, percentuais e pagamento em contrato; sem mínimo ou garantia; expressão pública não redefine bases econômicas |
 | L6 | Imóveis parceiros `[FW-SHP: §6.2]` | BR-053, BR-054 | não são Second Homes nem Branded Second Homes; fotos ilustrativas |
 | L7 | CTA `[FW-SHP: §8 P5]` | REQ-105 | formulário da mesma página; envio não formaliza parceria nem afilia imóvel |
 
@@ -56,7 +56,7 @@ Tom `[FW-SHP: §11]`, validação e execução `[FW-SHP: §13, §14]`. Blocos cu
 
 ## 10. Registro
 
-D-SHP-14 a D-SHP-16 são vigentes. Linhas anteriores preservam as decisões históricas e ficam superadas onde indicado; pendências operacionais e jurídicas continuam sem impedir a preparação editorial aprovada. P-SHP-03 não limita mais o tempo verbal da versão de lançamento, mas segue bloqueando execução de serviços sem regras.
+D-SHP-14 a D-SHP-18 são vigentes; D-SHP-18 resolve a duração antes indefinida em D-SHP-17. Linhas anteriores preservam as decisões históricas e ficam superadas onde indicado; pendências operacionais e jurídicas continuam sem impedir a preparação editorial aprovada. P-SHP-03 não limita mais o tempo verbal da versão de lançamento, mas segue bloqueando execução de serviços sem regras.
 
 
 | ID | Decisão | Status | Base |
@@ -80,6 +80,8 @@ D-SHP-14 a D-SHP-16 são vigentes. Linhas anteriores preservam as decisões hist
 | D-SHP-16 | Copy completa de lançamento no presente, sem notas de estruturação ou indisponibilidade; publicar quando o Club estiver pronto. Preparação editorial não comprova operação nem habilita serviço | aprovada pelo fundador em 2026-11-17; substitui os limites editoriais anteriores de D-SHP-09 e D-SHP-11; prontidão operacional segue pendente | REQ-105; catalog §20.6 |
 
 | D-SHP-17 | Hero com duas frases em blocos; oportunidade com narrativa imaginativa e foto do acervo; fechamentos no padrão centralizado da Home; carteira já vendida e futura sujeita a avaliação/adesão. A duração de receita não é presumida: usar receita depois da venda, sem “vitalícia” ou garantia de acelerar vendas | ajustes pedidos pelo fundador em 2026-11-17; julgamento editorial dentro de BR-352 e BR-374 | REQ-105; catalog §20.7 |
+
+| D-SHP-18 | Participação do parceiro responsável pela afiliação durante todo o período em que o imóvel permanecer afiliado; a venda não encerra a participação. Valores dependem do faturamento e contrato. Promessa explícita com condição de afiliação junto, sem “vitalícia” ambígua, percentual ou mínimo; revisar carregamento das três fotos do print | regra definida pelo fundador em 2026-11-17; substitui a indefinição de duração registrada em D-SHP-17 | `01` v10.7 §35; REQ-105; catalog §20.8 |
 
 | ID | Hipótese | Como validar |
 |---|---|---|

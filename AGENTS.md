@@ -24,6 +24,8 @@
 
 ## Canonical documents (source of truth)
 
+Revisão do fundador em 2026-11-17:01 v10.7 define participação SHP enquanto o imóvel permanecer afiliado, para o parceiro que o afiliou. Somente a comunicação do REQ-105 é ajustada;02 v4.6 e03 v3.18 mantêm seus contratos. Aceite em catalog §20.8.
+
 Revisão autorizada pelo fundador em 2026-11-17: SHP três perfis e copy de lançamento, versões 01 v10.6 / 02 v4.6 / 03 v3.18; REQ-105 / TECH-057, sem novos IDs ou serviços do Club. Histórico e aceite em catalog §20.6.
 
 Luxtory's business, product and technical definitions live in three **frozen** documents.
@@ -32,7 +34,7 @@ conflict, 01 prevails (BR-380, REQ-104).
 
 | Doc | Path | Defines | IDs |
 |---|---|---|---|
-| 01 — Business Model & Business Rules v10.6 | `docs/specs/canonical/01-business-model-business-rules.md` | what the business is; structural rules | 192 `BR-xxx` |
+| 01 — Business Model & Business Rules v10.7 | `docs/specs/canonical/01-business-model-business-rules.md` | what the business is; structural rules | 192 `BR-xxx` |
 | 02 — Product Spec v4.6 | `docs/specs/canonical/02-product-spec.md` | functional behavior, invariants, product decisions | 67 `REQ-xxx` · 6 `INV-n` · 11 `PD-xxx` |
 | 03 — Technical Spec v3.18 | `docs/specs/canonical/03-technical-spec.md` | how to build: data model, locks, ledgers, API, QA | 51 `TECH-xxx` · `ADR-001…008` |
 

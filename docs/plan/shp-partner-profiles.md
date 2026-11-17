@@ -45,3 +45,16 @@ Escopo: i18n, renderização, CSS local SHP, Framework/aplicação e brief. Sem 
 2. [x] Ajustar Hero, split com imagem, copy e três fechamentos; esclarecer carteira já vendida/futura na seção e FAQ.
 3. [x] Verificar parágrafos, imagem carregada, duas frases independentes, centralização/fonte, responsividade, reflow200%, axe e formulário existente. Lint/tipos/build, testes direcionados e capturas. CI remota registrada no PR.
 4. [x] Revisão independente do diff incremental; commit/push no PR94, preservar condição de lançamento.
+
+## Regra de duração e revisão do print — 2026-11-17
+
+O fundador definiu expressamente: enquanto o imóvel estiver afiliado, o parceiro responsável pela afiliação participa do faturamento. Incorporar a regra às fontes e à copy, sem porcentagem, valor mínimo ou participação sobre receitas de terceiros. A promessa pode ser afirmativa sobre a continuidade do direito; pagamento continua ligado ao faturamento efetivo. Preferir “A venda termina. Sua participação continua” com a duração explícita junto, mais preciso que “vitalícia”. Sem API de afiliação ou cálculo financeiro nesta entrega.
+
+O print mostra dois cards sem fotografia. Investigar DOM, carregamento nativo e respostas de imagem antes de mudar código. O acesso remoto direto ao Preview pode ser limitado pelo transporte; distinguir evidência local de causa remota. Preservar os três originais e a geometria. Se a cadeia de carregamento reproduzir o problema, antecipar solicitações e adicionar recuperação limitada para o original quando o otimizador falhar, com tratamento da falha anterior à hidratação. Sem enfraquecer a CSP nem substituir assets.
+
+1. [x] Registrar a definição de duração em revisão limitada do01, alinhar Framework/aplicação/brief e copy; testar o limite explícito de afiliação.
+2. [x] Reproduzir carregamento inicial/erro das fotos e observar testes RED antes de corrigir. Validar recuperação para o original, sem loop, e três frames iguais.
+3. [x] Verificar copy/layout, imagens carregadas, três perfis existentes, seis larguras, fonte200%, axe/contraste, lint/tipos/build e gates adequados; capturas reais.
+4. [x] Revisão independente do incremento e entrega no PR94/Preview; preservar condição de lançamento em produção. CI remota acompanhada no PR antes da conclusão.
+
+Revisão sem Critical/Important; teste existente reforçado para erro do otimizador após hidratação comprovada. Gates locais aprovados; estado final de CI/Preview registrado no PR para o SHA publicado.

@@ -1,6 +1,6 @@
 # FRAMEWORK DE COMUNICAÇÃO — SECOND HOME PARTNERS
 
-Luxtory · versão de 2026-11-17, revisão editorial 2, com os ajustes de Hero, oportunidade e fechamentos pedidos pelo fundador. Substitui a primeira versão de 2026-11-17; ambas sucedem a versão de 2026-11-13. Documento congelado: nova versão substitui o arquivo inteiro. Fatos vêm de 01/02/03; aceite e impacto em catalog §20.6. Escopo: comunicação de lançamento; sem declaração técnica de prontidão operacional.
+Luxtory · versão de 2026-11-17, revisão editorial 3, com a duração da participação definida pelo fundador e a revisão do print. Substitui a revisão editorial 2 e a primeira versão de 2026-11-17; ambas sucedem a versão de 2026-11-13. Documento congelado: nova versão substitui o arquivo inteiro. Fatos vêm de 01/02/03; aceite e impacto em catalog §20.6–20.8. Escopo: comunicação de lançamento; sem declaração técnica de prontidão operacional.
 
 # 1. OBJETIVO
 
@@ -8,7 +8,7 @@ Converter parceiros qualificados em conversas comerciais: incorporadoras, imobil
 
 # 2. POSICIONAMENTO DA MARCA
 
-A Luxtory acrescenta possibilidades de uso aos imóveis e argumentos à venda. Os primeiros parceiros participam do faturamento dos imóveis que afiliarem, conforme contrato. A oportunidade recorrente depende das receitas geradas; não é pagamento garantido. Receitas abrangidas, atribuição, percentuais e pagamento são contratuais; a linguagem pública não redefine as bases de 01 §35.
+A Luxtory acrescenta possibilidades de uso aos imóveis e argumentos à venda. Os primeiros parceiros participam do faturamento dos imóveis que afiliarem enquanto esses imóveis permanecerem afiliados à Luxtory. A continuidade da participação está definida; valores dependem do faturamento gerado e das condições contratadas, sem pagamento mínimo ou fixo garantido. Receitas abrangidas, atribuição, percentuais e pagamento são contratuais; a linguagem pública não redefine as bases de 01 §35.
 
 Proposta de valor: “Mais valor para seu negócio. Mais liberdade para seus clientes.” A página serve aos três perfis, independentemente de empreendimento próprio ou branded, sem chamar imóveis parceiros de Branded Second Homes. Sem exclusividade ou comparação sem evidência.
 
@@ -63,11 +63,11 @@ Hero comum aos três perfis. As duas frases ficam em blocos sucessivos, segunda 
 
 # P2 — PROBLEM
 
-Convidar o parceiro a imaginar seu cliente adquirindo um imóvel de lazer afiliado a um clube, monetizando períodos sem uso e descobrindo outros destinos por intercâmbio. Split de texto e fotografia contextual já autorizada no acervo. Esses argumentos podem ajudar a superar objeções e encurtar o ciclo de vendas; não afirmar resultado garantido. Fechamento editorial centralizado no papel de headline da Home.
+Convidar o parceiro a imaginar seu cliente adquirindo um imóvel de lazer afiliado a um clube, monetizando períodos sem uso e descobrindo outros destinos por intercâmbio. Split de texto e fotografia contextual já autorizada no acervo. Esses argumentos podem ajudar a superar objeções e encurtar o ciclo de vendas; não afirmar resultado garantido. Fechamento editorial centralizado no papel de headline da Home: “A venda termina. Sua participação continua.” A condição aparece junto: enquanto o imóvel estiver afiliado, o parceiro participa do faturamento que ele gera.
 
 # P3 — PROMISE
 
-Três benefícios com o mesmo peso, nesta ordem: Receita recorrente; Diferenciação comercial; Marketing e vendas. Nota explicita dependência de faturamento e condições contratadas. “Primeiros parceiros” não autoriza inventar vagas, prazo ou escassez.
+Três benefícios com o mesmo peso, nesta ordem: Receita além da venda; Diferenciação comercial; Marketing e vendas. Nota explicita dependência de faturamento e condições contratadas. “Primeiros parceiros” não autoriza inventar vagas, prazo ou escassez.
 
 # P4 — PROOF
 
@@ -107,10 +107,10 @@ Uma página, nove seções: Hero, A oportunidade, Benefícios, Onde a parceria p
 - Uma página; sem segunda landing page, nova rota, tabs por persona ou links cruzados para B2C/Brand Partners.
 - Copy integral aprovada no i18n; ajustes de parágrafo em pausas naturais para concisão. Zoom sem limite artificial de linhas.
 - No presente para lançamento; nenhuma funcionalidade de Club ou de apuração financeira é criada pela copy.
-- Participação dos primeiros parceiros explícita para os três perfis, sem porcentagem, fórmula, prazo, mínimo ou garantia. Bases econômicas de 01 §35 preservadas.
+- Participação dos primeiros parceiros explícita para os três perfis, sem inventar porcentagem, fórmula, duração além da afiliação, mínimo ou garantia de valor. Bases econômicas de 01 §35 preservadas.
 - Três imagens fornecidas preservadas conforme estágio; fotografia adicional na oportunidade, reaproveitada do acervo autorizado, sem prova social fictícia.
 - Fechamentos editoriais centralizados com `lx-section-closing` e `lx-headline`, no padrão da Home; condições e privacidade mantêm a hierarquia de corpo.
-- “Receita vitalícia” não é adotada sem definição expressa de duração e continuidade contratual (BR-352). Explorar receita depois da venda, sem inventar obrigação perpétua.
+- Duração definida pelo fundador: o parceiro que afilia participa enquanto o imóvel permanecer afiliado. Explicitar essa condição é mais preciso que “vitalícia”; não estender o direito para depois do fim da afiliação nem prometer valor sem faturamento.
 
 # 15. INPUT MÍNIMO
 

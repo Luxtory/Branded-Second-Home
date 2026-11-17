@@ -1909,4 +1909,6 @@ próprios, nascidos da `main` com o anterior mergeado (nunca CP1 + CP2 numa bran
 
 Autorizada pelo fundador após validação da copy completa. Dependência: SHP1 publicada (#91). Execução sequencial: contratos/versionamento → testes de perfil → copy/layout/formulário → verificação completa/revisão. REQ-105 / TECH-057; plano detalhado em [shp-partner-profiles.md](shp-partner-profiles.md), aceite em catalog §20.6. Sem nova rota, serviço financeiro, afiliação ou operação do Club. Status: implementação e gates locais concluídos; PR de Preview, sem merge/publicação de produção nesta etapa (condição de lançamento D-SHP-16).
 
-Refinamento SHP2 autorizado após o Preview em2026-11-17: Hero em duas frases, oportunidade com foto/narrativa, fechamentos e carteira já vendida/futura. D-SHP-17; catalog §20.7; plano detalhado no adendo de shp-partner-profiles.md. Sem mudança de economia ou duração contratual.
+Refinamento SHP2 autorizado após o Preview em 2026-11-17: Hero em duas frases, oportunidade com foto/narrativa, fechamentos e carteira já vendida/futura. D-SHP-17; catalog §20.7; plano detalhado no adendo de shp-partner-profiles.md. Sem mudança de economia ou duração contratual.
+
+Definição complementar SHP2 em 2026-11-17: duração do direito de participação enquanto o imóvel permanecer afiliado, conforme fundador/01 v10.7; catalog §20.8 e D-SHP-18. Corrigir cadeia de carregamento/fallback das fotos observadas no print, sem alterar originais, APIs ou operação do Club.

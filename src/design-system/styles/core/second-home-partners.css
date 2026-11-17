@@ -83,6 +83,7 @@
     grid-template-rows: minmax(var(--lx-space-48), 1fr) auto;
     min-width: 0;
     min-height: calc(var(--lx-space-48) * 2.5);
+    background-color: var(--lx-scrim-color);
   }
 
   [data-lx="core"] #empreendimentos .lx-development__image {

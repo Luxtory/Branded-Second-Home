@@ -29,6 +29,7 @@ const normalized = (value: string) => value.replace(/\s+/g, ' ').trim();
 const BLOCKS = [
   ...text.hero.paragraphs,
   ...text.opportunity.paragraphs,
+  text.opportunity.participation,
   text.benefits.intro,
   ...text.benefits.items.flatMap((item) => item.paragraphs),
   text.benefits.note,
@@ -188,6 +189,119 @@ test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, 
 });
 
 test.describe('Second Home Partners — gate de UI (ADR-0009, catalog §20.5)', () => {
+  test('[REQ-105] as três fotos abaixo da dobra carregam sem depender da rolagem', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(PAGE);
+    const photos = page.locator('#empreendimentos img');
+    await expect(photos).toHaveCount(3);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    for (const photo of await photos.all()) {
+      expect((await photo.boundingBox())?.y).toBeGreaterThan(900);
+      await expect(photo).toHaveAttribute('fetchpriority', 'low');
+      await expect
+        .poll(() => photo.evaluate((node: HTMLImageElement) => node.naturalWidth))
+        .toBeGreaterThan(0);
+    }
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  });
+
+  test('[REQ-105] falha no otimizador antes da hidratação recupera as três fotos originais', async ({
+    page,
+  }) => {
+    let releaseScripts: () => void = () => {};
+    const scriptGate = new Promise<void>((resolve) => {
+      releaseScripts = resolve;
+    });
+    await page.route('**/*.js*', async (route) => {
+      await scriptGate;
+      await route.continue();
+    });
+    await page.addInitScript(() => {
+      document.addEventListener(
+        'error',
+        (event) => {
+          if (
+            event.target instanceof HTMLImageElement &&
+            event.target.classList.contains('lx-development__image')
+          ) {
+            event.target.setAttribute('data-failed-before-hydration', 'true');
+          }
+        },
+        true,
+      );
+    });
+    await page.route('**/_next/image?*', async (route) => {
+      if (
+        new URL(route.request().url()).searchParams
+          .get('url')
+          ?.startsWith('/images/second-home-partners/')
+      ) {
+        await route.fulfill({ status: 503, body: '' });
+      } else await route.continue();
+    });
+    try {
+      await page.goto(PAGE, { waitUntil: 'commit' });
+      await expect(page.locator('#empreendimentos img[data-failed-before-hydration]')).toHaveCount(
+        3,
+      );
+    } finally {
+      releaseScripts();
+    }
+    for (const [index, item] of text.developments.items.entries()) {
+      const photo = page.locator('#empreendimentos img').nth(index);
+      await expect(photo).toHaveAttribute('src', `/images/second-home-partners/${item.image}`);
+      await expect(photo).not.toHaveAttribute('srcset');
+      await expect
+        .poll(() => photo.evaluate((node: HTMLImageElement) => node.naturalWidth))
+        .toBeGreaterThan(0);
+    }
+  });
+
+  test('[REQ-105] falha também no original mantém o card legível e não repete solicitações', async ({
+    page,
+  }) => {
+    const original = `/images/second-home-partners/${text.developments.items[1].image}`;
+    let originalRequests = 0;
+    let releaseOptimizer: () => void = () => {};
+    const optimizerGate = new Promise<void>((resolve) => {
+      releaseOptimizer = resolve;
+    });
+    await page.route('**/_next/image?*', async (route) => {
+      if (new URL(route.request().url()).searchParams.get('url') === original) {
+        await optimizerGate;
+        await route.fulfill({ status: 503, body: '' });
+      } else await route.continue();
+    });
+    await page.route(`**${original}`, async (route) => {
+      originalRequests++;
+      await route.fulfill({ status: 503, body: '' });
+    });
+    try {
+      await page.goto(PAGE, { waitUntil: 'domcontentloaded' });
+      // A React-driven profile change proves hydration finished before the optimizer fails.
+      await page.getByRole('radio', { name: form.profiles.broker, exact: true }).check();
+      await expect(
+        page.getByRole('textbox', { name: form.labels.region, exact: true }),
+      ).toBeVisible();
+    } finally {
+      releaseOptimizer();
+    }
+    const card = page.locator('#empreendimentos article').nth(1);
+    const photo = card.locator('img');
+    await expect.poll(() => originalRequests).toBe(1);
+    await expect(photo).toHaveAttribute('src', original);
+    await photo.dispatchEvent('error');
+    await page.waitForLoadState('networkidle');
+    expect(originalRequests).toBe(1);
+    await expect(card.getByRole('heading')).toHaveText(text.developments.items[1].title);
+    expect((await card.boundingBox())?.height).toBeGreaterThanOrEqual(480);
+    expect(await card.evaluate((node) => getComputedStyle(node).backgroundColor)).not.toBe(
+      'rgba(0, 0, 0, 0)',
+    );
+  });
+
   test('[REQ-105] Hero em duas frases, oportunidade com imagem e fechamentos no padrão da Home', async ({
     page,
   }) => {
@@ -320,7 +434,7 @@ test.describe('Second Home Partners — gate de UI (ADR-0009, catalog §20.5)', 
       await expect(image).toHaveAttribute('alt', text.developments.items[index]?.alt ?? '');
       await expect(image).toHaveAttribute('width', '1448');
       await expect(image).toHaveAttribute('height', '1086');
-      await expect(image).toHaveAttribute('loading', 'lazy');
+      await expect(image).toHaveAttribute('loading', 'eager');
       await expect(image).toHaveAttribute('sizes', /1024px/);
       const src = new URL((await image.getAttribute('src')) ?? '', 'http://localhost');
       expect(src.pathname).toBe('/_next/image');

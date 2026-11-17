@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Second Home Partners (REQ-105, D-SHP-18): participação no faturamento enquanto o imóvel permanecer afiliado,
+  conforme duração definida pelo fundador. Fechamento “A venda termina. Sua participação continua.” com a condição
+  visível no mesmo bloco; benefício e FAQ alinhados. Três fotos por estágio carregam desde a abertura, com prioridade
+  baixa e uma recuperação para o original em caso de falha do otimizador, inclusive antes da hidratação.
+
 - Refinamento Second Home Partners (REQ-105): Hero com frases em blocos sucessivos; oportunidade com narrativa
   imaginativa e foto contextual do acervo; fechamentos centralizados na tipografia da Home; imóveis já comercializados
   e futuras vendas sujeitos à avaliação e adesão dos proprietários. Participação descrita como oportunidade de receita

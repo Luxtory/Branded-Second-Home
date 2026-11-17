@@ -1,6 +1,6 @@
 /**
- * Copy de lançamento aprovada pelo fundador em 2026-11-17 (REQ-105, catalog §20.6, D-SHP-14–17).
- * Uma página para os três perfis; oportunidade recorrente dependente de faturamento e contrato.
+ * Copy de lançamento aprovada pelo fundador em 2026-11-17 (REQ-105, catalog §20.6–20.8, D-SHP-14–18).
+ * Uma página para os três perfis; participação enquanto afiliado, com valores dependentes de faturamento e contrato.
  * A preparação editorial no presente não implementa serviços nem comprova prontidão operacional do Club.
  */
 import type { DevelopmentStage, PartnerProfile } from '../../domain/second-home-partner-contact';
@@ -81,9 +81,11 @@ export const secondHomePartnersMessages = {
       height: 576,
     },
     closing: {
-      lead: 'Mais argumentos para vender. ',
-      turn: 'Oportunidades de receita depois da venda.',
+      lead: 'A venda termina. ',
+      turn: 'Sua participação continua.',
     },
+    participation:
+      'Enquanto o imóvel estiver afiliado, você participa do faturamento que ele gera.',
   },
   benefits: {
     marker: 'Para nossos parceiros',
@@ -91,13 +93,14 @@ export const secondHomePartnersMessages = {
       lead: 'Mais valor para oferecer. ',
       turn: 'Mais\u00a0oportunidades para crescer.',
     },
-    intro: 'Diferenciação comercial, apoio às vendas e oportunidades de receita recorrente.',
+    intro:
+      'Diferenciação comercial, apoio às vendas e participação no faturamento por toda a afiliação.',
     items: [
       {
-        title: 'Receita recorrente',
+        title: 'Receita além da venda',
         paragraphs: [
           'Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.',
-          'Conforme contrato.',
+          'A participação continua enquanto o imóvel estiver afiliado.',
         ],
       },
       {
@@ -264,6 +267,7 @@ export const secondHomePartnersMessages = {
         question: 'Como funciona a participação no faturamento?',
         answer: [
           'Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.',
+          'O parceiro responsável pela afiliação participa enquanto o imóvel permanecer afiliado.',
           'Receitas abrangidas, atribuição, percentuais e pagamento são definidos em contrato.',
         ],
       },
