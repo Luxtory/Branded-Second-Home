@@ -25,7 +25,7 @@ Build local de produção, Chromium e fontes/imagens carregadas. Os recortes de 
 
 ## Verificação
 
-- 38testes direcionados de copy, comunicação, ontologia e assets aprovados; lint, tipos e build aprovados.
+- 38testes direcionados de copy, comunicação, ontologia e assets aprovados; lint, tipos e build aprovados. Revalidação final em Next16.4.5 / Node22.23.3, após incorporar a atualização de segurança da main (#93), sem mudar a implementação visual.
 - 19/19 E2E da página aprovados: Hero, split, imagem carregada, fechamentos iguais à Home, navegação, SEO, três perfis até a API/adapter determinístico, falha/retry e estados acessíveis.
 - axe0 em390/1440; seis larguras320,390,768,1024,1440,1920 sem overflow; parágrafos/fechamentos de até3linhas nas larguras verificadas≥390 e até4a320.
 - Fonte200% em320,390,768,1440 sem clipping/overflow; contraste mínimo nas fotos7,32:1; console limpo. Detalhes em [metrics.json](metrics.json).
