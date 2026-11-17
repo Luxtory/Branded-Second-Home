@@ -1,0 +1,114 @@
+{
+  "initial": [
+    {
+      "alt": "Casa contemporânea com fachada de vidro, madeira e pedra, cercada por jardins.",
+      "loading": "lazy",
+      "complete": false,
+      "naturalWidth": 0,
+      "top": 3124.671875,
+      "height": 480
+    },
+    {
+      "alt": "Edifício em construção com guindaste, andaimes e estrutura dos pavimentos superiores exposta.",
+      "loading": "lazy",
+      "complete": false,
+      "naturalWidth": 0,
+      "top": 3124.671875,
+      "height": 480
+    },
+    {
+      "alt": "Edifício concluído com varandas, entrada iluminada e paisagismo cuidado.",
+      "loading": "lazy",
+      "complete": false,
+      "naturalWidth": 0,
+      "top": 3124.671875,
+      "height": 480
+    }
+  ],
+  "afterScreenshot": [
+    {
+      "alt": "Casa contemporânea com fachada de vidro, madeira e pedra, cercada por jardins.",
+      "loading": "lazy",
+      "complete": false,
+      "naturalWidth": 0,
+      "top": 3124.671875,
+      "height": 480
+    },
+    {
+      "alt": "Edifício em construção com guindaste, andaimes e estrutura dos pavimentos superiores exposta.",
+      "loading": "lazy",
+      "complete": false,
+      "naturalWidth": 0,
+      "top": 3124.671875,
+      "height": 480
+    },
+    {
+      "alt": "Edifício concluído com varandas, entrada iluminada e paisagismo cuidado.",
+      "loading": "lazy",
+      "complete": false,
+      "naturalWidth": 0,
+      "top": 3124.671875,
+      "height": 480
+    }
+  ],
+  "afterScroll": [
+    {
+      "alt": "Casa contemporânea com fachada de vidro, madeira e pedra, cercada por jardins.",
+      "loading": "lazy",
+      "complete": true,
+      "naturalWidth": 1351,
+      "top": 305.671875,
+      "height": 480
+    },
+    {
+      "alt": "Edifício em construção com guindaste, andaimes e estrutura dos pavimentos superiores exposta.",
+      "loading": "lazy",
+      "complete": true,
+      "naturalWidth": 1351,
+      "top": 305.671875,
+      "height": 480
+    },
+    {
+      "alt": "Edifício concluído com varandas, entrada iluminada e paisagismo cuidado.",
+      "loading": "lazy",
+      "complete": true,
+      "naturalWidth": 1351,
+      "top": 305.671875,
+      "height": 480
+    }
+  ],
+  "boxes": [
+    {
+      "height": 480,
+      "top": 305.671875
+    },
+    {
+      "height": 480,
+      "top": 305.671875
+    },
+    {
+      "height": 480,
+      "top": 305.671875
+    }
+  ],
+  "network": [
+    {
+      "ms": 2511,
+      "url": "http://127.0.0.1:3216/_next/image?url=%2Fimages%2Fsecond-home-partners%2Fsecond-home-condominio-sob-demanda.webp&w=3840&q=75",
+      "status": 200,
+      "cache": "MISS"
+    },
+    {
+      "ms": 2535,
+      "url": "http://127.0.0.1:3216/_next/image?url=%2Fimages%2Fsecond-home-partners%2Fempreendimento-em-desenvolvimento.webp&w=3840&q=75",
+      "status": 200,
+      "cache": "MISS"
+    },
+    {
+      "ms": 2605,
+      "url": "http://127.0.0.1:3216/_next/image?url=%2Fimages%2Fsecond-home-partners%2Fempreendimento-entregue.webp&w=3840&q=75",
+      "status": 200,
+      "cache": "MISS"
+    }
+  ]
+}

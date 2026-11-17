@@ -21,6 +21,7 @@ export function SecondHomePartnersSite({ children }: { readonly children: ReactN
       menuTrigger="mark"
       titleRole="headline"
       typeCeiling="home-hero"
+      closingStyle="subtle"
       navItems={[
         { href: anchor('beneficios'), label: text.site.benefits, current: false },
         { href: anchor('como-funciona'), label: text.site.howItWorks, current: false },

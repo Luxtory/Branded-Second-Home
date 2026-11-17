@@ -1,33 +1,33 @@
 /**
- * Jornada pública Second Home Partners (REQ-105, spec catalog §20): Master Copy do plano v3.3 aprovado pelo fundador em
- * 2026-11-12, atualizada com o modelo comercial de 2026-11-13 (`D-SHP-07`–`D-SHP-10`): três benefícios com o mesmo peso,
- * participação nas receitas de gestão das locações como parte da proposta e no Luxtory Club só como possibilidade; três
- * soluções para os proprietários (Luxchange e Luxplus planejados no Club; locação de temporada independente).
- * Sem percentual, fórmula, valor, exemplo ou plataforma nomeada. Os textos são VERBATIM — não reescrever, resumir nem
- * acrescentar claim. Headlines: `lead` + `turn` (a virada em itálico da copy). Identificadores internos (funções 5P)
- * ficam só nos comentários.
+ * Copy de lançamento aprovada pelo fundador em 2026-11-17 (REQ-105, catalog §20.6–20.8, D-SHP-14–18).
+ * Uma página para os três perfis; participação enquanto afiliado, com valores dependentes de faturamento e contrato.
+ * A preparação editorial no presente não implementa serviços nem comprova prontidão operacional do Club.
  */
+import type { DevelopmentStage, PartnerProfile } from '../../domain/second-home-partner-contact';
 
-import type { DevelopmentStage } from '../../domain/second-home-partner-contact';
-
-/** Rótulos do formulário (catalog §20.3) e do e-mail interno: os campos autorizados pelo REQ-105. */
 const fieldLabels = {
+  profile: 'Qual é o seu perfil?',
   name: 'Nome',
-  company: 'Incorporadora',
+  company: 'Empresa',
   email: 'E-mail',
   development: 'Empreendimento e localização',
   stage: 'Fase do empreendimento',
+  region: 'Cidade ou região de atuação',
   message: 'Mensagem',
-  website: 'Site',
+  website: 'Site ou perfil profissional',
 } as const;
 
+const profiles: Readonly<Record<PartnerProfile, string>> = {
+  developer: 'Incorporadora',
+  agency: 'Imobiliária',
+  broker: 'Corretor(a)',
+};
 const stages: Readonly<Record<DevelopmentStage, string>> = {
   planning_or_launch: 'Planejamento ou lançamento',
   construction_or_sales: 'Obra ou comercialização',
   delivered_or_operating: 'Entregue ou em operação',
 };
-
-const CTA = 'Conversar sobre seu empreendimento';
+const CTA = 'Conversar sobre uma parceria';
 
 export const secondHomePartnersMessages = {
   site: {
@@ -43,135 +43,172 @@ export const secondHomePartnersMessages = {
     questions: 'Perguntas',
     contact: 'Conversar',
   },
-
   metadata: {
     siteName: 'Luxtory',
-    title: 'Second Home Partners — Luxtory',
+    title: 'Second Home Partners | Luxtory',
     description:
-      'Parcerias para incorporadoras de empreendimentos de lazer: gestão de locações para os proprietários, apoio comercial e participação nos resultados.',
+      'Parcerias para incorporadoras, imobiliárias e corretores de imóveis de lazer de alto padrão, com diferenciação comercial e oportunidades de receita recorrente.',
   },
-
-  // PICTURE · Hero tipográfico (Deep): o corpo nomeia os três benefícios; a liberdade dos clientes está na headline.
   hero: {
     marker: 'Second Home Partners',
     title: {
-      lead: 'Mais valor para seu empreendimento. ',
+      lead: 'Mais valor para seu negócio. ',
       turn: 'Mais liberdade para seus clientes.',
     },
-    body: 'Uma parceria para diferenciar seu empreendimento, apoiar suas vendas e criar novas oportunidades de receita.',
+    paragraphs: [
+      'Para incorporadoras, imobiliárias e corretores de imóveis de lazer de alto padrão.',
+      'Diferencie sua oferta e participe das receitas dos imóveis que você afilia à Luxtory.',
+    ],
     action: CTA,
     secondary: 'Conheça a parceria',
-    // A indisponibilidade de Luxchange e Luxplus fica na nota das soluções, sem repetição no hero.
-    note: 'Estamos estruturando o programa e buscando os primeiros parceiros.',
   },
-
-  // PROBLEM · A oportunidade (White): a objeção da ociosidade vira argumento de venda. "Acelerar a decisão de compra" é
-  // hipótese (`H-SHP-01`), nunca resultado.
   opportunity: {
-    marker: 'Uma oportunidade para sua incorporadora',
+    marker: 'Uma oportunidade para seu negócio',
     title: {
       lead: 'Um benefício a mais para o cliente. ',
       turn: 'Um argumento a mais para vender.',
     },
     paragraphs: [
-      'Imagine seu cliente comprando um imóvel de lazer que poderá alugar quando não estiver usando e, no futuro, conhecer outros destinos.',
-      'Esse diferencial pode ajudar sua equipe a superar objeções e acelerar a decisão de compra.',
+      'Imagine seu cliente adquirindo um imóvel de lazer afiliado a um clube.',
+      'Nos períodos sem uso, ele pode monetizar o imóvel com locação de temporada.',
+      'E trocar estadias por outros destinos da rede, aproveitando melhor seu patrimônio.',
+      'Você ganha argumentos para superar objeções à compra e ajudar a encurtar o ciclo de vendas.',
     ],
+    image: {
+      src: '/images/como-funciona/problema-imovel.jpg',
+      alt: 'Casa de lazer à beira-mar, com piscina e palmeiras ao pôr do sol.',
+      width: 1024,
+      height: 576,
+    },
+    closing: {
+      lead: 'A venda termina. ',
+      turn: 'Sua participação continua.',
+    },
+    participation:
+      'Enquanto o imóvel estiver afiliado, você participa do faturamento que ele gera.',
   },
-
-  // PROMISE · Benefícios (Blue): três benefícios com o mesmo peso (`D-SHP-07`). A participação é parte da comissão da
-  // Luxtory pela gestão das locações (`D-SHP-08`), nunca lucro nem a parte dos proprietários; o Club só como possibilidade.
   benefits: {
-    marker: 'Para sua incorporadora',
+    marker: 'Para nossos parceiros',
     title: {
       lead: 'Mais valor para oferecer. ',
-      // Espaço inseparável: a virada não deixa um "Mais" sozinho no fim da primeira linha.
       turn: 'Mais\u00a0oportunidades para crescer.',
     },
     intro:
-      'Uma parceria que combina diferenciação comercial, apoio às vendas e novas oportunidades de receita.',
+      'Diferenciação comercial, apoio às vendas e participação no faturamento por toda a afiliação.',
     items: [
       {
+        title: 'Receita além da venda',
+        paragraphs: [
+          'Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.',
+          'A participação continua enquanto o imóvel estiver afiliado.',
+        ],
+      },
+      {
         title: 'Diferenciação comercial',
-        text: 'Ofereça aos compradores novas formas de aproveitar o imóvel: locação de temporada e, no futuro, intercâmbio de estadias.',
+        paragraphs: [
+          'Ofereça novas possibilidades de uso do imóvel, com locação de temporada e intercâmbio de estadias.',
+        ],
       },
       {
         title: 'Marketing e vendas',
-        text: 'Apoiamos sua equipe com estratégia, materiais e argumentos de venda, conforme o escopo contratado.',
-      },
-      {
-        title: 'Participação nos resultados',
-        text: 'Sua incorporadora recebe parte da comissão da Luxtory pelas locações e poderá participar dos resultados do Luxtory Club.',
+        paragraphs: [
+          'Estratégia, materiais e argumentos para apoiar sua atuação comercial, conforme o escopo contratado.',
+        ],
       },
     ],
-    note: 'Os benefícios dependem das condições da parceria. Não há garantia de vendas, receitas ou estadias.',
+    note: 'A participação depende do faturamento gerado pelos imóveis afiliados e das condições contratadas.',
   },
-
-  // PROOF · Empreendimentos (Wash): situações ilustrativas, sujeitas à avaliação; nenhuma parceria real é afirmada.
   developments: {
     marker: 'Onde a parceria pode acontecer',
     title: {
       lead: 'Da concepção à entrega. ',
-      turn: 'Seu empreendimento pode fazer parte.',
+      turn: 'Imóveis e empreendimentos podem fazer parte.',
     },
     intro:
-      'Avaliamos oportunidades em diferentes momentos do projeto, considerando o perfil dos imóveis, dos proprietários e da incorporadora.',
+      'Avaliamos o perfil dos imóveis, a fase do projeto e as oportunidades apresentadas por cada parceiro.',
     items: [
       {
-        title: 'Imóveis sob demanda em condomínios parceiros',
-        text: 'Casas de alto padrão desenvolvidas conforme a demanda, em condomínios com potencial para receber a parceria.',
+        title: 'Imóveis sob demanda',
+        text: 'Casas de alto padrão sob demanda, em condomínios com potencial para a parceria.',
         image: 'second-home-condominio-sob-demanda.webp',
         alt: 'Casa contemporânea com fachada de vidro, madeira e pedra, cercada por jardins.',
       },
       {
         title: 'Empreendimentos em desenvolvimento',
-        text: 'Projetos em planejamento, lançamento ou construção que buscam oferecer novos diferenciais aos futuros proprietários.',
+        text: 'Projetos em planejamento, lançamento ou obra, em busca de novos diferenciais.',
         image: 'empreendimento-em-desenvolvimento.webp',
         alt: 'Edifício em construção com guindaste, andaimes e estrutura dos pavimentos superiores exposta.',
       },
       {
-        title: 'Empreendimentos entregues',
-        text: 'Imóveis prontos ou em operação, cujos proprietários podem escolher novas formas de aproveitar os períodos sem uso.',
+        title: 'Imóveis entregues',
+        text: 'Imóveis prontos, com novas possibilidades para os períodos sem uso.',
         image: 'empreendimento-entregue.webp',
         alt: 'Edifício concluído com varandas, entrada iluminada e paisagismo cuidado.',
       },
     ],
-    note: 'A participação depende da avaliação do empreendimento e das condições da parceria. Imagens ilustrativas.',
+    note: 'A participação depende da avaliação dos imóveis e das condições da parceria. Imagens ilustrativas.',
   },
-
-  // PROOF · Soluções para os proprietários (Deep), na lista numerada da Home B2C: equilíbrio visual sem atribuir tudo ao
-  // Club (`D-SHP-09`). Luxchange e Luxplus são mecanismos planejados do Club, para associados (BR-146, L2–L3); a
-  // locação de temporada é a gestão da Luxtory, independente do Club e contratada por cada proprietário (L4).
-  // Espaço inseparável antes do travessão: o rótulo nunca começa uma linha com ele.
   solutions: {
     marker: 'Mais liberdade para seus clientes',
     title: {
       lead: 'Um imóvel para chamar de seu. ',
       turn: 'E mais formas de aproveitá-lo.',
     },
-    intro:
-      'Três possibilidades para os proprietários aproveitarem melhor o imóvel, inclusive nos períodos sem uso.',
+    intro: 'Três possibilidades para aproveitar melhor o imóvel, inclusive nos períodos sem uso.',
     items: [
       {
         label: 'Luxchange\u00a0— Intercâmbio de estadias',
-        text: 'Os associados poderão disponibilizar períodos de seus imóveis e receber créditos para solicitar estadias em outros destinos da rede.',
+        paragraphs: [
+          'Os associados disponibilizam períodos de seus imóveis e recebem créditos.',
+          'Com esses créditos, solicitam estadias em outros destinos da rede.',
+        ],
       },
       {
         label: 'Luxplus\u00a0— Estadias adicionais',
-        text: 'Os associados poderão reservar estadias disponíveis em outros imóveis da rede, pagando pela hospedagem, sem usar créditos.',
+        paragraphs: [
+          'Os associados reservam estadias disponíveis na rede, pagando pela hospedagem, sem usar créditos.',
+        ],
       },
       {
-        label: 'Locação de temporada\u00a0— Monetização de períodos ociosos',
-        text: 'Nos períodos sem uso, os proprietários poderão autorizar locações, com gestão digital da Luxtory e apoio de operadores locais.',
+        label: 'Locação de temporada',
+        paragraphs: [
+          'O proprietário escolhe os períodos que deseja disponibilizar para locação.',
+          'A Luxtory faz a gestão digital, com apoio de operadores locais.',
+        ],
       },
     ],
     note: [
-      'Luxchange e Luxplus são serviços planejados do Luxtory Club, ainda não disponíveis, com regras próprias para imóveis parceiros.',
-      'A gestão de locações é independente e contratada diretamente com cada proprietário.',
+      'Cada serviço segue regras próprias.',
+      'A gestão de locações é independente do Club e contratada diretamente com cada proprietário.',
     ],
   },
-
-  // PROOF · Como funciona a parceria (Wash): quatro etapas reais, em ordem.
+  intermediaries: {
+    marker: 'Imobiliárias e corretores',
+    title: {
+      lead: 'Seu relacionamento pode gerar receita ',
+      turn: 'depois da venda.',
+    },
+    paragraphs: [
+      'Você conhece os destinos, os imóveis e as pessoas que procuram por eles.',
+      'Apresente imóveis que você já comercializou e os que ainda vai comercializar.',
+      'A afiliação depende da avaliação da Luxtory e da adesão de cada proprietário.',
+    ],
+    items: [
+      {
+        title: 'Para imobiliárias',
+        text: 'Amplie a proposta para sua carteira e participe das receitas dos imóveis que você afilia.',
+      },
+      {
+        title: 'Para corretores',
+        text: 'Acrescente argumentos ao atendimento e abra oportunidades de receita com os imóveis que você afilia.',
+      },
+    ],
+    closing: {
+      lead: 'Novas oportunidades. ',
+      turn: 'Antes e depois da venda.',
+    },
+    action: CTA,
+  },
   process: {
     marker: 'Simples desde o primeiro contato',
     title: {
@@ -181,75 +218,111 @@ export const secondHomePartnersMessages = {
     steps: [
       {
         title: 'Conversa',
-        text: 'Você apresenta seu empreendimento, a fase do projeto e o que busca na parceria.',
+        paragraphs: [
+          'Conte sobre sua atuação, os imóveis com que trabalha e o que busca na parceria.',
+        ],
       },
       {
         title: 'Diagnóstico',
-        text: 'Conhecemos seu produto, seus compradores e as oportunidades do projeto.',
+        paragraphs: [
+          'Conhecemos o perfil dos imóveis, dos clientes e as possibilidades de colaboração.',
+        ],
       },
       {
         title: 'Proposta',
-        text: 'Se fizer sentido para os dois lados, definimos serviços, responsabilidades e condições.',
+        paragraphs: [
+          'Definimos serviços e responsabilidades.',
+          'Acordamos a participação nas receitas e as condições comerciais.',
+        ],
       },
       {
         title: 'Parceria',
-        text: 'Iniciamos os serviços acordados. Depois, o Luxtory Club poderá integrar a parceria.',
+        paragraphs: ['Formalizamos o acordo e iniciamos as ações previstas na parceria.'],
       },
     ],
+    closing: {
+      lead: 'Uma boa parceria começa ',
+      turn: 'com uma conversa.',
+    },
     action: CTA,
   },
-
-  // PROOF · Perguntas (Blue): só as dúvidas de uma incorporadora interessada (`D-SHP-10`) — O1, O3, O7, O8 e O6. A
-  // disponibilidade do Club fica na nota das soluções; a etapa inicial, em Como funciona.
   faq: {
     title: 'O que você precisa saber.',
     items: [
       {
+        question: 'Quem pode ser parceiro da Luxtory?',
+        answer: [
+          'Incorporadoras, imobiliárias e corretores especialistas em imóveis de lazer de alto padrão.',
+          'Cada oportunidade é avaliada conforme o perfil dos imóveis e a proposta de parceria.',
+        ],
+      },
+      {
         question: 'Como a parceria pode ajudar minhas vendas?',
-        answer:
-          'Ela ajuda a enfrentar a objeção da ociosidade: o comprador poderá alugar os períodos sem uso e, no futuro, intercambiar estadias.',
+        answer: [
+          'Acrescenta à sua proposta possibilidades de locação, intercâmbio e estadias adicionais.',
+          'Esses argumentos podem ajudar você a conversar sobre os períodos sem uso do imóvel.',
+        ],
       },
       {
-        question: 'Como minha incorporadora participa dos resultados?',
-        answer:
-          'Ela recebe parte da comissão da Luxtory pela gestão das locações e, futuramente, poderá participar dos resultados do Luxtory Club.',
+        question: 'Como funciona a participação no faturamento?',
+        answer: [
+          'Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.',
+          'O parceiro responsável pela afiliação participa enquanto o imóvel permanecer afiliado.',
+          'Receitas abrangidas, atribuição, percentuais e pagamento são definidos em contrato.',
+        ],
       },
       {
-        question: 'Minha incorporadora precisa administrar as locações?',
-        answer:
-          'Não. A Luxtory faz a gestão digital e coordena os prestadores locais. Sua incorporadora pode oferecer Concierge e Facilities, se quiser.',
+        question: 'Preciso representar um empreendimento inteiro?',
+        answer: [
+          'Você pode apresentar sua atuação e o perfil dos imóveis que comercializa ou representa.',
+          'Não é necessário ter um empreendimento próprio para iniciar a conversa.',
+        ],
       },
       {
-        question: 'Os proprietários precisam disponibilizar seus imóveis?',
-        answer:
-          'Não. Cada proprietário decide se contrata a gestão das locações e quais períodos quer disponibilizar.',
+        question: 'Posso afiliar imóveis que já comercializei?',
+        answer: [
+          'Você pode apresentar imóveis que já comercializou e os que ainda vai comercializar.',
+          'A afiliação depende da avaliação da Luxtory e da adesão de cada proprietário.',
+        ],
       },
       {
-        question: 'Meu empreendimento precisa estar em alguma fase específica?',
-        answer:
-          'Não. A parceria pode começar em qualquer fase, do planejamento ao empreendimento entregue e em operação.',
+        question: 'Os imóveis precisam estar prontos?',
+        answer: [
+          'A conversa pode começar no planejamento, no lançamento ou com imóveis prontos.',
+          'A participação dos imóveis depende de avaliação e das condições da parceria.',
+        ],
+      },
+      {
+        question: 'Preciso administrar as locações?',
+        answer: [
+          'Não é preciso assumir a operação para apresentar seu interesse.',
+          'As responsabilidades por gestão e serviços locais são definidas no escopo contratado.',
+        ],
+      },
+      {
+        question: 'Os proprietários são obrigados a disponibilizar seus imóveis?',
+        answer: [
+          'Não. Cada proprietário decide se contrata a gestão das locações e quais períodos deseja disponibilizar.',
+        ],
       },
     ],
   },
-
-  // PUSH · Conversa (White): introdução → formulário → aviso e privacidade.
   conversation: {
     marker: 'Vamos conversar',
-    title: 'Seu empreendimento pode fazer parte dessa história.',
-    intro:
-      'Conte um pouco sobre seu projeto e o que sua incorporadora busca. Vamos descobrir juntos se a parceria faz sentido.',
-    notice: 'O envio não formaliza uma parceria nem garante a entrada no Luxtory Club.',
-    // Finalidade do REQ-105 (LGPD): delimitada e sem uso para marketing sem autorização.
-    privacy:
-      'Usaremos seus dados somente para responder ao contato e avaliar uma possível parceria. As informações serão encaminhadas à equipe Luxtory e não serão armazenadas no banco da plataforma. Não usaremos seus dados para marketing sem sua autorização.',
+    title: 'Vamos conhecer sua atuação.',
+    intro: 'Conte como você atua e quais oportunidades quer apresentar à Luxtory.',
+    notice: 'O envio inicia uma conversa e não formaliza parceria ou afiliação de imóveis.',
+    privacy: [
+      'Usaremos seus dados somente para responder ao contato e avaliar uma possível parceria.',
+      'As informações serão encaminhadas à equipe Luxtory e não serão armazenadas no banco da plataforma.',
+      'Não usaremos seus dados para marketing sem sua autorização.',
+    ],
     submit: 'Enviar mensagem',
-    // Só no aceite confirmado pelo provedor (202).
-    success: 'Envio confirmado. Obrigado por apresentar seu empreendimento.',
+    success: 'Envio confirmado. Obrigado pelo interesse em conversar com a Luxtory.',
   },
-
-  /** Formulário (catalog §20.3): rótulos do contrato e microcopy funcional de validação e estado. */
   form: {
     labels: fieldLabels,
+    profiles,
     stages,
     optional: '(opcional)',
     sending: 'Enviando…',
@@ -261,10 +334,10 @@ export const secondHomePartnersMessages = {
     },
     fieldInvalid: {
       email: 'Informe um e-mail válido.',
-      website: 'Informe o endereço completo do site, começando com http:// ou https://.',
+      website: 'Informe o endereço completo do site ou perfil, começando com http:// ou https://.',
     },
+    profileRequired: 'Selecione o seu perfil.',
     stageRequired: 'Selecione a fase do empreendimento.',
-    // Resultado do envio por código da resposta (TECH-056); 503 e falha de rede: envio não confirmado.
     outcomes: {
       unconfirmed:
         'Não foi possível confirmar o envio. Seus dados continuam no formulário; tente novamente.',
@@ -274,11 +347,10 @@ export const secondHomePartnersMessages = {
       refused: 'Não foi possível enviar a mensagem.',
     },
   },
-
-  /** E-mail interno à caixa corporativa da jornada: assunto fixo, rótulos dos campos e nomes das fases. */
   contactEmail: {
     subject: 'Second Home Partners — mensagem pelo site',
     labels: fieldLabels,
+    profiles,
     stages,
   },
 } as const;

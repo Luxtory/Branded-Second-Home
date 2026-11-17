@@ -15,6 +15,7 @@ export const SECOND_HOME_PARTNERS_SECTIONS = [
   'beneficios',
   'empreendimentos',
   'solucoes',
+  'imobiliarias-e-corretores',
   'como-funciona',
   'perguntas',
   'conversa',

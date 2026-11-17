@@ -10,6 +10,7 @@ import {
 } from '../../application/second-home-partner-contact';
 import {
   DEVELOPMENT_STAGES,
+  PARTNER_PROFILES,
   SECOND_HOME_PARTNER_CONTACT_FIELDS,
   type SecondHomePartnerContactField,
 } from '../../domain/second-home-partner-contact';
@@ -25,7 +26,7 @@ export interface SecondHomePartnerFormText {
 }
 
 type Field = SecondHomePartnerContactField;
-type TextField = Exclude<Field, 'stage'>;
+type TextField = Exclude<Field, 'profile' | 'stage'>;
 type Values = Record<Field, string>;
 type FieldErrors = Partial<Record<Field, SecondHomePartnerContactFieldCode>>;
 type Outcome = keyof SecondHomePartnersMessages['form']['outcomes'];
@@ -38,21 +39,22 @@ type Status =
   | { readonly kind: 'failed'; readonly outcome: Outcome };
 
 const EMPTY: Values = {
+  profile: '',
   name: '',
   company: '',
   email: '',
   development: '',
   stage: '',
+  region: '',
   message: '',
   website: '',
 };
 
 /** Campos de texto na ordem do formulário (a fase vem depois de Empreendimento): tipo, autocomplete e obrigatoriedade. */
-const BEFORE_STAGE: readonly TextFieldSpec[] = [
+const COMMON_FIELDS: readonly TextFieldSpec[] = [
   { name: 'name', autoComplete: 'name' },
   { name: 'company', autoComplete: 'organization' },
   { name: 'email', type: 'email', autoComplete: 'email' },
-  { name: 'development', autoComplete: 'off' },
 ];
 const AFTER_STAGE: readonly TextFieldSpec[] = [
   { name: 'message', autoComplete: 'off', multiline: true, optional: true },
@@ -81,6 +83,7 @@ function messageFor(
   code: SecondHomePartnerContactFieldCode,
 ): string {
   if (field === 'stage') return text.stageRequired;
+  if (field === 'profile') return text.profileRequired;
   if (code === 'invalid' && (field === 'email' || field === 'website'))
     return text.fieldInvalid[field];
   return text.fields[code];
@@ -113,9 +116,17 @@ function serverIssues(body: unknown): readonly SecondHomePartnerContactFieldIssu
 
 /** Corpo enviado: opcionais vazios saem do JSON; o honeypot só vai quando preenchido. */
 function requestBody(values: Values, trap: string) {
-  const { message, website, ...required } = values;
+  const { profile, name, company, email, development, stage, region, message, website } = values;
   return {
-    ...required,
+    profile,
+    name,
+    email,
+    ...(profile === 'broker' && company.trim() === '' ? {} : { company }),
+    ...(profile === 'developer'
+      ? { development, stage }
+      : profile === 'agency' || profile === 'broker'
+        ? { region }
+        : {}),
     ...(message.trim() === '' ? {} : { message }),
     ...(website.trim() === '' ? {} : { website }),
     ...(trap === '' ? {} : { _trap: trap }),
@@ -123,7 +134,7 @@ function requestBody(values: Values, trap: string) {
 }
 
 /**
- * Formulário “Seu empreendimento pode fazer parte dessa história.” (REQ-105, spec catalog §20.3). Estados: inicial →
+ * Formulário por perfil (REQ-105, spec catalog §20.3/§20.6). Estados: inicial →
  * validação → enviando → aceite confirmado ou erro. O mesmo schema do servidor dá o feedback; foco no primeiro erro,
  * resumo acessível e região viva. Os dados e a `Idempotency-Key` ficam só na memória desta interação — nunca em URL,
  * cookie ou storage: falha preserva ambos (retry com a mesma chave e o mesmo conteúdo); sucesso limpa e encerra.
@@ -232,8 +243,17 @@ export function SecondHomePartnerContactForm({
     wasSending.current = status.kind === 'sending';
   }, [status.kind]);
 
-  const setValue = (field: Field, value: string) =>
-    setValues((current) => ({ ...current, [field]: value }));
+  const setValue = (field: Field, value: string) => {
+    setValues((current) => ({
+      ...current,
+      [field]: value,
+      ...(field === 'profile' ? { development: '', stage: '', region: '' } : {}),
+    }));
+    if (field === 'profile') {
+      setErrors({});
+      setStatus({ kind: 'idle' });
+    }
+  };
 
   const errorText = (field: Field) => {
     const code = errors[field];
@@ -283,7 +303,36 @@ export function SecondHomePartnerContactForm({
     );
   };
 
-  const stageError = errors.stage === undefined ? undefined : `${fieldId('stage')}-error`;
+  const choiceField = (
+    field: 'profile' | 'stage',
+    choices: readonly string[],
+    labels: Readonly<Record<string, string>>,
+  ) => (
+    <fieldset
+      className="lx-choice-group"
+      aria-describedby={errors[field] === undefined ? undefined : `${fieldId(field)}-error`}
+    >
+      <legend className="lx-label">{text.labels[field]}</legend>
+      <div className="lx-choice-group__options">
+        {choices.map((choice, index) => (
+          <label className="lx-choice" key={choice}>
+            <input
+              type="radio"
+              name={field}
+              value={choice}
+              id={index === 0 ? fieldId(field) : undefined}
+              checked={values[field] === choice}
+              required
+              disabled={isSending}
+              onChange={() => setValue(field, choice)}
+            />
+            <span className="lx-choice__title">{labels[choice]}</span>
+          </label>
+        ))}
+      </div>
+      {errorText(field)}
+    </fieldset>
+  );
 
   return (
     <form className="lx-form" noValidate method="post" onSubmit={(event) => void onSubmit(event)}>
@@ -303,29 +352,19 @@ export function SecondHomePartnerContactForm({
         </div>
       ) : null}
 
-      {BEFORE_STAGE.map(textField)}
-
-      <fieldset className="lx-choice-group" aria-describedby={stageError}>
-        <legend className="lx-label">{text.labels.stage}</legend>
-        <div className="lx-choice-group__options">
-          {DEVELOPMENT_STAGES.map((stage, index) => (
-            <label className="lx-choice" key={stage}>
-              <input
-                type="radio"
-                name="stage"
-                value={stage}
-                id={index === 0 ? fieldId('stage') : undefined}
-                checked={values.stage === stage}
-                required
-                disabled={isSending}
-                onChange={() => setValue('stage', stage)}
-              />
-              <span className="lx-choice__title">{text.stages[stage]}</span>
-            </label>
-          ))}
-        </div>
-        {errorText('stage')}
-      </fieldset>
+      {choiceField('profile', PARTNER_PROFILES, text.profiles)}
+      {COMMON_FIELDS.map((field) =>
+        textField({ ...field, optional: field.name === 'company' && values.profile === 'broker' }),
+      )}
+      {values.profile === 'developer' ? (
+        <>
+          {textField({ name: 'development', autoComplete: 'off' })}
+          {choiceField('stage', DEVELOPMENT_STAGES, text.stages)}
+        </>
+      ) : null}
+      {values.profile === 'agency' || values.profile === 'broker'
+        ? textField({ name: 'region', autoComplete: 'off' })
+        : null}
 
       {AFTER_STAGE.map(textField)}
 

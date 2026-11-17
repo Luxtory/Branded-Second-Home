@@ -3012,11 +3012,43 @@ components:
     SecondHomePartnerContactRequest:
       type: object
       description: |
-        Campos autorizados pelo REQ-105 (spec `catalog` §20.3). Sem CNPJ, telefone, valores, documentos ou dados de
+        Campos autorizados pelo REQ-105, revisão de 2026-11-17 (spec `catalog` §20.3/§20.6). Perfil explícito; campos exclusivos de outro perfil são recusados. Sem CNPJ, telefone, valores, documentos ou dados de
         compradores. `_trap` é o honeypot técnico: ausente ou vazio; preenchido → `403` sem envio.
       additionalProperties: false
-      required: [name, company, email, development, stage]
+      required: [profile, name, email]
+      allOf:
+        - if:
+            properties:
+              profile: { enum: [developer, agency] }
+          then:
+            properties:
+              company: { type: string, minLength: 1 }
+      oneOf:
+        - properties:
+            profile: { const: developer }
+            company: {}
+            development: {}
+            stage: {}
+            region: false
+          required: [company, development, stage]
+        - properties:
+            profile: { const: agency }
+            company: {}
+            region: {}
+            development: false
+            stage: false
+          required: [company, region]
+        - properties:
+            profile: { const: broker }
+            region: {}
+            development: false
+            stage: false
+          required: [region]
       properties:
+        profile:
+          type: string
+          description: Perfil obrigatório, sem escolha presumida.
+          enum: [developer, agency, broker]
         name:
           type: string
           description: Nome — 1 a 120 caracteres.
@@ -3024,8 +3056,7 @@ components:
           maxLength: 120
         company:
           type: string
-          description: Incorporadora — 1 a 200 caracteres.
-          minLength: 1
+          description: Empresa — obrigatória para incorporadora/imobiliária; opcional para corretor, vazio = ausente.
           maxLength: 200
         email:
           type: string
@@ -3041,6 +3072,11 @@ components:
           type: string
           description: Fase do empreendimento.
           enum: [planning_or_launch, construction_or_sales, delivered_or_operating]
+        region:
+          type: string
+          description: Cidade ou região de atuação — obrigatória para imobiliária/corretor; recusada para incorporadora.
+          minLength: 1
+          maxLength: 200
         message:
           type: string
           description: Mensagem — opcional, até 4.000 caracteres; vazio = ausente.
@@ -3048,7 +3084,7 @@ components:
         website:
           type: string
           description: |
-            Site — opcional; vazio = ausente. URL `http`/`https` de até 500 caracteres, sem credenciais. O servidor nunca
+            Site ou perfil profissional — opcional; vazio = ausente. URL `http`/`https` de até 500 caracteres, sem credenciais. O servidor nunca
             acessa o endereço.
           maxLength: 500
         _trap:
@@ -3079,7 +3115,7 @@ components:
                 properties:
                   field:
                     type: string
-                    enum: [name, company, email, development, stage, message, website]
+                    enum: [profile, name, company, email, development, stage, region, message, website]
                   code:
                     type: string
                     enum: [required, too_long, invalid]

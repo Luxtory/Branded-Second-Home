@@ -1,166 +1,117 @@
 # FRAMEWORK DE COMUNICAÇÃO — SECOND HOME PARTNERS
 
-Luxtory · versão de 2026-11-13, com o modelo comercial e o refinamento de copy do fundador; substitui a versão de
-2026-11-12, que não chegou à `main`. Documento congelado: uma nova versão substitui o arquivo inteiro. Fatos de negócio vêm sempre do `01`, do `02` e do `03`; este
-Framework orienta o que dizer e como dizer.
+Luxtory · versão de 2026-11-17, revisão editorial 3, com a duração da participação definida pelo fundador e a revisão do print. Substitui a revisão editorial 2 e a primeira versão de 2026-11-17; ambas sucedem a versão de 2026-11-13. Documento congelado: nova versão substitui o arquivo inteiro. Fatos vêm de 01/02/03; aceite e impacto em catalog §20.6–20.8. Escopo: comunicação de lançamento; sem declaração técnica de prontidão operacional.
 
 # 1. OBJETIVO
 
-Converter incorporadoras qualificadas em conversas comerciais sobre uma parceria com a Luxtory. A comunicação não
-vende Membership, não anuncia imóveis, não opera reservas e não apresenta uma plataforma já consolidada.
+Converter parceiros qualificados em conversas comerciais: incorporadoras, imobiliárias e corretores especialistas em imóveis de lazer de alto padrão. Uma página, um formulário, sem cadastro de parceiros nem afiliação automática.
 
 # 2. POSICIONAMENTO DA MARCA
 
-Para incorporadoras de empreendimentos de lazer de alto padrão, a Luxtory é a parceira de longo prazo que acrescenta
-valor percebido ao empreendimento e força à venda, e que divide com a incorporadora as receitas que os clientes e os
-empreendimentos conectados geram depois da venda, com a perspectiva futura de mais liberdade para os compradores pelo
-Luxtory Club.
+A Luxtory acrescenta possibilidades de uso aos imóveis e argumentos à venda. Os primeiros parceiros participam do faturamento dos imóveis que afiliarem enquanto esses imóveis permanecerem afiliados à Luxtory. A continuidade da participação está definida; valores dependem do faturamento gerado e das condições contratadas, sem pagamento mínimo ou fixo garantido. Receitas abrangidas, atribuição, percentuais e pagamento são contratuais; a linguagem pública não redefine as bases de 01 §35.
 
-Tese: incorporadoras como parceiras de distribuição, com incentivos econômicos alinhados. O crescimento combina a
-distribuição pelas incorporadoras (Partner-Led Growth) com a adoção futura dos serviços (Product-Led Growth).
-
-Proposta de valor: “Mais valor para seu empreendimento. Mais liberdade para seus clientes.”
-
-Diferenciais defensáveis: profundidade de produto e narrativa, foco no Brasil, caminho para Branded Second Homes em
-novos projetos e clareza sobre o que existe hoje e o que ainda será construído. Intercâmbio, materiais de venda,
-gestão de locações, operação e participação de parceiros existem em outras redes: nada disso é apresentado como
-exclusividade, e concorrentes não são comparados sem evidência.
+Proposta de valor: “Mais valor para seu negócio. Mais liberdade para seus clientes.” A página serve aos três perfis, independentemente de empreendimento próprio ou branded, sem chamar imóveis parceiros de Branded Second Homes. Sem exclusividade ou comparação sem evidência.
 
 # 3. PROTAGONISTA + CONTEXTO
 
-Diretor de incorporadora — fundador, CEO, incorporação, produto ou comercial — com empreendimento de lazer de alto
-padrão em destino turístico, em qualquer fase: planejamento, lançamento, obra, comercialização, entregue ou em
-operação.
-
-Contexto: empreendimentos parecidos em projeto e amenidades; o comprador hesita em concentrar tempo e patrimônio num
-único destino e teme a ociosidade do imóvel nos períodos sem uso.
+O parceiro especialista em imóveis de lazer de alto padrão: diretor de incorporadora, responsável por imobiliária ou corretor. Conhece o destino, imóveis e clientes. O cliente quer aproveitar seu imóvel e outros destinos; o parceiro busca diferenciação e receita além da venda pontual.
 
 # 3.1 DISPOSIÇÃO PARA MUDANÇA
 
-Pragmática: aberta a diferenciais que ajudem a vender e cética diante de promessas sem operação. A confiança nasce de
-mostrar o que existe e o que ainda é futuro.
+Pragmática, aberta a oportunidades comerciais e cética diante de promessa de resultado. Demonstrar mecanismos e condições com clareza.
 
 # 4. NARRATIVA + JTBD
 
-Um imóvel para chamar de seu e outros destinos para descobrir: a incorporadora passa a oferecer mais do que um
-endereço, e a Luxtory ajuda a transformar isso em argumento de venda.
+Mais valor para o negócio e mais liberdade para o cliente. Mensagem comum primeiro, bloco específico de imobiliárias/corretores depois das soluções, dentro da mesma página.
 
 # 4.1 JOB TO BE DONE — JTBD
 
-Quando lanço um empreendimento de lazer, quero argumentos que diferenciem o produto e respondam às objeções do
-comprador, para vender com mais força e continuar gerando receita depois da venda.
+Quando comercializo ou represento imóveis de lazer, quero acrescentar argumentos ao atendimento e continuar abrindo oportunidades de receita depois da venda, por meio dos imóveis que afilio.
 
 # 5. PERSONAGENS
 
-- Protagonista: a incorporadora.
-- Mentor: a Luxtory.
-- Aliados: equipe comercial e corretores.
-- Vilão: a lógica de que um imóvel de lazer prende o comprador a um único lugar. É uma lógica, nunca uma empresa;
-  concorrentes não são nomeados.
-
-Objeções esperadas: como a parceria ajuda a vender; como a incorporadora participa dos resultados; quem opera as
-locações; se os proprietários são obrigados a disponibilizar o imóvel; se o empreendimento precisa estar numa fase
-específica. A comunicação não cria objeções que o Protagonista não tem.
+- Protagonista: parceiro (incorporadora, imobiliária ou corretor).
+- Mentor: Luxtory.
+- Aliados: equipe comercial, proprietários e operadores locais.
+- Vilão: a lógica de limitar o uso do imóvel a um único destino e o ganho comercial à venda pontual; nunca uma empresa ou concorrente.
 
 # 6. MATRIZ DE COMPETÊNCIA RELACIONAL — MCR
 
 # 6.1 CRENÇAS DESEJADAS
 
-- A parceria acrescenta valor ao meu empreendimento sem mudar marca, conceito ou projeto.
-- A Luxtory diz com clareza o que existe hoje e o que ainda virá.
-- Ganho argumentos de venda e participo das receitas de gestão das locações do meu empreendimento; o Luxtory Club
-  poderá ampliar essa participação.
-- Meus compradores terão como aproveitar o imóvel nos períodos sem uso, e cada um decide se quer alugar.
+- A parceria pode diferenciar minha oferta e gerar receita além da venda.
+- Meu perfil tem espaço mesmo sem empreendimento próprio.
+- Receitas dependem de imóveis afiliados, faturamento e contrato.
+- Cada proprietário escolhe se disponibiliza períodos; locação e Club são serviços distintos.
 
 # 6.2 CRENÇAS NÃO DESEJADAS
 
-- Meus compradores já terão acesso automático ao Luxtory Club.
-- A Luxtory garante vendas, receitas ou estadias.
-- A participação é sobre o lucro da Luxtory ou sai da parte dos proprietários.
-- Minha incorporadora terá de operar as locações.
-- Meu empreendimento vira uma Branded Second Home.
+- A Luxtory garante vendas, renda, estadias, mínimo ou pagamento fixo.
+- Enviar o formulário formaliza parceria ou afilia imóveis.
+- O parceiro precisa assumir a gestão das locações para iniciar contato.
+- Todo imóvel parceiro se torna Branded Second Home ou entra automaticamente no Club.
 
 # 7. CONSCIENTIZAÇÃO — EUGENE SCHWARTZ
 
-Entrada: Problem Aware — a incorporadora conhece a objeção do comprador. Saída: Product Aware — entende a parceria e o
-modelo do Luxtory Club. Arco da página: Problem Aware → Product Aware.
+Problem Aware → Product Aware. O parceiro entende o valor da parceria, os mecanismos para o cliente e como começar a conversa.
 
 # 8. 5Ps — ARQUITETURA NARRATIVA
 
-Os 5Ps definem a função narrativa, não a estrutura de componentes.
-
 # P1 — PICTURE
 
-Hero: valor para o empreendimento e liberdade para os clientes, com a nota de que o programa está em estruturação e o
-intercâmbio ainda não está disponível.
+Hero comum aos três perfis. As duas frases ficam em blocos sucessivos, segunda em itálico, dentro de um único H1; reflow natural no celular. Dois parágrafos curtos, valor para o negócio e liberdade para o cliente. Copy no presente, preparada para lançamento quando o Club estiver pronto; sem nota de estruturação/indisponibilidade. Não inferir prontidão operacional desta decisão editorial.
 
 # P2 — PROBLEM
 
-O comprador busca mais do que localização, arquitetura e conforto; a possibilidade de conhecer outros destinos pesa
-na decisão.
+Convidar o parceiro a imaginar seu cliente adquirindo um imóvel de lazer afiliado a um clube, monetizando períodos sem uso e descobrindo outros destinos por intercâmbio. Split de texto e fotografia contextual já autorizada no acervo. Esses argumentos podem ajudar a superar objeções e encurtar o ciclo de vendas; não afirmar resultado garantido. Fechamento editorial centralizado no papel de headline da Home: “A venda termina. Sua participação continua.” A condição aparece junto: enquanto o imóvel estiver afiliado, o parceiro participa do faturamento que ele gera.
 
 # P3 — PROMISE
 
-Três benefícios com o mesmo peso: diferenciação comercial, marketing e vendas, participação nos resultados. A
-participação é explícita: nas receitas de gestão das locações, como parte da proposta; nos serviços do Luxtory Club,
-como possibilidade condicionada.
+Três benefícios com o mesmo peso, nesta ordem: Receita além da venda; Diferenciação comercial; Marketing e vendas. Nota explicita dependência de faturamento e condições contratadas. “Primeiros parceiros” não autoriza inventar vagas, prazo ou escassez.
 
 # P4 — PROOF
 
-A prova é a clareza: as soluções para os proprietários — Luxchange e Luxplus, planejados no Luxtory Club, e a locação
-de temporada com gestão da Luxtory, independente do Club —, como a parceria acontece e respostas diretas às objeções. Depoimentos, números e cases só quando existirem e forem autorizados.
+Clareza dos contextos de imóveis, soluções para proprietários, bloco específico dos intermediadores, quatro etapas e FAQ. Luxchange: períodos e créditos para solicitar estadias; Luxplus: estadias disponíveis pagas sem créditos; locação: gestão digital com apoio local, independente do Club e contratada com cada proprietário. Não inventar rede, números, cases ou parceiros reais. Fotos fornecidas são ilustrativas. Parceiros podem apresentar imóveis já comercializados e futuras vendas à avaliação, com adesão voluntária de cada proprietário.
 
 # P5 — PUSH
 
-CTA único: “Conversar sobre seu empreendimento”, que leva ao formulário da página.
+CTA único: “Conversar sobre uma parceria” → `#conversa`. Secundário do hero: “Conheça a parceria” → `#beneficios`. Mesmo formulário com perfil obrigatório e campos condicionais.
 
 # 9. REGRA AFETIVA — PANKSEPP
 
-Interesse e segurança: curiosidade pela oportunidade e confiança na clareza. Nunca medo de perder a oportunidade nem
-urgência artificial.
+Interesse e segurança. Sem medo, urgência artificial ou promessa de oportunidade exclusiva.
 
 # 10. PERSONALIDADE DO MENTOR — OCEAN
 
-Abertura e Conscienciosidade: experiente, direta e elegante. Nunca Volatilidade nem Retraimento.
+Abertura e Conscienciosidade: experiente, direta e elegante. Sem exagero.
 
 # 11. TOM DA MARCA
 
-Como uma pessoa experiente explicaria a oportunidade numa reunião com um diretor de incorporadora: humano, informal,
-elegante e persuasivo, sem jargão jurídico ou técnico e sem exagero comercial.
-
-Vocabulário: “associados” para quem participa do Luxtory Club; “proprietários” quando o assunto são direitos sobre o
-imóvel; “compradores” ou “clientes” na venda; “participação nos resultados”; “receita de gestão das locações”;
-“novas possibilidades de viagem”.
-
-Evitar: “proprietários elegíveis”, “resultados elegíveis”, “ativação futura”, “capacidade de inventário”,
-“comunidade”, “lucro”, “renda” e “recorrente” como promessa de pagamento. Condições como “conforme contrato” aparecem só onde evitam uma
-interpretação equivocada.
+Humano, claro e persuasivo, como numa reunião comercial. Vocabulário: parceiros, clientes, proprietários, associados (Club), faturamento, oportunidade de receita recorrente, conforme contrato. Sem jargão operacional, lucro garantido ou percentuais inventados.
 
 # 12. BRIEF NARRATIVO POR CONTEXTO
 
-Uma página, um Protagonista, sete seções: Hero, A oportunidade, Benefícios, Soluções para os proprietários, Como
-funciona, Perguntas e Conversa.
+Uma página, nove seções: Hero, A oportunidade, Benefícios, Onde a parceria pode acontecer, Soluções para os proprietários, Imobiliárias e corretores, Como funciona, Perguntas, Conversa. Mesma jornada e mesmo destino para os três perfis.
 
 # 13. TESTES DE VALIDAÇÃO
 
-1. Em poucos segundos, o diretor entende o valor para os compradores, para as vendas e a participação nos resultados?
-2. Algum benefício futuro parece disponível hoje?
-3. Alguma frase promete vendas, receitas, valorização ou estadias?
-4. A diferença entre imóvel parceiro e Branded Second Home está clara?
-5. Cada bloco cabe em até três linhas, com quatro só quando a clareza exigir?
-6. Cada seção comunica uma ideia, sem repetir a mesma promessa?
+1. Os três perfis se reconhecem no hero e no formulário?
+2. A receita recorrente está ligada a faturamento e contrato, sem resultado garantido?
+3. A mensagem comum da incorporadora permanece e os intermediadores têm espaço específico?
+4. Os três mecanismos para os proprietários continuam distintos?
+5. Parágrafos têm uma ideia e até três linhas em leitura normal, sem truncar ou reduzir fonte?
+6. O envio está completo e acessível para cada perfil, sem campos ocultos residuais?
 
 # 14. REGRAS DE EXECUÇÃO
 
-- Benefícios futuros sempre como possibilidade (“poderá”, “futuro”, “previsto”).
-- Participação econômica explícita, sem percentual, fórmula, valor, exemplo, plataforma nomeada ou pagamento
-  garantido; receita de gestão nunca é chamada de lucro; a participação no Club só como possibilidade.
-- “Acelerar a decisão de compra” é hipótese (“pode ajudar”), nunca resultado.
-- Créditos (Luxchange), estadias pagas (Luxplus) e gestão das locações são mecanismos diferentes e não se confundem;
-  a gestão das locações dos imóveis parceiros não é mecanismo do Luxtory Club.
-- Sem truncamento, fonte reduzida ou quebra forçada para caber.
+- Uma página; sem segunda landing page, nova rota, tabs por persona ou links cruzados para B2C/Brand Partners.
+- Copy integral aprovada no i18n; ajustes de parágrafo em pausas naturais para concisão. Zoom sem limite artificial de linhas.
+- No presente para lançamento; nenhuma funcionalidade de Club ou de apuração financeira é criada pela copy.
+- Participação dos primeiros parceiros explícita para os três perfis, sem inventar porcentagem, fórmula, duração além da afiliação, mínimo ou garantia de valor. Bases econômicas de 01 §35 preservadas.
+- Três imagens fornecidas preservadas conforme estágio; fotografia adicional na oportunidade, reaproveitada do acervo autorizado, sem prova social fictícia.
+- Fechamentos editoriais centralizados com `lx-section-closing` e `lx-headline`, no padrão da Home; condições e privacidade mantêm a hierarquia de corpo.
+- Duração definida pelo fundador: o parceiro que afilia participa enquanto o imóvel permanecer afiliado. Explicitar essa condição é mais preciso que “vitalícia”; não estender o direito para depois do fim da afiliação nem prometer valor sem faturamento.
 
 # 15. INPUT MÍNIMO
 
-Para iniciar a conversa: nome, incorporadora, e-mail, empreendimento e localização e fase do empreendimento; mensagem
-e site são opcionais.
+Perfil, nome e e-mail para todos; empresa obrigatória para incorporadora/imobiliária e opcional para corretor. Incorporadora informa empreendimento/localização e fase; intermediadores informam cidade/região. Mensagem e site/perfil profissional opcionais. Mesmo endpoint e controles TECH-057, sem banco, conta ou afiliação.

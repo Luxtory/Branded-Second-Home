@@ -1,0 +1,1789 @@
+{
+  "metrics": [
+    {
+      "width": 320,
+      "overflow": 0,
+      "sections": [
+        "inicio",
+        "oportunidade",
+        "beneficios",
+        "empreendimentos",
+        "solucoes",
+        "imobiliarias-e-corretores",
+        "como-funciona",
+        "perguntas",
+        "conversa"
+      ],
+      "paragraphs": [
+        {
+          "section": "inicio",
+          "text": "Para incorporadoras, imobiliárias e corretores de imóveis de lazer de alto padrão.",
+          "lines": 3
+        },
+        {
+          "section": "inicio",
+          "text": "Diferencie sua oferta e participe das receitas dos imóveis que você afilia à Luxtory.",
+          "lines": 3
+        },
+        {
+          "section": "oportunidade",
+          "text": "Seu cliente encontra alternativas para os períodos sem uso do imóvel e pode solicitar estadias em outros destinos.",
+          "lines": 3
+        },
+        {
+          "section": "oportunidade",
+          "text": "Você acrescenta um diferencial à venda e abre oportunidades de receita com os imóveis afiliados.",
+          "lines": 3
+        },
+        {
+          "section": "beneficios",
+          "text": "Diferenciação comercial, apoio às vendas e oportunidades de receita recorrente.",
+          "lines": 3
+        },
+        {
+          "section": "beneficios",
+          "text": "Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.",
+          "lines": 3
+        },
+        {
+          "section": "beneficios",
+          "text": "Conforme contrato.",
+          "lines": 1
+        },
+        {
+          "section": "beneficios",
+          "text": "Ofereça novas possibilidades de uso do imóvel, com locação de temporada e intercâmbio de estadias.",
+          "lines": 3
+        },
+        {
+          "section": "beneficios",
+          "text": "Estratégia, materiais e argumentos para apoiar sua atuação comercial, conforme o escopo contratado.",
+          "lines": 3
+        },
+        {
+          "section": "beneficios",
+          "text": "A participação depende do faturamento gerado pelos imóveis afiliados e das condições contratadas.",
+          "lines": 3
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Avaliamos o perfil dos imóveis, a fase do projeto e as oportunidades apresentadas por cada parceiro.",
+          "lines": 4
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Casas de alto padrão sob demanda, em condomínios com potencial para a parceria.",
+          "lines": 3
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Projetos em planejamento, lançamento ou obra, em busca de novos diferenciais.",
+          "lines": 3
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Imóveis prontos, com novas possibilidades para os períodos sem uso.",
+          "lines": 3
+        },
+        {
+          "section": "empreendimentos",
+          "text": "A participação depende da avaliação dos imóveis e das condições da parceria. Imagens ilustrativas.",
+          "lines": 3
+        },
+        {
+          "section": "solucoes",
+          "text": "Três possibilidades para aproveitar melhor o imóvel, inclusive nos períodos sem uso.",
+          "lines": 3
+        },
+        {
+          "section": "solucoes",
+          "text": "Os associados disponibilizam períodos de seus imóveis e recebem créditos.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Com esses créditos, solicitam estadias em outros destinos da rede.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Os associados reservam estadias disponíveis na rede, pagando pela hospedagem, sem usar créditos.",
+          "lines": 3
+        },
+        {
+          "section": "solucoes",
+          "text": "O proprietário escolhe os períodos que deseja disponibilizar para locação.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "A Luxtory faz a gestão digital, com apoio de operadores locais.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Cada serviço segue regras próprias.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "A gestão de locações é independente do Club e contratada diretamente com cada proprietário.",
+          "lines": 3
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Você conhece os destinos, os imóveis e as pessoas que procuram por eles.",
+          "lines": 2
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Com a Luxtory, esse relacionamento abre espaço para novas possibilidades de uso e de parceria.",
+          "lines": 3
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Amplie a proposta para sua carteira e participe das receitas dos imóveis que você afilia.",
+          "lines": 3
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Acrescente argumentos ao atendimento e abra oportunidades de receita com os imóveis que você afilia.",
+          "lines": 3
+        },
+        {
+          "section": "como-funciona",
+          "text": "Conte sobre sua atuação, os imóveis com que trabalha e o que busca na parceria.",
+          "lines": 3
+        },
+        {
+          "section": "como-funciona",
+          "text": "Conhecemos o perfil dos imóveis, dos clientes e as possibilidades de colaboração.",
+          "lines": 3
+        },
+        {
+          "section": "como-funciona",
+          "text": "Definimos serviços e responsabilidades.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Acordamos a participação nas receitas e as condições comerciais.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Formalizamos o acordo e iniciamos as ações previstas na parceria.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "Incorporadoras, imobiliárias e corretores especialistas em imóveis de lazer de alto padrão.",
+          "lines": 3
+        },
+        {
+          "section": "perguntas",
+          "text": "Cada oportunidade é avaliada conforme o perfil dos imóveis e a proposta de parceria.",
+          "lines": 3
+        },
+        {
+          "section": "perguntas",
+          "text": "Acrescenta à sua proposta possibilidades de locação, intercâmbio e estadias adicionais.",
+          "lines": 3
+        },
+        {
+          "section": "perguntas",
+          "text": "Esses argumentos podem ajudar você a conversar sobre os períodos sem uso do imóvel.",
+          "lines": 3
+        },
+        {
+          "section": "perguntas",
+          "text": "Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.",
+          "lines": 3
+        },
+        {
+          "section": "perguntas",
+          "text": "Receitas abrangidas, atribuição, percentuais e pagamento são definidos em contrato.",
+          "lines": 3
+        },
+        {
+          "section": "perguntas",
+          "text": "Você pode apresentar sua atuação e o perfil dos imóveis que comercializa ou representa.",
+          "lines": 3
+        },
+        {
+          "section": "perguntas",
+          "text": "Não é necessário ter um empreendimento próprio para iniciar a conversa.",
+          "lines": 3
+        },
+        {
+          "section": "perguntas",
+          "text": "A conversa pode começar no planejamento, no lançamento ou com imóveis prontos.",
+          "lines": 3
+        },
+        {
+          "section": "perguntas",
+          "text": "A participação dos imóveis depende de avaliação e das condições da parceria.",
+          "lines": 3
+        },
+        {
+          "section": "perguntas",
+          "text": "Não é preciso assumir a operação para apresentar seu interesse.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "As responsabilidades por gestão e serviços locais são definidas no escopo contratado.",
+          "lines": 3
+        },
+        {
+          "section": "perguntas",
+          "text": "Não. Cada proprietário decide se contrata a gestão das locações e quais períodos deseja disponibilizar.",
+          "lines": 3
+        },
+        {
+          "section": "conversa",
+          "text": "Conte como você atua e quais oportunidades quer apresentar à Luxtory.",
+          "lines": 3
+        },
+        {
+          "section": "conversa",
+          "text": "O envio inicia uma conversa e não formaliza parceria ou afiliação de imóveis.",
+          "lines": 3
+        },
+        {
+          "section": "conversa",
+          "text": "Usaremos seus dados somente para responder ao contato e avaliar uma possível parceria.",
+          "lines": 3
+        },
+        {
+          "section": "conversa",
+          "text": "As informações serão encaminhadas à equipe Luxtory e não serão armazenadas no banco da plataforma.",
+          "lines": 3
+        },
+        {
+          "section": "conversa",
+          "text": "Não usaremos seus dados para marketing sem sua autorização.",
+          "lines": 2
+        }
+      ],
+      "images": [
+        {
+          "alt": "Casa contemporânea com fachada de vidro, madeira e pedra, cercada por jardins.",
+          "loaded": true
+        },
+        {
+          "alt": "Edifício em construção com guindaste, andaimes e estrutura dos pavimentos superiores exposta.",
+          "loaded": true
+        },
+        {
+          "alt": "Edifício concluído com varandas, entrada iluminada e paisagismo cuidado.",
+          "loaded": true
+        }
+      ],
+      "stepsColumns": "278.406px",
+      "intermediateColumns": "278.406px"
+    },
+    {
+      "width": 390,
+      "overflow": 0,
+      "sections": [
+        "inicio",
+        "oportunidade",
+        "beneficios",
+        "empreendimentos",
+        "solucoes",
+        "imobiliarias-e-corretores",
+        "como-funciona",
+        "perguntas",
+        "conversa"
+      ],
+      "paragraphs": [
+        {
+          "section": "inicio",
+          "text": "Para incorporadoras, imobiliárias e corretores de imóveis de lazer de alto padrão.",
+          "lines": 2
+        },
+        {
+          "section": "inicio",
+          "text": "Diferencie sua oferta e participe das receitas dos imóveis que você afilia à Luxtory.",
+          "lines": 2
+        },
+        {
+          "section": "oportunidade",
+          "text": "Seu cliente encontra alternativas para os períodos sem uso do imóvel e pode solicitar estadias em outros destinos.",
+          "lines": 3
+        },
+        {
+          "section": "oportunidade",
+          "text": "Você acrescenta um diferencial à venda e abre oportunidades de receita com os imóveis afiliados.",
+          "lines": 3
+        },
+        {
+          "section": "beneficios",
+          "text": "Diferenciação comercial, apoio às vendas e oportunidades de receita recorrente.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.",
+          "lines": 3
+        },
+        {
+          "section": "beneficios",
+          "text": "Conforme contrato.",
+          "lines": 1
+        },
+        {
+          "section": "beneficios",
+          "text": "Ofereça novas possibilidades de uso do imóvel, com locação de temporada e intercâmbio de estadias.",
+          "lines": 3
+        },
+        {
+          "section": "beneficios",
+          "text": "Estratégia, materiais e argumentos para apoiar sua atuação comercial, conforme o escopo contratado.",
+          "lines": 3
+        },
+        {
+          "section": "beneficios",
+          "text": "A participação depende do faturamento gerado pelos imóveis afiliados e das condições contratadas.",
+          "lines": 3
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Avaliamos o perfil dos imóveis, a fase do projeto e as oportunidades apresentadas por cada parceiro.",
+          "lines": 3
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Casas de alto padrão sob demanda, em condomínios com potencial para a parceria.",
+          "lines": 3
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Projetos em planejamento, lançamento ou obra, em busca de novos diferenciais.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Imóveis prontos, com novas possibilidades para os períodos sem uso.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "A participação depende da avaliação dos imóveis e das condições da parceria. Imagens ilustrativas.",
+          "lines": 3
+        },
+        {
+          "section": "solucoes",
+          "text": "Três possibilidades para aproveitar melhor o imóvel, inclusive nos períodos sem uso.",
+          "lines": 3
+        },
+        {
+          "section": "solucoes",
+          "text": "Os associados disponibilizam períodos de seus imóveis e recebem créditos.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Com esses créditos, solicitam estadias em outros destinos da rede.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Os associados reservam estadias disponíveis na rede, pagando pela hospedagem, sem usar créditos.",
+          "lines": 3
+        },
+        {
+          "section": "solucoes",
+          "text": "O proprietário escolhe os períodos que deseja disponibilizar para locação.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "A Luxtory faz a gestão digital, com apoio de operadores locais.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Cada serviço segue regras próprias.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "A gestão de locações é independente do Club e contratada diretamente com cada proprietário.",
+          "lines": 2
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Você conhece os destinos, os imóveis e as pessoas que procuram por eles.",
+          "lines": 2
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Com a Luxtory, esse relacionamento abre espaço para novas possibilidades de uso e de parceria.",
+          "lines": 3
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Amplie a proposta para sua carteira e participe das receitas dos imóveis que você afilia.",
+          "lines": 2
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Acrescente argumentos ao atendimento e abra oportunidades de receita com os imóveis que você afilia.",
+          "lines": 3
+        },
+        {
+          "section": "como-funciona",
+          "text": "Conte sobre sua atuação, os imóveis com que trabalha e o que busca na parceria.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Conhecemos o perfil dos imóveis, dos clientes e as possibilidades de colaboração.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Definimos serviços e responsabilidades.",
+          "lines": 1
+        },
+        {
+          "section": "como-funciona",
+          "text": "Acordamos a participação nas receitas e as condições comerciais.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Formalizamos o acordo e iniciamos as ações previstas na parceria.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "Incorporadoras, imobiliárias e corretores especialistas em imóveis de lazer de alto padrão.",
+          "lines": 3
+        },
+        {
+          "section": "perguntas",
+          "text": "Cada oportunidade é avaliada conforme o perfil dos imóveis e a proposta de parceria.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "Acrescenta à sua proposta possibilidades de locação, intercâmbio e estadias adicionais.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "Esses argumentos podem ajudar você a conversar sobre os períodos sem uso do imóvel.",
+          "lines": 3
+        },
+        {
+          "section": "perguntas",
+          "text": "Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.",
+          "lines": 3
+        },
+        {
+          "section": "perguntas",
+          "text": "Receitas abrangidas, atribuição, percentuais e pagamento são definidos em contrato.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "Você pode apresentar sua atuação e o perfil dos imóveis que comercializa ou representa.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "Não é necessário ter um empreendimento próprio para iniciar a conversa.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "A conversa pode começar no planejamento, no lançamento ou com imóveis prontos.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "A participação dos imóveis depende de avaliação e das condições da parceria.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "Não é preciso assumir a operação para apresentar seu interesse.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "As responsabilidades por gestão e serviços locais são definidas no escopo contratado.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "Não. Cada proprietário decide se contrata a gestão das locações e quais períodos deseja disponibilizar.",
+          "lines": 3
+        },
+        {
+          "section": "conversa",
+          "text": "Conte como você atua e quais oportunidades quer apresentar à Luxtory.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "O envio inicia uma conversa e não formaliza parceria ou afiliação de imóveis.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "Usaremos seus dados somente para responder ao contato e avaliar uma possível parceria.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "As informações serão encaminhadas à equipe Luxtory e não serão armazenadas no banco da plataforma.",
+          "lines": 3
+        },
+        {
+          "section": "conversa",
+          "text": "Não usaremos seus dados para marketing sem sua autorização.",
+          "lines": 2
+        }
+      ],
+      "images": [
+        {
+          "alt": "Casa contemporânea com fachada de vidro, madeira e pedra, cercada por jardins.",
+          "loaded": true
+        },
+        {
+          "alt": "Edifício em construção com guindaste, andaimes e estrutura dos pavimentos superiores exposta.",
+          "loaded": true
+        },
+        {
+          "alt": "Edifício concluído com varandas, entrada iluminada e paisagismo cuidado.",
+          "loaded": true
+        }
+      ],
+      "stepsColumns": "342.812px",
+      "intermediateColumns": "342.812px",
+      "photoContrast": [
+        {
+          "card": 1,
+          "tag": "h3",
+          "ratio": 7.694104115544592
+        },
+        {
+          "card": 1,
+          "tag": "p",
+          "ratio": 7.82987653511304
+        },
+        {
+          "card": 2,
+          "tag": "h3",
+          "ratio": 7.841640939025393
+        },
+        {
+          "card": 2,
+          "tag": "p",
+          "ratio": 7.491906281186911
+        },
+        {
+          "card": 3,
+          "tag": "h3",
+          "ratio": 7.321805095108291
+        },
+        {
+          "card": 3,
+          "tag": "p",
+          "ratio": 7.503110954603129
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "overflow": 0,
+      "sections": [
+        "inicio",
+        "oportunidade",
+        "beneficios",
+        "empreendimentos",
+        "solucoes",
+        "imobiliarias-e-corretores",
+        "como-funciona",
+        "perguntas",
+        "conversa"
+      ],
+      "paragraphs": [
+        {
+          "section": "inicio",
+          "text": "Para incorporadoras, imobiliárias e corretores de imóveis de lazer de alto padrão.",
+          "lines": 1
+        },
+        {
+          "section": "inicio",
+          "text": "Diferencie sua oferta e participe das receitas dos imóveis que você afilia à Luxtory.",
+          "lines": 1
+        },
+        {
+          "section": "oportunidade",
+          "text": "Seu cliente encontra alternativas para os períodos sem uso do imóvel e pode solicitar estadias em outros destinos.",
+          "lines": 2
+        },
+        {
+          "section": "oportunidade",
+          "text": "Você acrescenta um diferencial à venda e abre oportunidades de receita com os imóveis afiliados.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "Diferenciação comercial, apoio às vendas e oportunidades de receita recorrente.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.",
+          "lines": 1
+        },
+        {
+          "section": "beneficios",
+          "text": "Conforme contrato.",
+          "lines": 1
+        },
+        {
+          "section": "beneficios",
+          "text": "Ofereça novas possibilidades de uso do imóvel, com locação de temporada e intercâmbio de estadias.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "Estratégia, materiais e argumentos para apoiar sua atuação comercial, conforme o escopo contratado.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "A participação depende do faturamento gerado pelos imóveis afiliados e das condições contratadas.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Avaliamos o perfil dos imóveis, a fase do projeto e as oportunidades apresentadas por cada parceiro.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Casas de alto padrão sob demanda, em condomínios com potencial para a parceria.",
+          "lines": 1
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Projetos em planejamento, lançamento ou obra, em busca de novos diferenciais.",
+          "lines": 1
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Imóveis prontos, com novas possibilidades para os períodos sem uso.",
+          "lines": 1
+        },
+        {
+          "section": "empreendimentos",
+          "text": "A participação depende da avaliação dos imóveis e das condições da parceria. Imagens ilustrativas.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Três possibilidades para aproveitar melhor o imóvel, inclusive nos períodos sem uso.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Os associados disponibilizam períodos de seus imóveis e recebem créditos.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "Com esses créditos, solicitam estadias em outros destinos da rede.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "Os associados reservam estadias disponíveis na rede, pagando pela hospedagem, sem usar créditos.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "O proprietário escolhe os períodos que deseja disponibilizar para locação.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "A Luxtory faz a gestão digital, com apoio de operadores locais.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "Cada serviço segue regras próprias.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "A gestão de locações é independente do Club e contratada diretamente com cada proprietário.",
+          "lines": 2
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Você conhece os destinos, os imóveis e as pessoas que procuram por eles.",
+          "lines": 1
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Com a Luxtory, esse relacionamento abre espaço para novas possibilidades de uso e de parceria.",
+          "lines": 2
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Amplie a proposta para sua carteira e participe das receitas dos imóveis que você afilia.",
+          "lines": 3
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Acrescente argumentos ao atendimento e abra oportunidades de receita com os imóveis que você afilia.",
+          "lines": 3
+        },
+        {
+          "section": "como-funciona",
+          "text": "Conte sobre sua atuação, os imóveis com que trabalha e o que busca na parceria.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Conhecemos o perfil dos imóveis, dos clientes e as possibilidades de colaboração.",
+          "lines": 3
+        },
+        {
+          "section": "como-funciona",
+          "text": "Definimos serviços e responsabilidades.",
+          "lines": 1
+        },
+        {
+          "section": "como-funciona",
+          "text": "Acordamos a participação nas receitas e as condições comerciais.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Formalizamos o acordo e iniciamos as ações previstas na parceria.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "Incorporadoras, imobiliárias e corretores especialistas em imóveis de lazer de alto padrão.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Cada oportunidade é avaliada conforme o perfil dos imóveis e a proposta de parceria.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Acrescenta à sua proposta possibilidades de locação, intercâmbio e estadias adicionais.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Esses argumentos podem ajudar você a conversar sobre os períodos sem uso do imóvel.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Receitas abrangidas, atribuição, percentuais e pagamento são definidos em contrato.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Você pode apresentar sua atuação e o perfil dos imóveis que comercializa ou representa.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Não é necessário ter um empreendimento próprio para iniciar a conversa.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "A conversa pode começar no planejamento, no lançamento ou com imóveis prontos.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "A participação dos imóveis depende de avaliação e das condições da parceria.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Não é preciso assumir a operação para apresentar seu interesse.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "As responsabilidades por gestão e serviços locais são definidas no escopo contratado.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Não. Cada proprietário decide se contrata a gestão das locações e quais períodos deseja disponibilizar.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "Conte como você atua e quais oportunidades quer apresentar à Luxtory.",
+          "lines": 1
+        },
+        {
+          "section": "conversa",
+          "text": "O envio inicia uma conversa e não formaliza parceria ou afiliação de imóveis.",
+          "lines": 1
+        },
+        {
+          "section": "conversa",
+          "text": "Usaremos seus dados somente para responder ao contato e avaliar uma possível parceria.",
+          "lines": 1
+        },
+        {
+          "section": "conversa",
+          "text": "As informações serão encaminhadas à equipe Luxtory e não serão armazenadas no banco da plataforma.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "Não usaremos seus dados para marketing sem sua autorização.",
+          "lines": 1
+        }
+      ],
+      "images": [
+        {
+          "alt": "Casa contemporânea com fachada de vidro, madeira e pedra, cercada por jardins.",
+          "loaded": true
+        },
+        {
+          "alt": "Edifício em construção com guindaste, andaimes e estrutura dos pavimentos superiores exposta.",
+          "loaded": true
+        },
+        {
+          "alt": "Edifício concluído com varandas, entrada iluminada e paisagismo cuidado.",
+          "loaded": true
+        }
+      ],
+      "stepsColumns": "345.281px 345.281px",
+      "intermediateColumns": "335.109px 335.109px"
+    },
+    {
+      "width": 1024,
+      "overflow": 0,
+      "sections": [
+        "inicio",
+        "oportunidade",
+        "beneficios",
+        "empreendimentos",
+        "solucoes",
+        "imobiliarias-e-corretores",
+        "como-funciona",
+        "perguntas",
+        "conversa"
+      ],
+      "paragraphs": [
+        {
+          "section": "inicio",
+          "text": "Para incorporadoras, imobiliárias e corretores de imóveis de lazer de alto padrão.",
+          "lines": 1
+        },
+        {
+          "section": "inicio",
+          "text": "Diferencie sua oferta e participe das receitas dos imóveis que você afilia à Luxtory.",
+          "lines": 1
+        },
+        {
+          "section": "oportunidade",
+          "text": "Seu cliente encontra alternativas para os períodos sem uso do imóvel e pode solicitar estadias em outros destinos.",
+          "lines": 2
+        },
+        {
+          "section": "oportunidade",
+          "text": "Você acrescenta um diferencial à venda e abre oportunidades de receita com os imóveis afiliados.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "Diferenciação comercial, apoio às vendas e oportunidades de receita recorrente.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.",
+          "lines": 3
+        },
+        {
+          "section": "beneficios",
+          "text": "Conforme contrato.",
+          "lines": 1
+        },
+        {
+          "section": "beneficios",
+          "text": "Ofereça novas possibilidades de uso do imóvel, com locação de temporada e intercâmbio de estadias.",
+          "lines": 3
+        },
+        {
+          "section": "beneficios",
+          "text": "Estratégia, materiais e argumentos para apoiar sua atuação comercial, conforme o escopo contratado.",
+          "lines": 3
+        },
+        {
+          "section": "beneficios",
+          "text": "A participação depende do faturamento gerado pelos imóveis afiliados e das condições contratadas.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Avaliamos o perfil dos imóveis, a fase do projeto e as oportunidades apresentadas por cada parceiro.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Casas de alto padrão sob demanda, em condomínios com potencial para a parceria.",
+          "lines": 3
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Projetos em planejamento, lançamento ou obra, em busca de novos diferenciais.",
+          "lines": 3
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Imóveis prontos, com novas possibilidades para os períodos sem uso.",
+          "lines": 3
+        },
+        {
+          "section": "empreendimentos",
+          "text": "A participação depende da avaliação dos imóveis e das condições da parceria. Imagens ilustrativas.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Três possibilidades para aproveitar melhor o imóvel, inclusive nos períodos sem uso.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Os associados disponibilizam períodos de seus imóveis e recebem créditos.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Com esses créditos, solicitam estadias em outros destinos da rede.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Os associados reservam estadias disponíveis na rede, pagando pela hospedagem, sem usar créditos.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "O proprietário escolhe os períodos que deseja disponibilizar para locação.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "A Luxtory faz a gestão digital, com apoio de operadores locais.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Cada serviço segue regras próprias.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "A gestão de locações é independente do Club e contratada diretamente com cada proprietário.",
+          "lines": 2
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Você conhece os destinos, os imóveis e as pessoas que procuram por eles.",
+          "lines": 1
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Com a Luxtory, esse relacionamento abre espaço para novas possibilidades de uso e de parceria.",
+          "lines": 2
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Amplie a proposta para sua carteira e participe das receitas dos imóveis que você afilia.",
+          "lines": 2
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Acrescente argumentos ao atendimento e abra oportunidades de receita com os imóveis que você afilia.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Conte sobre sua atuação, os imóveis com que trabalha e o que busca na parceria.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Conhecemos o perfil dos imóveis, dos clientes e as possibilidades de colaboração.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Definimos serviços e responsabilidades.",
+          "lines": 1
+        },
+        {
+          "section": "como-funciona",
+          "text": "Acordamos a participação nas receitas e as condições comerciais.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Formalizamos o acordo e iniciamos as ações previstas na parceria.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "Incorporadoras, imobiliárias e corretores especialistas em imóveis de lazer de alto padrão.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Cada oportunidade é avaliada conforme o perfil dos imóveis e a proposta de parceria.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Acrescenta à sua proposta possibilidades de locação, intercâmbio e estadias adicionais.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Esses argumentos podem ajudar você a conversar sobre os períodos sem uso do imóvel.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Receitas abrangidas, atribuição, percentuais e pagamento são definidos em contrato.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Você pode apresentar sua atuação e o perfil dos imóveis que comercializa ou representa.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Não é necessário ter um empreendimento próprio para iniciar a conversa.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "A conversa pode começar no planejamento, no lançamento ou com imóveis prontos.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "A participação dos imóveis depende de avaliação e das condições da parceria.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Não é preciso assumir a operação para apresentar seu interesse.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "As responsabilidades por gestão e serviços locais são definidas no escopo contratado.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Não. Cada proprietário decide se contrata a gestão das locações e quais períodos deseja disponibilizar.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "Conte como você atua e quais oportunidades quer apresentar à Luxtory.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "O envio inicia uma conversa e não formaliza parceria ou afiliação de imóveis.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "Usaremos seus dados somente para responder ao contato e avaliar uma possível parceria.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "As informações serão encaminhadas à equipe Luxtory e não serão armazenadas no banco da plataforma.",
+          "lines": 3
+        },
+        {
+          "section": "conversa",
+          "text": "Não usaremos seus dados para marketing sem sua autorização.",
+          "lines": 2
+        }
+      ],
+      "images": [
+        {
+          "alt": "Casa contemporânea com fachada de vidro, madeira e pedra, cercada por jardins.",
+          "loaded": true
+        },
+        {
+          "alt": "Edifício em construção com guindaste, andaimes e estrutura dos pavimentos superiores exposta.",
+          "loaded": true
+        },
+        {
+          "alt": "Edifício concluído com varandas, entrada iluminada e paisagismo cuidado.",
+          "loaded": true
+        }
+      ],
+      "stepsColumns": "463.047px 463.047px",
+      "intermediateColumns": "451.078px 451.094px"
+    },
+    {
+      "width": 1440,
+      "overflow": 0,
+      "sections": [
+        "inicio",
+        "oportunidade",
+        "beneficios",
+        "empreendimentos",
+        "solucoes",
+        "imobiliarias-e-corretores",
+        "como-funciona",
+        "perguntas",
+        "conversa"
+      ],
+      "paragraphs": [
+        {
+          "section": "inicio",
+          "text": "Para incorporadoras, imobiliárias e corretores de imóveis de lazer de alto padrão.",
+          "lines": 1
+        },
+        {
+          "section": "inicio",
+          "text": "Diferencie sua oferta e participe das receitas dos imóveis que você afilia à Luxtory.",
+          "lines": 1
+        },
+        {
+          "section": "oportunidade",
+          "text": "Seu cliente encontra alternativas para os períodos sem uso do imóvel e pode solicitar estadias em outros destinos.",
+          "lines": 2
+        },
+        {
+          "section": "oportunidade",
+          "text": "Você acrescenta um diferencial à venda e abre oportunidades de receita com os imóveis afiliados.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "Diferenciação comercial, apoio às vendas e oportunidades de receita recorrente.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "Conforme contrato.",
+          "lines": 1
+        },
+        {
+          "section": "beneficios",
+          "text": "Ofereça novas possibilidades de uso do imóvel, com locação de temporada e intercâmbio de estadias.",
+          "lines": 3
+        },
+        {
+          "section": "beneficios",
+          "text": "Estratégia, materiais e argumentos para apoiar sua atuação comercial, conforme o escopo contratado.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "A participação depende do faturamento gerado pelos imóveis afiliados e das condições contratadas.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Avaliamos o perfil dos imóveis, a fase do projeto e as oportunidades apresentadas por cada parceiro.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Casas de alto padrão sob demanda, em condomínios com potencial para a parceria.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Projetos em planejamento, lançamento ou obra, em busca de novos diferenciais.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Imóveis prontos, com novas possibilidades para os períodos sem uso.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "A participação depende da avaliação dos imóveis e das condições da parceria. Imagens ilustrativas.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Três possibilidades para aproveitar melhor o imóvel, inclusive nos períodos sem uso.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Os associados disponibilizam períodos de seus imóveis e recebem créditos.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "Com esses créditos, solicitam estadias em outros destinos da rede.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "Os associados reservam estadias disponíveis na rede, pagando pela hospedagem, sem usar créditos.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "O proprietário escolhe os períodos que deseja disponibilizar para locação.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "A Luxtory faz a gestão digital, com apoio de operadores locais.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "Cada serviço segue regras próprias.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "A gestão de locações é independente do Club e contratada diretamente com cada proprietário.",
+          "lines": 2
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Você conhece os destinos, os imóveis e as pessoas que procuram por eles.",
+          "lines": 1
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Com a Luxtory, esse relacionamento abre espaço para novas possibilidades de uso e de parceria.",
+          "lines": 2
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Amplie a proposta para sua carteira e participe das receitas dos imóveis que você afilia.",
+          "lines": 2
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Acrescente argumentos ao atendimento e abra oportunidades de receita com os imóveis que você afilia.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Conte sobre sua atuação, os imóveis com que trabalha e o que busca na parceria.",
+          "lines": 3
+        },
+        {
+          "section": "como-funciona",
+          "text": "Conhecemos o perfil dos imóveis, dos clientes e as possibilidades de colaboração.",
+          "lines": 3
+        },
+        {
+          "section": "como-funciona",
+          "text": "Definimos serviços e responsabilidades.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Acordamos a participação nas receitas e as condições comerciais.",
+          "lines": 3
+        },
+        {
+          "section": "como-funciona",
+          "text": "Formalizamos o acordo e iniciamos as ações previstas na parceria.",
+          "lines": 3
+        },
+        {
+          "section": "perguntas",
+          "text": "Incorporadoras, imobiliárias e corretores especialistas em imóveis de lazer de alto padrão.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "Cada oportunidade é avaliada conforme o perfil dos imóveis e a proposta de parceria.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Acrescenta à sua proposta possibilidades de locação, intercâmbio e estadias adicionais.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Esses argumentos podem ajudar você a conversar sobre os períodos sem uso do imóvel.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Receitas abrangidas, atribuição, percentuais e pagamento são definidos em contrato.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Você pode apresentar sua atuação e o perfil dos imóveis que comercializa ou representa.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Não é necessário ter um empreendimento próprio para iniciar a conversa.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "A conversa pode começar no planejamento, no lançamento ou com imóveis prontos.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "A participação dos imóveis depende de avaliação e das condições da parceria.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Não é preciso assumir a operação para apresentar seu interesse.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "As responsabilidades por gestão e serviços locais são definidas no escopo contratado.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Não. Cada proprietário decide se contrata a gestão das locações e quais períodos deseja disponibilizar.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "Conte como você atua e quais oportunidades quer apresentar à Luxtory.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "O envio inicia uma conversa e não formaliza parceria ou afiliação de imóveis.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "Usaremos seus dados somente para responder ao contato e avaliar uma possível parceria.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "As informações serão encaminhadas à equipe Luxtory e não serão armazenadas no banco da plataforma.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "Não usaremos seus dados para marketing sem sua autorização.",
+          "lines": 1
+        }
+      ],
+      "images": [
+        {
+          "alt": "Casa contemporânea com fachada de vidro, madeira e pedra, cercada por jardins.",
+          "loaded": true
+        },
+        {
+          "alt": "Edifício em construção com guindaste, andaimes e estrutura dos pavimentos superiores exposta.",
+          "loaded": true
+        },
+        {
+          "alt": "Edifício concluído com varandas, entrada iluminada e paisagismo cuidado.",
+          "loaded": true
+        }
+      ],
+      "stepsColumns": "327.203px 327.203px 327.203px 327.203px",
+      "intermediateColumns": "639.531px 639.531px",
+      "photoContrast": [
+        {
+          "card": 1,
+          "tag": "h3",
+          "ratio": 7.950274268624439
+        },
+        {
+          "card": 1,
+          "tag": "p",
+          "ratio": 7.82987653511304
+        },
+        {
+          "card": 2,
+          "tag": "h3",
+          "ratio": 7.491440074437445
+        },
+        {
+          "card": 2,
+          "tag": "p",
+          "ratio": 7.503110954603129
+        },
+        {
+          "card": 3,
+          "tag": "h3",
+          "ratio": 7.389984873876549
+        },
+        {
+          "card": 3,
+          "tag": "p",
+          "ratio": 7.491906281186911
+        }
+      ]
+    },
+    {
+      "width": 1920,
+      "overflow": 0,
+      "sections": [
+        "inicio",
+        "oportunidade",
+        "beneficios",
+        "empreendimentos",
+        "solucoes",
+        "imobiliarias-e-corretores",
+        "como-funciona",
+        "perguntas",
+        "conversa"
+      ],
+      "paragraphs": [
+        {
+          "section": "inicio",
+          "text": "Para incorporadoras, imobiliárias e corretores de imóveis de lazer de alto padrão.",
+          "lines": 1
+        },
+        {
+          "section": "inicio",
+          "text": "Diferencie sua oferta e participe das receitas dos imóveis que você afilia à Luxtory.",
+          "lines": 1
+        },
+        {
+          "section": "oportunidade",
+          "text": "Seu cliente encontra alternativas para os períodos sem uso do imóvel e pode solicitar estadias em outros destinos.",
+          "lines": 2
+        },
+        {
+          "section": "oportunidade",
+          "text": "Você acrescenta um diferencial à venda e abre oportunidades de receita com os imóveis afiliados.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "Diferenciação comercial, apoio às vendas e oportunidades de receita recorrente.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "Conforme contrato.",
+          "lines": 1
+        },
+        {
+          "section": "beneficios",
+          "text": "Ofereça novas possibilidades de uso do imóvel, com locação de temporada e intercâmbio de estadias.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "Estratégia, materiais e argumentos para apoiar sua atuação comercial, conforme o escopo contratado.",
+          "lines": 2
+        },
+        {
+          "section": "beneficios",
+          "text": "A participação depende do faturamento gerado pelos imóveis afiliados e das condições contratadas.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Avaliamos o perfil dos imóveis, a fase do projeto e as oportunidades apresentadas por cada parceiro.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Casas de alto padrão sob demanda, em condomínios com potencial para a parceria.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Projetos em planejamento, lançamento ou obra, em busca de novos diferenciais.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "Imóveis prontos, com novas possibilidades para os períodos sem uso.",
+          "lines": 2
+        },
+        {
+          "section": "empreendimentos",
+          "text": "A participação depende da avaliação dos imóveis e das condições da parceria. Imagens ilustrativas.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Três possibilidades para aproveitar melhor o imóvel, inclusive nos períodos sem uso.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "Os associados disponibilizam períodos de seus imóveis e recebem créditos.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "Com esses créditos, solicitam estadias em outros destinos da rede.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "Os associados reservam estadias disponíveis na rede, pagando pela hospedagem, sem usar créditos.",
+          "lines": 2
+        },
+        {
+          "section": "solucoes",
+          "text": "O proprietário escolhe os períodos que deseja disponibilizar para locação.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "A Luxtory faz a gestão digital, com apoio de operadores locais.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "Cada serviço segue regras próprias.",
+          "lines": 1
+        },
+        {
+          "section": "solucoes",
+          "text": "A gestão de locações é independente do Club e contratada diretamente com cada proprietário.",
+          "lines": 2
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Você conhece os destinos, os imóveis e as pessoas que procuram por eles.",
+          "lines": 1
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Com a Luxtory, esse relacionamento abre espaço para novas possibilidades de uso e de parceria.",
+          "lines": 2
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Amplie a proposta para sua carteira e participe das receitas dos imóveis que você afilia.",
+          "lines": 2
+        },
+        {
+          "section": "imobiliarias-e-corretores",
+          "text": "Acrescente argumentos ao atendimento e abra oportunidades de receita com os imóveis que você afilia.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Conte sobre sua atuação, os imóveis com que trabalha e o que busca na parceria.",
+          "lines": 3
+        },
+        {
+          "section": "como-funciona",
+          "text": "Conhecemos o perfil dos imóveis, dos clientes e as possibilidades de colaboração.",
+          "lines": 3
+        },
+        {
+          "section": "como-funciona",
+          "text": "Definimos serviços e responsabilidades.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Acordamos a participação nas receitas e as condições comerciais.",
+          "lines": 2
+        },
+        {
+          "section": "como-funciona",
+          "text": "Formalizamos o acordo e iniciamos as ações previstas na parceria.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "Incorporadoras, imobiliárias e corretores especialistas em imóveis de lazer de alto padrão.",
+          "lines": 2
+        },
+        {
+          "section": "perguntas",
+          "text": "Cada oportunidade é avaliada conforme o perfil dos imóveis e a proposta de parceria.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Acrescenta à sua proposta possibilidades de locação, intercâmbio e estadias adicionais.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Esses argumentos podem ajudar você a conversar sobre os períodos sem uso do imóvel.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Os primeiros parceiros participam do faturamento dos imóveis que afiliarem à Luxtory.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Receitas abrangidas, atribuição, percentuais e pagamento são definidos em contrato.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Você pode apresentar sua atuação e o perfil dos imóveis que comercializa ou representa.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Não é necessário ter um empreendimento próprio para iniciar a conversa.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "A conversa pode começar no planejamento, no lançamento ou com imóveis prontos.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "A participação dos imóveis depende de avaliação e das condições da parceria.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Não é preciso assumir a operação para apresentar seu interesse.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "As responsabilidades por gestão e serviços locais são definidas no escopo contratado.",
+          "lines": 1
+        },
+        {
+          "section": "perguntas",
+          "text": "Não. Cada proprietário decide se contrata a gestão das locações e quais períodos deseja disponibilizar.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "Conte como você atua e quais oportunidades quer apresentar à Luxtory.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "O envio inicia uma conversa e não formaliza parceria ou afiliação de imóveis.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "Usaremos seus dados somente para responder ao contato e avaliar uma possível parceria.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "As informações serão encaminhadas à equipe Luxtory e não serão armazenadas no banco da plataforma.",
+          "lines": 2
+        },
+        {
+          "section": "conversa",
+          "text": "Não usaremos seus dados para marketing sem sua autorização.",
+          "lines": 1
+        }
+      ],
+      "images": [
+        {
+          "alt": "Casa contemporânea com fachada de vidro, madeira e pedra, cercada por jardins.",
+          "loaded": true
+        },
+        {
+          "alt": "Edifício em construção com guindaste, andaimes e estrutura dos pavimentos superiores exposta.",
+          "loaded": true
+        },
+        {
+          "alt": "Edifício concluído com varandas, entrada iluminada e paisagismo cuidado.",
+          "loaded": true
+        }
+      ],
+      "stepsColumns": "350px 350px 350px 350px",
+      "intermediateColumns": "684px 684px"
+    }
+  ],
+  "zoom": [
+    {
+      "width": 320,
+      "overflow": 0,
+      "clipped": []
+    },
+    {
+      "width": 390,
+      "overflow": 0,
+      "clipped": []
+    },
+    {
+      "width": 768,
+      "overflow": 0,
+      "clipped": []
+    },
+    {
+      "width": 1440,
+      "overflow": 0,
+      "clipped": []
+    }
+  ],
+  "errors": []
+}

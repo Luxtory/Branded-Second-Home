@@ -166,6 +166,15 @@ valor de segredo entra em código, migration, log, issue ou artifact.
 
 ## Preparar a SHP1 (Second Home Partners público)
 
+**Revisão de lançamento aprovada em 2026-11-17 (catalog §20.6, D-SHP-14–16):** a página agora acolhe incorporadoras,
+imobiliárias e corretores no mesmo formulário. Testar os três perfis no Preview: empreendimento/fase só para
+incorporadora; cidade/região para intermediadores; empresa opcional do corretor. Conferir o perfil no e-mail de teste.
+Não há variáveis novas. Perfil ausente ou campos de outro perfil são recusados, inclusive em payloads antigos.
+Esta versão usa copy no presente para lançamento quando o Club estiver pronto, conforme instrução do fundador;
+a preparação editorial não comprova prontidão operacional. Essa condição substitui a liberação editorial antecipada
+do registro D-SHP-11 abaixo. O portão já aberto não impede publicação automática em merge: manter a revisão em Preview
+até o lançamento, sem alterar variáveis ou infraestrutura para contornar a condição.
+
 Contrato: spec `catalog` §20 (TECH-057 estendida, ADR-0028). O contato reaproveita a configuração da BP1 abaixo
 (Resend, Upstash, remetente, origens, segredo, limites e timeouts), com namespace próprio
 (`luxtory:second-home-partner-contact:<VERCEL_ENV>`). Só duas chaves são novas:

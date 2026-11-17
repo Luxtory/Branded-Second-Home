@@ -1,5 +1,62 @@
-/* SHP1 (catalog §20.2): only the three informative photographs in #empreendimentos. */
+/* Second Home Partners (catalog §20.6): local compositions using existing Core roles and tokens. */
 @layer lx.components {
+  /* The founder's two sentences stay in successive blocks, each reflowing naturally on narrow screens. */
+  [data-lx="core"] main:has(> #imobiliarias-e-corretores) #inicio h1 > :is(span, em) {
+    display: block;
+  }
+
+  [data-lx="core"] #oportunidade .lx-shp-opportunity__media {
+    aspect-ratio: var(--lx-ratio-media-md);
+  }
+
+  [data-lx="core"] #oportunidade .lx-shp-opportunity__media > img {
+    object-position: 35% 50%;
+  }
+
+  /* Intrinsic grid tracks, actions and choices must reflow when text is enlarged. */
+  [data-lx="core"] main:has(> #imobiliarias-e-corretores) {
+    overflow-wrap: anywhere;
+  }
+
+  [data-lx="core"] main:has(> #imobiliarias-e-corretores) :is(
+    .lx-stack, .lx-hero__copy, .lx-section-head, .lx-hero__actions,
+    .lx-field, .lx-choice, fieldset, h1, h2, h3, p, .lx-button
+  ) {
+    min-width: 0;
+  }
+
+  [data-lx="core"] main:has(> #imobiliarias-e-corretores) .lx-button {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  /* The official lockup may shrink proportionally beside the menu on narrow enlarged-text viewports. */
+  [data-lx="core"]:has(main > #imobiliarias-e-corretores) .lx-header__inner > .lx-logo {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  /* Four steps need two reading columns at intermediate widths; four fit from xl. */
+  @media (min-width: 64rem) {
+    [data-lx="core"] main:has(> #imobiliarias-e-corretores) #como-funciona .lx-steps--four {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    [data-lx="core"] main:has(> #imobiliarias-e-corretores) #como-funciona .lx-steps--four .lx-steps__item:nth-child(odd) {
+      padding-inline-start: 0;
+      border-inline-start: 0;
+    }
+  }
+
+  @media (min-width: 80rem) {
+    [data-lx="core"] main:has(> #imobiliarias-e-corretores) #como-funciona .lx-steps--four {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    [data-lx="core"] main:has(> #imobiliarias-e-corretores) #como-funciona .lx-steps--four .lx-steps__item:nth-child(3) {
+      padding-inline-start: var(--lx-space-8);
+      border-inline-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+    }
+  }
+
   /* Long architectural terms must reflow when the reader enlarges text. */
   [data-lx="core"] #empreendimentos {
     overflow-wrap: anywhere;
@@ -26,6 +83,7 @@
     grid-template-rows: minmax(var(--lx-space-48), 1fr) auto;
     min-width: 0;
     min-height: calc(var(--lx-space-48) * 2.5);
+    background-color: var(--lx-scrim-color);
   }
 
   [data-lx="core"] #empreendimentos .lx-development__image {

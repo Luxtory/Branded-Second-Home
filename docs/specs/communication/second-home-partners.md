@@ -1,97 +1,63 @@
-# Aplicação do Framework Second Home Partners — Protagonista incorporadora
+# Aplicação do Framework Second Home Partners — parceiro especialista
 
-> **Fonte canônica da comunicação Second Home Partners:** [Framework Second Home Partners](framework-second-home-partners.md),
-> congelado ([ADR-0028](../../adr/0028-jornada-second-home-partners.md)). Este arquivo **não repete o Framework**:
-> ancora em IDs canônicos o que a página pode afirmar, responde às objeções, mapeia a página e registra o que o
-> Framework não decide. Contrato: [`../communication.md`](../communication.md). Guardrails de todas as jornadas:
-> [`luxtory.md`](luxtory.md) §4.
+> Fonte: [Framework Second Home Partners](framework-second-home-partners.md), versão de 2026-11-17, revisão editorial 3 ([ADR-0028](../../adr/0028-jornada-second-home-partners.md)). Contrato: [communication](../communication.md). Guardrails: [luxtory](luxtory.md) §4.
 
 ## 1. Escopo e precedência
 
-- Jornada Second Home Partners. Protagonista: `[FW-SHP: §3]`. `02` v4.5 §2 e REQ-105 autorizam a página pública, o CTA
-  e o formulário; contrato e brief em [`catalog` §20](../catalog.md#20-second-home-partners-público-shp1).
-- A jornada não leva às jornadas B2C e Brand Partners, nem recebe links delas (`D-LX-13`).
-- A frente e seus limites estão no `01` §1 e §35: imóveis parceiros não são Second Homes nem Branded Second Homes; a
-  Luxtory pode prestar a gestão digital das locações aos proprietários, fora do Luxtory Club; a incorporadora pode
-  participar das receitas originadas pelo empreendimento, nos termos do contrato; a participação dos imóveis no Luxtory
-  Club depende de regras próprias, ainda não definidas.
-- Precedência. Fatos: `01 → 02 → 03` `[F: BR-380, REQ-104]`. Comunicação: Framework Second Home Partners > este arquivo
-  > brief da página > i18n.
+Uma página para incorporadoras, imobiliárias e corretores especialistas em imóveis de lazer de alto padrão `[FW-SHP: §3]`. `01` v10.7 §1/§35 → `02` v4.6 REQ-105 → `03` v3.18 TECH-057. Brief e aceite em [catalog §20.6](../catalog.md#206-revisão-aprovada--três-perfis-e-copy-de-lançamento-2026-11-17). Comunicação: Framework > aplicação > brief > i18n. Sem links para B2C/Brand Partners (`D-LX-13`).
 
-## 2. Leitura canônica do Framework
+## 2. Leitura canônica
 
-| # | Frase do Framework | Âncora | Limite na copy |
+| # | Tema | Âncora | Limite |
 |---|---|---|---|
-| L1 | mais liberdade para os clientes `[FW-SHP: §2, §8 P1]` | `01` §1, §2; REQ-105 | o Luxtory Club e o intercâmbio aparecem sempre como futuros (“poderão”, “previstos”), com “ainda não disponíveis” na nota das soluções; o hero diz que o programa está em estruturação, sem repetir a indisponibilidade nem destacá-la no FAQ |
-| L2 | Luxchange `[FW-SHP: §8 P4]` | BR-146, BR-190, REQ-060 | associados disponibilizam períodos e recebem créditos para solicitar estadias; créditos não são dinheiro nem garantia de disponibilidade |
-| L3 | Luxplus `[FW-SHP: §8 P4]` | BR-146, BR-240, BR-241, REQ-070 | estadias disponíveis pagas pela hospedagem, sem usar créditos |
-| L4 | locação de temporada e gestão das locações `[FW-SHP: §8 P3, P4, §14]` | `01` §1, §35; BR-352, BR-374 | serviço da Luxtory aos proprietários que o contratam, independente do Luxtory Club e sem Membership (`D-SHP-09`); cada proprietário decide se contrata e quais períodos disponibiliza; a incorporadora não precisa operar e pode oferecer Concierge e Facilities; responde à objeção da ociosidade sem promessa de receita, ocupação ou valor aos proprietários; sem plataforma nomeada; não altera a locação das Branded Second Homes na jornada B2C |
-| L5 | participação nos resultados `[FW-SHP: §8 P3, §14]` | `01` §35, BR-352, BR-374 | benefício explícito (`D-SHP-07`): nas locações, parte da receita (comissão) de gestão da Luxtory, nunca lucro nem a parte dos proprietários (`D-SHP-08`); no Luxtory Club, só “poderá”; sem percentual, fórmula, valor, exemplo, “recorrente” ou pagamento garantido |
-| L6 | o empreendimento continua da incorporadora `[FW-SHP: §6.2]` | `01` §1, BR-053, BR-054 | a página nunca chama imóveis parceiros de Second Homes nem de Branded Second Homes (“Second Home” só no nome do programa); o tema não vira pergunta no FAQ (`D-SHP-10`) |
-| L7 | CTA e destino `[FW-SHP: §8 P5]` | REQ-105 | CTA → formulário `/second-home-partner#conversa`; o envio não formaliza parceria nem garante entrada no Luxtory Club |
+| L1 | Liberdade para os clientes `[FW-SHP: §2, §8 P1]` | REQ-105, revisão de 2026-11-17 | copy no presente preparada para lançamento; implementação editorial não comprova prontidão nem ativa Club |
+| L2 | Luxchange `[FW-SHP: §8 P4]` | BR-146, BR-190, REQ-060 | associados disponibilizam períodos, recebem créditos e solicitam estadias; sem garantia |
+| L3 | Luxplus `[FW-SHP: §8 P4]` | BR-146, BR-240, REQ-070 | estadias disponíveis pagas pela hospedagem, sem créditos |
+| L4 | Locação `[FW-SHP: §8 P4]` | `01` §1/§35, BR-374 | gestão digital com apoio local, independente do Club e contratada por proprietário; decisão voluntária |
+| L5 | Receita recorrente `[FW-SHP: §8 P3]` | `01` v10.7 §35, BR-352 | primeiros parceiros dos três perfis participam do faturamento dos imóveis que afiliaram enquanto permanecerem afiliados; receitas, atribuição, percentuais e pagamento em contrato; sem mínimo ou garantia; expressão pública não redefine bases econômicas |
+| L6 | Imóveis parceiros `[FW-SHP: §6.2]` | BR-053, BR-054 | não são Second Homes nem Branded Second Homes; fotos ilustrativas |
+| L7 | CTA `[FW-SHP: §8 P5]` | REQ-105 | formulário da mesma página; envio não formaliza parceria nem afilia imóvel |
 
-## 3. Posicionamento — fatos ancorados
+## 3. Posicionamento
 
-Posicionamento: `[FW-SHP: §2]`.
+Mais valor para o negócio e mais liberdade para os clientes `[FW-SHP: §2]`. Distribuição pelos parceiros, diferenciação comercial e oportunidade de receita além da venda. Fatos da gestão e separação econômica: `01` §1/§35; nenhuma nova base ou taxa na implementação.
 
-| Elemento | Fato | Âncora |
-|---|---|---|
-| Frente | parceria comercial com incorporadoras de empreendimentos de lazer próprios, mediante contrato | `01` §1 |
-| Apoio comercial | proposta ao comprador e comercialização, no escopo contratado | `01` §1, BR-041 |
-| Club | modelo previsto de Luxchange e Luxplus para associados; imóveis parceiros dependem de regras próprias | `01` §1, §2, §20, §25; BR-146, BR-161 |
-| Gestão das locações | serviço digital da Luxtory aos proprietários dos imóveis parceiros, com operação local contratada pela Luxtory; fora do Club | `01` §1, §35 |
-| Participação | da incorporadora nas receitas da Luxtory originadas pelo empreendimento: comissão bruta de gestão das locações; serviços do Club só com regras próprias e sobre resultado líquido positivo atribuível | `01` §35 |
+## 4. Narrativa
 
-## 4. Narrativa, JTBD e Necessidade
+Narrativa/JTBD `[FW-SHP: §4, §4.1]`. Mensagem comum preservada e bloco para intermediadores na própria página. Hipótese de vendas (`H-SHP-01`) não vira resultado.
 
-Narrativa e JTBD: `[FW-SHP: §4, §4.1]`. A necessidade é comercial: diferenciar o produto e responder à objeção de ficar
-preso a um único destino. A página não afirma resultados de venda; “acelerar a decisão de compra” fica como hipótese
-(`H-SHP-01`).
+## 5. Personagens
 
-## 5. Personagens e objeções
+Personagens `[FW-SHP: §5]`. FAQ: quem pode ser parceiro; como ajuda as vendas; participação no faturamento; necessidade de empreendimento próprio; estágio; gestão; decisão do proprietário. As respostas seguem L1–L7 e REQ-105, sem repetição de indisponibilidade na copy de lançamento.
 
-Personagens: `[FW-SHP: §5]`. Respostas às objeções (FAQ da página):
+## 6. Crenças
 
-| ID | Objeção | Resposta |
-|---|---|---|
-| O1 | Como a parceria ajuda as vendas? | ajuda a enfrentar a objeção da ociosidade: locação nos períodos sem uso e, no futuro, intercâmbio (possibilidade, não resultado; L1, L4) |
-| O3 | Como a incorporadora participa dos resultados? | parte da comissão da Luxtory pela gestão das locações do empreendimento; o Club poderá entrar depois (L5) |
-| O7 | A incorporadora precisa administrar as locações? | não; a Luxtory faz a gestão digital e coordena os prestadores locais; a incorporadora pode oferecer Concierge e Facilities (L4) |
-| O8 | Os proprietários precisam disponibilizar os imóveis? | não; cada proprietário decide se contrata a gestão e quais períodos disponibiliza (L4) |
-| O6 | O empreendimento precisa estar numa fase específica? | não; qualquer fase, do planejamento ao empreendimento entregue e em operação (`D-SHP-10`) |
-
-Fora do FAQ desde 2026-11-13 (`D-SHP-10`), respondidas na conversa comercial: O2 (o Club já funciona? — a
-indisponibilidade fica na nota das soluções), O4 (mudança de marca ou projeto — L6) e O5 (outra intercambiadora). A
-etapa inicial da parceria fica em Como funciona, sem pergunta repetida.
-
-## 6. Crenças — MCR
-
-Crenças desejadas e não desejadas: `[FW-SHP: §6.1, §6.2]`. A nota do hero e a nota das soluções existem para
-impedir a crença de acesso automático ao Club; o FAQ O3 e a nota de Benefícios impedem a leitura de lucro, valor
-garantido ou desconto na parte dos proprietários.
+`[FW-SHP: §6.1, §6.2]`: oportunidade recorrente dependente de faturamento/contrato; sem promessa, afiliação automática ou obrigação operacional para iniciar conversa.
 
 ## 7. Jornada e 5Ps
 
-Uma página: `/second-home-partner`. Conscientização: Problem Aware → Product Aware `[FW-SHP: §7]`. CTA único:
-**Conversar sobre seu empreendimento** → `#conversa` `[FW-SHP: §8 P5]`.
+Problem Aware → Product Aware `[FW-SHP: §7]`. CTA “Conversar sobre uma parceria” → `#conversa`.
 
 | Seção | Função | Âncora |
 |---|---|---|
 | Hero | PICTURE `[FW-SHP: P1]` | `#inicio` |
 | A oportunidade | PROBLEM `[FW-SHP: P2]` | `#oportunidade` |
 | Benefícios | PROMISE `[FW-SHP: P3]` | `#beneficios` |
-| Onde a parceria pode acontecer · Soluções para os proprietários · Como funciona · Perguntas | PROOF `[FW-SHP: P4]` | `#empreendimentos` · `#solucoes` · `#como-funciona` · `#perguntas` |
+| Contextos, soluções, intermediadores, processo, perguntas | PROOF `[FW-SHP: P4]` | `#empreendimentos`, `#solucoes`, `#imobiliarias-e-corretores`, `#como-funciona`, `#perguntas` |
 | Conversa | PUSH `[FW-SHP: P5]` | `#conversa` |
 
-## 8. Tom e expressão
+## 8. Tom
 
-Tom, vocabulário e o que evitar: `[FW-SHP: §11]`. Testes de validação e regras de execução: `[FW-SHP: §13, §14]`.
+Tom `[FW-SHP: §11]`, validação e execução `[FW-SHP: §13, §14]`. Blocos curtos, sem truncamento ou fonte reduzida; preservar contexto e mecanismos.
 
 ## 9. Input mínimo
 
-`[FW-SHP: §15]`; campos, limites e estados em REQ-105 e [`catalog` §20](../catalog.md#20-second-home-partners-público-shp1).
+`[FW-SHP: §15]`; contrato fechado por perfil em REQ-105 / [catalog §20.3](../catalog.md#203-formulário). Dados apenas para contato e avaliação da parceria, sem marketing não autorizado ou persistência.
 
 ## 10. Registro
+
+D-SHP-14 a D-SHP-18 são vigentes; D-SHP-18 resolve a duração antes indefinida em D-SHP-17. Linhas anteriores preservam as decisões históricas e ficam superadas onde indicado; pendências operacionais e jurídicas continuam sem impedir a preparação editorial aprovada. P-SHP-03 não limita mais o tempo verbal da versão de lançamento, mas segue bloqueando execução de serviços sem regras.
+
 
 | ID | Decisão | Status | Base |
 |---|---|---|---|
@@ -108,6 +74,14 @@ Tom, vocabulário e o que evitar: `[FW-SHP: §11]`. Testes de validação e regr
 | D-SHP-11 | A página é de prospecção: publica-se com o aceite do fundador e a configuração de Production, sem esperar a operação. Revisão jurídica bloqueia contratos (`P-SHP-01`); definição operacional bloqueia a prestação dos serviços (`P-SHP-02`); definição do modelo B bloqueia sua contratação (`P-SHP-04`). O hero diz só que o programa está em estruturação; a indisponibilidade de Luxchange e Luxplus fica na nota das soluções | aprovada pelo fundador em 2026-11-13 | REQ-105 |
 | D-SHP-12 | Identidade visual pela paleta institucional, só com superfícies do Core: Hero Deep, A oportunidade White, Benefícios Blue, Soluções Deep, Como funciona Wash, Perguntas Blue, Conversa White; a passagem Blue → Deep entre Benefícios e Soluções segue o Como funciona do Brand Partners | aprovada pelo fundador em 2026-11-13 | DS §13.3 |
 | D-SHP-13 | Oito seções: acrescentar “Onde a parceria pode acontecer” entre Benefícios e Soluções; Wash, headline “Da concepção à entrega. Seu empreendimento pode fazer parte.”, três fotografias fornecidas (sob demanda em condomínios parceiros, em desenvolvimento e entregues), copy integral aprovada e nota de avaliação e imagens ilustrativas; sem CTA adicional, promessa de aprovação ou adesão obrigatória. CSS exclusivo da seção; demais seções e serviços preservados | aprovada pelo fundador em 2026-11-13 (brief da seção); amplia `D-SHP-03` e a transição de superfícies de `D-SHP-12` | REQ-105; L1, L4; DS §13.3 |
+
+| D-SHP-14 | Página única para os três perfis, nove seções, novo bloco de intermediadores e formulário condicional; CTA “Conversar sobre uma parceria” e hero “Mais valor para seu negócio. Mais liberdade para seus clientes.” | aprovada pelo fundador em 2026-11-17; substitui D-SHP-01, D-SHP-02, D-SHP-03, D-SHP-10 e amplia D-SHP-13 | REQ-105; catalog §20.6 |
+| D-SHP-15 | Primeiros parceiros dos três perfis participam do faturamento dos imóveis que afiliarem; oportunidade recorrente, dependente de receitas e contrato, sem taxa ou mínimo presumido; bases econômicas preservadas | aprovada pelo fundador em 2026-11-17; amplia D-SHP-07 e D-SHP-08, sem redefinir bases | `01` v10.6 §35, BR-352 |
+| D-SHP-16 | Copy completa de lançamento no presente, sem notas de estruturação ou indisponibilidade; publicar quando o Club estiver pronto. Preparação editorial não comprova operação nem habilita serviço | aprovada pelo fundador em 2026-11-17; substitui os limites editoriais anteriores de D-SHP-09 e D-SHP-11; prontidão operacional segue pendente | REQ-105; catalog §20.6 |
+
+| D-SHP-17 | Hero com duas frases em blocos; oportunidade com narrativa imaginativa e foto do acervo; fechamentos no padrão centralizado da Home; carteira já vendida e futura sujeita a avaliação/adesão. A duração de receita não é presumida: usar receita depois da venda, sem “vitalícia” ou garantia de acelerar vendas | ajustes pedidos pelo fundador em 2026-11-17; julgamento editorial dentro de BR-352 e BR-374 | REQ-105; catalog §20.7 |
+
+| D-SHP-18 | Participação do parceiro responsável pela afiliação durante todo o período em que o imóvel permanecer afiliado; a venda não encerra a participação. Valores dependem do faturamento e contrato. Promessa explícita com condição de afiliação junto, sem “vitalícia” ambígua, percentual ou mínimo; revisar carregamento das três fotos do print | regra definida pelo fundador em 2026-11-17; substitui a indefinição de duração registrada em D-SHP-17 | `01` v10.7 §35; REQ-105; catalog §20.8 |
 
 | ID | Hipótese | Como validar |
 |---|---|---|

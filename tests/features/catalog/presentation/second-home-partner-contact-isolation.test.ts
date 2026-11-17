@@ -56,6 +56,7 @@ const BP_BODY = {
   message: 'Olá.',
 };
 const SHP_BODY = {
+  profile: 'developer',
   name: 'Ana',
   company: 'Incorporadora',
   email: 'ana@exemplo.test',
