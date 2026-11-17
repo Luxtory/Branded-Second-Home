@@ -9,6 +9,7 @@ import { secondHomePartnersMessages } from '@/features/catalog/presentation/i18n
 // Contrato do formulário Second Home Partners (REQ-105, spec catalog §20.3): bordas que a rota não isola.
 
 const VALID = {
+  profile: 'developer',
   name: 'Ana',
   company: 'Incorporadora',
   email: 'ana@exemplo.test',
@@ -71,13 +72,98 @@ describe('contato Second Home Partners — schema e e-mail (REQ-105)', () => {
     );
     expect(email.text).toBe(
       [
+        'Qual é o seu perfil?: Incorporadora',
         'Nome: Ana',
-        'Incorporadora: Incorporadora',
+        'Empresa: Incorporadora',
         'E-mail: ana@exemplo.test',
         'Empreendimento e localização: Empreendimento, Trancoso',
         'Fase do empreendimento: Planejamento ou lançamento',
       ].join('\n'),
     );
+  });
+
+  it.each(['agency', 'broker'])(
+    '[REQ-105] %s usa região e não precisa de empreendimento nem fase',
+    (profile) => {
+      expect(
+        parseSecondHomePartnerContact({
+          profile,
+          name: 'Ana',
+          email: 'ana@exemplo.test',
+          company: 'Empresa',
+          region: '  Serra Gaúcha  ',
+        }),
+      ).toMatchObject({ ok: true, contact: { profile, region: 'Serra Gaúcha' } });
+    },
+  );
+
+  it('[REQ-105] empresa é opcional somente para corretor; vazio é ausente no e-mail', () => {
+    const broker = {
+      profile: 'broker',
+      name: 'Ana',
+      email: 'ana@exemplo.test',
+      region: 'Trancoso',
+    };
+    for (const company of [undefined, '', '  ']) {
+      const parsed = parseSecondHomePartnerContact({
+        ...broker,
+        ...(company === undefined ? {} : { company }),
+      });
+      expect(parsed).toMatchObject({ ok: true, contact: { company: null } });
+      if (!parsed.ok) throw new Error('corretor válido recusado');
+      const email = composeSecondHomePartnerContactEmail(
+        parsed.contact,
+        secondHomePartnersMessages.contactEmail,
+      );
+      expect(email.text).toContain('Qual é o seu perfil?: Corretor(a)');
+      expect(email.text).toContain('Cidade ou região de atuação: Trancoso');
+      expect(email.text).not.toMatch(/Empresa:|Empreendimento|Fase|undefined|null/);
+      expect(email.replyTo).toBe(broker.email);
+    }
+    expect(parseSecondHomePartnerContact({ ...broker, profile: 'agency' })).toEqual({
+      ok: false,
+      issues: [{ field: 'company', code: 'required' }],
+    });
+  });
+
+  it('[REQ-105] não presume perfil e recusa campos exclusivos de outro perfil, mesmo vazios', () => {
+    const legacy = Object.fromEntries(Object.entries(VALID).filter(([key]) => key !== 'profile'));
+    expect(parseSecondHomePartnerContact(legacy)).toEqual({
+      ok: false,
+      issues: [{ field: 'profile', code: 'required' }],
+    });
+    expect(parseSecondHomePartnerContact({ ...VALID, profile: 'unknown' })).toEqual({
+      ok: false,
+      issues: [{ field: 'profile', code: 'invalid' }],
+    });
+    expect(parseSecondHomePartnerContact({ ...VALID, region: '' }).ok).toBe(false);
+    const broker = {
+      profile: 'broker',
+      name: 'Ana',
+      email: 'ana@exemplo.test',
+      region: 'Trancoso',
+    };
+    for (const extra of [{ development: '' }, { stage: '' }, { privateData: 'x' }]) {
+      expect(parseSecondHomePartnerContact({ ...broker, ...extra }).ok).toBe(false);
+    }
+  });
+
+  it('[REQ-105] região obrigatória, sem controles, com limite de 200 pontos de código', () => {
+    const broker = { profile: 'broker', name: 'Ana', email: 'ana@exemplo.test' };
+    for (const region of [undefined, ''])
+      expect(parseSecondHomePartnerContact({ ...broker, region })).toEqual({
+        ok: false,
+        issues: [{ field: 'region', code: 'required' }],
+      });
+    expect(parseSecondHomePartnerContact({ ...broker, region: '😀'.repeat(200) }).ok).toBe(true);
+    expect(parseSecondHomePartnerContact({ ...broker, region: '😀'.repeat(201) })).toEqual({
+      ok: false,
+      issues: [{ field: 'region', code: 'too_long' }],
+    });
+    expect(parseSecondHomePartnerContact({ ...broker, region: 'A\r\nBcc: x@y.test' })).toEqual({
+      ok: false,
+      issues: [{ field: 'region', code: 'invalid' }],
+    });
   });
 
   it('[TECH-057] honeypot recusa sem chamar o provedor', async () => {

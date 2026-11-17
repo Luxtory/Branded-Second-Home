@@ -1,6 +1,10 @@
 # 01 — Business Model & Business Rules — Luxtory Branded Second Home
 
-2026-11-13 · Luxtory (fundador) · Versão 10.5 — Status: final
+2026-11-17 · Luxtory (fundador) · Versão 10.6 — Status: final
+
+Revisão SHP autorizada pelo fundador em 2026-11-17, após aprovação da copy completa: estende a frente aos três perfis — incorporadoras, imobiliárias e corretores especialistas em imóveis de lazer de alto padrão — e a oportunidade de participação recorrente dos primeiros parceiros no faturamento dos imóveis afiliados por eles. A expressão pública não redefine as bases econômicas do §35. Contrato define receitas abrangidas, atribuição, percentuais e pagamento; nenhum valor mínimo ou direito automático. Copy preparada no presente para lançamento quando o Club estiver pronto; esta emissão não comprova operação nem habilita mecanismos do Club para imóveis parceiros. Preserva todas as 192 BRs e os direitos constituídos. Impacto e aceite em catalog §20.6.
+
+Histórico preservado — versão 10.5, emitida em 2026-11-13:
 
 Revisão Second Home Partners autorizada pelo fundador (2026-11-12; modelo comercial definido em 2026-11-13, antes da emissão): complementa exclusivamente os §1 e §35 com a frente comercial com incorporadoras de empreendimentos de lazer próprios, a gestão digital de locações aos proprietários desses imóveis e a participação da incorporadora nas receitas originadas pelo empreendimento. Preserva as 192 Business Rules, os direitos constituídos e as funcionalidades existentes; não cria obrigação econômica nem funcionalidade de software. Esta revisão é normativa e não implica, por si só, disponibilidade operacional ou prestação efetiva de serviços.
 
@@ -25,6 +29,8 @@ Hierarquia documental: **01 Business Model & Business Rules → 02 Product Spec 
 **Convenção normativa.** DEVE / NÃO DEVE: regra obrigatória. PODE: possibilidade permitida. Parâmetro: valor ou condição variável dentro de uma Business Rule. Valores identificados como atuais ou defaults NÃO devem ser tratados como regras imutáveis.
 
 ## 1. Modelo de negócio
+
+**Extensão SHP vigente (2026-11-17).** A frente comercial Second Home Partners também abrange imobiliárias e corretores especialistas em imóveis de lazer de alto padrão, com ou sem empreendimento próprio. Os três perfis podem apresentar imóveis e atuar como parceiros de afiliação; a afiliação efetiva depende de avaliação e contrato, não do formulário público. A versão de lançamento da comunicação segue a decisão acima; as regras operacionais e a separação entre imóveis parceiros e Branded Second Homes permanecem.
 
 A Luxtory desenvolve Branded Second Homes a partir do universo de marcas desejadas. A estrutura conceitual do modelo, com a jornada do consumidor a partir da Home Edition, é:
 
@@ -594,6 +600,8 @@ O Investor NÃO constitui terceira modalidade de propriedade.
 **BR-346** — As posições nas rotações ordinária e bissexta pertencem à participação societária correspondente, e não à pessoa do Co-Owner. Em caso de transferência, o adquirente assume as posições e o histórico rotativo associados à participação.
 
 ## 35. Revenue Model Luxtory
+
+**Extensão SHP vigente (2026-11-17).** Os primeiros parceiros dos três perfis participam do faturamento dos imóveis que afiliarem à Luxtory, conforme contrato. Trata-se de oportunidade recorrente dependente das receitas efetivamente geradas, sem pagamento fixo ou garantido. As bases de gestão e Club abaixo permanecem distintas; a expressão editorial não transfere receita do proprietário nem cria base, percentual, prazo ou sistema de apuração. Para intermediadores, atribuição e eventuais sobreposições de indicação exigem contrato; nada é presumido pelo software (BR-352).
 
 As fontes de monetização atualmente previstas incluem: Membership; Taxa de Administração; Design & Build; Property Services; Luxchange Fee; receita Luxplus; taxas e comissões de locação externa; e remuneração pela estruturação, desenvolvimento ou comercialização das Second Homes, quando aplicável.
 

@@ -22,7 +22,7 @@ export interface SecondHomePartnerContactFieldIssue {
   readonly code: SecondHomePartnerContactFieldCode;
 }
 
-type TextField = Exclude<SecondHomePartnerContactField, 'stage'>;
+type TextField = Exclude<SecondHomePartnerContactField, 'profile' | 'stage'>;
 
 // Controles C0/DEL; a mensagem aceita tabulação e quebras de linha (texto simples).
 const LINE_CONTROL = /[\u0000-\u001f\u007f]/u;
@@ -69,16 +69,40 @@ const website = z
   .refine((value) => value === '' || isWebsite(value), 'invalid')
   .optional();
 
-export const secondHomePartnerContactSchema = z.strictObject({
+const common = {
   name: line('name'),
-  company: line('company'),
   email,
-  development: line('development'),
-  stage: z.enum(DEVELOPMENT_STAGES, 'invalid'),
   message,
   website,
   _trap: z.string('invalid').optional(),
-});
+};
+
+export const secondHomePartnerContactSchema = z.discriminatedUnion('profile', [
+  z.strictObject({
+    ...common,
+    profile: z.literal('developer'),
+    company: line('company'),
+    development: line('development'),
+    stage: z.enum(DEVELOPMENT_STAGES, 'invalid'),
+  }),
+  z.strictObject({
+    ...common,
+    profile: z.literal('agency'),
+    company: line('company'),
+    region: line('region'),
+  }),
+  z.strictObject({
+    ...common,
+    profile: z.literal('broker'),
+    company: z
+      .string('invalid')
+      .trim()
+      .refine(fits('company'), 'too_long')
+      .refine((value) => !LINE_CONTROL.test(value), 'invalid')
+      .optional(),
+    region: line('region'),
+  }),
+]);
 
 export type SecondHomePartnerContactValues = Readonly<
   Partial<Record<SecondHomePartnerContactField | '_trap', unknown>>
@@ -102,7 +126,8 @@ function issueOf(
   // Campo ausente (ou fase sem escolha) é obrigatório faltando; os demais códigos vêm das mensagens do schema.
   const raw =
     typeof values === 'object' && values !== null ? (values as SecondHomePartnerContactValues) : {};
-  const missing = raw[field] === undefined || (field === 'stage' && raw.stage === '');
+  const missing =
+    raw[field] === undefined || ((field === 'stage' || field === 'profile') && raw[field] === '');
   const code = missing
     ? 'required'
     : FIELD_CODES.includes(issue.message)
@@ -139,7 +164,11 @@ export function parseSecondHomePartnerContact(values: unknown): SecondHomePartne
   const { _trap: trap = '', message: text, website: site, ...fields } = result.data;
   return {
     ok: true,
-    contact: { ...fields, message: orNull(text), website: orNull(site) },
+    contact: {
+      ...(fields.profile === 'broker' ? { ...fields, company: orNull(fields.company) } : fields),
+      message: orNull(text),
+      website: orNull(site),
+    },
     trapped: trap !== '',
   };
 }

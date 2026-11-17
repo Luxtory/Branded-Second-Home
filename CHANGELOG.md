@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Second Home Partners (REQ-105): página única adaptada a incorporadoras, imobiliárias e corretores de imóveis de
+  lazer de alto padrão, com receita recorrente em destaque, bloco específico para intermediadores, FAQ ampliado e
+  copy de lançamento aprovada. Mesmas três imagens por estágio. Formulário exige perfil e somente os campos
+  correspondentes; empresa é opcional para corretor. E-mail interno identifica o perfil; envio continua sem persistência.
+  A preparação editorial não habilita a operação do Club nem altera o portão de produção.
+
 ### Added
 
 - Second Home Partners (REQ-105): seção editorial “Onde a parceria pode acontecer” entre Benefícios e Soluções,

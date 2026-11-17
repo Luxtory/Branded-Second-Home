@@ -4,15 +4,20 @@
  * afiliação, adesão ao Luxtory Club, conta ou cadastro.
  */
 export const SECOND_HOME_PARTNER_CONTACT_FIELDS = [
+  'profile',
   'name',
   'company',
   'email',
   'development',
   'stage',
+  'region',
   'message',
   'website',
 ] as const;
 export type SecondHomePartnerContactField = (typeof SECOND_HOME_PARTNER_CONTACT_FIELDS)[number];
+
+export const PARTNER_PROFILES = ['developer', 'agency', 'broker'] as const;
+export type PartnerProfile = (typeof PARTNER_PROFILES)[number];
 
 /** Fase do empreendimento (REQ-105), na ordem do formulário. */
 export const DEVELOPMENT_STAGES = [
@@ -22,7 +27,7 @@ export const DEVELOPMENT_STAGES = [
 ] as const;
 export type DevelopmentStage = (typeof DEVELOPMENT_STAGES)[number];
 
-type TextField = Exclude<SecondHomePartnerContactField, 'stage'>;
+type TextField = Exclude<SecondHomePartnerContactField, 'profile' | 'stage'>;
 
 /** Limites em pontos de código Unicode, depois do trim (§20.3). */
 export const SECOND_HOME_PARTNER_CONTACT_LIMITS: Readonly<Record<TextField, number>> = {
@@ -30,6 +35,7 @@ export const SECOND_HOME_PARTNER_CONTACT_LIMITS: Readonly<Record<TextField, numb
   company: 200,
   email: 254,
   development: 200,
+  region: 200,
   message: 4000,
   website: 500,
 };
@@ -37,23 +43,34 @@ export const SECOND_HOME_PARTNER_CONTACT_LIMITS: Readonly<Record<TextField, numb
 /** Corpo efetivo máximo do request (§20.4): 32 KiB. */
 export const SECOND_HOME_PARTNER_CONTACT_BODY_MAX_BYTES = 32 * 1024;
 
-export interface SecondHomePartnerContact {
+interface ContactCommon {
   readonly name: string;
-  readonly company: string;
   readonly email: string;
-  readonly development: string;
-  readonly stage: DevelopmentStage;
   /** Opcionais: vazio = ausente. */
   readonly message: string | null;
   /** Nunca acessado pelo servidor. */
   readonly website: string | null;
 }
 
+/** Um perfil explícito; só os campos correspondentes podem chegar ao e-mail. */
+export type SecondHomePartnerContact = ContactCommon &
+  (
+    | {
+        readonly profile: 'developer';
+        readonly company: string;
+        readonly development: string;
+        readonly stage: DevelopmentStage;
+      }
+    | { readonly profile: 'agency'; readonly company: string; readonly region: string }
+    | { readonly profile: 'broker'; readonly company: string | null; readonly region: string }
+  );
+
 /** Textos fixos do e-mail interno (vêm da camada i18n): assunto, rótulos dos campos e nomes das fases. */
 export interface SecondHomePartnerContactEmailText {
   readonly subject: string;
   readonly labels: Readonly<Record<SecondHomePartnerContactField, string>>;
   readonly stages: Readonly<Record<DevelopmentStage, string>>;
+  readonly profiles: Readonly<Record<PartnerProfile, string>>;
 }
 
 export interface SecondHomePartnerContactEmail {
@@ -77,11 +94,16 @@ export function composeSecondHomePartnerContactEmail(
 ): SecondHomePartnerContactEmail {
   const { labels } = text;
   const lines = [
+    `${labels.profile}: ${text.profiles[contact.profile]}`,
     `${labels.name}: ${contact.name}`,
-    `${labels.company}: ${contact.company}`,
+    ...(contact.company === null ? [] : [`${labels.company}: ${contact.company}`]),
     `${labels.email}: ${contact.email}`,
-    `${labels.development}: ${contact.development}`,
-    `${labels.stage}: ${text.stages[contact.stage]}`,
+    ...(contact.profile === 'developer'
+      ? [
+          `${labels.development}: ${contact.development}`,
+          `${labels.stage}: ${text.stages[contact.stage]}`,
+        ]
+      : [`${labels.region}: ${contact.region}`]),
     ...(contact.website === null ? [] : [`${labels.website}: ${contact.website}`]),
     ...(contact.message === null ? [] : ['', `${labels.message}:`, contact.message]),
   ];

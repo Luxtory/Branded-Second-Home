@@ -8,10 +8,29 @@ import { SecondHomePartnerContactForm } from './contact-form';
 import { SECOND_HOME_PARTNERS_SECTIONS, titleOf } from './paths';
 import { SecondHomePartnersSite } from './site';
 
-const { hero, opportunity, benefits, developments, solutions, process, faq, conversation } = text;
+const {
+  hero,
+  opportunity,
+  benefits,
+  developments,
+  solutions,
+  intermediaries,
+  process,
+  faq,
+  conversation,
+} = text;
 
-const [HERO, OPPORTUNITY, BENEFITS, DEVELOPMENTS, SOLUTIONS, PROCESS, FAQ, CONVERSATION] =
-  SECOND_HOME_PARTNERS_SECTIONS;
+const [
+  HERO,
+  OPPORTUNITY,
+  BENEFITS,
+  DEVELOPMENTS,
+  SOLUTIONS,
+  INTERMEDIARIES,
+  PROCESS,
+  FAQ,
+  CONVERSATION,
+] = SECOND_HOME_PARTNERS_SECTIONS;
 
 /** Parágrafos da copy, um `<p>` por item, com os termos compostos (Second Home…) sem quebra. */
 function Paragraphs({ lines }: { readonly lines: readonly string[] }) {
@@ -25,13 +44,13 @@ function Paragraphs({ lines }: { readonly lines: readonly string[] }) {
 /**
  * Página Second Home Partners `/second-home-partner` (REQ-105, spec catalog §20.2): PICTURE → PROBLEM → PROMISE → PROOF
  * (empreendimentos, soluções para os proprietários, processo, perguntas) → PUSH sobre o Core. Três benefícios com o mesmo peso, incluindo a participação
- * nos resultados (`D-SHP-07`). Superfícies da paleta institucional (`D-SHP-12`, `D-SHP-13`): Deep → White → Blue → Wash → Deep → Wash → Blue
- * → White. Nada aqui é prova, case ou parceria real; o Luxtory Club aparece só como modelo previsto.
+ * nas receitas (`D-SHP-15`). Copy de lançamento no presente (`D-SHP-16`); nenhuma operação é habilitada pela página.
+ * Os três perfis compartilham a mensagem e o contato, com um bloco próprio para intermediadores (`D-SHP-14`).
  */
 export function SecondHomePartnersHomePage() {
   return (
     <SecondHomePartnersSite>
-      {/* PICTURE — Hero tipográfico (Deep, `D-SHP-06`): valor, liberdade e a nota do programa sem rolagem. */}
+      {/* PICTURE — Hero tipográfico (Deep): valor e liberdade para os três perfis. */}
       <section
         id={HERO}
         className="lx-hero lx-hero--typographic"
@@ -44,12 +63,13 @@ export function SecondHomePartnersHomePage() {
             <h1 id={titleOf(HERO)} className="lx-headline lx-headline--home-hero">
               <HeadlineText headline={hero.title} />
             </h1>
-            <p className="lx-body">{hero.body}</p>
+            <div className="lx-stack">
+              <Paragraphs lines={hero.paragraphs} />
+            </div>
             <div className="lx-hero__actions">
               <ActionLink href={`#${CONVERSATION}`} label={hero.action} primary large />
-              <ActionLink href={`#${OPPORTUNITY}`} label={hero.secondary} icon="arrow-down" />
+              <ActionLink href={`#${BENEFITS}`} label={hero.secondary} icon="arrow-down" />
             </div>
-            <p className="lx-compact">{hero.note}</p>
           </div>
         </div>
       </section>
@@ -93,7 +113,9 @@ export function SecondHomePartnersHomePage() {
             {benefits.items.map((item) => (
               <li className="lx-siblings__item" key={item.title}>
                 <h3 className="lx-display-s">{item.title}</h3>
-                <p className="lx-body">{item.text}</p>
+                <div className="lx-stack">
+                  <Paragraphs lines={item.paragraphs} />
+                </div>
               </li>
             ))}
           </ul>
@@ -150,8 +172,7 @@ export function SecondHomePartnersHomePage() {
         </div>
       </section>
 
-      {/* PROOF — Deep: as três soluções para os proprietários na lista numerada da Home B2C, com o mesmo peso; a nota
-          separa os serviços planejados do Club da gestão de locações independente (`D-SHP-09`). */}
+      {/* PROOF — Deep: mecanismos distintos; gestão das locações independente do Club. */}
       <section
         id={SOLUTIONS}
         className="lx-section"
@@ -174,7 +195,7 @@ export function SecondHomePartnersHomePage() {
                 </span>
                 <h3 className="lx-display-s">{item.label}</h3>
                 <div className="lx-numbered__text">
-                  <p className="lx-body">{item.text}</p>
+                  <Paragraphs lines={item.paragraphs} />
                 </div>
               </li>
             ))}
@@ -184,6 +205,36 @@ export function SecondHomePartnersHomePage() {
             <div className="lx-stack">
               <Paragraphs lines={solutions.note} />
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id={INTERMEDIARIES}
+        className="lx-section"
+        data-surface="white"
+        aria-labelledby={titleOf(INTERMEDIARIES)}
+      >
+        <div className="lx-container lx-stack">
+          <div className="lx-section-head">
+            <Eyebrow>{intermediaries.marker}</Eyebrow>
+            <h2 id={titleOf(INTERMEDIARIES)} className="lx-headline">
+              <HeadlineText headline={intermediaries.title} />
+            </h2>
+            <div className="lx-stack lx-stack--editorial">
+              <Paragraphs lines={intermediaries.paragraphs} />
+            </div>
+          </div>
+          <ul className="lx-siblings lx-siblings--pair">
+            {intermediaries.items.map((item) => (
+              <li className="lx-siblings__item" key={item.title}>
+                <h3 className="lx-display-s">{item.title}</h3>
+                <p className="lx-body">{item.text}</p>
+              </li>
+            ))}
+          </ul>
+          <div>
+            <ActionLink href={`#${CONVERSATION}`} label={intermediaries.action} primary large />
           </div>
         </div>
       </section>
@@ -210,7 +261,9 @@ export function SecondHomePartnersHomePage() {
                     {ordinal(index)}
                   </span>
                   <h3 className="lx-display-s">{step.title}</h3>
-                  <p className="lx-body">{step.text}</p>
+                  <div className="lx-stack">
+                    <Paragraphs lines={step.paragraphs} />
+                  </div>
                 </li>
               ))}
             </ol>
@@ -236,8 +289,8 @@ export function SecondHomePartnersHomePage() {
                   <span>{item.question}</span>
                   <Icon name="chevron-right" className="lx-disclosure__icon" />
                 </summary>
-                <div className="lx-disclosure__body">
-                  <p className="lx-body">{nb(item.answer)}</p>
+                <div className="lx-disclosure__body lx-stack">
+                  <Paragraphs lines={item.answer} />
                 </div>
               </details>
             ))}
@@ -266,7 +319,7 @@ export function SecondHomePartnersHomePage() {
           />
           <div className="lx-stack">
             <p className="lx-body">{conversation.notice}</p>
-            <p className="lx-body">{conversation.privacy}</p>
+            <Paragraphs lines={conversation.privacy} />
           </div>
         </div>
       </section>

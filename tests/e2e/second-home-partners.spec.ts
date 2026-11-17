@@ -24,16 +24,22 @@ const normalized = (value: string) => value.replace(/\s+/g, ' ').trim();
 
 /** Parágrafos, cards, etapas, linhas do Club e respostas: os blocos com limite de linhas (catalog §20.2). */
 const BLOCKS = [
-  text.hero.body,
+  ...text.hero.paragraphs,
   ...text.opportunity.paragraphs,
   text.benefits.intro,
-  ...text.benefits.items.map((item) => item.text),
+  ...text.benefits.items.flatMap((item) => item.paragraphs),
   text.benefits.note,
+  ...text.developments.items.map((item) => item.text),
+  text.developments.intro,
+  text.developments.note,
+  ...text.intermediaries.paragraphs,
+  ...text.intermediaries.items.map((item) => item.text),
+  ...conversation.privacy,
   text.solutions.intro,
-  ...text.solutions.items.map((item) => item.text),
+  ...text.solutions.items.flatMap((item) => item.paragraphs),
   ...text.solutions.note,
-  ...text.process.steps.map((step) => step.text),
-  ...text.faq.items.map((item) => item.answer),
+  ...text.process.steps.flatMap((step) => step.paragraphs),
+  ...text.faq.items.flatMap((item) => item.answer),
   conversation.intro,
 ];
 
@@ -44,7 +50,6 @@ const FOUR_LINE_EXCEPTIONS: readonly string[] = [];
 const VISIBLE = [
   text.hero.marker,
   HERO_TITLE,
-  text.hero.note,
   text.opportunity.marker,
   `${text.opportunity.title.lead}${text.opportunity.title.turn}`,
   text.benefits.marker,
@@ -56,14 +61,19 @@ const VISIBLE = [
   text.developments.note,
   text.solutions.marker,
   ...text.solutions.items.map((item) => item.label),
+  text.intermediaries.marker,
+  `${text.intermediaries.title.lead}${text.intermediaries.title.turn}`,
+  ...text.intermediaries.items.map((item) => item.title),
   text.process.marker,
   ...text.process.steps.map((step) => step.title),
   text.faq.title,
   ...text.faq.items.map((item) => item.question),
   conversation.title,
   conversation.notice,
-  conversation.privacy,
-  ...BLOCKS.filter((block) => !text.faq.items.some((item) => item.answer === block)),
+  ...conversation.privacy,
+  ...BLOCKS.filter(
+    (block) => !text.faq.items.some((item) => (item.answer as readonly string[]).includes(block)),
+  ),
 ];
 
 const CONTACT = {
@@ -77,6 +87,7 @@ const textbox = (page: Page, name: keyof typeof CONTACT) =>
   page.locator('#conversa form').getByRole('textbox', { name: form.labels[name], exact: true });
 
 async function fillContact(page: Page) {
+  await page.getByRole('radio', { name: form.profiles.developer, exact: true }).check();
   for (const [name, value] of Object.entries(CONTACT)) {
     await textbox(page, name as keyof typeof CONTACT).fill(value);
   }
@@ -119,12 +130,12 @@ test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, 
     }
   });
 
-  test('[REQ-105] CTA único leva ao formulário; o link secundário leva à oportunidade', async ({
+  test('[REQ-105] CTA único leva ao formulário; o link secundário leva aos benefícios', async ({
     page,
   }) => {
     await page.goto(PAGE);
     const ctas = page.locator('main').getByRole('link', { name: text.hero.action });
-    await expect(ctas).toHaveCount(2);
+    await expect(ctas).toHaveCount(3);
     for (const href of await ctas.evaluateAll((nodes) =>
       nodes.map((n) => n.getAttribute('href')),
     )) {
@@ -132,7 +143,7 @@ test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, 
     }
     await expect(page.getByRole('link', { name: text.hero.secondary })).toHaveAttribute(
       'href',
-      '#oportunidade',
+      '#beneficios',
     );
   });
 
@@ -173,7 +184,7 @@ test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, 
 });
 
 test.describe('Second Home Partners — gate de UI (ADR-0009, catalog §20.5)', () => {
-  test('[REQ-105] nova seção mantém reflow e texto integral com fonte ampliada a 200%', async ({
+  test('[REQ-105] página mantém reflow e texto integral com fonte ampliada a 200%', async ({
     page,
   }) => {
     await page.goto(PAGE);
@@ -185,7 +196,7 @@ test.describe('Second Home Partners — gate de UI (ADR-0009, catalog §20.5)', 
     });
     for (const width of [320, 390, 768, 1440]) {
       await page.setViewportSize({ width, height: 900 });
-      const overflowing = await page.locator('#empreendimentos').evaluate((section) =>
+      const overflowing = await page.locator('main').evaluate((section) =>
         [...section.querySelectorAll('.lx-section-head > *, article, article h3, article p')]
           .filter((node) => {
             const box = node.getBoundingClientRect();
@@ -199,6 +210,11 @@ test.describe('Second Home Partners — gate de UI (ADR-0009, catalog §20.5)', 
           .map((node) => node.textContent?.trim().slice(0, 60)),
       );
       expect(overflowing, `${width}px com fonte a 200%`).toEqual([]);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        ),
+      ).toBe(0);
     }
   });
 
@@ -211,9 +227,9 @@ test.describe('Second Home Partners — gate de UI (ADR-0009, catalog §20.5)', 
     await page.goto(PAGE);
     const section = page.locator('#empreendimentos');
     await expect(section.getByRole('heading', { level: 2 })).toHaveText(
-      'Da concepção à entrega. Seu empreendimento pode fazer parte.',
+      'Da concepção à entrega. Imóveis e empreendimentos podem fazer parte.',
     );
-    await expect(section.locator('h2 em')).toHaveText('Seu empreendimento pode fazer parte.');
+    await expect(section.locator('h2 em')).toHaveText(text.developments.title.turn);
     await expect(section.getByRole('heading', { level: 3 })).toHaveCount(3);
     await expect(section.locator('a, button, [tabindex]')).toHaveCount(0);
     const files = [
@@ -353,7 +369,10 @@ test.describe('Second Home Partners — gate de UI (ADR-0009, catalog §20.5)', 
     for (const [width, limit] of [
       [320, 4],
       [390, 3],
+      [768, 3],
+      [1024, 3],
       [1440, 3],
+      [1920, 3],
     ] as const) {
       await page.setViewportSize({ width, height: 900 });
       for (const block of BLOCKS) {
@@ -438,6 +457,12 @@ test.describe('Second Home Partners — formulário (REQ-105, TECH-057, catalog 
     await submitButton(page).click();
 
     await expect(page.locator('#conversa [role="alert"]')).toContainText(form.errorSummary);
+    await expect(
+      page.getByRole('radio', { name: form.profiles.developer, exact: true }),
+    ).toBeFocused();
+    await expect(page.locator('#conversa')).toContainText(form.profileRequired);
+    await page.getByRole('radio', { name: form.profiles.developer, exact: true }).check();
+    await submitButton(page).click();
     await expect(textbox(page, 'name')).toBeFocused();
     await expect(textbox(page, 'name')).toHaveAttribute('aria-invalid', 'true');
     await expect(page.locator('#conversa')).toContainText(form.stageRequired);
@@ -447,6 +472,11 @@ test.describe('Second Home Partners — formulário (REQ-105, TECH-057, catalog 
   test('[REQ-105] envio aceito (202) limpa o formulário e confirma; falha não confirmada preserva os dados', async ({
     page,
   }) => {
+    const attempts: { key: string | undefined; body: string | null }[] = [];
+    page.on('request', (request) => {
+      if (request.url().endsWith(ENDPOINT) && request.method() === 'POST')
+        attempts.push({ key: request.headers()['idempotency-key'], body: request.postData() });
+    });
     await page.goto(PAGE);
     await page.route(`**${ENDPOINT}`, (route) =>
       route.fulfill({
@@ -464,6 +494,9 @@ test.describe('Second Home Partners — formulário (REQ-105, TECH-057, catalog 
     await submitButton(page).click();
     await expect(page.locator('#conversa')).toContainText(conversation.success);
     await expect(textbox(page, 'company')).toHaveValue('');
+    expect(attempts).toHaveLength(2);
+    expect(attempts[0]?.key).toBeTruthy();
+    expect(attempts[1]).toEqual(attempts[0]);
   });
 
   test('[REQ-105] fluxo principal a 390 px com toque: só teclado virtual e toque, aceite confirmado', async ({
@@ -489,7 +522,7 @@ test.describe('Second Home Partners — endpoint e portão fechado (TECH-057, ca
     request,
     baseURL,
   }) => {
-    const body = { ...CONTACT, stage: 'delivered_or_operating' };
+    const body = { profile: 'developer', ...CONTACT, stage: 'delivered_or_operating' };
     const ok = await request.post(ENDPOINT, {
       data: body,
       headers: { origin: baseURL ?? '', 'idempotency-key': randomUUID() },
@@ -527,12 +560,80 @@ test.describe('Second Home Partners — endpoint e portão fechado (TECH-057, ca
     expect(body).not.toMatch(/rel="canonical"[^>]*second-home-partner/);
 
     const closedEndpoint = await request.post(`${CLOSED_SITE}${ENDPOINT}`, {
-      data: { ...CONTACT, stage: 'planning_or_launch' },
+      data: { profile: 'developer', ...CONTACT, stage: 'planning_or_launch' },
       headers: { origin: CLOSED_SITE, 'idempotency-key': randomUUID() },
     });
     expect(closedEndpoint.status()).toBe(404);
 
     await page.goto(`${CLOSED_SITE}${PAGE}`);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(platformText.notFound.title);
+  });
+});
+
+test.describe('contato dos intermediadores na mesma página (REQ-105)', () => {
+  for (const profile of ['agency', 'broker'] as const) {
+    test(`[REQ-105] ${profile}: contato até API real a 390 px, sem empreendimento ou fase`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(PAGE);
+      await page.getByRole('radio', { name: form.profiles[profile], exact: true }).check();
+      await textbox(page, 'name').fill(CONTACT.name);
+      await textbox(page, 'email').fill(CONTACT.email);
+      const company = page.locator('#conversa input[name="company"]');
+      if (profile === 'agency') await expect(company).toHaveAttribute('required');
+      else await expect(company).not.toHaveAttribute('required');
+      if (profile === 'agency') {
+        await submitButton(page).click();
+        await expect(company).toBeFocused();
+        await company.fill('Imobiliária de Teste');
+      }
+      await page
+        .getByRole('textbox', { name: form.labels.region, exact: true })
+        .fill('Serra Gaúcha');
+      await expect(page.locator('input[name="development"], input[name="stage"]')).toHaveCount(0);
+      const request = page.waitForRequest(
+        (request) => request.url().endsWith(ENDPOINT) && request.method() === 'POST',
+      );
+      await submitButton(page).click();
+      const sent = (await request).postDataJSON() as Record<string, unknown>;
+      expect(sent).toMatchObject({ profile, region: 'Serra Gaúcha' });
+      expect(sent).not.toHaveProperty('development');
+      expect(sent).not.toHaveProperty('stage');
+      if (profile === 'broker') expect(sent).not.toHaveProperty('company');
+      await expect(page.locator('#conversa')).toContainText(conversation.success);
+    });
+  }
+
+  test('[REQ-105] mudar perfil apaga campos exclusivos e erros antigos, preservando dados comuns', async ({
+    page,
+  }) => {
+    await page.goto(PAGE);
+    await fillContact(page);
+    await textbox(page, 'development').fill('Projeto anterior');
+    await page.getByRole('radio', { name: form.profiles.agency, exact: true }).check();
+    await expect(page.locator('input[name="development"], input[name="stage"]')).toHaveCount(0);
+    const region = page.getByRole('textbox', { name: form.labels.region, exact: true });
+    await submitButton(page).click();
+    await expect(region).toBeFocused();
+    await expect(region).toHaveAttribute('aria-invalid', 'true');
+    await region.fill('Região anterior');
+    await page.getByRole('radio', { name: form.profiles.broker, exact: true }).check();
+    await expect(region).toHaveValue('');
+    await expect(page.locator('#conversa [role="alert"]')).toHaveCount(0);
+    await expect(textbox(page, 'name')).toHaveValue(CONTACT.name);
+    await region.fill('Campos do Jordão');
+    const request = page.waitForRequest(
+      (request) => request.url().endsWith(ENDPOINT) && request.method() === 'POST',
+    );
+    await submitButton(page).click();
+    expect((await request).postDataJSON()).toEqual({
+      profile: 'broker',
+      name: CONTACT.name,
+      email: CONTACT.email,
+      company: CONTACT.company,
+      region: 'Campos do Jordão',
+    });
+    await expect(page.locator('#conversa')).toContainText(conversation.success);
   });
 });

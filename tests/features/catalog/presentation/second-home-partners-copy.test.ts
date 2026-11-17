@@ -4,35 +4,29 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { secondHomePartnersMessages as text } from '../../../../src/features/catalog/presentation/i18n/second-home-partners-pt-br';
 import { SecondHomePartnersHomePage } from '../../../../src/features/catalog/presentation/second-home-partners/home-page';
 
-// Limites da copy Second Home Partners (spec catalog §20.2; aplicação L1–L7; Framework §14). Verificam regras de negócio
-// e de comunicação — participação explícita sem números, Club só como futuro, locação independente do Club, nada de
-// promessa —, não frases: a copy pode ser refinada sem reescrever os testes (`D-SHP-07`–`D-SHP-10`).
-
-/** Todos os textos de um nó do i18n. */
+/** Limites aprovados de comunicação, REQ-105 / catalog §20.6 / D-SHP-14–16. */
 function strings(value: unknown): string[] {
   if (typeof value === 'string') return [value];
   if (Array.isArray(value)) return value.flatMap(strings);
   if (typeof value === 'object' && value !== null) return Object.values(value).flatMap(strings);
   return [];
 }
-
 const PAGE = strings({
-  metadata: text.metadata,
   hero: text.hero,
   opportunity: text.opportunity,
   benefits: text.benefits,
   developments: text.developments,
   solutions: text.solutions,
+  intermediaries: text.intermediaries,
   process: text.process,
   faq: text.faq,
   conversation: text.conversation,
 });
-const ALL = strings(text);
 const answerTo = (question: RegExp) =>
-  text.faq.items.find((item) => question.test(item.question))?.answer ?? '';
+  text.faq.items.find((item) => question.test(item.question))?.answer.join(' ') ?? '';
 
-describe('copy Second Home Partners (catalog §20.2)', () => {
-  it('[REQ-105] oito seções: empreendimentos entre benefícios e soluções, sem alterar a ordem anterior', () => {
+describe('copy Second Home Partners (catalog §20.6)', () => {
+  it('[REQ-105] nove seções na mesma página, intermediadores depois das soluções; imagens informativas preservadas', () => {
     const html = renderToStaticMarkup(createElement(SecondHomePartnersHomePage));
     expect([...html.matchAll(/<section id="([^"]+)"/g)].map((match) => match[1])).toEqual([
       'inicio',
@@ -40,6 +34,7 @@ describe('copy Second Home Partners (catalog §20.2)', () => {
       'beneficios',
       'empreendimentos',
       'solucoes',
+      'imobiliarias-e-corretores',
       'como-funciona',
       'perguntas',
       'conversa',
@@ -49,137 +44,97 @@ describe('copy Second Home Partners (catalog §20.2)', () => {
     expect(section.match(/<h2\b/g)).toHaveLength(1);
     expect(section.match(/<h3\b/g)).toHaveLength(3);
     expect(section.match(/<article\b/g)).toHaveLength(3);
-    expect(section).not.toMatch(/<(?:a|button)\b|tabindex=/);
-    // A CSP com nonce da plataforma bloqueia também o estilo inline padrão do Next Image.
-    expect(section).not.toMatch(/\sstyle=/);
-    expect(section).toContain(
-      'Da concepção à entrega. <em>Seu empreendimento pode fazer parte.</em>',
-    );
-    for (const line of [
-      'Onde a parceria pode acontecer',
-      'Avaliamos oportunidades em diferentes momentos do projeto, considerando o perfil dos imóveis, dos proprietários e da incorporadora.',
-      'Imóveis sob demanda em condomínios parceiros',
-      'Casas de alto padrão desenvolvidas conforme a demanda, em condomínios com potencial para receber a parceria.',
-      'Empreendimentos em desenvolvimento',
-      'Projetos em planejamento, lançamento ou construção que buscam oferecer novos diferenciais aos futuros proprietários.',
-      'Empreendimentos entregues',
-      'Imóveis prontos ou em operação, cujos proprietários podem escolher novas formas de aproveitar os períodos sem uso.',
-      'A participação depende da avaliação do empreendimento e das condições da parceria. Imagens ilustrativas.',
-    ])
-      expect(section).toContain(line);
+    expect(section).not.toMatch(/<(?:a|button)\b|tabindex=|\sstyle=/);
+    expect(section).toContain('Imagens ilustrativas.');
+    expect(html.match(/<details\b/g)).toHaveLength(7);
   });
 
-  it('[REQ-105] três benefícios com o mesmo peso; a participação é parte da comissão da Luxtory pelas locações (D-SHP-07, D-SHP-08)', () => {
-    const [, , participation] = text.benefits.items;
-
-    expect(text.benefits.items.map((item) => item.title)).toEqual([
-      'Diferenciação comercial',
-      'Marketing e vendas',
-      'Participação nos resultados',
-    ]);
-    expect(participation?.text).toMatch(
-      /parte da comissão da Luxtory pel[ao]s? (?:gestão das )?locações/,
-    );
-    // Modelo B: o Club entra só como possibilidade, sem herdar a base do modelo A.
-    expect(participation?.text).toMatch(/poderá[^.]*Luxtory Club/);
-    expect(answerTo(/participa dos resultados/)).toMatch(/parte da comissão da Luxtory/);
-  });
-
-  it('[REQ-105] [BR-352] sem percentual, número, fórmula, lucro, "recorrente" nem plataforma de locação nomeada', () => {
-    const economic =
-      /%|\d|R\$|percentual|fórmula|\blucr|líquid|brut[ao]|recorrente|mínim|airbnb|booking|\bOTA\b/i;
-
-    expect(PAGE.filter((line) => economic.test(line))).toEqual([]);
-  });
-
-  it('[REQ-105] [BR-374] nenhuma promessa de vendas, renda, valorização, ocupação ou disponibilidade', () => {
-    const promise =
-      /garant(?:e|ido|ida|imos)|aumente|vend[ae] mais|valorização|rentab|\brenda\b|ocupação|imediat|gratuit|sem custo/i;
-    // Frases que negam a garantia (nota de Benefícios, aviso do formulário) não prometem.
-    const negation = /^(?:Os benefícios dependem[^.]*\. Não há garantia|O envio não formaliza)/;
-    const hits = PAGE.filter((line) => !negation.test(line) && promise.test(line));
-
-    expect(hits).toEqual([]);
-    // Efeito nas vendas só como possibilidade (hipótese H-SHP-01).
-    expect(text.opportunity.paragraphs.join(' ')).toMatch(/pode ajudar/);
-    expect(answerTo(/ajudar minhas vendas/)).toMatch(/ajuda a enfrentar[^.]*poderá/);
-  });
-
-  it('[REQ-105] o Luxtory Club e o intercâmbio aparecem só como futuros ou planejados, nunca como disponíveis', () => {
-    const future = /poderá|poderão|futur|planejad|previst|ainda não|ainda está|estruturando/i;
-    const mentions = PAGE.filter((line) =>
-      /Luxtory Club|intercâmbio|Luxchange|Luxplus/i.test(line),
-    );
-    // O aviso do formulário nega a entrada no Club; não afirma disponibilidade.
-    const assertive = mentions.filter(
-      (line) => !future.test(line) && line !== text.conversation.notice,
-    );
-
-    expect(mentions.length).toBeGreaterThan(0);
-    // Rótulos curtos só nomeiam o mecanismo; as frases é que afirmam.
-    expect(assertive.filter((line) => line.split(' ').length > 6)).toEqual([]);
-    // O hero diz que o programa está em estruturação; a indisponibilidade do Club fica na nota das soluções.
-    expect(text.hero.note).toMatch(/estruturando/);
-    expect(text.solutions.note.join(' ')).toMatch(
-      /Luxchange e Luxplus[^.]*Luxtory Club[^.]*ainda não/,
+  it('[REQ-105] os três perfis se reconhecem no hero, FAQ e formulário', () => {
+    for (const profile of [/incorporadoras/i, /imobiliárias/i, /corretores/i]) {
+      expect(text.hero.paragraphs.join(' ')).toMatch(profile);
+      expect(answerTo(/Quem pode/)).toMatch(profile);
+    }
+    expect(text.intermediaries.items).toHaveLength(2);
+    expect(answerTo(/empreendimento inteiro/)).toMatch(
+      /Não é necessário ter um empreendimento próprio/,
     );
   });
 
-  it('[REQ-105] [BR-146] três soluções com o mesmo peso; Luxchange e Luxplus são do Club (associados), a locação é independente (D-SHP-09)', () => {
-    const [luxchange, luxplus, rental, ...others] = text.solutions.items;
-
-    expect(others).toEqual([]);
-    expect([luxchange?.label, luxplus?.label, rental?.label]).toEqual([
-      expect.stringMatching(/^Luxchange/),
-      expect.stringMatching(/^Luxplus/),
-      expect.stringMatching(/^Locação de temporada/),
-    ]);
-    // Créditos (Luxchange) e estadias pagas sem créditos (Luxplus) não se confundem (L2–L3).
-    expect(luxchange?.text).toMatch(/^Os associados[^.]*créditos/);
-    expect(luxplus?.text).toMatch(/^Os associados[^.]*pagando[^.]*sem usar créditos/);
-    // A locação é dos proprietários, com gestão da Luxtory, sem Membership (L4).
-    expect(rental?.text).toMatch(/proprietários[^.]*gestão digital da Luxtory/);
-    expect(rental?.text).not.toMatch(/associad|Club|Membership/);
-    expect(text.solutions.note.join(' ')).toMatch(/gestão de locações é independente/);
-  });
-
-  it('[REQ-105] a incorporadora não precisa operar e cada proprietário decide sobre a locação (O7, O8)', () => {
-    expect(answerTo(/administrar as locações/)).toMatch(
-      /^Não\.[^.]*Luxtory[^.]*prestadores locais/,
+  it('[REQ-105] receita recorrente primeiro, dependente de faturamento e contrato; sem inventar valores ou exclusividade', () => {
+    expect(text.benefits.items).toHaveLength(3);
+    expect(text.benefits.items[0].title).toBe('Receita recorrente');
+    expect(text.benefits.items[0].paragraphs.join(' ')).toMatch(
+      /primeiros parceiros.*faturamento.*afiliarem.*contrato/,
     );
-    expect(answerTo(/proprietários precisam/)).toMatch(/^Não\.[^.]*proprietário decide/);
+    expect(text.benefits.note).toMatch(/depende do faturamento.*condições contratadas/);
+    expect(answerTo(/faturamento/)).toMatch(
+      /Receitas abrangidas, atribuição, percentuais e pagamento.*contrato/,
+    );
+    expect(
+      PAGE.filter((line) =>
+        /%|\d|R\$|\blucr|líquid|brut[ao]|mínim|exclusiv|últimas vagas|airbnb|booking/i.test(line),
+      ),
+    ).toEqual([]);
   });
 
-  it('[REQ-105] qualquer fase do empreendimento, sem prioridade não decidida (D-SHP-10)', () => {
-    expect(PAGE.filter((line) => /priori/i.test(line))).toEqual([]);
-    expect(answerTo(/fase/)).toMatch(/^Não\.[^.]*qualquer fase/);
+  it('[REQ-105] [BR-374] nenhuma promessa de vendas, renda, valorização ou disponibilidade', () => {
+    expect(
+      PAGE.filter((line) =>
+        /garant(?:e|ido|ida|imos)|aumente|vend[ae] mais|valorização|rentab|\brenda\b|ocupação|imediat|gratuit|sem custo/i.test(
+          line,
+        ),
+      ),
+    ).toEqual([]);
+    expect(answerTo(/ajudar minhas vendas/)).toMatch(/podem ajudar/);
   });
 
-  it('[REQ-105] [BR-053] [BR-054] imóveis parceiros nunca viram Second Homes nem Branded Second Homes', () => {
-    // "Second Home" só no nome do programa; nenhuma menção a Branded na jornada.
-    const secondHome = PAGE.filter((line) => /Second Homes?(?! Partners)/.test(line));
-
-    expect(secondHome).toEqual([]);
-    expect(PAGE.filter((line) => /Branded/.test(line))).toEqual([]);
+  it('[REQ-105] copy de lançamento no presente, sem nota de indisponibilidade', () => {
+    expect(
+      PAGE.filter((line) =>
+        /estruturando|ainda não|no futuro|poderão|serviços planejados/i.test(line),
+      ),
+    ).toEqual([]);
+    expect(text.solutions.items[0].paragraphs.join(' ')).toMatch(
+      /^Os associados disponibilizam.*recebem créditos.*solicitam estadias/,
+    );
   });
 
-  it('[REQ-105] vocabulário: sem o enquadramento de moradia (BR-377), "lucros", "cota", "comunidade" nem "Titular" para o proprietário parceiro', () => {
-    const banned = /resid[eê]nci(?:a|al)|lucros?\b|\bcotas?\b|comunidade|\bTitular/i;
-
-    expect(ALL.filter((line) => banned.test(line))).toEqual([]);
+  it('[REQ-105] [BR-146] créditos, estadias pagas e locação independente continuam distintos', () => {
+    const [exchange, plus, rental] = text.solutions.items;
+    expect(exchange.paragraphs.join(' ')).toMatch(/créditos.*solicitam estadias/);
+    expect(plus.paragraphs.join(' ')).toMatch(/pagando pela hospedagem, sem usar créditos/);
+    expect(rental.paragraphs.join(' ')).toMatch(
+      /proprietário escolhe.*Luxtory faz a gestão digital/,
+    );
+    expect(rental.paragraphs.join(' ')).not.toMatch(/associad|Membership/);
+    expect(text.solutions.note.join(' ')).toMatch(/independente do Club.*cada proprietário/);
+    expect(answerTo(/administrar as locações/)).toMatch(/Não é preciso assumir a operação/);
+    expect(answerTo(/obrigados a disponibilizar/)).toMatch(/^Não\. Cada proprietário decide/);
+    expect(answerTo(/precisam estar prontos/)).toMatch(/planejamento.*lançamento.*imóveis prontos/);
   });
 
-  it('[REQ-105] CTA único e privacidade com finalidade delimitada (LGPD)', () => {
-    expect(text.hero.action).toBe('Conversar sobre seu empreendimento');
+  it('[REQ-105] [BR-053] [BR-054] [BR-377] imóveis parceiros não viram Branded Second Homes e mantêm terminologia', () => {
+    expect(
+      PAGE.filter((line) =>
+        /Second Homes?(?! Partners)|Branded|resid[eê]nci(?:a|al)|lucros?\b|\bcotas?\b|comunidade|\bTitular/i.test(
+          line,
+        ),
+      ),
+    ).toEqual([]);
+  });
+
+  it('[REQ-105] CTA comum, privacidade separada e sucesso apenas como confirmação de envio', () => {
+    expect(text.hero.action).toBe('Conversar sobre uma parceria');
     expect(text.process.action).toBe(text.hero.action);
-    expect(text.conversation.privacy).toMatch(
+    expect(text.intermediaries.action).toBe(text.hero.action);
+    expect(text.conversation.privacy).toHaveLength(3);
+    expect(text.conversation.privacy[0]).toMatch(
       /^Usaremos seus dados somente para responder ao contato e avaliar uma possível parceria\./,
     );
-    expect(text.conversation.privacy).toMatch(
+    expect(text.conversation.privacy[2]).toMatch(
       /Não usaremos seus dados para marketing sem sua autorização\.$/,
     );
-    expect(text.conversation.success).toBe(
-      'Envio confirmado. Obrigado por apresentar seu empreendimento.',
-    );
+    expect(text.conversation.notice).toMatch(/não formaliza parceria ou afiliação/);
+    expect(text.conversation.success).toMatch(/^Envio confirmado\./);
   });
 });

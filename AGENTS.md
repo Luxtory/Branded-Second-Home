@@ -24,15 +24,17 @@
 
 ## Canonical documents (source of truth)
 
+Revisão autorizada pelo fundador em 2026-11-17: SHP três perfis e copy de lançamento, versões 01 v10.6 / 02 v4.6 / 03 v3.18; REQ-105 / TECH-057, sem novos IDs ou serviços do Club. Histórico e aceite em catalog §20.6.
+
 Luxtory's business, product and technical definitions live in three **frozen** documents.
 Hierarchy: **01 → 02 → 03 → Software** — a lower level never redefines a higher one; on
 conflict, 01 prevails (BR-380, REQ-104).
 
 | Doc | Path | Defines | IDs |
 |---|---|---|---|
-| 01 — Business Model & Business Rules v10.5 | `docs/specs/canonical/01-business-model-business-rules.md` | what the business is; structural rules | 192 `BR-xxx` |
-| 02 — Product Spec v4.5 | `docs/specs/canonical/02-product-spec.md` | functional behavior, invariants, product decisions | 67 `REQ-xxx` · 6 `INV-n` · 11 `PD-xxx` |
-| 03 — Technical Spec v3.17 | `docs/specs/canonical/03-technical-spec.md` | how to build: data model, locks, ledgers, API, QA | 51 `TECH-xxx` · `ADR-001…008` |
+| 01 — Business Model & Business Rules v10.6 | `docs/specs/canonical/01-business-model-business-rules.md` | what the business is; structural rules | 192 `BR-xxx` |
+| 02 — Product Spec v4.6 | `docs/specs/canonical/02-product-spec.md` | functional behavior, invariants, product decisions | 67 `REQ-xxx` · 6 `INV-n` · 11 `PD-xxx` |
+| 03 — Technical Spec v3.18 | `docs/specs/canonical/03-technical-spec.md` | how to build: data model, locks, ledgers, API, QA | 51 `TECH-xxx` · `ADR-001…008` |
 
 - **Never edit them.** Changes only via a new version issued by Luxtory, followed by impact
   analysis and traceability update.
@@ -59,7 +61,7 @@ conflict, 01 prevails (BR-380, REQ-104).
   Never Residence, residência or residencial to name or frame the product; "identidade da marca", never "Brand DNA";
   "imóvel de lazer" only descriptively and "casa" only as narrative language.
 - **Gate (target, 03 §12):** 67/67 REQ · 11/11 PD · 6/6 INV covered by tests. 67 REQ is the normative count of
-  `02` v4.5 (REQ-105, SHP1); 66 REQ was the count of `02` v4.4 (REQ-084, W13), issued with the merge of the W13 E0 docs PR; traceability is updated, but executed
+  `02` v4.6 (REQ-105, SHP2); 66 REQ was the count of `02` v4.4 (REQ-084, W13), issued with the merge of the W13 E0 docs PR; traceability is updated, but executed
   coverage of REQ-084 is pending the W13 implementation stages.
 
 ## Instance constraints (Luxtory)

@@ -1,6 +1,10 @@
 # 02 — Product Spec — Luxtory Branded Second Home
 
-2026-11-13 · Luxtory (fundador) · Versão 4.5 — final · Base normativa: 01 v10.5 (192 BRs) · PD-001 a PD-011 ratificados
+2026-11-17 · Luxtory (fundador) · Versão 4.6 — final · Base normativa: 01 v10.6 (192 BRs) · PD-001 a PD-011 ratificados
+
+Revisão SHP autorizada pelo fundador em 2026-11-17: amplia somente REQ-105 aos três perfis e à copy de lançamento aprovada. Mesma página, nove seções, formulário por perfil; nenhum novo REQ, PD ou INV (67 REQ · 6 INV · 11 PD). TECH-057 / 03 v3.18; catalog §20.6. Nenhum serviço do Club implementado ou habilitado por esta revisão.
+
+Histórico preservado — versão 4.5, emitida em 2026-11-13:
 
 Revisão Second Home Partners autorizada pelo fundador (2026-11-12; comunicação do modelo comercial em 2026-11-13, antes
 da emissão): acrescenta o REQ-105 — jornada pública Second Home Partners e formulário de incorporadoras — e a linha
@@ -67,7 +71,7 @@ O produto é a **Second Home**; os conceitos de que deriva são **Home Concept**
 | Carteira | Créditos Luxchange |
 | Admin | Operação, parâmetros, conformidade e exceções |
 | Brand Partners público (BP1) | Home `/brand-partner`, Como funciona `/brand-partner/como-funciona` e formulário para iniciar conversa com a Luxtory (REQ-028) |
-| Second Home Partners público (SHP1) | Página `/second-home-partner` e formulário para incorporadoras iniciarem conversa com a Luxtory (REQ-105) |
+| Second Home Partners público (SHP1) | Página `/second-home-partner` e formulário para incorporadoras, imobiliárias e corretores iniciarem conversa com a Luxtory (REQ-105) |
 | Portal Brand Partner (planejado, BP2) | Representantes autorizados consultam informações pertinentes à própria parceria; somente leitura, após os critérios de entrada do REQ-029 |
 
 Existir no modelo de negócio não concede acesso ao software.
@@ -199,6 +203,12 @@ Fonte ausente ou indisponível é apresentada como **“dados indisponíveis”*
 O acesso respeita REQ-014 e os direitos sobreviventes aplicáveis; não decorre do envio do formulário.
 
 ### 6.2. Jornada Second Home Partners
+
+**Extensão vigente do REQ-105 (2026-11-17).** A página única serve incorporadoras, imobiliárias e corretores de imóveis de lazer de alto padrão. CTA “Conversar sobre uma parceria” → `#conversa`; seção específica para imobiliárias/corretores após as soluções. Comunicação de lançamento no presente conforme Framework de 2026-11-17; oportunidade de receita recorrente dos primeiros parceiros dos três perfis, dependente de faturamento e contrato, sem garantia ou percentual. A copy não comprova prontidão operacional.
+
+Formulário: perfil explícito obrigatório (`developer`, `agency`, `broker`), nome e e-mail obrigatórios para todos; empresa obrigatória para incorporadora/imobiliária e opcional para corretor; empreendimento/localização e fase obrigatórios apenas para incorporadora; cidade/região obrigatória apenas para imobiliária/corretor. Mensagem e site/perfil profissional opcionais para todos. Campos exclusivos de outro perfil são recusados pelo servidor e removidos ao trocar o perfil no navegador. Sem perfil implícito para payload antigo. Limites em catalog §20.3; demais controles e privacidade do texto abaixo preservados. A extensão substitui exclusivamente público, CTA, tempo verbal, FAQ e campos incompatíveis do registro histórico abaixo; não afilia imóvel nem implementa Club.
+
+**Registro histórico do REQ-105 — versão 4.5 (2026-11-13), superado somente nos pontos expressos acima:**
 
 **REQ-105 \[BR-040, BR-041, BR-374\]** — A jornada pública Second Home Partners, para incorporadoras de
 empreendimentos de lazer próprios (`01` §1), possui página em `/second-home-partner`, com navegação própria, sem links
