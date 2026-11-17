@@ -43,14 +43,15 @@ function Choices(props: {
 }) {
   const errorId = `${props.name}-erro`;
   const hintId = `${props.name}-dica`;
-  const described = [props.hint ? hintId : null, props.error ? errorId : null]
-    .filter(Boolean)
-    .join(' ');
+  // "Escolha…" reflete o controle agora: some quando uma opção é marcada (o servidor valida de novo no envio).
+  const [current, setCurrent] = useState(props.selected);
+  const error = current === '' ? props.error : null;
+  const described = [props.hint ? hintId : null, error ? errorId : null].filter(Boolean).join(' ');
   return (
     <fieldset
       className="lx-choice-group"
       aria-describedby={described === '' ? undefined : described}
-      aria-invalid={props.error ? true : undefined}
+      aria-invalid={error ? true : undefined}
     >
       <legend className="lx-label">{props.legend}</legend>
       {props.hint ? (
@@ -66,14 +67,17 @@ function Choices(props: {
               name={props.name}
               value={option.value}
               defaultChecked={props.selected === option.value}
-              onChange={() => props.onSelect?.(option.value)}
+              onChange={() => {
+                setCurrent(option.value);
+                props.onSelect?.(option.value);
+              }}
             />
             <span className="lx-choice__title">{option.title}</span>
             {option.desc ? <span className="lx-choice__desc">{option.desc}</span> : null}
           </label>
         ))}
       </div>
-      {props.error ? <FieldError id={errorId}>{props.error}</FieldError> : null}
+      {error ? <FieldError id={errorId}>{error}</FieldError> : null}
     </fieldset>
   );
 }
@@ -116,21 +120,74 @@ function Attest(props: {
   readonly checked: boolean;
   readonly error: string | null;
 }) {
+  // "Marque a atestação" reflete o controle agora: some ao marcar, volta ao desmarcar (o servidor valida no envio).
+  const [checked, setChecked] = useState(props.checked);
+  const error = checked ? null : props.error;
   return (
     <fieldset
       className="lx-choice-group"
-      aria-describedby={props.error ? 'attest-erro' : undefined}
-      aria-invalid={props.error ? true : undefined}
+      aria-describedby={error ? 'attest-erro' : undefined}
+      aria-invalid={error ? true : undefined}
     >
       <legend className="lx-label">{text.attest}</legend>
       <div className="lx-choice-group__options">
         <label className="lx-choice">
-          <input type="checkbox" name="attest" defaultChecked={props.checked} />
+          <input
+            type="checkbox"
+            name="attest"
+            defaultChecked={props.checked}
+            onChange={(event) => setChecked(event.currentTarget.checked)}
+          />
           <span className="lx-choice__title">{props.label}</span>
         </label>
       </div>
-      {props.error ? <FieldError id="attest-erro">{props.error}</FieldError> : null}
+      {error ? <FieldError id="attest-erro">{error}</FieldError> : null}
     </fieldset>
+  );
+}
+
+/**
+ * "Abrir exceção" pelo tipo escolhido (contrato `open_exception`): P-A pede o motivo da PD-010; P-B, a referência do
+ * incidente. O campo do outro tipo não é renderizado (nem enviado, sem valor obsoleto); a Base registrada vale para os
+ * dois. Esconder não é controle: a action e o command validam o tipo e os campos de novo.
+ */
+function ExceptionFields(props: {
+  readonly values: AdminActState['values'];
+  readonly error: (field: AdminActField, message: string) => string | null;
+}) {
+  const [type, setType] = useState(props.values.type ?? '');
+  return (
+    <>
+      <Choices
+        name="type"
+        legend={text.type}
+        selected={props.values.type ?? ''}
+        onSelect={setType}
+        error={props.error('type', text.typeError)}
+        options={[
+          { value: 'operational', title: text.typeOperational, desc: text.typeOperationalDesc },
+          { value: 'unauthorized_booking', title: text.typeReview, desc: text.typeReviewDesc },
+        ]}
+      />
+      {type === 'operational' ? (
+        <Choices
+          name="reason"
+          legend={text.reason}
+          selected={props.values.reason ?? ''}
+          error={props.error('reason', text.reasonError)}
+          options={REASONS}
+        />
+      ) : null}
+      {type === 'unauthorized_booking' ? (
+        <TextField
+          name="incident_ref"
+          label={text.incident}
+          hint={text.incidentHint}
+          value={props.values.incident_ref ?? ''}
+          error={props.error('incident_ref', text.incidentError)}
+        />
+      ) : null}
+    </>
   );
 }
 
@@ -199,32 +256,7 @@ export function OwnUseAdminForm(props: {
         </div>
       )}
       {props.act === 'open_exception' ? (
-        <>
-          <Choices
-            name="type"
-            legend={text.type}
-            selected={state.values.type ?? ''}
-            error={error('type', text.outcomeChoiceError)}
-            options={[
-              { value: 'operational', title: text.typeOperational, desc: text.typeOperationalDesc },
-              { value: 'unauthorized_booking', title: text.typeReview, desc: text.typeReviewDesc },
-            ]}
-          />
-          <Choices
-            name="reason"
-            legend={text.reason}
-            selected={state.values.reason ?? ''}
-            error={error('reason', text.reasonError)}
-            options={REASONS}
-          />
-          <TextField
-            name="incident_ref"
-            label={text.incident}
-            hint={text.incidentHint}
-            value={state.values.incident_ref ?? ''}
-            error={error('incident_ref', text.incidentError)}
-          />
-        </>
+        <ExceptionFields values={state.values} error={error} />
       ) : null}
       {props.act === 'resolve' && props.outcomes !== undefined ? (
         <>

@@ -180,6 +180,7 @@ export const adminActMessages = {
   typeReview: 'Apuração de reserva não reconhecida',
   typeReviewDesc:
     'O Titular não reconhece a reserva. No Co-Owner, o cancelamento fora do prazo e o no-show ficam suspensos até a resolução.',
+  typeError: 'Escolha o tipo da exceção.',
   reason: 'Motivo (exceção operacional)',
   reasonError: 'Escolha o motivo da exceção operacional.',
   incident: 'Referência do incidente (apuração)',
