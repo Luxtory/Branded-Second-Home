@@ -117,7 +117,10 @@ test.describe('W13 E4b — ciclo da reserva de uso próprio pelas telas reais', 
       );
       await gate(titular, errors, 'e4b-02-owner-previa');
 
-      // Termos alterados (D7): a confirmação com termos diferentes é recusada sem efeito e nada fica acionável.
+      // Termos divergentes (D7): adulterar o campo oculto NÃO simula a passagem do tempo. Prova só a recusa sem efeito
+      // e a mensagem neutra: nenhuma causa afirmada e nenhum "Antes" vindo do formulário, só as condições atuais. Prazo
+      // terminado e noite iniciada (causas provadas pelo servidor) estão nas fronteiras da prévia pura (`termsChange`).
+      const firstNight = addDays(civilToday(), 5);
       await titular
         .locator('input[name="expected_first_affected_date"]')
         .evaluate(
@@ -128,11 +131,21 @@ test.describe('W13 E4b — ciclo da reserva de uso próprio pelas telas reais', 
       await expect(titular).toHaveURL(/condicoes=mudaram/);
       // O anúncio de rota do App Router também é `role="alert"`: filtra pelo texto da recusa.
       await expect(
-        titular.getByRole('alert').filter({ hasText: 'As condições mudaram. Nada foi cancelado.' }),
+        titular.getByRole('alert').filter({
+          hasText: 'A confirmação não corresponde às condições atuais. Nada foi cancelado.',
+        }),
       ).toBeVisible();
+      await expect(
+        titular.getByRole('heading', { level: 2, name: 'Condições atuais' }),
+      ).toBeVisible();
+      await expect(titular.locator('.lx-evidence__label')).toHaveText(['Agora']);
+      await expect(titular.locator('.lx-evidence__value')).toHaveText([
+        `O cancelamento começa na noite de ${firstNight.slice(8, 10)}/${firstNight.slice(5, 7)}`,
+      ]);
+      await expect(titular.locator('main')).not.toContainText(/começou|terminou|O que mudou/);
       await expect(titular.getByRole('button', { name: 'Confirmar cancelamento' })).toHaveCount(0);
       await gate(titular, errors, 'e4b-03-termos-alterados');
-      await titular.getByRole('link', { name: 'Revisar as novas condições' }).tap();
+      await titular.getByRole('link', { name: 'Revisar as condições atuais' }).tap();
       await titular.getByRole('button', { name: 'Confirmar cancelamento' }).tap();
       await expect(titular).toHaveURL(/cancelada=1/);
       await expect(
@@ -146,8 +159,27 @@ test.describe('W13 E4b — ciclo da reserva de uso próprio pelas telas reais', 
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(label);
       await gate(page, adminErrors, 'e4b-10-admin-detalhe');
       await page.getByRole('link', { name: 'Abrir exceção' }).click();
-      await page.getByRole('radio', { name: /Apuração de reserva não reconhecida/ }).check();
-      await page.getByLabel('Referência do incidente (apuração)').fill('INC-2026-0007');
+      // Campos pelo tipo (contrato `open_exception`): antes da escolha, nem motivo (P-A) nem referência (P-B).
+      const operational = page.getByRole('radio', { name: /Exceção operacional/ });
+      const review = page.getByRole('radio', { name: /Apuração de reserva não reconhecida/ });
+      const reasons = page.getByRole('group', { name: 'Motivo (exceção operacional)' });
+      const incident = page.getByLabel('Referência do incidente (apuração)');
+      await expect(reasons).toHaveCount(0);
+      await expect(incident).toHaveCount(0);
+      // Envio sem tipo: o erro é do tipo; marcar uma opção o tira na hora (reflete o controle, não o último envio).
+      await page.getByRole('button', { name: 'Abrir exceção' }).click();
+      await expect(page.locator('#type-erro')).toHaveText('Escolha o tipo da exceção.');
+      await operational.check();
+      await expect(page.locator('#type-erro')).toHaveCount(0);
+      await expect(reasons).toBeVisible();
+      await expect(incident).toHaveCount(0);
+      await page.getByRole('radio', { name: 'Segurança' }).check();
+      // Teclado: a seta troca o tipo; o motivo escolhido some com o grupo (não é enviado) e a referência aparece.
+      await operational.press('ArrowDown');
+      await expect(review).toBeChecked();
+      await expect(reasons).toHaveCount(0);
+      await expect(page.getByRole('radio', { name: 'Segurança' })).toHaveCount(0);
+      await incident.fill('INC-2026-0007');
       await page.getByLabel('Base registrada').fill('42135557890');
       await page.getByRole('button', { name: 'Abrir exceção' }).click();
       await expect(
@@ -155,7 +187,21 @@ test.describe('W13 E4b — ciclo da reserva de uso próprio pelas telas reais', 
       ).toBeVisible();
       await expect(page.getByLabel('Base registrada')).toHaveAttribute('aria-invalid', 'true');
       await expect(page.locator('#basis-erro')).toContainText('10 ou mais dígitos seguidos');
+      // A resposta do servidor mantém P-B e só os campos dele.
+      await expect(review).toBeChecked();
+      await expect(incident).toHaveValue('INC-2026-0007');
+      await expect(reasons).toHaveCount(0);
       await gate(page, adminErrors, 'e4b-11-admin-abrir-excecao-erro');
+      // Desktop: a seta volta ao P-A pelo teclado e os campos acompanham; depois, de novo ao P-B.
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await review.press('ArrowUp');
+      await expect(operational).toBeChecked();
+      await expect(reasons).toBeVisible();
+      await expect(incident).toHaveCount(0);
+      await operational.press('ArrowDown');
+      await expect(review).toBeChecked();
+      await expect(incident).toBeVisible();
+      await page.setViewportSize(MOBILE.viewport);
       await page.getByLabel('Base registrada').fill('TCK-2026-0042');
       await page.getByRole('button', { name: 'Abrir exceção' }).click();
       await expect(
@@ -210,8 +256,20 @@ test.describe('W13 E4b — ciclo da reserva de uso próprio pelas telas reais', 
         .getByLabel('Registro de não comparecimento', { exact: true })
         .fill('ADM-SERRA-2026-118');
       await page.getByRole('button', { name: 'Declarar no-show' }).click();
+      const attest = page.getByRole('group', { name: 'Atestação' });
       await expect(page.locator('#attest-erro')).toContainText('Marque a atestação');
+      await expect(attest).toHaveAttribute('aria-invalid', 'true');
+      await expect(attest).toHaveAttribute('aria-describedby', 'attest-erro');
+      // O erro reflete o controle agora, antes de qualquer novo envio: some ao marcar e volta ao desmarcar.
       await page.getByRole('checkbox').check();
+      await expect(page.locator('#attest-erro')).toHaveCount(0);
+      await expect(attest).not.toHaveAttribute('aria-invalid');
+      await expect(attest).not.toHaveAttribute('aria-describedby');
+      await page.getByRole('checkbox').uncheck();
+      await expect(page.locator('#attest-erro')).toContainText('Marque a atestação');
+      await expect(attest).toHaveAttribute('aria-invalid', 'true');
+      await page.getByRole('checkbox').check();
+      await expect(page.locator('#attest-erro')).toHaveCount(0);
       await gate(page, adminErrors, 'e4b-15-admin-no-show');
       await page.getByRole('button', { name: 'Declarar no-show' }).click();
       await expect(
