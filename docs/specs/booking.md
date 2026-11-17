@@ -732,8 +732,14 @@ apuração = `in_exception`; Em andamento = `in_use` ou `confirmed` com o 1º ch
 (`cancellationTerms`), com o instante do servidor e os instantes de check-in gravados (fuso IANA da Second Home). A chave
 de idempotência nasce com a prévia acionável (K2 presente, ≥ 1 noite não iniciada, cancelamento não suspenso). A
 confirmação envia a classe esperada e a primeira noite afetada; termos diferentes → `ERR_CANCELLATION_TERMS_CHANGED`,
-nada gravado, e a página mostra "As condições mudaram. Nada foi cancelado." sem ação destrutiva, com "Revisar as novas
-condições" (nova prévia, chave nova). Na apuração, o Co-Owner fora do prazo recebe `ERR_STATE_TRANSITION` e vê a
+nada gravado, e a página da recusa não tem ação destrutiva: só revisar (nova prévia, chave nova). Os termos enviados vêm
+do formulário e não provam a condição anterior; a causa só é dita quando o servidor a confirma (`termsChange`, pura,
+junto da prévia). Prazo terminado (enviado tempestivo, prévia atual tardia) ou noite iniciada (a noite enviada como
+primeira está entre as iniciadas agora) → "As condições mudaram. Nada foi cancelado.", o fato ("O prazo de 15 dias
+terminou em …" / "A noite de … já começou"), "Antes" e "Agora", e "Revisar as novas condições". Sem esse fato → "A
+confirmação não corresponde às condições atuais. Nada foi cancelado.", só "Condições atuais" e "Revisar as condições
+atuais", sem causa. O E2E adultera o campo oculto e prova o caso neutro; prazo e check-in são provados nas fronteiras
+da prévia pura (±1 µs), sem relógio falso. Na apuração, o Co-Owner fora do prazo recebe `ERR_STATE_TRANSITION` e vê a
 suspensão. Matriz: Co-Owner dentro do prazo — não iniciadas voltam ao saldo; fora do prazo — deixam a reserva, consumo
 mantido; Owner — não iniciadas voltam ao calendário do Owner, sem prazo nem categorias; exceção operacional — regras
 normais, o cancelamento encerra a exceção; apuração — Co-Owner só dentro do prazo, Owner a qualquer tempo, o cancelamento
@@ -742,8 +748,13 @@ encerra a apuração. Resultado incerto: o reenvio com a mesma chave é replay d
 **Atos do Admin.** Cada página mostra a consequência antes do formulário. O guard do executor revalida AAL2 e o
 `staff_role`; K2 no handler e no banco; a autorização independente aplicável é resolvida pelo servidor (D4) e exigida
 pelo banco. Em "Resolver exceção", o aviso de autorização só aparece com o desfecho "Cancelar"; sem autorização viva, o
-cancelamento não é oferecido (e o servidor recusa com `ERR_PERMISSION` se forjado). Texto visível sem "party": "o
-Titular", "quem representa a reserva"; identificadores técnicos só no código.
+cancelamento não é oferecido (e o servidor recusa com `ERR_PERMISSION` se forjado). Em "Abrir exceção", os campos seguem
+o tipo escolhido (contrato `open_exception`): P-A mostra o motivo da PD-010; P-B, a referência do incidente; antes da
+escolha, nenhum dos dois. O campo do outro tipo não é renderizado nem enviado, e a Base registrada vale para os dois;
+esconder não é controle (a action e o command validam de novo). Erro de escolha obrigatória (tipo, motivo, desfecho,
+finalidade) e de atestação reflete o controle no momento: some ao marcar e volta ao desmarcar, com `aria-invalid` e
+`aria-describedby` juntos; o resumo no topo descreve o último envio, como nos demais formulários. Texto visível sem
+"party": "o Titular", "quem representa a reserva"; identificadores técnicos só no código.
 
 **Base registrada e referência do incidente.** Erro de validação associado ao campo (`aria-invalid`,
 `aria-describedby`), com a regra atual de `isNonPersonalReference` (M1 e T-1314 continuam pendentes). O valor nunca vai a
