@@ -68,6 +68,10 @@ Regras:
 | `PII_HMAC_ACTIVE_KEY_ID` | Vercel (Sensitive, só servidor) — só Production | chave do anel do HMAC usada nas linhas novas | W7 |
 | `NEXT_PUBLIC_SITE_URL` | Vercel | links de convite e redirecionamentos de Auth — **não adotada na W7**: o convite usa código (`{{ .Token }}`) e o `Site URL` do próprio Supabase Auth, sem `redirectTo` | W7 |
 | `ACQUISITION_WRITES` | Vercel — **somente Production, ativação posterior**; local/CI com source explícita de teste | portão exclusivo das quatro mutations W8: somente `open` habilita; ausente, `closed` ou valor inválido fecham. Preview permanece recusado. Depois da autorização e antes da idempotência/efeitos: REST `503 ERR_UNAVAILABLE`, Server Action indisponível. Leituras e `register_second_home` independem dele. **Não criar ou abrir na W8** (ADR-0021, runbook) | W8 |
+| `BOOKING_AUTHORIZATION_LIMITER_MODE` | local e CI | `fake` = limitador da solicitação de autorização independente em memória (nenhum Upstash); recusado quando `VERCEL_ENV` existe, inclusive em Preview. Ausente = Upstash real (`UPSTASH_REDIS_REST_URL`/`TOKEN`, namespace próprio); nunca configurar na Vercel | W13 |
+| `BOOKING_AUTHORIZATION_REQUEST_LIMIT` · `BOOKING_AUTHORIZATION_REQUEST_WINDOW_SECONDS` | Vercel — Production, **configuração posterior autorizada pelo fundador** | solicitações de autorização independente (`request_booking_authorization`, G-E4-1) por papel de staff por janela (inteiros positivos; valores no runbook, TECH-001). Ausentes → a solicitação é recusada com `ERR_PARAMETER_MISSING` | W13 |
+| `BOOKING_AUTHORIZATION_GLOBAL_LIMIT` · `BOOKING_AUTHORIZATION_GLOBAL_WINDOW_SECONDS` | Vercel — Production, configuração posterior | solicitações totais por janela (idem) | W13 |
+| `BOOKING_AUTHORIZATION_LIMITER_TIMEOUT_MS` | Vercel — Production, configuração posterior | prazo do limitador; sem resposta no prazo → recusa (falha fechada; idem) | W13 |
 | `PAYMENT_GATEWAY` | Preview, Development e CI | `fake` enquanto o PSP não é contratado; recusado em produção (TECH-081) | W19 |
 
 ## Fora do catálogo
