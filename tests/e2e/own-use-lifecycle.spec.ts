@@ -45,7 +45,7 @@ async function bookOwnUse(titular: Page, label: string, checkin: string, checkou
   await titular.goto('/titular');
   await titular
     .locator('section[aria-labelledby="titular-own-use"]')
-    .getByRole('link', { name: new RegExp(label) })
+    .getByRole('link', { name: label })
     .tap();
   await titular.getByLabel('Entrada', { exact: true }).fill(checkin);
   await titular.getByLabel('Saída', { exact: true }).fill(checkout);
@@ -58,7 +58,7 @@ async function bookOwnUse(titular: Page, label: string, checkin: string, checkou
 /** Solicitação pela tela do Admin; devolve o id opaco mostrado depois do registro. */
 async function requestAuthorization(page: Page, bookingId: string, purpose: string) {
   await page.goto(`/admin/reservas/${bookingId}/autorizacao`);
-  await page.getByRole('radio', { name: new RegExp(purpose) }).check();
+  await page.getByRole('radio', { name: purpose }).check();
   await page.getByLabel('Base registrada').fill('TCK-2026-0042');
   await page.getByRole('button', { name: 'Registrar solicitação' }).click();
   await expect(page).toHaveURL(REQUEST_PATH);
