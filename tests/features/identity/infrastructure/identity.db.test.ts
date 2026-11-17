@@ -189,8 +189,11 @@ describe('guard com PostgreSQL real e pipeline de commands (REQ-014, TECH-050/05
       `SELECT app.assign_staff_role('${STAFF_USER}', 'admin', 'Ata') AS id`,
     );
     const roleId = rows[0]?.id as string;
+    // `granted_at` é o `now()` do banco (µs); um `Date` (ms) criado no mesmo milissegundo fica antes dele. O instante
+    // da consulta precisa ser posterior à concessão: o milissegundo seguinte, como qualquer requisição real.
+    const afterGrant = new Date(Date.now() + 1);
 
-    await expect(staff.activeRoles(STAFF_USER, new Date())).resolves.toEqual([
+    await expect(staff.activeRoles(STAFF_USER, afterGrant)).resolves.toEqual([
       { id: roleId, role: 'admin' },
     ]);
     await expect(staff.activeRoles(STAFF_USER, new Date('2000-01-01T00:00:00Z'))).resolves.toEqual(
