@@ -7,10 +7,13 @@ import { getDatabase, unavailableKeys, withUserRead } from '@/features/platform'
 import { BOOKING_SECTIONS } from '../application/own-use-booking-sections';
 import {
   cancellationPreview,
+  termsChange,
   type CancellationPreview,
   type PreviewNight,
+  type SubmittedTerms,
+  type TermsChange,
 } from '../application/own-use-cancellation-preview';
-import { microsFromMillis } from '../domain/own-use-lifecycle';
+import { microsFromMillis, type CancellationClass } from '../domain/own-use-lifecycle';
 import { bookingLabels, bookingsMessages, notificationMessages } from './i18n/own-use-pt-br';
 import {
   bookingDetailMessages as detailText,
@@ -517,51 +520,81 @@ function Aside({ booking }: { readonly booking: TitularBookingDetail }) {
 
 const DATE_PARAM = /^\d{4}-\d{2}-\d{2}$/;
 
-/** Termos mudaram (D7): a página da recusa não tem ação destrutiva; só "Revisar as novas condições" (nova prévia e chave). */
+const SUBMITTED_CLASS = new Map<string, CancellationClass | null>([
+  ['timely', 'timely'],
+  ['late', 'late'],
+  ['owner', null],
+]);
+
+/** Termos que a confirmação recusada levou, devolvidos pela action na URL (`antes`, `primeira`): só indícios. */
+function submittedTerms(params: SearchParams): SubmittedTerms | null {
+  const before = param(params, 'antes');
+  const first = param(params, 'primeira');
+  if (before === null || !SUBMITTED_CLASS.has(before)) return null;
+  return {
+    cancellationClass: SUBMITTED_CLASS.get(before) ?? null,
+    firstAffectedDate: first !== null && DATE_PARAM.test(first) ? first : null,
+  };
+}
+
+type Row = readonly [string, string];
+
+function termsChangeView(change: TermsChange, preview: CancellationPreview, timezone: string) {
+  const now: Row = [
+    text.now,
+    preview.firstAffectedDate === null
+      ? text.nothingLeftTitle
+      : text.firstNightNow(dayMonth(preview.firstAffectedDate)),
+  ];
+  const changed = { id: 'mudou', title: text.changedTitle, section: text.whatChanged };
+  switch (change.kind) {
+    case 'deadline_passed':
+      return {
+        ...changed,
+        body: text.changedDeadline(instantIn(dateFromMicros(change.timelyUntil), timezone)),
+        review: text.review,
+        rows: [
+          [text.before, text.beforeTimely],
+          [text.now, text.nowLate(preview.affected.length)],
+        ] as readonly Row[],
+      };
+    case 'night_started':
+      return {
+        ...changed,
+        body: text.changedNight(dayMonth(change.stayDate)),
+        review: text.review,
+        rows: [[text.before, text.firstNight(dayMonth(change.stayDate))], now] as readonly Row[],
+      };
+    case 'unexplained':
+      return {
+        id: 'condicoes-atuais',
+        title: text.mismatchTitle,
+        section: text.currentTerms,
+        body: text.mismatchBody,
+        review: text.reviewCurrent,
+        rows: [now] as readonly Row[],
+      };
+  }
+}
+
+/**
+ * Recusa por termos diferentes (D7): sem ação destrutiva; só revisar (nova prévia e chave). A causa só é dita quando o
+ * servidor a prova (`termsChange`: prazo terminado ou noite iniciada), com "Antes" e "Agora". Sem prova, a tela afirma
+ * só a recusa e mostra as condições atuais: os valores do formulário nunca viram fato.
+ */
 function TermsChanged(props: {
   readonly booking: TitularBookingDetail;
   readonly preview: CancellationPreview;
   readonly params: SearchParams;
 }) {
-  const before = param(props.params, 'antes');
-  const beforeFirst = param(props.params, 'primeira');
-  const classChanged = before === 'timely' && props.preview.cancellationClass === 'late';
-  const deadline =
-    props.preview.timelyUntil === null
-      ? null
-      : instantIn(dateFromMicros(props.preview.timelyUntil), props.booking.timezone);
-  const rows: (readonly [string, string])[] = classChanged
-    ? [
-        [text.before, text.beforeTimely],
-        [text.now, text.nowLate(props.preview.affected.length)],
-      ]
-    : [
-        [
-          text.before,
-          beforeFirst !== null && DATE_PARAM.test(beforeFirst)
-            ? text.firstNight(dayMonth(beforeFirst))
-            : text.firstNight('—'),
-        ],
-        [
-          text.now,
-          props.preview.firstAffectedDate === null
-            ? text.nothingLeftTitle
-            : text.firstNightNow(dayMonth(props.preview.firstAffectedDate)),
-        ],
-      ];
+  const change = termsChange(submittedTerms(props.params), props.preview);
+  const view = termsChangeView(change, props.preview, props.booking.timezone);
   return (
     <>
-      <Message
-        kind="warning"
-        live="alert"
-        title={text.changedTitle}
-        body={
-          classChanged && deadline !== null ? text.changedDeadline(deadline) : text.changedNight
-        }
-      />
-      <Section id="mudou" title={text.whatChanged}>
+      <Message kind="warning" live="alert" title={view.title} body={view.body} />
+      <Section id={view.id} title={view.section}>
         <dl className="lx-evidence lx-evidence--inline">
-          {rows.map(([label, value]) => (
+          {view.rows.map(([label, value]) => (
             <div className="lx-evidence__item" key={label}>
               <dt className="lx-evidence__label">{label}</dt>
               <dd className="lx-evidence__value">{value}</dd>
@@ -573,7 +606,7 @@ function TermsChanged(props: {
             className="lx-button lx-button--primary"
             href={ownUsePaths.cancellation(props.booking.id)}
           >
-            {text.review}
+            {view.review}
           </a>
           <a className="lx-button lx-button--quiet" href={ownUsePaths.booking(props.booking.id)}>
             {text.keep}

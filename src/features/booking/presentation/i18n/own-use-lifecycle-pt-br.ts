@@ -201,9 +201,13 @@ export const cancellationMessages = {
   nothingLeftBody: 'Não há noites a cancelar.',
   changedTitle: 'As condições mudaram. Nada foi cancelado.',
   changedDeadline: (deadline: string) =>
-    `O prazo de 15 dias terminou ${deadline}, enquanto você revisava. Revise as novas condições antes de decidir.`,
-  changedNight:
-    'Uma noite começou enquanto você revisava. Revise as novas condições antes de decidir.',
+    `O prazo de 15 dias terminou em ${deadline}. Revise as novas condições antes de decidir.`,
+  changedNight: (date: string) =>
+    `A noite de ${date} já começou. Revise as novas condições antes de decidir.`,
+  mismatchTitle: 'A confirmação não corresponde às condições atuais. Nada foi cancelado.',
+  mismatchBody: 'Revise as condições atuais antes de decidir.',
+  currentTerms: 'Condições atuais',
+  reviewCurrent: 'Revisar as condições atuais',
   whatChanged: 'O que mudou',
   before: 'Antes',
   now: 'Agora',
