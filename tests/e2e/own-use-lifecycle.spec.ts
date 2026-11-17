@@ -351,17 +351,19 @@ test.describe('W13 E4b — ciclo da reserva de uso próprio pelas telas reais', 
     test.setTimeout(FLOW_TIMEOUT_MS);
     const label = `Second Home sintética Avisos ${Date.now().toString(36)}`;
     const { home, acquirer } = await formalizedOwner(page, label, addDays(civilToday(), -3));
-    // Reserva real (link válido) e um evento entregue por variação, no formato do consumidor da E3 (só banco descartável).
-    const { bookingId } = await seedE2eStartedOwnerBooking(home);
-    await seedE2eNotifications(
-      acquirer,
-      home,
-      bookingId,
-      NOTIFICATION_VARIANTS.map(([, kind, data]) => ({ kind, data })),
-    );
+    // A representação vem antes do fixture: o ator da operação histórica é a representação ativa da party.
     const { titular, context } = await titularFor(page, browser, acquirer);
     const errors = collectConsoleErrors(titular);
     try {
+      // Reserva real (link válido) e um evento entregue por variação, no formato do consumidor da E3 (só banco
+      // descartável).
+      const { bookingId } = await seedE2eStartedOwnerBooking(home);
+      await seedE2eNotifications(
+        acquirer,
+        home,
+        bookingId,
+        NOTIFICATION_VARIANTS.map(([, kind, data]) => ({ kind, data })),
+      );
       await titular.goto('/titular/notificacoes');
       const items = await titular
         .getByRole('list', { name: 'Notificações' })
