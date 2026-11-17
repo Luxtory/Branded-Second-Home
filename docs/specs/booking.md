@@ -807,3 +807,19 @@ Sem mudança de regra canônica, contrato de evento, migration ou permissão. Es
   Owner e reserva de Co-Owner dentro de 15 dias (a janela do cenário abre meses à frente), com o mesmo SQL do fixture
   histórico dos testes db. K1/K2 são estado global desse banco: os specs `own-use-*` rodam no projeto Playwright
   `chrome-own-use` com um worker (um de cada vez; os demais seguem em paralelo).
+- **O que cada teste de aviso prova.** Pelos commands reais e pelo consumidor real do outbox (job `outbox`), os E2E do
+  Owner e do Co-Owner geram e mostram na central: confirmação, cancelamento, apuração aberta, invalidação, no-show,
+  exceção operacional aberta e cancelamento que encerra a exceção. As **19 variações + a confirmação** são verificadas
+  na central real por um **fixture que persiste os registros** (`seedE2eNotifications`: um evento entregue em
+  `app.outbox` e a linha em `app.notification` por variação, com os campos que o consumidor da E3 grava, só no banco
+  descartável). Esse teste prova a leitura, o texto, o link e a ausência de marcação de leitura de cada variação. Ele
+  **não** executa 19 fluxos completos de commands. A produção de cada variação pelos consumidores continua coberta
+  pelos testes da E3, que a E4b não alterou: `own-use-lifecycle-consumers.test.ts`, `own-use-lifecycle-jobs.test.ts`,
+  `own-use-lifecycle-jobs.db.test.ts`, `own-use-lifecycle.test.ts` e `lifecycle-cron-coverage.test.ts`.
+- **Escalabilidade da listagem do Admin (ponto de avaliação antes de ampliar o volume operacional).** A consulta de
+  `/admin/reservas` traz no máximo 200 reservas (`DIRECTORY_LIMIT * 4`), ordenadas pelo check-in, sem paginação e sem
+  aviso de truncamento na tela. Cada linha calcula `app.booking_period_instants` duas vezes. Cada reserva cancelada ou
+  com no-show e check-out futuro faz, em sequência no laço, `findBooking` e `requestFacts` (cerca de 4 consultas) para
+  decidir se entra na fila de capacidade recuperável. Com as reservas desativadas (K1/K2), o volume atual é zero. Antes
+  de ativar ou ampliar o volume operacional, reavaliar limite, paginação e a consulta por lote. A E4b não introduz
+  paginação.
