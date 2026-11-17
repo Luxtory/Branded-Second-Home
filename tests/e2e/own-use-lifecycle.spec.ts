@@ -1,11 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
 import {
   authorizeE2eBookingAction,
+  countReadE2eNotifications,
+  seedE2eNotifications,
   seedE2eSoonCoOwnerBooking,
   seedE2eStartedOwnerBooking,
   setE2eOwnUseBooking,
   setE2eOwnUseLifecycle,
 } from '../support/e2e-acquisition-database.mjs';
+import { NOTIFICATION_VARIANTS } from '../support/own-use-notification-variants';
 import {
   addDays,
   civilToday,
@@ -337,6 +340,74 @@ test.describe('W13 E4b — ciclo da reserva de uso próprio pelas telas reais', 
     } finally {
       await setE2eOwnUseLifecycle(false);
       await setE2eOwnUseBooking(false);
+      await context.close();
+    }
+  });
+
+  test('[REQ-097][REQ-096] Avisos: as 19 variações do ciclo e a confirmação na central real, sem marcação de leitura', async ({
+    page,
+    browser,
+  }) => {
+    test.setTimeout(FLOW_TIMEOUT_MS);
+    const label = `Second Home sintética Avisos ${Date.now().toString(36)}`;
+    const { home, acquirer } = await formalizedOwner(page, label, addDays(civilToday(), -3));
+    // Reserva real (link válido) e um evento entregue por variação, no formato do consumidor da E3 (só banco descartável).
+    const { bookingId } = await seedE2eStartedOwnerBooking(home);
+    await seedE2eNotifications(
+      acquirer,
+      home,
+      bookingId,
+      NOTIFICATION_VARIANTS.map(([, kind, data]) => ({ kind, data })),
+    );
+    const { titular, context } = await titularFor(page, browser, acquirer);
+    const errors = collectConsoleErrors(titular);
+    try {
+      await titular.goto('/titular/notificacoes');
+      const items = await titular
+        .getByRole('list', { name: 'Notificações' })
+        .locator('.lx-record-list__item')
+        .evaluateAll((nodes) =>
+          nodes.map((node) => ({
+            title: node.querySelector('.lx-record-list__title')?.textContent?.trim() ?? '',
+            href: node.querySelector('a')?.getAttribute('href') ?? null,
+            meta: Object.fromEntries(
+              [...node.querySelectorAll('.lx-record-list__meta-item')].map((pair) => [
+                pair.querySelector('dt')?.textContent?.trim() ?? '',
+                pair.querySelector('dd')?.textContent?.trim() ?? '',
+              ]),
+            ),
+          })),
+        );
+      // Cada variação aparece uma única vez, com título curto, Second Home, "O que mudou" e extras exatos, link para a
+      // reserva, na ordem da central (mais recente primeiro).
+      const positions = NOTIFICATION_VARIANTS.map(([name, , , title, what, extra]) => {
+        const matches = items.flatMap((item, index) =>
+          item.title === title &&
+          item.meta['Second Home'] === label &&
+          item.meta['O que mudou'] === what &&
+          extra.every(([key, value]) => item.meta[key] === value)
+            ? [index]
+            : [],
+        );
+        expect(matches, name).toHaveLength(1);
+        expect(items[matches[0]!]!.href, name).toBe(`/titular/reservas/${bookingId}`);
+        return matches[0]!;
+      });
+      expect(positions).toEqual([...positions].sort((a, b) => a - b));
+      await expect(titular.locator('main')).not.toContainText(/party|\bcota|di[aá]ria/i);
+      // Central só leitura: abrir a lista não marca nenhum aviso como lido.
+      expect(await countReadE2eNotifications(acquirer)).toBe(0);
+      await gate(titular, errors, 'e4b-18-avisos-variacoes');
+
+      // O link do aviso abre a reserva certa.
+      await titular
+        .getByRole('list', { name: 'Notificações' })
+        .getByRole('link', { name: 'Reserva confirmada' })
+        .first()
+        .tap();
+      await expect(titular).toHaveURL(`/titular/reservas/${bookingId}`);
+      await expect(titular.getByRole('heading', { level: 1 })).toHaveText(label);
+    } finally {
       await context.close();
     }
   });

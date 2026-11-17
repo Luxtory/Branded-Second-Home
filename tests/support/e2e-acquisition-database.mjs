@@ -305,3 +305,59 @@ export async function seedE2eSoonCoOwnerBooking(homeId, partyId, fromOffset = 3)
     }
   });
 }
+
+/**
+ * As variações dos avisos do ciclo na central real (W13 E4b, evidência renderizada): grava, só no banco descartável,
+ * um evento já entregue por variação e a notificação do destinatário com os campos do consumidor da E3 — o mesmo
+ * formato de `app.notification`, sem contrato novo. `second_home_id` e `booking_id` reais (Second Home e link válidos).
+ */
+export async function seedE2eNotifications(partyId, homeId, bookingId, variants) {
+  if (![partyId, homeId, bookingId].every((id) => /^[0-9a-f-]{36}$/i.test(id)))
+    throw new Error('Invalid fixture ids');
+  const url = disposableOwnerUrl();
+  return withClient(url, async (client) => {
+    await client.query('BEGIN');
+    try {
+      const { rows } = await client.query('SELECT gen_random_uuid() AS op');
+      const { op } = rows[0];
+      await client.query(
+        `INSERT INTO app.operation (id, command, actor_user_id, acting_party_id, role, idempotency_key, correlation_id,
+           authorization_ref, state, created_at, updated_at)
+         VALUES ($1, 'e2e_notification_fixture', NULL, NULL, 'system', $2, $2, 'system:e2e-fixture', 'pending', now(),
+           now())`,
+        [op, `e2e:${op}`],
+      );
+      for (const [index, { kind, data }] of variants.entries()) {
+        const payload = { ...data, second_home_id: homeId, booking_id: bookingId };
+        // Ordem estável na central (mais recente primeiro): a primeira variação fica no topo.
+        await client.query(
+          `WITH event AS (
+             INSERT INTO app.outbox (id, operation_id, event_type, dedup_key, payload, occurred_at, delivered_at)
+             VALUES (gen_random_uuid(), $1, $2, 'e2e:' || gen_random_uuid(), $3, now(), now())
+             RETURNING id)
+           INSERT INTO app.notification (id, event_id, recipient_party_id, kind, data, created_at)
+           SELECT gen_random_uuid(), event.id, $4, $2, $3, now() - make_interval(secs => $5) FROM event`,
+          [op, kind, payload, partyId, index],
+        );
+      }
+      await client.query(`UPDATE app.operation SET state = 'committed' WHERE id = $1`, [op]);
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      throw error;
+    }
+  });
+}
+
+/** Avisos do destinatário marcados como lidos (a central não marca leitura; W13 E4b, ponto 8). */
+export async function countReadE2eNotifications(partyId) {
+  if (!/^[0-9a-f-]{36}$/i.test(partyId)) throw new Error('Invalid fixture id');
+  const url = disposableOwnerUrl();
+  return withClient(url, async (client) => {
+    const { rows } = await client.query(
+      `SELECT count(*)::int AS read FROM app.notification WHERE recipient_party_id = $1 AND read_at IS NOT NULL`,
+      [partyId],
+    );
+    return rows[0].read;
+  });
+}
