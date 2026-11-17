@@ -95,43 +95,6 @@ export function cancellationPreview(input: CancellationPreviewInput): Cancellati
   };
 }
 
-/** Termos que a confirmação recusada levou (D7), como vieram do formulário: indício, nunca prova da condição anterior. */
-export interface SubmittedTerms {
-  readonly cancellationClass: CancellationClass | null;
-  readonly firstAffectedDate: string | null;
-}
-
-export type TermsChange =
-  /** O prazo de 15 dias terminou: a prévia do servidor já é tardia, e os termos enviados eram tempestivos. */
-  | { readonly kind: 'deadline_passed'; readonly timelyUntil: Micros }
-  /** A noite enviada como primeira já começou: está entre as iniciadas no instante do servidor. */
-  | { readonly kind: 'night_started'; readonly stayDate: string }
-  /** Nenhum evento do relógio explica a diferença: a tela só afirma a recusa e mostra as condições atuais. */
-  | { readonly kind: 'unexplained' };
-
-/**
- * Por que os termos enviados diferem dos atuais (W13 E4b; D7, spec booking §10.15). O formulário só escolhe qual fato
- * do servidor conferir — o prazo já terminado ou a noite já iniciada, no instante da prévia atual. Sem esse fato, a
- * causa não é afirmada.
- */
-export function termsChange(
-  submitted: SubmittedTerms | null,
-  preview: CancellationPreview,
-): TermsChange {
-  if (submitted === null) return { kind: 'unexplained' };
-  if (
-    submitted.cancellationClass === 'timely' &&
-    preview.cancellationClass === 'late' &&
-    preview.timelyUntil !== null
-  )
-    return { kind: 'deadline_passed', timelyUntil: preview.timelyUntil };
-  if (submitted.cancellationClass !== preview.cancellationClass) return { kind: 'unexplained' };
-  const night = preview.started.find((n) => n.stayDate === submitted.firstAffectedDate);
-  return night === undefined
-    ? { kind: 'unexplained' }
-    : { kind: 'night_started', stayDate: night.stayDate };
-}
-
 function kindOf(
   input: CancellationPreviewInput,
   cancellationClass: CancellationClass | null,

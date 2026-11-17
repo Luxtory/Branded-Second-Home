@@ -117,10 +117,11 @@ test.describe('W13 E4b — ciclo da reserva de uso próprio pelas telas reais', 
       );
       await gate(titular, errors, 'e4b-02-owner-previa');
 
-      // Termos divergentes (D7): adulterar o campo oculto NÃO simula a passagem do tempo. Prova só a recusa sem efeito
-      // e a mensagem neutra: nenhuma causa afirmada e nenhum "Antes" vindo do formulário, só as condições atuais. Prazo
-      // terminado e noite iniciada (causas provadas pelo servidor) estão nas fronteiras da prévia pura (`termsChange`).
+      // Termos divergentes (D7): adulterar o campo oculto NÃO simula a passagem do tempo. Prova só a recusa sem efeito e
+      // as condições atuais do servidor; nada do que o navegador enviou volta à tela. Prazo e noite iniciada (fatos
+      // atuais) estão nas fronteiras ±1 µs da prévia pura.
       const firstNight = addDays(civilToday(), 5);
+      const firstNightLabel = `${firstNight.slice(8, 10)}/${firstNight.slice(5, 7)}`;
       await titular
         .locator('input[name="expected_first_affected_date"]')
         .evaluate(
@@ -138,12 +139,27 @@ test.describe('W13 E4b — ciclo da reserva de uso próprio pelas telas reais', 
       await expect(
         titular.getByRole('heading', { level: 2, name: 'Condições atuais' }),
       ).toBeVisible();
-      await expect(titular.locator('.lx-evidence__label')).toHaveText(['Agora']);
+      await expect(titular.locator('.lx-evidence__label')).toHaveText(['Cancelamento']);
       await expect(titular.locator('.lx-evidence__value')).toHaveText([
-        `O cancelamento começa na noite de ${firstNight.slice(8, 10)}/${firstNight.slice(5, 7)}`,
+        `A partir da noite de ${firstNightLabel}`,
       ]);
-      await expect(titular.locator('main')).not.toContainText(/começou|terminou|O que mudou/);
       await expect(titular.getByRole('button', { name: 'Confirmar cancelamento' })).toHaveCount(0);
+      // A recusa não devolve os termos enviados na URL; e termos anteriores forjados nos parâmetros (`antes`,
+      // `primeira`) não mudam uma letra da página: nada vindo do navegador vira afirmação histórica.
+      const refused = new URL(titular.url());
+      expect([...refused.searchParams.keys()]).toEqual(['condicoes']);
+      const main = titular.locator('main');
+      const shown = await main.innerText();
+      for (const forged of [
+        `antes=timely&primeira=${firstNight}`,
+        `antes=owner&primeira=${addDays(civilToday(), 4)}`,
+        'antes=late&primeira=2000-01-01',
+      ]) {
+        await titular.goto(`${refused.pathname}?condicoes=mudaram&${forged}`);
+        await expect(main).toHaveText(shown, { useInnerText: true });
+        await expect(main).not.toContainText(/Antes|Agora|começaria|voltariam|mudaram|revisava/);
+      }
+      await titular.goto(refused.toString());
       await gate(titular, errors, 'e4b-03-termos-alterados');
       await titular.getByRole('link', { name: 'Revisar as condições atuais' }).tap();
       await titular.getByRole('button', { name: 'Confirmar cancelamento' }).tap();
@@ -241,6 +257,18 @@ test.describe('W13 E4b — ciclo da reserva de uso próprio pelas telas reais', 
 
       // No-show: estadia já começada (fixture histórico) → fila de comparecimento → autorização → declaração atestada.
       const started = await seedE2eStartedOwnerBooking(home);
+      // Recusa por termos (D7) com um "antes" forjado que coincide com um fato atual (a noite enviada já começou):
+      // continua sem "Antes" nem causa; a página mostra os mesmos fatos atuais com ou sem os parâmetros.
+      const refusal = `/titular/reservas/${started.bookingId}/cancelamento?condicoes=mudaram`;
+      await titular.goto(refusal);
+      await expect(titular.locator('.lx-evidence__label')).toHaveText([
+        'Já começaram',
+        'Cancelamento',
+      ]);
+      const startedShown = await titular.locator('main').innerText();
+      await titular.goto(`${refusal}&antes=owner&primeira=${started.checkin}`);
+      await expect(titular.locator('main')).toHaveText(startedShown, { useInnerText: true });
+      await expect(titular.locator('main')).not.toContainText(/Antes|Agora|começaria|mudaram/);
       await page.goto('/admin/reservas');
       await expect(page.getByRole('list', { name: 'A verificar comparecimento' })).toContainText(
         label,

@@ -10,8 +10,6 @@ import { createOwnUseLifecycleHandlers } from './own-use-lifecycle-handlers';
 import { ownUsePaths } from './own-use-paths';
 
 const handlers = createOwnUseLifecycleHandlers();
-const CLASS = /^(timely|late)$/;
-const CIVIL_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 const field = (form: FormData, name: string): string => {
   const value = form.get(name);
@@ -51,14 +49,9 @@ export async function cancelOwnUseBookingAction(
   if (attempt === 'unavailable') return { ...state, outcome: 'unavailable' };
   if (attempt.status === 'unauthenticated') redirect(ownUsePaths.login);
   if (attempt.status === 'committed') redirect(`${ownUsePaths.booking(bookingId)}?cancelada=1`);
-  if (attempt.code === 'ERR_CANCELLATION_TERMS_CHANGED') {
-    const before = new URLSearchParams({
-      condicoes: 'mudaram',
-      antes: CLASS.test(expectedClass) ? expectedClass : 'owner',
-      primeira: CIVIL_DATE.test(expectedFirst) ? expectedFirst : '',
-    });
-    redirect(`${ownUsePaths.cancellation(bookingId)}?${before.toString()}`);
-  }
+  // Os termos enviados não voltam à tela: vieram do navegador e não provam a prévia anterior.
+  if (attempt.code === 'ERR_CANCELLATION_TERMS_CHANGED')
+    redirect(`${ownUsePaths.cancellation(bookingId)}?condicoes=mudaram`);
   if (attempt.code === 'ERR_STATE_TRANSITION')
     redirect(`${ownUsePaths.booking(bookingId)}?aviso=nada-cancelado`);
   // Recusa gravada consome a chave (o replay repetiria a recusa): a próxima tentativa leva uma nova.

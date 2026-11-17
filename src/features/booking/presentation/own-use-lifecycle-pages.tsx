@@ -7,13 +7,10 @@ import { getDatabase, unavailableKeys, withUserRead } from '@/features/platform'
 import { BOOKING_SECTIONS } from '../application/own-use-booking-sections';
 import {
   cancellationPreview,
-  termsChange,
   type CancellationPreview,
   type PreviewNight,
-  type SubmittedTerms,
-  type TermsChange,
 } from '../application/own-use-cancellation-preview';
-import { microsFromMillis, type CancellationClass } from '../domain/own-use-lifecycle';
+import { microsFromMillis } from '../domain/own-use-lifecycle';
 import { bookingLabels, bookingsMessages, notificationMessages } from './i18n/own-use-pt-br';
 import {
   bookingDetailMessages as detailText,
@@ -518,83 +515,45 @@ function Aside({ booking }: { readonly booking: TitularBookingDetail }) {
   );
 }
 
-const DATE_PARAM = /^\d{4}-\d{2}-\d{2}$/;
-
-const SUBMITTED_CLASS = new Map<string, CancellationClass | null>([
-  ['timely', 'timely'],
-  ['late', 'late'],
-  ['owner', null],
-]);
-
-/** Termos que a confirmação recusada levou, devolvidos pela action na URL (`antes`, `primeira`): só indícios. */
-function submittedTerms(params: SearchParams): SubmittedTerms | null {
-  const before = param(params, 'antes');
-  const first = param(params, 'primeira');
-  if (before === null || !SUBMITTED_CLASS.has(before)) return null;
-  return {
-    cancellationClass: SUBMITTED_CLASS.get(before) ?? null,
-    firstAffectedDate: first !== null && DATE_PARAM.test(first) ? first : null,
-  };
-}
-
 type Row = readonly [string, string];
 
-function termsChangeView(change: TermsChange, preview: CancellationPreview, timezone: string) {
-  const now: Row = [
-    text.now,
+/** Fatos atuais do servidor no instante desta página: prazo (Co-Owner), noites já iniciadas e a partir de qual noite. */
+function currentTermsRows(preview: CancellationPreview, timezone: string): readonly Row[] {
+  const rows: Row[] = [];
+  if (preview.timelyUntil !== null) {
+    const deadline = instantIn(dateFromMicros(preview.timelyUntil), timezone);
+    rows.push([
+      text.termsDeadline,
+      preview.cancellationClass === 'late'
+        ? text.deadlineEnded(deadline)
+        : text.deadlineEnds(deadline),
+    ]);
+  }
+  if (preview.started.length > 0)
+    rows.push([text.rowStarted, dateList(preview.started.map((night) => night.stayDate))]);
+  rows.push([
+    text.termsFrom,
     preview.firstAffectedDate === null
       ? text.nothingLeftTitle
-      : text.firstNightNow(dayMonth(preview.firstAffectedDate)),
-  ];
-  const changed = { id: 'mudou', title: text.changedTitle, section: text.whatChanged };
-  switch (change.kind) {
-    case 'deadline_passed':
-      return {
-        ...changed,
-        body: text.changedDeadline(instantIn(dateFromMicros(change.timelyUntil), timezone)),
-        review: text.review,
-        rows: [
-          [text.before, text.beforeTimely],
-          [text.now, text.nowLate(preview.affected.length)],
-        ] as readonly Row[],
-      };
-    case 'night_started':
-      return {
-        ...changed,
-        body: text.changedNight(dayMonth(change.stayDate)),
-        review: text.review,
-        rows: [[text.before, text.firstNight(dayMonth(change.stayDate))], now] as readonly Row[],
-      };
-    case 'unexplained':
-      return {
-        id: 'condicoes-atuais',
-        title: text.mismatchTitle,
-        section: text.currentTerms,
-        body: text.mismatchBody,
-        review: text.reviewCurrent,
-        rows: [now] as readonly Row[],
-      };
-  }
+      : text.fromNight(dayMonth(preview.firstAffectedDate)),
+  ]);
+  return rows;
 }
 
 /**
- * Recusa por termos diferentes (D7): sem ação destrutiva; só revisar (nova prévia e chave). A causa só é dita quando o
- * servidor a prova (`termsChange`: prazo terminado ou noite iniciada), com "Antes" e "Agora". Sem prova, a tela afirma
- * só a recusa e mostra as condições atuais: os valores do formulário nunca viram fato.
+ * Recusa por termos diferentes (D7): sem ação destrutiva; só revisar (nova prévia e chave). Os termos enviados vieram do
+ * navegador e não provam a prévia anterior: a tela afirma só a recusa e as condições atuais do servidor, sem "antes".
  */
 function TermsChanged(props: {
   readonly booking: TitularBookingDetail;
   readonly preview: CancellationPreview;
-  readonly params: SearchParams;
 }) {
-  const change = termsChange(submittedTerms(props.params), props.preview);
-  const view = termsChangeView(change, props.preview, props.booking.timezone);
   return (
     <>
-      <Message kind="warning" live="alert" title={view.title} body={view.body} />
-      <Section id={view.id} title={view.section}>
+      <Message kind="warning" live="alert" title={text.mismatchTitle} body={text.mismatchBody} />
+      <Section id="condicoes-atuais" title={text.currentTerms}>
         <dl className="lx-evidence lx-evidence--inline">
-          {view.rows.map(([label, value]) => (
+          {currentTermsRows(props.preview, props.booking.timezone).map(([label, value]) => (
             <div className="lx-evidence__item" key={label}>
               <dt className="lx-evidence__label">{label}</dt>
               <dd className="lx-evidence__value">{value}</dd>
@@ -606,7 +565,7 @@ function TermsChanged(props: {
             className="lx-button lx-button--primary"
             href={ownUsePaths.cancellation(props.booking.id)}
           >
-            {view.review}
+            {text.reviewCurrent}
           </a>
           <a className="lx-button lx-button--quiet" href={ownUsePaths.booking(props.booking.id)}>
             {text.keep}
@@ -649,7 +608,7 @@ export async function TitularCancellationPage(props: {
     return (
       <TitularShell>
         {header}
-        <TermsChanged booking={booking} preview={preview} params={props.searchParams} />
+        <TermsChanged booking={booking} preview={preview} />
       </TitularShell>
     );
   if (preview.kind === 'nothing_left')

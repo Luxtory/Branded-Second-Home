@@ -5,7 +5,6 @@ import {
 } from '@/features/booking/application/own-use-booking-sections';
 import {
   cancellationPreview,
-  termsChange,
   type CancellationPreviewInput,
   type PreviewNight,
 } from '@/features/booking/application/own-use-cancellation-preview';
@@ -123,39 +122,15 @@ describe('W13 E4b — prévia do cancelamento', () => {
     }
   });
 
-  it('[D7] recusa por termos: só um evento do relógio provado pelo servidor explica a diferença; o resto é neutro', () => {
-    const at = (instant: bigint, over: Partial<CancellationPreviewInput> = {}) =>
-      cancellationPreview(base({ at: instant, ...over }));
-    const timely = { cancellationClass: 'timely' as const, firstAffectedDate: '2026-12-11' };
-    // Prazo: os termos enviados eram tempestivos e o servidor, +1 µs depois do prazo, já é tardio.
-    expect(termsChange(timely, at(timelyUntil(T0) + 1n))).toEqual({
-      kind: 'deadline_passed',
-      timelyUntil: timelyUntil(T0),
-    });
-    // No limite (−0 µs, inclusive) ainda é tempestivo: nada de prazo terminado.
-    expect(termsChange(timely, at(timelyUntil(T0)))).toEqual({ kind: 'unexplained' });
-    // Check-in: a noite enviada como primeira está entre as iniciadas no instante do servidor (check-in inclusive).
-    const late = { cancellationClass: 'late' as const, firstAffectedDate: '2026-12-11' };
-    expect(termsChange(late, at(T0))).toEqual({ kind: 'night_started', stayDate: '2026-12-11' });
-    expect(termsChange(late, at(T0 - 1n))).toEqual({ kind: 'unexplained' });
-    const owner = { modality: 'owner' as const, balances: [] };
-    expect(
-      termsChange(
-        { cancellationClass: null, firstAffectedDate: '2026-12-12' },
-        at(T0 + DAY, owner),
-      ),
-    ).toEqual({ kind: 'night_started', stayDate: '2026-12-12' });
-    // Valores do formulário sem evento que os explique não viram causa: data depois da atual (o E2E), fora da
-    // reserva, classe de outra modalidade, data ausente, nada enviado, ou tardio → tempestivo.
-    for (const submitted of [
-      { cancellationClass: 'late' as const, firstAffectedDate: '2026-12-14' },
-      { cancellationClass: 'late' as const, firstAffectedDate: '2026-12-01' },
-      { cancellationClass: null, firstAffectedDate: '2026-12-11' },
-      { cancellationClass: 'late' as const, firstAffectedDate: null },
-      null,
-    ])
-      expect(termsChange(submitted, at(T0 + DAY + 1n))).toEqual({ kind: 'unexplained' });
-    expect(termsChange(late, at(timelyUntil(T0)))).toEqual({ kind: 'unexplained' });
+  it('[D7] recusa por termos: os fatos atuais da tela nas fronteiras — prazo terminado só +1 µs depois do limite; noite iniciada a partir do check-in (inclusive)', () => {
+    const at = (instant: bigint) => cancellationPreview(base({ at: instant }));
+    // A tela da recusa mostra só estes fatos do servidor, nunca os termos que o navegador enviou: provam a regra
+    // temporal atual, não a prévia anterior.
+    expect(at(timelyUntil(T0))).toMatchObject({ cancellationClass: 'timely', started: [] });
+    expect(at(timelyUntil(T0) + 1n)).toMatchObject({ cancellationClass: 'late', started: [] });
+    expect(at(T0 - 1n)).toMatchObject({ started: [], firstAffectedDate: '2026-12-11' });
+    expect(at(T0).started.map((n) => n.stayDate)).toEqual(['2026-12-11']);
+    expect(at(T0).firstAffectedDate).toBe('2026-12-12');
   });
 });
 
