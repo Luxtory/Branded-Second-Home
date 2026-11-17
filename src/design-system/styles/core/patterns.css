@@ -930,6 +930,11 @@
     [data-lx="core"] .lx-siblings--pair {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+    /* --trio stays stacked until lg, as its contract says: the auto-fill above would leave the third unit alone on a
+     * row of two (2 + 1) from md. */
+    [data-lx="core"] .lx-siblings--trio {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 
   /* Como funciona (revisão do fundador, 2026-10-06) — the complements its specification asks for, on the Core grid. */

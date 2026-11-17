@@ -105,6 +105,183 @@ const errorBody = (code: string) =>
   JSON.stringify({ code, message: 'erro simulado', correlation_id: 'e2e-correlation' });
 
 test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
+  test('[WCAG 1.4.4] etapa 06 adapta as colunas à fonte ampliada sem estreitar as modalidades', async ({
+    page,
+  }) => {
+    await page.goto(HOW);
+    await page.evaluate(() => {
+      const enlarged = new CSSStyleSheet();
+      enlarged.replaceSync('html { font-size: 200%; }');
+      document.adoptedStyleSheets.push(enlarged);
+      return document.fonts.ready;
+    });
+    for (const width of [768, 1280, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      const state = await page.locator('.lx-bp-realization').evaluate((node) => {
+        const groups = [...node.querySelectorAll('[role="group"]')];
+        const sides = [...node.querySelectorAll('[data-pair="modality"] .lx-comparison__item')];
+        return {
+          groupX: groups.map((group) => group.getBoundingClientRect().x),
+          measures: sides.map((side) => {
+            const paragraph = side.querySelector('p')!;
+            const style = getComputedStyle(paragraph);
+            return paragraph.getBoundingClientRect().width / Number.parseFloat(style.fontSize);
+          }),
+          widths: sides.map((side) => side.getBoundingClientRect().width),
+          textWidths: sides.map((side) => side.querySelector('p')!.getBoundingClientRect().width),
+          fontSizes: sides.map((side) => getComputedStyle(side.querySelector('p')!).fontSize),
+        };
+      });
+      expect(
+        Math.abs(state.groupX[0]! - state.groupX[1]!),
+        `${width}px: áreas empilhadas`,
+      ).toBeLessThanOrEqual(1);
+      expect(
+        Math.min(...state.measures),
+        `${width}px: largura relativa à fonte`,
+      ).toBeGreaterThanOrEqual(12);
+      expect(Math.abs(state.widths[0]! - state.widths[1]!)).toBeLessThanOrEqual(1);
+      expect(Math.abs(state.textWidths[0]! - state.textWidths[1]!)).toBeLessThanOrEqual(1);
+      expect(new Set(state.fontSizes).size).toBe(1);
+    }
+  });
+
+  test('[ADR-0009] índice usa uma coluna em 320 e duas em 390 com alvos legíveis', async ({
+    page,
+  }) => {
+    await page.goto(HOW);
+    await page.evaluate(() => document.fonts.ready);
+    const index = page.getByRole('navigation', { name: text.howItWorks.opening.indexLabel });
+    for (const [width, columns] of [
+      [320, 1],
+      [390, 2],
+    ] as const) {
+      await page.setViewportSize({ width, height: 844 });
+      const links = await index.getByRole('link').evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const bounds = node.getBoundingClientRect();
+          return { x: Math.round(bounds.x), width: bounds.width, height: bounds.height };
+        }),
+      );
+      expect(new Set(links.map((link) => link.x)).size, `${width}px`).toBe(columns);
+      expect(links).toHaveLength(7);
+      expect(links.every((link) => link.width >= 44 && link.height >= 44)).toBe(true);
+    }
+  });
+
+  test('[WCAG 1.4.4] texto ampliado a 200% mantém reflow e conteúdo integral', async ({ page }) => {
+    for (const path of [HOME, HOW]) {
+      await page.setViewportSize({ width: 320, height: 568 });
+      await page.goto(path);
+      await page.evaluate(() => {
+        const enlarged = new CSSStyleSheet();
+        enlarged.replaceSync('html { font-size: 200%; }');
+        document.adoptedStyleSheets.push(enlarged);
+        return document.fonts.ready;
+      });
+      for (const width of [320, 390, 768]) {
+        await page.setViewportSize({ width, height: 900 });
+        const state = await page.evaluate(() => ({
+          overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          bodySize: Number.parseFloat(
+            getComputedStyle(document.querySelector('main .lx-body')!).fontSize,
+          ),
+          clipped: [
+            ...document.querySelectorAll('main p, main h1, main h2, main h3, main h4'),
+          ].filter((node) => {
+            const element = node as HTMLElement;
+            return (
+              getComputedStyle(element).overflow === 'hidden' &&
+              element.scrollHeight > element.clientHeight
+            );
+          }).length,
+        }));
+        expect(state.bodySize).toBeGreaterThanOrEqual(32);
+        expect(state.overflow, `${path}, ${width}px, texto 200%`).toBeLessThanOrEqual(0);
+        expect(state.clipped).toBe(0);
+      }
+    }
+  });
+
+  test('[ADR-0009] aberturas apresentam a headline na tela curta de 320 por 568 sem cortar o restante', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    for (const path of [HOME, HOW]) {
+      await page.goto(path);
+      await page.evaluate(() => document.fonts.ready);
+      await expect(page.getByRole('heading', { level: 1 })).toBeInViewport();
+      const lastLink = page.locator('main > section').first().getByRole('link').last();
+      await lastLink.scrollIntoViewIfNeeded();
+      await expect(lastLink).toBeInViewport();
+    }
+  });
+
+  test('[REQ-028] percurso amplia a leitura e distingue interesse, aquisição e realização sem ocultar direitos', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.goto(HOW);
+    await page.evaluate(() => document.fonts.ready);
+    const steps = page.locator('#percurso ol > li');
+    const explanation = await steps.nth(1).locator('.lx-numbered__text').boundingBox();
+    expect(explanation?.width).toBeGreaterThanOrEqual(600);
+
+    const realization = steps.nth(5);
+    const acquisition = realization.getByRole('group', { name: 'Interesse e aquisição' });
+    const development = realization.getByRole('group', { name: 'Realização imobiliária' });
+    await expect(acquisition).toBeVisible();
+    await expect(development).toBeVisible();
+    await expect(acquisition.locator('[data-pair="modality"]')).toBeVisible();
+    await expect(acquisition).toContainText('Direito de Uso');
+    await expect(acquisition).toContainText('Uma manifestação de interesse não os constitui.');
+    await expect(development).toContainText('responsáveis habilitados');
+
+    for (const width of [768, 1024, 1279, 1280, 1440, 1599, 1600, 1920]) {
+      await page.setViewportSize({ width, height: 900 });
+      const sides = acquisition.locator('[data-pair="modality"] .lx-comparison__item');
+      const widths = await sides.evaluateAll((nodes) =>
+        nodes.map((node) => node.getBoundingClientRect().width),
+      );
+      expect(Math.abs(widths[0]! - widths[1]!)).toBeLessThanOrEqual(1);
+      const textWidths = await sides
+        .locator('p')
+        .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().width));
+      expect(Math.min(...textWidths)).toBeGreaterThanOrEqual(260);
+    }
+  });
+
+  test('[REQ-028] blocos de posicionamento da Home têm até quatro linhas com as fontes reais', async ({
+    page,
+  }) => {
+    const copy = [
+      ...text.home.hero.body,
+      text.home.promise.intro,
+      text.home.promise.body[0],
+      text.home.promise.body[2],
+      ...text.home.brand.mechanisms.items.flatMap((item) => item.text),
+      ...text.home.living.pillars[2].text,
+      ...text.home.mechanism.steps.flatMap((step) => step.text),
+    ];
+    await page.goto(HOME);
+    await page.evaluate(() => document.fonts.ready);
+    for (const width of [320, 390, 767, 768, 1023, 1024, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const line of copy) {
+        const paragraph = page.getByText(line.replaceAll('**', ''), { exact: true });
+        // Rich may place a highlighted term inside the paragraph; measure the complete rendered block.
+        const rendered = await paragraph.first().evaluate((node) => {
+          const block = node.closest('p')!;
+          return (
+            block.getBoundingClientRect().height /
+            Number.parseFloat(getComputedStyle(block).lineHeight)
+          );
+        });
+        expect(rendered, `${width}px: ${line}`).toBeLessThanOrEqual(4.05);
+      }
+    }
+  });
+
   for (const [name, path] of [
     ['home', HOME],
     ['how', HOW],
@@ -129,10 +306,11 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     test.slow();
     // [papel, página B2C, seletor B2C, página BP, seletor BP] — o B2C é a referência (catalog §14.9). No B2B, perguntas e
     // títulos de mecanismo são heading interno (`display-s`, `D-BP-22`): saem as linhas "pergunta" e "display-m". As
-    // Headlines (H1 do Como funciona, H2) seguem o teto do Hero da Home (`D-BP-23`), não a escala do B2C.
+    // Headlines (H1 do Como funciona, H2) seguem o teto do Hero da Home (`D-BP-23`), não a escala do B2C. Desde
+    // `D-BP-33`, o H1 do Hero da Home também: a escala das aberturas é local ao B2B e sai desta paridade (era `D-BP-18`);
+    // o teste do teto abaixo prova a nova hierarquia.
     // B2C closings have a separate italic scale (D-B2C-22); compare the shared roles outside those closings.
     const roles = [
-      ['H1 do Hero da Home', '/', '.lx-home-hero__title', HOME, '#inicio h1'],
       ['CTA do Hero da Home', '/', '.lx-home-hero__action', HOME, '#inicio .lx-button'],
       [
         'CTA sobre o fechamento',
@@ -353,10 +531,11 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     page,
   }) => {
     test.slow();
-    // Papéis editoriais (`D-BP-22`); a exceção aprovada é o H1 do Hero da Home (`D-BP-18`). As três linhas da fórmula são
-    // heading interno (`D-BP-23`). Eyebrow, ordinal, rótulo de fase e os operadores + e = têm papéis próprios.
+    // Papéis editoriais (`D-BP-22`); a exceção aprovada é o H1 de abertura das duas páginas (`D-BP-33`; antes, só o do
+    // Hero da Home, `D-BP-18`), provado no teste do teto. As três linhas da fórmula são heading interno (`D-BP-23`).
+    // Eyebrow, ordinal, rótulo de fase e os operadores + e = têm papéis próprios.
     const ROLES = {
-      'Section Headline': 'main :is(h1, h2).lx-headline:not(.lx-headline--home-hero)',
+      'Section Headline': 'main h2.lx-headline',
       'Internal Heading': 'main :is(h3, h4, h5, h6):not(.lx-eyebrow), main .lx-equation__term',
       'Lead/Subheadline': 'main p.lx-subheadline:not(.lx-section-closing *)',
       Body: 'main :is(p, li).lx-body',
@@ -390,6 +569,7 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
   }) => {
     test.slow();
     // `D-BP-23`: o Hero da Home é o maior papel do site. Cobre os papéis editoriais, a fórmula e qualquer outro texto.
+    // `D-BP-33`: o H1 do Como funciona tem a mesma escala, e as Headlines de seção ficam estritamente abaixo.
     const ROLES = {
       'Hero Headline': 'main #inicio h1',
       'Section Headline': 'main :is(h1, h2).lx-headline:not(.lx-headline--home-hero)',
@@ -419,6 +599,15 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
           for (const size of found)
             expect(size, `${role} em ${path} a ${width}px`).toBeLessThanOrEqual(hero!);
         }
+        // `D-BP-33`: as duas aberturas têm a escala do Hero, e toda Headline de seção ou statement fica abaixo dela.
+        const openings = await sizes('main .lx-bp-opening h1');
+        expect(openings, `H1 de abertura em ${path} a ${width}px`).toEqual([hero]);
+        const headlines = await sizes(
+          'main h2.lx-headline, main .lx-section-closing p.lx-headline',
+        );
+        expect(headlines.length, `Headlines de seção em ${path}`).toBeGreaterThan(0);
+        for (const size of headlines)
+          expect(size, `Headline de seção em ${path} a ${width}px`).toBeLessThan(hero!);
         // Qualquer outro texto: todo elemento com texto próprio no <main>.
         const largest = await page
           .locator('main')
@@ -549,8 +738,59 @@ test.describe('Brand Partners — copy, estrutura e navegação (REQ-028, catalo
       .evaluateAll((links) => links.map((link) => link.getAttribute('href') ?? ''));
     expect(anchors).toEqual(BRAND_PARTNERS_HOW_SECTIONS.slice(1).map((id) => `#${id}`));
     for (const anchor of anchors) await expect(page.locator(anchor)).toHaveCount(1);
+
+    // O percurso B2B tem sete etapas; a numeração nativa continua entre os três grupos.
+    const lists = page.locator('#percurso .lx-answers--phases .lx-answers__content > ol');
+    expect(
+      await lists.evaluateAll((nodes) =>
+        nodes.map((node) => ({
+          start: (node as HTMLOListElement).start,
+          count: node.children.length,
+        })),
+      ),
+    ).toEqual([
+      { start: 1, count: 3 },
+      { start: 4, count: 2 },
+      { start: 6, count: 2 },
+    ]);
+    const steps = lists.locator(':scope > li');
+    await expect(steps.locator(':scope > .lx-ordinal')).toHaveText([
+      '01',
+      '02',
+      '03',
+      '04',
+      '05',
+      '06',
+      '07',
+    ]);
+    const realization = steps.nth(5);
+    await expect(realization.locator('[data-pair="modality"]')).toHaveCount(1);
+    const paragraphs = await realization.locator('.lx-numbered__text p').allTextContents();
+    const interest = paragraphs.findIndex((line) => /Após a publicação da Home Edition/.test(line));
+    const formalSale = paragraphs.findIndex((line) =>
+      /A (?:comercialização|venda) formal/.test(line),
+    );
+    const execution = paragraphs.findIndex((line) => /A incorporadora investe/.test(line));
+    expect(interest).toBeGreaterThanOrEqual(0);
+    expect(formalSale).toBeGreaterThan(interest);
+    expect(execution).toBeGreaterThan(formalSale);
+    const acquisition = realization.getByRole('group', { name: 'Interesse e aquisição' });
+    expect((await acquisition.locator('p').allTextContents()).slice(-2)).toEqual([
+      'Os respectivos direitos nascem da formalização da aquisição, respeitando as condições e os compromissos aplicáveis.',
+      'Uma manifestação de interesse não os constitui.',
+    ]);
+    await expect(
+      realization.getByText(
+        'Enquanto essa estrutura estiver aberta, a Second Home pode contemplar Owner, Co-Owner ou ambos.',
+        { exact: true },
+      ),
+    ).toBeVisible();
     const sides = page.locator('[data-pair="modality"] .lx-comparison__item');
     await expect(sides).toHaveCount(2);
+    await expect(sides.locator('p')).toHaveText([
+      'Adquire a propriedade integral da Second Home.',
+      'Adquire uma participação societária na SPE proprietária da Second Home, com Direito de Uso conforme as regras aplicáveis.',
+    ]);
     const fonts = await sides
       .locator('h5')
       .evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).fontSize));

@@ -69,7 +69,7 @@ export function BrandPartnersHomePage() {
       {/* PICTURE — Cinematic Hero (M1): o valor para quem vive e para a marca já nos primeiros segundos. */}
       <section
         id={HERO}
-        className="lx-hero lx-hero--uniform"
+        className="lx-hero lx-hero--uniform lx-bp-opening"
         data-surface="blue"
         aria-labelledby={titleOf(HERO)}
       >
@@ -237,7 +237,7 @@ export function BrandPartnersHomePage() {
       {/* Como acontece — White: da identidade da marca à Second Home em sete passos; o link aprofunda no Como funciona. */}
       <section
         id={MECHANISM}
-        className="lx-section"
+        className="lx-section lx-bp-journey"
         data-surface="white"
         aria-labelledby={titleOf(MECHANISM)}
       >
@@ -256,7 +256,7 @@ export function BrandPartnersHomePage() {
                   <span className="lx-ordinal lx-numbered__number" aria-hidden="true">
                     {ordinal(index)}
                   </span>
-                  <h3 className="lx-display-s">
+                  <h3 className="lx-display-s lx-numbered__text--wide">
                     <Rich value={step.title} />
                   </h3>
                   <div className="lx-numbered__text lx-stack">

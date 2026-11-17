@@ -24,6 +24,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   com limite por papel —, cada um com a consequência antes do formulário. Correções do Design System: menu do App Shell,
   campos de escolha e avisos com texto ampliado e alvo do link de volta. **Continua fechado:** os atos só executam com a ativação
   do ciclo, ainda não autorizada.
+- Second Home Partners (REQ-105): seção editorial “Onde a parceria pode acontecer” entre Benefícios e Soluções,
+  com três cards para imóveis sob demanda em condomínios parceiros, empreendimentos em desenvolvimento e entregues;
+  avaliação condicionada, imagens ilustrativas e copy aprovada preservada.
+- Second Home Partners (SHP1, REQ-105, spec `catalog` §20, ADR-0028): página `/second-home-partner` para incorporadoras
+  de empreendimentos de lazer, com três benefícios — diferenciação comercial, marketing e vendas e participação nos
+  resultados (nas receitas de gestão das locações do empreendimento e, como possibilidade, no Luxtory Club), sem
+  percentuais nem valores —, soluções para os proprietários (Luxchange e Luxplus, planejados no Luxtory Club e ainda
+  não disponíveis, e locação de temporada com gestão da Luxtory, independente do Club), perguntas da incorporadora
+  (vendas e ociosidade, participação, operação, decisão dos proprietários e qualquer fase) e formulário próprio de
+  contato, separado do Brand Partners. **Fechada em Production** até a
+  autorização do fundador.
 - Reserva de uso próprio (W12, spec `booking`, ADR-0026): na Área do Titular, Owner e Co-Owner reservam noites de uso
   próprio num período contínuo — o Co-Owner dentro da própria janela e do saldo do Direito de Uso por categoria, em
   permanências de até 14 noites seguidas, somando as reservas adjacentes; o Owner sobre a própria capacidade, sem janela,
@@ -57,6 +68,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   cadastrada.
 
 ### Changed
+
+- Design System: `lx-siblings--trio` fica empilhado abaixo do `lg`, como o contrato do componente define — a regra
+  `auto-fill` do `md` deixava o terceiro item sozinho numa linha de dois (2 + 1) entre 768 e 1023 px. Vale para
+  Second Home Partners, Sobre e Como funciona do Brand Partners.
+- Brand Partners (`D-BP-33`, `catalog` §14.12): headlines com mais protagonismo em `/brand-partner` e
+  `/brand-partner/como-funciona` — o título de abertura das duas páginas passa a ser o maior texto da jornada (até
+  56 px no desktop e 40 px no celular) e os títulos de seção ficam logo abaixo (até 44 px), em até duas linhas do
+  tablet em diante. Copy, fotografia, composição, formulário e demais textos preservados. Revisão `01` v10.4 emitida
+  com esta publicação, sem nova regra, funcionalidade ou disponibilidade operacional.
+- Brand Partners (`D-BP-32`, `catalog` §14.11): Heros de abertura com enquadramento mobile mais curto, percurso com
+  explicações mais largas e áreas abertas de interesse/aquisição e realização na etapa 06; Owner/Co-Owner e direitos
+  preservados. Copy mais concisa sobre estilo de vida, direção de produto, licenciamento e responsabilidades, sem
+  promessa de gratuidade geral. Ajustes de composição exclusivos da jornada, com as fontes e os tokens existentes.
+- Brand Partners (`D-BP-31`, `catalog` §14.10): proposta de valor para a marca, Discovery orientando Home Concepts,
+  licenciamento com incorporadoras antes da Home Edition definitiva e percurso B2B em sete etapas. Governança,
+  direitos Owner/Co-Owner, formulário e Design System preservados. Revisão normativa mínima do `01` v10.4 preparada
+  para aprovação do diff; emissão e publicação dependem de autorização específica.
 
 - Ontologia Home Concept → Home Edition → Second Home (W4.2, `01` v10.2, ADR-0019): a Home Edition passa a ser uma
   configuração específica e replicável de Second Home — nome, descrição, tipologia, configuração dos espaços, área

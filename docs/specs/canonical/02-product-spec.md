@@ -1,6 +1,14 @@
 # 02 — Product Spec — Luxtory Branded Second Home
 
-2026-11-03 · Luxtory (fundador) · Versão 4.4 — final · Base normativa: 01 v10.2 (192 BRs) · PD-001 a PD-011 ratificados
+2026-11-13 · Luxtory (fundador) · Versão 4.5 — final · Base normativa: 01 v10.5 (192 BRs) · PD-001 a PD-011 ratificados
+
+Revisão Second Home Partners autorizada pelo fundador (2026-11-12; comunicação do modelo comercial em 2026-11-13, antes
+da emissão): acrescenta o REQ-105 — jornada pública Second Home Partners e formulário de incorporadoras — e a linha
+correspondente no §2, sem alterar Business Rules, PDs ou invariantes; a matriz BR → REQ registra o REQ-105 nas BR-040,
+BR-041 e BR-374. Numeração sequencial depois do REQ-104, porque a faixa do §6 está completa. Rastreabilidade técnica em
+`03` v3.17 (TECH-057); aceite em [`catalog` §20](../catalog.md#20-second-home-partners-público-shp1). Total normativo:
+**67 REQ · 6 INV · 11 PD**.
+Emitida com o merge do PR da SHP1.
 
 Revisão W13 autorizada pelo fundador (2026-11-03): acrescenta à v4.3 o REQ-084 — invalidação de reserva de uso
 próprio comprovadamente não autorizada, distinta de cancelamento — e o edge case 16, sem alterar Business Rules,
@@ -59,6 +67,7 @@ O produto é a **Second Home**; os conceitos de que deriva são **Home Concept**
 | Carteira | Créditos Luxchange |
 | Admin | Operação, parâmetros, conformidade e exceções |
 | Brand Partners público (BP1) | Home `/brand-partner`, Como funciona `/brand-partner/como-funciona` e formulário para iniciar conversa com a Luxtory (REQ-028) |
+| Second Home Partners público (SHP1) | Página `/second-home-partner` e formulário para incorporadoras iniciarem conversa com a Luxtory (REQ-105) |
 | Portal Brand Partner (planejado, BP2) | Representantes autorizados consultam informações pertinentes à própria parceria; somente leitura, após os critérios de entrada do REQ-029 |
 
 Existir no modelo de negócio não concede acesso ao software.
@@ -188,6 +197,27 @@ representação do usuário perante a parte e a Brand Partner; autorização e r
 especificado de forma testável. Os controles devem ser comprovados antes de disponibilizar o portal.
 Fonte ausente ou indisponível é apresentada como **“dados indisponíveis”**, nunca como “zero vendas”.
 O acesso respeita REQ-014 e os direitos sobreviventes aplicáveis; não decorre do envio do formulário.
+
+### 6.2. Jornada Second Home Partners
+
+**REQ-105 \[BR-040, BR-041, BR-374\]** — A jornada pública Second Home Partners, para incorporadoras de
+empreendimentos de lazer próprios (`01` §1), possui página em `/second-home-partner`, com navegação própria, sem links
+para as jornadas B2C e Brand Partners e com portão de publicação independente. O CTA **“Conversar sobre seu
+empreendimento”** leva ao formulário da página (`/second-home-partner#conversa`). A comunicação segue o Framework
+Second Home Partners, dentro dos limites deste documento e do `01`: o Luxtory Club e seus mecanismos aparecem só como
+modelo previsto, nunca como disponíveis, e a participação de imóveis parceiros depende de regras próprias.
+
+O formulário solicita Nome, Incorporadora, E-mail, Empreendimento e localização e Fase do empreendimento
+obrigatórios; Mensagem e Site são opcionais. A fase é uma de: planejamento ou lançamento; obra ou comercialização;
+entregue ou em operação. Não solicita CNPJ, telefone, valores, documentos ou dados de compradores. Envia a solicitação
+à caixa corporativa definida para a jornada, com estados acessíveis de validação, envio, sucesso e erro, nas mesmas
+condições de aceite, falha e nova tentativa do REQ-028. A submissão inicia conversa: não constitui parceria,
+afiliação, adesão ao Luxtory Club, conta ou cadastro, e não cria CRM nem histórico na aplicação. O propósito
+comunicado é: **“Usaremos seus dados somente para responder ao contato e avaliar uma possível parceria.”** Não há uso
+de marketing sem autorização. A página PODE comunicar, como benefício, a participação da incorporadora nas receitas de
+gestão das locações originadas pelo empreendimento e, como possibilidade condicionada, nos resultados de serviços do
+Luxtory Club (`01` §1 e §35), sem percentuais, fórmulas, valores, exemplos ou garantia de pagamento; as condições
+econômicas ficam no contrato.
 
 ## 7. Direito de Uso, calendário e capacidade
 
@@ -374,8 +404,8 @@ As 192 BRs do `01` v10.2, uma a uma. Serve como mecanismo de auditoria contra om
 | BR-034 | REQ-022 | BR-243 | REQ-070 |
 | BR-035 | REQ-022 | BR-244 | REQ-070 |
 | BR-036 | REQ-022 | BR-245 | REQ-070 |
-| BR-040 | REQ-023, 028 | BR-250 | REQ-071, 041 |
-| BR-041 | REQ-023, 028 | BR-251 | REQ-071 |
+| BR-040 | REQ-023, 028, 105 | BR-250 | REQ-071, 041 |
+| BR-041 | REQ-023, 028, 105 | BR-251 | REQ-071 |
 | BR-042 | REQ-023, 014 | BR-252 | REQ-071 |
 | BR-043 | REQ-023, 014 | BR-253 | REQ-071 |
 | BR-050 | REQ-024 | BR-254 | REQ-071 |
@@ -428,7 +458,7 @@ As 192 BRs do `01` v10.2, uma a uma. Serve como mecanismo de auditoria contra om
 | BR-131 | REQ-038 | BR-360 | REQ-094, 095 |
 | BR-132 | REQ-038 | BR-361 | REQ-094, 095 |
 | BR-140 | REQ-050 | BR-373 | REQ-100 |
-| BR-141 | REQ-050 | BR-374 | REQ-101, 028 |
+| BR-141 | REQ-050 | BR-374 | REQ-101, 028, 105 |
 | BR-142 | REQ-050 | BR-375 | REQ-102, 015 |
 | BR-143 | REQ-050, 095 | BR-376 | REQ-103 |
 | BR-144 | REQ-050 | BR-377 | REQ-100 |
@@ -468,6 +498,11 @@ O documento está completo, rastreável às 192 BRs, sem conteúdo técnico, sem
 evolução planejada e não está pronto para implementação antes dos critérios de entrada. BP0 é documental;
 não declara nenhum dos dois requisitos entregue em software. O restante do B2C permanece deliberadamente
 pausado no roadmap, sem remover seu escopo normativo.
+
+**Recorte SHP1 (2026-11-12):** REQ-105 entra em software na SHP1. Não autoriza afiliação de imóveis, Membership de
+proprietários parceiros nem qualquer mecanismo do Luxtory Club para esses imóveis. A gestão digital de locações e a
+participação da incorporadora (`01` §1 e §35) não são executadas por software na SHP1: apuração, pagamento, split e
+integração com plataformas de locação dependem de requisito próprio.
 
 **Recorte M0 (2026-10-19):** a ontologia Home Concept → Home Edition → Second Home, o modelo da Home Edition, a
 média projetada de investimento e a correção estrutural da manifestação de interesse do REQ-022 entram em software

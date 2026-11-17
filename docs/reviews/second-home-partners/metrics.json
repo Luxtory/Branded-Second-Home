@@ -1,0 +1,267 @@
+{
+  "metrics": [
+    {
+      "width": 320,
+      "overflow": 0,
+      "cards": [
+        {
+          "width": 278.40625,
+          "height": 480,
+          "y": -745.9375,
+          "loaded": true,
+          "position": "64% 45%",
+          "textFits": true
+        },
+        {
+          "width": 278.40625,
+          "height": 480,
+          "y": -249.9375,
+          "loaded": true,
+          "position": "50% 35%",
+          "textFits": true
+        },
+        {
+          "width": 278.40625,
+          "height": 480,
+          "y": 246.0625,
+          "loaded": true,
+          "position": "50% 50%",
+          "textFits": true
+        }
+      ],
+      "contrast": []
+    },
+    {
+      "width": 390,
+      "overflow": 0,
+      "cards": [
+        {
+          "width": 342.8125,
+          "height": 480,
+          "y": -745.5625,
+          "loaded": true,
+          "position": "64% 45%",
+          "textFits": true
+        },
+        {
+          "width": 342.8125,
+          "height": 480,
+          "y": -249.5625,
+          "loaded": true,
+          "position": "50% 35%",
+          "textFits": true
+        },
+        {
+          "width": 342.8125,
+          "height": 480,
+          "y": 246.4375,
+          "loaded": true,
+          "position": "50% 50%",
+          "textFits": true
+        }
+      ],
+      "contrast": [
+        {
+          "card": 1,
+          "tag": "h3",
+          "ratio": 7.683533560433201
+        },
+        {
+          "card": 1,
+          "tag": "p",
+          "ratio": 7.93841876391165
+        },
+        {
+          "card": 2,
+          "tag": "h3",
+          "ratio": 7.617957652471989
+        },
+        {
+          "card": 2,
+          "tag": "p",
+          "ratio": 7.583810638629478
+        },
+        {
+          "card": 3,
+          "tag": "h3",
+          "ratio": 7.536140978156361
+        },
+        {
+          "card": 3,
+          "tag": "p",
+          "ratio": 7.389984873876549
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "overflow": 0,
+      "cards": [
+        {
+          "width": 690.5625,
+          "height": 480,
+          "y": -754.859375,
+          "loaded": true,
+          "position": "64% 45%",
+          "textFits": true
+        },
+        {
+          "width": 690.5625,
+          "height": 480,
+          "y": -254.515625,
+          "loaded": true,
+          "position": "50% 35%",
+          "textFits": true
+        },
+        {
+          "width": 690.5625,
+          "height": 480,
+          "y": 245.828125,
+          "loaded": true,
+          "position": "50% 50%",
+          "textFits": true
+        }
+      ],
+      "contrast": []
+    },
+    {
+      "width": 1024,
+      "overflow": 0,
+      "cards": [
+        {
+          "width": 292.75,
+          "height": 505.3125,
+          "y": 232.953125,
+          "loaded": true,
+          "position": "64% 45%",
+          "textFits": true
+        },
+        {
+          "width": 292.75,
+          "height": 505.3125,
+          "y": 232.953125,
+          "loaded": true,
+          "position": "50% 35%",
+          "textFits": true
+        },
+        {
+          "width": 292.75,
+          "height": 505.3125,
+          "y": 232.953125,
+          "loaded": true,
+          "position": "50% 50%",
+          "textFits": true
+        }
+      ],
+      "contrast": []
+    },
+    {
+      "width": 1440,
+      "overflow": 0,
+      "cards": [
+        {
+          "width": 416.4375,
+          "height": 480,
+          "y": 245.84375,
+          "loaded": true,
+          "position": "64% 45%",
+          "textFits": true
+        },
+        {
+          "width": 416.4375,
+          "height": 480,
+          "y": 245.84375,
+          "loaded": true,
+          "position": "50% 35%",
+          "textFits": true
+        },
+        {
+          "width": 416.4375,
+          "height": 480,
+          "y": 245.84375,
+          "loaded": true,
+          "position": "50% 50%",
+          "textFits": true
+        }
+      ],
+      "contrast": [
+        {
+          "card": 1,
+          "tag": "h3",
+          "ratio": 7.514218675661066
+        },
+        {
+          "card": 1,
+          "tag": "p",
+          "ratio": 7.8417475538443995
+        },
+        {
+          "card": 2,
+          "tag": "h3",
+          "ratio": 7.3788623068782435
+        },
+        {
+          "card": 2,
+          "tag": "p",
+          "ratio": 7.503110954603129
+        },
+        {
+          "card": 3,
+          "tag": "h3",
+          "ratio": 7.514218675661066
+        },
+        {
+          "card": 3,
+          "tag": "p",
+          "ratio": 7.389984873876549
+        }
+      ]
+    },
+    {
+      "width": 1920,
+      "overflow": 0,
+      "cards": [
+        {
+          "width": 445.328125,
+          "height": 480,
+          "y": 245.859375,
+          "loaded": true,
+          "position": "64% 45%",
+          "textFits": true
+        },
+        {
+          "width": 445.328125,
+          "height": 480,
+          "y": 245.859375,
+          "loaded": true,
+          "position": "50% 35%",
+          "textFits": true
+        },
+        {
+          "width": 445.34375,
+          "height": 480,
+          "y": 245.859375,
+          "loaded": true,
+          "position": "50% 50%",
+          "textFits": true
+        }
+      ],
+      "contrast": []
+    }
+  ],
+  "zoom": [
+    {
+      "width": 390,
+      "globalOverflow": 192,
+      "sectionOverflow": 0,
+      "textFits": true
+    },
+    {
+      "width": 1440,
+      "globalOverflow": 0,
+      "sectionOverflow": 0,
+      "textFits": true
+    }
+  ],
+  "errors": []
+}

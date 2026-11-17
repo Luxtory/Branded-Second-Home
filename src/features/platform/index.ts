@@ -114,6 +114,7 @@ export {
 export { unavailableKeys } from './presentation/unavailable';
 export {
   isBrandPartnersSiteOpen,
+  isSecondHomePartnersSiteOpen,
   isInterestWriteOpen,
   isPublicSiteOpen,
 } from './presentation/public-site';
