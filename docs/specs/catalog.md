@@ -1963,3 +1963,16 @@ Aceite: perfis válidos aceitos até o adapter determinístico; empresa opcional
 
 
 Ajustes de encaixe verificados na implementação de §20.6: as descrições dos três contextos foram condensadas sem mudar o estágio ou a imagem; o limite contratual do primeiro benefício e as condições da etapa Proposta aparecem em parágrafos separados. O processo usa duas colunas de768 a1279 e quatro a partir de1280, mantendo as quatro etapas. O escopo SHP permite encolhimento proporcional do lockup oficial no cabeçalho e quebra natural de ações com fonte ampliada; nenhum asset ou tipografia é alterado. Validação de concisão cobre também768,1024 e1920.
+
+
+### 20.7 Refinamento editorial — Hero, oportunidade e fechamentos (2026-11-17)
+
+Pedido do fundador após o Preview do PR94: as duas frases do Hero devem ocupar blocos sucessivos, segunda em itálico. Um único H1; em telas estreitas cada frase reflui naturalmente, sem encolher fonte ou provocar overflow.
+
+A oportunidade passa ao split6/6 do Core, texto primeiro e fotografia depois no celular, texto à esquerda e imagem à direita no desktop. Reaproveitar `public/images/como-funciona/problema-imovel.jpg` (1024×576, autorizado como asset provisório na §13.11), com getImageProps, dimensões/sizes/alt, imagem lazy e sem estilo inline bloqueado pela CSP. A casa à beira-mar ilustra uso de imóvel de lazer e outros destinos; não comprova afiliação à rede. As três fotografias por estágio permanecem intactas.
+
+Narrativa “Imagine seu cliente adquirindo…” com parágrafos curtos: imóvel afiliado a um clube, locação nos períodos sem uso e intercâmbio em outros destinos. Benefícios comerciais apresentados como argumentos que podem ajudar a superar objeções e encurtar o ciclo, sem garantia. Fechamentos editoriais em Oportunidade, Intermediadores e Processo usam `lx-section-closing` + `lx-headline`, centralizados e com o mesmo tratamento `closingStyle=subtle` da Home. Condições, notas ilustrativas e privacidade mantêm corpo legível, sem virar claims.
+
+Informar no bloco de intermediadores e FAQ que podem apresentar imóveis já comercializados e imóveis que ainda comercializarão. A afiliação depende de avaliação da Luxtory e adesão de cada proprietário; não afilia por ter havido uma venda. “Vitalícia” foi sugerida para análise; a duração não foi definida no modelo/contrato. Julgamento editorial: explorar receita depois da venda e manter recorrente como oportunidade, sem inventar continuidade perpétua (BR-352). Sem revisão econômica, API, formulário, parâmetros ou serviço operacional novo.
+
+Aceite: frases do H1 em linhas independentes no desktop, reflow no celular; foto carregada no split, sem CSP errors; fechamentos centralizados em Newsreader no papel de headline do Core; parágrafos até3linhas nas larguras verificadas≥390 e até4 a320; sem clipping/overflow até1920 e em fonte200%; axe0 a390/1440 e fluxo existente de contato preservado. Atualizar capturas e CI do PR94, mantendo a condição de lançamento de §20.6.

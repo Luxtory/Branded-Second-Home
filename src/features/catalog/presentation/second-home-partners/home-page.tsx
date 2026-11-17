@@ -48,6 +48,11 @@ function Paragraphs({ lines }: { readonly lines: readonly string[] }) {
  * Os três perfis compartilham a mensagem e o contato, com um bloco próprio para intermediadores (`D-SHP-14`).
  */
 export function SecondHomePartnersHomePage() {
+  const { props: opportunityPhoto } = getImageProps({
+    ...opportunity.image,
+    // A 16:9 source covers a 4:3 frame: reserve the width needed at the frame's height.
+    sizes: '(min-width: 1024px) 65vw, 135vw',
+  });
   return (
     <SecondHomePartnersSite>
       {/* PICTURE — Hero tipográfico (Deep): valor e liberdade para os três perfis. */}
@@ -61,7 +66,8 @@ export function SecondHomePartnersHomePage() {
           <div className="lx-hero__copy">
             <Eyebrow>{hero.marker}</Eyebrow>
             <h1 id={titleOf(HERO)} className="lx-headline lx-headline--home-hero">
-              <HeadlineText headline={hero.title} />
+              <span>{hero.title.lead}</span>
+              <em>{hero.title.turn}</em>
             </h1>
             <div className="lx-stack">
               <Paragraphs lines={hero.paragraphs} />
@@ -82,14 +88,25 @@ export function SecondHomePartnersHomePage() {
         aria-labelledby={titleOf(OPPORTUNITY)}
       >
         <div className="lx-container">
-          <div className="lx-section-head">
-            <Eyebrow>{opportunity.marker}</Eyebrow>
-            <h2 id={titleOf(OPPORTUNITY)} className="lx-headline">
-              <HeadlineText headline={opportunity.title} />
-            </h2>
+          <div className="lx-columns">
+            <div className="lx-stack">
+              <div className="lx-section-head">
+                <Eyebrow>{opportunity.marker}</Eyebrow>
+                <h2 id={titleOf(OPPORTUNITY)} className="lx-headline">
+                  <HeadlineText headline={opportunity.title} />
+                </h2>
+              </div>
+              <Paragraphs lines={opportunity.paragraphs} />
+            </div>
+            <figure className="lx-media lx-shp-opportunity__media">
+              {/* eslint-disable-next-line @next/next/no-img-element -- getImageProps optimizes the approved asset; omit inline style for the strict CSP. */}
+              <img {...opportunityPhoto} alt={opportunity.image.alt} style={undefined} />
+            </figure>
           </div>
-          <div className="lx-stack lx-stack--editorial">
-            <Paragraphs lines={opportunity.paragraphs} />
+          <div className="lx-section-closing lx-stack">
+            <p className="lx-headline">
+              <HeadlineText headline={opportunity.closing} />
+            </p>
           </div>
         </div>
       </section>
@@ -233,8 +250,13 @@ export function SecondHomePartnersHomePage() {
               </li>
             ))}
           </ul>
-          <div>
-            <ActionLink href={`#${CONVERSATION}`} label={intermediaries.action} primary large />
+          <div className="lx-section-closing lx-stack">
+            <p className="lx-headline">
+              <HeadlineText headline={intermediaries.closing} />
+            </p>
+            <div className="lx-hero__actions">
+              <ActionLink href={`#${CONVERSATION}`} label={intermediaries.action} primary large />
+            </div>
           </div>
         </div>
       </section>
@@ -267,8 +289,13 @@ export function SecondHomePartnersHomePage() {
                 </li>
               ))}
             </ol>
-            <div>
-              <ActionLink href={`#${CONVERSATION}`} label={process.action} primary large />
+            <div className="lx-section-closing lx-stack">
+              <p className="lx-headline">
+                <HeadlineText headline={process.closing} />
+              </p>
+              <div className="lx-hero__actions">
+                <ActionLink href={`#${CONVERSATION}`} label={process.action} primary large />
+              </div>
             </div>
           </div>
         </div>

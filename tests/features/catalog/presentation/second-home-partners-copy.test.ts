@@ -26,6 +26,24 @@ const answerTo = (question: RegExp) =>
   text.faq.items.find((item) => question.test(item.question))?.answer.join(' ') ?? '';
 
 describe('copy Second Home Partners (catalog §20.6)', () => {
+  it('[REQ-105] oportunidade convida a imaginar, esclarece carteira anterior e não promete duração vitalícia', () => {
+    const html = renderToStaticMarkup(createElement(SecondHomePartnersHomePage));
+    const hero = html.match(/<h1[\s\S]*?<\/h1>/)?.[0] ?? '';
+    expect(hero).toMatch(
+      /<span>Mais valor para seu negócio\.\s*<\/span><em>Mais liberdade para seus clientes\.<\/em>/,
+    );
+    const opportunity = html.match(/<section id="oportunidade"[\s\S]*?<\/section>/)?.[0] ?? '';
+    expect(opportunity).toMatch(/Imagine seu cliente/);
+    expect(opportunity).toContain('problema-imovel');
+    expect(opportunity).toMatch(/lx-section-closing/);
+    expect(text.opportunity.closing.turn).toMatch(/oportunidade|possibilidade|pode/i);
+    expect(opportunity).not.toMatch(/\sstyle=/);
+    expect(answerTo(/já comercializei/)).toMatch(/já comercializou.*ainda vai comercializar/);
+    expect(answerTo(/já comercializei/)).toMatch(/avaliação.*adesão.*proprietário/);
+    expect(
+      PAGE.filter((line) => /vital[ií]ci|receita para sempre|você supera|você acelera/i.test(line)),
+    ).toEqual([]);
+  });
   it('[REQ-105] nove seções na mesma página, intermediadores depois das soluções; imagens informativas preservadas', () => {
     const html = renderToStaticMarkup(createElement(SecondHomePartnersHomePage));
     expect([...html.matchAll(/<section id="([^"]+)"/g)].map((match) => match[1])).toEqual([
@@ -46,7 +64,7 @@ describe('copy Second Home Partners (catalog §20.6)', () => {
     expect(section.match(/<article\b/g)).toHaveLength(3);
     expect(section).not.toMatch(/<(?:a|button)\b|tabindex=|\sstyle=/);
     expect(section).toContain('Imagens ilustrativas.');
-    expect(html.match(/<details\b/g)).toHaveLength(7);
+    expect(html.match(/<details\b/g)).toHaveLength(8);
   });
 
   it('[REQ-105] os três perfis se reconhecem no hero, FAQ e formulário', () => {

@@ -19,6 +19,9 @@ const CLOSED_SITE = 'http://127.0.0.1:3101';
 const PRODUCTION_SITE = 'http://127.0.0.1:3102';
 const HERO_TITLE = `${text.hero.title.lead}${text.hero.title.turn}`;
 const { conversation, form } = text;
+const CLOSINGS = [text.opportunity.closing, text.intermediaries.closing, text.process.closing].map(
+  (closing) => `${closing.lead}${closing.turn}`,
+);
 
 const normalized = (value: string) => value.replace(/\s+/g, ' ').trim();
 
@@ -41,6 +44,7 @@ const BLOCKS = [
   ...text.process.steps.flatMap((step) => step.paragraphs),
   ...text.faq.items.flatMap((item) => item.answer),
   conversation.intro,
+  ...CLOSINGS,
 ];
 
 /** Exceções registradas no catalog §20.2: quatro linhas por clareza, a 390 e 1440 px (nenhuma desde 2026-11-13). */
@@ -184,6 +188,79 @@ test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, 
 });
 
 test.describe('Second Home Partners — gate de UI (ADR-0009, catalog §20.5)', () => {
+  test('[REQ-105] Hero em duas frases, oportunidade com imagem e fechamentos no padrão da Home', async ({
+    page,
+  }) => {
+    await page.goto(PAGE);
+    await page.evaluate(() => document.fonts.ready);
+    const image = page.locator('#oportunidade img');
+    await image.scrollIntoViewIfNeeded();
+    await expect(image).toHaveAttribute('alt', text.opportunity.image.alt);
+    await expect
+      .poll(() => image.evaluate((node) => (node as HTMLImageElement).naturalWidth))
+      .toBeGreaterThan(0);
+    await expect(page.locator('h1')).toHaveCount(1);
+    await expect(page.locator('.lx-section-closing > .lx-headline')).toHaveCount(3);
+    const home = await page.context().newPage();
+    await home.goto('/');
+    await home.evaluate(() => document.fonts.ready);
+    for (const width of [320, 390, 768, 1024, 1440, 1920]) {
+      await page.setViewportSize({ width, height: 900 });
+      await home.setViewportSize({ width, height: 900 });
+      const lead = await page.locator('h1 > span').boundingBox();
+      const turn = await page.locator('h1 > em').boundingBox();
+      expect(lead).not.toBeNull();
+      expect(turn).not.toBeNull();
+      expect((lead?.y ?? 0) + (lead?.height ?? 0)).toBeLessThanOrEqual((turn?.y ?? 0) + 0.5);
+      if (width >= 1024) {
+        for (const selector of ['h1 > span', 'h1 > em']) {
+          const lines = await page
+            .locator(selector)
+            .evaluate(
+              (n) => n.getBoundingClientRect().height / parseFloat(getComputedStyle(n).lineHeight),
+            );
+          expect(lines).toBeLessThanOrEqual(1.05);
+        }
+      }
+      const copy = await page.locator('#oportunidade .lx-columns > .lx-stack').boundingBox();
+      const photo = await page.locator('#oportunidade figure').boundingBox();
+      if (width >= 1024)
+        expect(photo?.x).toBeGreaterThanOrEqual((copy?.x ?? 0) + (copy?.width ?? 0));
+      else expect(photo?.y).toBeGreaterThanOrEqual((copy?.y ?? 0) + (copy?.height ?? 0));
+      const styles = await page
+        .locator('.lx-section-closing > .lx-headline')
+        .evaluateAll((nodes) => {
+          const reference = getComputedStyle(document.querySelector('#oportunidade h2')!);
+          return nodes.map((n) => {
+            const s = getComputedStyle(n);
+            return {
+              center: s.textAlign,
+              family: s.fontFamily,
+              reference: reference.fontFamily,
+              size: s.fontSize,
+              italic: s.fontStyle,
+              lineHeight: s.lineHeight,
+            };
+          });
+        });
+      const homeClosing = await home
+        .locator('.lx-section-closing .lx-headline')
+        .first()
+        .evaluate((n) => {
+          const s = getComputedStyle(n);
+          return { size: s.fontSize, italic: s.fontStyle, lineHeight: s.lineHeight };
+        });
+      for (const style of styles) {
+        expect(style.center).toBe('center');
+        expect(style.family).toBe(style.reference);
+        expect(style.size).toBe(homeClosing.size);
+        expect(style.italic).toBe(homeClosing.italic);
+        expect(style.lineHeight).toBe(homeClosing.lineHeight);
+      }
+    }
+    await home.close();
+  });
+
   test('[REQ-105] página mantém reflow e texto integral com fonte ampliada a 200%', async ({
     page,
   }) => {

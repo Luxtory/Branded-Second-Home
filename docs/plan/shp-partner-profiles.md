@@ -30,3 +30,18 @@
 - Comunicação: `docs/specs/communication/framework-second-home-partners.md`, aplicação SHP, i18n.
 - Produto: `src/features/catalog/{domain,application}/second-home-partner-contact.ts`, `presentation/second-home-partners/{home-page,contact-form,paths}.tsx` (paths é `.ts`), CSS SHP.
 - Evidências: testes existentes da jornada, testes de comunicação/contratos, capturas e métricas em `docs/reviews/second-home-partners/profiles/`.
+
+## Refinamento do fundador — Hero, oportunidade e fechamentos (2026-11-17)
+
+Pedido: duas frases do Hero em blocos sucessivos; imagem no espaço da oportunidade; narrativa “Imagine seu cliente”; fechamentos centralizados no papel de headline da Home; mencionar imóveis já comercializados e futuras vendas, sujeitos a avaliação.
+
+Abordagem de implementação: reaproveitar o imóvel de lazer à beira-mar já autorizado no acervo (`como-funciona/problema-imovel.jpg`), no split6/6 do Core, sem gerar ou substituir os três assets por estágio. O Hero mantém um único H1, com as frases em blocos e a segunda em itálico; no celular cada frase reflui naturalmente. Fechamentos editoriais usam `lx-section-closing` + `lx-headline`, com o tratamento da Home. Condições e privacidade mantêm sua hierarquia legível.
+
+Julgamento de copy: “vitalícia” é persuasivo, mas duração e continuidade ainda não têm definição contratual (BR-352). Não inventar obrigação perpétua nem garantia de aceleração de vendas. Usar “receita depois da venda” e argumentos que podem encurtar o ciclo. Imóveis já vendidos podem ser apresentados à avaliação; a adesão do proprietário continua voluntária.
+
+Escopo: i18n, renderização, CSS local SHP, Framework/aplicação e brief. Sem alteração de formulário, API, negócio operacional, dependências, imagens originais ou produção. Continuação no PR94 de Preview.
+
+1. [x] Registrar o brief e atualizar a revisão editorial/hash do Framework; testes relevantes de narrativa, ausência de promessa vitalícia e encaixe visual.
+2. [x] Ajustar Hero, split com imagem, copy e três fechamentos; esclarecer carteira já vendida/futura na seção e FAQ.
+3. [x] Verificar parágrafos, imagem carregada, duas frases independentes, centralização/fonte, responsividade, reflow200%, axe e formulário existente. Lint/tipos/build, testes direcionados e capturas. CI remota registrada no PR.
+4. [x] Revisão independente do diff incremental; commit/push no PR94, preservar condição de lançamento.

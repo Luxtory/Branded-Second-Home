@@ -1,6 +1,6 @@
 # FRAMEWORK DE COMUNICAÇÃO — SECOND HOME PARTNERS
 
-Luxtory · versão de 2026-11-17, aprovada pelo fundador com a copy integral e a autorização de implementação. Substitui a versão de 2026-11-13. Documento congelado: nova versão substitui o arquivo inteiro. Fatos vêm de 01/02/03; aceite e impacto em catalog §20.6. Escopo: comunicação de lançamento; sem declaração técnica de prontidão operacional.
+Luxtory · versão de 2026-11-17, revisão editorial 2, com os ajustes de Hero, oportunidade e fechamentos pedidos pelo fundador. Substitui a primeira versão de 2026-11-17; ambas sucedem a versão de 2026-11-13. Documento congelado: nova versão substitui o arquivo inteiro. Fatos vêm de 01/02/03; aceite e impacto em catalog §20.6. Escopo: comunicação de lançamento; sem declaração técnica de prontidão operacional.
 
 # 1. OBJETIVO
 
@@ -59,11 +59,11 @@ Problem Aware → Product Aware. O parceiro entende o valor da parceria, os meca
 
 # P1 — PICTURE
 
-Hero comum aos três perfis. Dois parágrafos curtos, valor para o negócio e liberdade para o cliente. Copy no presente, preparada para lançamento quando o Club estiver pronto; sem nota de estruturação/indisponibilidade. Não inferir prontidão operacional desta decisão editorial.
+Hero comum aos três perfis. As duas frases ficam em blocos sucessivos, segunda em itálico, dentro de um único H1; reflow natural no celular. Dois parágrafos curtos, valor para o negócio e liberdade para o cliente. Copy no presente, preparada para lançamento quando o Club estiver pronto; sem nota de estruturação/indisponibilidade. Não inferir prontidão operacional desta decisão editorial.
 
 # P2 — PROBLEM
 
-Períodos sem uso e concentração em um único destino são argumentos para a conversa comercial, sem prometer aceleração de vendas.
+Convidar o parceiro a imaginar seu cliente adquirindo um imóvel de lazer afiliado a um clube, monetizando períodos sem uso e descobrindo outros destinos por intercâmbio. Split de texto e fotografia contextual já autorizada no acervo. Esses argumentos podem ajudar a superar objeções e encurtar o ciclo de vendas; não afirmar resultado garantido. Fechamento editorial centralizado no papel de headline da Home.
 
 # P3 — PROMISE
 
@@ -71,7 +71,7 @@ Três benefícios com o mesmo peso, nesta ordem: Receita recorrente; Diferencia�
 
 # P4 — PROOF
 
-Clareza dos contextos de imóveis, soluções para proprietários, bloco específico dos intermediadores, quatro etapas e FAQ. Luxchange: períodos e créditos para solicitar estadias; Luxplus: estadias disponíveis pagas sem créditos; locação: gestão digital com apoio local, independente do Club e contratada com cada proprietário. Não inventar rede, números, cases ou parceiros reais. Fotos fornecidas são ilustrativas.
+Clareza dos contextos de imóveis, soluções para proprietários, bloco específico dos intermediadores, quatro etapas e FAQ. Luxchange: períodos e créditos para solicitar estadias; Luxplus: estadias disponíveis pagas sem créditos; locação: gestão digital com apoio local, independente do Club e contratada com cada proprietário. Não inventar rede, números, cases ou parceiros reais. Fotos fornecidas são ilustrativas. Parceiros podem apresentar imóveis já comercializados e futuras vendas à avaliação, com adesão voluntária de cada proprietário.
 
 # P5 — PUSH
 
@@ -108,7 +108,9 @@ Uma página, nove seções: Hero, A oportunidade, Benefícios, Onde a parceria p
 - Copy integral aprovada no i18n; ajustes de parágrafo em pausas naturais para concisão. Zoom sem limite artificial de linhas.
 - No presente para lançamento; nenhuma funcionalidade de Club ou de apuração financeira é criada pela copy.
 - Participação dos primeiros parceiros explícita para os três perfis, sem porcentagem, fórmula, prazo, mínimo ou garantia. Bases econômicas de 01 §35 preservadas.
-- Três imagens fornecidas preservadas conforme estágio; sem prova social fictícia.
+- Três imagens fornecidas preservadas conforme estágio; fotografia adicional na oportunidade, reaproveitada do acervo autorizado, sem prova social fictícia.
+- Fechamentos editoriais centralizados com `lx-section-closing` e `lx-headline`, no padrão da Home; condições e privacidade mantêm a hierarquia de corpo.
+- “Receita vitalícia” não é adotada sem definição expressa de duração e continuidade contratual (BR-352). Explorar receita depois da venda, sem inventar obrigação perpétua.
 
 # 15. INPUT MÍNIMO
 

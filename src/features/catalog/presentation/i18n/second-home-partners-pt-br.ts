@@ -1,5 +1,5 @@
 /**
- * Copy de lançamento aprovada pelo fundador em 2026-11-17 (REQ-105, catalog §20.6, D-SHP-14–16).
+ * Copy de lançamento aprovada pelo fundador em 2026-11-17 (REQ-105, catalog §20.6, D-SHP-14–17).
  * Uma página para os três perfis; oportunidade recorrente dependente de faturamento e contrato.
  * A preparação editorial no presente não implementa serviços nem comprova prontidão operacional do Club.
  */
@@ -69,9 +69,21 @@ export const secondHomePartnersMessages = {
       turn: 'Um argumento a mais para vender.',
     },
     paragraphs: [
-      'Seu cliente encontra alternativas para os períodos sem uso do imóvel e pode solicitar estadias em outros destinos.',
-      'Você acrescenta um diferencial à venda e abre oportunidades de receita com os imóveis afiliados.',
+      'Imagine seu cliente adquirindo um imóvel de lazer afiliado a um clube.',
+      'Nos períodos sem uso, ele pode monetizar o imóvel com locação de temporada.',
+      'E trocar estadias por outros destinos da rede, aproveitando melhor seu patrimônio.',
+      'Você ganha argumentos para superar objeções à compra e ajudar a encurtar o ciclo de vendas.',
     ],
+    image: {
+      src: '/images/como-funciona/problema-imovel.jpg',
+      alt: 'Casa de lazer à beira-mar, com piscina e palmeiras ao pôr do sol.',
+      width: 1024,
+      height: 576,
+    },
+    closing: {
+      lead: 'Mais argumentos para vender. ',
+      turn: 'Oportunidades de receita depois da venda.',
+    },
   },
   benefits: {
     marker: 'Para nossos parceiros',
@@ -175,7 +187,8 @@ export const secondHomePartnersMessages = {
     },
     paragraphs: [
       'Você conhece os destinos, os imóveis e as pessoas que procuram por eles.',
-      'Com a Luxtory, esse relacionamento abre espaço para novas possibilidades de uso e de parceria.',
+      'Apresente imóveis que você já comercializou e os que ainda vai comercializar.',
+      'A afiliação depende da avaliação da Luxtory e da adesão de cada proprietário.',
     ],
     items: [
       {
@@ -187,6 +200,10 @@ export const secondHomePartnersMessages = {
         text: 'Acrescente argumentos ao atendimento e abra oportunidades de receita com os imóveis que você afilia.',
       },
     ],
+    closing: {
+      lead: 'Novas oportunidades. ',
+      turn: 'Antes e depois da venda.',
+    },
     action: CTA,
   },
   process: {
@@ -220,6 +237,10 @@ export const secondHomePartnersMessages = {
         paragraphs: ['Formalizamos o acordo e iniciamos as ações previstas na parceria.'],
       },
     ],
+    closing: {
+      lead: 'Uma boa parceria começa ',
+      turn: 'com uma conversa.',
+    },
     action: CTA,
   },
   faq: {
@@ -251,6 +272,13 @@ export const secondHomePartnersMessages = {
         answer: [
           'Você pode apresentar sua atuação e o perfil dos imóveis que comercializa ou representa.',
           'Não é necessário ter um empreendimento próprio para iniciar a conversa.',
+        ],
+      },
+      {
+        question: 'Posso afiliar imóveis que já comercializei?',
+        answer: [
+          'Você pode apresentar imóveis que já comercializou e os que ainda vai comercializar.',
+          'A afiliação depende da avaliação da Luxtory e da adesão de cada proprietário.',
         ],
       },
       {

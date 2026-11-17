@@ -1,5 +1,18 @@
 /* Second Home Partners (catalog §20.6): local compositions using existing Core roles and tokens. */
 @layer lx.components {
+  /* The founder's two sentences stay in successive blocks, each reflowing naturally on narrow screens. */
+  [data-lx="core"] main:has(> #imobiliarias-e-corretores) #inicio h1 > :is(span, em) {
+    display: block;
+  }
+
+  [data-lx="core"] #oportunidade .lx-shp-opportunity__media {
+    aspect-ratio: var(--lx-ratio-media-md);
+  }
+
+  [data-lx="core"] #oportunidade .lx-shp-opportunity__media > img {
+    object-position: 35% 50%;
+  }
+
   /* Intrinsic grid tracks, actions and choices must reflow when text is enlarged. */
   [data-lx="core"] main:has(> #imobiliarias-e-corretores) {
     overflow-wrap: anywhere;

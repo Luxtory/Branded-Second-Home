@@ -1,6 +1,6 @@
 # Aplicação do Framework Second Home Partners — parceiro especialista
 
-> Fonte: [Framework Second Home Partners](framework-second-home-partners.md), versão aprovada de 2026-11-17 ([ADR-0028](../../adr/0028-jornada-second-home-partners.md)). Contrato: [communication](../communication.md). Guardrails: [luxtory](luxtory.md) §4.
+> Fonte: [Framework Second Home Partners](framework-second-home-partners.md), versão de 2026-11-17, revisão editorial 2 ([ADR-0028](../../adr/0028-jornada-second-home-partners.md)). Contrato: [communication](../communication.md). Guardrails: [luxtory](luxtory.md) §4.
 
 ## 1. Escopo e precedência
 
@@ -78,6 +78,8 @@ D-SHP-14 a D-SHP-16 são vigentes. Linhas anteriores preservam as decisões hist
 | D-SHP-14 | Página única para os três perfis, nove seções, novo bloco de intermediadores e formulário condicional; CTA “Conversar sobre uma parceria” e hero “Mais valor para seu negócio. Mais liberdade para seus clientes.” | aprovada pelo fundador em 2026-11-17; substitui D-SHP-01, D-SHP-02, D-SHP-03, D-SHP-10 e amplia D-SHP-13 | REQ-105; catalog §20.6 |
 | D-SHP-15 | Primeiros parceiros dos três perfis participam do faturamento dos imóveis que afiliarem; oportunidade recorrente, dependente de receitas e contrato, sem taxa ou mínimo presumido; bases econômicas preservadas | aprovada pelo fundador em 2026-11-17; amplia D-SHP-07 e D-SHP-08, sem redefinir bases | `01` v10.6 §35, BR-352 |
 | D-SHP-16 | Copy completa de lançamento no presente, sem notas de estruturação ou indisponibilidade; publicar quando o Club estiver pronto. Preparação editorial não comprova operação nem habilita serviço | aprovada pelo fundador em 2026-11-17; substitui os limites editoriais anteriores de D-SHP-09 e D-SHP-11; prontidão operacional segue pendente | REQ-105; catalog §20.6 |
+
+| D-SHP-17 | Hero com duas frases em blocos; oportunidade com narrativa imaginativa e foto do acervo; fechamentos no padrão centralizado da Home; carteira já vendida e futura sujeita a avaliação/adesão. A duração de receita não é presumida: usar receita depois da venda, sem “vitalícia” ou garantia de acelerar vendas | ajustes pedidos pelo fundador em 2026-11-17; julgamento editorial dentro de BR-352 e BR-374 | REQ-105; catalog §20.7 |
 
 | ID | Hipótese | Como validar |
 |---|---|---|

@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Refinamento Second Home Partners (REQ-105): Hero com frases em blocos sucessivos; oportunidade com narrativa
+  imaginativa e foto contextual do acervo; fechamentos centralizados na tipografia da Home; imóveis já comercializados
+  e futuras vendas sujeitos à avaliação e adesão dos proprietários. Participação descrita como oportunidade de receita
+  depois da venda, sem inventar duração vitalícia ou garantir aceleração de vendas.
+
 - Second Home Partners (REQ-105): página única adaptada a incorporadoras, imobiliárias e corretores de imóveis de
   lazer de alto padrão, com receita recorrente em destaque, bloco específico para intermediadores, FAQ ampliado e
   copy de lançamento aprovada. Mesmas três imagens por estágio. Formulário exige perfil e somente os campos
