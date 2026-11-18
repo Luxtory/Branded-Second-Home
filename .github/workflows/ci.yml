@@ -140,19 +140,27 @@ jobs:
     environment: production-ci
     concurrency: { group: production, cancel-in-progress: false }
     env:
-      # Identificadores do projeto na Vercel (não são segredo); o token vem do Environment `production-ci`.
+      # Identificadores do projeto na Vercel (não são segredo).
       VERCEL_ORG_ID: team_qTseTMCEpdMeoQFB6WnaATef
       VERCEL_PROJECT_ID: prj_GJINhlmRANMTVzK6tBzFfOuTldJ0
-      VERCEL_TOKEN: ${{ secrets.PROD_VERCEL_TOKEN }}
+    # O token (Environment `production-ci`) só nos passos que falam com a API da Vercel, pela variável VERCEL_TOKEN
+    # (fora do argv, como a Vercel recomenda para CI). O `build` instala dependências e executa o projeto sem ele: o
+    # CLI 60.0.1 não exige token no `build` quando o `pull` já gravou as configurações em `.vercel/`.
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with: { node-version: 22, cache: npm }
       - name: Require VERCEL_TOKEN
+        env:
+          VERCEL_TOKEN: ${{ secrets.PROD_VERCEL_TOKEN }}
         run: test -n "$VERCEL_TOKEN" || { echo "::error::secret PROD_VERCEL_TOKEN (Environment production-ci) is not set"; exit 1; }
       - name: Pull production settings
-        run: npx --yes vercel@60.0.1 pull --yes --environment=production --token="$VERCEL_TOKEN"
+        env:
+          VERCEL_TOKEN: ${{ secrets.PROD_VERCEL_TOKEN }}
+        run: npx --yes vercel@60.0.1 pull --yes --environment=production
       - name: Build
-        run: npx --yes vercel@60.0.1 build --prod --token="$VERCEL_TOKEN"
+        run: npx --yes vercel@60.0.1 build --prod
       - name: Deploy to production
-        run: npx --yes vercel@60.0.1 deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+        env:
+          VERCEL_TOKEN: ${{ secrets.PROD_VERCEL_TOKEN }}
+        run: npx --yes vercel@60.0.1 deploy --prebuilt --prod

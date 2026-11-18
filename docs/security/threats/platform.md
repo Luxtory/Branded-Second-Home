@@ -85,7 +85,9 @@ Repúdio não se aplica à W0: não há mutation. A trilha de auditoria chega na
     repositório: push ou PR interno roda a versão do workflow **da branch**, que pode retirar o `if` e ler secrets do
     repositório (exige push e, por token, escopo `workflow`). Correção: secrets `PROD_*` só no Environment
     `production-ci`, restrito à `main`, nos jobs `migrate` e `deploy`; secrets do repositório apagados depois de o
-    primeiro run da `main` provar os novos (roteiro, passo 2).
+    primeiro run da `main` provar os novos (roteiro de governança).
+    O token da Vercel só entra nos passos `pull` e `deploy`, pela variável `VERCEL_TOKEN` (fora do argv); o `build`,
+    que instala dependências e executa o projeto, roda sem ele; o secret do banco só no passo `Apply migrations`.
 - **Owner**: Engenharia · **Tracking**: W0
 
 ### T-003 [MEDIUM] Information disclosure — path traversal em `/lab`
