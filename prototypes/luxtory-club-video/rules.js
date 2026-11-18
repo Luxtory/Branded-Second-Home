@@ -56,6 +56,19 @@ export function luxchangeFee(prlPeriodCents, params) {
 }
 
 /**
+ * 01 §25, BR-243, BR-244 — Preço Luxplus = PRL do período × (1 − desconto aplicável), HALF_UP uma vez (TECH-033). O
+ * desconto é parâmetro comercial do Membership e não tem default (TECH-001): sem ele, a função recusa. Zero só vale
+ * como decisão explícita ("Membership sem desconto Luxplus"), nunca como presunção.
+ */
+export function luxplusPrice(prlByNightCents, discountPercent) {
+  if (discountPercent === undefined || discountPercent === null)
+    throw new Error('ERR_PARAMETER_MISSING: desconto Luxplus do Membership não definido');
+  if (!(discountPercent >= 0 && discountPercent < 100))
+    throw new Error(`Desconto Luxplus fora do intervalo: ${discountPercent}`);
+  return percentHalfUp(prlOfPeriod(prlByNightCents), 100 - discountPercent);
+}
+
+/**
  * PD-006, PD-008, TECH-071 — Garantia por FEFO: ordena por (expires_at, originated_at, id); só lotes com
  * now < expires_at e expires_at ≥ expires_at da Request. Retorna as parcelas retidas de cada lote.
  */

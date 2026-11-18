@@ -371,6 +371,13 @@ e não adota automaticamente o cenário da leitura B. Os valores são PRL intern
   compatível com um desconto de 60%. Portanto, ele muda depois da decisão.
 - **Sem desconto:** se a Luxtory decidir que o Membership do filme não tem desconto Luxplus, o valor exibido é
   R$ 6.200. Isso também é uma decisão explícita, não uma presunção.
+- **Opção preparada (v6.4):** `rules.js#luxplusPrice(prlPorNoite, desconto)` aplica a fórmula com HALF_UP e recusa
+  calcular sem desconto explícito (`ERR_PARAMETER_MISSING`). Coberta por teste.
+- **No congelamento, se aprovado:**
+  - `FICTITIOUS.luxplus` passa a ter o PRL de 13 e 14/08 (R$ 3.000 + R$ 3.200) e o desconto aprovado, com a origem da
+    aprovação;
+  - a sequência do Luxplus exibe `luxplusPrice(...)` no lugar do valor ilustrativo;
+  - o teste do Luxplus deixa de ser "valor ilustrativo" e passa a "valor derivado da fórmula".
 
 ### 12.3 Consistência verificada (sem alterar `data.js`)
 

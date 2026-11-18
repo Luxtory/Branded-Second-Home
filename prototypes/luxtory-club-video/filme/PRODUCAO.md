@@ -1,4 +1,4 @@
-# Filme Luxtory Club: produção, footage e integração (v6.3, preparação da prova cinematográfica · proposta para aprovação)
+# Filme Luxtory Club: produção, footage e integração (v6.4, prova cinematográfica escalonada · proposta para aprovação)
 
 > Complementa `ROTEIRO.md`. Imóveis, pessoas e valores ilustrativos, nunca apresentados como Second Homes reais à venda
 > ou disponíveis. A publicação depende da verificação de prontidão do produto e da aprovação da comunicação (§5).
@@ -292,6 +292,15 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
    outros; a troca é um dado (`data.js`) e não muda papéis, datas nem Créditos.
 
 ## 8. Revisões
+
+**v6.4 (execução eficiente da prova, 2026-11-18):** `PROVA-CINEMATOGRAFICA.md` corrigido:
+- orçamento só vídeo pela tabela oficial do Google Cloud, executado pelo Vertex (no Gemini API o áudio do Veo 3.1 é
+  sempre gerado);
+- plano escalonado A → B → C com tetos (≈ US$ 33 de custo bruto; ≈ US$ 38 com tributos);
+- primeiro quadro composto antes de animar, porque a combinação com referências não está confirmada;
+- pré-voo na conta;
+- reprovação imediata por defeito grave;
+- famílias com crianças preservadas para a produção por caminhos autorizados.
 
 **v6.3 (preparação da prova cinematográfica, 2026-11-18):**
 

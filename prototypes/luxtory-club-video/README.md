@@ -447,6 +447,16 @@ Nenhum PRL, Crédito, taxa ou valor do Luxplus foi alterado: a mudança depende 
 - **24 fps:** `check.mjs --fps=24` (a varredura quadro a quadro segue a cadência pedida; o padrão continua 30) dá
   conforme nas 5 sequências e nos 2 formatos.
 
+## Prova cinematográfica escalonada (v6.4, 2026-11-18)
+
+- **Kit corrigido:** `filme/PROVA-CINEMATOGRAFICA.md`.
+  - Orçamento só vídeo pela tabela oficial do Google Cloud. O teto anterior cai de ≈ US$ 146 para ≈ US$ 90 com as
+    mesmas quantidades, e a primeira prova vira três estágios com tetos (A US$ 5, B US$ 8, C US$ 20; ≈ US$ 38 com
+    tributos).
+  - Primeiro quadro composto antes de animar, mais um pré-voo na conta antes de qualquer geração paga.
+- **Luxplus:** `rules.js#luxplusPrice` aplica a fórmula canônica e recusa calcular sem desconto explícito. Fica pronto
+  para o congelamento; o filme continua com o valor ilustrativo até a decisão.
+
 ## Integração na pós (Etapa A)
 
 - **Alfa straight** (não premultiplicado) nos PNG e no ProRes 4444; interpretar como *Straight* no editor.

@@ -29,6 +29,7 @@ import {
   creditsOfSelection,
   depositNightStatus,
   depositStops,
+  luxplusPrice,
   selectionForTarget,
 } from './rules.js';
 import { EDL } from './filme/prova/edl.js';
@@ -825,4 +826,22 @@ test('estados do calendário do depósito por forma, não só por cor: seleciona
     /data-deposit='reserved_unavailable'\] \.lx-calendar__number \{[^}]*line-through/,
   );
   assert.match(css, /\.demo-swatch\[data-swatch='selected'\]::after/);
+});
+
+test('[01 §25][BR-243][BR-244][TECH-001] preço Luxplus pela fórmula, com desconto sempre explícito', () => {
+  // Pronto para o congelamento; o filme ainda mostra o valor ilustrativo até a decisão comercial do desconto.
+  assert.equal(
+    luxplusPrice([300_000, 320_000], 0),
+    620_000,
+    'Membership sem desconto Luxplus, se aprovado',
+  );
+  assert.equal(luxplusPrice([300_000, 320_000], 10), 558_000);
+  assert.equal(luxplusPrice([123_455], 10), 111_110, '[TECH-033] HALF_UP uma vez no valor final');
+  assert.throws(
+    () => luxplusPrice([300_000, 320_000]),
+    /ERR_PARAMETER_MISSING/,
+    'sem desconto, sem preço',
+  );
+  assert.throws(() => luxplusPrice([300_000], null), /ERR_PARAMETER_MISSING/);
+  assert.throws(() => luxplusPrice([300_000], 100), /fora do intervalo/);
 });
