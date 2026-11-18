@@ -628,7 +628,7 @@ autorizações e operações do ciclo).
 - **Bloqueio B-A3** segue até este PR estar integrado na `main`, aplicado pela CI e validado.
 - **Situação (2026-11-05):** a correção foi mergeada pelo #84 (squash `afa2d12`); a CI da `main` (42091427441) aplicou só a migration `20261105174225_booking_recovery_operational_exception_origin` (60/0) e a validação somente leitura em Production confirmou o critério novo em `app.authorize_booking_action` (md5 do corpo igual ao do repositório), `SECURITY DEFINER`, `search_path = pg_catalog, pg_temp`, dono e ACL preservados e `app.assert_own_use_activation_ready()` sem erro, com ativação 0 e nenhuma reserva, solicitação ou autorização. B-A3 **resolvido tecnicamente**; não autoriza ativação.
 
-### 10.14. E3 — jobs e consumidores de notificação (autorizada em 2026-11-05; PR draft, sem merge nem Production)
+### 10.14. E3 — jobs e consumidores de notificação (autorizada em 2026-11-05; PR draft, sem merge nem Production) → concluída (#88 → `dbb4ac6`, 2026-11-05)
 
 Sem migration nem mudança de regra: o banco da E1 já confere os dois jobs (avanço só por `advance_booking_states` com
 papel `system`, duas transições na mesma operação quando atrasado; candidato só por `flag_no_show_candidates`, uma linha
@@ -698,3 +698,139 @@ Sem mudança de decisão, migration ou regra canônica.
   repetição sem operação nova, concorrência job × job/cancelamento/exceção/no-show, ordem dos jobs, K1/K2 fechadas,
   banco vazio sem operação, nenhum rastro econômico ou evento, entrega real dos cinco eventos com falha parcial,
   redespacho e payload inválido).
+
+### 10.15. E4b — telas, Server Actions e G-E4-1 (autorizada em 2026-11-06; PR draft, sem merge, deploy ou ativação)
+
+Referência visual: revisão renderizada E4a v2.1, aprovada pelo fundador em 2026-11-06 (hierarquia pela consequência,
+coluna larga da decisão com a reserva ao lado, revisão obrigatória de termos alterados, divulgação progressiva, lista por
+situação, notificações com título curto). Sem regra canônica nova, sem migration, sem mudança de contrato de evento.
+
+**Rotas.** Titular: `/titular/reservas` (seções), `/titular/reservas/[bookingId]` (detalhe),
+`/titular/reservas/[bookingId]/cancelamento` (prévia e confirmação), `/titular/notificacoes`. Admin (papel `admin`, AAL2
+pelo gate): `/admin/reservas`, `/admin/reservas/[bookingId]` e uma página por ato — `excecao` (`open_exception`),
+`resolucao` (`resolve_exception`), `no-show` (`declare_no_show`), `invalidacao` (`correct_use_right`, apuração de
+Co-Owner), `recuperacao` (`recover_future_capacity`) e `autorizacao` (`request_booking_authorization`). Só Server Actions
+(D6); as rotas REST continuam adiadas.
+
+**Leituras.** Titular: a RLS da W12 prova a reserva (holding representada); os campos fora do `GRANT` de coluna —
+exceção aberta (`exception_type`, `reason`, `opened_at`), `cancellation_class`, instante do cancelamento, noites com
+`checkin_at` — vêm do servidor pelo `withUserThenServerRead`, na mesma transação `repeatable read` e só leitura (mesmo
+instantâneo da prova). Retorno mínimo para a tela; nunca `incident_ref`, base registrada, autorização, solicitação,
+custódia ou dado de outra holding. Reserva invisível pela RLS (outra party, representação revogada ou expirada, holding
+transferida) → 404 sem oráculo; banco indisponível → estado indisponível existente (falha fechada). Admin: leituras
+auditadas (`admin_read`, objetos `booking_directory` e `booking`, só ids), base registrada e referência do incidente
+visíveis só ao Admin.
+
+**Situação e seções.** A situação exibida é sempre o estado gravado (`app.booking.state`, projeção da última transição)
+no vocabulário da REQ-096, com "Em exceção operacional" (P-A) e "Em apuração" (P-B) pelo `exception_type` da exceção
+aberta. O relógio nunca cria "Em uso" ou "Concluída": com o job atrasado (Hobby, best effort), uma estadia já começada
+continua "Confirmada". Seções da lista: Histórico = estado terminal (só por transição registrada); Em exceção ou em
+apuração = `in_exception`; Em andamento = `in_use` ou `confirmed` com o 1º check-in passado; Próximas = `confirmed` com o
+1º check-in futuro. A prévia não depende do job: "noite iniciada" é sempre `at ≥ checkin_at`.
+
+**Prévia e confirmação (D7).** A prévia é calculada no servidor ao abrir a página, pela mesma função do command
+(`cancellationTerms`), com o instante do servidor e os instantes de check-in gravados (fuso IANA da Second Home). A chave
+de idempotência nasce com a prévia acionável (K2 presente, ≥ 1 noite não iniciada, cancelamento não suspenso). A
+confirmação envia a classe esperada e a primeira noite afetada; termos diferentes → `ERR_CANCELLATION_TERMS_CHANGED`,
+nada gravado, e a página da recusa não tem ação destrutiva: só revisar (nova prévia, chave nova). Os termos enviados vêm
+do navegador e não provam a prévia anterior (nenhum estado do servidor autentica o que foi mostrado): a action não os
+devolve, e a página não afirma estado anterior nem causa. Mostra "A confirmação não corresponde às condições atuais.
+Nada foi cancelado." e as "Condições atuais" do servidor no instante da página: o prazo de 15 dias (Co-Owner: "Terminou
+…" ou "Termina …"), as noites que já começaram e a partir de qual noite cancela; e "Revisar as condições atuais". O E2E
+adultera o campo oculto (recusa sem efeito) e forja `antes`/`primeira` na URL: a página não muda. As fronteiras ±1 µs
+de prazo e check-in ficam na prévia pura, e provam a regra temporal atual, não a prévia anterior. Na apuração, o
+Co-Owner fora do prazo recebe `ERR_STATE_TRANSITION` e vê a
+suspensão. Matriz: Co-Owner dentro do prazo — não iniciadas voltam ao saldo; fora do prazo — deixam a reserva, consumo
+mantido; Owner — não iniciadas voltam ao calendário do Owner, sem prazo nem categorias; exceção operacional — regras
+normais, o cancelamento encerra a exceção; apuração — Co-Owner só dentro do prazo, Owner a qualquer tempo, o cancelamento
+encerra a apuração. Resultado incerto: o reenvio com a mesma chave é replay do executor (nunca dois cancelamentos).
+
+**Atos do Admin.** Cada página mostra a consequência antes do formulário. O guard do executor revalida AAL2 e o
+`staff_role`; K2 no handler e no banco; a autorização independente aplicável é resolvida pelo servidor (D4) e exigida
+pelo banco. Em "Resolver exceção", o aviso de autorização só aparece com o desfecho "Cancelar"; sem autorização viva, o
+cancelamento não é oferecido (e o servidor recusa com `ERR_PERMISSION` se forjado). Em "Abrir exceção", os campos seguem
+o tipo escolhido (contrato `open_exception`): P-A mostra o motivo da PD-010; P-B, a referência do incidente; antes da
+escolha, nenhum dos dois. O campo do outro tipo não é renderizado nem enviado, e a Base registrada vale para os dois;
+esconder não é controle (a action e o command validam de novo). Erro de escolha obrigatória (tipo, motivo, desfecho,
+finalidade) e de atestação reflete o controle no momento: some ao marcar e volta ao desmarcar, com `aria-invalid` e
+`aria-describedby` juntos; o resumo no topo descreve o último envio, como nos demais formulários. Texto visível sem
+"party": "o Titular", "quem representa a reserva"; identificadores técnicos só no código.
+
+**Base registrada e referência do incidente.** Erro de validação associado ao campo (`aria-invalid`,
+`aria-describedby`), com a regra atual de `isNonPersonalReference` (M1 e T-1314 continuam pendentes). O valor nunca vai a
+log, notificação, resultado de command ou mensagem de erro.
+
+**G-E4-1 (gate do `request_booking_authorization`).** O limitador roda depois do guard e da consulta de idempotência e
+antes da operação: replay de chave concluída devolve o resultado gravado sem consumir o limite; excesso → `ERR_RATE_LIMITED`
+sem operação nem chave gravadas (a chave continua utilizável); limitador indisponível → recusa (falha fechada, como na
+TECH-057). Chave pseudônima sem segredo novo: SHA-256 de `luxtory:booking-authorization-request:<staff_role_id>` (o
+`staff_role` vem da decisão do guard). Limites por papel e global no runbook (TECH-001): parâmetro ausente → recusa.
+
+**Notificações.** Título curto + Second Home + "O que mudou", só com os campos gravados pelo consumidor da E3 (19
+variações: confirmação; cancelamento pelo Titular — Co-Owner dentro e fora do prazo, Owner, em exceção operacional e em
+apuração; cancelamento pela Luxtory — dentro e fora do prazo, Owner; no-show — Co-Owner, Owner, sem noite futura;
+exceção aberta — operacional de Co-Owner (com o prazo no fuso da Second Home) e de Owner, apuração; exceção encerrada —
+confirmada, concluída, apuração sem comprovação; invalidação — Co-Owner e Owner). Sem marcação de leitura.
+
+**Design System (consumer-driven).** R-DS-1: o botão de menu do App Shell não sai da barra com texto a 200%. R-DS-2: o
+link de contexto do PageHeader com alvo ≥ 44 px. R-DS-3: o rótulo longo do `lx-choice` sem rolagem com texto a 200%.
+Regressão nas superfícies que compartilham os componentes (Admin, Área do Titular, Lab).
+
+#### 10.15.1. Implementação da E4b (2026-11-06, PR draft; sem merge, deploy, Production, migration ou ativação)
+
+Sem mudança de regra canônica, contrato de evento, migration ou permissão. Escolhas de implementação:
+
+- **Arquivos.** Regras puras em `application/`: `own-use-cancellation-preview.ts` (prévia: mesma `cancellationTerms` do
+  command, noites iniciadas e afetadas, saldo depois; tipos `actionable`, `closed`, `suspended`, `nothing_left`,
+  `not_cancellable`), `own-use-booking-sections.ts` (seção e situação da lista) e `own-use-admin-availability.ts` (atos do
+  Admin com o motivo de cada indisponível; finalidades solicitáveis). Leituras em `presentation/`:
+  `own-use-lifecycle-read.ts` (Titular, `withUserThenServerRead`) e `own-use-admin-read.ts` (Admin, auditadas, com o
+  store da E2: `findBooking`, `period`, `openException`, `requestFacts`, `liveAuthorization`). Telas:
+  `own-use-lifecycle-pages.tsx` (Titular), `own-use-admin-pages.tsx` (Admin), formulários de cliente
+  `own-use-cancel-form.tsx` e `own-use-admin-form.tsx`, Server Actions `own-use-cancel-action.ts` e
+  `own-use-admin-actions.ts`, textos em `i18n/own-use-lifecycle-pt-br.ts` e `i18n/own-use-admin-pt-br.ts`, avisos em
+  `own-use-notification-copy.ts`; peças comuns em `own-use-ui.tsx` (só classes `lx-*`).
+- **Rotas.** `src/app/titular/reservas/[bookingId]/cancelamento`, `src/app/admin/reservas`, `[bookingId]` e
+  `[bookingId]/[acao]` (`excecao`, `resolucao`, `no-show`, `invalidacao`, `recuperacao`, `autorizacao`). Item
+  "Reservas" no Admin (papel `admin`).
+- **Desfechos da confirmação do Titular.** Confirmada → detalhe com "Reserva cancelada"; termos alterados → a mesma rota
+  com `?condicoes=mudaram` (o que mudou, sem formulário; "Revisar as novas condições" abre prévia e chave novas);
+  `ERR_STATE_TRANSITION` → detalhe com "Nada foi cancelado"; K2 ausente, indisponível, permissão → mensagem no formulário
+  (indisponível mantém a chave: replay). Apuração com Co-Owner fora do prazo e estado terminal → a rota leva ao detalhe.
+- **G-E4-1.** Gancho opcional `consumeQuota` no `CommandHandler` do executor da plataforma, chamado depois do guard e da
+  consulta de idempotência e antes da operação (`limited` → `ERR_RATE_LIMITED`; `unavailable` → `ERR_UNAVAILABLE`;
+  `parameter_missing` → `ERR_PARAMETER_MISSING`; sempre sem operação nem chave). Limite em
+  `presentation/booking-authorization-quota.ts` com o `RateLimiter` existente (Upstash, ou em memória só local/CI),
+  parâmetros `BOOKING_AUTHORIZATION_*` no runbook, sem default.
+- **Design System.** R-DS-1 (`app.css`: logo encolhe na barra, botão de menu não), R-DS-2 (`page-header.css`: alvo do
+  link de contexto por preenchimento compensado), R-DS-3 (`choice.css`: trilhas `minmax(0, 1fr)`; `choice.css` e
+  `message.css`: `overflow-wrap: anywhere` — com texto a 200% em 320 px a data do aviso de autorização, mais larga que a
+  coluna, alargava a trilha do `lx-form` e empurrava o `lx-choice` para fora da janela; só as trilhas faziam a palavra
+  vazar do card); regressão `expectSharedComponentFixes` (caixa e texto do `lx-choice` e do `lx-message`, zoom aplicado
+  por CSSOM e conferido) no Lab, no Admin e nas telas novas.
+- **Testes.** Unidade: prévia (fronteira de 360 h em µs, matriz Owner/Co-Owner e P-A/P-B, paridade com o command),
+  seções, disponibilidade dos atos, os 20 textos dos avisos (19 variações + confirmação), limite e executor. PostgreSQL
+  real: leituras do Titular (RLS, mínimo, acesso cruzado, revogação, transferência, K2), Admin (auditoria, atos, autorização
+  viva) e G-E4-1 pelo executor de produção. E2E (390 px com toque no Titular): Owner (termos alterados, cancelamento,
+  apuração, solicitação + autorização + resolução, no-show em estadia começada, avisos) e Co-Owner (exceção operacional
+  encerrada pelo cancelamento, fora do prazo, recuperação).
+- **Fixtures E2E** (só banco descartável, dono do schema): K2, autorização pelo papel autorizador, estadia começada do
+  Owner e reserva de Co-Owner dentro de 15 dias (a janela do cenário abre meses à frente), com o mesmo SQL do fixture
+  histórico dos testes db. K1/K2 são estado global desse banco: os specs `own-use-*` rodam no projeto Playwright
+  `chrome-own-use` com um worker (um de cada vez; os demais seguem em paralelo).
+- **O que cada teste de aviso prova.** Pelos commands reais e pelo consumidor real do outbox (job `outbox`), os E2E do
+  Owner e do Co-Owner geram e mostram na central: confirmação, cancelamento, apuração aberta, invalidação, no-show,
+  exceção operacional aberta e cancelamento que encerra a exceção. As **19 variações + a confirmação** são verificadas
+  na central real por um **fixture que persiste os registros** (`seedE2eNotifications`: um evento entregue em
+  `app.outbox` e a linha em `app.notification` por variação, com os campos que o consumidor da E3 grava, só no banco
+  descartável). Esse teste prova a leitura, o texto, o link e a ausência de marcação de leitura de cada variação. Ele
+  **não** executa 19 fluxos completos de commands. A produção de cada variação pelos consumidores continua coberta
+  pelos testes da E3, que a E4b não alterou: `own-use-lifecycle-consumers.test.ts`, `own-use-lifecycle-jobs.test.ts`,
+  `own-use-lifecycle-jobs.db.test.ts`, `own-use-lifecycle.test.ts` e `lifecycle-cron-coverage.test.ts`.
+- **Escalabilidade da listagem do Admin (ponto de avaliação antes de ampliar o volume operacional).** A consulta de
+  `/admin/reservas` traz no máximo 200 reservas (`DIRECTORY_LIMIT * 4`), ordenadas pelo check-in, sem paginação e sem
+  aviso de truncamento na tela. Cada linha calcula `app.booking_period_instants` duas vezes. Cada reserva cancelada ou
+  com no-show e check-out futuro faz, em sequência no laço, `findBooking` e `requestFacts` (cerca de 4 consultas) para
+  decidir se entra na fila de capacidade recuperável. Com as reservas desativadas (K1/K2), o volume atual é zero. Antes
+  de ativar ou ampliar o volume operacional, reavaliar limite, paginação e a consulta por lote. A E4b não introduz
+  paginação.

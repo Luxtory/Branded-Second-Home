@@ -1,13 +1,19 @@
 import type { Metadata } from 'next';
 import { bookingsMessages } from '@/features/booking/presentation/i18n/own-use-pt-br';
-import { TitularBookingPage } from '@/features/booking/presentation/own-use-pages';
+import { TitularBookingDetailPage } from '@/features/booking/presentation/own-use-lifecycle-pages';
 
 export const metadata: Metadata = {
   title: bookingsMessages.detailTitle,
   robots: { index: false, follow: false },
 };
 
-export default async function Page({ params }: { params: Promise<{ bookingId: string }> }) {
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ bookingId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { bookingId } = await params;
-  return <TitularBookingPage bookingId={bookingId} />;
+  return <TitularBookingDetailPage bookingId={bookingId} searchParams={await searchParams} />;
 }

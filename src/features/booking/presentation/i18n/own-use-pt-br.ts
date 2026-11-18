@@ -33,7 +33,16 @@ export const bookingLabels = {
         ? 'Uso próprio'
         : 'Uso próprio · Direito de Uso'
       : null,
-  state: (state: string): string | null => (state === 'confirmed' ? 'Confirmada' : null),
+  /** Situação gravada no vocabulário da REQ-096 (W13 E4b): o calendário e a lista nunca deduzem do relógio. */
+  state: (state: string): string | null =>
+    ({
+      confirmed: 'Confirmada',
+      in_use: 'Em uso',
+      completed: 'Concluída',
+      cancelled: 'Cancelada',
+      no_show: 'No-show',
+      in_exception: 'Em exceção',
+    })[state] ?? null,
   /** PD-002: check-in 14h, check-out 10h; a noite da data de saída não é usada. */
   checkinTime: '14h',
   checkoutTime: '10h',

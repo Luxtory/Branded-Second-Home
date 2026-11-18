@@ -6,8 +6,14 @@ describe('seções do Admin (ADR-0008, ADR-0009)', () => {
     const ids = (roles: Parameters<typeof availableSections>[0]) =>
       availableSections(roles).map((section) => section.id);
 
-    expect(ids(['admin'])).toEqual(['home', 'catalog', 'interests', 'parties']);
-    expect(ids(['admin', 'super_admin'])).toEqual(['home', 'catalog', 'interests', 'parties']);
+    expect(ids(['admin'])).toEqual(['home', 'catalog', 'interests', 'parties', 'bookings']);
+    expect(ids(['admin', 'super_admin'])).toEqual([
+      'home',
+      'catalog',
+      'interests',
+      'parties',
+      'bookings',
+    ]);
     expect(ids(['super_admin'])).toEqual(['home']);
   });
 

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { bookingsMessages } from '@/features/booking/presentation/i18n/own-use-pt-br';
-import { TitularBookingsPage } from '@/features/booking/presentation/own-use-pages';
+import { TitularBookingListPage } from '@/features/booking/presentation/own-use-lifecycle-pages';
 
 export const metadata: Metadata = {
   title: bookingsMessages.metadataTitle,
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <TitularBookingsPage />;
+  return <TitularBookingListPage />;
 }

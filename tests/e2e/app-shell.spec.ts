@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { signIn, STAFF_EMAIL } from './support/auth';
-import { collectConsoleErrors, expectResponsive } from './support/ui';
+import { collectConsoleErrors, expectResponsive, expectSharedComponentFixes } from './support/ui';
 
 // App Shell das superfícies de produto (ADR-0009), com o Admin como primeiro consumidor.
 const NAV = 'Navegação da administração';
@@ -119,4 +119,20 @@ test.describe('corte do lg (64rem)', () => {
       await drawer(page).evaluate((element) => getComputedStyle(element).animationDuration),
     ).toBe('0s');
   });
+});
+
+// R-DS-1 a R-DS-3 (W13 E4b, spec booking §10.15): regressão nas superfícies que compartilham os componentes — o shell
+// do Lab, a Área do Titular e o Admin real (página com link de contexto e campos de escolha).
+test('[R-DS-1][R-DS-2][R-DS-3] texto a 200%: menu do App Shell e lx-choice cabem; link de contexto ≥ 44 px', async ({
+  page,
+}) => {
+  test.slow();
+  await page.goto('/lab/lab/produto-app.html', { waitUntil: 'networkidle' });
+  await expectSharedComponentFixes(page);
+  await signIn(page, STAFF_EMAIL);
+  await expect(page).toHaveURL(/\/admin$/);
+  await expectSharedComponentFixes(page);
+  await page.goto('/admin/catalogo/brand-partners/nova');
+  await expect(page.locator('.lx-page-header__context .lx-link')).toBeVisible();
+  await expectSharedComponentFixes(page);
 });

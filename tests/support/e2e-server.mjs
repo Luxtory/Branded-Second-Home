@@ -118,6 +118,13 @@ try {
       INTEREST_NETWORK_WINDOW_SECONDS: '60',
       INTEREST_GLOBAL_LIMIT: '500',
       INTEREST_GLOBAL_WINDOW_SECONDS: '60',
+      // W13 E4b (G-E4-1): limitador determinístico da solicitação de autorização independente, com limites folgados — o
+      // excesso, a indisponibilidade e o replay são provados nos testes db pelo executor de produção.
+      BOOKING_AUTHORIZATION_LIMITER_MODE: 'fake',
+      BOOKING_AUTHORIZATION_REQUEST_LIMIT: '50',
+      BOOKING_AUTHORIZATION_REQUEST_WINDOW_SECONDS: '60',
+      BOOKING_AUTHORIZATION_GLOBAL_LIMIT: '200',
+      BOOKING_AUTHORIZATION_GLOBAL_WINDOW_SECONDS: '60',
       // W6 (ADR-0018): segredos próprios de teste, gerados a cada execução — hash de idempotência e contexto de
       // apresentação da Home Edition. O E2E lê o contexto da própria página.
       INTEREST_REQUEST_HMAC_SECRET: randomBytes(32).toString('base64url'),

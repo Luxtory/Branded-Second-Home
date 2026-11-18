@@ -1,180 +1,27 @@
 import { randomUUID } from 'node:crypto';
-import { expect, test, type Browser, type Page } from '@playwright/test';
-import { partialAcquisitionScenario } from '../support/acquisition-scenario';
-import { ensureE2eInstitution, setE2eOwnUseBooking } from '../support/e2e-acquisition-database.mjs';
-import { completeE2eInitialDraw, e2eCronSecret } from '../support/e2e-initial-draw';
-import { randomCpf, validCnpj } from '../support/documents';
-import { signIn, STAFF_EMAIL, TEST_CODE } from './support/auth';
-import { readSeed } from './support/discovery';
-import { captureForReview, collectConsoleErrors, expectResponsive } from './support/ui';
+import { expect, test } from '@playwright/test';
+import { setE2eOwnUseBooking } from '../support/e2e-acquisition-database.mjs';
+import { randomCpf } from '../support/documents';
+import {
+  addDays,
+  civilToday,
+  dayMonth,
+  FLOW_TIMEOUT_MS,
+  formalizedCoOwner,
+  formalizedOwner,
+  gate,
+  gateMode,
+  job,
+  MOBILE,
+  post,
+  titularFor,
+} from './support/own-use';
+import { collectConsoleErrors } from './support/ui';
 
 // W12 (spec booking §7): calendário de uso próprio pelos contratos reais — Admin formaliza, os jobs reais selam o
 // exercício, o Titular ativa a representação e reserva. Sem a ativação (ADR-0026), a interface informa que as reservas
 // não estão abertas e não oferece confirmação; um teste liga a ativação só neste banco descartável para provar a
 // confirmação na interface real e a desliga em seguida. Em série: a ativação é estado global do banco.
-const FLOW_TIMEOUT_MS = 300_000;
-const MOBILE = {
-  viewport: { width: 390, height: 844 },
-  hasTouch: true,
-  isMobile: true,
-  timezoneId: 'America/Sao_Paulo',
-  locale: 'pt-BR',
-} as const;
-const gateMode = process['env']['E2E_ACQUISITION_GATE'];
-const DAY_MS = 86_400_000;
-
-const civilToday = () =>
-  new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Sao_Paulo',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date());
-const addDays = (date: string, days: number) =>
-  new Date(Date.parse(`${date}T12:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10);
-const dayMonth = (date: string) => `${date.slice(8, 10)}/${date.slice(5, 7)}`;
-const uniqueEmail = (prefix: string) => `${prefix}-${randomUUID().slice(0, 8)}@luxtory.test`;
-
-async function post(page: Page, path: string, data: unknown) {
-  const response = await page.request.post(path, {
-    headers: { origin: new URL(page.url()).origin, 'idempotency-key': randomUUID() },
-    data,
-  });
-  expect(response.status(), `${path}: ${await response.text()}`).toBeLessThan(300);
-  return (await response.json()) as { id: string };
-}
-
-async function job(page: Page, name: string) {
-  const response = await page.request.get(`/api/jobs/${name}`, {
-    headers: { authorization: `Bearer ${e2eCronSecret()}` },
-  });
-  expect(response.status(), `${name}: ${await response.text()}`).toBe(200);
-}
-
-const section = (page: Page, id: string) => page.locator(`#${id}`).locator('..');
-
-/** Owner formalizado com início da operação hoje, pela tela do Admin (contrato já provado na W8). */
-async function formalizedOwner(page: Page, label: string) {
-  await signIn(page, STAFF_EMAIL);
-  await expect(page).toHaveURL(/\/admin$/);
-  const home = (
-    await post(page, '/v1/admin/second-homes', {
-      home_edition_id: readSeed().withHomeEdition.homeEdition.id,
-      label,
-      timezone: 'America/Sao_Paulo',
-    })
-  ).id;
-  const acquirer = (await post(page, '/v1/admin/parties', { document: randomCpf() })).id;
-  await page.goto(`/admin/catalogo/second-homes/${home}/formalizacao`);
-  const form = section(page, 'formalize-form');
-  await form.getByLabel('Localização concreta').fill('Localização sintética · Reserva 01');
-  await form.getByLabel('Data de início da operação (base civil)').fill(civilToday());
-  await form.getByLabel('Modalidade', { exact: true }).selectOption('owner');
-  await form.getByLabel('Adquirente 1', { exact: true }).selectOption(acquirer);
-  await form.getByLabel('Referência da base registrada').fill('Ato sintético Owner W12');
-  await form.getByRole('checkbox').check();
-  await form.getByRole('button', { name: 'Formalizar aquisição' }).tap();
-  await expect(page.locator('#registered')).toContainText('Registro concluído.');
-  const start = section(page, 'operation-start-form');
-  await start.getByLabel('Data efetiva de início').fill(civilToday());
-  await start.getByLabel('Referência da base registrada').fill('Declaração sintética Owner W12');
-  await start.getByRole('checkbox').check();
-  await start.getByRole('button', { name: 'Declarar início da operação' }).tap();
-  await expect(page.locator('#registered')).toContainText('Registro concluído.');
-  await job(page, 'open_exercise');
-  await job(page, 'outbox');
-  return { home, acquirer };
-}
-
-/** Co-Owner parcial formalizado pela tela do Admin (contrato da W8), com sorteio concluído, exercício selado e Direito
- *  de Uso concedido pelos jobs reais (W9–W11). */
-async function formalizedCoOwner(page: Page, label: string) {
-  const cnpj = () => validCnpj(randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase());
-  await signIn(page, STAFF_EMAIL);
-  await expect(page).toHaveURL(/\/admin$/);
-  const home = (
-    await post(page, '/v1/admin/second-homes', {
-      home_edition_id: readSeed().withHomeEdition.homeEdition.id,
-      label,
-      timezone: 'America/Sao_Paulo',
-    })
-  ).id;
-  // A formalização Co-Owner exige a identidade jurídica da Luxtory (única no ambiente; qualquer party serve aqui).
-  await ensureE2eInstitution((await post(page, '/v1/admin/parties', { document: cnpj() })).id);
-  const acquirers = [
-    (await post(page, '/v1/admin/parties', { document: randomCpf() })).id,
-    (await post(page, '/v1/admin/parties', { document: randomCpf() })).id,
-  ] as const;
-  const spe = (await post(page, '/v1/admin/parties', { document: cnpj() })).id;
-  const scenario = partialAcquisitionScenario(new Date());
-  await page.goto(`/admin/catalogo/second-homes/${home}/formalizacao`);
-  const allocation = section(page, 'initial-allocation-form');
-  await allocation.locator('summary').tap();
-  await allocation.getByLabel('Configuração Co-Owner').selectOption('2');
-  await allocation
-    .getByLabel('Data de início da operação (base civil)')
-    .fill(scenario.operationDate);
-  await allocation.getByLabel('Referência da base registrada').fill('Alocação sintética W12');
-  for (const [field, value] of [
-    ['Alta por Ação', String(scenario.alta)],
-    ['Média por Ação', String(scenario.media)],
-    ['Alta Luxtory', '0'],
-    ['Média Luxtory', '0'],
-  ] as const)
-    await allocation.getByLabel(field).fill(value);
-  await allocation.getByRole('button', { name: 'Registrar alocação inicial' }).tap();
-  await expect(page.locator('#registered')).toContainText('Registro concluído.');
-  const form = section(page, 'formalize-form');
-  await form.getByLabel('Localização concreta').fill('Localização sintética · Reserva 02');
-  await form.getByLabel('Data de início da operação (base civil)').fill(scenario.operationDate);
-  await form.getByLabel('Modalidade', { exact: true }).selectOption('co_owner');
-  await form.getByLabel('Configuração Co-Owner').selectOption('2');
-  await form.getByLabel('Pessoa jurídica da SPE').selectOption(spe);
-  await form.getByLabel('Alocação inicial registrada').selectOption({ index: 1 });
-  for (const [i, id] of acquirers.entries())
-    await form.getByLabel(`Adquirente ${i + 1}`, { exact: true }).selectOption(id);
-  await form.getByLabel('Referência da base registrada').fill('Ato sintético Co-Owner W12');
-  await form.getByRole('checkbox').check();
-  await form.getByRole('button', { name: 'Formalizar aquisição' }).tap();
-  await expect(page.locator('#registered')).toContainText('Registro concluído.');
-  const start = section(page, 'operation-start-form');
-  await start.getByLabel('Data efetiva de início').fill(scenario.operationDate);
-  await start.getByLabel('Referência da base registrada').fill('Declaração sintética Co-Owner W12');
-  await start.getByRole('checkbox').check();
-  await start.getByRole('button', { name: 'Declarar início da operação' }).tap();
-  await expect(page.locator('#registered')).toContainText('Registro concluído.');
-  await job(page, 'outbox');
-  await completeE2eInitialDraw(home);
-  await job(page, 'outbox');
-  await job(page, 'open_exercise');
-  await job(page, 'outbox');
-  return { home, acquirers, scenario };
-}
-
-/** Convite + primeiro acesso + ativação da representação na Área do Titular, num contexto móvel próprio. */
-async function titularFor(page: Page, browser: Browser, partyId: string) {
-  const email = uniqueEmail('titular-reserva');
-  await post(page, `/v1/admin/parties/${partyId}/delegations`, {
-    email,
-    basis: 'Contrato sintético W12',
-  });
-  const context = await browser.newContext({ ...MOBILE, baseURL: new URL(page.url()).origin });
-  const titular = await context.newPage();
-  await titular.goto('/titular/ativar');
-  await titular.getByLabel('E-mail').fill(email);
-  await titular.getByLabel('Código do convite').fill(TEST_CODE);
-  await titular.getByRole('button', { name: 'Continuar' }).tap();
-  await expect(titular).toHaveURL(/\/titular$/);
-  await titular.getByRole('button', { name: 'Ativar representação' }).tap();
-  await expect(titular.getByRole('status')).toContainText('Representação ativada.');
-  return { titular, context };
-}
-
-async function gate(page: Page, errors: readonly string[], name: string) {
-  await expectResponsive(page, errors);
-  await captureForReview(page, name, { fromTop: true });
-}
-
 test.describe('W12 — reserva de uso próprio a 390 px com toque e PostgreSQL real', () => {
   test.skip(gateMode === 'closed', 'Open acquisition gate variant not selected');
   test.describe.configure({ mode: 'serial' });
@@ -344,10 +191,16 @@ test.describe('W12 — reserva de uso próprio a 390 px com toque e PostgreSQL r
         const otherBefore = await rightsRow(other).textContent();
         await titular.getByRole('button', { name: 'Confirmar reserva' }).tap();
 
+        // Detalhe redesenhado na W13 E4b (spec booking §10.15): imóvel no h1, situação/período/noites no cabeçalho e o
+        // tipo persistido em "Mais detalhes".
         await expect(titular).toHaveURL(/\/titular\/reservas\/[0-9a-f-]{36}$/);
-        const detail = titular.locator('.lx-booking__facts');
-        for (const fact of ['Uso próprio · Direito de Uso', 'Confirmada', '1 noite'])
-          await expect(detail).toContainText(fact);
+        await expect(titular.getByRole('heading', { level: 1 })).toHaveText(label);
+        for (const fact of ['Confirmada', '1 noite'])
+          await expect(titular.locator('.lx-page-header__lead')).toContainText(fact);
+        await titular.locator('summary', { hasText: 'Mais detalhes' }).tap();
+        await expect(titular.locator('.lx-disclosure__body')).toContainText(
+          'Uso próprio · Direito de Uso',
+        );
         await gate(titular, errors, 'w12-11-co-owner-confirmada');
 
         await titular.goto('/titular');
@@ -444,20 +297,26 @@ test.describe('W12 — reserva de uso próprio a 390 px com toque e PostgreSQL r
 
         // Confirmada pelo command real (TECH-054): página da reserva com tipo e situação persistidos.
         await expect(titular).toHaveURL(/\/titular\/reservas\/[0-9a-f-]{36}$/);
-        await expect(titular.getByRole('heading', { level: 1 })).toHaveText('Reserva');
-        const detail = titular.locator('.lx-booking__facts');
-        for (const fact of ['Uso próprio', 'Confirmada', '2 noites'])
-          await expect(detail).toContainText(fact);
+        await expect(titular.getByRole('heading', { level: 1 })).toHaveText(label);
+        for (const fact of ['Confirmada', '2 noites'])
+          await expect(titular.locator('.lx-page-header__lead')).toContainText(fact);
+        await titular.locator('summary', { hasText: 'Mais detalhes' }).tap();
+        await expect(titular.locator('.lx-disclosure__body')).toContainText('Uso próprio');
         await gate(titular, errors, 'w12-03-owner-confirmada');
 
         // Notificação à party que reservou, pelo consumidor real do outbox (REQ-097).
         await job(page, 'outbox');
         await titular.goto('/titular/notificacoes');
-        await expect(titular.getByText(new RegExp(`Reserva confirmada em ${label}`))).toBeVisible();
+        // Título curto + Second Home + "O que mudou" (W13 E4b).
+        const notice = titular
+          .getByRole('listitem')
+          .filter({ hasText: 'Reserva confirmada' })
+          .filter({ hasText: label });
+        await expect(notice).toContainText('Entrada em');
         await gate(titular, errors, 'w12-07-owner-notificacao');
         await titular.goto('/titular/reservas');
-        await expect(titular.getByRole('list', { name: 'Reservas' })).toContainText('Uso próprio');
-        await expect(titular.getByRole('list', { name: 'Reservas' })).toContainText('Confirmada');
+        await expect(titular.getByRole('list', { name: 'Próximas' })).toContainText('Uso próprio');
+        await expect(titular.getByRole('list', { name: 'Próximas' })).toContainText('Confirmada');
         await gate(titular, errors, 'w12-10-owner-reservas-com-item');
 
         // Calendário revalidado: as noites são reserva do Owner (detalhe por toque) e a prévia aponta a causa.

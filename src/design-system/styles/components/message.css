@@ -6,6 +6,9 @@
     display: grid;
     grid-template-columns: auto 1fr;
     gap: var(--lx-space-1) var(--lx-space-3);
+    /* R-DS-3 (W13 E4b): sem isso a palavra mais larga (ex.: uma data a 200% em 320 px) vira o mínimo do aviso e alarga
+     * a trilha do `lx-form`, empurrando os campos irmãos para fora da janela. */
+    overflow-wrap: anywhere;
     align-items: start;
     padding: var(--lx-space-4) var(--lx-space-6) var(--lx-space-4) var(--lx-space-4);
     border-inline-start: var(--lx-focus-width) solid var(--lx-message-accent);

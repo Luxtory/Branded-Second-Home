@@ -19,6 +19,14 @@
     font-size: var(--lx-text-small);
   }
 
+  /* R-DS-2 (W13 E4b): alvo de toque ≥ 44 px sem mudar o desenho — o preenchimento vertical é compensado pela margem
+     negativa, e o h1 fica no mesmo lugar. */
+  .lx-page-header__context .lx-link {
+    display: inline-block;
+    padding-block: var(--lx-space-3);
+    margin-block: calc(-1 * var(--lx-space-3));
+  }
+
   /* Ações da página (W3): abaixo do texto; no celular os botões dividem a largura, a partir de md ficam no tamanho
    * do conteúdo. */
   .lx-page-header__actions {

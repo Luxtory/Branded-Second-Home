@@ -250,6 +250,77 @@ describe('executor de commands (TECH-054)', () => {
     expect(order).toEqual(['available', 'lookup']);
   });
 
+  it('[G-E4-1] limite depois do guard e da consulta de idempotência; replay de chave concluída não consome o limite', async () => {
+    const { store, executor } = setup();
+    const order: string[] = [];
+    const lookup = store.findIdempotency.bind(store);
+    vi.spyOn(store, 'findIdempotency').mockImplementation(async (...args) => {
+      order.push('lookup');
+      return lookup(...args);
+    });
+    const allowed = vi.fn(async (ref: string | null) => {
+      order.push(`quota:${ref}`);
+      return 'allowed' as const;
+    });
+    const first = await executor.execute(
+      { ...handler(), consumeQuota: allowed },
+      request({ n: 1 }),
+    );
+    expect(first).toMatchObject({ status: 'committed', replayed: false });
+    expect(order).toEqual(['lookup', 'quota:base:test']);
+    const limited = vi.fn(async () => 'limited' as const);
+    const again = await executor.execute(
+      { ...handler(), consumeQuota: limited },
+      request({ n: 1 }),
+    );
+    expect(again).toMatchObject({ status: 'committed', replayed: true, result: { doubled: 2 } });
+    expect(limited).not.toHaveBeenCalled();
+  });
+
+  it('[G-E4-1] limite esgotado → ERR_RATE_LIMITED; limitador indisponível → ERR_UNAVAILABLE; nada gravado, chave livre', async () => {
+    const { store, executor } = setup();
+    const reserve = vi.spyOn(store, 'reserve');
+    const before = { committed: store.committed.length, rejected: store.rejected.length };
+    expect(
+      await executor.execute(
+        { ...handler(), consumeQuota: async () => 'limited' },
+        request({ n: 1 }),
+      ),
+    ).toEqual({ status: 'rejected', operationId: null, code: 'ERR_RATE_LIMITED', replayed: false });
+    expect(
+      await executor.execute(
+        { ...handler(), consumeQuota: async () => 'unavailable' },
+        request({ n: 1 }),
+      ),
+    ).toEqual({ status: 'rejected', operationId: null, code: 'ERR_UNAVAILABLE', replayed: false });
+    expect(
+      await executor.execute(
+        { ...handler(), consumeQuota: async () => 'parameter_missing' },
+        request({ n: 1 }),
+      ),
+    ).toEqual({
+      status: 'rejected',
+      operationId: null,
+      code: 'ERR_PARAMETER_MISSING',
+      replayed: false,
+    });
+    expect(reserve).not.toHaveBeenCalled();
+    expect({ committed: store.committed.length, rejected: store.rejected.length }).toEqual(before);
+    // A mesma chave continua utilizável depois da recusa por limite.
+    expect(
+      await executor.execute(
+        { ...handler(), consumeQuota: async () => 'allowed' },
+        request({ n: 1 }),
+      ),
+    ).toMatchObject({ status: 'committed', replayed: false });
+    const denied = setup({ guard: { authorize: () => Promise.resolve({ allowed: false }) } });
+    const quota = vi.fn(async () => 'allowed' as const);
+    expect(
+      await denied.executor.execute({ ...handler(), consumeQuota: quota }, request({ n: 1 })),
+    ).toMatchObject({ code: 'ERR_PERMISSION' });
+    expect(quota).not.toHaveBeenCalled();
+  });
+
   it('[REQ-015] comita com operation, auditoria e eventos; antes/depois e payload sem dado pessoal bruto', async () => {
     const { store, executor } = setup();
 

@@ -15,6 +15,7 @@ export const messages = {
     catalog: 'Catálogo',
     interests: 'Interesses',
     parties: 'Pessoas e empresas',
+    bookings: 'Reservas',
   },
   home: {
     title: 'Administração',
@@ -40,6 +41,11 @@ export const messages = {
       parties: {
         includesLabel: 'Inclui',
         includes: 'Pessoas físicas e jurídicas (CPF/CNPJ mascarado) e convites de representantes',
+      },
+      bookings: {
+        includesLabel: 'Inclui',
+        includes:
+          'Reservas de uso próprio: comparecimento, exceções, apurações, recuperação e solicitações de autorização',
       },
     },
   },

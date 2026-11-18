@@ -56,12 +56,22 @@ export interface InputFingerprint<I> {
   payload(input: I, keyId: string): unknown;
 }
 
+/** Decisão do limite de um command (G-E4-1). */
+export type QuotaDecision = 'allowed' | 'limited' | 'unavailable' | 'parameter_missing';
+
 /** Handler de um command do registro: revalida tudo dentro da transação e lança `CommandRejection` para recusar. */
 export interface CommandHandler<I, R extends JsonValue, Tx> {
   readonly command: string;
   readonly input: ZodType<I>;
   /** Optional server policy: after authorization, before any idempotency lookup or effect (ADR-0021). */
   assertAvailable?(): void | Promise<void>;
+  /**
+   * Limite opcional (G-E4-1, W13 E4b; spec booking §10.15): consumida depois do guard e da consulta de idempotência e antes
+   * da operação — o replay de uma chave concluída nunca consome o limite. `limited` → `ERR_RATE_LIMITED` e `unavailable`
+   * (limitador sem resposta segura) → `ERR_UNAVAILABLE` e `parameter_missing` (limite ausente, TECH-001) →
+   * `ERR_PARAMETER_MISSING`, sempre sem operação nem chave gravadas (falha fechada).
+   */
+  consumeQuota?(authorizationRef: string | null): Promise<QuotaDecision>;
   secondHomeId?(input: I): string | null;
   /** Objeto do command, para o guard conferir o escopo de um `authorization_grant` (REQ-014). */
   scope?(input: I): CommandScope;
@@ -190,6 +200,10 @@ async function execute<I, R extends JsonValue, Tx>(
   };
   const existing = await deps.store.findIdempotency(base.scope, base.idempotencyKey);
   if (existing !== null) return replay<R>(existing, base);
+  const quota = (await handler.consumeQuota?.(decision.authorizationRef)) ?? 'allowed';
+  if (quota === 'limited') return early('ERR_RATE_LIMITED');
+  if (quota === 'unavailable') return early('ERR_UNAVAILABLE');
+  if (quota === 'parameter_missing') return early('ERR_PARAMETER_MISSING');
   return run(deps, handler, parsed.data, base);
 }
 
