@@ -1,4 +1,4 @@
-# Filme Luxtory Club: produção, footage e integração (v6.5, liberação técnica da prova · proposta para aprovação)
+# Filme Luxtory Club: produção, footage e integração (v7.0, produção sem ferramentas pagas · proposta para aprovação)
 
 > Complementa `ROTEIRO.md`. Imóveis, pessoas e valores ilustrativos, nunca apresentados como Second Homes reais à venda
 > ou disponíveis. A publicação depende da verificação de prontidão do produto e da aprovação da comunicação (§5).
@@ -293,6 +293,13 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
 
 ## 8. Revisões
 
+**v7.0 (sem ferramentas pagas, 2026-11-18):**
+- Restrição da Luxtory: só o Claude Code e o ChatGPT (com o Codex), mais planos gratuitos.
+- O Sora foi descontinuado em 26/04/2026, então o ChatGPT não gera mais vídeo.
+- O filme passa a "fotografia em movimento": imagens do ChatGPT com câmera 2,5D e footage real gratuito para os gestos
+  humanos. O Vids gratuito fica só como teste até a confirmação do uso comercial.
+- Bíblias, 17 planos, prompts e critérios mantidos.
+
 **v6.5 (liberação técnica da prova, 2026-11-18):** pré-voo com fontes oficiais.
 - **Veo 3.1 GA no Google Cloud:** sem pagamento por uso ("fixed quota" não definido; Provisioned Throughput é
   assinatura). O vídeo da prova passa ao Gemini Omni 1.2 Flash, GA com cobrança por uso.
@@ -394,6 +401,15 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
 
 ## 9. Fase cinematográfica: plano de execução e autorizações (v6)
 
+> **v7.0 (decisão da Luxtory, 18/11/2026):** nenhuma ferramenta paga além do Claude Code e do ChatGPT (com o Codex).
+> Fontes de imagem do filme:
+> - arquitetura e atmosfera: fotografia gerada no ChatGPT com câmera 2,5D feita pelo Claude Code;
+> - gesto humano: footage real gratuito (Pexels, Pixabay, Mixkit) com as autorizações necessárias, ou filmagem própria;
+> - trilha e efeitos: Pixabay;
+> - narração: voz da equipe.
+>
+> O plano e a divisão de tarefas estão em `PROVA-CINEMATOGRAFICA.md`. Os passos e custos abaixo que pressupõem
+> contratação (ferramentas pagas, locução, trilha encomendada) deixam de valer.
 A biblioteca de interfaces está pronta para a fase cinematográfica. Duas condições: a decisão econômica
 (`ECONOMIA.md`) e o congelamento dos valores e nomes (Etapa 3). Nada abaixo foi contratado nem gerado.
 

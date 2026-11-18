@@ -467,6 +467,19 @@ Nenhum PRL, Crédito, taxa ou valor do Luxplus foi alterado: a mudança depende 
 - **Cadência:** a do Omni não é documentada e será medida no primeiro clipe. Detalhes em
   `filme/PROVA-CINEMATOGRAFICA.md`.
 
+## Produção sem ferramentas pagas (v7.0, 2026-11-18)
+
+Decisão da Luxtory: nenhuma ferramenta paga além do Claude Code e do ChatGPT (com o Codex), mais planos gratuitos. O
+plano está em `filme/PROVA-CINEMATOGRAFICA.md`.
+
+- **Imagens:** ChatGPT, no plano já pago.
+- **Câmera e pós:** câmera 2,5D sobre fotografia, montagem, cor, interfaces a 24 fps e QA pelo Claude Code.
+- **Footage e trilha:** gratuitos (Pexels, Pixabay, Mixkit), com as autorizações necessárias.
+- **Narração:** voz da equipe.
+- **Google Vids gratuito:** só como teste até a confirmação do uso comercial.
+
+O Sora foi descontinuado em 26/04/2026. Os planos v6.3 a v6.5, com APIs pagas, ficam no histórico do Git.
+
 ## Integração na pós (Etapa A)
 
 - **Alfa straight** (não premultiplicado) nos PNG e no ProRes 4444; interpretar como *Straight* no editor.

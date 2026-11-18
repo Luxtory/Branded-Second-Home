@@ -148,6 +148,9 @@ com sol baixo. A sensação é de convivência, mesa posta e calor humano.
 
 ## 5. Prova de viabilidade: três tomadas
 
+> **v7.0 (sem ferramentas pagas):** a prova usa o ChatGPT (imagens, no plano já pago), câmera 2,5D feita pelo Claude
+> Code, footage e trilha gratuitos e o Google Vids gratuito só como teste (`PROVA-CINEMATOGRAFICA.md`). Os prompts
+> deste documento continuam válidos. As ferramentas e os custos abaixo ficam só como histórico.
 > **v6.3:** a execução (ferramenta e cadência, orçamento com preços oficiais, prompts finais, critérios e
 > contingências) está em `PROVA-CINEMATOGRAFICA.md`. Os preços de terceiros abaixo ficam só como histórico. Os modos de
 > imagem → vídeo e por referência do Veo não geram crianças, então o S02 da prova é testado com Helena e o parceiro
