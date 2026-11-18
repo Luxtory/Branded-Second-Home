@@ -1,8 +1,7 @@
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { scramVerifier } from '../../scripts/lib/scram.mjs';
 import { waitForLockWaiter } from '../support/platform-fixtures';
 import { createTestDatabase } from '../support/test-database';
 import {
@@ -38,6 +37,7 @@ import {
   resolveWithoutEffect,
   revoke,
   unstartedNights,
+  withAuthorizerLogin,
   type Admin,
   type OperationActor,
 } from '../features/booking/lifecycle-support';
@@ -146,18 +146,15 @@ describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, pl
 
     it('[ADR-0027 §4] login real do papel autorizador: só chama as funções; segunda conexão simultânea recusada', async () => {
       const id = await bookNow(h, co.titulares[0]!, co.homeId, at(70), at(71));
-      const password = randomBytes(24).toString('base64url');
-      await h.database.pool.query(`ALTER ROLE luxtory_booking_authorizer WITH PASSWORD '${scramVerifier(password)}'`);
-      const url = new URL(h.database.url);
-      url.username = 'luxtory_booking_authorizer';
-      url.password = password;
-      const authorizer = await connect(url.toString());
-      try {
+      // Login real serializado entre arquivos (papel global, CONNECTION LIMIT 1; W13 E5).
+      await withAuthorizerLogin(h, async (url) => {
+        const authorizer = await connect(url);
+        try {
         await expect(authorizer.query('SELECT id FROM app.booking LIMIT 1')).rejects.toMatchObject({ code: '42501' });
         await expect(authorizer.query('SELECT id FROM app.booking_authorization_request LIMIT 1')).rejects.toMatchObject({
           code: '42501',
         });
-        await expect(connect(url.toString())).rejects.toMatchObject({ code: '53300' });
+        await expect(connect(url)).rejects.toMatchObject({ code: '53300' });
         // Entrada fora do schema fechado e solicitação inexistente: recusas nomeadas, sem SQL livre.
         await expect(
           authorizer.query(`SELECT app.authorize_booking_action($1, $2)`, [randomUUID(), 'run 1; DROP TABLE x']),
@@ -170,10 +167,10 @@ describe('W13 E1 — autorização independente do luxtory_app (ADR-0027 §4, pl
         await expect(
           authorizer.query(`SELECT app.authorize_booking_action($1, $2)`, [request, 'github-run:7:1']),
         ).rejects.toEqual(constraint('authorization_emission_window'));
-      } finally {
-        await authorizer.end();
-        await h.database.pool.query(`ALTER ROLE luxtory_booking_authorizer WITH PASSWORD NULL`);
-      }
+        } finally {
+          await authorizer.end();
+        }
+      });
     });
 
     it('[ADR-0027 §4] isolamento: sem CREATE, sem TRIGGER/REFERENCES nem coluna; gatilhos só com os próprios privilégios', async () => {

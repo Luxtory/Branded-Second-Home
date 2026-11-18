@@ -1,0 +1,60 @@
+# SANDBOX DA E5 — nunca roda neste repositório (não está em .github/workflows). Publicado só no repositório de teste
+# Luxtory/luxtory-e5-authorizer-sandbox, no mesmo caminho do workflow real (spec booking §10.16).
+# É o workflow `.github/workflows/booking-authorizer.yml` mais um overlay de sandbox: o service container `postgres`
+# (PostgreSQL descartável, morre com o job) e os passos com nome "Sandbox:". Removido o overlay, é idêntico ao real
+# (tests/scripts/booking-authorizer-workflow.test.ts). A senha do container é literal e descartável (só loopback).
+name: booking-authorizer
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: authorize (id da solicitação) ou revoke (id da autorização)
+        type: choice
+        options: [authorize, revoke]
+        required: true
+      id:
+        description: id opaco (UUID) mostrado na área Admin
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  authorize:
+    name: authorize
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    environment: booking-authorizer
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17.10@sha256:7958605b474b3d264a969cb3a123d6aa00ad1e1fe9da8a69984dabb704d93317
+        env:
+          POSTGRES_PASSWORD: sandbox-disposable
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 2s --health-timeout 5s --health-retries 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: 'Sandbox: disposable database (migrations of the commit)'
+        run: npm ci --ignore-scripts && node tests/support/booking-authorizer-sandbox-db.mjs
+        env:
+          SANDBOX_ADMIN_URL: postgresql://postgres:sandbox-disposable@127.0.0.1:5432/postgres?sslmode=disable
+          SANDBOX_AUTHORIZER_VERIFIER: ${{ secrets.SANDBOX_AUTHORIZER_VERIFIER }}
+      - name: Install (production dependencies, no lifecycle scripts)
+        run: npm ci --omit=dev --ignore-scripts
+      - name: Authorize
+        run: node scripts/booking-authorizer.mjs
+        env:
+          AUTHORIZER_ACTION: ${{ inputs.action }}
+          AUTHORIZER_ID: ${{ inputs.id }}
+          AUTHORIZER_APPROVAL_REF: github-run:${{ github.run_id }}:${{ github.run_attempt }}
+          BOOKING_AUTHORIZER_DATABASE_URL: ${{ secrets.BOOKING_AUTHORIZER_DATABASE_URL }}

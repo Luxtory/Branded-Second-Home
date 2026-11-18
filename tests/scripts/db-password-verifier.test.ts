@@ -12,8 +12,8 @@ const OUTPUT =
 
 const password = (length: number) => randomBytes(length).toString('base64url').slice(0, length);
 
-function run(input: string) {
-  const result = spawnSync(process.execPath, [SCRIPT], { input, encoding: 'utf8' });
+function run(input: string, args: readonly string[] = []) {
+  const result = spawnSync(process.execPath, [SCRIPT, ...args], { input, encoding: 'utf8' });
   return { status: result.status, stdout: result.stdout, stderr: result.stderr };
 }
 
@@ -50,5 +50,24 @@ describe('db:password-verifier', { timeout: SCRIPT_PROCESS_TIMEOUT_MS }, () => {
     expect(status).toBe(1);
     expect(stdout).toBe('');
     expect(stderr).toContain('ao menos 32 caracteres');
+  });
+
+  it('[ADR-0027 §4] papel autorizador (W13 E5): mesmo caminho, só o verificador da senha dele', () => {
+    const secret = password(40);
+
+    const { status, stdout, stderr } = run(`${secret}\n`, ['luxtory_booking_authorizer']);
+
+    expect(status).toBe(0);
+    expect(stdout).toMatch(
+      /^ALTER ROLE luxtory_booking_authorizer WITH PASSWORD 'SCRAM-SHA-256\$\d+:[A-Za-z0-9+/=]+\$[A-Za-z0-9+/=]+:[A-Za-z0-9+/=]+';\n$/,
+    );
+    expect(stdout + stderr).not.toContain(secret);
+  });
+
+  it('[ADR-0027 §4] papel fora da lista fechada é recusado antes de ler a senha', () => {
+    const { status, stdout } = run(`${password(40)}\n`, ['postgres']);
+
+    expect(status).toBe(1);
+    expect(stdout).toBe('');
   });
 });

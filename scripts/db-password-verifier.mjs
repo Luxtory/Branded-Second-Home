@@ -1,10 +1,13 @@
-// npm run db:password-verifier — imprime o `ALTER ROLE luxtory_app … PASSWORD '<verificador SCRAM>'` para o SQL
-// Editor do Supabase (runbook: docs/how-to/operacao.md). A senha é lida sem eco e nunca é impressa nem gravada.
+// npm run db:password-verifier [-- <papel>] — imprime o `ALTER ROLE <papel> … PASSWORD '<verificador SCRAM>'` para o
+// SQL Editor do Supabase (runbooks: docs/how-to/operacao.md e, para o papel autorizador, docs/how-to/autorizador-de-
+// reservas.md). A senha é lida sem eco e nunca é impressa nem gravada.
 import { createInterface } from 'node:readline';
 import { Writable } from 'node:stream';
 import { scramVerifier } from './lib/scram.mjs';
 
-const ROLE = 'luxtory_app';
+// Papéis com senha definida por runbook (lista fechada): o da aplicação (padrão) e o autorizador independente (W13 E5).
+const ROLES = ['luxtory_app', 'luxtory_booking_authorizer'];
+const ROLE = process.argv[2] ?? ROLES[0];
 // Senha gerada por gerenciador de senhas; o runbook pede ao menos este tamanho.
 const MIN_PASSWORD_LENGTH = 32;
 
@@ -27,6 +30,11 @@ function readSecret(prompt) {
     // Só vale quando nenhuma linha chegou (stdin encerrado vazio): a senha vazia é recusada adiante.
     rl.once('close', () => resolve(''));
   });
+}
+
+if (!ROLES.includes(ROLE)) {
+  console.error(`Papel não aceito. Use um destes: ${ROLES.join(', ')}.`);
+  process.exit(1);
 }
 
 const password = await readSecret(`Senha do papel ${ROLE} (não aparece na tela): `);
