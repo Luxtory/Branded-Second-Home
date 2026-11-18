@@ -871,7 +871,9 @@ GitHub; configuração real (Environment, revisor, senha) segue decisão futura 
   `Luxtory`, branch policy só `main`, secrets sintéticos só no Environment (2 no Environment, 0 no repositório).
   **Identidade:** todos os disparos e o único revisor são a mesma conta `Luxtory`; não houve separação entre quem dispara
   e quem revisa, e `prevent_self_review` ficou desligado (ligado, o único revisor não aprova o próprio disparo) — nenhuma
-  proteção de auto-revisão foi provada. O agente nunca chamou a API de aprovação.
+  proteção de auto-revisão foi provada. O agente nunca chamou a API de aprovação; as três revisões foram feitas pelo
+  fundador com a conta `Luxtory`, pela API oficial (o registro do GitHub não distingue interface de API). Os testes do
+  Environment provam o gate funcional, não independência entre identidades (T-1320 e T-1323 seguem abertos).
 
 **Runs do sandbox (2026-11-18).**
 
@@ -880,9 +882,9 @@ GitHub; configuração real (Environment, revisor, senha) segue decisão futura 
 | 44218188775 | `outra-ref` (workflow intacto) | critério 2: o `if` | job `skipped`, 0 passos |
 | 44218204517 | `adulterada` (sem o `if`, com sonda do secret) | critério 2: a regra do Environment | recusado: "Branch "adulterada" is not allowed to deploy to booking-authorizer due to environment protection rules", 0 passos |
 | 44219499475 | `adulterada`, com os secrets já cadastrados | critério 2 com o secret existente | mesma recusa, 0 passos, log vazio |
-| 44218219833 | `main` | critério 3: espera e rejeição | `waiting`, 0 passos, revisor `Luxtory` pendente; **rejeição ainda não registrada no GitHub** |
-| 44218235412 | `main`, id aleatório | critério 3 e 5: aprovação, login real, recusa real da função | `waiting`, 0 passos; **aprovação ainda não registrada no GitHub** |
-| 44218249933 | `main`, id com SQL e shell | critério 4 e 5 na plataforma | `waiting`, 0 passos; **aprovação ainda não registrada no GitHub** |
+| 44218219833 | `main` | critério 3: espera e rejeição | em espera (0 passos) até a revisão; **rejeitado** por `Luxtory` → job encerrado sem executar nenhum passo ("The deployment was rejected…") |
+| 44218235412 | `main`, id aleatório | critério 3 e 5: aprovação, login real, recusa real da função | **aprovado** por `Luxtory` → banco descartável pronto (60 migrations, ativação 0), login com o secret do Environment, `result=authorization_request_unknown`, saída 1 (recusa intencional) |
+| 44218249933 | `main`, id com SQL e shell | critério 4 e 5 na plataforma | **aprovado** por `Luxtory` → `result=input_invalid` antes de conectar; o payload aparece só como entrada literal, sem avaliação de shell; saída 1 (recusa intencional) |
 
 **Cobertura dos critérios do plano W13 (autorização independente).**
 
@@ -890,9 +892,9 @@ GitHub; configuração real (Environment, revisor, senha) segue decisão futura 
 |---|---|---|
 | 1 | contrato do YAML (gatilho, permissões, `if`, Environment, SHAs, sem cache, `env:`); **limitação:** a `main` não tem proteção nem ruleset — "mudança só por PR revisado" não é imposto pela plataforma (pré-requisito da configuração real) | nova (E5) |
 | 2 | runs 44218188775, 44218204517 e 44219499475 | nova (E5, sandbox) |
-| 3 | secrets só no Environment (API); runs na `main` em espera sem passo executado; rejeição e aprovação: pendentes do registro do revisor | nova (E5, sandbox), parcial |
+| 3 | secrets só no Environment (2) e 0 no repositório (API); runs na `main` em espera sem passo executado até a revisão; rejeitado → nenhum passo; aprovado → o secret chega só ao passo final | nova (E5, sandbox) |
 | 4 | YAML sem `${{ }}` em `run:`; programa recusa antes de conectar (unit, db com login real); função com schema fechado (`authorization_input`) | nova (E5) + E1 |
-| 5 | saída só `result=`/`authorization_id=` com varredura (db: id da reserva, noites, party, senha, host); varredura do log público do run aprovado: pendente | nova (E5) + E1, parcial |
+| 5 | saída só `result=`/`authorization_id=` com varredura (db: id da reserva, noites, party, senha, host); logs públicos dos dois runs aprovados sem a senha sintética (crua ou codificada), sem DSN com credencial, sem verificador e sem avaliação de shell; secrets mascarados (`***`) | nova (E5) + E1 |
 | 6, 7, 8, 9, 12, 13, 16 | `tests/migrations/booking-authorization.db.test.ts` e `booking-lifecycle.db.test.ts` | reaproveitada (E1/E2b) |
 | 10 | E1 (privilégios, 42501, login real, `CONNECTION LIMIT 1`) + E5 (login real pelo programa; impostor recusado por `current_user`) | E1 + nova (E5) |
 | 11 | E1 (PK, reuso recusado, rollback) + E2 (replay pela chave do executor) + E5 (re-execução do run → `authorization_request_already_authorized`) | E1/E2 + nova (E5) |
