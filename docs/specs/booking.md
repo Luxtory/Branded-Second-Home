@@ -834,3 +834,67 @@ Sem mudança de regra canônica, contrato de evento, migration ou permissão. Es
   decidir se entra na fila de capacidade recuperável. Com as reservas desativadas (K1/K2), o volume atual é zero. Antes
   de ativar ou ampliar o volume operacional, reavaliar limite, paginação e a consulta por lote. A E4b não introduz
   paginação.
+
+### 10.16. E5 — workflow do autorizador (autorizada em 2026-11-18; branch isolada, sandbox de teste e PR draft)
+
+Sem decisão nova, migration, endpoint ou evento. Implementa o fluxo da §10.7 e a tabela do ADR-0027 §4 do lado do
+GitHub; configuração real (Environment, revisor, senha) segue decisão futura do fundador (runbook
+[`autorizador-de-reservas.md`](../how-to/autorizador-de-reservas.md)).
+
+- **Workflow** `.github/workflows/booking-authorizer.yml`: só `workflow_dispatch` (entradas `action` ∈ {`authorize`,
+  `revoke`} e `id`), `permissions: contents: read`, um job com `if: github.ref == 'refs/heads/main' &&
+  github.event_name == 'workflow_dispatch'` e `environment: booking-authorizer`; actions fixadas pelos mesmos SHAs da
+  `ci.yml`; checkout sem credencial persistida; sem cache; `npm ci --omit=dev --ignore-scripts`; entradas só por `env:`
+  (nenhum `${{ }}` em `run:`); o secret `BOOKING_AUTHORIZER_DATABASE_URL` só no passo final; referência da aprovação
+  `github-run:<run_id>:<run_attempt>`. Sem `concurrency`: o `CONNECTION LIMIT 1` do papel já serializa (e um grupo de
+  concorrência cancelaria a execução pendente de aprovação ao chegar outra).
+- **Programa** `scripts/booking-authorizer.mjs` (só `pg` e módulos do Node): recusa ação, id (UUID) ou referência fora do
+  formato antes de conectar; aceita só a conexão do papel autorizador (direto ou `<papel>.<project-ref>` do Supavisor),
+  com senha, sem parâmetro além de `sslmode`, `verify-full` com a CA fixada do repositório (`disable` só em loopback);
+  confere `current_user`/`session_user` no servidor antes da chamada; chama `app.authorize_booking_action` ou
+  `app.revoke_booking_authorization` com parâmetros; imprime só `result=<código>` (constraint nomeada, `sqlstate_<código>`
+  ou `connection_failed`) e, na emissão, `authorization_id=<uuid>` — nunca mensagem, conexão ou dado da reserva.
+- **Senha:** `npm run db:password-verifier -- luxtory_booking_authorizer` (lista fechada de dois papéis).
+- **Testes novos (E5):** `tests/scripts/booking-authorizer-workflow.test.ts` (contrato do YAML e equivalência da variante
+  do sandbox), `tests/scripts/booking-authorizer.test.ts` (entradas, conexão, CA, códigos),
+  `tests/scripts/booking-authorizer.db.test.ts` (o programa como processo, com login real: emissão, repetição, revogação,
+  recusas da função, injeção, senha errada, papel impostor, saída sem dado sensível), `db-password-verifier.test.ts`
+  (papel autorizador). O E2E do ciclo (`own-use-lifecycle.spec.ts`) passa a autorizar pelo programa real com login real
+  (`authorizeE2eBookingAction`), fechando a cadeia solicitação na tela Admin → workflow → execução na tela. O login real
+  nos testes db passa por `withAuthorizerLogin` (trava consultiva no banco de administração): o papel é global no
+  servidor, tem `CONNECTION LIMIT 1` e os arquivos rodam em paralelo.
+- **Sandbox** (`Luxtory/luxtory-e5-authorizer-sandbox`, público e descartável, autorizado pelo fundador): arquivos públicos
+  copiados sem alteração (hashes de blob no README dele) e, no caminho do workflow, a variante
+  `tests/fixtures/booking-authorizer-sandbox.yml` = workflow real + overlay (service container `postgres:17.10` fixado por
+  digest e o passo `Sandbox:` que aplica as migrations do commit, confere a prontidão e grava o verificador sintético —
+  `tests/support/booking-authorizer-sandbox-db.mjs`). Environment de teste `booking-authorizer`: revisor obrigatório
+  `Luxtory`, branch policy só `main`, secrets sintéticos só no Environment (2 no Environment, 0 no repositório).
+  **Identidade:** todos os disparos e o único revisor são a mesma conta `Luxtory`; não houve separação entre quem dispara
+  e quem revisa, e `prevent_self_review` ficou desligado (ligado, o único revisor não aprova o próprio disparo) — nenhuma
+  proteção de auto-revisão foi provada. O agente nunca chamou a API de aprovação.
+
+**Runs do sandbox (2026-11-18).**
+
+| Run | Ref | Prova | Resultado |
+|---|---|---|---|
+| 44218188775 | `outra-ref` (workflow intacto) | critério 2: o `if` | job `skipped`, 0 passos |
+| 44218204517 | `adulterada` (sem o `if`, com sonda do secret) | critério 2: a regra do Environment | recusado: "Branch "adulterada" is not allowed to deploy to booking-authorizer due to environment protection rules", 0 passos |
+| 44219499475 | `adulterada`, com os secrets já cadastrados | critério 2 com o secret existente | mesma recusa, 0 passos, log vazio |
+| 44218219833 | `main` | critério 3: espera e rejeição | `waiting`, 0 passos, revisor `Luxtory` pendente; **rejeição ainda não registrada no GitHub** |
+| 44218235412 | `main`, id aleatório | critério 3 e 5: aprovação, login real, recusa real da função | `waiting`, 0 passos; **aprovação ainda não registrada no GitHub** |
+| 44218249933 | `main`, id com SQL e shell | critério 4 e 5 na plataforma | `waiting`, 0 passos; **aprovação ainda não registrada no GitHub** |
+
+**Cobertura dos critérios do plano W13 (autorização independente).**
+
+| # | Evidência | Origem |
+|---|---|---|
+| 1 | contrato do YAML (gatilho, permissões, `if`, Environment, SHAs, sem cache, `env:`); **limitação:** a `main` não tem proteção nem ruleset — "mudança só por PR revisado" não é imposto pela plataforma (pré-requisito da configuração real) | nova (E5) |
+| 2 | runs 44218188775, 44218204517 e 44219499475 | nova (E5, sandbox) |
+| 3 | secrets só no Environment (API); runs na `main` em espera sem passo executado; rejeição e aprovação: pendentes do registro do revisor | nova (E5, sandbox), parcial |
+| 4 | YAML sem `${{ }}` em `run:`; programa recusa antes de conectar (unit, db com login real); função com schema fechado (`authorization_input`) | nova (E5) + E1 |
+| 5 | saída só `result=`/`authorization_id=` com varredura (db: id da reserva, noites, party, senha, host); varredura do log público do run aprovado: pendente | nova (E5) + E1, parcial |
+| 6, 7, 8, 9, 12, 13, 16 | `tests/migrations/booking-authorization.db.test.ts` e `booking-lifecycle.db.test.ts` | reaproveitada (E1/E2b) |
+| 10 | E1 (privilégios, 42501, login real, `CONNECTION LIMIT 1`) + E5 (login real pelo programa; impostor recusado por `current_user`) | E1 + nova (E5) |
+| 11 | E1 (PK, reuso recusado, rollback) + E2 (replay pela chave do executor) + E5 (re-execução do run → `authorization_request_already_authorized`) | E1/E2 + nova (E5) |
+| 14 | E1/E2 (cancelamento do Titular sem autorização independente) | reaproveitada |
+| 15 | runbook `autorizador-de-reservas.md` §1 (fontes por finalidade) | nova (E5) |

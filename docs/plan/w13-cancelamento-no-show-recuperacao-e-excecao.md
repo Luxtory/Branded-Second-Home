@@ -20,6 +20,8 @@ ou ativação); E2 em diante dependem de nova autorização expressa.
 
 **Atualização 2026-11-06 (E3 mergeada; E4a aprovada; E4b autorizada):** a E3 foi mergeada pelo #88 (squash `dbb4ac6`; crons em Production, sem execução manual, ativação 0, nenhum fato do ciclo). A E4a passou por revisão renderizada com o fundador (v1 NO-GO visual, v2 com a hierarquia pela consequência, v2.1 com a matriz exata da apuração e a cobertura integral) e foi aprovada como referência visual da implementação. A E4b foi autorizada só em branch isolada e PR draft: telas e Server Actions do Titular e do Admin, leituras, gate G-E4-1, correções R-DS-1 a R-DS-3 do Design System e E2E (spec `booking` §10.15). Sem merge, deploy, Production, migration nova ou ativação; M1 e T-1314 continuam pendentes.
 
+**Atualização 2026-11-18 (E4b mergeada; E5 em PR draft):** a E4b foi mergeada pelo #92 (squash `caa699c`; CI da main 44204312585 verde, Production sem migration nova, K1 e K2 com 0 linhas). A E5 foi autorizada só em branch isolada, num repositório sandbox público e descartável (`Luxtory/luxtory-e5-authorizer-sandbox`, Environment de teste com revisor obrigatório e só a `main`, secrets sintéticos, PostgreSQL criado no job) e em PR draft: workflow, programa do autorizador, testes e runbook (spec `booking` §10.16). Sem merge, Production, Environment real, senha do autorizador ou ativação; M1 e T-1314 continuam pendentes.
+
 ## Decisões do fundador (2026-11-03)
 
 | # | Decisão | Situação |
@@ -51,8 +53,8 @@ ou ativação); E2 em diante dependem de nova autorização expressa.
 | E2b | Correção da origem P-A na recuperação (A3, BR-123; spec `booking` §10.13): migration incremental com `CREATE OR REPLACE` de `app.authorize_booking_action`, espelho no `requestFacts`, testes de regressão; bloqueio B-A3 até integrada e validada | autorizada (2026-11-05; PR draft, sem merge nem Production) → concluída (#84 → `afa2d12`, 2026-11-05; Production 60/0, validada somente leitura) |
 | E3 | Jobs e consumidores de notificação | não autorizada → autorizada (2026-11-05; branch isolada e PR draft, sem merge, deploy, Production ou ativação) → implementada em PR draft (spec `booking` §10.14.1), aguardando auditoria → concluída (#88 → `dbb4ac6`, 2026-11-05; crons em Production, ativação 0) |
 | E4a | Revisão renderizada com o fundador: prévia do cancelamento (tempestivo, tardio, iniciada, Owner, prazo vencido na revisão, em exceção) e telas Admin, 390/1440 px | não autorizada → autorizada (2026-11-05, só protótipos) → v1 NO-GO visual → v2 → v2.1 aprovada como referência visual (2026-11-06; spec `booking` §10.15) |
-| E4b | Integração das telas e E2E; gate G-E4-1 (limitador da solicitação, spec `booking` §10.12) testado antes de expor a solicitação | não autorizada → autorizada (2026-11-06; branch isolada e PR draft, sem merge, deploy ou ativação; spec `booking` §10.15) → implementada em PR draft (spec `booking` §10.15.1), aguardando auditoria |
-| E5 | Workflow do autorizador comprovado num Environment isolado apontando para banco descartável | não autorizada |
+| E4b | Integração das telas e E2E; gate G-E4-1 (limitador da solicitação, spec `booking` §10.12) testado antes de expor a solicitação | não autorizada → autorizada (2026-11-06; branch isolada e PR draft, sem merge, deploy ou ativação; spec `booking` §10.15) → implementada em PR draft (spec `booking` §10.15.1), aguardando auditoria → concluída (#92 → `caa699c`, 2026-11-18; Production, nada ativado) |
+| E5 | Workflow do autorizador comprovado num Environment isolado apontando para banco descartável | não autorizada → autorizada (2026-11-18; branch isolada, sandbox de teste e PR draft) → implementada em PR draft (spec `booking` §10.16) |
 | E6 | Gates locais | não autorizada |
 | E7 | PR draft da implementação; parar antes do merge | não autorizada |
 
@@ -124,7 +126,7 @@ operacionais, secrets, Environment real, migrations fora da CI, merge sem autori
   desativação (R3) fora de Production; execuções do `outbox`, `open_exercise` e `close_exercise` observadas; latência de
   entrega das notificações adequada à detecção (R4, R7), comprovada em Production — hoje o evento é enfileirado no
   COMMIT e entregue pelo cron diário do `outbox`, sem serviço novo na W13; decisões expressas sobre R1–R8; reavaliação do T-1207; configuração do Environment, do
-  revisor e da senha do autorizador.
+  revisor e da senha do autorizador; proteção da `main` por ruleset (critério 1: hoje a `main` não tem proteção nem ruleset).
 - **C1** — prazo vencido durante indisponibilidade ou contenção: decisão operacional/contratual antes da ativação, com
   comunicação, coleta de evidência e escalonamento administrativo; sem compensação automática; a PD-010 não é exclusão
   genérica.

@@ -266,3 +266,24 @@ A W13 não ativa reservas.
   cancelamento) pelo padrão `withUserThenServerRead` da W12, depois da prova da RLS e no mesmo instantâneo; nenhuma
   permissão nova. O Admin lê pelo store da E2, com leitura auditada.
 
+
+## Nota de implementação da E5 (2026-11-18, PR draft; sem mudança de decisão)
+
+A E4b foi mergeada pelo #92 (`caa699c`). A E5 entrega o lado GitHub do §4 (spec `booking` §10.16; runbook
+`docs/how-to/autorizador-de-reservas.md`):
+
+- **Programa mínimo no passo protegido.** `scripts/booking-authorizer.mjs` depende só de `pg`, instalado com
+  `npm ci --omit=dev --ignore-scripts` e sem cache. Antes de conectar, recusa entrada fora do formato e conexão que não
+  seja do papel autorizador. No servidor, confere `current_user` e `session_user` antes da chamada. A saída pública é só
+  o código do resultado e o id da autorização, porque o log do run é público.
+- **Identidade única.** Com um único mantenedor, quem dispara e quem aprova é a mesma conta GitHub, e
+  `prevent_self_review` precisa ficar desligado: ligado, o único revisor não aprova o próprio disparo. O mecanismo
+  continua independente do `luxtory_app` (o secret existe só no Environment, nunca na Vercel), mas não separa duas
+  pessoas. A aprovação também é aceita pela API com qualquer token da conta do revisor, então a força do gate é a da
+  credencial GitHub do fundador.
+- **Pré-requisitos achados para a configuração real:** a `main` não tem proteção nem ruleset (critério 1); o GitHub cria
+  sem proteção um Environment que um job referencia antes de ele existir (o programa falha fechado sem o secret); conexão
+  pelo Supavisor, porque os runners não têm IPv6.
+- **Prova de plataforma** num repositório sandbox público e descartável, com a variante do workflow
+  `tests/fixtures/booking-authorizer-sandbox.yml`. Um teste prova que ela é idêntica à real sem o overlay. Nenhuma
+  decisão muda.

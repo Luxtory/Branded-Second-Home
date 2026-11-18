@@ -343,3 +343,19 @@ do ciclo e `request_booking_authorization`) e as leituras das telas. Nenhuma rot
 | T-1315 Tampering/Elevation — recuperação de origem P-A sem atestação | Na solicitação de recuperação de origem P-A, a atestação é obrigatória no formulário (erro no campo) e o handler e a função do banco a exigem (A3, E2b) | E2E (fluxo de recuperação), db (E2b) |
 | T-1302 Elevation — ato Admin sem decisão legítima | Gate da página (AAL2, papel exercido) e guard do executor (AAL2 e `staff_role` revalidados); K2 no handler e no banco; autorização viva resolvida pelo servidor e exigida pelo banco; "Cancelar" só aparece com autorização viva e o aviso depende do desfecho escolhido | db (E2 e E4b), E2E |
 | T-1318 [LOW] Information disclosure — leitura do Admin | Leituras auditadas (`admin_read`, `booking_directory`/`booking`, só ids) na mesma transação | db (`audit_log`) |
+
+## W13.9. E5 — workflow do autorizador (2026-11-18, PR draft)
+
+Superfície nova: o workflow `booking-authorizer` (disparo manual por quem tem escrita no repositório público) e o
+programa `scripts/booking-authorizer.mjs`, no passo protegido pelo Environment. Inerte até a configuração real (decisão
+futura do fundador). Nenhuma rota, migration ou permissão de banco nova.
+
+| Ameaça | Mitigação na E5 | Teste / prova |
+|---|---|---|
+| T-1319 Tampering/Elevation — workflow alterado numa branch para expor o secret | Regra de branch do Environment só `main`, além do `if` do job; secret só no Environment | sandbox: run 44218188775 (`if`) e 44218204517/44219499475 (variante sem `if`, com sonda) recusados sem passo executado |
+| T-1320 [MEDIUM] Tampering — workflow alterado direto na `main` | **Aberta:** a `main` não tem proteção nem ruleset. O revisor confere commit e histórico do workflow antes de aprovar (runbook §2). Ruleset na `main` é pré-requisito da configuração real | contrato do YAML (unit); limitação registrada |
+| T-1321 Information disclosure — log público do run | Entradas só por `env:`; saída só `result=`/`authorization_id=`; erro sem mensagem; secret mascarado pelo GitHub | unit e db (varredura da saída com login real); varredura do log do run aprovado pendente do revisor |
+| T-1322 Injection — `id` com SQL ou shell | Nenhum `${{ }}` em `run:`; UUID conferido antes de conectar; chamada com parâmetros; schema fechado na função | YAML, unit, db (payload com login real → `input_invalid`, nada gravado) |
+| T-1323 [MEDIUM] Spoofing — aprovação sem a pessoa do revisor | Revisor obrigatório no Environment. **Residual:** com identidade única não há separação disparo × revisão nem `prevent_self_review`; a API aceita aprovação com qualquer token `repo` da conta do revisor. Runbook §5.6: 2FA, nenhum token da conta em máquina de agente ou CI, ou conta revisora separada | registrado; não ratificado |
+| T-1324 Elevation — secret com credencial mais forte (dono, `luxtory_app`) | Programa recusa outro nome de papel antes de conectar e confere o papel no servidor | unit (DSN do dono e do `luxtory_app`) e db (papel impostor `luxtory_booking_authorizer.*` → `role_mismatch`) |
+| T-1325 Tampering — dependência comprometida no job | Só `pg` é carregado; instalação sem devDependencies, sem scripts e sem cache; actions fixadas por SHA | contrato do YAML |
