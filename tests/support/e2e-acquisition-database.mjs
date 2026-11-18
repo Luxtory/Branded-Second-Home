@@ -2,6 +2,9 @@
 import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { withClient } from '../../scripts/lib/pg.mjs';
 import { scramVerifier } from '../../scripts/lib/scram.mjs';
@@ -121,6 +124,8 @@ export async function authorizeE2eBookingAction(requestId) {
   if (!/^[0-9a-f-]{36}$/i.test(requestId)) throw new Error('Invalid fixture request id');
   const ownerUrl = disposableOwnerUrl();
   const password = randomBytes(AUTHORIZER_PASSWORD_BYTES).toString('base64url');
+  const eventDir = await mkdtemp(join(tmpdir(), 'e2e-authorizer-event-'));
+  const eventPath = join(eventDir, 'event.json');
   await withClient(ownerUrl, (client) =>
     client.query(
       `ALTER ROLE luxtory_booking_authorizer WITH PASSWORD '${scramVerifier(password)}'`,
@@ -131,15 +136,16 @@ export async function authorizeE2eBookingAction(requestId) {
     url.username = 'luxtory_booking_authorizer';
     url.password = password;
     url.search = '?sslmode=disable';
-    // Referência no formato fechado da função (`github-run:<id>:<tentativa>`), sintética e única por chamada.
+    // Como o runner: evento `workflow_dispatch` num arquivo e id do run sintético e único por chamada.
     syntheticRun += 1;
+    await writeFile(eventPath, JSON.stringify({ inputs: { action: 'authorize', id: requestId } }));
     const { stdout } = await runAuthorizer(process.execPath, ['scripts/booking-authorizer.mjs'], {
       encoding: 'utf8',
       env: {
         PATH: process.env.PATH ?? '',
-        AUTHORIZER_ACTION: 'authorize',
-        AUTHORIZER_ID: requestId,
-        AUTHORIZER_APPROVAL_REF: `github-run:${Date.now()}${syntheticRun}:1`,
+        GITHUB_EVENT_PATH: eventPath,
+        GITHUB_RUN_ID: `${Date.now()}${syntheticRun}`,
+        GITHUB_RUN_ATTEMPT: '1',
         BOOKING_AUTHORIZER_DATABASE_URL: url.toString(),
       },
     });
@@ -148,6 +154,7 @@ export async function authorizeE2eBookingAction(requestId) {
       throw new Error(`Authorizer program did not authorize: ${stdout.trim()}`);
     return authorized[1];
   } finally {
+    await rm(eventDir, { recursive: true, force: true });
     await withClient(ownerUrl, (client) =>
       client.query('ALTER ROLE luxtory_booking_authorizer WITH PASSWORD NULL'),
     );

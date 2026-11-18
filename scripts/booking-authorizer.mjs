@@ -1,8 +1,11 @@
 // Autorizador independente do luxtory_app (W13 E5; ADR-0027 §4; spec booking §10.7 e §10.16).
 // Executado só pelo workflow `.github/workflows/booking-authorizer.yml`, no passo protegido pelo GitHub Environment
-// `booking-authorizer` (runbook: docs/how-to/autorizador-de-reservas.md). Entradas só por variáveis de ambiente; o banco
-// deriva e confere o escopo (`app.authorize_booking_action`). Saída pública (repositório público): só `result=<código>`
-// e, na emissão, `authorization_id=<uuid>` — nunca a mensagem do erro, a conexão ou dado da reserva.
+// `booking-authorizer` (runbook: docs/how-to/autorizador-de-reservas.md). Entradas: `action` e `id` lidos do arquivo do
+// evento `workflow_dispatch` (`GITHUB_EVENT_PATH`) e a referência do run de `GITHUB_RUN_ID`/`GITHUB_RUN_ATTEMPT` — nunca
+// pelo `env:` do passo, que o runner imprime no log público (T-1321). O evento não é confidencial: a entrada é só o id
+// opaco. O banco deriva e confere o escopo (`app.authorize_booking_action`). Saída pública (repositório público): só
+// `result=<código>` e, na emissão, `authorization_id=<uuid>` — nunca a entrada, a mensagem do erro, a conexão ou dado da
+// reserva.
 // Dependências: só `pg` e módulos do Node (o job instala sem devDependencies e sem scripts de instalação).
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -47,14 +50,32 @@ export class AuthorizerRefusal extends Error {
 }
 
 /**
+ * Entradas do disparo: `inputs` do arquivo do evento escrito pelo runner e a referência do run. Sem arquivo, sem
+ * `inputs` legível ou sem o id do run → `input_missing`; valor fora do schema fechado → `input_invalid`.
  * @param {Readonly<Record<string, string | undefined>>} env
+ * @param {(path: string) => string} [readEvent]
  * @returns {{ action: 'authorize' | 'revoke', id: string, approvalRef: string }}
  */
-export function parseInputs(env) {
-  const action = env.AUTHORIZER_ACTION ?? '';
-  const id = env.AUTHORIZER_ID ?? '';
-  const approvalRef = env.AUTHORIZER_APPROVAL_REF ?? '';
-  if (!Object.hasOwn(ACTIONS, action) || !UUID.test(id) || !APPROVAL_REF.test(approvalRef)) {
+export function parseInputs(env, readEvent = (path) => readFileSync(path, 'utf8')) {
+  if (!env.GITHUB_EVENT_PATH || !env.GITHUB_RUN_ID || !env.GITHUB_RUN_ATTEMPT) {
+    throw new AuthorizerRefusal('input_missing');
+  }
+  let inputs;
+  try {
+    inputs = JSON.parse(readEvent(env.GITHUB_EVENT_PATH)).inputs;
+  } catch {
+    throw new AuthorizerRefusal('input_missing');
+  }
+  if (typeof inputs !== 'object' || inputs === null) throw new AuthorizerRefusal('input_missing');
+  const { action, id } = inputs;
+  const approvalRef = `github-run:${env.GITHUB_RUN_ID}:${env.GITHUB_RUN_ATTEMPT}`;
+  if (
+    typeof action !== 'string' ||
+    typeof id !== 'string' ||
+    !Object.hasOwn(ACTIONS, action) ||
+    !UUID.test(id) ||
+    !APPROVAL_REF.test(approvalRef)
+  ) {
     throw new AuthorizerRefusal('input_invalid');
   }
   return { action: /** @type {'authorize' | 'revoke'} */ (action), id, approvalRef };

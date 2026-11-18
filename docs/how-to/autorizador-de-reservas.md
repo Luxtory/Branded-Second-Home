@@ -31,7 +31,8 @@ Se o servidor da aplicação estiver inteiro comprometido, a tela Admin que most
 ## 2. Autorizar
 
 1. Na área Admin, em **Reservas → reserva → Autorização**, registre a solicitação e copie o **id opaco** exibido. É a
-   única entrada pública: nenhuma reserva, data, nome ou evidência vai para o GitHub (o repositório é público).
+   única entrada: nenhuma reserva, data, nome ou evidência vai para o GitHub (o repositório é público). O programa lê o
+   id do evento do disparo e não o imprime no log, mas o evento do GitHub não é confidencial: informe só o id opaco.
 2. No GitHub, abra **Actions → booking-authorizer → Run workflow**, com a branch **`main`**, `action = authorize` e
    `id = <id opaco>`.
 3. Abra o run. Ele fica **Waiting**: nenhum passo roda e o secret não é carregado até a aprovação.
@@ -64,6 +65,7 @@ O programa imprime só uma destas linhas, nunca a mensagem do erro, a conexão o
 |---|---|---|
 | `authorized` (+ `authorization_id`) | autorização gravada | executar o ato na área Admin |
 | `revoked` | revogação gravada | — |
+| `input_missing` | o programa não encontrou a entrada do disparo (arquivo do evento ou id do run) | disparar de novo pelo **Run workflow** |
 | `input_invalid` | ação, id ou referência fora do formato fechado (checado antes de conectar) | conferir o id copiado |
 | `configuration_missing` | o secret do Environment não chegou ao passo | conferir o Environment (seção 5) |
 | `configuration_invalid` | conexão de outro papel, sem senha, com parâmetro extra ou sem `sslmode=verify-full` | corrigir o secret |

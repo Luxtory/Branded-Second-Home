@@ -1,5 +1,8 @@
 import { execFile } from 'node:child_process';
 import { randomBytes, randomUUID } from 'node:crypto';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { scramVerifier } from '../../scripts/lib/scram.mjs';
@@ -22,13 +25,15 @@ import {
 } from '../features/booking/lifecycle-support';
 
 // W13 E5 (spec booking §10.16; plano W13 critérios 4, 5 e 11): o programa do passo protegido do workflow, executado
-// como o job o executa (processo próprio, entradas só por variáveis de ambiente), com o login real do papel autorizador
-// num PostgreSQL descartável. Prova a emissão e a revogação ponta a ponta, as recusas nomeadas da função e que nada além
-// do código do resultado e do id da autorização chega à saída (o log do run é público).
+// como o job o executa (processo próprio, entrada no arquivo do evento e referência pelo id do run, como o runner
+// fornece), com o login real do papel autorizador num PostgreSQL descartável. Prova a emissão e a revogação ponta a
+// ponta, as recusas nomeadas da função e que nada além do código do resultado e do id da autorização chega à saída (o
+// log do run é público).
 const SCRIPT = 'scripts/booking-authorizer.mjs';
 const RESULT_LINE = /^result=[a-z][a-z0-9_]*$/;
 const AUTHORIZATION_LINE = /^authorization_id=[0-9a-f-]{36}$/;
 const run = promisify(execFile);
+const events = mkdtempSync(join(tmpdir(), 'e5-db-event-'));
 let runId = 0;
 
 interface Outcome {
@@ -37,7 +42,10 @@ interface Outcome {
   readonly stderr: string;
 }
 
-/** Executa o passo `Authorize` com o env que o workflow monta (referência do run sintética e única). */
+/**
+ * Executa o passo `Authorize` como o runner: evento `workflow_dispatch` num arquivo, id do run sintético e único, e só o
+ * secret no ambiente do passo.
+ */
 async function authorizerStep(env: {
   action: string;
   id: string;
@@ -45,12 +53,14 @@ async function authorizerStep(env: {
   attempt?: number;
 }): Promise<Outcome> {
   runId += 1;
+  const eventPath = join(events, `event-${runId}.json`);
+  writeFileSync(eventPath, JSON.stringify({ inputs: { action: env.action, id: env.id } }));
   const stepEnv = {
     PATH: process.env.PATH ?? '',
     NODE_ENV: 'test' as const,
-    AUTHORIZER_ACTION: env.action,
-    AUTHORIZER_ID: env.id,
-    AUTHORIZER_APPROVAL_REF: `github-run:${Date.now()}${runId}:${env.attempt ?? 1}`,
+    GITHUB_EVENT_PATH: eventPath,
+    GITHUB_RUN_ID: `${Date.now()}${runId}`,
+    GITHUB_RUN_ATTEMPT: String(env.attempt ?? 1),
     BOOKING_AUTHORIZER_DATABASE_URL: env.url,
   };
   try {
@@ -88,7 +98,10 @@ describe('W13 E5 — programa do workflow do autorizador com login real (plano W
     start = await lastStartedNight(h, co.homeId);
     await activate(h, 'own_use_booking', 'own_use_lifecycle');
   }, 300_000);
-  afterAll(() => h.close());
+  afterAll(async () => {
+    rmSync(events, { recursive: true, force: true });
+    await h.close();
+  });
 
   it('[TECH-051][TECH-046][ADR-0027 §4] emite, recusa a repetição e revoga pelo workflow: só código e id na saída', async () => {
     const titular = co.titulares[0]!;

@@ -53,8 +53,7 @@ jobs:
         run: npm ci --omit=dev --ignore-scripts
       - name: Authorize
         run: node scripts/booking-authorizer.mjs
+        # Entradas lidas pelo programa do arquivo do evento e de GITHUB_RUN_ID/GITHUB_RUN_ATTEMPT: o runner imprime o
+        # `env:` do passo no log público, e só o secret (mascarado) passa por aqui (T-1321).
         env:
-          AUTHORIZER_ACTION: ${{ inputs.action }}
-          AUTHORIZER_ID: ${{ inputs.id }}
-          AUTHORIZER_APPROVAL_REF: github-run:${{ github.run_id }}:${{ github.run_attempt }}
           BOOKING_AUTHORIZER_DATABASE_URL: ${{ secrets.BOOKING_AUTHORIZER_DATABASE_URL }}

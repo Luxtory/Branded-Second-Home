@@ -275,7 +275,8 @@ A E4b foi mergeada pelo #92 (`caa699c`). A E5 entrega o lado GitHub do §4 (spec
 - **Programa mínimo no passo protegido.** `scripts/booking-authorizer.mjs` depende só de `pg`, instalado com
   `npm ci --omit=dev --ignore-scripts` e sem cache. Antes de conectar, recusa entrada fora do formato e conexão que não
   seja do papel autorizador. No servidor, confere `current_user` e `session_user` antes da chamada. A saída pública é só
-  o código do resultado e o id da autorização, porque o log do run é público.
+  o código do resultado e o id da autorização, porque o log do run é público. A entrada é lida do arquivo do evento,
+  nunca do `env:` do passo: o runner imprime esse bloco no log (achado da auditoria, T-1321).
 - **Identidade única.** Com um único mantenedor, quem dispara e quem aprova é a mesma conta GitHub, e
   `prevent_self_review` precisa ficar desligado: ligado, o único revisor não aprova o próprio disparo. O mecanismo
   continua independente do `luxtory_app` (o secret existe só no Environment, nunca na Vercel), mas não separa duas

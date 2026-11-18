@@ -2,7 +2,8 @@
 # Runbook: docs/how-to/autorizador-de-reservas.md. Inerte até existirem o Environment `booking-authorizer` (revisor
 # obrigatório, só a branch main) e o secret dele: a configuração real é decisão do fundador, fora da W13.
 # Repositório público: entradas e logs são públicos. A entrada é só o id opaco; o banco deriva e confere o escopo.
-# Sem `${{ }}` em `run:` (entradas só por `env:`); actions fixadas pelos mesmos SHAs da ci.yml; sem cache.
+# Entradas nunca interpoladas: o programa lê `inputs` do arquivo do evento (o `env:` do passo é impresso no log);
+# actions fixadas pelos mesmos SHAs da ci.yml; sem cache.
 name: booking-authorizer
 
 on:
@@ -39,8 +40,7 @@ jobs:
         run: npm ci --omit=dev --ignore-scripts
       - name: Authorize
         run: node scripts/booking-authorizer.mjs
+        # Entradas lidas pelo programa do arquivo do evento e de GITHUB_RUN_ID/GITHUB_RUN_ATTEMPT: o runner imprime o
+        # `env:` do passo no log público, e só o secret (mascarado) passa por aqui (T-1321).
         env:
-          AUTHORIZER_ACTION: ${{ inputs.action }}
-          AUTHORIZER_ID: ${{ inputs.id }}
-          AUTHORIZER_APPROVAL_REF: github-run:${{ github.run_id }}:${{ github.run_attempt }}
           BOOKING_AUTHORIZER_DATABASE_URL: ${{ secrets.BOOKING_AUTHORIZER_DATABASE_URL }}

@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterAll, describe, expect, it } from 'vitest';
 import {
   AuthorizerRefusal,
   connectionConfig,
@@ -9,18 +12,30 @@ import {
 } from '../../scripts/booking-authorizer.mjs';
 import { SUPABASE_ROOT_CA } from '@/features/platform/infrastructure/database/supabase-root-ca';
 
-// W13 E5 (spec booking §10.16; ADR-0027 §4; plano W13 critérios 4 e 5): o programa do workflow do autorizador recusa
-// entrada fora do schema fechado antes de conectar, só aceita a conexão do papel autorizador e só imprime o código do
-// resultado — nunca mensagem de erro, conexão ou dado da reserva (repositório público).
+// W13 E5 (spec booking §10.16; ADR-0027 §4; plano W13 critérios 4 e 5): o programa do workflow do autorizador lê a
+// entrada do arquivo do evento (nunca do `env:` do passo, impresso no log público — T-1321), recusa entrada fora do
+// schema fechado antes de conectar, só aceita a conexão do papel autorizador e só imprime o código do resultado.
 const REQUEST = '0b6f2f0e-6c1d-4f0a-9a57-3d1f2b9c8e71';
 const REF = 'github-run:44204312585:1';
 const DSN =
   'postgresql://luxtory_booking_authorizer.abcdefghijklmnopqrst:p%40ss%2Fw0rd@aws-0-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=verify-full';
-const valid = {
-  AUTHORIZER_ACTION: 'authorize',
-  AUTHORIZER_ID: REQUEST,
-  AUTHORIZER_APPROVAL_REF: REF,
+const EVENT_PATH = '/runner/event.json';
+const run = {
+  GITHUB_EVENT_PATH: EVENT_PATH,
+  GITHUB_RUN_ID: '44204312585',
+  GITHUB_RUN_ATTEMPT: '1',
 };
+const event = (inputs: unknown) => () => JSON.stringify({ inputs, ref: 'refs/heads/main' });
+const dispatch = event({ action: 'authorize', id: REQUEST });
+const events = mkdtempSync(join(tmpdir(), 'e5-event-'));
+afterAll(() => rmSync(events, { recursive: true, force: true }));
+
+/** Arquivo de evento real em disco (como o runner o escreve), para os testes que executam o programa inteiro. */
+function eventFile(inputs: unknown): string {
+  const path = join(events, `${Math.random().toString(36).slice(2)}.json`);
+  writeFileSync(path, JSON.stringify({ inputs }));
+  return path;
+}
 
 function refusal(work: () => unknown): string {
   try {
@@ -33,23 +48,51 @@ function refusal(work: () => unknown): string {
 }
 
 describe('W13 E5 — programa do workflow do autorizador (plano W13 critérios 4 e 5)', () => {
-  it('[TECH-051][ADR-0027 §4] entrada válida: ação fechada, id UUID e referência do run no schema da função', () => {
-    expect(parseInputs(valid)).toEqual({ action: 'authorize', id: REQUEST, approvalRef: REF });
-    expect(parseInputs({ ...valid, AUTHORIZER_ACTION: 'revoke' }).action).toBe('revoke');
+  it('[TECH-051][ADR-0027 §4] entrada do evento: ação fechada, id UUID e referência montada do run', () => {
+    expect(parseInputs(run, dispatch)).toEqual({
+      action: 'authorize',
+      id: REQUEST,
+      approvalRef: REF,
+    });
+    expect(parseInputs(run, event({ action: 'revoke', id: REQUEST })).action).toBe('revoke');
   });
 
   it.each([
-    ['ação fora da lista', { AUTHORIZER_ACTION: 'drop' }],
-    ['ação herdada do protótipo', { AUTHORIZER_ACTION: 'constructor' }],
-    ['id ausente', { AUTHORIZER_ID: undefined }],
-    ['id com SQL', { AUTHORIZER_ID: `${REQUEST}'; DROP TABLE app.booking; --` }],
-    ['id com substituição de shell', { AUTHORIZER_ID: '$(touch /tmp/pwned)' }],
-    ['id com quebra de linha', { AUTHORIZER_ID: `${REQUEST}\nresult=authorized` }],
-    ['id com espaço', { AUTHORIZER_ID: ` ${REQUEST}` }],
-    ['referência livre', { AUTHORIZER_APPROVAL_REF: 'run 1; DROP TABLE x' }],
-    ['referência com tentativa zero', { AUTHORIZER_APPROVAL_REF: 'github-run:44204312585:0' }],
-  ])('[TECH-051][A4] %s → input_invalid', (_case, override) => {
-    expect(refusal(() => parseInputs({ ...valid, ...override }))).toBe('input_invalid');
+    ['ação fora da lista', { action: 'drop', id: REQUEST }],
+    ['ação herdada do protótipo', { action: 'constructor', id: REQUEST }],
+    ['ação não textual', { action: ['authorize'], id: REQUEST }],
+    ['id ausente', { action: 'authorize' }],
+    ['id com SQL', { action: 'authorize', id: `${REQUEST}'; DROP TABLE app.booking; --` }],
+    ['id com substituição de shell', { action: 'authorize', id: '$(touch /tmp/pwned) `id`' }],
+    ['id com quebra de linha', { action: 'authorize', id: `${REQUEST}\nresult=authorized` }],
+    ['id com espaço', { action: 'authorize', id: ` ${REQUEST}` }],
+    ['id com dado pessoal', { action: 'authorize', id: 'maria@example.com 11987654321' }],
+  ])('[TECH-051][A4] %s → input_invalid', (_case, inputs) => {
+    expect(refusal(() => parseInputs(run, event(inputs)))).toBe('input_invalid');
+  });
+
+  it.each([
+    ['referência livre', { GITHUB_RUN_ID: 'run 1; DROP TABLE x' }],
+    ['tentativa zero', { GITHUB_RUN_ATTEMPT: '0' }],
+  ])('[TECH-051][A4] referência do run fora do schema (%s) → input_invalid', (_case, override) => {
+    expect(refusal(() => parseInputs({ ...run, ...override }, dispatch))).toBe('input_invalid');
+  });
+
+  it.each([
+    ['sem arquivo do evento', { ...run, GITHUB_EVENT_PATH: undefined }, dispatch],
+    ['sem id do run', { ...run, GITHUB_RUN_ID: undefined }, dispatch],
+    ['sem tentativa do run', { ...run, GITHUB_RUN_ATTEMPT: undefined }, dispatch],
+    ['evento sem inputs', run, () => JSON.stringify({ ref: 'refs/heads/main' })],
+    ['evento ilegível', run, () => '{not json'],
+    [
+      'arquivo inexistente',
+      run,
+      () => {
+        throw new Error('ENOENT');
+      },
+    ],
+  ])('[TECH-051][A4] %s → input_missing', (_case, env, read) => {
+    expect(refusal(() => parseInputs(env, read))).toBe('input_missing');
   });
 
   it('[ADR-0027 §4] conexão do Supavisor: papel autorizador, senha decodificada, verify-full com a CA fixada', () => {
@@ -158,13 +201,14 @@ describe('W13 E5 — programa do workflow do autorizador (plano W13 critérios 4
     expect(refusalCode('unexpected')).toBe('connection_failed');
   });
 
-  it('[TECH-051][A4] entrada inválida: uma linha de resultado, saída 1, nenhuma conexão tentada', async () => {
+  it('[TECH-051][A4] payload de SQL e shell no evento: uma linha, sem eco da entrada, nenhuma conexão tentada', async () => {
     const lines: string[] = [];
+    const payload = "x'; DROP TABLE app.booking; -- $(id) `uname -a`";
 
     const status = await runAuthorizer(
       {
-        ...valid,
-        AUTHORIZER_ID: "x'; DROP TABLE app.booking; --",
+        ...run,
+        GITHUB_EVENT_PATH: eventFile({ action: 'authorize', id: payload }),
         // Porta fechada: se o programa conectasse, o resultado seria connection_failed.
         BOOKING_AUTHORIZER_DATABASE_URL:
           'postgresql://luxtory_booking_authorizer:x@127.0.0.1:1/postgres?sslmode=disable',
@@ -176,10 +220,25 @@ describe('W13 E5 — programa do workflow do autorizador (plano W13 critérios 4
     expect(lines).toEqual(['result=input_invalid']);
   });
 
+  it('[TECH-051][A4] sem a entrada do disparo: input_missing, saída 1', async () => {
+    const lines: string[] = [];
+
+    const status = await runAuthorizer(
+      { ...run, GITHUB_EVENT_PATH: join(events, 'absent.json') },
+      (line: string) => lines.push(line),
+    );
+
+    expect(status).toBe(1);
+    expect(lines).toEqual(['result=input_missing']);
+  });
+
   it('[TECH-051] sem o secret do Environment: configuration_missing, saída 1', async () => {
     const lines: string[] = [];
 
-    const status = await runAuthorizer(valid, (line: string) => lines.push(line));
+    const status = await runAuthorizer(
+      { ...run, GITHUB_EVENT_PATH: eventFile({ action: 'authorize', id: REQUEST }) },
+      (line: string) => lines.push(line),
+    );
 
     expect(status).toBe(1);
     expect(lines).toEqual(['result=configuration_missing']);

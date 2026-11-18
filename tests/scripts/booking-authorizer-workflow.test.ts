@@ -80,22 +80,23 @@ describe('W13 E5 — workflow do autorizador (plano W13 critérios 1 e 4)', () =
     expect(job.steps[1]!.with).toEqual({ 'node-version': 22 });
   });
 
-  it('[TECH-051][A4] sem expressão em run: entradas só por env; o secret só no passo final', () => {
+  it('[TECH-051][A4][T-1321] entrada nunca interpolada: o id não vai a run nem a env (impresso no log público)', () => {
     const runs = job.steps.flatMap((step) => (step.run ? [step.run] : []));
     expect(runs).toEqual([
       'npm ci --omit=dev --ignore-scripts',
       'node scripts/booking-authorizer.mjs',
     ]);
     for (const run of runs) expect(run).not.toContain('${{');
-    const last = job.steps.at(-1)!;
-    expect(last.env).toEqual({
-      AUTHORIZER_ACTION: '${{ inputs.action }}',
-      AUTHORIZER_ID: '${{ inputs.id }}',
-      AUTHORIZER_APPROVAL_REF: 'github-run:${{ github.run_id }}:${{ github.run_attempt }}',
+    // O único valor do `env:` do passo é o secret (mascarado pelo runner); o programa lê o evento.
+    expect(job.steps.at(-1)!.env).toEqual({
       BOOKING_AUTHORIZER_DATABASE_URL: '${{ secrets.BOOKING_AUTHORIZER_DATABASE_URL }}',
     });
-    const secrets = readFileSync(WORKFLOW, 'utf8').match(/secrets\.\w+/g);
-    expect(secrets).toEqual(['secrets.BOOKING_AUTHORIZER_DATABASE_URL']);
+    const text = readFileSync(WORKFLOW, 'utf8');
+    expect(text.match(/\$\{\{[^}]*\}\}/g)).toEqual([
+      '${{ secrets.BOOKING_AUTHORIZER_DATABASE_URL }}',
+    ]);
+    // Nenhum acesso às entradas ou ao payload do evento (o `if` usa só `github.event_name`).
+    expect(text).not.toMatch(/inputs\.|github\.event\./);
     expect(workflow.env).toBeUndefined();
     expect(job.steps.slice(0, -1).every((step) => step.env === undefined)).toBe(true);
   });
