@@ -116,8 +116,11 @@ Nada desta seção está feito. Faça na ordem; cada passo é conferível.
      **Ampliado (2026-11-18):** o `.github/CODEOWNERS` versionado usa a regra geral `*` e lista também o próprio
      arquivo, a `ci.yml`, `db-migrate`, `vercel.json` e `migrations/`; o ruleset completo (checks fixados no app
      GitHub Actions, aprovação da última push, só squash) está em
-     [`governanca-do-repositorio.md`](governanca-do-repositorio.md), passo 4;
+     [`governanca-do-repositorio.md`](governanca-do-repositorio.md), passo 3. **Revisão (2026-11-18):** dois rulesets
+     (`main-checks` sem bypass; `main-revisao` com bypass só por PR do admin, que depois da separação é só o fundador);
    - nenhum ator com bypass; em emergência, o fundador desativa o ruleset, e o desligamento fica no histórico.
+     **Revisão (2026-11-18):** vale para o `main-checks`; o `main-revisao` admite bypass só por PR do papel admin
+     (só o fundador, depois do passo 0), nunca dos checks.
    **O que a plataforma impõe:** sem os checks verdes, nada entra na `main`. A revisão humana só passa a ser imposta com
    o passo 0: o dono de código (`Luxtory`) não pode ser a mesma identidade que o agente usa. Com uma única conta, o
    ruleset garante "só por PR com checks", não revisão. Confirme na configuração que a regra de *code owner* vale com o

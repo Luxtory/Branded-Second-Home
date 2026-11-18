@@ -31,6 +31,21 @@ depende de quem opera não ser quem aprova.
 5. **Ordem:** PRs de autoria `Luxtory` entram antes do ruleset; identidade separada antes do ruleset; ensaio do ruleset
    no sandbox antes da `main`. Roteiro: [`governanca-do-repositorio.md`](../how-to/governanca-do-repositorio.md).
 
+### Revisão 2026-11-18 (auditoria do fundador, #98) — substitui os itens 2 e 5 e acrescenta o 6
+
+2. **Revisão obrigatória em dois rulesets**, que o GitHub agrega (regra repetida vale na versão mais restritiva):
+   `main-checks`, **sem bypass**: sem exclusão nem force push, só por PR, só squash, os cinco checks exigidos do app
+   GitHub Actions (id 15368) e branch atualizada; `main-revisao`: 1 aprovação, *code owner*, aprovação da última push,
+   descarte de aprovação velha, com bypass **só por PR** do papel *Repository admin*. Depois da separação das
+   identidades o único admin é o fundador: ele integra PRs de autoria `Luxtory` sem aprovar a si mesmo, nunca sem os
+   checks; agentes não têm bypass.
+5. **Ordem:** identidade separada por todos os canais (incluindo o conector GitHub do ChatGPT/Codex) → rulesets
+   validados no repositório real → Environment com a regra de branch conferida **antes** dos secrets novos → merge do
+   #98 pelo fundador → credenciais antigas retiradas. Nenhuma credencial nova fica ao alcance da conta administrativa dos
+   agentes ou de código integrado sem revisão humana.
+6. **Credencial no menor escopo:** o token da Vercel só nos passos `pull` e `deploy`, pela variável `VERCEL_TOKEN` (fora
+   do argv); o `build`, que executa dependências e o projeto, roda sem ele; o secret do banco só no passo de migrations.
+
 ## Consequences
 
 ### Positive
@@ -61,6 +76,14 @@ CODEOWNERS; com dois escritores, `*` não custa nada a mais. **Reusar o Environm
 `vercel[bot]`; um nome dedicado evita acoplar a regra de branch aos deployments da Vercel. **Mesmos nomes de secret no
 Environment:** o secret do Environment tem precedência, mas não dá para provar o novo antes de apagar o antigo;
 nomes novos tornam a prova o próprio run da `main`.
+
+Revisão de 2026-11-18. **Proteção intermediária** (PR e checks sem revisão, antes do ruleset completo): fecharia o push
+direto, mas a conta de máquina continuaria integrando o próprio PR, e esse código roda no `migrate` com a credencial do
+banco; com a identidade separada antes, a revisão humana pode entrar de uma vez. **Um ruleset sem bypass:** PRs de
+autoria `Luxtory` (#98 e legados) ficariam sem aprovador possível; reabri-los pela conta de máquina exigiria push com
+escopo `workflow` (regra da última push). **Credenciais novas antes da separação:** nasceriam ao alcance do token
+administrativo dos agentes. **Ensaio no sandbox:** o ruleset é reversível na hora e a validação no repositório real
+(commit vazio recusado, fluxo real de PR) prova o que importa sem passos extras.
 
 ## References
 
