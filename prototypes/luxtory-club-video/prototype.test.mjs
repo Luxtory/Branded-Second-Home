@@ -33,6 +33,7 @@ import {
   selectionForTarget,
 } from './rules.js';
 import { EDL } from './filme/prova/edl.js';
+import { edlFor } from './filme/prova/edl-cinema.js';
 import {
   REQUEST_STATES,
   addMonthsUTC,
@@ -844,4 +845,76 @@ test('[01 §25][BR-243][BR-244][TECH-001] preço Luxplus pela fórmula, com desc
   );
   assert.throws(() => luxplusPrice([300_000], null), /ERR_PARAMETER_MISSING/);
   assert.throws(() => luxplusPrice([300_000], 100), /fora do intervalo/);
+});
+
+test('prova cinematográfica: planos contínuos, interface sem alteração de tempo e cadência de 24 fps', () => {
+  const t = requestSeq.times('16x9');
+  for (const fmt of ['16x9', '9x16']) {
+    const edl = edlFor(fmt);
+    assert.equal(edl.fps, 24);
+    assert.equal(edl.uiSource, 'stage');
+    assert.ok(edl.duration >= 20_000 && edl.duration <= 30_000, `duração ${edl.duration}`);
+    // Cortes, trechos e dissolve na grade de 3 quadros (125 ms a 24 fps): corte de imagem e troca de interface no
+    // mesmo quadro.
+    const grid = (ms) => ms % 125 === 0;
+    for (const s of edl.shots)
+      assert.ok(grid(s.from) && grid(s.to) && grid(s.dissolve ?? 0), `${s.plan}`);
+    for (const u of edl.ui) assert.ok(grid(u.at) && grid(u.to - u.from), `trecho em ${u.at}`);
+    // Planos encadeados de 0 ao fim, sem buraco nem sobreposição; dissolve só entre planos.
+    edl.shots.forEach((s, i) => {
+      assert.equal(
+        s.from,
+        i === 0 ? 0 : edl.shots[i - 1].to,
+        `${fmt} ${s.plan} começa no fim do anterior`,
+      );
+      if (s.dissolve) assert.ok(i > 0 && s.dissolve < s.to - s.from, `${fmt} ${s.plan} dissolve`);
+    });
+    assert.equal(edl.shots.at(-1).to, edl.duration);
+    // Trechos da Request dentro da sequência, sem sobreposição e dentro da prova.
+    edl.ui.forEach((u, i) => {
+      assert.ok(u.from >= 0 && u.to <= t.duration && u.from < u.to, `trecho ${i}`);
+      if (i > 0) assert.ok(u.at >= edl.ui[i - 1].at + (edl.ui[i - 1].to - edl.ui[i - 1].from));
+      assert.ok(u.at + (u.to - u.from) <= edl.duration);
+    });
+    // O aceite e a confirmação aparecem: toque em Aceitar e resultado dentro dos trechos.
+    for (const at of [t.sendCommit, t.accept, t.result])
+      assert.ok(
+        edl.ui.some((u) => at >= u.from && at < u.to),
+        `instante ${at} na prova`,
+      );
+    // Um plano humano real, sem interface por cima.
+    const human = edl.shots.find((s) => s.footage);
+    assert.ok(human, 'plano de footage');
+    assert.ok(
+      edl.uiFadeOut.at + edl.uiFadeOut.dur <= human.from,
+      'interface sai antes do plano humano',
+    );
+  }
+});
+
+test('prova cinematográfica: câmera sobre imagem dentro do quadro e com ampliação contida', () => {
+  for (const fmt of ['16x9', '9x16'])
+    for (const s of edlFor(fmt).shots)
+      for (const [kind, move, max] of [
+        ['asset', s.move, 1.06],
+        ['placeholder', s.placeholder.move, 2],
+      ]) {
+        if (!move) continue;
+        for (const [cx, cy, z] of [move.from, move.to ?? move.from]) {
+          const half = 0.5 / z;
+          assert.ok(z >= 1 && z <= max, `${fmt} ${s.plan} ${kind}: zoom ${z}`);
+          for (const c of [cx, cy])
+            assert.ok(
+              c >= half - 1e-9 && c <= 1 - half + 1e-9,
+              `${fmt} ${s.plan} ${kind}: centro ${c}`,
+            );
+        }
+      }
+});
+
+test('prova cinematográfica: narração de teste só com frases aprovadas (roteiro ou prova de montagem)', () => {
+  const roteiro = readFileSync(join(DIR, 'filme/ROTEIRO.md'), 'utf8');
+  const aprovadas = new Set(EDL.vo.map((v) => v.text));
+  for (const { text } of edlFor('16x9').vo)
+    assert.ok(roteiro.includes(text) || aprovadas.has(text), `frase sem origem aprovada: ${text}`);
 });

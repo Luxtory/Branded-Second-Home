@@ -1,9 +1,14 @@
 // Demonstração conceitual — camada editorial da prova de montagem (Etapa C). Título da modalidade, ressalva da
 // primeira interface e etiqueta "prova interna", com os tokens e o movimento do Core (fade-up curto, durações do
 // tokens.css), renderizados com alfa como as interfaces. Textos e tempos vêm da EDL (filme/prova/edl.js).
-// Só 16:9 nesta prova; a vertical tem composição própria (ROTEIRO.md §6) e não é derivada desta camada.
-import { EDL } from './filme/prova/edl.js';
+// A prova de montagem é só 16:9 (a vertical do filme tem composição própria, ROTEIRO.md §6); a prova cinematográfica
+// (?edl=cinema, filme/prova/edl-cinema.js) tem 16:9 e 9:16 com os mesmos textos e tempos.
+import { EDL as EDL_REQUEST } from './filme/prova/edl.js';
+import { edlFor } from './filme/prova/edl-cinema.js';
 import { ALWAYS, FINAL } from './shared.js';
+
+const query = new URLSearchParams(globalThis.location?.search ?? '');
+const EDL = query.get('edl') === 'cinema' ? edlFor(query.get('fmt') ?? '16x9') : EDL_REQUEST;
 
 const { title, legal, tag } = EDL.editorial;
 

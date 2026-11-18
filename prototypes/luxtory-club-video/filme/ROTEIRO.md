@@ -294,6 +294,9 @@ Versões curtas por modalidade ficam para depois da aprovação do filme princip
 Uso: trilha original encomendada ou faixa de biblioteca com licença para publicidade (web e, se houver, TV), com o
 documento de licença arquivado. Nada com direitos não verificados.
 
+**v7.1 (custo adicional zero):** trilha gratuita da Pixabay (ou Mixkit, com a licença do item conferida), com
+certificado e registro de direitos (`PROVA-CINEMATOGRAFICA.md` §6); sem encomenda.
+
 **Mixagem:** o equilíbrio entre voz e trilha não segue uma diferença fixa em dB. Define-se pela inteligibilidade:
 
 - ducking ou automação da trilha sob cada frase;

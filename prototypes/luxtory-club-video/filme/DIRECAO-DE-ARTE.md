@@ -4,6 +4,11 @@
 > `PRODUCAO.md` (§2–§3) e só ajusta o necessário. Nenhuma imagem ou footage foi produzido: aqui só há descrições,
 > prompts e critérios.
 >
+> **v7.1 (custo adicional zero):** ferramentas, fontes por plano e prompts finais da prova estão em
+> `PROVA-CINEMATOGRAFICA.md` (§3 e §5). Aqui continuam valendo as descrições, as bíblias e os critérios. As menções a
+> gerador de vídeo, "gerar 1,5× a duração" e cadência do Veo são históricas; footage gratuito entra em qualquer cadência
+> comum, retemporizado (`PROVA-CINEMATOGRAFICA.md` §7).
+>
 > Os nomes *Satori Home*, *Azzura Home* e *Olivar Home* são provisórios até a validação de marca. Direção aprovada:
 > Second Homes de **luxo contemporâneo e alto padrão**, com arquitetura extraordinária, privacidade, pertencimento,
 > experiências humanas e sofisticação sem ostentação.

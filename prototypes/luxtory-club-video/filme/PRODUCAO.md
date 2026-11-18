@@ -1,10 +1,12 @@
-# Filme Luxtory Club: produção, footage e integração (v7.0, produção sem ferramentas pagas · proposta para aprovação)
+# Filme Luxtory Club: produção, footage e integração (v7.1, custo adicional zero · proposta para aprovação)
 
 > Complementa `ROTEIRO.md`. Imóveis, pessoas e valores ilustrativos, nunca apresentados como Second Homes reais à venda
 > ou disponíveis. A publicação depende da verificação de prontidão do produto e da aprovação da comunicação (§5).
 > Revisões: §8.
 
 ## 1. Recursos e estratégia de footage
+
+> **Histórico (v7.1).** Os caminhos A, B e C abaixo pressupunham ferramenta de vídeo, banco licenciado e filmagem com orçamento. O plano ativo, sem custo adicional, está em `PROVA-CINEMATOGRAFICA.md`: fotografia exclusiva do ChatGPT em movimento, footage real gratuito e filmagem própria pontual como contingência.
 
 **O que existe neste ambiente:**
 
@@ -208,7 +210,7 @@ usar nenhuma das três Second Homes. O placeholder escuro da prova nunca é foot
 
 | Item | Definição |
 |---|---|
-| Cadência | **30 fps**, padrão provisório de edição: todos os assets atuais estão nela. 24 fps só por razão criativa decidida antes dos masters finais; nesse caso, as interfaces são renderizadas nativamente (`--fps=24`) e o footage gerado ou filmado na mesma cadência. Nenhuma conversão de cadência. TV, se houver: definir 29,97 antes do master. **Recomendação v6.3: master a 24 fps**, porque o Veo 3.1 gera a 24 fps e as interfaces renderizam nativamente a 24 no congelamento (`PROVA-CINEMATOGRAFICA.md` §1) |
+| Cadência | **30 fps**, padrão provisório de edição: todos os assets atuais estão nela. 24 fps só por razão criativa decidida antes dos masters finais; nesse caso, as interfaces são renderizadas nativamente (`--fps=24`) e o footage gerado ou filmado na mesma cadência. Nenhuma conversão de cadência. TV, se houver: definir 29,97 antes do master. **Recomendação v6.3: master a 24 fps**, porque o Veo 3.1 gera a 24 fps e as interfaces renderizam nativamente a 24 no congelamento (`PROVA-CINEMATOGRAFICA.md` §1). **v7.1:** master a 24 fps sem gerador de vídeo; footage gratuito em qualquer cadência comum, retemporizado sem quadros inventados ou descartados (`PROVA-CINEMATOGRAFICA.md` §7) |
 | Resolução | timeline de web em 1920×1080 (16:9) e 1080×1920 (9:16). Interfaces em 1080p; render maior só dos trechos com push-in acima de 110% ou recorte. Footage na maior resolução nativa da ferramenta (ideal ≥ 4K UHD), para permitir reenquadrar. Master 4K só se o destino exigir, decidido antes da montagem final |
 | Alfa | *straight* (não premultiplicado) nos PNG e no ProRes 4444; interpretar como Straight |
 | Cor | Rec.709 (BT.709, faixa limitada) nos MP4/MOV; composição em RGB com matriz BT.709 explícita; cores da marca conferidas por amostragem depois do encode |
@@ -279,6 +281,8 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
 
 ## 7. Decisões pendentes (Luxtory)
 
+> **Histórico (v7.1).** Itens 1, 4, 5 e 6 resolvidos pela restrição de custo zero: sem ferramenta paga, voz da equipe, trilha gratuita da Pixabay com registro de direitos e master a 24 fps (`PROVA-CINEMATOGRAFICA.md` §1 e §7). Continuam pendentes os itens 2, 3 e 7.
+
 1. **Footage:** autorizar o teste de viabilidade de A (§1), com a escolha da ferramenta, a licença e o orçamento.
 2. **Créditos, nomenclatura e ressalvas:** aprovar a nova experiência de Créditos (Request e Direct), o nome "Taxa de
    intermediação", a copy da complementação, o painel de C04 e sua nota, o lettering de C05 e o texto da descrição
@@ -292,6 +296,13 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
    outros; a troca é um dado (`data.js`) e não muda papéis, datas nem Créditos.
 
 ## 8. Revisões
+
+**v7.1 (custo adicional zero, 2026-11-18):**
+- Correções do plano em `PROVA-CINEMATOGRAFICA.md`: Vids opcional (exportar não é licença); footage em qualquer cadência
+  comum, retemporizado; Blender só com ganho perceptível; Drive opcional.
+- Os 17 planos reclassificados com fonte gratuita principal e alternativa.
+- Prova de 20–30 s implementada (`prova/edl-cinema.js`, `montar.mjs --edl=cinema`).
+- Caminhos pagos deste documento (§1, §7, §9.4) marcados como históricos.
 
 **v7.0 (sem ferramentas pagas, 2026-11-18):**
 - Restrição da Luxtory: só o Claude Code e o ChatGPT (com o Codex), mais planos gratuitos.
@@ -422,7 +433,7 @@ A biblioteca de interfaces está pronta para a fase cinematográfica. Duas condi
 | 3. Referências por imóvel | imagens-chave mestras K-SA, K-AZ e K-OL (exterior e interior, com os prompts de `DIRECAO-DE-ARTE.md`) a partir das bíblias (§2.2), folha de personagem K-HE e folhas da família; uma prancha de aprovação por imóvel (arquitetura, materiais, paisagem, luz, figurino) | referências aprovadas | ferramenta autorizada |
 | 4. Teste de viabilidade | S06 (arquitetura, Azzura), S02 (pessoas, Satori), S15 (mãos e fogo, Olivar), com o plano e os critérios de `DIRECAO-DE-ARTE.md` §5 | decisão por plano: A, B ou C | passo 3 |
 | 5. Footage | 17 planos (§3), ≈ 1,5× a duração usada, na cadência decidida (30 fps); QA plano a plano: continuidade, mãos, rostos, arquitetura sem deriva, espaço livre para os cartões | planos aprovados em `out/entrada/` | passo 4 |
-| 6. Voz e trilha | seleção de locução (voz natural, 30–45 anos) com cessão de direitos; trilha original ou de biblioteca com licença para publicidade | `vo.wav`, `trilha.wav` | autorização |
+| 6. Voz e trilha | seleção de locução (voz natural, 30–45 anos) com cessão de direitos; trilha original ou de biblioteca com licença para publicidade (**v7.1:** voz da equipe e trilha gratuita da Pixabay com registro de direitos) | `vo.wav`, `trilha.wav` | autorização |
 | 7. Montagem | master 16:9 (≈ 105,5 s) e vertical 9:16 (≈ 58 s) a partir da EDL; a prova já troca placeholder por footage automaticamente | cortes para aprovação | passos 2, 5, 6 |
 | 8. Finalização | mixagem por inteligibilidade, loudness por canal, legendas; `check.mjs --final` e `montar.mjs --final` (nenhum placeholder, nenhuma marca interna) | masters | passo 7 |
 | 9. Antes de publicar | lista do §5: prontidão do produto, compatibilidade das interfaces, comunicação e direitos aprovados | publicação autorizada | Luxtory |
@@ -464,6 +475,8 @@ primeiro corte com footage, por ritmo e compreensão:
   de montagem.
 
 ### 9.4 Recursos e custos externos que pedem autorização
+
+> **Histórico (v7.1).** Tabela de referência de um cenário com contratação, que não está ativo. Pela restrição da Luxtory, nada aqui é contratado. A busca de anterioridade de marca e a revisão jurídica continuam necessárias antes da publicação.
 
 Nenhum deles foi contratado. Valores dependem de orçamento com fornecedores; nada aqui é estimativa de preço.
 

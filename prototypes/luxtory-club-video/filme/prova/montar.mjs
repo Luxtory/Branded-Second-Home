@@ -17,26 +17,42 @@
 // "Dados ilustrativos") e a camada editorial sem a etiqueta interna; não gera cópia de revisão. Exportar não é publicar:
 // a publicação depende da verificação de prontidão do produto e da aprovação da comunicação (PRODUCAO.md §5).
 //
-// Uso: node prototypes/luxtory-club-video/filme/prova/montar.mjs [--final] [--entrada=<pasta>] [--saida=<pasta>]
+// Prova cinematográfica (`--edl=cinema`, edl-cinema.js; PROVA-CINEMATOGRAFICA.md §3): 24 fps, `--fmt=16x9|9x16`,
+// interface renderizada do palco na cadência da EDL, imagens estáticas de out/entrada com câmera subpixel
+// (superamostragem 2× + `perspective`), footage conformado por retemporização (sem quadros inventados ou descartados) e
+// dissolve entre planos (`xfade`). Saídas em out/prova-cinema/.
+//
+// Uso: node prototypes/luxtory-club-video/filme/prova/montar.mjs [--edl=cinema] [--fmt=16x9|9x16] [--final]
+//      [--entrada=<pasta>] [--saida=<pasta>]
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { startServer } from '../../serve.mjs';
-import { EDL } from './edl.js';
 
 const arg = (name) => process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
+const EDL =
+  arg('edl') === 'cinema'
+    ? (await import('./edl-cinema.js')).edlFor(arg('fmt') ?? '16x9')
+    : (await import('./edl.js')).EDL;
 const PROTO = fileURLToPath(new URL('../../', import.meta.url));
 const ROOT = fileURLToPath(new URL('../../../../', import.meta.url));
 const FINAL = process.argv.includes('--final');
-const OUT = arg('saida') ?? join(PROTO, FINAL ? 'out/final/montagem' : 'out/prova');
+const OUT =
+  arg('saida') ?? join(PROTO, FINAL ? `out/final/${EDL.id}-${EDL.fmt}` : (EDL.out ?? 'out/prova'));
 const FRAMES_DIR = join(PROTO, FINAL ? 'out/final' : 'out/etapa-a');
 const ENTRADA = arg('entrada') ?? join(PROTO, 'out/entrada');
 const FONT = join(ROOT, 'src/design-system/fonts/hanken-grotesk/hanken-grotesk-latin.woff2');
 const { width: W, height: H, fps: FPS } = EDL;
 const FRAMES = Math.round((EDL.duration * FPS) / 1000);
-const STRIP = 120; // altura da tarja da cópia de revisão (fora do quadro 16:9)
+const STRIP = 120; // altura da tarja da cópia de revisão (fora do quadro)
+const VIEWPORT = EDL.fmt === '9x16' ? { width: 405, height: 720 } : { width: 1280, height: 720 };
+const VIDEO_EXTS = ['mov', 'mp4'];
+const STILL_EXTS = ['png', 'jpg', 'jpeg', 'webp'];
+const SS = 2; // superamostragem do movimento de câmera sobre imagem
+const [LABEL_SIZE, VO_SIZE] = EDL.fmt === '9x16' ? [17, 24] : [22, 32]; // tarja da cópia de revisão
+const AUDIO = { vo: 'vo', trilha: 'trilha', trilhaIn: 0, ...EDL.audio };
 const sec = (ms) => (ms / 1000).toFixed(3);
 const probe = (file, entries) =>
   JSON.parse(
@@ -61,6 +77,18 @@ function ffmpeg(args) {
 function entrada(asset, exts) {
   return exts.map((ext) => join(ENTRADA, `${asset}.${ext}`)).find((f) => existsSync(f));
 }
+
+/** Asset de um plano: `<asset>-<fmt>` antes de `<asset>`; imagens estáticas só nas EDLs que as aceitam. */
+function shotAsset(shot) {
+  const exts = EDL.stills ? [...VIDEO_EXTS, ...STILL_EXTS] : VIDEO_EXTS;
+  return [`${shot.asset}-${EDL.fmt}`, shot.asset].map((name) => entrada(name, exts)).find(Boolean);
+}
+
+const isStill = (file) => STILL_EXTS.some((ext) => file.toLowerCase().endsWith(`.${ext}`));
+const ratio = (fraction) => {
+  const [num, den = 1] = fraction.split('/').map(Number);
+  return num / den;
+};
 
 /** Quadros da interface: um link por quadro da prova para o quadro capturado (ou para um quadro transparente). */
 function linkUiFrames(dir) {
@@ -92,19 +120,68 @@ function linkUiFrames(dir) {
   }
 }
 
+/** Abre o palco de uma sequência no formato da EDL, na resolução de saída. */
+async function openStage(browser, origin, query) {
+  const page = await browser.newPage({
+    viewport: VIEWPORT,
+    deviceScaleFactor: W / VIEWPORT.width,
+  });
+  await page.goto(
+    `${origin}/prototypes/luxtory-club-video/?${query}&fmt=${EDL.fmt}${FINAL ? '&final=1' : ''}`,
+  );
+  await page.waitForFunction(() => window.__demo?.ready);
+  return page;
+}
+
+/**
+ * Interface renderizada do palco na cadência da EDL (`uiSource: 'stage'`): cada quadro da prova busca o instante exato
+ * da sequência, como o capture.mjs faz; nenhuma conversão de cadência. Fora dos trechos, quadro transparente.
+ */
+async function renderUiFrames(dir) {
+  const blank = join(OUT, 'transparente.png');
+  ffmpeg([
+    '-f',
+    'lavfi',
+    '-i',
+    `color=c=black@0.0:s=${W}x${H},format=rgba`,
+    '-frames:v',
+    '1',
+    blank,
+  ]);
+  const { origin, close } = await startServer();
+  const browser = await chromium.launch();
+  const pages = new Map();
+  try {
+    for (let k = 0; k < FRAMES; k++) {
+      const t = (k * 1000) / FPS;
+      const file = join(dir, `${String(k).padStart(5, '0')}.png`);
+      const item = EDL.ui.find((u) => t >= u.at && t < u.at + (u.to - u.from));
+      if (!item) {
+        symlinkSync(blank, file);
+        continue;
+      }
+      if (!pages.has(item.seq))
+        pages.set(item.seq, await openStage(browser, origin, `seq=${item.seq}`));
+      const page = pages.get(item.seq);
+      await page.evaluate((ms) => window.__demo.seek(ms), item.from + t - item.at);
+      await page.screenshot({ path: file, omitBackground: true });
+    }
+  } finally {
+    await browser.close();
+    await close();
+  }
+}
+
 /** Camada editorial: quadros RGBA do palco (?seq=prova), determinísticos como as interfaces. */
 async function renderEditorial(dir) {
   const { origin, close } = await startServer();
   const browser = await chromium.launch();
   try {
-    const page = await browser.newPage({
-      viewport: { width: 1280, height: 720 },
-      deviceScaleFactor: W / 1280,
-    });
-    await page.goto(
-      `${origin}/prototypes/luxtory-club-video/?seq=prova&fmt=${EDL.fmt}${FINAL ? '&final=1' : ''}`,
+    const page = await openStage(
+      browser,
+      origin,
+      `seq=prova${EDL.id === 'prova-cinema' ? '&edl=cinema' : ''}`,
     );
-    await page.waitForFunction(() => window.__demo?.ready);
     for (let k = 0; k < FRAMES; k++) {
       await page.evaluate((t) => window.__demo.seek(t), (k * 1000) / FPS);
       await page.screenshot({
@@ -118,32 +195,151 @@ async function renderEditorial(dir) {
   }
 }
 
-/** Entrada e cadeia de filtro de um plano: footage aprovado, placeholder neutro ou foto com push-in. */
+/** Quadro do master de um instante (ms); os planos são contados por quadro, sem acumular arredondamento. */
+const frameAt = (ms) => Math.round((ms * FPS) / 1000);
+/** Quadros a mais no fim do plano `i` para o dissolve do plano seguinte (o plano continua por baixo da transição). */
+const dissolveFrames = (i) => frameAt(EDL.shots[i + 1]?.dissolve ?? 0);
+
+/**
+ * Câmera sobre imagem estática: recorte `[cx, cy, zoom]` normalizado, interpolado em velocidade constante ou com
+ * aceleração e desaceleração suaves (`ease: 'smooth'`). Superamostragem 2× antes do `perspective` (subpixel, cúbico) e
+ * redução lanczos no fim: sem tremor de arredondamento nem cintilação em movimentos lentos.
+ */
+function stillMotion(i, n, extra, file, move = {}) {
+  // O recorte nunca sai da imagem: centro limitado a [0,5/zoom, 1 − 0,5/zoom] nos extremos (entre eles, a interpolação
+  // linear continua dentro, porque o limite é côncavo no zoom). Sem limitação por quadro, que daria partida brusca.
+  const inside = ([cx, cy, z]) => {
+    const half = 0.5 / z;
+    const clamp = (v) => Math.min(1 - half, Math.max(half, v));
+    return [clamp(cx), clamp(cy), z];
+  };
+  const from = inside(move.from ?? [0.5, 0.5, 1]);
+  const to = inside(move.to ?? move.from ?? [0.5, 0.5, 1]);
+  const [ax, ay] = move.anchor ?? [0.5, 0.5];
+  const [w2, h2] = [W * SS, H * SS];
+  const last = Math.max(1, n - 1);
+  // No dissolve, o movimento linear continua na mesma velocidade; o suave assenta no último quadro do plano.
+  const lin = `clip(on/${last},0,${move.ease === 'smooth' ? 1 : ((last + extra) / last).toFixed(6)})`;
+  const prog = move.ease === 'smooth' ? `(${lin}*${lin}*(3-2*${lin}))` : lin;
+  const lerp = (a, b) => `(${a}+(${b - a})*${prog})`;
+  const rw = `(${w2}/${lerp(from[2], to[2])})`;
+  const rh = `(${h2}/${lerp(from[2], to[2])})`;
+  const x = `clip(${lerp(from[0], to[0])}*${w2}-${rw}/2,0,${w2}-${rw})`;
+  const y = `clip(${lerp(from[1], to[1])}*${h2}-${rh}/2,0,${h2}-${rh})`;
+  const { streams } = probe(file, [
+    '-select_streams',
+    'v:0',
+    '-show_entries',
+    'stream=width,height',
+  ]);
+  const [{ width: iw, height: ih }] = streams;
+  return {
+    input: [
+      '-loop',
+      '1',
+      '-framerate',
+      String(FPS),
+      '-t',
+      sec(((n + extra) * 1000) / FPS),
+      '-i',
+      file,
+    ],
+    chain:
+      `[${i}:v]scale=${w2}:${h2}:force_original_aspect_ratio=increase:flags=lanczos,` +
+      `crop=${w2}:${h2}:(iw-${w2})*${ax}:(ih-${h2})*${ay},format=rgb24,` +
+      `perspective=x0='${x}':y0='${y}':x1='${x}+${rw}':y1='${y}':x2='${x}':y2='${y}+${rh}':` +
+      `x3='${x}+${rw}':y3='${y}+${rh}':interpolation=cubic:eval=frame:sense=source,` +
+      `scale=${W}:${H}:flags=lanczos`,
+    // Ampliação efetiva sobre os pixels da fonte no quadro mais fechado.
+    upscale: Math.max(W / iw, H / ih) * Math.max(from[2], to[2]),
+    source: `${iw}×${ih}`,
+  };
+}
+
+/**
+ * Footage: retemporização por padrão (cada quadro da fonte vira um quadro do master: 23,976 → +0,1%, 25 → 96%, 30 →
+ * 80%, 60 → 40% da velocidade), sem interpolar nem descartar quadros. `conform: 'realtime'` mantém a velocidade
+ * descartando ou repetindo quadros e exige verificação visual de judder (fica registrado no relatório).
+ */
+function footageSource(i, n, extra, file, opts = {}) {
+  const { streams } = probe(file, [
+    '-select_streams',
+    'v:0',
+    '-show_entries',
+    'stream=width,height,r_frame_rate,avg_frame_rate',
+  ]);
+  const [v] = streams;
+  const srcFps = ratio(
+    v.avg_frame_rate && v.avg_frame_rate !== '0/0' ? v.avg_frame_rate : v.r_frame_rate,
+  );
+  const realtime = (opts.conform ?? (EDL.stills ? 'retime' : 'realtime')) === 'realtime';
+  const [fx, fy] = opts.focus ?? [0.5, 0.5];
+  const frames = n + extra;
+  const cadence = realtime ? `fps=${FPS}` : `settb=1/${FPS},setpts=N,fps=${FPS}`;
+  const speed = realtime ? 1 : FPS / srcFps;
+  return {
+    input: [
+      '-ss',
+      sec(opts.in ?? 0),
+      '-t',
+      ((frames + 2) / (realtime ? FPS : srcFps)).toFixed(3),
+      '-i',
+      file,
+    ],
+    chain:
+      `[${i}:v]${cadence},scale=${W}:${H}:force_original_aspect_ratio=increase:in_color_matrix=bt709:flags=lanczos,` +
+      `crop=${W}:${H}:(iw-${W})*${fx}:(ih-${H})*${fy},format=rgb24`,
+    upscale: Math.max(W / v.width, H / v.height),
+    source: `${v.width}×${v.height} a ${srcFps.toFixed(3)} fps`,
+    conform: realtime
+      ? 'tempo real (quadros repetidos ou descartados): verificar judder'
+      : `retemporizado: ${(speed * 100).toFixed(1)}% da velocidade`,
+  };
+}
+
+/** Entrada e cadeia de filtro de um plano: asset aprovado (footage ou imagem), placeholder neutro ou foto. */
 function shotSource(shot, i) {
-  const dur = sec(shot.to - shot.from);
-  const n = Math.round(((shot.to - shot.from) * FPS) / 1000);
-  const file = entrada(shot.asset, ['mov', 'mp4']);
-  // Exatamente n quadros: completa clonando o último (footage mais curto) e corta no fim do plano.
-  const fit = `setsar=1,tpad=stop_mode=clone:stop=${n},trim=end_frame=${n},setpts=PTS-STARTPTS`;
-  if (file)
-    return {
-      used: `entrada: ${file}`,
-      input: ['-t', dur, '-i', file],
-      chain: `[${i}:v]fps=${FPS},scale=${W}:${H}:force_original_aspect_ratio=increase:in_color_matrix=bt709:flags=lanczos,crop=${W}:${H},format=rgb24,${fit}`,
-    };
+  const n = frameAt(shot.to) - frameAt(shot.from);
+  const extra = dissolveFrames(i);
+  const N = n + extra;
+  const dur = sec((N * 1000) / FPS);
+  // Exatamente N quadros: completa clonando o último (footage mais curto) e corta no fim do plano.
+  const fit = `setsar=1,tpad=stop_mode=clone:stop=${N},trim=end_frame=${N},setpts=PTS-STARTPTS,settb=1/${FPS}`;
+  const done = (used, src, extraInfo = {}) => ({
+    used,
+    input: src.input,
+    chain: `${src.chain},${fit}`,
+    upscale: src.upscale,
+    ...extraInfo,
+  });
+  const file = shotAsset(shot);
+  if (file && isStill(file)) {
+    const src = stillMotion(i, n, extra, file, shot.move);
+    return done(`entrada ${basename(file)} (imagem ${src.source})`, src, { asset: true });
+  }
+  if (file) {
+    const src = footageSource(i, n, extra, file, shot.footage);
+    return done(`entrada ${basename(file)} (${src.source}; ${src.conform})`, src, { asset: true });
+  }
   const p = shot.placeholder;
-  if (p.neutral)
-    return {
-      used: 'placeholder neutro',
+  const tagOf = (kind) => (p.note ? p.note : `${kind}${p.image ? `: ${p.image}` : ''}`);
+  if (p.neutral) {
+    const [c0, c1] = p.colors ?? ['0x5b5147', '0x0f1215'];
+    return done(tagOf('placeholder neutro'), {
       input: [
         '-f',
         'lavfi',
         '-i',
-        // Placeholder sóbrio (luz de janela num interior ao anoitecer), identificado na tarja; nunca footage final.
-        `gradients=s=${W}x${H}:c0=0x5b5147:c1=0x0f1215:type=radial:x0=${Math.round(W * 0.18)}:y0=${Math.round(H * 0.35)}:x1=${W}:y1=${H}:d=${dur}:r=${FPS}:n=2:speed=0.002`,
+        // Placeholder sóbrio (gradiente de luz, semente fixa para renders reprodutíveis), identificado na tarja.
+        `gradients=s=${W}x${H}:c0=${c0}:c1=${c1}:type=radial:x0=${Math.round(W * 0.18)}:y0=${Math.round(H * 0.35)}:x1=${W}:y1=${H}:d=${dur}:r=${FPS}:n=2:speed=0.002:seed=7`,
       ],
-      chain: `[${i}:v]format=rgb24,noise=alls=4:allf=t,gblur=sigma=3,${fit}`,
-    };
+      chain: `[${i}:v]format=rgb24,noise=alls=4:allf=t,gblur=sigma=3`,
+    });
+  }
+  if (p.move) {
+    const src = stillMotion(i, n, extra, join(ROOT, p.image), p.move);
+    return done(tagOf('placeholder'), src);
+  }
   const [xs, ys, ws] = p.start;
   const [xe, ye, we] = p.end;
   // Progresso do movimento: começa em `moveFrom` (ms no plano; câmera parada antes) e segue em velocidade constante
@@ -156,18 +352,17 @@ function shotSource(shot, i) {
   const y = lerp(ys, ye);
   const w = lerp(ws, we);
   const h = `(${w}*9/16)`;
-  return {
-    used: `placeholder: ${p.image}`,
+  return done(tagOf('placeholder'), {
     input: ['-loop', '1', '-framerate', String(FPS), '-t', dur, '-i', join(ROOT, p.image)],
     chain:
       `[${i}:v]scale=${W}:-2:flags=lanczos,crop=${W}:${H},format=rgb24,` +
       `perspective=x0='${x}':y0='${y}':x1='${x}+${w}':y1='${y}':x2='${x}':y2='${y}+${h}':` +
-      `x3='${x}+${w}':y3='${y}+${h}':interpolation=cubic:eval=frame:sense=source,${fit}`,
-  };
+      `x3='${x}+${w}':y3='${y}+${h}':interpolation=cubic:eval=frame:sense=source`,
+  });
 }
 
 /** Tarja da cópia de revisão: plano e status do placeholder, narração-guia e timecode (fonte do DS). */
-function reviewStrip(tmp) {
+function reviewStrip(tmp, labels) {
   const filters = [`pad=${W}:${H + STRIP}:0:0:color=0x101418`];
   const text = (name, value) => {
     const file = join(tmp, `${name}.txt`);
@@ -177,12 +372,12 @@ function reviewStrip(tmp) {
   const between = (from, to) => `'gte(t,${sec(from)})*lt(t,${sec(to)})'`;
   EDL.shots.forEach((s, i) =>
     filters.push(
-      `drawtext=fontfile=${FONT}:textfile=${text(`plano-${i}`, s.label)}:fontsize=22:fontcolor=0xb9c4cb:x=40:y=${H + 20}:enable=${between(s.from, s.to)}`,
+      `drawtext=fontfile=${FONT}:textfile=${text(`plano-${i}`, labels[i])}:fontsize=${LABEL_SIZE}:fontcolor=0xb9c4cb:x=40:y=${H + 20}:enable=${between(s.from, s.to)}`,
     ),
   );
   EDL.vo.forEach((v, i) =>
     filters.push(
-      `drawtext=fontfile=${FONT}:textfile=${text(`vo-${i}`, `VO guia — ${v.text}`)}:fontsize=32:fontcolor=white:x=40:y=${H + 60}:enable=${between(v.from, v.to)}`,
+      `drawtext=fontfile=${FONT}:textfile=${text(`vo-${i}`, `VO guia — ${v.text}`)}:fontsize=${VO_SIZE}:fontcolor=white:x=40:y=${H + 60}:enable=${between(v.from, v.to)}`,
     ),
   );
   filters.push(
@@ -251,8 +446,8 @@ function buildAudio(file) {
   );
   const inputs = [];
   const layers = ['[fx]', '[mar]', '[sala]', '[vento]'];
-  const vo = entrada('vo', ['wav']);
-  const trilha = entrada('trilha', ['wav']);
+  const vo = entrada(AUDIO.vo, ['wav']);
+  const trilha = entrada(AUDIO.trilha, ['wav', 'mp3']);
   if (vo) {
     inputs.push('-i', vo);
     graph.push(
@@ -262,9 +457,9 @@ function buildAudio(file) {
   }
   if (trilha) {
     const idx = vo ? 1 : 0;
-    inputs.push('-i', trilha);
+    inputs.push('-ss', sec(AUDIO.trilhaIn), '-i', trilha);
     graph.push(
-      `[${idx}:a]aformat=sample_rates=${SR}:channel_layouts=stereo,apad=whole_dur=${D}[tr]`,
+      `[${idx}:a]aformat=sample_rates=${SR}:channel_layouts=stereo,afade=t=in:d=0.8,apad=whole_dur=${D}[tr]`,
     );
     if (vo)
       graph.push('[tr][vosc]sidechaincompress=threshold=0.03:ratio=8:attack=15:release=350[trd]');
@@ -313,11 +508,9 @@ function buildAudio(file) {
 /** Na exportação final, recusa antes de renderizar: nenhum plano depende de placeholder; voz e trilha existem. */
 function preflightFinal() {
   const missing = [
-    ...EDL.shots
-      .filter((s) => !entrada(s.asset, ['mov', 'mp4']))
-      .map((s) => `${s.scene} ${s.plan} (footage ${s.asset})`),
-    ...(entrada('vo', ['wav']) ? [] : ['voz (vo.wav)']),
-    ...(entrada('trilha', ['wav']) ? [] : ['trilha (trilha.wav)']),
+    ...EDL.shots.filter((s) => !shotAsset(s)).map((s) => `${s.scene} ${s.plan} (asset ${s.asset})`),
+    ...(entrada(AUDIO.vo, ['wav']) ? [] : [`voz (${AUDIO.vo}.wav)`]),
+    ...(entrada(AUDIO.trilha, ['wav', 'mp3']) ? [] : [`trilha (${AUDIO.trilha}.wav|mp3)`]),
   ];
   if (missing.length)
     throw new MontagemError(
@@ -332,11 +525,30 @@ const reviewFile = () => join(OUT, `${EDL.id}-${EDL.fmt}-revisao.mp4`);
 function compose(uiDir, edDir, audio, tmp) {
   const shots = EDL.shots.map(shotSource);
   const n = shots.length;
+  // Cortes secos por concat; dissolve (`shot.dissolve`, ms) por xfade a partir do início do plano que entra (o plano
+  // anterior foi renderizado com os quadros a mais).
+  const join2 = EDL.shots.some((s) => s.dissolve)
+    ? EDL.shots.slice(1).map((s, k) => {
+        const i = k + 1;
+        const a = i === 1 ? '[s0]' : `[v${i - 1}]`;
+        const out = i === n - 1 ? '' : `[v${i}]`;
+        const op = s.dissolve
+          ? `xfade=transition=fade:duration=${(frameAt(s.dissolve) / FPS).toFixed(6)}:offset=${(frameAt(s.from) / FPS).toFixed(6)}`
+          : `concat=n=2:v=1:a=0,settb=1/${FPS}`;
+        return `${a}[s${i}]${op}${out}`;
+      })
+    : [`${shots.map((_, i) => `[s${i}]`).join('')}concat=n=${n}:v=1:a=0`];
+  const labels = EDL.shots.map((s, i) =>
+    s.label
+      ? s.label
+      : `${s.scene} · ${s.plan}${EDL.fmt === '9x16' ? '' : ` ${s.what}`} · ${shots[i].used}`,
+  );
   const { soften, sharpen, sigma } = EDL.focus;
   const bt709 = `scale=out_color_matrix=bt709:out_range=tv,format=yuv420p`;
   const graph = [
     ...shots.map((s, i) => `${s.chain}[s${i}]`),
-    `${shots.map((_, i) => `[s${i}]`).join('')}concat=n=${n}:v=1:a=0,format=gbrp,split[sharp][soft]`,
+    ...join2.slice(0, -1),
+    `${join2.at(-1)},format=gbrp,split[sharp][soft]`,
     // Desfoque como camada com alfa que entra e sai em fade (bem mais rápido que blend por pixel).
     `[soft]gblur=sigma=${sigma},format=gbrap,fade=t=in:st=${sec(soften.at)}:d=${sec(soften.dur)}:alpha=1,` +
       `fade=t=out:st=${sec(sharpen.at)}:d=${sec(sharpen.dur)}:alpha=1[blur]`,
@@ -345,7 +557,9 @@ function compose(uiDir, edDir, audio, tmp) {
     `[bg][ui]overlay=format=rgb[c1]`,
     `[c1][${n + 1}:v]overlay=format=rgb,fade=t=out:st=${sec(EDL.fadeOut.at)}:d=${sec(EDL.fadeOut.dur)}` +
       (FINAL ? `,${bt709}[vclean]` : `,split[clean][rev]`),
-    ...(FINAL ? [] : [`[clean]${bt709}[vclean]`, `[rev]${reviewStrip(tmp)},${bt709}[vrev]`]),
+    ...(FINAL
+      ? []
+      : [`[clean]${bt709}[vclean]`, `[rev]${reviewStrip(tmp, labels)},${bt709}[vrev]`]),
   ];
   const script = join(tmp, 'grafo.txt');
   writeFileSync(script, graph.join(';\n'));
@@ -397,8 +611,21 @@ function compose(uiDir, edDir, audio, tmp) {
     ...enc('[vclean]', cleanFile()),
     ...(FINAL ? [] : enc('[vrev]', reviewFile())),
   ]);
-  return Object.fromEntries(EDL.shots.map((s, i) => [`${s.scene} ${s.plan}`, shots[i].used]));
+  return EDL.shots.map((s, i) => ({
+    plan: `${s.scene} ${s.plan}`,
+    used: shots[i].used,
+    asset: Boolean(shots[i].asset),
+    upscale: shots[i].upscale && Number(shots[i].upscale.toFixed(3)),
+  }));
 }
+
+// Ampliação acima disso sobre um asset aprovado tende a amaciar a 100% em 1080p (PROVA-CINEMATOGRAFICA.md §4): aviso na
+// prévia, recusa na exportação final.
+const MAX_UPSCALE = 1.35;
+const upscaleIssues = (plates) =>
+  plates
+    .filter((p) => p.asset && p.upscale > MAX_UPSCALE)
+    .map((p) => `${p.plan}: ampliação ${p.upscale}× sobre a fonte (máximo ${MAX_UPSCALE}×)`);
 
 /** Legenda-guia da narração (SRT), para ouvir a montagem com a voz definitiva depois. */
 function writeSrt(file) {
@@ -452,7 +679,7 @@ function contactSheet(file, sheet, tmp) {
       '-frames:v',
       '1',
       '-vf',
-      'scale=640:-2:in_color_matrix=bt709',
+      'scale=-2:360:in_color_matrix=bt709',
       png,
     ]);
     return png;
@@ -479,13 +706,15 @@ async function main() {
     mkdirSync(dir, { recursive: true });
   }
   const t0 = Date.now();
-  linkUiFrames(uiDir);
+  if (EDL.uiSource === 'stage') await renderUiFrames(uiDir);
+  else linkUiFrames(uiDir);
   await renderEditorial(edDir);
   const audioFile = join(OUT, 'audio.wav');
   const audio = buildAudio(audioFile);
   const plates = compose(uiDir, edDir, audioFile, tmp);
   writeSrt(join(OUT, `${EDL.id}-vo-guia.srt`));
   const clean = cleanFile();
+  const warnings = upscaleIssues(plates);
   const { failures, report } = validate(
     [['limpa', clean, H], ...(FINAL ? [] : [['revisao', reviewFile(), H + STRIP]])],
     audioFile,
@@ -499,21 +728,27 @@ async function main() {
     plates,
     audio,
     report,
-    failures,
+    warnings,
+    failures: FINAL ? [...failures, ...warnings] : failures,
     ms: Date.now() - t0,
   };
-  writeFileSync(join(OUT, 'prova.json'), JSON.stringify(result, null, 2));
+  writeFileSync(
+    join(OUT, EDL.out ? `prova-${EDL.fmt}.json` : 'prova.json'),
+    JSON.stringify(result, null, 2),
+  );
   rmSync(tmp, { recursive: true, force: true });
   console.log(
     `prova: ${FRAMES} quadros (${EDL.duration / 1000} s) em ${Math.round(result.ms / 1000)} s`,
   );
-  for (const [plan, used] of Object.entries(plates)) console.log(`  ${plan}: ${used}`);
+  for (const { plan, used, upscale } of plates)
+    console.log(`  ${plan}: ${used}${upscale ? ` · ampliação ${upscale.toFixed(2)}×` : ''}`);
+  for (const w of warnings) console.warn(`  AVISO: ${w}`);
   console.log(`  voz: ${audio.voz} · trilha: ${audio.trilha}`);
   console.log(
     `  áudio: ${report.audio.integratedLufs} LUFS integrado · true peak ${report.audio.truePeakDbtp} dBTP`,
   );
-  if (failures.length) {
-    console.error(`FALHAS (${failures.length}):\n- ${failures.join('\n- ')}`);
+  if (result.failures.length) {
+    console.error(`FALHAS (${result.failures.length}):\n- ${result.failures.join('\n- ')}`);
     process.exit(1);
   }
   console.log('prova: arquivos codificados conformes');

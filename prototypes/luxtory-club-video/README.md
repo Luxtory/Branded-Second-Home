@@ -433,6 +433,8 @@ Nenhum PRL, Crédito, taxa ou valor do Luxplus foi alterado: a mudança depende 
 
 ## Preparação da prova cinematográfica (v6.3, 2026-11-18)
 
+> **Histórico.** Substituído pela produção sem ferramentas pagas (v7.0 e v7.1, abaixo); nada desta seção está ativo.
+
 - **Kit de execução:** `filme/PROVA-CINEMATOGRAFICA.md`, para as três tomadas (S06, S02, S15). Inclui master a 24 fps
   com Veo 3.1 (fontes oficiais), orçamento com preços oficiais (≈ US$ 146), imagens-chave e prompts, critérios de
   aprovação e contingências. Nada foi gerado nem contratado.
@@ -449,6 +451,8 @@ Nenhum PRL, Crédito, taxa ou valor do Luxplus foi alterado: a mudança depende 
 
 ## Prova cinematográfica escalonada (v6.4, 2026-11-18)
 
+> **Histórico.** Substituído pela produção sem ferramentas pagas (v7.0 e v7.1, abaixo); nada desta seção está ativo.
+
 - **Kit corrigido:** `filme/PROVA-CINEMATOGRAFICA.md`.
   - Orçamento só vídeo pela tabela oficial do Google Cloud. O teto anterior cai de ≈ US$ 146 para ≈ US$ 90 com as
     mesmas quantidades, e a primeira prova vira três estágios com tetos (A US$ 5, B US$ 8, C US$ 20; ≈ US$ 38 com
@@ -458,6 +462,8 @@ Nenhum PRL, Crédito, taxa ou valor do Luxplus foi alterado: a mudança depende 
   para o congelamento; o filme continua com o valor ilustrativo até a decisão.
 
 ## Liberação técnica da prova (v6.5, 2026-11-18)
+
+> **Histórico.** Substituído pela produção sem ferramentas pagas (v7.0 e v7.1, abaixo); nada desta seção está ativo.
 
 - **Vídeo:** Gemini Omni 1.2 Flash (`gemini-omni-1.2-flash`, GA, cobrança por uso em tokens). O Veo 3.1 GA no Google
   Cloud não oferece pagamento por uso: o acesso é "fixed quota" ou Provisioned Throughput. Ele fica como candidato de
@@ -479,6 +485,45 @@ plano está em `filme/PROVA-CINEMATOGRAFICA.md`.
 - **Google Vids gratuito:** só como teste até a confirmação do uso comercial.
 
 O Sora foi descontinuado em 26/04/2026. Os planos v6.3 a v6.5, com APIs pagas, ficam no histórico do Git.
+
+## Produção premium com custo adicional zero (v7.1, 2026-11-18)
+
+Correções cirúrgicas do plano (`filme/PROVA-CINEMATOGRAFICA.md`):
+
+- **Vids opcional:** exportar em MP4 não é licença de reuso. Sem confirmação oficial, o clipe é só prova interna, e
+  nenhum plano depende dele.
+- **Footage em qualquer cadência comum** (23,976 a 60 fps), conformado por retemporização: nenhum quadro inventado ou
+  descartado. A velocidade real (`conform: 'realtime'`) só passa com verificação visual de judder.
+- **Movimento sobre foto é enquadramento, não paralaxe.** Blender só com ganho perceptível e camadas reais. Quadro
+  estático elegante em vez de movimento artificial; regras contra aspecto de slideshow.
+- **Drive opcional:** conector disponível nesta sessão, ou anexo no chat para avaliação.
+- **Os 17 planos** reclassificados com fonte principal e alternativa gratuitas: S02 é gesto real, não zoom sobre
+  foto; S15 prioriza footage real; S17 vira montagem emocional nova.
+- **Prova de 20–30 s** pronta para receber os assets.
+
+`filme/prova/edl-cinema.js`: 24 s da Request na Azzura Home, 24 fps, 16:9 e 9:16. Os planos são:
+- S06, S07, S08 e S10 (imagens do ChatGPT com câmera subpixel);
+- S17a (gesto humano real, com dissolve).
+
+O `montar.mjs` ganhou:
+- `--edl=cinema` e `--fmt`;
+- interface renderizada do palco a 24 fps nativos;
+- imagens estáticas de `out/entrada/` com superamostragem 2×;
+- footage retemporizado;
+- dissolve por `xfade`;
+- trilha em MP3;
+- medição de ampliação: aviso na prévia acima de 1,35×, recusa na exportação final.
+
+A prova antiga (`edl.js`, 30 fps) não muda. Saídas em `out/prova-cinema/`, com placeholders identificados até os assets
+chegarem:
+
+```bash
+node prototypes/luxtory-club-video/filme/prova/montar.mjs --edl=cinema --fmt=16x9
+```
+
+```bash
+node prototypes/luxtory-club-video/filme/prova/montar.mjs --edl=cinema --fmt=9x16
+```
 
 ## Integração na pós (Etapa A)
 

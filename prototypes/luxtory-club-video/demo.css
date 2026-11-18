@@ -879,3 +879,21 @@ body {
   font-size: var(--lx-type-label);
   line-height: var(--lx-leading-tight);
 }
+
+/* Prova cinematográfica em 9:16 (?seq=prova&edl=cinema&fmt=9x16): título no terço superior, longe dos cartões e da
+   interface das plataformas (20% inferiores), com a sombra no canto superior. A etiqueta interna fica no rodapé, como no
+   16:9 (fora da área dos cartões; não existe na exportação final). */
+[data-fmt='9x16'] .demo-ed--title {
+  top: 12%;
+  bottom: auto;
+  inset-inline: 8%;
+  width: auto;
+}
+
+[data-fmt='9x16'] .demo-ed--shade::before {
+  mask-image: radial-gradient(
+    ellipse 110% 55% at 0% 0%,
+    var(--lx-scrim-color) 42%,
+    transparent 100%
+  );
+}
