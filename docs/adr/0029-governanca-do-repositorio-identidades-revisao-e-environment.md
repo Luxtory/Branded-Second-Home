@@ -56,6 +56,20 @@ depende de quem opera não ser quem aprova.
    o admin contorna a revisão só por PR e nunca os checks); no repositório real, só leitura (`rules/branches/main`,
    `current_user_can_bypass`) e um PR inofensivo da conta de máquina, sem merge.
 
+### Revisão 3 de 2026-11-18 (decisão definitiva do fundador, #98) — substitui os itens 1, 2 e 5
+
+1. **Identidade única.** Sem segunda conta: `Luxtory` é a única identidade. Os agentes usam um token *fine-grained* da
+   própria conta, só nos repositórios em que trabalham, 90 dias, sem *Administration*, *Secrets*, *Deployments*,
+   *Variables* e *Webhooks* (Contents, Pull requests, Issues, Workflows e Actions com escrita; Checks, Commit statuses
+   e Environments só leitura). O token antigo do `gh` é revogado pelo fundador. No repositório da própria conta o
+   fine-grained funciona, e o `gh` 2.46 o aceita (sem cabeçalho de escopos, não checa escopos).
+2. **Só o `main-checks`:** PR obrigatório sem aprovação, só squash, os cinco checks do app GitHub Actions (id 15368) e
+   branch atualizada, sem exclusão, sem force push, sem bypass. Aprovação independente sai: com uma conta só, ninguém
+   poderia cumpri-la.
+5. **Ordem:** token limitado → `main-checks` conferido por leitura → Environment com a regra de branch conferida antes
+   dos secrets novos → merge comum do #98 → credenciais antigas retiradas. Sem ensaio no sandbox e sem push de teste na
+   `main` real.
+
 ## Consequences
 
 ### Positive
@@ -80,6 +94,12 @@ depende de quem opera não ser quem aprova.
   não impedem um workflow alterado no próprio PR que fique verde sem testar nada, por isso a revisão humana das
   mudanças críticas segue indispensável; agentes rodam com o usuário do sistema, e a leitura do `supabase-prod-read` é
   imposta pelo servidor MCP, não pela credencial.
+- Revisão 3: os itens "nenhum agente integra código sem o fundador", "habilita *Prevent self-review*" e "todo PR espera
+  a aprovação do fundador" deixam de valer. Ganho: sem conta nova, sem espera por aprovação, sem atrito com workflow.
+  Riscos aceitos: um agente integra o próprio PR com checks verdes, e um PR pode alterar workflow ou scripts para
+  passar; a conta segue admin, então canais com a sessão do fundador (Claude in Chrome, conectores do ChatGPT/Codex)
+  ainda alcançam os controles; conectores de escrita fora do GitHub seguem como opção do fundador. T-1323 (autorizador)
+  exige decisão própria antes de K1/K2: com uma conta, quem dispara e quem aprova são a mesma identidade.
 
 ## Alternatives considered
 
@@ -105,6 +125,13 @@ Revisão 2. **Commit vazio na `main` real:** com um ruleset errado, o push entra
 dona do schema) e um deploy de Production; o sandbox prova o mesmo sem esse risco, e a API dá por leitura o que cada
 identidade pode contornar (`current_user_can_bypass`). **`public_repo` no lugar de `repo`:** o `gh` exige `repo`; com a
 conta colaborando só neste repositório público, a diferença seria nula.
+
+Revisão 3. **Conta de máquina:** fronteira mais forte (operador ≠ aprovador), recusada pelo fundador pelo custo de nova
+conta, e-mail e manutenção. **Manter o token OAuth administrativo do `gh`:** zero esforço, mas qualquer agente
+desligaria o ruleset ou trocaria secrets com uma chamada. **Token fine-grained sem *Workflows*:** protegeria pouco (os
+checks rodam scripts do `package.json`) e travaria PRs de CI. **Ensaio no sandbox para um ruleset sem bypass:** o
+ruleset é reversível na tela, não toca produção, e a leitura das regras com `current_user_can_bypass` mais o fluxo real
+do #98 dão a prova.
 
 ## References
 

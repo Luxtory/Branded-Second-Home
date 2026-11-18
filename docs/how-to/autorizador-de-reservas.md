@@ -105,6 +105,10 @@ Nada desta seção está feito. Faça na ordem; cada passo é conferível.
    expiração; o limite é o papel de colaborador (escrita, sem admin). Inventário dos canais dos agentes (incluindo o
    conector GitHub do Codex e o Claude in Chrome) e ordem dos passos:
    [`governanca-do-repositorio.md`](governanca-do-repositorio.md) (ADR-0029).
+   **Revisão v4 (2026-11-18, fundador):** sem conta de automação. Os agentes usam token fine-grained da própria conta
+   `Luxtory` (no repositório do dono ele funciona), sem *Administration*, *Secrets* e *Deployments*: não reconfiguram o
+   Environment nem aprovam deployment. Disparo e aprovação continuam na mesma identidade, e o *Prevent self-review*
+   bloquearia o fundador: a ativação exige decisão própria sobre T-1323 antes de K1/K2.
 1. **Proteger a `main` (T-1320, bloqueia a configuração real).** Hoje a `main` **não tem** proteção clássica (API: 404
    "Branch not protected") nem ruleset. Crie um ruleset na branch padrão, ativo:
    - sem exclusão e sem force push;

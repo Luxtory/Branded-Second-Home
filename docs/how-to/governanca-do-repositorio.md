@@ -7,6 +7,9 @@ T-1323 em [`booking`](../security/threats/booking.md); secrets da CI em [`platfo
 exige aprovação específica dele; o agente só prepara PRs e confere por leitura. T-1320 e T-1323 só fecham com os
 controles validados (seção final), não com este documento. Passo 2 com GO do fundador (2026-11-18, execução
 assistida); passos 3 a 5 e o merge do #98 seguem sem autorização.
+**v4 (2026-11-18, decisão definitiva do fundador): identidade única `Luxtory`**, sem segunda conta. A seção
+[v4](#v4--identidade-única-luxtory-vigente) prevalece sobre os passos 2, 3, 5 e 7 onde divergir; o texto deles fica
+como histórico. Nada da v4 foi aplicado.
 
 **Princípio da ordem:** nenhuma credencial nova enquanto um agente alcançar a conta administrativa, e nenhuma credencial
 nova antes de a `main` exigir revisão humana. Do passo 2 ao passo 5, **nenhum merge na `main` além do #98** (evita
@@ -35,11 +38,95 @@ reatualizar o #98 com uma identidade que não pode mais alterar workflow).
 | Branch do próprio repositório (push ou PR interno) | **Sim:** roda a versão do arquivo **da branch**; uma `ci.yml` alterada ou um workflow novo com `on: push` lê os dois secrets | quem tem push no repositório; por token, com escopo `workflow`. Hoje: a conta `Luxtory` e qualquer agente com o token dela |
 | `main` | Sim | push direto de qualquer token da conta dona; `migrate` e `deploy` automáticos |
 
+## v4 — identidade única `Luxtory` (vigente)
+
+**Decisão do fundador (2026-11-18):** sem segunda conta, e-mail ou conta de automação; `Luxtory` é a única identidade.
+Sem aprovação humana independente, impossível com uma conta só: a `main` exige PR, os cinco checks verdes do GitHub
+Actions e squash, e recusa push direto, exclusão e force push (só o `main-checks` do passo 3, sem bypass). O Environment
+`production-ci` restrito à `main` e a migração dos secrets seguem os passos 4 a 6. Custo zero, nada novo para manter
+além da renovação do token.
+
+**Credencial limitada para os agentes:** token *fine-grained* da própria conta `Luxtory`. O usuário continua admin, mas
+cada chamada fica limitada às permissões do token: sem *Administration*, *Secrets* e *Deployments*, os agentes não
+alteram rulesets, Environments, secrets ou configurações e não aprovam deployment. No repositório da própria conta o
+fine-grained funciona (a limitação da documentação vale para colaborador), e o `gh` 2.46 aceita token sem cabeçalho de
+escopos (`HeaderHasMinimumScopes` retorna sem checar; conferido no código-fonte da v2.46.0). O fluxo de trabalho não
+muda: push, PR, merge, reexecução de job e leitura da CI.
+
+| Permissão do repositório | Acesso | Para quê |
+|---|---|---|
+| Contents | leitura e escrita | push de branch e merge de PR |
+| Pull requests, Issues | leitura e escrita | criar, atualizar e comentar |
+| Workflows | leitura e escrita | PR que altera `.github/workflows/`; omitir não protegeria, porque os checks rodam scripts do `package.json`, que *Contents* já altera |
+| Actions | leitura e escrita | runs, logs e reexecução de job; ler o Environment e a regra de branch dele |
+| Checks, Commit statuses, Environments | leitura | estado da CI; só os nomes dos secrets do Environment |
+| Metadata | leitura | obrigatória; lê rulesets e regras da branch |
+| Administration, Secrets, Deployments, Variables, Webhooks e as demais | sem acesso | — |
+
+Repositórios: só os da conta em que os agentes trabalham. Expiração: 90 dias; renovar é repetir a ação 1.
+
+**Sequência mínima (o fundador executa cada ação com autorização própria; o agente só confere por leitura):**
+
+1. **Token dos agentes.** *Settings → Developer settings → Personal access tokens → Fine-grained tokens*, nome
+   `agentes-luxtory`, permissões da tabela. Num terminal WSL separado (não pelo `!` do Claude Code):
+   `gh auth login --hostname github.com --git-protocol https`, colando o token na entrada oculta (Git: Yes). Em
+   seguida, em *Settings → Applications → Authorized OAuth Apps*, revogar **GitHub CLI** (encerra o token
+   administrativo antigo do `gh`) e **Git Credential Manager**, se aparecer; apagar PATs classic sem uso; em *Installed
+   GitHub Apps*, conferir que o conector do ChatGPT/Codex não tem *Administration* (se tiver, desinstalar).
+   *Agente:* `gh auth status 2>&1 | grep -v -i token` → `Luxtory`;
+   `gh api repos/Luxtory/Branded-Second-Home/actions/permissions` → 403 (sem *Administration*);
+   `gh api repos/Luxtory/Branded-Second-Home/actions/secrets` → 403 (sem *Secrets*);
+   `git push --dry-run origin HEAD:refs/heads/verificacao-token` → autentica sem enviar nada.
+2. **Ruleset `main-checks`** (JSON do passo 3; o `main-revisao` sai): *Settings → Rules → Rulesets → New ruleset →
+   Import a ruleset*. Opcional na mesma visita: política de Actions do item 8 da validação (pinning por SHA).
+   *Agente:* `gh api repos/Luxtory/Branded-Second-Home/rules/branches/main` → `deletion`, `non_fast_forward`,
+   `pull_request` (0 aprovações, só squash) e `required_status_checks` (cinco checks, `integration_id` 15368, strict);
+   `…/rulesets/<id> --jq .current_user_can_bypass` → `never`. Nenhum push de teste na `main` real: o fluxo do #98
+   (checks exigidos na tela de merge) é a prova de uso.
+3. **Environment `production-ci` e secrets novos:** passo 4, itens 2 a 4, sem mudança (regra de branch `main` conferida
+   pelo agente antes dos secrets).
+4. **Merge do #98:** passo 5, mas merge comum (checks verdes, sem aprovação e sem bypass), pelo navegador ou pelo agente
+   com autorização específica.
+5. **Credenciais antigas:** passo 6; o fundador confere na tela os secrets do repositório vazios (o token dos agentes
+   não lê secrets).
+
+Depois da ação 5, desenvolvimento normal. Sem o congelamento geral da `main` do "princípio da ordem": o token dos agentes
+altera workflow, então o #98 pode ser atualizado se a `main` andar. Fica só o congelamento do passo 4 quando a senha do
+banco for trocada antes do merge.
+
+**Recuperação:** o fundador entra como `Luxtory` no navegador, com 2FA e meio de recuperação fora do PC (confirmado em
+2026-11-18). Ruleset errado: editar ou desligar na tela, com efeito imediato. Falha no primeiro run da `main` com o
+Environment: passo 5 (Production fica no deployment anterior; os secrets antigos só saem no passo 6). Token vazado ou
+vencido: revogar e repetir a ação 1.
+
+**Riscos aceitos (registrados, sem controle novo):**
+
+- Sem revisão independente, um agente pode integrar o próprio PR com checks verdes, e um PR pode alterar workflow ou
+  scripts para passar sem testar nada; esse código roda o `migrate` com o secret do Environment. A fronteira é "toda
+  mudança em produção passa por PR, CI verde e histórico". O fundador revisa a cadeia crítica (`.github/`, migrations,
+  autorizador) antes do merge.
+- A conta `Luxtory` segue admin: o token limitado tira dos agentes a mudança de controles pelo `gh` e pelo `git`, mas
+  não de canais com a sessão do fundador (Claude in Chrome no perfil principal: não liberar `github.com` para a
+  extensão; conectores do ChatGPT/Codex).
+- Fora do GitHub, os conectores de escrita do Supabase e da Vercel (claude.ai, ChatGPT/Codex) e o MCP de gerência do
+  Upstash chegam a produção sem a CI. Opcional, sem custo: desconectá-los (o agente perde a leitura de erros da Vercel).
+- Autorizador (K1/K2, fechados): com uma só conta, quem dispara e quem aprova o Environment `booking-authorizer` são a
+  mesma identidade, e o *Prevent self-review* bloquearia o próprio fundador. O token sem *Deployments* impede o agente de
+  aprovar, mas T-1323 precisa de decisão própria antes de qualquer ativação.
+
+**Sai do plano:** segunda conta e itens 2.2 a 2.7 (o 2.1 foi cumprido); `main-revisao`, regras de operação da última
+push e ensaio no sandbox (um ruleset sem bypass, reversível na tela, sem tocar produção; a leitura das regras e o fluxo
+do #98 bastam); PR "[NÃO INTEGRAR]"; passo 7 (os PRs legados seguem o fluxo comum ou são fechados). O sandbox deixa de
+ser necessário; apagá-lo é decisão do fundador.
+
 ## Passo 1 — PR A: CODEOWNERS e documentação ✅
 
 Mergeado: #97 → `5772c56` (CI da main verde). `.github/CODEOWNERS` com regra geral `*` e a cadeia crítica explícita.
 
 ## Passo 2 — identidade separada, por todos os canais (fundador)
+
+> **v4:** substituído pela [identidade única](#v4--identidade-única-luxtory-vigente). O 2.1 foi cumprido; os itens 2.2
+> a 2.7 ficam como histórico.
 
 **GO do fundador (2026-11-18)** para a execução assistida: o fundador executa cada ação; o agente só confere por leitura
 e registra. Nenhuma credencial é revogada ou alterada pelo agente.
@@ -165,6 +252,9 @@ conector do ChatGPT conectado); a conta de máquina ler o que só admin lê; um 
 refazer o 2.4); surgir mudança não explicada em colaboradores, apps, Environments ou secrets.
 
 ## Passo 3 — rulesets da `main` (fundador)
+
+> **v4:** só o `main-checks`, conferido por leitura (ação 2 da v4). O `main-revisao`, o ensaio no sandbox (A), os itens
+> 5 e 7 e as regras de operação saem; o item 8 fica opcional.
 
 Dois rulesets, importados em *Settings → Rules → Rulesets → New ruleset → Import a ruleset*. Os dois valem juntos; regra
 repetida vale na versão mais restritiva (documentação do GitHub).
@@ -312,6 +402,9 @@ aprovador); atualizar a branch com a `main` pode descartar a aprovação; o bypa
 
 ## Passo 5 — merge do #98 (fundador, no navegador)
 
+> **v4:** merge comum, sem bypass; condições e recuperação abaixo valem, com "passos 2, 3 e 4 validados" lido como as
+> ações 1 a 3 da v4.
+
 **GO** só com todos: head do #98 igual ao auditado e atualizado com a `main`; CI do PR 5/5 verde; passos 2, 3 e 4
 validados; secrets antigos do repositório ainda presentes (caminho de volta); nenhum run em andamento na `main`;
 conferência somente leitura de Production igual à anterior; fundador disponível para acompanhar o run (~15 min).
@@ -338,6 +431,8 @@ do último run da `main`.
 
 ## Passo 7 — PRs legados de autoria `Luxtory`
 
+> **v4:** sai do plano; sem exigência de aprovação, os PRs legados seguem o fluxo comum ou são fechados.
+
 #28 (superado pelo #32), #86 e #87: decisão do fundador. Integrar exige atualizar com a `main`, checks verdes e o bypass
 por PR; ou fechar. Nenhum é reescrito pelo agente.
 
@@ -347,6 +442,7 @@ por PR; ou fechar. Nenhum é reescrito pelo agente.
 - T-1323: depois da conferência do passo 2 em todos os canais; na ativação, o Environment `booking-authorizer` com o
   fundador como único revisor e *Prevent self-review* ligado ([runbook do autorizador](autorizador-de-reservas.md) §5).
 - As evidências entram num PR de documentação depois das validações.
+- **v4:** T-1320 fecha depois das ações 2 e 5; T-1323 fica aberta até a decisão sobre o autorizador com uma só conta.
 
 ## Histórico
 
@@ -362,3 +458,7 @@ por PR; ou fechar. Nenhum é reescrito pelo agente.
   saiu do plano (com um ruleset errado, o push entraria e rodaria `migrate` e deploy de Production): ensaio no sandbox
   com os mesmos JSONs e um workflow mínimo dos cinco checks, e no repositório real só leitura
   (`current_user_can_bypass`) e um PR inofensivo sem merge; GO/NO-GO do passo 3 e riscos residuais registrados.
+- 2026-11-18, v4 (decisão definitiva do fundador, #98): identidade única `Luxtory`, sem segunda conta; só o
+  `main-checks` (PR, cinco checks, squash, sem push direto, sem bypass); agentes com token fine-grained da própria
+  conta, sem *Administration*, *Secrets* e *Deployments*; Environment e migração dos secrets mantidos; ensaio no
+  sandbox, `main-revisao` e passo 7 saem.
