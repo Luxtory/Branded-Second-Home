@@ -1,0 +1,17 @@
+# Revisão obrigatória da conta do fundador (ADR-0029). Só tem efeito quando o ruleset da `main` exigir revisão de
+# code owner (docs/how-to/governanca-do-repositorio.md); até lá é inerte.
+
+# Regra geral: todo PR para a `main`.
+*                                                                   @Luxtory
+
+# Cadeia crítica: continua só com o fundador mesmo que outros revisores entrem na regra geral.
+# `/.github/` cobre este arquivo, a `ci.yml` (migrate e deploy), o workflow do autorizador e o dependabot.
+/.github/                                                           @Luxtory
+/scripts/booking-authorizer.mjs                                     @Luxtory
+/scripts/db-migrate.mjs                                             @Luxtory
+/package.json                                                       @Luxtory
+/package-lock.json                                                  @Luxtory
+/.npmrc                                                             @Luxtory
+/vercel.json                                                        @Luxtory
+/migrations/                                                        @Luxtory
+/src/features/platform/infrastructure/database/supabase-root-ca.ts  @Luxtory

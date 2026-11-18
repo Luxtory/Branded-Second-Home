@@ -19,6 +19,8 @@ solve a specific problem. They are recipes, not tutorials.
   produção, rotação e falhas
 - [`autorizador-de-reservas.md`](autorizador-de-reservas.md) — autorizador independente da reserva de uso próprio (W13):
   fundamentos por finalidade, autorizar, revogar, resultados e configuração real futura
+- [`governanca-do-repositorio.md`](governanca-do-repositorio.md) — separar agentes, aprovação humana e credenciais de
+  produção: CODEOWNERS, secrets num Environment só da `main`, conta de máquina, ruleset e provas (ADR-0029)
 
 [CUSTOMIZE] List guides as you add them, e.g.:
 
