@@ -36,6 +36,7 @@ described by Michael Nygard. The ADR process itself is established in
 | 0026 | [Reserva de uso próprio: autorização no banco presa à reserva, ativação privilegiada e instante de aceite](0026-reserva-de-uso-proprio-autorizacao-no-banco-e-ativacao.md) | Accepted (arquitetura; risco residual pendente de ratificação) |
 | 0027 | [Ciclo da reserva de uso próprio: transições só-inserção, chaves K1/K2 e autorização independente](0027-ciclo-da-reserva-de-uso-proprio-e-autorizacao-independente.md) | Accepted (merge do #80, `5d9b636`, 2026-11-03; antes: Proposed — E0 em auditoria) |
 | 0028 | [Jornada Second Home Partners: superfície, portão e contato próprios sobre a infraestrutura existente](0028-jornada-second-home-partners.md) | Accepted (plano v3.3 aprovado pelo fundador em 2026-11-12) |
+| 0029 | [Governança do repositório: identidade dos agentes, revisão obrigatória e Environment de produção](0029-governanca-do-repositorio-identidades-revisao-e-environment.md) | Proposed (PR draft de governança, 2026-11-18) |
 
 The technical decisions ADR-001…008 of the canonical
 [03 — Technical Spec](../specs/canonical/03-technical-spec.md) also apply, by reference.

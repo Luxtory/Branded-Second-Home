@@ -100,6 +100,11 @@ Nada desta seção está feito. Faça na ordem; cada passo é conferível.
      settings*);
    - com isso, quem dispara é diferente de quem aprova, e o *Prevent self-review* pode ser ligado.
    Criar contas e tokens é ação do fundador; nada disso foi feito.
+   **Correção (2026-11-18):** o token fine-grained não serve aqui: a documentação do GitHub lista como limitação
+   contribuir em repositório onde o usuário é colaborador, e a conta dona é pessoal. Use PAT classic só `repo`, com
+   expiração; o limite é o papel de colaborador (escrita, sem admin). Inventário dos canais dos agentes (incluindo o
+   conector GitHub do Codex e o Claude in Chrome) e ordem dos passos:
+   [`governanca-do-repositorio.md`](governanca-do-repositorio.md) (ADR-0029).
 1. **Proteger a `main` (T-1320, bloqueia a configuração real).** Hoje a `main` **não tem** proteção clássica (API: 404
    "Branch not protected") nem ruleset. Crie um ruleset na branch padrão, ativo:
    - sem exclusão e sem force push;
@@ -107,7 +112,11 @@ Nada desta seção está feito. Faça na ordem; cada passo é conferível.
      `security`);
    - revisão de *code owner* obrigatória para a cadeia do autorizador. Crie um `CODEOWNERS` com
      `.github/workflows/booking-authorizer.yml`, `scripts/booking-authorizer.mjs`, `package.json`, `package-lock.json`,
-     `.npmrc` e `src/features/platform/infrastructure/database/supabase-root-ca.ts`, com dono `@Luxtory`;
+     `.npmrc` e `src/features/platform/infrastructure/database/supabase-root-ca.ts`, com dono `@Luxtory`.
+     **Ampliado (2026-11-18):** o `.github/CODEOWNERS` versionado usa a regra geral `*` e lista também o próprio
+     arquivo, a `ci.yml`, `db-migrate`, `vercel.json` e `migrations/`; o ruleset completo (checks fixados no app
+     GitHub Actions, aprovação da última push, só squash) está em
+     [`governanca-do-repositorio.md`](governanca-do-repositorio.md), passo 4;
    - nenhum ator com bypass; em emergência, o fundador desativa o ruleset, e o desligamento fica no histórico.
    **O que a plataforma impõe:** sem os checks verdes, nada entra na `main`. A revisão humana só passa a ser imposta com
    o passo 0: o dono de código (`Luxtory`) não pode ser a mesma identidade que o agente usa. Com uma única conta, o
