@@ -22,6 +22,8 @@ ou ativação); E2 em diante dependem de nova autorização expressa.
 
 **Atualização 2026-11-18 (E4b mergeada; E5 em PR draft):** a E4b foi mergeada pelo #92 (squash `caa699c`; CI da main 44204312585 verde, Production sem migration nova, K1 e K2 com 0 linhas). A E5 foi autorizada só em branch isolada, num repositório sandbox público e descartável (`Luxtory/luxtory-e5-authorizer-sandbox`, Environment de teste com revisor obrigatório e só a `main`, secrets sintéticos, PostgreSQL criado no job) e em PR draft: workflow, programa do autorizador, testes e runbook (spec `booking` §10.16). Sem merge, Production, Environment real, senha do autorizador ou ativação; M1 e T-1314 continuam pendentes.
 
+**Atualização 2026-11-18 (E5 mergeada; W13 encerrada na implementação, nada ativado):** o #96 foi mergeado (squash `01ca51b`; CI da main 44358051930 verde, `migrate` sem migration nova (60/0), deploy em Production; conferência somente leitura: tabela de ativação, K1 e K2 com 0 linhas, nenhuma reserva, transição, solicitação, autorização ou uso; papel autorizador sem senha; nenhum Environment `booking-authorizer`). E6 e E7 foram cumpridas por etapa (tabela abaixo). **Implementação concluída não é ativação.** Continuam abertos, cada um no seu escopo: T-1320 (proteção da `main`) e T-1323 (identidade revisora fora do alcance de agentes), com roteiro em `docs/how-to/governanca-do-repositorio.md` (ADR-0029); configuração real do autorizador (runbook §5); M1 e T-1314; a decisão de ativar K1 e K2; issue #95 (testes instáveis, sem efeito em Production).
+
 ## Decisões do fundador (2026-11-03)
 
 | # | Decisão | Situação |
@@ -54,9 +56,9 @@ ou ativação); E2 em diante dependem de nova autorização expressa.
 | E3 | Jobs e consumidores de notificação | não autorizada → autorizada (2026-11-05; branch isolada e PR draft, sem merge, deploy, Production ou ativação) → implementada em PR draft (spec `booking` §10.14.1), aguardando auditoria → concluída (#88 → `dbb4ac6`, 2026-11-05; crons em Production, ativação 0) |
 | E4a | Revisão renderizada com o fundador: prévia do cancelamento (tempestivo, tardio, iniciada, Owner, prazo vencido na revisão, em exceção) e telas Admin, 390/1440 px | não autorizada → autorizada (2026-11-05, só protótipos) → v1 NO-GO visual → v2 → v2.1 aprovada como referência visual (2026-11-06; spec `booking` §10.15) |
 | E4b | Integração das telas e E2E; gate G-E4-1 (limitador da solicitação, spec `booking` §10.12) testado antes de expor a solicitação | não autorizada → autorizada (2026-11-06; branch isolada e PR draft, sem merge, deploy ou ativação; spec `booking` §10.15) → implementada em PR draft (spec `booking` §10.15.1), aguardando auditoria → concluída (#92 → `caa699c`, 2026-11-18; Production, nada ativado) |
-| E5 | Workflow do autorizador comprovado num Environment isolado apontando para banco descartável | não autorizada → autorizada (2026-11-18; branch isolada, sandbox de teste e PR draft) → implementada em PR draft (spec `booking` §10.16) |
-| E6 | Gates locais | não autorizada |
-| E7 | PR draft da implementação; parar antes do merge | não autorizada |
+| E5 | Workflow do autorizador comprovado num Environment isolado apontando para banco descartável | não autorizada → autorizada (2026-11-18; branch isolada, sandbox de teste e PR draft) → implementada em PR draft (spec `booking` §10.16) → concluída (#96 → `01ca51b`, 2026-11-18; CI da main 44358051930 verde, sem migration nova; workflow inerte: sem Environment, secret ou senha do autorizador) |
+| E6 | Gates locais | não autorizada → cumprida por etapa: cada etapa passou pelos gates locais e pela CI completa no seu PR (#82, #83, #84, #88, #92, #96) e de novo na `main` integrada; a última, 44358051930 (`01ca51b`), cobre lint, typecheck, test com coverage, `db:check`, trace (REQ-080, REQ-081, REQ-083, REQ-084, PD-010), e2e e Semgrep |
+| E7 | PR draft da implementação; parar antes do merge | não autorizada → cumprida por etapa: cada etapa saiu em PR draft, parou no checkpoint e só foi mergeada com autorização expressa do fundador |
 
 ## E1 — resultado no banco (2026-11-04, ambiente isolado)
 
