@@ -1,4 +1,4 @@
-# Direção de arte das Second Homes do filme (pacote de pré-produção · v6.2)
+# Direção de arte das Second Homes do filme (pacote de pré-produção · v6.3)
 
 > Pacote consolidado por imóvel, para gerar ou contratar as imagens do filme. Parte das bíblias e da shot list de
 > `PRODUCAO.md` (§2–§3) e só ajusta o necessário. Nenhuma imagem ou footage foi produzido: aqui só há descrições,
@@ -25,8 +25,8 @@
 - **Técnica:**
   - gerar cerca de 1,5 vez a duração usada;
   - resolução nativa máxima da ferramenta (ideal 4K);
-  - cadência decidida antes do master (30 fps padrão; se a ferramenta só gera 24 fps, decidir antes entre master a 24
-    fps, com as interfaces renderizadas nativamente a 24, ou outra ferramenta). Nunca converter a cadência.
+  - cadência: recomendado master a 24 fps (Veo 3.1 gera a 24 fps; as interfaces renderizam nativamente a 24 fps no
+    congelamento). Nunca converter a cadência (`PROVA-CINEMATOGRAFICA.md` §1).
 - **Negativo comum** (todos os prompts): `no text, no logos, no signage, no watermark, no brand names, no distorted
   hands, no extra fingers, no warped architecture, no bending straight lines, no flickering, no morphing faces, no
   identity drift between shots, no fast camera moves, no fisheye, no oversaturated colors, no CGI look, no posed
@@ -147,6 +147,11 @@ com sol baixo. A sensação é de convivência, mesa posta e calor humano.
 | S17 ⇕ | C16 · 8 s | montagem de mar, serra e campo com risos, em 3 planos de cerca de 2,7 s | sobras de S01–S16, sem novo imóvel nem nova pessoa |
 
 ## 5. Prova de viabilidade: três tomadas
+
+> **v6.3:** a execução (ferramenta e cadência, orçamento com preços oficiais, prompts finais, critérios e
+> contingências) está em `PROVA-CINEMATOGRAFICA.md`. Os preços de terceiros abaixo ficam só como histórico. Os modos de
+> imagem → vídeo e por referência do Veo não geram crianças, então o S02 da prova é testado com Helena e o parceiro
+> (§2 do kit).
 
 **Objetivo:** provar, antes de produzir o filme, que a direção de arte gera imagem premium com consistência. Nada
 abaixo foi gerado. Os prompts estão prontos para uso externo depois da autorização.

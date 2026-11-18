@@ -1,4 +1,4 @@
-# Filme Luxtory Club: produção, footage e integração (v6.2, transição para a produção cinematográfica · proposta para aprovação)
+# Filme Luxtory Club: produção, footage e integração (v6.3, preparação da prova cinematográfica · proposta para aprovação)
 
 > Complementa `ROTEIRO.md`. Imóveis, pessoas e valores ilustrativos, nunca apresentados como Second Homes reais à venda
 > ou disponíveis. A publicação depende da verificação de prontidão do produto e da aprovação da comunicação (§5).
@@ -208,7 +208,7 @@ usar nenhuma das três Second Homes. O placeholder escuro da prova nunca é foot
 
 | Item | Definição |
 |---|---|
-| Cadência | **30 fps**, padrão provisório de edição: todos os assets atuais estão nela. 24 fps só por razão criativa decidida antes dos masters finais; nesse caso, as interfaces são renderizadas nativamente (`--fps=24`) e o footage gerado ou filmado na mesma cadência. Nenhuma conversão de cadência. TV, se houver: definir 29,97 antes do master |
+| Cadência | **30 fps**, padrão provisório de edição: todos os assets atuais estão nela. 24 fps só por razão criativa decidida antes dos masters finais; nesse caso, as interfaces são renderizadas nativamente (`--fps=24`) e o footage gerado ou filmado na mesma cadência. Nenhuma conversão de cadência. TV, se houver: definir 29,97 antes do master. **Recomendação v6.3: master a 24 fps**, porque o Veo 3.1 gera a 24 fps e as interfaces renderizam nativamente a 24 no congelamento (`PROVA-CINEMATOGRAFICA.md` §1) |
 | Resolução | timeline de web em 1920×1080 (16:9) e 1080×1920 (9:16). Interfaces em 1080p; render maior só dos trechos com push-in acima de 110% ou recorte. Footage na maior resolução nativa da ferramenta (ideal ≥ 4K UHD), para permitir reenquadrar. Master 4K só se o destino exigir, decidido antes da montagem final |
 | Alfa | *straight* (não premultiplicado) nos PNG e no ProRes 4444; interpretar como Straight |
 | Cor | Rec.709 (BT.709, faixa limitada) nos MP4/MOV; composição em RGB com matriz BT.709 explícita; cores da marca conferidas por amostragem depois do encode |
@@ -292,6 +292,17 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
    outros; a troca é um dado (`data.js`) e não muda papéis, datas nem Créditos.
 
 ## 8. Revisões
+
+**v6.3 (preparação da prova cinematográfica, 2026-11-18):**
+
+- Kit de execução da prova em `PROVA-CINEMATOGRAFICA.md`. Inclui:
+  - recomendação de master a 24 fps com Veo 3.1 (fontes oficiais);
+  - orçamento discriminado (≈ US$ 146);
+  - imagens-chave e prompts de S06, S02 e S15;
+  - critérios e contingências.
+- Restrição oficial do Veo: os modos com imagem não geram crianças. O S02 da prova usa Helena e o parceiro, e a Luxtory
+  decide o caminho dos planos com crianças.
+- Cadência (§5): a recomendação passa a 24 fps, a decidir antes do master.
 
 **v6.2 (transição para a produção cinematográfica, 2026-11-18):**
 

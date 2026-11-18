@@ -1,4 +1,4 @@
-# Economia do filme: benchmark de mercado e PRL das Second Homes (v6.2 · proposta de congelamento para aprovação)
+# Economia do filme: benchmark de mercado e PRL das Second Homes (v6.3 · proposta de congelamento para aprovação)
 
 > Análise da coerência econômica dos valores simulados do filme do Luxtory Club. **Nada foi alterado:** PRLs, Créditos,
 > lotes, taxas e o valor do Luxplus continuam os da v5 até a aprovação comercial. Consulta de mercado em 18/11/2026.
@@ -388,5 +388,37 @@ A recomendada foi aplicada numa cópia descartável do repositório (git worktre
 
 1. **Aprovar a proposta recomendada ou a conservadora** (PRLs por data e lotes fictícios).
 2. **Desconto Luxplus do Membership mostrado** no filme, ou a decisão explícita de exibir sem desconto.
-3. **Opcional:** Direct com 1 noite (como está) ou 2 noites na ponte de Corpus Christi.
+3. ~~Opcional: Direct com 1 ou 2 noites~~ → **resolvido (v6.3): 1 noite.** Nenhum canônico invalida: o Direct exige
+   Membership, Créditos suficientes, validação e pagamento da taxa (REQ-065); limites de permanência não se estendem
+   a Request, Direct, Luxplus ou locação (REQ-035); a política vigente exigida pela PD-009 trata de cancelamento e
+   no-show, não de estadia mínima, e já aparece como etapa no protótipo.
+
+**Luxplus, recomendação para a decisão (v6.3):** usar um Membership de demonstração **sem desconto Luxplus**, se essa
+condição for aprovada comercialmente. O preço exibido seria então R$ 6.200, sem prometer benefício indefinido. Se a
+Luxtory quiser mostrar um benefício, o percentual tem de ser aprovado antes. O desconto não é escolhido pela análise.
+
+### 12.5 Controle de qualidade do congelamento: os 12 testes
+
+Na cópia descartável com a recomendada, 12 testes falharam. Revisão de cada um: o que é regra (preservar) e o que é
+literal do cenário v5 (atualizar).
+
+| Teste | Regra a preservar | Literal do cenário v5 | Ação no congelamento |
+|---|---|---|---|
+| Créditos = PRL × multiplicador; taxa nos dois ramos | fórmula e os dois ramos da taxa (10% e mínimo de R$ 120) | a leitura de `FICTITIOUS.request` (R$ 5.500) | desacoplar: os ramos da taxa com valores sintéticos fixos (R$ 5.500 → R$ 550; R$ 1.150 → R$ 120 pelo mínimo), garantindo a **cobertura do mínimo**; o cenário passa a R$ 12.000 → R$ 1.200 |
+| Garantia por FEFO | ordem FEFO, só lotes válidos até a expiração, erro de saldo insuficiente (casos sintéticos) | parcelas 30.000 + 18.000 + 7.000 | atualizar para 64.000 + 44.000 + 12.000; manter os casos sintéticos |
+| Lote do depósito com 14 dias | antecedência de 14 dias (BR-200) | lote de 46.000 | 80.000 |
+| Saldos e lote do cedente | identidade disponível + em Garantia + consumido; confirmação na mesma operação | 94.000 · 39.000 + 55.000 | 188.000 · 68.000 + 120.000 |
+| Direct: FEFO na confirmação | sem aceite de terceiro, consumo por FEFO do L-0003 | 11.500 Créditos, taxa mínima, saldos 39.000 → 27.500 | 34.000, taxa de 10% (R$ 340), 68.000 → 34.000; **renomear** o teste (deixa de ser "Fee mínimo"), já que o mínimo fica coberto no primeiro teste |
+| Luxplus: dinheiro, sem Créditos | sem Créditos, sem taxa, Créditos intocados | valor ilustrativo de R$ 2.480 e saldo de 27.500 | saldo de 34.000; o valor passa a PRL de agosto × (1 − desconto aprovado), e a asserção muda de "ilustrativo" para "derivado da fórmula" |
+| C04 conceitual; saldo formado uma vez | C04 sem números nem "Helena"; anterior + depósito = saldo antes do envio | Garantia de 30.000 + 18.000 + 7.000 | 64.000 + 44.000 + 12.000 |
+| Depósito: elegibilidade e números do cenário | elegibilidade por modalidade (BR-151, BR-200), datas inteiras, meta inalcançável recusada | metas 0…46.000, mínimo 14.000, falta 7.000 | metas 0 · 24.000 · 28.000 · 52.000 · 56.000 · 80.000; mínimo 24.000 (16/05); falta 12.000 inalcançável |
+| Request 16:9 e 9:16: fonte única (2 testes) | sincronia controle × calendário, depósito desabilitado, seleção elegível, mês de abertura | coreografia 14.000 → 30.000 → 46.000 | 24.000 → 52.000 → 80.000 |
+| Sugestão determinística | preservar escolha → menos datas → datas mais cedo; a escolha explícita prevalece | metas do cenário | **desacoplar:** conjunto sintético fixo com duas datas iguais e uma menor, para a regra não depender do cenário |
+| Direct: saldo suficiente | continuar sem depósito; complementação fechada | saldo de 39.000 | 68.000 |
+
+Depois:
+- regenerar uma única vez Request, Direct, Luxplus, C04 e as provas, a 24 fps se a cadência A for aprovada
+  (`PROVA-CINEMATOGRAFICA.md` §1);
+- validar 16:9, 9:16, alfa, números e continuidade;
+- não mexer em nenhum asset cinematográfico.
 

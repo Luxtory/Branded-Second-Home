@@ -431,6 +431,18 @@ Nenhum PRL, Crédito, taxa ou valor do Luxplus foi alterado: a mudança depende 
 - **Pacote de direção de arte** das três Second Homes e plano da prova de viabilidade em `filme/DIRECAO-DE-ARTE.md`.
   Só há prompts e especificações; nenhum footage foi produzido.
 
+## Preparação da prova cinematográfica (v6.3, 2026-11-18)
+
+- **Kit de execução:** `filme/PROVA-CINEMATOGRAFICA.md`, para as três tomadas (S06, S02, S15). Inclui master a 24 fps
+  com Veo 3.1 (fontes oficiais), orçamento com preços oficiais (≈ US$ 146), imagens-chave e prompts, critérios de
+  aprovação e contingências. Nada foi gerado nem contratado.
+- **Restrição oficial:** os modos de imagem → vídeo e por referência do Veo não geram crianças. O S02 da prova usa
+  Helena e o parceiro, e os planos com crianças dependem de decisão da Luxtory.
+- **Congelamento econômico:**
+  - Direct de 1 noite validado nos canônicos (REQ-035, REQ-065, PD-009);
+  - Luxplus aguarda a decisão do desconto (recomendado: Membership de demonstração sem desconto, se aprovado);
+  - os 12 testes estão classificados regra × literal em `filme/ECONOMIA.md` §12.5.
+
 ## Integração na pós (Etapa A)
 
 - **Alfa straight** (não premultiplicado) nos PNG e no ProRes 4444; interpretar como *Straight* no editor.
