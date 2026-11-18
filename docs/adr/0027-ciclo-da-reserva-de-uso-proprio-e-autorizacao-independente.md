@@ -277,11 +277,12 @@ A E4b foi mergeada pelo #92 (`caa699c`). A E5 entrega o lado GitHub do §4 (spec
   seja do papel autorizador. No servidor, confere `current_user` e `session_user` antes da chamada. A saída pública é só
   o código do resultado e o id da autorização, porque o log do run é público. A entrada é lida do arquivo do evento,
   nunca do `env:` do passo: o runner imprime esse bloco no log (achado da auditoria, T-1321).
-- **Identidade única.** Com um único mantenedor, quem dispara e quem aprova é a mesma conta GitHub, e
-  `prevent_self_review` precisa ficar desligado: ligado, o único revisor não aprova o próprio disparo. O mecanismo
-  continua independente do `luxtory_app` (o secret existe só no Environment, nunca na Vercel), mas não separa duas
-  pessoas. A aprovação também é aceita pela API com qualquer token da conta do revisor, então a força do gate é a da
-  credencial GitHub do fundador.
+- **Identidade única no sandbox; separação exigida antes da ativação.** No sandbox, quem disparou e quem aprovou foi a
+  mesma conta GitHub, com `prevent_self_review` desligado. Isso prova o gate do Environment, não independência entre
+  identidades. O mecanismo é independente do `luxtory_app` (o secret existe só no Environment, nunca na Vercel), mas um
+  token da conta dona acessível a agentes aprova, reconfigura o Environment e faz push na `main`. Antes da ativação:
+  conta de automação sem `admin` para agentes, conta do fundador só no navegador como única revisora, e
+  `prevent_self_review` ligado (T-1323; runbook §5.0).
 - **Pré-requisitos achados para a configuração real:** a `main` não tem proteção nem ruleset (critério 1); o GitHub cria
   sem proteção um Environment que um job referencia antes de ele existir (o programa falha fechado sem o secret); conexão
   pelo Supavisor, porque os runners não têm IPv6.

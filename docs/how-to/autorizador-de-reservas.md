@@ -33,12 +33,18 @@ Se o servidor da aplicação estiver inteiro comprometido, a tela Admin que most
 1. Na área Admin, em **Reservas → reserva → Autorização**, registre a solicitação e copie o **id opaco** exibido. É a
    única entrada: nenhuma reserva, data, nome ou evidência vai para o GitHub (o repositório é público). O programa lê o
    id do evento do disparo e não o imprime no log, mas o evento do GitHub não é confidencial: informe só o id opaco.
-2. No GitHub, abra **Actions → booking-authorizer → Run workflow**, com a branch **`main`**, `action = authorize` e
+2. No GitHub, com a conta de automação (seção 5, passo 0), abra **Actions → booking-authorizer → Run workflow**,
+   com a branch **`main`**, `action = authorize` e
    `id = <id opaco>`.
 3. Abra o run. Ele fica **Waiting**: nenhum passo roda e o secret não é carregado até a aprovação.
 4. Antes de aprovar, confira no run:
    - a branch é `main` e o commit é o HEAD esperado da `main`;
-   - o workflow não mudou desde a última versão revisada: `git log --oneline -- .github/workflows/booking-authorizer.yml scripts/booking-authorizer.mjs`;
+   - nada da cadeia executada mudou desde a última versão revisada. O job executa, no commit do run, o workflow, o
+     programa, as dependências instaladas pelo `package.json`, `package-lock.json` e `.npmrc` (o `npm ci` confere a
+     integridade pelo lockfile) e a CA lida de `supabase-root-ca.ts`: `git log --oneline <commit revisado>..<commit do
+     run> -- .github/workflows/booking-authorizer.yml scripts/booking-authorizer.mjs package.json package-lock.json .npmrc
+     src/features/platform/infrastructure/database/supabase-root-ca.ts` não lista nada. As actions estão fixadas por SHA;
+     a imagem do runner e o Node 22.x vêm do GitHub;
    - os fundamentos da seção 1.
 5. Em **Review deployments**, marque `booking-authorizer`, escreva um comentário curto sem dado pessoal e clique em
    **Approve and deploy** (ou **Reject**).
@@ -83,17 +89,38 @@ O programa imprime só uma destas linhas, nunca a mensagem do erro, a conexão o
 
 Nada desta seção está feito. Faça na ordem; cada passo é conferível.
 
-1. **Proteger a `main`** (critério 1: mudança no workflow só por PR revisado). Hoje a `main` **não tem** proteção nem
-   ruleset. Crie um ruleset na `main`: PR obrigatório, checks da CI obrigatórios, sem force push e sem exclusão. Com um
-   único mantenedor, aprovação obrigatória de PR por outra pessoa não é viável: o PR com checks verdes é o controle.
+0. **Separar identidades (T-1323, bloqueia a ativação).** Hoje o `gh` desta máquina de desenvolvimento, usado por
+   agentes, está autenticado na conta dona `Luxtory`, com `admin` no repositório e escopos `repo` e `workflow`. Com esse
+   token, um agente consegue aprovar o deployment, mudar as regras do Environment (como o sandbox da E5 foi configurado)
+   e fazer push na `main`. Modelo mínimo:
+   - **conta de automação**, separada e sem `admin`, para agentes e CLI, com token fine-grained só deste repositório,
+     sem as permissões *Administration*, *Environments* e *Secrets*; ela dispara o workflow e abre os PRs;
+   - **conta do fundador** (`Luxtory`, dona e revisora), usada só no navegador, com 2FA (de preferência passkey).
+     Revogue os tokens dela nas máquinas de agentes e de CI (`gh auth logout` e revogação em *Settings → Developer
+     settings*);
+   - com isso, quem dispara é diferente de quem aprova, e o *Prevent self-review* pode ser ligado.
+   Criar contas e tokens é ação do fundador; nada disso foi feito.
+1. **Proteger a `main` (T-1320, bloqueia a configuração real).** Hoje a `main` **não tem** proteção clássica (API: 404
+   "Branch not protected") nem ruleset. Crie um ruleset na branch padrão, ativo:
+   - sem exclusão e sem force push;
+   - PR obrigatório, com os checks da CI obrigatórios e atualizados com a `main` (`lint`, `typecheck`, `test`, `e2e`,
+     `security`);
+   - revisão de *code owner* obrigatória para a cadeia do autorizador. Crie um `CODEOWNERS` com
+     `.github/workflows/booking-authorizer.yml`, `scripts/booking-authorizer.mjs`, `package.json`, `package-lock.json`,
+     `.npmrc` e `src/features/platform/infrastructure/database/supabase-root-ca.ts`, com dono `@Luxtory`;
+   - nenhum ator com bypass; em emergência, o fundador desativa o ruleset, e o desligamento fica no histórico.
+   **O que a plataforma impõe:** sem os checks verdes, nada entra na `main`. A revisão humana só passa a ser imposta com
+   o passo 0: o dono de código (`Luxtory`) não pode ser a mesma identidade que o agente usa. Com uma única conta, o
+   ruleset garante "só por PR com checks", não revisão. Confirme na configuração que a regra de *code owner* vale com o
+   número de aprovações que você escolher.
 2. **Criar o Environment `booking-authorizer` antes de qualquer secret e antes do primeiro disparo.** Se um job
    referenciar um Environment inexistente, o GitHub o cria **sem proteção**. Sem o secret, o programa falha fechado
    (`configuration_missing`), mas não dispare antes de configurar. Configure:
-   - **Required reviewers:** o fundador;
+   - **Required reviewers:** só a conta do fundador;
    - **Deployment branches and tags:** *Selected branches*, uma regra do tipo *branch* com o nome `main`;
-   - **Prevent self-review:** com uma única identidade GitHub disparando e aprovando, deixe **desligado**; ligado, o
-     único revisor não consegue aprovar o próprio disparo. Assim não há separação entre quem dispara e quem aprova.
-     A independência do ADR-0027 é em relação ao `luxtory_app`, não entre duas pessoas.
+   - **Prevent self-review:** **ligado**, o que exige o passo 0. Com uma única identidade disparando e aprovando, ele
+     impediria a aprovação; nesse caso a ativação fica bloqueada (T-1323). A independência do ADR-0027 em relação ao
+     `luxtory_app` não supre a falta de separação entre quem opera e quem aprova.
 3. **Senha do papel autorizador.** Gere no gerenciador de senhas ao menos 32 caracteres de ASCII visível, sem espaço.
    Rode `npm run db:password-verifier -- luxtory_booking_authorizer`, cole a senha (não aparece) e execute a linha
    `ALTER ROLE luxtory_booking_authorizer WITH PASSWORD 'SCRAM-SHA-256$…';` no **SQL Editor** do Supabase. Só o
@@ -104,13 +131,14 @@ Nada desta seção está feito. Faça na ordem; cada passo é conferível.
    5432), que mantém uma conexão de servidor por cliente, coerente com o `CONNECTION LIMIT 1`; confirme na primeira
    conexão real. Outro `sslmode` ou parâmetro extra é recusado pelo programa.
 5. **Conferências somente leitura:**
-   - `gh api repos/Luxtory/Branded-Second-Home/environments/booking-authorizer` mostra as duas regras;
+   - `gh api repos/Luxtory/Branded-Second-Home/rules/branches/main` lista as regras do passo 1;
+   - `gh api repos/Luxtory/Branded-Second-Home/environments/booking-authorizer` mostra revisor, `prevent_self_review: true` e a regra de branch;
    - `gh api repos/Luxtory/Branded-Second-Home/actions/secrets` **não** lista `BOOKING_AUTHORIZER_DATABASE_URL`;
    - no banco, `SELECT rolpassword IS NOT NULL FROM pg_authid WHERE rolname = 'luxtory_booking_authorizer'` dá `true`,
      e `app.assert_own_use_activation_ready()` não lança erro.
-6. **Credencial do revisor.** O GitHub aceita a aprovação também pela API, com qualquer token da conta do revisor que
-   tenha escopo `repo`. Quem tem esse token aprova sem a interface. Mantenha 2FA, não deixe token da conta do revisor em
-   máquinas de agentes ou de CI, ou use para revisar uma conta separada, sem token de CLI.
+6. **Credencial do revisor.** O GitHub aceita a aprovação também pela API, com qualquer token da conta revisora que
+   tenha escopo `repo`; quem tem esse token aprova sem a interface. Por isso o passo 0: nenhum token da conta do
+   fundador em máquina de agente ou de CI.
 
 ## 6. Rotação e incidente
 

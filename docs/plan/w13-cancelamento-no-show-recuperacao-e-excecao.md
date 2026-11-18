@@ -126,7 +126,7 @@ operacionais, secrets, Environment real, migrations fora da CI, merge sem autori
   desativação (R3) fora de Production; execuções do `outbox`, `open_exercise` e `close_exercise` observadas; latência de
   entrega das notificações adequada à detecção (R4, R7), comprovada em Production — hoje o evento é enfileirado no
   COMMIT e entregue pelo cron diário do `outbox`, sem serviço novo na W13; decisões expressas sobre R1–R8; reavaliação do T-1207; configuração do Environment, do
-  revisor e da senha do autorizador; proteção da `main` por ruleset (critério 1: hoje a `main` não tem proteção nem ruleset).
+  revisor e da senha do autorizador; proteção da `main` por ruleset (critério 1: hoje a `main` não tem proteção nem ruleset; T-1320); separação entre a identidade dos agentes e a conta revisora do fundador, com `prevent_self_review` ligado (T-1323; runbook `autorizador-de-reservas.md` §5).
 - **C1** — prazo vencido durante indisponibilidade ou contenção: decisão operacional/contratual antes da ativação, com
   comunicação, coleta de evidência e escalonamento administrativo; sem compensação automática; a PD-010 não é exclusão
   genérica.

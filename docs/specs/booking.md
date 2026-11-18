@@ -911,3 +911,20 @@ GitHub; configuração real (Environment, revisor, senha) segue decisão futura 
 | 11 | E1 (PK, reuso recusado, rollback) + E2 (replay pela chave do executor) + E5 (re-execução do run → `authorization_request_already_authorized`) | E1/E2 + nova (E5) |
 | 14 | E1/E2 (cancelamento do Titular sem autorização independente) | reaproveitada |
 | 15 | runbook `autorizador-de-reservas.md` §1 (fontes por finalidade) | nova (E5) |
+
+**Estado por critério (2026-11-18, revisão final).** *Código e CI*: implementado e coberto por teste verde na CI.
+*Sandbox*: comportamento observado na plataforma. *Configuração real*: depende do Environment, da senha, do ruleset ou
+da operação, que ainda não existem.
+
+| # | Código e CI | Sandbox | Configuração real (pendente) |
+|---|---|---|---|
+| 1 | ✅ gatilho, permissões, `if`, Environment, SHAs | — | **não atendido:** "mudança só por PR revisado" exige ruleset (T-1320) e identidade revisora separada (T-1323) |
+| 2 | ✅ `if` | ✅ outra ref e variante adulterada recusadas | regra de branch no Environment real |
+| 3 | — | ✅ espera, rejeição sem passo, secret só após aprovação | Environment real com revisor e secret só nele |
+| 4 | ✅ | ✅ payload recusado, sem avaliação de shell | — |
+| 5 | ✅ | ✅ após a correção T-1321 | regra operacional: informar só id opaco |
+| 6, 7, 8, 9, 11, 12, 13, 14, 16 | ✅ banco (E1/E2/E2b) e E5 (11) | — | — |
+| 10 | ✅ privilégios e login real | ✅ login real pelo programa | senha definida e guardada só no Environment real |
+| 15 | ✅ roteiro no runbook | — | execução humana pelo aprovador |
+
+Independência entre quem opera e quem aprova (T-1323): **não atendida**; pré-requisito da ativação.
