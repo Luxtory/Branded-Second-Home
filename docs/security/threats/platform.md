@@ -69,6 +69,9 @@ Repúdio não se aplica à W0: não há mutation. A trilha de auditoria chega na
   - **Revisão (2026-11-18, ADR-0029):** ruleset está disponível sem custo em repositório público; ruleset da `main`
     (PR, revisão de *code owner*, checks do GitHub Actions, sem force push nem exclusão) no roteiro
     `docs/how-to/governanca-do-repositorio.md`, passo 4.
+  - **Revisão v4.1 (2026-11-18, ADR-0029 revisão 4):** revisor obrigatório no Environment `production-ci` (fundador;
+    sem bypass de admin): o run da `main` só recebe os secrets e publica depois da aprovação humana, uma no `migrate` e
+    outra no `deploy`; o token dos agentes não tem *Deployments* nem *Administration*.
 - **Owner**: Engenharia · **Tracking**: W0
 
 ### T-007 [HIGH] Information disclosure — vazamento de segredos da CI

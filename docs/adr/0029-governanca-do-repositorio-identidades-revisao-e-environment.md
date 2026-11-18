@@ -70,6 +70,15 @@ depende de quem opera não ser quem aprova.
    dos secrets novos → merge comum do #98 → credenciais antigas retiradas. Sem ensaio no sandbox e sem push de teste na
    `main` real.
 
+### Revisão 4 de 2026-11-18 (auditoria do fundador, GO condicionado, #98) — complementa os itens 1 e 4
+
+1. **Token:** `gh` ≥ 2.97.0 (CVE-2026-64652: `gh auth status` anterior expunha parte de tokens `github_pat_`); a
+   conferência não usa `gh auth status`; os acessos antigos (OAuth do GitHub CLI, Git Credential Manager, PATs classic,
+   conector do ChatGPT/Codex neste repositório) só são revogados depois de o token novo ser conferido.
+4. **Portão humano no `production-ci`:** revisor obrigatório `Luxtory` (fundador), *Prevent self-review* desligado (os
+   runs da `main` são disparados pela mesma conta), sem bypass de admin. `migrate` e `deploy` seguem em jobs separados,
+   com uma aprovação cada.
+
 ## Consequences
 
 ### Positive
@@ -100,6 +109,10 @@ depende de quem opera não ser quem aprova.
   passar; a conta segue admin, então canais com a sessão do fundador (Claude in Chrome, conectores do ChatGPT/Codex)
   ainda alcançam os controles; conectores de escrita fora do GitHub seguem como opção do fundador. T-1323 (autorizador)
   exige decisão própria antes de K1/K2: com uma conta, quem dispara e quem aprova são a mesma identidade.
+- Revisão 4: volta um portão humano ao caminho de produção sem segunda conta: o agente integra, mas não publica (o token
+  sem *Deployments* não aprova). Custo: duas aprovações do fundador por publicação, também ao reexecutar um job. O
+  portão não cobre canais com a sessão do fundador, conectores de escrita fora do GitHub nem os secrets do repositório
+  antes da retirada.
 
 ## Alternatives considered
 
@@ -132,6 +145,11 @@ desligaria o ruleset ou trocaria secrets com uma chamada. **Token fine-grained s
 checks rodam scripts do `package.json`) e travaria PRs de CI. **Ensaio no sandbox para um ruleset sem bypass:** o
 ruleset é reversível na tela, não toca produção, e a leitura das regras com `current_user_can_bypass` mais o fluxo real
 do #98 dão a prova.
+
+Revisão 4. **Um job só para `migrate` e `deploy`** (uma aprovação): o `build` executa dependências de terceiros no
+mesmo job da credencial do banco. ***Prevent self-review* ligado:** bloquearia o próprio fundador, que dispara os runs.
+**`GH_TOKEN` no lugar de `gh auth login`** (sugerido pelo help do `gh` para fine-grained, por usabilidade): a variável
+iria para todo processo filho (npm, dependências, build) e exigiria arquivo de perfil.
 
 ## References
 

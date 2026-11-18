@@ -10,6 +10,9 @@ assistida); passos 3 a 5 e o merge do #98 seguem sem autorização.
 **v4 (2026-11-18, decisão definitiva do fundador): identidade única `Luxtory`**, sem segunda conta. A seção
 [v4](#v4--identidade-única-luxtory-vigente) prevalece sobre os passos 2, 3, 5 e 7 onde divergir; o texto deles fica
 como histórico. Nada da v4 foi aplicado.
+**v4.1 (2026-11-18, auditoria do fundador: GO condicionado):** `gh` ≥ 2.97.0 (instalado 2.105.0), conferência da ação 1
+sem `gh auth status`, revogações só depois de o token novo ser conferido e revisor do fundador no Environment
+`production-ci` ([portão humano](#portão-humano-no-environment-v41)).
 
 **Princípio da ordem:** nenhuma credencial nova enquanto um agente alcançar a conta administrativa, e nenhuma credencial
 nova antes de a `main` exigir revisão humana. Do passo 2 ao passo 5, **nenhum merge na `main` além do #98** (evita
@@ -52,6 +55,10 @@ alteram rulesets, Environments, secrets ou configurações e não aprovam deploy
 fine-grained funciona (a limitação da documentação vale para colaborador), e o `gh` 2.46 aceita token sem cabeçalho de
 escopos (`HeaderHasMinimumScopes` retorna sem checar; conferido no código-fonte da v2.46.0). O fluxo de trabalho não
 muda: push, PR, merge, reexecução de job e leitura da CI.
+**v4.1:** versão mínima do `gh` 2.97.0: antes dela, `gh auth status` mascarava tokens `github_pat_` só depois do último
+`_` e expunha parte do token (CVE-2026-64652, GHSA-cg6r-mpgc-h9mm). Instalado 2.105.0 pelo repositório apt oficial
+(`cli.github.com`), onde `HeaderHasMinimumScopes` segue igual (código-fonte da tag v2.105.0). Mesmo assim, a conferência
+não usa `gh auth status`.
 
 | Permissão do repositório | Acesso | Para quê |
 |---|---|---|
@@ -67,16 +74,20 @@ Repositórios: só os da conta em que os agentes trabalham. Expiração: 90 dias
 
 **Sequência mínima (o fundador executa cada ação com autorização própria; o agente só confere por leitura):**
 
-1. **Token dos agentes.** *Settings → Developer settings → Personal access tokens → Fine-grained tokens*, nome
-   `agentes-luxtory`, permissões da tabela. Num terminal WSL separado (não pelo `!` do Claude Code):
-   `gh auth login --hostname github.com --git-protocol https`, colando o token na entrada oculta (Git: Yes). Em
-   seguida, em *Settings → Applications → Authorized OAuth Apps*, revogar **GitHub CLI** (encerra o token
-   administrativo antigo do `gh`) e **Git Credential Manager**, se aparecer; apagar PATs classic sem uso; em *Installed
-   GitHub Apps*, conferir que o conector do ChatGPT/Codex não tem *Administration* (se tiver, desinstalar).
-   *Agente:* `gh auth status 2>&1 | grep -v -i token` → `Luxtory`;
-   `gh api repos/Luxtory/Branded-Second-Home/actions/permissions` → 403 (sem *Administration*);
+1. **Token dos agentes** (v4.1: pré-requisito `gh --version` ≥ 2.97.0, conferido pelo agente). *Settings → Developer
+   settings → Personal access tokens → Fine-grained tokens*, nome `agentes-luxtory`, permissões da tabela. Num terminal
+   WSL separado (não pelo `!` do Claude Code): `gh auth login --hostname github.com --git-protocol https`, colando o
+   token na entrada oculta (Git: Yes). O token não é colado em chat, arquivo ou variável de ambiente.
+   *Agente, antes de qualquer revogação (sem `gh auth status`):* `gh api user --jq .login` → `Luxtory`;
+   `gh api repos/Luxtory/Branded-Second-Home/actions/permissions` → 403 (sem *Administration*; o token antigo, com
+   `repo`, responderia 200);
    `gh api repos/Luxtory/Branded-Second-Home/actions/secrets` → 403 (sem *Secrets*);
    `git push --dry-run origin HEAD:refs/heads/verificacao-token` → autentica sem enviar nada.
+   **Só depois de tudo conferido**, o fundador revoga, em *Settings → Applications → Authorized OAuth Apps*, **GitHub
+   CLI** (encerra o token administrativo antigo do `gh`) e **Git Credential Manager**, se aparecer; apaga PATs classic
+   sem uso; em *Installed GitHub Apps*, tira este repositório do acesso do conector do ChatGPT/Codex (ou o desinstala):
+   ele age como `Luxtory` com permissões próprias, que o token novo não limita. *Agente:* repete `gh api user` e o 403
+   (o `gh` não dependia do token revogado).
 2. **Ruleset `main-checks`** (JSON do passo 3; o `main-revisao` sai): *Settings → Rules → Rulesets → New ruleset →
    Import a ruleset*. Opcional na mesma visita: política de Actions do item 8 da validação (pinning por SHA).
    *Agente:* `gh api repos/Luxtory/Branded-Second-Home/rules/branches/main` → `deletion`, `non_fast_forward`,
@@ -84,15 +95,36 @@ Repositórios: só os da conta em que os agentes trabalham. Expiração: 90 dias
    `…/rulesets/<id> --jq .current_user_can_bypass` → `never`. Nenhum push de teste na `main` real: o fluxo do #98
    (checks exigidos na tela de merge) é a prova de uso.
 3. **Environment `production-ci` e secrets novos:** passo 4, itens 2 a 4, sem mudança (regra de branch `main` conferida
-   pelo agente antes dos secrets).
+   pelo agente antes dos secrets). v4.1: com o revisor do [portão humano](#portão-humano-no-environment-v41), conferido
+   junto com a regra de branch.
 4. **Merge do #98:** passo 5, mas merge comum (checks verdes, sem aprovação e sem bypass), pelo navegador ou pelo agente
-   com autorização específica.
+   com autorização específica. v4.1: o run da `main` espera a aprovação do fundador no `migrate` e depois no `deploy`.
 5. **Credenciais antigas:** passo 6; o fundador confere na tela os secrets do repositório vazios (o token dos agentes
    não lê secrets).
 
 Depois da ação 5, desenvolvimento normal. Sem o congelamento geral da `main` do "princípio da ordem": o token dos agentes
 altera workflow, então o #98 pode ser atualizado se a `main` andar. Fica só o congelamento do passo 4 quando a senha do
 banco for trocada antes do merge.
+
+### Portão humano no Environment (v4.1)
+
+No Environment `production-ci`: *Required reviewers* = `Luxtory` (fundador); *Prevent self-review* **desligado** (os
+runs da `main` são disparados pela própria conta: ligado, ninguém aprovaria); *Allow administrators to bypass
+configured protection rules* **desligado**; sem *wait timer*. Efeito: um agente integra PR, mas `migrate` e `deploy` só
+recebem os secrets e publicam depois de o fundador aprovar no navegador; o token dos agentes, sem *Deployments* e
+*Administration*, não aprova nem retira o revisor.
+
+- **Duas aprovações por publicação:** `migrate` e `deploy` são jobs sequenciais com o mesmo Environment; a aprovação
+  libera só os jobs que esperam naquele momento, e o `deploy` só entra em espera depois do `migrate`. Os jobs não são
+  fundidos: o `build` executa dependências de terceiros e ficaria no mesmo job da credencial do banco.
+- **Antes de aprovar:** conferir o SHA do run e o que mudou desde a última publicação, em especial `.github/`,
+  `migrations/` e scripts. Reexecutar um job pede aprovação de novo.
+- **Agente confere por leitura** (*Actions* leitura): `gh api repos/Luxtory/Branded-Second-Home/environments/production-ci
+  --jq '{can_admins_bypass, protection_rules}'` → `can_admins_bypass: false`; regra `required_reviewers` com
+  `prevent_self_review: false` e o revisor `Luxtory`; regra `branch_policy`.
+- **Limite:** o portão protege o caminho da CI. Não cobre token antigo ainda válido (até as revogações da ação 1),
+  workflow de branch com os secrets do repositório (até a ação 5), canais com a sessão do fundador nem conectores de
+  escrita fora do GitHub.
 
 **Recuperação:** o fundador entra como `Luxtory` no navegador, com 2FA e meio de recuperação fora do PC (confirmado em
 2026-11-18). Ruleset errado: editar ou desligar na tela, com efeito imediato. Falha no primeiro run da `main` com o
@@ -104,7 +136,11 @@ vencido: revogar e repetir a ação 1.
 - Sem revisão independente, um agente pode integrar o próprio PR com checks verdes, e um PR pode alterar workflow ou
   scripts para passar sem testar nada; esse código roda o `migrate` com o secret do Environment. A fronteira é "toda
   mudança em produção passa por PR, CI verde e histórico". O fundador revisa a cadeia crítica (`.github/`, migrations,
-  autorizador) antes do merge.
+  autorizador) antes do merge. **v4.1:** com o revisor no `production-ci`, esse código só chega a produção depois da
+  aprovação do fundador; a aprovação vale pelo que ele confere no run.
+- **v4.1, canais paralelos:** até as revogações da ação 1, os tokens classic/OAuth da `Luxtory` (`gh`, Git Credential
+  Manager, PATs) e o conector GitHub do ChatGPT/Codex contornam o token limitado; até a ação 5, um workflow de branch
+  ainda lê os secrets do repositório.
 - A conta `Luxtory` segue admin: o token limitado tira dos agentes a mudança de controles pelo `gh` e pelo `git`, mas
   não de canais com a sessão do fundador (Claude in Chrome no perfil principal: não liberar `github.com` para a
   extensão; conectores do ChatGPT/Codex).
@@ -400,10 +436,17 @@ aprovador); atualizar a branch com a `main` pode descartar a aprovação; o bypa
    definida) e `PROD_DATABASE_URL_MIGRATIONS` (o valor atual, se guardado; senão, nova senha do papel, com a `main`
    congelada até o passo 5). Os secrets antigos ficam intactos. Agente confere só os nomes.
 
+> **v4.1:** no item 2, em vez de "sem revisores", o revisor do
+> [portão humano](#portão-humano-no-environment-v41) (`Luxtory`, *Prevent self-review* e bypass de admin desligados);
+> no item 3, o agente confere também `can_admins_bypass` e `protection_rules`.
+
 ## Passo 5 — merge do #98 (fundador, no navegador)
 
 > **v4:** merge comum, sem bypass; condições e recuperação abaixo valem, com "passos 2, 3 e 4 validados" lido como as
 > ações 1 a 3 da v4.
+>
+> **v4.1:** o run da `main` espera duas aprovações do fundador (`migrate`, depois `deploy`); na recuperação, reexecutar
+> `migrate` ou `deploy` pede aprovação de novo. Sem aprovação, nada chega a Production.
 
 **GO** só com todos: head do #98 igual ao auditado e atualizado com a `main`; CI do PR 5/5 verde; passos 2, 3 e 4
 validados; secrets antigos do repositório ainda presentes (caminho de volta); nenhum run em andamento na `main`;
@@ -462,3 +505,9 @@ por PR; ou fechar. Nenhum é reescrito pelo agente.
   `main-checks` (PR, cinco checks, squash, sem push direto, sem bypass); agentes com token fine-grained da própria
   conta, sem *Administration*, *Secrets* e *Deployments*; Environment e migração dos secrets mantidos; ensaio no
   sandbox, `main-revisao` e passo 7 saem.
+- 2026-11-18, v4.1 (auditoria do fundador, GO condicionado, #98): `gh` ≥ 2.97.0 pela CVE-2026-64652 (instalado
+  2.105.0); a conferência da ação 1 deixa de usar `gh auth status 2>&1 | grep -v -i token` e passa a `gh api user`;
+  revogações só depois da conferência; revisor do fundador no `production-ci` (duas aprovações por publicação, sem
+  bypass de admin, *Prevent self-review* desligado); canais paralelos nos riscos aceitos. `GH_TOKEN` (sugerido pelo
+  help do `gh` para fine-grained, por usabilidade) não foi adotado: iria para todo processo filho (npm, dependências,
+  build).
