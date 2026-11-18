@@ -199,7 +199,8 @@ comprometido, forja operações Admin — tem `INSERT` em `app.operation` e `SEL
 
 - **Vector**: alteração do workflow, disparo de outra ref, injeção por entrada, exposição do secret.
 - **Mitigation**: arquivo versionado com PR revisado; Environment só da `main` com revisor obrigatório; secret do
-  Environment; entradas por `env:` com schema fechado; SQL parametrizado; `permissions: contents: read`; actions por SHA.
+  Environment; entrada lida do arquivo do evento, nunca interpolada em `run:` nem no `env:` do passo (T-1321), com
+  schema fechado; SQL parametrizado; `permissions: contents: read`; actions por SHA.
 
 ### T-1305 [MEDIUM] Information disclosure — logs públicos do GitHub
 

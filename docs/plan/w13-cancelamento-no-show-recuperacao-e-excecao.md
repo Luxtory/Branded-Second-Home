@@ -80,8 +80,9 @@ executor, guard/MFA/auditoria da solicitação, AsyncAPI.
 2. **Só a `main`.** A regra de branch do Environment aceita só `main`; disparo de outra ref bloqueado (prova isolada).
 3. **Secret só depois da aprovação.** Secret do Environment, não do repositório; sem aprovação o job espera e o secret
    não é exposto (prova isolada).
-4. **Sem injeção.** Entrada só por `env:`, nunca `${{ inputs.* }}` em `run:`; schema fechado (id da solicitação em UUID,
-   referência do run); SQL parametrizado; nenhum SQL livre.
+4. **Sem injeção.** O programa lê a entrada do arquivo do evento (`GITHUB_EVENT_PATH`) e a referência do run das
+   variáveis do runner; nunca `${{ inputs.* }}` em `run:` nem no `env:` do passo, que o runner imprime no log público
+   (T-1321); schema fechado (id da solicitação em UUID, referência do run); SQL parametrizado; nenhum SQL livre.
 5. **Sem dado pessoal ou sensível público.** Entradas: id opaco da solicitação e referência do run. Saída: código do
    resultado e id da autorização. Varredura do log do run isolado.
 6. **Concorrência.** Duas autorizações simultâneas para a mesma reserva e finalidade → exatamente uma; uso × revogação
