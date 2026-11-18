@@ -1,4 +1,4 @@
-# Filme Luxtory Club: produção, footage e integração (v6.4, prova cinematográfica escalonada · proposta para aprovação)
+# Filme Luxtory Club: produção, footage e integração (v6.5, liberação técnica da prova · proposta para aprovação)
 
 > Complementa `ROTEIRO.md`. Imóveis, pessoas e valores ilustrativos, nunca apresentados como Second Homes reais à venda
 > ou disponíveis. A publicação depende da verificação de prontidão do produto e da aprovação da comunicação (§5).
@@ -292,6 +292,13 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
    outros; a troca é um dado (`data.js`) e não muda papéis, datas nem Créditos.
 
 ## 8. Revisões
+
+**v6.5 (liberação técnica da prova, 2026-11-18):** pré-voo com fontes oficiais.
+- **Veo 3.1 GA no Google Cloud:** sem pagamento por uso ("fixed quota" não definido; Provisioned Throughput é
+  assinatura). O vídeo da prova passa ao Gemini Omni 1.2 Flash, GA com cobrança por uso.
+- **Imagens:** passam ao Nano Banana 2.1, GA, no lugar do Gemini 2.5 Flash Image, que será aposentado.
+- **Orçamento:** ≈ US$ 13 a 21 estimados, dentro dos mesmos tetos.
+- **Cadência do Omni:** a confirmar no primeiro arquivo.
 
 **v6.4 (execução eficiente da prova, 2026-11-18):** `PROVA-CINEMATOGRAFICA.md` corrigido:
 - orçamento só vídeo pela tabela oficial do Google Cloud, executado pelo Vertex (no Gemini API o áudio do Veo 3.1 é

@@ -457,6 +457,16 @@ Nenhum PRL, Crédito, taxa ou valor do Luxplus foi alterado: a mudança depende 
 - **Luxplus:** `rules.js#luxplusPrice` aplica a fórmula canônica e recusa calcular sem desconto explícito. Fica pronto
   para o congelamento; o filme continua com o valor ilustrativo até a decisão.
 
+## Liberação técnica da prova (v6.5, 2026-11-18)
+
+- **Vídeo:** Gemini Omni 1.2 Flash (`gemini-omni-1.2-flash`, GA, cobrança por uso em tokens). O Veo 3.1 GA no Google
+  Cloud não oferece pagamento por uso: o acesso é "fixed quota" ou Provisioned Throughput. Ele fica como candidato de
+  qualidade se o acesso for comprovado sem compromisso.
+- **Imagem:** Gemini Nano Banana 2.1 (`gemini-nano-banana-2.1`, GA; até 14 imagens de entrada; 1K, 2K e 4K).
+- **Orçamento:** ≈ US$ 13 a 21 estimados, dentro dos tetos de US$ 5, 8 e 20.
+- **Cadência:** a do Omni não é documentada e será medida no primeiro clipe. Detalhes em
+  `filme/PROVA-CINEMATOGRAFICA.md`.
+
 ## Integração na pós (Etapa A)
 
 - **Alfa straight** (não premultiplicado) nos PNG e no ProRes 4444; interpretar como *Straight* no editor.
