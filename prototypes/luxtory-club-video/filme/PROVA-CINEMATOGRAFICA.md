@@ -34,6 +34,10 @@ verificável e pela ausência de conversão, não pela cadência em si.
 
 Os tempos da coreografia estão em milissegundos e não mudam. TV, se houver, define 23,976 ou 29,97 antes do master.
 
+**Evidência sem custo:** `check.mjs --fps=24` varre todos os quadros a 24 fps. Request, Direct, Luxplus, Créditos e
+assinatura, nos dois formatos, ficam conformes: sobreposição 0, axe, limites do quadro, área segura e determinismo.
+Falta só a validação dos arquivos codificados, feita na captura do congelamento.
+
 ## 2. Restrição a resolver antes da prova: pessoas menores de idade
 
 A documentação oficial do Google Cloud diz que, nos modos de imagem → vídeo e por referência, o padrão é "Allow

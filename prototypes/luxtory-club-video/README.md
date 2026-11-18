@@ -441,7 +441,11 @@ Nenhum PRL, Crédito, taxa ou valor do Luxplus foi alterado: a mudança depende 
 - **Congelamento econômico:**
   - Direct de 1 noite validado nos canônicos (REQ-035, REQ-065, PD-009);
   - Luxplus aguarda a decisão do desconto (recomendado: Membership de demonstração sem desconto, se aprovado);
-  - os 12 testes estão classificados regra × literal em `filme/ECONOMIA.md` §12.5.
+  - os 12 testes estão classificados regra × literal em `filme/ECONOMIA.md` §12.5;
+  - os testes da taxa (com o ramo do mínimo de R$ 120) e da sugestão determinística usam valores sintéticos fixos e
+    não dependem mais do PRL do filme. Com a proposta recomendada, restam 10 falhas, todas de números literais.
+- **24 fps:** `check.mjs --fps=24` (a varredura quadro a quadro segue a cadência pedida; o padrão continua 30) dá
+  conforme nas 5 sequências e nos 2 formatos.
 
 ## Integração na pós (Etapa A)
 

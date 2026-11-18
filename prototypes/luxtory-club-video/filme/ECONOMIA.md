@@ -399,7 +399,8 @@ Luxtory quiser mostrar um benefício, o percentual tem de ser aprovado antes. O 
 
 ### 12.5 Controle de qualidade do congelamento: os 12 testes
 
-Na cópia descartável com a recomendada, 12 testes falharam. Revisão de cada um: o que é regra (preservar) e o que é
+Na cópia descartável com a recomendada, 12 testes falharam. Os dois testes de regra marcados "desacoplar" já foram
+desacoplados (v6.3). Com a mesma proposta, as falhas caem para 10, todas de números literais do cenário. Revisão de cada um: o que é regra (preservar) e o que é
 literal do cenário v5 (atualizar).
 
 | Teste | Regra a preservar | Literal do cenário v5 | Ação no congelamento |

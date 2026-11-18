@@ -22,6 +22,8 @@ const MIN_TEXT_OUT_PX = { '16x9': 16, '9x16': 30 };
 const SAFE_TOP_9X16 = 0.08;
 // --final: confere a exportação para o comercial — nenhuma marca interna pode aparecer em quadro algum.
 const FINAL = process.argv.includes('--final');
+// Cadência da varredura quadro a quadro: a mesma do master (capture.mjs --fps=). Os instantes de verificação estão em ms.
+const FPS = Number(process.argv.find((a) => a.startsWith('--fps='))?.slice(6) ?? 30);
 const INTERNAL_MARKS = ['Prova interna'];
 // Revisão comercial (2026-11-15): nenhum jargão técnico ou marca de protótipo nos cartões, em modo algum.
 const JARGON = [
@@ -186,12 +188,12 @@ for (const seq of SEQS) {
       if (JSON.stringify(cal) !== JSON.stringify(qa.calendar.range))
         fail(`${tag}: faixa do calendário ${JSON.stringify(cal)}`);
     }
-    // Transições, quadro a quadro (30 fps): dois cartões que se cruzam nunca ficam visíveis ao mesmo tempo
+    // Transições, quadro a quadro (na cadência --fps): dois cartões que se cruzam nunca ficam visíveis ao mesmo tempo
     // (opacidade > 0,05 nos dois) — é o que mistura textos durante uma troca no mesmo lugar. O mesmo vale para os
     // filhos de um .demo-swap.
-    const crossings = await page.evaluate(() => {
+    const crossings = await page.evaluate((fps) => {
       const found = [];
-      const step = 1000 / 30;
+      const step = 1000 / fps;
       for (let t = 0; t <= window.__demo.duration; t += step) {
         window.__demo.seek(t);
         const cards = [...document.querySelectorAll('.demo-card')]
@@ -215,7 +217,7 @@ for (const seq of SEQS) {
         }
       }
       return found;
-    });
+    }, FPS);
     if (crossings.length)
       fail(`${tag}: cartões sobrepostos em ${crossings.length} quadros: ${crossings.join(', ')}`);
     // Determinismo: o mesmo instante, visitado duas vezes por caminhos diferentes, gera os mesmos bytes.
@@ -257,7 +259,7 @@ for (const [seq, formats] of Object.entries(report.sequences))
   for (const [fmt, r] of Object.entries(formats)) {
     const min = Math.min(...Object.values(r.states).map((x) => x.minTextOutputPx));
     console.log(
-      `${seq} ${fmt}: ${Object.keys(r.states).length} instantes · texto mínimo ${min} px no arquivo · sobreposição ${r.overlappingFrames} quadros · determinístico ${r.deterministic}`,
+      `${seq} ${fmt}: ${Object.keys(r.states).length} instantes · texto mínimo ${min} px no arquivo · sobreposição ${r.overlappingFrames} quadros a ${FPS} fps · determinístico ${r.deterministic}`,
     );
   }
 if (failures.length) {

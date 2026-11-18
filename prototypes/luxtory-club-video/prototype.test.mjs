@@ -25,7 +25,12 @@ import * as requestSeq from './sequence-request.js';
 import * as assinaturaSeq from './sequence-assinatura.js';
 import * as creditosSeq from './sequence-creditos.js';
 import { datesCard, needCard, seasonOf, selectionStates } from './credits-step.js';
-import { creditsOfSelection, depositNightStatus, selectionForTarget } from './rules.js';
+import {
+  creditsOfSelection,
+  depositNightStatus,
+  depositStops,
+  selectionForTarget,
+} from './rules.js';
 import { EDL } from './filme/prova/edl.js';
 import {
   REQUEST_STATES,
@@ -63,13 +68,22 @@ test('[TECH-044] validade por adição calendárica em UTC, com o último dia v�
 });
 
 test('[BR-201][01 §20] Créditos = PRL do período × multiplicador; [01 §24][BR-230] Fee pelos dois ramos', () => {
-  assert.equal(prlOfPeriod(FICTITIOUS.request.prlCents), 550_000);
+  // A regra, com valores sintéticos fixos: não depende do PRL escolhido para o filme (ramo do mínimo sempre coberto).
+  assert.equal(prlOfPeriod([190_000, 190_000, 170_000]), 550_000);
   assert.equal(creditsForPrl(550_000, CANONICAL), 55_000);
   assert.equal(luxchangeFee(550_000, CANONICAL), 55_000, '10% de R$ 5.500,00 = R$ 550,00');
   assert.equal(
-    luxchangeFee(prlOfPeriod(FICTITIOUS.direct.prlCents), CANONICAL),
+    luxchangeFee(115_000, CANONICAL),
     12_000,
     '10% de R$ 1.150,00 < mínimo de R$ 120,00',
+  );
+  assert.equal(luxchangeFee(120_000, CANONICAL), 12_000, 'no limite: 10% = mínimo');
+  // O cenário do filme segue a mesma regra, qualquer que seja o PRL aprovado.
+  const request = prlOfPeriod(FICTITIOUS.request.prlCents);
+  assert.equal(creditsForPrl(request, CANONICAL), (request / 100) * CANONICAL.creditMultiplier);
+  assert.equal(
+    luxchangeFee(request, CANONICAL),
+    Math.max(Math.floor((request * CANONICAL.feePercent + 50) / 100), CANONICAL.feeMinimumCents),
   );
   assert.equal(
     luxchangeFee(123_455, CANONICAL),
@@ -641,8 +655,17 @@ for (const fmt of ['16x9', '9x16']) {
 }
 
 test('controle de Créditos: sugestão determinística nos dois sentidos, e a escolha explícita prevalece', () => {
-  const { eligible } = depositScenario();
+  // Conjunto sintético fixo (duas datas iguais e uma menor): a regra não depende do PRL escolhido para o filme.
+  const eligible = [
+    { night: '2027-05-14', credits: 16_000 },
+    { night: '2027-05-15', credits: 16_000 },
+    { night: '2027-05-16', credits: 14_000 },
+  ];
   const [d14, d15, d16] = eligible.map((d) => d.night);
+  assert.deepEqual(
+    depositStops(eligible).map((s) => s.credits),
+    [0, 14_000, 16_000, 30_000, 32_000, 46_000],
+  );
   // Para cima, a partir do mínimo (16/05): mantém 16/05 e soma a data mais cedo.
   assert.deepEqual(selectionForTarget(eligible, 30_000, [d16]), [d14, d16]);
   assert.deepEqual(selectionForTarget(eligible, 46_000, [d14, d16]), [d14, d15, d16]);
@@ -654,9 +677,10 @@ test('controle de Créditos: sugestão determinística nos dois sentidos, e a es
   // Escolha explícita prevalece: com 15/05 escolhida, 16.000 é 15/05 (não 14/05) e 30.000 é 15+16.
   assert.deepEqual(selectionForTarget(eligible, 16_000, [d15]), [d15]);
   assert.deepEqual(selectionForTarget(eligible, 30_000, [d15]), [d15, d16]);
-  // Toda meta corresponde a datas reais cuja soma é a meta.
-  for (const stop of depositScenario().stops)
-    assert.equal(creditsOfSelection(eligible, stop.nights), stop.credits);
+  // No cenário do filme, toda meta corresponde a datas reais cuja soma é a meta.
+  const scenario = depositScenario();
+  for (const stop of scenario.stops)
+    assert.equal(creditsOfSelection(scenario.eligible, stop.nights), stop.credits);
 });
 
 test('Direct: saldo suficiente, continuar sem depósito; complementação disponível e fechada', () => {
