@@ -93,7 +93,7 @@ primeiras a gerar.
 | 6,625–9,625 s | S07 | borda infinita, travelling | Request Pendente e Garantia | "Seus Créditos ficam em Garantia enquanto o Titular decide." | **falta** a S07 |
 | 9,625–14,125 s | S08 | pérgola, push-in | o outro Titular recebe e aceita; verificações | "Do outro lado, o Titular aceita." | **falta** a S08 |
 | 14,125–17,25 s | S10 | interior aberto ao mar, push-in suave | Reserva confirmada; a interface sai | "Estando tudo certo, a reserva se confirma na mesma operação." | **falta** a K-AZ-i |
-| 17,25–24 s | S17a | gesto humano real: casal na praia ao entardecer, sem rosto (dissolve de 15 quadros) | — | "Mais lugares para viver com quem você ama." | **falta** o clipe |
+| 17,25–24 s | S17a | gesto humano real: casal na praia ao entardecer, sem rosto (dissolve de 15 quadros) | — | "Mais lugares para viver com quem você ama." | **existe:** Mixkit 44490 (16:9) e 1224 (9:16), §6 |
 | todo | — | — | — | trilha gratuita; voz da equipe | **faltam** a faixa e a voz |
 
 **O que já existe:**
@@ -197,14 +197,19 @@ Salvar como `S06-9x16.png`, `S07-9x16.png`, `S08-9x16.png` e `S10-9x16.png`.
 
 ## 6. Footage e trilha identificados (para validação)
 
-Encontrados por busca em 18/11/2026. As páginas dos bancos estão bloqueadas pela rede deste ambiente, então licença,
-cadência e resolução **não foram conferidas na fonte**. A validação acontece na página, no dia do download, e a
-cadência é medida com `ffprobe` na chegada.
+Encontrados por busca em 18/11/2026. Depois disso, a Luxtory aprovou um ambiente com acesso a esses sites:
+
+- **Mixkit:** os dois clipes da prova foram conferidos na página do item (licença, cadência declarada, resolução),
+  baixados e medidos. O texto integral da licença abre por script e é conferido no navegador.
+- **Pixabay e Pexels:** respondem com o desafio anti-robô da Cloudflare, que é bloqueio do próprio site e não da rede.
+  Os itens deles **não foram conferidos na fonte** e são baixados por você no navegador.
+
+A cadência é sempre medida com `ffprobe` na chegada.
 
 | Uso | Clipe | Licença indicada | Observação |
 |---|---|---|---|
-| **Prova, S17a (16:9)** | [Sunset on a beach (Mixkit 44490)](https://mixkit.co/free-stock-video/sunset-on-a-beach-44490/) | Mixkit, licença gratuita (conferir no item) | casal caminhando ao pôr do sol, 12 s, 1080p, 24 fps; conferir se as casas de palafita ao fundo não parecem a Azzura |
-| **Prova, S17a (9:16)** | [A couple's silhouette on the beach at sunset (Mixkit 1224)](https://mixkit.co/free-stock-video/a-couples-silhouette-on-the-beach-at-sunset-1224/) | Mixkit, licença gratuita (conferir) | vertical nativo, 19 s; silhuetas, sem rosto identificável |
+| **Prova, S17a (16:9)** · baixado | [Sunset on a beach (Mixkit 44490)](https://mixkit.co/free-stock-video/sunset-on-a-beach-44490/) | **Mixkit Stock Video Free License** ("commercial or personal use"), conferida na página do item | medido: 1920×1080, **23,976 fps** (a página diz 24), 11,6 s. Sem palafitas visíveis. O casal aparece pequeno e distante só nos primeiros segundos, então o gesto humano é fraco: serve à prova, e vale procurar um clipe mais próximo para o filme |
+| **Prova, S17a (9:16)** · baixado | [A couple's silhouette on the beach at sunset (Mixkit 1224)](https://mixkit.co/free-stock-video/a-couples-silhouette-on-the-beach-at-sunset-1224/) | **Mixkit Stock Video Free License**, conferida na página do item | medido: 1080×1920, **23,976 fps**, 19,1 s. Mãos dadas que se aproximam, em silhueta (perfis sem traços identificáveis; avaliar). Gesto forte; usado a partir de 9 s |
 | S15 | [Couple clinking their glasses in a toast (Mixkit 22738)](https://mixkit.co/free-stock-video/couple-clinking-their-glasses-in-a-toast-22738/) | Mixkit (conferir) | mãos e taças, fundo desfocado com luzes |
 | S15 | [Two glasses of wine colliding during a toast (Mixkit 41259)](https://mixkit.co/free-stock-video/two-glasses-of-wine-colliding-during-a-toast-41259/) | Mixkit (conferir) | vertical, ≈ 7 s |
 | S14 alt / S15 | [Mesmerizing Outdoor Fire Pit at Night (Pexels 29376046)](https://www.pexels.com/video/mesmerizing-outdoor-fire-pit-at-night-29376046/) | Licença Pexels | 4K vertical, 32 s, sem pessoas |
@@ -215,7 +220,8 @@ cadência é medida com `ffprobe` na chegada.
 | **Trilha da prova** | [Cinematic Ambient Piano, Lexin_Music (Pixabay 118668)](https://pixabay.com/music/beautiful-plays-cinematic-ambient-piano-118668/) | Licença de Conteúdo Pixabay | piano e pads; conferir escudo de Content ID e restrições da página; baixar o certificado |
 | ⚠ excluído | [Couple holding hands walking on beach towards sea (Mixkit 48409)](https://mixkit.co/free-stock-video/couple-holding-hands-walking-on-beach-towards-sea-48409/) | licença restrita (uso não comercial) | exemplo de por que cada item é conferido |
 
-**Registro de direitos e proveniência** (um por asset; guardado fora do Git com os arquivos, em `out/entrada/direitos.csv`):
+**Registro de direitos e proveniência** (um por asset; guardado fora do Git com os arquivos, em `out/entrada/direitos.csv`,
+já iniciado com os dois clipes da Mixkit):
 
 | Campo | Exemplo |
 |---|---|

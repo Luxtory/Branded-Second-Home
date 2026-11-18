@@ -124,7 +124,13 @@ const SHOTS = [
     what: 'gesto humano real: casal caminhando na praia ao entardecer, sem rosto (footage gratuito)',
     // A interface já saiu: dissolve curto para o plano humano, que respira até o fim.
     dissolve: 625,
-    footage: { conform: 'retime', in: 0, focus: { '16x9': [0.5, 0.5], '9x16': [0.5, 0.5] } },
+    // Candidatos verificados em 18/11/2026 (PROVA-CINEMATOGRAFICA.md §6): 16:9 Mixkit 44490 (o casal aparece nos
+    // primeiros segundos); 9:16 Mixkit 1224, vertical nativo (mãos dadas que se aproximam, a partir de 9 s).
+    footage: {
+      conform: 'retime',
+      in: { '16x9': 0, '9x16': 9_000 },
+      focus: { '16x9': [0.5, 0.5], '9x16': [0.5, 0.5] },
+    },
     placeholder: {
       neutral: true,
       colors: ['0x9a7a5e', '0x1b2731'],
@@ -157,7 +163,11 @@ export function edlFor(fmt) {
       ...shot,
       move: move?.[fmt],
       placeholder: { ...placeholder, move: placeholder.move?.[fmt] },
-      footage: shot.footage && { ...shot.footage, focus: shot.footage.focus[fmt] },
+      footage: shot.footage && {
+        ...shot.footage,
+        in: shot.footage.in[fmt],
+        focus: shot.footage.focus[fmt],
+      },
     })),
     ui: UI,
     uiFadeOut: { at: UI_END - 500, dur: 500 },
