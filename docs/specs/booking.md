@@ -862,7 +862,9 @@ GitHub; configuração real (Environment, revisor, senha) segue decisão futura 
   44218249933 o payload de teste apareceu literal no log (não executado). Corrigido sem dependência nova: o programa lê
   a entrada do arquivo do evento e o id do run das variáveis do runner, e o passo só recebe o secret. O evento do GitHub
   não é tratado como confidencial: a regra operacional continua sendo informar só ids opacos (runbook §2). As provas de
-  plataforma de branches, Environment, aprovação e secrets valem sem repetição (regras inalteradas).
+  plataforma de branches, Environment, aprovação e secrets valem sem repetição (regras inalteradas). Verificação na
+  plataforma (run 44245182718, sandbox `57d067a`): aprovado por `Luxtory`, `result=input_invalid` (o programa leu o
+  arquivo do evento real) e o log público sem nenhum fragmento do payload nem linha `AUTHORIZER_ID`.
 - **Testes novos (E5):** `tests/scripts/booking-authorizer-workflow.test.ts` (contrato do YAML e equivalência da variante
   do sandbox), `tests/scripts/booking-authorizer.test.ts` (entradas, conexão, CA, códigos),
   `tests/scripts/booking-authorizer.db.test.ts` (o programa como processo, com login real: emissão, repetição, revogação,
@@ -893,6 +895,7 @@ GitHub; configuração real (Environment, revisor, senha) segue decisão futura 
 | 44218219833 | `main` | critério 3: espera e rejeição | em espera (0 passos) até a revisão; **rejeitado** por `Luxtory` → job encerrado sem executar nenhum passo ("The deployment was rejected…") |
 | 44218235412 | `main`, id aleatório | critério 3 e 5: aprovação, login real, recusa real da função | **aprovado** por `Luxtory` → banco descartável pronto (60 migrations, ativação 0), login com o secret do Environment, `result=authorization_request_unknown`, saída 1 (recusa intencional) |
 | 44218249933 | `main`, id com SQL e shell | critério 4 e 5 na plataforma | **aprovado** por `Luxtory` → `result=input_invalid` antes de conectar, sem avaliação de shell; saída 1 (recusa intencional). **Defeito achado:** o payload apareceu literal no `env:` do passo impresso no log → corrigido (T-1321, acima) |
+| 44245182718 | `main` (sandbox `57d067a`, com a correção T-1321), id com SQL e shell | critério 5 após a correção | **aprovado** por `Luxtory` → `result=input_invalid`; log sem o payload e sem `AUTHORIZER_ID`; secrets `***`; saída 1 (recusa intencional) |
 
 **Cobertura dos critérios do plano W13 (autorização independente).**
 
@@ -902,7 +905,7 @@ GitHub; configuração real (Environment, revisor, senha) segue decisão futura 
 | 2 | runs 44218188775, 44218204517 e 44219499475 | nova (E5, sandbox) |
 | 3 | secrets só no Environment (2) e 0 no repositório (API); runs na `main` em espera sem passo executado até a revisão; rejeitado → nenhum passo; aprovado → o secret chega só ao passo final | nova (E5, sandbox) |
 | 4 | YAML sem interpolação das entradas (só o secret em `${{ }}`); programa lê o evento e recusa antes de conectar, inclusive payload de SQL e shell e entrada ausente (unit, db com login real); função com schema fechado (`authorization_input`) | nova (E5) + E1 |
-| 5 | saída só `result=`/`authorization_id=` com varredura (db: id da reserva, noites, party, senha, host); logs públicos dos dois runs aprovados sem a senha sintética (crua ou codificada), sem DSN com credencial, sem verificador e sem avaliação de shell; secrets mascarados (`***`). A entrada aparecia no `env:` impresso (T-1321) → corrigido: entrada fora do `env:`, provado pelo contrato do YAML e pelos testes do programa | nova (E5) + E1 |
+| 5 | saída só `result=`/`authorization_id=` com varredura (db: id da reserva, noites, party, senha, host); logs públicos dos dois runs aprovados sem a senha sintética (crua ou codificada), sem DSN com credencial, sem verificador e sem avaliação de shell; secrets mascarados (`***`). A entrada aparecia no `env:` impresso (T-1321) → corrigido: entrada fora do `env:`, provado pelo contrato do YAML, pelos testes do programa e pelo log do run 44245182718 | nova (E5) + E1 |
 | 6, 7, 8, 9, 12, 13, 16 | `tests/migrations/booking-authorization.db.test.ts` e `booking-lifecycle.db.test.ts` | reaproveitada (E1/E2b) |
 | 10 | E1 (privilégios, 42501, login real, `CONNECTION LIMIT 1`) + E5 (login real pelo programa; impostor recusado por `current_user`) | E1 + nova (E5) |
 | 11 | E1 (PK, reuso recusado, rollback) + E2 (replay pela chave do executor) + E5 (re-execução do run → `authorization_request_already_authorized`) | E1/E2 + nova (E5) |
