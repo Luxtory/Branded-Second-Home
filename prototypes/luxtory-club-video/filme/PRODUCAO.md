@@ -1,4 +1,4 @@
-# Filme Luxtory Club: produção, footage e integração (v6.1, auditoria econômica e plano da fase cinematográfica · proposta para aprovação)
+# Filme Luxtory Club: produção, footage e integração (v6.2, transição para a produção cinematográfica · proposta para aprovação)
 
 > Complementa `ROTEIRO.md`. Imóveis, pessoas e valores ilustrativos, nunca apresentados como Second Homes reais à venda
 > ou disponíveis. A publicação depende da verificação de prontidão do produto e da aprovação da comunicação (§5).
@@ -293,6 +293,19 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
 
 ## 8. Revisões
 
+**v6.2 (transição para a produção cinematográfica, 2026-11-18):**
+
+- Pacote de direção de arte por imóvel em `DIRECAO-DE-ARTE.md`. Inclui:
+  - descrição única de cada imóvel;
+  - prompts das imagens-chave exteriores, interiores e noturna da Olivar;
+  - os 17 planos com espaço para a interface, critérios de continuidade e a prova de viabilidade (S06, S02, S15) com
+    ferramentas e ordem de grandeza de custo.
+- Ajustes mínimos nos prompts:
+  - S02 no terraço de pedra em balanço;
+  - S08 com o mar ao fundo;
+  - S15 com a mesma fogueira e o mesmo pátio de S14.
+- Proposta econômica de congelamento em `ECONOMIA.md` §12.
+
 **v6.1 (auditoria crítica da v6, 2026-11-18):**
 
 - `ECONOMIA.md` corrigido: Luxplus de agosto sem acusação de irregularidade (os PRLs de agosto e o desconto não estão
@@ -363,8 +376,8 @@ A biblioteca de interfaces está pronta para a fase cinematográfica. Duas condi
 |---|---|---|---|
 | 1. Decisões | posicionamento e PRLs por data, valor do Luxplus (`ECONOMIA.md` §11); nomes Satori, Azzura e Olivar Home liberados para uso interno de produção; ferramenta de IA, voz e trilha (§7) | parâmetros congelados | Luxtory |
 | 2. Congelamento | `data.js` com os valores aprovados; uma única regeneração de Request, Direct e Luxplus (16:9 e 9:16), da prova e da prova curta; C04 e assinatura não mudam | biblioteca final com alfa | passo 1 |
-| 3. Referências por imóvel | imagens-chave mestras K-SA, K-AZ e K-OL (exterior e interior) a partir das bíblias (§2.2), folha de personagem K-HE e folhas da família; uma prancha de aprovação por imóvel (arquitetura, materiais, paisagem, luz, figurino) | referências aprovadas | ferramenta autorizada |
-| 4. Teste de viabilidade | S06 (arquitetura, Azzura), S02 (pessoas, Satori), S15 (mãos e fogo, Olivar), com os critérios do §1 | decisão por plano: A, B ou C | passo 3 |
+| 3. Referências por imóvel | imagens-chave mestras K-SA, K-AZ e K-OL (exterior e interior, com os prompts de `DIRECAO-DE-ARTE.md`) a partir das bíblias (§2.2), folha de personagem K-HE e folhas da família; uma prancha de aprovação por imóvel (arquitetura, materiais, paisagem, luz, figurino) | referências aprovadas | ferramenta autorizada |
+| 4. Teste de viabilidade | S06 (arquitetura, Azzura), S02 (pessoas, Satori), S15 (mãos e fogo, Olivar), com o plano e os critérios de `DIRECAO-DE-ARTE.md` §5 | decisão por plano: A, B ou C | passo 3 |
 | 5. Footage | 17 planos (§3), ≈ 1,5× a duração usada, na cadência decidida (30 fps); QA plano a plano: continuidade, mãos, rostos, arquitetura sem deriva, espaço livre para os cartões | planos aprovados em `out/entrada/` | passo 4 |
 | 6. Voz e trilha | seleção de locução (voz natural, 30–45 anos) com cessão de direitos; trilha original ou de biblioteca com licença para publicidade | `vo.wav`, `trilha.wav` | autorização |
 | 7. Montagem | master 16:9 (≈ 105,5 s) e vertical 9:16 (≈ 58 s) a partir da EDL; a prova já troca placeholder por footage automaticamente | cortes para aprovação | passos 2, 5, 6 |

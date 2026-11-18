@@ -1,9 +1,11 @@
-# Economia do filme: benchmark de mercado e PRL das Second Homes (v6.1 · proposta para decisão comercial)
+# Economia do filme: benchmark de mercado e PRL das Second Homes (v6.2 · proposta de congelamento para aprovação)
 
 > Análise da coerência econômica dos valores simulados do filme do Luxtory Club. **Nada foi alterado:** PRLs, Créditos,
 > lotes, taxas e o valor do Luxplus continuam os da v5 até a aprovação comercial. Consulta de mercado em 18/11/2026.
 > Revisão v6.1: correção da análise do Luxplus (§9), dimensões de comparação (§2), anúncios verificados diretamente pela
 > Luxtory (§4) e separação entre sensibilidade econômica (§6) e cenário narrativo (§7).
+> Revisão v6.2: proposta de congelamento (§12), com posicionamento aprovado como direção ("luxo contemporâneo e alto
+> padrão"), sem novo benchmark.
 
 ## 1. Do que este documento trata
 
@@ -301,3 +303,90 @@ de agosto e o desconto aprovado. O valor exibido passa a ser o resultado dessa f
 5. **Taxa visível:** aceitar o valor resultante ou acionar os parâmetros administráveis.
 6. **Conferência:** reconferir diretamente os anúncios marcados como "índice" do segmento escolhido, e ampliar a
    amostra do Campo.
+
+## 12. Proposta de congelamento (v6.2)
+
+Direção aprovada: **Second Homes de luxo contemporâneo e alto padrão**. A proposta usa só os dados já levantados (§4)
+e não adota automaticamente o cenário da leitura B. Os valores são PRL interno de cada noite, não preço de anúncio.
+
+### 12.1 Valores
+
+| Item | Atual (v5) | **Recomendada** | Conservadora |
+|---|---|---|---|
+| Satori · 14, 15 e 16/05 (sex, sáb, dom) | R$ 1.600 · 1.600 · 1.400 | **R$ 2.800 · 2.800 · 2.400** | R$ 2.400 · 2.400 · 2.000 |
+| Créditos por data → depósito | 16.000 + 16.000 + 14.000 = 46.000 | **28.000 + 28.000 + 24.000 = 80.000** | 24.000 + 24.000 + 20.000 = 68.000 |
+| Metas do controle | 0 · 14.000 · 16.000 · 30.000 · 32.000 · 46.000 | **0 · 24.000 · 28.000 · 52.000 · 56.000 · 80.000** | 0 · 20.000 · 24.000 · 44.000 · 48.000 · 68.000 |
+| Azzura · 04, 05 e 06/06 (sex, sáb, dom) | R$ 1.900 · 1.900 · 1.700 = R$ 5.500 | **R$ 4.200 · 4.200 · 3.600 = R$ 12.000** | R$ 3.400 · 3.400 · 3.000 = R$ 9.800 |
+| Créditos da Request · Taxa de intermediação | 55.000 · R$ 550 | **120.000 · R$ 1.200** | 98.000 · R$ 980 |
+| Saldo inicial fictício (L-0001 + L-0002) | 30.000 + 18.000 = 48.000 | **64.000 + 44.000 = 108.000** | 52.000 + 36.000 = 88.000 |
+| Faltam → mínimo que cobre (16/05) | 7.000 → 14.000 | **12.000 → 24.000** | 10.000 → 20.000 |
+| Coreografia do controle | 14.000 → 30.000 → 46.000 | **24.000 → 52.000 → 80.000** | 20.000 → 44.000 → 68.000 |
+| Saldo após o depósito → Garantia (FEFO) | 94.000 → 30.000 + 18.000 + 7.000 | **188.000 → 64.000 + 44.000 + 12.000** | 156.000 → 52.000 + 36.000 + 10.000 |
+| Saldo após o aceite | 39.000 | **68.000** | 58.000 |
+| Olivar · 28/05 (sex, ponte de Corpus Christi) → Créditos · Taxa | R$ 1.150 → 11.500 · R$ 120 (mínimo) | **R$ 3.400 → 34.000 · R$ 340** | R$ 2.800 → 28.000 · R$ 280 |
+| Saldo após o Direct (e no Luxplus, inalterado) | 27.500 | **34.000** | 30.000 |
+| Olivar · 13 e 14/08 (sex, sáb) | não definido | **R$ 3.000 · 3.200 = R$ 6.200** | R$ 2.600 · 2.800 = R$ 5.400 |
+| Preço Luxplus exibido | R$ 2.480 (ilustrativo) | **R$ 6.200 × (1 − desconto aprovado)** | R$ 5.400 × (1 − desconto aprovado) |
+| Relação de troca (3 noites Satori ÷ 3 noites Azzura) | 0,84 | **0,67** | 0,69 |
+
+**Fundamentação por imóvel (recomendada):**
+- **Satori:** de R$ 2.400 a R$ 2.800 fica na metade inferior das casas de serra de 3 a 6 suítes (R$ 2.400 a R$ 4.000,
+  §4.1). Maio está fora do inverno da serra, e o domingo vale menos.
+- **Azzura:** de R$ 3.600 a R$ 4.200 fica acima da casa de condomínio sem vista para o mar (R$ 2.900, verificado) e
+  abaixo da frente-mar com serviços ou curadoria (R$ 5.100 e R$ 6.500, verificados). É um PRL frente-mar sem serviço
+  de hotel embutido, na baixa do litoral.
+- **Olivar no Direct:** R$ 3.400, entre a baixa (R$ 3.000) e a alta (R$ 3.600) da casa de campo verificada em Cunha.
+  A sexta 28/05 é ponte de Corpus Christi (27/05/2027), o que justifica ficar acima de uma sexta comum de agosto.
+- **Estadia de 1 noite no Direct:** os canônicos não definem estadia mínima no Club, então a reserva é válida no
+  produto. A estadia mínima de feriado é prática de anúncios de locação, não regra do Inventário Luxtory. Se a
+  Luxtory quiser verossimilhança de mercado, a alternativa simples é 2 noites (28 e 29/05). A decisão é opcional e
+  não muda nenhum mecanismo.
+- **Olivar em agosto:** R$ 3.000 a R$ 3.200, fim de semana de inverno fora das férias de julho, próximo da baixa
+  verificada em Cunha.
+
+**Equilíbrio:**
+- **Coerência premium:** todos os PRLs saem do piso de plataforma e entram na faixa de casas inteiras de alto padrão,
+  sem chegar à curadoria de arquitetura assinada com serviço.
+- **Atratividade:** a taxa visível da Request fica em R$ 1.200, abaixo dos R$ 1.380 da leitura B. O Direct fica em
+  R$ 340.
+- **Relação de troca:** 0,67 reconhece que uma noite frente-mar em junho vale mais que uma noite de serra em maio,
+  sem chegar à diferença dos anúncios (≈ 0,55). Assim, a troca entre Co-Owners de imóveis diferentes segue
+  atraente.
+- **A conservadora:** reduz a taxa visível (R$ 980), com relação de troca de 0,69, mas a Azzura fica perto do limite
+  inferior da frente-mar.
+
+**Escolhas explicitadas:**
+- **Lotes reconfigurados:** o saldo inicial e os lotes da narrativa mudam de propósito, para preservar a mecânica da
+  história (leitura B). Pela sensibilidade, com os lotes da v5 constantes (48.000), a Request ainda cabe depositando
+  as três datas, mas o Direct não cabe: faltariam 26.000 na recomendada e 10.000 na conservadora.
+- **Créditos já originados:** não são recalculados quando o PRL sobe (BR-182). Com PRLs da recomendada, 48.000
+  Créditos compram 1,20 noite média da Azzura, contra 2,62 hoje. Isso importa para o produto; no filme, os lotes são
+  fictícios.
+
+### 12.2 Luxplus de agosto
+
+- **Fórmula:** preço = PRL de 13/08 + PRL de 14/08, × (1 − desconto aplicável ao Membership mostrado) (01 §25).
+- **O que falta:** o desconto não está aprovado e não é presumido.
+- **Valores:** na recomendada, o preço exibido será R$ 6.200 × (1 − d). O valor ilustrativo atual (R$ 2.480) só seria
+  compatível com um desconto de 60%. Portanto, ele muda depois da decisão.
+- **Sem desconto:** se a Luxtory decidir que o Membership do filme não tem desconto Luxplus, o valor exibido é
+  R$ 6.200. Isso também é uma decisão explícita, não uma presunção.
+
+### 12.3 Consistência verificada (sem alterar `data.js`)
+
+A recomendada foi aplicada numa cópia descartável do repositório (git worktree), nunca na branch:
+
+- **`check.mjs`:** conforme em Request, Direct e Luxplus, em 16:9 e 9:16. Cobre valores derivados nos cartões, axe,
+  sobreposição em todos os quadros, limites do quadro e área segura.
+- **Stills:** os números de 6 dígitos ("188.000", "120.000") cabem em todos os cartões nos dois formatos.
+- **Testes:** 12 falham só por números literais do cenário v5 (por exemplo 46.000 → 80.000, R$ 550 → R$ 1.200). Nenhuma
+  regra quebra.
+  - No congelamento, esses literais são atualizados.
+  - O ramo da taxa mínima (R$ 120), que deixa de aparecer no Direct, passa a ser testado com um valor sintético.
+
+### 12.4 Decisões indispensáveis
+
+1. **Aprovar a proposta recomendada ou a conservadora** (PRLs por data e lotes fictícios).
+2. **Desconto Luxplus do Membership mostrado** no filme, ou a decisão explícita de exibir sem desconto.
+3. **Opcional:** Direct com 1 noite (como está) ou 2 noites na ponte de Corpus Christi.
+

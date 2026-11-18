@@ -423,6 +423,14 @@ Nenhum PRL, Crédito, taxa ou valor do Luxplus foi alterado: a mudança depende 
   Contrapartida: entre a menção ao depósito e a soma, o espaço das linhas seguintes fica reservado acima da nota.
 - **Sem captura completa nesta rodada:** os vídeos são regenerados uma única vez no congelamento.
 
+## Transição para a produção cinematográfica (v6.2, 2026-11-18)
+
+- **Proposta de congelamento econômico** (`filme/ECONOMIA.md` §12): uma recomendada e uma conservadora, com PRLs por
+  data, lotes fictícios, taxas e Luxplus pela fórmula. Conferida numa cópia descartável do repositório: `check.mjs`
+  conforme e números de 6 dígitos cabendo nos dois formatos. `data.js` segue inalterado até a aprovação.
+- **Pacote de direção de arte** das três Second Homes e plano da prova de viabilidade em `filme/DIRECAO-DE-ARTE.md`.
+  Só há prompts e especificações; nenhum footage foi produzido.
+
 ## Integração na pós (Etapa A)
 
 - **Alfa straight** (não premultiplicado) nos PNG e no ProRes 4444; interpretar como *Straight* no editor.
