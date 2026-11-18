@@ -46,6 +46,16 @@ depende de quem opera não ser quem aprova.
 6. **Credencial no menor escopo:** o token da Vercel só nos passos `pull` e `deploy`, pela variável `VERCEL_TOKEN` (fora
    do argv); o `build`, que executa dependências e o projeto, roda sem ele; o secret do banco só no passo de migrations.
 
+### Revisão 2 de 2026-11-18 (segunda auditoria do fundador, #98) — complementa os itens 1 e 5
+
+1. **Token:** PAT classic com `repo` e `read:org` (o `gh` 2.46 recusa token sem os dois), 90 dias, sem `workflow`.
+   Antes de qualquer revogação, o fundador garante o próprio caminho de recuperação (2FA com dois métodos, códigos de
+   recuperação fora do PC). Para agentes, nenhum conector de escrita em produção, também fora do GitHub (ChatGPT/Codex,
+   claude.ai, Upstash); leitura continua (`supabase-prod-read`).
+5. **Validação dos rulesets sem escrita na `main` real:** ensaio no sandbox com os mesmos JSONs (push direto recusado;
+   o admin contorna a revisão só por PR e nunca os checks); no repositório real, só leitura (`rules/branches/main`,
+   `current_user_can_bypass`) e um PR inofensivo da conta de máquina, sem merge.
+
 ## Consequences
 
 ### Positive
@@ -64,6 +74,12 @@ depende de quem opera não ser quem aprova.
 
 - Renovar o PAT e o token da Vercel antes da expiração.
 - Conectores de escrita fora do GitHub (Supabase, Vercel, Upstash) também contornam a CI: para agentes, só leitura.
+- Revisão 2: sem os conectores de escrita, a conferência pós-merge dos agentes usa os logs do GitHub e endpoints
+  públicos; erros de runtime e o Upstash ficam com o fundador, nos painéis.
+- Riscos residuais aceitos: o admin (fundador) ainda altera ou desliga os rulesets; checks exigidos do GitHub Actions
+  não impedem um workflow alterado no próprio PR que fique verde sem testar nada, por isso a revisão humana das
+  mudanças críticas segue indispensável; agentes rodam com o usuário do sistema, e a leitura do `supabase-prod-read` é
+  imposta pelo servidor MCP, não pela credencial.
 
 ## Alternatives considered
 
@@ -84,6 +100,11 @@ autoria `Luxtory` (#98 e legados) ficariam sem aprovador possível; reabri-los p
 escopo `workflow` (regra da última push). **Credenciais novas antes da separação:** nasceriam ao alcance do token
 administrativo dos agentes. **Ensaio no sandbox:** o ruleset é reversível na hora e a validação no repositório real
 (commit vazio recusado, fluxo real de PR) prova o que importa sem passos extras.
+
+Revisão 2. **Commit vazio na `main` real:** com um ruleset errado, o push entraria e rodaria o `migrate` (credencial
+dona do schema) e um deploy de Production; o sandbox prova o mesmo sem esse risco, e a API dá por leitura o que cada
+identidade pode contornar (`current_user_can_bypass`). **`public_repo` no lugar de `repo`:** o `gh` exige `repo`; com a
+conta colaborando só neste repositório público, a diferença seria nula.
 
 ## References
 

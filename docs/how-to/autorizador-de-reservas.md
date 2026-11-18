@@ -101,7 +101,7 @@ Nada desta seção está feito. Faça na ordem; cada passo é conferível.
    - com isso, quem dispara é diferente de quem aprova, e o *Prevent self-review* pode ser ligado.
    Criar contas e tokens é ação do fundador; nada disso foi feito.
    **Correção (2026-11-18):** o token fine-grained não serve aqui: a documentação do GitHub lista como limitação
-   contribuir em repositório onde o usuário é colaborador, e a conta dona é pessoal. Use PAT classic só `repo`, com
+   contribuir em repositório onde o usuário é colaborador, e a conta dona é pessoal. Use PAT classic só `repo` (mais `read:org`, que o `gh` exige), com
    expiração; o limite é o papel de colaborador (escrita, sem admin). Inventário dos canais dos agentes (incluindo o
    conector GitHub do Codex e o Claude in Chrome) e ordem dos passos:
    [`governanca-do-repositorio.md`](governanca-do-repositorio.md) (ADR-0029).
