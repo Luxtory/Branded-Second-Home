@@ -740,3 +740,4 @@ Reaproveitadas: `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` (namespace
 `luxtory:booking-authorization-request:<ambiente>`; chave = SHA-256 do id do papel de staff, sem segredo novo). Os
 valores são decisão da operação (TECH-001: o código não tem default). Nunca criar `BOOKING_AUTHORIZATION_LIMITER_MODE`
 na Vercel. Configurar essas variáveis, o Environment do autorizador (E5) e a ativação são decisões futuras do fundador.
+Workflow, programa e roteiro do aprovador (E5): [`autorizador-de-reservas.md`](autorizador-de-reservas.md).

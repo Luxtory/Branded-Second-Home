@@ -266,3 +266,26 @@ A W13 não ativa reservas.
   cancelamento) pelo padrão `withUserThenServerRead` da W12, depois da prova da RLS e no mesmo instantâneo; nenhuma
   permissão nova. O Admin lê pelo store da E2, com leitura auditada.
 
+
+## Nota de implementação da E5 (2026-11-18, PR draft; sem mudança de decisão)
+
+A E4b foi mergeada pelo #92 (`caa699c`). A E5 entrega o lado GitHub do §4 (spec `booking` §10.16; runbook
+`docs/how-to/autorizador-de-reservas.md`):
+
+- **Programa mínimo no passo protegido.** `scripts/booking-authorizer.mjs` depende só de `pg`, instalado com
+  `npm ci --omit=dev --ignore-scripts` e sem cache. Antes de conectar, recusa entrada fora do formato e conexão que não
+  seja do papel autorizador. No servidor, confere `current_user` e `session_user` antes da chamada. A saída pública é só
+  o código do resultado e o id da autorização, porque o log do run é público. A entrada é lida do arquivo do evento,
+  nunca do `env:` do passo: o runner imprime esse bloco no log (achado da auditoria, T-1321).
+- **Identidade única no sandbox; separação exigida antes da ativação.** No sandbox, quem disparou e quem aprovou foi a
+  mesma conta GitHub, com `prevent_self_review` desligado. Isso prova o gate do Environment, não independência entre
+  identidades. O mecanismo é independente do `luxtory_app` (o secret existe só no Environment, nunca na Vercel), mas um
+  token da conta dona acessível a agentes aprova, reconfigura o Environment e faz push na `main`. Antes da ativação:
+  conta de automação sem `admin` para agentes, conta do fundador só no navegador como única revisora, e
+  `prevent_self_review` ligado (T-1323; runbook §5.0).
+- **Pré-requisitos achados para a configuração real:** a `main` não tem proteção nem ruleset (critério 1); o GitHub cria
+  sem proteção um Environment que um job referencia antes de ele existir (o programa falha fechado sem o secret); conexão
+  pelo Supavisor, porque os runners não têm IPv6.
+- **Prova de plataforma** num repositório sandbox público e descartável, com a variante do workflow
+  `tests/fixtures/booking-authorizer-sandbox.yml`. Um teste prova que ela é idêntica à real sem o overlay. Nenhuma
+  decisão muda.

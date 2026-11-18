@@ -32,6 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Workflow do autorizador independente da reserva de uso próprio (W13 E5, spec `booking` §10.16): disparo manual no
+  GitHub, aprovação obrigatória num Environment restrito à `main`, programa mínimo que só imprime o código do resultado,
+  e runbook do aprovador (`docs/how-to/autorizador-de-reservas.md`). **Inerte:** o Environment real, o revisor e a senha
+  do papel autorizador são configuração futura do fundador; nenhum ato do ciclo executa com a K2 fechada.
+
 - Ciclo da reserva de uso próprio nas telas (W13 E4b, spec `booking` §10.15): na Área do Titular, lista por situação
   (em andamento, em exceção ou em apuração, próximas e histórico), detalhe com a situação gravada, e cancelamento com
   prévia pela consequência — o que volta ao Direito de Uso desta Ação ou ao calendário do Owner, o que deixa a reserva,

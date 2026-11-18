@@ -834,3 +834,97 @@ Sem mudança de regra canônica, contrato de evento, migration ou permissão. Es
   decidir se entra na fila de capacidade recuperável. Com as reservas desativadas (K1/K2), o volume atual é zero. Antes
   de ativar ou ampliar o volume operacional, reavaliar limite, paginação e a consulta por lote. A E4b não introduz
   paginação.
+
+### 10.16. E5 — workflow do autorizador (autorizada em 2026-11-18; branch isolada, sandbox de teste e PR draft)
+
+Sem decisão nova, migration, endpoint ou evento. Implementa o fluxo da §10.7 e a tabela do ADR-0027 §4 do lado do
+GitHub; configuração real (Environment, revisor, senha) segue decisão futura do fundador (runbook
+[`autorizador-de-reservas.md`](../how-to/autorizador-de-reservas.md)).
+
+- **Workflow** `.github/workflows/booking-authorizer.yml`: só `workflow_dispatch` (entradas `action` ∈ {`authorize`,
+  `revoke`} e `id`), `permissions: contents: read`, um job com `if: github.ref == 'refs/heads/main' &&
+  github.event_name == 'workflow_dispatch'` e `environment: booking-authorizer`; actions fixadas pelos mesmos SHAs da
+  `ci.yml`; checkout sem credencial persistida; sem cache; `npm ci --omit=dev --ignore-scripts`; nenhuma interpolação
+  das entradas (nem em `run:` nem em `env:`); o único valor no `env:` do passo final é o secret
+  `BOOKING_AUTHORIZER_DATABASE_URL` (mascarado). Sem `concurrency`: o `CONNECTION LIMIT 1` do papel já serializa (e um grupo de
+  concorrência cancelaria a execução pendente de aprovação ao chegar outra).
+- **Programa** `scripts/booking-authorizer.mjs` (só `pg` e módulos do Node): lê `action` e `id` do arquivo do evento
+  `workflow_dispatch` (`GITHUB_EVENT_PATH`) e monta a referência `github-run:<GITHUB_RUN_ID>:<GITHUB_RUN_ATTEMPT>`; sem
+  entrada legível → `input_missing`; recusa ação, id (UUID) ou referência fora do formato (`input_invalid`) antes de
+  conectar; aceita só a conexão do papel autorizador (direto ou `<papel>.<project-ref>` do Supavisor),
+  com senha, sem parâmetro além de `sslmode`, `verify-full` com a CA fixada do repositório (`disable` só em loopback);
+  confere `current_user`/`session_user` no servidor antes da chamada; chama `app.authorize_booking_action` ou
+  `app.revoke_booking_authorization` com parâmetros; imprime só `result=<código>` (constraint nomeada, `sqlstate_<código>`
+  ou `connection_failed`) e, na emissão, `authorization_id=<uuid>` — nunca mensagem, conexão ou dado da reserva.
+- **Senha:** `npm run db:password-verifier -- luxtory_booking_authorizer` (lista fechada de dois papéis).
+- **Correção T-1321 (auditoria independente de 2026-11-18).** Na primeira versão, o id chegava ao programa por
+  `env: AUTHORIZER_ID: ${{ inputs.id }}`, e o runner imprime o `env:` do passo no log público antes de executar: no run
+  44218249933 o payload de teste apareceu literal no log (não executado). Corrigido sem dependência nova: o programa lê
+  a entrada do arquivo do evento e o id do run das variáveis do runner, e o passo só recebe o secret. O evento do GitHub
+  não é tratado como confidencial: a regra operacional continua sendo informar só ids opacos (runbook §2). As provas de
+  plataforma de branches, Environment, aprovação e secrets valem sem repetição (regras inalteradas). Verificação na
+  plataforma (run 44245182718, sandbox `57d067a`): aprovado por `Luxtory`, `result=input_invalid` (o programa leu o
+  arquivo do evento real) e o log público sem nenhum fragmento do payload nem linha `AUTHORIZER_ID`.
+- **Testes novos (E5):** `tests/scripts/booking-authorizer-workflow.test.ts` (contrato do YAML e equivalência da variante
+  do sandbox), `tests/scripts/booking-authorizer.test.ts` (entradas, conexão, CA, códigos),
+  `tests/scripts/booking-authorizer.db.test.ts` (o programa como processo, com login real: emissão, repetição, revogação,
+  recusas da função, injeção, senha errada, papel impostor, saída sem dado sensível), `db-password-verifier.test.ts`
+  (papel autorizador). O E2E do ciclo (`own-use-lifecycle.spec.ts`) passa a autorizar pelo programa real com login real
+  (`authorizeE2eBookingAction`), fechando a cadeia solicitação na tela Admin → workflow → execução na tela. O login real
+  nos testes db passa por `withAuthorizerLogin` (trava consultiva no banco de administração): o papel é global no
+  servidor, tem `CONNECTION LIMIT 1` e os arquivos rodam em paralelo.
+- **Sandbox** (`Luxtory/luxtory-e5-authorizer-sandbox`, público e descartável, autorizado pelo fundador): arquivos públicos
+  copiados sem alteração (hashes de blob no README dele) e, no caminho do workflow, a variante
+  `tests/fixtures/booking-authorizer-sandbox.yml` = workflow real + overlay (service container `postgres:17.10` fixado por
+  digest e o passo `Sandbox:` que aplica as migrations do commit, confere a prontidão e grava o verificador sintético —
+  `tests/support/booking-authorizer-sandbox-db.mjs`). Environment de teste `booking-authorizer`: revisor obrigatório
+  `Luxtory`, branch policy só `main`, secrets sintéticos só no Environment (2 no Environment, 0 no repositório).
+  **Identidade:** todos os disparos e o único revisor são a mesma conta `Luxtory`; não houve separação entre quem dispara
+  e quem revisa, e `prevent_self_review` ficou desligado (ligado, o único revisor não aprova o próprio disparo) — nenhuma
+  proteção de auto-revisão foi provada. O agente nunca chamou a API de aprovação; as três revisões foram feitas pelo
+  fundador com a conta `Luxtory`, pela API oficial (o registro do GitHub não distingue interface de API). Os testes do
+  Environment provam o gate funcional, não independência entre identidades (T-1320 e T-1323 seguem abertos).
+
+**Runs do sandbox (2026-11-18).**
+
+| Run | Ref | Prova | Resultado |
+|---|---|---|---|
+| 44218188775 | `outra-ref` (workflow intacto) | critério 2: o `if` | job `skipped`, 0 passos |
+| 44218204517 | `adulterada` (sem o `if`, com sonda do secret) | critério 2: a regra do Environment | recusado: "Branch "adulterada" is not allowed to deploy to booking-authorizer due to environment protection rules", 0 passos |
+| 44219499475 | `adulterada`, com os secrets já cadastrados | critério 2 com o secret existente | mesma recusa, 0 passos, log vazio |
+| 44218219833 | `main` | critério 3: espera e rejeição | em espera (0 passos) até a revisão; **rejeitado** por `Luxtory` → job encerrado sem executar nenhum passo ("The deployment was rejected…") |
+| 44218235412 | `main`, id aleatório | critério 3 e 5: aprovação, login real, recusa real da função | **aprovado** por `Luxtory` → banco descartável pronto (60 migrations, ativação 0), login com o secret do Environment, `result=authorization_request_unknown`, saída 1 (recusa intencional) |
+| 44218249933 | `main`, id com SQL e shell | critério 4 e 5 na plataforma | **aprovado** por `Luxtory` → `result=input_invalid` antes de conectar, sem avaliação de shell; saída 1 (recusa intencional). **Defeito achado:** o payload apareceu literal no `env:` do passo impresso no log → corrigido (T-1321, acima) |
+| 44245182718 | `main` (sandbox `57d067a`, com a correção T-1321), id com SQL e shell | critério 5 após a correção | **aprovado** por `Luxtory` → `result=input_invalid`; log sem o payload e sem `AUTHORIZER_ID`; secrets `***`; saída 1 (recusa intencional) |
+
+**Cobertura dos critérios do plano W13 (autorização independente).**
+
+| # | Evidência | Origem |
+|---|---|---|
+| 1 | contrato do YAML (gatilho, permissões, `if`, Environment, SHAs, sem cache, `env:`); **limitação:** a `main` não tem proteção nem ruleset — "mudança só por PR revisado" não é imposto pela plataforma (pré-requisito da configuração real) | nova (E5) |
+| 2 | runs 44218188775, 44218204517 e 44219499475 | nova (E5, sandbox) |
+| 3 | secrets só no Environment (2) e 0 no repositório (API); runs na `main` em espera sem passo executado até a revisão; rejeitado → nenhum passo; aprovado → o secret chega só ao passo final | nova (E5, sandbox) |
+| 4 | YAML sem interpolação das entradas (só o secret em `${{ }}`); programa lê o evento e recusa antes de conectar, inclusive payload de SQL e shell e entrada ausente (unit, db com login real); função com schema fechado (`authorization_input`) | nova (E5) + E1 |
+| 5 | saída só `result=`/`authorization_id=` com varredura (db: id da reserva, noites, party, senha, host); logs públicos dos dois runs aprovados sem a senha sintética (crua ou codificada), sem DSN com credencial, sem verificador e sem avaliação de shell; secrets mascarados (`***`). A entrada aparecia no `env:` impresso (T-1321) → corrigido: entrada fora do `env:`, provado pelo contrato do YAML, pelos testes do programa e pelo log do run 44245182718 | nova (E5) + E1 |
+| 6, 7, 8, 9, 12, 13, 16 | `tests/migrations/booking-authorization.db.test.ts` e `booking-lifecycle.db.test.ts` | reaproveitada (E1/E2b) |
+| 10 | E1 (privilégios, 42501, login real, `CONNECTION LIMIT 1`) + E5 (login real pelo programa; impostor recusado por `current_user`) | E1 + nova (E5) |
+| 11 | E1 (PK, reuso recusado, rollback) + E2 (replay pela chave do executor) + E5 (re-execução do run → `authorization_request_already_authorized`) | E1/E2 + nova (E5) |
+| 14 | E1/E2 (cancelamento do Titular sem autorização independente) | reaproveitada |
+| 15 | runbook `autorizador-de-reservas.md` §1 (fontes por finalidade) | nova (E5) |
+
+**Estado por critério (2026-11-18, revisão final).** *Código e CI*: implementado e coberto por teste verde na CI.
+*Sandbox*: comportamento observado na plataforma. *Configuração real*: depende do Environment, da senha, do ruleset ou
+da operação, que ainda não existem.
+
+| # | Código e CI | Sandbox | Configuração real (pendente) |
+|---|---|---|---|
+| 1 | ✅ gatilho, permissões, `if`, Environment, SHAs | — | **não atendido:** "mudança só por PR revisado" exige ruleset (T-1320) e identidade revisora separada (T-1323) |
+| 2 | ✅ `if` | ✅ outra ref e variante adulterada recusadas | regra de branch no Environment real |
+| 3 | — | ✅ espera, rejeição sem passo, secret só após aprovação | Environment real com revisor e secret só nele |
+| 4 | ✅ | ✅ payload recusado, sem avaliação de shell | — |
+| 5 | ✅ | ✅ após a correção T-1321 | regra operacional: informar só id opaco |
+| 6, 7, 8, 9, 11, 12, 13, 14, 16 | ✅ banco (E1/E2/E2b) e E5 (11) | — | — |
+| 10 | ✅ privilégios e login real | ✅ login real pelo programa | senha definida e guardada só no Environment real |
+| 15 | ✅ roteiro no runbook | — | execução humana pelo aprovador |
+
+Independência entre quem opera e quem aprova (T-1323): **não atendida**; pré-requisito da ativação.

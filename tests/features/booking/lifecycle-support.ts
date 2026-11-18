@@ -1,5 +1,7 @@
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import pg from 'pg';
+import { inject } from 'vitest';
+import { scramVerifier } from '../../../scripts/lib/scram.mjs';
 import { ordinaryOrder } from '@/features/calendar/domain/use-right';
 import { SEALING_YEAR } from '../calendar/sealing-support';
 import {
@@ -55,6 +57,41 @@ export async function connect(url: string): Promise<pg.Client> {
   const client = new pg.Client({ connectionString: url });
   await client.connect();
   return client;
+}
+
+// Trava consultiva no banco de administração do servidor dos testes db (os papéis são globais no servidor).
+const AUTHORIZER_LOGIN_LOCK = 1_302_013;
+const AUTHORIZER_PASSWORD_BYTES = 24;
+
+/**
+ * Login real do papel autorizador (W13 E1/E5): senha temporária, só o verificador SCRAM chega ao servidor (o caminho do
+ * runbook). O papel é global no servidor e tem CONNECTION LIMIT 1, e os arquivos de teste rodam em paralelo: a janela
+ * da senha é serializada por uma trava consultiva na sessão do banco de administração. A senha volta a NULL no fim.
+ */
+export async function withAuthorizerLogin<T>(
+  h: Harness,
+  work: (url: string, password: string) => Promise<T>,
+): Promise<T> {
+  const lock = await connect(inject('postgres').adminUrl);
+  try {
+    await lock.query('SELECT pg_advisory_lock($1)', [AUTHORIZER_LOGIN_LOCK]);
+    const password = randomBytes(AUTHORIZER_PASSWORD_BYTES).toString('base64url');
+    await h.database.pool.query(
+      `ALTER ROLE luxtory_booking_authorizer WITH PASSWORD '${scramVerifier(password)}'`,
+    );
+    try {
+      const url = new URL(h.database.url);
+      url.username = 'luxtory_booking_authorizer';
+      url.password = password;
+      url.search = '?sslmode=disable';
+      return await work(url.toString(), password);
+    } finally {
+      await h.database.pool.query('ALTER ROLE luxtory_booking_authorizer WITH PASSWORD NULL');
+    }
+  } finally {
+    // Encerrar a sessão libera a trava consultiva.
+    await lock.end();
+  }
 }
 
 /** Admin com atribuição ativa (`app.assign_staff_role`, o caminho do runbook). */

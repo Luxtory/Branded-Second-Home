@@ -1,6 +1,13 @@
 // Disposable local/CI runbook fixture only. Never reads DATABASE_URL or contacts a deployed database.
+import { execFile } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { promisify } from 'node:util';
 import { withClient } from '../../scripts/lib/pg.mjs';
+import { scramVerifier } from '../../scripts/lib/scram.mjs';
 export const E2E_ACQUISITION_DATABASE_FILE = 'reports/e2e-acquisition-db.json';
 
 /** @param {unknown} value @param {Readonly<Record<string, string | undefined>>} [source] */
@@ -104,25 +111,54 @@ export async function setE2eOwnUseLifecycle(open) {
 }
 
 /**
- * Autorização independente pelo papel autorizador real (`app.authorize_booking_action`), como o workflow da E5 faria,
- * só no banco descartável: a função deriva o escopo dos fatos e confere o esperado da solicitação.
+ * Autorização independente pelo programa do workflow da E5 (`scripts/booking-authorizer.mjs`), com o login real do papel
+ * autorizador, só no banco descartável: a função deriva o escopo dos fatos e confere o esperado da solicitação. A senha
+ * é temporária (só o verificador SCRAM chega ao servidor, como no runbook) e volta a NULL depois.
  */
+const runAuthorizer = promisify(execFile);
+const AUTHORIZER_PASSWORD_BYTES = 24;
+const AUTHORIZED = /^result=authorized\nauthorization_id=([0-9a-f-]{36})\n$/;
 let syntheticRun = 0;
 
 export async function authorizeE2eBookingAction(requestId) {
   if (!/^[0-9a-f-]{36}$/i.test(requestId)) throw new Error('Invalid fixture request id');
-  const url = disposableOwnerUrl();
-  // Referência no formato fechado da função (`github-run:<id>:<tentativa>`), sintética e única por chamada.
-  syntheticRun += 1;
-  const approvalRef = `github-run:${Date.now()}${syntheticRun}:1`;
-  return withClient(url, async (client) => {
-    await client.query('SET ROLE luxtory_booking_authorizer');
-    const { rows } = await client.query('SELECT app.authorize_booking_action($1, $2) AS id', [
-      requestId,
-      approvalRef,
-    ]);
-    return rows[0].id;
-  });
+  const ownerUrl = disposableOwnerUrl();
+  const password = randomBytes(AUTHORIZER_PASSWORD_BYTES).toString('base64url');
+  const eventDir = await mkdtemp(join(tmpdir(), 'e2e-authorizer-event-'));
+  const eventPath = join(eventDir, 'event.json');
+  await withClient(ownerUrl, (client) =>
+    client.query(
+      `ALTER ROLE luxtory_booking_authorizer WITH PASSWORD '${scramVerifier(password)}'`,
+    ),
+  );
+  try {
+    const url = new URL(ownerUrl);
+    url.username = 'luxtory_booking_authorizer';
+    url.password = password;
+    url.search = '?sslmode=disable';
+    // Como o runner: evento `workflow_dispatch` num arquivo e id do run sintético e único por chamada.
+    syntheticRun += 1;
+    await writeFile(eventPath, JSON.stringify({ inputs: { action: 'authorize', id: requestId } }));
+    const { stdout } = await runAuthorizer(process.execPath, ['scripts/booking-authorizer.mjs'], {
+      encoding: 'utf8',
+      env: {
+        PATH: process.env.PATH ?? '',
+        GITHUB_EVENT_PATH: eventPath,
+        GITHUB_RUN_ID: `${Date.now()}${syntheticRun}`,
+        GITHUB_RUN_ATTEMPT: '1',
+        BOOKING_AUTHORIZER_DATABASE_URL: url.toString(),
+      },
+    });
+    const authorized = AUTHORIZED.exec(stdout);
+    if (authorized === null)
+      throw new Error(`Authorizer program did not authorize: ${stdout.trim()}`);
+    return authorized[1];
+  } finally {
+    await rm(eventDir, { recursive: true, force: true });
+    await withClient(ownerUrl, (client) =>
+      client.query('ALTER ROLE luxtory_booking_authorizer WITH PASSWORD NULL'),
+    );
+  }
 }
 
 /**

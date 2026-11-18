@@ -1,0 +1,46 @@
+# Autorização independente do luxtory_app (W13 E5; ADR-0027 §4; spec booking §10.7 e §10.16).
+# Runbook: docs/how-to/autorizador-de-reservas.md. Inerte até existirem o Environment `booking-authorizer` (revisor
+# obrigatório, só a branch main) e o secret dele: a configuração real é decisão do fundador, fora da W13.
+# Repositório público: entradas e logs são públicos. A entrada é só o id opaco; o banco deriva e confere o escopo.
+# Entradas nunca interpoladas: o programa lê `inputs` do arquivo do evento (o `env:` do passo é impresso no log);
+# actions fixadas pelos mesmos SHAs da ci.yml; sem cache.
+name: booking-authorizer
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: authorize (id da solicitação) ou revoke (id da autorização)
+        type: choice
+        options: [authorize, revoke]
+        required: true
+      id:
+        description: id opaco (UUID) mostrado na área Admin
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  authorize:
+    name: authorize
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    environment: booking-authorizer
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: Install (production dependencies, no lifecycle scripts)
+        run: npm ci --omit=dev --ignore-scripts
+      - name: Authorize
+        run: node scripts/booking-authorizer.mjs
+        # Entradas lidas pelo programa do arquivo do evento e de GITHUB_RUN_ID/GITHUB_RUN_ATTEMPT: o runner imprime o
+        # `env:` do passo no log público, e só o secret (mascarado) passa por aqui (T-1321).
+        env:
+          BOOKING_AUTHORIZER_DATABASE_URL: ${{ secrets.BOOKING_AUTHORIZER_DATABASE_URL }}
