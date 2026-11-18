@@ -4,6 +4,24 @@
 > são regenerados pelos comandos do `README.md`. Nada aqui é footage, voz ou trilha definitiva, e nada está publicado.
 > A publicação depende da verificação de prontidão do produto e da aprovação da comunicação (`PRODUCAO.md` §5).
 
+## Situação na v6 (auditoria econômica, 2026-11-18)
+
+- **Base aprovada para prosseguir (pré-produção):** a biblioteca v5 abaixo. Não é master comercial.
+- **Já no código e nos testes, ainda não renderizado:**
+  - unidade "Créditos" no número do controle;
+  - depósito desabilitado sem datas;
+  - C04 mais enxuto;
+  - placas da Olivar estáticas e sem grão;
+  - leitor da métrica de movimento corrigido.
+- **Regeneração única no congelamento (Etapa 3),** depois da decisão de PRL (`ECONOMIA.md`): Request, Direct e Luxplus
+  (16:9 e 9:16), C04, prova de montagem e prova curta. A assinatura não muda.
+- **Pendências cinematográficas** (`PRODUCAO.md` §9):
+  - imagens-chave K-SA, K-AZ e K-OL e folhas de personagem;
+  - footage S01–S17;
+  - locução, trilha e efeitos licenciados;
+  - legendas;
+  - revisão jurídica e busca de marca dos nomes.
+
 ## Masters atuais (vigentes)
 
 Mesmos nomes de antes, conteúdo novo, exceto a assinatura, que não foi afetada e não foi regenerada. O hash (sha256, 12
@@ -80,8 +98,11 @@ Stills 4K com alfa dos instantes-chave em `out/etapa-a/stills/<seq>-<fmt>-<insta
 - Legibilidade das metas, medida no navegador (opacidade ≥ 0,95): 30.000 por 0,83 s (16:9) e 0,77 s (9:16); antes,
   ≈ 0,04 s e nunca opaco.
 - `capture.mjs`: arquivos codificados conformes — dimensões, 30 fps, quadros, alfa (PSNR ≥ 75 dB) e RGB (≥ 48 dB),
-  cores da marca, entrada sem quadro repetido e push-in contínuo de todas as placas, inclusive as da Olivar Home
-  depois do grão fino.
+  cores da marca, entrada sem quadro repetido e push-in contínuo das placas. **Correção na v6:** o "movimento
+  irregular" das placas lisas da Olivar era leitura errada da métrica (notação científica: 9.645e-05 lido como 9,645),
+  não falta de textura. O grão foi removido e as placas da Olivar passam a placeholders estáticos, validados como
+  parados. Os vídeos de Direct e Luxplus desta tabela ainda trazem as placas com grão e só serão regenerados no
+  congelamento da biblioteca (Etapa 3).
 - `montar.mjs`: 792/792 quadros (26,4 s), BT.709, áudio 48 kHz estéreo, −20 LUFS e true peak −2,4 dBTP.
 - Gates do repositório: `npm run lint` e `npm run typecheck` verdes; Design System 56/56; Vitest `unit` 1023/1023.
   O Vitest `db` não foi rodado: nada de banco, `src/` ou migrations mudou.

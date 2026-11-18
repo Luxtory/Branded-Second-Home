@@ -139,10 +139,10 @@ export function topupCard(dep, states) {
       <div class="demo-slider-field">
         <div class="demo-slider-head">
           <span class="lx-label" id="topup-label">Créditos adicionais desejados</span>
-          <span class="demo-figure demo-slider-value">${swapSpans(
+          <span class="demo-slider-value"><span class="demo-figure">${swapSpans(
             'tv',
             states.map((s) => credits(s.added)),
-          )}</span>
+          )}</span><span class="demo-unit">Créditos</span></span>
         </div>
         <div class="demo-slider" id="topup-slider" role="slider" tabindex="-1" aria-labelledby="topup-label" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${states[0].added}" aria-valuetext="${credits(states[0].added)} Créditos" style="--pos: 0; --need: ${dep.shortfall / max}">
           <span class="demo-slider__track"></span>
@@ -238,7 +238,7 @@ export function datesCard(dep, states, { action }) {
           )}</strong></span>
         </p>
       </details>
-      <button class="lx-button lx-button--primary" type="button" id="deposit-go" tabindex="-1"><span class="demo-swap"><span id="deposit-label">${action}</span><span id="deposit-busy">Confirmando o depósito</span></span></button>
+      <button class="lx-button lx-button--primary" type="button" id="deposit-go" tabindex="-1"${states[0].nights.length ? '' : ' aria-disabled="true"'}><span class="demo-swap"><span id="deposit-label">${action}</span><span id="deposit-busy">Confirmando o depósito</span></span></button>
     </section>`;
 }
 
@@ -269,6 +269,10 @@ export function selectionChoreography(dep, steps, { tween, needed }) {
   const set = [];
   const tweens = [];
   const valueIds = ['tv', 'tp', 'ta', 'ts', 'tq'];
+  // A linha do tempo é a fonte do estado em cada quadro (stage.js remove o atributo antes do primeiro passo): sem datas,
+  // a ação de depósito começa desabilitada.
+  if (!states[0].nights.length)
+    set.push({ sel: '#deposit-go', attr: 'aria-disabled', at: ALWAYS, value: 'true' });
   states.forEach((state, i) => {
     const at = i === 0 ? ALWAYS : steps[i - 1].at;
     const out = i < steps.length ? steps[i].at : undefined;
@@ -296,6 +300,14 @@ export function selectionChoreography(dep, steps, { tween, needed }) {
     );
     // Datas novas na seleção: no toque (calendário) ou quando o controle chega à meta (metade do movimento).
     const selectedAt = step.via === 'slider' ? at + tween / 2 : at;
+    // A ação de depósito só fica habilitada com pelo menos uma data selecionada (sem datas, não há o que depositar).
+    if (!prev.nights.length !== !state.nights.length)
+      set.push({
+        sel: '#deposit-go',
+        attr: 'aria-disabled',
+        at: selectedAt,
+        value: state.nights.length ? null : 'true',
+      });
     for (const night of state.nights.filter((n) => !prev.nights.includes(n)))
       set.push(
         {

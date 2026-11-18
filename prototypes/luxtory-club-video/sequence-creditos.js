@@ -1,13 +1,15 @@
 // Motion graphic editorial dos Créditos (ROTEIRO.md C04), conceitual: Créditos válidos que você já tem + novos
-// Créditos de datas elegíveis depositadas → um só saldo, de lotes diferentes → Luxchange Request ou Direct, com a Taxa
-// de intermediação de cada modalidade. Sem números nem personagem: a formação do saldo de Helena (48.000 + 46.000 =
+// Créditos de datas elegíveis depositadas → um só saldo para viver outras Second Homes, com Membership vigente, em
+// Luxchange Request ou Direct. Comunica liberdade, não contrato: sem números nem personagem; a formação do saldo de Helena (48.000 + 46.000 =
 // 94.000) acontece uma única vez no filme, na Request (credits-step.js). Camada editorial da montagem, não interface:
 // nenhum botão, nenhuma etapa transacional.
 //
 // Regras que a composição respeita: Créditos só se usam com Membership vigente (BR-195, escrito no painel); valem 24
 // meses (BR-191: "válidos"); o depósito origina Créditos e a capacidade entra no Inventário Luxtory (REQ-060,
 // BR-202) — a data nunca paga a reserva diretamente; no Co-Owner, só data já reservada é depositada (BR-151, super);
-// lotes diferentes compõem o saldo (PD-008, mostrado na Request).
+// lotes diferentes compõem o saldo (PD-008, mostrado na Request, não aqui). Obrigatórias pela L3 de b2c.md: a condição
+// de Membership vigente (painel e narração), "Crédito não é moeda" e a regra do Co-Owner (supers); a taxa de cada
+// modalidade fica nos títulos das modalidades.
 import { ICONS, icon } from './shared.js';
 
 // Proporções da barra só como forma (dois lotes anteriores e um novo); nenhum valor aparece.
@@ -15,13 +17,14 @@ const SEGMENTS = { prior: [0.32, 0.19], fresh: 0.49 };
 
 export const SUPERS = {
   coOwner: 'No Co-Owner, só data já reservada é cedida.',
-  credits: 'Créditos não são moeda, investimento nem garantia de disponibilidade.',
+  // Frase aprovada da resposta "Consigo usar outros lugares?" (b2c.md §4).
+  credits: 'Créditos não são moeda nem garantem disponibilidade.',
 };
 
 export const ROWS = {
   prior: 'Créditos válidos que você já tem',
   fresh: 'Novos Créditos, de datas elegíveis depositadas',
-  total: 'Um só saldo, de lotes diferentes',
+  total: 'Um só saldo para viver outras Second Homes',
 };
 
 export function build(stage, fmt) {
@@ -39,7 +42,7 @@ export function build(stage, fmt) {
         <li id="cr-row-deposit"><span class="demo-equation__op" aria-hidden="true">+</span><span>${ROWS.fresh}</span></li>
         <li id="cr-row-total" class="demo-equation__total"><span class="demo-equation__op" aria-hidden="true">=</span><span>${ROWS.total}</span></li>
       </ol>
-      <p class="demo-note" id="cr-use">${icon('i-info')}<span><strong>Para Luxchange Request ou Direct, com Membership vigente</strong>Créditos + Taxa de intermediação, em cada modalidade.</span></p>
+      <p class="demo-note" id="cr-use">${icon('i-info')}<span>Com Membership vigente, em Luxchange Request ou Direct.</span></p>
     </section>
     <p class="demo-ed demo-ed--legal" id="cr-legal-coowner" data-surface="deep"><span>${SUPERS.coOwner}</span></p>
     <p class="demo-ed demo-ed--legal" id="cr-legal-credits" data-surface="deep"><span>${SUPERS.credits}</span></p>`,
@@ -84,12 +87,8 @@ export function timeline() {
       { at: prior - 300, label: 'painel dos Créditos (conceitual, sem números)' },
       { at: prior, label: 'Créditos válidos que você já tem' },
       { at: deposit, label: '+ novos Créditos de datas elegíveis depositadas (super do Co-Owner)' },
-      { at: total, label: '= um só saldo, de lotes diferentes' },
-      {
-        at: use,
-        label:
-          'Luxchange Request ou Direct · Créditos + Taxa de intermediação (super dos Créditos)',
-      },
+      { at: total, label: '= um só saldo para viver outras Second Homes' },
+      { at: use, label: 'com Membership vigente, em Request ou Direct (super dos Créditos)' },
       { at: 10_500, label: 'fim (corte para C05)' },
     ],
   };
@@ -114,11 +113,7 @@ export const qa = {
       name: 'saldo',
       // A condição de Membership fica escrita no painel: a vertical é vista sem som (L3, BR-195). Sem números nem
       // personagem: o saldo de Helena só se forma na Request.
-      expect: [
-        ROWS.total,
-        'Para Luxchange Request ou Direct, com Membership vigente',
-        'Créditos + Taxa de intermediação',
-      ],
+      expect: [ROWS.total, 'Com Membership vigente, em Luxchange Request ou Direct'],
       absent: ['48.000', '46.000', '94.000', 'Helena'],
     },
   ],

@@ -1,4 +1,4 @@
-# Filme Luxtory Club: roteiro, storyboard e direção (v5, auditoria de UX e identidade das Second Homes · proposta para aprovação)
+# Filme Luxtory Club: roteiro, storyboard e direção (v6, auditoria econômica · proposta para aprovação)
 
 > **Pré-produção do comercial de lançamento.** O filme apresenta os mecanismos do Luxtory Club (Luxchange Request,
 > Luxchange Direct, Luxplus) como possibilidades reais do modelo, para ser publicado só depois da verificação de
@@ -28,7 +28,7 @@ capacidade entra no Inventário Luxtory (REQ-060, BR-202); depois, os Créditos 
 Taxa de intermediação (monetária) de cada modalidade. O Luxplus é a alternativa em dinheiro, que não consome Créditos.
 
 **Os números aparecem uma única vez.** O painel de C04 explica a lógica sem números: Créditos que você já tem + novos
-Créditos de datas depositadas = um só saldo, de lotes diferentes. O saldo de Helena se forma só na Request (C05b–C06):
+Créditos de datas depositadas = um só saldo para viver outras Second Homes. O saldo de Helena se forma só na Request (C05b–C06):
 saldo de 48.000, necessidade de 55.000, complementação, depósito de 46.000, saldo de 94.000 e uso de 55.000. O cenário
 completo, para referência da produção (a tabela não vai para a tela):
 
@@ -140,7 +140,7 @@ fotografia em Pure White (Newsreader no título, Hanken no descritor), com a hai
 | C01 | 0:00–0:04 | S01 vale ao amanhecer, a Satori Home ao longe | — | — | — | trilha entra (piano), vento | — |
 | C02 | 0:04–0:09 | S02 Helena e a família no terraço de pedra; S03 detalhe de luz no interior | — | — | "Tudo começa na sua Second Home." | trilha, passos na madeira | corte no movimento |
 | C03 | 0:09–0:13 | S04 Helena com o celular, horizonte ao fundo | — | **Luxtory Club** | "Mas ela pode ser o ponto de partida — não o limite." | toque de UI suave | dissolve 8 quadros |
-| C04 | 0:13–0:23,5 | S05 terraço da Satori Home e o vale; Helena no terço direito | creditos 0–10,5: painel conceitual à esquerda (Créditos válidos que você já tem + novos Créditos, de datas elegíveis depositadas = um só saldo, de lotes diferentes; para Request ou Direct, com Membership vigente), sem números | supers: 0:16,0–0:19,2 *No Co-Owner, só data já reservada é cedida.* · 0:19,5–0:23,0 *Créditos não são moeda, investimento nem garantia de disponibilidade.* | "Com Membership vigente, você usa os Créditos válidos que já tem, deposita datas elegíveis para gerar novos — ou combina os dois para viver outras Second Homes." | um toque macio por linha do painel; pulso da trilha | corte |
+| C04 | 0:13–0:23,5 | S05 terraço da Satori Home e o vale; Helena no terço direito | creditos 0–10,5: painel conceitual à esquerda (Créditos válidos que você já tem + novos Créditos, de datas elegíveis depositadas = um só saldo para viver outras Second Homes; com Membership vigente, em Luxchange Request ou Direct), sem números | supers: 0:16,0–0:19,2 *No Co-Owner, só data já reservada é cedida.* · 0:19,5–0:23,0 *Créditos não são moeda nem garantem disponibilidade.* | "Com Membership vigente, você usa os Créditos válidos que já tem, deposita datas elegíveis para gerar novos — ou combina os dois para viver outras Second Homes." | um toque macio por linha do painel; pulso da trilha | corte |
 | C05 | 0:23,5–0:30,5 | S06 Azzura Home, plano aberto ao entardecer | request 0,0–4,6, a partir de 0:25,9 | **Luxchange Request** · noites de outro Titular · Créditos + Taxa de intermediação (0,3–2,4 s); faixa inferior: *Imagens, interfaces e valores ilustrativos.* | "Quando as noites que você deseja estão com outro Titular, você envia uma Request." | toques nas datas | corte |
 | C05b | 0:30,5–0:34,5 | S04 (segunda parte) Helena na Satori Home com o celular | request 6,0–10,0 (Créditos necessários 55.000 × saldo 48.000, faltam 7.000 → Complementar saldo → abril → maio) | — | "Se o saldo não bastar, você completa com datas do seu Direito de Uso — e pode depositar mais, para as próximas experiências." | toques | corte |
 | C05c | 0:34,5–0:39,5 | S03 (segunda parte) luz da manhã no interior da Satori Home | request 10,6–15,6 (controle → 14.000, o mínimo, com 16/05; toque em 14/05 → 30.000; toque em 15/05 → 46.000; saldo projetado 94.000; depositar) | — | (continuação) | toques; um tic por data | corte |
@@ -194,7 +194,8 @@ certa. Os ajustes:
 - **Presente do indicativo.** "Usa, deposita, combina" soa mais humano e direto que "pode usar, depositar, combinar".
 - **"Gerar novos".** Evita repetir "Créditos" três vezes na mesma frase.
 - **Travessão antes de "ou combina os dois".** A pausa marca a ideia principal, a combinação, que o painel fecha com
-  "Um só saldo, de lotes diferentes" — sem números, que ficam para a Request.
+  "Um só saldo para viver outras Second Homes" — sem números, que ficam para a Request, e sem "lotes", termo técnico
+  que fica na interface da Request.
 
 Se a Luxtory preferir o nome na voz: "Com Membership vigente, no Luxchange você usa os Créditos válidos que já tem…" (uma
 palavra a mais).
@@ -242,7 +243,7 @@ geométrico (centro óptico); no 9:16, logo a 62% da largura e frase em duas lin
 | Onde | Ressalva | Tempo |
 |---|---|---|
 | C04, com o depósito | *No Co-Owner, só data já reservada é cedida.* (frase aprovada do FAQ) | 3,2 s · 8 palavras |
-| C04, com o saldo | *Créditos não são moeda, investimento nem garantia de disponibilidade.* (copy aprovada) | 3,5 s · 9 palavras |
+| C04, com o saldo | *Créditos não são moeda nem garantem disponibilidade.* (frase aprovada do FAQ, b2c.md §4) | 3,5 s · 7 palavras |
 | C05, faixa inferior, na primeira interface | *Imagens, interfaces e valores ilustrativos.* | 4 s · 5 palavras |
 | Cartões de interface | sem selo, em prévia e em exportação: a indicação de material ilustrativo é o lettering de C05 e a descrição | — |
 | Descrição do vídeo e página de destino | texto completo (abaixo) | sem limite |
@@ -319,7 +320,7 @@ emissora para TV, com true peak ≤ −1 dBTP e sem distorção nem clipping.
 | Camada | O que é | Regra |
 |---|---|---|
 | Interface | os assets das três sequências, com alfa | movimento só dos tokens do Core; não reanimar a interface na pós; nunca espelhar |
-| Créditos (C04) | painel editorial conceitual: Créditos que já tem + novos Créditos de datas depositadas = um só saldo, de lotes diferentes; uso em Request ou Direct; barra de lotes | sem números (o saldo de Helena se forma só na Request); sem botões nem etapas transacionais; fade-up curto por linha, alinhado à voz |
+| Créditos (C04) | painel editorial conceitual: Créditos que já tem + novos Créditos de datas depositadas = um só saldo para viver outras Second Homes; com Membership vigente, em Request ou Direct; barra de lotes como forma | sem números (o saldo de Helena se forma só na Request); sem botões nem etapas transacionais; fade-up curto por linha, alinhado à voz |
 | Câmera sobre a interface | push-in lento do conjunto (imagem e interface juntas) ou leve paralaxe entre elas | ≤ 110% de escala sobre render 1080p; acima disso, render maior só daquele trecho |
 | Profundidade | foco da imagem suaviza levemente quando a interface entra e volta quando ela sai | desfoque discreto; nunca blur nos cartões |
 | Passo de Créditos (Request e Direct) | Créditos necessários × saldo; controle "Créditos adicionais desejados"; calendário do Direito de Uso num acordeão; depósito confirmado | uma decisão por momento; controle e calendário com uma fonte única (as datas); todas as metas com datas inteiras (0, 14.000, 16.000, 30.000, 32.000, 46.000), com uma marca por meta na trilha; sugestão determinística quando o controle se move (`rules.js`); estados por forma e texto, não só por cor (ponto = reserva, traço de check = selecionada, riscado = indisponível ou comprometida); no filme, o controle é coreografado (ver `README.md`) |
@@ -329,6 +330,16 @@ emissora para TV, com true peak ≤ −1 dBTP e sem distorção nem clipping.
 | Assinatura | logo oficial em fade puro (900 ms) e frase em fade-up | arquivo do manifest intacto; sem traço, brilho, máscara, rotação, escala ou texto adicional |
 
 ## 9. Revisões
+
+**v6 (auditoria econômica e direção audiovisual final, 2026-11-18):**
+
+- C04 mais enxuto, comunicando liberdade e não contrato: "Um só saldo para viver outras Second Homes" (sai "lotes");
+  nota numa linha com a condição de Membership; ressalva com a frase aprovada do FAQ ("Créditos não são moeda nem
+  garantem disponibilidade."). A descrição do vídeo mantém o texto completo.
+- Controle: unidade "Créditos" junto do número principal; depósito desabilitado enquanto nenhuma data estiver
+  selecionada.
+- Valores do cenário da Helena (§1) inalterados até a decisão de PRL (`ECONOMIA.md`). Se um cenário for aprovado, a
+  tabela do §1 e os números dos storyboards mudam; a narração não muda (não cita números).
 
 **v5 (auditoria final de UX, identidade das Second Homes e consistência audiovisual, 2026-11-15):**
 

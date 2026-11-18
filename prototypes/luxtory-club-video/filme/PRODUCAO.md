@@ -1,4 +1,4 @@
-# Filme Luxtory Club: produção, footage e integração (v5, auditoria de UX e identidade das Second Homes · proposta para aprovação)
+# Filme Luxtory Club: produção, footage e integração (v6, auditoria econômica e plano da fase cinematográfica · proposta para aprovação)
 
 > Complementa `ROTEIRO.md`. Imóveis, pessoas e valores ilustrativos, nunca apresentados como Second Homes reais à venda
 > ou disponíveis. A publicação depende da verificação de prontidão do produto e da aprovação da comunicação (§5).
@@ -293,6 +293,13 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
 
 ## 8. Revisões
 
+**v6 (auditoria econômica e direção audiovisual final, 2026-11-18):**
+
+- Economia em `ECONOMIA.md`: benchmark por Second Home, matriz de PRL e simulação; nada alterado sem aprovação.
+- Placas da Olivar como placeholders estáticos (sem push-in nem grão), validadas como paradas; a métrica de movimento
+  lia notação científica errado.
+- Plano da fase cinematográfica, com recursos e custos que pedem autorização (§9).
+
 **v5 (auditoria final de UX, identidade das Second Homes e consistência audiovisual, 2026-11-15):**
 
 - Nomes: Mirante · Serra → *Satori Home*; Varanda · Litoral → *Azzura Home*; Pátio · Campo → *Olivar Home* (propostas
@@ -337,3 +344,76 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
   - 30 fps como padrão;
   - resolução definida por plano aprovado;
   - mixagem por inteligibilidade.
+
+## 9. Fase cinematográfica: plano de execução e autorizações (v6)
+
+A biblioteca de interfaces está pronta para a fase cinematográfica. Duas condições: a decisão econômica
+(`ECONOMIA.md`) e o congelamento dos valores e nomes (Etapa 3). Nada abaixo foi contratado nem gerado.
+
+### 9.1 Sequência de trabalho
+
+| Passo | O que se faz | Sai daqui | Depende de |
+|---|---|---|---|
+| 1. Decisões | cenário de PRL e valor do Luxplus; nomes Satori, Azzura e Olivar Home liberados para uso interno de produção; ferramenta de IA, voz e trilha (§7) | parâmetros congelados | Luxtory |
+| 2. Congelamento | `data.js` com os valores aprovados; uma única regeneração de Request, Direct e Luxplus (16:9 e 9:16), da prova e da prova curta; C04 e assinatura não mudam | biblioteca final com alfa | passo 1 |
+| 3. Referências por imóvel | imagens-chave mestras K-SA, K-AZ e K-OL (exterior e interior) a partir das bíblias (§2.2), folha de personagem K-HE e folhas da família; uma prancha de aprovação por imóvel (arquitetura, materiais, paisagem, luz, figurino) | referências aprovadas | ferramenta autorizada |
+| 4. Teste de viabilidade | S06 (arquitetura, Azzura), S02 (pessoas, Satori), S15 (mãos e fogo, Olivar), com os critérios do §1 | decisão por plano: A, B ou C | passo 3 |
+| 5. Footage | 17 planos (§3), ≈ 1,5× a duração usada, na cadência decidida (30 fps); QA plano a plano: continuidade, mãos, rostos, arquitetura sem deriva, espaço livre para os cartões | planos aprovados em `out/entrada/` | passo 4 |
+| 6. Voz e trilha | seleção de locução (voz natural, 30–45 anos) com cessão de direitos; trilha original ou de biblioteca com licença para publicidade | `vo.wav`, `trilha.wav` | autorização |
+| 7. Montagem | master 16:9 (≈ 105,5 s) e vertical 9:16 (≈ 58 s) a partir da EDL; a prova já troca placeholder por footage automaticamente | cortes para aprovação | passos 2, 5, 6 |
+| 8. Finalização | mixagem por inteligibilidade, loudness por canal, legendas; `check.mjs --final` e `montar.mjs --final` (nenhum placeholder, nenhuma marca interna) | masters | passo 7 |
+| 9. Antes de publicar | lista do §5: prontidão do produto, compatibilidade das interfaces, comunicação e direitos aprovados | publicação autorizada | Luxtory |
+
+### 9.2 Referências consistentes de cada Second Home
+
+- Uma Second Home é uma casa só. Todos os planos de um imóvel partem da mesma imagem-chave mestra (exterior e
+  interior) e repetem volumes, materiais, aberturas, posição da piscina e direção do sol.
+- Imóveis diferentes nunca passam pela mesma propriedade: a pedra é da serra (Satori), os volumes brancos e o vidro
+  sobre o mar são do litoral (Azzura), a taipa e o pátio com oliveira são do campo (Olivar).
+- As fotos de `public/images/` e as placas internas continuam só como referência e teste. Nenhuma delas vai para o
+  master.
+- Pessoas: as mesmas folhas de personagem em todos os planos; rostos nos planos sem interface; nenhuma semelhança com
+  pessoa real.
+
+### 9.3 Equilíbrio entre momentos funcionais e emocionais
+
+Medido no roteiro atual (§3 do `ROTEIRO.md`), sobre 105,5 s:
+
+| Camada | Tempo | Parte do filme |
+|---|---|---|
+| Cartões de interface | 51,4 s | 49% |
+| Painel editorial dos Créditos (C04) | 10,5 s | 10% |
+| Sem nenhuma camada (arquitetura, pessoas, celebração, assinatura) | 43,6 s | 41% |
+
+Por modalidade, a interface ocupa 28,1 s na Request, 11,6 s no Direct e 11,7 s no Luxplus.
+
+Recomendação para a montagem:
+- manter a Request, onde está a novidade (saldo, complemento, depósito, Garantia, aceite);
+- avaliar cortar cerca de 1,5 s de interface no Direct (C11) e no Luxplus (C14), devolvendo esse tempo a planos de
+  pessoas no lugar. Os cartões já trazem cada estado essencial em menos tempo;
+- resultado: ≈ 45% de cartões, sem mudar a duração total. É decisão de montagem, a confirmar no primeiro corte com
+  footage.
+
+### 9.4 Recursos e custos externos que pedem autorização
+
+Nenhum deles foi contratado. Valores dependem de orçamento com fornecedores; nada aqui é estimativa de preço.
+
+| Recurso | Para quê | Natureza do custo | O que conferir antes |
+|---|---|---|---|
+| Ferramenta de imagem (imagens-chave e folhas de personagem) | §2.2, passo 3 | assinatura ou créditos de uso | licença comercial, sem marca d'água, direitos sobre o resultado |
+| Ferramenta de imagem → vídeo | 17 planos, passo 5 | assinatura ou créditos por segundo gerado | licença comercial para publicidade, resolução nativa, consistência de personagem |
+| Upscale ou reenquadramento | planos reenquadrados (§5) | assinatura ou por arquivo | licença comercial |
+| Banco de imagens (caminho B) | só os planos que A reprovar | licença por clipe | mesma casa ou pessoa nos planos vizinhos; direitos de imagem |
+| Filmagem própria (caminho C) | só se houver vantagem perceptível | produção, locação, elenco | locação compatível com as bíblias; cessão de imagem |
+| Locução | narração pt-BR | cachê com cessão de direitos (canais, território, prazo) | voz sintética só com licença comercial explícita |
+| Trilha | master e vertical | composição original ou licença de biblioteca | uso em publicidade web (e TV, se houver), território e prazo; documento arquivado |
+| Efeitos e ambientes | desenho de som | licença de biblioteca | uso comercial |
+| Busca de anterioridade de marca | nomes Satori, Azzura e Olivar Home | pesquisa e parecer | INPI e uso de mercado; nenhuma afirmação de exclusividade |
+| Revisão jurídica | narração, supers, descrição, "Taxa de intermediação" | honorários | §6 |
+
+### 9.5 Próxima decisão para iniciar a produção definitiva
+
+1. Aprovar um cenário de PRL e a regra do valor exibido no Luxplus (`ECONOMIA.md` §4–§6).
+2. Autorizar o passo 3 (referências por imóvel) e o teste de viabilidade do passo 4, com a ferramenta e o orçamento
+   escolhidos.
+

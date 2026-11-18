@@ -408,7 +408,7 @@ test('ressalvas do filme: condições essenciais no roteiro, fora da assinatura 
   const roteiro = readFileSync(join(DIR, 'filme/ROTEIRO.md'), 'utf8');
   for (const text of [
     'Com Membership vigente', // L3, BR-195: condição na mesma frase dos Créditos (narração)
-    'Créditos não são moeda, investimento nem garantia de disponibilidade.', // BR-190, copy aprovada (C04)
+    'Créditos não são moeda nem garantem disponibilidade.', // BR-190, frase aprovada do FAQ (b2c.md §4) (C04)
     'No Co-Owner, só data já reservada é cedida.', // BR-151, REQ-060, frase aprovada do FAQ (C04)
     'Imagens, interfaces e valores ilustrativos.', // C05, primeira interface (neutro, sem negar o produto)
   ])
@@ -601,7 +601,22 @@ for (const fmt of ['16x9', '9x16']) {
     const lastSelect = Math.max(
       ...tl.set.filter((x) => x.attr === 'data-selected').map((x) => x.at),
     );
-    assert.ok(lastSelect < tl.set.find((x) => x.sel === '#deposit-go').at);
+    const press = tl.set.find((x) => x.sel === '#deposit-go' && x.attr !== 'aria-disabled');
+    assert.ok(lastSelect < press.at);
+    // Sem nenhuma data selecionada, a ação de depósito nasce desabilitada e só se habilita na primeira seleção.
+    const stage = { dataset: {}, insertAdjacentHTML: (_, html) => (stage.html = html) };
+    requestSeq.build(stage, fmt);
+    assert.match(stage.html, /id="deposit-go"[^>]*aria-disabled="true"/);
+    const enable = tl.set.filter((x) => x.sel === '#deposit-go' && x.attr === 'aria-disabled');
+    assert.deepEqual(
+      enable.map((x) => x.value),
+      ['true', null],
+    );
+    const firstSelect = Math.min(
+      ...tl.set.filter((x) => x.attr === 'data-selected').map((x) => x.at),
+    );
+    assert.ok(enable[0].at < 0, 'desabilitada desde o início');
+    assert.equal(enable[1].at, firstSelect);
   });
 }
 

@@ -13,12 +13,10 @@ import { PLATES } from './placas-caminhos.js';
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const SIZE = 2400; // cobre 16:9 e 9:16 com folga para o push-in
 
-// Grão fino e estático (como papel ou película): sem textura, o push-in de um gradiente liso não muda quase nada entre
-// quadros e a validação de continuidade da placa (capture.mjs) não consegue provar o movimento (mediana 0,002, medido).
-const GRAIN = 14;
-const GRAIN_BLUR = 1.2;
+// Campo liso: é placeholder estático de contraste (STATIC_PLATES), sem push-in. Na v5 recebeu grão só para a métrica de
+// movimento enxergar o push-in; textura usada para satisfazer métrica foi removida na auditoria seguinte.
 const field = (c0, c1) =>
-  `gradients=s=${SIZE}x${SIZE}:c0=${c0}:c1=${c1}:type=radial:x0=${SIZE * 0.3}:y0=${SIZE * 0.35}:x1=${SIZE}:y1=${SIZE}:n=2:d=1,format=rgb24,noise=alls=${GRAIN}:allf=t,gblur=sigma=${GRAIN_BLUR}`;
+  `gradients=s=${SIZE}x${SIZE}:c0=${c0}:c1=${c1}:type=radial:x0=${SIZE * 0.3}:y0=${SIZE * 0.35}:x1=${SIZE}:y1=${SIZE}:n=2:d=1,format=rgb24,noise=alls=3:allf=t,gblur=sigma=6`;
 
 const RECIPES = {
   azzuraNoite: [

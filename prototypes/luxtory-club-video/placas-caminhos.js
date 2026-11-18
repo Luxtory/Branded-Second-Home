@@ -7,3 +7,10 @@ export const PLATES = {
   olivarTarde: `${DIR}olivar-tarde.png`,
   olivarNoite: `${DIR}olivar-noite.png`,
 };
+
+/**
+ * Placas sem fotografia (campos neutros da Olivar Home): são placeholders estáticos de contraste. Não anunciam movimento
+ * de câmera; capture.mjs as compõe paradas e valida que estão paradas. As placas fotográficas seguem com push-in e
+ * validação de movimento contínuo.
+ */
+export const STATIC_PLATES = new Set([PLATES.olivarTarde, PLATES.olivarNoite]);

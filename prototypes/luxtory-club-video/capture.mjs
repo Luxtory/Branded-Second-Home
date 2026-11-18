@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { startServer } from './serve.mjs';
 import { ensurePlates } from './placas.mjs';
+import { STATIC_PLATES } from './placas-caminhos.js';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 // --final: exportação para o comercial (selo neutro, sem marcas internas) em out/final/, sem tocar nas evidências.
@@ -170,7 +171,9 @@ const motion = (file, [w, h, x, y], from = 0, to = Infinity) => {
     'null',
     '-',
   ]);
-  const values = [...readFileSync(log, 'utf8').matchAll(/YAVG=([\d.]+)/g)]
+  // Notação científica incluída: o ffmpeg imprime diferenças quase nulas como 9.645e-05, que a leitura antiga tomava por
+  // 9,645 (falso "movimento irregular" nas placas lisas da v5, mascarado depois com grão).
+  const values = [...readFileSync(log, 'utf8').matchAll(/YAVG=([-+\d.eE]+)/g)]
     .map((m) => Number(m[1]))
     .slice(Math.max(1, from), to);
   rmSync(log);
@@ -303,8 +306,12 @@ for (const seq of SEQS) {
         `scale=${W}:${H}:force_original_aspect_ratio=increase:flags=lanczos,crop=${W}:${H}:(iw-ow)*${spec.focusX}:(ih-oh)/2`,
         still,
       ]);
+      // Placeholder estático (campo sem fotografia): composto parado, sem anunciar movimento de câmera.
+      const isStatic = STATIC_PLATES.has(PLATES[kind]);
       const z = `(0.03*in/${total})`;
-      const push = `perspective=x0=W*${z}:y0=H*${z}:x1=W*(1-${z}):y1=H*${z}:x2=W*${z}:y2=H*(1-${z}):x3=W*(1-${z}):y3=H*(1-${z}):interpolation=cubic:sense=source:eval=frame`;
+      const push = isStatic
+        ? 'null'
+        : `perspective=x0=W*${z}:y0=H*${z}:x1=W*(1-${z}):y1=H*${z}:x2=W*${z}:y2=H*(1-${z}):x3=W*(1-${z}):y3=H*(1-${z}):interpolation=cubic:sense=source:eval=frame`;
       ffmpeg([
         '-loop',
         '1',
@@ -326,12 +333,15 @@ for (const seq of SEQS) {
         ...BT709,
         plate,
       ]);
-      plateMotion[kind] = motion(plate, [
-        Math.round(W * 0.4),
-        Math.round(H * 0.3),
-        Math.round(W * 0.3),
-        Math.round(H * 0.35),
-      ]);
+      plateMotion[kind] = {
+        static: isStatic,
+        ...motion(plate, [
+          Math.round(W * 0.4),
+          Math.round(H * 0.3),
+          Math.round(W * 0.3),
+          Math.round(H * 0.35),
+        ]),
+      };
       // Composição em RGB (alfa straight), como num editor: placa decodificada pela mesma matriz BT.709.
       ffmpeg([
         '-i',
@@ -446,10 +456,11 @@ for (const seq of SEQS) {
     );
     // Continuidade: placa sem travada (nenhum quadro parado; nenhum salto > 3× a mediana que também passe de 0,25 nível
     // de luma, limiar de visibilidade — o zoompan media 2,69) e entrada do cartão do detentor sem quadro repetido.
+    // Placeholder estático: valida-se como parado (nenhuma variação visível entre quadros), nunca como movimento.
     for (const [kind, m] of Object.entries(plateMotion))
       check(
-        m.still === 0 && m.max <= Math.max(3 * m.median, 0.25),
-        `${fmt} placa ${kind}: movimento irregular ${JSON.stringify(m)}`,
+        m.static ? m.max <= 0.25 : m.still === 0 && m.max <= Math.max(3 * m.median, 0.25),
+        `${fmt} placa ${kind}: ${m.static ? 'placeholder estático com variação' : 'movimento irregular'} ${JSON.stringify(m)}`,
       );
     const enterFrom = Math.round((qa.motion.enter[0] / 1000) * FPS) + 1;
     const enterTo = Math.round((qa.motion.enter[1] / 1000) * FPS);

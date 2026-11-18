@@ -336,7 +336,7 @@ Especificação para o produto, quando existir:
 A ausência de violações detectadas pelo axe não substitui essa validação de interação, que fica para o produto.
 
 **Depósito uma única vez.** O C04 (`sequence-creditos.js`) passa a ser conceitual e sem números: "Créditos válidos que
-você já tem" + "Novos Créditos, de datas elegíveis depositadas" = "Um só saldo, de lotes diferentes", 10,5 s. O saldo de
+você já tem" + "Novos Créditos, de datas elegíveis depositadas" = "Um só saldo para viver outras Second Homes", 10,5 s. O saldo de
 Helena (48.000 + 46.000 = 94.000) se forma só na Request. O teste garante que o markup do C04 não tem dígitos nem
 "Helena".
 
@@ -372,6 +372,36 @@ node prototypes/luxtory-club-video/placas.mjs --force
 dos arquivos codificados. Inventário dos masters vigentes em `filme/INVENTARIO.md`.
 
 **Versões anteriores.** Os entregáveis do commit `f5810a6` (v4) estão em `out/referencia-f5810a6/`, com os mesmos nomes.
+
+## Auditoria econômica e ajustes pontuais (v6, 2026-11-18)
+
+**Economia.** Benchmark de mercado, matriz de PRL por Second Home e simulação de impacto em `filme/ECONOMIA.md`.
+Nenhum PRL, Crédito, taxa ou valor do Luxplus foi alterado: a mudança depende de aprovação comercial e acontece uma
+única vez, no congelamento da biblioteca.
+
+**Ajustes de UX** (no código e nos testes; os vídeos só são regenerados no congelamento):
+
+- **Unidade:** o número principal do controle leva "Créditos" ao lado (no 9:16) ou logo abaixo (no 16:9, para o
+  rótulo seguir em uma linha). Nenhum valor em reais nem PRL entra na tela de seleção.
+- **Depósito:** "Depositar datas e gerar Créditos" nasce desabilitada (`aria-disabled`, estilo do Core) enquanto
+  nenhuma data está selecionada e se habilita na primeira seleção. O estado vem da linha do tempo, porque o motor
+  remove o atributo antes do primeiro passo.
+- **C04 mais enxuto:**
+  - a soma termina em "Um só saldo para viver outras Second Homes" (sai "lotes", termo técnico);
+  - a nota fica numa linha só: "Com Membership vigente, em Luxchange Request ou Direct.";
+  - a ressalva passa a usar a frase aprovada do FAQ: "Créditos não são moeda nem garantem disponibilidade.";
+  - permanecem as condições exigidas pela L3 de `b2c.md`: Membership vigente, Crédito não é moeda e a regra do
+    Co-Owner.
+
+**Placas.**
+- A métrica de movimento lia números em notação científica pela metade (9.645e-05 virava 9,645). Por isso as placas
+  lisas da Olivar "falhavam", e o grão da v5 só mascarava a leitura errada.
+- Correções:
+  - leitor corrigido em `capture.mjs`;
+  - grão removido;
+  - as placas sem fotografia (`STATIC_PLATES` em `placas-caminhos.js`) passam a placeholders estáticos: sem push-in,
+    validados como parados (variação máxima de 0,057 nível de luma na codificação final, contra o limiar de 0,25).
+- As placas fotográficas mantêm o push-in e a validação de movimento contínuo.
 
 ## Integração na pós (Etapa A)
 
