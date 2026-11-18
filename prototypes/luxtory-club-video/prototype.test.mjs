@@ -501,11 +501,14 @@ test('[BR-190][BR-191][PD-008][REQ-060] Créditos: C04 conceitual; o saldo de He
   assert.ok(at('#cr-panel').in < beats[0], 'o painel chega com a primeira batida');
   const exit = parseFloat(TOKENS.duration.moderate.$value);
   const words = (t) => t.split(/\s+/).length;
-  const [coOwner, credits] = [at('#cr-legal-coowner'), at('#cr-legal-credits')];
-  assert.ok(coOwner.out - coOwner.in >= (words(creditosSeq.SUPERS.coOwner) / 3 + 0.5) * 1000);
-  assert.ok(credits.out - credits.in >= (words(creditosSeq.SUPERS.credits) / 3 + 0.5) * 1000);
-  assert.ok(credits.in >= coOwner.out + exit, 'troca dos supers sem crossfade');
-  assert.ok(credits.out + exit <= tl.duration, 'o último super sai antes do corte');
+  // Ressalvas da L3 numa nota só, dentro do painel: entra com o depósito e fica até a saída do painel.
+  const [legal, panel] = [at('#cr-legal'), at('#cr-panel')];
+  assert.equal(creditosSeq.FOOTNOTE, `${creditosSeq.SUPERS.credits} ${creditosSeq.SUPERS.coOwner}`);
+  assert.ok(
+    panel.out - legal.in >= (words(creditosSeq.FOOTNOTE) / 3 + 0.5) * 1000,
+    'tempo de leitura da nota',
+  );
+  assert.ok(panel.out + exit <= tl.duration, 'o painel sai antes do corte');
 });
 
 test('[BR-151][BR-200][REQ-060] depósito: elegibilidade por modalidade, datas inteiras e números do cenário', () => {
@@ -617,6 +620,23 @@ for (const fmt of ['16x9', '9x16']) {
     );
     assert.ok(enable[0].at < 0, 'desabilitada desde o início');
     assert.equal(enable[1].at, firstSelect);
+    // Semântica do protótipo: nenhum toque, processamento ou confirmação na ação enquanto ela está desabilitada, e toda
+    // data selecionada é elegível (seleção válida: datas inteiras, reservadas, com a antecedência mínima).
+    for (const x of tl.set.filter((s) => s.sel === '#deposit-go' && s.attr !== 'aria-disabled'))
+      assert.ok(x.at >= enable[1].at, `ação acionada desabilitada em ${x.at} ms`);
+    const eligibleNights = dep.eligible.map((d) => d.night);
+    for (const x of tl.set.filter(
+      (s) => s.attr === 'data-selected' && s.sel.startsWith('[data-deposit-day'),
+    ))
+      assert.ok(eligibleNights.includes(x.sel.match(/"(.+)"/)[1]), `${x.sel} não é elegível`);
+    // O calendário abre no primeiro mês com data elegível (maio), sem passo de navegação; abril segue navegável.
+    const opening = tl.enter.filter((e) => e.sel.startsWith('#dm-'));
+    assert.deepEqual(
+      opening.filter((e) => e.in < 0).map((e) => e.sel),
+      ['#dm-2027-05'],
+    );
+    assert.ok(eligibleNights.every((n) => n.startsWith('2027-05')));
+    assert.ok(!tl.marks.some((m) => /próximo mês/.test(m.label)), 'sem toque de navegação');
   });
 }
 

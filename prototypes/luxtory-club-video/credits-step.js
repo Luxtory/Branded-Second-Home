@@ -322,6 +322,24 @@ export function selectionChoreography(dep, steps, { tween, needed }) {
   return { enter, set, tween: tweens, states };
 }
 
+/** Mês fora de cena no vídeo: continua navegável no produto (botões de mês), mas nunca entra no quadro. */
+const OFFSTAGE = Number.POSITIVE_INFINITY;
+
+/**
+ * O calendário do depósito abre no primeiro mês com data elegível: é onde estão as datas que o controle oferece, sem um
+ * passo de navegação antes. Os demais meses do Direito de Uso seguem acessíveis pelos botões de mês.
+ */
+export function openingMonth(dep) {
+  const month =
+    dep.months.find((ym) =>
+      dep.days.some((d) => d.night.startsWith(ym) && d.status === DEPOSIT_STATUS.eligible),
+    ) ?? dep.months[0];
+  return {
+    month,
+    enter: dep.months.map((ym) => ({ sel: `#dm-${ym}`, in: ym === month ? ALWAYS : OFFSTAGE })),
+  };
+}
+
 /** Navegação do calendário: toque no "próximo mês", saída do mês atual e entrada do seguinte. */
 export function monthNavigation(dep, at) {
   const [from, to] = dep.months;

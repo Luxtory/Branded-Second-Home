@@ -1,4 +1,4 @@
-# Filme Luxtory Club: produção, footage e integração (v6, auditoria econômica e plano da fase cinematográfica · proposta para aprovação)
+# Filme Luxtory Club: produção, footage e integração (v6.1, auditoria econômica e plano da fase cinematográfica · proposta para aprovação)
 
 > Complementa `ROTEIRO.md`. Imóveis, pessoas e valores ilustrativos, nunca apresentados como Second Homes reais à venda
 > ou disponíveis. A publicação depende da verificação de prontidão do produto e da aprovação da comunicação (§5).
@@ -268,7 +268,7 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
       antes de qualquer uso público; nenhuma afirmação de exclusividade. Atenção: "Azzura" e "Olivar" são grafias
       criadas (de "azzurra" e "olival"); "Satori" está no mesmo registro de "Kaizen" (palavras japonesas) e não deve
       sugerir vínculo com aquele projeto.
-- [ ] Supers de C04, lettering de C05 e texto completo na descrição (`ROTEIRO.md` §5); cartões sem selo nem jargão;
+- [ ] Nota do C04, lettering de C05 e texto completo na descrição (`ROTEIRO.md` §5); cartões sem selo nem jargão;
       a assinatura é só a marca.
 - [ ] "Taxa de intermediação" harmonizada com os documentos comerciais e jurídicos (conceito canônico: Luxchange Fee,
       01 §24).
@@ -281,7 +281,7 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
 
 1. **Footage:** autorizar o teste de viabilidade de A (§1), com a escolha da ferramenta, a licença e o orçamento.
 2. **Créditos, nomenclatura e ressalvas:** aprovar a nova experiência de Créditos (Request e Direct), o nome "Taxa de
-   intermediação", a copy da complementação, o painel de C04, os supers, o lettering de C05 e o texto da descrição
+   intermediação", a copy da complementação, o painel de C04 e sua nota, o lettering de C05 e o texto da descrição
    (`ROTEIRO.md` §1, §4–§5), com revisão jurídica.
 3. **Assinatura:** confirmar o corte *"Seja protagonista de histórias extraordinárias."* (ou a headline aprovada
    completa).
@@ -292,6 +292,13 @@ A separação é um único parâmetro, sem ambientes nem feature flags.
    outros; a troca é um dado (`data.js`) e não muda papéis, datas nem Créditos.
 
 ## 8. Revisões
+
+**v6.1 (auditoria crítica da v6, 2026-11-18):**
+
+- `ECONOMIA.md` corrigido: Luxplus de agosto sem acusação de irregularidade (os PRLs de agosto e o desconto não estão
+  definidos); oito dimensões de comparação; anúncios verificados pela Luxtory; sensibilidade econômica separada do
+  cenário narrativo; posicionamento recomendado.
+- §9.3 sem meta de porcentagem; §9.6 com o inventário de materiais cinematográficos pendentes.
 
 **v6 (auditoria econômica e direção audiovisual final, 2026-11-18):**
 
@@ -354,7 +361,7 @@ A biblioteca de interfaces está pronta para a fase cinematográfica. Duas condi
 
 | Passo | O que se faz | Sai daqui | Depende de |
 |---|---|---|---|
-| 1. Decisões | cenário de PRL e valor do Luxplus; nomes Satori, Azzura e Olivar Home liberados para uso interno de produção; ferramenta de IA, voz e trilha (§7) | parâmetros congelados | Luxtory |
+| 1. Decisões | posicionamento e PRLs por data, valor do Luxplus (`ECONOMIA.md` §11); nomes Satori, Azzura e Olivar Home liberados para uso interno de produção; ferramenta de IA, voz e trilha (§7) | parâmetros congelados | Luxtory |
 | 2. Congelamento | `data.js` com os valores aprovados; uma única regeneração de Request, Direct e Luxplus (16:9 e 9:16), da prova e da prova curta; C04 e assinatura não mudam | biblioteca final com alfa | passo 1 |
 | 3. Referências por imóvel | imagens-chave mestras K-SA, K-AZ e K-OL (exterior e interior) a partir das bíblias (§2.2), folha de personagem K-HE e folhas da família; uma prancha de aprovação por imóvel (arquitetura, materiais, paisagem, luz, figurino) | referências aprovadas | ferramenta autorizada |
 | 4. Teste de viabilidade | S06 (arquitetura, Azzura), S02 (pessoas, Satori), S15 (mãos e fogo, Olivar), com os critérios do §1 | decisão por plano: A, B ou C | passo 3 |
@@ -387,12 +394,18 @@ Medido no roteiro atual (§3 do `ROTEIRO.md`), sobre 105,5 s:
 
 Por modalidade, a interface ocupa 28,1 s na Request, 11,6 s no Direct e 11,7 s no Luxplus.
 
-Recomendação para a montagem:
-- manter a Request, onde está a novidade (saldo, complemento, depósito, Garantia, aceite);
-- avaliar cortar cerca de 1,5 s de interface no Direct (C11) e no Luxplus (C14), devolvendo esse tempo a planos de
-  pessoas no lugar. Os cartões já trazem cada estado essencial em menos tempo;
-- resultado: ≈ 45% de cartões, sem mudar a duração total. É decisão de montagem, a confirmar no primeiro corte com
-  footage.
+A porcentagem é diagnóstico, não meta: nenhuma cena necessária sai para atingir um número. O equilíbrio se avalia no
+primeiro corte com footage, por ritmo e compreensão:
+
+- **Compreensão:** cada estado da narrativa única (escolha → necessários → saldo → complemento → depósito → Request →
+  aceite → confirmação; Direct com o saldo; Luxplus em dinheiro) fica legível uma vez, sem estado repetido. Os tempos
+  de leitura já medidos são o piso; por exemplo, as metas do controle ficam visíveis por 0,77 a 2,57 s.
+- **Ritmo:** nenhum trecho de cartões passa de cerca de 5 s sem corte de imagem (regra do `ROTEIRO.md` §2).
+- **Respiro:** cada modalidade termina com a interface saindo em fade e um plano humano sem tela; a celebração e a
+  assinatura ficam limpas.
+- **Teste:** uma exibição para pessoas que não conhecem o produto. Se alguém não entende o complemento ou a diferença
+  entre as modalidades, a interface fica; se a atenção cai num trecho sem informação nova, ele encurta. A decisão é
+  de montagem.
 
 ### 9.4 Recursos e custos externos que pedem autorização
 
@@ -413,7 +426,31 @@ Nenhum deles foi contratado. Valores dependem de orçamento com fornecedores; na
 
 ### 9.5 Próxima decisão para iniciar a produção definitiva
 
-1. Aprovar um cenário de PRL e a regra do valor exibido no Luxplus (`ECONOMIA.md` §4–§6).
+1. Decidir o posicionamento (recomendado: alto padrão) e a intenção econômica do PRL; depois, os PRLs por data e o
+   desconto Luxplus ou a regra de exibição (`ECONOMIA.md` §8, §9 e §11).
 2. Autorizar o passo 3 (referências por imóvel) e o teste de viabilidade do passo 4, com a ferramenta e o orçamento
    escolhidos.
+
+### 9.6 Inventário de materiais cinematográficos
+
+| Material | Satori Home (Serra) | Azzura Home (Litoral) | Olivar Home (Campo) | Estado |
+|---|---|---|---|---|
+| Bíblia arquitetônica | §2.2 | §2.2 | §2.2 | pronta; aprovação pendente |
+| Imagem-chave mestra exterior e interior | K-SA, K-SA-i | K-AZ, K-AZ-i | K-OL, K-OL-i | a gerar e aprovar |
+| Planos (§3) | S01–S05; S03 e S04 em duas partes | S06–S08, S10 | S11–S16 | a produzir |
+| Pessoas | Helena, parceiro e filhos (K-HE + folhas) | Helena e parceiro | três gerações (Direct); Helena e parceiro (Luxplus) | folhas a gerar; nenhuma pessoa real |
+| Plano do outro Titular | — | S09: apartamento na cidade, ao anoitecer, sem rosto | — | a produzir |
+| Montagem final (S17) | sobras de S01–S16 | idem | idem | depende do footage |
+
+| Material comum | Estado |
+|---|---|
+| Interfaces Request, Direct e Luxplus (16:9 e 9:16, alfa) | base aprovada; regeneração única no congelamento |
+| Painel do C04 | base aprovada; regeneração no congelamento (nota no painel) |
+| Assinatura com a logo oficial (6 s) | pronta; não muda |
+| Logo oficial | kit oficial no repositório (`src/design-system/brand/logo/`) |
+| Narração pt-BR | texto em `ROTEIRO.md` §4; locução a contratar |
+| Trilha | a licenciar ou encomendar |
+| Efeitos e ambientes | a licenciar |
+| Legendas (16:9 em arquivo, 9:16 queimadas) | texto pronto; geração na finalização |
+| EDL e montagem automática | prontas (`prova/`); a EDL do master sai do primeiro corte |
 

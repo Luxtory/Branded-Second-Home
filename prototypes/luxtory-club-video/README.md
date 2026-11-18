@@ -403,6 +403,26 @@ Nenhum PRL, Crédito, taxa ou valor do Luxplus foi alterado: a mudança depende 
     validados como parados (variação máxima de 0,057 nível de luma na codificação final, contra o limiar de 0,25).
 - As placas fotográficas mantêm o push-in e a validação de movimento contínuo.
 
+## Auditoria crítica da v6 (v6.1, 2026-11-18)
+
+- **Economia** (`filme/ECONOMIA.md`):
+  - o Luxplus de agosto não é declarado irregular: faltam os PRLs de 13 e 14/08 e o desconto aplicável;
+  - a comparação separa preço público, PRL, perfil, porte e serviços, estadia mínima, sazonalidade do destino,
+    classificação canônica e condições pendentes;
+  - entram os anúncios verificados diretamente pela Luxtory;
+  - a sensibilidade econômica (só o PRL muda) fica separada do cenário narrativo (lotes reconfigurados);
+  - posicionamento recomendado: alto padrão, sem adotar números antes das decisões.
+- **Calendário do depósito:** abre direto no primeiro mês com datas elegíveis (`credits-step.js#openingMonth`). Sai o
+  toque de navegação de abril para maio; os demais meses continuam navegáveis no produto.
+- **Depósito:** os testes garantem que nenhuma ação (toque, processamento, confirmação) acontece enquanto o botão está
+  desabilitado, que a habilitação coincide com a primeira seleção e que toda data selecionada é elegível. No
+  protótipo, a ação é coreografada e não tem manipulador de clique. No produto, o botão desabilitado precisa bloquear
+  a ativação (`disabled`, ou `aria-disabled` com a ativação impedida).
+- **C04:** as ressalvas exigidas pela L3 ficam numa nota só, no rodapé do painel, com a frase aprovada do FAQ. Ela
+  entra quando o depósito é mencionado e fica 6,7 s, para 15 palavras. A faixa inferior do quadro fica livre.
+  Contrapartida: entre a menção ao depósito e a soma, o espaço das linhas seguintes fica reservado acima da nota.
+- **Sem captura completa nesta rodada:** os vídeos são regenerados uma única vez no congelamento.
+
 ## Integração na pós (Etapa A)
 
 - **Alfa straight** (não premultiplicado) nos PNG e no ProRes 4444; interpretar como *Straight* no editor.

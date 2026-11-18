@@ -4,7 +4,7 @@
 > são regenerados pelos comandos do `README.md`. Nada aqui é footage, voz ou trilha definitiva, e nada está publicado.
 > A publicação depende da verificação de prontidão do produto e da aprovação da comunicação (`PRODUCAO.md` §5).
 
-## Situação na v6 (auditoria econômica, 2026-11-18)
+## Situação na v6.1 (auditoria crítica da v6, 2026-11-18)
 
 - **Base aprovada para prosseguir (pré-produção):** a biblioteca v5 abaixo. Não é master comercial.
 - **Já no código e nos testes, ainda não renderizado:**
@@ -12,7 +12,9 @@
   - depósito desabilitado sem datas;
   - C04 mais enxuto;
   - placas da Olivar estáticas e sem grão;
-  - leitor da métrica de movimento corrigido.
+  - leitor da métrica de movimento corrigido;
+  - calendário do depósito abrindo direto em maio (v6.1);
+  - ressalvas do C04 numa nota no rodapé do painel (v6.1).
 - **Regeneração única no congelamento (Etapa 3),** depois da decisão de PRL (`ECONOMIA.md`): Request, Direct e Luxplus
   (16:9 e 9:16), C04, prova de montagem e prova curta. A assinatura não muda.
 - **Pendências cinematográficas** (`PRODUCAO.md` §9):

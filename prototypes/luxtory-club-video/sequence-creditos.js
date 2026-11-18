@@ -6,20 +6,23 @@
 //
 // Regras que a composição respeita: Créditos só se usam com Membership vigente (BR-195, escrito no painel); valem 24
 // meses (BR-191: "válidos"); o depósito origina Créditos e a capacidade entra no Inventário Luxtory (REQ-060,
-// BR-202) — a data nunca paga a reserva diretamente; no Co-Owner, só data já reservada é depositada (BR-151, super);
+// BR-202) — a data nunca paga a reserva diretamente; no Co-Owner, só data já reservada é depositada (BR-151, nota do painel);
 // lotes diferentes compõem o saldo (PD-008, mostrado na Request, não aqui). Obrigatórias pela L3 de b2c.md: a condição
-// de Membership vigente (painel e narração), "Crédito não é moeda" e a regra do Co-Owner (supers); a taxa de cada
+// de Membership vigente (painel e narração), "Crédito não é moeda" e a regra do Co-Owner (nota do painel); a taxa de cada
 // modalidade fica nos títulos das modalidades.
 import { ICONS, icon } from './shared.js';
 
 // Proporções da barra só como forma (dois lotes anteriores e um novo); nenhum valor aparece.
 const SEGMENTS = { prior: [0.32, 0.19], fresh: 0.49 };
 
+// Ressalvas exigidas pela L3 de b2c.md, com o texto aprovado da resposta "Consigo usar outros lugares?" (b2c.md §4).
 export const SUPERS = {
-  coOwner: 'No Co-Owner, só data já reservada é cedida.',
-  // Frase aprovada da resposta "Consigo usar outros lugares?" (b2c.md §4).
   credits: 'Créditos não são moeda nem garantem disponibilidade.',
+  coOwner: 'No Co-Owner, só data já reservada é cedida.',
 };
+// Uma nota só, dentro do painel: a informação fica junto do que ela qualifica e o terço inferior do quadro fica livre
+// para a fotografia (antes, duas legendas na faixa inferior, trocando no meio da cena).
+export const FOOTNOTE = `${SUPERS.credits} ${SUPERS.coOwner}`;
 
 export const ROWS = {
   prior: 'Créditos válidos que você já tem',
@@ -43,9 +46,8 @@ export function build(stage, fmt) {
         <li id="cr-row-total" class="demo-equation__total"><span class="demo-equation__op" aria-hidden="true">=</span><span>${ROWS.total}</span></li>
       </ol>
       <p class="demo-note" id="cr-use">${icon('i-info')}<span>Com Membership vigente, em Luxchange Request ou Direct.</span></p>
-    </section>
-    <p class="demo-ed demo-ed--legal" id="cr-legal-coowner" data-surface="deep"><span>${SUPERS.coOwner}</span></p>
-    <p class="demo-ed demo-ed--legal" id="cr-legal-credits" data-surface="deep"><span>${SUPERS.credits}</span></p>`,
+      <p class="demo-hint demo-footnote" id="cr-legal">${FOOTNOTE}</p>
+    </section>`,
   );
   stage.dataset.fmt = fmt;
 }
@@ -66,10 +68,9 @@ export function timeline() {
       { sel: '#cr-row-deposit', in: deposit },
       { sel: '#cr-row-total', in: total },
       { sel: '#cr-use', in: use },
-      // Supers da cena, cada um com tempo de leitura (≥ 1 s a cada 3 palavras + 0,5 s); o segundo só entra depois da
-      // saída do primeiro (duration.moderate), no mesmo lugar.
-      { sel: '#cr-legal-coowner', in: 3_000, out: 6_200 },
-      { sel: '#cr-legal-credits', in: 6_500, out: 10_000 },
+      // A nota entra quando o depósito é mencionado e fica até a saída do painel (tempo de leitura: ≥ 1 s a cada 3
+      // palavras + 0,5 s).
+      { sel: '#cr-legal', in: deposit },
     ],
     set: [],
     // A barra enche: os lotes que já existiam com a primeira batida, o lote novo com a segunda.
@@ -86,9 +87,12 @@ export function timeline() {
     marks: [
       { at: prior - 300, label: 'painel dos Créditos (conceitual, sem números)' },
       { at: prior, label: 'Créditos válidos que você já tem' },
-      { at: deposit, label: '+ novos Créditos de datas elegíveis depositadas (super do Co-Owner)' },
+      {
+        at: deposit,
+        label: '+ novos Créditos de datas elegíveis depositadas (entra a nota com as ressalvas)',
+      },
       { at: total, label: '= um só saldo para viver outras Second Homes' },
-      { at: use, label: 'com Membership vigente, em Request ou Direct (super dos Créditos)' },
+      { at: use, label: 'com Membership vigente, em Request ou Direct' },
       { at: 10_500, label: 'fim (corte para C05)' },
     ],
   };
@@ -113,7 +117,7 @@ export const qa = {
       name: 'saldo',
       // A condição de Membership fica escrita no painel: a vertical é vista sem som (L3, BR-195). Sem números nem
       // personagem: o saldo de Helena só se forma na Request.
-      expect: [ROWS.total, 'Com Membership vigente, em Luxchange Request ou Direct'],
+      expect: [ROWS.total, 'Com Membership vigente, em Luxchange Request ou Direct', FOOTNOTE],
       absent: ['48.000', '46.000', '94.000', 'Helena'],
     },
   ],

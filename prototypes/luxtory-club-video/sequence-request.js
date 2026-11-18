@@ -12,7 +12,7 @@ import { ALWAYS, ICONS, calendarMonth, hours, icon, periodOf, press, swapIn } fr
 import {
   datesCard,
   depositedCard,
-  monthNavigation,
+  openingMonth,
   needCard,
   selectionChoreography,
   selectionStates,
@@ -182,7 +182,6 @@ export function times(fmt) {
     slider: v ? 9_500 : 10_700,
     topupOut: v ? 10_900 : 15_700,
     datesIn: v ? 11_200 : 8_900,
-    nav: v ? 11_700 : 9_700,
     taps: v ? [12_650, 14_000] : [12_200, 13_600],
     depositPress: 14_900,
     depositOut: 15_700,
@@ -218,7 +217,8 @@ export function timeline(fmt) {
     ],
     { tween, needed: s.credits },
   );
-  const nav = monthNavigation(dep, t.nav);
+  // O calendário do depósito abre direto em maio, o primeiro mês com datas elegíveis (sem navegar a partir de abril).
+  const opening = openingMonth(dep);
   const valueIn = t.sendCommit + 280;
   return {
     duration: t.duration,
@@ -234,7 +234,7 @@ export function timeline(fmt) {
       // Complementação: controle e calendário, sincronizados
       { sel: '#topup', in: t.topupIn, out: t.topupOut },
       { sel: '#dates', in: t.datesIn, out: t.depositOut },
-      ...nav.enter,
+      ...opening.enter,
       ...selection.enter,
       { sel: '#deposit-label', in: ALWAYS, out: t.depositPress + 100 },
       { sel: '#deposit-busy', in: swapIn(t.depositPress + 100), dur: 0 },
@@ -272,7 +272,6 @@ export function timeline(fmt) {
       { sel: '[data-day="2027-06-07"]', attr: 'data-range', at: 3_260, value: 'end' },
       ...press('#cal-next', 5_200),
       ...press('#need-topup', t.topupPress),
-      ...nav.set,
       ...selection.set,
       ...press('#deposit-go', t.depositPress),
       { sel: '#deposit-go', attr: 'aria-busy', at: t.depositPress + 100, value: 'true' },
@@ -309,7 +308,6 @@ export function timeline(fmt) {
       ...(v ? [] : [{ at: 5_200, label: 'toque · Continuar' }]),
       { at: t.needIn, label: 'Créditos necessários 55.000 × saldo 48.000: faltam 7.000' },
       { at: t.topupPress, label: 'toque · Complementar saldo (datas do meu Direito de Uso)' },
-      { at: t.nav, label: 'toque · próximo mês (abril → maio)' },
       {
         at: t.slider,
         label: 'controle · Créditos adicionais desejados → 14.000, o mínimo (16/05)',

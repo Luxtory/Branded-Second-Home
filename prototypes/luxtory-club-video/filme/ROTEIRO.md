@@ -1,4 +1,4 @@
-# Filme Luxtory Club: roteiro, storyboard e direção (v6, auditoria econômica · proposta para aprovação)
+# Filme Luxtory Club: roteiro, storyboard e direção (v6.1, auditoria econômica · proposta para aprovação)
 
 > **Pré-produção do comercial de lançamento.** O filme apresenta os mecanismos do Luxtory Club (Luxchange Request,
 > Luxchange Direct, Luxplus) como possibilidades reais do modelo, para ser publicado só depois da verificação de
@@ -140,9 +140,9 @@ fotografia em Pure White (Newsreader no título, Hanken no descritor), com a hai
 | C01 | 0:00–0:04 | S01 vale ao amanhecer, a Satori Home ao longe | — | — | — | trilha entra (piano), vento | — |
 | C02 | 0:04–0:09 | S02 Helena e a família no terraço de pedra; S03 detalhe de luz no interior | — | — | "Tudo começa na sua Second Home." | trilha, passos na madeira | corte no movimento |
 | C03 | 0:09–0:13 | S04 Helena com o celular, horizonte ao fundo | — | **Luxtory Club** | "Mas ela pode ser o ponto de partida — não o limite." | toque de UI suave | dissolve 8 quadros |
-| C04 | 0:13–0:23,5 | S05 terraço da Satori Home e o vale; Helena no terço direito | creditos 0–10,5: painel conceitual à esquerda (Créditos válidos que você já tem + novos Créditos, de datas elegíveis depositadas = um só saldo para viver outras Second Homes; com Membership vigente, em Luxchange Request ou Direct), sem números | supers: 0:16,0–0:19,2 *No Co-Owner, só data já reservada é cedida.* · 0:19,5–0:23,0 *Créditos não são moeda nem garantem disponibilidade.* | "Com Membership vigente, você usa os Créditos válidos que já tem, deposita datas elegíveis para gerar novos — ou combina os dois para viver outras Second Homes." | um toque macio por linha do painel; pulso da trilha | corte |
+| C04 | 0:13–0:23,5 | S05 terraço da Satori Home e o vale; Helena no terço direito | creditos 0–10,5: painel conceitual à esquerda (Créditos válidos que você já tem + novos Créditos, de datas elegíveis depositadas = um só saldo para viver outras Second Homes; com Membership vigente, em Luxchange Request ou Direct), sem números; nota no rodapé do painel a partir de 0:16,2: *Créditos não são moeda nem garantem disponibilidade. No Co-Owner, só data já reservada é cedida.* | — (terço inferior livre) | "Com Membership vigente, você usa os Créditos válidos que já tem, deposita datas elegíveis para gerar novos — ou combina os dois para viver outras Second Homes." | um toque macio por linha do painel; pulso da trilha | corte |
 | C05 | 0:23,5–0:30,5 | S06 Azzura Home, plano aberto ao entardecer | request 0,0–4,6, a partir de 0:25,9 | **Luxchange Request** · noites de outro Titular · Créditos + Taxa de intermediação (0,3–2,4 s); faixa inferior: *Imagens, interfaces e valores ilustrativos.* | "Quando as noites que você deseja estão com outro Titular, você envia uma Request." | toques nas datas | corte |
-| C05b | 0:30,5–0:34,5 | S04 (segunda parte) Helena na Satori Home com o celular | request 6,0–10,0 (Créditos necessários 55.000 × saldo 48.000, faltam 7.000 → Complementar saldo → abril → maio) | — | "Se o saldo não bastar, você completa com datas do seu Direito de Uso — e pode depositar mais, para as próximas experiências." | toques | corte |
+| C05b | 0:30,5–0:34,5 | S04 (segunda parte) Helena na Satori Home com o celular | request 6,0–10,0 (Créditos necessários 55.000 × saldo 48.000, faltam 7.000 → Complementar saldo → calendário já em maio, com 14, 15 e 16/05 elegíveis e o depósito desabilitado) | — | "Se o saldo não bastar, você completa com datas do seu Direito de Uso — e pode depositar mais, para as próximas experiências." | toques | corte |
 | C05c | 0:34,5–0:39,5 | S03 (segunda parte) luz da manhã no interior da Satori Home | request 10,6–15,6 (controle → 14.000, o mínimo, com 16/05; toque em 14/05 → 30.000; toque em 15/05 → 46.000; saldo projetado 94.000; depositar) | — | (continuação) | toques; um tic por data | corte |
 | C06 | 0:39,5–0:43,5 | S07 detalhe da piscina de borda infinita da Azzura Home | request 17,0–21,0 (depósito confirmado, saldo 94.000 → revisão, Taxa de intermediação R$ 550,00, política, pagar) | — | "Seus Créditos ficam em Garantia, a Taxa de intermediação é paga no envio…" | tic do depósito; toque | corte |
 | C07 | 0:43,5–0:46,5 | S08 terraço sombreado vazio sob a pérgola, o mar ao fundo, luz caindo | request 21,4–24,4 (Pendente + Garantia de três lotes) | — | "…e as noites não ficam bloqueadas enquanto o Titular decide." | tic suave, ambiente do mar | corte |
@@ -242,8 +242,7 @@ geométrico (centro óptico); no 9:16, logo a 62% da largura e frase em duas lin
 
 | Onde | Ressalva | Tempo |
 |---|---|---|
-| C04, com o depósito | *No Co-Owner, só data já reservada é cedida.* (frase aprovada do FAQ) | 3,2 s · 8 palavras |
-| C04, com o saldo | *Créditos não são moeda nem garantem disponibilidade.* (frase aprovada do FAQ, b2c.md §4) | 3,5 s · 7 palavras |
+| C04, nota no rodapé do painel, a partir da menção ao depósito | *Créditos não são moeda nem garantem disponibilidade. No Co-Owner, só data já reservada é cedida.* (frase aprovada do FAQ, b2c.md §4; exigências da L3) | 6,7 s · 15 palavras |
 | C05, faixa inferior, na primeira interface | *Imagens, interfaces e valores ilustrativos.* | 4 s · 5 palavras |
 | Cartões de interface | sem selo, em prévia e em exportação: a indicação de material ilustrativo é o lettering de C05 e a descrição | — |
 | Descrição do vídeo e página de destino | texto completo (abaixo) | sem limite |
@@ -265,8 +264,8 @@ Créditos são os 9:16 do protótipo (um cartão por vez).
 | Bloco | Tempo | Conteúdo |
 |---|---|---|
 | Gancho | 0–3 s | plano vertical da Azzura Home ao entardecer + *"E se a sua Second Home fosse só o começo?"* |
-| Club e Créditos | 3–13,5 s | creditos 9:16 sobre S05 vertical: painel conceitual, sem números, com "com Membership vigente"; os dois supers abaixo do painel |
-| Request | 13,5–34 s | request 9:16: calendário → faltam 7.000 → controle a 14.000, o mínimo (16/05) → calendário de abril → maio (toque em 14/05 → 30.000; toque em 15/05 → 46.000; "A gerar 46.000 · Saldo projetado 94.000") → depósito confirmado → Pendente → Request recebida → Reserva confirmada, com dois planos de lugar; lettering de C05 na entrada |
+| Club e Créditos | 3–13,5 s | creditos 9:16 sobre S05 vertical: painel conceitual, sem números, com "com Membership vigente" e a nota das ressalvas no rodapé do painel |
+| Request | 13,5–34 s | request 9:16: calendário → faltam 7.000 → controle a 14.000, o mínimo (16/05) → calendário de maio (toque em 14/05 → 30.000; toque em 15/05 → 46.000; "A gerar 46.000 · Saldo projetado 94.000") → depósito confirmado → Pendente → Request recebida → Reserva confirmada, com dois planos de lugar; lettering de C05 na entrada |
 | Direct | 34–43 s | direct 9:16: saldo suficiente → continuar com meu saldo → revisão → verificações → Reserva confirmada |
 | Luxplus | 43–52 s | luxplus 9:16: valor da estadia → Créditos inalterados → Reserva confirmada |
 | Assinatura | 52–58 s | assinatura 9:16, só a marca |
@@ -330,6 +329,14 @@ emissora para TV, com true peak ≤ −1 dBTP e sem distorção nem clipping.
 | Assinatura | logo oficial em fade puro (900 ms) e frase em fade-up | arquivo do manifest intacto; sem traço, brilho, máscara, rotação, escala ou texto adicional |
 
 ## 9. Revisões
+
+**v6.1 (auditoria crítica da v6, 2026-11-18):**
+
+- C04: as duas legendas da faixa inferior viram uma nota só no rodapé do painel, com a frase aprovada do FAQ; o terço
+  inferior fica livre para a fotografia. Nenhuma exigência removida (Membership vigente no painel e na narração,
+  Crédito não é moeda, regra do Co-Owner).
+- Request: o calendário do depósito abre direto em maio, o primeiro mês com datas elegíveis; sai o toque de navegação
+  de abril para maio. Os tempos dos toques e do controle não mudam.
 
 **v6 (auditoria econômica e direção audiovisual final, 2026-11-18):**
 
