@@ -8,6 +8,8 @@ import { unavailableKeys } from '@/features/platform';
 import type { AdminAct } from '../application/own-use-admin-availability';
 import type { AuthorizationPurpose } from '../application/own-use-lifecycle-ports';
 import { timelyUntil, microsFromMillis } from '../domain/own-use-lifecycle';
+import { readBookingNominations } from './guest-nomination-read';
+import { guestNominationMessages as guestText } from './i18n/guest-nomination-pt-br';
 import { adminActMessages as act, adminBookingMessages as text } from './i18n/own-use-admin-pt-br';
 import { lifecycleLabels } from './i18n/own-use-lifecycle-pt-br';
 import {
@@ -265,6 +267,8 @@ export async function AdminBookingPage(props: {
     : null;
   if (booking === 'unavailable') return <AuthUnavailable />;
   if (booking === null) notFound();
+  const nominations = await orUnavailable(() => readBookingNominations(booking.id));
+  if (nominations === 'unavailable') return <AuthUnavailable />;
   const available = booking.acts.filter((a) => a.available);
   const unavailable = booking.acts.filter((a) => !a.available);
   const done = param(props.searchParams, 'feito');
@@ -414,6 +418,20 @@ export async function AdminBookingPage(props: {
               ],
             }))}
           />
+        )}
+      </Section>
+      <Section id="convidados-admin" title={guestText.adminSection}>
+        {nominations.length === 0 ? (
+          <p className="lx-body">{guestText.adminNone}</p>
+        ) : (
+          nominations.map((entry) => (
+            <p className="lx-body" key={entry.rulesId}>
+              {guestText.adminItem(
+                instantIn(entry.nominatedAt, booking.timezone),
+                instantIn(entry.rulesSince, booking.timezone),
+              )}
+            </p>
+          ))
         )}
       </Section>
       <Section id="historico" title={text.detail.history}>

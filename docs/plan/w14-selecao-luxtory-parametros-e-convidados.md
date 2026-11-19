@@ -8,6 +8,10 @@ Production. Este documento organiza a execução, sem substituir os canônicos. 
 [`inventory` W14](../specs/inventory.md), [`admin` §13](../specs/admin.md), [`booking` §11](../specs/booking.md).
 Ameaças: [`booking` W14](../security/threats/booking.md).
 
+**Atualização (C1 aprovado):** GO de E3+E4 no mesmo PR, com correção obrigatória — os `down` de `admin_parameter` e
+`booking_guest_nomination` recusam rollback com linhas (histórico nunca descartado), testado em
+`guest-rules.db.test.ts`.
+
 ## Decisões aprovadas (2026-11-19)
 
 | # | Decisão |
@@ -16,7 +20,7 @@ Ameaças: [`booking` W14](../security/threats/booking.md).
 | D2 | K3 `luxtory_selection` entra fechada (sem linha); ativação só por migration própria autorizada; K1/K2 intocadas |
 | D3 | `parameter` só por inserção: início estritamente crescente por escopo, nunca retroativo, nunca antes de um `effective_to` explícito; fim derivado; trava exclusiva por escopo |
 | D4 | Declaração do Titular por (reserva, versão aceita de `guest_rules`), sem dados nem quantidade de convidados (P-6) |
-| D5 | Server Actions sobre o executor; REST `/v1` da TECH-056 **adiado** para esses commands (emenda D6 estendida), não cumprido; OpenAPI inalterado |
+| D5 | Server Actions sobre o executor; REST `/v1` da TECH-056 **adiado** para esses commands (emenda D6 estendida), não cumprido; nenhuma rota nova no OpenAPI — só o enum global `ErrorCode` ganha `ERR_GUEST_RULES_CHANGED` (E3) |
 
 ## Escopo
 
@@ -41,10 +45,10 @@ Ameaças: [`booking` W14](../security/threats/booking.md).
 | 0 | Worktree `/home/rjr-idb/luxtory-w14` a partir de `001ef0d`; branch `feat/w14-selecao-luxtory-parametros-convidados` | concluída |
 | E1 | Plano, specs, ADR-0030, STRIDE | concluída (este PR) |
 | E2 | 3 migrations + testes SQL (seleção, parâmetros, declaração, preservação) | concluída (este PR) |
-| **C1** | Evidências para auditoria: PR draft, `db:check`, regressão W10–W13, prova de preservação | **checkpoint** |
-| E3 | Handlers, mapeamentos de erro, classe de trava, testes de aplicação | aguarda GO |
-| E4 | Server Actions, telas, i18n, E2E responsivo/axe | aguarda GO |
-| E5 / C2 | `npm run verify`, `test:e2e`, trace, CI do PR → checkpoint de merge | aguarda GO |
+| **C1** | Evidências para auditoria: PR draft, `db:check`, regressão W10–W13, prova de preservação | aprovado (GO de E3+E4, com a correção dos rollbacks) |
+| E3 | Handlers, mapeamentos de erro, classe de trava, testes de aplicação | concluída (GO do C1, mesmo PR) |
+| E4 | Server Actions, telas, i18n, E2E responsivo/axe | concluída (mesmo PR) |
+| E5 / C2 | `npm run verify`, `test:e2e`, trace, CI do PR → checkpoint de merge | checkpoint C2 |
 
 ## Migrations (E2)
 

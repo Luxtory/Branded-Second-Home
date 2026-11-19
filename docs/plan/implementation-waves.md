@@ -1239,7 +1239,8 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   - **D4:** `nominate_guest` grava uma declaração por (reserva, versão aceita), sem dados nem quantidade (P-6).
   - **D5:** as rotas `POST /v1/admin/second-homes/{id}/luxtory-selection`, `POST /v1/admin/parameters` e
     `POST /v1/bookings/{id}/guests` ficam adiadas (emenda D6 estendida): entrada por Server Actions sobre o executor;
-    a TECH-056 não é declarada cumprida para esses commands; OpenAPI inalterado.
+    a TECH-056 não é declarada cumprida para esses commands; nenhuma rota nova no OpenAPI (só o enum global
+    `ErrorCode` ganha `ERR_GUEST_RULES_CHANGED`, na E3).
   - **Critérios acrescentados:** `[TECH-027]` 29/02 nunca selecionável · `[TECH-051]` sem a K3 nenhuma seleção pelo
     papel da aplicação · `[REQ-037]` Second Home Owner sem capacidade Luxtory · `[REQ-095]` término explícito nunca
     antecipado · `[TECH-110]` rollback restaura as definições da W13.

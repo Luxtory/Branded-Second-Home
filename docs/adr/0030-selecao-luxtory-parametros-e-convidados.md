@@ -57,7 +57,9 @@ TECH-030, TECH-051 e TECH-052 (`03` v3.18). Três fatos do código e dos canôni
    Direito de Uso, não cria direito, ocupação nem valor econômico; o Titular continua responsável (BR-330 a BR-332).
 5. **Entrada por Server Actions (D5).** Os três commands usam o executor existente (idempotência, autorização, códigos
    de erro, POST). As rotas REST `/v1` da TECH-056 para esses commands ficam **adiadas** (emenda D6 da W12 estendida),
-   não cumpridas: viram adaptador fino sobre o mesmo handler quando houver consumidor fora da web. OpenAPI inalterado.
+   não cumpridas: viram adaptador fino sobre o mesmo handler quando houver consumidor fora da web. Nenhuma rota nova no
+   OpenAPI; só o catálogo global `ErrorCode` ganha `ERR_GUEST_RULES_CHANGED` (o enum é o espelho exato dos códigos do
+   código, como o `ERR_CANCELLATION_TERMS_CHANGED` da W13).
 
 ## Consequences
 

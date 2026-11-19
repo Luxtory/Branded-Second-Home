@@ -951,3 +951,8 @@ os dados do convidado (P-6).
   serializam) → trava compartilhada das regras → instante.
 - **Leitura.** Titular: as declarações das reservas que já lê, sem party nem operação. Admin: no detalhe da reserva.
 - **Entrada.** Server Action da Área do Titular (D5); a rota REST `POST /v1/bookings/{id}/guests` fica adiada.
+- **E3/E4 (implementação).** `booking/application/nominate-guest.ts`, `infrastructure/postgres-guest-nomination-store.ts`,
+  composição `presentation/guest-nomination-handlers.ts`. Recusas no handler (e no banco): `parameter_missing_guest_rules`
+  → `ERR_PARAMETER_MISSING`; `guest_rules_changed` → `ERR_GUEST_RULES_CHANGED` (código de produto, 409). Tela
+  `/titular/reservas/[bookingId]/convidados` (regras vigentes em parágrafos de texto; declaração por aceitação; regras
+  mudadas → a página relê as atuais); seção "Convidados" no detalhe da reserva (confirmada ou em uso) e no detalhe Admin.

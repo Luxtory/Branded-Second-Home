@@ -378,3 +378,16 @@ revisa esta seção quando as Server Actions existirem.
 | T-1406 Information disclosure — finalidade da seleção, base ou autor de parâmetro expostos ao Titular | Privilégio de coluna: o Titular vê `holder_kind` (não `purpose`), regras sem base/autoridade/autor, declarações sem party/operação; RLS pela holding vigente | leituras como `authenticated` (42501 nas colunas fechadas) |
 | T-1407 Information disclosure — dados pessoais de convidados | Nenhum campo pessoal existe (P-6); só a declaração e a versão aceita | esquema da tabela |
 | T-1408 Denial of service — publicação ou seleção segurando travas | Travas de transação curtas, por escopo; ordem TECH-053; limite de lote e timeout no executor (E3) | corridas com espera de trava |
+
+### W14 E3/E4 — Server Actions (2026-11-19, PR draft)
+
+Superfície nova: três Server Actions autenticadas (seleção e regras: Admin com AAL2 e `staff_role` revalidados;
+declaração: Titular por delegação e holding), sobre o executor (idempotência por chave da página, auditoria). Nenhuma
+rota REST nova (D5).
+
+| Ameaça | Mitigação | Teste / prova |
+|---|---|---|
+| T-1409 Spoofing/Elevation — Titular ou outra conta chama a action Admin | Guard do executor: papel `admin` explícito, AAL2, atribuição ativa; o banco confere a atribuição de novo | `w14-commands.db.test.ts` (Titular → `ERR_PERMISSION`) |
+| T-1410 Tampering — campos ocultos alterados (Second Home, reserva, versão das regras, party) | O command revalida representação, holding da reserva, Second Home e versão vigente; nada do formulário vira autoridade | outra party → `ERR_PERMISSION`; versão antiga → `ERR_GUEST_RULES_CHANGED` |
+| T-1411 Information disclosure — texto das regras com HTML/script | Texto puro renderizado como nós de texto (React), sem HTML; limite de tamanho | revisão do componente; E2E |
+| T-1412 Repudiation — reenvio ou duplo clique gera dois efeitos | Chave de idempotência por página; recusa gravada troca a chave | replay `replayed: true` nos testes do executor |

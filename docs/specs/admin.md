@@ -115,3 +115,10 @@ coberto pela W14.
   representa, sem base, autoridade, autor ou operação (RLS + privilégio de coluna).
 - **Entrada.** Server Action sobre o executor (D5); a rota REST `POST /v1/admin/parameters` fica adiada.
 
+- **E3/E4 (implementação).** `admin/domain/parameter.ts` (D3 pura: `successorConflict`, `versionInForce`),
+  `admin/application/set-parameter.ts`, `admin/infrastructure/postgres-parameter-store.ts`, entrada de servidor
+  `admin/parameters.ts`. Trava `parameter` na ordem de travas (depois de `booking`). Recusas: Second Home inexistente →
+  `ERR_NOT_FOUND`; vigência → `ERR_STATE_TRANSITION`; entrada (texto, base, término antes do início) →
+  `ERR_VALIDATION`. Tela `/admin/catalogo/second-homes/[id]/regras-de-convidados`: em vigor, histórico (início, fim
+  efetivo, autoridade, base, publicação, texto) e publicação; datas no horário da Second Home (`datetime-local`,
+  horário inexistente ou ambíguo recusado).

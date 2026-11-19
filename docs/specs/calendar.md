@@ -180,3 +180,13 @@ e o INV-4 do lado da Luxtory).
   → pai` depende de política. A seleção é irreversível até nova versão do `03`.
 - **Fechada (K3, D2).** Sem a linha `luxtory_selection` em `app.capability_activation`, o banco recusa toda escrita da
   seleção pelo papel da aplicação; o executor desfaz a transação sem gravar recusa e a tela mostra o estado fechado.
+
+- **E3/E4 (implementação).** Handler `calendar/application/select-luxtory-capacity.ts` (entrada de servidor
+  `calendar/luxtory-selection.ts`); custódia pela porta pública `inventory` (`createLuxtorySelectionInventory`); fatos
+  pelas mesmas funções SQL do gatilho (`app.luxtory_window_opens_at`, `app.luxtory_capacity`). Lote atômico de até 366
+  noites, datas únicas. Ordem: autoridade → K3 (`CapabilityNotActivatedError`, nada gravado) → modalidade (sem
+  aquisição → `ERR_NOT_FOUND`; Owner → `ERR_CAPACITY_UNAVAILABLE`) → noites (classe 5) → noite não selada, iniciada ou
+  29/02 (`ERR_CAPACITY_UNAVAILABLE`) → janela (`ERR_WINDOW_NOT_OPEN`) → `luxtory_capacity` → capacidade
+  (`ERR_USE_RIGHT_BALANCE`) → custódia `spe_pool` (`ERR_CAPACITY_UNAVAILABLE`) → escrita. Tela Admin
+  `/admin/catalogo/second-homes/[id]/selecao-luxtory` (Server Action; intervalo de noites com uma finalidade, base e
+  confirmação; com a K3 fechada só a leitura e o aviso, sem formulário).
