@@ -25,6 +25,8 @@ export {
 } from './application/recover-future-capacity';
 import type { RootHolder } from './domain/root-custody';
 import { createPostgresOwnUseInventory } from './infrastructure/postgres-own-use-inventory';
+import { createPostgresLuxtorySelectionInventory } from './infrastructure/postgres-luxtory-selection-inventory';
+import type { LuxtorySelectionInventory } from './application/luxtory-selection';
 import {
   createPostgresForfeitedCapacityRecovery,
   createPostgresOwnUseLifecycleInventory,
@@ -50,6 +52,18 @@ export type RootCustodyOpener = (
 export function createRootCustodyOpener(): RootCustodyOpener {
   const store = createPostgresRootCustodyStore();
   return (tx, input) => openRootCustodies(store, tx, input);
+}
+
+// W14 (ADR-0030 §2): a custódia da seleção Luxtory, na transação do command do calendar.
+export {
+  LUXTORY_PURPOSES,
+  type LuxtoryPurpose,
+  type LuxtorySelectionInventory,
+  type LuxtorySelectionTransition,
+} from './application/luxtory-selection';
+
+export function createLuxtorySelectionInventory(): LuxtorySelectionInventory<DatabaseTransaction> {
+  return createPostgresLuxtorySelectionInventory();
 }
 
 export function createOwnUseInventory(): OwnUseInventory<DatabaseTransaction> {

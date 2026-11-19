@@ -2911,6 +2911,8 @@ components:
         Depois dos gerais, os códigos de produto (fora dos mínimos do TECH-056): `ERR_CANCELLATION_TERMS_CHANGED` — os
         termos esperados da prévia do cancelamento (classificação e primeira noite afetada) diferem dos calculados no
         instante da escrita; nada acontece e a prévia emite chave nova (W13, D7; spec booking §10.5).
+        `ERR_GUEST_RULES_CHANGED` — a versão de `guest_rules` aceita pelo Titular não é a vigente no instante da
+        declaração de convidados; nada é gravado e a tela relê as regras atuais (W14, ADR-0030 §4; spec booking §11).
       enum:
         - ERR_PERMISSION
         - ERR_MEMBERSHIP_INELIGIBLE
@@ -2940,6 +2942,7 @@ components:
         - ERR_UNSUPPORTED_MEDIA_TYPE
         - ERR_RATE_LIMITED
         - ERR_CANCELLATION_TERMS_CHANGED
+        - ERR_GUEST_RULES_CHANGED
 
     BrandPartnerContactRequest:
       type: object

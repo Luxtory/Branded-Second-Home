@@ -18,11 +18,15 @@ export type LockClass = (typeof LOCK_CLASSES)[number];
 /**
  * Extensão do ADR-0027 §2 (a TECH-053 não lista a reserva): a trava da reserva de uso próprio (`app.booking:<id>`, a
  * mesma chave dos gatilhos da W13) fica entre `second_home_date` (classe 5) e `balance_and_custody` (classe 6).
- * `LOCK_CLASSES` continua o espelho exato da TECH-053; commands que não travam reserva não mudam.
+ * Extensão do ADR-0030 (W14), na mesma posição e depois da reserva: a capacidade Luxtory por (Second Home, exercício)
+ * (`app.luxtory_capacity:<id>:<ano>`) e o escopo de um parâmetro (`app.parameter:<chave>:<id>`), as mesmas chaves dos
+ * gatilhos. `LOCK_CLASSES` continua o espelho exato da TECH-053; commands que não travam essas classes não mudam.
  */
 export const LOCK_ORDER = [
   ...LOCK_CLASSES.slice(0, 5),
   'booking',
+  'luxtory_capacity',
+  'parameter',
   ...LOCK_CLASSES.slice(5),
 ] as const;
 

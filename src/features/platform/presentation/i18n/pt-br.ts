@@ -48,6 +48,8 @@ export const messages = {
     ERR_RATE_LIMITED: 'Muitas tentativas em pouco tempo. Tente novamente mais tarde.',
     ERR_CANCELLATION_TERMS_CHANGED:
       'As condições do cancelamento mudaram desde a prévia. Revise a nova prévia antes de confirmar.',
+    ERR_GUEST_RULES_CHANGED:
+      'As regras de convidados da Second Home mudaram. Leia as regras atuais antes de declarar.',
   },
   // Notificação de staff dos alertas operacionais (W10, TECH-101): só identificadores e códigos, nunca PII.
   operationalAlert: {
