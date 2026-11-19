@@ -38,6 +38,16 @@ const JARGON = [
   'L-01',
 ];
 const FEE_WORD = /\bFee\b/;
+// Vocabulário da comunicação do filme (direção final, 2026-11-19): "Membro" (quem solicita / quem recebe); nada de
+// Owner, Co-Owner, Ação ou Titular nas superfícies comerciais. `allowTerms` num instante registra exceção pendente de
+// decisão (por exemplo, a regra do Co-Owner exigida pela L3 de b2c.md no painel de Créditos).
+const FILM_TERMS = [
+  /\bCo-Owner\b/i,
+  /\bOwner\b/i,
+  /\bAção\b/i,
+  /\bTitular(es)?\b/i,
+  /\bRequest (recebida|aceita|enviada|pendente)\b/i,
+];
 
 const failures = [];
 const fail = (msg) => failures.push(msg);
@@ -156,6 +166,13 @@ for (const seq of SEQS) {
       for (const text of [...JARGON, ...(key.absent ?? []), ...(FINAL ? INTERNAL_MARKS : [])])
         if (info.text.toLowerCase().includes(text.toLowerCase()))
           fail(`${tag}@${key.t}: texto visível antes da hora: ${text}`);
+      const filmText = (key.allowTerms ?? []).reduce(
+        (acc, term) => acc.split(term).join(''),
+        info.text,
+      );
+      for (const re of FILM_TERMS)
+        if (re.test(filmText))
+          fail(`${tag}@${key.t}: termo fora da comunicação do filme: ${re.source}`);
       if (FEE_WORD.test(info.text))
         fail(`${tag}@${key.t}: "Fee" visível (rótulo comercial: Taxa de intermediação)`);
       const minOut = info.minFont * (vp.outHeight / vp.height);

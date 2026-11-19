@@ -32,10 +32,12 @@ import { chromium } from 'playwright';
 import { startServer } from '../../serve.mjs';
 
 const arg = (name) => process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
-const EDL =
-  arg('edl') === 'cinema'
-    ? (await import('./edl-cinema.js')).edlFor(arg('fmt') ?? '16x9')
-    : (await import('./edl.js')).EDL;
+// `--edl=<nome>` carrega filme/prova/edl-<nome>.js (edlFor(fmt)); sem ele, a prova de montagem da Request (edl.js).
+const EDL_NAME = arg('edl');
+if (EDL_NAME && !/^[a-z0-9-]+$/.test(EDL_NAME)) throw new Error(`EDL inválida: ${EDL_NAME}`);
+const EDL = EDL_NAME
+  ? (await import(`./edl-${EDL_NAME}.js`)).edlFor(arg('fmt') ?? '16x9')
+  : (await import('./edl.js')).EDL;
 const PROTO = fileURLToPath(new URL('../../', import.meta.url));
 const ROOT = fileURLToPath(new URL('../../../../', import.meta.url));
 const FINAL = process.argv.includes('--final');
@@ -90,6 +92,25 @@ const ratio = (fraction) => {
   return num / den;
 };
 
+/** Fim de um trecho de interface: a sequência toca de `from` a `to` e congela em `to` por `hold` ms. */
+const uiEnd = (u) => u.at + (u.to - u.from) + (u.hold ?? 0);
+
+/**
+ * Trecho de interface no instante t (ms) da montagem: instante da sequência (congelado durante a pausa de leitura,
+ * `hold`) e opacidade do trecho (`fadeIn`/`fadeOut` em ms; por exemplo, o dissolve da imagem para a assinatura).
+ */
+function uiAt(t) {
+  const u = EDL.ui.find((s) => t >= s.at && t < uiEnd(s));
+  if (!u) return null;
+  const fadeIn = u.fadeIn ? Math.min(1, (t - u.at) / u.fadeIn) : 1;
+  const fadeOut = u.fadeOut ? Math.min(1, (uiEnd(u) - t) / u.fadeOut) : 1;
+  return {
+    u,
+    ms: u.from + Math.min(t - u.at, u.to - u.from),
+    opacity: Math.max(0, Math.min(fadeIn, fadeOut)),
+  };
+}
+
 /** Quadros da interface: um link por quadro da prova para o quadro capturado (ou para um quadro transparente). */
 function linkUiFrames(dir) {
   const blank = join(OUT, 'transparente.png');
@@ -104,10 +125,11 @@ function linkUiFrames(dir) {
   ]);
   for (let k = 0; k < FRAMES; k++) {
     const t = (k * 1000) / FPS;
-    const item = EDL.ui.find((u) => t >= u.at && t < u.at + (u.to - u.from));
+    const hit = uiAt(t);
+    const item = hit?.u;
     let src = blank;
     if (item) {
-      const frame = Math.round(((item.from + t - item.at) * FPS) / 1000);
+      const frame = Math.round((hit.ms * FPS) / 1000);
       // Mesma convenção da captura (capture.mjs): frames-<seq>-<fmt> para todas as sequências.
       const framesDir = `frames-${item.seq}-${EDL.fmt}`;
       src = join(FRAMES_DIR, framesDir, `f${String(frame).padStart(5, '0')}.png`);
@@ -135,7 +157,8 @@ async function openStage(browser, origin, query) {
 
 /**
  * Interface renderizada do palco na cadência da EDL (`uiSource: 'stage'`): cada quadro da prova busca o instante exato
- * da sequência, como o capture.mjs faz; nenhuma conversão de cadência. Fora dos trechos, quadro transparente.
+ * da sequência, como o capture.mjs faz; nenhuma conversão de cadência. Fora dos trechos, quadro transparente. Na pausa
+ * de leitura o quadro é o mesmo: um link para o anterior, sem nova captura.
  */
 async function renderUiFrames(dir) {
   const blank = join(OUT, 'transparente.png');
@@ -151,20 +174,33 @@ async function renderUiFrames(dir) {
   const { origin, close } = await startServer();
   const browser = await chromium.launch();
   const pages = new Map();
+  let last = { key: '', file: '' };
   try {
     for (let k = 0; k < FRAMES; k++) {
       const t = (k * 1000) / FPS;
       const file = join(dir, `${String(k).padStart(5, '0')}.png`);
-      const item = EDL.ui.find((u) => t >= u.at && t < u.at + (u.to - u.from));
-      if (!item) {
+      const hit = uiAt(t);
+      if (!hit || hit.opacity <= 0) {
         symlinkSync(blank, file);
         continue;
       }
-      if (!pages.has(item.seq))
-        pages.set(item.seq, await openStage(browser, origin, `seq=${item.seq}`));
-      const page = pages.get(item.seq);
-      await page.evaluate((ms) => window.__demo.seek(ms), item.from + t - item.at);
+      const key = `${hit.u.seq}|${hit.ms.toFixed(3)}|${hit.opacity.toFixed(4)}`;
+      if (key === last.key) {
+        symlinkSync(last.file, file);
+        continue;
+      }
+      if (!pages.has(hit.u.seq))
+        pages.set(hit.u.seq, await openStage(browser, origin, `seq=${hit.u.seq}`));
+      const page = pages.get(hit.u.seq);
+      await page.evaluate(
+        ([ms, opacity]) => {
+          window.__demo.seek(ms);
+          document.querySelector('[data-stage]').style.opacity = String(opacity);
+        },
+        [hit.ms, hit.opacity],
+      );
       await page.screenshot({ path: file, omitBackground: true });
+      last = { key, file };
     }
   } finally {
     await browser.close();
@@ -177,11 +213,7 @@ async function renderEditorial(dir) {
   const { origin, close } = await startServer();
   const browser = await chromium.launch();
   try {
-    const page = await openStage(
-      browser,
-      origin,
-      `seq=prova${EDL.id === 'prova-cinema' ? '&edl=cinema' : ''}`,
-    );
+    const page = await openStage(browser, origin, `seq=prova${EDL_NAME ? `&edl=${EDL_NAME}` : ''}`);
     for (let k = 0; k < FRAMES; k++) {
       await page.evaluate((t) => window.__demo.seek(t), (k * 1000) / FPS);
       await page.screenshot({
@@ -408,6 +440,11 @@ function buildAudio(file) {
     tap: { d: 0.12, e: '0.22*(sin(2*PI*1250*t)+0.5*sin(2*PI*2500*t))*exp(-t*70)*(1-exp(-t*3000))' },
     check: { d: 0.06, e: '0.08*sin(2*PI*2200*t)*exp(-t*120)*(1-exp(-t*4000))' },
     state: { d: 0.45, e: '0.13*(sin(2*PI*660*t)+0.7*sin(2*PI*990*t))*exp(-t*14)*(1-exp(-t*800))' },
+    // Resolução da assinatura: acorde grave e aberto, com decaimento longo, sob a frase da marca.
+    resolve: {
+      d: 4,
+      e: '0.06*(sin(2*PI*196*t)+sin(2*PI*293.66*t)+0.8*sin(2*PI*392*t)+0.5*sin(2*PI*587.33*t))*(1-exp(-t*8))*exp(-t*0.9)',
+    },
     chord: {
       d: 3,
       e: '0.075*(sin(2*PI*293.66*t)+sin(2*PI*369.99*t)+sin(2*PI*440*t)+0.6*sin(2*PI*587.33*t))*(1-exp(-t*25))*exp(-t*1.4)',
@@ -427,7 +464,9 @@ function buildAudio(file) {
   EDL.sfx.forEach((s, i) => {
     const { d, e } = SOUNDS[s.kind];
     graph.push(
-      `aevalsrc=exprs='${e}':d=${d}:s=${SR},adelay=delays=${s.at}:all=1,apad=whole_dur=${D}[fx${i}]`,
+      // asetpts: o adelay desloca os carimbos de tempo; sem renumerar as amostras, o amix alinhava os efeitos fora do
+      // instante e o atrim cortava o fim do áudio (provas até a v7.1: áudio mais curto que o vídeo).
+      `aevalsrc=exprs='${e}':d=${d}:s=${SR},adelay=delays=${s.at}:all=1,apad=whole_dur=${D},asetpts=N/SR/TB[fx${i}]`,
     );
     mix.push(`[fx${i}]`);
   });
@@ -467,7 +506,9 @@ function buildAudio(file) {
   } else if (vo) graph.push('[vosc]anullsink');
   graph.push(
     `${layers.join('')}amix=inputs=${layers.length}:normalize=0,atrim=end=${D},` +
-      `afade=t=out:st=${sec(EDL.fadeOut.at - 200)}:d=${sec(EDL.fadeOut.dur + 200)}[a]`,
+      (EDL.audioOut
+        ? `afade=t=out:st=${sec(EDL.audioOut.at)}:d=${sec(EDL.audioOut.dur)}[a]`
+        : `afade=t=out:st=${sec(EDL.fadeOut.at - 200)}:d=${sec(EDL.fadeOut.dur + 200)}[a]`),
   );
   const mixFile = file.replace(/\.wav$/, '-mix.wav');
   ffmpeg([
@@ -543,19 +584,41 @@ function compose(uiDir, edDir, audio, tmp) {
       ? s.label
       : `${s.scene} · ${s.plan}${EDL.fmt === '9x16' ? '' : ` ${s.what}`} · ${shots[i].used}`,
   );
-  const { soften, sharpen, sigma } = EDL.focus;
+  const { soften, sharpen, sigma, windows } = EDL.focus;
   const bt709 = `scale=out_color_matrix=bt709:out_range=tv,format=yuv420p`;
+  // Desfoque como camada com alfa (bem mais rápido que blend por pixel). Uma janela (soften → sharpen) por fades; várias
+  // janelas (`windows`, uma por bloco de interface) por uma máscara de baixa resolução calculada no tempo e ampliada.
+  const maskInput = n + 3;
+  const blur = windows
+    ? [
+        `[${maskInput}:v]format=gray,geq=lum='255*clip(${windows
+          .map(
+            (w) =>
+              `clip((T-${sec(w.from)})/${sec(w.ramp)},0,1)*clip((${sec(w.to)}-T)/${sec(w.ramp)},0,1)`,
+          )
+          .join('+')},0,1)',scale=${W}:${H},format=gray[fmask]`,
+        `[soft]gblur=sigma=${sigma},format=gbrap[softa]`,
+        `[softa][fmask]alphamerge[blur]`,
+      ]
+    : [
+        `[soft]gblur=sigma=${sigma},format=gbrap,fade=t=in:st=${sec(soften.at)}:d=${sec(soften.dur)}:alpha=1,` +
+          `fade=t=out:st=${sec(sharpen.at)}:d=${sec(sharpen.dur)}:alpha=1[blur]`,
+      ];
+  const uiFade = EDL.uiFadeOut
+    ? `,fade=t=out:st=${sec(EDL.uiFadeOut.at)}:d=${sec(EDL.uiFadeOut.dur)}:alpha=1`
+    : '';
+  const endFade = EDL.fadeOut
+    ? `,fade=t=out:st=${sec(EDL.fadeOut.at)}:d=${sec(EDL.fadeOut.dur)}`
+    : '';
   const graph = [
     ...shots.map((s, i) => `${s.chain}[s${i}]`),
     ...join2.slice(0, -1),
     `${join2.at(-1)},format=gbrp,split[sharp][soft]`,
-    // Desfoque como camada com alfa que entra e sai em fade (bem mais rápido que blend por pixel).
-    `[soft]gblur=sigma=${sigma},format=gbrap,fade=t=in:st=${sec(soften.at)}:d=${sec(soften.dur)}:alpha=1,` +
-      `fade=t=out:st=${sec(sharpen.at)}:d=${sec(sharpen.dur)}:alpha=1[blur]`,
+    ...blur,
     `[sharp][blur]overlay=format=rgb[bg]`,
-    `[${n}:v]format=rgba,fade=t=out:st=${sec(EDL.uiFadeOut.at)}:d=${sec(EDL.uiFadeOut.dur)}:alpha=1[ui]`,
+    `[${n}:v]format=rgba${uiFade}[ui]`,
     `[bg][ui]overlay=format=rgb[c1]`,
-    `[c1][${n + 1}:v]overlay=format=rgb,fade=t=out:st=${sec(EDL.fadeOut.at)}:d=${sec(EDL.fadeOut.dur)}` +
+    `[c1][${n + 1}:v]overlay=format=rgb${endFade}` +
       (FINAL ? `,${bt709}[vclean]` : `,split[clean][rev]`),
     ...(FINAL
       ? []
@@ -606,6 +669,9 @@ function compose(uiDir, edDir, audio, tmp) {
     join(edDir, '%05d.png'),
     '-i',
     audio,
+    ...(windows
+      ? ['-f', 'lavfi', '-i', `color=c=black:s=32x18:r=${FPS}:d=${sec(EDL.duration)}`]
+      : []),
     '-filter_complex_script',
     script,
     ...enc('[vclean]', cleanFile()),
@@ -647,7 +713,7 @@ function validate(files, audio) {
     const info = probe(file, [
       '-count_frames',
       '-show_entries',
-      'stream=codec_type,codec_name,width,height,r_frame_rate,nb_read_frames,color_space,color_transfer,color_primaries,sample_rate,channels:format=duration',
+      'stream=codec_type,codec_name,width,height,r_frame_rate,nb_read_frames,color_space,color_transfer,color_primaries,sample_rate,channels,duration:format=duration',
     ]);
     const v = info.streams.find((s) => s.codec_type === 'video');
     const a = info.streams.find((s) => s.codec_type === 'audio');
@@ -660,6 +726,9 @@ function validate(files, audio) {
       failures.push(`${name}: cor ${v.color_space}`);
     if (!a || a.sample_rate !== '48000' || a.channels !== 2)
       failures.push(`${name}: áudio ${JSON.stringify(a)}`);
+    // Áudio do começo ao fim do vídeo (tolerância de um quadro mais o priming do AAC).
+    else if (Math.abs(Number(a.duration) - EDL.duration / 1000) > 1 / FPS + 0.05)
+      failures.push(`${name}: áudio de ${a.duration} s para ${EDL.duration / 1000} s de vídeo`);
   }
   report.audio = measureLoudness(audio);
   if (!(report.audio.truePeakDbtp <= -1))
@@ -687,7 +756,7 @@ function contactSheet(file, sheet, tmp) {
   execFileSync('montage', [
     ...shots,
     '-tile',
-    '4x2',
+    `4x${Math.ceil(times.length / 4)}`,
     '-geometry',
     '+4+4',
     '-background',

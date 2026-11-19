@@ -23,7 +23,7 @@ import { PLATES } from './placas-caminhos.js';
 const s = directScenario();
 const period = periodOf(s.checkin, s.checkout);
 const nightsLabel = `${s.nights.length} ${s.nights.length === 1 ? 'noite' : 'noites'}`;
-const route = `${icon('i-info')}<span><strong>Noites do Inventário Luxtory</strong>Reserva direta, sem aceite de outro Titular: Luxchange Direct.</span>`;
+const route = `${icon('i-info')}<span><strong>Noites do Inventário Luxtory</strong>Reserva direta, sem aceite de outro Membro: Luxchange Direct.</span>`;
 
 export function build(stage, fmt) {
   const [year, month] = s.checkin.split('-').map(Number);
@@ -55,9 +55,9 @@ export function build(stage, fmt) {
       <p class="lx-eyebrow">Revisar Direct</p>
       <p class="lx-title">${s.secondHome.name} · ${period}</p>
       <dl class="lx-evidence">
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos consumidos na confirmação</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(s.credits)}</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos utilizados na confirmação</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(s.credits)}</dd></div>
         <div class="lx-evidence__item"><dt class="lx-evidence__label">Taxa de intermediação</dt><dd class="lx-evidence__value">${brl(s.feeCents)}</dd><dd class="demo-hint">Paga antes da confirmação, separada dos Créditos</dd></div>
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Aceite de outro Titular</dt><dd class="lx-evidence__value">Não exigido</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Aceite de outro Membro</dt><dd class="lx-evidence__value">Não exigido</dd></div>
       </dl>
       <label class="lx-check"><input type="checkbox" id="policy" tabindex="-1"><span>Li e aceito a política comercial aplicável</span></label>
       <button class="lx-button lx-button--primary" type="button" id="send" tabindex="-1"><span class="demo-swap"><span id="send-label">Pagar taxa e confirmar</span><span id="send-busy">Processando pagamento</span></span></button>
@@ -71,7 +71,7 @@ export function build(stage, fmt) {
         <div><dt>Disponíveis</dt><dd><span id="lg-avail-before">${credits(s.balances.before.available)}</span><span id="lg-avail-after">${credits(s.balances.after.available)}</span></dd></div>
         <div><dt>Nesta reserva</dt><dd><span id="lg-used-before">${credits(s.balances.before.consumed)}</span><span id="lg-used-after">${credits(s.balances.after.consumed)}</span></dd></div>
       </dl>
-      <p class="demo-sub demo-only-16x9" id="lots">Consumidos na confirmação, do lote que vence primeiro.</p>
+      <p class="demo-sub demo-only-16x9" id="lots">Utilizados só na confirmação.</p>
     </section>
 
     <section class="demo-card demo-card--task" id="reval" data-surface="deep" aria-label="Revalidação">
@@ -92,7 +92,7 @@ export function build(stage, fmt) {
         <p class="demo-name">${period}</p>
         <p class="demo-sub">${s.secondHome.name} · ${nightsLabel} · ${hours}</p>
       </div>
-      <p class="demo-sub">${s.booking.channel} · ${credits(s.credits)} Créditos consumidos · sem aceite de outro Titular</p>
+      <p class="demo-sub">${s.booking.channel} · ${credits(s.credits)} Créditos utilizados · sem aceite de outro Membro</p>
     </section>`,
   );
   stage.dataset.fmt = fmt;
@@ -175,7 +175,7 @@ export function timeline(fmt) {
       { at: endAt, label: 'toque · saída 29/05' },
       {
         at: endAt + 700,
-        label: 'rota: Inventário Luxtory → Luxchange Direct, sem aceite de outro Titular',
+        label: 'rota: Inventário Luxtory → Luxchange Direct, sem aceite de outro Membro',
       },
       ...(v ? [] : [{ at: 3_300, label: 'toque · Continuar' }]),
       { at: needIn, label: 'Créditos necessários 11.500 × saldo 39.000: saldo suficiente' },
@@ -238,7 +238,7 @@ export const qa = {
       expect: [
         'Reserva confirmada',
         period,
-        `${s.booking.channel} · ${credits(s.credits)} Créditos consumidos`,
+        `${s.booking.channel} · ${credits(s.credits)} Créditos utilizados`,
         credits(s.balances.after.available),
       ],
     },

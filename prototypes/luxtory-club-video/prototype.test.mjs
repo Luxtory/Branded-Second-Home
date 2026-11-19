@@ -34,6 +34,8 @@ import {
 } from './rules.js';
 import { EDL } from './filme/prova/edl.js';
 import { edlFor } from './filme/prova/edl-cinema.js';
+import { edlFor as requestCurta } from './filme/prova/edl-request-curta.js';
+import { GRID_MS, legibility } from './filme/prova/blocos.js';
 import {
   REQUEST_STATES,
   addMonthsUTC,
@@ -228,7 +230,7 @@ for (const fmt of ['16x9', '9x16']) {
     );
     // Garantia nunca antes do envio; depósito confirmado (operação própria) antes da revisão.
     assert.ok(enter('#lg-held').in > sendPress, 'Em Garantia só depois do envio');
-    assert.ok(enter('#lots').in > sendPress, 'lotes da Garantia só depois do envio');
+    assert.ok(enter('#held-note').in > sendPress, 'frase da Garantia só depois do envio');
     assert.ok(
       set('#deposit-go', 'data-pressed')[0].at < enter('#deposited').in &&
         enter('#deposited').in < enter('#review').in,
@@ -261,11 +263,7 @@ for (const fmt of ['16x9', '9x16']) {
             ['#topup', '#credits'],
           ]),
     ];
-    handoffs.push(
-      ['#cr-before', '#cr-after'],
-      ['#lg-avail-before', '#lg-avail-after'],
-      ['#lots-before', '#lots'],
-    );
+    handoffs.push(['#lg-avail-before', '#lg-avail-after']);
     for (const [before, after] of handoffs)
       assert.ok(
         enter(after).in >= enter(before).out + exit,
@@ -735,11 +733,28 @@ test('revisão comercial: nenhum jargão ou marca de protótipo nas sequências 
     assert.doesNotMatch(markup(seq), /Mirante|Varanda|Pátio|Home Edition/);
 });
 
-test('a Request aprovada continua com Garantia, Pendente e aceite do detentor', () => {
+test('a Request aprovada continua com Garantia, Pendente e aceite de quem recebe a solicitação', () => {
   const text = markup(requestSeq);
   assert.match(text, /Créditos em Garantia/);
   assert.match(text, /Pendente/);
-  assert.match(text, /Request recebida/);
+  assert.match(text, /Solicitação de troca recebida/);
+});
+
+test('[PD-008][REQ-064] filme: saldo e Garantia sem lotes na tela; FEFO, origem e consumo preservados nas regras', () => {
+  const text = markup(requestSeq);
+  // Comunicação: dois indicadores e uma frase, sem a lista de lotes.
+  assert.match(text, /Saldo disponível/);
+  assert.match(text, /utilizados para confirmar a reserva/);
+  assert.doesNotMatch(text, /lote|Créditos anteriores|Novo depósito/i);
+  // Regras: a Garantia continua formada pelos lotes que vencem primeiro e soma exatamente os Créditos necessários.
+  const r = requestScenario();
+  assert.equal(
+    r.hold.reduce((sum, part) => sum + part.quantity, 0),
+    r.credits,
+  );
+  assert.ok(r.hold.length >= 2, 'Garantia composta por mais de um lote (FEFO)');
+  // Quem recebe é Co-Owner no domínio: as noites cedidas são do Direito de Uso já reservado.
+  assert.equal(r.holder.role, 'co_owner');
 });
 
 const SOURCES = readdirSync(DIR).filter((f) => /\.(js|mjs|css|html|md)$/.test(f));
@@ -918,3 +933,81 @@ test('prova cinematográfica: narração de teste só com frases aprovadas (rote
   for (const { text } of edlFor('16x9').vo)
     assert.ok(roteiro.includes(text) || aprovadas.has(text), `frase sem origem aprovada: ${text}`);
 });
+
+const FILM_TERMS = /\b(Co-Owner|Owner|Ação|Titular(es)?)\b/i;
+const roteiroText = () =>
+  readFileSync(join(DIR, 'filme/ROTEIRO.md'), 'utf8').replace(/\n>\s*/g, ' ');
+
+for (const fmt of ['16x9', '9x16']) {
+  test(`[REQ-063][REQ-064] prévia curta da Request ${fmt}: ritmo legível, ordem dos fatos e assinatura`, () => {
+    const edl = requestCurta(fmt);
+    const t = requestSeq.times(fmt);
+    // Cada tela dentro da faixa do seu tipo, contada depois da animação de entrada (QUATRO-FILMES.md §3).
+    const report = legibility(edl);
+    assert.deepEqual(
+      report.filter((r) => !r.ok).map((r) => `${r.label}: ${r.window} ms`),
+      [],
+    );
+    for (const type of ['banner', 'multi', 'confirmacao', 'assinatura'])
+      assert.ok(
+        report.some((r) => r.type === type),
+        `tela do tipo ${type}`,
+      );
+    // Grade de 3 quadros, trechos encadeados sem sobreposição; interface tocada em tempo real (só pausas).
+    assert.equal(edl.duration % GRID_MS, 0);
+    edl.ui.forEach((u, i) => {
+      assert.ok(u.to >= u.from && (u.hold ?? 0) >= 0, `trecho ${i}`);
+      const end = u.at + (u.to - u.from) + (u.hold ?? 0);
+      assert.equal(end % GRID_MS, 0, `trecho ${i} na grade`);
+      if (i > 0) {
+        const p = edl.ui[i - 1];
+        assert.ok(u.at >= p.at + (p.to - p.from) + (p.hold ?? 0), `trecho ${i} depois do anterior`);
+      }
+    });
+    edl.shots.forEach((s, i) =>
+      assert.equal(s.from, i === 0 ? 0 : edl.shots[i - 1].to, `${s.plan} encadeado`),
+    );
+    assert.equal(edl.shots.at(-1).to, edl.duration);
+    // Ordem dos fatos no tempo do filme: pendente → recebida → aceite → confirmação (REQ-063, REQ-064).
+    const filmAt = (ms) => {
+      const u = edl.ui.find((x) => x.seq === 'request' && ms >= x.from && ms <= x.to);
+      assert.ok(u, `instante ${ms} da Request na prévia`);
+      return u.at + (ms - u.from);
+    };
+    const order = [t.topupPress, t.depositedIn, t.sendCommit, t.holderIn, t.accept, t.result].map(
+      filmAt,
+    );
+    assert.deepEqual(
+      order,
+      [...order].sort((a, b) => a - b),
+    );
+    // Banner antes da primeira interface, com a copy aprovada.
+    const [banner] = edl.editorial.banners;
+    assert.equal(banner.title, 'Luxchange Request');
+    assert.deepEqual(banner.lines, [
+      'Solicite noites reservadas por outro Membro.',
+      'Utilize Créditos + Taxa de intermediação.',
+      'Depende do aceite de quem recebeu a solicitação.',
+    ]);
+    assert.ok(banner.out <= edl.ui[0].at + 400);
+    // Assinatura oficial no fim: 6 s, dissolve da imagem, nenhuma etiqueta interna sobre ela.
+    const sig = edl.ui.at(-1);
+    assert.equal(sig.seq, 'assinatura');
+    assert.equal(sig.to - sig.from, 6_000);
+    assert.ok(sig.fadeIn >= 600 && sig.fadeIn <= 1_000);
+    assert.equal(sig.at + 6_000, edl.duration);
+    assert.equal(edl.editorial.tagOut, sig.at);
+    // Som até o fim: a resolução da assinatura e o fade final dentro do filme.
+    assert.ok(edl.sfx.some((x) => x.kind === 'resolve' && x.at > sig.at));
+    assert.ok(edl.audioOut.at + edl.audioOut.dur <= edl.duration);
+    // Vocabulário do filme e narração só com frases aprovadas (ROTEIRO.md §4).
+    const roteiro = roteiroText();
+    for (const v of edl.vo) {
+      assert.doesNotMatch(v.text, FILM_TERMS);
+      assert.ok(roteiro.includes(v.text), `frase sem origem aprovada: ${v.text}`);
+      assert.ok(v.to <= edl.duration);
+    }
+    for (const b of edl.editorial.banners)
+      assert.doesNotMatch([b.title, ...b.lines].join(' '), FILM_TERMS);
+  });
+}

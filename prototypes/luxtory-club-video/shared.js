@@ -9,6 +9,11 @@ export const FINAL =
   typeof location !== 'undefined' && new URLSearchParams(location.search).get('final') === '1';
 export const hours = `entrada ${CANONICAL.checkinHour}h, saída ${CANONICAL.checkoutHour}h`; // PD-002
 export const periodOf = (checkin, checkout) => `${civilShort(checkin)} a ${civilFull(checkout)}`;
+/** Período curto do filme: "04 a 07/06/2027" no mesmo mês; senão, o período completo. */
+export const periodCompact = (checkin, checkout) =>
+  checkin.slice(0, 7) === checkout.slice(0, 7)
+    ? `${checkin.slice(8, 10)} a ${civilFull(checkout)}`
+    : periodOf(checkin, checkout);
 /** Elemento sempre visível na linha do tempo (entra antes do início). */
 export const ALWAYS = -10_000;
 /** Saída do Core (duration.moderate, stage.js MOTION.exit). */
