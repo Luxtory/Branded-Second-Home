@@ -189,6 +189,8 @@ autorização expressa do fundador (2026-11-03), em ambiente isolado, sem merge,
 
 **Atualização 2026-11-18 (W13 encerrada na implementação):** o #96 foi mergeado (squash `01ca51b`; CI da main 44358051930 verde, sem migration nova). E6 e E7 foram cumpridas por etapa: gates locais, CI completa e PR draft parado no checkpoint em cada etapa, e CI completa na `main` integrada. Nada foi ativado (K1 e K2 com 0 linhas, autorizador sem Environment, secret ou senha). A ativação segue bloqueada por T-1320 e T-1323 (roteiro de governança, ADR-0029), pela configuração real do autorizador, por M1/T-1314 e pela decisão do fundador. A W14 só começa com instrução expressa, depois da governança.
 
+**Atualização 2026-11-19 (W14 iniciada):** governança encerrada (#98 → `001ef0d`). Plano corrigido da W14 aprovado pelo fundador e pela auditoria independente (D1–D5, [emenda W14](#wave-14--seleção-luxtory-parâmetros-e-convidados), [ADR-0030](../adr/0030-selecao-luxtory-parametros-e-convidados.md)). GO só para E1 + E2 (docs, 3 migrations e testes SQL) num PR draft, com checkpoint C1 antes de handlers e telas. Nada em Production; K1, K2 e K3 sem linha.
+
 Paralelismo na retomada do B2C: só **W9 ∥ W10**. A W9 toca a migration `draw`, o módulo `ownership`, o pacote `drand-client`, um
 canal do AsyncAPI, telas e `CHANGELOG.md`, e o STRIDE do beacon. A W10 toca migrations de `calendar`/`inventory`,
 a entrada `open_exercise` em `vercel.json` e no registro de jobs, e o port de alerta; não tem tela, endpoint,
@@ -1224,6 +1226,27 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   recusada` · `[REQ-095] parâmetro sem autoridade ou vigência é recusado; vigências não se sobrepõem` · `[REQ-092]
   indicar convidado não consome Direito de Uso nem cria direito; sem guest_rules → ERR_PARAMETER_MISSING`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-016,REQ-036,REQ-092,REQ-095 exits 0, stop after 4 tries`
+- **Emenda W14 (2026-11-19, plano corrigido aprovado pelo fundador e pela auditoria; prevalece sobre as linhas acima
+  no que divergir):** plano [`w14-selecao-luxtory-parametros-e-convidados.md`](w14-selecao-luxtory-parametros-e-convidados.md),
+  [ADR-0030](../adr/0030-selecao-luxtory-parametros-e-convidados.md).
+  - **D1:** a seleção registra só a custódia `luxtory/{finalidade}` (03 §7); seleção de capacidade não é ocupação.
+    "finalidade diferente de inventory cria reserva e ocupação `luxtory_use`" e o critério "ocupa com luxtory_use"
+    saem do escopo: o critério do REQ-036 passa a ser "cada data selecionada tem custódia `luxtory/{finalidade}`;
+    nenhuma ocupação, Crédito ou ledger nasce da seleção; manutenção antes da janela é recusada".
+  - **D2:** K3 `luxtory_selection` entra fechada; ativação só por migration própria autorizada pelo fundador.
+  - **D3:** `parameter` só por inserção, só com `guest_rules` por Second Home; início estritamente crescente, nunca
+    retroativo, nunca antes de um `effective_to` explícito; fim derivado.
+  - **D4:** `nominate_guest` grava uma declaração por (reserva, versão aceita), sem dados nem quantidade (P-6).
+  - **D5:** as rotas `POST /v1/admin/second-homes/{id}/luxtory-selection`, `POST /v1/admin/parameters` e
+    `POST /v1/bookings/{id}/guests` ficam adiadas (emenda D6 estendida): entrada por Server Actions sobre o executor;
+    a TECH-056 não é declarada cumprida para esses commands; OpenAPI inalterado.
+  - **Critérios acrescentados:** `[TECH-027]` 29/02 nunca selecionável · `[TECH-051]` sem a K3 nenhuma seleção pelo
+    papel da aplicação · `[REQ-037]` Second Home Owner sem capacidade Luxtory · `[REQ-095]` término explícito nunca
+    antecipado · `[TECH-110]` rollback restaura as definições da W13.
+  - **Cobertura parcial:** REQ-095 só na parte de parâmetros (PRL na W16; demais parâmetros na W15/W16); REQ-092 sem
+    dados do convidado (P-6); TECH-022 sem saída da seleção (P-12).
+  - **Execução:** um PR draft; checkpoint C1 obrigatório depois das migrations e dos testes de banco (E1 + E2), antes de
+    handlers e telas.
 
 ### Wave 15 — Membership
 

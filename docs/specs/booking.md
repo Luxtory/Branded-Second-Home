@@ -928,3 +928,26 @@ da operação, que ainda não existem.
 | 15 | ✅ roteiro no runbook | — | execução humana pelo aprovador |
 
 Independência entre quem opera e quem aprova (T-1323): **não atendida**; pré-requisito da ativação.
+
+## 11. Declaração de convidados: `nominate_guest` (W14)
+
+Plano: [`w14-selecao-luxtory-parametros-e-convidados.md`](../plan/w14-selecao-luxtory-parametros-e-convidados.md);
+decisão: [ADR-0030](../adr/0030-selecao-luxtory-parametros-e-convidados.md) §4. Dona: REQ-092 (BR-330 a BR-332), sem
+os dados do convidado (P-6).
+
+- **O que é.** Declaração do Titular de que convidados poderão usar a própria reserva sob a versão aceita de
+  `guest_rules` da Second Home. Não identifica nem conta convidados; não afirma que só uma pessoa usará a reserva. A
+  entidade `guest` do `03` §3.1 espera a P-6.
+- **Command `nominate_guest`** (Titular, sem Membership, TECH-051). Entrada: reserva e versão de `guest_rules` exibida.
+  Exige reserva `own_use` da holding vigente da party representada, em `confirmed` ou `in_use`, antes do check-out
+  (TECH-055); senão `ERR_STATE_TRANSITION`. Sem regras vigentes → `ERR_PARAMETER_MISSING`; versão aceita diferente da
+  vigente no instante → `ERR_GUEST_RULES_CHANGED` (sem efeito; a tela mostra as regras atuais). Mesma versão já
+  declarada na reserva → `ERR_STATE_TRANSITION`; regras novas permitem nova declaração (`app.guest_nomination`, única
+  por reserva e versão).
+- **Efeito.** Só a declaração (`app.guest_nomination`: reserva, versão, party, instante carimbado pelo banco). Não
+  consome Direito de Uso, não cria direito, ocupação, reserva ou valor econômico e não substitui os canais autorizados;
+  o Titular continua responsável (BR-332).
+- **Concorrência.** Representação travada → trava da reserva (a do ciclo da W13: cancelamento e declaração se
+  serializam) → trava compartilhada das regras → instante.
+- **Leitura.** Titular: as declarações das reservas que já lê, sem party nem operação. Admin: no detalhe da reserva.
+- **Entrada.** Server Action da Área do Titular (D5); a rota REST `POST /v1/bookings/{id}/guests` fica adiada.
