@@ -15,7 +15,8 @@ O maior valor a proteger nesta fase é o **caminho até produção** (segredos d
 
 ## 2. Assets
 
-- Secrets da CI: `VERCEL_TOKEN`, `DATABASE_URL_MIGRATIONS` (credencial do dono do schema no Supabase).
+- Secrets da CI: `VERCEL_TOKEN`, `DATABASE_URL_MIGRATIONS` (credencial do dono do schema no Supabase). Desde a
+  governança de 2026-11 (ADR-0029): `PROD_VERCEL_TOKEN` e `PROD_DATABASE_URL_MIGRATIONS` no Environment `production-ci`.
 - Integridade do deployment de produção e do schema do banco.
 - Arquivos do repositório fora do Design System (código, configuração).
 - Disponibilidade dos probes.
@@ -65,6 +66,12 @@ Repúdio não se aplica à W0: não há mutation. A trilha de auditoria chega na
     que depende de todos os gates. `dbmate --strict` recusa migração fora de ordem.
   - Process: toda mudança entra por PR (`CLAUDE.md`); `concurrency: production` impede dois deploys simultâneos.
   - Residual: quem tem push em `main` ainda dispara a CI de produção — aceito até haver plano pago do GitHub.
+  - **Revisão (2026-11-18, ADR-0029):** ruleset está disponível sem custo em repositório público; ruleset da `main`
+    (PR, revisão de *code owner*, checks do GitHub Actions, sem force push nem exclusão) no roteiro
+    `docs/how-to/governanca-do-repositorio.md`, passo 4.
+  - **Revisão v4.1 (2026-11-18, ADR-0029 revisão 4):** revisor obrigatório no Environment `production-ci` (fundador;
+    sem bypass de admin): o run da `main` só recebe os secrets e publica depois da aprovação humana, uma no `migrate` e
+    outra no `deploy`; o token dos agentes não tem *Deployments* nem *Administration*.
 - **Owner**: Engenharia · **Tracking**: W0
 
 ### T-007 [HIGH] Information disclosure — vazamento de segredos da CI
@@ -77,6 +84,13 @@ Repúdio não se aplica à W0: não há mutation. A trilha de auditoria chega na
   - Code: `scripts/lib/dbmate.mjs` passa a URL por variável de ambiente (fora de `argv`) e mascara credenciais em
     mensagens de erro; `loadEnv` nunca inclui valores em erros.
   - Infra: gitleaks em toda execução, com o histórico completo.
+  - **Revisão (2026-11-18, ADR-0029):** "PRs não os recebem" vale para PR de fork, não para branch do próprio
+    repositório: push ou PR interno roda a versão do workflow **da branch**, que pode retirar o `if` e ler secrets do
+    repositório (exige push e, por token, escopo `workflow`). Correção: secrets `PROD_*` só no Environment
+    `production-ci`, restrito à `main`, nos jobs `migrate` e `deploy`; secrets do repositório apagados depois de o
+    primeiro run da `main` provar os novos (roteiro de governança).
+    O token da Vercel só entra nos passos `pull` e `deploy`, pela variável `VERCEL_TOKEN` (fora do argv); o `build`,
+    que instala dependências e executa o projeto, roda sem ele; o secret do banco só no passo `Apply migrations`.
 - **Owner**: Engenharia · **Tracking**: W0
 
 ### T-003 [MEDIUM] Information disclosure — path traversal em `/lab`
@@ -126,6 +140,8 @@ Repúdio não se aplica à W0: não há mutation. A trilha de auditoria chega na
 
 - Varredura automatizada de caminhos em `/lab` procurando `.env*`, `package.json` ou código-fonte → 404 (T-003).
 - PR de fork tentando exfiltrar secrets pela CI → jobs com secrets não rodam em PR (T-007).
+- Branch do próprio repositório com workflow alterado para ler secrets → Environment `production-ci` só da `main`
+  (revisão de 2026-11-18 da T-007).
 - Push direto em `main` para pular a revisão → gates continuam obrigatórios antes de `migrate` e `deploy` (T-006).
 - Cabeçalhos de segurança adicionais (`nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`)
   em todas as respostas; CSP entra com a primeira página pública (W4).

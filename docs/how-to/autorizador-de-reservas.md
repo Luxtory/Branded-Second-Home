@@ -101,10 +101,14 @@ Nada desta seção está feito. Faça na ordem; cada passo é conferível.
    - com isso, quem dispara é diferente de quem aprova, e o *Prevent self-review* pode ser ligado.
    Criar contas e tokens é ação do fundador; nada disso foi feito.
    **Correção (2026-11-18):** o token fine-grained não serve aqui: a documentação do GitHub lista como limitação
-   contribuir em repositório onde o usuário é colaborador, e a conta dona é pessoal. Use PAT classic só `repo`, com
+   contribuir em repositório onde o usuário é colaborador, e a conta dona é pessoal. Use PAT classic só `repo` (mais `read:org`, que o `gh` exige), com
    expiração; o limite é o papel de colaborador (escrita, sem admin). Inventário dos canais dos agentes (incluindo o
    conector GitHub do Codex e o Claude in Chrome) e ordem dos passos:
    [`governanca-do-repositorio.md`](governanca-do-repositorio.md) (ADR-0029).
+   **Revisão v4 (2026-11-18, fundador):** sem conta de automação. Os agentes usam token fine-grained da própria conta
+   `Luxtory` (no repositório do dono ele funciona), sem *Administration*, *Secrets* e *Deployments*: não reconfiguram o
+   Environment nem aprovam deployment. Disparo e aprovação continuam na mesma identidade, e o *Prevent self-review*
+   bloquearia o fundador: a ativação exige decisão própria sobre T-1323 antes de K1/K2.
 1. **Proteger a `main` (T-1320, bloqueia a configuração real).** Hoje a `main` **não tem** proteção clássica (API: 404
    "Branch not protected") nem ruleset. Crie um ruleset na branch padrão, ativo:
    - sem exclusão e sem force push;
@@ -116,8 +120,11 @@ Nada desta seção está feito. Faça na ordem; cada passo é conferível.
      **Ampliado (2026-11-18):** o `.github/CODEOWNERS` versionado usa a regra geral `*` e lista também o próprio
      arquivo, a `ci.yml`, `db-migrate`, `vercel.json` e `migrations/`; o ruleset completo (checks fixados no app
      GitHub Actions, aprovação da última push, só squash) está em
-     [`governanca-do-repositorio.md`](governanca-do-repositorio.md), passo 4;
+     [`governanca-do-repositorio.md`](governanca-do-repositorio.md), passo 3. **Revisão (2026-11-18):** dois rulesets
+     (`main-checks` sem bypass; `main-revisao` com bypass só por PR do admin, que depois da separação é só o fundador);
    - nenhum ator com bypass; em emergência, o fundador desativa o ruleset, e o desligamento fica no histórico.
+     **Revisão (2026-11-18):** vale para o `main-checks`; o `main-revisao` admite bypass só por PR do papel admin
+     (só o fundador, depois do passo 0), nunca dos checks.
    **O que a plataforma impõe:** sem os checks verdes, nada entra na `main`. A revisão humana só passa a ser imposta com
    o passo 0: o dono de código (`Luxtory`) não pode ser a mesma identidade que o agente usa. Com uma única conta, o
    ruleset garante "só por PR com checks", não revisão. Confirme na configuração que a regra de *code owner* vale com o
