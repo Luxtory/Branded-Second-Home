@@ -26,7 +26,7 @@
 //      [--entrada=<pasta>] [--saida=<pasta>]
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { startServer } from '../../serve.mjs';
@@ -41,8 +41,18 @@ const EDL = EDL_NAME
 const PROTO = fileURLToPath(new URL('../../', import.meta.url));
 const ROOT = fileURLToPath(new URL('../../../../', import.meta.url));
 const FINAL = process.argv.includes('--final');
+// `--rascunho`: inspeção rápida de ritmo e composição (sem superamostragem, codificação rápida, pasta própria);
+// nunca vale como prévia de qualidade nem como exportação final.
+const DRAFT = process.argv.includes('--rascunho') && !FINAL;
+// Caminho absoluto: os quadros repetidos são links simbólicos, que precisam apontar para o arquivo certo.
 const OUT =
-  arg('saida') ?? join(PROTO, FINAL ? `out/final/${EDL.id}-${EDL.fmt}` : (EDL.out ?? 'out/prova'));
+  (arg('saida') && resolve(arg('saida'))) ??
+  join(
+    PROTO,
+    FINAL
+      ? `out/final/${EDL.id}-${EDL.fmt}`
+      : `${EDL.out ?? 'out/prova'}${DRAFT ? '-rascunho' : ''}`,
+  );
 const FRAMES_DIR = join(PROTO, FINAL ? 'out/final' : 'out/etapa-a');
 const ENTRADA = arg('entrada') ?? join(PROTO, 'out/entrada');
 const FONT = join(ROOT, 'src/design-system/fonts/hanken-grotesk/hanken-grotesk-latin.woff2');
@@ -52,7 +62,7 @@ const STRIP = 120; // altura da tarja da cópia de revisão (fora do quadro)
 const VIEWPORT = EDL.fmt === '9x16' ? { width: 405, height: 720 } : { width: 1280, height: 720 };
 const VIDEO_EXTS = ['mov', 'mp4'];
 const STILL_EXTS = ['png', 'jpg', 'jpeg', 'webp'];
-const SS = 2; // superamostragem do movimento de câmera sobre imagem
+const SS = DRAFT ? 1 : 2; // superamostragem do movimento de câmera sobre imagem
 const [LABEL_SIZE, VO_SIZE] = EDL.fmt === '9x16' ? [17, 24] : [22, 32]; // tarja da cópia de revisão
 const AUDIO = { vo: 'vo', trilha: 'trilha', trilhaIn: 0, ...EDL.audio };
 const sec = (ms) => (ms / 1000).toFixed(3);
@@ -113,7 +123,7 @@ function uiAt(t) {
 
 /** Quadros da interface: um link por quadro da prova para o quadro capturado (ou para um quadro transparente). */
 function linkUiFrames(dir) {
-  const blank = join(OUT, 'transparente.png');
+  const blank = join(OUT, `transparente-${EDL.fmt}.png`);
   ffmpeg([
     '-f',
     'lavfi',
@@ -161,7 +171,7 @@ async function openStage(browser, origin, query) {
  * de leitura o quadro é o mesmo: um link para o anterior, sem nova captura.
  */
 async function renderUiFrames(dir) {
-  const blank = join(OUT, 'transparente.png');
+  const blank = join(OUT, `transparente-${EDL.fmt}.png`);
   ffmpeg([
     '-f',
     'lavfi',
@@ -636,7 +646,7 @@ function compose(uiDir, edDir, audio, tmp) {
     '-c:v',
     'libx264',
     '-preset',
-    'slow',
+    DRAFT ? 'veryfast' : 'slow',
     '-crf',
     '16',
     '-pix_fmt',
@@ -767,9 +777,10 @@ function contactSheet(file, sheet, tmp) {
 
 async function main() {
   if (FINAL) preflightFinal();
-  const tmp = join(OUT, 'tmp');
-  const uiDir = join(OUT, 'ui');
-  const edDir = join(OUT, 'editorial');
+  // Pastas de trabalho por formato: 16:9 e 9:16 podem renderizar ao mesmo tempo na mesma saída.
+  const tmp = join(OUT, `tmp-${EDL.fmt}`);
+  const uiDir = join(OUT, `ui-${EDL.fmt}`);
+  const edDir = join(OUT, `editorial-${EDL.fmt}`);
   for (const dir of [tmp, uiDir, edDir]) {
     rmSync(dir, { recursive: true, force: true });
     mkdirSync(dir, { recursive: true });
@@ -778,7 +789,7 @@ async function main() {
   if (EDL.uiSource === 'stage') await renderUiFrames(uiDir);
   else linkUiFrames(uiDir);
   await renderEditorial(edDir);
-  const audioFile = join(OUT, 'audio.wav');
+  const audioFile = join(OUT, `audio-${EDL.fmt}.wav`);
   const audio = buildAudio(audioFile);
   const plates = compose(uiDir, edDir, audioFile, tmp);
   writeSrt(join(OUT, `${EDL.id}-vo-guia.srt`));

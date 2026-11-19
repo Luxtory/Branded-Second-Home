@@ -20,7 +20,7 @@ const BANNERS =
   EDL.editorial.banners ??
   (title ? [{ in: title.in, out: title.out, title: title.title, lines: [title.desc] }] : []);
 const LEGALS = Array.isArray(legal) ? legal : legal ? [legal] : [];
-// Intervalo entre as linhas do banner: a próxima entra quando a anterior já assentou (duration.moderate do Core).
+// Intervalo padrão entre as linhas do banner; a EDL pode definir `lineDelay` e `lineGap` em cada banner.
 const LINE_GAP = 280;
 const LINE_DELAY = 320;
 
@@ -53,7 +53,10 @@ export function timeline() {
         { sel: `#ed-banner-${i}`, in: b.in, out: b.out },
         ...b.lines.map((_, k) => ({
           sel: `#ed-banner-${i}-${k}`,
-          in: b.lines.length > 1 ? b.in + LINE_DELAY + k * LINE_GAP : b.in,
+          in:
+            b.lines.length > 1
+              ? b.in + (b.lineDelay ?? LINE_DELAY) + k * (b.lineGap ?? LINE_GAP)
+              : b.in,
           out: b.out,
         })),
       ]),

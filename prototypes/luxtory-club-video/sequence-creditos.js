@@ -18,7 +18,9 @@ const SEGMENTS = { prior: [0.32, 0.19], fresh: 0.49 };
 // Ressalvas exigidas pela L3 de b2c.md, com o texto aprovado da resposta "Consigo usar outros lugares?" (b2c.md §4).
 export const SUPERS = {
   credits: 'Créditos não são moeda nem garantem disponibilidade.',
-  coOwner: 'No Co-Owner, só data já reservada é cedida.',
+  // Regra do Co-Owner (L3 de b2c.md, BR-151) no contexto de propriedade compartilhada (D-B2C-20), sem estender ao
+  // Owner; decisão da Luxtory de 2026-11-19.
+  coOwner: 'Nas Second Homes compartilhadas, só datas já reservadas podem ser depositadas.',
 };
 // Uma nota só, dentro do painel: a informação fica junto do que ela qualifica e o terço inferior do quadro fica livre
 // para a fotografia (antes, duas legendas na faixa inferior, trocando no meio da cena).
@@ -111,7 +113,6 @@ export const qa = {
       name: 'deposito',
       expect: [ROWS.prior, ROWS.fresh],
       absent: [ROWS.total],
-      allowTerms: ['Co-Owner'], // nota do painel (L3), ver o instante 'saldo'
     },
     {
       t: 8_600,
@@ -119,9 +120,6 @@ export const qa = {
       // A condição de Membership fica escrita no painel: a vertical é vista sem som (L3, BR-195). Sem números nem
       // personagem: o saldo de Helena só se forma na Request.
       expect: [ROWS.total, 'Com Membership vigente, em Luxchange Request ou Direct', FOOTNOTE],
-      // Regra do Co-Owner exigida pela L3 (b2c.md). Sem o rótulo, a proposta é "Na Second Home compartilhada, só data
-      // já reservada é cedida." (D-B2C-20), pendente de aprovação (filme/QUATRO-FILMES.md §1).
-      allowTerms: ['Co-Owner'],
       absent: ['48.000', '46.000', '94.000', 'Helena'],
     },
   ],

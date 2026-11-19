@@ -1,4 +1,4 @@
-# Quatro filmes do Luxtory Club: nomenclatura, storyboard, ritmo e assinatura (v8 · checkpoint para aprovação)
+# Quatro filmes do Luxtory Club: nomenclatura, storyboard, ritmo e assinatura (v8.1 · checkpoint para aprovação)
 
 > **Direção final de 2026-11-19.** Quatro filmes, cada um em 16:9 e 9:16:
 > 1. Luxchange Request;
@@ -13,6 +13,43 @@
 >
 > Pessoas, Second Homes, datas e valores são ilustrativos. Os oito masters só são gerados depois da aprovação deste
 > checkpoint, e nada é publicado antes da validação de direitos, das condições comerciais e da prontidão do produto.
+
+## 0. v8.1: ritmo cinematográfico e textos essenciais
+
+A v8 ficou lenta (69 s): pausas longas e telas paradas depois de a informação principal ter sido lida. A v8.1 tem
+54,4 s no 16:9 e 54,8 s no 9:16, com a assinatura, e mostra duas etapas que faltavam: a seleção das datas depositadas
+e a revisão com a Taxa de intermediação e o envio.
+
+**Edição.** A interface continua tocando no tempo da sequência, sem aceleração. O ritmo vem de três decisões:
+- **cortes em tempo morto:** saída de cartões e processamento do pagamento;
+- **entrada na ação:** a complementação começa com o controle já na tela, logo antes do primeiro movimento;
+- **pausas curtas:** só quando a informação principal pede leitura.
+
+**Textos que mudaram (cartões da Request):**
+
+| Cartão | v8 | v8.1 |
+|---|---|---|
+| Revisão | Créditos necessários · Taxa de intermediação · Prazo para o aceite 24 horas | Créditos necessários ("Vão para a Garantia no envio") · Taxa de intermediação ("Paga no envio, separada dos Créditos; devolvida se não houver aceite") · política · Pagar taxa e enviar |
+| Créditos (Garantia) | Saldo disponível · Créditos em Garantia + frase sobre o uso da Garantia | Créditos disponíveis 39.000 · Créditos em Garantia 55.000 |
+| Pendente | Pendente · Solicitação enviada · duas frases (prazo, devolução, liberação) | Aguardando resposta · Solicitação enviada · "A reserva depende do aceite e da validação das condições." |
+| Solicitação recebida | Visão do membro que recebe a solicitação · Solicitação de troca recebida · duas explicações | Membro que recebe · Solicitação recebida · Azzura Home · 04 a 07/06/2027 · 3 noites do seu Direito de Uso · Créditos a receber 55.000 · Responda em até 24 horas · "Ao aceitar, você cede as noites e recebe os Créditos após a confirmação." |
+| Aceite | + validade de 24 meses | Membro que recebe · Solicitação aceita · 55.000 Créditos recebidos |
+| Reserva | Visão do membro solicitante · 55.000 Créditos utilizados na confirmação | Membro que solicita · Reserva confirmada · Azzura Home · 04 a 07/06/2027 · 3 noites · 55.000 Créditos utilizados |
+| Banner | 3 linhas | "Solicite noites reservadas por outro Membro." · "Créditos + Taxa de intermediação · depende do aceite." |
+
+**Prazo e condições, uma vez cada:**
+- o prazo de 24 horas aparece só para quem recebe;
+- a devolução da taxa sem aceite aparece junto da taxa, na revisão;
+- a validade dos Créditos fica no produto.
+
+Aceite e reserva confirmada continuam entrando no mesmo instante: são a mesma operação (REQ-064). No 16:9 ficam lado a
+lado; no 9:16, empilhados.
+
+**C04 decidido.** A nota do painel diz "Nas Second Homes compartilhadas, só datas já reservadas podem ser depositadas."
+Isso atende à L3 de `b2c.md` e ao BR-151 no contexto de propriedade compartilhada da D-B2C-20, sem estender a regra ao
+Owner, e mantém a condição de Membership vigente no painel. É a forma curta da redação sugerida: a nota inteira cabe
+no tempo de leitura já aprovado do painel (6,7 s), sem refazer a coreografia do C04. O `check.mjs` não tem mais
+exceção.
 
 ## 1. Nomenclatura: o que mudou e onde
 
@@ -40,13 +77,10 @@ quem recebe a solicitação é Co-Owner nos dados da demonstração, e as noites
 | Noites de outro Titular · A reserva depende do aceite dele | Noites reservadas por outro Membro · A reserva depende do aceite | rota da Request | texto comercial visível |
 | sem aceite de outro Titular · Créditos consumidos · do lote que vence primeiro | sem aceite de outro Membro · Créditos utilizados · Utilizados só na confirmação. | cartões do Direct | texto comercial visível |
 | …com outro Titular… / …enquanto o Titular decide. / Do outro lado, o Titular aceita. / …aceite de outro Titular. | …com outro Membro… / Seus Créditos ficam em Garantia e a Taxa de intermediação é paga no envio. / Do outro lado, quem recebe a solicitação decide se aceita. / …aceite de outro Membro. | `ROTEIRO.md` §4 | narração |
-| "No Co-Owner, só data já reservada é cedida." | **pendente:** "Na Second Home compartilhada, só data já reservada é cedida." | nota do painel C04 | jurídico e canônico (L3 de `b2c.md`) |
+| "No Co-Owner, só data já reservada é cedida." | "Nas Second Homes compartilhadas, só datas já reservadas podem ser depositadas." (v8.1, decidido) | nota do painel C04 | jurídico e canônico (L3 de `b2c.md`) |
 | `role: 'co_owner'`, `holding`, lotes, `holdCreditsFefo`, comentários técnicos | sem mudança | `data.js`, `rules.js`, comentários | identificador de código ou regra de negócio |
 
-**Decisão pendente (C04).** A L3 de `b2c.md` exige a regra do Co-Owner sempre que se fala em ceder ou monetizar datas.
-Tirar só o rótulo ("só data já reservada é cedida") estenderia a regra ao Owner, que deposita capacidade própria. A
-proposta usa a expressão já aprovada na D-B2C-20, "Second Home compartilhada". Enquanto não houver aprovação, o painel
-C04 mantém a frase atual, como exceção registrada no `check.mjs` (`allowTerms`).
+**C04.** Decidido na v8.1 (§0).
 
 **Fora do filme.** Se "Membro" passar a ser usado no site, entra antes no registro de decisões de `b2c.md`. Este
 checkpoint não altera a comunicação pública nem os canônicos.
@@ -56,25 +90,34 @@ checkpoint não altera a comunicação pública nem os canônicos.
 Os tempos são estimativas a partir das faixas do §3, com a interface tocada em tempo real e pausas de leitura. A
 duração final sai da medição da prévia aprovada, sem acelerar interface.
 
-### Filme 1 · Luxchange Request (≈ 85–90 s)
+### Filme 1 · Luxchange Request (≈ 54 s, medidos na prévia v8.1)
 
-| # | Etapa | Plano | Tela | Tempo |
+| # | Etapa | Plano | Tela | 16:9 |
 |---|---|---|---|---|
-| 1 | Banner | S06 Azzura, grua | Luxchange Request + 3 linhas | 5 s |
-| 2 | Second Home e datas | S06 (continua) | contexto + calendário, 3 noites, rota | 9,5 s |
-| 3 | Créditos necessários × saldo | S05 Helena na Satori | 55.000 × 48.000, faltam 7.000; Complementar saldo | 9,5 s |
-| 4 | Complementação | S03 luz no interior | controle no mínimo (14.000) e duas datas no calendário (46.000) | 10 s |
-| 5 | Depósito confirmado | S03 (continua) | 46.000 novos Créditos, saldo 94.000 | 5,5 s |
-| 6 | Revisão, Taxa de intermediação e política | S04 Helena com o celular | Créditos necessários, taxa, prazo, aceite da política | 7,5 s |
-| 7 | Pagamento e envio | S04 (continua) | Processando pagamento | 2 s |
-| 8 | Garantia e solicitação pendente | S07 borda infinita | Saldo disponível 39.000 · Créditos em Garantia 55.000; Solicitação enviada | 8,5 s |
-| 9 | Quem recebe a solicitação | S09 sem rosto | Solicitação de troca recebida · 55.000 Créditos a receber · 24 horas | 9 s |
-| 10 | Aceite e revalidação | S09 (continua) | Aceitar · quatro verificações | 3 s |
-| 11 | Créditos recebidos e reserva confirmada | S10 chegada à Azzura | Solicitação aceita · 55.000 Créditos recebidos; Reserva confirmada | 7 s |
-| 12 | Experiência | S17a gesto humano, dissolve | — | 6,5 s |
-| 13 | Assinatura | dissolve para o cartão | logo oficial + frase | 6 s |
+| 1 | Banner | S06 Azzura, grua | Luxchange Request + 2 linhas | 4,25 s |
+| 2 | Second Home e datas | S06 (continua) | contexto + calendário: toques em 04 e 07/06, 3 noites | 5,9 s |
+| 3 | Créditos necessários × saldo | S05 Helena na Satori | 55.000 necessários × 48.000 disponíveis, faltam 7.000; Complementar saldo | 5,25 s |
+| 4 | Complementação | S04 Helena com o celular | controle no mínimo (14.000, uma data) e mais duas datas do Direito de Uso (46.000); Depositar | 7,0 s |
+| 5 | Depósito confirmado | S03 luz no interior | 46.000 novos Créditos, saldo 94.000 | 3,25 s |
+| 6 | Revisão e envio | S03 (continua) | Créditos, Taxa de intermediação, política; Pagar taxa e enviar; processamento breve | 5,0 s |
+| 7 | Solicitação enviada | S07 borda infinita | Aguardando resposta · 55.000 em Garantia · 39.000 disponíveis | 3,5 s |
+| 8 | Solicitação recebida | S09 sem rosto | 55.000 Créditos a receber · Responda em até 24 horas · Aceitar ou Recusar | 4,1 s |
+| 9 | Aceite e revalidação | S09 (continua) | Aceitar · quatro verificações | 2,4 s |
+| 10 | Confirmações (mesma operação) | S10 chegada à Azzura | Solicitação aceita · 55.000 Créditos recebidos; Reserva confirmada · 3 noites · 55.000 Créditos utilizados | 4,25 s |
+| 11 | Experiência | S17a gesto humano, dissolve | — | 3,5 s |
+| 12 | Assinatura | dissolve para o cartão | logo oficial + frase | 6 s |
 
-### Filme 2 · Luxchange Direct (≈ 50 s)
+O 9:16 tem 54,8 s: a complementação vertical (um cartão por vez) começa um pouco antes, com o controle em 9,5 s.
+
+**O que o espectador entende na complementação:**
+- datas elegíveis do Direito de Uso originam Créditos;
+- o depósito é uma operação própria, confirmada antes da revisão;
+- o saldo sobe para 94.000, e os 55.000 da Request saem dele;
+- o restante fica para outras experiências (narração).
+
+A data nunca paga a reserva diretamente.
+
+### Filme 2 · Luxchange Direct (≈ 34 s no ritmo da v8.1)
 
 | # | Etapa | Plano | Tela | Tempo |
 |---|---|---|---|---|
@@ -90,7 +133,7 @@ duração final sai da medição da prévia aprovada, sem acelerar interface.
 O consumo continua pelo lote que vence primeiro (FEFO, PD-008), só nas regras; a tela diz "Utilizados só na
 confirmação".
 
-### Filme 3 · Luxplus (≈ 45 s)
+### Filme 3 · Luxplus (≈ 30 s no ritmo da v8.1)
 
 | # | Etapa | Plano | Tela | Tempo |
 |---|---|---|---|---|
@@ -104,7 +147,7 @@ confirmação".
 
 Sem Taxa de intermediação e sem desconto de Membership (BR-244, não publicado).
 
-### Filme 4 · Luxtory Club, filme completo (≈ 165–175 s)
+### Filme 4 · Luxtory Club, filme completo (≈ 115–130 s no ritmo da v8.1)
 
 | # | Bloco | Conteúdo | Tempo |
 |---|---|---|---|
@@ -118,7 +161,15 @@ Sem Taxa de intermediação e sem desconto de Membership (BR-244, não publicado
 | 8 | Assinatura | dissolve para o cartão | 6 s |
 
 **Sem repetição.** Os Créditos são explicados uma vez (bloco 2 e decisão da Request). Direct e Luxplus mostram só o que
-os diferencia.
+os diferencia. Os tempos das tabelas de Direct, Luxplus e filme completo acima foram estimados na v8. No ritmo da v8.1,
+cada etapa encolhe na mesma proporção da Request, sem copiar tempos.
+
+Banners de cada modalidade (diferença em duas linhas):
+- **Request:** "Solicite noites reservadas por outro Membro." · "Créditos + Taxa de intermediação · depende do aceite."
+- **Direct:** "Reserve noites do Inventário Luxtory." · "Créditos + Taxa de intermediação · sem aceite de outro Membro."
+- **Luxplus:** "Reserve noites adicionais no Luxtory Club." · "Pagamento em dinheiro, sem utilizar Créditos."
+
+A confirmação continua sujeita às validações e ao pagamento, e nenhum banner promete disponibilidade.
 
 ### Vertical (9:16)
 
@@ -127,32 +178,33 @@ os diferencia.
 - **Banners:** no terço superior.
 - **Assinatura:** a mesma.
 
-## 3. Critérios de legibilidade aplicados
+## 3. Critérios de legibilidade aplicados (v8.1)
 
 **A leitura começa quando a animação de entrada termina** (480 ms, `duration.slow`) e vai até a troca seguinte. Cada
-tela tem um tipo, com faixa de tempo, e um texto essencial; a pausa garante 1 s de orientação mais 2,5 palavras por
-segundo desse texto:
+tela tem um tipo e uma faixa editorial, que protege contra excesso e contra insuficiência. O texto essencial só exige
+uma leitura rápida (5 palavras por segundo) dentro da faixa. Texto secundário não precisa ser lido inteiro e não
+alonga a tela.
 
-| Tipo | Faixa | Uso |
+| Tipo | Faixa | Uso na prévia |
 |---|---|---|
-| banner | 2,5–4 s, contados desde a primeira linha (as linhas entram uma a uma) | título da modalidade + até 3 linhas |
-| clique | 1–2 s | aceite, revalidação, botão |
-| mensagem | 4,5–6 s | datas, depósito confirmado |
-| multi | 7–10 s | Créditos necessários × saldo, Garantia, solicitação recebida |
-| confirmação | 5–7 s | Créditos recebidos e reserva confirmada |
+| banner | 2,5–3,5 s, desde a primeira linha | Luxchange Request (3,05 s) |
+| ação | 0,7–1,5 s | datas escolhidas antes do depósito; aceite e revalidação |
+| mensagem | 2,5–4 s | 3 noites; depósito confirmado; revisão; solicitação enviada |
+| decisão com números | 3,5–5,5 s | Créditos necessários × saldo; solicitação recebida |
+| etapa complexa | 5–7 s, só se indispensável | não usada |
+| confirmação | 3–4,5 s | Créditos recebidos e reserva confirmada (3,3 s) |
 | assinatura | 6 s | logo oficial + frase |
 
-**Implementação** (`prova/blocos.js`):
-- a pausa (`hold`) congela o quadro da interface depois da entrada, enquanto a imagem continua em movimento por baixo;
-- `legibility(edl)` mede a janela real de cada tela;
-- o teste exige todas dentro da faixa, nos dois formatos;
-- textos longos primeiro foram simplificados: o cartão pendente perdeu uma frase e o cartão de Créditos perdeu a lista
-  de lotes.
+Transições de 300–600 ms: entrada e saída do Core, dissolve de 500 ms para o plano humano e de 700 ms para a
+assinatura.
 
-**Validação visual a fazer na prévia, sem pausar:**
-- computador e celular;
-- vertical em tamanho típico;
-- com e sem áudio (legenda-guia `.srt`).
+**Implementação** (`prova/blocos.js`):
+- `READING` e `legibility(edl)` medem a janela real de cada tela;
+- o teste exige todas dentro da faixa, nos dois formatos, a duração total entre 46 e 56 s, a ordem dos fatos incluindo
+  complementação e envio, e a narração sem sobreposição.
+
+A fórmula não substitui a revisão: a aprovação final é a reprodução contínua em velocidade normal, no computador e no
+celular, com e sem som.
 
 ## 4. Saldo, Garantia e solicitação recebida
 
@@ -170,7 +222,7 @@ Taxa de intermediação, o que o cartão pendente diz.
 A solicitação recebida usa a copy aprovada, e a originação dos Créditos de quem cede só acontece com o aceite válido, a
 revalidação e a confirmação, na mesma operação (REQ-064).
 
-## 5. Prévia curta da Request (etapa 4)
+## 5. Prévia da Request (v8.1)
 
 `prova/edl-request-curta.js` reúne:
 - o banner;
@@ -183,7 +235,9 @@ revalidação e a confirmação, na mesma operação (REQ-064).
 - o plano humano;
 - a assinatura oficial.
 
-Tem ≈ 69 s nos dois formatos e todas as telas dentro das faixas do §3.
+Tem 54,4 s no 16:9 e 54,8 s no 9:16, com todas as telas dentro das faixas do §3 (a v8 tinha 69 s). Para inspeção
+rápida de ritmo e composição, `--rascunho` renderiza sem superamostragem e com codificação rápida, numa pasta
+própria.
 
 **Comandos:**
 
@@ -201,7 +255,7 @@ Saída em `out/request-curta/`: cópia limpa, cópia de revisão com tarja e leg
 no 16:9, no terço inferior esquerdo; no 9:16, no terço superior.
 
 **Assinatura.** `sequence-assinatura.js` e o arquivo da logo oficial não mudam:
-- o cartão Dark Moroccan Blue entra por dissolve de 700 ms sobre a última imagem;
+- o cartão Dark Moroccan Blue entra por dissolve de 700 ms sobre a última imagem (aprovada e intacta na v8.1);
 - a logo Warm Sand entra em fade puro de 900 ms, sem deslocamento, escala ou efeito;
 - a frase vem depois, em 6 s no total;
 - na resolução sonora entra um acorde grave e aberto sob a frase, e o som silencia nos últimos 200 ms;

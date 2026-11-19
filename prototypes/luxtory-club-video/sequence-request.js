@@ -5,8 +5,8 @@
 // Todo valor exibido vem de requestScenario() e depositScenario() (data.js → rules.js). A capacidade pedida não fica
 // bloqueada enquanto a Request está pendente (PD-005).
 // Copy do filme (direção final, 2026-11-19): "Membro" na comunicação (quem solicita / quem recebe), sem Owner, Co-Owner
-// nem Ação; saldo e Garantia em dois indicadores e uma frase (os lotes e o FEFO continuam em rules.js e data.js, fora
-// da tela). Papéis e regras do domínio não mudam: quem recebe é Co-Owner em data.js, e as noites cedidas são do Direito
+// nem Ação; saldo e Garantia em dois indicadores (os lotes e o FEFO continuam em rules.js e data.js, fora da tela);
+// textos enxutos da v8.1 (uma ideia por cartão, o prazo de 24 horas só no cartão de quem recebe). Papéis e regras do domínio não mudam: quem recebe é Co-Owner em data.js, e as noites cedidas são do Direito
 // de Uso já reservado (BR-151, PD-007).
 import { depositScenario, requestScenario } from './data.js';
 import { selectionForTarget } from './rules.js';
@@ -82,9 +82,8 @@ export function build(stage, fmt) {
       <p class="lx-eyebrow">Revisar solicitação</p>
       <p class="lx-title">${s.secondHome.name} · ${period}</p>
       <dl class="lx-evidence">
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos necessários</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(s.credits)}</dd><dd class="demo-hint">Garantia constituída no envio; utilizados só com o aceite</dd></div>
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Taxa de intermediação</dt><dd class="lx-evidence__value">${brl(s.feeCents)}</dd><dd class="demo-hint">Paga no envio, separada dos Créditos</dd></div>
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Prazo para o aceite</dt><dd class="lx-evidence__value">24 horas</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos necessários</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(s.credits)}</dd><dd class="demo-hint">Vão para a Garantia no envio</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Taxa de intermediação</dt><dd class="lx-evidence__value">${brl(s.feeCents)}</dd><dd class="demo-hint">Paga no envio, separada dos Créditos; devolvida se não houver aceite</dd></div>
       </dl>
       <label class="lx-check"><input type="checkbox" id="policy" tabindex="-1"><span>Li e aceito a política comercial aplicável</span></label>
       <button class="lx-button lx-button--primary" type="button" id="send" tabindex="-1"><span class="demo-swap"><span id="send-label">Pagar taxa e enviar</span><span id="send-busy">Processando pagamento</span></span></button>
@@ -94,28 +93,26 @@ export function build(stage, fmt) {
       <p class="lx-eyebrow">Créditos Luxchange de ${s.requesterName}</p>
       <div class="demo-bar" aria-hidden="true"><span class="demo-bar__seg" id="bar-avail"></span><span class="demo-bar__seg demo-bar__seg--held" id="bar-held"></span></div>
       <dl class="demo-legend">
-        <div><dt>Saldo disponível</dt><dd><span id="lg-avail-before">${credits(s.balances.beforeSend.available)}</span><span id="lg-avail-after">${credits(s.balances.afterSend.available)}</span></dd></div>
+        <div><dt>Créditos disponíveis</dt><dd><span id="lg-avail-before">${credits(s.balances.beforeSend.available)}</span><span id="lg-avail-after">${credits(s.balances.afterSend.available)}</span></dd></div>
         <div id="lg-held"><dt>Créditos em Garantia</dt><dd>${credits(s.balances.afterSend.held)}</dd></div>
       </dl>
-      <p class="demo-sub" id="held-note">Se a solicitação for aceita e validada, os Créditos em Garantia são utilizados para confirmar a reserva.</p>
     </section>
 
     <section class="demo-card demo-card--task" id="pending" data-surface="deep" aria-label="Solicitação pendente">
-      <p class="demo-state demo-state--pending">${icon('i-clock')}Pendente</p>
+      <p class="demo-state demo-state--pending">${icon('i-clock')}Aguardando resposta</p>
       <p class="lx-display-s">Solicitação enviada</p>
-      <p class="demo-note">${icon('i-info')}<span>A reserva só se confirma com o aceite e a revalidação.</span></p>
-      <p class="demo-sub">Quem recebe tem até 24 horas para responder. Sem aceite, a Taxa de intermediação é devolvida e a Garantia é liberada.</p>
+      <p class="demo-note">${icon('i-info')}<span>A reserva depende do aceite e da validação das condições.</span></p>
     </section>
 
     <section class="demo-card demo-card--task" id="holder" data-surface="deep" aria-label="Solicitação recebida">
-      <p class="lx-eyebrow">Visão do membro que recebe a solicitação</p>
-      <p class="lx-display-s">Solicitação de troca recebida</p>
-      <p class="demo-sub">${s.secondHome.name} · ${periodShort}<br>${s.nights.length} noites reservadas do seu Direito de Uso</p>
+      <p class="lx-eyebrow">Membro que recebe</p>
+      <p class="lx-display-s">Solicitação recebida</p>
+      <p class="demo-sub">${s.secondHome.name} · ${periodShort}<br>${s.nights.length} noites do seu Direito de Uso</p>
       <dl class="lx-evidence">
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos a receber</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(s.holder.lot.quantity)}</dd><dd class="demo-hint">Receba esses Créditos se aceitar a solicitação e as condições forem confirmadas.</dd></div>
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Prazo para responder</dt><dd class="lx-evidence__value">24 horas</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos a receber</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(s.holder.lot.quantity)}</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Responda em até</dt><dd class="lx-evidence__value">24 horas</dd></div>
       </dl>
-      <p class="demo-sub">Ao aceitar, você cede essas noites e recebe Créditos Luxchange.</p>
+      <p class="demo-sub">Ao aceitar, você cede as noites e recebe os Créditos após a confirmação.</p>
       <div class="demo-swap">
         <div class="demo-actions" id="holder-actions">
           <button class="lx-button lx-button--primary" type="button" id="accept" tabindex="-1">Aceitar</button>
@@ -134,20 +131,19 @@ export function build(stage, fmt) {
     </section>
 
     <section class="demo-card demo-card--task" id="accepted" data-surface="deep" aria-label="Solicitação aceita">
-      <p class="lx-eyebrow">Visão do membro que recebeu a solicitação</p>
+      <p class="lx-eyebrow">Membro que recebe</p>
       <p class="demo-state demo-state--done">${icon('i-check')}Solicitação aceita</p>
       <p><span class="lx-ordinal">${credits(s.holder.lot.quantity)}</span> <span class="demo-sub">Créditos recebidos</span></p>
-      <p class="demo-sub">Válidos por 24 meses a partir da originação.</p>
     </section>
 
     <section class="demo-card demo-card--ctx" id="booking" data-surface="deep" aria-label="Reserva confirmada">
-      <p class="lx-eyebrow">Visão do membro solicitante</p>
+      <p class="lx-eyebrow">Membro que solicita</p>
       <p class="demo-state demo-state--done">${icon('i-check')}Reserva ${s.booking.state.toLowerCase()}</p>
       <div>
         <p class="demo-name">${s.secondHome.name}</p>
-        <p class="demo-sub">${periodShort} · ${s.nights.length} noites</p>
+        <p class="demo-sub">${periodShort}</p>
       </div>
-      <p class="demo-sub">${credits(s.balances.afterAccept.consumed)} Créditos utilizados na confirmação.</p>
+      <p class="demo-sub">${s.nights.length} noites · ${credits(s.balances.afterAccept.consumed)} Créditos utilizados</p>
     </section>`,
   );
   stage.dataset.fmt = fmt;
@@ -234,9 +230,8 @@ export function timeline(fmt) {
       { sel: '#review', in: t.reviewIn, out: t.sendOut },
       { sel: '#send-label', in: ALWAYS, out: t.pay + 100 },
       { sel: '#send-busy', in: swapIn(t.pay + 100), dur: 0 },
-      // Garantia só no envio: dois indicadores e uma frase (sem a lista de lotes).
+      // Garantia só no envio: dois indicadores (sem a lista de lotes); a dependência do aceite fica no cartão pendente.
       { sel: '#lg-held', in: valueIn },
-      { sel: '#held-note', in: valueIn },
       { sel: '#lg-avail-before', in: ALWAYS, out: t.sendCommit },
       { sel: '#lg-avail-after', in: valueIn },
       { sel: '#pending', in: t.sendCommit, out: t.pendingOut },
@@ -366,38 +361,44 @@ export const qa = {
     {
       t: 20_400,
       name: 'revisao',
-      expect: [credits(s.credits), 'Taxa de intermediação', brl(s.feeCents), '24 horas'],
+      expect: [
+        credits(s.credits),
+        'Taxa de intermediação',
+        brl(s.feeCents),
+        'separada dos Créditos',
+        'devolvida se não houver aceite',
+        'Li e aceito a política comercial aplicável',
+      ],
       absent: ['Em Garantia'],
     },
     {
       t: 24_600,
       name: 'pendente',
       expect: [
-        'Pendente',
+        'Aguardando resposta',
         'Solicitação enviada',
-        'Saldo disponível',
+        'Créditos disponíveis',
         credits(s.balances.afterSend.available),
         'Créditos em Garantia',
         credits(s.balances.afterSend.held),
-        'utilizados para confirmar a reserva',
-        'Taxa de intermediação é devolvida',
+        'A reserva depende do aceite e da validação das condições',
       ],
-      // Sem detalhamento por lote no filme (o FEFO continua nas regras e nos dados).
-      absent: ['lote', 'Créditos anteriores', 'Novo depósito'],
+      // Sem detalhamento por lote no filme (o FEFO continua nas regras e nos dados); o prazo fica com quem recebe.
+      absent: ['lote', 'Créditos anteriores', 'Novo depósito', '24 horas'],
     },
     {
       t: 28_300,
       name: 'recebida',
       expect: [
-        'Visão do membro que recebe a solicitação',
-        'Solicitação de troca recebida',
+        'Membro que recebe',
+        'Solicitação recebida',
         '04 a 07/06/2027',
-        'noites reservadas do seu Direito de Uso',
+        '3 noites do seu Direito de Uso',
         'Créditos a receber',
         credits(s.holder.lot.quantity),
-        'se aceitar a solicitação e as condições forem confirmadas',
+        'Responda em até',
         '24 horas',
-        'Ao aceitar, você cede essas noites e recebe Créditos Luxchange',
+        'Ao aceitar, você cede as noites e recebe os Créditos após a confirmação',
       ],
     },
     {
@@ -415,11 +416,10 @@ export const qa = {
       expect: [
         'Solicitação aceita',
         'Créditos recebidos',
-        'Válidos por 24 meses a partir da originação',
-        'Visão do membro solicitante',
+        'Membro que solicita',
         'Reserva confirmada',
-        'Créditos utilizados na confirmação',
-        credits(s.balances.afterAccept.consumed),
+        '04 a 07/06/2027',
+        `3 noites · ${credits(s.balances.afterAccept.consumed)} Créditos utilizados`,
       ],
     },
   ],

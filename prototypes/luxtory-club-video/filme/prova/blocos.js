@@ -13,34 +13,39 @@ export const FPS = 24;
 export const GRID_MS = 125;
 const FORMATS = { '16x9': [1920, 1080], '9x16': [1080, 1920] };
 const FOCUS_RAMP_MS = 500;
-const BANNER_EDGE_MS = 400; // entrada e saída do banner dentro do bloco
+const BANNER_EDGE_MS = 300; // entrada e saída do banner dentro do bloco
+// Linhas do banner: entram quase juntas, logo depois do título (sequence-prova.js lê estes tempos da EDL).
+const BANNER_LINE_DELAY_MS = 120;
+const BANNER_LINE_GAP_MS = 120;
+const ENTER_MS = 480; // duration.slow (entrada do Core)
 const LEGAL_MS = 4_000;
 // Narração: ritmo de conversa (≈ 2,6 palavras por segundo, ROTEIRO.md §4).
 const VO_WORDS_PER_S = 2.6;
 
 /**
- * Legibilidade (filme/QUATRO-FILMES.md §3): a janela de leitura começa quando a animação de entrada termina e vai até a
- * troca seguinte. Faixas por tipo de tela, em ms, e leitura mínima do texto essencial (1 s de orientação + 2,5 palavras
- * por segundo).
+ * Legibilidade proporcional (filme/QUATRO-FILMES.md §3, v8.1): a janela de leitura começa quando a animação de entrada
+ * termina e vai até a troca seguinte. Cada tipo de tela tem uma faixa editorial, que protege contra excesso e contra
+ * insuficiência, sem impor pausas: o texto secundário não precisa ser lido inteiro. O texto essencial só exige o tempo
+ * de uma leitura rápida (5 palavras por segundo), nunca mais que a faixa.
  */
 export const READING = {
   ranges: {
-    banner: [2_500, 4_000],
-    clique: [1_000, 2_000],
-    mensagem: [4_500, 6_000],
-    multi: [7_000, 10_000],
-    confirmacao: [5_000, 7_000],
+    banner: [2_500, 3_500],
+    acao: [700, 1_500],
+    mensagem: [2_500, 4_000],
+    decisao: [3_500, 5_500],
+    complexa: [5_000, 7_000],
+    confirmacao: [3_000, 4_500],
     assinatura: [5_500, 6_500],
   },
-  baseMs: 1_000,
-  wordsPerS: 2.5,
+  skimWordsPerS: 5,
 };
-const words = (text) => text.trim().split(/\s+/).filter(Boolean).length;
+// Palavras de verdade: sinais soltos (+, ·, —) não contam como leitura.
+const words = (text) => text.split(/\s+/).filter((w) => /[\p{L}\d]/u.test(w)).length;
 const ceilGrid = (ms) => Math.ceil(ms / GRID_MS) * GRID_MS;
 
-/** Tempo mínimo de leitura do texto essencial de uma tela, em ms. */
-export const readingMs = (text) =>
-  Math.round(READING.baseMs + (words(text) / READING.wordsPerS) * 1000);
+/** Tempo de uma leitura rápida do texto essencial de uma tela, em ms. */
+export const skimMs = (text) => Math.round((words(text) / READING.skimWordsPerS) * 1000);
 
 /** Monta a EDL de um filme num formato. `spec.blocks(fmt)` devolve os blocos daquele formato. */
 export function buildFilm(fmt, spec) {
@@ -118,6 +123,8 @@ const PLACE = {
       out: acc.t - BANNER_EDGE_MS,
       title: block.banner.title,
       lines: block.banner.lines,
+      lineDelay: BANNER_LINE_DELAY_MS,
+      lineGap: BANNER_LINE_GAP_MS,
     };
     acc.banners.push(banner);
     // Leitura do banner: as linhas entram uma a uma (sequence-prova.js), então a leitura começa quando a primeira
@@ -126,7 +133,7 @@ const PLACE = {
       label: `banner · ${banner.title}`,
       type: 'banner',
       essential: [banner.title, ...banner.lines].join(' '),
-      from: banner.in + 320 + 480,
+      from: banner.in + BANNER_LINE_DELAY_MS + ENTER_MS,
       to: banner.out,
     });
     placeShot(acc, block, from);
@@ -197,15 +204,12 @@ const PLACE = {
   },
 };
 
-/** Relatório de legibilidade: janela real de cada tela, faixa do tipo e leitura mínima do texto essencial. */
+/** Relatório de legibilidade: janela real de cada tela, faixa do tipo e leitura rápida do texto essencial. */
 export function legibility(edl) {
   return edl.beats.map((b) => {
     const window = b.to - b.from;
     const [min, max] = READING.ranges[b.type];
-    // Banner e assinatura seguem a faixa do tipo; as telas de interface também a leitura do texto essencial.
-    const need = ['banner', 'assinatura'].includes(b.type)
-      ? min
-      : Math.max(min, readingMs(b.essential));
+    const need = Math.min(max, Math.max(min, skimMs(b.essential)));
     return { ...b, window, min: need, max, ok: window >= need && window <= max + GRID_MS };
   });
 }

@@ -230,7 +230,6 @@ for (const fmt of ['16x9', '9x16']) {
     );
     // Garantia nunca antes do envio; depósito confirmado (operação própria) antes da revisão.
     assert.ok(enter('#lg-held').in > sendPress, 'Em Garantia só depois do envio');
-    assert.ok(enter('#held-note').in > sendPress, 'frase da Garantia só depois do envio');
     assert.ok(
       set('#deposit-go', 'data-pressed')[0].at < enter('#deposited').in &&
         enter('#deposited').in < enter('#review').in,
@@ -423,7 +422,7 @@ test('ressalvas do filme: condições essenciais no roteiro, fora da assinatura 
   for (const text of [
     'Com Membership vigente', // L3, BR-195: condição na mesma frase dos Créditos (narração)
     'Créditos não são moeda nem garantem disponibilidade.', // BR-190, frase aprovada do FAQ (b2c.md §4) (C04)
-    'No Co-Owner, só data já reservada é cedida.', // BR-151, REQ-060, frase aprovada do FAQ (C04)
+    'Nas Second Homes compartilhadas, só datas já reservadas podem ser depositadas.', // BR-151, L3; decisão de 2026-11-19 (C04)
     'Imagens, interfaces e valores ilustrativos.', // C05, primeira interface (neutro, sem negar o produto)
   ])
     assert.ok(roteiro.includes(text), `ROTEIRO.md sem a ressalva: ${text}`);
@@ -736,15 +735,15 @@ test('revisão comercial: nenhum jargão ou marca de protótipo nas sequências 
 test('a Request aprovada continua com Garantia, Pendente e aceite de quem recebe a solicitação', () => {
   const text = markup(requestSeq);
   assert.match(text, /Créditos em Garantia/);
-  assert.match(text, /Pendente/);
-  assert.match(text, /Solicitação de troca recebida/);
+  assert.match(text, /Aguardando resposta/);
+  assert.match(text, /Solicitação recebida/);
 });
 
 test('[PD-008][REQ-064] filme: saldo e Garantia sem lotes na tela; FEFO, origem e consumo preservados nas regras', () => {
   const text = markup(requestSeq);
   // Comunicação: dois indicadores e uma frase, sem a lista de lotes.
-  assert.match(text, /Saldo disponível/);
-  assert.match(text, /utilizados para confirmar a reserva/);
+  assert.match(text, /Créditos disponíveis/);
+  assert.match(text, /A reserva depende do aceite e da validação das condições/);
   assert.doesNotMatch(text, /lote|Créditos anteriores|Novo depósito/i);
   // Regras: a Garantia continua formada pelos lotes que vencem primeiro e soma exatamente os Créditos necessários.
   const r = requestScenario();
@@ -939,16 +938,18 @@ const roteiroText = () =>
   readFileSync(join(DIR, 'filme/ROTEIRO.md'), 'utf8').replace(/\n>\s*/g, ' ');
 
 for (const fmt of ['16x9', '9x16']) {
-  test(`[REQ-063][REQ-064] prévia curta da Request ${fmt}: ritmo legível, ordem dos fatos e assinatura`, () => {
+  test(`[REQ-063][REQ-064] prévia curta da Request ${fmt}: ritmo da v8.1, ordem dos fatos e assinatura`, () => {
     const edl = requestCurta(fmt);
     const t = requestSeq.times(fmt);
-    // Cada tela dentro da faixa do seu tipo, contada depois da animação de entrada (QUATRO-FILMES.md §3).
+    // Ritmo da v8.1: entre a prova de 24 s e a v8 de 69 s (meta editorial de 48–55 s, com a assinatura).
+    assert.ok(edl.duration >= 46_000 && edl.duration <= 56_000, `duração ${edl.duration}`);
+    // Cada tela dentro da faixa proporcional do seu tipo (sem excesso nem insuficiência), contada depois da entrada.
     const report = legibility(edl);
     assert.deepEqual(
       report.filter((r) => !r.ok).map((r) => `${r.label}: ${r.window} ms`),
       [],
     );
-    for (const type of ['banner', 'multi', 'confirmacao', 'assinatura'])
+    for (const type of ['banner', 'decisao', 'acao', 'confirmacao', 'assinatura'])
       assert.ok(
         report.some((r) => r.type === type),
         `tela do tipo ${type}`,
@@ -974,9 +975,21 @@ for (const fmt of ['16x9', '9x16']) {
       assert.ok(u, `instante ${ms} da Request na prévia`);
       return u.at + (ms - u.from);
     };
-    const order = [t.topupPress, t.depositedIn, t.sendCommit, t.holderIn, t.accept, t.result].map(
-      filmAt,
-    );
+    // Inclui a complementação (controle, duas datas, depósito) e a revisão com política e envio (v8.1).
+    const order = [
+      t.topupPress,
+      t.slider,
+      ...t.taps,
+      t.depositPress,
+      t.depositedIn,
+      t.reviewPress,
+      t.policy,
+      t.pay,
+      t.sendCommit,
+      t.holderIn,
+      t.accept,
+      t.result,
+    ].map(filmAt);
     assert.deepEqual(
       order,
       [...order].sort((a, b) => a - b),
@@ -986,8 +999,7 @@ for (const fmt of ['16x9', '9x16']) {
     assert.equal(banner.title, 'Luxchange Request');
     assert.deepEqual(banner.lines, [
       'Solicite noites reservadas por outro Membro.',
-      'Utilize Créditos + Taxa de intermediação.',
-      'Depende do aceite de quem recebeu a solicitação.',
+      'Créditos + Taxa de intermediação · depende do aceite.',
     ]);
     assert.ok(banner.out <= edl.ui[0].at + 400);
     // Assinatura oficial no fim: 6 s, dissolve da imagem, nenhuma etiqueta interna sobre ela.
@@ -1000,13 +1012,18 @@ for (const fmt of ['16x9', '9x16']) {
     // Som até o fim: a resolução da assinatura e o fade final dentro do filme.
     assert.ok(edl.sfx.some((x) => x.kind === 'resolve' && x.at > sig.at));
     assert.ok(edl.audioOut.at + edl.audioOut.dur <= edl.duration);
-    // Vocabulário do filme e narração só com frases aprovadas (ROTEIRO.md §4).
+    // Vocabulário do filme e narração só com frases aprovadas (ROTEIRO.md §4 ou a prova de montagem), sem sobreposição.
     const roteiro = roteiroText();
-    for (const v of edl.vo) {
+    const aprovadas = new Set(EDL.vo.map((v) => v.text));
+    edl.vo.forEach((v, i) => {
       assert.doesNotMatch(v.text, FILM_TERMS);
-      assert.ok(roteiro.includes(v.text), `frase sem origem aprovada: ${v.text}`);
+      assert.ok(
+        roteiro.includes(v.text) || aprovadas.has(v.text),
+        `frase sem origem aprovada: ${v.text}`,
+      );
       assert.ok(v.to <= edl.duration);
-    }
+      if (i > 0) assert.ok(v.from >= edl.vo[i - 1].to, `narração sobreposta: ${v.text}`);
+    });
     for (const b of edl.editorial.banners)
       assert.doesNotMatch([b.title, ...b.lines].join(' '), FILM_TERMS);
   });

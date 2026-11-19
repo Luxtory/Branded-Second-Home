@@ -145,7 +145,7 @@ fotografia em Pure White (Newsreader no título, Hanken no descritor), com a hai
 | C01 | 0:00–0:04 | S01 vale ao amanhecer, a Satori Home ao longe | — | — | — | trilha entra (piano), vento | — |
 | C02 | 0:04–0:09 | S02 Helena e a família no terraço de pedra; S03 detalhe de luz no interior | — | — | "Tudo começa na sua Second Home." | trilha, passos na madeira | corte no movimento |
 | C03 | 0:09–0:13 | S04 Helena com o celular, horizonte ao fundo | — | **Luxtory Club** | "Mas ela pode ser o ponto de partida — não o limite." | toque de UI suave | dissolve 8 quadros |
-| C04 | 0:13–0:23,5 | S05 terraço da Satori Home e o vale; Helena no terço direito | creditos 0–10,5: painel conceitual à esquerda (Créditos válidos que você já tem + novos Créditos, de datas elegíveis depositadas = um só saldo para viver outras Second Homes; com Membership vigente, em Luxchange Request ou Direct), sem números; nota no rodapé do painel a partir de 0:16,2: *Créditos não são moeda nem garantem disponibilidade. No Co-Owner, só data já reservada é cedida.* | — (terço inferior livre) | "Com Membership vigente, você usa os Créditos válidos que já tem, deposita datas elegíveis para gerar novos — ou combina os dois para viver outras Second Homes." | um toque macio por linha do painel; pulso da trilha | corte |
+| C04 | 0:13–0:23,5 | S05 terraço da Satori Home e o vale; Helena no terço direito | creditos 0–10,5: painel conceitual à esquerda (Créditos válidos que você já tem + novos Créditos, de datas elegíveis depositadas = um só saldo para viver outras Second Homes; com Membership vigente, em Luxchange Request ou Direct), sem números; nota no rodapé do painel a partir de 0:16,2: *Créditos não são moeda nem garantem disponibilidade. Nas Second Homes compartilhadas, só datas já reservadas podem ser depositadas.* | — (terço inferior livre) | "Com Membership vigente, você usa os Créditos válidos que já tem, deposita datas elegíveis para gerar novos — ou combina os dois para viver outras Second Homes." | um toque macio por linha do painel; pulso da trilha | corte |
 | C05 | 0:23,5–0:30,5 | S06 Azzura Home, plano aberto ao entardecer | request 0,0–4,6, a partir de 0:25,9 | **Luxchange Request** · noites de outro Titular · Créditos + Taxa de intermediação (0,3–2,4 s); faixa inferior: *Imagens, interfaces e valores ilustrativos.* | "Quando as noites que você deseja estão com outro Titular, você envia uma Request." | toques nas datas | corte |
 | C05b | 0:30,5–0:34,5 | S04 (segunda parte) Helena na Satori Home com o celular | request 6,0–10,0 (Créditos necessários 55.000 × saldo 48.000, faltam 7.000 → Complementar saldo → calendário já em maio, com 14, 15 e 16/05 elegíveis e o depósito desabilitado) | — | "Se o saldo não bastar, você completa com datas do seu Direito de Uso — e pode depositar mais, para as próximas experiências." | toques | corte |
 | C05c | 0:34,5–0:39,5 | S03 (segunda parte) luz da manhã no interior da Satori Home | request 10,6–15,6 (controle → 14.000, o mínimo, com 16/05; toque em 14/05 → 30.000; toque em 15/05 → 46.000; saldo projetado 94.000; depositar) | — | (continuação) | toques; um tic por data | corte |
@@ -226,7 +226,10 @@ Guardrails conferidos:
   escrita no painel, para a vertical sem som.
 - Os Créditos levam a ressalva da copy aprovada (BR-190), em texto na tela, junto do saldo.
 - A regra do Co-Owner usa a frase aprovada do FAQ: "no Co-Owner, só data já reservada é cedida" (b2c.md §4, BR-151,
-  REQ-060), junto do depósito.
+  REQ-060), junto do depósito. **v8.1 (decisão da Luxtory, 2026-11-19):** no filme, a mesma regra aparece no contexto
+  de propriedade compartilhada (D-B2C-20), sem estender ao Owner: "Nas Second Homes compartilhadas, só datas já
+  reservadas podem ser depositadas."
+
 - Nenhuma promessa (BR-374, REQ-101).
 - Nenhum termo vedado pelo REQ-100 (varredura em `prototype.test.mjs`).
 
@@ -246,7 +249,7 @@ geométrico (centro óptico); no 9:16, logo a 62% da largura e frase em duas lin
 
 | Onde | Ressalva | Tempo |
 |---|---|---|
-| C04, nota no rodapé do painel, a partir da menção ao depósito | *Créditos não são moeda nem garantem disponibilidade. No Co-Owner, só data já reservada é cedida.* (frase aprovada do FAQ, b2c.md §4; exigências da L3) | 6,7 s · 15 palavras |
+| C04, nota no rodapé do painel, a partir da menção ao depósito | *Créditos não são moeda nem garantem disponibilidade. Nas Second Homes compartilhadas, só datas já reservadas podem ser depositadas.* (frase aprovada do FAQ, b2c.md §4; exigências da L3) | 6,7 s · 15 palavras |
 | C05, faixa inferior, na primeira interface | *Imagens, interfaces e valores ilustrativos.* | 4 s · 5 palavras |
 | Cartões de interface | sem selo, em prévia e em exportação: a indicação de material ilustrativo é o lettering de C05 e a descrição | — |
 | Descrição do vídeo e página de destino | texto completo (abaixo) | sem limite |
@@ -257,7 +260,7 @@ Nenhuma ressalva nega o produto. "Ilustrativo" diz apenas que pessoas, imóveis,
 
 > Imagens, interfaces, pessoas, datas e valores ilustrativos. Os mecanismos do Luxtory Club — Luxchange Request,
 > Luxchange Direct e Luxplus — exigem Membership vigente e seguem regras, políticas e disponibilidade. Créditos não são
-> moeda, investimento nem garantia de disponibilidade. No Co-Owner, só data já reservada é cedida. Nenhuma rentabilidade
+> moeda, investimento nem garantia de disponibilidade. Nas Second Homes compartilhadas, só datas já reservadas podem ser depositadas. Nenhuma rentabilidade
 > é prometida.
 
 ## 6. Edição vertical 9:16 (≈ 58 s, própria para redes)
