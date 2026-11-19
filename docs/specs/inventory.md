@@ -118,3 +118,16 @@ para tudo, exceto as escritas presas à transição de estado da mesma operaçã
 
 Prova econômica (camada 3 do ADR-0024): a recuperação não grava `restore`, Crédito nem remuneração; P-A e invalidação
 nunca criam entrada no Inventário Luxtory. Privilégio novo do `luxtory_app`: `UPDATE` só das três colunas de liberação.
+
+## W14 — seleção Luxtory (`spe_pool → luxtory/{finalidade}`)
+
+ADR-0030; spec do command em [`calendar` §9](calendar.md). A transição já constava da tabela fechada desde a W10; a W14
+só a libera para o papel da aplicação, numa regra presa à operação `select_luxtory_capacity` da mesma Second Home, à
+atribuição Admin ativa da operação, à K3, à noite futura e não bissexta, à janela N+1, à base registrada e à capacidade
+da categoria (`app.assert_luxtory_selection_write`, `app.assert_luxtory_capacity_available`). Fechamento de `spe_pool`
+pela operação da seleção segue essa regra; os demais ramos de `date_custody_open/close` são os da W13, copiados
+literalmente (prova: `tests/migrations/w14-preservation.db.test.ts`). Nenhuma ocupação, liberação ou outra transição
+nova. A consulta de invariantes ganha o INV-4 da Luxtory (seleção acima da capacidade ou no 29/02). Prova econômica
+(camada 3): a entrada `luxtory/inventory/annual_allocation` tem origem, autorização e tratamento identificáveis
+(REQ-040) e não gera Crédito nem remuneração. Privilégio novo do `luxtory_app`: nenhum (só EXECUTE das funções da
+regra). Rollback recusado com a K3 presente.

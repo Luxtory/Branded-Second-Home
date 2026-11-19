@@ -88,3 +88,37 @@ Uma área `/admin` que só abre para staff autenticado com MFA (TECH-050) e que 
 ## 12. References
 
 - `02` §2 (superfície Admin), REQ-095. `03`: TECH-050. ADR-0003 (Design System), ADR-0008.
+
+## 13. Parâmetros: `set_parameter` e `parameter` (W14)
+
+Plano: [`w14-selecao-luxtory-parametros-e-convidados.md`](../plan/w14-selecao-luxtory-parametros-e-convidados.md);
+decisão: [ADR-0030](../adr/0030-selecao-luxtory-parametros-e-convidados.md) §3. Dona da parte de parâmetros do REQ-095
+(autoridade, histórico e vigência); PRL na W16, demais parâmetros na W15/W16 — o REQ-095 não é declarado integralmente
+coberto pela W14.
+
+- **Tabela `app.parameter`** (TECH-030): chave, Second Home, valor, `effective_from`, `effective_to` opcional,
+  autoridade, base (`authorization_ref`), `created_at`, `created_by`, operação. Lista fechada de chaves na W14: só
+  `guest_rules` (texto por Second Home, 1–20 000 caracteres, exibido como texto puro; conteúdo em P-5). Nenhum valor
+  presumido: sem versão vigente, quem depende recusa com `ERR_PARAMETER_MISSING`.
+- **Command `set_parameter`** (Admin + base registrada, TECH-051). Autoridade e autor vêm da operação (guard do
+  servidor, atribuição Admin revalidada no banco), nunca da entrada.
+- **Vigência (D3).** Só por inserção; nenhuma linha muda depois (TECH-052). Uma versão nova do escopo só é aceita se
+  começar depois de todos os inícios existentes, não antes do instante da gravação e não antes do `effective_to`
+  explícito da versão mais recente (começar exatamente nele é aceito; intervalos `[início, fim)`). Sem `effective_to`,
+  a versão vale até o início da seguinte (`app.parameter_version.effective_until`). Sem início informado, vale no
+  instante da gravação. Com uma versão futura agendada, uma nova só pode começar depois dela. Vigente no instante:
+  `app.parameter_at` (nenhuma linha = ausente). Recusas: retroativo, mesmo início, início anterior ou antecipação de
+  término → `ERR_STATE_TRANSITION`.
+- **Concorrência.** Trava exclusiva por escopo no gatilho; a declaração de convidados toma a mesma em modo
+  compartilhado: nenhuma versão nova começa antes de uma declaração já gravada.
+- **Leitura.** Admin: histórico completo pelo servidor. Titular: versões da Second Home da holding vigente que
+  representa, sem base, autoridade, autor ou operação (RLS + privilégio de coluna).
+- **Entrada.** Server Action sobre o executor (D5); a rota REST `POST /v1/admin/parameters` fica adiada.
+
+- **E3/E4 (implementação).** `admin/domain/parameter.ts` (D3 pura: `successorConflict`, `versionInForce`),
+  `admin/application/set-parameter.ts`, `admin/infrastructure/postgres-parameter-store.ts`, entrada de servidor
+  `admin/parameters.ts`. Trava `parameter` na ordem de travas (depois de `booking`). Recusas: Second Home inexistente →
+  `ERR_NOT_FOUND`; vigência → `ERR_STATE_TRANSITION`; entrada (texto, base, término antes do início) →
+  `ERR_VALIDATION`. Tela `/admin/catalogo/second-homes/[id]/regras-de-convidados`: em vigor, histórico (início, fim
+  efetivo, autoridade, base, publicação, texto) e publicação; datas no horário da Second Home (`datetime-local`,
+  horário inexistente ou ambíguo recusado).

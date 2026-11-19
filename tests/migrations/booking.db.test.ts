@@ -370,7 +370,8 @@ describe('W12 — reserva de uso próprio: fronteira no banco com os privilégio
           await consumeNight(c, op, co.homeId, b.stakeId!, night);
         }),
       ).rejects.toEqual(constraint('booking_consumption_binding'));
-      // Outra transição a partir de `spe_pool` (seleção Luxtory) continua fechada.
+      // Outra transição a partir de `spe_pool` (seleção Luxtory) continua fechada. Desde a W14 ela tem regra própria
+      // (ADR-0030), que recusa primeiro pela K3 fechada; com a K3, a operação de reserva seria recusada pelo vínculo.
       await expect(
         asApp(a, co.homeId, async (c, op) => {
           await insertBooking(c, op, { homeId: co.homeId, titular: a, checkin: night, checkout: addDays(night, 1) });
@@ -386,7 +387,7 @@ describe('W12 — reserva de uso próprio: fronteira no banco com os privilégio
             [randomUUID(), co.homeId, night, rows[0]!.id, op],
           );
         }),
-      ).rejects.toMatchObject({ code: '42501', constraint: 'inventory_transition_not_enabled' });
+      ).rejects.toMatchObject({ code: '42501', constraint: 'luxtory_selection_not_activated' });
     });
 
     it('[ADR-0026] reserva incompleta não chega ao COMMIT: sem ocupação, sem consumo, ou Owner movendo Direito de Uso', async () => {

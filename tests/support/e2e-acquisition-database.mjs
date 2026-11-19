@@ -397,3 +397,63 @@ export async function countReadE2eNotifications(partyId) {
     return rows[0].read;
   });
 }
+
+/**
+ * K3 (`luxtory_selection`, ADR-0030 §2) só no banco descartável do E2E (W14 E4): liga para provar a seleção Luxtory na
+ * interface real e desliga em seguida. Nunca em Production (a validação recusa qualquer banco não descartável).
+ */
+export async function setE2eLuxtorySelection(open) {
+  const url = disposableOwnerUrl();
+  await withClient(url, (client) =>
+    client.query(
+      open
+        ? `INSERT INTO app.capability_activation VALUES ('luxtory_selection', now(), 'e2e:fixture')
+           ON CONFLICT DO NOTHING`
+        : `DELETE FROM app.capability_activation WHERE capability = 'luxtory_selection'`,
+    ),
+  );
+}
+
+/**
+ * Fato histórico do fixture (W14 E4, padrão W13 E4b): a formalização é recuada para que a janela N+1 da Luxtory do
+ * exercício seguinte já tenha aberto (base = 15/09 do ano anterior). Só no banco descartável; a imutabilidade da
+ * aquisição fica desligada só nesta transação do dono.
+ */
+export async function backdateE2eFormalization(homeId, days = 180) {
+  const url = disposableOwnerUrl();
+  await withClient(url, async (client) => {
+    await client.query('BEGIN');
+    try {
+      await client.query('SET LOCAL session_replication_role = replica');
+      await client.query(
+        `UPDATE app.acquisition SET formalized_at = formalized_at - make_interval(days => $2::int)
+          WHERE second_home_id = $1`,
+        [homeId, days],
+      );
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    }
+  });
+}
+
+/** Primeira sequência de `count` noites futuras seguidas, ainda `spe_pool`, da categoria no exercício (só leitura). */
+export async function freeE2eNights(homeId, year, season, count) {
+  const url = disposableOwnerUrl();
+  return withClient(url, async (client) => {
+    const { rows } = await client.query(
+      `SELECT d.stay_date::text AS stay_date FROM app.second_home_date d
+        WHERE d.second_home_id = $1 AND d.exercise_year = $2 AND d.checkin_at > now() + interval '2 days'
+          AND (SELECT count(*) FROM app.second_home_date e
+                 JOIN app.date_custody c ON c.second_home_id = e.second_home_id AND c.stay_date = e.stay_date
+                                        AND c.closed_at IS NULL AND c.holder_kind = 'spe_pool'
+                WHERE e.second_home_id = d.second_home_id AND e.stay_date >= d.stay_date
+                  AND e.stay_date < d.stay_date + $4::int AND e.season = $3 AND NOT e.is_leap_day) = $4
+        ORDER BY d.stay_date LIMIT 1`,
+      [homeId, year, season, count],
+    );
+    if (rows[0] === undefined) throw new Error(`no ${count} free ${season} nights in ${year}`);
+    return rows[0].stay_date;
+  });
+}

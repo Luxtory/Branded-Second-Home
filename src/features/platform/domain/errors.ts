@@ -39,9 +39,13 @@ export const PLATFORM_ERROR_CODES = [
 /**
  * Códigos de produto, fora dos mínimos do TECH-056 (que dizem "mínimos") e depois dos gerais (enum `ErrorCode` do
  * OpenAPI): `ERR_CANCELLATION_TERMS_CHANGED` — os termos esperados da prévia do cancelamento diferem dos calculados no
- * instante da escrita (W13, D7; spec booking §10.5, §10.12).
+ * instante da escrita (W13, D7; spec booking §10.5, §10.12); `ERR_GUEST_RULES_CHANGED` — a versão de `guest_rules`
+ * aceita pelo Titular não é a vigente no instante da declaração (W14, ADR-0030 §4; spec booking §11).
  */
-export const PRODUCT_ERROR_CODES = ['ERR_CANCELLATION_TERMS_CHANGED'] as const;
+export const PRODUCT_ERROR_CODES = [
+  'ERR_CANCELLATION_TERMS_CHANGED',
+  'ERR_GUEST_RULES_CHANGED',
+] as const;
 
 export const ERROR_CODES = [
   ...TECH_056_ERROR_CODES,
@@ -103,6 +107,9 @@ const CONSTRAINT_NAMES: ReadonlyMap<string, RejectionCode> = new Map([
   ['uq_custody_active', 'ERR_CAPACITY_UNAVAILABLE'],
   // W13 (D7): termos esperados da prévia ≠ termos calculados no instante da escrita.
   ['cancellation_terms_changed', 'ERR_CANCELLATION_TERMS_CHANGED'],
+  // W14 (ADR-0030 §4): declaração de convidados sem regras vigentes, ou com versão diferente da vigente.
+  ['parameter_missing_guest_rules', 'ERR_PARAMETER_MISSING'],
+  ['guest_rules_changed', 'ERR_GUEST_RULES_CHANGED'],
 ]);
 
 export function rejectionForConstraint(constraint: string): RejectionCode | null {
@@ -127,10 +134,14 @@ export const PRIVILEGE_REFUSALS: ReadonlyMap<string, RejectionCode> = new Map([
   ['permission_authorization_expired', 'ERR_PERMISSION'],
 ]);
 
-/** Capabilities fechadas pela tabela de ativação privilegiada (`42501` nomeado): K1 (ADR-0026) e K2 (ADR-0027). */
+/**
+ * Capabilities fechadas pela tabela de ativação privilegiada (`42501` nomeado): K1 (ADR-0026), K2 (ADR-0027) e K3
+ * (ADR-0030).
+ */
 export const CLOSED_CAPABILITIES: ReadonlyMap<string, string> = new Map([
   ['booking_not_activated', 'own_use_booking'],
   ['booking_lifecycle_not_activated', 'own_use_lifecycle'],
+  ['luxtory_selection_not_activated', 'luxtory_selection'],
 ]);
 
 /**

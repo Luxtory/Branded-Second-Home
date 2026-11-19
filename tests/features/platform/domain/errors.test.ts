@@ -44,6 +44,9 @@ describe('códigos de erro (TECH-056)', () => {
     expect(rejectionForConstraint('cancellation_terms_changed')).toBe(
       'ERR_CANCELLATION_TERMS_CHANGED',
     );
+    // W14: declaração sem regras vigentes ou com versão diferente da vigente.
+    expect(rejectionForConstraint('parameter_missing_guest_rules')).toBe('ERR_PARAMETER_MISSING');
+    expect(rejectionForConstraint('guest_rules_changed')).toBe('ERR_GUEST_RULES_CHANGED');
     // Proveniência da operação é erro de código, não recusa funcional.
     expect(rejectionForConstraint('inventory_operation_provenance')).toBeNull();
   });
@@ -57,7 +60,10 @@ describe('códigos de erro (TECH-056)', () => {
   });
 
   it('[TECH-056] códigos de produto vêm depois dos gerais e nunca entram nos mínimos', () => {
-    expect(PRODUCT_ERROR_CODES).toEqual(['ERR_CANCELLATION_TERMS_CHANGED']);
+    expect(PRODUCT_ERROR_CODES).toEqual([
+      'ERR_CANCELLATION_TERMS_CHANGED',
+      'ERR_GUEST_RULES_CHANGED',
+    ]);
     expect(ERROR_CODES.slice(-PRODUCT_ERROR_CODES.length)).toEqual([...PRODUCT_ERROR_CODES]);
     for (const code of PRODUCT_ERROR_CODES) expect(TECH_056_ERROR_CODES).not.toContain(code);
   });

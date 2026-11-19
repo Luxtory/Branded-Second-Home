@@ -149,3 +149,44 @@ Spec [`booking` §10](booking.md#10-w13--cancelamento-no-show-recuperação-exce
   (`restore` ou `correction`). Nunca sobre `grant` nem sobre noite em `forfeited_right`.
 - **Correção de expiração** continua estrutural e fechada (emenda de escopo do roadmap, W13): recusa explícita.
 - Consulta de invariantes da TECH-026 passa a aceitar só a `correction` nessa forma.
+
+## 9. Seleção Luxtory (W14)
+
+Plano: [`docs/plan/w14-selecao-luxtory-parametros-e-convidados.md`](../plan/w14-selecao-luxtory-parametros-e-convidados.md);
+decisão: [ADR-0030](../adr/0030-selecao-luxtory-parametros-e-convidados.md). Dona: REQ-016, REQ-036 (com EC-5, CONC-11
+e o INV-4 do lado da Luxtory).
+
+- **Command `select_luxtory_capacity`** (Admin + base registrada, TECH-051; módulo `calendar`). Entrada: Second Home
+  Co-Owner, datas e a finalidade de cada data (`maintenance | marketing | promotion | production | inventory`), base.
+  Efeito por noite: `spe_pool → luxtory/{finalidade}`; `inventory ⇔ annual_allocation` (TECH-022); a base vai em
+  `authorization_ref`. **Só a custódia** (`03` §7, D1): seleção de capacidade não é ocupação; nenhuma reserva, ocupação
+  `luxtory_use`, consumo, Crédito ou direito nasce dela. Para o Titular a noite aparece como "Noite indisponível",
+  sem a finalidade.
+- **Janela (BR-122, TECH-042).** Posição N+1: base (15/09 local do ano anterior ou a formalização) + N × 7 dias civis,
+  cumulativa até o fim do exercício; sem sorteio revelado não há janela. Toda finalidade, inclusive manutenção
+  (REQ-036), só a partir dela → antes: `ERR_WINDOW_NOT_OPEN`. Gêmea SQL `app.luxtory_window_opens_at`, equivalência com
+  `windowOpensAt({ position: N + 1 })` testada.
+- **Capacidade (BR-120, INV-4, REQ-016).** Quantidade por categoria, não escolha garantida de datas: a da alocação
+  inicial no primeiro exercício parcial, a da configuração nos demais (`app.luxtory_capacity`). Usada = custódias ativas
+  `luxtory` com finalidade ≠ inventory ou `annual_allocation`, no exercício e na categoria da noite. Excesso →
+  `ERR_USE_RIGHT_BALANCE` (causa "saldo ou limite sazonal" do REQ-098; o texto ao Admin não fala em Direito de Uso).
+  Categorias não se compensam. O 29/02 nunca é selecionável (TECH-027) → `ERR_CAPACITY_UNAVAILABLE`, como noite
+  iniciada, já fora de `spe_pool` ou Second Home Owner.
+- **Concorrência (TECH-053, CONC-11).** Travas: noites em ordem crescente (classe 5) → capacidade
+  `app.luxtory_capacity:<Second Home>:<exercício>` (entre as classes 5 e 6) → custódias (classe 6). Seleção × reserva na
+  mesma noite: exatamente uma confirma (`uq_custody_active` e fechamento único). Seleções concorrentes nunca passam da
+  capacidade.
+- **Sem saída (P-12).** A TECH-022 não tem transição a partir de `luxtory/{finalidade ≠ inventory}`; `luxtory/inventory
+  → pai` depende de política. A seleção é irreversível até nova versão do `03`.
+- **Fechada (K3, D2).** Sem a linha `luxtory_selection` em `app.capability_activation`, o banco recusa toda escrita da
+  seleção pelo papel da aplicação; o executor desfaz a transação sem gravar recusa e a tela mostra o estado fechado.
+
+- **E3/E4 (implementação).** Handler `calendar/application/select-luxtory-capacity.ts` (entrada de servidor
+  `calendar/luxtory-selection.ts`); custódia pela porta pública `inventory` (`createLuxtorySelectionInventory`); fatos
+  pelas mesmas funções SQL do gatilho (`app.luxtory_window_opens_at`, `app.luxtory_capacity`). Lote atômico de até 366
+  noites, datas únicas. Ordem: autoridade → K3 (`CapabilityNotActivatedError`, nada gravado) → modalidade (sem
+  aquisição → `ERR_NOT_FOUND`; Owner → `ERR_CAPACITY_UNAVAILABLE`) → noites (classe 5) → noite não selada, iniciada ou
+  29/02 (`ERR_CAPACITY_UNAVAILABLE`) → janela (`ERR_WINDOW_NOT_OPEN`) → `luxtory_capacity` → capacidade
+  (`ERR_USE_RIGHT_BALANCE`) → custódia `spe_pool` (`ERR_CAPACITY_UNAVAILABLE`) → escrita. Tela Admin
+  `/admin/catalogo/second-homes/[id]/selecao-luxtory` (Server Action; intervalo de noites com uma finalidade, base e
+  confirmação; com a K3 fechada só a leitura e o aviso, sem formulário).

@@ -11,6 +11,7 @@ import {
   type PreviewNight,
 } from '../application/own-use-cancellation-preview';
 import { microsFromMillis } from '../domain/own-use-lifecycle';
+import { guestNominationMessages as guestText } from './i18n/guest-nomination-pt-br';
 import { bookingLabels, bookingsMessages, notificationMessages } from './i18n/own-use-pt-br';
 import {
   bookingDetailMessages as detailText,
@@ -335,6 +336,16 @@ export async function TitularBookingDetailPage(props: {
         </div>
       </Section>
       <CancellationSection booking={booking} preview={preview} />
+      {booking.display === 'confirmed' || booking.display === 'in_use' ? (
+        <Section id="convidados" title={guestText.detailTitle}>
+          <p className="lx-body">{guestText.detailBody}</p>
+          <p className="lx-body">
+            <a className="lx-button lx-button--secondary" href={ownUsePaths.guests(booking.id)}>
+              {guestText.detailLink}
+            </a>
+          </p>
+        </Section>
+      ) : null}
       <div className="lx-page-section">
         <Disclosure summary={detailText.more}>
           <Facts

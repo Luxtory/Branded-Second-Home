@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- W14 — Seleção Luxtory, regras de convidados e declaração (REQ-016, REQ-036, REQ-092, parte de parâmetros do
+  REQ-095; ADR-0030). Admin: tela "Seleção Luxtory" da Second Home Co-Owner (capacidade e uso por exercício e
+  categoria, janela N+1, seleção de um intervalo de noites com finalidade, base registrada e confirmação; só a custódia,
+  sem ocupação) e "Regras de convidados" (versão em vigor, histórico imutável com autoridade, base e vigência, publicação
+  sem antecipar término definido). Titular: "Convidados nesta reserva" (regras vigentes e declaração de uso por
+  convidados, sem dados nem quantidade de convidados). Detalhe Admin da reserva mostra as declarações. A seleção fica
+  fechada até a ativação autorizada (K3 sem linha); entrada só por Server Actions (REST `/v1` adiado).
+
 ### Changed
 
 - Second Home Partners (REQ-105, D-SHP-18): participação no faturamento enquanto o imóvel permanecer afiliado,
