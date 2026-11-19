@@ -127,10 +127,14 @@ export const PRIVILEGE_REFUSALS: ReadonlyMap<string, RejectionCode> = new Map([
   ['permission_authorization_expired', 'ERR_PERMISSION'],
 ]);
 
-/** Capabilities fechadas pela tabela de ativação privilegiada (`42501` nomeado): K1 (ADR-0026) e K2 (ADR-0027). */
+/**
+ * Capabilities fechadas pela tabela de ativação privilegiada (`42501` nomeado): K1 (ADR-0026), K2 (ADR-0027) e K3
+ * (ADR-0030).
+ */
 export const CLOSED_CAPABILITIES: ReadonlyMap<string, string> = new Map([
   ['booking_not_activated', 'own_use_booking'],
   ['booking_lifecycle_not_activated', 'own_use_lifecycle'],
+  ['luxtory_selection_not_activated', 'luxtory_selection'],
 ]);
 
 /**

@@ -823,7 +823,8 @@ describe('custódia e selagem: barreiras do banco (W10)', () => {
               authorization_ref: 'base:forged',
             }),
           ),
-        ).rejects.toEqual(constraint('booking_write_binding'));
+          // W14 (ADR-0030): o fechamento de `spe_pool` pela operação da seleção segue a regra própria, fechada pela K3.
+        ).rejects.toEqual(constraint('luxtory_selection_not_activated'));
         await expect(
           asApp(async (client) => {
             const op = await openOperation(client, 'create_own_use_booking', h.userId);

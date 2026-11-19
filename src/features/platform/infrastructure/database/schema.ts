@@ -248,6 +248,17 @@ export interface AppDateOccupancy {
   stay_date: Timestamp;
 }
 
+export interface AppGuestNomination {
+  booking_id: string;
+  id: string;
+  nominated_at: Timestamp;
+  operation_id: string;
+  parameter_id: string;
+  parameter_key: Generated<string>;
+  party_id: string;
+  second_home_id: string;
+}
+
 export interface AppHolding {
   acquisition_id: string;
   id: string;
@@ -588,6 +599,35 @@ export interface AppOutboxReceipt {
   received_at: Timestamp;
 }
 
+export interface AppParameter {
+  authority: string;
+  authorization_ref: string;
+  created_at: Timestamp;
+  created_by: string;
+  effective_from: Timestamp;
+  effective_to: Timestamp | null;
+  id: string;
+  key: string;
+  operation_id: string;
+  second_home_id: string;
+  value: string;
+}
+
+export interface AppParameterVersion {
+  authority: string | null;
+  authorization_ref: string | null;
+  created_at: Timestamp | null;
+  created_by: string | null;
+  effective_from: Timestamp | null;
+  effective_to: Timestamp | null;
+  effective_until: Timestamp | null;
+  id: string | null;
+  key: string | null;
+  operation_id: string | null;
+  second_home_id: string | null;
+  value: string | null;
+}
+
 export interface AppParty {
   created_at: Timestamp;
   document_ciphertext: Buffer;
@@ -785,6 +825,7 @@ export interface DB {
   'app.central_inventory': AppCentralInventory;
   'app.date_custody': AppDateCustody;
   'app.date_occupancy': AppDateOccupancy;
+  'app.guest_nomination': AppGuestNomination;
   'app.holding': AppHolding;
   'app.home_concept': AppHomeConcept;
   'app.home_concept_curation': AppHomeConceptCuration;
@@ -814,6 +855,8 @@ export interface DB {
   'app.operation': AppOperation;
   'app.outbox': AppOutbox;
   'app.outbox_receipt': AppOutboxReceipt;
+  'app.parameter': AppParameter;
+  'app.parameter_version': AppParameterVersion;
   'app.party': AppParty;
   'app.party_delegation': AppPartyDelegation;
   'app.party_document_digest': AppPartyDocumentDigest;
