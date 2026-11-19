@@ -91,5 +91,14 @@ CREATE POLICY guest_nomination_holder_read ON app.guest_nomination FOR SELECT TO
 
 
 -- migrate:down
+-- Declarações nunca são descartadas por rollback: com qualquer declaração gravada, a reversão é recusada. A trava
+-- exclusiva espera declarações em curso e barra as novas. Sem linhas (banco vazio do `db:check`), desfaz tudo.
+DO $$
+BEGIN
+  LOCK TABLE app.guest_nomination IN ACCESS EXCLUSIVE MODE;
+  IF EXISTS (SELECT 1 FROM app.guest_nomination) THEN
+    RAISE EXCEPTION 'W14 rollback would discard guest nominations';
+  END IF;
+END $$;
 DROP TABLE app.guest_nomination;
 DROP FUNCTION app.guest_nomination_insert();

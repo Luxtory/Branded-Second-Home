@@ -116,6 +116,15 @@ CREATE POLICY parameter_holder_read ON app.parameter FOR SELECT TO authenticated
 
 
 -- migrate:down
+-- Histórico de parâmetros nunca é descartado por rollback (TECH-052): com qualquer versão gravada, a reversão é recusada.
+-- A trava exclusiva espera publicações em curso e barra as novas. Sem linhas (banco vazio do `db:check`), desfaz tudo.
+DO $$
+BEGIN
+  LOCK TABLE app.parameter IN ACCESS EXCLUSIVE MODE;
+  IF EXISTS (SELECT 1 FROM app.parameter) THEN
+    RAISE EXCEPTION 'W14 rollback would discard the parameter history';
+  END IF;
+END $$;
 DROP FUNCTION app.parameter_at(text, uuid, timestamptz);
 DROP VIEW app.parameter_version;
 DROP TABLE app.parameter;

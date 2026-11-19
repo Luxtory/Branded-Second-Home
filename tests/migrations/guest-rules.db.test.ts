@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { rejectionForConstraint } from '@/features/platform/domain/errors';
@@ -470,6 +471,34 @@ describe('W14 — parâmetros só por inserção (TECH-030) e declaração de co
         [live, v2],
       );
       expect(rows[0]!.ordered).toBe(true);
+    });
+
+    it('[TECH-052][TECH-110] rollback com histórico é recusado: parâmetros e declarações nunca são descartados', async () => {
+      const count = async () =>
+        (
+          await h.database.pool.query<{ parameters: number; nominations: number }>(
+            `SELECT (SELECT count(*)::int FROM app.parameter) AS parameters,
+                    (SELECT count(*)::int FROM app.guest_nomination) AS nominations`,
+          )
+        ).rows[0]!;
+      const before = await count();
+      expect(before.parameters).toBeGreaterThan(0);
+      expect(before.nominations).toBeGreaterThan(0);
+      for (const [migration, message] of [
+        ['20261119061704_booking_guest_nomination', /discard guest nominations/],
+        ['20261119061701_admin_parameter', /discard the parameter history/],
+      ] as const) {
+        const down = (await readFile(`migrations/${migration}.sql`, 'utf8')).split('-- migrate:down')[1]!;
+        const client = await h.client(h.database.url);
+        try {
+          await client.query('BEGIN');
+          await expect(client.query(down)).rejects.toThrow(message);
+        } finally {
+          await client.query('ROLLBACK');
+          await client.end();
+        }
+      }
+      expect(await count()).toEqual(before);
     });
   });
 });
