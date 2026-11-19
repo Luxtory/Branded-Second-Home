@@ -40,11 +40,30 @@ export function requestedByCategory(
   return counts;
 }
 
-/** Datas civis de `first` a `last`, inclusive (`YYYY-MM-DD`), para montar a seleção de um intervalo. */
-export function civilDatesBetween(first: string, last: string): string[] {
-  const dates: string[] = [];
-  const end = Date.parse(`${last}T00:00:00Z`);
-  for (let at = Date.parse(`${first}T00:00:00Z`); at <= end; at += 86_400_000)
-    dates.push(new Date(at).toISOString().slice(0, 10));
-  return dates;
+const DAY_MS = 86_400_000;
+const CIVIL_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Data civil `YYYY-MM-DD` que existe no calendário: a conversão volta exatamente ao mesmo texto (`2026-02-30`, que o
+ * `Date.parse` normalizaria para `2026-03-02`, é recusada).
+ */
+export function isCivilDate(value: string): boolean {
+  if (!CIVIL_DATE.test(value)) return false;
+  const at = Date.parse(`${value}T00:00:00Z`);
+  return Number.isFinite(at) && new Date(at).toISOString().slice(0, 10) === value;
+}
+
+/**
+ * Datas civis de `first` a `last`, inclusive, para montar a seleção de um intervalo. O tamanho é calculado antes de
+ * expandir: `null` para data inexistente, intervalo invertido ou mais de `max` noites — nunca percorre um intervalo
+ * arbitrariamente grande.
+ */
+export function civilDatesBetween(first: string, last: string, max: number): string[] | null {
+  if (!isCivilDate(first) || !isCivilDate(last)) return null;
+  const start = Date.parse(`${first}T00:00:00Z`);
+  const nights = (Date.parse(`${last}T00:00:00Z`) - start) / DAY_MS + 1;
+  if (nights < 1 || nights > max) return null;
+  return Array.from({ length: nights }, (_, index) =>
+    new Date(start + index * DAY_MS).toISOString().slice(0, 10),
+  );
 }

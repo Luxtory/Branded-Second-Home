@@ -19,7 +19,6 @@ import type { LuxtorySelectionField, LuxtorySelectionState } from './luxtory-sel
 
 const handlers = createLuxtorySelectionHandlers();
 const PURPOSES = ['maintenance', 'marketing', 'promotion', 'production', 'inventory'];
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 const REJECTIONS: Partial<Record<ErrorCode, string>> = {
   ERR_WINDOW_NOT_OPEN: 'window',
@@ -35,9 +34,6 @@ const field = (form: FormData, name: string): string => {
   const value = form.get(name);
   return typeof value === 'string' ? value.trim() : '';
 };
-
-const validDate = (value: string) =>
-  DATE.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
 
 /**
  * "Selecionar noites" (W14; REQ-036; spec calendar §9): sessão verificada → guard Admin (AAL2 e `staff_role`) →
@@ -57,11 +53,9 @@ export async function selectLuxtoryCapacityAction(
     confirm: field(form, 'confirm'),
   };
   const errors: Partial<Record<LuxtorySelectionField, true>> = {};
-  const dates =
-    validDate(values.first) && validDate(values.last)
-      ? civilDatesBetween(values.first, values.last)
-      : [];
-  if (dates.length === 0 || dates.length > MAX_SELECTION_NIGHTS) {
+  // Datas civis estritas e tamanho conferido antes de expandir (até 366 noites).
+  const dates = civilDatesBetween(values.first, values.last, MAX_SELECTION_NIGHTS);
+  if (dates === null) {
     errors.first = true;
     errors.last = true;
   }
@@ -73,7 +67,7 @@ export async function selectLuxtoryCapacityAction(
     return { ...state, values, fieldErrors: errors, rejection: 'invalid' };
   const input = {
     second_home_id: homeId,
-    nights: dates.map((date) => ({ stay_date: date, purpose: values.purpose })),
+    nights: (dates ?? []).map((date) => ({ stay_date: date, purpose: values.purpose })),
     basis: values.basis,
   };
   let outcome: Awaited<ReturnType<typeof executeAdminCommand>>;

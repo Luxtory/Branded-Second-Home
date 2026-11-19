@@ -2,7 +2,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { redirect } from 'next/navigation';
-import { executeAdminCommand } from '@/features/identity';
+import { executeAdminCommand, exercisedRole, getStaffAccess } from '@/features/identity';
 import { getDatabase, isNonPersonalReference, type ErrorCode } from '@/features/platform';
 import { createParameterHandlers, GUEST_RULES_MAX_LENGTH } from '../parameters';
 import { guestRulesPath } from './guest-rules-paths';
@@ -40,6 +40,15 @@ export async function setGuestRulesAction(
     effective_to: field(form, 'effective_to').trim(),
     basis: field(form, 'basis').trim(),
   };
+  // Autoriza antes de qualquer leitura (o proxy não autoriza nada): mesmo critério dos portões Admin — sessão, AAL2 e
+  // papel `admin` exercido. O executor revalida tudo, inclusive no banco.
+  const access = await getStaffAccess();
+  if (access.kind === 'anonymous') redirect('/entrar');
+  if (access.kind === 'mfa_required') redirect('/entrar/mfa');
+  if (access.kind === 'unavailable')
+    return { ...state, values, fieldErrors: {}, rejection: 'unavailable' };
+  if (access.kind !== 'granted' || exercisedRole(access, 'admin') === null)
+    return { ...state, values, fieldErrors: {}, rejection: 'permission' };
   const home = await getDatabase()
     .selectFrom('app.second_home')
     .select('timezone')
