@@ -460,14 +460,24 @@ function buildAudio(file) {
       e: '0.075*(sin(2*PI*293.66*t)+sin(2*PI*369.99*t)+sin(2*PI*440*t)+0.6*sin(2*PI*587.33*t))*(1-exp(-t*25))*exp(-t*1.4)',
     },
   };
-  // Janela de cada ambiente com rampas de 150 ms nos cortes; `fadeOut` (ms) alonga a saída (fim sob a assinatura).
+  // Janela de cada ambiente: nos cortes, cruzamento de 300 ms centrado no corte (os dois ambientes em 50% no quadro do
+  // corte, sem buraco); no início do filme, entrada de 250 ms (sem clique); `fadeOut` (ms) é a saída longa sob a
+  // assinatura, terminando em `to`.
+  const XFADE_S = 0.3;
   const windowExpr = (kind) =>
     EDL.ambience
       .filter((a) => a.kind === kind)
-      .map(
-        (a) =>
-          `clip((t-${sec(a.from)})/0.15+${a.from === 0 ? 1 : 0},0,1)*clip((${sec(a.to)}-t)/${sec(a.fadeOut ?? 150)}+${a.to === EDL.duration ? 1 : 0},0,1)`,
-      )
+      .map((a) => {
+        const up =
+          a.from === 0 ? 'clip(t/0.25,0,1)' : `clip((t-${sec(a.from)})/${XFADE_S}+0.5,0,1)`;
+        const down =
+          a.to === EDL.duration
+            ? '1'
+            : a.fadeOut
+              ? `clip((${sec(a.to)}-t)/${sec(a.fadeOut)},0,1)`
+              : `clip((${sec(a.to)}-t)/${XFADE_S}+0.5,0,1)`;
+        return `${up}*${down}`;
+      })
       .join('+') || '0'; // ambiente ausente no filme: camada muda (expressão vazia quebra o ffmpeg)
   const graph = [];
   const mix = [];
@@ -490,8 +500,9 @@ function buildAudio(file) {
     `[mar1][mar2]join=inputs=2:channel_layout=stereo[mar]`,
     // Interior neutro: tom de sala muito baixo.
     `anoisesrc=c=pink:a=0.03:d=${D}:r=${SR}:seed=3,lowpass=f=400,volume='${windowExpr('interior')}':eval=frame,pan=stereo|c0=c0|c1=c0[sala]`,
-    // Vento na serra: ruído rosa em banda média, com rajadas lentas.
-    `anoisesrc=c=pink:a=0.12:d=${D}:r=${SR}:seed=5,highpass=f=300,lowpass=f=1400,volume='0.5*(0.6+0.4*sin(2*PI*0.17*t))*(${windowExpr('vento')})':eval=frame,pan=stereo|c0=c0|c1=c0[vento]`,
+    // Vento na serra: ruído rosa em banda média, com rajadas lentas; ≈ 11 dB abaixo do mar (antes 23 dB: a Satori
+    // ficava quase muda).
+    `anoisesrc=c=pink:a=0.12:d=${D}:r=${SR}:seed=5,highpass=f=300,lowpass=f=1400,volume='2*(0.6+0.4*sin(2*PI*0.17*t))*(${windowExpr('vento')})':eval=frame,pan=stereo|c0=c0|c1=c0[vento]`,
   );
   const inputs = [];
   const layers = ['[fx]', '[mar]', '[sala]', '[vento]'];
