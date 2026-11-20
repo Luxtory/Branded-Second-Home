@@ -32,6 +32,13 @@ export const CANONICAL = Object.freeze({
   checkoutHour: 10, // PD-002
 });
 
+/**
+ * Configuração da demonstração da Request (direção v8.3): proposta comercial de 48 horas para responder, dentro do PD-005
+ * ("prazo padrão 24 horas, administrável"). Não é parâmetro aprovado para Production; CANONICAL guarda o padrão do 02. A
+ * simulação expira de fato em 48 horas e a tela deriva o prazo dela (nunca um número escrito à mão).
+ */
+export const DEMO = Object.freeze({ ...CANONICAL, requestExpiryHours: 48 });
+
 export const FICTITIOUS = Object.freeze({
   timeZone: 'America/Sao_Paulo',
   // Nomes das Second Homes fictícias do filme (propostas criativas, sujeitas a validação comercial e de marca): o nome é
@@ -235,8 +242,8 @@ export function depositScenario(data = FICTITIOUS, params = CANONICAL) {
   };
 }
 
-/** Cenário derivado da Request (R1–R4). Tudo o que a tela mostra sai daqui. */
-export function requestScenario(data = FICTITIOUS, params = CANONICAL) {
+/** Cenário derivado da Request (R1–R4), com a configuração da demonstração. Tudo o que a tela mostra sai daqui. */
+export function requestScenario(data = FICTITIOUS, params = DEMO) {
   const r = data.request;
   const lots = lotsAtRequest(data, params);
   const sentAt = at(r.sentAt);

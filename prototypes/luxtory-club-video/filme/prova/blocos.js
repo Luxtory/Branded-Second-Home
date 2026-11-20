@@ -19,6 +19,7 @@ const BANNER_LINE_DELAY_MS = 120;
 const BANNER_LINE_GAP_MS = 120;
 const ENTER_MS = 480; // duration.slow (entrada do Core)
 const LEGAL_MS = 4_000;
+const LEGAL_DELAY_MS = 400; // a ressalva entra depois do corte
 // Narração: ritmo de conversa (≈ 2,6 palavras por segundo, ROTEIRO.md §4).
 const VO_WORDS_PER_S = 2.6;
 
@@ -127,6 +128,9 @@ const PLACE = {
       lineGap: BANNER_LINE_GAP_MS,
     };
     acc.banners.push(banner);
+    // Ressalva no banner (9:16): a interface do R1 ocupa o terço inferior útil, então a ressalva fica no plano limpo.
+    if (block.legal)
+      acc.legal.push({ in: from + LEGAL_DELAY_MS, out: banner.out, text: block.legal });
     // Leitura do banner: as linhas entram uma a uma (sequence-prova.js), então a leitura começa quando a primeira
     // assenta e vai até a saída.
     acc.beats.push({
@@ -172,7 +176,11 @@ const PLACE = {
       if (m) acc.sfx.push({ at: m.at + (fx.ms - m.from), kind: fx.kind, note: fx.note });
     }
     if (block.legal)
-      acc.legal.push({ in: from + 400, out: from + 400 + LEGAL_MS, text: block.legal });
+      acc.legal.push({
+        in: from + LEGAL_DELAY_MS,
+        out: from + LEGAL_DELAY_MS + LEGAL_MS,
+        text: block.legal,
+      });
     acc.windows.push({ from, to: acc.t, ramp: FOCUS_RAMP_MS });
     placeShot(acc, block, from);
   },

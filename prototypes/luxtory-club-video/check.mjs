@@ -96,7 +96,8 @@ for (const seq of SEQS) {
     for (const family of ['Newsreader', 'Hanken Grotesk', ...(hasMeta ? ['Courier Prime'] : [])])
       if (!fonts.includes(family)) fail(`${tag}: fonte ${family} não carregada`);
     const states = {};
-    for (const key of qa.checkpoints) {
+    // Um ponto pode valer só para um formato (`fmt`): no 9:16 os cartões entram um por vez, em outros instantes.
+    for (const key of qa.checkpoints.filter((k) => !k.fmt || k.fmt === fmt)) {
       await page.evaluate((t) => window.__demo.seek(t), key.t);
       const info = await page.evaluate(() => {
         const visible = [...document.querySelectorAll('.demo-card')].filter(
@@ -174,7 +175,7 @@ for (const seq of SEQS) {
         if (re.test(filmText))
           fail(`${tag}@${key.t}: termo fora da comunicação do filme: ${re.source}`);
       if (FEE_WORD.test(info.text))
-        fail(`${tag}@${key.t}: "Fee" visível (rótulo comercial: Taxa de intermediação)`);
+        fail(`${tag}@${key.t}: "Fee" visível (rótulo comercial: Taxa de intercâmbio)`);
       const minOut = info.minFont * (vp.outHeight / vp.height);
       if (minOut < MIN_TEXT_OUT_PX[fmt])
         fail(`${tag}@${key.t}: texto de ${minOut.toFixed(1)} px no arquivo final`);

@@ -13,6 +13,7 @@ import {
 } from '../../src/design-system/scripts/check-hardcodes.mjs';
 import {
   CANONICAL,
+  DEMO,
   FICTITIOUS,
   depositScenario,
   directScenario,
@@ -48,6 +49,7 @@ import {
   nightsOf,
   prlOfPeriod,
   creditsForPrl,
+  requestExpiresAt,
 } from './rules.js';
 import { timeline } from './sequence-request.js';
 
@@ -96,10 +98,46 @@ test('[BR-201][01 §20] Créditos = PRL do período × multiplicador; [01 §24][
   );
 });
 
-test('[PD-005][TECH-044] instantes da Request: expira exatamente 24 h após o envio; aceite dentro do prazo', () => {
+test('[PD-005][TECH-044] instantes da Request: expira exatamente no prazo da simulação; aceite dentro do prazo', () => {
   assert.equal(s.sentAt, utc('2027-04-12T13:06:00Z'));
-  assert.equal(s.expiresAt - s.sentAt, CANONICAL.requestExpiryHours * 3_600_000);
+  // Proposta comercial da demonstração: 48 h (PD-005, prazo administrável); o padrão canônico continua 24 h.
+  assert.equal(CANONICAL.requestExpiryHours, 24);
+  assert.equal(DEMO.requestExpiryHours, 48);
+  assert.equal(s.expiresAt - s.sentAt, DEMO.requestExpiryHours * 3_600_000);
+  assert.equal(s.expiresAt, requestExpiresAt(s.sentAt, DEMO));
   assert.ok(s.acceptedAt > s.sentAt && s.acceptedAt < s.expiresAt);
+  // Com o padrão de 24 h, o mesmo cenário expira antes e continua válido (o aceite ocorre em minutos).
+  const padrao = requestScenario(FICTITIOUS, CANONICAL);
+  assert.equal(padrao.expiresAt - padrao.sentAt, 24 * 3_600_000);
+  assert.deepEqual(padrao.hold, s.hold);
+});
+
+test('[PD-006][EC-6] prazo de 48 h: a Garantia só usa lotes válidos durante todo o período; pré-aceite reverte', () => {
+  // Todo lote retido vale até a expiração da Request de 48 h.
+  for (const part of s.hold)
+    assert.ok(s.lots.find((l) => l.id === part.lotId).expiresAt >= s.expiresAt);
+  // Um lote que vence entre 24 h e 48 h depois do envio lastreia a Request de 24 h, mas não a de 48 h.
+  const vence36h = {
+    id: 'L-0000',
+    originatedAt: utc('2025-04-12T12:00:00Z'),
+    expiresAt: s.sentAt + 36 * 3_600_000,
+    available: 99_000,
+    quantity: 99_000,
+  };
+  const em24 = holdCreditsFefo([vence36h, ...s.lots], s.credits, {
+    now: s.sentAt,
+    requestExpiresAt: requestExpiresAt(s.sentAt, CANONICAL),
+  });
+  const em48 = holdCreditsFefo([vence36h, ...s.lots], s.credits, {
+    now: s.sentAt,
+    requestExpiresAt: s.expiresAt,
+  });
+  assert.deepEqual(em24, [{ lotId: 'L-0000', quantity: s.credits }]);
+  assert.deepEqual(em48, s.hold);
+  // Desfechos pré-aceite previstos (recusa, expiração, retirada) existem a partir de Pendente; neles a Garantia é
+  // liberada e a taxa revertida (PD-006, documentado no cartão de revisão e no pendente).
+  for (const to of ['declined', 'expired', 'cancelled_pre_accept'])
+    assert.ok(canTransitionRequest('pending', to), to);
 });
 
 test('[PD-006][PD-008][TECH-071] Garantia por FEFO, só com lotes válidos até a expiração da Request', () => {
@@ -352,7 +390,7 @@ test('[BR-240][BR-241][BR-244][BR-230] Luxplus: dinheiro, sem Créditos, sem Fee
   assert.equal(text.match(/em dinheiro/gi)?.length, 3);
   assert.doesNotMatch(
     text,
-    /Fee|Taxa de intermediação|desconto|PRL|Garantia|depósito|Créditos adicionais/,
+    /Fee|Taxa de intermediação|Taxa de intercâmbio|desconto|PRL|Garantia|depósito|Créditos adicionais/,
     'sem taxa, desconto, PRL, Garantia ou complementação de Créditos',
   );
   assert.equal(luxplusSeq.timeline('16x9').tween.length, 0, 'nenhum movimento de Créditos');
@@ -697,10 +735,7 @@ test('Direct: saldo suficiente, continuar sem depósito; complementação dispon
   assert.match(raw.html, /Saldo suficiente/);
   assert.match(raw.html, /id="need-continue"/);
   assert.match(raw.html, /<details class="lx-disclosure demo-accordion demo-accordion--closed">/);
-  assert.doesNotMatch(
-    raw.html,
-    /id="dates"|id="topup"|id="deposit-go"|Créditos adicionais necessários/,
-  );
+  assert.doesNotMatch(raw.html, /id="dates"|id="topup"|id="deposit-go"|>Faltam</);
   const tl = directSeq.timeline('16x9');
   const pressAt = (sel) => tl.set.find((x) => x.sel === sel && x.attr === 'data-pressed').at;
   assert.ok(pressAt('#need-continue') < tl.enter.find((e) => e.sel === '#review').in);
@@ -730,8 +765,10 @@ test('revisão comercial: nenhum jargão ou marca de protótipo nas sequências 
       /\bFee\b|PRL|fictíci|ilustrativ|simulad|Demonstração|conceitual|L-0\d{3}|\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}/,
     );
   }
-  assert.match(markup(requestSeq), /Taxa de intermediação/);
-  assert.match(markup(directSeq), /Taxa de intermediação/);
+  // Rótulo comercial decidido pela Luxtory (2026-11-20; revisão comercial e jurídica antes da publicação).
+  assert.match(markup(requestSeq), /Taxa de intercâmbio/);
+  assert.match(markup(directSeq), /Taxa de intercâmbio/);
+  assert.doesNotMatch(markup(requestSeq) + markup(directSeq), /Taxa de intermediação/);
   // Nomes das Second Homes: o nome é protagonista, a região secundária; sem os nomes antigos nem "Home Edition".
   assert.match(markup(requestSeq), /Azzura Home[\s\S]*Litoral · Second Home Luxtory/);
   assert.match(markup(requestSeq), /Satori Home/, 'datas depositadas da Satori Home de Helena');
@@ -1006,10 +1043,17 @@ for (const fmt of ['16x9', '9x16']) {
     const [banner] = edl.editorial.banners;
     assert.equal(banner.title, 'Luxchange Request');
     assert.deepEqual(banner.lines, [
-      'Solicite ao Membro que reservou as datas desejadas.',
-      'Créditos + Taxa de intermediação.',
+      'Solicite noites reservadas por outro Membro.',
+      'Use Créditos e pague a Taxa de intercâmbio.',
     ]);
     assert.ok(banner.out <= edl.ui[0].at + 400);
+    // Ressalva legível e nunca sobre texto de cartão: no 9:16 o calendário do R1 ocupa a faixa da ressalva (acima dos
+    // 20% inferiores), então ela fica no banner, antes de qualquer interface (v8.3).
+    const [legal] = edl.editorial.legal;
+    assert.equal(legal.text, 'Imagens, interfaces e valores ilustrativos.');
+    assert.ok(legal.out - legal.in >= 2_000, 'tempo de leitura da ressalva');
+    if (fmt === '9x16')
+      assert.ok(legal.out <= edl.ui[0].at, 'ressalva antes da primeira interface');
     // Assinatura oficial no fim: 6 s, dissolve da imagem, nenhuma etiqueta interna sobre ela.
     const sig = edl.ui.at(-1);
     assert.equal(sig.seq, 'assinatura');

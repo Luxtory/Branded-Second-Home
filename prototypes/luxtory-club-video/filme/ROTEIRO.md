@@ -11,6 +11,11 @@
 > comunicação ("Membro"; sem Owner, Co-Owner, Ação ou Titular nas superfícies do filme), o ritmo e a assinatura estão em
 > `QUATRO-FILMES.md`, que prevalece sobre a estrutura e as células de copy abaixo. A narração do §4 já usa o novo
 > vocabulário.
+>
+> **v8.3 (2026-11-20):** o rótulo comercial da taxa monetária da Request e do Direct passa a ser **Taxa de intercâmbio**
+> (decisão da Luxtory), em telas, narração e legendas; o conceito técnico continua Luxchange Fee, com a mesma fórmula
+> (01 §24). Revisão comercial e jurídica antes da publicação: no Brasil, "taxa de intercâmbio" também nomeia a tarifa
+> dos cartões de pagamento.
 
 ## 1. Conceito
 
@@ -30,7 +35,7 @@ possibilidades** (Request, Direct, Luxplus) → **celebração** (viver) → **a
 Lotes diferentes formam um só saldo, e o consumo segue o lote que vence primeiro (PD-008). Depositar é uma possibilidade
 a mais, não uma exigência a cada reserva. A data nunca paga a reserva diretamente: o depósito origina Créditos e a
 capacidade entra no Inventário Luxtory (REQ-060, BR-202); depois, os Créditos são usados na Request ou no Direct, com a
-Taxa de intermediação (monetária) de cada modalidade. O Luxplus é a alternativa em dinheiro, que não consome Créditos.
+Taxa de intercâmbio (monetária) de cada modalidade. O Luxplus é a alternativa em dinheiro, que não consome Créditos.
 
 **Os números aparecem uma única vez.** O painel de C04 explica a lógica sem números: Créditos que você já tem + novos
 Créditos de datas depositadas = um só saldo para viver outras Second Homes. O saldo de Helena se forma só na Request (C05b–C06):
@@ -64,7 +69,7 @@ Direct mostram os Créditos necessários e o saldo válido disponível, com uma 
   disponível, fechada.
 - **Luxplus:** em dinheiro, sem controle, depósito ou consumo de Créditos.
 
-Na tela, a taxa monetária da Request e do Direct se chama **Taxa de intermediação** (o conceito canônico continua sendo
+Na tela, a taxa monetária da Request e do Direct se chama **Taxa de intercâmbio** (o conceito canônico continua sendo
 o Luxchange Fee, 01 §24). O nome ainda precisa ser harmonizado com os documentos comerciais e jurídicos antes do
 lançamento.
 
@@ -92,8 +97,8 @@ Cada Second Home tem uma bíblia de continuidade e uma imagem-chave mestra (`PRO
 
 | Modalidade | De onde vêm as noites | Como paga | O diferencial |
 |---|---|---|---|
-| Luxchange Request | de outro Titular | Créditos em Garantia + Taxa de intermediação no envio | o Titular das noites decide; com o aceite, tudo é verificado de novo e, estando tudo certo, a reserva se confirma na mesma operação |
-| Luxchange Direct | do Inventário Luxtory | Créditos + Taxa de intermediação | caminho mais curto: sem aceite de outro Titular; a confirmação vem depois do pagamento da taxa, da política e das verificações |
+| Luxchange Request | de outro Titular | Créditos em Garantia + Taxa de intercâmbio no envio | o Titular das noites decide; com o aceite, tudo é verificado de novo e, estando tudo certo, a reserva se confirma na mesma operação |
+| Luxchange Direct | do Inventário Luxtory | Créditos + Taxa de intercâmbio | caminho mais curto: sem aceite de outro Titular; a confirmação vem depois do pagamento da taxa, da política e das verificações |
 | Luxplus | do Inventário Luxtory (noites adicionais) | em dinheiro, sem Créditos | sem aceite de outro Titular e sem usar Créditos; a confirmação vem depois do pagamento, da política e das verificações |
 
 As três exigem Membership vigente e nenhuma garante disponibilidade. No Luxplus, o preço tem o PRL do período como
@@ -105,7 +110,7 @@ referência (BR-243, REQ-070). O filme não mostra PRL, desconto nem condição 
 |---|---|---|---|
 | Abertura | 0:00–0:09 | 9 s | desejo: arquitetura, paisagem e família na Satori Home |
 | Club e Créditos | 0:09–0:23,5 | 14,5 s | a Second Home como ponto de partida; a liberdade dos Créditos, sem números |
-| Luxchange Request | 0:23,5–0:57,5 | 34 s | outro Titular; saldo, necessidade, complemento por depósito (uma única vez no filme); Taxa de intermediação; Garantia; aceite; mesma operação |
+| Luxchange Request | 0:23,5–0:57,5 | 34 s | outro Titular; saldo, necessidade, complemento por depósito (uma única vez no filme); Taxa de intercâmbio; Garantia; aceite; mesma operação |
 | Luxchange Direct | 0:57,5–1:14,5 | 17 s | Inventário Luxtory; só o saldo que já existe; sem aceite de outro Titular |
 | Luxplus | 1:14,5–1:31,5 | 17 s | noites adicionais em dinheiro, sem Créditos |
 | Celebração | 1:31,5–1:39,5 | 8 s | viver: os três lugares e as pessoas |
@@ -122,8 +127,8 @@ Regras de montagem:
   0,3 s a 2,4 s no terço inferior esquerdo, sobre a sombra de canto. A interface só ocupa esse lugar depois da saída do
   título (+ 280 ms).
 - **Gramática dos títulos.** Nome da modalidade + "de onde vêm as noites · como se paga":
-  - *Luxchange Request* · noites de outro Titular · Créditos + Taxa de intermediação;
-  - *Luxchange Direct* · noites do Inventário Luxtory · Créditos + Taxa de intermediação;
+  - *Luxchange Request* · noites de outro Titular · Créditos + Taxa de intercâmbio;
+  - *Luxchange Direct* · noites do Inventário Luxtory · Créditos + Taxa de intercâmbio;
   - *Luxplus* · noites adicionais · em dinheiro, sem Créditos.
 - **Troca de trecho.** Imagem e interface cortam no mesmo quadro. Dois trechos de interface nunca se cruzam em
   dissolve.
@@ -146,15 +151,15 @@ fotografia em Pure White (Newsreader no título, Hanken no descritor), com a hai
 | C02 | 0:04–0:09 | S02 Helena e a família no terraço de pedra; S03 detalhe de luz no interior | — | — | "Tudo começa na sua Second Home." | trilha, passos na madeira | corte no movimento |
 | C03 | 0:09–0:13 | S04 Helena com o celular, horizonte ao fundo | — | **Luxtory Club** | "Mas ela pode ser o ponto de partida — não o limite." | toque de UI suave | dissolve 8 quadros |
 | C04 | 0:13–0:23,5 | S05 terraço da Satori Home e o vale; Helena no terço direito | creditos 0–10,5: painel conceitual à esquerda (Créditos válidos que você já tem + novos Créditos, de datas elegíveis depositadas = um só saldo para viver outras Second Homes; com Membership vigente, em Luxchange Request ou Direct), sem números; nota no rodapé do painel a partir de 0:16,2: *Créditos não são moeda nem garantem disponibilidade. Nas Second Homes compartilhadas, só datas já reservadas podem ser depositadas.* | — (terço inferior livre) | "Com Membership vigente, você usa os Créditos válidos que já tem, deposita datas elegíveis para gerar novos — ou combina os dois para viver outras Second Homes." | um toque macio por linha do painel; pulso da trilha | corte |
-| C05 | 0:23,5–0:30,5 | S06 Azzura Home, plano aberto ao entardecer | request 0,0–4,6, a partir de 0:25,9 | **Luxchange Request** · noites de outro Titular · Créditos + Taxa de intermediação (0,3–2,4 s); faixa inferior: *Imagens, interfaces e valores ilustrativos.* | "Quando as noites que você deseja estão com outro Titular, você envia uma Request." | toques nas datas | corte |
+| C05 | 0:23,5–0:30,5 | S06 Azzura Home, plano aberto ao entardecer | request 0,0–4,6, a partir de 0:25,9 | **Luxchange Request** · noites de outro Titular · Créditos + Taxa de intercâmbio (0,3–2,4 s); faixa inferior: *Imagens, interfaces e valores ilustrativos.* | "Quando as noites que você deseja estão com outro Titular, você envia uma Request." | toques nas datas | corte |
 | C05b | 0:30,5–0:34,5 | S04 (segunda parte) Helena na Satori Home com o celular | request 6,0–10,0 (Créditos necessários 55.000 × saldo 48.000, faltam 7.000 → Complementar saldo → calendário já em maio, com 14, 15 e 16/05 elegíveis e o depósito desabilitado) | — | "Se o saldo não bastar, você completa com datas do seu Direito de Uso — e pode depositar mais, para as próximas experiências." | toques | corte |
 | C05c | 0:34,5–0:39,5 | S03 (segunda parte) luz da manhã no interior da Satori Home | request 10,6–15,6 (controle → 14.000, o mínimo, com 16/05; toque em 14/05 → 30.000; toque em 15/05 → 46.000; saldo projetado 94.000; depositar) | — | (continuação) | toques; um tic por data | corte |
-| C06 | 0:39,5–0:43,5 | S07 detalhe da piscina de borda infinita da Azzura Home | request 17,0–21,0 (depósito confirmado, saldo 94.000 → revisão, Taxa de intermediação R$ 550,00, política, pagar) | — | "Seus Créditos ficam em Garantia, a Taxa de intermediação é paga no envio…" | tic do depósito; toque | corte |
+| C06 | 0:39,5–0:43,5 | S07 detalhe da piscina de borda infinita da Azzura Home | request 17,0–21,0 (depósito confirmado, saldo 94.000 → revisão, Taxa de intercâmbio R$ 550,00, política, pagar) | — | "Seus Créditos ficam em Garantia, a Taxa de intercâmbio é paga no envio…" | tic do depósito; toque | corte |
 | C07 | 0:43,5–0:46,5 | S08 terraço sombreado vazio sob a pérgola, o mar ao fundo, luz caindo | request 21,4–24,4 (Pendente + Garantia de três lotes) | — | "…e as noites não ficam bloqueadas enquanto o Titular decide." | tic suave, ambiente do mar | corte |
 | C08 | 0:46,5–0:51 | S09 o outro Titular recebe a solicitação no próprio apartamento, ao anoitecer | request 26,7–31,2 (Request recebida, Aceitar, verificações) | O outro Titular recebe a solicitação (no cartão) | "Do outro lado, o Titular aceita." | toque em Aceitar, tics das verificações | corte no gesto |
 | C09 | 0:51–0:57,5 | S10 Helena chega à Azzura Home | request 31,2–34,2, depois fade da interface | — | "Com o aceite, tudo é verificado de novo — e, estando tudo certo, a reserva se confirma na mesma operação." | acorde de resolução, mar | a interface sai e o plano respira |
-| C10 | 0:57,5–1:02,5 | S11 Olivar Home, pátio central da casa térrea numa tarde de outono | direct 0,0–2,6, a partir de 0:59,9 | **Luxchange Direct** · noites do Inventário Luxtory · Créditos + Taxa de intermediação (0,3–2,4 s) | "Se as noites já fazem parte do Inventário Luxtory, o caminho é mais curto…" | toques | dissolve de entrada no bloco (sem interface no lado anterior) |
-| C11 | 1:02,5–1:08,5 | S12 mesa posta sob a oliveira do pátio | direct 4,2–10,2 (saldo suficiente, 39.000 para 11.500 → continuar com meu saldo → revisão, Taxa de intermediação R$ 120,00, pagar) | — | "…o Luxchange Direct dispensa o aceite de outro Titular." | toque, tics | corte |
+| C10 | 0:57,5–1:02,5 | S11 Olivar Home, pátio central da casa térrea numa tarde de outono | direct 0,0–2,6, a partir de 0:59,9 | **Luxchange Direct** · noites do Inventário Luxtory · Créditos + Taxa de intercâmbio (0,3–2,4 s) | "Se as noites já fazem parte do Inventário Luxtory, o caminho é mais curto…" | toques | dissolve de entrada no bloco (sem interface no lado anterior) |
+| C11 | 1:02,5–1:08,5 | S12 mesa posta sob a oliveira do pátio | direct 4,2–10,2 (saldo suficiente, 39.000 para 11.500 → continuar com meu saldo → revisão, Taxa de intercâmbio R$ 120,00, pagar) | — | "…o Luxchange Direct dispensa o aceite de outro Titular." | toque, tics | corte |
 | C12 | 1:08,5–1:14,5 | S13 três gerações no pátio, fim de tarde | direct 10,9–13,9 (verificações, Reserva confirmada, Créditos 39.000 → 27.500), depois fade | — | — | acorde curto | o plano respira |
 | C13 | 1:14,5–1:19,5 | S14 Olivar Home numa noite de inverno, fogo no pátio | luxplus 0,0–2,7, a partir de 1:16,8 | **Luxplus** · noites adicionais · em dinheiro, sem Créditos (0,3–2,4 s) | "Para viver novas experiências, há também o Luxplus…" | crepitar do fogo | dissolve de entrada no bloco |
 | C14 | 1:19,5–1:25,5 | S15 detalhe: taças, mãos, luz quente | luxplus 4,7–10,7 (valor da estadia, Créditos não usados, verificações) | — | "…noites adicionais do Inventário Luxtory, pagas em dinheiro, sem usar seus Créditos." | toque, tics | corte |
@@ -178,7 +183,7 @@ não lê a interface: diz o que ela significa e deixa as confirmações acontece
 > **0:23,9** Quando as noites que você deseja estão com outro Membro, você envia uma Request.
 > **0:30,8** Se o saldo não bastar, você completa com datas do seu Direito de Uso — e o que sobrar fica para as
 > próximas experiências.
-> **0:39,9** Seus Créditos ficam em Garantia e a Taxa de intermediação é paga no envio.
+> **0:39,9** Seus Créditos ficam em Garantia e a Taxa de intercâmbio é paga no envio.
 > **0:48,1** Do outro lado, quem recebe a solicitação decide se aceita.
 > **0:51,0** Com o aceite, tudo é verificado de novo — e, estando tudo certo, a reserva se confirma na mesma operação.
 > **0:57,8** Se as noites já fazem parte do Inventário Luxtory, o caminho é mais curto: o Luxchange Direct dispensa o
@@ -379,7 +384,7 @@ emissora para TV, com true peak ≤ −1 dBTP e sem distorção nem clipping.
   Direct com saldo suficiente segue sem depósito.
 - Cena C05b/C05c (complementação em Mirante · Serra), com uma frase nova na narração; Request de 34 s; filme ≈ 106 s;
   vertical ≈ 58 s.
-- "Taxa de intermediação" no lugar de "Fee" em títulos, narração e interfaces; cartões sem selo, PRL, IDs de lote,
+- "Taxa de intercâmbio" no lugar de "Fee" em títulos, narração e interfaces; cartões sem selo, PRL, IDs de lote,
   timestamps ou textos de protótipo.
 
 **v3 (direção comercial final):**

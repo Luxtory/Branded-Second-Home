@@ -89,7 +89,7 @@ export function needCard({ title, needed, available, role, sufficient }) {
     ? `<p class="demo-state demo-state--done">${icon('i-check')}Saldo suficiente</p>
       <button class="lx-button lx-button--primary" type="button" id="need-continue" tabindex="-1">Continuar com meu saldo</button>
       <details class="lx-disclosure demo-accordion demo-accordion--closed"><summary class="lx-disclosure__summary">Complementar saldo com datas ${t.source}${icon('i-next', 'demo-icon lx-disclosure__icon')}</summary></details>`
-    : `<p class="demo-note">${icon('i-info')}<span>Você pode completar com datas elegíveis ${t.source}. O depósito gera novos Créditos, que se somam ao seu saldo.</span></p>
+    : `<p class="demo-note">${icon('i-info')}<span>Datas elegíveis inteiras ${t.source} geram novos Créditos.</span></p>
       <button class="lx-button lx-button--primary" type="button" id="need-topup" tabindex="-1">${t.complement}</button>`;
   return `
     <section class="demo-card demo-card--task" id="need" data-surface="deep" aria-label="Créditos para esta estadia">
@@ -98,7 +98,7 @@ export function needCard({ title, needed, available, role, sufficient }) {
       <dl class="lx-evidence">
         <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos necessários</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(needed)}</dd></div>
         <div class="lx-evidence__item"><dt class="lx-evidence__label">Saldo válido disponível</dt><dd class="lx-evidence__value">${credits(available)}</dd></div>
-        ${missing ? `<div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos adicionais necessários</dt><dd class="lx-evidence__value">${credits(missing)}</dd></div>` : ''}
+        ${missing ? `<div class="lx-evidence__item"><dt class="lx-evidence__label">Faltam</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(missing)}</dd></div>` : ''}
       </dl>
       ${decision}
     </section>`;
@@ -130,8 +130,16 @@ export function topupCard(dep, states) {
   const marks = dep.stops
     .map((s) => `<span class="demo-slider__stop" style="--at: ${s.credits / max}"></span>`)
     .join('');
+  // Copy da direção v8.3, em três frases curtas: o que falta, quanto a menor seleção gera e o destino do excedente. A
+  // regra das datas inteiras fica no cartão anterior (sem repetir).
   const hint = dep.minimum
-    ? `Mínimo para esta reserva: ${credits(dep.minimum.credits)} (${dep.minimum.nights.length} ${dep.minimum.nights.length === 1 ? 'data' : 'datas'}). O que passar disso fica no saldo para as próximas experiências.`
+    ? [
+        dep.shortfall ? `Faltam ${credits(dep.shortfall)} Créditos.` : '',
+        `${dep.minimum.nights.length === 1 ? 'Uma data elegível gera' : `${dep.minimum.nights.length} datas elegíveis geram`} ${credits(dep.minimum.credits)} Créditos.`,
+        'O excedente permanece disponível.',
+      ]
+        .filter(Boolean)
+        .join(' ')
     : 'Valores possíveis com datas inteiras.';
   return `
     <section class="demo-card demo-card--ctx" id="topup" data-surface="deep" aria-label="Complementar saldo">

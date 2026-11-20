@@ -1,4 +1,4 @@
-# Quatro filmes do Luxtory Club: nomenclatura, storyboard, ritmo e assinatura (v8.2 · checkpoint para aprovação)
+# Quatro filmes do Luxtory Club: nomenclatura, storyboard, ritmo e assinatura (v8.3 · checkpoint para aprovação)
 
 > **Direção final de 2026-11-19.** Quatro filmes, cada um em 16:9 e 9:16:
 > 1. Luxchange Request;
@@ -13,6 +13,117 @@
 >
 > Pessoas, Second Homes, datas e valores são ilustrativos. Os oito masters só são gerados depois da aprovação deste
 > checkpoint, e nada é publicado antes da validação de direitos, das condições comerciais e da prontidão do produto.
+
+## v8.3: correções obrigatórias antes dos quatro filmes
+
+**Imagem da família: proveniência conferida.** O arquivo usado no encerramento é o enviado pela Luxtory, sem
+alteração:
+- o sha256 do `.webp` recebido é igual ao da cópia em `out/entrada/`;
+- os pixels decodificados do original, do PNG de trabalho e do `S17b-16x9.png` são idênticos (mesmo hash RGB);
+- no quadro do vídeo, a família é a mesma do original: SSIM de 0,87 em escala reduzida, com a diferença vinda da
+  aproximação de câmera e da codificação.
+
+A divergência percebida tinha outra origem: os placeholders provisórios da Azzura (foto do site) mostravam uma
+segunda família, de outras pessoas, numa piscina, em S06, S07 e S10. A v8.3 usa só recortes sem pessoas dessas fotos.
+A única família do filme é a da campanha, no encerramento.
+
+**Formatos da família:**
+- **16:9:** recorte da largura inteira do original. Amplia 1,62× (aviso na prévia; a exportação final recusa).
+- **9:16:** a imagem inteira, nítida e sem ampliação, emoldurada no Moroccan Blue da assinatura, sem espelhamento nem
+  extensão. A versão estendida da v8.2 foi descartada.
+
+As duas são provisórias até as versões editadas no ChatGPT (prompts abaixo). Com elas, a arquitetura fica coerente com
+a Azzura e os dois formatos não dependem de ampliação. Cada arquivo entra por nome em `out/entrada/`
+(`S17b-16x9.png`, `S17b-9x16.png`), sem mudar código.
+
+**Fotografia por Second Home:**
+
+| Second Home | Momentos | Placeholder atual |
+|---|---|---|
+| Azzura | escolha da estadia (banner e datas), solicitação recebida, confirmação | recortes sem pessoas da foto do litoral |
+| Satori | contexto de Helena: Créditos necessários, depósito, revisão, envio e espera | quatro recortes diferentes da foto da serra |
+| Família (campanha) | encerramento | imagem aprovada |
+
+A troca de imóvel acontece uma vez, em "Do outro lado": a câmera sai de Helena na Satori e vai para quem recebe a
+solicitação, na Azzura.
+
+**Assinatura em Moroccan Blue (#0F4E67).** O cartão usa a superfície `blue` do Design System, que já existe, sem mudar
+o DS global. A regra que permite: "Logo: Warm Sand sobre Blue/Deep" (`docs/specs/design-system.md`).
+
+O manifest da logo associa a Warm Sand ao fundo "night" (Dark Moroccan Blue), o que vale para os fundos de página. O
+cartão é uma superfície de componente, coberta pela regra acima.
+
+| Elemento | Contraste sobre #0F4E67 | Mínimo |
+|---|---|---|
+| Logo Warm Sand (elemento gráfico) | 4,32:1 | 3:1 |
+| Tagline Pure White | 9,11:1 | 4,5:1 |
+
+Logo SVG, fade de 900 ms, frase posterior e 6 s não mudam.
+
+**Taxa de intercâmbio.** Passa a ser o rótulo da taxa monetária da Request e do Direct: banner, revisão, narração e
+roteiro. O conceito técnico continua Luxchange Fee, com a mesma fórmula, e o Luxplus continua sem taxa (o teste barra
+os dois nomes nele). Pendente antes da publicação: revisão comercial e jurídica, porque o nome coincide com a tarifa
+de intercâmbio dos cartões.
+
+**Primeiras telas:**
+- Banner: "Luxchange Request" / "Solicite noites reservadas por outro Membro." / "Use Créditos e pague a Taxa de
+  intercâmbio."
+- Azzura: "Esta reserva depende do aceite do Membro que reservou as noites solicitadas."
+
+**Prazo de 48 horas (proposta comercial).** A Request simulada expira de fato em 48 h (`DEMO.requestExpiryHours`), e o
+cartão de quem recebe deriva o prazo da própria simulação: (`expiresAt` − `sentAt`). O padrão do 02 continua em
+`CANONICAL` (24 h, PD-005); nada muda em canônicos ou Production.
+
+Verificado em teste:
+
+| Verificação | Resultado |
+|---|---|
+| Expiração | exatamente 48 h depois do envio |
+| Aceite | dentro do prazo |
+| Garantia | só lotes válidos durante as 48 h; um lote que vence 36 h depois lastreia a de 24 h, mas não a de 48 h (PD-006) |
+| Desfechos pré-aceite | recusa, expiração e retirada partem de Pendente, com liberação da Garantia e reversão da taxa |
+
+Ficam para o produto: Requests concorrentes (a revalidação do primeiro aceite já resolve) e notificações (lembrete
+antes da expiração). A adoção definitiva depende da aprovação comercial.
+
+**Complementação:**
+- Créditos necessários: "Faltam 7.000" em destaque e a nota "Datas elegíveis inteiras do meu Direito de Uso geram
+  novos Créditos." (a regra das datas inteiras, uma vez).
+- Controle, com a copy da direção, em três frases curtas: "Faltam 7.000 Créditos. Uma data elegível gera 14.000
+  Créditos. O excedente permanece disponível."
+- Números preservados: 48.000 → +14.000 → 62.000 → 55.000 em Garantia → 7.000 disponíveis.
+
+**Prompts para o ChatGPT (imagem da família).** Enviar o arquivo original e pedir, em conversas separadas:
+
+```text
+Edit this exact photo. Keep the four people exactly as they are: same faces, expressions, poses, hair, swimwear,
+skin, water and reflections; do not regenerate them. Change only the architecture: remove the olive tree and the
+stone wall at the right; continue the white contemporary cantilevered volumes with large frameless glass façades in
+their place; add a dark timber pergola over the terrace. Keep the infinity pool, the coastal view and the sunset light
+identical. Output as a landscape 3:2 image at the highest resolution available. No text, no logos.
+```
+
+```text
+Using the edited photo, create a vertical 2:3 version of the same scene: the same four people, exactly as they are and
+at the same size relative to the frame width, all fully visible. Extend only the sky above and the pool water below,
+continuing the scene naturally. Highest resolution available. No new people, no text, no logos.
+```
+
+Conferência antes de aprovar:
+- rosto, expressão, pose e roupa dos quatro idênticos ao original, sobrepondo os dois;
+- nenhuma mão ou dente alterado;
+- arquitetura branca, com vidro e madeira escura;
+- se algum rosto mudar, a edição é rejeitada, mesmo que pareça fotorrealista.
+
+O 3:2 recortado para 16:9 e o 2:3 recortado para 9:16 ampliam ≈ 1,25×, dentro do limite de 1,35×.
+
+**Ainda provisório:**
+- imagens definitivas da Azzura e da Satori;
+- versões editadas da família;
+- trilha (Pixabay);
+- narração da equipe;
+- revisão comercial e jurídica de "Taxa de intercâmbio";
+- aprovação comercial do prazo de 48 h.
 
 ## v8.2: revisão final da Request e continuidade
 
@@ -123,7 +234,7 @@ local.
 
 A v8 ficou lenta (69 s): pausas longas e telas paradas depois de a informação principal ter sido lida. A v8.1 tem
 54,4 s no 16:9 e 54,8 s no 9:16, com a assinatura, e mostra duas etapas que faltavam: a seleção das datas depositadas
-e a revisão com a Taxa de intermediação e o envio.
+e a revisão com a Taxa de intercâmbio e o envio.
 
 **Edição.** A interface continua tocando no tempo da sequência, sem aceleração. O ritmo vem de três decisões:
 - **cortes em tempo morto:** saída de cartões e processamento do pagamento;
@@ -134,13 +245,13 @@ e a revisão com a Taxa de intermediação e o envio.
 
 | Cartão | v8 | v8.1 |
 |---|---|---|
-| Revisão | Créditos necessários · Taxa de intermediação · Prazo para o aceite 24 horas | Créditos necessários ("Vão para a Garantia no envio") · Taxa de intermediação ("Paga no envio, separada dos Créditos; devolvida se não houver aceite") · política · Pagar taxa e enviar |
+| Revisão | Créditos necessários · Taxa de intercâmbio · Prazo para o aceite 24 horas | Créditos necessários ("Vão para a Garantia no envio") · Taxa de intercâmbio ("Paga no envio, separada dos Créditos; devolvida se não houver aceite") · política · Pagar taxa e enviar |
 | Créditos (Garantia) | Saldo disponível · Créditos em Garantia + frase sobre o uso da Garantia | Créditos disponíveis 39.000 · Créditos em Garantia 55.000 |
 | Pendente | Pendente · Solicitação enviada · duas frases (prazo, devolução, liberação) | Aguardando resposta · Solicitação enviada · "A reserva depende do aceite e da validação das condições." |
 | Solicitação recebida | Visão do membro que recebe a solicitação · Solicitação de troca recebida · duas explicações | Membro que recebe · Solicitação recebida · Azzura Home · 04 a 07/06/2027 · 3 noites do seu Direito de Uso · Créditos a receber 55.000 · Responda em até 24 horas · "Ao aceitar, você cede as noites e recebe os Créditos após a confirmação." |
 | Aceite | + validade de 24 meses | Membro que recebe · Solicitação aceita · 55.000 Créditos recebidos |
 | Reserva | Visão do membro solicitante · 55.000 Créditos utilizados na confirmação | Membro que solicita · Reserva confirmada · Azzura Home · 04 a 07/06/2027 · 3 noites · 55.000 Créditos utilizados |
-| Banner | 3 linhas | "Solicite noites reservadas por outro Membro." · "Créditos + Taxa de intermediação · depende do aceite." |
+| Banner | 3 linhas | "Solicite noites reservadas por outro Membro." · "Créditos + Taxa de intercâmbio · depende do aceite." |
 
 **Prazo e condições, uma vez cada:**
 - o prazo de 24 horas aparece só para quem recebe;
@@ -176,12 +287,12 @@ quem recebe a solicitação é Co-Owner nos dados da demonstração, e as noites
 | Visão do Titular detentor · Co-Owner / Request aceita / Créditos para esta Ação, válidos por 24 meses | Visão do membro que recebeu a solicitação / Solicitação aceita / 55.000 Créditos recebidos / Válidos por 24 meses a partir da originação. | cartão de aceite | texto comercial visível |
 | Visão de quem solicitou / período · horários / Créditos consumidos da Garantia, no momento do aceite | Visão do membro solicitante / Azzura Home / 04 a 07/06/2027 · 3 noites / 55.000 Créditos utilizados na confirmação. | cartão de reserva confirmada | texto comercial visível |
 | Seu saldo, do lote que vence primeiro / Garantia pelos lotes que vencem primeiro (lista de lotes) | Saldo disponível 39.000 · Créditos em Garantia 55.000 + "Se a solicitação for aceita e validada, os Créditos em Garantia são utilizados para confirmar a reserva." | cartão de Créditos da Request | texto comercial visível |
-| Request enviada / O Titular tem até 24 horas… / As noites não ficam bloqueadas… | Solicitação enviada / A reserva só se confirma com o aceite e a revalidação. / Quem recebe tem até 24 horas para responder. Sem aceite, a Taxa de intermediação é devolvida e a Garantia é liberada. | cartão pendente | texto comercial visível |
+| Request enviada / O Titular tem até 24 horas… / As noites não ficam bloqueadas… | Solicitação enviada / A reserva só se confirma com o aceite e a revalidação. / Quem recebe tem até 24 horas para responder. Sem aceite, a Taxa de intercâmbio é devolvida e a Garantia é liberada. | cartão pendente | texto comercial visível |
 | Revisar Request / Reservados no envio; consumidos só com o aceite | Revisar solicitação / Garantia constituída no envio; utilizados só com o aceite | revisão | texto comercial visível |
 | Membership dos dois Titulares / Request dentro do prazo | Membership vigente dos dois Membros / Solicitação dentro do prazo | revalidação | texto comercial visível |
 | Noites de outro Titular · A reserva depende do aceite dele | Noites reservadas por outro Membro · A reserva depende do aceite | rota da Request | texto comercial visível |
 | sem aceite de outro Titular · Créditos consumidos · do lote que vence primeiro | sem aceite de outro Membro · Créditos utilizados · Utilizados só na confirmação. | cartões do Direct | texto comercial visível |
-| …com outro Titular… / …enquanto o Titular decide. / Do outro lado, o Titular aceita. / …aceite de outro Titular. | …com outro Membro… / Seus Créditos ficam em Garantia e a Taxa de intermediação é paga no envio. / Do outro lado, quem recebe a solicitação decide se aceita. / …aceite de outro Membro. | `ROTEIRO.md` §4 | narração |
+| …com outro Titular… / …enquanto o Titular decide. / Do outro lado, o Titular aceita. / …aceite de outro Titular. | …com outro Membro… / Seus Créditos ficam em Garantia e a Taxa de intercâmbio é paga no envio. / Do outro lado, quem recebe a solicitação decide se aceita. / …aceite de outro Membro. | `ROTEIRO.md` §4 | narração |
 | "No Co-Owner, só data já reservada é cedida." | "Nas Second Homes compartilhadas, só datas já reservadas podem ser depositadas." (v8.1, decidido) | nota do painel C04 | jurídico e canônico (L3 de `b2c.md`) |
 | `role: 'co_owner'`, `holding`, lotes, `holdCreditsFefo`, comentários técnicos | sem mudança | `data.js`, `rules.js`, comentários | identificador de código ou regra de negócio |
 
@@ -204,7 +315,7 @@ duração final sai da medição da prévia aprovada, sem acelerar interface.
 | 3 | Créditos necessários × saldo | S05 Helena na Satori | 55.000 necessários × 48.000 disponíveis, faltam 7.000; Complementar saldo | 5,25 s |
 | 4 | Complementação | S04 Helena com o celular | controle no mínimo (14.000, uma data) e mais duas datas do Direito de Uso (46.000); Depositar | 7,0 s |
 | 5 | Depósito confirmado | S03 luz no interior | 46.000 novos Créditos, saldo 94.000 | 3,25 s |
-| 6 | Revisão e envio | S03 (continua) | Créditos, Taxa de intermediação, política; Pagar taxa e enviar; processamento breve | 5,0 s |
+| 6 | Revisão e envio | S03 (continua) | Créditos, Taxa de intercâmbio, política; Pagar taxa e enviar; processamento breve | 5,0 s |
 | 7 | Solicitação enviada | S07 borda infinita | Aguardando resposta · 55.000 em Garantia · 39.000 disponíveis | 3,5 s |
 | 8 | Solicitação recebida | S09 sem rosto | 55.000 Créditos a receber · Responda em até 24 horas · Aceitar ou Recusar | 4,1 s |
 | 9 | Aceite e revalidação | S09 (continua) | Aceitar · quatro verificações | 2,4 s |
@@ -229,7 +340,7 @@ A data nunca paga a reserva diretamente.
 | 1 | Banner | S11 Olivar, pátio | Luxchange Direct + 3 linhas | 5 s |
 | 2 | Datas disponíveis no Club | S11 (continua) | contexto + calendário; rota "sem aceite de outro Membro" | 8 s |
 | 3 | Créditos necessários e saldo suficiente | S12 mesa sob a oliveira | saldo cobre; Continuar com meu saldo | 7,5 s |
-| 4 | Revisão e Taxa de intermediação | S12 (continua) | Créditos utilizados na confirmação, taxa, política | 7 s |
+| 4 | Revisão e Taxa de intercâmbio | S12 (continua) | Créditos utilizados na confirmação, taxa, política | 7 s |
 | 5 | Pagamento e validações | S12 (continua) | pagamento aprovado; verificações | 3 s |
 | 6 | Confirmação sem aceite de outro Membro | S13 três gerações | Reserva confirmada; saldo 39.000 → 27.500 | 6,5 s |
 | 7 | Experiência | S13 (continua) | — | 5 s |
@@ -250,7 +361,7 @@ confirmação".
 | 6 | Experiência | S16 (continua) | — | 5 s |
 | 7 | Assinatura | dissolve | logo oficial + frase | 6 s |
 
-Sem Taxa de intermediação e sem desconto de Membership (BR-244, não publicado).
+Sem Taxa de intercâmbio e sem desconto de Membership (BR-244, não publicado).
 
 ### Filme 4 · Luxtory Club, filme completo (≈ 115–130 s no ritmo da v8.1)
 
@@ -270,8 +381,8 @@ os diferencia. Os tempos das tabelas de Direct, Luxplus e filme completo acima f
 cada etapa encolhe na mesma proporção da Request, sem copiar tempos.
 
 Banners de cada modalidade (diferença em duas linhas):
-- **Request:** "Solicite noites reservadas por outro Membro." · "Créditos + Taxa de intermediação · depende do aceite."
-- **Direct:** "Reserve noites do Inventário Luxtory." · "Créditos + Taxa de intermediação · sem aceite de outro Membro."
+- **Request:** "Solicite noites reservadas por outro Membro." · "Créditos + Taxa de intercâmbio · depende do aceite."
+- **Direct:** "Reserve noites do Inventário Luxtory." · "Créditos + Taxa de intercâmbio · sem aceite de outro Membro."
 - **Luxplus:** "Reserve noites adicionais no Luxtory Club." · "Pagamento em dinheiro, sem utilizar Créditos."
 
 A confirmação continua sujeita às validações e ao pagamento, e nenhum banner promete disponibilidade.
@@ -322,7 +433,7 @@ Antes, o cartão de Créditos da Request listava lotes: "Créditos anteriores 30
 
 **O que continua igual nas regras:** FEFO, origem dos lotes, quantidades, validade, Garantia, consumo e saldos (`rules.js`, `data.js`). O teste
 "filme: saldo e Garantia sem lotes na tela" confere as duas coisas. Recusa ou expiração seguem liberando a Garantia e devolvendo a
-Taxa de intermediação, o que o cartão pendente diz.
+Taxa de intercâmbio, o que o cartão pendente diz.
 
 A solicitação recebida usa a copy aprovada, e a originação dos Créditos de quem cede só acontece com o aceite válido, a
 revalidação e a confirmação, na mesma operação (REQ-064).

@@ -1,6 +1,6 @@
 // Coreografia da Luxchange Request (revisão de UX de 2026-11-15): escolha da estadia → Créditos necessários × saldo →
 // complementação opcional por depósito de datas elegíveis (controle + calendário do Direito de Uso) → depósito
-// confirmado → revisão → Taxa de intermediação → pagamento e envio → Garantia (só no envio) → aceite expresso do
+// confirmado → revisão → Taxa de intercâmbio → pagamento e envio → Garantia (só no envio) → aceite expresso do
 // membro que recebe a solicitação → revalidação → solicitação aceita + reserva confirmada na mesma operação (REQ-064).
 // Todo valor exibido vem de requestScenario() e depositScenario() (data.js → rules.js). A capacidade pedida não fica
 // bloqueada enquanto a Request está pendente (PD-005).
@@ -8,7 +8,7 @@
 // nem Ação; saldo e Garantia em dois indicadores (os lotes e o FEFO continuam em rules.js e data.js, fora da tela);
 // textos enxutos da v8.1 (uma ideia por cartão, o prazo de 24 horas só no cartão de quem recebe). Papéis e regras do domínio não mudam: quem recebe é Co-Owner em data.js, e as noites cedidas são do Direito
 // de Uso já reservado (BR-151, PD-007).
-import { CANONICAL, depositScenario, requestScenario } from './data.js';
+import { depositScenario, requestScenario } from './data.js';
 import { selectionForTarget } from './rules.js';
 import { PLATES } from './placas-caminhos.js';
 import { brl, credits } from './format.js';
@@ -37,9 +37,10 @@ const s = requestScenario();
 const dep = depositScenario();
 const period = periodOf(s.checkin, s.checkout);
 const periodShort = periodCompact(s.checkin, s.checkout);
-// Prazo de resposta do parâmetro da demonstração (PD-005: padrão de 24 horas, administrável): o vídeo mostra sempre o
-// valor configurado, nunca um número escrito à mão.
-const REPLY_HOURS = CANONICAL.requestExpiryHours;
+// Prazo de resposta derivado da própria simulação (expira de fato nesse prazo; proposta de 48 horas, PD-005): o vídeo
+// nunca mostra um prazo diferente do que a Request simulada usa.
+const HOUR_MS = 3_600_000;
+const REPLY_HOURS = (s.expiresAt - s.sentAt) / HOUR_MS;
 // Segunda tela (direção v8.2): só a dependência do aceite, sem repetir o banner.
 const route = `${icon('i-info')}<span>Esta reserva depende do aceite do Membro que reservou as noites solicitadas.</span>`;
 // Seleção (fonte única: as datas). O controle vai ao mínimo que cobre o que falta (14.000: a sugestão para essa meta é
@@ -84,7 +85,7 @@ export function build(stage, fmt) {
       <p class="lx-title">${s.secondHome.name} · ${period}</p>
       <dl class="lx-evidence">
         <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos necessários</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(s.credits)}</dd><dd class="demo-hint">Vão para a Garantia no envio</dd></div>
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Taxa de intermediação</dt><dd class="lx-evidence__value">${brl(s.feeCents)}</dd><dd class="demo-hint">Paga no envio, separada dos Créditos; devolvida se não houver aceite</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Taxa de intercâmbio</dt><dd class="lx-evidence__value">${brl(s.feeCents)}</dd><dd class="demo-hint">Paga no envio, separada dos Créditos; devolvida se não houver aceite</dd></div>
       </dl>
       <label class="lx-check"><input type="checkbox" id="policy" tabindex="-1"><span>Li e aceito a política comercial aplicável</span></label>
       <button class="lx-button lx-button--primary" type="button" id="send" tabindex="-1"><span class="demo-swap"><span id="send-label">Pagar taxa e enviar</span><span id="send-busy">Processando pagamento</span></span></button>
@@ -223,7 +224,7 @@ export function timeline(fmt) {
       { sel: '#deposited', in: t.depositedIn, out: t.reviewOut },
       // Saldo e Garantia só no envio: antes disso o depósito confirmado já mostra o saldo (sem informação duplicada).
       { sel: '#credits', in: t.sendCommit, out: t.pendingOut },
-      // Revisão, Taxa de intermediação, pagamento e envio
+      // Revisão, Taxa de intercâmbio, pagamento e envio
       { sel: '#review', in: t.reviewIn, out: t.sendOut },
       { sel: '#send-label', in: ALWAYS, out: t.pay + 100 },
       { sel: '#send-busy', in: swapIn(t.pay + 100), dur: 0 },
@@ -291,7 +292,10 @@ export function timeline(fmt) {
         label: 'controle · Créditos adicionais desejados → 14.000, o mínimo (16/05)',
       },
       { at: t.depositPress, label: 'toque · Depositar datas e gerar Créditos' },
-      { at: t.depositedIn, label: 'depósito confirmado: 46.000 novos Créditos · saldo 94.000' },
+      {
+        at: t.depositedIn,
+        label: `depósito confirmado: ${credits(dep.originated)} novos Créditos · saldo ${credits(dep.afterDeposit)}`,
+      },
       { at: t.reviewPress, label: 'toque · Revisar Request' },
       { at: t.policy, label: 'toque · aceite da política' },
       { at: t.pay, label: 'toque · Pagar taxa e enviar' },
@@ -331,22 +335,36 @@ export const qa = {
         credits(s.credits),
         'Saldo válido disponível',
         credits(dep.priorAvailable),
+        'Faltam',
         credits(dep.shortfall),
         'Complementar saldo',
-        'datas elegíveis do meu Direito de Uso',
+        'Datas elegíveis inteiras do meu Direito de Uso geram novos Créditos',
       ],
       absent: ['Em Garantia'],
     },
     {
       t: 14_880,
       name: 'complemento',
-      expect: [
-        credits(dep.originated),
-        credits(dep.afterDeposit),
-        'Depositar datas e gerar Créditos',
-      ],
+      expect: [credits(dep.afterDeposit), 'Depositar datas e gerar Créditos'],
       absent: ['Em Garantia'],
     },
+    // Copy da complementação (direção v8.3): no 16:9 o controle fica ao lado do calendário; no 9:16 ele sai antes de o
+    // calendário entrar, então o ponto é logo depois de o controle assentar em 14.000.
+    ...[
+      { fmt: '16x9', t: 14_880 },
+      { fmt: '9x16', t: times('9x16').topupOut - 100 },
+    ].map(({ fmt, t }) => ({
+      fmt,
+      t,
+      name: `complemento-copy-${fmt}`,
+      expect: [
+        `Faltam ${credits(dep.shortfall)} Créditos.`,
+        `Uma data elegível gera ${credits(dep.originated)} Créditos.`,
+        'O excedente permanece disponível.',
+        credits(dep.afterDeposit),
+        credits(s.balances.afterSend.available),
+      ],
+    })),
     {
       t: 17_200,
       name: 'deposito',
@@ -358,7 +376,7 @@ export const qa = {
       name: 'revisao',
       expect: [
         credits(s.credits),
-        'Taxa de intermediação',
+        'Taxa de intercâmbio',
         brl(s.feeCents),
         'separada dos Créditos',
         'devolvida se não houver aceite',

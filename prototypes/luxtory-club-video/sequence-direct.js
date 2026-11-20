@@ -1,7 +1,7 @@
 // Coreografia do Luxchange Direct (revisão de UX de 2026-11-15). Capacidade já no Inventário Luxtory: sem aceite de
 // outro Titular (BR-220). Depois da escolha da estadia, o mesmo passo de Créditos da Request: aqui o saldo cobre a
 // reserva (39.000 para 11.500), então a ação principal é continuar com o saldo, sem novo depósito; a complementação fica
-// disponível, fechada. Taxa de intermediação paga antes da confirmação (TECH-082); o pagamento não reserva —
+// disponível, fechada. Taxa de intercâmbio paga antes da confirmação (TECH-082); o pagamento não reserva —
 // revalidação e só então confirmação (ADR-008, TECH-080); Créditos consumidos na confirmação, por FEFO (BR-221, PD-008).
 // Todo valor exibido vem de directScenario() (data.js → rules.js). Textos da demonstração, ainda não copy aprovada.
 import { FICTITIOUS, directScenario } from './data.js';
@@ -56,7 +56,7 @@ export function build(stage, fmt) {
       <p class="lx-title">${s.secondHome.name} · ${period}</p>
       <dl class="lx-evidence">
         <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos utilizados na confirmação</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(s.credits)}</dd></div>
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Taxa de intermediação</dt><dd class="lx-evidence__value">${brl(s.feeCents)}</dd><dd class="demo-hint">Paga antes da confirmação, separada dos Créditos</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Taxa de intercâmbio</dt><dd class="lx-evidence__value">${brl(s.feeCents)}</dd><dd class="demo-hint">Paga antes da confirmação, separada dos Créditos</dd></div>
         <div class="lx-evidence__item"><dt class="lx-evidence__label">Aceite de outro Membro</dt><dd class="lx-evidence__value">Não exigido</dd></div>
       </dl>
       <label class="lx-check"><input type="checkbox" id="policy" tabindex="-1"><span>Li e aceito a política comercial aplicável</span></label>
@@ -208,14 +208,14 @@ export const qa = {
         'Continuar com meu saldo',
         'Complementar saldo com datas do meu Direito de Uso',
       ],
-      absent: ['Créditos adicionais necessários'],
+      absent: ['Faltam'],
     },
     {
       t: 8_900,
       name: 'revisao',
       expect: [
         credits(s.credits),
-        'Taxa de intermediação',
+        'Taxa de intercâmbio',
         brl(s.feeCents),
         'Não exigido',
         'política comercial aplicável',

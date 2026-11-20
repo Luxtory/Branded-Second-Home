@@ -1,8 +1,13 @@
 // Demonstração conceitual — prévia da Luxchange Request (v8.2, filme/QUATRO-FILMES.md §5), no ritmo aprovado da v8.1.
 // Banner → datas → Créditos necessários × saldo → complementação com o depósito mínimo (16/05, 14.000 novos Créditos)
-// → depósito confirmado (saldo 62.000) → revisão com a Taxa de intermediação, política e envio → solicitação enviada
+// → depósito confirmado (saldo 62.000) → revisão com a Taxa de intercâmbio, política e envio → solicitação enviada
 // (55.000 em Garantia, 7.000 disponíveis) → solicitação recebida → aceite e revalidação → Créditos recebidos e reserva
 // confirmada → família na piscina (imagem aprovada da campanha) → assinatura oficial.
+//
+// Fotografia por Second Home (direção v8.3): Azzura na escolha da estadia, na solicitação recebida e na confirmação;
+// Satori no contexto de Helena (Créditos, depósito, revisão e espera); a família só no encerramento. Enquanto não houver
+// imagens definitivas, os placeholders são recortes sem pessoas das fotos provisórias do site (a do litoral tem outra
+// família na piscina, que nunca aparece no filme).
 //
 // A interface toca no tempo da sequência (sequence-request.js), sem acelerar. A edição usa só cortes em tempo morto (a
 // saída de um cartão, o processamento do pagamento) e pausas curtas quando a informação principal pede leitura.
@@ -17,16 +22,62 @@ const PLACA_SERRA = 'public/images/home/hero/luxury-property-facade-hero.jpg';
 const FOTO = 'placeholder: foto provisória do site, não é a Second Home do filme';
 const ENTER = 480; // duration.slow: a leitura começa depois da entrada
 
-/** Plano de imagem estática com câmera lenta; placeholder com o mesmo movimento. */
-const still = (plan, what, image, move) => ({
+/**
+ * Plano de imagem estática com câmera lenta. O asset definitivo usa `move`; o placeholder usa o recorte próprio
+ * (`crop`), escolhido para mostrar só arquitetura e paisagem.
+ */
+const still = (plan, what, image, move, crop = move) => ({
   plan,
   asset: plan,
   what,
   move,
   placeholder: image
-    ? { image, note: FOTO, move }
+    ? { image, note: FOTO, move: crop }
     : { neutral: true, note: `placeholder neutro: ${what} a gerar` },
 });
+
+// Recortes dos placeholders por formato: [cx, cy, zoom] na foto já ajustada ao quadro; `anchor` escolhe a faixa da
+// foto no 9:16. Litoral: a família da foto fica abaixo de 53% da altura e entre 65% e 88% da largura, então os
+// recortes da Azzura param acima dela. Serra: sem pessoas.
+const CROP = {
+  S06: {
+    '16x9': { from: [0.48, 0.265, 1.92], to: [0.52, 0.26, 1.96], ease: 'smooth' },
+    '9x16': {
+      from: [0.5, 0.265, 1.92],
+      to: [0.5, 0.26, 1.96],
+      ease: 'smooth',
+      anchor: [0.574, 0.5],
+    },
+  },
+  S05: {
+    '16x9': { from: [0.45, 0.5, 1.25], to: [0.44, 0.5, 1.3], ease: 'smooth' },
+    '9x16': { from: [0.5, 0.5, 1.0], to: [0.5, 0.5, 1.04], ease: 'smooth', anchor: [0.573, 0.5] },
+  },
+  S04: {
+    '16x9': { from: [0.25, 0.56, 2.0], to: [0.27, 0.56, 2.0] },
+    '9x16': { from: [0.5, 0.56, 1.3], to: [0.5, 0.56, 1.34], anchor: [0.09, 0.5] },
+  },
+  S03: {
+    '16x9': { from: [0.7, 0.6, 2.0], to: [0.72, 0.6, 2.0] },
+    '9x16': { from: [0.5, 0.6, 1.4], to: [0.5, 0.6, 1.44], anchor: [0.866, 0.5] },
+  },
+  S05b: {
+    '16x9': { from: [0.45, 0.72, 1.8], to: [0.46, 0.71, 1.85], ease: 'smooth' },
+    '9x16': { from: [0.5, 0.68, 1.6], to: [0.5, 0.67, 1.64], ease: 'smooth', anchor: [0.427, 0.5] },
+  },
+  S09: {
+    '16x9': { from: [0.62, 0.26, 2.0], to: [0.63, 0.25, 2.06] },
+    '9x16': { from: [0.5, 0.26, 2.0], to: [0.5, 0.25, 2.06], anchor: [0.677, 0.5] },
+  },
+  S10: {
+    '16x9': { from: [0.8, 0.22, 2.6], to: [0.79, 0.22, 2.66], ease: 'smooth' },
+    '9x16': { from: [0.5, 0.25, 2.0], to: [0.5, 0.25, 2.06], ease: 'smooth', anchor: [1, 0.5] },
+  },
+};
+const LEGAL = 'Imagens, interfaces e valores ilustrativos.';
+// Texto do controle que precisa ser lido na complementação (credits-step.js, direção v8.3).
+const COMPLEMENT_COPY =
+  'Faltam 7.000 Créditos. Uma data elegível gera 14.000 Créditos. O excedente permanece disponível.';
 const PUSH = { from: [0.5, 0.5, 1.0], to: [0.5, 0.49, 1.04], ease: 'smooth' };
 const DRIFT = { from: [0.48, 0.5, 1.05], to: [0.52, 0.5, 1.05] };
 const CRANE = { from: [0.5, 0.482, 1.04], to: [0.5, 0.528, 1.06], ease: 'smooth' };
@@ -37,17 +88,20 @@ function blocks(fmt) {
     {
       kind: 'banner',
       scene: 'B1',
-      dur: 4_250,
-      // Primeira tela (direção v8.2): a quem se pede e como se paga. A dependência do aceite fica na segunda tela.
-      // "Taxa de intermediação" segue o nome aprovado; "Taxa de intercâmbio" é proposta pendente de validação.
+      dur: 4_500,
+      // Primeira tela (direção v8.3): de quem são as noites e como se paga; a dependência do aceite fica na segunda
+      // tela. "Taxa de intercâmbio" é o rótulo comercial decidido pela Luxtory (revisão comercial e jurídica pendente
+      // antes da publicação); o conceito técnico continua Luxchange Fee.
       banner: {
         title: 'Luxchange Request',
         lines: [
-          'Solicite ao Membro que reservou as datas desejadas.',
-          'Créditos + Taxa de intermediação.',
+          'Solicite noites reservadas por outro Membro.',
+          'Use Créditos e pague a Taxa de intercâmbio.',
         ],
       },
-      shot: still('S06', 'Azzura Home ao entardecer (K-AZ)', PLACA_LITORAL, CRANE),
+      // 9:16: a ressalva fica no banner; no R1 o calendário ocupa a faixa acima dos 20% inferiores (v8.3).
+      ...(fmt === '9x16' ? { legal: LEGAL } : {}),
+      shot: still('S06', 'Azzura Home ao entardecer (K-AZ)', PLACA_LITORAL, CRANE, CROP.S06[fmt]),
       ambience: 'mar',
       contact: 2_000,
     },
@@ -69,7 +123,7 @@ function blocks(fmt) {
           },
         },
       ],
-      legal: 'Imagens, interfaces e valores ilustrativos.',
+      ...(fmt === '16x9' ? { legal: LEGAL } : {}),
       sfx: [
         { ms: 2_400, kind: 'tap', note: 'entrada 04/06' },
         { ms: 3_100, kind: 'tap', note: 'saída 07/06' },
@@ -111,7 +165,7 @@ function blocks(fmt) {
         after: 600,
         text: 'Se o saldo não bastar, você completa com datas do seu Direito de Uso — e o que sobrar fica para as próximas experiências.',
       },
-      shot: still('S05', 'Helena no terraço da Satori Home', PLACA_SERRA, PUSH),
+      shot: still('S05', 'Helena no terraço da Satori Home', PLACA_SERRA, PUSH, CROP.S05[fmt]),
       ambience: 'vento',
       contact: 3_000,
     },
@@ -122,32 +176,67 @@ function blocks(fmt) {
       kind: 'ui',
       seq: 'request',
       scene: 'R3',
+      // O controle vai ao mínimo (14.000, 16/05) e a copy da direção v8.3 diz por quê: "Faltam 7.000 Créditos. Uma
+      // data elegível gera 14.000 Créditos. O excedente permanece disponível." No 16:9 o calendário já está ao lado;
+      // no 9:16 o controle tem a própria pausa e o calendário entra depois, só para mostrar 16/05 e o toque. O tempo
+      // parado até o depósito sai num corte invisível.
       parts: [
-        {
-          // O controle vai ao mínimo (14.000, 16/05). No 16:9 o calendário já está ao lado; no 9:16 ele entra depois
-          // do controle e mostra 16/05 selecionada. O tempo parado até o depósito sai num corte invisível.
-          from: Math.min(9_600, t.slider - 200),
-          to: fmt === '9x16' ? t.datesIn + ENTER + 20 : t.slider + 1_200,
-          hold: fmt === '9x16' ? 2_500 : 2_200,
-          beat: {
-            label: 'depósito mínimo: 16/05, 14.000 novos Créditos',
-            type: 'mensagem',
-            essential: '14.000 16/05 Saldo projetado 62.000 Após esta reserva 7.000',
-            readFrom: fmt === '9x16' ? t.datesIn + ENTER : t.slider + 900,
-          },
-        },
+        ...(fmt === '9x16'
+          ? [
+              {
+                from: Math.min(9_600, t.slider - 200),
+                to: t.topupOut - 100,
+                hold: 1_625,
+                beat: {
+                  label: 'complementação: faltam 7.000, uma data gera 14.000',
+                  type: 'mensagem',
+                  essential: `${COMPLEMENT_COPY} 62.000 7.000`,
+                  readFrom: t.topupIn + ENTER,
+                },
+              },
+              {
+                from: t.topupOut - 100,
+                to: t.datesIn + ENTER + 20,
+                hold: 1_200,
+                beat: {
+                  label: 'calendário: 16/05 selecionada',
+                  type: 'acao',
+                  essential: '16/05 Depositar datas e gerar Créditos',
+                  readFrom: t.datesIn + ENTER,
+                },
+              },
+            ]
+          : [
+              {
+                from: Math.min(9_600, t.slider - 200),
+                to: t.slider + 1_200,
+                hold: 2_200,
+                beat: {
+                  label: 'complementação: faltam 7.000, uma data gera 14.000 (16/05)',
+                  type: 'mensagem',
+                  essential: `${COMPLEMENT_COPY} 16/05 62.000 7.000`,
+                  readFrom: t.slider,
+                },
+              },
+            ]),
         { from: t.depositPress - 300, to: t.depositOut },
       ],
       sfx: [
         { ms: t.slider, kind: 'tap', note: 'controle → 14.000, o mínimo (16/05)' },
         { ms: t.depositPress, kind: 'tap', note: 'Depositar datas e gerar Créditos' },
       ],
-      shot: still('S04', 'Helena com o celular, horizonte ao fundo', PLACA_SERRA, DRIFT),
+      shot: still(
+        'S04',
+        'Helena com o celular, horizonte ao fundo',
+        PLACA_SERRA,
+        DRIFT,
+        CROP.S04[fmt],
+      ),
       ambience: 'vento',
       contact: 3_500,
     },
     {
-      // Depósito confirmado (operação própria) e revisão: Créditos, Taxa de intermediação, política e envio.
+      // Depósito confirmado (operação própria) e revisão: Créditos, Taxa de intercâmbio, política e envio.
       kind: 'ui',
       seq: 'request',
       scene: 'R4',
@@ -168,9 +257,9 @@ function blocks(fmt) {
           to: t.pay - 100,
           hold: 1_000,
           beat: {
-            label: 'revisão: Créditos e Taxa de intermediação',
+            label: 'revisão: Créditos e Taxa de intercâmbio',
             type: 'mensagem',
-            essential: '55.000 Créditos Taxa de intermediação R$ 550,00 Pagar taxa e enviar',
+            essential: '55.000 Créditos Taxa de intercâmbio R$ 550,00 Pagar taxa e enviar',
             readFrom: t.reviewIn + ENTER,
           },
         },
@@ -186,9 +275,15 @@ function blocks(fmt) {
       ],
       vo: {
         after: 3_300,
-        text: 'Seus Créditos ficam em Garantia e a Taxa de intermediação é paga no envio.',
+        text: 'Seus Créditos ficam em Garantia e a Taxa de intercâmbio é paga no envio.',
       },
-      shot: still('S03', 'luz da manhã no interior da Satori Home', PLACA_SERRA, DRIFT),
+      shot: still(
+        'S03',
+        'luz da manhã no interior da Satori Home',
+        PLACA_SERRA,
+        DRIFT,
+        CROP.S03[fmt],
+      ),
       ambience: 'vento',
       contact: 4_500,
     },
@@ -212,7 +307,8 @@ function blocks(fmt) {
       sfx: [
         { ms: t.sendCommit, kind: 'state', note: 'solicitação pendente; Garantia constituída' },
       ],
-      shot: still('S07', 'borda infinita da Azzura Home', PLACA_LITORAL, DRIFT),
+      // Helena aguarda na Satori: a troca para a Azzura acontece em "Do outro lado" (quem recebe a solicitação).
+      shot: still('S05b', 'terraço e piscina da Satori Home', PLACA_SERRA, DRIFT, CROP.S05b[fmt]),
       ambience: 'mar',
       contact: 2_500,
     },
@@ -255,9 +351,8 @@ function blocks(fmt) {
         'S09',
         'arquitetura da Azzura Home (volumes brancos e vidro), sem pessoas',
         PLACA_LITORAL,
-        fmt === '9x16'
-          ? { from: [0.5, 0.26, 2.0], to: [0.5, 0.25, 2.06], anchor: [0.9, 0.5] }
-          : { from: [0.74, 0.26, 2.0], to: [0.75, 0.25, 2.06] },
+        DRIFT,
+        CROP.S09[fmt],
       ),
       ambience: 'interior',
       contact: 3_000,
@@ -288,6 +383,7 @@ function blocks(fmt) {
         'chegada: interior da Azzura Home aberto ao mar (K-AZ-i)',
         PLACA_LITORAL,
         PUSH,
+        CROP.S10[fmt],
       ),
       ambience: 'mar',
       contact: 2_500,
@@ -304,11 +400,12 @@ function blocks(fmt) {
         asset: 'S17b',
         what: 'família na piscina ao pôr do sol (imagem aprovada da campanha)',
         dissolve: 500,
-        // 16:9: recorte da largura inteira (família, pôr do sol e casa) e aproximação lenta. 9:16: imagem inteira na
-        // largura, com céu e água estendidos (S17b-9x16.png), e aproximação lenta. Nenhum rosto ou corpo cortado.
+        // 16:9: recorte da largura inteira (família, pôr do sol e casa) e aproximação lenta. 9:16 provisório: a imagem
+        // inteira, nítida, emoldurada no Moroccan Blue da assinatura (S17b-9x16.png), sem extensão artificial, até a
+        // versão 9:16 editada no ChatGPT. Nenhum rosto ou corpo cortado.
         move:
           fmt === '9x16'
-            ? { from: [0.5, 0.5, 1.0], to: [0.5, 0.528, 1.06] }
+            ? { from: [0.5, 0.5, 1.0], to: [0.5, 0.5, 1.05] }
             : { from: [0.5, 0.5, 1.0], to: [0.48, 0.5, 1.06], anchor: [0.5, 0.547] },
         placeholder: {
           neutral: true,

@@ -50,7 +50,7 @@ function percentHalfUp(cents, percent) {
   return Math.floor((cents * percent + 50) / 100);
 }
 
-/** 01 §24 — Luxchange Fee (rótulo comercial na tela: "Taxa de intermediação") = maior entre o percentual do PRL do período e o mínimo (BR-230, BR-231). */
+/** 01 §24 — Luxchange Fee (rótulo comercial na tela: "Taxa de intercâmbio") = maior entre o percentual do PRL do período e o mínimo (BR-230, BR-231). */
 export function luxchangeFee(prlPeriodCents, params) {
   return Math.max(percentHalfUp(prlPeriodCents, params.feePercent), params.feeMinimumCents);
 }

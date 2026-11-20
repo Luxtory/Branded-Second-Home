@@ -1,5 +1,6 @@
 // Assinatura do filme: exclusivamente o momento da marca. Logo oficial do manifest, sempre <img> e com o arquivo
-// intacto (sha256 conferido em prototype.test.mjs): vertical Warm Sand sobre Dark Moroccan Blue (superfície `deep`),
+// intacto (sha256 conferido em prototype.test.mjs): vertical Warm Sand sobre Moroccan Blue #0F4E67 (superfície `blue` do
+// DS, decisão da Luxtory de 2026-11-20; Warm Sand sobre Blue/Deep é permitido em docs/specs/design-system.md),
 // e a frase "Seja protagonista de histórias extraordinárias." (corte da headline aprovada do Hero, D-B2C-19, a
 // confirmar pela Luxtory). Nenhum aviso, texto técnico ou informação comercial no encerramento: as ressalvas do filme
 // ficam onde fazem sentido (ROTEIRO.md §5). A logo entra só em opacidade (900 ms, duration.cinematic), sem
@@ -11,7 +12,7 @@ export const DURATION = 6_000;
 export function build(stage, fmt) {
   stage.insertAdjacentHTML(
     'beforeend',
-    `<section class="demo-card demo-card--endcard" id="endcard" data-surface="deep" aria-label="Assinatura Luxtory">
+    `<section class="demo-card demo-card--endcard" id="endcard" data-surface="blue" aria-label="Assinatura Luxtory">
       <img class="demo-endcard__logo" id="endcard-logo" src="/src/design-system/brand/logo/${LOGO.file}" alt="Luxtory" width="1176" height="542">
       <p class="lx-closing" id="endcard-line">${TAGLINE}</p>
     </section>`,

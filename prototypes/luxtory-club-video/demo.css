@@ -760,7 +760,7 @@ body {
   inset-inline: var(--lx-space-4);
 }
 
-/* Assinatura: cartão de quadro inteiro na superfície deep, sem borda nem sombra; só a logo oficial (arquivo do manifest
+/* Assinatura: cartão de quadro inteiro na superfície blue (Moroccan Blue, v8.3), sem borda nem sombra; só a logo oficial (arquivo do manifest
    como <img>, tamanho por largura, proporção preservada) e a frase, centradas como um bloco. */
 [data-fmt] .demo-card.demo-card--endcard {
   inset: 0;
