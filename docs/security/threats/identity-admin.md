@@ -172,3 +172,20 @@ flowchart LR
 
 - OWASP ASVS V2 (autenticação), V3 (sessão), V4 (controle de acesso).
 - `03`: TECH-050, TECH-051, TECH-052, TECH-092, TECH-100, ADR-002.
+
+## W15 — Membership (E1 + E2, 2026-11-19, PR draft)
+
+Superfície nova no banco (E2): `app.membership` e `app.membership_transition`, com gatilhos de procedência, transição e
+titularidade e leitura do Titular por RLS ([ADR-0031](../../adr/0031-membership-estado-historico-e-elegibilidade-no-executor.md)).
+Contrato das quatro rotas Admin no OpenAPI (E1); rotas, Server Actions e telas chegam na E3/E4, que revisam esta seção.
+Nenhum secret, Environment ou capability novo; nada em Production.
+
+| Ameaça | Mitigação | Teste / prova |
+|---|---|---|
+| T-1501 Elevation — servidor ou SQL direto com a credencial do `luxtory_app` cria ou muda Membership sem Admin | Gatilho exige operação `pending` da transação, do command da transição, sem Second Home nem party, e atribuição Admin ativa revalidada com trava compartilhada; autor/autoridade/instante derivados da operação e do banco. Residual: forjar operação citando uma atribuição Admin ativa real (o banco não autentica a sessão) — igual à W14 | `membership.db.test.ts` (procedência, Titular, Admin revogada, operação reusada) |
+| T-1502 Tampering — reescrever histórico, autor, instante ou party; apagar Membership | Privilégio por coluna (só `state`, `basis`, `operation_id`); histórico só SELECT para o app e escrito por gatilho; gatilhos `forbid_change`; down recusa com linhas | `membership.db.test.ts` (privilégios, dono, rollback) |
+| T-1503 Tampering — transição fora da TECH-055 ou segundo Membership | Gatilho de transição + CHECK do histórico; `conflict_membership_party`; mudanças concorrentes em série pela trava de linha | corridas de ativação e de suspensão |
+| T-1504 Elevation — Membership para party que não é Titular | D2 no gatilho: `active` só com holding vigente no instante | party sem holding; holding encerrada |
+| T-1505 Information disclosure — base, autor ou histórico expostos ao Titular; Membership de outra party | RLS por delegação vigente; SELECT por coluna (`id`, `party_id`, `state`, `changed_at`); histórico ilegível | leitura com vizinho e delegação revogada |
+| T-1506 Tampering — Membership altera direitos ou uso próprio | Nenhuma FK/gatilho para holding, Ação, Direito de Uso, rotação, reserva ou custódia; catálogo anterior intacto | impressão digital do schema `app`; preservação do catálogo; reserva com Membership suspenso/encerrado |
+| T-1507 Denial of service — verificação de elegibilidade segurando a suspensão | `FOR SHARE` curto, na ordem da TECH-053, até o commit; timeout de trava do executor (E3) | ação × suspensão com espera de trava |

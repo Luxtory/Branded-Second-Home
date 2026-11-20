@@ -113,7 +113,7 @@ Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 | 12 | Reserva de uso próprio | booking | REQ-034, REQ-035, REQ-037, PD-002, INV-1 | 11 | — | R2 | ⬜ → próxima executável (W11 ✅ em 2026-10-30); ainda não iniciada → ✅ concluída como infraestrutura implantada com as reservas desativadas (#78, squash `57015e1`, 2026-11-02; 3 migrations aplicadas, 55 no total; `app.capability_activation` vazia; nenhuma reserva real autorizada) |
 | 13 | Cancelamento, no-show, recuperação e exceção | booking, inventory | REQ-080, REQ-081, REQ-083, REQ-084, PD-010 | 12 | — | R2 | ⬜ → próxima executável (W12 ✅ em 2026-11-02, reservas desativadas); ainda não iniciada · E0 documental em PR draft (2026-11-03); E1 não autorizada → em andamento: E0 concluída (#80, squash `5d9b636`, 2026-11-03; `02` v4.4 e `03` v3.16 emitidos); E1 autorizada pelo fundador em 2026-11-03 só em ambiente isolado (PR draft, sem merge, sem Production) → E1 concluída (#82, squash `26dd58d`, 2026-11-04; 4 migrations em Production, 59/0; ativação 0 linhas); E2 autorizada pelo fundador em 2026-11-05 (plano v2 auditado; PR draft, sem merge, sem Production, sem ativação) → E2 concluída (#83, squash `65223a9`, 2026-11-05; sem migration; K1/K2 fechadas) · **bloqueio B-A3** (2026-11-05): nenhuma ativação de reserva (K1, K2), recuperação (`recover_future_capacity`) ou autorização independente (senha, Environment ou uso do papel `luxtory_booking_authorizer`) antes de a correção da origem P-A na recuperação estar integrada na `main`, aplicada pela CI e validada (correção em PR draft) → B-A3 resolvido tecnicamente (#84, squash `afa2d12`, 2026-11-05; Production 60/0, validada somente leitura; ativação segue não autorizada) · E3 autorizada em 2026-11-05 só em branch isolada e PR draft → E3 concluída (#88, squash `dbb4ac6`, 2026-11-05; crons em Production, ativação 0) · E4a aprovada como referência visual (2026-11-06) · E4b autorizada em 2026-11-06 só em branch isolada e PR draft → E4b concluída (#92, squash `caa699c`, 2026-11-18; Production, nada ativado) · E5 autorizada em 2026-11-18 só em branch isolada, sandbox de teste e PR draft → ✅ implementação concluída (#96, squash `01ca51b`, 2026-11-18; E0–E7 cumpridas; nada ativado: K1/K2 fechadas; ativação depende de T-1320, T-1323, configuração real do autorizador, M1/T-1314 e decisão do fundador) |
 | 14 | Seleção Luxtory, parâmetros e convidados | calendar, admin, booking | REQ-016, REQ-036, REQ-092, REQ-095 | 12 | — | R2 | ⬜ |
-| 15 | Membership | identity | REQ-011, REQ-050, PD-001 | 7 | — | R3 | ⬜ |
+| 15 | Membership | identity | REQ-011, REQ-050, PD-001 | 7 | — | R3 | ⬜ → 🔄 em execução (plano aprovado em 2026-11-19, D1–D4; [`w15-membership.md`](w15-membership.md)): E0 + E1 + E2 em PR draft, parada obrigatória no C1; E3 só com novo GO |
 | 16 | PRL, parâmetros econômicos e snapshot | pricing | REQ-013, REQ-052 | 10, 14 | — | R3 | ⬜ |
 | 17 | Créditos e Carteira | credits | REQ-053, REQ-054, PD-008, INV-6 | 15 | — | R3 | ⬜ |
 | 18 | Políticas comerciais | pricing | REQ-082, REQ-104, PD-009 | 16 | — | R3 | ⬜ |
@@ -1265,6 +1265,15 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   mudar o Membership não cria nem altera Taxa, despesas, Ação, Direito de Uso ou rotação` · `[REQ-032] plano não
   altera janela nem rotação` · `[TECH-055] transição inválida → ERR_STATE_TRANSITION`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-011,REQ-050,PD-001 exits 0, stop after 4 tries`
+- **Execução (2026-11-19): E0 + E1 + E2 em PR draft, parada no C1.** Plano aprovado pelo fundador e pela auditoria
+  independente: [`w15-membership.md`](w15-membership.md), [ADR-0031](../adr/0031-membership-estado-historico-e-elegibilidade-no-executor.md).
+  Decisões: D1 sem `membership_plan_version`; D2 só party Titular (holding vigente) ativa ou reativa — decisão de
+  elegibilidade da W15, Membership da party e nunca da holding; D3 sem cobrança, validade, renovação ou job; D4 sem
+  capability nova, nenhum Membership real em Production sem autorização operacional expressa. API: rotas
+  `POST /v1/admin/parties/{id}/membership/{activate|suspend|reactivate|end}` (a "…/memberships…" do escopo) + Server
+  Actions sobre os mesmos handlers. Verificação de elegibilidade no executor (E3), com obrigação futura de verificar as
+  duas parties no aceite de Request (REQ-064). Cobertura parcial: Taxa/despesas do REQ-050 só estrutural (`03` §15;
+  Taxa como parâmetro na W16); Créditos na W17; fechamento de Request na W21/W22. Migration: 64 no total.
 
 ### Wave 16 — PRL, parâmetros econômicos e snapshot
 

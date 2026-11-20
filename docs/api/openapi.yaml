@@ -297,6 +297,202 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
+  /admin/parties/{id}/membership/activate:
+    post:
+      tags: [admin, identity]
+      summary: Ativa o Membership da party (∅ → active)
+      description: |
+        Operação não crítica `activate_membership` (REQ-095, W15; ADR-0031), papel Admin com MFA, com a base. Um
+        Membership por party (PD-001): já existente, em qualquer estado → 409 `ERR_STATE_TRANSITION` (o encerrado volta
+        por `reactivate`). Só party com holding vigente no instante entra em `active` (D2) → senão 409
+        `ERR_STATE_TRANSITION`. Party inexistente → 404. Sem plano, preço ou cobrança. `Origin` diferente do host → 403
+        (TECH-100).
+      operationId: activateMembership
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipChangeRequest'
+      responses:
+        '201':
+          description: Membership ativo
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membership'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/parties/{id}/membership/suspend:
+    post:
+      tags: [admin, identity]
+      summary: Suspende o Membership da party (active → suspended)
+      description: |
+        Operação não crítica `suspend_membership` (REQ-095, W15), papel Admin com MFA, com a base. Efeito prospectivo
+        (BR-320): não desfaz reservas, Direito de Uso, rotação nem compromissos (BR-321); uso próprio continua (BR-147).
+        Sem Membership → 404; estado diferente de `active` → 409 `ERR_STATE_TRANSITION`. `Origin` diferente do host →
+        403 (TECH-100).
+      operationId: suspendMembership
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipChangeRequest'
+      responses:
+        '200':
+          description: Membership suspenso
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membership'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/parties/{id}/membership/reactivate:
+    post:
+      tags: [admin, identity]
+      summary: Reativa o Membership da party (suspended | ended → active)
+      description: |
+        Operação não crítica `reactivate_membership` (REQ-095, W15), papel Admin com MFA, com a base. Reusa o mesmo
+        Membership (nunca um segundo). Só party com holding vigente no instante volta a `active` (D2). Sem Membership →
+        404; estado `active` ou party sem holding vigente → 409 `ERR_STATE_TRANSITION`. `Origin` diferente do host → 403
+        (TECH-100).
+      operationId: reactivateMembership
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipChangeRequest'
+      responses:
+        '200':
+          description: Membership ativo de novo
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membership'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/parties/{id}/membership/end:
+    post:
+      tags: [admin, identity]
+      summary: Encerra o Membership da party (active | suspended → ended)
+      description: |
+        Operação não crítica `end_membership` (REQ-095, W15), papel Admin com MFA, com a base (a não renovação pode ser
+        a base; não há expiração automática). Efeito prospectivo (BR-320, BR-321). Sem Membership → 404; já `ended` →
+        409 `ERR_STATE_TRANSITION`. `Origin` diferente do host → 403 (TECH-100).
+      operationId: endMembership
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipChangeRequest'
+      responses:
+        '200':
+          description: Membership encerrado
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membership'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
   /admin/brand-partners:
     post:
       tags: [admin, catalog]
@@ -3510,6 +3706,46 @@ components:
           format: date-time
         revocation_basis:
           type: [string, 'null']
+    MembershipChangeRequest:
+      type: object
+      additionalProperties: false
+      required: [basis]
+      description: Base registrada da mudança (TECH-051), sem dado pessoal.
+      properties:
+        basis:
+          type: string
+          minLength: 1
+          maxLength: 255
+    Membership:
+      type: object
+      additionalProperties: false
+      required: [id, party_id, state, basis, changed_at, operation_id, created_at]
+      description: |
+        Membership da party (`03` §3.1, W15; ADR-0031): um por CPF/CNPJ, condição da party e nunca papel. Estados da
+        TECH-055 — `active` (Vigente), `suspended` (Suspenso), `ended` (Encerrado). Sem plano, preço, benefício, prazo
+        ou cobrança. Elegível para os mecanismos do Club = `active`. `changed_at` é o instante do banco na última
+        mudança; `basis`, a base registrada dessa mudança.
+      properties:
+        id:
+          type: string
+          format: uuid
+        party_id:
+          type: string
+          format: uuid
+        state:
+          type: string
+          enum: [active, suspended, ended]
+        basis:
+          type: string
+        changed_at:
+          type: string
+          format: date-time
+        operation_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
     TextList:
       type: array
       minItems: 1
