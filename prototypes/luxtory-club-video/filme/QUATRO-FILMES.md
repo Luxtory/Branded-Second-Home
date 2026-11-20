@@ -113,6 +113,8 @@ Conferência antes de aprovar:
 - rosto, expressão, pose e roupa dos quatro idênticos ao original, sobrepondo os dois;
 - nenhuma mão ou dente alterado;
 - arquitetura branca, com vidro e madeira escura;
+- no 2:3, céu e água contínuos, sem espelhamento nem emenda visível, e os quatro com o mesmo tamanho em relação à
+  largura;
 - se algum rosto mudar, a edição é rejeitada, mesmo que pareça fotorrealista.
 
 O 3:2 recortado para 16:9 e o 2:3 recortado para 9:16 ampliam ≈ 1,25×, dentro do limite de 1,35×.
@@ -123,7 +125,9 @@ O 3:2 recortado para 16:9 e o 2:3 recortado para 9:16 ampliam ≈ 1,25×, dentro
 - trilha (Pixabay);
 - narração da equipe;
 - revisão comercial e jurídica de "Taxa de intercâmbio";
-- aprovação comercial do prazo de 48 h.
+- aprovação comercial do prazo de 48 h;
+- licenças de cada asset definitivo registradas em `out/entrada/direitos.csv`;
+- Direct: o cartão de Créditos repete o saldo (número grande e legenda), a corrigir na passada do Direct.
 
 ## v8.2: revisão final da Request e continuidade
 
