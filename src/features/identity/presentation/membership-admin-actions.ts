@@ -21,7 +21,8 @@ const field = (form: FormData, name: string): string => {
   return typeof value === 'string' ? value : '';
 };
 
-const isAction = (value: string): value is MembershipAction => value in HANDLER_FOR;
+// Só as chaves próprias das quatro ações: `in` aceitaria herdadas do protótipo (`constructor`, `toString`, `__proto__`).
+const isAction = (value: string): value is MembershipAction => Object.hasOwn(HANDLER_FOR, value);
 
 /**
  * Mudança do Membership pelo Admin (W15): a mesma entrada da API — o executor autoriza (papel Admin, AAL2, atribuição

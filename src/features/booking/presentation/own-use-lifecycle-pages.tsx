@@ -35,6 +35,7 @@ import {
   periodRange,
   shortDate,
   shortInstantIn,
+  timeZoneLabel,
 } from './own-use-lifecycle-format';
 import {
   readTitularBooking,
@@ -706,15 +707,21 @@ export async function TitularNotificationsListPage() {
     const home =
       typeof data.second_home_id === 'string' ? homes.get(data.second_home_id) : undefined;
     const timeZone = home?.timezone ?? rows.homes[0]?.timezone ?? 'UTC';
+    // Aviso sem Second Home (ex.: Membership, da party — W15): o fuso usado não aparece no aviso, então o horário leva o
+    // fuso explícito ("BRT", "UTC"). Avisos de reserva seguem no fuso da Second Home exibida, como antes.
+    const zone = (at: Date) => (home === undefined ? ` ${timeZoneLabel(at, timeZone)}` : '');
     const bookingId = typeof data.booking_id === 'string' ? data.booking_id : undefined;
     const copy = notificationCopy(row.kind, data, {
       date: fullDate,
       instant: (iso) => {
         const at = new Date(iso);
-        return Number.isNaN(at.getTime()) ? '—' : instantIn(at, timeZone).replace(/^[^,]*, /, '');
+        return Number.isNaN(at.getTime())
+          ? '—'
+          : `${instantIn(at, timeZone).replace(/^[^,]*, /, '')}${zone(at)}`;
       },
     });
-    const received = shortInstantIn(new Date(row.created_at), timeZone);
+    const createdAt = new Date(row.created_at);
+    const received = `${shortInstantIn(createdAt, timeZone)}${zone(createdAt)}`;
     return {
       id: row.id,
       ...(bookingId === undefined ? {} : { href: ownUsePaths.booking(bookingId) }),

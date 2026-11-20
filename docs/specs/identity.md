@@ -645,3 +645,7 @@ recusada; representante de CNPJ vê o Membership da CNPJ; delegação revogada �
 - **Rotas.** `afterCommit` injetável como nas da W7 (o disparo do outbox pós-resposta usa `after()` do Next).
 - **Leituras.** Admin: Membership e histórico na leitura auditada `party`. Titular: estado das parties representadas
   pela RLS, na mesma transação da Área.
+- **Auditoria do C2 (2026-11-20).** A Server Action só aceita as quatro ações próprias (`Object.hasOwn`; `in` aceitaria
+  chaves herdadas do protótipo, que chegariam ao executor e virariam 500). Na central, avisos sem Second Home (o do
+  Membership é da party) mostram o horário com o fuso explícito ("BRT", "UTC"): o fuso usado — o da primeira Second Home
+  visível, ou UTC sem nenhuma — não aparece no aviso; avisos de reserva seguem no fuso da Second Home exibida.

@@ -94,6 +94,8 @@ test.describe('W15 E4 — Membership: Admin e Área do Titular', () => {
       'Membership encerrado',
     ])
       await expect(titular.getByText(title, { exact: true })).toBeVisible();
+    // Aviso da party, sem Second Home: o horário traz o fuso explícito.
+    await expect(titular.getByText(/passou a Encerrado em .+ BRT\./)).toBeVisible();
     await gate(titular, titularErrors, 'w15-07-titular-notificacoes');
     await titular.goto(`/titular/representacoes/${acquirer}`);
     await expect(section).toContainText('Encerrado');

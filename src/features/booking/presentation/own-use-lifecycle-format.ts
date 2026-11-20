@@ -71,6 +71,15 @@ export function instantIn(at: Date, timeZone: string): string {
   return `${parts.weekday}, ${parts.day}/${parts.month}/${parts.year} às ${parts.hour}:${parts.minute}`;
 }
 
+/** Nome curto do fuso no instante ("BRT", "UTC"), para horários cujo fuso não é dado pela tela (W15). */
+export function timeZoneLabel(at: Date, timeZone: string): string {
+  return (
+    new Intl.DateTimeFormat(LOCALE, { timeZone, timeZoneName: 'short' })
+      .formatToParts(at)
+      .find((part) => part.type === 'timeZoneName')?.value ?? timeZone
+  );
+}
+
 /** Instante curto no fuso da Second Home: "20/11/2026 10:42". */
 export const shortInstantIn = (at: Date, timeZone: string) =>
   new Intl.DateTimeFormat(LOCALE, {
