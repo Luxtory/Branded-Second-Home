@@ -14,6 +14,29 @@
 > Pessoas, Second Homes, datas e valores são ilustrativos. Os oito masters só são gerados depois da aprovação deste
 > checkpoint, e nada é publicado antes da validação de direitos, das condições comerciais e da prontidão do produto.
 
+## v8.4: refinamento de direção (prévia técnica provisória)
+
+**Feito no código e na prévia:**
+- **Som:** só efeitos de operação. São toque em botão e data, revalidação, depósito confirmado, envio e reserva
+  confirmada, com picos medidos de −24 a −14 dBFS. Não há mar, vento, sala, acorde longo nem resolução, e a assinatura
+  termina em silêncio. O áudio de efeitos esparsos não é normalizado para −20 LUFS.
+- **Prazo:** a solicitação recebida usa o prazo derivado da simulação (48 h) na interface e na EDL.
+- **Prévia limpa sem marcas:** etiqueta interna e ressalva saem da imagem e vão para a tarja da cópia de revisão.
+- **Cartões:**
+  - a solicitação recebida começa compacta e cresce até a revalidação em 480 ms;
+  - na confirmação, os dois resultados têm a mesma estrutura e aparecem juntos (par centrado no 16:9, bloco no 9:16);
+  - no 16:9, o controle da complementação fica no mesmo eixo do calendário.
+
+**Depende de imagens novas** (prompts em `IMAGENS-MESTRAS.md`):
+- fotografia consistente da Azzura e da Satori;
+- família em 16:9 sem ampliação de 1,62×;
+- família em 9:16 ocupando o quadro inteiro.
+
+A moldura Moroccan Blue segue como placeholder interno e não é master.
+
+**Critério de completude a decidir:** `preflightFinal()` ainda exige voz e trilha. Se a campanha for só com efeitos de
+operação, o critério muda nessa decisão. Continuam obrigatórios: assets aprovados, licenças e regras comerciais.
+
 ## v8.3: correções obrigatórias antes dos quatro filmes
 
 **Imagem da família: proveniência conferida.** O arquivo usado no encerramento é o enviado pela Luxtory, sem
