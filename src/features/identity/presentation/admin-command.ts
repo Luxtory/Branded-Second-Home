@@ -43,7 +43,11 @@ import { withAuth } from './server-auth';
  */
 export interface AdminCommand<I, R extends JsonValue> {
   readonly handler: CommandHandler<I, R, DatabaseTransaction>;
-  readonly role: StaffRole;
+  /**
+   * Papel exercido. Uma lista (W16: PRL inicial, Admin ou Super Admin — TECH-051) é ordem de preferência: vale o primeiro
+   * papel ativo do usuário, registrado na `operation` como qualquer papel explícito; sem nenhum, o guard nega.
+   */
+  readonly role: StaffRole | readonly StaffRole[];
   /** Optional server policy after the guard and before idempotency; existing commands do not opt in (ADR-0021). */
   assertAvailable?(): void | Promise<void>;
 }
@@ -70,9 +74,10 @@ async function runAdminCommand<I, R extends JsonValue>(
   { source, clock = systemClock, database = () => getDatabase(source) }: AdminCommandDependencies,
 ): Promise<AdminCommandResult<R>> {
   if (session === null) return { status: 'unauthenticated' };
+  const staff = createPostgresStaffDirectory(database);
   const guard = createAuthorizationGuard({
     session,
-    staff: createPostgresStaffDirectory(database),
+    staff,
     grants: createPostgresGrantDirectory(database),
     delegations: createPostgresDelegationDirectory(database),
     clock,
@@ -88,8 +93,12 @@ async function runAdminCommand<I, R extends JsonValue>(
             await command.handler.assertAvailable?.();
           },
         };
+  const role =
+    typeof command.role === 'string'
+      ? command.role
+      : await preferredActiveRole(command.role, session.userId, staff, clock);
   return executor.execute(handler, {
-    actor: { kind: 'user', userId: session.userId, actingPartyId: null, role: command.role },
+    actor: { kind: 'user', userId: session.userId, actingPartyId: null, role },
     idempotencyKey: call.idempotencyKey,
     correlationId: call.correlationId,
     input: call.input,
@@ -97,6 +106,17 @@ async function runAdminCommand<I, R extends JsonValue>(
 }
 
 // A sessão já foi renovada pelo `proxy.ts`; aqui os cookies só são lidos. Só os headers: o corpo fica intacto.
+/** Primeiro papel da lista com atribuição ativa; sem nenhum, o primeiro (o guard nega com ERR_PERMISSION). */
+async function preferredActiveRole(
+  roles: readonly StaffRole[],
+  userId: string,
+  staff: ReturnType<typeof createPostgresStaffDirectory>,
+  clock: Clock,
+): Promise<StaffRole> {
+  const active = await staff.activeRoles(userId, clock.now());
+  return roles.find((role) => active.some((record) => record.role === role)) ?? roles[0]!;
+}
+
 function requestCookies(request: Request): CookieJar {
   const cookies = new NextRequest(request.url, { headers: request.headers }).cookies;
   return { getAll: () => cookies.getAll(), setAll: () => undefined };

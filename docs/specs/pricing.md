@@ -1,6 +1,6 @@
 # Spec: pricing
 
-- **Status**: W16 — E1/E2 em PR draft (C1); E3/E4 após GO
+- **Status**: W16 — E1/E2 aprovadas no C1; E3/E4 em PR draft (C2)
 - **Owner**: módulo `pricing` (TECH-011)
 - **IDs**: REQ-013, REQ-052 (dona, W16); TECH-030, TECH-031, TECH-033; complementos REQ-095, TECH-001, TECH-051,
   TECH-052, TECH-053, TECH-056
@@ -62,8 +62,11 @@ Admin e Super Admin (MFA, TECH-050). O Titular não lê PRL na W16.
 - Recusas: entrada → `ERR_VALIDATION`; papel → `ERR_PERMISSION`; Second Home inexistente → `ERR_NOT_FOUND`; noite não
   selada, publicada (no inicial), não publicada (na alteração), início retroativo ou não posterior →
   `ERR_STATE_TRANSITION`.
-- Auditoria: um registro por publicação (tipo, início, quantidade de noites, primeira e última noite; na alteração, as
-  versões substituídas). Leitura do histórico pelo Admin registrada (TECH-092).
+- Auditoria: um registro por publicação (tipo, início, quantidade de noites, primeira e última noite, base; na
+  alteração, a quantidade de noites substituídas — as versões anteriores seguem no histórico imutável de
+  `app.prl_version`). Leitura do histórico pelo Admin registrada (TECH-092).
+- Papel exercido (ADR-0008): a alteração exerce `super_admin`; a publicação inicial exerce o primeiro papel ativo de
+  `admin`, `super_admin` (lista em ordem de preferência na entrada única do Admin), registrado na operação.
 - Sem evento nem notificação (REQ-097 não os lista).
 
 ### HTTP API (TECH-056, D2)
@@ -96,8 +99,11 @@ EconomicTerms {
 }
 ```
 
-- Resolvido dentro da transação do command, na ordem de travas (`parameter` compartilhada, depois `prl`
-  compartilhada). Os ids apontam versões imutáveis.
+- Resolvido dentro da transação do command (`resolveEconomicTerms`, `pricing/application/economic-terms.ts`): travas
+  compartilhadas dos parâmetros globais em ordem crescente de chave, depois a do PRL (tomada por
+  `app.prl_period_in_force`, que lê o instante do banco depois dela); sem período, `clock_timestamp()` depois das
+  travas. Todos os parâmetros são consultados nesse mesmo instante. As travas seguem até o fim da transação. Os ids
+  apontam versões imutáveis.
 - **Obrigação futura (rastreável):** a primeira wave que produzir o efeito econômico persiste o snapshot com FK para
   as versões usadas, na mesma transação do efeito: W17 (validade do lote), W19 (Fee), W20 (Créditos do depósito), W21
   (Request — PD-007, EC-9), W23 (Luxplus). Até lá o REQ-052 não é declarado integralmente coberto.

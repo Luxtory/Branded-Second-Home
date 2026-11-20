@@ -8,7 +8,10 @@ import {
 } from '@/features/platform';
 import {
   GUEST_RULES_MAX_LENGTH,
+  isEconomicParameterKey,
+  isEconomicParameterValue,
   PARAMETER_KEYS,
+  parameterCurrency,
   successorConflict,
   type ParameterKey,
   type ParameterVersion,
@@ -18,7 +21,8 @@ const instant = z.iso.datetime({ offset: true });
 
 export const setParameterInput = z
   .strictObject({
-    second_home_id: z.uuid(),
+    /** Só `guest_rules` é por Second Home; as chaves econômicas são globais (`null`, ADR-0032 §6). */
+    second_home_id: z.uuid().nullable(),
     key: z.enum(PARAMETER_KEYS),
     value: z.string().trim().min(1).max(GUEST_RULES_MAX_LENGTH),
     /** Sem início: vale no instante da gravação, carimbado pelo banco. */
@@ -27,6 +31,15 @@ export const setParameterInput = z
     /** Base registrada (TECH-051): referência não pessoal a um registro verificável. */
     basis: z.string().trim().min(1).max(255).refine(isNonPersonalReference),
   })
+  .refine((input) => (input.key === 'guest_rules') === (input.second_home_id !== null), {
+    path: ['second_home_id'],
+    message: 'parameterScope',
+  })
+  .refine(
+    (input) =>
+      !isEconomicParameterKey(input.key) || isEconomicParameterValue(input.key, input.value),
+    { path: ['value'], message: 'parameterValue' },
+  )
   .refine(
     (input) =>
       input.effective_to === null ||
@@ -47,8 +60,9 @@ export type SetParameterResult = {
 export interface ParameterDraft {
   readonly id: string;
   readonly key: ParameterKey;
-  readonly secondHomeId: string;
+  readonly secondHomeId: string | null;
   readonly value: string;
+  readonly currency: 'BRL' | null;
   readonly effectiveFrom: Date | null;
   readonly effectiveTo: Date | null;
   readonly authority: string;
@@ -59,9 +73,9 @@ export interface ParameterDraft {
 
 export interface ParameterStore<Tx> {
   secondHomeExists(tx: Tx, secondHomeId: string): Promise<boolean>;
-  /** Trava exclusiva do escopo (`app.parameter:<chave>:<Second Home>`, a mesma do gatilho). */
-  lockScope(tx: Tx, key: ParameterKey, secondHomeId: string): Promise<void>;
-  latest(tx: Tx, key: ParameterKey, secondHomeId: string): Promise<ParameterVersion | null>;
+  /** Trava exclusiva do escopo (`app.parameter:<chave>:<Second Home | global>`, a mesma do gatilho). */
+  lockScope(tx: Tx, key: ParameterKey, secondHomeId: string | null): Promise<void>;
+  latest(tx: Tx, key: ParameterKey, secondHomeId: string | null): Promise<ParameterVersion | null>;
   /** Grava a versão; devolve o início efetivo (o do banco quando o início não foi informado). */
   insert(tx: Tx, draft: ParameterDraft): Promise<Date>;
 }
@@ -83,17 +97,23 @@ export function createSetParameterHandler<Tx>(
     command: 'set_parameter',
     input: setParameterInput,
     secondHomeId: (input) => input.second_home_id,
-    scope: (input) => ({ type: 'second_home', id: input.second_home_id }),
+    scope: (input) =>
+      input.second_home_id === null
+        ? { type: 'parameter', id: input.key }
+        : { type: 'second_home', id: input.second_home_id },
     async execute(context) {
       const { input, tx, actor } = context;
       await deps.assertAdmin(tx, actor, context.authorizationRef);
       if (actor.kind !== 'user') throw new CommandRejection('ERR_PERMISSION');
-      if (!(await deps.store.secondHomeExists(tx, input.second_home_id)))
+      if (
+        input.second_home_id !== null &&
+        !(await deps.store.secondHomeExists(tx, input.second_home_id))
+      )
         throw new CommandRejection('ERR_NOT_FOUND');
-      for (const [key, home] of context.locks.claim('parameter', [
-        [input.key, input.second_home_id],
+      for (const [key] of context.locks.claim('parameter', [
+        [input.key, input.second_home_id ?? 'global'],
       ]))
-        await deps.store.lockScope(tx, key as ParameterKey, home!);
+        await deps.store.lockScope(tx, key as ParameterKey, input.second_home_id);
       const latest = await deps.store.latest(tx, input.key, input.second_home_id);
       const requested = input.effective_from === null ? null : new Date(input.effective_from);
       const effectiveTo = input.effective_to === null ? null : new Date(input.effective_to);
@@ -111,6 +131,7 @@ export function createSetParameterHandler<Tx>(
         key: input.key,
         secondHomeId: input.second_home_id,
         value: input.value,
+        currency: parameterCurrency(input.key),
         effectiveFrom: requested,
         effectiveTo,
         authority: actor.role,
@@ -127,7 +148,10 @@ export function createSetParameterHandler<Tx>(
           second_home_id: input.second_home_id,
           effective_from: effectiveFrom.toISOString(),
           effective_to: effectiveTo?.toISOString() ?? null,
-          value_length: input.value.length,
+          // Texto de regras: só o tamanho; valor econômico (não pessoal): o valor canônico e a moeda.
+          ...(isEconomicParameterKey(input.key)
+            ? { value: input.value, currency: parameterCurrency(input.key) }
+            : { value_length: input.value.length }),
           basis: input.basis,
         },
       });
