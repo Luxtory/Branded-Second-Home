@@ -138,7 +138,11 @@ O 3:2 recortado para 16:9 e o 2:3 recortado para 9:16 ampliam ≈ 1,25×, dentro
 - o mar sai em 1,8 s sob a assinatura e termina depois de a resolução entrar, sem silêncio digital no meio;
 - fade final até o silêncio dentro do filme;
 - moldura do 9:16 e fundo da assinatura com o mesmo valor decodificado: o dissolve não mostra emenda;
-- nenhuma etiqueta interna sobre a família ou a assinatura;
+- nenhuma etiqueta interna sobre a família ou a assinatura: a etiqueta termina de sair 280 ms antes do dissolve da
+  família (antes começava a sair junto com ele e aparecia sobre a imagem por ~300 ms);
+- cortes entre ambientes diferentes com cruzamento de 300 ms centrado no corte, sem buraco nem clique;
+- arquivos publicados de forma atômica: cada execução codifica num `.parcial-<pid>.mp4`, decodifica o arquivo inteiro,
+  valida e só então renomeia;
 - frase da assinatura com 9,11:1 de contraste.
 
 Sem narração definitiva e sem trilha, a sincronia só pode ser conferida para efeitos e legenda-guia. Por isso a prévia
