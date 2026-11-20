@@ -555,6 +555,31 @@ export interface AppLuxtoryLegalIdentity {
   singleton: Generated<boolean>;
 }
 
+export interface AppMembership {
+  authority: string;
+  basis: string;
+  changed_at: Timestamp;
+  changed_by: string;
+  created_at: Timestamp;
+  created_operation_id: string;
+  id: string;
+  operation_id: string;
+  party_id: string;
+  state: string;
+}
+
+export interface AppMembershipTransition {
+  authority: string;
+  basis: string;
+  from_state: string | null;
+  membership_id: string;
+  operation_id: string;
+  party_id: string;
+  recorded_at: Timestamp;
+  recorded_by: string;
+  to_state: string;
+}
+
 export interface AppNotification {
   created_at: Timestamp;
   data: Json;
@@ -851,6 +876,8 @@ export interface DB {
   'app.investor_authorization': AppInvestorAuthorization;
   'app.luxtory_inventory': AppLuxtoryInventory;
   'app.luxtory_legal_identity': AppLuxtoryLegalIdentity;
+  'app.membership': AppMembership;
+  'app.membership_transition': AppMembershipTransition;
   'app.notification': AppNotification;
   'app.operation': AppOperation;
   'app.outbox': AppOutbox;
