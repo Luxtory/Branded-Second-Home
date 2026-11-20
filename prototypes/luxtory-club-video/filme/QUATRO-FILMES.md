@@ -40,12 +40,19 @@ a Azzura e os dois formatos não dependem de ampliação. Cada arquivo entra por
 
 | Second Home | Momentos | Placeholder atual |
 |---|---|---|
-| Azzura | escolha da estadia (banner e datas), solicitação recebida, confirmação | recortes sem pessoas da foto do litoral |
-| Satori | contexto de Helena: Créditos necessários, depósito, revisão, envio e espera | quatro recortes diferentes da foto da serra |
+| Azzura | escolha da estadia (banner e datas), Créditos necessários (S07, borda infinita), solicitação recebida, confirmação | recortes sem pessoas da foto do litoral |
+| Satori | contexto de Helena: complementação, depósito, revisão, envio e espera | quatro recortes diferentes da foto da serra |
 | Família (campanha) | encerramento | imagem aprovada |
 
-A troca de imóvel acontece uma vez, em "Do outro lado": a câmera sai de Helena na Satori e vai para quem recebe a
-solicitação, na Azzura.
+Duas trocas de imóvel, cada uma quando a história muda de lugar:
+1. Azzura → Satori na complementação, quando Helena passa às datas do próprio Direito de Uso. O depósito confirmado
+   nomeia o imóvel ("16/05/2027 · Satori Home").
+2. Satori → Azzura em "Do outro lado", para quem recebe a solicitação.
+
+Nenhum cartão com o nome "Azzura Home" aparece sobre foto da Satori como identificação do lugar. Na prévia final v8.3,
+o cartão de contexto "Azzura Home" do 16:9 ficava sobre a foto da serra durante "Créditos necessários". O plano passou
+para a S07 (Azzura). A revisão cita "Azzura Home · 04/06 a 07/06/2027" como destino da solicitação, logo depois de o
+depósito nomear a Satori.
 
 **Assinatura em Moroccan Blue (#0F4E67).** O cartão usa a superfície `blue` do Design System, que já existe, sem mudar
 o DS global. A regra que permite: "Logo: Warm Sand sobre Blue/Deep" (`docs/specs/design-system.md`).

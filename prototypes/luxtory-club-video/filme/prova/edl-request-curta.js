@@ -49,6 +49,11 @@ const CROP = {
       anchor: [0.574, 0.5],
     },
   },
+  // Borda infinita e mar, à esquerda da família da foto do litoral.
+  S07: {
+    '16x9': { from: [0.24, 0.55, 2.0], to: [0.27, 0.55, 2.0] },
+    '9x16': { from: [0.5, 0.58, 1.3], to: [0.5, 0.58, 1.34], anchor: [0.15, 0.5] },
+  },
   S05: {
     '16x9': { from: [0.45, 0.5, 1.25], to: [0.44, 0.5, 1.3], ease: 'smooth' },
     '9x16': { from: [0.5, 0.5, 1.0], to: [0.5, 0.5, 1.04], ease: 'smooth', anchor: [0.573, 0.5] },
@@ -165,7 +170,9 @@ function blocks(fmt) {
         after: 600,
         text: 'Se o saldo não bastar, você completa com datas do seu Direito de Uso — e o que sobrar fica para as próximas experiências.',
       },
-      shot: still('S05', 'Helena no terraço da Satori Home', PLACA_SERRA, PUSH, CROP.S05[fmt]),
+      // Ainda é a estadia na Azzura (o cartão de contexto do 16:9 diz "Azzura Home"): S07, a borda infinita. A troca
+      // para a Satori acontece no corte seguinte, quando Helena passa às datas do próprio Direito de Uso (v8.3).
+      shot: still('S07', 'borda infinita da Azzura Home', PLACA_LITORAL, DRIFT, CROP.S07[fmt]),
       ambience: 'vento',
       contact: 3_000,
     },
