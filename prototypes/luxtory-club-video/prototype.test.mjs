@@ -1068,7 +1068,8 @@ for (const fmt of ['16x9', '9x16']) {
       Math.abs(sig.at - family.from - 4_000) <= 250,
       `família por ${sig.at - family.from} ms`,
     );
-    assert.ok(edl.editorial.tagOut <= family.from, 'nada sobre a família');
+    // A etiqueta termina a saída (duration.moderate, 280 ms) antes de o dissolve da família começar.
+    assert.ok(edl.editorial.tagOut + 280 <= family.from, 'nada sobre a família, nem no dissolve');
     assert.ok(sig.fadeIn >= 700 && sig.fadeIn <= 1_000);
     // Depósito mínimo: a seleção da complementação é o menor depósito que cobre o que falta (16/05).
     const dep = depositScenario();

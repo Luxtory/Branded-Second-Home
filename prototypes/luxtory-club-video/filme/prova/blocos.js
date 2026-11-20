@@ -18,6 +18,7 @@ const BANNER_EDGE_MS = 300; // entrada e saída do banner dentro do bloco
 const BANNER_LINE_DELAY_MS = 120;
 const BANNER_LINE_GAP_MS = 120;
 const ENTER_MS = 480; // duration.slow (entrada do Core)
+const EXIT_MS = 280; // duration.moderate (saída do Core, stage.js MOTION.exit)
 const LEGAL_MS = 4_000;
 const LEGAL_DELAY_MS = 400; // a ressalva entra depois do corte
 const RESOLVE_AT_MS = 1_500; // resolução sonora da assinatura, depois de a logo assentar
@@ -89,7 +90,9 @@ export function buildFilm(fmt, spec) {
       legal: acc.legal,
       tag: 'Prova interna · imagens e sons provisórios',
       // Nada de etiqueta, aviso ou selo sobre o encerramento emocional (bloco `clean`) nem sobre a assinatura.
-      tagOut: Math.min(acc.cleanFrom ?? Infinity, signature?.at ?? Infinity),
+      // A etiqueta interna termina de sair antes do dissolve da família (ou da assinatura): nenhum quadro da cena limpa
+      // a mostra, nem durante o dissolve.
+      tagOut: Math.min(acc.cleanFrom ?? Infinity, signature?.at ?? Infinity) - EXIT_MS,
     },
     vo: acc.vo,
     audio: spec.audio,
