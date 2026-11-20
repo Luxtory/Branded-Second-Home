@@ -1075,6 +1075,15 @@ for (const fmt of ['16x9', '9x16']) {
     assert.deepEqual(dep.selected, dep.minimum.nights);
     // Som até o fim: a resolução da assinatura e o fade final dentro do filme.
     assert.ok(edl.sfx.some((x) => x.kind === 'resolve' && x.at > sig.at));
+    // Sem cortes secos no som (v8.3): o mesmo ambiente em cenas seguidas é uma janela só, e o último ambiente sai
+    // devagar sob a assinatura até depois de a resolução entrar (sem silêncio digital entre os dois).
+    edl.ambience.forEach((a, i) => {
+      if (i > 0)
+        assert.ok(!(edl.ambience[i - 1].kind === a.kind && edl.ambience[i - 1].to === a.from));
+    });
+    const lastAmb = edl.ambience.at(-1);
+    const resolve = edl.sfx.find((x) => x.kind === 'resolve');
+    assert.ok(lastAmb.to > resolve.at && lastAmb.fadeOut >= 1_000, 'ambiente cruza a resolução');
     assert.ok(edl.audioOut.at + edl.audioOut.dur <= edl.duration);
     // Vocabulário do filme e narração só com frases aprovadas (ROTEIRO.md §4 ou a prova de montagem), sem sobreposição.
     const roteiro = roteiroText();

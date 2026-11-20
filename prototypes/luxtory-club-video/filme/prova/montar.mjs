@@ -460,13 +460,13 @@ function buildAudio(file) {
       e: '0.075*(sin(2*PI*293.66*t)+sin(2*PI*369.99*t)+sin(2*PI*440*t)+0.6*sin(2*PI*587.33*t))*(1-exp(-t*25))*exp(-t*1.4)',
     },
   };
-  // Janela de cada ambiente com rampas de 150 ms nos cortes.
+  // Janela de cada ambiente com rampas de 150 ms nos cortes; `fadeOut` (ms) alonga a saída (fim sob a assinatura).
   const windowExpr = (kind) =>
     EDL.ambience
       .filter((a) => a.kind === kind)
       .map(
         (a) =>
-          `clip((t-${sec(a.from)})/0.15+${a.from === 0 ? 1 : 0},0,1)*clip((${sec(a.to)}-t)/0.15+${a.to === EDL.duration ? 1 : 0},0,1)`,
+          `clip((t-${sec(a.from)})/0.15+${a.from === 0 ? 1 : 0},0,1)*clip((${sec(a.to)}-t)/${sec(a.fadeOut ?? 150)}+${a.to === EDL.duration ? 1 : 0},0,1)`,
       )
       .join('+');
   const graph = [];

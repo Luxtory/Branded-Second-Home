@@ -20,6 +20,8 @@ const BANNER_LINE_GAP_MS = 120;
 const ENTER_MS = 480; // duration.slow (entrada do Core)
 const LEGAL_MS = 4_000;
 const LEGAL_DELAY_MS = 400; // a ressalva entra depois do corte
+const RESOLVE_AT_MS = 1_500; // resolução sonora da assinatura, depois de a logo assentar
+const AMBIENCE_HANDOFF_MS = 300; // o ambiente termina sob o ataque da resolução
 // Narração: ritmo de conversa (≈ 2,6 palavras por segundo, ROTEIRO.md §4).
 const VO_WORDS_PER_S = 2.6;
 
@@ -104,7 +106,10 @@ export function buildFilm(fmt, spec) {
 function placeShot(acc, block, from) {
   if (block.shot.continue) acc.shots.at(-1).to = acc.t;
   else acc.shots.push({ scene: block.scene, ...block.shot, from, to: acc.t });
-  if (block.ambience) acc.ambience.push({ from, to: acc.t, kind: block.ambience });
+  // O mesmo ambiente em blocos seguidos é uma janela só: duas janelas com rampa no mesmo ponto zeravam o som no corte.
+  const prevAmb = acc.ambience.at(-1);
+  if (block.ambience && prevAmb?.kind === block.ambience && prevAmb.to === from) prevAmb.to = acc.t;
+  else if (block.ambience) acc.ambience.push({ from, to: acc.t, kind: block.ambience });
   if (block.vo) acc.vo.push(voLine(from + (block.vo.after ?? 0), block.vo.text));
   if (block.contact !== undefined) acc.contact.push(from + block.contact);
 }
@@ -198,9 +203,14 @@ const PLACE = {
     acc.t = at + SIGNATURE_MS;
     // A imagem anterior continua por baixo do dissolve até o fim.
     acc.shots.at(-1).to = acc.t;
+    // O ambiente da última cena sai devagar sob a assinatura e termina logo depois de a resolução entrar: nenhum
+    // corte seco nem silêncio digital entre o ambiente e a resolução.
     const amb = acc.ambience.at(-1);
-    if (amb && amb.to === at) amb.to = at + block.dissolve;
-    acc.sfx.push({ at: at + 1_500, kind: 'resolve', note: 'assinatura' });
+    if (amb && amb.to === at) {
+      amb.to = at + RESOLVE_AT_MS + AMBIENCE_HANDOFF_MS;
+      amb.fadeOut = amb.to - at;
+    }
+    acc.sfx.push({ at: at + RESOLVE_AT_MS, kind: 'resolve', note: 'assinatura' });
     if (block.vo) acc.vo.push(voLine(at + 1_500, block.vo));
     acc.beats.push({
       label: 'assinatura oficial',

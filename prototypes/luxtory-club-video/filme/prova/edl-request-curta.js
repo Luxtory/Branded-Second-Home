@@ -173,7 +173,8 @@ function blocks(fmt) {
       // Ainda é a estadia na Azzura (o cartão de contexto do 16:9 diz "Azzura Home"): S07, a borda infinita. A troca
       // para a Satori acontece no corte seguinte, quando Helena passa às datas do próprio Direito de Uso (v8.3).
       shot: still('S07', 'borda infinita da Azzura Home', PLACA_LITORAL, DRIFT, CROP.S07[fmt]),
-      ambience: 'vento',
+      // Som do lugar (v8.3): ainda na Azzura (S07), então mar; o vento entra com a Satori.
+      ambience: 'mar',
       contact: 3_000,
     },
     {
@@ -316,7 +317,8 @@ function blocks(fmt) {
       ],
       // Helena aguarda na Satori: a troca para a Azzura acontece em "Do outro lado" (quem recebe a solicitação).
       shot: still('S05b', 'terraço e piscina da Satori Home', PLACA_SERRA, DRIFT, CROP.S05b[fmt]),
-      ambience: 'mar',
+      // Som do lugar (v8.3): a espera acontece na Satori (serra), então vento.
+      ambience: 'vento',
       contact: 2_500,
     },
     {
@@ -361,7 +363,8 @@ function blocks(fmt) {
         DRIFT,
         CROP.S09[fmt],
       ),
-      ambience: 'interior',
+      // Som do lugar (v8.3): quem recebe está na Azzura, então mar.
+      ambience: 'mar',
       contact: 3_000,
     },
     {
