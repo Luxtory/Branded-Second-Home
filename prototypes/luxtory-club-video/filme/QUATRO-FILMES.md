@@ -126,6 +126,20 @@ Conferência antes de aprovar:
 
 O 3:2 recortado para 16:9 e o 2:3 recortado para 9:16 ampliam ≈ 1,25×, dentro do limite de 1,35×.
 
+**Som e acabamento (medidos nos arquivos da prévia final):**
+- áudio e vídeo com a mesma duração nos dois formatos;
+- som de cada lugar: mar na Azzura, vento na Satori;
+- sem queda na entrada da família. Duas janelas seguidas do mesmo ambiente zeravam o som no corte; agora formam uma
+  janela só;
+- o mar sai em 1,8 s sob a assinatura e termina depois de a resolução entrar, sem silêncio digital no meio;
+- fade final até o silêncio dentro do filme;
+- moldura do 9:16 e fundo da assinatura com o mesmo valor decodificado: o dissolve não mostra emenda;
+- nenhuma etiqueta interna sobre a família ou a assinatura;
+- frase da assinatura com 9,11:1 de contraste.
+
+Sem narração definitiva e sem trilha, a sincronia só pode ser conferida para efeitos e legenda-guia. Por isso a prévia
+não é master.
+
 **Ainda provisório:**
 - imagens definitivas da Azzura e da Satori;
 - versões editadas da família;
