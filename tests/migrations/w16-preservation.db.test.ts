@@ -16,9 +16,10 @@ import { createTestDatabase, type TestDatabase } from '../support/test-database'
  * `parameter_insert`, o `parameter_at`, a lista fechada de chaves, a unicidade `NULLS NOT DISTINCT` e a `currency` ao fim
  * da view. Nada da W15 (Membership), da indicação de convidados ou do uso próprio muda.
  */
-const W16 = ['20261120055433_admin_parameter_economic_keys', '20261120055435_pricing_prl'];
-const FIRST_W16 = [...W16].sort()[0]!;
-const [M1, M2] = W16 as [string, string];
+/** Migrations da W16, na ordem de aplicação (uma por linha). */
+const M1 = '20261120055433_admin_parameter_economic_keys';
+const M2 = '20261120055435_pricing_prl';
+const FIRST_W16 = M1;
 
 const CHANGED = [
   'constraint app.parameter.conflict_parameter_scope_start',
