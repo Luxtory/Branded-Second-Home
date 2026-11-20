@@ -14,6 +14,7 @@ import { Icon, RecordList } from '@/design-system/react';
 import { prlMessages as text } from './i18n/prl-pt-br';
 import { prlPublicationAction } from './prl-actions';
 import type { PrlCalendarNight } from './prl-calendar-data';
+import { adjacentMonth } from './prl-months';
 import type { PrlFormKind, PrlPublicationState } from './prl-state';
 
 const DAY_MS = 86_400_000;
@@ -181,8 +182,6 @@ export function PrlPricing(props: {
   const [focused, setFocused] = useState<string | null>(null);
   const pendingFocus = useRef(false);
   const gridRef = useRef<HTMLDivElement>(null);
-  const first = props.months[0] ?? month;
-  const last = props.months.at(-1) ?? month;
   const years = [...new Set(props.months.map((value) => value.slice(0, 4)))];
   const eligible = (night: PrlCalendarNight | undefined) =>
     night !== undefined && (props.kind === 'initial' ? !night.hasVersion : night.hasVersion);
@@ -266,8 +265,9 @@ export function PrlPricing(props: {
       }),
     );
 
-  const goToMonth = (target: string) => {
-    if (target < first || target > last) return;
+  // Só meses efetivamente selados (lacunas são puladas, inclusive entre exercícios).
+  const goToMonth = (target: string | null) => {
+    if (target === null || !props.months.includes(target)) return;
     setMonth(target);
     setGuidance('');
   };
@@ -281,14 +281,20 @@ export function PrlPricing(props: {
       ArrowDown: () => addDays(date, 7),
       Home: () => addDays(date, -weekday),
       End: () => addDays(date, 6 - weekday),
-      PageUp: () => `${shiftMonth(date.slice(0, 7), -1)}-01`,
-      PageDown: () => `${shiftMonth(date.slice(0, 7), 1)}-01`,
+      PageUp: () => `${adjacentMonth(props.months, month, -1) ?? month}-01`,
+      PageDown: () => `${adjacentMonth(props.months, month, 1) ?? month}-01`,
     };
     const move = moves[event.key];
     if (move === undefined) return;
     event.preventDefault();
-    const target = move();
-    if (target.slice(0, 7) < first || target.slice(0, 7) > last) return;
+    let target = move();
+    if (!props.months.includes(target.slice(0, 7))) {
+      // Caiu num mês não selado: vai ao mês selado vizinho nessa direção (primeiro ou último dia), se houver.
+      const direction = target < date ? -1 : 1;
+      const neighbour = adjacentMonth(props.months, month, direction);
+      if (neighbour === null) return;
+      target = direction > 0 ? `${neighbour}-01` : lastDayOf(neighbour);
+    }
     setMonth(target.slice(0, 7));
     setFocused(target);
     pendingFocus.current = true;
@@ -373,8 +379,8 @@ export function PrlPricing(props: {
                     <NavButton
                       label={text.previousMonth}
                       direction={-1}
-                      disabled={month <= first}
-                      onClick={() => goToMonth(shiftMonth(month, -1))}
+                      disabled={adjacentMonth(props.months, month, -1) === null}
+                      onClick={() => goToMonth(adjacentMonth(props.months, month, -1))}
                     />
                     <h3 className="lx-calendar__title" id={titleId} aria-live="polite">
                       {monthName(month)}
@@ -382,8 +388,8 @@ export function PrlPricing(props: {
                     <NavButton
                       label={text.nextMonth}
                       direction={1}
-                      disabled={month >= last}
-                      onClick={() => goToMonth(shiftMonth(month, 1))}
+                      disabled={adjacentMonth(props.months, month, 1) === null}
+                      onClick={() => goToMonth(adjacentMonth(props.months, month, 1))}
                     />
                   </div>
                   <table className="lx-calendar__table" aria-labelledby={titleId}>
@@ -624,44 +630,44 @@ export function PrlPricing(props: {
   );
 }
 
-/** Revisão do lote, calculada no servidor: tipo, vigência, datas, vigente × novo, prévia de Créditos e totais. */
+/**
+ * Revisão do lote, calculada no servidor: operação, autoridade, base, vigência, datas com categoria e, na alteração, a
+ * sequência de preços de cada noite — vigente agora, agendados e o preço imediatamente anterior à nova vigência → novo.
+ */
 function Review({ state }: { readonly state: PrlPublicationState }) {
   const review = state.review!;
   const change = review.kind === 'change';
+  const facts: [string, string][] = [
+    [text.review.kind, text.modes[review.kind]],
+    [text.review.authority, review.authority],
+    [text.review.basis, review.basis],
+    [text.review.validity, review.validity],
+    [text.review.nights, text.nightsCount(review.lines.length)],
+    [
+      change ? text.review.totalChange : text.review.total,
+      change && review.totalPrevious !== null
+        ? text.review.compare(review.totalPrevious, review.totalProposed)
+        : review.totalProposed,
+    ],
+    [
+      text.review.credits,
+      review.totalCredits === null
+        ? text.review.creditsUnavailable
+        : text.review.creditsValue(review.totalCredits),
+    ],
+  ];
   return (
     <section className="lx-page-section" aria-labelledby="prl-revisao">
       <h3 className="lx-display-s" id="prl-revisao">
         {text.review.title}
       </h3>
       <dl className="lx-evidence">
-        <div className="lx-evidence__item">
-          <dt className="lx-evidence__label">{text.review.kind}</dt>
-          <dd className="lx-evidence__value">{text.modes[review.kind]}</dd>
-        </div>
-        <div className="lx-evidence__item">
-          <dt className="lx-evidence__label">{text.review.validity}</dt>
-          <dd className="lx-evidence__value">{review.validity}</dd>
-        </div>
-        <div className="lx-evidence__item">
-          <dt className="lx-evidence__label">{text.review.nights}</dt>
-          <dd className="lx-evidence__value">{text.nightsCount(review.lines.length)}</dd>
-        </div>
-        <div className="lx-evidence__item">
-          <dt className="lx-evidence__label">{text.review.total}</dt>
-          <dd className="lx-evidence__value">
-            {change && review.totalCurrent !== null
-              ? text.review.compare(review.totalCurrent, review.totalProposed)
-              : review.totalProposed}
-          </dd>
-        </div>
-        <div className="lx-evidence__item">
-          <dt className="lx-evidence__label">{text.review.credits}</dt>
-          <dd className="lx-evidence__value">
-            {review.totalCredits === null
-              ? text.review.creditsUnavailable
-              : text.review.creditsValue(review.totalCredits)}
-          </dd>
-        </div>
+        {facts.map(([label, value]) => (
+          <div className="lx-evidence__item" key={label}>
+            <dt className="lx-evidence__label">{label}</dt>
+            <dd className="lx-evidence__value">{value}</dd>
+          </div>
+        ))}
       </dl>
       <RecordList
         label={text.review.linesLabel}
@@ -669,10 +675,18 @@ function Review({ state }: { readonly state: PrlPublicationState }) {
           id: line.date,
           title: `${line.night} · ${line.season}`,
           attributes: [
-            ...(change && line.current !== null
-              ? [{ label: text.review.current, value: line.current }]
+            ...(change
+              ? [{ label: text.review.currentNow, value: line.current ?? text.review.currentNone }]
               : []),
-            { label: change ? text.review.proposed : text.review.value, value: line.proposed },
+            ...(change && line.scheduled.length > 0
+              ? [{ label: text.review.scheduled, value: line.scheduled.join(' · ') }]
+              : []),
+            change && line.previous !== null
+              ? {
+                  label: text.review.replaces,
+                  value: text.review.compare(line.previous, line.proposed),
+                }
+              : { label: text.review.value, value: line.proposed },
             ...(line.credits === null
               ? []
               : [

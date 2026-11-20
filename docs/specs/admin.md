@@ -158,6 +158,7 @@ spec [`pricing`](pricing.md).
   mesmo formato do CHECK; a auditoria grava o valor e a moeda das chaves econômicas (não pessoais) e só o tamanho do
   texto de `guest_rules`.
 - **Tela `/admin/parametros`** (Admin): cada chave ausente, vigente ou agendada, histórico imutável (valor, vigência,
-  autoridade, base, registro) e nova versão; valor no formato da tela (reais com até 2 casas, percentual com até 4,
+  autoridade, base, registro) e nova versão com revisão antes de confirmar (vigente agora, agendados, "anterior → novo",
+  vigência, término, base e autoridade, calculados no servidor; a confirmação refaz a validação); valor no formato da tela (reais com até 2 casas, percentual com até 4,
   multiplicador com até 6, meses e horas inteiros), convertido em texto para o valor canônico, sem `number`; horários em
   UTC (parâmetros globais não têm fuso de Second Home).

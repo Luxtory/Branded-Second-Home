@@ -48,12 +48,20 @@ export async function loadPrlCalendar(
   const nights = calendar.map(({ stayDate, season }) => {
     const own = versions.get(stayDate) ?? [];
     const status = nightStatus(own, now);
+    const latest = own.at(-1);
     states.set(stayDate, {
       stayDate,
       season,
       inForceMinor: status.inForce?.amountMinor ?? null,
+      scheduled: status.scheduled.map((version) => ({
+        amountMinor: version.amountMinor,
+        effectiveFrom: version.effectiveFrom,
+      })),
       hasVersion: own.length > 0,
-      latestStart: own.at(-1)?.effectiveFrom ?? null,
+      latest:
+        latest === undefined
+          ? null
+          : { amountMinor: latest.amountMinor, effectiveFrom: latest.effectiveFrom },
     });
     return {
       date: stayDate,

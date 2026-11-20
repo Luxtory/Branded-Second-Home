@@ -88,11 +88,21 @@ string em unidade mínima (`amount_minor`) + `currency`.
     ou Média/Baixa do mês, valor comum aplicado às noites e valor próprio por noite, até 366 noites. Só noites
     elegíveis ao tipo aceitam seleção (a inicial não alcança noite publicada; a alteração não alcança noite sem PRL):
     um lote nunca mistura as duas operações. A categoria não é editável.
-  - **Revisão no servidor** antes da confirmação (`reviewPrlPublication`, `pricing/application/prl-review.ts`): tipo,
-    vigência, noites com categoria, vigente × novo na alteração, PRL somado e prévia de Créditos com o multiplicador
-    vigente (`creditsForPrl`); sem multiplicador, "não configurado". Problemas (noite publicada, sem PRL, não selada,
-    repetida, valor inválido, início retroativo ou não posterior) voltam por noite. A confirmação refaz a revisão e só
-    então executa o command; o cliente não calcula nada econômico.
+  - **Revisão no servidor** antes da confirmação (`reviewPrlPublication`, `pricing/application/prl-review.ts`):
+    operação, autoridade exercida, base registrada, vigência, noites com categoria, PRL somado e prévia de Créditos com
+    o multiplicador vigente (`creditsForPrl`); sem multiplicador, "não configurado". Na alteração, cada noite mostra a
+    sequência de preços: vigente agora (ou "só versão agendada"), versões agendadas e o **preço imediatamente anterior
+    à nova vigência → novo**. Como uma versão nova só começa depois da última versão da noite (D3), o preço substituído
+    é o da última versão — agendada, se houver —, nunca necessariamente o vigente agora. Problemas (noite publicada, sem
+    PRL, não selada, repetida, valor inválido, início retroativo ou não posterior) voltam por noite. A confirmação refaz
+    a revisão (uma publicação concorrente depois da revisão recusa o lote) e só então executa o command; o cliente não
+    calcula nada econômico.
+  - Mês de referência no fuso IANA da Second Home (TECH-040), nunca UTC; a navegação (botões, teclado e exercícios)
+    percorre só os meses efetivamente selados, pulando lacunas.
+  - Semântica da base: `prl_publication.authorization_ref` grava a **base registrada** informada (justificativa
+    administrativa, TECH-002/TECH-030, como em `app.parameter` na W14); a autorização efetiva do operador é a atribuição
+    `staff_role:<id>` em `operation.authorization_ref`, ligada pela `operation_id`, com `authority` e `created_by` na
+    publicação.
   - O texto deixa claro que publicar PRL não cobra ninguém nem ativa mecanismos do Club. Nenhuma superfície ao Titular
     (REQ-100).
 

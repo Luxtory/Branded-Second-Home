@@ -5,7 +5,12 @@ export interface PrlReviewLine {
   readonly date: string;
   readonly night: string;
   readonly season: string;
+  /** Vigente agora (alteração); `null` = só versões agendadas. */
   readonly current: string | null;
+  /** Versões agendadas, já formatadas ("R$ … a partir de …"). */
+  readonly scheduled: readonly string[];
+  /** Preço imediatamente anterior à nova vigência (alteração). */
+  readonly previous: string | null;
   readonly proposed: string;
   readonly credits: string | null;
 }
@@ -15,10 +20,13 @@ export interface PrlReviewView {
   readonly kind: PrlFormKind;
   readonly lines: readonly PrlReviewLine[];
   readonly totalProposed: string;
-  readonly totalCurrent: string | null;
+  readonly totalPrevious: string | null;
   readonly totalCredits: string | null;
   readonly multiplierConfigured: boolean;
   readonly validity: string;
+  /** Papel que será exercido e registrado (ADR-0008). */
+  readonly authority: string;
+  readonly basis: string;
 }
 
 export type PrlPublicationField = 'nights' | 'effective_from' | 'basis';

@@ -55,23 +55,40 @@ function parseNights(raw: string): { stayDate: string; amount: string }[] | null
 const credits = (value: string) =>
   new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 20 }).format(value as `${number}`);
 
-function view(review: PrlReview, validity: string): PrlReviewView {
+function view(
+  review: PrlReview,
+  context: {
+    readonly validity: string;
+    readonly authority: string;
+    readonly basis: string;
+    readonly timezone: string;
+  },
+): PrlReviewView {
+  const money = (minor: string | null) => (minor === null ? null : formatMoney(BigInt(minor)));
   return {
     kind: review.kind,
     lines: review.rows.map((row) => ({
       date: row.stayDate,
       night: formatNight(row.stayDate),
       season: text.seasons[row.season],
-      current: row.currentMinor === null ? null : formatMoney(BigInt(row.currentMinor)),
+      current: money(row.currentMinor),
+      scheduled: row.scheduled.map((version) =>
+        text.scheduled(
+          formatMoney(BigInt(version.amountMinor)),
+          formatInstant(new Date(version.effectiveFrom), context.timezone),
+        ),
+      ),
+      previous: money(row.previousMinor),
       proposed: formatMoney(BigInt(row.proposedMinor)),
       credits: row.credits === null ? null : credits(row.credits),
     })),
     totalProposed: formatMoney(BigInt(review.totalProposedMinor)),
-    totalCurrent:
-      review.totalCurrentMinor === null ? null : formatMoney(BigInt(review.totalCurrentMinor)),
+    totalPrevious: money(review.totalPreviousMinor),
     totalCredits: review.totalCredits === null ? null : credits(review.totalCredits),
     multiplierConfigured: review.multiplierConfigured,
-    validity,
+    validity: context.validity,
+    authority: context.authority,
+    basis: context.basis,
   };
 }
 
@@ -97,12 +114,16 @@ export async function prlPublicationAction(
   if (access.kind === 'mfa_required') redirect('/entrar/mfa');
   if (access.kind === 'unavailable')
     return { ...editing, stage: 'edit', fieldErrors: {}, rejection: 'unavailable' };
-  const allowed =
-    access.kind === 'granted' &&
-    (kind === 'change'
-      ? exercisedRole(access, 'super_admin') !== null
-      : exercisedRole(access, 'admin') !== null || exercisedRole(access, 'super_admin') !== null);
-  if (!allowed) return { ...editing, stage: 'edit', fieldErrors: {}, rejection: 'permission' };
+  // Papel que o command vai exercer (mesma preferência da entrada única do Admin): alteração só Super Admin; inicial,
+  // Admin se ativo, senão Super Admin.
+  const exercised =
+    access.kind !== 'granted'
+      ? null
+      : kind === 'change'
+        ? exercisedRole(access, 'super_admin')
+        : (exercisedRole(access, 'admin') ?? exercisedRole(access, 'super_admin'));
+  if (exercised === null)
+    return { ...editing, stage: 'edit', fieldErrors: {}, rejection: 'permission' };
   const db = getDatabase();
   const home = await db
     .selectFrom('app.second_home')
@@ -147,10 +168,14 @@ export async function prlPublicationAction(
       })),
       rejection: 'issues',
     };
-  const reviewed = view(
-    review,
-    from === null ? text.review.validityNow : formatInstant(new Date(from), home.timezone),
-  );
+  const reviewed = view(review, {
+    validity:
+      from === null ? text.review.validityNow : formatInstant(new Date(from), home.timezone),
+    authority: text.authorities[exercised.role] ?? exercised.role,
+    basis: values.basis,
+    timezone: home.timezone,
+  });
+
   if (intent !== 'confirm')
     return { ...editing, stage: 'review', fieldErrors: {}, review: reviewed };
 

@@ -30,8 +30,11 @@ function ParameterSection({
   const inForce = versionInForce(versions, now);
   const scheduled = versions.filter((version) => version.effectiveFrom.getTime() > now.getTime());
   const status =
-    inForce !== null ? text.inForce : scheduled.length > 0 ? text.scheduledOnly : text.absent;
+    inForce !== null ? text.inForce : scheduled.length > 0 ? text.scheduledOnly : text.absentTitle;
   const attributes = [
+    ...(inForce === null && scheduled.length === 0
+      ? [{ label: text.effect, value: text.absentEffect }]
+      : []),
     ...(inForce === null
       ? []
       : [

@@ -10,6 +10,7 @@ import { formatInstant, formatMoney, formatMonth, formatNight } from './format';
 import { prlMessages as text } from './i18n/prl-pt-br';
 import { loadPrlCalendar, type PrlCalendarModel, type PrlCalendarNight } from './prl-calendar-data';
 import { PrlMonthCalendar } from './prl-month-calendar';
+import { adjacentMonth, initialMonth, monthIn } from './prl-months';
 import { prlListPath, prlPath } from './prl-paths';
 import { PrlPricing } from './prl-pricing';
 
@@ -18,11 +19,6 @@ const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 const MODES = ['consultar', 'inicial', 'alteracao'] as const;
 type Mode = (typeof MODES)[number];
 type SearchParams = Record<string, string | string[] | undefined>;
-
-const shiftMonth = (month: string, delta: number) => {
-  const [year, value] = month.split('-').map(Number) as [number, number];
-  return new Date(Date.UTC(year, value - 1 + delta, 1)).toISOString().slice(0, 7);
-};
 
 function Section(props: {
   readonly id: string;
@@ -169,19 +165,15 @@ export async function AdminPrlDetailPage(props: {
   }
   if (read === null) notFound();
   const { model, timezone } = read;
-  const first = model.months[0] ?? null;
-  const last = model.months.at(-1) ?? null;
-  const current = now.toISOString().slice(0, 7);
-  const month =
-    first === null || last === null
-      ? null
-      : MONTH.test(requestedMonth) && requestedMonth >= first && requestedMonth <= last
-        ? requestedMonth
-        : current < first
-          ? first
-          : current > last
-            ? last
-            : current;
+  // Mês de referência no fuso IANA da Second Home (TECH-040), nunca UTC; só meses selados.
+  const current = monthIn(now, timezone);
+  const month = initialMonth(
+    model.months,
+    MONTH.test(requestedMonth) ? requestedMonth : '',
+    current,
+  );
+  const previousMonth = month === null ? null : adjacentMonth(model.months, month, -1);
+  const nextMonth = month === null ? null : adjacentMonth(model.months, month, 1);
   const done =
     typeof props.searchParams.feito === 'string'
       ? text.doneTitle[props.searchParams.feito]
@@ -256,9 +248,9 @@ export async function AdminPrlDetailPage(props: {
               month={month}
               nights={byDate}
               previous={
-                month > first! ? navLink(shiftMonth(month, -1), text.previousMonth, -1) : null
+                previousMonth === null ? null : navLink(previousMonth, text.previousMonth, -1)
               }
-              next={month < last! ? navLink(shiftMonth(month, 1), text.nextMonth, 1) : null}
+              next={nextMonth === null ? null : navLink(nextMonth, text.nextMonth, 1)}
             />
             {years.length > 1 ? (
               <div className="lx-form__actions" role="group" aria-label={text.calendar.exercises}>

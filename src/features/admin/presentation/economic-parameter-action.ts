@@ -3,11 +3,12 @@
 import { randomUUID } from 'node:crypto';
 import { redirect } from 'next/navigation';
 import { executeAdminCommand, exercisedRole, getStaffAccess } from '@/features/identity';
-import { isNonPersonalReference, type ErrorCode } from '@/features/platform';
+import { getDatabase, isNonPersonalReference, type ErrorCode } from '@/features/platform';
 import { isEconomicParameterKey } from '../domain/parameter';
-import { createParameterHandlers } from '../parameters';
-import { toCanonicalValue } from './economic-parameter-input';
+import { createParameterHandlers, parameterHistory, versionInForce } from '../parameters';
+import { displayValue, toCanonicalValue } from './economic-parameter-input';
 import type { EconomicParameterField, EconomicParameterState } from './economic-parameter-state';
+import { economicParametersMessages as text } from './i18n/economic-parameters-pt-br';
 
 const handlers = createParameterHandlers();
 const UTC_INPUT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
@@ -33,10 +34,14 @@ function utcInstant(value: string): string | null {
     : at.toISOString();
 }
 
+const utc = (at: Date) =>
+  `${at.toLocaleString('pt-BR', { timeZone: 'UTC', dateStyle: 'short', timeStyle: 'short' })} (UTC)`;
+
 /**
- * "Publicar versão" de um parâmetro econômico global (W16; REQ-095; spec admin §14): sessão → guard Admin (AAL2 e
- * `staff_role`) → executor (TECH-054) → `set_parameter` sem Second Home. A action converte o formato da tela no valor
- * canônico; vigência (D3) e tipo são decididos também pelo command e pelo banco.
+ * "Publicar versão" de um parâmetro econômico global (W16; REQ-095; spec admin §14): `review` mostra, calculado no
+ * servidor, o vigente agora, os agendados, o novo valor, a vigência e a base; `confirm` refaz a validação e só então
+ * executa (sessão → guard Admin com AAL2 e `staff_role` → executor → `set_parameter` sem Second Home); `edit` volta ao
+ * formulário. Vigência (D3) e tipo são decididos também pelo command e pelo banco.
  */
 export async function setEconomicParameterAction(
   state: EconomicParameterState,
@@ -48,6 +53,9 @@ export async function setEconomicParameterAction(
     effective_to: field(form, 'effective_to'),
     basis: field(form, 'basis'),
   };
+  const intent = field(form, 'intent');
+  if (intent === 'edit')
+    return { ...state, values, stage: 'edit', review: null, fieldErrors: {}, rejection: null };
   const access = await getStaffAccess();
   if (access.kind === 'anonymous') redirect('/entrar');
   if (access.kind === 'mfa_required') redirect('/entrar/mfa');
@@ -71,7 +79,30 @@ export async function setEconomicParameterAction(
   if (values.basis === '' || values.basis.length > 255 || !isNonPersonalReference(values.basis))
     errors.basis = true;
   if (Object.keys(errors).length > 0 || value === null)
-    return { ...state, values, fieldErrors: errors, rejection: 'invalid' };
+    return {
+      ...state,
+      values,
+      stage: 'edit',
+      review: null,
+      fieldErrors: errors,
+      rejection: 'invalid',
+    };
+  const now = new Date();
+  const versions = await parameterHistory(getDatabase(), state.parameter, null);
+  const inForce = versionInForce(versions, now);
+  const show = (canonical: string) => displayValue(state.parameter, canonical, text);
+  const review = {
+    current: inForce === null ? null : show(inForce.value),
+    scheduled: versions
+      .filter((version) => version.effectiveFrom.getTime() > now.getTime())
+      .map((version) => text.scheduledEntry(show(version.value), utc(version.effectiveFrom))),
+    proposed: show(value),
+    from: from === null ? text.review.fromNow : utc(new Date(from)),
+    to: to === null ? text.review.toOpen : utc(new Date(to)),
+    basis: values.basis,
+  };
+  if (intent !== 'confirm')
+    return { ...state, values, stage: 'review', review, fieldErrors: {}, rejection: null };
   const outcome = await executeAdminCommand(
     { handler: handlers.setParameter, role: 'admin' },
     {
@@ -85,7 +116,7 @@ export async function setEconomicParameterAction(
     state.key,
   );
   if (outcome === 'unavailable')
-    return { ...state, values, fieldErrors: {}, rejection: 'unavailable' };
+    return { ...state, values, stage: 'review', review, fieldErrors: {}, rejection: 'unavailable' };
   if (outcome.status === 'unauthenticated') redirect('/entrar');
   if (outcome.status === 'committed')
     redirect(`/admin/parametros?feito=${state.parameter}#${state.parameter}`);
@@ -94,6 +125,8 @@ export async function setEconomicParameterAction(
     ...state,
     key,
     values,
+    stage: 'review',
+    review,
     fieldErrors: {},
     rejection: REJECTIONS[outcome.code] ?? 'unexpected',
   };
