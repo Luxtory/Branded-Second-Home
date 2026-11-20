@@ -265,6 +265,37 @@ describe('W15 — Membership no banco (REQ-011, REQ-050, PD-001; TECH-050, TECH-
       ).rejects.toThrow();
       expect(await transitionsOf(h.database.pool, subject)).toHaveLength(1);
     });
+
+    it('[TECH-052][T-1502] gatilhos: só o gravador do histórico é SECURITY DEFINER, do dono do schema, search_path fixo, sem EXECUTE para ninguém', async () => {
+      const { rows } = await h.database.pool.query<{
+        name: string;
+        definer: boolean;
+        config: string[];
+        owner_is_schema_owner: boolean;
+        grantees: string[] | null;
+        app_can_execute: boolean;
+      }>(
+        `SELECT p.proname AS name, p.prosecdef AS definer, p.proconfig AS config,
+                p.proowner = n.nspowner AS owner_is_schema_owner,
+                (SELECT array_agg(coalesce(g.rolname, 'PUBLIC') || ':' || a.privilege_type)
+                   FROM aclexplode(p.proacl) a LEFT JOIN pg_roles g ON g.oid = a.grantee
+                  WHERE a.grantee <> p.proowner) AS grantees,
+                has_function_privilege('luxtory_app', p.oid, 'EXECUTE') AS app_can_execute
+           FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+          WHERE n.nspname = 'app' AND p.proname IN ('membership_write', 'membership_record_transition')
+          ORDER BY p.proname`,
+      );
+      const common = {
+        config: ['search_path=pg_catalog, pg_temp'],
+        owner_is_schema_owner: true,
+        grantees: null,
+        app_can_execute: false,
+      };
+      expect(rows).toEqual([
+        { name: 'membership_record_transition', definer: true, ...common },
+        { name: 'membership_write', definer: false, ...common },
+      ]);
+    });
   });
 
   describe('D2 — só party Titular passa a `active`; Membership é da party, nunca da holding', () => {
