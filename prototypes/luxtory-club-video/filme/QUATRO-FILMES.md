@@ -19,7 +19,11 @@
 **Imagem da família: proveniência conferida.** O arquivo usado no encerramento é o enviado pela Luxtory, sem
 alteração:
 - o sha256 do `.webp` recebido é igual ao da cópia em `out/entrada/`;
-- os pixels decodificados do original, do PNG de trabalho e do `S17b-16x9.png` são idênticos (mesmo hash RGB);
+- o PNG de trabalho e o `S17b-16x9.png` têm os mesmos pixels da decodificação de referência do WebP (libwebp, sRGB);
+- correção na própria v8.3: até a prévia anterior, o PNG vinha da decodificação do ffmpeg. A diferença para a
+  referência era de 1,7 nível em média (0–255), até 3 níveis em 81% dos pixels e no máximo 42 em bordas de cor, pela
+  reamostragem do croma. Não era edição, mas o arquivo foi refeito pela referência e o anterior ficou guardado
+  (`-ffmpeg.png`);
 - no quadro do vídeo, a família é a mesma do original: SSIM de 0,87 em escala reduzida, com a diferença vinda da
   aproximação de câmera e da codificação.
 
