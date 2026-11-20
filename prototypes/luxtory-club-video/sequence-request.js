@@ -40,7 +40,7 @@ const periodShort = periodCompact(s.checkin, s.checkout);
 // Prazo de resposta derivado da própria simulação (expira de fato nesse prazo; proposta de 48 horas, PD-005): o vídeo
 // nunca mostra um prazo diferente do que a Request simulada usa.
 const HOUR_MS = 3_600_000;
-const REPLY_HOURS = (s.expiresAt - s.sentAt) / HOUR_MS;
+export const REPLY_HOURS = (s.expiresAt - s.sentAt) / HOUR_MS;
 // Segunda tela (direção v8.2): só a dependência do aceite, sem repetir o banner.
 const route = `${icon('i-info')}<span>Esta reserva depende do aceite do Membro que reservou as noites solicitadas.</span>`;
 // Seleção (fonte única: as datas). O controle vai ao mínimo que cobre o que falta (14.000: a sugestão para essa meta é

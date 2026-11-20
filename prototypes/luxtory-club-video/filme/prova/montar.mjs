@@ -44,6 +44,8 @@ const FINAL = process.argv.includes('--final');
 // `--rascunho`: inspeção rápida de ritmo e composição (sem superamostragem, codificação rápida, pasta própria);
 // nunca vale como prévia de qualidade nem como exportação final.
 const DRAFT = process.argv.includes('--rascunho') && !FINAL;
+// `--audio`: só a mixagem (audio-<fmt>.wav na saída), para validar o som antes de renderizar a imagem.
+const AUDIO_ONLY = process.argv.includes('--audio');
 // Caminho absoluto: os quadros repetidos são links simbólicos, que precisam apontar para o arquivo certo.
 const OUT =
   (arg('saida') && resolve(arg('saida'))) ??
@@ -58,7 +60,7 @@ const ENTRADA = arg('entrada') ?? join(PROTO, 'out/entrada');
 const FONT = join(ROOT, 'src/design-system/fonts/hanken-grotesk/hanken-grotesk-latin.woff2');
 const { width: W, height: H, fps: FPS } = EDL;
 const FRAMES = Math.round((EDL.duration * FPS) / 1000);
-const STRIP = 120; // altura da tarja da cópia de revisão (fora do quadro)
+const STRIP = 200; // altura da tarja da cópia de revisão (fora do quadro): plano, narração, etiqueta e ressalva
 const VIEWPORT = EDL.fmt === '9x16' ? { width: 405, height: 720 } : { width: 1280, height: 720 };
 const VIDEO_EXTS = ['mov', 'mp4'];
 const STILL_EXTS = ['png', 'jpg', 'jpeg', 'webp'];
@@ -425,6 +427,18 @@ function reviewStrip(tmp, labels) {
   filters.push(
     `drawtext=fontfile=${FONT}:text='%{pts\\:hms}':fontsize=22:fontcolor=0xb9c4cb:x=w-tw-40:y=${H + 20}`,
   );
+  // Marcas de produção só aqui (v8.4): a prévia limpa não leva etiqueta nem ressalva sobre a imagem.
+  if (EDL.editorial.tag)
+    filters.push(
+      `drawtext=fontfile=${FONT}:textfile=${text('etiqueta', EDL.editorial.tag)}:fontsize=${LABEL_SIZE}:fontcolor=0xb9c4cb:x=40:y=${H + 104}`,
+    );
+  [EDL.editorial.legal ?? []]
+    .flat()
+    .forEach((l, i) =>
+      filters.push(
+        `drawtext=fontfile=${FONT}:textfile=${text(`ressalva-${i}`, `Ressalva prevista na peça: ${l.text}`)}:fontsize=${LABEL_SIZE}:fontcolor=0xb9c4cb:x=40:y=${H + 144}:enable=${between(l.in, l.out)}`,
+      ),
+    );
   return filters.join(',');
 }
 
@@ -442,70 +456,54 @@ function measureLoudness(file) {
   };
 }
 
-/** Áudio: efeitos e ambientes sintéticos (+ voz e trilha de out/entrada, se existirem). */
+/**
+ * Áudio (direção v8.4): só efeitos discretos de operações da interface, sem ambiente de fundo, acorde longo ou resolução
+ * da assinatura; o silêncio entre as ações é intencional. Cada efeito tem nível fixo (pico em dBFS no próprio desenho),
+ * sem normalização de loudness: elevar a média de um áudio esparso amplificaria os cliques. Com voz ou trilha (a peça
+ * definitiva), a mixagem volta a ser medida (−14 LUFS) e os efeitos ficam por baixo.
+ */
+const SOUNDS = {
+  // Toque em botão ou data: clique curto e macio (pico medido −17,5 dBFS).
+  tap: { d: 0.09, e: '0.087*(sin(2*PI*880*t)+0.45*sin(2*PI*1760*t))*exp(-t*85)*(1-exp(-t*2500))' },
+  // Item verificado na revalidação: tique muito leve (−24,4 dBFS).
+  check: { d: 0.06, e: '0.05*sin(2*PI*1975*t)*exp(-t*110)*(1-exp(-t*3000))' },
+  // Estado concluído (depósito confirmado, solicitação enviada): duas parciais curtas (−13,9 dBFS).
+  state: {
+    d: 0.4,
+    e: '0.103*(sin(2*PI*659.26*t)+0.6*sin(2*PI*987.77*t))*exp(-t*13)*(1-exp(-t*600))',
+  },
+  // Reserva confirmada: duas notas ascendentes curtas (−14,1 dBFS), sem cauda longa.
+  confirm: {
+    d: 0.6,
+    e: '0.127*(sin(2*PI*659.26*t)*exp(-t*14)*(1-exp(-t*600))+between(t,0.11,1)*sin(2*PI*987.77*(t-0.11))*exp(-(t-0.11)*9)*(1-exp(-(t-0.11)*600)))',
+  },
+};
+// Provas antigas (edl.js, edl-cinema.js) chamam a confirmação de "chord": mesmo som curto.
+SOUNDS.chord = SOUNDS.confirm;
+
 function buildAudio(file) {
   const D = sec(EDL.duration);
   const SR = 48_000;
-  const SOUNDS = {
-    tap: { d: 0.12, e: '0.22*(sin(2*PI*1250*t)+0.5*sin(2*PI*2500*t))*exp(-t*70)*(1-exp(-t*3000))' },
-    check: { d: 0.06, e: '0.08*sin(2*PI*2200*t)*exp(-t*120)*(1-exp(-t*4000))' },
-    state: { d: 0.45, e: '0.13*(sin(2*PI*660*t)+0.7*sin(2*PI*990*t))*exp(-t*14)*(1-exp(-t*800))' },
-    // Resolução da assinatura: acorde grave e aberto, com decaimento longo, sob a frase da marca.
-    resolve: {
-      d: 4,
-      e: '0.06*(sin(2*PI*196*t)+sin(2*PI*293.66*t)+0.8*sin(2*PI*392*t)+0.5*sin(2*PI*587.33*t))*(1-exp(-t*8))*exp(-t*0.9)',
-    },
-    chord: {
-      d: 3,
-      e: '0.075*(sin(2*PI*293.66*t)+sin(2*PI*369.99*t)+sin(2*PI*440*t)+0.6*sin(2*PI*587.33*t))*(1-exp(-t*25))*exp(-t*1.4)',
-    },
-  };
-  // Janela de cada ambiente: nos cortes, cruzamento de 300 ms centrado no corte (os dois ambientes em 50% no quadro do
-  // corte, sem buraco); no início do filme, entrada de 250 ms (sem clique); `fadeOut` (ms) é a saída longa sob a
-  // assinatura, terminando em `to`.
-  const XFADE_S = 0.3;
-  const windowExpr = (kind) =>
-    EDL.ambience
-      .filter((a) => a.kind === kind)
-      .map((a) => {
-        const up =
-          a.from === 0 ? 'clip(t/0.25,0,1)' : `clip((t-${sec(a.from)})/${XFADE_S}+0.5,0,1)`;
-        const down =
-          a.to === EDL.duration
-            ? '1'
-            : a.fadeOut
-              ? `clip((${sec(a.to)}-t)/${sec(a.fadeOut)},0,1)`
-              : `clip((${sec(a.to)}-t)/${XFADE_S}+0.5,0,1)`;
-        return `${up}*${down}`;
-      })
-      .join('+') || '0'; // ambiente ausente no filme: camada muda (expressão vazia quebra o ffmpeg)
   const graph = [];
   const mix = [];
   EDL.sfx.forEach((s, i) => {
-    const { d, e } = SOUNDS[s.kind];
+    const sound = SOUNDS[s.kind];
+    if (!sound)
+      throw new MontagemError(`Efeito sonoro desconhecido: ${s.kind} (${s.note ?? s.at})`);
     graph.push(
       // asetpts: o adelay desloca os carimbos de tempo; sem renumerar as amostras, o amix alinhava os efeitos fora do
       // instante e o atrim cortava o fim do áudio (provas até a v7.1: áudio mais curto que o vídeo).
-      `aevalsrc=exprs='${e}':d=${d}:s=${SR},adelay=delays=${s.at}:all=1,apad=whole_dur=${D},asetpts=N/SR/TB[fx${i}]`,
+      `aevalsrc=exprs='${sound.e}':d=${sound.d}:s=${SR},adelay=delays=${s.at}:all=1,apad=whole_dur=${D},asetpts=N/SR/TB[fx${i}]`,
     );
     mix.push(`[fx${i}]`);
   });
-  graph.push(
-    `${mix.join('')}amix=inputs=${mix.length}:normalize=0,pan=stereo|c0=c0|c1=c0[fx]`,
-    // Mar: ruído marrom filtrado, em estéreo (duas sementes), com ondulação lenta.
-    ...[1, 2].map(
-      (seed) =>
-        `anoisesrc=c=brown:a=0.5:d=${D}:r=${SR}:seed=${seed * 7},lowpass=f=520,highpass=f=45,volume='0.3*(0.55+0.45*sin(2*PI*0.09*t+${seed}))*(${windowExpr('mar')})':eval=frame[mar${seed}]`,
-    ),
-    `[mar1][mar2]join=inputs=2:channel_layout=stereo[mar]`,
-    // Interior neutro: tom de sala muito baixo.
-    `anoisesrc=c=pink:a=0.03:d=${D}:r=${SR}:seed=3,lowpass=f=400,volume='${windowExpr('interior')}':eval=frame,pan=stereo|c0=c0|c1=c0[sala]`,
-    // Vento na serra: ruído rosa em banda média, com rajadas lentas; ≈ 11 dB abaixo do mar (antes 23 dB: a Satori
-    // ficava quase muda).
-    `anoisesrc=c=pink:a=0.12:d=${D}:r=${SR}:seed=5,highpass=f=300,lowpass=f=1400,volume='2*(0.6+0.4*sin(2*PI*0.17*t))*(${windowExpr('vento')})':eval=frame,pan=stereo|c0=c0|c1=c0[vento]`,
-  );
+  if (!mix.length) {
+    graph.push(`anullsrc=r=${SR}:cl=mono:d=${D}[fx0]`);
+    mix.push('[fx0]');
+  }
+  graph.push(`${mix.join('')}amix=inputs=${mix.length}:normalize=0,pan=stereo|c0=c0|c1=c0[fx]`);
   const inputs = [];
-  const layers = ['[fx]', '[mar]', '[sala]', '[vento]'];
+  const layers = ['[fx]'];
   const vo = entrada(AUDIO.vo, ['wav']);
   const trilha = entrada(AUDIO.trilha, ['wav', 'mp3']);
   if (vo) {
@@ -544,15 +542,15 @@ function buildAudio(file) {
     'pcm_s24le',
     mixFile,
   ]);
-  // Loudness medido, não ganho fixo: com voz, referência de web (−14 LUFS); só com efeitos sintéticos, −20 LUFS para
-  // ouvir a prova num nível confortável. O alvo final é decidido por canal (ROTEIRO.md §7); o limitador segura o pico.
-  const target = vo ? -14 : -20;
-  const gain = target - measureLoudness(mixFile).integratedLufs;
+  // Só efeitos: ganho 0 (níveis do desenho) e limitador de segurança em −6 dBFS. Com voz ou trilha: loudness medido.
+  const measured = vo || trilha;
+  const target = measured ? -14 : null;
+  const gain = measured ? target - measureLoudness(mixFile).integratedLufs : 0;
   ffmpeg([
     '-i',
     mixFile,
     '-af',
-    `volume=${gain.toFixed(2)}dB,alimiter=limit=0.79:level=false`,
+    `volume=${gain.toFixed(2)}dB,alimiter=limit=${measured ? 0.79 : 0.5}:level=false`,
     '-ar',
     String(SR),
     '-c:a',
@@ -563,7 +561,8 @@ function buildAudio(file) {
   return {
     voz: vo ?? 'ausente (narração só como legenda-guia)',
     trilha: trilha ?? 'ausente',
-    alvoLufs: target,
+    efeitos: EDL.sfx.map((s) => s.kind),
+    alvoLufs: target ?? 'sem normalização (só efeitos, níveis fixos)',
   };
 }
 
@@ -796,6 +795,16 @@ function contactSheet(file, sheet, tmp) {
 }
 
 async function main() {
+  if (AUDIO_ONLY) {
+    mkdirSync(OUT, { recursive: true });
+    const audioFile = join(OUT, `audio-${EDL.fmt}.wav`);
+    const audio = buildAudio(audioFile);
+    const loud = measureLoudness(audioFile);
+    console.log(`áudio: ${audioFile}`);
+    console.log(`  efeitos: ${audio.efeitos.join(', ')} · ${audio.alvoLufs}`);
+    console.log(`  ${loud.integratedLufs} LUFS integrado · true peak ${loud.truePeakDbtp} dBTP`);
+    return;
+  }
   if (FINAL) preflightFinal();
   // Pastas de trabalho por formato: 16:9 e 9:16 podem renderizar ao mesmo tempo na mesma saída.
   const tmp = join(OUT, `tmp-${EDL.fmt}`);

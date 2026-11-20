@@ -983,6 +983,16 @@ const FILM_TERMS = /\b(Co-Owner|Owner|Ação|Titular(es)?)\b/i;
 const roteiroText = () =>
   readFileSync(join(DIR, 'filme/ROTEIRO.md'), 'utf8').replace(/\n>\s*/g, ' ');
 
+test('prévia limpa sem marcas internas: etiqueta e ressalva só na tarja da cópia de revisão (v8.4)', async () => {
+  const provaSeq = await import('./sequence-prova.js');
+  const stage = { dataset: {}, insertAdjacentHTML: (_, html) => (stage.html = html) };
+  provaSeq.build(stage, '16x9');
+  assert.doesNotMatch(stage.html, /id="ed-tag"|id="ed-legal-|Prova interna|ilustrativ/);
+  const montar = readFileSync(join(DIR, 'filme/prova/montar.mjs'), 'utf8');
+  assert.match(montar, /Ressalva prevista na peça/);
+  assert.doesNotMatch(montar, /anoisesrc|\[mar\]|\[vento\]|\[sala\]/, 'mixer sem ambiente');
+});
+
 for (const fmt of ['16x9', '9x16']) {
   test(`[REQ-063][REQ-064] prévia curta da Request ${fmt}: ritmo, ordem dos fatos, família e assinatura`, () => {
     const edl = requestCurta(fmt);
@@ -1047,8 +1057,7 @@ for (const fmt of ['16x9', '9x16']) {
       'Use Créditos e pague a Taxa de intercâmbio.',
     ]);
     assert.ok(banner.out <= edl.ui[0].at + 400);
-    // Ressalva legível e nunca sobre texto de cartão: no 9:16 o calendário do R1 ocupa a faixa da ressalva (acima dos
-    // 20% inferiores), então ela fica no banner, antes de qualquer interface (v8.3).
+    // Ressalva prevista para a peça: na v8.4 aparece só na tarja da cópia de revisão (a prévia limpa não leva marcas).
     const [legal] = edl.editorial.legal;
     assert.equal(legal.text, 'Imagens, interfaces e valores ilustrativos.');
     assert.ok(legal.out - legal.in >= 2_000, 'tempo de leitura da ressalva');
@@ -1060,7 +1069,6 @@ for (const fmt of ['16x9', '9x16']) {
     assert.equal(sig.to - sig.from, 6_000);
     assert.ok(sig.fadeIn >= 600 && sig.fadeIn <= 1_000);
     assert.equal(sig.at + 6_000, edl.duration);
-    assert.ok(edl.editorial.tagOut <= sig.at, 'nenhuma etiqueta interna sobre a assinatura');
     // Encerramento emocional (v8.2): a família da campanha por ≈ 4 s, sem etiqueta por cima, e dissolve de 0,7–1 s.
     const family = edl.shots.find((x) => x.plan === 'S17b');
     assert.ok(family, 'cena da família');
@@ -1068,24 +1076,27 @@ for (const fmt of ['16x9', '9x16']) {
       Math.abs(sig.at - family.from - 4_000) <= 250,
       `família por ${sig.at - family.from} ms`,
     );
-    // A etiqueta termina a saída (duration.moderate, 280 ms) antes de o dissolve da família começar.
-    assert.ok(edl.editorial.tagOut + 280 <= family.from, 'nada sobre a família, nem no dissolve');
     assert.ok(sig.fadeIn >= 700 && sig.fadeIn <= 1_000);
     // Depósito mínimo: a seleção da complementação é o menor depósito que cobre o que falta (16/05).
     const dep = depositScenario();
     assert.deepEqual(dep.selected, dep.minimum.nights);
-    // Som até o fim: a resolução da assinatura e o fade final dentro do filme.
-    assert.ok(edl.sfx.some((x) => x.kind === 'resolve' && x.at > sig.at));
-    // Sem cortes secos no som (v8.3): o mesmo ambiente em cenas seguidas é uma janela só, e o último ambiente sai
-    // devagar sob a assinatura até depois de a resolução entrar (sem silêncio digital entre os dois).
-    edl.ambience.forEach((a, i) => {
-      if (i > 0)
-        assert.ok(!(edl.ambience[i - 1].kind === a.kind && edl.ambience[i - 1].to === a.from));
-    });
-    const lastAmb = edl.ambience.at(-1);
-    const resolve = edl.sfx.find((x) => x.kind === 'resolve');
-    assert.ok(lastAmb.to > resolve.at && lastAmb.fadeOut >= 1_000, 'ambiente cruza a resolução');
+    // Som só de operações (v8.4): toques, revalidação, estados e confirmação; nada depois da assinatura começar (ela
+    // termina em silêncio), sem acorde longo nem resolução. O mixer não gera ambiente (montar.mjs SOUNDS).
+    assert.ok(edl.sfx.every((x) => ['tap', 'check', 'state', 'confirm'].includes(x.kind)));
+    assert.ok(
+      edl.sfx.every((x) => x.at < family.from),
+      'nenhum efeito na família nem na assinatura',
+    );
+    assert.equal(edl.sfx.filter((x) => x.kind === 'confirm').length, 1);
     assert.ok(edl.audioOut.at + edl.audioOut.dur <= edl.duration);
+    // Prazo de resposta da solicitação recebida derivado da simulação (48 h na demonstração), nunca literal.
+    const hours = (requestScenario().expiresAt - requestScenario().sentAt) / 3_600_000;
+    const received = edl.beats.find((b) => b.label.startsWith('solicitação recebida'));
+    assert.match(received.essential, new RegExp(`\\b${hours} horas\\b`));
+    assert.doesNotMatch(
+      readFileSync(join(DIR, 'filme/prova/edl-request-curta.js'), 'utf8'),
+      /\b24 horas\b/,
+    );
     // Vocabulário do filme e narração só com frases aprovadas (ROTEIRO.md §4 ou a prova de montagem), sem sobreposição.
     const roteiro = roteiroText();
     const aprovadas = new Set(EDL.vo.map((v) => v.text));

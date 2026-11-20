@@ -14,7 +14,7 @@
 //
 // Imagens: os planos usam assets de out/entrada quando existem (nomes do plano, como em edl-cinema.js); sem eles,
 // placeholders identificados. O footage humano (S17a) é o mesmo da prova cinematográfica.
-import { times } from '../../sequence-request.js';
+import { REPLY_HOURS, times } from '../../sequence-request.js';
 import { buildFilm } from './blocos.js';
 
 const PLACA_LITORAL = 'public/images/home/hero/hero-lifestyle.jpg';
@@ -334,7 +334,8 @@ function blocks(fmt) {
           beat: {
             label: 'solicitação recebida · Créditos a receber',
             type: 'decisao',
-            essential: 'Solicitação recebida 55.000 Créditos a receber 24 horas Aceitar',
+            // Prazo derivado da simulação (o mesmo da interface), nunca literal.
+            essential: `Solicitação recebida 55.000 Créditos a receber ${REPLY_HOURS} horas Aceitar`,
             readFrom: t.holderIn + ENTER,
           },
         },
@@ -386,7 +387,7 @@ function blocks(fmt) {
           },
         },
       ],
-      sfx: [{ ms: t.result, kind: 'chord', note: 'solicitação aceita + reserva confirmada' }],
+      sfx: [{ ms: t.result, kind: 'confirm', note: 'solicitação aceita + reserva confirmada' }],
       vo: { after: 0, text: 'Estando tudo certo, a reserva se confirma na mesma operação.' },
       shot: still(
         'S10',

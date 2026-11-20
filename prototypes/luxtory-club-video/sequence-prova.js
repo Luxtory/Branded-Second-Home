@@ -8,6 +8,9 @@ import { EDL as EDL_REQUEST } from './filme/prova/edl.js';
 import { ALWAYS, FINAL } from './shared.js';
 
 const query = new URLSearchParams(globalThis.location?.search ?? '');
+// Etiqueta interna e ressalva sobre a imagem só com `?marcas=1` (inspeção no navegador). A montagem não as desenha: a
+// prévia limpa sai sem marcas e a cópia de revisão as leva na tarja (direção v8.4).
+const MARKS = query.get('marcas') === '1';
 const EDL_NAME = query.get('edl');
 if (EDL_NAME && !/^[a-z0-9-]+$/.test(EDL_NAME)) throw new Error(`EDL inválida: ${EDL_NAME}`);
 const EDL = EDL_NAME
@@ -19,7 +22,8 @@ const { title, legal, tag, tagOut } = EDL.editorial;
 const BANNERS =
   EDL.editorial.banners ??
   (title ? [{ in: title.in, out: title.out, title: title.title, lines: [title.desc] }] : []);
-const LEGALS = Array.isArray(legal) ? legal : legal ? [legal] : [];
+const LEGALS = MARKS ? (Array.isArray(legal) ? legal : legal ? [legal] : []) : [];
+const TAG = MARKS && !FINAL;
 // Intervalo padrão entre as linhas do banner; a EDL pode definir `lineDelay` e `lineGap` em cada banner.
 const LINE_GAP = 280;
 const LINE_DELAY = 320;
@@ -39,7 +43,7 @@ export function build(stage, fmt) {
   stage.insertAdjacentHTML(
     'beforeend',
     `${banners.join('')}${legals.join('')}
-    ${FINAL ? '' : `<p class="demo-ed demo-ed--tag" id="ed-tag" data-surface="deep">${tag}</p>`}`,
+    ${TAG ? `<p class="demo-ed demo-ed--tag" id="ed-tag" data-surface="deep">${tag}</p>` : ''}`,
   );
   stage.dataset.fmt = fmt;
 }
@@ -62,7 +66,7 @@ export function timeline() {
       ]),
       ...LEGALS.map((l, i) => ({ sel: `#ed-legal-${i}`, in: l.in, out: l.out })),
       // Etiqueta interna só na prévia (sai antes da assinatura); a exportação final (?final=1) não a carrega.
-      ...(FINAL ? [] : [{ sel: '#ed-tag', in: ALWAYS, ...(tagOut ? { out: tagOut } : {}) }]),
+      ...(TAG ? [{ sel: '#ed-tag', in: ALWAYS, ...(tagOut ? { out: tagOut } : {}) }] : []),
     ],
     set: [],
     tween: [],

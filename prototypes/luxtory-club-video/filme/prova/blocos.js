@@ -21,8 +21,7 @@ const ENTER_MS = 480; // duration.slow (entrada do Core)
 const EXIT_MS = 280; // duration.moderate (saída do Core, stage.js MOTION.exit)
 const LEGAL_MS = 4_000;
 const LEGAL_DELAY_MS = 400; // a ressalva entra depois do corte
-const RESOLVE_AT_MS = 1_500; // resolução sonora da assinatura, depois de a logo assentar
-const AMBIENCE_HANDOFF_MS = 300; // o ambiente termina sob o ataque da resolução
+const SIGNATURE_VO_AT_MS = 1_500; // narração da assinatura, depois de a logo assentar
 // Narração: ritmo de conversa (≈ 2,6 palavras por segundo, ROTEIRO.md §4).
 const VO_WORDS_PER_S = 2.6;
 
@@ -206,15 +205,8 @@ const PLACE = {
     acc.t = at + SIGNATURE_MS;
     // A imagem anterior continua por baixo do dissolve até o fim.
     acc.shots.at(-1).to = acc.t;
-    // O ambiente da última cena sai devagar sob a assinatura e termina logo depois de a resolução entrar: nenhum
-    // corte seco nem silêncio digital entre o ambiente e a resolução.
-    const amb = acc.ambience.at(-1);
-    if (amb && amb.to === at) {
-      amb.to = at + RESOLVE_AT_MS + AMBIENCE_HANDOFF_MS;
-      amb.fadeOut = amb.to - at;
-    }
-    acc.sfx.push({ at: at + RESOLVE_AT_MS, kind: 'resolve', note: 'assinatura' });
-    if (block.vo) acc.vo.push(voLine(at + 1_500, block.vo));
+    // Som só de operações (direção v8.4): a assinatura é visual e termina em silêncio, sem resolução sonora.
+    if (block.vo) acc.vo.push(voLine(at + SIGNATURE_VO_AT_MS, block.vo));
     acc.beats.push({
       label: 'assinatura oficial',
       type: 'assinatura',
