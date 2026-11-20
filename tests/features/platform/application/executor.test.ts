@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { Actor } from '@/features/platform/application/commands/actor';
 import {
   createCommandExecutor,
+  MembershipCheckError,
   MissingAuditError,
   UnregisteredCommandError,
   type CommandHandler,
@@ -622,5 +623,158 @@ describe('executor de commands (TECH-054)', () => {
       );
       keys.add('h1');
     });
+  });
+});
+
+describe('verificação do Membership no executor (W15, REQ-011, TECH-050, TECH-051; ADR-0031 §5)', () => {
+  const TITULAR: Actor = { kind: 'user', userId: 'u-2', actingPartyId: 'p-2', role: 'titular' };
+  const spec = (name: string, membership: 'eligible' | 'not_required' | 'not_applicable') => ({
+    name,
+    module: 'luxchange' as const,
+    authority: 'titular' as const,
+    membership,
+    critical: true,
+  });
+  const membershipRegistry = new CommandRegistry([
+    spec('test_eligible', 'eligible'),
+    spec('test_not_required', 'not_required'),
+    spec('test_not_applicable', 'not_applicable'),
+  ]);
+
+  /** Gate em memória: devolve as parties fora de `active` e registra as chaves na ordem recebida. */
+  function gate(active: readonly string[]) {
+    const calls: (readonly string[])[] = [];
+    return {
+      calls,
+      port: {
+        ineligible: (_tx: string, partyIds: readonly string[]) => {
+          calls.push(partyIds);
+          return Promise.resolve(partyIds.filter((party) => !active.includes(party)));
+        },
+      },
+    };
+  }
+
+  function membershipSetup(active: readonly string[] | null) {
+    const store = new FakeStore();
+    const g = gate(active ?? []);
+    const executor = createCommandExecutor({
+      store,
+      guard: allow,
+      clock: { now: () => NOW },
+      limits: { maxAttempts: 1, lockTimeoutMs: 100 },
+      log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+      registry: membershipRegistry,
+      ...(active === null ? {} : { membership: g.port }),
+    });
+    return { store, gate: g, executor };
+  }
+
+  const command = (
+    name: string,
+    behavior: (
+      context: Parameters<CommandHandler<{ n: number }, JsonValue, string>['execute']>[0],
+    ) => Promise<void>,
+  ): CommandHandler<{ n: number }, JsonValue, string> => ({
+    command: name,
+    input: z.object({ n: z.number() }),
+    async execute(context) {
+      await behavior(context);
+      context.audit({
+        objectType: 'test',
+        objectId: 't-1',
+        before: null,
+        after: { n: context.input.n },
+      });
+      return { ok: true };
+    },
+  });
+  const asTitular = {
+    actor: TITULAR,
+    idempotencyKey: 'k-1',
+    correlationId: 'c-1',
+    input: { n: 1 },
+  };
+
+  it('[REQ-011][TECH-050] `eligible` com a party elegível: trava na ordem crescente e confirma', async () => {
+    const { executor, gate: g, store } = membershipSetup(['p-1', 'p-2']);
+    const outcome = await executor.execute(
+      command('test_eligible', (c) => c.requireEligibleMembership(['p-2', 'p-1', 'p-2'])),
+      asTitular,
+    );
+    expect(outcome).toMatchObject({ status: 'committed' });
+    expect(g.calls).toEqual([['p-1', 'p-2']]);
+    expect(store.committed).toHaveLength(1);
+  });
+
+  it('[REQ-011][TECH-050] party não elegível (ou sem Membership) → ERR_MEMBERSHIP_INELIGIBLE, nada gravado', async () => {
+    const { executor, store } = membershipSetup(['p-1']);
+    const outcome = await executor.execute(
+      command('test_eligible', (c) => c.requireEligibleMembership(['p-2'])),
+      asTitular,
+    );
+    expect(outcome).toMatchObject({ status: 'rejected', code: 'ERR_MEMBERSHIP_INELIGIBLE' });
+    expect(store.committed).toEqual([]);
+  });
+
+  it('[TECH-051] `eligible` que não comprova a party que age falha fechado (só outra party não basta)', async () => {
+    for (const behavior of [
+      () => Promise.resolve(),
+      (c: Parameters<Parameters<typeof command>[1]>[0]) => c.requireEligibleMembership(['p-1']),
+    ]) {
+      const { executor, store } = membershipSetup(['p-1', 'p-2']);
+      await expect(executor.execute(command('test_eligible', behavior), asTitular)).rejects.toThrow(
+        MembershipCheckError,
+      );
+      expect(store.committed).toEqual([]);
+    }
+  });
+
+  it('[TECH-051][BR-147] `not_required` e `not_applicable` não podem chamar a verificação; sem chamá-la, nada muda', async () => {
+    for (const name of ['test_not_required', 'test_not_applicable']) {
+      const blocked = membershipSetup(['p-2']);
+      await expect(
+        blocked.executor.execute(
+          command(name, (c) => c.requireEligibleMembership(['p-2'])),
+          asTitular,
+        ),
+      ).rejects.toThrow(MembershipCheckError);
+      expect(blocked.gate.calls).toEqual([]);
+      // Sem Membership nenhum e sem gate configurado, o command independente de Membership confirma normalmente.
+      const plain = membershipSetup(null);
+      await expect(
+        plain.executor.execute(
+          command(name, () => Promise.resolve()),
+          asTitular,
+        ),
+      ).resolves.toMatchObject({
+        status: 'committed',
+      });
+    }
+  });
+
+  it('[TECH-051] sem gate configurado, nenhum command `eligible` executa (falha fechada)', async () => {
+    const { executor, store } = membershipSetup(null);
+    await expect(
+      executor.execute(
+        command('test_eligible', (c) => c.requireEligibleMembership(['p-2'])),
+        asTitular,
+      ),
+    ).rejects.toThrow(MembershipCheckError);
+    expect(store.committed).toEqual([]);
+  });
+
+  it('[TECH-053] a verificação depois de uma classe posterior (ex.: stake) viola a ordem de travas', async () => {
+    const { executor, gate: g } = membershipSetup(['p-2']);
+    await expect(
+      executor.execute(
+        command('test_eligible', async (c) => {
+          c.locks.claim('stake', ['s-1']);
+          await c.requireEligibleMembership(['p-2']);
+        }),
+        asTitular,
+      ),
+    ).rejects.toThrow(/lock order/);
+    expect(g.calls).toEqual([]);
   });
 });

@@ -74,6 +74,7 @@ describe('grant_authorization — execução (REQ-015)', () => {
       now,
       tx: 'tx',
       locks: new LockSequence(),
+      requireEligibleMembership: () => Promise.reject(new Error('not a Membership command')),
       audit: (record) => void audit.push(record),
       emit: () => undefined,
     });
@@ -114,6 +115,7 @@ describe('grant_authorization — execução (REQ-015)', () => {
         now: new Date(),
         tx: 'tx',
         locks: new LockSequence(),
+        requireEligibleMembership: () => Promise.reject(new Error('not a Membership command')),
         audit: () => undefined,
         emit: () => undefined,
       }),
@@ -142,6 +144,7 @@ describe('grant_authorization — party inexistente (D-W2-1 encerrada, W7)', () 
         now: new Date('2026-09-15T00:00:00.000Z'),
         tx: 'tx',
         locks: new LockSequence(),
+        requireEligibleMembership: () => Promise.reject(new Error('not a Membership command')),
         audit: () => undefined,
         emit: () => undefined,
       }),

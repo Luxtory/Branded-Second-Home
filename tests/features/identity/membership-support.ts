@@ -175,11 +175,14 @@ const MEMBERSHIP_WRITES = ['membership', 'membership_transition', 'operation'];
  * reservas e transições, custódias e ocupações, convidados, parâmetros, ativações, parties e delegações. Lida pelo dono
  * do schema (sem RLS).
  */
-export async function rightsFingerprint(owner: Queryable): Promise<Record<string, string>> {
+export async function rightsFingerprint(
+  owner: Queryable,
+  also: readonly string[] = [],
+): Promise<Record<string, string>> {
   const { rows: tables } = await owner.query<{ name: string }>(
     `SELECT tablename AS name FROM pg_tables WHERE schemaname = 'app' AND NOT (tablename = ANY($1::text[]))
       ORDER BY tablename`,
-    [MEMBERSHIP_WRITES],
+    [[...MEMBERSHIP_WRITES, ...also]],
   );
   const fingerprint: Record<string, string> = {};
   for (const { name } of tables) {

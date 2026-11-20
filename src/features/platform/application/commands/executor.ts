@@ -21,6 +21,7 @@ import type {
   CommandScope,
   CommandStore,
   IdempotencyEntry,
+  MembershipGate,
   OperationDraft,
   OutboxEventDraft,
 } from './ports';
@@ -44,6 +45,13 @@ export interface CommandContext<I, Tx> {
   /** Registra objeto e antes/depois; sem ao menos um registro o commit é recusado (REQ-015). */
   audit(record: AuditRecord): void;
   emit(event: OutboxEventDraft): void;
+  /**
+   * Verificação do Membership no instante da ação (REQ-011, TECH-050; W15, ADR-0031 §5): trava `membership` das parties
+   * com `FOR SHARE` na classe 3 da TECH-053, até o commit, e recusa com `ERR_MEMBERSHIP_INELIGIBLE` se alguma não estiver
+   * elegível. Só commands com Membership `eligible` na TECH-051 podem chamá-la, e esses têm de comprovar ao menos a party
+   * que age — senão o executor falha fechado.
+   */
+  requireEligibleMembership(partyIds: readonly string[]): Promise<void>;
 }
 
 /**
@@ -115,6 +123,8 @@ export interface ExecutorDependencies<Tx> {
   readonly log: LogPort;
   readonly registry?: CommandRegistry;
   readonly newId?: () => string;
+  /** Elegibilidade do Membership (W15); ausente = nenhum command `eligible` executa (falha fechada). */
+  readonly membership?: MembershipGate<Tx>;
 }
 
 export class UnregisteredCommandError extends Error {
@@ -128,6 +138,14 @@ export class MissingAuditError extends Error {
   constructor(command: string) {
     super(`Command ${command} produced no audit record (REQ-015)`);
     this.name = 'MissingAuditError';
+  }
+}
+
+/** Uso indevido da verificação de Membership: erro de programação (rollback), nunca recusa funcional (TECH-051). */
+export class MembershipCheckError extends Error {
+  constructor(command: string, reason: string) {
+    super(`Command ${command}: ${reason} (TECH-050, TECH-051)`);
+    this.name = 'MembershipCheckError';
   }
 }
 
@@ -204,7 +222,7 @@ async function execute<I, R extends JsonValue, Tx>(
   if (quota === 'limited') return early('ERR_RATE_LIMITED');
   if (quota === 'unavailable') return early('ERR_UNAVAILABLE');
   if (quota === 'parameter_missing') return early('ERR_PARAMETER_MISSING');
-  return run(deps, handler, parsed.data, base);
+  return run(deps, spec, handler, parsed.data, base);
 }
 
 function resolveSpec(registry: CommandRegistry, command: string): CommandSpec {
@@ -215,6 +233,7 @@ function resolveSpec(registry: CommandRegistry, command: string): CommandSpec {
 
 async function run<I, R extends JsonValue, Tx>(
   deps: ExecutorDependencies<Tx>,
+  spec: CommandSpec,
   handler: CommandHandler<I, R, Tx>,
   input: I,
   base: Attempt,
@@ -223,7 +242,7 @@ async function run<I, R extends JsonValue, Tx>(
     const draft: AttemptDraft = { ...base, at: deps.clock.now() };
     try {
       const result = await deps.store.transaction(deps.limits.lockTimeoutMs, (tx) =>
-        runOnce(deps, handler, input, draft, tx),
+        runOnce(deps, spec, handler, input, draft, tx),
       );
       deps.log.info('command committed', { command: draft.command, operation_id: draft.id });
       return { status: 'committed', operationId: draft.id, result, replayed: false };
@@ -236,6 +255,7 @@ async function run<I, R extends JsonValue, Tx>(
 
 async function runOnce<I, R extends JsonValue, Tx>(
   deps: ExecutorDependencies<Tx>,
+  spec: CommandSpec,
   handler: CommandHandler<I, R, Tx>,
   input: I,
   draft: OperationDraft,
@@ -244,6 +264,8 @@ async function runOnce<I, R extends JsonValue, Tx>(
   if (!(await deps.store.reserve(tx, draft))) throw new IdempotencyKeyTaken();
   const audit: AuditRecord[] = [];
   const events: OutboxEventDraft[] = [];
+  const locks = new LockSequence();
+  const membership = membershipCheck(deps, spec, tx, locks);
   const result = await handler.execute({
     input,
     actor: draft.actor,
@@ -251,17 +273,53 @@ async function runOnce<I, R extends JsonValue, Tx>(
     operationId: draft.id,
     now: draft.at,
     tx,
-    locks: new LockSequence(),
+    locks,
     audit: (record) => {
       audit.push(redactPersonalData(record));
     },
     emit: (event) => {
       events.push({ ...event, payload: redactPersonalData<JsonObject>(event.payload) });
     },
+    requireEligibleMembership: membership.require,
   });
   if (audit.length === 0) throw new MissingAuditError(draft.command);
+  membership.assertProven(draft.actor);
   await deps.store.complete(tx, draft, result, audit, events);
   return result;
+}
+
+/**
+ * Verificação do Membership de uma tentativa (W15, ADR-0031 §5). Commands que não a chamam não mudam; um command fora de
+ * `eligible` que a chama, ou um `eligible` que não comprova a party que age, é erro de programação (rollback).
+ */
+function membershipCheck<Tx>(
+  deps: ExecutorDependencies<Tx>,
+  spec: CommandSpec,
+  tx: Tx,
+  locks: LockSequence,
+) {
+  const proven = new Set<string>();
+  return {
+    async require(partyIds: readonly string[]): Promise<void> {
+      if (spec.membership !== 'eligible')
+        throw new MembershipCheckError(spec.name, 'does not depend on Membership');
+      if (deps.membership === undefined)
+        throw new MembershipCheckError(spec.name, 'no Membership gate configured');
+      const keys = locks.claim('membership', partyIds);
+      if ((await deps.membership.ineligible(tx, keys, spec)).length > 0)
+        throw new CommandRejection('ERR_MEMBERSHIP_INELIGIBLE');
+      for (const key of keys) proven.add(key);
+    },
+    assertProven(actor: Actor): void {
+      if (spec.membership !== 'eligible') return;
+      const party = actor.kind === 'user' ? actor.actingPartyId : null;
+      if (party === null || !proven.has(party))
+        throw new MembershipCheckError(
+          spec.name,
+          'did not verify the Membership of the acting party',
+        );
+    },
+  };
 }
 
 /** Destino de uma tentativa que falhou: replay, recusa gravada, nova tentativa ou erro inesperado. */

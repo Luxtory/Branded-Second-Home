@@ -1,5 +1,5 @@
 import { createCommandExecutor, type CommandExecutor } from '../../application/commands/executor';
-import type { CommandGuard } from '../../application/commands/ports';
+import type { CommandGuard, MembershipGate } from '../../application/commands/ports';
 import type { Clock } from '../../application/clock';
 import type { LogPort } from '../../application/log';
 import { getDatabase, type Database, type DatabaseTransaction } from '../database/connection';
@@ -15,6 +15,8 @@ export interface ProductionExecutorDependencies {
   readonly database?: Database;
   /** Relógio injetável (TECH-110); padrão: o do sistema. */
   readonly clock?: Clock;
+  /** Elegibilidade do Membership (W15); só quem executa commands `eligible` precisa dela. */
+  readonly membership?: MembershipGate<DatabaseTransaction>;
 }
 
 /**
@@ -27,6 +29,7 @@ export function createProductionExecutor({
   source,
   database,
   clock = systemClock,
+  membership,
 }: ProductionExecutorDependencies): CommandExecutor<DatabaseTransaction> {
   const limits = loadRuntimeConfig(['COMMAND_MAX_ATTEMPTS', 'COMMAND_LOCK_TIMEOUT_MS'], source);
   return createCommandExecutor({
@@ -38,5 +41,6 @@ export function createProductionExecutor({
       lockTimeoutMs: limits.COMMAND_LOCK_TIMEOUT_MS,
     },
     log,
+    ...(membership === undefined ? {} : { membership }),
   });
 }
