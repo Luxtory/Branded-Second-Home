@@ -1,0 +1,100 @@
+import type { EconomicParameterKey } from '../../domain/parameter';
+
+// Textos dos parâmetros econômicos globais (W16; spec admin §14; ADR-0032 §6). Bases citadas por ID, sem valor
+// comercial: nenhum preço, percentual ou exemplo econômico aparece aqui.
+export const economicParametersMessages = {
+  metadataTitle: 'Parâmetros econômicos — Admin Luxtory',
+  title: 'Parâmetros econômicos',
+  lead: 'Valores globais versionados, só por inserção, com autoridade, base e vigência. Nenhum valor é presumido: sem versão vigente, a função que depende do parâmetro é recusada. Publicar um parâmetro não cobra ninguém nem ativa mecanismos do Club.',
+  keys: {
+    credit_multiplier: {
+      name: 'Multiplicador de Créditos',
+      unit: 'Créditos por real de PRL',
+      about: 'Créditos de uma data = PRL da data × multiplicador (01 §20).',
+    },
+    credit_validity_months: {
+      name: 'Validade dos Créditos',
+      unit: 'Meses a partir da originação do lote',
+      about: 'Prazo de validade dos Créditos (BR-191, TECH-044).',
+    },
+    luxchange_fee_rate: {
+      name: 'Percentual do Luxchange Fee',
+      unit: 'Percentual do PRL do período',
+      about: 'Fee = maior entre o percentual do PRL do período e o mínimo (01 §24, BR-232).',
+    },
+    luxchange_fee_minimum: {
+      name: 'Mínimo do Luxchange Fee',
+      unit: 'Valor em reais',
+      about: 'Valor mínimo do Fee, em dinheiro e nunca em Créditos (01 §24, BR-231, BR-232).',
+    },
+    request_deadline_hours: {
+      name: 'Prazo da Request',
+      unit: 'Horas',
+      about: 'Prazo para o detentor responder a uma Request (PD-005).',
+    },
+    membership_base_annual_price: {
+      name: 'Valor-base anual do Membership',
+      unit: 'Reais por ano por titular',
+      about:
+        'Valor-base do Membership (BR-141). Só registro: não gera cobrança, renovação, faturamento nem plano.',
+    },
+  } satisfies Record<EconomicParameterKey, { name: string; unit: string; about: string }>,
+  status: 'Situação',
+  absent: 'Ausente — funções que dependem dele são recusadas',
+  inForce: 'Vigente',
+  scheduledOnly: 'Sem versão vigente — versão agendada',
+  value: 'Valor vigente',
+  since: 'Vigente desde',
+  until: 'Até',
+  untilOpen: 'Sem término',
+  scheduled: 'Agendado',
+  scheduledEntry: (value: string, from: string) => `${value} a partir de ${from}`,
+  history: 'Histórico imutável',
+  showHistory: (count: number) => (count === 1 ? 'Ver a versão' : `Ver as ${count} versões`),
+  authority: 'Autoridade',
+  authorityAdmin: 'Admin',
+  basis: 'Base registrada',
+  recordedAt: 'Registrada em',
+  months: (count: string) => (count === '1' ? '1 mês' : `${count} meses`),
+  hours: (count: string) => (count === '1' ? '1 hora' : `${count} horas`),
+  publish: 'Publicar nova versão',
+  doneTitle: 'Versão publicada',
+  doneBody: 'A versão foi registrada com a sua autoridade e a base informada.',
+  fields: {
+    value: {
+      decimal: 'Multiplicador',
+      decimalHint: 'Número positivo, até 6 casas decimais (ex.: 2,5).',
+      fraction: 'Percentual (%)',
+      fractionHint: 'Percentual positivo até 100, com até 4 casas decimais (ex.: 2,5).',
+      money: 'Valor (R$)',
+      moneyHint:
+        'Valor em reais com até 2 casas (ex.: 1.234,56). Mais casas são recusadas, nunca arredondadas.',
+      months: 'Meses',
+      monthsHint: 'Número inteiro positivo de meses.',
+      hours: 'Horas',
+      hoursHint: 'Número inteiro positivo de horas.',
+      error: 'Informe um valor positivo no formato indicado.',
+    },
+    effective_from: 'Início da vigência (opcional)',
+    effectiveFromHint: 'Horário em UTC. Vazio: vale a partir da publicação. Nunca no passado.',
+    effectiveFromError: 'Informe data e hora válidas.',
+    effective_to: 'Término da vigência (opcional)',
+    effectiveToHint: 'Horário em UTC. Vazio: vale até a próxima versão.',
+    effectiveToError: 'Informe um término válido, depois do início.',
+    basis: 'Base registrada',
+    basisHint:
+      'Referência ao registro que autoriza a versão, sem dado pessoal (ex.: número da ata).',
+    basisError: 'Informe uma referência de até 255 caracteres, sem e-mail, telefone ou documento.',
+  },
+  submit: 'Publicar versão',
+  pending: 'Publicando…',
+  pendingStatus: 'Publicando a versão do parâmetro.',
+  rejection: {
+    vigency:
+      'Não foi possível publicar: a versão começaria no passado, antes de uma versão existente ou antes de um término já definido.',
+    permission: 'Somente o Admin publica parâmetros econômicos.',
+    invalid: 'Revise os campos destacados.',
+    unavailable: 'Serviço indisponível no momento. Tente novamente em instantes.',
+    unexpected: 'Não foi possível publicar agora.',
+  } as Record<string, string>,
+} as const;

@@ -1,6 +1,6 @@
 // Disposable local/CI runbook fixture only. Never reads DATABASE_URL or contacts a deployed database.
 import { execFile } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -455,5 +455,25 @@ export async function freeE2eNights(homeId, year, season, count) {
     );
     if (rows[0] === undefined) throw new Error(`no ${count} free ${season} nights in ${year}`);
     return rows[0].stay_date;
+  });
+}
+
+/**
+ * Super Admin próprio do E2E da W16 (banco descartável): usuário de teste com o mesmo id derivado do e-mail que a
+ * autenticação de teste usa (tests/support/e2e-server.mjs) e a atribuição `super_admin` pelo caminho do runbook. O staff
+ * compartilhado continua só Admin, sem interferir nos specs paralelos.
+ * @param {string} email
+ */
+export async function ensureE2eSuperAdmin(email) {
+  const hex = createHash('sha256').update(email.trim().toLowerCase()).digest('hex');
+  const userId = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-5${hex.slice(13, 16)}-8${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+  await withClient(disposableOwnerUrl(), async (client) => {
+    await client.query('INSERT INTO auth.users (id) VALUES ($1) ON CONFLICT DO NOTHING', [userId]);
+    const { rows } = await client.query(
+      `SELECT 1 FROM app.staff_role WHERE user_id = $1 AND role = 'super_admin' AND revoked_at IS NULL`,
+      [userId],
+    );
+    if (rows.length === 0)
+      await client.query(`SELECT app.assign_staff_role($1, 'super_admin', 'E2E W16')`, [userId]);
   });
 }

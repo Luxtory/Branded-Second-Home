@@ -153,4 +153,11 @@ spec [`pricing`](pricing.md).
   seed, migration ou teste. Valores iniciais da TECH-030 só pelo runbook, com autorização operacional (D4).
 - **Leitura.** Admin pelo servidor; o Titular não lê parâmetros globais (a política de leitura do §13 só alcança
   versões de uma Second Home).
-- **Entrada.** Server Action sobre o executor (E4, tela `/admin/parametros`); rota REST continua adiada (ADR-0030, D5).
+- **Entrada.** Server Action sobre o executor; rota REST continua adiada (ADR-0030, D5). `set_parameter` aceita
+  `second_home_id: null` só nas chaves econômicas (escopo validado no Zod e no banco); valor canônico validado pelo
+  mesmo formato do CHECK; a auditoria grava o valor e a moeda das chaves econômicas (não pessoais) e só o tamanho do
+  texto de `guest_rules`.
+- **Tela `/admin/parametros`** (Admin): cada chave ausente, vigente ou agendada, histórico imutável (valor, vigência,
+  autoridade, base, registro) e nova versão; valor no formato da tela (reais com até 2 casas, percentual com até 4,
+  multiplicador com até 6, meses e horas inteiros), convertido em texto para o valor canônico, sem `number`; horários em
+  UTC (parâmetros globais não têm fuso de Second Home).

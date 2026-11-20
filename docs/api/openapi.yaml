@@ -2047,6 +2047,10 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+        '413':
+          $ref: '#/components/responses/PrlPayloadTooLarge'
+        '415':
+          $ref: '#/components/responses/AcquisitionUnsupportedMediaType'
         '500':
           $ref: '#/components/responses/InternalError'
         '503':
@@ -2096,6 +2100,10 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+        '413':
+          $ref: '#/components/responses/PrlPayloadTooLarge'
+        '415':
+          $ref: '#/components/responses/AcquisitionUnsupportedMediaType'
         '500':
           $ref: '#/components/responses/InternalError'
         '503':
@@ -2898,6 +2906,15 @@ components:
             $ref: '#/components/schemas/Error'
     AcquisitionUnsupportedMediaType:
       description: 'ERR_UNSUPPORTED_MEDIA_TYPE: exige application/json e charset UTF-8, se informado.'
+      headers:
+        x-correlation-id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    PrlPayloadTooLarge:
+      description: 'ERR_PAYLOAD_TOO_LARGE: corpo acima de 64 KiB efetivos (até 366 noites cabem com folga); nada gravado.'
       headers:
         x-correlation-id:
           $ref: '#/components/headers/CorrelationId'

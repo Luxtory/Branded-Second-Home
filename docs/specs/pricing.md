@@ -75,6 +75,16 @@ Admin e Super Admin (MFA, TECH-050). O Titular não lê PRL na W16.
 staff com MFA, mesmos handlers das Server Actions — [`openapi.yaml`](../api/openapi.yaml). Dinheiro em JSON como
 string em unidade mínima (`amount_minor`) + `currency`.
 
+### Telas (E4)
+
+- `/admin/prl` (Admin e Super Admin): cobertura por Second Home — noites seladas, com PRL vigente e com alguma versão.
+- `/admin/prl/[id]`: noites seladas do mês (navegação entre meses selados) com situação ausente (não ofertável), vigente
+  ou só agendada, valor, início, versões agendadas e histórico imutável (valor, tipo, vigência, autoridade, base,
+  registro); horários no fuso da Second Home, com o fuso explícito. Publicação inicial (intervalo de até 366 noites,
+  valor em reais por noite, início opcional, base) para Admin ou Super Admin; alteração só aparece para o Super Admin
+  (os demais veem que só ele altera). O texto deixa claro que publicar PRL não cobra ninguém nem ativa mecanismos do
+  Club. Nenhuma superfície ao Titular (REQ-100).
+
 ### Valores exatos (TECH-033, E3)
 
 - Dinheiro: `bigint` em unidade mínima + moeda; em TypeScript, `bigint`/string, nunca `number`. Entrada da tela em reais

@@ -2,7 +2,7 @@
 
 - **Date**: 2026-11-20
 - **Author(s)**: agente de engenharia (revisão: fundador + auditoria independente)
-- **Status**: Draft (E1; revisado no C1 e no C2)
+- **Status**: Reviewed no C1; atualizado na E4 (C2)
 - **Scope**: `app.prl_publication`, `app.prl`, `app.prl_version`, `app.prl_at`, `app.prl_period_in_force`; chaves
   econômicas globais de `app.parameter`; commands `publish_initial_prl`, `change_published_prl`, `set_parameter`;
   rotas `POST /v1/admin/prl` e `POST /v1/admin/prl/changes`
@@ -53,6 +53,7 @@ Tela Admin / rota REST → executor (guard AAL2 + papel, idempotência, operaç�
 | T-1608 Information disclosure — Titular ou anônimo lê PRL por noite ou parâmetros | Sem GRANT a `authenticated`/`anon` no PRL; política do Titular em `app.parameter` só alcança versões de Second Home |
 | T-1609 DoS — publicação ou leitura gigante | 366 noites por publicação (Zod + gatilho adiado) e por leitura; rota sob sessão de staff, `Idempotency-Key` |
 | T-1610 Spoofing — sessão de staff sem MFA | Guard exige AAL2 e papel ativo (TECH-050, ADR-0008) |
+| T-1611 Elevation — papel exercido escolhido pelo servidor no PRL inicial | Lista fechada `admin`, `super_admin` na entrada única do Admin: vale o primeiro papel **ativo** do usuário, registrado na operação; o guard e o gatilho revalidam a atribuição; a alteração continua fixa em `super_admin` |
 
 ## 6. Residual risks
 
