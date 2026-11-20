@@ -110,3 +110,17 @@ export function versionInForce<V extends Pick<ParameterVersion, 'effectiveFrom' 
     ? candidate
     : null;
 }
+
+/**
+ * Situação imediatamente anterior ao início de uma sucessora **válida** (D3, ou seja, `successorConflict` nulo): a versão
+ * mais recente, se ela ainda vigorar até o início (sem término, ou término no próprio início); `null` = lacuna sem versão
+ * vigente (a mais recente terminou antes) ou nenhuma versão. Leitura derivada da mesma regra, não outra decisão.
+ */
+export function predecessorInForce<
+  V extends Pick<ParameterVersion, 'effectiveFrom' | 'effectiveTo'>,
+>(latest: V | null, start: Date): V | null {
+  if (latest === null) return null;
+  return latest.effectiveTo === null || latest.effectiveTo.getTime() >= start.getTime()
+    ? latest
+    : null;
+}

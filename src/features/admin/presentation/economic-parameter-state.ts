@@ -5,8 +5,11 @@ export type EconomicParameterField = 'value' | 'effective_from' | 'effective_to'
 
 /** Revisão antes de confirmar (padrão "anterior → novo" com motivo do legado), calculada no servidor. */
 export interface EconomicParameterReview {
+  /** Vigente no instante atual; `null` = ausente. */
   readonly current: string | null;
   readonly scheduled: readonly string[];
+  /** Situação imediatamente anterior à nova vigência; `null` = ausente (nenhuma versão ou lacuna após término). */
+  readonly previous: string | null;
   readonly proposed: string;
   readonly from: string;
   readonly to: string;

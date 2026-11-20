@@ -95,7 +95,8 @@ export const economicParametersMessages = {
     current: 'Vigente agora',
     currentNone: 'Ausente',
     scheduled: 'Agendado',
-    change: 'Novo valor',
+    change: 'Antes da nova vigência → novo',
+    previousNone: 'Ausente',
     compare: (current: string, proposed: string) => `${current} → ${proposed}`,
     from: 'Início da vigência',
     fromNow: 'A partir da confirmação',
@@ -111,7 +112,7 @@ export const economicParametersMessages = {
   pendingStatus: 'Publicando a versão do parâmetro.',
   rejection: {
     vigency:
-      'Não foi possível publicar: a versão começaria no passado, antes de uma versão existente ou antes de um término já definido.',
+      'A nova versão começaria no passado, no início ou antes de uma versão existente (inclusive agendada) ou antes de um término já definido. Escolha um início posterior.',
     permission: 'Somente o Admin publica parâmetros econômicos.',
     invalid: 'Revise os campos destacados.',
     unavailable: 'Serviço indisponível no momento. Tente novamente em instantes.',

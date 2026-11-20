@@ -5,7 +5,8 @@ import { redirect } from 'next/navigation';
 import { executeAdminCommand, exercisedRole, getStaffAccess } from '@/features/identity';
 import { getDatabase, isNonPersonalReference, type ErrorCode } from '@/features/platform';
 import { isEconomicParameterKey } from '../domain/parameter';
-import { createParameterHandlers, parameterHistory, versionInForce } from '../parameters';
+import { reviewParameterVersion } from '../application/review-parameter';
+import { createParameterHandlers, parameterHistory } from '../parameters';
 import { displayValue, toCanonicalValue } from './economic-parameter-input';
 import type { EconomicParameterField, EconomicParameterState } from './economic-parameter-state';
 import { economicParametersMessages as text } from './i18n/economic-parameters-pt-br';
@@ -88,14 +89,32 @@ export async function setEconomicParameterAction(
       rejection: 'invalid',
     };
   const now = new Date();
+  // Revisão com as mesmas regras do command (D3): proposta incompatível volta antes da confirmação; a confirmação
+  // relê o histórico (mudança concorrente) e o command e o banco revalidam.
   const versions = await parameterHistory(getDatabase(), state.parameter, null);
-  const inForce = versionInForce(versions, now);
+  const checked = reviewParameterVersion(
+    versions,
+    from === null ? null : new Date(from),
+    to === null ? null : new Date(to),
+    now,
+  );
+  if (checked.conflict !== null)
+    return {
+      ...state,
+      values,
+      stage: 'edit',
+      review: null,
+      fieldErrors:
+        checked.conflict === 'end_not_future' ? { effective_to: true } : { effective_from: true },
+      rejection: checked.conflict === 'end_not_future' ? 'invalid' : 'vigency',
+    };
   const show = (canonical: string) => displayValue(state.parameter, canonical, text);
   const review = {
-    current: inForce === null ? null : show(inForce.value),
-    scheduled: versions
-      .filter((version) => version.effectiveFrom.getTime() > now.getTime())
-      .map((version) => text.scheduledEntry(show(version.value), utc(version.effectiveFrom))),
+    current: checked.current === null ? null : show(checked.current.value),
+    scheduled: checked.scheduled.map((version) =>
+      text.scheduledEntry(show(version.value), utc(version.effectiveFrom)),
+    ),
+    previous: checked.previous === null ? null : show(checked.previous.value),
     proposed: show(value),
     from: from === null ? text.review.fromNow : utc(new Date(from)),
     to: to === null ? text.review.toOpen : utc(new Date(to)),

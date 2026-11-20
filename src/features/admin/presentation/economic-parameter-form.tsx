@@ -74,9 +74,7 @@ function ReviewBlock({ state }: { readonly state: EconomicParameterState }) {
       : ([[text.review.scheduled, review.scheduled.join(' · ')]] as [string, string][])),
     [
       text.review.change,
-      review.current === null
-        ? review.proposed
-        : text.review.compare(review.current, review.proposed),
+      text.review.compare(review.previous ?? text.review.previousNone, review.proposed),
     ],
     [text.review.from, review.from],
     [text.review.to, review.to],

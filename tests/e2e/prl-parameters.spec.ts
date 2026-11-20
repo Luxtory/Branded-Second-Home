@@ -40,9 +40,16 @@ function twoNights(): [string, string] {
   return [start, addDays(start, 1)];
 }
 
-async function publishParameter(section: Locator, page: Page, label: string, value: string) {
+async function publishParameter(
+  section: Locator,
+  page: Page,
+  label: string,
+  value: string,
+  start = '',
+) {
   await section.getByText('Publicar nova versão').tap();
   await section.getByLabel(label, { exact: true }).fill(value);
+  await section.getByLabel('Início da vigência (opcional)').fill(start);
   await section.getByLabel('Base registrada').fill('Ata sintética W16 E2E');
   await section.getByRole('button', { name: 'Revisar versão' }).tap();
   return section;
@@ -89,20 +96,27 @@ test.describe('W16 E4 — PRL e parâmetros econômicos no Admin', () => {
     await publishParameter(minimum, page, 'Valor (R$)', '43,21');
     await minimum.getByRole('button', { name: 'Confirmar publicação' }).tap();
     await expect(page.getByRole('status')).toContainText('Mínimo do Luxchange Fee');
-    await publishParameter(
-      page.locator('section#luxchange_fee_minimum'),
-      page,
-      'Valor (R$)',
-      '50,00',
-    );
-    await expect(page.locator('section#luxchange_fee_minimum')).toContainText(
-      /R\$\s43,21\s→\sR\$\s50,00/,
-    );
+    // Versão agendada para amanhã (UTC); depois, a imediata é recusada já na revisão e a posterior compara com a
+    // agendada — não com a vigente agora.
+    const fee = () => page.locator('section#luxchange_fee_minimum');
+    await publishParameter(fee(), page, 'Valor (R$)', '50,00', `${addDays(civilToday(), 1)}T15:00`);
+    await expect(fee()).toContainText(/R\$\s43,21\s→\sR\$\s50,00/);
+    await fee().getByRole('button', { name: 'Confirmar publicação' }).tap();
+    await expect(page.getByRole('status')).toContainText('Mínimo do Luxchange Fee');
+    await publishParameter(fee(), page, 'Valor (R$)', '55,00');
+    await expect(
+      page.getByRole('alert').filter({ hasText: 'versão existente (inclusive agendada)' }),
+    ).toBeVisible();
+    await fee()
+      .getByLabel('Início da vigência (opcional)')
+      .fill(`${addDays(civilToday(), 2)}T15:00`);
+    await fee().getByRole('button', { name: 'Revisar versão' }).tap();
+    await expect(fee()).toContainText('Vigente agora');
+    await expect(fee()).toContainText(/R\$\s43,21/);
+    await expect(fee()).toContainText(/R\$\s50,00 a partir de/);
+    await expect(fee()).toContainText(/R\$\s50,00\s→\sR\$\s55,00/);
     await gate(page, errors, 'w16-02-parametro-revisao');
-    await page
-      .locator('section#luxchange_fee_minimum')
-      .getByRole('button', { name: 'Voltar e editar' })
-      .tap();
+    await fee().getByRole('button', { name: 'Voltar e editar' }).tap();
 
     // PRL: cobertura e consulta; o Admin não vê o modo de alteração.
     await page.goto('/admin/prl');
