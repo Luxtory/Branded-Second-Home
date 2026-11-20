@@ -117,6 +117,11 @@ export const NON_CRITICAL_OPERATIONS: readonly CommandSpec[] = [
   nonCritical('register_party', 'identity'),
   nonCritical('create_party_delegation', 'identity'),
   nonCritical('revoke_party_delegation', 'identity'),
+  // Membership (W15, spec identity §15, ADR-0031): ciclo de vida da TECH-055 pelo Admin, sem efeito econômico.
+  nonCritical('activate_membership', 'identity'),
+  nonCritical('suspend_membership', 'identity'),
+  nonCritical('reactivate_membership', 'identity'),
+  nonCritical('end_membership', 'identity'),
   {
     name: 'activate_party_delegation',
     module: 'identity',

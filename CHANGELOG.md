@@ -14,6 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- W15 — Membership (REQ-011, REQ-050, PD-001; ADR-0031). Admin: seção "Membership" nos dados da pessoa ou empresa
+  (situação Vigente, Suspenso, Encerrado ou sem Membership; histórico com data, situação anterior, base registrada e
+  papel) e confirmação de cada mudança com a base: ativar, suspender, reativar e encerrar, conforme a TECH-055; só
+  pessoa ou empresa com Second Home vigente ativa ou reativa. REST `POST /v1/admin/parties/{id}/membership/*` sobre os
+  mesmos commands. Titular: situação do Membership na Área e na representação, com o aviso de que ela não altera
+  propriedade, Direito de Uso nem compromissos já constituídos, e avisos de mudança na central de notificações. O
+  executor verifica o Membership no instante da ação para os mecanismos do Club das próximas waves; uso próprio e
+  convidados não dependem dele. Sem plano, valor, renovação ou cobrança; nenhum Membership real operado sem
+  autorização.
 - W14 — Seleção Luxtory, regras de convidados e declaração (REQ-016, REQ-036, REQ-092, parte de parâmetros do
   REQ-095; ADR-0030). Admin: tela "Seleção Luxtory" da Second Home Co-Owner (capacidade e uso por exercício e
   categoria, janela N+1, seleção de um intervalo de noites com finalidade, base registrada e confirmação; só a custódia,

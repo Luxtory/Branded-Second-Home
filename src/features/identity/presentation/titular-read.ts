@@ -13,7 +13,9 @@ import {
 } from '../domain/party-delegation';
 import { maskPartyDocument, type DocumentType } from '../domain/party-document';
 import type { VerifiedSession } from '../domain/session';
+import type { MembershipState } from '../domain/membership';
 import { environmentDocumentProtector } from '../infrastructure/pii/document-protector';
+import { visibleMemberships } from '../infrastructure/postgres-membership';
 import {
   postgresPartyReader as reader,
   type OwnDelegation,
@@ -27,6 +29,8 @@ export interface Representation {
   readonly delegationId: string;
   readonly activatedAt: Date | null;
   readonly validUntil: Date | null;
+  /** Membership da party (W15; RLS), sem base nem autor; `null` = sem Membership. */
+  readonly membership: { readonly state: MembershipState; readonly changedAt: Date } | null;
 }
 
 /** Convite pendente: nenhuma informação da party antes da ativação (decisão do fundador de 2026-10-21). */
@@ -65,6 +69,7 @@ export function readTitularOverview(
       asDelegation(own, session.userId),
     );
     const parties = await reader.visibleParties(tx);
+    const memberships = await visibleMemberships(tx);
     const representations = parties.flatMap((party) => {
       const delegation = delegations.find(
         (item) => item.partyId === party.id && isDelegationCurrent(item, now),
@@ -79,6 +84,7 @@ export function readTitularOverview(
           delegationId: delegation.id,
           activatedAt: delegation.activatedAt,
           validUntil: delegation.validUntil,
+          membership: memberships.get(party.id) ?? null,
         },
       ];
     });

@@ -11,6 +11,7 @@ import {
   type JsonValue,
 } from '@/features/platform';
 import { createAuthorizationGuard } from '../application/authorization-guard';
+import { postgresMembershipGate } from '../infrastructure/postgres-membership';
 import type { HoldingDirectory } from '../application/party-ports';
 import { createPostgresGrantDirectory } from '../infrastructure/postgres-grants';
 import { createPostgresDelegationDirectory } from '../infrastructure/postgres-parties';
@@ -52,7 +53,13 @@ export async function executeTitularCommand<I, R extends JsonValue>(
       holdings: representation?.holdings,
       clock: systemClock,
     });
-    const executor = createProductionExecutor({ guard, log, database: database() });
+    // W15: elegibilidade do Membership no instante da ação, para os commands `eligible` (ADR-0031 §5).
+    const executor = createProductionExecutor({
+      guard,
+      log,
+      database: database(),
+      membership: postgresMembershipGate,
+    });
     const outcome = await executor.execute(handler, {
       actor: {
         kind: 'user',

@@ -51,6 +51,8 @@ channels:
         $ref: '#/components/messages/OwnUseExceptionResolved'
       ownUseBookingInvalidated:
         $ref: '#/components/messages/OwnUseBookingInvalidated'
+      membershipStateChanged:
+        $ref: '#/components/messages/MembershipStateChanged'
 
 operations:
   publishOutboxEvent:
@@ -292,6 +294,26 @@ components:
                 const: booking.own_use_invalidated
               payload:
                 $ref: '#/components/schemas/OwnUseBookingInvalidatedPayload'
+    MembershipStateChanged:
+      name: identity.membership_state_changed
+      title: Mudança de estado do Membership (REQ-097, W15)
+      description: |
+        Gravado por `activate_membership`, `suspend_membership`, `reactivate_membership` e `end_membership` na transação
+        da mudança (`dedup_key` = `identity.membership_state_changed:<operation_id>`: cada operação grava exatamente uma
+        transição, `app.membership_transition` tem a operação como chave). Consumido pela notificação à party do
+        Membership — todos os representantes com delegação vigente a veem. Uma notificação por transição; notificação
+        não cria direito, prazo nem consequência econômica (REQ-097). Só ids, estados e instante: nunca a base
+        registrada nem dado pessoal (ADR-0031).
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/OutboxEnvelope'
+          - type: object
+            properties:
+              type:
+                const: identity.membership_state_changed
+              payload:
+                $ref: '#/components/schemas/MembershipStateChangedPayload'
     OutboxEvent:
       name: OutboxEvent
       title: Envelope de evento do outbox
@@ -574,6 +596,31 @@ components:
             - $ref: '#/components/schemas/OwnUseLifecycleNights'
             - type: 'null'
           description: Consumo revertido por `correction` (Co-Owner, TECH-026); nulo no Owner.
+    MembershipStateChangedPayload:
+      type: object
+      additionalProperties: false
+      required: [membership_id, recipient_party_id, from_state, to_state, changed_at]
+      properties:
+        membership_id:
+          type: string
+          format: uuid
+        recipient_party_id:
+          type: string
+          format: uuid
+          description: A party do Membership (pseudônimo interno, nunca documento).
+        from_state:
+          oneOf:
+            - type: string
+              enum: [active, suspended, ended]
+            - type: 'null'
+          description: Nulo na criação (∅ → active).
+        to_state:
+          type: string
+          enum: [active, suspended, ended]
+        changed_at:
+          type: string
+          format: date-time
+          description: Instante do banco na mudança.
     OutboxEnvelope:
       type: object
       additionalProperties: false

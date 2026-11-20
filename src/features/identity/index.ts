@@ -38,3 +38,5 @@ export {
   type TitularRepresentation,
 } from './presentation/titular-command';
 export type { HoldingDirectory, RepresentedHolding } from './application/party-ports';
+// W15 — texto do aviso de mudança do Membership para a central de notificações do Titular (booking).
+export { membershipNotificationCopy } from './presentation/membership-notification-copy';

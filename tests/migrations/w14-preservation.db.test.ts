@@ -1,10 +1,13 @@
-import { copyFile, mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { dbmate, MIGRATIONS_DIR } from '../../scripts/lib/dbmate.mjs';
-import { applySupabaseCompat } from '../../scripts/lib/pg.mjs';
-import { createTestDatabase, type TestDatabase } from '../support/test-database';
+import {
+  databaseBefore,
+  differences,
+  migrationDown,
+  migrationsFromNewest,
+  snapshot,
+  type Snapshot,
+} from '../support/catalog-snapshot';
+import { createTestDatabase } from '../support/test-database';
 
 /**
  * W14 E2 — prova de preservação: a W14 não altera nada da W12/W13 além do ramo da seleção. O `db:check` compara só
@@ -16,44 +19,7 @@ const W14 = [
   '20261119061704_booking_guest_nomination',
   '20261119061701_admin_parameter',
 ];
-
-const SNAPSHOT_SQL = `
-  SELECT 'function ' || p.oid::regprocedure::text AS name, pg_get_functiondef(p.oid) AS def
-    FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'app' AND p.prokind = 'f'
-  UNION ALL
-  SELECT 'function-acl ' || p.oid::regprocedure::text, coalesce(p.proacl::text, '')
-    FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'app'
-  UNION ALL
-  SELECT 'constraint ' || c.conrelid::regclass::text || '.' || c.conname, pg_get_constraintdef(c.oid)
-    FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace WHERE n.nspname = 'app'
-  UNION ALL
-  SELECT 'trigger ' || t.tgrelid::regclass::text || '.' || t.tgname, pg_get_triggerdef(t.oid)
-    FROM pg_trigger t JOIN pg_class r ON r.oid = t.tgrelid JOIN pg_namespace n ON n.oid = r.relnamespace
-   WHERE n.nspname = 'app' AND NOT t.tgisinternal
-  UNION ALL
-  SELECT 'policy ' || tablename || '.' || policyname,
-         concat_ws(' | ', cmd, roles::text, coalesce(qual, ''), coalesce(with_check, ''))
-    FROM pg_policies WHERE schemaname = 'app'
-  UNION ALL
-  SELECT 'view ' || c.oid::regclass::text, pg_get_viewdef(c.oid)
-    FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'app' AND c.relkind = 'v'
-  UNION ALL
-  SELECT 'acl ' || c.oid::regclass::text,
-         coalesce(c.relacl::text, '') || ' ' ||
-         coalesce((SELECT string_agg(a.attname || '=' || a.attacl::text, ',' ORDER BY a.attnum)
-                     FROM pg_attribute a WHERE a.attrelid = c.oid AND a.attacl IS NOT NULL), '')
-    FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'app'
-  ORDER BY 1`;
-
-type Snapshot = ReadonlyMap<string, string>;
-
-async function snapshot(database: TestDatabase): Promise<Snapshot> {
-  const { rows } = await database.pool.query<{ name: string; def: string }>(SNAPSHOT_SQL);
-  return new Map(rows.map((row) => [row.name, row.def]));
-}
-
-const down = async (name: string) =>
-  (await readFile(join(MIGRATIONS_DIR, `${name}.sql`), 'utf8')).split('-- migrate:down')[1]!;
+const FIRST_W14 = [...W14].sort()[0]!;
 
 /** Linhas inseridas por `after` sobre `before`: prefixo e sufixo comuns; o resto de `before` volta como `removed`. */
 function lineDelta(before: string, after: string) {
@@ -68,37 +34,28 @@ function lineDelta(before: string, after: string) {
 }
 
 describe('W14 — preservação das funções e do catálogo da W12/W13 (E2)', () => {
-  let w13: TestDatabase;
+  let w13: Awaited<ReturnType<typeof databaseBefore>>;
   let w13Snapshot: Snapshot;
-  let partialDir: string;
 
   beforeAll(async () => {
-    // Banco só com as migrations anteriores à W14 (estado da main 001ef0d), pelo mesmo dbmate do repositório.
-    partialDir = await mkdtemp(join(tmpdir(), 'w14-preservation-'));
-    const files = (await readdir(MIGRATIONS_DIR)).filter((file) => file.endsWith('.sql')).sort();
-    for (const file of files.filter((name) => !W14.some((w) => name.startsWith(w))))
-      await copyFile(join(MIGRATIONS_DIR, file), join(partialDir, file));
-    w13 = await createTestDatabase({ migrated: false });
-    await applySupabaseCompat(w13.url);
-    await dbmate(['up', '--strict'], { url: w13.url, migrationsDir: partialDir });
-    w13Snapshot = await snapshot(w13);
+    // Banco só com as migrations anteriores à W14 (estado da main 001ef0d); as waves seguintes (W15+) também ficam de
+    // fora, senão o `up --strict` da W14 sairia de ordem.
+    w13 = await databaseBefore(FIRST_W14);
+    w13Snapshot = await snapshot(w13.database);
   });
 
   afterAll(async () => {
-    await w13?.drop();
-    if (partialDir !== undefined) await rm(partialDir, { recursive: true, force: true });
+    await w13?.dispose();
   });
 
   it('[TECH-110][ADR-0030] desfazer a W14 restaura exatamente o catálogo da W13 (definições, não só nomes)', async () => {
     const subject = await createTestDatabase();
     try {
       expect((await snapshot(subject)).size).toBeGreaterThan(w13Snapshot.size);
-      for (const name of W14) await subject.pool.query(await down(name));
-      const restored = await snapshot(subject);
-      const differences = [...new Set([...w13Snapshot.keys(), ...restored.keys()])].filter(
-        (key) => w13Snapshot.get(key) !== restored.get(key),
-      );
-      expect(differences).toEqual([]);
+      // A W14 e as posteriores, da mais nova para a mais antiga.
+      for (const name of await migrationsFromNewest(FIRST_W14))
+        await subject.pool.query(await migrationDown(name));
+      expect(differences(w13Snapshot, await snapshot(subject))).toEqual([]);
     } finally {
       await subject.drop();
     }
@@ -107,9 +64,7 @@ describe('W14 — preservação das funções e do catálogo da W12/W13 (E2)', (
   it('[ADR-0030] a W14 só acrescenta o ramo da seleção às funções de custódia e o INV-4 às invariantes', async () => {
     const subject = await createTestDatabase({ migrated: false });
     try {
-      await applySupabaseCompat(subject.url);
-      await dbmate(['up', '--strict'], { url: subject.url, migrationsDir: partialDir });
-      await dbmate(['up', '--strict'], { url: subject.url, migrationsDir: MIGRATIONS_DIR });
+      await w13.migrateThenAll(subject.url);
       const after = await snapshot(subject);
       const changed = [...w13Snapshot.keys()].filter((key) => after.get(key) !== w13Snapshot.get(key));
       expect(changed.sort()).toEqual([

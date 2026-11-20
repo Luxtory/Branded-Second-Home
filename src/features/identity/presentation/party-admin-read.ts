@@ -21,7 +21,12 @@ import {
 } from '../domain/party-document';
 import { createRepresentativeAccounts } from '../infrastructure/auth/representative-accounts';
 import { environmentDocumentProtector } from '../infrastructure/pii/document-protector';
+import {
+  readMembershipForAdmin,
+  type MembershipHistoryEntry,
+} from '../infrastructure/postgres-membership';
 import { postgresPartyStore } from '../infrastructure/postgres-parties';
+import type { MembershipRecord } from '../application/membership-ports';
 import {
   postgresPartyReader as reader,
   type SealedParty,
@@ -44,8 +49,15 @@ export interface DelegationView extends DelegationRecord {
   readonly account: AccountLabel | null;
 }
 
+/** Membership da party (W15) com o histórico, mais recente primeiro; `null` = sem Membership. */
+export interface MembershipView {
+  readonly record: MembershipRecord;
+  readonly history: readonly MembershipHistoryEntry[];
+}
+
 export interface PartyDetail extends PartySummary {
   readonly delegations: readonly DelegationView[];
+  readonly membership: MembershipView | null;
 }
 
 export interface PartyAdminReadDependencies {
@@ -126,12 +138,15 @@ export function readPartyDetail(
     if (party === null) return null;
     const delegations = await reader.partyDelegations(tx, partyId);
     const labels = await accounts.labels(tx, [...new Set(delegations.map((item) => item.userId))]);
+    // W15: estado e histórico do Membership na mesma leitura auditada (`admin_read` `party`).
+    const membership = await readMembershipForAdmin(tx, partyId);
     return {
       ...summaryOf(protector, party),
       delegations: delegations.map((item) => ({
         ...item,
         account: labels.get(item.userId) ?? null,
       })),
+      membership,
     };
   });
 }

@@ -149,6 +149,7 @@ function harness(scenario: Scenario = {}) {
       now: NOW,
       tx: {},
       locks: new LockSequence(),
+      requireEligibleMembership: () => Promise.reject(new Error('not a Membership command')),
       audit: (record) => audit.push(record),
       emit: (event) => events.push(event),
     });

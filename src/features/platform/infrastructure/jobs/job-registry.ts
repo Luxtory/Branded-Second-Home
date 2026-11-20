@@ -8,6 +8,7 @@ import {
   createFlagNoShowCandidatesJob,
   createOwnUseBookingConsumers,
 } from '@/features/booking/jobs';
+import { createMembershipConsumers } from '@/features/identity/jobs';
 import { createInitialDrawConsumers } from '@/features/ownership';
 import type { Clock } from '../../application/clock';
 import { JobRegistry, type JobRunner } from '../../application/jobs/registry';
@@ -41,6 +42,8 @@ export function createOutboxConsumers({
     ...createUseRightConsumers({ clock }),
     // W12 — notificação da confirmação da reserva de uso próprio (spec booking).
     ...createOwnUseBookingConsumers({ clock }),
+    // W15 — notificação da mudança de estado do Membership (spec identity §15).
+    ...createMembershipConsumers({ clock }),
   ]);
 }
 

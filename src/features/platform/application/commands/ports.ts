@@ -67,6 +67,15 @@ export interface OutboxEventDraft {
   readonly availableAt?: Date;
 }
 
+/**
+ * Elegibilidade do Membership no instante da ação (TECH-050, TECH-053; W15, ADR-0031 §5), implementada pelo identity:
+ * trava `membership` com `FOR SHARE` por `party_id`, na ordem recebida (crescente), até o commit, e devolve as parties
+ * não elegíveis para o command (sem Membership ou fora de `active`). O executor decide a recusa.
+ */
+export interface MembershipGate<Tx> {
+  ineligible(tx: Tx, partyIds: readonly string[], spec: CommandSpec): Promise<readonly string[]>;
+}
+
 /** Persistência do pipeline de commands (implementação PostgreSQL em `infrastructure/commands/`). */
 export interface CommandStore<Tx> {
   findIdempotency(scope: string, idempotencyKey: string): Promise<IdempotencyEntry | null>;

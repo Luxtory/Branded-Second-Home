@@ -530,3 +530,122 @@ identity (`HoldingDirectory`), implementada pela superfície pública do ownersh
 diretório, nenhum command do Titular é autorizado (a ativação da delegação, W7, segue com a autoridade `invitee`). O
 handler revalida na transação com `FOR SHARE` na delegação (ADR-0021), e o banco repete a conferência no gatilho da
 reserva.
+
+## 15. W15 — Membership
+
+> Wave 15 do plano ([`w15-membership.md`](../plan/w15-membership.md)). IDs: REQ-011, REQ-050, PD-001; TECH-030, TECH-050,
+> TECH-053, TECH-055. Decisões D1–D4 do fundador e da auditoria (2026-11-19):
+> [ADR-0031](../adr/0031-membership-estado-historico-e-elegibilidade-no-executor.md). STRIDE:
+> [`identity-admin`](../security/threats/identity-admin.md) §W15.
+
+### 15.1 Goal e non-goals
+
+**Goal.** Cada party (CPF/CNPJ) tem no máximo um Membership, nos estados `active`, `suspended` e `ended` com as
+transições da TECH-055, administrado pelo Admin sob guard, base registrada e auditoria. O Membership é verificado no
+instante da ação dos commands que o exigem (TECH-051 `eligible`), sem tocar propriedade, holding, Ação, Direito de Uso,
+rotação, Créditos ou compromissos já constituídos (BR-144, BR-320, BR-321).
+
+**Non-goals.** Planos, preços, benefícios, descontos e prioridade (D1, P-5); validade, renovação, job e cobrança (D3,
+`03` §15); Luxchange, Luxplus e locação (W20+): nenhum handler `eligible` existe na W15; fechamento de Request por perda
+de elegibilidade (W21/W22); Créditos "Indisponíveis por Membership" (W17).
+
+### 15.2 Regras
+
+- **Um por party** (PD-001): `app.membership.party_id` único (`conflict_membership_party`); a party já é única por
+  CPF/CNPJ (§13.3). A reativação depois do encerramento reusa a mesma linha.
+- **Condição, não papel** (PD-001): permissões continuam pelo papel exercido em cada Second Home (holding, §14); o
+  Membership não entra no guard nem na holding.
+- **Só Titular entra em `active`** (D2): ativação e reativação exigem holding vigente da party no instante (gatilho do
+  banco). Perder a holding depois não muda o estado. Suspensão e encerramento não exigem holding.
+- **Efeitos prospectivos** (BR-320, BR-321, TECH-050): mudar o Membership não desfaz reserva, custódia, Direito de Uso,
+  rotação ou compromisso; nenhuma FK ou gatilho liga o Membership a essas tabelas.
+- **Uso próprio e convidados independem de Membership** (BR-147, TECH-051 `not_required`).
+- **Elegível** = `active` (TECH-050); restrições aplicáveis ao mecanismo (inadimplência, conformidade) entram nas suas
+  waves no mesmo ponto de verificação.
+
+### 15.3 Modelo de dados (`migrations/20261119234739_identity_membership.sql`)
+
+**`app.membership`** — estado atual: `id`, `party_id` (único), `state` (`active` | `suspended` | `ended`), `basis` (base
+registrada da última mudança, 1–255, sem dado pessoal), `operation_id`, `changed_at`, `changed_by`, `authority`
+(`admin`), `created_at`, `created_operation_id`.
+
+**`app.membership_transition`** — histórico append-only escrito pelo banco: `operation_id` (chave), `membership_id`,
+`party_id`, `from_state` (nulo só na criação), `to_state`, `basis`, `recorded_at`, `recorded_by`, `authority`; par da
+TECH-055 por CHECK (`conflict_membership_transition_pair`).
+
+**Gatilho `membership_write` (BEFORE INSERT OR UPDATE)**: par da TECH-055 (`conflict_membership_transition`); party e
+origem imutáveis (`conflict_membership_immutable`); operação nova, `pending` na transação, do command da transição, sem
+Second Home nem party representada (`membership_operation_provenance`, `inventory_operation_provenance`); atribuição
+Admin ativa revalidada com trava compartilhada (`permission_staff_role`); `changed_at = clock_timestamp()`,
+`changed_by`/`authority` da operação; holding vigente para `active` (`conflict_membership_requires_titular`).
+**Gatilho `membership_record_transition` (AFTER)**: copia a linha validada para o histórico (`SECURITY DEFINER`). Sem
+DELETE/TRUNCATE no Membership; sem UPDATE/DELETE/TRUNCATE no histórico.
+
+**Privilégios.** `luxtory_app`: SELECT; INSERT só de `id, party_id, state, basis, operation_id`; UPDATE só de `state,
+basis, operation_id` (também viabiliza `FOR SHARE`/`FOR NO KEY UPDATE`); histórico só SELECT. `authenticated`: SELECT de
+`id, party_id, state, changed_at` das parties com delegação vigente do `auth.uid()` (padrão da §13.9); histórico
+ilegível. Down recusa com linhas.
+
+**Erros (TECH-056).** `conflict_membership_*` → `ERR_STATE_TRANSITION` (prefixo existente); procedência forjada não é
+recusa funcional (500); verificação de elegibilidade → `ERR_MEMBERSHIP_INELIGIBLE`. Nenhum código novo.
+
+### 15.4 Operações (não críticas do REQ-095; `CRITICAL_COMMANDS` intacto) — E3
+
+| Operação | Transição | Rota | Recusas |
+|---|---|---|---|
+| `activate_membership` | ∅ → `active` | `POST /v1/admin/parties/{id}/membership/activate` → 201 | `ERR_NOT_FOUND` · `ERR_STATE_TRANSITION` (já existe; não é Titular) · `ERR_VALIDATION` |
+| `suspend_membership` | `active` → `suspended` | `…/membership/suspend` → 200 | `ERR_NOT_FOUND` · `ERR_STATE_TRANSITION` |
+| `reactivate_membership` | `suspended` \| `ended` → `active` | `…/membership/reactivate` → 200 | `ERR_NOT_FOUND` · `ERR_STATE_TRANSITION` (inclusive não Titular) |
+| `end_membership` | `active` \| `suspended` → `ended` | `…/membership/end` → 200 | `ERR_NOT_FOUND` · `ERR_STATE_TRANSITION` |
+
+Autoridade `admin` (AAL2, sem hierarquia — ADR-0008); corpo `{ basis }` (1–255, sem dado pessoal). O handler trava a
+linha com `FOR NO KEY UPDATE` por `party_id` (classe 3 da TECH-053), valida a transição, grava `membership`, auditoria
+(antes/depois só ids e estados) e o evento `identity.membership_state_changed` (dedup `<tipo>:<operation_id>`). REST e
+Server Actions sobre os mesmos handlers; sessão por cookie, `Idempotency-Key`, `Origin` igual ao host (TECH-100).
+
+### 15.5 Verificação no instante da ação (REQ-011) — E3
+
+O executor oferece ao handler a verificação de elegibilidade das parties indicadas: trava `membership` com `FOR SHARE`
+por `party_id` na ordem da TECH-053 (mantida até o commit) e recusa com `ERR_MEMBERSHIP_INELIGIBLE` se alguma não
+estiver `active` ou não tiver Membership. No fim do handler, o executor falha fechado se um command `eligible` não
+comprovou a party que age, ou se um command `not_required`/`not_applicable` chamou a verificação. Commands que não a
+chamam não mudam. Aceite de Request (REQ-064, W22): as duas parties.
+
+### 15.6 Notificação e telas — E3/E4
+
+- Evento → consumidor → `app.notification` à party (todos os representantes vigentes a veem; delegação revogada deixa de
+  ver), uma por transição; só ids, estados e instante, nunca a base. Sem segundo sistema de notificações.
+- Admin (`/admin/pessoas-e-empresas/[id]`): seção "Membership" com estado, desde quando, histórico (data, de → para,
+  base, papel) e as ações válidas; confirmação com a base.
+- Titular (`/titular/representacoes/[partyId]` e selo no início): Vigente · Suspenso · Encerrado (REQ-096) ou "Sem
+  Membership"; textos factuais — uso próprio e Direito de Uso não dependem do Membership (BR-147); reservas e
+  compromissos já constituídos continuam válidos (BR-321).
+
+### 15.7 Edge cases
+
+Party inexistente → `ERR_NOT_FOUND`; segunda ativação ou ativações concorrentes → uma só; mudanças concorrentes → em
+série, a segunda valida contra o estado deixado pela primeira; ação × suspensão → a primeira a travar decide (READ
+COMMITTED com `FOR SHARE`); party sem holding → não ativa; holding encerrada depois → estado mantido, reativação
+recusada; representante de CNPJ vê o Membership da CNPJ; delegação revogada → nada visível.
+
+### 15.8 Implementação (E3/E4, 2026-11-20)
+
+- **Código.** Domínio `identity/domain/membership.ts` (TECH-055, elegível = `active`, evento); operações
+  `application/membership-commands.ts` (porta `membership-ports.ts`); store e gate `infrastructure/postgres-membership.ts`
+  (`FOR NO KEY UPDATE` nas mudanças; `FOR SHARE` crescente na verificação; leituras do Admin e do Titular); rotas
+  `presentation/membership-routes.ts` e `src/app/v1/admin/parties/[id]/membership/*/route.ts`; Server Action
+  `membership-admin-actions.ts`; telas em `party-admin-pages.tsx` (seção e `MembershipChangePage`,
+  `/admin/pessoas-e-empresas/[id]/membership/{ativar|suspender|reativar|encerrar}`) e `titular-pages.tsx`; textos em
+  `i18n/membership-pt-br.ts`.
+- **Executor.** `CommandContext.requireEligibleMembership` + porta `MembershipGate` do platform; só o executor do Titular
+  (`executeTitularCommand`) recebe o gate. Nenhum command real é `eligible` com handler na W15.
+- **Notificação.** Consumidor `identity_membership_notification` registrado pela entrada leve `identity/jobs.ts` (sem
+  puxar telas nem capturar exportações do platform no topo do módulo); a central do Titular (booking) delega ao identity
+  o texto do tipo `identity.membership_changed`.
+- **Rotas.** `afterCommit` injetável como nas da W7 (o disparo do outbox pós-resposta usa `after()` do Next).
+- **Leituras.** Admin: Membership e histórico na leitura auditada `party`. Titular: estado das parties representadas
+  pela RLS, na mesma transação da Área.
+- **Auditoria do C2 (2026-11-20).** A Server Action só aceita as quatro ações próprias (`Object.hasOwn`; `in` aceitaria
+  chaves herdadas do protótipo, que chegariam ao executor e virariam 500). Na central, avisos sem Second Home (o do
+  Membership é da party) mostram o horário com o fuso explícito ("BRT", "UTC"): o fuso usado — o da primeira Second Home
+  visível, ou UTC sem nenhuma — não aparece no aviso; avisos de reserva seguem no fuso da Second Home exibida.

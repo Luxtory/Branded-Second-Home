@@ -40,6 +40,7 @@ export type {
   AuthorizationDecision,
   CommandGuard,
   CommandScope,
+  MembershipGate,
   OutboxEventDraft,
 } from './application/commands/ports';
 export {
@@ -52,6 +53,7 @@ export {
 } from './application/commands/registry';
 export {
   createCommandExecutor,
+  MembershipCheckError,
   type CommandContext,
   type CommandExecutor,
   type CommandHandler,

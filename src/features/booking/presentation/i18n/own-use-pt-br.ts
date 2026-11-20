@@ -243,7 +243,7 @@ export const bookingsMessages = {
 export const notificationMessages = {
   metadataTitle: 'Notificações',
   title: 'Notificações',
-  lead: 'Avisos das reservas das pessoas e empresas que você representa.',
+  lead: 'Avisos das reservas e do Membership das pessoas e empresas que você representa.',
   empty: 'Nenhuma notificação.',
   backToArea: 'Área do Titular',
   confirmed: (label: string, checkin: string, checkout: string, nights: number) =>

@@ -3,7 +3,12 @@ import type { ReactNode } from 'react';
 import { PageHeader, RecordList, type RecordAttribute } from '@/design-system/react';
 import { adminRoleGate, AdminShell, type ExercisedAdminSession } from '@/features/admin';
 import { systemClock, unavailableKeys } from '@/features/platform';
+import { membershipTransition, type MembershipState } from '../domain/membership';
 import { delegationStatus } from '../domain/party-delegation';
+import {
+  membershipAdminMessages as membershipText,
+  membershipStates,
+} from './i18n/membership-pt-br';
 import { partyMessages as text } from './i18n/parties-pt-br';
 import { Instant } from './instant';
 import {
@@ -14,13 +19,14 @@ import {
   type DelegationView,
   type PartyDetail,
 } from './party-admin-read';
+import { MembershipChangeForm } from './membership-admin-forms';
 import {
   InviteRepresentativeForm,
   PartySearchForm,
   RegisterPartyForm,
   RevokeDelegationForm,
 } from './party-admin-forms';
-import { partyPaths, type PartyStatus } from './party-paths';
+import { partyPaths, type MembershipAction, type PartyStatus } from './party-paths';
 
 /** Autoridade "Admin" (REQ-095): sem hierarquia, Super Admin sozinho não vê pessoas e empresas (ADR-0008). */
 const PARTY_ROLE = 'admin';
@@ -240,6 +246,88 @@ function Representatives({ party }: { readonly party: PartyDetail }) {
   );
 }
 
+/** Mudanças admitidas pela TECH-055 a partir do estado atual (sem Membership: só a ativação). */
+function membershipActions(state: MembershipState | null): MembershipAction[] {
+  if (state === null) return ['activate'];
+  return (['suspend', 'reactivate', 'end'] as const).filter(
+    (action) => membershipTransition(state, action) !== null,
+  );
+}
+
+/** Estado de destino de uma mudança admitida a partir do estado atual. */
+function membershipTarget(
+  state: MembershipState | null,
+  action: MembershipAction,
+): MembershipState | null {
+  if (action === 'activate') return state === null ? 'active' : null;
+  return state === null ? null : membershipTransition(state, action);
+}
+
+/** Seção "Membership" do detalhe (W15): situação, mudanças admitidas e histórico (lidos na leitura auditada). */
+function MembershipPanel({ party }: { readonly party: PartyDetail }) {
+  const membership = party.membership;
+  const state = membership?.record.state ?? null;
+  return (
+    <>
+      <p className="lx-body">{membershipText.lead}</p>
+      <KeyValues
+        items={[
+          {
+            label: membershipText.stateLabel,
+            value: state === null ? membershipText.none : membershipStates[state],
+          },
+          ...(membership === null
+            ? []
+            : [
+                {
+                  label: membershipText.sinceLabel,
+                  value: <Instant iso={membership.record.changedAt.toISOString()} />,
+                },
+              ]),
+        ]}
+      />
+      <div className="lx-form__actions">
+        {membershipActions(state).map((action) => (
+          <a
+            key={action}
+            className={`lx-button ${action === 'activate' || action === 'reactivate' ? 'lx-button--primary' : 'lx-button--secondary'}`}
+            href={partyPaths.membership(party.id, action)}
+          >
+            {membershipText.actions[action]}
+          </a>
+        ))}
+      </div>
+      {membership === null ? null : (
+        <RecordList
+          label={membershipText.historyTitle}
+          items={membership.history.map((entry) => ({
+            id: entry.recordedAt.toISOString(),
+            title: membershipStates[entry.toState],
+            attributes: [
+              {
+                label: membershipText.historyAt,
+                value: <Instant iso={entry.recordedAt.toISOString()} />,
+              },
+              {
+                label: membershipText.historyFrom,
+                value:
+                  entry.fromState === null
+                    ? membershipText.historyCreation
+                    : membershipStates[entry.fromState],
+              },
+              { label: membershipText.historyBasis, value: entry.basis },
+              {
+                label: membershipText.historyRole,
+                value: membershipText.roles[entry.authority] ?? entry.authority,
+              },
+            ],
+          }))}
+        />
+      )}
+    </>
+  );
+}
+
 /** `/admin/pessoas-e-empresas/[id]`: documento mascarado e representantes (auditado). */
 export async function PartyDetailPage({
   id,
@@ -285,6 +373,9 @@ export async function PartyDetailPage({
       </Section>
       <Section id="party-representatives" title={detail.representativesTitle}>
         <Representatives party={party} />
+      </Section>
+      <Section id="party-membership" title={membershipText.sectionTitle}>
+        <MembershipPanel party={party} />
       </Section>
     </PartyPage>
   );
@@ -384,6 +475,53 @@ export async function RevokeDelegationPage({
         delegationId={delegation.id}
         idempotencyKey={randomUUID()}
       />
+    </PartyPage>
+  );
+}
+
+/** `/admin/pessoas-e-empresas/[id]/membership/[acao]`: confirmação da mudança do Membership com a base (W15). */
+export async function MembershipChangePage({
+  id,
+  action,
+}: {
+  readonly id: string;
+  readonly action: MembershipAction | null;
+}) {
+  const gate = await adminRoleGate(PARTY_ROLE);
+  if (gate.kind === 'blocked') return gate.page;
+  const party =
+    UUID.test(id) && action !== null
+      ? await readOrUnavailable(() => readPartyDetail(gate.session, id))
+      : null;
+  if (party === 'unavailable') return <Unavailable session={gate.session} />;
+  const state = party?.membership?.record.state ?? null;
+  const target = action === null ? null : membershipTarget(state, action);
+  if (party === null || action === null || target === null)
+    return <NotFound session={gate.session} />;
+  const page = membershipText.page[action];
+  return (
+    <PartyPage session={gate.session}>
+      <PageHeader
+        title={page.title}
+        lead={page.lead}
+        context={{ href: partyPaths.party(id), label: membershipText.contextLink }}
+      />
+      <Section id="membership-summary" title={membershipText.summaryTitle}>
+        <KeyValues
+          items={[
+            { label: text.detail.documentLabel, value: party.maskedDocument },
+            {
+              label: membershipText.currentLabel,
+              value: state === null ? membershipText.none : membershipStates[state],
+            },
+            { label: membershipText.nextLabel, value: membershipStates[target] },
+          ]}
+        />
+      </Section>
+      {/* Espaçamento do Design System só entre `.lx-page-section` irmãs: o formulário fica na sua própria seção. */}
+      <div className="lx-page-section">
+        <MembershipChangeForm partyId={party.id} action={action} idempotencyKey={randomUUID()} />
+      </div>
     </PartyPage>
   );
 }

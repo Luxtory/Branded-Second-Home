@@ -5,6 +5,7 @@ import {
   OWN_USE_EXCEPTION_RESOLVED,
   OWN_USE_NO_SHOW_DECLARED,
 } from '../application/own-use-lifecycle-events';
+import { membershipNotificationCopy } from '@/features/identity';
 import {
   lifecycleLabels,
   lifecycleNotificationMessages as text,
@@ -179,6 +180,7 @@ export function notificationCopy(
     case OWN_USE_BOOKING_INVALIDATED:
       return invalidated(data, format);
     default:
-      return null;
+      // W15: mudança do Membership (texto do identity); outros tipos → aviso genérico.
+      return membershipNotificationCopy(kind, data, format.instant);
   }
 }
