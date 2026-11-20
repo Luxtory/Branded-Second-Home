@@ -16,20 +16,3 @@ export function localToInstant(value: string, timeZone: string): string | null {
     return null;
   }
 }
-
-const NIGHT = /^\d{4}-\d{2}-\d{2}$/;
-
-/** Noites civis de `[first, last]` (inclusive), ou `null` se inválido ou acima do limite. */
-export function nightsBetween(first: string, last: string, limit: number): string[] | null {
-  if (!NIGHT.test(first) || !NIGHT.test(last)) return null;
-  try {
-    const start = Temporal.PlainDate.from(first, { overflow: 'reject' });
-    const end = Temporal.PlainDate.from(last, { overflow: 'reject' });
-    const count = start.until(end, { largestUnit: 'days' }).days + 1;
-    if (count < 1 || count > limit) return null;
-    return Array.from({ length: count }, (_, i) => start.add({ days: i }).toString());
-  } catch {
-    // Data inexistente: recusa de entrada do formulário.
-    return null;
-  }
-}

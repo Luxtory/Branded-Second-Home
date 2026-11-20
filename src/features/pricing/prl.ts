@@ -19,9 +19,17 @@ export {
 export {
   prlCoverage,
   prlHistory,
+  sealedCalendar,
   sealedNightsBetween,
   type PrlCoverage,
 } from './infrastructure/postgres-prl-store';
+export {
+  reviewPrlPublication,
+  type PrlNightState,
+  type PrlReview,
+  type PrlReviewIssue,
+  type PrlReviewRow,
+} from './application/prl-review';
 
 export function createPrlHandlers() {
   const store = createPostgresPrlStore();

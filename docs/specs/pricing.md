@@ -78,12 +78,23 @@ string em unidade mínima (`amount_minor`) + `currency`.
 ### Telas (E4)
 
 - `/admin/prl` (Admin e Super Admin): cobertura por Second Home — noites seladas, com PRL vigente e com alguma versão.
-- `/admin/prl/[id]`: noites seladas do mês (navegação entre meses selados) com situação ausente (não ofertável), vigente
-  ou só agendada, valor, início, versões agendadas e histórico imutável (valor, tipo, vigência, autoridade, base,
-  registro); horários no fuso da Second Home, com o fuso explícito. Publicação inicial (intervalo de até 366 noites,
-  valor em reais por noite, início opcional, base) para Admin ou Super Admin; alteração só aparece para o Super Admin
-  (os demais veem que só ele altera). O texto deixa claro que publicar PRL não cobra ninguém nem ativa mecanismos do
-  Club. Nenhuma superfície ao Titular (REQ-100).
+- `/admin/prl/[id]`, com modos separados (`?modo=consultar|inicial|alteracao&mes=AAAA-MM`):
+  - **Consultar:** calendário do mês (`.lx-calendar` do DS, renderizado no servidor) com navegação entre os meses e
+    exercícios selados; cada noite diz no nome acessível a categoria canônica (Alta pelo traço do DS, só informativa),
+    a situação (sem PRL, vigente, só agendada) e leva ao detalhe da noite: valor vigente, versões agendadas e histórico
+    imutável (valor, tipo, vigência, autoridade, base, registro), no fuso da Second Home.
+  - **Publicar PRL inicial** (Admin ou Super Admin) e **Alterar PRL publicado** (só Super Admin; para o Admin o modo
+    não existe, nem pela URL): calendário de seleção com alternância por noite (`aria-pressed`), mês inteiro ou só Alta
+    ou Média/Baixa do mês, valor comum aplicado às noites e valor próprio por noite, até 366 noites. Só noites
+    elegíveis ao tipo aceitam seleção (a inicial não alcança noite publicada; a alteração não alcança noite sem PRL):
+    um lote nunca mistura as duas operações. A categoria não é editável.
+  - **Revisão no servidor** antes da confirmação (`reviewPrlPublication`, `pricing/application/prl-review.ts`): tipo,
+    vigência, noites com categoria, vigente × novo na alteração, PRL somado e prévia de Créditos com o multiplicador
+    vigente (`creditsForPrl`); sem multiplicador, "não configurado". Problemas (noite publicada, sem PRL, não selada,
+    repetida, valor inválido, início retroativo ou não posterior) voltam por noite. A confirmação refaz a revisão e só
+    então executa o command; o cliente não calcula nada econômico.
+  - O texto deixa claro que publicar PRL não cobra ninguém nem ativa mecanismos do Club. Nenhuma superfície ao Titular
+    (REQ-100).
 
 ### Valores exatos (TECH-033, E3)
 

@@ -21,18 +21,24 @@ export const prlMessages = {
   detailLead:
     'Um PRL por noite; o PRL de um período é a soma das noites. Uma vez publicado, só o Super Admin altera, e a alteração vale só para o futuro: o que já foi formado preserva a versão usada.',
   back: 'Voltar ao PRL',
+  modes: {
+    label: 'Modo',
+    consult: 'Consultar',
+    initial: 'Publicar PRL inicial',
+    change: 'Alterar PRL publicado',
+  },
   monthTitle: (month: string) => `Noites de ${month}`,
-  monthNav: 'Meses selados',
   previousMonth: 'Mês anterior',
   nextMonth: 'Próximo mês',
   monthEmpty: 'Nenhuma noite selada neste mês.',
   nightsLabel: (month: string) => `PRL das noites de ${month}`,
+  season: 'Categoria',
+  seasons: { alta: 'Alta', media: 'Média/Baixa' },
   status: 'Situação',
   statusAbsent: 'Sem PRL — noite não ofertável em mecanismo que use PRL',
   statusInForce: 'PRL vigente',
   statusScheduledOnly: 'Sem PRL vigente — versão agendada',
   inForceValue: 'Valor vigente',
-  inForceSince: 'Vigente desde',
   scheduledLabel: 'Agendado',
   scheduled: (value: string, from: string) => `${value} a partir de ${from}`,
   history: 'Histórico imutável',
@@ -47,12 +53,89 @@ export const prlMessages = {
   basis: 'Base registrada',
   recordedAt: 'Registrada em',
 
+  calendar: {
+    weekdays: [
+      ['D', 'domingo'],
+      ['S', 'segunda-feira'],
+      ['T', 'terça-feira'],
+      ['Q', 'quarta-feira'],
+      ['Q', 'quinta-feira'],
+      ['S', 'sexta-feira'],
+      ['S', 'sábado'],
+    ] as readonly (readonly [string, string])[],
+    legend: 'Legenda do calendário',
+    legendAbsent: 'Sem PRL',
+    legendInForce: 'PRL vigente',
+    legendScheduled: 'Alteração agendada',
+    legendSelected: 'Selecionada',
+    legendAlta: 'Categoria Alta (calendário canônico)',
+    absentShort: 'sem PRL',
+    scheduledShort: 'alteração agendada',
+    selected: 'selecionada',
+    unsealed: 'fora do calendário selado',
+    notInitial: 'já tem PRL; a alteração é só do Super Admin',
+    notChange: 'ainda sem PRL; use a publicação inicial',
+    exercises: 'Exercícios',
+    exercise: (year: string) => `Exercício ${year}`,
+  },
+  selection: {
+    count: (count: number) =>
+      count === 0
+        ? 'Nenhuma noite selecionada.'
+        : count === 1
+          ? '1 noite selecionada.'
+          : `${count} noites selecionadas.`,
+    capped: 'Limite de 366 noites por publicação atingido.',
+    month: 'Selecionar o mês',
+    monthAlta: 'Só Alta do mês',
+    monthMedia: 'Só Média/Baixa do mês',
+    clear: 'Limpar seleção',
+    common: 'Valor comum (R$)',
+    commonHint:
+      'Aplicado às noites que você selecionar a seguir, ou a todas com o botão abaixo. Até 2 casas decimais; nada é arredondado.',
+    apply: 'Aplicar a todas as selecionadas',
+    empty: 'Selecione noites no calendário.',
+    listTitle: (count: number) => (count === 1 ? '1 noite no lote' : `${count} noites no lote`),
+    currentLabel: 'Vigente',
+    amountLabel: 'Novo valor (R$)',
+    amountFor: (night: string) => `PRL de ${night} (R$)`,
+    removeLabel: 'Seleção',
+    removeShort: 'Tirar do lote',
+    remove: (night: string) => `Tirar ${night} do lote`,
+    current: (value: string) => `Vigente: ${value}`,
+    nightsError: 'Selecione ao menos uma noite e informe o valor de cada uma.',
+    review: 'Revisar publicação',
+  },
+  review: {
+    title: 'Revisão antes de confirmar',
+    kind: 'Operação',
+    validity: 'Vigência',
+    validityNow: 'A partir da confirmação',
+    nights: 'Noites',
+    total: 'PRL somado',
+    compare: (current: string, proposed: string) => `${current} → ${proposed}`,
+    credits: 'Prévia de Créditos',
+    creditsPreview: 'Créditos (prévia)',
+    creditsValue: (value: string) => `${value} Créditos`,
+    creditsUnavailable: 'Multiplicador não configurado: prévia indisponível',
+    linesLabel: 'Noites e valores do lote',
+    current: 'Vigente',
+    proposed: 'Novo',
+    value: 'Valor',
+    notice:
+      'A prévia de Créditos usa o multiplicador vigente e não origina Créditos. Confirmar registra a versão de cada noite; não cobra ninguém nem ativa mecanismos do Club.',
+    confirm: { initial: 'Confirmar publicação inicial', change: 'Confirmar alteração' } as Record<
+      string,
+      string
+    >,
+    edit: 'Voltar e editar',
+  },
   initialTitle: 'Publicar PRL inicial',
   initialIntro:
-    'Só para noites seladas ainda sem PRL. O mesmo valor vale para cada noite do intervalo; noites com PRL já publicado recusam a publicação inteira.',
+    'Só noites seladas ainda sem PRL podem ser selecionadas. Aplique um valor comum e ajuste noites específicas; a revisão mostra datas, valores e totais antes da confirmação.',
   changeTitle: 'Alterar PRL publicado',
   changeIntro:
-    'Exclusivo do Super Admin. Só para noites com PRL publicado; a nova versão começa agora ou num instante futuro, depois da última versão de cada noite.',
+    'Exclusivo do Super Admin. Só noites com PRL publicado podem ser selecionadas; a revisão compara o valor vigente com o novo. A nova versão começa na confirmação ou num instante futuro, depois da última versão de cada noite.',
   changeRestricted:
     'Somente o Super Admin altera PRL já publicado. Para corrigir uma noite, peça a alteração a quem tem esse papel.',
   doneTitle: { initial: 'PRL inicial publicado', change: 'PRL alterado' } as Record<string, string>,
@@ -60,34 +143,33 @@ export const prlMessages = {
     'A versão foi registrada com a sua autoridade e a base informada. Ela não cobra ninguém nem ativa mecanismos do Club.',
 
   fields: {
-    first_night: 'Primeira noite',
-    firstNightHint: 'Noite selada do calendário da Second Home.',
-    last_night: 'Última noite',
-    lastNightHint: 'Incluída no intervalo. Até 366 noites por publicação.',
-    nightsError:
-      'Informe um intervalo válido de até 366 noites, com a última noite igual ou depois da primeira.',
-    amount: 'PRL por noite (R$)',
-    amountHint:
-      'Valor em reais com até 2 casas, por exemplo 1.234,56. Mais casas são recusadas, nunca arredondadas.',
-    amountError: 'Informe um valor positivo em reais, com até 2 casas decimais.',
     effective_from: 'Início da vigência (opcional)',
     effectiveFromHint:
-      'Horário da Second Home. Vazio: vale a partir da publicação. Nunca no passado.',
+      'Horário da Second Home. Vazio: vale a partir da confirmação. Nunca no passado.',
     effectiveFromError: 'Informe um horário válido e existente no fuso da Second Home.',
     basis: 'Base registrada',
     basisHint:
       'Referência ao registro que autoriza a publicação, sem dado pessoal (ex.: número da ata).',
     basisError: 'Informe uma referência de até 255 caracteres, sem e-mail, telefone ou documento.',
   },
-  submit: { initial: 'Publicar PRL inicial', change: 'Registrar alteração' } as Record<
-    string,
-    string
-  >,
   pending: 'Registrando…',
+  reviewing: 'Revisando…',
   pendingStatus: 'Registrando a publicação do PRL.',
+  issues: {
+    empty: 'Nenhuma noite no lote',
+    too_many: 'Mais de 366 noites no lote',
+    duplicate: 'Noite repetida',
+    not_sealed: 'Fora do calendário selado',
+    already_published: 'Já têm PRL (alteração só pelo Super Admin)',
+    not_published: 'Ainda sem PRL (use a publicação inicial)',
+    invalid_amount: 'Valor inválido (positivo, em reais, até 2 casas)',
+    retroactive: 'Início no passado',
+    not_after_latest: 'O início não é posterior à última versão destas noites',
+  } as Record<string, string>,
   rejection: {
+    issues: 'Revise o lote antes de continuar.',
     vigency:
-      'Não foi possível registrar: alguma noite já tem PRL (ou ainda não tem, na alteração), não está no calendário selado, ou o início não é posterior à última versão.',
+      'Não foi possível registrar: o lote mudou desde a revisão (noite publicada, sem PRL ou com versão mais recente). Revise novamente.',
     permission: 'Seu papel não permite esta publicação.',
     not_found: 'Second Home não encontrada.',
     invalid: 'Revise os campos destacados.',

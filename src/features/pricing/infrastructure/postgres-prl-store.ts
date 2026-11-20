@@ -200,3 +200,23 @@ export async function prlCoverage(db: Reader, at: Date): Promise<readonly PrlCov
     lastSealed: row.last_sealed,
   }));
 }
+
+/**
+ * Calendário selado da Second Home, com a categoria canônica de cada noite (Alta ou Média/Baixa, selada na W10). A
+ * categoria só organiza e filtra a tela: o PRL pertence à noite e nada aqui a reclassifica.
+ */
+export async function sealedCalendar(
+  db: Reader,
+  secondHomeId: string,
+): Promise<readonly { readonly stayDate: string; readonly season: 'alta' | 'media' }[]> {
+  const rows = await db
+    .selectFrom('app.second_home_date')
+    .select([sql<string>`stay_date::text`.as('night'), 'season'])
+    .where('second_home_id', '=', secondHomeId)
+    .orderBy('stay_date')
+    .execute();
+  return rows.map((row) => ({
+    stayDate: row.night,
+    season: row.season === 'alta' ? 'alta' : 'media',
+  }));
+}

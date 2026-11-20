@@ -15,9 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - W16 — PRL e parâmetros econômicos (REQ-013, REQ-052; TECH-030, TECH-031, TECH-033; ADR-0032). Admin: tela "PRL"
-  (cobertura por Second Home; por noite selada do mês, PRL ausente, vigente ou agendado e histórico imutável com
-  autoridade, base e vigência), publicação inicial de um intervalo de noites sem PRL por Admin ou Super Admin e
-  alteração só pelo Super Admin, sempre com efeito para o futuro. Tela "Parâmetros econômicos" (Admin): multiplicador e
+  (cobertura por Second Home; consulta em calendário mensal com PRL ausente, vigente ou agendado e histórico imutável
+  com autoridade, base e vigência) e precificação em lote no calendário — noites individuais, mês inteiro ou só Alta
+  ou Média/Baixa, valor comum e valores próprios por noite, revisão com totais e prévia de Créditos antes de confirmar
+  —, com publicação inicial por Admin ou Super Admin e alteração só pelo Super Admin, sempre com efeito para o futuro. Tela "Parâmetros econômicos" (Admin): multiplicador e
   validade dos Créditos, percentual e mínimo do Luxchange Fee, prazo da Request e valor-base anual do Membership, cada
   um ausente, vigente ou agendado, com histórico e nova versão. REST `POST /v1/admin/prl` e `POST /v1/admin/prl/changes`
   sobre os mesmos commands. Valores exatos (dinheiro em centavos, Créditos decimais, Fee com HALF_UP uma vez) e o
