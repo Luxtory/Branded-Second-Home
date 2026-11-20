@@ -122,3 +122,35 @@ coberto pela W14.
   `ERR_VALIDATION`. Tela `/admin/catalogo/second-homes/[id]/regras-de-convidados`: em vigor, histórico (início, fim
   efetivo, autoridade, base, publicação, texto) e publicação; datas no horário da Second Home (`datetime-local`,
   horário inexistente ou ambíguo recusado).
+
+## 14. Parâmetros econômicos globais (W16)
+
+Plano: [`w16-prl-parametros-e-snapshot.md`](../plan/w16-prl-parametros-e-snapshot.md); decisão:
+[ADR-0032](../adr/0032-prl-parametros-economicos-e-contrato-de-snapshot.md) §6–§7. Amplia o §13 sem alterar suas
+regras: mesma tabela `app.parameter`, mesmo command `set_parameter` (Admin + base), mesma vigência D3. O PRL fica na
+spec [`pricing`](pricing.md).
+
+- **Escopo global.** `second_home_id` nulo para as chaves econômicas; `guest_rules` continua a única chave por Second
+  Home (CHECK de escopo). Trava do escopo `app.parameter:<chave>:global`; vigência, unicidade do início
+  (`NULLS NOT DISTINCT`) e `app.parameter_at(chave, NULL, instante)` tratam o escopo global como um escopo próprio.
+- **Chaves (lista fechada) e tipos no banco** — valor em texto canônico, validado por CHECK:
+
+  | Chave | Base | Tipo | Consumidor |
+  |---|---|---|---|
+  | `credit_multiplier` | `01` §20 | decimal > 0, até 6 casas, sem zero à direita | W20 |
+  | `credit_validity_months` | BR-191, TECH-044 | inteiro de meses ≥ 1 | W17 |
+  | `luxchange_fee_rate` | `01` §24, BR-232 | fração em (0, 1], até 6 casas | W19, W21 |
+  | `luxchange_fee_minimum` | `01` §24, BR-232 | dinheiro: unidade mínima ≥ 1 + `currency = 'BRL'` | W19, W21 |
+  | `request_deadline_hours` | PD-005 | inteiro de horas ≥ 1 | W21 |
+  | `membership_base_annual_price` | BR-141 | dinheiro: unidade mínima ≥ 1 + `currency = 'BRL'`, por ano por titular | — (registro) |
+
+  Zero e negativo são recusados (BR-361); limites superiores são técnicos. `currency` só existe nas chaves monetárias.
+- **Valor-base do Membership.** Só registro e histórico: não cria cobrança, renovação, faturamento, plano nem integração
+  financeira, e não toca `app.membership` (D1–D4 da W15).
+- **Adiados (D1).** Taxa de Administração, descontos Luxplus, taxas e comissões de locação: entram por migration
+  própria quando a Luxtory definir a forma e houver consumidor.
+- **Ausência.** Sem versão vigente, quem depende recusa com `ERR_PARAMETER_MISSING`; nenhum valor padrão no código,
+  seed, migration ou teste. Valores iniciais da TECH-030 só pelo runbook, com autorização operacional (D4).
+- **Leitura.** Admin pelo servidor; o Titular não lê parâmetros globais (a política de leitura do §13 só alcança
+  versões de uma Second Home).
+- **Entrada.** Server Action sobre o executor (E4, tela `/admin/parametros`); rota REST continua adiada (ADR-0030, D5).

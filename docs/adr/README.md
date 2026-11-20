@@ -39,6 +39,7 @@ described by Michael Nygard. The ADR process itself is established in
 | 0029 | [Governança do repositório: identidade dos agentes, revisão obrigatória e Environment de produção](0029-governanca-do-repositorio-identidades-revisao-e-environment.md) | Proposed (PR draft de governança, 2026-11-18) |
 | 0030 | [Seleção Luxtory, parâmetros e declaração de convidados: regras no banco, K3 e vigência só por inserção](0030-selecao-luxtory-parametros-e-convidados.md) | Accepted (plano corrigido da W14 aprovado em 2026-11-19; implementação em PR draft) |
 | 0031 | [Membership: estado com histórico escrito pelo banco e elegibilidade verificada no executor](0031-membership-estado-historico-e-elegibilidade-no-executor.md) | Accepted (plano da W15 aprovado em 2026-11-19; C1 aprovado; E3 + E4 em PR draft) |
+| 0032 | [PRL por data com autoridade no banco, parâmetros econômicos globais e contrato de snapshot](0032-prl-parametros-economicos-e-contrato-de-snapshot.md) | Accepted (plano da W16 aprovado em 2026-11-20; E0–E2 em PR draft, parada no C1) |
 
 The technical decisions ADR-001…008 of the canonical
 [03 — Technical Spec](../specs/canonical/03-technical-spec.md) also apply, by reference.

@@ -1290,6 +1290,22 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   formada preserva o PRL; data sem PRL não é ofertável` · `[TECH-001] parâmetro ausente → ERR_PARAMETER_MISSING;
   zero nunca presumido` · `[TECH-033] HALF_UP uma única vez no valor final`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-013,REQ-052 exits 0, stop after 4 tries`
+- **Emenda W16 (2026-11-20, plano aprovado pelo fundador e pela auditoria independente; prevalece sobre as linhas
+  acima no que divergir):** plano [`w16-prl-parametros-e-snapshot.md`](w16-prl-parametros-e-snapshot.md),
+  [ADR-0032](../adr/0032-prl-parametros-economicos-e-contrato-de-snapshot.md).
+  - **D1:** seis chaves econômicas globais em `app.parameter` — multiplicador, validade dos Créditos, percentual e
+    mínimo do Fee, prazo da Request e valor-base anual do Membership (só registro: sem cobrança, renovação,
+    faturamento, plano ou integração financeira; D1–D4 da W15 preservadas). Taxa de Administração, descontos Luxplus e
+    taxas e comissões de locação ficam adiados até a Luxtory definir a forma e haver consumidor.
+  - **D2:** `POST /v1/admin/prl` e `POST /v1/admin/prl/changes` como adaptadores mínimos dos handlers das Server Actions;
+    `POST /v1/admin/parameters` segue adiada (D5 da W14).
+  - **D3:** contrato `EconomicTerms` na W16; a tabela de snapshot nasce na primeira wave que produzir o efeito econômico,
+    na mesma transação (obrigação de W17, W19, W20, W21 e W23).
+  - **D4:** sem capability nova; nenhum PRL ou parâmetro econômico real em Production sem autorização operacional.
+  - **Cobertura parcial:** REQ-052 sem o vínculo persistente à operação (W20/W21; EC-9 na W21); REQ-095 sem Taxa de
+    Administração, descontos e taxas de locação.
+  - **Execução:** um PR draft; checkpoint C1 obrigatório depois das migrations e dos testes de banco (E1 + E2).
+    Migrations: 66 no total.
 
 ### Wave 17 — Créditos e Carteira
 

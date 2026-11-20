@@ -741,3 +741,29 @@ Reaproveitadas: `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` (namespace
 valores são decisão da operação (TECH-001: o código não tem default). Nunca criar `BOOKING_AUTHORIZATION_LIMITER_MODE`
 na Vercel. Configurar essas variáveis, o Environment do autorizador (E5) e a ativação são decisões futuras do fundador.
 Workflow, programa e roteiro do aprovador (E5): [`autorizador-de-reservas.md`](autorizador-de-reservas.md).
+
+## Preparar a W16 em produção (PRL e parâmetros econômicos)
+
+Nada a ativar: a W16 não cria capability, e K1/K2/K3 continuam fechadas (ADR-0032 §10). As migrations
+`admin_parameter_economic_keys` e `pricing_prl` só criam estrutura; o deploy não publica PRL nem parâmetro.
+
+**Autorização (D4).** Nenhum PRL ou parâmetro econômico real é publicado em Production sem autorização operacional
+específica do fundador, registrada fora do repositório. Os valores iniciais vêm das fontes canônicas citadas por ID —
+multiplicador (`01` §20), validade dos Créditos (BR-191), percentual e mínimo do Luxchange Fee (`01` §24), prazo da
+Request (PD-005), valor-base anual do Membership (BR-141) — e o PRL de cada noite, da tabela aprovada pela Luxtory
+(P-5). Nunca copiar valores para o código, seed, migration, teste, PR ou commit (repositório público).
+
+1. **Pré-condições (só leitura, SQL Editor):** quantidade de migrations e a última aplicada; `app.capability_activation`
+   vazia; papéis ativos em `app.staff_role` (`admin` para publicar; `super_admin` para alterar PRL publicado — atribuição
+   pelo procedimento de staff acima, com base registrada); noites seladas da Second Home em `app.second_home_date`.
+2. **Parâmetros econômicos:** Admin com MFA, tela `/admin/parametros`, uma versão por chave, com a base (ex.: referência
+   da ata) e o início (vazio = imediato). Conferir em seguida a versão vigente e o histórico na própria tela.
+3. **PRL inicial:** Admin ou Super Admin com MFA, tela `/admin/prl/<Second Home>` (ou `POST /v1/admin/prl` com
+   `Idempotency-Key`): período de noites seladas sem PRL + valor + base. Até 366 noites por publicação; noite fora do
+   calendário selado ou já publicada recusa a publicação inteira.
+4. **Alteração do PRL publicado:** só Super Admin (tela ou `POST /v1/admin/prl/changes`), com início presente ou futuro
+   posterior ao último início de cada noite. Operações já formadas preservam a versão que as formou (BR-182).
+5. **Correções:** nada é editado nem apagado. Parâmetro errado → nova versão; PRL errado → alteração pelo Super Admin
+   (inclusive para um PRL inicial ainda não vigente).
+6. **Rollback:** as migrations recusam o `down` quando já há histórico (PRL ou parâmetro econômico); reverter só o
+   código, nunca o histórico.
