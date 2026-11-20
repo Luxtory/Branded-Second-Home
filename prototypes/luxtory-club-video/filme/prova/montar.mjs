@@ -468,7 +468,7 @@ function buildAudio(file) {
         (a) =>
           `clip((t-${sec(a.from)})/0.15+${a.from === 0 ? 1 : 0},0,1)*clip((${sec(a.to)}-t)/${sec(a.fadeOut ?? 150)}+${a.to === EDL.duration ? 1 : 0},0,1)`,
       )
-      .join('+');
+      .join('+') || '0'; // ambiente ausente no filme: camada muda (expressão vazia quebra o ffmpeg)
   const graph = [];
   const mix = [];
   EDL.sfx.forEach((s, i) => {
@@ -491,7 +491,7 @@ function buildAudio(file) {
     // Interior neutro: tom de sala muito baixo.
     `anoisesrc=c=pink:a=0.03:d=${D}:r=${SR}:seed=3,lowpass=f=400,volume='${windowExpr('interior')}':eval=frame,pan=stereo|c0=c0|c1=c0[sala]`,
     // Vento na serra: ruído rosa em banda média, com rajadas lentas.
-    `anoisesrc=c=pink:a=0.12:d=${D}:r=${SR}:seed=5,highpass=f=300,lowpass=f=1400,volume='0.5*(0.6+0.4*sin(2*PI*0.17*t))*(${windowExpr('vento') || '0'})':eval=frame,pan=stereo|c0=c0|c1=c0[vento]`,
+    `anoisesrc=c=pink:a=0.12:d=${D}:r=${SR}:seed=5,highpass=f=300,lowpass=f=1400,volume='0.5*(0.6+0.4*sin(2*PI*0.17*t))*(${windowExpr('vento')})':eval=frame,pan=stereo|c0=c0|c1=c0[vento]`,
   );
   const inputs = [];
   const layers = ['[fx]', '[mar]', '[sala]', '[vento]'];
