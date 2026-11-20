@@ -629,12 +629,13 @@ export interface AppParameter {
   authorization_ref: string;
   created_at: Timestamp;
   created_by: string;
+  currency: string | null;
   effective_from: Timestamp;
   effective_to: Timestamp | null;
   id: string;
   key: string;
   operation_id: string;
-  second_home_id: string;
+  second_home_id: string | null;
   value: string;
 }
 
@@ -643,6 +644,7 @@ export interface AppParameterVersion {
   authorization_ref: string | null;
   created_at: Timestamp | null;
   created_by: string | null;
+  currency: string | null;
   effective_from: Timestamp | null;
   effective_to: Timestamp | null;
   effective_until: Timestamp | null;
@@ -691,6 +693,45 @@ export interface AppPartyDocumentDigest {
   digest: Buffer;
   hmac_key_id: string;
   party_id: string;
+}
+
+export interface AppPrl {
+  amount_minor: Int8;
+  currency: string;
+  effective_from: Timestamp;
+  id: string;
+  publication_id: string;
+  second_home_id: string;
+  stay_date: Timestamp;
+}
+
+export interface AppPrlPublication {
+  authority: string;
+  authorization_ref: string;
+  created_at: Timestamp;
+  created_by: string;
+  effective_from: Timestamp;
+  id: string;
+  kind: string;
+  operation_id: string;
+  second_home_id: string;
+}
+
+export interface AppPrlVersion {
+  amount_minor: Int8 | null;
+  authority: string | null;
+  authorization_ref: string | null;
+  created_at: Timestamp | null;
+  created_by: string | null;
+  currency: string | null;
+  effective_from: Timestamp | null;
+  effective_to: Timestamp | null;
+  id: string | null;
+  kind: string | null;
+  operation_id: string | null;
+  publication_id: string | null;
+  second_home_id: string | null;
+  stay_date: Timestamp | null;
 }
 
 export interface AppPublicIdempotencyKey {
@@ -887,6 +928,9 @@ export interface DB {
   'app.party': AppParty;
   'app.party_delegation': AppPartyDelegation;
   'app.party_document_digest': AppPartyDocumentDigest;
+  'app.prl': AppPrl;
+  'app.prl_publication': AppPrlPublication;
+  'app.prl_version': AppPrlVersion;
   'app.public_idempotency_key': AppPublicIdempotencyKey;
   'app.second_home': AppSecondHome;
   'app.second_home_administration': AppSecondHomeAdministration;
