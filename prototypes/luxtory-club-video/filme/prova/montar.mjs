@@ -25,7 +25,7 @@
 // Uso: node prototypes/luxtory-club-video/filme/prova/montar.mjs [--edl=cinema] [--fmt=16x9|9x16] [--final]
 //      [--entrada=<pasta>] [--saida=<pasta>]
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
@@ -582,6 +582,9 @@ function preflightFinal() {
 
 const cleanFile = () => join(OUT, `${EDL.id}-${EDL.fmt}${FINAL ? '-final' : ''}.mp4`);
 const reviewFile = () => join(OUT, `${EDL.id}-${EDL.fmt}-revisao.mp4`);
+// Publicação atômica: cada execução codifica num arquivo só dela e só o promove ao nome definitivo depois de validar
+// o arquivo inteiro. Um ffmpeg remanescente de outra execução nunca escreve no nome definitivo.
+const partialFile = (file) => file.replace(/\.mp4$/, `.parcial-${process.pid}.mp4`);
 
 /** Composição: imagem → profundidade → interface → editorial → fade; cópia limpa (+ cópia de revisão na prévia). */
 function compose(uiDir, edDir, audio, tmp) {
@@ -695,8 +698,8 @@ function compose(uiDir, edDir, audio, tmp) {
       : []),
     '-filter_complex_script',
     script,
-    ...enc('[vclean]', cleanFile()),
-    ...(FINAL ? [] : enc('[vrev]', reviewFile())),
+    ...enc('[vclean]', partialFile(cleanFile())),
+    ...(FINAL ? [] : enc('[vrev]', partialFile(reviewFile()))),
   ]);
   return EDL.shots.map((s, i) => ({
     plan: `${s.scene} ${s.plan}`,
@@ -739,6 +742,12 @@ function validate(files, audio) {
     const v = info.streams.find((s) => s.codec_type === 'video');
     const a = info.streams.find((s) => s.codec_type === 'audio');
     report[name] = { video: v, audio: a, duration: Number(info.format.duration) };
+    // Decodificação integral (vídeo e áudio): qualquer erro do decodificador reprova o arquivo.
+    const decode = spawnSync('ffmpeg', ['-v', 'error', '-i', file, '-f', 'null', '-'], {
+      encoding: 'utf8',
+    });
+    if (decode.status !== 0 || decode.stderr.trim())
+      failures.push(`${name}: decodificação com erro (${decode.stderr.trim().split('\n')[0]})`);
     if (v.width !== W || v.height !== height) failures.push(`${name}: ${v.width}x${v.height}`);
     if (v.r_frame_rate !== `${FPS}/1`) failures.push(`${name}: cadência ${v.r_frame_rate}`);
     if (Number(v.nb_read_frames) !== FRAMES)
@@ -804,13 +813,15 @@ async function main() {
   const audio = buildAudio(audioFile);
   const plates = compose(uiDir, edDir, audioFile, tmp);
   writeSrt(join(OUT, `${EDL.id}-vo-guia.srt`));
-  const clean = cleanFile();
+  const outputs = [
+    ['limpa', cleanFile(), H],
+    ...(FINAL ? [] : [['revisao', reviewFile(), H + STRIP]]),
+  ];
   const warnings = upscaleIssues(plates);
   const { failures, report } = validate(
-    [['limpa', clean, H], ...(FINAL ? [] : [['revisao', reviewFile(), H + STRIP]])],
+    outputs.map(([name, file, height]) => [name, partialFile(file), height]),
     audioFile,
   );
-  contactSheet(clean, join(OUT, `contato-${EDL.id}-${EDL.fmt}.jpg`), tmp);
   const result = {
     edl: EDL.id,
     export: FINAL ? 'final' : 'prévia interna',
@@ -823,6 +834,10 @@ async function main() {
     failures: FINAL ? [...failures, ...warnings] : failures,
     ms: Date.now() - t0,
   };
+  // Só um arquivo validado por inteiro recebe o nome definitivo; reprovado, fica como .parcial para diagnóstico.
+  if (!result.failures.length) for (const [, file] of outputs) renameSync(partialFile(file), file);
+  const sheetSource = result.failures.length ? partialFile(cleanFile()) : cleanFile();
+  contactSheet(sheetSource, join(OUT, `contato-${EDL.id}-${EDL.fmt}.jpg`), tmp);
   writeFileSync(
     join(OUT, EDL.out ? `prova-${EDL.fmt}.json` : 'prova.json'),
     JSON.stringify(result, null, 2),
