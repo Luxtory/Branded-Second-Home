@@ -1,8 +1,8 @@
 # 0031. Membership: estado com histórico escrito pelo banco e elegibilidade verificada no executor
 
 - **Date**: 2026-11-19
-- **Status**: Accepted (plano da W15 aprovado pelo fundador e pela auditoria independente em 2026-11-19; E1 + E2 em PR
-  draft; E3 só depois do checkpoint C1)
+- **Status**: Accepted (plano da W15 aprovado pelo fundador e pela auditoria independente em 2026-11-19; C1 aprovado;
+  E3 + E4 em PR draft, parada no C2)
 - **Deciders**: Fundador (Luxtory), auditoria independente, agente de engenharia
 - **Tags**: architecture, security, database, identity, W15
 

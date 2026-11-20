@@ -108,6 +108,10 @@ export const partyMessages = {
     registered: 'Pessoa ou empresa cadastrada.',
     invited: 'Convite registrado. A representação fica pendente até a ativação.',
     revoked: 'Representação revogada.',
+    membership_activate: 'Membership ativado.',
+    membership_suspend: 'Membership suspenso.',
+    membership_reactivate: 'Membership reativado.',
+    membership_end: 'Membership encerrado.',
   },
   fields: {
     required: 'Preencha este campo.',

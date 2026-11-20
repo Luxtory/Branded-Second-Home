@@ -189,3 +189,17 @@ Nenhum secret, Environment ou capability novo; nada em Production.
 | T-1505 Information disclosure — base, autor ou histórico expostos ao Titular; Membership de outra party | RLS por delegação vigente; SELECT por coluna (`id`, `party_id`, `state`, `changed_at`); histórico ilegível | leitura com vizinho e delegação revogada |
 | T-1506 Tampering — Membership altera direitos ou uso próprio | Nenhuma FK/gatilho para holding, Ação, Direito de Uso, rotação, reserva ou custódia; catálogo anterior intacto | impressão digital do schema `app`; preservação do catálogo; reserva com Membership suspenso/encerrado |
 | T-1507 Denial of service — verificação de elegibilidade segurando a suspensão | `FOR SHARE` curto, na ordem da TECH-053, até o commit; timeout de trava do executor (E3) | ação × suspensão com espera de trava |
+
+### W15 E3/E4 — operações, rotas, Server Actions e telas (2026-11-20, PR draft)
+
+Superfície nova: quatro rotas REST Admin e uma Server Action de mudança (papel Admin, AAL2, atribuição ativa
+revalidada no banco), verificação de elegibilidade no executor, consumidor do outbox e leituras do Admin (na leitura
+auditada `party`) e do Titular (RLS).
+
+| Ameaça | Mitigação | Teste / prova |
+|---|---|---|
+| T-1508 Spoofing/Elevation — Titular, staff sem AAL2 ou atribuição revogada chama a rota ou a action | Guard do executor (papel `admin`, AAL2, atribuição ativa); gatilho repete a atribuição com trava | `membership-commands.db` (autorização), `membership-routes.db` (403/401) |
+| T-1509 Tampering — `party_id` do corpo diferente do caminho; campos extras (plano, valor) | O id do caminho vale sobre o corpo; entrada estrita (`z.strictObject`) | `membership-routes.db`, `membership-commands.db` (validação) |
+| T-1510 Elevation — command futuro do Club sem verificar o Membership, ou uso próprio passando a depender dele | Pós-condição do executor nos dois sentidos; sem gate configurado, falha fechada | `executor.test.ts`, `membership-commands.db` (falha fechada) |
+| T-1511 Information disclosure — base ou dado pessoal em auditoria, evento, notificação ou log | Base sem forma de identificador pessoal (`isNonPersonalReference`); auditoria e evento só com ids e estados; logs do executor só com nome e operação | `membership-commands.db` (auditoria/evento sem a base), consumidor × AsyncAPI |
+| T-1512 Repudiation — reenvio ou duplo clique muda duas vezes | `Idempotency-Key` por página; replay sem nova transição; payload diferente → conflito | `membership-commands.db` (idempotência) |

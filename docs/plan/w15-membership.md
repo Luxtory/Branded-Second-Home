@@ -51,8 +51,8 @@ Spec: [`identity.md` §15](../specs/identity.md). STRIDE: [`identity-admin.md` �
 | E0 | Worktree `/home/rjr-idb/luxtory-w15`, branch `feat/w15-membership` a partir de `c681727` | — |
 | E1 | Plano, ADR-0031, spec §15, OpenAPI (4 rotas), AsyncAPI (1 evento), STRIDE, linha do roadmap | — |
 | E2 | Migration + testes de banco + regressões (rollback da W8, preservação da W14, tipos do Kysely) | **C1** (PR draft + CI) |
-| E3 | Domínio, operações, verificação no executor, rotas, consumidor; testes unit, db e de contrato | só com GO |
-| E4 | Telas Admin e Titular, texto da notificação, E2E, CHANGELOG | — |
+| E3 | Domínio, operações, verificação no executor, rotas, consumidor; testes unit, db e de contrato | GO após C1 (2026-11-19) ✅ |
+| E4 | Telas Admin e Titular, texto da notificação, E2E, CHANGELOG | ✅ |
 | E5 | `verify`, `test:e2e`, `trace`, capturas | **C2** (GO do merge) |
 
 ## Critérios de aceite (testes com ID)

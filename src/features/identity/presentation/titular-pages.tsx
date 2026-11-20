@@ -5,6 +5,10 @@ import { AppShell, FocusedLayout, PageHeader, RecordList } from '@/design-system
 import { unavailableKeys } from '@/features/platform';
 import type { VerifiedSession } from '../domain/session';
 import { AuthUnavailable } from './auth-unavailable';
+import {
+  membershipStates,
+  membershipTitularMessages as membershipText,
+} from './i18n/membership-pt-br';
 import { titularMessages as text } from './i18n/titular-pt-br';
 import { Instant } from './instant';
 import { LoginForm } from './login-form';
@@ -124,6 +128,13 @@ function Representations({ overview }: { readonly overview: TitularOverview }) {
                   <Instant iso={item.validUntil.toISOString()} />
                 ),
             },
+            {
+              label: membershipText.sectionTitle,
+              value:
+                item.membership === null
+                  ? membershipText.none
+                  : membershipStates[item.membership.state],
+            },
           ],
         }))}
       />
@@ -225,6 +236,30 @@ export async function TitularRepresentationPage({ partyId }: { readonly partyId:
             </dd>
           </div>
         </dl>
+      </section>
+      <section className="lx-page-section" aria-labelledby="titular-membership">
+        <h2 className="lx-display-s" id="titular-membership">
+          {membershipText.sectionTitle}
+        </h2>
+        <dl className="lx-evidence lx-evidence--inline">
+          <div className="lx-evidence__item">
+            <dt className="lx-evidence__label">{membershipText.stateLabel}</dt>
+            <dd className="lx-evidence__value">
+              {representation.membership === null
+                ? membershipText.none
+                : membershipStates[representation.membership.state]}
+            </dd>
+          </div>
+          {representation.membership === null ? null : (
+            <div className="lx-evidence__item">
+              <dt className="lx-evidence__label">{membershipText.sinceLabel}</dt>
+              <dd className="lx-evidence__value">
+                <Instant iso={representation.membership.changedAt.toISOString()} />
+              </dd>
+            </div>
+          )}
+        </dl>
+        <p className="lx-body">{membershipText.note}</p>
       </section>
     </TitularShell>
   );

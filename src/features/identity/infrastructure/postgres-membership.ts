@@ -99,3 +99,60 @@ export const postgresMembershipGate: MembershipGate<DatabaseTransaction> = {
     return partyIds.filter((partyId) => !isMembershipEligible(states.get(partyId) ?? null));
   },
 };
+
+/** Mudança do histórico (`app.membership_transition`), para a tela do Admin. */
+export interface MembershipHistoryEntry {
+  readonly fromState: MembershipState | null;
+  readonly toState: MembershipState;
+  readonly basis: string;
+  readonly recordedAt: Date;
+  readonly authority: string;
+}
+
+/** Membership e histórico de uma party, lidos pelo papel da aplicação na transação auditada do detalhe do Admin. */
+export async function readMembershipForAdmin(
+  tx: DatabaseTransaction,
+  partyId: string,
+): Promise<{
+  readonly record: MembershipRecord;
+  readonly history: readonly MembershipHistoryEntry[];
+} | null> {
+  const row = await tx
+    .selectFrom('app.membership')
+    .select(COLUMNS)
+    .where('party_id', '=', partyId)
+    .executeTakeFirst();
+  if (row === undefined) return null;
+  const history = await tx
+    .selectFrom('app.membership_transition')
+    .select(['from_state', 'to_state', 'basis', 'recorded_at', 'authority'])
+    .where('party_id', '=', partyId)
+    .orderBy('recorded_at', 'desc')
+    .execute();
+  return {
+    record: toRecord(row),
+    history: history.map((entry) => ({
+      fromState: entry.from_state === null ? null : toState(entry.from_state),
+      toState: toState(entry.to_state),
+      basis: entry.basis,
+      recordedAt: new Date(entry.recorded_at),
+      authority: entry.authority,
+    })),
+  };
+}
+
+/** Estado atual visível ao Titular (RLS: só parties com delegação vigente; sem base, autor nem operação). */
+export async function visibleMemberships(
+  tx: DatabaseTransaction,
+): Promise<ReadonlyMap<string, { readonly state: MembershipState; readonly changedAt: Date }>> {
+  const rows = await tx
+    .selectFrom('app.membership')
+    .select(['party_id', 'state', 'changed_at'])
+    .execute();
+  return new Map(
+    rows.map((row) => [
+      row.party_id,
+      { state: toState(row.state), changedAt: new Date(row.changed_at) },
+    ]),
+  );
+}

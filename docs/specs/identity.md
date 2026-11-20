@@ -627,3 +627,21 @@ Party inexistente → `ERR_NOT_FOUND`; segunda ativação ou ativações concorr
 série, a segunda valida contra o estado deixado pela primeira; ação × suspensão → a primeira a travar decide (READ
 COMMITTED com `FOR SHARE`); party sem holding → não ativa; holding encerrada depois → estado mantido, reativação
 recusada; representante de CNPJ vê o Membership da CNPJ; delegação revogada → nada visível.
+
+### 15.8 Implementação (E3/E4, 2026-11-20)
+
+- **Código.** Domínio `identity/domain/membership.ts` (TECH-055, elegível = `active`, evento); operações
+  `application/membership-commands.ts` (porta `membership-ports.ts`); store e gate `infrastructure/postgres-membership.ts`
+  (`FOR NO KEY UPDATE` nas mudanças; `FOR SHARE` crescente na verificação; leituras do Admin e do Titular); rotas
+  `presentation/membership-routes.ts` e `src/app/v1/admin/parties/[id]/membership/*/route.ts`; Server Action
+  `membership-admin-actions.ts`; telas em `party-admin-pages.tsx` (seção e `MembershipChangePage`,
+  `/admin/pessoas-e-empresas/[id]/membership/{ativar|suspender|reativar|encerrar}`) e `titular-pages.tsx`; textos em
+  `i18n/membership-pt-br.ts`.
+- **Executor.** `CommandContext.requireEligibleMembership` + porta `MembershipGate` do platform; só o executor do Titular
+  (`executeTitularCommand`) recebe o gate. Nenhum command real é `eligible` com handler na W15.
+- **Notificação.** Consumidor `identity_membership_notification` registrado pela entrada leve `identity/jobs.ts` (sem
+  puxar telas nem capturar exportações do platform no topo do módulo); a central do Titular (booking) delega ao identity
+  o texto do tipo `identity.membership_changed`.
+- **Rotas.** `afterCommit` injetável como nas da W7 (o disparo do outbox pós-resposta usa `after()` do Next).
+- **Leituras.** Admin: Membership e histórico na leitura auditada `party`. Titular: estado das parties representadas
+  pela RLS, na mesma transação da Área.
