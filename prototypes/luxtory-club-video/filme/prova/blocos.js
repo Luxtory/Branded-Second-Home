@@ -85,8 +85,8 @@ export function buildFilm(fmt, spec) {
       banners: acc.banners,
       legal: acc.legal,
       tag: 'Prova interna · imagens e sons provisórios',
-      // Nada de etiqueta, aviso ou selo na assinatura.
-      tagOut: signature?.at,
+      // Nada de etiqueta, aviso ou selo sobre o encerramento emocional (bloco `clean`) nem sobre a assinatura.
+      tagOut: Math.min(acc.cleanFrom ?? Infinity, signature?.at ?? Infinity),
     },
     vo: acc.vo,
     audio: spec.audio,
@@ -179,6 +179,7 @@ const PLACE = {
 
   moment(acc, block) {
     const from = acc.t;
+    if (block.clean) acc.cleanFrom ??= from;
     acc.t = ceilGrid(from + block.dur);
     placeShot(acc, block, from);
   },

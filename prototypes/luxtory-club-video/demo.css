@@ -47,18 +47,18 @@ body {
   margin: 0;
 }
 
-/* 16:9 — tarefa à direita, contexto embaixo à esquerda; o grid é referência, não restrição. */
+/* 16:9 — tarefa à direita, contexto à esquerda, na mesma linha de base (v8.2): cartões alinhados pela borda inferior e
+   colunas mais próximas do grid (contexto até ≈ 37%, tarefa a partir de ≈ 55%); o vão central fica para a imagem. */
 [data-fmt='16x9'] .demo-card--task {
-  top: 46%;
+  bottom: 17%;
   inset-inline-end: 6%;
-  width: 30rem;
-  translate: 0 -50%;
+  width: 31rem;
 }
 
 [data-fmt='16x9'] .demo-card--ctx {
   bottom: 17%;
   inset-inline-start: 6%;
-  width: 23rem;
+  width: 25rem;
 }
 
 /* 9:16 — composição própria: contexto no alto, tarefa ancorada embaixo, acima da área das plataformas. */
@@ -548,10 +548,13 @@ body {
   min-block-size: calc(var(--lx-space-8) + var(--lx-space-2));
 }
 
-/* 16:9: cartão do calendário mais largo, legenda em três colunas (duas linhas), centrado na altura do quadro. */
+/* 16:9: cartão do calendário mais largo, legenda em três colunas (duas linhas), centrado na altura do quadro: é o único
+   cartão alto demais para a linha de base comum dos outros (v8.2). */
 [data-fmt='16x9'] .demo-card--dates {
   top: 50%;
+  bottom: auto;
   width: 34rem;
+  translate: 0 -50%;
 }
 
 [data-fmt='16x9'] .demo-deposit-cal .lx-calendar__legend {

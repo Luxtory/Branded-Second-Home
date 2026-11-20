@@ -1,4 +1,4 @@
-# Quatro filmes do Luxtory Club: nomenclatura, storyboard, ritmo e assinatura (v8.1 · checkpoint para aprovação)
+# Quatro filmes do Luxtory Club: nomenclatura, storyboard, ritmo e assinatura (v8.2 · checkpoint para aprovação)
 
 > **Direção final de 2026-11-19.** Quatro filmes, cada um em 16:9 e 9:16:
 > 1. Luxchange Request;
@@ -13,6 +13,111 @@
 >
 > Pessoas, Second Homes, datas e valores são ilustrativos. Os oito masters só são gerados depois da aprovação deste
 > checkpoint, e nada é publicado antes da validação de direitos, das condições comerciais e da prontidão do produto.
+
+## v8.2: revisão final da Request e continuidade
+
+O ritmo da v8.1 fica como referência. As mudanças são de comunicação, lógica econômica da demonstração, composição e
+encerramento.
+
+**Primeiras telas:**
+- **Banner:** "Luxchange Request" / "Solicite ao Membro que reservou as datas desejadas." / "Créditos + Taxa de
+  intermediação." É a forma curta: a dependência do aceite vai para a segunda tela.
+- **Azzura Home** (contexto): "Litoral · Second Home Luxtory" / "Esta reserva depende do aceite do Membro que reservou as
+  noites solicitadas."
+- **"Taxa de intercâmbio":** proposta registrada, ainda não aplicada. Até ser validada, os filmes mantêm "Taxa de
+  intermediação". Atenção: no Brasil, "taxa de intercâmbio" é também o nome conhecido da tarifa dos cartões de pagamento.
+
+**Depósito mínimo.** Helena deposita só 16/05, o menor depósito que cobre o que falta (14.000):
+
+| Momento | Créditos |
+|---|---|
+| Saldo inicial | 48.000 |
+| Necessários para a Request | 55.000 (faltam 7.000) |
+| Depósito de 16/05 | + 14.000 |
+| Saldo atualizado | 62.000 |
+| Em Garantia no envio | 55.000 (30.000 + 18.000 + 7.000 do lote novo, pelo vencimento: FEFO) |
+| Disponível depois do envio | 7.000, para experiências futuras |
+
+A coreografia só leva o controle ao mínimo; o tempo parado até o depósito sai num corte invisível. A narração diz "e
+o que sobrar fica para as próximas experiências". Ficam iguais:
+- origem dos lotes;
+- validade;
+- FEFO;
+- Garantia no envio;
+- antecedência de 14 dias por data;
+- datas inteiras.
+
+**Continuidade entre modalidades.** O Direct passa a ser de outro Membro, Marina, de outra família, com carteira própria
+e lotes de origem identificável (24.000 de depósito + 15.000 como cedente = 39.000). O Direct consome 11.500 pelo lote
+que vence primeiro (39.000 → 27.500). O Luxplus é da mesma família e não toca nos Créditos (27.500 intocados). Nenhum
+saldo de Helena aparece no Direct ou no Luxplus.
+
+No filme completo, cada modalidade mostra a carteira de quem a usa: Helena na Request e Marina no Direct e no Luxplus.
+Isso conversa com os planos do Direct, que já eram de outra família (três gerações na Olivar).
+
+**Prazo de resposta.** O vídeo continua com 24 horas, o padrão do PD-005, que já diz que o prazo é administrável. O
+cartão agora lê o valor do parâmetro da demonstração (`requestExpiryHours`), então mostra sempre o que estiver
+configurado. Se a Luxtory aprovar 48 horas, basta mudar esse parâmetro. Impactos a validar antes:
+- **Garantia:** só lotes válidos até a expiração podem lastreá-la (PD-006). Com 48 horas, lotes que vencem nesse
+  intervalo deixam de servir, e os Créditos do solicitante ficam indisponíveis por mais tempo.
+- **Taxa:** paga no envio e revertida na recusa ou expiração. Com 48 horas, o dinheiro fica retido por mais tempo
+  antes de uma eventual devolução.
+- **Concorrência:** a capacidade não fica bloqueada e várias Requests podem coexistir (PD-005). Uma janela maior
+  aumenta a chance de outra operação confirmar antes, e a revalidação do aceite resolve isso. Quem recebe também pode
+  usar ou ceder as noites nesse intervalo.
+- **Notificações:** lembrete antes da expiração para quem recebe e aviso de expiração para quem solicita.
+- **Testes:** `requestExpiresAt` (TECH-044) e os textos derivados mudam juntos com o parâmetro.
+
+Nada disso altera canônicos nem Production: é configuração administrável.
+
+**Cartões.**
+- **16:9:**
+  - contexto e tarefa na mesma linha de base;
+  - colunas um pouco mais largas (contexto 25rem, tarefa 31rem);
+  - o calendário de depósito, que ocupa quase a altura toda, continua centralizado.
+- **Duplicações removidas:**
+  - o cartão de Créditos só entra no envio (antes, o saldo aparecia junto com o depósito confirmado);
+  - o cartão de Créditos necessários não repete "Azzura Home" ("04 a 07/06/2027 · 3 noites").
+- **9:16:** um cartão principal por momento, com áreas seguras conferidas pelo `check.mjs`.
+- **Pendência do Direct:** o cartão de Créditos ainda repete o saldo, em número grande e na legenda. Corrigir quando o
+  Direct for produzido.
+
+**Fundo da solicitação recebida.** No lugar do gradiente neutro, entra a arquitetura da Azzura: volumes brancos e vidro,
+sem pessoas, recorte da placa litoral provisória. O fundo fica desfocado sob o cartão, como os demais.
+
+**Encerramento com a imagem aprovada da família** (S17b, ≈ 4 s, sem cartão nem etiqueta por cima):
+- **16:9:** recorte da largura inteira, com família, pôr do sol e casa, e aproximação lenta de até 6%. A imagem tem
+  1254 px, então o 16:9 amplia 1,53×: o `montar.mjs` avisa na prévia e recusa na exportação final.
+- **9:16:** a imagem inteira na largura (nítida, sem ampliar), com o céu estendido acima por degradê desfocado e a água
+  abaixo por reflexo da própria água. Ninguém é cortado ou distorcido.
+- **Transição:** dissolve de 0,5 s da confirmação para a família e de 0,8 s da família para o cartão da assinatura
+  oficial, que fica intacto. A logo SVG é Warm Sand sobre o token Dark Moroccan Blue (#003D52) do Design System. O
+  `#0F4E67` citado é o Moroccan Blue (`palette.moroccan-blue`); a assinatura segue o token aprovado.
+
+**Continuidade da imagem com a Azzura.** A imagem tem volumes brancos, vidro sem caixilho, borda infinita e pôr do sol
+sobre a baía, coerentes com a bíblia. Três elementos não são da Azzura:
+- a oliveira, que é o elemento-assinatura da Olivar;
+- a parede de pedra, material da Satori;
+- a ausência da pérgola de madeira escura.
+
+Para apresentá-la como a Azzura, a correção é uma edição no ChatGPT da própria imagem, preservando a família (prompts
+abaixo). Sem a edição, ela funciona como encerramento da campanha, sem nome de imóvel.
+
+```text
+Edit this exact photo. Keep the four people exactly as they are: same faces, expressions, poses, hair, swimwear,
+water and reflections. Change only the architecture at the right edge: remove the olive tree and the stone wall, and
+continue the white cantilevered volume with frameless glass in their place; add a dark timber pergola over the
+terrace. Keep the sunset, the bay and the light identical. No text, no logos.
+```
+
+```text
+Extend this exact photo to a 16:9 landscape frame (and, separately, to a 9:16 portrait frame) without changing anything
+that already exists: same family, faces, house, light and water. Add only sky above and water or deck at the edges,
+continuing the scene naturally. No new people, no text, no logos.
+```
+
+Com as versões editadas em 16:9 e 9:16 na resolução máxima, o 16:9 deixa de ampliar e o 9:16 dispensa a extensão
+local.
 
 ## 0. v8.1: ritmo cinematográfico e textos essenciais
 

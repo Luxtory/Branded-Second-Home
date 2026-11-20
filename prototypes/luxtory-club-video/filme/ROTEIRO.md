@@ -176,7 +176,7 @@ não lê a interface: diz o que ela significa e deixa as confirmações acontece
 > **0:13,3** Com Membership vigente, você usa os Créditos válidos que já tem, deposita datas elegíveis para gerar novos
 > — ou combina os dois para viver outras Second Homes.
 > **0:23,9** Quando as noites que você deseja estão com outro Membro, você envia uma Request.
-> **0:30,8** Se o saldo não bastar, você completa com datas do seu Direito de Uso — e pode depositar mais, para as
+> **0:30,8** Se o saldo não bastar, você completa com datas do seu Direito de Uso — e o que sobrar fica para as
 > próximas experiências.
 > **0:39,9** Seus Créditos ficam em Garantia e a Taxa de intermediação é paga no envio.
 > **0:48,1** Do outro lado, quem recebe a solicitação decide se aceita.

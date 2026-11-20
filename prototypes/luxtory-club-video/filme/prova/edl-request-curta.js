@@ -1,8 +1,8 @@
-// Demonstração conceitual — prévia da Luxchange Request no ritmo da v8.1 (filme/QUATRO-FILMES.md §5): ≈ 53 s com a
-// assinatura. Banner → datas → Créditos necessários × saldo → complementação (controle e datas do Direito de Uso,
-// 46.000 novos Créditos) → depósito confirmado → revisão com a Taxa de intermediação, política e envio → solicitação
-// enviada com a Garantia → solicitação recebida → aceite e revalidação → Créditos recebidos e reserva confirmada →
-// plano humano → assinatura oficial.
+// Demonstração conceitual — prévia da Luxchange Request (v8.2, filme/QUATRO-FILMES.md §5), no ritmo aprovado da v8.1.
+// Banner → datas → Créditos necessários × saldo → complementação com o depósito mínimo (16/05, 14.000 novos Créditos)
+// → depósito confirmado (saldo 62.000) → revisão com a Taxa de intermediação, política e envio → solicitação enviada
+// (55.000 em Garantia, 7.000 disponíveis) → solicitação recebida → aceite e revalidação → Créditos recebidos e reserva
+// confirmada → família na piscina (imagem aprovada da campanha) → assinatura oficial.
 //
 // A interface toca no tempo da sequência (sequence-request.js), sem acelerar. A edição usa só cortes em tempo morto (a
 // saída de um cartão, o processamento do pagamento) e pausas curtas quando a informação principal pede leitura.
@@ -38,12 +38,13 @@ function blocks(fmt) {
       kind: 'banner',
       scene: 'B1',
       dur: 4_250,
-      // Diferença da modalidade em duas linhas (direção v8.1): de quem são as noites, como se paga e do que depende.
+      // Primeira tela (direção v8.2): a quem se pede e como se paga. A dependência do aceite fica na segunda tela.
+      // "Taxa de intermediação" segue o nome aprovado; "Taxa de intercâmbio" é proposta pendente de validação.
       banner: {
         title: 'Luxchange Request',
         lines: [
-          'Solicite noites reservadas por outro Membro.',
-          'Créditos + Taxa de intermediação · depende do aceite.',
+          'Solicite ao Membro que reservou as datas desejadas.',
+          'Créditos + Taxa de intermediação.',
         ],
       },
       shot: still('S06', 'Azzura Home ao entardecer (K-AZ)', PLACA_LITORAL, CRANE),
@@ -63,7 +64,7 @@ function blocks(fmt) {
           beat: {
             label: 'Second Home e datas',
             type: 'mensagem',
-            essential: 'Azzura Home 3 noites',
+            essential: 'Azzura Home 3 noites depende do aceite do Membro',
             readFrom: 3_700 + ENTER,
           },
         },
@@ -108,38 +109,37 @@ function blocks(fmt) {
       ],
       vo: {
         after: 600,
-        text: 'Se o saldo não bastar, você completa com datas do seu Direito de Uso — e pode depositar mais, para as próximas experiências.',
+        text: 'Se o saldo não bastar, você completa com datas do seu Direito de Uso — e o que sobrar fica para as próximas experiências.',
       },
       shot: still('S05', 'Helena no terraço da Satori Home', PLACA_SERRA, PUSH),
       ambience: 'vento',
       contact: 3_000,
     },
     {
-      // Complementação: o controle vai ao mínimo (14.000, uma data) e Helena escolhe mais duas datas elegíveis do seu
-      // Direito de Uso (46.000 novos Créditos, saldo projetado de 94.000). Entra com os cartões já abertos (corte na
-      // ação) e só segura um instante antes de depositar.
+      // Complementação com o depósito mínimo (direção v8.2): o controle vai a 14.000, que é 16/05 inteira; saldo
+      // projetado de 62.000 e 7.000 depois da reserva, que ficam para experiências futuras. Entra com os cartões já
+      // abertos (corte na ação).
       kind: 'ui',
       seq: 'request',
       scene: 'R3',
       parts: [
         {
-          // Antes do primeiro movimento do controle (10,7 s no 16:9; 9,5 s no 9:16, com o cartão ainda entrando).
+          // O controle vai ao mínimo (14.000, 16/05). No 16:9 o calendário já está ao lado; no 9:16 ele entra depois
+          // do controle e mostra 16/05 selecionada. O tempo parado até o depósito sai num corte invisível.
           from: Math.min(9_600, t.slider - 200),
-          to: t.depositPress - 100,
-          hold: 800,
+          to: fmt === '9x16' ? t.datesIn + ENTER + 20 : t.slider + 1_200,
+          hold: fmt === '9x16' ? 2_500 : 2_200,
           beat: {
-            label: 'datas escolhidas: 46.000 novos Créditos',
-            type: 'acao',
-            essential: '46.000 saldo 94.000',
-            readFrom: Math.min(t.depositPress - 100, t.taps[1] + 900),
+            label: 'depósito mínimo: 16/05, 14.000 novos Créditos',
+            type: 'mensagem',
+            essential: '14.000 16/05 Saldo projetado 62.000 Após esta reserva 7.000',
+            readFrom: fmt === '9x16' ? t.datesIn + ENTER : t.slider + 900,
           },
         },
-        { from: t.depositPress - 100, to: t.depositOut },
+        { from: t.depositPress - 300, to: t.depositOut },
       ],
       sfx: [
-        { ms: t.slider, kind: 'tap', note: 'controle → 14.000, o mínimo' },
-        { ms: t.taps[0], kind: 'tap', note: '14/05 → 30.000' },
-        { ms: t.taps[1], kind: 'tap', note: '15/05 → 46.000' },
+        { ms: t.slider, kind: 'tap', note: 'controle → 14.000, o mínimo (16/05)' },
         { ms: t.depositPress, kind: 'tap', note: 'Depositar datas e gerar Créditos' },
       ],
       shot: still('S04', 'Helena com o celular, horizonte ao fundo', PLACA_SERRA, DRIFT),
@@ -159,7 +159,7 @@ function blocks(fmt) {
           beat: {
             label: 'depósito confirmado e saldo atualizado',
             type: 'mensagem',
-            essential: 'Depósito confirmado 46.000 novos Créditos saldo 94.000',
+            essential: 'Depósito confirmado 14.000 novos Créditos saldo 62.000',
             readFrom: t.depositedIn + ENTER,
           },
         },
@@ -204,7 +204,7 @@ function blocks(fmt) {
           beat: {
             label: 'solicitação enviada · Garantia',
             type: 'mensagem',
-            essential: 'Solicitação enviada 55.000 em Garantia 39.000 disponíveis',
+            essential: 'Solicitação enviada 55.000 em Garantia 7.000 disponíveis',
             readFrom: t.sendCommit + 280 + ENTER,
           },
         },
@@ -250,7 +250,15 @@ function blocks(fmt) {
         ...[400, 600, 800, 1_000].map((d) => ({ ms: t.accept + d, kind: 'check' })),
       ],
       vo: { after: 300, text: 'Do outro lado, quem recebe a solicitação decide se aceita.' },
-      shot: still('S09', 'o membro que recebe a solicitação, sem rosto'),
+      // Fundo cinematográfico (direção v8.2): arquitetura da Azzura Home, sem pessoas, no lugar do gradiente neutro.
+      shot: still(
+        'S09',
+        'arquitetura da Azzura Home (volumes brancos e vidro), sem pessoas',
+        PLACA_LITORAL,
+        fmt === '9x16'
+          ? { from: [0.5, 0.26, 2.0], to: [0.5, 0.25, 2.06], anchor: [0.9, 0.5] }
+          : { from: [0.74, 0.26, 2.0], to: [0.75, 0.25, 2.06] },
+      ),
       ambience: 'interior',
       contact: 3_000,
     },
@@ -287,26 +295,34 @@ function blocks(fmt) {
     {
       kind: 'moment',
       scene: 'R8',
-      dur: 3_500,
-      vo: { after: 200, text: 'Mais lugares para viver com quem você ama.' },
+      dur: 4_000,
+      // Sem cartão, legenda ou etiqueta sobre a família (encerramento emocional).
+      clean: true,
+      vo: { after: 300, text: 'Mais lugares para viver com quem você ama.' },
       shot: {
-        plan: 'S17a',
-        asset: 'S17a',
-        what: 'gesto humano real na praia ao entardecer (footage gratuito)',
+        plan: 'S17b',
+        asset: 'S17b',
+        what: 'família na piscina ao pôr do sol (imagem aprovada da campanha)',
         dissolve: 500,
-        footage: { conform: 'retime', in: fmt === '9x16' ? 10_500 : 0, focus: [0.5, 0.5] },
+        // 16:9: recorte da largura inteira (família, pôr do sol e casa) e aproximação lenta. 9:16: imagem inteira na
+        // largura, com céu e água estendidos (S17b-9x16.png), e aproximação lenta. Nenhum rosto ou corpo cortado.
+        move:
+          fmt === '9x16'
+            ? { from: [0.5, 0.5, 1.0], to: [0.5, 0.528, 1.06] }
+            : { from: [0.5, 0.5, 1.0], to: [0.48, 0.5, 1.06], anchor: [0.5, 0.547] },
         placeholder: {
           neutral: true,
           colors: ['0x9a7a5e', '0x1b2731'],
-          note: 'placeholder neutro',
+          note: 'placeholder neutro: imagem da família ausente em out/entrada',
         },
       },
       ambience: 'mar',
-      contact: 1_750,
+      contact: 2_000,
     },
     {
       kind: 'signature',
-      dissolve: 700,
+      // Dissolve de 0,8 s da família para o cartão Dark Moroccan Blue da assinatura oficial.
+      dissolve: 800,
       vo: 'Luxtory. Seja protagonista de histórias extraordinárias.',
     },
   ];

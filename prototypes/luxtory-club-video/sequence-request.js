@@ -8,7 +8,7 @@
 // nem Ação; saldo e Garantia em dois indicadores (os lotes e o FEFO continuam em rules.js e data.js, fora da tela);
 // textos enxutos da v8.1 (uma ideia por cartão, o prazo de 24 horas só no cartão de quem recebe). Papéis e regras do domínio não mudam: quem recebe é Co-Owner em data.js, e as noites cedidas são do Direito
 // de Uso já reservado (BR-151, PD-007).
-import { depositScenario, requestScenario } from './data.js';
+import { CANONICAL, depositScenario, requestScenario } from './data.js';
 import { selectionForTarget } from './rules.js';
 import { PLATES } from './placas-caminhos.js';
 import { brl, credits } from './format.js';
@@ -37,16 +37,17 @@ const s = requestScenario();
 const dep = depositScenario();
 const period = periodOf(s.checkin, s.checkout);
 const periodShort = periodCompact(s.checkin, s.checkout);
-const route = `${icon('i-info')}<span><strong>Noites reservadas por outro Membro</strong>A reserva depende do aceite: Luxchange Request.</span>`;
-// Etapas da seleção (fonte única: as datas). O controle vai ao mínimo que cobre o que falta (14.000: a sugestão para essa
-// meta é 16/05); depois Helena escolhe no calendário 14/05 (30.000) e 15/05 (46.000) para manter Créditos para as
-// próximas experiências. Todas são metas alcançáveis com datas inteiras (rules.js#depositStops).
-const [d14, d15, d16] = dep.eligible.map((d) => d.night);
-const SELECTION = [
-  selectionForTarget(dep.eligible, dep.minimum.credits),
-  [d14, ...selectionForTarget(dep.eligible, dep.minimum.credits)].sort(),
-  [d14, d15, d16],
-];
+// Prazo de resposta do parâmetro da demonstração (PD-005: padrão de 24 horas, administrável): o vídeo mostra sempre o
+// valor configurado, nunca um número escrito à mão.
+const REPLY_HOURS = CANONICAL.requestExpiryHours;
+// Segunda tela (direção v8.2): só a dependência do aceite, sem repetir o banner.
+const route = `${icon('i-info')}<span>Esta reserva depende do aceite do Membro que reservou as noites solicitadas.</span>`;
+// Seleção (fonte única: as datas). O controle vai ao mínimo que cobre o que falta (14.000: a sugestão para essa meta é
+// 16/05), e é isso que Helena deposita (direção v8.2): nada de datas a mais só para mostrar o controle. A meta é
+// alcançável com uma data inteira (rules.js#depositStops), e a seleção coincide com o depósito dos dados.
+const SELECTION = [selectionForTarget(dep.eligible, dep.minimum.credits)];
+if (SELECTION.at(-1).join() !== dep.selected.join())
+  throw new Error('Seleção da coreografia diferente do depósito de data.js');
 
 export function build(stage, fmt) {
   const [year, month] = s.checkin.split('-').map(Number);
@@ -73,7 +74,7 @@ export function build(stage, fmt) {
       <button class="lx-button lx-button--primary demo-only-16x9" type="button" id="cal-next" tabindex="-1">Continuar</button>
     </section>
 
-    ${needCard({ title: `${s.secondHome.name} · ${period}`, needed: s.credits, available: dep.priorAvailable, role: dep.role, sufficient: false })}
+    ${needCard({ title: `${periodShort} · ${s.nights.length} noites`, needed: s.credits, available: dep.priorAvailable, role: dep.role, sufficient: false })}
     ${topupCard(dep, states)}
     ${datesCard(dep, states, { action: 'Depositar datas e gerar Créditos' })}
     ${depositedCard(dep, { next: 'Revisar solicitação' })}
@@ -110,7 +111,7 @@ export function build(stage, fmt) {
       <p class="demo-sub">${s.secondHome.name} · ${periodShort}<br>${s.nights.length} noites do seu Direito de Uso</p>
       <dl class="lx-evidence">
         <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos a receber</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(s.holder.lot.quantity)}</dd></div>
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Responda em até</dt><dd class="lx-evidence__value">24 horas</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Responda em até</dt><dd class="lx-evidence__value">${REPLY_HOURS} horas</dd></div>
       </dl>
       <p class="demo-sub">Ao aceitar, você cede as noites e recebe os Créditos após a confirmação.</p>
       <div class="demo-swap">
@@ -162,12 +163,11 @@ export function times(fmt) {
     stepOut: 8_600,
     topupIn: 8_900,
     // 16:9: controle e calendário lado a lado. 9:16: um cartão por vez — controle, depois calendário.
-    // Cada valor troca sem crossfade (saída 280 ms + entrada 480 ms): os intervalos deixam 14.000, 30.000 e 46.000
-    // legíveis por pelo menos ~0,6 s antes do próximo toque (o valor final segue visível até a saída do cartão).
+    // O valor troca sem crossfade (saída 280 ms + entrada 480 ms) e fica visível até a saída do cartão; a montagem
+    // corta o tempo parado entre o controle e o depósito.
     slider: v ? 9_500 : 10_700,
     topupOut: v ? 10_900 : 15_700,
     datesIn: v ? 11_200 : 8_900,
-    taps: v ? [12_650, 14_000] : [12_200, 13_600],
     depositPress: 14_900,
     depositOut: 15_700,
     depositedIn: 16_000,
@@ -195,11 +195,7 @@ export function timeline(fmt) {
   const tween = 900; // duration.cinematic (stage.js MOTION.tween)
   const selection = selectionChoreography(
     dep,
-    [
-      { at: t.slider, nights: SELECTION[0], via: 'slider' },
-      { at: t.taps[0], nights: SELECTION[1], via: 'calendar' },
-      { at: t.taps[1], nights: SELECTION[2], via: 'calendar' },
-    ],
+    [{ at: t.slider, nights: SELECTION[0], via: 'slider' }],
     { tween, needed: s.credits },
   );
   // O calendário do depósito abre direto em maio, o primeiro mês com datas elegíveis (sem navegar a partir de abril).
@@ -225,7 +221,8 @@ export function timeline(fmt) {
       { sel: '#deposit-busy', in: swapIn(t.depositPress + 100), dur: 0 },
       // Depósito confirmado (operação própria) e, no 16:9, o saldo de Créditos ao lado
       { sel: '#deposited', in: t.depositedIn, out: t.reviewOut },
-      { sel: '#credits', in: v ? t.sendCommit : t.depositedIn, out: t.pendingOut },
+      // Saldo e Garantia só no envio: antes disso o depósito confirmado já mostra o saldo (sem informação duplicada).
+      { sel: '#credits', in: t.sendCommit, out: t.pendingOut },
       // Revisão, Taxa de intermediação, pagamento e envio
       { sel: '#review', in: t.reviewIn, out: t.sendOut },
       { sel: '#send-label', in: ALWAYS, out: t.pay + 100 },
@@ -293,11 +290,6 @@ export function timeline(fmt) {
         at: t.slider,
         label: 'controle · Créditos adicionais desejados → 14.000, o mínimo (16/05)',
       },
-      { at: t.taps[0], label: 'toque · 14/05 → 30.000' },
-      {
-        at: t.taps[1],
-        label: 'toque · 15/05 → 46.000, para as próximas experiências (saldo projetado 94.000)',
-      },
       { at: t.depositPress, label: 'toque · Depositar datas e gerar Créditos' },
       { at: t.depositedIn, label: 'depósito confirmado: 46.000 novos Créditos · saldo 94.000' },
       { at: t.reviewPress, label: 'toque · Revisar Request' },
@@ -326,7 +318,10 @@ export const qa = {
     {
       t: 4_800,
       name: 'calendario',
-      expect: ['3 noites', 'Noites reservadas por outro Membro', 'Luxchange Request'],
+      expect: [
+        '3 noites',
+        'Esta reserva depende do aceite do Membro que reservou as noites solicitadas',
+      ],
     },
     {
       t: 7_600,
@@ -384,7 +379,7 @@ export const qa = {
         'A reserva depende do aceite e da validação das condições',
       ],
       // Sem detalhamento por lote no filme (o FEFO continua nas regras e nos dados); o prazo fica com quem recebe.
-      absent: ['lote', 'Créditos anteriores', 'Novo depósito', '24 horas'],
+      absent: ['lote', 'Créditos anteriores', 'Novo depósito', `${REPLY_HOURS} horas`],
     },
     {
       t: 28_300,
@@ -397,7 +392,7 @@ export const qa = {
         'Créditos a receber',
         credits(s.holder.lot.quantity),
         'Responda em até',
-        '24 horas',
+        `${REPLY_HOURS} horas`,
         'Ao aceitar, você cede as noites e recebe os Créditos após a confirmação',
       ],
     },

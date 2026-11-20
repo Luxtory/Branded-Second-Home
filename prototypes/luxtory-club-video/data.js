@@ -68,6 +68,31 @@ export const FICTITIOUS = Object.freeze({
     prlCents: [160_000, 160_000, 140_000],
     at: '2027-04-12T10:02:00-03:00',
     lotId: 'L-0003',
+    // Datas que Helena deposita: só 16/05, o menor depósito que cobre os 7.000 que faltam (14.000). O excedente
+    // (62.000 − 55.000 = 7.000) fica disponível para experiências futuras (direção v8.2, 2026-11-20).
+    selected: ['2027-05-16'],
+  },
+  // Membro do Luxchange Direct e do Luxplus: outra família, com carteira própria e lotes de origem identificável
+  // (INV-6). O Direct não herda o saldo de Helena: cada filme mostra uma carteira coerente (direção v8.2).
+  directMember: {
+    name: 'Marina',
+    role: 'co_owner',
+    secondHome: 'mirante',
+    membership: 'Vigente',
+    lots: [
+      {
+        id: 'L-0201',
+        origin: 'Depósito no Luxchange',
+        originatedAt: '2026-11-09T11:20:00-03:00',
+        quantity: 24_000,
+      },
+      {
+        id: 'L-0202',
+        origin: 'Request aceita como cedente',
+        originatedAt: '2027-01-27T15:40:00-03:00',
+        quantity: 15_000,
+      },
+    ],
   },
   // Calendário do Direito de Uso de Helena em Satori Home (Co-Owner) para o depósito opcional: datas já
   // reservadas, uma reserva dentro da antecedência mínima (24–25/04, menos de 14 dias antes de 12/04) e uma cessão já
@@ -114,18 +139,9 @@ const at = (iso) => Date.parse(iso);
 const checkinInstant = (date, params) =>
   Date.parse(`${date}T${String(params.checkinHour).padStart(2, '0')}:00:00-03:00`);
 
-/** Lotes de quem solicita no instante do envio da Request: os dois iniciais + o lote originado pelo depósito. */
-function lotsAtRequest(data, params) {
-  const d = data.deposit;
-  if (!canDeposit(checkinInstant(d.checkin, params), at(d.at), params))
-    throw new Error('Depósito fictício sem antecedência');
-  const deposited = {
-    id: d.lotId,
-    origin: 'Depósito no Luxchange',
-    originatedAt: d.at,
-    quantity: creditsForPrl(prlOfPeriod(d.prlCents), params),
-  };
-  return [...data.lots, deposited].map((lot) => {
+/** Lotes com validade e saldo disponível (validade por adição calendárica, TECH-044). */
+const walletLots = (lots, params) =>
+  lots.map((lot) => {
     const originatedAt = at(lot.originatedAt);
     return {
       ...lot,
@@ -134,6 +150,29 @@ function lotsAtRequest(data, params) {
       available: lot.quantity,
     };
   });
+
+/** Lotes de quem solicita no instante do envio da Request: os dois iniciais + o lote originado pelo depósito. */
+function lotsAtRequest(data, params) {
+  const d = data.deposit;
+  const nights = nightsOf(d.checkin, d.checkout);
+  // Cada data depositada tem antecedência própria (BR-200, TECH-043) e é inteira (BR-201): o lote soma as datas
+  // escolhidas, nunca o período inteiro.
+  for (const night of d.selected) {
+    if (!nights.includes(night))
+      throw new Error(`Data depositada fora do período elegível: ${night}`);
+    if (!canDeposit(checkinInstant(night, params), at(d.at), params))
+      throw new Error('Depósito fictício sem antecedência');
+  }
+  const deposited = {
+    id: d.lotId,
+    origin: 'Depósito no Luxchange',
+    originatedAt: d.at,
+    quantity: creditsForPrl(
+      prlOfPeriod(d.selected.map((n) => d.prlCents[nights.indexOf(n)])),
+      params,
+    ),
+  };
+  return walletLots([...data.lots, deposited], params);
 }
 
 /**
@@ -175,7 +214,7 @@ export function depositScenario(data = FICTITIOUS, params = CANONICAL) {
   if (eligible.map((e) => e.night).join() !== depositNights.join())
     throw new Error('Calendário fictício incoerente com o depósito');
   const request = creditsForPrl(prlOfPeriod(data.request.prlCents), params);
-  const selected = depositNights;
+  const selected = [...d.selected];
   const originated = creditsOfSelection(eligible, selected);
   return {
     secondHome: data.secondHomes[u.secondHome],
@@ -184,8 +223,7 @@ export function depositScenario(data = FICTITIOUS, params = CANONICAL) {
     days,
     eligible,
     stops: depositStops(eligible),
-    // Menor complemento que cobre a reserva (14.000, só 16/05); Helena escolhe depositar as três datas para manter
-    // Créditos disponíveis para próximas experiências (o saldo de 39.000 depois da Request vai para o Direct).
+    // Menor complemento que cobre a reserva (14.000, só 16/05), que é o que Helena deposita (direção v8.2).
     minimum: minimumCovering(eligible, Math.max(0, request - prior)),
     priorAvailable: prior,
     requestCredits: request,
@@ -246,28 +284,20 @@ export function requestScenario(data = FICTITIOUS, params = CANONICAL) {
   };
 }
 
-/** Lotes de quem solicitou depois do aceite da Request: a Garantia consumida sai de cada lote (held → consumed). */
-function lotsAfterRequest(data, params) {
-  const r = requestScenario(data, params);
-  return r.lots.map((lot) => ({
-    ...lot,
-    available: lot.available - (r.hold.find((h) => h.lotId === lot.id)?.quantity ?? 0),
-  }));
-}
-
 /**
  * Cenário do Luxchange Direct (Inventário Luxtory): sem aceite de terceiro (BR-220); Créditos consumidos por FEFO
  * na confirmação (BR-221, PD-008); Fee pago antes da confirmação (TECH-082) — aqui, o ramo do mínimo (01 §24).
+ * Carteira própria do Membro do Direct (direção v8.2): não herda o saldo de quem fez a Request.
  */
 export function directScenario(data = FICTITIOUS, params = CANONICAL) {
   const d = data.direct;
   const now = at(d.at);
-  const lots = lotsAfterRequest(data, params);
+  const lots = walletLots(data.directMember.lots, params);
   const available = lots.reduce((sum, lot) => sum + lot.available, 0);
   const prlPeriodCents = prlOfPeriod(d.prlCents);
   const credits = creditsForPrl(prlPeriodCents, params);
   return {
-    requesterName: data.requester.name,
+    requesterName: data.directMember.name,
     secondHome: data.secondHomes[d.secondHome],
     nights: nightsOf(d.checkin, d.checkout),
     checkin: d.checkin,
@@ -295,7 +325,8 @@ export function luxplusScenario(data = FICTITIOUS, params = CANONICAL) {
   const l = data.luxplus;
   const direct = directScenario(data, params);
   return {
-    requesterName: data.requester.name,
+    // A mesma família do Direct: o saldo mostrado é o dela, intocado pelo Luxplus.
+    requesterName: direct.requesterName,
     secondHome: data.secondHomes[l.secondHome],
     nights: nightsOf(l.checkin, l.checkout),
     checkin: l.checkin,
