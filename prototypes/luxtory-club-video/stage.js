@@ -113,8 +113,8 @@ function renderTweens(t) {
   }
   for (const items of groups.values()) {
     const sorted = [...items].sort((a, b) => a.at - b.at);
-    const { sel, prop, at, from, to } = sorted.filter((i) => i.at <= t).at(-1) ?? sorted[0];
-    const p = MOTION.ease(progress(t, at, MOTION.tween));
+    const { sel, prop, at, from, to, dur } = sorted.filter((i) => i.at <= t).at(-1) ?? sorted[0];
+    const p = MOTION.ease(progress(t, at, reduce ? 0 : (dur ?? MOTION.tween)));
     $(sel).style.setProperty(prop, String(from + (to - from) * p));
   }
 }
@@ -165,6 +165,13 @@ document.addEventListener('keydown', (event) => {
 });
 
 await document.fonts.ready;
+// Áreas que crescem de um estado ao outro (`data-grow`, ex.: ações → revalidação): a altura de cada estado é medida uma
+// vez, já com as fontes, e o tween `--grow` (0 → 1) interpola entre as duas. Sem medida, a área fica com a altura maior.
+for (const el of stage.querySelectorAll('[data-grow]')) {
+  const [from, to] = [...el.children].map((child) => child.offsetHeight);
+  el.style.setProperty('--grow-from', `${from}px`);
+  el.style.setProperty('--grow-to', `${to}px`);
+}
 window.__demo = { seek, seq, fmt, duration: tl.duration, marks: tl.marks, ready: true };
 if (query.has('t')) seek(Number(query.get('t')));
 else if (navigator.webdriver && !query.has('play')) seek(0);

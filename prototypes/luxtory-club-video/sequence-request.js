@@ -41,6 +41,7 @@ const periodShort = periodCompact(s.checkin, s.checkout);
 // nunca mostra um prazo diferente do que a Request simulada usa.
 const HOUR_MS = 3_600_000;
 export const REPLY_HOURS = (s.expiresAt - s.sentAt) / HOUR_MS;
+const GROW_MS = 480; // duration.slow
 // Segunda tela (direção v8.2): só a dependência do aceite, sem repetir o banner.
 const route = `${icon('i-info')}<span>Esta reserva depende do aceite do Membro que reservou as noites solicitadas.</span>`;
 // Seleção (fonte única: as datas). O controle vai ao mínimo que cobre o que falta (14.000: a sugestão para essa meta é
@@ -115,7 +116,7 @@ export function build(stage, fmt) {
         <div class="lx-evidence__item"><dt class="lx-evidence__label">Responda em até</dt><dd class="lx-evidence__value">${REPLY_HOURS} horas</dd></div>
       </dl>
       <p class="demo-sub">Ao aceitar, você cede as noites e recebe os Créditos após a confirmação.</p>
-      <div class="demo-swap">
+      <div class="demo-swap" id="holder-swap" data-grow>
         <div class="demo-actions" id="holder-actions">
           <button class="lx-button lx-button--primary" type="button" id="accept" tabindex="-1">Aceitar</button>
           <button class="lx-button lx-button--secondary" type="button" tabindex="-1">Recusar</button>
@@ -132,21 +133,20 @@ export function build(stage, fmt) {
       </div>
     </section>
 
-    <section class="demo-card demo-card--task" id="accepted" data-surface="deep" aria-label="Solicitação aceita">
-      <p class="lx-eyebrow">Membro que recebe</p>
-      <p class="demo-state demo-state--done">${icon('i-check')}Solicitação aceita</p>
-      <p><span class="lx-ordinal">${credits(s.holder.lot.quantity)}</span> <span class="demo-sub">Créditos recebidos</span></p>
-    </section>
-
-    <section class="demo-card demo-card--ctx" id="booking" data-surface="deep" aria-label="Reserva confirmada">
-      <p class="lx-eyebrow">Membro que solicita</p>
-      <p class="demo-state demo-state--done">${icon('i-check')}Reserva ${s.booking.state.toLowerCase()}</p>
-      <div>
+    <div class="demo-pair" id="result-pair">
+      <section class="demo-card" id="booking" data-surface="deep" aria-label="Reserva confirmada">
+        <p class="lx-eyebrow">Membro que solicita</p>
+        <p class="demo-state demo-state--done">${icon('i-check')}Reserva ${s.booking.state.toLowerCase()}</p>
         <p class="demo-name">${s.secondHome.name}</p>
-        <p class="demo-sub">${periodShort}</p>
-      </div>
-      <p class="demo-sub">${s.nights.length} noites · ${credits(s.balances.afterAccept.consumed)} Créditos utilizados</p>
-    </section>`,
+        <p class="demo-sub">${periodShort} · ${s.nights.length} noites</p>
+      </section>
+      <section class="demo-card" id="accepted" data-surface="deep" aria-label="Solicitação aceita">
+        <p class="lx-eyebrow">Membro que recebe</p>
+        <p class="demo-state demo-state--done">${icon('i-check')}Solicitação aceita</p>
+        <p class="demo-name">${credits(s.holder.lot.quantity)}</p>
+        <p class="demo-sub">Créditos recebidos</p>
+      </section>
+    </div>`,
   );
   stage.dataset.fmt = fmt;
 }
@@ -264,6 +264,9 @@ export function timeline(fmt) {
     ],
     tween: [
       ...selection.tween,
+      // O cartão de quem recebe começa compacto (ações logo abaixo do texto); depois do toque em Aceitar, a área cresce
+      // até a revalidação em duration.slow, sem vão reservado antes e sem salto de layout (v8.4).
+      { sel: '#holder-swap', prop: '--grow', at: t.accept + 100, from: 0, to: 1, dur: GROW_MS },
       {
         sel: '#bar-avail',
         prop: '--share',
@@ -431,9 +434,10 @@ export const qa = {
         'Créditos recebidos',
         'Membro que solicita',
         'Reserva confirmada',
-        '04 a 07/06/2027',
-        `3 noites · ${credits(s.balances.afterAccept.consumed)} Créditos utilizados`,
+        `04 a 07/06/2027 · ${s.nights.length} noites`,
+        credits(s.holder.lot.quantity),
       ],
+      absent: ['Créditos utilizados'],
     },
   ],
   calendar: {

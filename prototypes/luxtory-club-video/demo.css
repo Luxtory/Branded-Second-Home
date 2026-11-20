@@ -75,6 +75,33 @@ body {
   bottom: 13%;
 }
 
+/* Resultado da mesma operação (v8.4): reserva confirmada e solicitação aceita lado a lado no 16:9 (par centrado, mesma
+   altura, vão do Core) e empilhadas no 9:16, como um bloco único. */
+.demo-pair {
+  position: absolute;
+  display: grid;
+  gap: var(--lx-space-4);
+}
+
+[data-fmt] .demo-pair > .demo-card {
+  position: relative;
+  inset: auto;
+  width: auto;
+}
+
+[data-fmt='16x9'] .demo-pair {
+  bottom: 17%;
+  inset-inline: 0;
+  width: calc(2 * 25rem + var(--lx-space-4));
+  margin-inline: auto;
+  grid-template-columns: 1fr 1fr;
+}
+
+[data-fmt='9x16'] .demo-pair {
+  bottom: 13%;
+  inset-inline: var(--lx-space-3);
+}
+
 [data-fmt='16x9'] .demo-only-9x16,
 [data-fmt='9x16'] .demo-only-16x9 {
   display: none;
@@ -227,6 +254,17 @@ body {
    na base da área, como rodapé de ações; a revalidação ocupa a mesma área a partir do topo. */
 .demo-swap > .demo-actions {
   align-self: end;
+}
+
+/* Área que cresce (v8.4): começa na altura das ações (sem vão reservado para a revalidação) e cresce até a altura da
+   revalidação com o tween --grow (stage.js mede os dois estados). */
+.demo-swap[data-grow] {
+  block-size: calc(var(--grow-from) + (var(--grow-to) - var(--grow-from)) * var(--grow, 0));
+  overflow: clip;
+}
+
+.demo-swap[data-grow] > .demo-actions {
+  align-self: start;
 }
 
 /* Estado: cor do papel semântico + ícone + texto, nunca só cor (§13.3). Retangular (radius de controle). */
@@ -554,6 +592,14 @@ body {
   top: 50%;
   bottom: auto;
   width: 34rem;
+  translate: 0 -50%;
+}
+
+/* 16:9: o controle da complementação divide o eixo horizontal com o calendário ao lado (centros alinhados), em vez de
+   ficar na linha de base enquanto o calendário fica centrado (v8.4). */
+[data-fmt='16x9'] #topup {
+  top: 50%;
+  bottom: auto;
   translate: 0 -50%;
 }
 
