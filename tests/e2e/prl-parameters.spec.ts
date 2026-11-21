@@ -14,8 +14,9 @@ import {
 import { collectConsoleErrors } from './support/ui';
 
 // W16 E4 (spec pricing §5, spec admin §14; ADR-0032): parâmetros econômicos e PRL pelas telas reais do Admin, com o
-// PostgreSQL real. Jornada de precificação em lote: seleção acumulada entre meses (toque e teclado), preço comum
-// aplicado explicitamente e preço próprio por noite, revisão no servidor revalidada na confirmação (seleção preservada),
+// PostgreSQL real. Jornada de precificação em lote: seleção acumulada entre meses (toque e teclado), preço comum para
+// as noites sem preço próprio, exceção individual que o comum não sobrescreve, substituição só explícita, painel
+// compacto com a lista noite a noite sob demanda, revisão no servidor revalidada na confirmação (seleção preservada),
 // consulta com a noite em detalhe e o histórico, alterações agendadas em sequência. Valores de teste
 // arbitrários (nenhum valor canônico). Nenhuma capability é ligada; o Super Admin é um usuário próprio deste spec.
 test.describe.configure({ mode: 'serial' });
@@ -42,6 +43,16 @@ async function widths(page: Page, name: string) {
     await page.screenshot({ path: `${dir}/${name}-${width}.png`, fullPage: true });
   }
   if (original !== null) await page.setViewportSize(original);
+}
+/** Recorte do calendário com o foco do teclado num dia (vai e volta pelas setas, sem sair do mês), só com
+ * `UI_CAPTURE_DIR` — evidência de foco visível sobre a seleção e sobre o tom da temporada. */
+async function focusShot(page: Page, target: Locator, name: string) {
+  const dir = process['env']['UI_CAPTURE_DIR'];
+  if (dir === undefined || dir === '') return;
+  await target.focus();
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('ArrowRight');
+  await page.locator('.lx-pricing__calendar').screenshot({ path: `${dir}/${name}.png` });
 }
 const nextMonth = (month: string) => {
   const [year, value] = month.split('-').map(Number) as [number, number];
@@ -167,19 +178,40 @@ test.describe('W16 E4 — PRL e parâmetros econômicos no Admin', () => {
     await expect(
       page.getByRole('status').filter({ hasText: '3 noites selecionadas.' }),
     ).toBeVisible();
-    // O painel mostra só as noites do mês em tela; as demais ficam a um toque.
+    // Painel compacto: sem exceção, nenhuma linha por noite; as noites de outros meses ficam a um toque.
+    const panel = page.locator('.lx-pricing__panel');
+    const rows = page.locator('.lx-pricing__night');
     await page.getByRole('button', { name: 'Mês anterior' }).tap();
     await expect(page.getByRole('button', { name: /: 1 noite$/ })).toBeVisible();
-    // Exceção individual e reaplicação explícita do preço comum.
+    await expect(rows).toHaveCount(0);
+    await expect(panel).toContainText('2 noites deste mês no preço comum.');
+    // Exceção individual pela lista noite a noite; mudar o preço comum não toca o preço próprio.
+    await page.getByRole('button', { name: 'Ajustar noite a noite' }).tap();
     const secondPrice = page.getByLabel(new RegExp(`Preço de .*${civil(second)}`));
     await secondPrice.fill('1.500,00');
-    await expect(
-      page.locator('.lx-pricing__night').filter({ hasText: civil(second) }),
-    ).toContainText('Preço próprio');
-    await page.getByRole('button', { name: 'Aplicar às 3 noites selecionadas' }).tap();
-    await expect(page.getByRole('status')).toContainText('Preço comum aplicado a 3 noites.');
+    const secondRow = rows.filter({ hasText: civil(second) });
+    await expect(secondRow).toContainText('Preço próprio');
+    await expect(panel).toContainText('2 noites no preço comum · 1 com preço próprio.');
+    await page.getByLabel('Preço comum (R$)').fill('1.000,00');
+    await expect(secondPrice).toHaveValue('1.500,00');
+    await expect(day(page, first)).toHaveAccessibleName(/novo preço R\$ 1\.000,00/);
+    await expect(day(page, second)).toHaveAccessibleName(
+      /novo preço R\$ 1\.500,00 — preço próprio/,
+    );
+    await page.getByLabel('Preço comum (R$)').fill('1.234,56');
+    // Substituir preço próprio só por ação explícita, que diz quantos substitui.
+    await page.getByRole('button', { name: 'Substituir 1 preço próprio pelo comum' }).tap();
+    await expect(page.getByRole('status')).toContainText('1 preço próprio substituído pelo comum.');
     await expect(secondPrice).toHaveValue('1.234,56');
+    await expect(secondRow).not.toContainText('Preço próprio');
     await secondPrice.fill('1.500,00');
+    // Compacto de novo: a exceção continua à vista e a noite no comum sai da lista; trocar de mês não perde valores.
+    await page.getByRole('button', { name: 'Mostrar só os preços próprios' }).tap();
+    await expect(rows).toHaveCount(1);
+    await expect(panel).toContainText('1 noite deste mês no preço comum.');
+    await page.getByRole('button', { name: 'Próximo mês' }).tap();
+    await page.getByRole('button', { name: 'Mês anterior' }).tap();
+    await expect(secondPrice).toHaveValue('1.500,00');
     await page.getByLabel('Base registrada').fill('Ata sintética W16 E2E');
     await gate(page, errors, 'w16-05-prl-selecao-em-lote');
     await widths(page, 'w16-05-prl-selecao-em-lote');
@@ -206,6 +238,7 @@ test.describe('W16 E4 — PRL e parâmetros econômicos no Admin', () => {
     ).toContainText(civil(first));
     // A seleção e os preços sobrevivem à revisão; remoção individual pelo painel do mês.
     await expect(secondPrice).toHaveValue('1.500,00');
+    await page.getByRole('button', { name: 'Ajustar noite a noite' }).tap();
     await page
       .getByRole('button', { name: new RegExp(`Remover .*${civil(first)} da seleção`) })
       .tap();
@@ -254,20 +287,33 @@ test.describe('W16 E4 — PRL e parâmetros econômicos no Admin', () => {
     await expect(
       day(page, (await superAlta.first().locator('button').getAttribute('data-date')) ?? ''),
     ).toHaveAccessibleName(/Temporada Super Alta/);
+    await page.getByLabel('Preço comum (R$)').fill('2.000,00');
     await page.getByRole('button', { name: 'Super Alta', exact: true }).tap();
     await expect(page.getByRole('status')).toContainText(`${carnival} noites adicionadas.`);
+    await expect(rows).toHaveCount(0);
     await expect(
       page.locator('td[data-tier="super_alta"] button[aria-pressed="true"]'),
     ).toHaveCount(carnival);
     await expect(page.locator('td[data-tier="media"] button[aria-pressed="true"]')).toHaveCount(0);
     await gate(page, errors, 'w16-10-prl-temporadas-carnaval');
     await widths(page, 'w16-10-prl-temporadas-carnaval');
+    const lastMedia = page.locator('td[data-tier="media"] button').last();
+    await focusShot(page, superAlta.first().locator('button'), 'w16-12-prl-foco-selecionada');
+    await focusShot(page, lastMedia, 'w16-12-prl-foco-nao-selecionada');
     await page.getByRole('button', { name: 'Limpar seleção' }).tap();
     while ((await page.locator('td[data-tier="alta"]').count()) === 0)
       await page.getByRole('button', { name: 'Mês anterior' }).tap();
     await page.getByRole('button', { name: 'Alta', exact: true }).tap();
     await expect(page.getByRole('status')).toContainText(/noites adicionadas\./);
+    // Mês inteiro: o painel continua curto; a lista completa abre sob demanda, uma linha por noite selecionada.
+    const alta = await page.locator('td[data-tier="alta"] button[aria-pressed="true"]').count();
+    expect(alta).toBeGreaterThanOrEqual(28);
+    await expect(rows).toHaveCount(0);
     await gate(page, errors, 'w16-11-prl-temporada-alta');
+    await widths(page, 'w16-11-prl-temporada-alta');
+    await page.getByRole('button', { name: 'Ajustar noite a noite' }).tap();
+    await expect(rows).toHaveCount(alta);
+    await page.getByRole('button', { name: 'Mostrar só os preços próprios' }).tap();
     await page.getByRole('button', { name: 'Limpar seleção' }).tap();
     await page.goto(`/admin/prl/${home}?modo=alteracao&mes=${month}`);
     await expect(page.getByRole('form', { name: 'Alterar preços' })).toHaveCount(0);
@@ -281,7 +327,7 @@ test.describe('W16 E4 — PRL e parâmetros econômicos no Admin', () => {
     const schedule = async (amount: string, start: string) => {
       await superPage.goto(`/admin/prl/${home}?modo=alteracao&mes=${month}`);
       await day(superPage, second).tap();
-      await superPage.getByLabel(new RegExp(`Preço de .*${civil(second)}`)).fill(amount);
+      await superPage.getByLabel('Preço comum (R$)').fill(amount);
       await superPage.getByLabel('Início da vigência (opcional)').fill(start);
       await superPage.getByLabel('Base registrada').fill('Ata sintética W16 E2E');
       await superPage.getByRole('button', { name: 'Revisar', exact: true }).tap();
@@ -311,6 +357,14 @@ test.describe('W16 E4 — PRL e parâmetros econômicos no Admin', () => {
       await expect(changed).toContainText(/R\$\s1\.500,00/);
       await expect(changed).toContainText(/R\$\s1\.600,00 a partir de/);
       await expect(changed).toContainText(/R\$\s1\.700,00 a partir de/);
+      // Resumo do mês: situação agora (partição) separada das alterações programadas, que se sobrepõem a ela.
+      const summary = superPage.locator('section[aria-labelledby="prl-resumo-mes"]');
+      const fact = (label: string) =>
+        summary.locator('.lx-pricing__fact').filter({ hasText: label });
+      await expect(summary).toContainText('Situação agora');
+      await expect(fact('Com preço vigente')).toContainText('2 noites');
+      await expect(summary).toContainText('Alterações programadas');
+      await expect(fact('Noites com versão futura')).toContainText('1 noite');
       await changed.getByText('Histórico · 3 versões registradas').tap();
       await expect(changed).toContainText('Alteração');
       await expect(changed).toContainText('Super Admin');

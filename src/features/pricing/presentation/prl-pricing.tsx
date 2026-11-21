@@ -18,7 +18,13 @@ import {
 } from './prl-month-calendar';
 import { adjacentMonth } from './prl-months';
 import type { SeasonTier } from './prl-seasons';
-import { addNights } from './prl-selection';
+import {
+  addNights,
+  ownPriced,
+  resetToCommon,
+  selectionPayload,
+  type PrlSelection,
+} from './prl-selection';
 import type { PrlFormKind, PrlPublicationState } from './prl-state';
 
 const SEASON_TIERS = ['super_alta', 'alta', 'media'] as const;
@@ -107,8 +113,9 @@ function Field(props: {
 /**
  * Definir ou alterar preços em lote (W16; REQ-013, REQ-052; spec pricing §5). Calendário do mês à esquerda e painel da
  * seleção à direita (no celular, um depois do outro): seleção individual, do mês ou por temporada, acumulada entre
- * meses; preço comum aplicado explicitamente; preço próprio por noite na lista do mês em tela; revisão calculada no
- * servidor antes da confirmação. Só noites elegíveis ao modo aceitam seleção — a inicial não alcança noite com preço e
+ * meses. O preço comum vale para toda noite sem preço próprio; preço próprio só pelo campo da noite e só volta ao
+ * comum por ação explícita (da noite ou de todas, com a contagem). O painel mostra as exceções do mês e abre a lista
+ * completa sob demanda; revisão calculada no servidor antes da confirmação. Só noites elegíveis ao modo aceitam seleção — a inicial não alcança noite com preço e
  * a alteração não alcança noite sem preço —, então uma publicação nunca mistura as duas operações. O cliente não
  * calcula valor econômico: totais e Créditos vêm da revisão no servidor.
  */
@@ -134,8 +141,10 @@ export function PrlPricing(props: {
     [props.nights],
   );
   const [month, setMonth] = useState(props.initialMonth);
-  const [selected, setSelected] = useState<ReadonlyMap<string, string>>(new Map());
+  const [selected, setSelected] = useState<PrlSelection>(new Map());
   const [common, setCommon] = useState('');
+  // Lista completa do mês aberta ou só as exceções; vale para todos os meses até o Admin mudar.
+  const [perNight, setPerNight] = useState(false);
   const [guidance, setGuidance] = useState('');
   const [focused, setFocused] = useState<string | null>(null);
   const [focusRequest, setFocusRequest] = useState(0);
@@ -150,7 +159,7 @@ export function PrlPricing(props: {
         : text.calendar.notChange;
 
   const add = (dates: readonly string[]) => {
-    const { next, added, capped } = addNights(selected, dates, common);
+    const { next, added, capped } = addNights(selected, dates, null);
     setSelected(next);
     return { added, capped };
   };
@@ -200,17 +209,19 @@ export function PrlPricing(props: {
 
   const sorted = [...selected.keys()].sort();
   const inMonth = sorted.filter((date) => date.startsWith(month));
+  const own = ownPriced(selected);
+  const isOwn = (date: string) => (selected.get(date) ?? null) !== null;
+  const ownInMonth = own.filter((date) => date.startsWith(month));
+  const rows = perNight ? inMonth : ownInMonth;
   const elsewhere = [
     ...sorted
       .filter((date) => !date.startsWith(month))
-      .reduce(
-        (groups, date) => groups.set(date.slice(0, 7), (groups.get(date.slice(0, 7)) ?? 0) + 1),
-        new Map<string, number>(),
-      ),
+      .reduce((groups, date) => {
+        const [count, owned] = groups.get(date.slice(0, 7)) ?? [0, 0];
+        return groups.set(date.slice(0, 7), [count + 1, owned + (isOwn(date) ? 1 : 0)]);
+      }, new Map<string, [number, number]>()),
   ];
-  const payload = JSON.stringify(
-    sorted.map((date) => ({ stay_date: date, amount: selected.get(date) ?? '' })),
-  );
+  const payload = JSON.stringify(selectionPayload(selected, common));
   const reviewing = state.stage === 'review' && state.review !== null;
   const previousMonth = adjacentMonth(props.months, month, -1);
   const nextMonth = adjacentMonth(props.months, month, 1);
@@ -264,13 +275,14 @@ export function PrlPricing(props: {
                 focusRequest={focusRequest}
                 day={(date, night) => {
                   const isSelected = selected.has(date);
-                  const proposed = selected.get(date) ?? '';
+                  const proposed = isSelected ? (selected.get(date) ?? common) : '';
                   const parts = nightDescription(date, night);
                   if (!eligible(night)) parts.push(reason(night));
                   else if (isSelected) {
                     parts.push(text.calendar.selected);
                     if (proposed.trim() !== '')
                       parts.push(text.calendar.proposed(`R$ ${proposed}`));
+                    if (isOwn(date)) parts.push(text.calendar.own);
                   }
                   return {
                     label: parts.join(' — '),
@@ -414,17 +426,24 @@ export function PrlPricing(props: {
                     />
                   )}
                 </Field>
-                <button
-                  className="lx-button lx-button--secondary"
-                  type="button"
-                  disabled={selected.size === 0 || !hasCommon}
-                  onClick={() => {
-                    setSelected(new Map(sorted.map((date) => [date, common])));
-                    setGuidance(text.selection.applied(sorted.length));
-                  }}
-                >
-                  {text.selection.apply(selected.size)}
-                </button>
+                {own.length === 0 ? null : (
+                  <p className="lx-pricing__text">
+                    {text.selection.split(selected.size - own.length, own.length)}
+                  </p>
+                )}
+                {own.length === 0 || !hasCommon ? null : (
+                  <button
+                    className="lx-calendar__clear"
+                    type="button"
+                    onClick={() => {
+                      const { next, replaced } = resetToCommon(selected);
+                      setSelected(next);
+                      setGuidance(text.selection.resetDone(replaced));
+                    }}
+                  >
+                    {text.selection.resetAll(own.length)}
+                  </button>
+                )}
               </div>
 
               <section className="lx-pricing__block" aria-labelledby={`prl-${props.kind}-mes`}>
@@ -444,58 +463,87 @@ export function PrlPricing(props: {
                     {text.selection.thisMonthNone(monthName(month))}
                   </p>
                 ) : (
-                  <ol className="lx-pricing__nights">
-                    {inMonth.map((date) => {
-                      const night = byDate.get(date);
-                      const amount = selected.get(date) ?? '';
-                      const meta = [night === undefined ? '' : text.seasons[night.tier]];
-                      if (props.kind === 'change' && night?.inForce)
-                        meta.push(text.selection.current(night.inForce));
-                      if (hasCommon && amount !== common) meta.push(text.selection.exception);
-                      return (
-                        <li className="lx-pricing__night" key={date}>
-                          <span className="lx-pricing__night-date">
-                            <span className="lx-pricing__night-name">{nightName(date)}</span>
-                            <span className="lx-pricing__night-meta">
-                              {meta.filter(Boolean).join(' · ')}
-                            </span>
-                          </span>
-                          <input
-                            className="lx-input"
-                            type="text"
-                            inputMode="decimal"
-                            autoComplete="off"
-                            aria-label={text.selection.amountFor(nightName(date))}
-                            value={amount}
-                            onChange={(event) =>
-                              setSelected(new Map(selected).set(date, event.target.value))
-                            }
-                          />
-                          <button
-                            className="lx-pricing__remove"
-                            type="button"
-                            aria-label={text.selection.remove(nightName(date))}
-                            onClick={() => remove(date)}
-                          >
-                            <Icon name="close" />
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ol>
+                  <>
+                    {rows.length === 0 ? null : (
+                      <ol className="lx-pricing__nights">
+                        {rows.map((date) => {
+                          const night = byDate.get(date);
+                          const owned = isOwn(date);
+                          const meta = [night === undefined ? '' : text.seasons[night.tier]];
+                          if (props.kind === 'change' && night?.inForce)
+                            meta.push(text.selection.current(night.inForce));
+                          if (owned) meta.push(text.selection.exception);
+                          return (
+                            <li className="lx-pricing__night" key={date}>
+                              <span className="lx-pricing__night-date">
+                                <span className="lx-pricing__night-name">{nightName(date)}</span>
+                                <span className="lx-pricing__night-meta">
+                                  {meta.filter(Boolean).join(' · ')}
+                                </span>
+                                {owned ? (
+                                  <button
+                                    className="lx-calendar__clear"
+                                    type="button"
+                                    aria-label={text.selection.resetOneFor(nightName(date))}
+                                    onClick={() =>
+                                      setSelected(resetToCommon(selected, [date]).next)
+                                    }
+                                  >
+                                    {text.selection.resetOne}
+                                  </button>
+                                ) : null}
+                              </span>
+                              <input
+                                className="lx-input"
+                                type="text"
+                                inputMode="decimal"
+                                autoComplete="off"
+                                aria-label={text.selection.amountFor(nightName(date))}
+                                value={selected.get(date) ?? common}
+                                onChange={(event) =>
+                                  setSelected(new Map(selected).set(date, event.target.value))
+                                }
+                              />
+                              <button
+                                className="lx-pricing__remove"
+                                type="button"
+                                aria-label={text.selection.remove(nightName(date))}
+                                onClick={() => remove(date)}
+                              >
+                                <Icon name="close" />
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ol>
+                    )}
+                    {perNight || inMonth.length === ownInMonth.length ? null : (
+                      <p className="lx-pricing__text">
+                        {text.selection.followingInMonth(inMonth.length - ownInMonth.length)}
+                      </p>
+                    )}
+                    <button
+                      className="lx-calendar__clear"
+                      type="button"
+                      aria-expanded={perNight}
+                      onClick={() => setPerNight(!perNight)}
+                    >
+                      {perNight ? text.selection.ownOnly : text.selection.perNight}
+                    </button>
+                  </>
                 )}
                 {elsewhere.length === 0 ? null : (
                   <div className="lx-pricing__block">
                     <p className="lx-pricing__eyebrow">{text.selection.otherMonths}</p>
                     <ul className="lx-pricing__months">
-                      {elsewhere.map(([other, count]) => (
+                      {elsewhere.map(([other, [count, owned]]) => (
                         <li key={other}>
                           <button
                             className="lx-calendar__clear"
                             type="button"
                             onClick={() => goToMonth(other)}
                           >
-                            {text.selection.goToMonth(monthName(other), count)}
+                            {text.selection.goToMonth(monthName(other), count, owned)}
                           </button>
                         </li>
                       ))}

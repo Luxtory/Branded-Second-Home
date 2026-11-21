@@ -13,7 +13,17 @@ import {
   PrlMonthCalendar,
   SeasonSwatch,
 } from './prl-month-calendar';
+import { monthSummary } from './prl-month-summary';
 import { adjacentMonth } from './prl-months';
+
+function Fact({ label, value }: { readonly label: string; readonly value: string }) {
+  return (
+    <div className="lx-pricing__fact">
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </div>
+  );
+}
 
 /** Uma versão do histórico imutável, formatada no servidor; `state` diz se vale agora, se é futura ou se já acabou. */
 export interface PrlHistoryEntry {
@@ -143,14 +153,8 @@ export function PrlConsult(props: {
     `${props.basePath}&mes=${month}${night === undefined ? '' : `&noite=${night}`}${focus ? '&foco=1' : ''}`;
   const previous = adjacentMonth(props.months, props.month, -1);
   const next = adjacentMonth(props.months, props.month, 1);
-  const counts = {
-    inForce: props.nights.filter((night) => night.status === 'in_force').length,
-    scheduled: props.nights.filter((night) => night.scheduled.length > 0).length,
-    absent: props.nights.filter((night) => night.status === 'absent').length,
-  };
-  const seasons = (['super_alta', 'alta', 'media'] as const)
-    .map((tier) => [tier, props.nights.filter((night) => night.tier === tier).length] as const)
-    .filter(([, total]) => total > 0)
+  const summary = monthSummary(props.nights);
+  const seasons = summary.tiers
     .map(([tier, total]) => `${total} ${text.seasons[tier]}`)
     .join(' · ');
   const years = [...new Set(props.months.map((value) => value.slice(0, 4)))];
@@ -240,26 +244,31 @@ export function PrlConsult(props: {
               {text.monthSummaryLabel(monthName(props.month))}
             </h3>
             <dl className="lx-pricing__facts">
-              <div className="lx-pricing__fact">
-                <dt>{text.monthSummary.nights}</dt>
-                <dd>{text.nightsCount(props.nights.length)}</dd>
-              </div>
-              <div className="lx-pricing__fact">
-                <dt>{text.monthSummary.seasons}</dt>
-                <dd>{seasons}</dd>
-              </div>
-              <div className="lx-pricing__fact">
-                <dt>{text.monthSummary.inForce}</dt>
-                <dd>{text.nightsCount(counts.inForce)}</dd>
-              </div>
-              <div className="lx-pricing__fact">
-                <dt>{text.monthSummary.scheduled}</dt>
-                <dd>{text.nightsCount(counts.scheduled)}</dd>
-              </div>
-              <div className="lx-pricing__fact">
-                <dt>{text.monthSummary.absent}</dt>
-                <dd>{text.nightsCount(counts.absent)}</dd>
-              </div>
+              <Fact label={text.monthSummary.nights} value={text.nightsCount(summary.total)} />
+              <Fact label={text.monthSummary.seasons} value={seasons} />
+            </dl>
+            {/* Situação agora: cada noite em uma linha só, somando o total; versões futuras vão à parte. */}
+            <h4 className="lx-pricing__subhead">{text.monthSummary.now}</h4>
+            <dl className="lx-pricing__facts">
+              <Fact
+                label={text.monthSummary.inForce}
+                value={text.nightsCount(summary.now.inForce)}
+              />
+              {summary.now.scheduledOnly === 0 ? null : (
+                <Fact
+                  label={text.monthSummary.scheduledOnly}
+                  value={text.nightsCount(summary.now.scheduledOnly)}
+                />
+              )}
+              <Fact label={text.monthSummary.absent} value={text.nightsCount(summary.now.absent)} />
+            </dl>
+            <h4 className="lx-pricing__subhead">{text.monthSummary.planned}</h4>
+            <p className="lx-pricing__text">{text.monthSummary.plannedNote}</p>
+            <dl className="lx-pricing__facts">
+              <Fact
+                label={text.monthSummary.scheduled}
+                value={text.nightsCount(summary.scheduled)}
+              />
             </dl>
           </section>
         </div>

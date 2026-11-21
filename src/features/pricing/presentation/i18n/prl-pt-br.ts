@@ -68,9 +68,14 @@ export const prlMessages = {
   monthSummary: {
     nights: 'No calendário',
     seasons: 'Temporadas',
+    now: 'Situação agora',
     inForce: 'Com preço vigente',
-    scheduled: 'Com versão futura',
+    scheduledOnly: 'Sem preço vigente, com versão futura',
     absent: 'Sem preço definido',
+    planned: 'Alterações programadas',
+    plannedNote:
+      'Contadas à parte: uma noite pode ter preço vigente e versão futura ao mesmo tempo.',
+    scheduled: 'Noites com versão futura',
   },
   nightTitle: 'Noite em detalhe',
 
@@ -97,6 +102,7 @@ export const prlMessages = {
     selected: 'selecionada',
     viewing: 'em detalhe',
     proposed: (value: string) => `novo preço ${value}`,
+    own: 'preço próprio',
     unsealed: 'fora do calendário da Second Home',
     notInitial: 'já tem preço; só o Super Admin altera',
     notChange: 'ainda sem preço; use Definir preços iniciais',
@@ -126,17 +132,32 @@ export const prlMessages = {
     clear: 'Limpar seleção',
     common: 'Preço comum (R$)',
     commonHint:
-      'Até 2 casas decimais; nada é arredondado. Noites novas na seleção recebem este preço.',
-    apply: (count: number) =>
-      count === 1 ? 'Aplicar à noite selecionada' : `Aplicar às ${count} noites selecionadas`,
-    applied: (count: number) =>
-      count === 1 ? 'Preço comum aplicado a 1 noite.' : `Preço comum aplicado a ${count} noites.`,
-    empty: 'Selecione noites no calendário; o preço de cada uma aparece aqui para ajuste.',
-    thisMonth: (month: string) => `Em ${month}`,
+      'Vale para todas as noites selecionadas, menos as de preço próprio. Até 2 casas decimais; nada é arredondado.',
+    split: (common: number, own: number) =>
+      `${common === 1 ? '1 noite' : `${common} noites`} no preço comum · ${own === 1 ? '1 com preço próprio' : `${own} com preço próprio`}.`,
+    resetAll: (count: number) =>
+      count === 1
+        ? 'Substituir 1 preço próprio pelo comum'
+        : `Substituir ${count} preços próprios pelo comum`,
+    resetDone: (count: number) =>
+      count === 1
+        ? '1 preço próprio substituído pelo comum.'
+        : `${count} preços próprios substituídos pelo comum.`,
+    resetOne: 'Usar o preço comum',
+    resetOneFor: (night: string) => `Usar o preço comum em ${night}`,
+    empty:
+      'Selecione noites no calendário. Todas recebem o preço comum; aqui você ajusta só as exceções.',
+    thisMonth: (month: string) => `Preço por noite em ${month}`,
     thisMonthNone: (month: string) => `Nenhuma noite selecionada em ${month}.`,
+    followingInMonth: (count: number) =>
+      count === 1
+        ? '1 noite deste mês no preço comum.'
+        : `${count} noites deste mês no preço comum.`,
+    perNight: 'Ajustar noite a noite',
+    ownOnly: 'Mostrar só os preços próprios',
     otherMonths: 'Também selecionadas',
-    goToMonth: (month: string, count: number) =>
-      `${month}: ${count === 1 ? '1 noite' : `${count} noites`}`,
+    goToMonth: (month: string, count: number, own: number) =>
+      `${month}: ${count === 1 ? '1 noite' : `${count} noites`}${own === 0 ? '' : ` (${own} com preço próprio)`}`,
     current: (value: string) => `vigente ${value}`,
     exception: 'Preço próprio',
     amountFor: (night: string) => `Preço de ${night} (R$)`,
@@ -177,7 +198,7 @@ export const prlMessages = {
     edit: 'Voltar e editar',
   },
   initialIntro:
-    'Para noites ainda sem preço. Selecione no calendário, aplique um preço comum e ajuste as exceções.',
+    'Para noites ainda sem preço. Selecione no calendário, informe o preço comum e ajuste só as exceções.',
   changeIntro:
     'Exclusivo do Super Admin, para noites que já têm preço. A nova versão vale da confirmação, ou de um horário futuro, em diante.',
   changeRestricted: 'Só o Super Admin altera preços já definidos.',

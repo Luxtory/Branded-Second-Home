@@ -79,7 +79,11 @@ A W16 entrega REQ-013 e REQ-052 (`02` v4.6), com TECH-030, TECH-031 e TECH-033 (
     = demais noites, 29/02 incluído — derivadas do grupo canônico do calendário selado e de `carnivalDates` do
     calendário canônico (TECH-041), sem migration, contrato ou segundo cálculo de Carnaval. Os canônicos definem duas
     categorias (`01` §9, REQ-030); por isso a divisão é só de leitura: os grupos `alta`/`media` continuam governando
-    Direito de Uso e os limites 103/262, e o PRL continua por noite, sem preço por temporada.
+    Direito de Uso e os limites 103/262, e o PRL continua por noite, sem preço por temporada. Registro da decisão: na
+    sessão de desenvolvimento do C2 (2026-11-21, 16:53 UTC), o fundador escolheu, entre duas opções, "Carnaval = Super
+    Alta", cuja descrição trazia as datas — Super Alta = as 10 noites da janela de Carnaval do PD-003, Alta =
+    janeiro/julho/dezembro (93 noites num exercício completo), Média/Baixa = as demais, com o 29/02; a alternativa
+    era manter duas temporadas com cores. Transcrição literal no PR #101.
 
 ## Consequences
 

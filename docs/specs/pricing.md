@@ -97,17 +97,24 @@ string em unidade mínima (`amount_minor`) + `currency`.
   selecionada ou em detalhe) — e nenhuma cor serve aos dois; a seleção preserva a faixa da temporada.
   - **Consultar:** a noite em detalhe ao lado (temporada, situação do preço, preço vigente e desde quando, versões
     futuras, histórico imutável sob demanda — valor, tipo, situação, vigência, autoridade, base, registro — no fuso da
-    Second Home) e o resumo do mês (noites, com preço vigente, com versão futura, sem preço). Trocar de noite é
+    Second Home) e o resumo do mês em dois grupos: **situação agora**, com linhas mutuamente exclusivas que somam as
+    noites do mês (com preço vigente · sem preço vigente, com versão futura — só quando houver · sem preço definido), e
+    **alterações programadas** (noites com versão futura), contadas à parte porque uma noite pode ter preço vigente e
+    versão futura ao mesmo tempo. Trocar de noite é
     imediato (cliente, dados do mês vindos do servidor); trocar de mês — pelo link ou pelo teclado — recarrega no
     servidor (uma leitura administrativa por mês) e remonta a consulta, com a noite e o foco vindos da URL do mês
     novo. Depois de uma confirmação, a consulta abre na primeira noite publicada.
   - **Definir preços iniciais** (Admin ou Super Admin) e **Alterar preços** (só Super Admin; para o Admin o modo não
     existe, nem pela URL): seleção por noite (`aria-pressed`), do mês (todas, só Super Alta, só Alta, só Média/Baixa),
     acumulada entre meses, até 366 noites — a seleção em lote diz quantas noites entraram e, no limite, que as demais
-    ficaram de fora. O painel mostra a contagem, o **preço comum** (noites novas o recebem; reaplicá-lo às selecionadas
-    é uma ação explícita, que diz a quantas noites foi aplicado) e as **noites do mês em tela** com o preço de cada uma
-    editável, a temporada, o preço vigente (alteração) e a marca "Preço próprio" quando difere do comum; noites de
-    outros meses aparecem como atalhos para o calendário. Remover uma noite e limpar a seleção ficam no painel. Só
+    ficaram de fora. O painel mostra a contagem e o **preço comum**, que vale para toda noite selecionada sem preço
+    próprio (mudar o comum muda essas noites, e só elas). **Preço próprio** é o que o Admin digita no campo da noite:
+    o comum nunca o sobrescreve, e ele só volta ao comum por ação explícita — "Usar o preço comum" na noite, ou "Substituir N
+    preços próprios pelo comum", que diz quantos substituiu. Havendo preço próprio, o painel diz quantas noites seguem o
+    comum e quantas têm preço próprio; do **mês em tela**, lista só as noites de preço próprio (preço editável, temporada,
+    preço vigente na alteração) e abre, sob demanda, a lista completa noite a noite — aberta ou fechada, a escolha vale
+    para os outros meses. Noites de outros meses aparecem como atalhos para o calendário, com quantas têm preço
+    próprio. Remover uma noite e limpar a seleção ficam no painel. Só
     noites elegíveis ao modo aceitam seleção (a inicial não alcança noite com preço; a alteração não alcança noite sem
     preço): uma publicação nunca mistura as duas operações. Nenhum preço único por temporada é imposto. A seleção e os
     preços sobrevivem à revisão e à volta para editar.

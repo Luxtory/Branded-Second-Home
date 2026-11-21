@@ -94,6 +94,14 @@
     color: var(--lx-color-fg);
   }
 
+  /* Subgrupo dentro de um bloco (resumo do mês: situação agora × alterações programadas). */
+  .lx-pricing__subhead {
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-small);
+    font-weight: var(--lx-weight-semibold);
+    color: var(--lx-color-fg);
+  }
+
   .lx-pricing__text {
     font-family: var(--lx-font-utility);
     font-size: var(--lx-text-small);
@@ -191,17 +199,10 @@
     }
   }
 
-  /* Preço comum: campo e ação lado a lado quando cabem. */
+  /* Preço comum: o campo, a divisão comum × próprio e, se houver exceções, a substituição explícita. */
   .lx-pricing__common {
     display: grid;
     gap: var(--lx-space-3);
-    align-items: end;
-  }
-
-  @container (min-width: 26rem) {
-    .lx-pricing__common {
-      grid-template-columns: minmax(0, 1fr) auto;
-    }
   }
 
   .lx-pricing__common .lx-field {
