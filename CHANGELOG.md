@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Home da Luxtory: títulos dos serviços em duas linhas, foto do fechamento exibida inteira e textos de Membership e
+  Luxchange revisados.
 - A Home pública apresenta o Luxtory Club e a proposta de intercâmbio de estadias em imóveis de lazer de alto padrão.
   Patrimônio, Liberdade e Pertencimento orientam a narrativa e os convites levam à descrição do Club e às dúvidas.
 

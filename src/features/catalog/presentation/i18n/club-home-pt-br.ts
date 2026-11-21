@@ -61,15 +61,14 @@ export const clubHomeMessages = {
       {
         title: 'Membership',
         text: [
-          'É a associação à Luxtory. Se o seu imóvel for aprovado, você pode contratar a associação.',
-          'Com a associação ativa, você pode usar o Luxchange e o Luxplus.',
+          'É a associação à Luxtory que permite ao membro acessar os benefícios do clube, como Luxchange, Luxplus e locação de temporada com gestão profissional.',
         ],
       },
       {
         title: 'Luxchange',
         // A descrição de Second Home Partners serve de base, com a condição de aceite dos períodos.
         text: [
-          'Os associados disponibilizam períodos de seus imóveis e recebem créditos pelas datas aceitas no intercâmbio.',
+          'Os membros do clube disponibilizam períodos de seus imóveis e recebem créditos pelas datas aceitas no intercâmbio.',
           'Com esses créditos, solicitam estadias em outros destinos da rede.',
           'A reserva depende da disponibilidade e está sujeita a uma taxa em dinheiro, conforme as regras da Luxtory.',
         ],
@@ -86,7 +85,7 @@ export const clubHomeMessages = {
     title: { lead: 'Além do ', turn: 'intercâmbio' },
     items: [
       {
-        title: 'Locação de temporada',
+        title: 'Locação\nde temporada',
         text: [
           'O proprietário escolhe os períodos que deseja disponibilizar para locação.',
           'A Luxtory cuida das locações online, com apoio de equipes locais.',
@@ -94,14 +93,14 @@ export const clubHomeMessages = {
         ],
       },
       {
-        title: 'Second Home Development',
+        title: 'Second Home\nDevelopment',
         text: [
           'Desenvolvimento e gestão de produto para projetos de Second Homes nas modalidades Owner e Co-Owner.',
           'O projeto pode ter a identidade de uma marca licenciada.',
         ],
       },
       {
-        title: 'Second Home Partners',
+        title: 'Second Home\nPartners',
         text: [
           'Parceria com incorporadoras, imobiliárias e corretores que trabalham com imóveis de lazer.',
           'A parceria ajuda a apresentar aos clientes opções de locação e intercâmbio.',

@@ -2054,3 +2054,9 @@ destinos.” fica centralizado na composição com a foto e o botão para as dú
 
 A apresentação do Club informa que os créditos vêm dos períodos aceitos. O bloco Luxchange explica que a reserva
 depende da disponibilidade e está sujeita à taxa em dinheiro prevista nas BR-230 e BR-231.
+
+### 21.6 Alinhamento dos serviços e foto do fechamento
+
+Os títulos dos três serviços são compostos em duas linhas para alinhar os textos das colunas. A foto do fechamento
+aparece inteira. A frase e o botão para as dúvidas ficam centralizados na faixa abaixo da imagem. As descrições de
+Membership e Luxchange usam a redação aprovada pelo fundador.

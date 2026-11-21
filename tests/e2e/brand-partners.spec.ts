@@ -312,13 +312,7 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     // B2C closings have a separate italic scale (D-B2C-22); compare the shared roles outside those closings.
     const roles = [
       ['CTA do Hero da Home', '/', '.lx-home-hero__action', HOME, '#inicio .lx-button'],
-      [
-        'CTA sobre o fechamento',
-        '/',
-        '.lx-hero--closing .lx-button',
-        HOME,
-        '#sua-marca .lx-button',
-      ],
+      ['CTA do fechamento', '/', '#convite .lx-button', HOME, '#sua-marca .lx-button'],
       ['índice do Hero', '/como-funciona', '.lx-hero__chapter-name', HOW, '.lx-anchors a'],
       [
         'rótulo de fase',
