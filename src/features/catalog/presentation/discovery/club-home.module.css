@@ -17,6 +17,10 @@
   opacity: 1;
 }
 
+.lx-club-home :global(.lx-triad-comparison__copy .lx-headline em) {
+  display: block;
+}
+
 @media (min-width: 48rem) {
   .lx-club-home :global(.lx-home-hero__scrim) {
     --lx-club-home-scrim-start: 60%;

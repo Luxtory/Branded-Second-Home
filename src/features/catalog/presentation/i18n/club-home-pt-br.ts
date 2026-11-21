@@ -7,7 +7,7 @@ export const clubHomeMessages = {
   metadata: {
     title: 'Luxtory Club | Intercâmbio de estadias de alto padrão',
     description:
-      'Conheça o Luxtory Club, a proposta de intercâmbio de estadias em imóveis de lazer de alto padrão para descobrir novos destinos.',
+      'O Luxtory Club é um clube de intercâmbio de estadias em imóveis de lazer de alto padrão. Sua casa pode ser o ponto de partida para conhecer novos destinos.',
     siteName: 'Luxtory',
   },
   nav: {
@@ -18,86 +18,98 @@ export const clubHomeMessages = {
   hero: {
     title: original.hero.title,
     carousel: original.hero.carousel,
-    text: 'Luxtory Club. Intercâmbio de estadias de alto padrão para descobrir outros destinos a partir do seu imóvel.',
+    text: 'O Luxtory Club é um clube de intercâmbio de estadias. Seu imóvel de lazer pode abrir caminho para outras casas de alto padrão.',
     action: 'Conheça o Luxtory Club',
   },
   triad: {
-    title: { lead: 'Um lugar para chamar de seu. ', turn: 'Mais possibilidades para viver.' },
+    title: { lead: 'Seu segundo lar como chave mestra. ', turn: 'Para outros lares pelo mundo.' },
     text: [
-      'Sua Second Home guarda os rituais que você criou e as histórias que viveu com quem ama.',
-      'Há também lugares que você ainda quer conhecer. Seu patrimônio pode abrir caminho para essas experiências.',
+      'Imagine passar as férias com a família no seu lugar de sempre e reunir os amigos num feriado à beira-mar.',
+      'Com o intercâmbio, a casa que você já tem pode ser o começo de viagens assim.',
     ],
     diagramAlt: original.renunciation.diagramAlt,
     pillars: [
       {
         title: values.patrimony,
-        text: 'O seu lugar, com a identidade e a privacidade que você conquistou.',
+        text: 'Um lugar seu, com privacidade e espaço para viver do seu jeito.',
       },
       {
         title: values.freedom,
-        text: 'Mais destinos para descobrir e novas experiências para viver.',
+        text: 'Mais opções na hora de escolher onde passar um feriado ou as férias.',
       },
       {
         title: values.belonging,
-        text: 'Tempo com quem você ama, em lugares que combinam com seu jeito de viver.',
+        text: 'Tempo com quem você ama, em casas que combinam com vocês.',
       },
     ],
   },
   club: {
     title: { lead: 'Foi para isso que criamos o ', turn: 'Luxtory Club.' },
     text: [
-      'Um clube de intercâmbio de estadias em imóveis de lazer de alto padrão, pensado para reunir proprietários e imóveis selecionados.',
-      'A proposta é que você escolha períodos elegíveis do seu imóvel para disponibilizar e possa solicitar estadias em outros destinos.',
+      'O Club foi pensado para quem gosta de viajar e se sentir em casa. A rede será formada por imóveis de lazer selecionados pela Luxtory.',
+      'A ideia é que você possa oferecer períodos da sua casa e usar créditos para pedir uma estadia em outro destino.',
     ],
     photo: original.media.kaizen,
   },
   mechanics: {
     title: { lead: 'Como funciona ', turn: 'o Club' },
-    intro: 'A afiliação de imóveis existentes está em desenvolvimento.',
+    intro: 'A Luxtory está preparando o Club para quem já tem um imóvel de lazer.',
     items: [
       {
         title: 'Membership',
         text: [
-          'A associação ao Club depende de elegibilidade e contratação.',
-          'Para acessar Luxchange e Luxplus, é preciso ter Membership elegível e vigente.',
+          'É a associação ao Luxtory Club. Se a Luxtory aprovar seu imóvel, você pode contratar a associação.',
+          'Com a associação ativa, você pode usar o Luxchange e o Luxplus.',
         ],
       },
       {
         title: 'Luxchange',
+        // A descrição de Second Home Partners serve de base, com a condição de aceite dos períodos.
         text: [
-          'A cessão válida de períodos elegíveis pode gerar créditos internos.',
-          'Com créditos válidos, você pode solicitar estadias na rede, conforme as regras e a disponibilidade.',
+          'Os associados disponibilizam períodos de seus imóveis e podem receber créditos do Club pelas datas aceitas no intercâmbio.',
+          'Com esses créditos, solicitam estadias em outros destinos da rede.',
+          'Cada estadia depende das regras do Club e da disponibilidade.',
         ],
       },
       {
         title: 'Luxplus',
         text: [
-          'Estadias adicionais disponíveis podem ser adquiridas mediante pagamento, independentemente do saldo de créditos de intercâmbio.',
+          'Os associados reservam estadias adicionais disponíveis na rede, pagando pela hospedagem, sem usar créditos.',
         ],
       },
     ],
   },
   services: {
-    title: { lead: 'Serviços e ', turn: 'parcerias' },
+    title: { lead: 'Além do ', turn: 'Club' },
     items: [
       {
-        title: 'Gestão de locação de temporada',
-        text: 'Serviço opcional, contratado à parte, para proprietários que desejam autorizar períodos do imóvel para locação.',
+        title: 'Locação de temporada',
+        text: [
+          'O proprietário escolhe os períodos que deseja disponibilizar para locação.',
+          'A proposta é que a Luxtory cuide das locações online, com apoio de equipes locais.',
+          'O serviço é opcional e contratado à parte.',
+        ],
       },
       {
         title: 'Second Home Development',
-        text: 'Desenvolvimento e gestão de produto de Second Homes nas modalidades Owner e Co-Owner, com ou sem identidade de marca licenciada.',
+        text: [
+          'Desenvolvimento e gestão de produto para projetos de Second Homes nas modalidades Owner e Co-Owner.',
+          'O projeto pode ter a identidade de uma marca licenciada.',
+        ],
       },
       {
         title: 'Second Home Partners',
-        text: 'Parceria com incorporadoras, imobiliárias e corretores especializados em imóveis de lazer.',
+        text: [
+          'Parceria com incorporadoras, imobiliárias e corretores que trabalham com imóveis de lazer.',
+          'A parceria ajuda a apresentar aos clientes opções de locação e intercâmbio.',
+        ],
       },
     ],
   },
   invite: {
     title: { lead: 'Para quem é o ', turn: 'Luxtory Club?' },
-    text: 'Para quem já tem um imóvel de lazer de alto padrão e quer viver novas experiências com a família e os amigos.',
-    promise: 'Seu lugar continua sendo seu.',
+    text: 'Para quem tem um imóvel de lazer de alto padrão e quer conhecer outros destinos em família ou com amigos.',
+    promise: original.freedom.closing,
     promiseDetails: 'Suas próximas histórias podem acontecer em muitos outros destinos.',
     action: 'Tire suas dúvidas',
   },
@@ -105,32 +117,33 @@ export const clubHomeMessages = {
     title: 'Dúvidas frequentes',
     items: [
       {
-        question: 'Posso afiliar um imóvel que já possuo?',
+        question: 'Minha casa de lazer pode entrar no Club?',
         answer:
-          'A afiliação está em desenvolvimento. A adesão dependerá da avaliação do imóvel e das condições do Club.',
+          'A Luxtory está preparando a entrada desses imóveis no Club. Para participar, será preciso ter o imóvel aprovado e contratar a associação.',
       },
       {
-        question: 'O intercâmbio altera a propriedade do meu imóvel?',
-        answer: 'O intercâmbio se limita a estadias. A propriedade do imóvel permanece com você.',
+        question: 'Minha casa continua sendo minha?',
+        answer: 'Sim. Você oferece períodos para estadias e mantém a propriedade do imóvel.',
       },
       {
-        question: 'Eu escolho os períodos que disponibilizo?',
+        question: 'Eu escolho as datas que ofereço?',
         answer:
-          'Você decide quais períodos elegíveis deseja disponibilizar e quais mantém para uso próprio, conforme os direitos sobre o imóvel.',
+          'Você escolhe quais datas guarda para usar a casa e quais oferece ao Club. Só entram no intercâmbio as datas que você tem direito de oferecer e que o Club aceita.',
       },
       {
-        question: 'Como recebo e uso os créditos?',
+        question: 'Como eu recebo e uso os créditos?',
         answer:
-          'A origem dos créditos depende da cessão válida de períodos elegíveis. O uso exige créditos válidos e Membership elegível e vigente.',
+          'Os períodos aceitos para o intercâmbio podem virar créditos. Com a associação ativa e os créditos ainda válidos, você pode pedir uma estadia na rede.',
       },
       {
         question: 'Posso escolher qualquer destino ou data?',
         answer:
-          'Cada pedido depende da disponibilidade do imóvel e do período, além das regras do Club, mesmo com créditos válidos.',
+          'Você pode escolher entre os destinos da rede. A estadia depende da disponibilidade do imóvel na data que você quer e das regras do Club.',
       },
       {
-        question: 'Preciso contratar a gestão de locação?',
-        answer: 'A gestão de locação de temporada é opcional e tem contratação própria.',
+        question: 'Preciso contratar a gestão de locação para entrar no Club?',
+        answer:
+          'A gestão de locação é opcional. Se quiser o apoio da Luxtory para alugar sua casa, pode contratar o serviço à parte.',
       },
     ],
   },

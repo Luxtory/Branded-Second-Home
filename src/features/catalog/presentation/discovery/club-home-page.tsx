@@ -7,7 +7,6 @@ import { discoveryMessages } from '../i18n/discovery-pt-br';
 import styles from './club-home.module.css';
 import { HeadlineText } from './headline';
 import { HomeHero } from './home-hero';
-import { nb } from './no-break';
 import { ActionLink, Paragraphs, SplitPhoto } from './parts';
 import { discoveryPaths } from './paths';
 
@@ -162,7 +161,7 @@ export function ClubHomePage() {
               {services.items.map((item) => (
                 <li className="lx-siblings__item" key={item.title}>
                   <h3 className="lx-display-m">{item.title}</h3>
-                  <p className="lx-body">{nb(item.text)}</p>
+                  <Paragraphs lines={item.text} />
                 </li>
               ))}
             </ul>
@@ -194,7 +193,9 @@ export function ClubHomePage() {
             </div>
             <div className="lx-container lx-hero__content">
               <div className="lx-hero__copy">
-                <p className="lx-headline">{invite.promise}</p>
+                <p className="lx-headline">
+                  <HeadlineText headline={invite.promise} />
+                </p>
                 <p className="lx-subheadline">{invite.promiseDetails}</p>
                 <ActionLink
                   href={`#${sections.faq}`}

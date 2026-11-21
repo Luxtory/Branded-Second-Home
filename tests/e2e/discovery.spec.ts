@@ -288,8 +288,11 @@ test.describe('Discovery público — conteúdo', () => {
     await page.goto('/');
     const faq = page.locator('section#duvidas');
     const items = [
-      ['Posso afiliar um imóvel que já possuo?', 'dependerá da avaliação do imóvel'],
-      ['O intercâmbio altera a propriedade do meu imóvel?', 'permanece com você'],
+      [
+        'Minha casa de lazer pode entrar no Club?',
+        'ter o imóvel aprovado e contratar a associação',
+      ],
+      ['Minha casa continua sendo minha?', 'mantém a propriedade do imóvel'],
       ['Posso escolher qualquer destino ou data?', 'depende da disponibilidade'],
     ] as const;
     for (const [question, answer] of items) {

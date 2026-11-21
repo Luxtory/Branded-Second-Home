@@ -2036,3 +2036,10 @@ Aceite em Chromium nas larguras 320, 390, 768, 1024, 1440 e 1920 px, com fluxo p
 contraste nos pixels do Hero, axe, movimento reduzido, metadados, fragmentos e portão público em HTML, RSC e prefetch.
 A nova Home aplica um gradiente local ao Hero para cumprir contraste sobre a foto. A versão anterior segue disponível
 no código, junto de sua copy e seus metadados.
+
+### 21.3 Revisão editorial
+
+A tríade abre com “Seu segundo lar como chave mestra. Para outros lares pelo mundo.” e mostra como os proprietários
+podem conciliar as viagens com o uso do próprio imóvel. “Um lugar para chamar de seu. Mais possibilidades para viver.”
+passa para o fechamento. A descrição de Luxchange, Luxplus e locação de temporada retoma a redação de Second Home
+Partners (§20), com as condições de participação e disponibilidade junto aos mecanismos correspondentes.
