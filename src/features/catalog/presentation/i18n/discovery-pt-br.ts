@@ -247,13 +247,12 @@ export const discoveryMessages = {
     },
     luxtory: {
       marker: 'Foi para isso que criamos a Luxtory',
-      intro:
-        'A Luxtory é um clube de second homes de alto padrão construídas em torno de uma ideia simples:',
+      intro: 'A Luxtory cria Branded Second Homes de alto padrão em torno de uma ideia simples:',
       idea: 'O lugar onde você vive o lazer deve refletir a vida que você quer viver.',
       lifestyle: 'o lifestyle com o qual você se identifica.',
       partners:
         'Em parceria com marcas que representam esse lifestyle, criamos Second Homes com identidade própria para você viver seu lazer como deseja.',
-      club: 'Tudo conectado ao Luxtory Club.',
+      club: 'O modelo prevê a integração ao Luxtory Club, quando disponível.',
       architecture: 'Uma arquitetura pensada para reunir:',
       triad: 'Patrimônio. Liberdade. Pertencimento.',
     },
@@ -319,19 +318,19 @@ export const discoveryMessages = {
         {
           title: 'Luxchange — intercâmbio da rede',
           text: [
-            'No Luxchange, você escolhe períodos da sua Second Home para converter em créditos equivalentes e diversificar estadias em outros imóveis da rede.',
+            'No Luxchange, quando disponível, você poderá converter períodos elegíveis da sua Second Home em Créditos para solicitar estadias na rede.',
           ],
         },
         {
           title: 'Luxplus — reservas extras',
           text: [
-            'O Luxplus dá acesso a estadias adicionais quando os dias da sua Second Home e os créditos do Luxchange não bastarem.',
+            'O Luxplus está previsto para a compra de estadias adicionais disponíveis no Inventário Luxtory.',
           ],
         },
         {
           title: 'Locação de temporada — monetizar tempo ocioso',
           text: [
-            'Quando houver períodos que você não pretende usar, você pode autorizar a locação pelo canal Luxtory, conforme a modalidade e as regras aplicáveis.',
+            'Quando disponível, você poderá autorizar a locação por canais e operadores autorizados pela Luxtory, conforme a modalidade e as regras aplicáveis.',
             'No Co-Owner, apenas datas já reservadas do seu Direito de Uso podem ser disponibilizadas.',
           ],
         },
@@ -346,7 +345,7 @@ export const discoveryMessages = {
       title: { lead: 'Aproveite mais. ', turn: 'Administre menos.' } satisfies Headline,
       intro:
         'Ter uma casa de lazer costuma trazer junto manutenção, fornecedores, preparação, imprevistos e uma lista de coisas para resolver.',
-      text: 'A Luxtory coordena os serviços de gestão e manutenção aplicáveis a cada Second Home para reduzir boa parte desses atritos.',
+      text: 'A operadora ou os prestadores contratados cuidam da gestão e da manutenção previstas para cada Second Home, ajudando a reduzir esses atritos.',
       pair: {
         owner: [
           'A gestão pode ser estruturada conforme os serviços contratados e as necessidades da sua Second Home.',
@@ -392,7 +391,7 @@ export const discoveryMessages = {
         {
           question: 'O que é a Luxtory?',
           answer: [
-            'A Luxtory cria Branded Second Homes inspiradas em diferentes lifestyles e conectadas ao Luxtory Club.',
+            'A Luxtory cria Branded Second Homes inspiradas em diferentes lifestyles, com integração ao Luxtory Club prevista no modelo.',
             'Cada Second Home é estruturada para reunir patrimônio, liberdade e pertencimento em uma mesma proposta.',
           ],
         },
@@ -437,32 +436,33 @@ export const discoveryMessages = {
           question: 'Vou ficar preso à minha Second Home?',
           answer: [
             'Não.',
-            'Sua Second Home é o ponto de partida, mas, com Membership vigente, mecanismos como Luxchange e Luxplus podem ampliar suas possibilidades de viver outras Second Homes e períodos adicionais, sempre de acordo com disponibilidade e regras aplicáveis.',
+            'Sua Second Home é o ponto de partida, mas, com Membership vigente, mecanismos como Luxchange e Luxplus, quando disponíveis, podem ampliar suas possibilidades de viver outras Second Homes e períodos adicionais, sempre de acordo com disponibilidade e regras aplicáveis.',
           ],
         },
         {
           question: 'Como funciona o Luxchange?',
           answer: [
-            'Com Membership vigente, você pode disponibilizar determinados períodos elegíveis da sua Second Home e, seguindo as regras do clube, transformá-los em créditos para viver experiências em outras Second Homes da rede; no Co-Owner, somente datas já reservadas no seu Direito de Uso podem ser cedidas. Créditos não são moeda, investimento nem garantia de disponibilidade.',
+            'Quando disponível e com Membership vigente, você poderá disponibilizar determinados períodos elegíveis da sua Second Home e, seguindo as regras do clube, transformá-los em créditos para viver experiências em outras Second Homes da rede; no Co-Owner, somente datas já reservadas no seu Direito de Uso podem ser cedidas. Créditos não são moeda, investimento nem garantia de disponibilidade.',
           ],
         },
         {
           question: 'O que é o Luxplus?',
           answer: [
-            'Com Membership vigente, é uma forma de adquirir noites adicionais disponíveis no inventário da Luxtory quando você quiser viver mais do que seus dias ou créditos disponíveis permitem.',
+            'Quando disponível e com Membership vigente, o Luxplus permitirá comprar noites adicionais disponíveis no Inventário Luxtory.',
           ],
         },
         {
           question: 'Posso alugar os períodos que não usar?',
           answer: [
-            'Quando a modalidade e a Second Home permitirem, com Membership vigente e pelos canais autorizados: no Owner, as datas que você decidir disponibilizar; no Co-Owner, só datas já reservadas no seu Direito de Uso.',
+            'Quando disponível e com Membership vigente, você poderá autorizar a locação por canais e operadores autorizados pela Luxtory, conforme as regras da Second Home: datas próprias disponíveis no Owner; somente datas já reservadas no Direito de Uso no Co-Owner.',
             'A receita depende da procura, da ocupação, dos preços praticados, dos custos e do mercado. Não há garantia de resultado.',
+            'Encerrado o Membership, o Owner pode comercializar sua Second Home independentemente da Luxtory, preservando o Home Concept. O uso comercial das marcas Luxtory e Brand Partner exige autorização específica.',
           ],
         },
         {
           question: 'Quem cuida da Second Home?',
           answer: [
-            'A Luxtory coordena os serviços de gestão e manutenção previstos para cada Second Home.',
+            'A gestão e a manutenção cabem à operadora ou aos prestadores contratados para cada Second Home.',
             'O escopo varia conforme a Second Home, a modalidade e os serviços aplicáveis.',
             'No Owner, a administração integral pela Luxtory é opcional, assim como a Taxa de Administração. As despesas da Second Home são suas.',
             'No Co-Owner, a administração profissional é obrigatória, com Taxa de Administração. As despesas da Second Home são rateadas entre os Co-Owners.',
@@ -564,7 +564,7 @@ export const discoveryMessages = {
               },
               {
                 title: 'Luxtory Club',
-                text: 'A rede que conecta sua Second Home a serviços e novas possibilidades.',
+                text: 'A rede prevista para conectar sua Second Home a serviços e novas possibilidades.',
               },
             ],
           },
@@ -725,7 +725,7 @@ export const discoveryMessages = {
         {
           title: 'Luxchange',
           text: [
-            'Você pode converter capacidade elegível em Créditos e usar esses Créditos para estadias em outras Second Homes da rede.',
+            'No Luxchange, quando disponível, você poderá converter capacidade elegível em Créditos e solicitar estadias em outras Second Homes da rede.',
             'Tudo depende das regras e da disponibilidade.',
           ],
           coOwner:
@@ -735,14 +735,14 @@ export const discoveryMessages = {
           title: 'Luxplus',
           text: [
             'Quer ficar mais tempo?',
-            'O Luxplus permite adquirir noites adicionais disponíveis no inventário da Luxtory.',
+            'O Luxplus está previsto para a compra de noites adicionais disponíveis no Inventário Luxtory, independentemente do saldo de Créditos.',
             'Isso não altera sua posição patrimonial nem, no Co-Owner, o seu Direito de Uso.',
           ],
         },
         {
           title: 'Locação',
           text: [
-            'Quando a modalidade permitir, você pode autorizar datas elegíveis para locação pelos canais da Luxtory.',
+            'Quando disponível, você poderá autorizar datas elegíveis para locação por canais e operadores autorizados pela Luxtory, conforme a modalidade.',
             'No Co-Owner, somente datas previamente reservadas dentro do Direito de Uso podem ser disponibilizadas.',
           ],
         },
