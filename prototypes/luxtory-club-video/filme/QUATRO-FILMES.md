@@ -39,7 +39,7 @@
   isso, tem duas leituras: o que o Membro já tem mais o que gera, e depois o saldo único com a condição da Membership.
   O corte espera essa última linha e a ressalva, que pede pelo menos 1 s a cada 3 palavras + 0,5 s. Na primeira QA, o
   corte vinha antes disso: a linha ficava 1,3 s inteira na tela, quando a leitura rápida pede 1,6 s. Só o filme
-  completo foi renderizado de novo.
+  completo foi renderizado de novo: 116,1 s no 16:9 e 116,9 s no 9:16, com QA conforme.
 
 **QA dos oito MP4 (24 fps):**
 - **Arquivos:**
