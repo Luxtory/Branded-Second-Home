@@ -49,8 +49,8 @@ export const clubHomeMessages = {
   club: {
     title: { lead: 'Foi para isso que criamos o ', turn: 'Luxtory Club.' },
     text: [
-      'Um clube para quem deseja conciliar o patrimônio e o pertencimento que seu segundo lar oferece com a liberdade de viver novas experiências em outros destinos.',
-      'A proposta é simples: você disponibiliza períodos de uso do seu imóvel e recebe créditos para solicitar estadias em outras casas da rede.',
+      'Um clube para quem valoriza o lugar que conquistou e quer a liberdade de viver novas experiências.',
+      'Você recebe créditos pelos períodos aceitos no intercâmbio e pode usá-los para solicitar estadias em outras casas da rede.',
       'Uma forma mais inteligente de aproveitar seu imóvel de lazer.',
     ],
     photo: original.media.kaizen,
@@ -71,7 +71,7 @@ export const clubHomeMessages = {
         text: [
           'Os associados disponibilizam períodos de seus imóveis e recebem créditos pelas datas aceitas no intercâmbio.',
           'Com esses créditos, solicitam estadias em outros destinos da rede.',
-          'Cada estadia depende da disponibilidade e das regras da Luxtory.',
+          'A reserva depende da disponibilidade e está sujeita a uma taxa em dinheiro, conforme as regras da Luxtory.',
         ],
       },
       {

@@ -2049,3 +2049,8 @@ Partners (§20), com as condições de participação e disponibilidade junto ao
 A Home apresenta a Luxtory no presente. O texto da tríade liga o segundo lar a outros destinos, e a seção sobre o
 Luxtory Club explica para quem é a proposta. O fechamento “Viva o verdadeiro luxo de sentir-se em casa em outros
 destinos.” fica centralizado na composição com a foto e o botão para as dúvidas.
+
+### 21.5 Clareza sobre o intercâmbio
+
+A apresentação do Club informa que os créditos vêm dos períodos aceitos. O bloco Luxchange explica que a reserva
+depende da disponibilidade e está sujeita à taxa em dinheiro prevista nas BR-230 e BR-231.

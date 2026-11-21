@@ -282,10 +282,15 @@ test.describe('Discovery público — conteúdo', () => {
     await expect(hero.getByRole('button', { name: 'Próxima imagem' })).toBeVisible();
   });
 
-  test('[BR-144] [BR-190] FAQ da Home esclarece afiliação, propriedade e disponibilidade', async ({
+  test('[BR-144] [BR-190] [BR-230] Home esclarece créditos, taxa, afiliação e disponibilidade', async ({
     page,
   }) => {
     await page.goto('/');
+    await expect(page.locator('section#luxtory')).toContainText('créditos pelos períodos aceitos');
+    const luxchange = page.locator('section#liberdade .lx-blocks__item').filter({
+      has: page.getByText('Luxchange', { exact: true }),
+    });
+    await expect(luxchange).toContainText('taxa em dinheiro');
     const faq = page.locator('section#duvidas');
     const items = [
       [
