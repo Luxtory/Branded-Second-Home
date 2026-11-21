@@ -219,7 +219,7 @@ test.describe('W16 E4 — PRL e parâmetros econômicos no Admin', () => {
     const picked = page.locator('section.lx-pricing__picked');
     await picked.getByRole('button', { name: 'Ver as 3 noites' }).tap();
     await expect(picked.locator('.lx-pricing__badge')).toHaveText(
-      [first, second, later].map((date) => new RegExp(`${date.slice(8, 10)}/${date.slice(5, 7)}`)),
+      [first, second, later].map((date) => `${date.slice(8, 10)}/${date.slice(5, 7)}`),
     );
     await page.getByLabel('Base registrada').fill('Ata sintética W16 E2E');
     await gate(page, errors, 'w16-05-prl-selecao-em-lote');
