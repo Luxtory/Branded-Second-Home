@@ -62,9 +62,8 @@ export function build(stage, fmt) {
 
     <section class="demo-card demo-card--ctx" id="credits" data-surface="deep" aria-label="Créditos Luxchange">
       <p class="lx-eyebrow">Créditos Luxchange de ${s.requesterName}</p>
-      <div class="demo-figure demo-only-16x9"><span class="lx-ordinal">${credits(s.credits.available)}</span></div>
       <dl class="demo-legend">
-        <div><dt>Disponíveis</dt><dd><span>${credits(s.credits.available)}</span></dd></div>
+        <div><dt>Créditos disponíveis</dt><dd><span>${credits(s.credits.available)}</span></dd></div>
         <div><dt>Usados no Luxplus</dt><dd><span>${credits(s.credits.used)}</span></dd></div>
       </dl>
       <p class="demo-note">${icon('i-info')}<span>O Luxplus não usa Créditos: o saldo continua o mesmo.</span></p>
@@ -94,17 +93,34 @@ export function build(stage, fmt) {
   stage.dataset.fmt = fmt;
 }
 
-export function timeline(fmt) {
+/** Instantes de cada formato (a montagem do filme corta e pausa por eles). */
+export function times(fmt) {
   const v = fmt === '9x16';
   // Ritmo contemplativo: mais tempo na escolha e na estadia confirmada. Trocas no mesmo lugar só após a saída (280 ms).
-  const calIn = v ? 1_700 : 1_000;
   const startAt = v ? 2_400 : 1_900;
   const endAt = startAt + 700;
-  const reviewIn = 4_900;
-  const reviewOut = 8_600;
-  const revalIn = 8_900;
-  const revalOut = 10_400;
-  const confirmed = 10_700;
+  return {
+    v,
+    calIn: v ? 1_700 : 1_000,
+    startAt,
+    endAt,
+    routeIn: endAt + 900,
+    calNext: 4_100,
+    calOut: 4_600,
+    reviewIn: 4_900,
+    policy: 6_800,
+    pay: 7_600,
+    reviewOut: 8_600,
+    revalIn: 8_900,
+    revalOut: 10_400,
+    confirmed: 10_700,
+    duration: 15_500,
+  };
+}
+
+export function timeline(fmt) {
+  const { v, calIn, startAt, endAt, reviewIn, reviewOut, revalIn, revalOut, confirmed } =
+    times(fmt);
   return {
     duration: 15_500,
     enter: [

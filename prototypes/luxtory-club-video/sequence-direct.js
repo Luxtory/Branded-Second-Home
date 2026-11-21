@@ -65,13 +65,11 @@ export function build(stage, fmt) {
 
     <section class="demo-card demo-card--ctx" id="credits" data-surface="deep" aria-label="Créditos Luxchange">
       <p class="lx-eyebrow">Créditos Luxchange de ${s.requesterName}</p>
-      <div class="demo-figure demo-only-16x9"><span class="lx-ordinal" id="cr-before">${credits(s.balances.before.available)}</span><span class="lx-ordinal" id="cr-after">${credits(s.balances.after.available)}</span></div>
       <div class="demo-bar" aria-hidden="true"><span class="demo-bar__seg" id="bar-avail"></span><span class="demo-bar__seg demo-bar__seg--held" id="bar-used"></span></div>
       <dl class="demo-legend">
-        <div><dt>Disponíveis</dt><dd><span id="lg-avail-before">${credits(s.balances.before.available)}</span><span id="lg-avail-after">${credits(s.balances.after.available)}</span></dd></div>
-        <div><dt>Nesta reserva</dt><dd><span id="lg-used-before">${credits(s.balances.before.consumed)}</span><span id="lg-used-after">${credits(s.balances.after.consumed)}</span></dd></div>
+        <div><dt>Créditos disponíveis</dt><dd><span id="lg-avail-before">${credits(s.balances.before.available)}</span><span id="lg-avail-after">${credits(s.balances.after.available)}</span></dd></div>
+        <div><dt>Utilizados nesta reserva</dt><dd><span id="lg-used-before">${credits(s.balances.before.consumed)}</span><span id="lg-used-after">${credits(s.balances.after.consumed)}</span></dd></div>
       </dl>
-      <p class="demo-sub demo-only-16x9" id="lots">Utilizados só na confirmação.</p>
     </section>
 
     <section class="demo-card demo-card--task" id="reval" data-surface="deep" aria-label="Revalidação">
@@ -100,22 +98,51 @@ export function build(stage, fmt) {
 
 const share = (part) => part / s.balances.before.available;
 
-export function timeline(fmt) {
+/** Instantes de cada formato (a montagem do filme corta e pausa por eles). */
+export function times(fmt) {
   const v = fmt === '9x16';
   // Ritmo direto: nenhuma espera por terceiro. Trocas no mesmo lugar só depois da saída de 280 ms.
-  const calIn = v ? 1_500 : 800;
   const startAt = v ? 2_100 : 1_500;
   const endAt = startAt + 500;
-  // Créditos × saldo: saldo suficiente, continuar sem novo depósito (a complementação fica fechada).
-  const needIn = 4_200;
-  const continueAt = 6_100;
-  const needOut = 6_600;
-  const reviewIn = 6_900;
-  const reviewOut = 10_000;
-  const revalIn = 10_300;
-  const revalOut = 11_800;
-  // Confirmação: a reserva nasce e os Créditos são consumidos no mesmo instante (BR-221).
-  const confirmed = 12_100;
+  return {
+    v,
+    calIn: v ? 1_500 : 800,
+    startAt,
+    endAt,
+    routeIn: endAt + 700,
+    calNext: 3_300,
+    calOut: 3_900,
+    // Créditos × saldo: saldo suficiente, continuar sem novo depósito (a complementação fica fechada).
+    needIn: 4_200,
+    continueAt: 6_100,
+    needOut: 6_600,
+    reviewIn: 6_900,
+    policy: 8_600,
+    pay: 9_200,
+    reviewOut: 10_000,
+    revalIn: 10_300,
+    revalOut: 11_800,
+    // Confirmação: a reserva nasce e os Créditos são consumidos no mesmo instante (BR-221).
+    confirmed: 12_100,
+    duration: 16_700,
+  };
+}
+
+export function timeline(fmt) {
+  const {
+    v,
+    calIn,
+    startAt,
+    endAt,
+    needIn,
+    continueAt,
+    needOut,
+    reviewIn,
+    reviewOut,
+    revalIn,
+    revalOut,
+    confirmed,
+  } = times(fmt);
   const valueIn = confirmed + 280;
   return {
     duration: 16_700,
@@ -130,9 +157,6 @@ export function timeline(fmt) {
       { sel: '#send-label', in: ALWAYS, out: 9_300 },
       { sel: '#send-busy', in: swapIn(9_300), dur: 0 },
       { sel: '#credits', in: v ? confirmed : reviewIn },
-      { sel: '#lots', in: reviewIn + 500 },
-      { sel: '#cr-before', in: ALWAYS, out: confirmed },
-      { sel: '#cr-after', in: valueIn },
       { sel: '#lg-avail-before', in: ALWAYS, out: confirmed },
       { sel: '#lg-avail-after', in: valueIn },
       { sel: '#lg-used-before', in: ALWAYS, out: confirmed },

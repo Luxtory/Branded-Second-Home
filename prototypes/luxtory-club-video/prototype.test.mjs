@@ -1113,3 +1113,92 @@ for (const fmt of ['16x9', '9x16']) {
       assert.doesNotMatch([b.title, ...b.lines].join(' '), FILM_TERMS);
   });
 }
+
+// v9 (2026-11-21): Direct e Luxplus no padrão da Request v8.4, sobre o fundo editorial comum (hero da home, sem overlay).
+const directCurta = await import('./filme/prova/edl-direct-curta.js');
+const luxplusCurta = await import('./filme/prova/edl-luxplus-curta.js');
+const fundoMod = await import('./filme/prova/fundo.js');
+for (const [name, mod, title, lines] of [
+  [
+    'Direct',
+    directCurta,
+    'Luxchange Direct',
+    [
+      'Reserve noites do Inventário Luxtory.',
+      'Use Créditos e pague a Taxa de intercâmbio, sem aceite de outro Membro.',
+    ],
+  ],
+  [
+    'Luxplus',
+    luxplusCurta,
+    'Luxplus',
+    ['Reserve noites adicionais no Luxtory Club.', 'Pagamento em dinheiro, sem utilizar Créditos.'],
+  ],
+]) {
+  for (const fmt of ['16x9', '9x16']) {
+    test(`prévia do ${name} ${fmt}: banner, leitura, fundo comum, som de operações, família e assinatura`, () => {
+      const edl = mod.edlFor(fmt);
+      assert.ok(edl.duration < requestCurta(fmt).duration, 'mais curto que a Request');
+      assert.deepEqual(
+        legibility(edl)
+          .filter((r) => !r.ok)
+          .map((r) => r.label),
+        [],
+      );
+      const [banner] = edl.editorial.banners;
+      assert.equal(banner.title, title);
+      assert.deepEqual(banner.lines, lines);
+      // Um plano contínuo do hero (sem alternar recortes) até a família; depois a assinatura.
+      assert.deepEqual(
+        edl.shots.map((s) => s.plan),
+        ['HERO', 'S17b'],
+      );
+      assert.equal(edl.shots[0].image, fundoMod.HERO);
+      assert.ok(edl.sfx.every((x) => ['tap', 'check', 'state', 'confirm'].includes(x.kind)));
+      assert.equal(edl.sfx.filter((x) => x.kind === 'confirm').length, 1);
+      const family = edl.shots.find((x) => x.plan === 'S17b');
+      const sig = edl.ui.at(-1);
+      assert.equal(sig.seq, 'assinatura');
+      assert.equal(sig.to - sig.from, 6_000);
+      assert.ok(Math.abs(sig.at - family.from - 4_000) <= 250);
+      assert.ok(edl.sfx.every((x) => x.at < family.from));
+      const roteiro = roteiroText();
+      edl.vo.forEach((v, i) => {
+        assert.doesNotMatch(v.text, FILM_TERMS);
+        assert.ok(roteiro.includes(v.text), `frase sem origem aprovada: ${v.text}`);
+        if (i > 0) assert.ok(v.from >= edl.vo[i - 1].to, `narração sobreposta: ${v.text}`);
+      });
+    });
+  }
+}
+
+test('Direct: carteira própria de Marina (39.000 → 27.500) e saldo uma vez só no cartão de Créditos', () => {
+  const d = directScenario();
+  assert.equal(d.balances.before.available, 39_000);
+  assert.equal(d.credits, 11_500);
+  assert.equal(d.balances.after.available, 27_500);
+  const stage = { dataset: {}, insertAdjacentHTML: (_, html) => (stage.html = html) };
+  directSeq.build(stage, '16x9');
+  const card = stage.html.slice(
+    stage.html.indexOf('id="credits"'),
+    stage.html.indexOf('id="reval"'),
+  );
+  assert.doesNotMatch(
+    card,
+    /demo-figure|Utilizados só na confirmação/,
+    'sem número grande duplicado',
+  );
+  assert.equal((card.match(/27\.500/g) ?? []).length, 1);
+});
+
+test('Luxplus: sem Créditos, sem Taxa de intercâmbio e sem desconto; saldo uma vez só', () => {
+  const stage = { dataset: {}, insertAdjacentHTML: (_, html) => (stage.html = html) };
+  luxplusSeq.build(stage, '16x9');
+  assert.doesNotMatch(stage.html, /Taxa de intercâmbio|desconto|Desconto|PRL/);
+  const card = stage.html.slice(
+    stage.html.indexOf('id="credits"'),
+    stage.html.indexOf('id="reval"'),
+  );
+  assert.doesNotMatch(card, /demo-figure/);
+  assert.equal((card.match(/27\.500/g) ?? []).length, 1);
+});
