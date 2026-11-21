@@ -66,7 +66,7 @@ function blocks(fmt) {
       parts: [
         {
           from: 0,
-          to: SINTESE_FIRST_IN + ENTER + 6_040,
+          to: SINTESE_FIRST_IN + ENTER + 7_020,
           fadeOut: 500,
           beat: {
             label: 'síntese das três modalidades',

@@ -102,6 +102,46 @@ body {
   inset-inline: var(--lx-space-3);
 }
 
+/* Síntese do filme completo (v9): as três modalidades lado a lado no 16:9 (mesma altura, vão do Core) e empilhadas e
+   centradas no 9:16; cada linha separada por hairline, como as evidências dos cartões. */
+.demo-trio {
+  position: absolute;
+  display: grid;
+  gap: var(--lx-space-4);
+}
+
+[data-fmt] .demo-trio > .demo-card {
+  position: relative;
+  inset: auto;
+  width: auto;
+}
+
+.demo-trio__rows {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--lx-type-body);
+  line-height: var(--lx-leading-tight);
+}
+
+.demo-trio__rows > li {
+  padding-block: var(--lx-space-2);
+  border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+}
+
+[data-fmt='16x9'] .demo-trio {
+  bottom: 17%;
+  inset-inline: 6%;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+[data-fmt='9x16'] .demo-trio {
+  top: 50%;
+  inset-inline: var(--lx-space-3);
+  translate: 0 -50%;
+}
+
 [data-fmt='16x9'] .demo-only-9x16,
 [data-fmt='9x16'] .demo-only-16x9 {
   display: none;

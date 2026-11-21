@@ -24,9 +24,13 @@ const LEGAL = 'Imagens, interfaces e valores ilustrativos.';
 const COMPLEMENT_COPY =
   'Faltam 7.000 Créditos. Uma data elegível gera 14.000 Créditos. O excedente permanece disponível.';
 
-function blocks(fmt) {
+/**
+ * Blocos do filme. `resumo` (filme completo): o plano do fundo continua do bloco anterior e família e assinatura ficam
+ * para o fim do filme.
+ */
+export function blocks(fmt, { resumo = false } = {}) {
   const t = times(fmt);
-  return [
+  const list = [
     {
       kind: 'banner',
       scene: 'B1',
@@ -43,7 +47,7 @@ function blocks(fmt) {
       },
       // 9:16: a ressalva fica no banner; no R1 o calendário ocupa a faixa acima dos 20% inferiores (v8.3).
       ...(fmt === '9x16' ? { legal: LEGAL } : {}),
-      shot: fundo(fmt),
+      shot: resumo ? { continue: true } : fundo(fmt),
       contact: 2_000,
     },
     {
@@ -331,6 +335,7 @@ function blocks(fmt) {
       vo: 'Luxtory. Seja protagonista de histórias extraordinárias.',
     },
   ];
+  return resumo ? list.slice(0, -2) : list;
 }
 
 /** EDL da prévia num formato (`16x9` ou `9x16`). */

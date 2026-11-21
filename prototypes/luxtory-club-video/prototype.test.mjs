@@ -1202,3 +1202,69 @@ test('Luxplus: sem Créditos, sem Taxa de intercâmbio e sem desconto; saldo uma
   assert.doesNotMatch(card, /demo-figure/);
   assert.equal((card.match(/27\.500/g) ?? []).length, 1);
 });
+
+const clubCompleto = await import('./filme/prova/edl-club-completo.js');
+const sinteseSeq = await import('./sequence-sintese.js');
+for (const fmt of ['16x9', '9x16']) {
+  test(`filme completo ${fmt}: ritmo próprio, sem repetição, banners das três modalidades, síntese, família e assinatura`, () => {
+    const edl = clubCompleto.edlFor(fmt);
+    const individual = [requestCurta, directCurta.edlFor, luxplusCurta.edlFor].reduce(
+      (sum, f) => sum + f(fmt).duration,
+      0,
+    );
+    // Não é a concatenação: uma família e uma assinatura só, e Direct/Luxplus sem pagamento e revalidação (já mostrados
+    // na Request: os únicos efeitos de estado do filme são o depósito e o envio da Request); abertura, Créditos e
+    // síntese são do próprio filme.
+    assert.ok(edl.duration < individual, `${edl.duration} ms × ${individual} ms somados`);
+    assert.equal(edl.shots.filter((s) => s.plan === 'S17b').length, 1);
+    assert.equal(
+      edl.sfx.filter((x) => x.kind === 'state').length,
+      requestCurta(fmt).sfx.filter((x) => x.kind === 'state').length,
+    );
+    assert.ok(edl.duration >= 100_000 && edl.duration <= 135_000);
+    assert.deepEqual(
+      edl.editorial.banners.map((b) => b.title),
+      ['Luxtory Club', 'Luxchange Request', 'Luxchange Direct', 'Luxplus'],
+    );
+    assert.deepEqual(
+      edl.shots.map((s) => s.plan),
+      ['HERO', 'S17b'],
+    );
+    assert.equal(edl.ui.filter((u) => u.seq === 'assinatura').length, 1);
+    assert.ok(edl.ui.some((u) => u.seq === 'creditos') && edl.ui.some((u) => u.seq === 'sintese'));
+    assert.deepEqual(
+      legibility(edl)
+        .filter((r) => !r.ok)
+        .map((r) => r.label),
+      [],
+    );
+    assert.ok(edl.sfx.every((x) => ['tap', 'check', 'state', 'confirm'].includes(x.kind)));
+    assert.equal(
+      edl.sfx.filter((x) => x.kind === 'confirm').length,
+      3,
+      'uma confirmação por modalidade',
+    );
+    // Mesma regra da Request: frases do ROTEIRO.md §4 ou da prova de montagem aprovada.
+    const roteiro = roteiroText();
+    const aprovadas = new Set(EDL.vo.map((v) => v.text));
+    edl.vo.forEach((v, i) => {
+      assert.ok(
+        roteiro.includes(v.text) || aprovadas.has(v.text),
+        `frase sem origem aprovada: ${v.text}`,
+      );
+      if (i > 0) assert.ok(v.from >= edl.vo[i - 1].to, `narração sobreposta: ${v.text}`);
+    });
+  });
+}
+
+test('síntese: as diferenças nos termos aprovados, sem termos proibidos nem promessa', () => {
+  const stage = { dataset: {}, insertAdjacentHTML: (_, html) => (stage.html = html) };
+  sinteseSeq.build(stage, '16x9');
+  const text = stage.html.replace(/<[^>]+>/g, ' ');
+  for (const m of sinteseSeq.MODALIDADES) assert.match(text, new RegExp(m.title));
+  assert.match(text, /Depende do aceite/);
+  assert.match(text, /Sem aceite de outro Membro/);
+  assert.match(text, /Sem utilizar Créditos/);
+  assert.doesNotMatch(text, FILM_TERMS);
+  assert.doesNotMatch(text, /cota|diária|garantid|disponibilidade garantida|rentab/i);
+});
