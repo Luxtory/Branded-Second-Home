@@ -358,7 +358,7 @@ test.describe('Second Home Partners — gate de UI (ADR-0009, catalog §20.5)', 
           });
         });
       const homeClosing = await home
-        .locator('.lx-section-closing .lx-headline')
+        .locator('.lx-hero--closing .lx-headline')
         .first()
         .evaluate((n) => {
           const s = getComputedStyle(n);

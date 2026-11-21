@@ -1,0 +1,24 @@
+.lx-club-home :global(.lx-home-hero__scrim) {
+  --lx-club-home-scrim-start: 30%;
+  --lx-club-home-scrim-edge: color-mix(in srgb, var(--lx-scrim-color) 45%, transparent);
+  --lx-club-home-scrim-text: color-mix(
+    in srgb,
+    var(--lx-scrim-color) calc(var(--lx-scrim-display-alpha) * 100%),
+    transparent
+  );
+
+  background: linear-gradient(
+    to bottom,
+    var(--lx-club-home-scrim-edge),
+    var(--lx-club-home-scrim-text) var(--lx-club-home-scrim-start),
+    var(--lx-club-home-scrim-text) 90%,
+    var(--lx-club-home-scrim-edge)
+  );
+  opacity: 1;
+}
+
+@media (min-width: 48rem) {
+  .lx-club-home :global(.lx-home-hero__scrim) {
+    --lx-club-home-scrim-start: 60%;
+  }
+}

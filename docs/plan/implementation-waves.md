@@ -25,6 +25,12 @@ Spec: [catalog §15](../specs/catalog.md#15-sobre-a-luxtory). Plano detalhado:
 [Sobre a Luxtory](sobre-luxtory.md). Copy e estrutura já aprovadas pelo fundador no pedido; nenhum merge automático.
 Não reabre as waves pausadas e não altera os Frameworks ou canônicos.
 
+## Home pública do Luxtory Club
+
+Spec: [catalog §21](../specs/catalog.md#21-home-pública-do-luxtory-club). A entrega para revisão segue três etapas
+sequenciais: auditoria e definição editorial, composição isolada e troca do ponto de entrada, QA técnico e visual.
+A afiliação de imóveis existentes, as novas páginas do Club e a publicação têm etapas próprias.
+
 ## Plano Luxtory — W0…W30
 
 ### Premissas verificadas (2026-09-25)
