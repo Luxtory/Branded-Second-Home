@@ -356,7 +356,13 @@ function shotSource(shot, i) {
     upscale: src.upscale,
     ...extraInfo,
   });
-  const file = shotAsset(shot);
+  const file = shotAsset(shot) ?? (shot.image && join(ROOT, shot.image));
+  // Fundo editorial aprovado do repositório (ex.: o hero da home, sem overlay): fonte real, não placeholder; um arquivo
+  // em out/entrada com o nome do asset continua tendo prioridade (ex.: uma versão de maior resolução).
+  if (file && !shotAsset(shot)) {
+    const src = stillMotion(i, n, extra, file, shot.move);
+    return done(`fundo editorial ${shot.image} (imagem ${src.source})`, src, { asset: true });
+  }
   if (file && isStill(file)) {
     const src = stillMotion(i, n, extra, file, shot.move);
     return done(`entrada ${basename(file)} (imagem ${src.source})`, src, { asset: true });
@@ -566,12 +572,21 @@ function buildAudio(file) {
   };
 }
 
-/** Na exportação final, recusa antes de renderizar: nenhum plano depende de placeholder; voz e trilha existem. */
+/**
+ * Na exportação final, recusa antes de renderizar: nenhum plano depende de placeholder (asset aprovado em out/entrada
+ * ou fundo editorial do repositório). Voz e trilha só são exigidas fora do modo `audio.modo: 'efeitos'`, a decisão de
+ * campanha com som só de operações; direitos, prontidão comercial e regras de negócio seguem fora deste preflight.
+ */
 function preflightFinal() {
+  const effectsOnly = AUDIO.modo === 'efeitos';
   const missing = [
-    ...EDL.shots.filter((s) => !shotAsset(s)).map((s) => `${s.scene} ${s.plan} (asset ${s.asset})`),
-    ...(entrada(AUDIO.vo, ['wav']) ? [] : [`voz (${AUDIO.vo}.wav)`]),
-    ...(entrada(AUDIO.trilha, ['wav', 'mp3']) ? [] : [`trilha (${AUDIO.trilha}.wav|mp3)`]),
+    ...EDL.shots
+      .filter((s) => !shotAsset(s) && !(s.image && existsSync(join(ROOT, s.image))))
+      .map((s) => `${s.scene} ${s.plan} (asset ${s.asset})`),
+    ...(effectsOnly || entrada(AUDIO.vo, ['wav']) ? [] : [`voz (${AUDIO.vo}.wav)`]),
+    ...(effectsOnly || entrada(AUDIO.trilha, ['wav', 'mp3'])
+      ? []
+      : [`trilha (${AUDIO.trilha}.wav|mp3)`]),
   ];
   if (missing.length)
     throw new MontagemError(

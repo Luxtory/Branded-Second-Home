@@ -4,88 +4,25 @@
 // (55.000 em Garantia, 7.000 disponíveis) → solicitação recebida → aceite e revalidação → Créditos recebidos e reserva
 // confirmada → família na piscina (imagem aprovada da campanha) → assinatura oficial.
 //
-// Fotografia por Second Home (direção v8.3): Azzura na escolha da estadia, na solicitação recebida e na confirmação;
-// Satori no contexto de Helena (Créditos, depósito, revisão e espera); a família só no encerramento. Enquanto não houver
-// imagens definitivas, os placeholders são recortes sem pessoas das fotos provisórias do site (a do litoral tem outra
-// família na piscina, que nunca aparece no filme).
+// Fundo (decisão de 2026-11-21): a simulação inteira acontece sobre o hero da home, sem overlay, num plano contínuo
+// (fundo.js), como ambientação do Luxtory Club; os nomes das Second Homes ficam só na interface. A família só no
+// encerramento.
 //
 // A interface toca no tempo da sequência (sequence-request.js), sem acelerar. A edição usa só cortes em tempo morto (a
 // saída de um cartão, o processamento do pagamento) e pausas curtas quando a informação principal pede leitura.
 //
-// Imagens: os planos usam assets de out/entrada quando existem (nomes do plano, como em edl-cinema.js); sem eles,
-// placeholders identificados. O footage humano (S17a) é o mesmo da prova cinematográfica.
+// Imagens: um arquivo em out/entrada com o nome do asset tem prioridade (ex.: HERO-9x16.jpg em maior resolução).
+// Som: só efeitos de operação (audio.modo 'efeitos', decisão da campanha).
 import { REPLY_HOURS, times } from '../../sequence-request.js';
 import { buildFilm } from './blocos.js';
+import { fundo } from './fundo.js';
 
-const PLACA_LITORAL = 'public/images/home/hero/hero-lifestyle.jpg';
-const PLACA_SERRA = 'public/images/home/hero/luxury-property-facade-hero.jpg';
-const FOTO = 'placeholder: foto provisória do site, não é a Second Home do filme';
 const ENTER = 480; // duration.slow: a leitura começa depois da entrada
 
-/**
- * Plano de imagem estática com câmera lenta. O asset definitivo usa `move`; o placeholder usa o recorte próprio
- * (`crop`), escolhido para mostrar só arquitetura e paisagem.
- */
-const still = (plan, what, image, move, crop = move) => ({
-  plan,
-  asset: plan,
-  what,
-  move,
-  placeholder: image
-    ? { image, note: FOTO, move: crop }
-    : { neutral: true, note: `placeholder neutro: ${what} a gerar` },
-});
-
-// Recortes dos placeholders por formato: [cx, cy, zoom] na foto já ajustada ao quadro; `anchor` escolhe a faixa da
-// foto no 9:16. Litoral: a família da foto fica abaixo de 53% da altura e entre 65% e 88% da largura, então os
-// recortes da Azzura param acima dela. Serra: sem pessoas.
-const CROP = {
-  S06: {
-    '16x9': { from: [0.48, 0.265, 1.92], to: [0.52, 0.26, 1.96], ease: 'smooth' },
-    '9x16': {
-      from: [0.5, 0.265, 1.92],
-      to: [0.5, 0.26, 1.96],
-      ease: 'smooth',
-      anchor: [0.574, 0.5],
-    },
-  },
-  // Borda infinita e mar, à esquerda da família da foto do litoral.
-  S07: {
-    '16x9': { from: [0.24, 0.55, 2.0], to: [0.27, 0.55, 2.0] },
-    '9x16': { from: [0.5, 0.58, 1.3], to: [0.5, 0.58, 1.34], anchor: [0.15, 0.5] },
-  },
-  S05: {
-    '16x9': { from: [0.45, 0.5, 1.25], to: [0.44, 0.5, 1.3], ease: 'smooth' },
-    '9x16': { from: [0.5, 0.5, 1.0], to: [0.5, 0.5, 1.04], ease: 'smooth', anchor: [0.573, 0.5] },
-  },
-  S04: {
-    '16x9': { from: [0.25, 0.56, 2.0], to: [0.27, 0.56, 2.0] },
-    '9x16': { from: [0.5, 0.56, 1.3], to: [0.5, 0.56, 1.34], anchor: [0.09, 0.5] },
-  },
-  S03: {
-    '16x9': { from: [0.7, 0.6, 2.0], to: [0.72, 0.6, 2.0] },
-    '9x16': { from: [0.5, 0.6, 1.4], to: [0.5, 0.6, 1.44], anchor: [0.866, 0.5] },
-  },
-  S05b: {
-    '16x9': { from: [0.45, 0.72, 1.8], to: [0.46, 0.71, 1.85], ease: 'smooth' },
-    '9x16': { from: [0.5, 0.68, 1.6], to: [0.5, 0.67, 1.64], ease: 'smooth', anchor: [0.427, 0.5] },
-  },
-  S09: {
-    '16x9': { from: [0.62, 0.26, 2.0], to: [0.63, 0.25, 2.06] },
-    '9x16': { from: [0.5, 0.26, 2.0], to: [0.5, 0.25, 2.06], anchor: [0.677, 0.5] },
-  },
-  S10: {
-    '16x9': { from: [0.8, 0.22, 2.6], to: [0.79, 0.22, 2.66], ease: 'smooth' },
-    '9x16': { from: [0.5, 0.25, 2.0], to: [0.5, 0.25, 2.06], ease: 'smooth', anchor: [1, 0.5] },
-  },
-};
 const LEGAL = 'Imagens, interfaces e valores ilustrativos.';
 // Texto do controle que precisa ser lido na complementação (credits-step.js, direção v8.3).
 const COMPLEMENT_COPY =
   'Faltam 7.000 Créditos. Uma data elegível gera 14.000 Créditos. O excedente permanece disponível.';
-const PUSH = { from: [0.5, 0.5, 1.0], to: [0.5, 0.49, 1.04], ease: 'smooth' };
-const DRIFT = { from: [0.48, 0.5, 1.05], to: [0.52, 0.5, 1.05] };
-const CRANE = { from: [0.5, 0.482, 1.04], to: [0.5, 0.528, 1.06], ease: 'smooth' };
 
 function blocks(fmt) {
   const t = times(fmt);
@@ -106,8 +43,7 @@ function blocks(fmt) {
       },
       // 9:16: a ressalva fica no banner; no R1 o calendário ocupa a faixa acima dos 20% inferiores (v8.3).
       ...(fmt === '9x16' ? { legal: LEGAL } : {}),
-      shot: still('S06', 'Azzura Home ao entardecer (K-AZ)', PLACA_LITORAL, CRANE, CROP.S06[fmt]),
-      ambience: 'mar',
+      shot: fundo(fmt),
       contact: 2_000,
     },
     {
@@ -139,7 +75,6 @@ function blocks(fmt) {
       },
       // O plano do banner continua (grua lenta): sem corte na mesma imagem.
       shot: { continue: true },
-      ambience: 'mar',
       contact: 3_500,
     },
     {
@@ -170,11 +105,7 @@ function blocks(fmt) {
         after: 600,
         text: 'Se o saldo não bastar, você completa com datas do seu Direito de Uso — e o que sobrar fica para as próximas experiências.',
       },
-      // Ainda é a estadia na Azzura (o cartão de contexto do 16:9 diz "Azzura Home"): S07, a borda infinita. A troca
-      // para a Satori acontece no corte seguinte, quando Helena passa às datas do próprio Direito de Uso (v8.3).
-      shot: still('S07', 'borda infinita da Azzura Home', PLACA_LITORAL, DRIFT, CROP.S07[fmt]),
-      // Som do lugar (v8.3): ainda na Azzura (S07), então mar; o vento entra com a Satori.
-      ambience: 'mar',
+      shot: { continue: true },
       contact: 3_000,
     },
     {
@@ -233,14 +164,7 @@ function blocks(fmt) {
         { ms: t.slider, kind: 'tap', note: 'controle → 14.000, o mínimo (16/05)' },
         { ms: t.depositPress, kind: 'tap', note: 'Depositar datas e gerar Créditos' },
       ],
-      shot: still(
-        'S04',
-        'Helena com o celular, horizonte ao fundo',
-        PLACA_SERRA,
-        DRIFT,
-        CROP.S04[fmt],
-      ),
-      ambience: 'vento',
+      shot: { continue: true },
       contact: 3_500,
     },
     {
@@ -285,14 +209,7 @@ function blocks(fmt) {
         after: 3_300,
         text: 'Seus Créditos ficam em Garantia e a Taxa de intercâmbio é paga no envio.',
       },
-      shot: still(
-        'S03',
-        'luz da manhã no interior da Satori Home',
-        PLACA_SERRA,
-        DRIFT,
-        CROP.S03[fmt],
-      ),
-      ambience: 'vento',
+      shot: { continue: true },
       contact: 4_500,
     },
     {
@@ -315,10 +232,7 @@ function blocks(fmt) {
       sfx: [
         { ms: t.sendCommit, kind: 'state', note: 'solicitação pendente; Garantia constituída' },
       ],
-      // Helena aguarda na Satori: a troca para a Azzura acontece em "Do outro lado" (quem recebe a solicitação).
-      shot: still('S05b', 'terraço e piscina da Satori Home', PLACA_SERRA, DRIFT, CROP.S05b[fmt]),
-      // Som do lugar (v8.3): a espera acontece na Satori (serra), então vento.
-      ambience: 'vento',
+      shot: { continue: true },
       contact: 2_500,
     },
     {
@@ -356,16 +270,7 @@ function blocks(fmt) {
         ...[400, 600, 800, 1_000].map((d) => ({ ms: t.accept + d, kind: 'check' })),
       ],
       vo: { after: 300, text: 'Do outro lado, quem recebe a solicitação decide se aceita.' },
-      // Fundo cinematográfico (direção v8.2): arquitetura da Azzura Home, sem pessoas, no lugar do gradiente neutro.
-      shot: still(
-        'S09',
-        'arquitetura da Azzura Home (volumes brancos e vidro), sem pessoas',
-        PLACA_LITORAL,
-        DRIFT,
-        CROP.S09[fmt],
-      ),
-      // Som do lugar (v8.3): quem recebe está na Azzura, então mar.
-      ambience: 'mar',
+      shot: { continue: true },
       contact: 3_000,
     },
     {
@@ -389,14 +294,7 @@ function blocks(fmt) {
       ],
       sfx: [{ ms: t.result, kind: 'confirm', note: 'solicitação aceita + reserva confirmada' }],
       vo: { after: 0, text: 'Estando tudo certo, a reserva se confirma na mesma operação.' },
-      shot: still(
-        'S10',
-        'chegada: interior da Azzura Home aberto ao mar (K-AZ-i)',
-        PLACA_LITORAL,
-        PUSH,
-        CROP.S10[fmt],
-      ),
-      ambience: 'mar',
+      shot: { continue: true },
       contact: 2_500,
     },
     {
@@ -424,7 +322,6 @@ function blocks(fmt) {
           note: 'placeholder neutro: imagem da família ausente em out/entrada',
         },
       },
-      ambience: 'mar',
       contact: 2_000,
     },
     {
@@ -441,6 +338,6 @@ export const edlFor = (fmt) =>
   buildFilm(fmt, {
     id: 'request-curta',
     out: 'out/request-curta',
-    audio: { vo: 'request-curta-vo', trilha: 'request-curta-trilha', trilhaIn: 0 },
+    audio: { modo: 'efeitos', vo: 'request-curta-vo', trilha: 'request-curta-trilha', trilhaIn: 0 },
     blocks,
   });
