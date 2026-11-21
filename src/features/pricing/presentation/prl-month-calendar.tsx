@@ -4,7 +4,7 @@ import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { Icon } from '@/design-system/react';
 import { prlMessages as text } from './i18n/prl-pt-br';
 import type { PrlCalendarNight } from './prl-calendar-data';
-import { adjacentMonth } from './prl-months';
+import { adjacentMonth, monthInExercise } from './prl-months';
 
 const DAY_MS = 86_400_000;
 const toDate = (date: string) => new Date(`${date}T00:00:00Z`);
@@ -32,6 +32,84 @@ export const nightName = (date: string) =>
     month: '2-digit',
     year: 'numeric',
   }).format(toDate(date));
+
+/** Forma curta da noite para a lista de selecionadas ("22/11", como os badges do legado): o nome acessível a contém. */
+export const nightShortName = (date: string) => `${date.slice(8, 10)}/${date.slice(5, 7)}`;
+const monthOnlyName = (month: string) =>
+  new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC', month: 'long' }).format(
+    toDate(`${month}-01`),
+  );
+
+/**
+ * Ir direto a um mês (como os seletores de mês e ano do legado), só entre os meses selados da Second Home: o mês lista
+ * os meses selados do exercício em tela; o exercício, os exercícios com mês selado. Seletores nativos, rotulados.
+ */
+function MonthJump(props: {
+  readonly id: string;
+  readonly month: string;
+  readonly months: readonly string[];
+  readonly onJump: (month: string) => void;
+  readonly autoFocus?: boolean;
+}) {
+  const year = props.month.slice(0, 4);
+  const years = [...new Set(props.months.map((value) => value.slice(0, 4)))];
+  const monthRef = useRef<HTMLSelectElement>(null);
+  // Na consulta, ir a outro mês recarrega a página; o foco volta ao seletor de onde o Admin partiu.
+  useEffect(() => {
+    if (props.autoFocus === true) monthRef.current?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return (
+    <div className="lx-pricing__jump">
+      <div className="lx-field">
+        <label className="lx-label" htmlFor={`${props.id}-ir-mes`}>
+          {text.calendar.jumpMonth}
+        </label>
+        <div className="lx-select-wrap">
+          <select
+            className="lx-select"
+            id={`${props.id}-ir-mes`}
+            value={props.month}
+            ref={monthRef}
+            onChange={(event) => props.onJump(event.target.value)}
+          >
+            {props.months
+              .filter((value) => value.startsWith(`${year}-`))
+              .map((value) => (
+                <option key={value} value={value}>
+                  {monthOnlyName(value)}
+                </option>
+              ))}
+          </select>
+        </div>
+      </div>
+      {years.length < 2 ? null : (
+        <div className="lx-field">
+          <label className="lx-label" htmlFor={`${props.id}-ir-exercicio`}>
+            {text.calendar.jumpYear}
+          </label>
+          <div className="lx-select-wrap">
+            <select
+              className="lx-select"
+              id={`${props.id}-ir-exercicio`}
+              value={year}
+              onChange={(event) => {
+                const target = monthInExercise(props.months, props.month, event.target.value);
+                if (target !== null) props.onJump(target);
+              }}
+            >
+              {years.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 /** Nome acessível da noite: data, temporada e situação do preço (o motivo e a seleção vêm de quem usa a grade). */
 export function nightDescription(date: string, night: PrlCalendarNight | undefined): string[] {
@@ -105,6 +183,9 @@ export function PrlMonthCalendar(props: {
   readonly onMove: (date: string) => void;
   readonly previous: ReactNode;
   readonly next: ReactNode;
+  /** Ir direto a um mês selado (seletores de mês e exercício); a navegação nunca mexe na seleção. */
+  readonly onJump: (month: string) => void;
+  readonly jumpAutoFocus?: boolean;
   readonly legend: ReactNode;
   readonly children?: ReactNode;
 }) {
@@ -198,6 +279,13 @@ export function PrlMonthCalendar(props: {
   const titleId = `${props.id}-titulo`;
   return (
     <div className="lx-calendar lx-calendar--prl">
+      <MonthJump
+        id={props.id}
+        month={props.month}
+        months={props.months}
+        onJump={props.onJump}
+        autoFocus={props.jumpAutoFocus}
+      />
       <div className="lx-calendar__months">
         <div className="lx-calendar__month">
           <div className="lx-calendar__header">

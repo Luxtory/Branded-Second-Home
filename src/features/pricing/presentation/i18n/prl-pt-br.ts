@@ -106,11 +106,11 @@ export const prlMessages = {
     unsealed: 'fora do calendário da Second Home',
     notInitial: 'já tem preço; só o Super Admin altera',
     notChange: 'ainda sem preço; use Definir preços iniciais',
-    exercises: 'Ir para o exercício',
-    exercise: (year: string) => year,
+    jumpMonth: 'Mês',
+    jumpYear: 'Exercício',
   },
   selection: {
-    title: 'Seleção',
+    title: 'Preços da seleção',
     count: (count: number) =>
       count === 0
         ? 'Nenhuma noite selecionada.'
@@ -127,8 +127,12 @@ export const prlMessages = {
         : count === 1
           ? '1 noite adicionada.'
           : `${count} noites adicionadas.`,
+    already: (count: number) =>
+      count === 1
+        ? 'A noite elegível deste mês já estava selecionada.'
+        : `As ${count} noites elegíveis deste mês já estavam selecionadas.`,
     bulkLabel: (month: string) => `Selecionar em ${month}`,
-    month: 'Todas',
+    month: 'Mês inteiro',
     clear: 'Limpar seleção',
     common: 'Preço comum (R$)',
     commonHint:
@@ -155,7 +159,6 @@ export const prlMessages = {
         : `${count} noites deste mês no preço comum.`,
     perNight: 'Ajustar noite a noite',
     ownOnly: 'Mostrar só os preços próprios',
-    otherMonths: 'Também selecionadas',
     goToMonth: (month: string, count: number, own: number) =>
       `${month}: ${count === 1 ? '1 noite' : `${count} noites`}${own === 0 ? '' : ` (${own} com preço próprio)`}`,
     current: (value: string) => `vigente ${value}`,
@@ -164,6 +167,12 @@ export const prlMessages = {
     remove: (night: string) => `Remover ${night} da seleção`,
     nightsError: 'Selecione ao menos uma noite e informe o preço de cada uma.',
     review: 'Revisar',
+  },
+  picked: {
+    title: 'Noites selecionadas',
+    show: (count: number) => (count === 1 ? 'Ver a noite' : `Ver as ${count} noites`),
+    hide: 'Ocultar as noites',
+    monthLabel: (month: string) => `Noites selecionadas em ${month}`,
   },
   review: {
     title: 'Revise antes de confirmar',

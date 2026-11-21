@@ -16,7 +16,9 @@ import { collectConsoleErrors } from './support/ui';
 // W16 E4 (spec pricing §5, spec admin §14; ADR-0032): parâmetros econômicos e PRL pelas telas reais do Admin, com o
 // PostgreSQL real. Jornada de precificação em lote: seleção acumulada entre meses (toque e teclado), preço comum para
 // as noites sem preço próprio, exceção individual que o comum não sobrescreve, substituição só explícita, painel
-// compacto com a lista noite a noite sob demanda, revisão no servidor revalidada na confirmação (seleção preservada),
+// compacto com a lista noite a noite sob demanda, paridade com o SeasonCalendar do legado (ir direto ao mês, tocar
+// marca e desmarca, "Mês inteiro" aditivo, noites selecionadas junto ao calendário com remoção e limpeza), revisão no
+// servidor revalidada na confirmação (seleção preservada),
 // consulta com a noite em detalhe e o histórico, alterações agendadas em sequência. Valores de teste
 // arbitrários (nenhum valor canônico). Nenhuma capability é ligada; o Super Admin é um usuário próprio deste spec.
 test.describe.configure({ mode: 'serial' });
@@ -212,6 +214,13 @@ test.describe('W16 E4 — PRL e parâmetros econômicos no Admin', () => {
     await page.getByRole('button', { name: 'Próximo mês' }).tap();
     await page.getByRole('button', { name: 'Mês anterior' }).tap();
     await expect(secondPrice).toHaveValue('1.500,00');
+    // Noites selecionadas junto ao calendário (como "Datas selecionadas" do legado): os meses à vista; as noites sob
+    // demanda, em ordem cronológica e agrupadas por mês.
+    const picked = page.locator('section.lx-pricing__picked');
+    await picked.getByRole('button', { name: 'Ver as 3 noites' }).tap();
+    await expect(picked.locator('.lx-pricing__badge')).toHaveText(
+      [first, second, later].map((date) => new RegExp(`${date.slice(8, 10)}/${date.slice(5, 7)}`)),
+    );
     await page.getByLabel('Base registrada').fill('Ata sintética W16 E2E');
     await gate(page, errors, 'w16-05-prl-selecao-em-lote');
     await widths(page, 'w16-05-prl-selecao-em-lote');
@@ -238,8 +247,8 @@ test.describe('W16 E4 — PRL e parâmetros econômicos no Admin', () => {
     ).toContainText(civil(first));
     // A seleção e os preços sobrevivem à revisão; remoção individual pelo painel do mês.
     await expect(secondPrice).toHaveValue('1.500,00');
-    await page.getByRole('button', { name: 'Ajustar noite a noite' }).tap();
-    await page
+    await expect(picked.locator('.lx-pricing__badge')).toHaveCount(3);
+    await picked
       .getByRole('button', { name: new RegExp(`Remover .*${civil(first)} da seleção`) })
       .tap();
     await expect(
@@ -268,6 +277,13 @@ test.describe('W16 E4 — PRL e parâmetros econômicos no Admin', () => {
       civil(firstOfNext),
     );
     await expect(page.locator(':focus')).toHaveAttribute('data-date', firstOfNext);
+    // Ir direto a um mês na consulta: recarrega o mês pedido e devolve o foco ao seletor de mês.
+    const sameYear = month.slice(0, 4) === nextMonth(month).slice(0, 4);
+    await page
+      .getByLabel(sameYear ? 'Mês' : 'Exercício', { exact: true })
+      .selectOption(sameYear ? month : month.slice(0, 4));
+    await expect(page).toHaveURL(new RegExp(`mes=${month}`));
+    await expect(page.getByLabel('Mês', { exact: true })).toBeFocused();
 
     // A publicação inicial não alcança noite com preço; o Admin não abre a alteração nem pela URL.
     await page.goto(`/admin/prl/${home}?modo=inicial&mes=${month}`);
@@ -275,6 +291,53 @@ test.describe('W16 E4 — PRL e parâmetros econômicos no Admin', () => {
     // O dia inerte continua tocável para explicar o motivo (o Playwright o trata como desabilitado).
     await day(page, second).tap({ force: true });
     await expect(page.getByRole('status').filter({ hasText: 'já tem preço' })).toBeVisible();
+    // Paridade com o SeasonCalendar do legado: ir direto ao mês (exercício + mês, só meses selados), tocar marca e
+    // desmarca, noites soltas, "Mês inteiro" aditivo (sem duplicar nem mexer em preço próprio), trocar de mês sem
+    // perder nada, voltar pelo atalho da lista, remover uma noite pela lista e limpar.
+    const nextYear = String(Number(month.slice(0, 4)) + 1);
+    const jan = (value: number) => `${nextYear}-01-${String(value).padStart(2, '0')}`;
+    const title = page.locator('.lx-calendar__title');
+    const status = page.getByRole('status');
+    await page.getByLabel('Exercício', { exact: true }).selectOption(nextYear);
+    await page.getByLabel('Mês', { exact: true }).selectOption(`${nextYear}-01`);
+    await expect(title).toHaveText(new RegExp(`janeiro de ${nextYear}`, 'i'));
+    await day(page, jan(5)).tap();
+    await expect(day(page, jan(5))).toHaveAttribute('aria-pressed', 'true');
+    await day(page, jan(5)).tap();
+    await expect(day(page, jan(5))).toHaveAttribute('aria-pressed', 'false');
+    await expect(status).toContainText('Nenhuma noite selecionada.');
+    for (const value of [5, 12, 20]) await day(page, jan(value)).tap();
+    await expect(status).toContainText('3 noites selecionadas.');
+    await page.getByRole('button', { name: 'Ajustar noite a noite' }).tap();
+    const ownPrice = page.getByLabel(new RegExp(`Preço de .*${civil(jan(12))}`));
+    await ownPrice.fill('777,00');
+    await page.getByRole('button', { name: 'Mês inteiro' }).tap();
+    await expect(status).toContainText('31 noites selecionadas. 28 noites adicionadas.');
+    await page.getByRole('button', { name: 'Mês inteiro' }).tap();
+    await expect(status).toContainText(
+      '31 noites selecionadas. As 31 noites elegíveis deste mês já estavam selecionadas.',
+    );
+    await expect(ownPrice).toHaveValue('777,00');
+    await page.getByRole('button', { name: 'Mostrar só os preços próprios' }).tap();
+    await page.getByLabel('Exercício', { exact: true }).selectOption(month.slice(0, 4));
+    await expect(title).toHaveText(new RegExp(month.slice(0, 4)));
+    await picked
+      .getByRole('button', { name: `janeiro de ${nextYear}: 31 noites (1 com preço próprio)` })
+      .tap();
+    await expect(title).toHaveText(new RegExp(`janeiro de ${nextYear}`, 'i'));
+    await expect(ownPrice).toHaveValue('777,00');
+    await picked.getByRole('button', { name: 'Ver as 31 noites' }).tap();
+    await expect(picked.locator('.lx-pricing__badge')).toHaveCount(31);
+    await gate(page, errors, 'w16-16-prl-noites-selecionadas');
+    await widths(page, 'w16-16-prl-noites-selecionadas');
+    await picked
+      .getByRole('button', { name: new RegExp(`Remover .*${civil(jan(20))} da seleção`) })
+      .tap();
+    await expect(status).toContainText('30 noites selecionadas.');
+    await expect(day(page, jan(20))).toHaveAttribute('aria-pressed', 'false');
+    await picked.getByRole('button', { name: 'Limpar seleção' }).tap();
+    await expect(status).toContainText('Nenhuma noite selecionada.');
+    await expect(picked).toHaveCount(0);
     // Temporadas de apresentação: avança até o mês da janela de Carnaval (Super Alta) e seleciona só ela; o resto do
     // mês é Média/Baixa. Depois, janeiro (Alta). A seleção por temporada não muda o grupo canônico da noite.
     const superAlta = page.locator('td[data-tier="super_alta"]');

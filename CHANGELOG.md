@@ -21,7 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   noites individuais, do mês ou por temporada — Super Alta (janela de Carnaval), Alta (janeiro, julho, dezembro) ou
   Média/Baixa, cada uma com a sua cor no calendário —, acumuladas entre meses; preço comum para as noites sem preço
   próprio, preço próprio por noite que o comum nunca sobrescreve (substituição só explícita, com a contagem) e painel
-  compacto com a lista noite a noite sob demanda; revisão com PRL total e prévia de Créditos antes de confirmar —, com preços
+  compacto com a lista noite a noite sob demanda; seletores de mês e exercício (só meses do calendário) e noites
+  selecionadas junto ao calendário, por mês, removíveis, com "Limpar seleção"; revisão com PRL total e prévia de
+  Créditos antes de confirmar —, com preços
   iniciais por Admin ou Super Admin e alteração só pelo Super Admin, sempre com efeito para o futuro. Tela "Parâmetros
   econômicos" (Admin), em cartões: multiplicador e validade dos Créditos, percentual e mínimo do Luxchange Fee, prazo
   da Request e valor-base anual do Membership, cada um ausente, vigente ou com versão futura, com histórico e nova

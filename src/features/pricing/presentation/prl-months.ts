@@ -13,6 +13,22 @@ export function adjacentMonth(
   return [...months].reverse().find((candidate) => candidate < month) ?? null;
 }
 
+/**
+ * Ir direto a outro exercício (seletor de exercício): o mesmo mês do ano, se selado; senão o primeiro mês selado do
+ * exercício quando se vai adiante, ou o último quando se volta. `null` se o exercício não tem mês selado.
+ */
+export function monthInExercise(
+  months: readonly string[],
+  current: string,
+  year: string,
+): string | null {
+  const inYear = months.filter((candidate) => candidate.startsWith(`${year}-`));
+  if (inYear.length === 0) return null;
+  const same = `${year}${current.slice(4)}`;
+  if (inYear.includes(same)) return same;
+  return year > current.slice(0, 4) ? inYear[0]! : inYear.at(-1)!;
+}
+
 /** Mês civil (`AAAA-MM`) do instante no fuso da Second Home. */
 export function monthIn(at: Date, timeZone: string): string {
   const parts = new Intl.DateTimeFormat('en-CA', {

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { adjacentMonth, initialMonth, monthIn } from '@/features/pricing/presentation/prl-months';
+import {
+  adjacentMonth,
+  initialMonth,
+  monthIn,
+  monthInExercise,
+} from '@/features/pricing/presentation/prl-months';
 
 /** W16 E4 — navegação só por meses selados e mês de referência no fuso da Second Home (TECH-040). */
 describe('PRL — meses do calendário', () => {
@@ -14,6 +19,14 @@ describe('PRL — meses do calendário', () => {
     // A partir de um mês fora da lista (ex.: o corrente sem selagem), o vizinho selado mais próximo.
     expect(adjacentMonth(months, '2027-02', 1)).toBe('2027-03');
     expect(adjacentMonth(months, '2027-02', -1)).toBe('2027-01');
+  });
+
+  it('[REQ-052] ir direto a outro exercício só alcança meses selados: o mesmo mês do ano, ou o mais próximo na direção', () => {
+    expect(monthInExercise(months, '2026-12', '2027')).toBe('2027-01');
+    expect(monthInExercise(months, '2027-03', '2026')).toBe('2026-12');
+    expect(monthInExercise(months, '2027-02', '2028')).toBe('2028-02');
+    expect(monthInExercise(['2026-03', '2027-03'], '2026-03', '2027')).toBe('2027-03');
+    expect(monthInExercise(months, '2027-01', '2029')).toBeNull();
   });
 
   it('[TECH-040] o mês corrente é o do fuso da Second Home, não o de UTC, na virada do mês', () => {

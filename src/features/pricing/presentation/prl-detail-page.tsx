@@ -194,6 +194,7 @@ export async function AdminPrlDetailPage(props: {
               )}
               initialNight={NIGHT.test(requestedNight) ? requestedNight : null}
               focusOnMount={param(props.searchParams, 'foco') === '1'}
+              focusJump={param(props.searchParams, 'foco') === 'mes'}
             />
           ) : (
             <>

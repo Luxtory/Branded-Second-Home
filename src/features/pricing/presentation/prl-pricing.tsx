@@ -17,6 +17,7 @@ import {
   SeasonSwatch,
 } from './prl-month-calendar';
 import { adjacentMonth } from './prl-months';
+import { PrlSelectedNights } from './prl-selected-nights';
 import type { SeasonTier } from './prl-seasons';
 import {
   addNights,
@@ -145,10 +146,11 @@ export function PrlPricing(props: {
   const [common, setCommon] = useState('');
   // Lista completa do mês aberta ou só as exceções; vale para todos os meses até o Admin mudar.
   const [perNight, setPerNight] = useState(false);
+  // Noites selecionadas junto ao calendário abertas ou só os meses; sobrevive à revisão e à troca de mês.
+  const [pickedOpen, setPickedOpen] = useState(false);
   const [guidance, setGuidance] = useState('');
   const [focused, setFocused] = useState<string | null>(null);
   const [focusRequest, setFocusRequest] = useState(0);
-  const years = [...new Set(props.months.map((value) => value.slice(0, 4)))];
   const eligible = (night: PrlCalendarNight | undefined) =>
     night !== undefined && (props.kind === 'initial' ? !night.hasVersion : night.hasVersion);
   const reason = (night: PrlCalendarNight | undefined) =>
@@ -182,15 +184,21 @@ export function PrlPricing(props: {
     setGuidance(capped ? text.selection.capped(0) : '');
   };
 
-  // Filtro de apresentação: escolhe noites pela temporada visual; o grupo canônico da noite não muda.
+  // Aditiva, como "Selecionar mês inteiro" do legado: só acrescenta (nunca desmarca nem muda preço próprio). A temporada
+  // é filtro de apresentação: escolhe noites pela temporada visual; o grupo canônico da noite não muda.
   const selectMonth = (tier?: SeasonTier) => {
-    const { added, capped } = add(
-      daysOf(month).filter((date) => {
-        const night = byDate.get(date);
-        return eligible(night) && (tier === undefined || night?.tier === tier);
-      }),
+    const candidates = daysOf(month).filter((date) => {
+      const night = byDate.get(date);
+      return eligible(night) && (tier === undefined || night?.tier === tier);
+    });
+    const { added, capped } = add(candidates);
+    setGuidance(
+      capped
+        ? text.selection.capped(added)
+        : added === 0 && candidates.length > 0
+          ? text.selection.already(candidates.length)
+          : text.selection.added(added),
     );
-    setGuidance(capped ? text.selection.capped(added) : text.selection.added(added));
   };
 
   const remove = (date: string) => {
@@ -213,14 +221,6 @@ export function PrlPricing(props: {
   const isOwn = (date: string) => (selected.get(date) ?? null) !== null;
   const ownInMonth = own.filter((date) => date.startsWith(month));
   const rows = perNight ? inMonth : ownInMonth;
-  const elsewhere = [
-    ...sorted
-      .filter((date) => !date.startsWith(month))
-      .reduce((groups, date) => {
-        const [count, owned] = groups.get(date.slice(0, 7)) ?? [0, 0];
-        return groups.set(date.slice(0, 7), [count + 1, owned + (isOwn(date) ? 1 : 0)]);
-      }, new Map<string, [number, number]>()),
-  ];
   const payload = JSON.stringify(selectionPayload(selected, common));
   const reviewing = state.stage === 'review' && state.review !== null;
   const previousMonth = adjacentMonth(props.months, month, -1);
@@ -303,6 +303,7 @@ export function PrlPricing(props: {
                   setFocused(date);
                   setFocusRequest((value) => value + 1);
                 }}
+                onJump={goToMonth}
                 previous={
                   <MonthNavButton
                     label={text.previousMonth}
@@ -356,32 +357,21 @@ export function PrlPricing(props: {
                     ))}
                   </div>
                 </div>
-                {years.length > 1 ? (
-                  <div
-                    className="lx-pricing__bulk"
-                    role="group"
-                    aria-labelledby={`prl-${props.kind}-exercicios`}
-                  >
-                    <p className="lx-pricing__eyebrow" id={`prl-${props.kind}-exercicios`}>
-                      {text.calendar.exercises}
-                    </p>
-                    <div className="lx-pricing__chips">
-                      {years.map((year) => (
-                        <button
-                          key={year}
-                          className="lx-pricing__chip"
-                          type="button"
-                          aria-pressed={month.startsWith(year)}
-                          onClick={() =>
-                            goToMonth(props.months.find((value) => value.startsWith(year)) ?? month)
-                          }
-                        >
-                          {text.calendar.exercise(year)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
+                <PrlSelectedNights
+                  id={`prl-${props.kind}`}
+                  dates={sorted}
+                  month={month}
+                  open={pickedOpen}
+                  isOwn={isOwn}
+                  onToggle={() => setPickedOpen(!pickedOpen)}
+                  onRemove={remove}
+                  onClear={() => {
+                    setSelected(new Map());
+                    setPickedOpen(false);
+                    setGuidance('');
+                  }}
+                  onGoTo={goToMonth}
+                />
               </PrlMonthCalendar>
             </div>
 
@@ -392,18 +382,6 @@ export function PrlPricing(props: {
                   {text.selection.title}
                 </h3>
                 <p className="lx-pricing__text">{text.selection.count(selected.size)}</p>
-                {selected.size === 0 ? null : (
-                  <button
-                    className="lx-calendar__clear"
-                    type="button"
-                    onClick={() => {
-                      setSelected(new Map());
-                      setGuidance('');
-                    }}
-                  >
-                    {text.selection.clear}
-                  </button>
-                )}
               </section>
 
               <div className="lx-pricing__common">
@@ -531,24 +509,6 @@ export function PrlPricing(props: {
                       {perNight ? text.selection.ownOnly : text.selection.perNight}
                     </button>
                   </>
-                )}
-                {elsewhere.length === 0 ? null : (
-                  <div className="lx-pricing__block">
-                    <p className="lx-pricing__eyebrow">{text.selection.otherMonths}</p>
-                    <ul className="lx-pricing__months">
-                      {elsewhere.map(([other, [count, owned]]) => (
-                        <li key={other}>
-                          <button
-                            className="lx-calendar__clear"
-                            type="button"
-                            onClick={() => goToMonth(other)}
-                          >
-                            {text.selection.goToMonth(monthName(other), count, owned)}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
                 )}
               </section>
 

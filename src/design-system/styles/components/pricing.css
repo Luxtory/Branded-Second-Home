@@ -146,6 +146,91 @@
     overflow-wrap: anywhere;
   }
 
+  /* Ir direto a um mês selado: mês e exercício lado a lado quando cabem (seletores nativos do DS). */
+  .lx-pricing__jump {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lx-space-3);
+  }
+
+  .lx-pricing__jump > .lx-field {
+    flex: 1 1 8rem;
+    max-inline-size: 14rem;
+    margin: 0;
+  }
+
+  /* Noites selecionadas junto ao calendário: os meses (atalhos) sempre à vista; as noites sob demanda, removíveis. */
+  .lx-pricing__picked {
+    display: grid;
+    gap: var(--lx-space-2);
+  }
+
+  .lx-pricing__picked > * {
+    margin: 0;
+  }
+
+  .lx-pricing__picked-group {
+    display: grid;
+    gap: var(--lx-space-1);
+  }
+
+  /* Atalho do mês: com texto ampliado ou a 320 px quebra em linhas alinhadas ao início, como texto corrido. */
+  .lx-pricing__picked-month {
+    text-align: start;
+  }
+
+  .lx-pricing__picked-month[aria-current="true"] {
+    color: var(--lx-color-fg);
+    font-weight: var(--lx-weight-semibold);
+  }
+
+  .lx-pricing__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lx-space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .lx-pricing__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lx-space-1);
+    min-block-size: var(--lx-target-min);
+    padding-inline: var(--lx-space-2);
+    border: var(--lx-border-hairline) solid var(--lx-color-accent);
+    border-radius: var(--lx-radius-none);
+    background-color: var(--lx-color-bg);
+    color: var(--lx-color-fg);
+    font-family: var(--lx-font-utility);
+    font-size: var(--lx-text-small);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+
+  .lx-pricing__badge > svg {
+    inline-size: var(--lx-space-3);
+    block-size: var(--lx-space-3);
+  }
+
+  .lx-pricing__badge:focus-visible {
+    outline: var(--lx-focus-width) solid var(--lx-color-focus);
+    outline-offset: var(--lx-focus-offset);
+  }
+
+  @media (hover: hover) {
+    .lx-pricing__badge:hover {
+      background-color: var(--lx-color-surface);
+    }
+  }
+
+  .lx-pricing__picked-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--lx-space-6);
+  }
+
   /* Seleção em lote: grupo de botões com borda, alvos de 44 px, logo abaixo do calendário. */
   .lx-pricing__bulk {
     display: grid;

@@ -136,6 +136,8 @@ export function PrlConsult(props: {
   readonly history: Readonly<Record<string, readonly PrlHistoryEntry[]>>;
   readonly initialNight: string | null;
   readonly focusOnMount: boolean;
+  /** Veio do seletor de mês: o foco volta a ele depois da recarga. */
+  readonly focusJump: boolean;
 }) {
   const router = useRouter();
   const byDate = useMemo(
@@ -149,15 +151,14 @@ export function PrlConsult(props: {
   );
   const [focused, setFocused] = useState<string | null>(viewing);
   const [focusRequest, setFocusRequest] = useState(props.focusOnMount ? 1 : 0);
-  const href = (month: string, night?: string, focus = false) =>
-    `${props.basePath}&mes=${month}${night === undefined ? '' : `&noite=${night}`}${focus ? '&foco=1' : ''}`;
+  const href = (month: string, night?: string, focus?: 'dia' | 'mes') =>
+    `${props.basePath}&mes=${month}${night === undefined ? '' : `&noite=${night}`}${focus === undefined ? '' : `&foco=${focus === 'dia' ? '1' : 'mes'}`}`;
   const previous = adjacentMonth(props.months, props.month, -1);
   const next = adjacentMonth(props.months, props.month, 1);
   const summary = monthSummary(props.nights);
   const seasons = summary.tiers
     .map(([tier, total]) => `${total} ${text.seasons[tier]}`)
     .join(' · ');
-  const years = [...new Set(props.months.map((value) => value.slice(0, 4)))];
   const viewed = viewing === null ? undefined : byDate.get(viewing);
 
   return (
@@ -190,7 +191,7 @@ export function PrlConsult(props: {
             }}
             onMove={(date) => {
               if (!date.startsWith(props.month)) {
-                router.push(href(date.slice(0, 7), date, true));
+                router.push(href(date.slice(0, 7), date, 'dia'));
                 return;
               }
               setFocused(date);
@@ -210,28 +211,10 @@ export function PrlConsult(props: {
                 <MonthNavButton label={text.nextMonth} direction={1} href={href(next)} />
               )
             }
+            onJump={(target) => router.push(href(target, undefined, 'mes'))}
+            jumpAutoFocus={props.focusJump}
             legend={<PrlLegend mark="viewing" />}
-          >
-            {years.length > 1 ? (
-              <nav className="lx-pricing__bulk" aria-labelledby="prl-consulta-exercicios">
-                <p className="lx-pricing__eyebrow" id="prl-consulta-exercicios">
-                  {text.calendar.exercises}
-                </p>
-                <div className="lx-pricing__chips">
-                  {years.map((year) => (
-                    <a
-                      key={year}
-                      className="lx-pricing__chip"
-                      href={href(props.months.find((value) => value.startsWith(year))!)}
-                      aria-current={props.month.startsWith(year) ? 'true' : undefined}
-                    >
-                      {text.calendar.exercise(year)}
-                    </a>
-                  ))}
-                </div>
-              </nav>
-            ) : null}
-          </PrlMonthCalendar>
+          />
         </div>
         <div className="lx-pricing__panel" data-ground="wash">
           {viewing === null || viewed === undefined ? (
