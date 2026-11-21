@@ -180,7 +180,7 @@ test.describe('Discovery público — jornada a 390 px com toque', () => {
   test('Home → Club → como funciona → dúvidas', async ({ page }) => {
     const errors = collectConsoleErrors(page);
     await page.goto('/');
-    await page.getByRole('link', { name: 'Conheça o Luxtory Club' }).tap();
+    await page.getByRole('link', { name: 'Conheça a Luxtory' }).tap();
     await expect(page).toHaveURL(/\/#luxtory$/);
     await expect(page.locator('#luxtory h2')).toBeInViewport();
 
@@ -254,7 +254,7 @@ test.describe('Discovery público — conteúdo', () => {
       'luxtory',
       'liberdade',
       'gestao',
-      'para-quem',
+      'convite',
       'duvidas',
     ]);
 
@@ -262,7 +262,7 @@ test.describe('Discovery público — conteúdo', () => {
     const { lead, turn, tail } = discoveryMessages.home.hero.title;
     await expect(hero.getByRole('heading', { level: 1 })).toHaveText(`${lead}${turn}${tail}`);
     await expect(hero.locator('.lx-home-hero__lead')).toHaveText(
-      /Luxtory Club.*intercâmbio de estadias/i,
+      /Luxtory.*intercâmbio de estadias/i,
     );
     const invite = hero.getByRole('link');
     await expect(invite).toHaveCount(1);
@@ -289,8 +289,8 @@ test.describe('Discovery público — conteúdo', () => {
     const faq = page.locator('section#duvidas');
     const items = [
       [
-        'Minha casa de lazer pode entrar no Club?',
-        'ter o imóvel aprovado e contratar a associação',
+        'Minha casa de lazer pode entrar na rede da Luxtory?',
+        'ter o imóvel aprovado pela Luxtory e contratar a associação',
       ],
       ['Minha casa continua sendo minha?', 'mantém a propriedade do imóvel'],
       ['Posso escolher qualquer destino ou data?', 'depende da disponibilidade'],
@@ -340,7 +340,7 @@ test.describe('Discovery público — conteúdo', () => {
         expect(response.status()).toBe(404);
       }
       expect(body).not.toContain(discoveryMessages.home.hero.title.lead.trim());
-      expect(body).not.toContain('Conheça o Luxtory Club');
+      expect(body).not.toContain('Conheça a Luxtory');
       expect(body).not.toContain('Intercâmbio de estadias de alto padrão');
     }
   });

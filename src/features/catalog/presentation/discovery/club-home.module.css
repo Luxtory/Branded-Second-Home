@@ -17,12 +17,35 @@
   opacity: 1;
 }
 
-.lx-club-home :global(.lx-triad-comparison__copy .lx-headline em) {
+.lx-club-home :global(:is(#possibilidade-titulo, #luxtory-titulo) > em) {
   display: block;
+}
+
+.lx-club-closing :global(.lx-hero__content) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.lx-club-closing :global(.lx-hero__copy) {
+  justify-items: center;
+  justify-self: center;
+  max-width: var(--lx-layout-container-narrow);
+  text-align: center;
+}
+
+.lx-club-closing :global(.lx-headline) {
+  text-wrap: balance;
 }
 
 @media (min-width: 48rem) {
   .lx-club-home :global(.lx-home-hero__scrim) {
     --lx-club-home-scrim-start: 60%;
+  }
+
+  .lx-club-closing:global(.lx-hero--closing) {
+    align-content: center;
+  }
+
+  .lx-club-closing :global(.lx-hero__content) {
+    padding-block: var(--lx-space-section);
   }
 }

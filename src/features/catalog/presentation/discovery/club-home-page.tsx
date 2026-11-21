@@ -10,7 +10,7 @@ import { HomeHero } from './home-hero';
 import { ActionLink, Paragraphs, SplitPhoto } from './parts';
 import { discoveryPaths } from './paths';
 
-const { hero, triad, club, mechanics, services, invite, faq } = text;
+const { hero, triad, club, mechanics, services, closing, faq } = text;
 const sections = { club: 'luxtory', mechanics: 'liberdade', faq: 'duvidas' } as const;
 
 export function generateClubHomeMetadata(): Metadata {
@@ -130,7 +130,6 @@ export function ClubHomePage() {
               <h2 id="liberdade-titulo" className="lx-headline">
                 <HeadlineText headline={mechanics.title} />
               </h2>
-              <p className="lx-body">{mechanics.intro}</p>
             </div>
             <dl className="lx-blocks lx-blocks--rows">
               {mechanics.items.map((item) => (
@@ -168,43 +167,37 @@ export function ClubHomePage() {
           </div>
         </section>
 
-        <section id="para-quem" data-surface="deep" aria-labelledby="para-quem-titulo">
-          <div className="lx-section">
-            <div className="lx-container lx-columns">
-              <h2 id="para-quem-titulo" className="lx-headline">
-                <HeadlineText headline={invite.title} />
-              </h2>
-              <p className="lx-body">{invite.text}</p>
+        <section
+          id="convite"
+          className={`lx-hero lx-hero--closing ${styles['lx-club-closing']}`}
+          data-surface="blue"
+          aria-labelledby="convite-titulo"
+        >
+          <div className="lx-hero__slides" aria-hidden="true">
+            <div className="lx-hero__slide" data-active="">
+              {/* eslint-disable-next-line @next/next/no-img-element -- Next/Image injects a style blocked by the CSP. */}
+              <img
+                className="lx-hero__image lx-crop-x-80 lx-crop-y-65 lx-crop-lg-x-50 lx-crop-lg-y-65"
+                src="/images/home/hero/home-solucao-firepit-family.jpg"
+                alt=""
+                width={1376}
+                height={768}
+                loading="lazy"
+              />
             </div>
           </div>
-          <div className="lx-hero lx-hero--closing" data-surface="blue">
-            <div className="lx-hero__slides" aria-hidden="true">
-              <div className="lx-hero__slide" data-active="">
-                {/* eslint-disable-next-line @next/next/no-img-element -- Next/Image injects a style blocked by the CSP. */}
-                <img
-                  className="lx-hero__image lx-crop-x-80 lx-crop-y-65 lx-crop-lg-x-50 lx-crop-lg-y-65"
-                  src="/images/home/hero/home-solucao-firepit-family.jpg"
-                  alt=""
-                  width={1376}
-                  height={768}
-                  loading="lazy"
-                />
-              </div>
-            </div>
-            <div className="lx-container lx-hero__content">
-              <div className="lx-hero__copy">
-                <p className="lx-headline">
-                  <HeadlineText headline={invite.promise} />
-                </p>
-                <p className="lx-subheadline">{invite.promiseDetails}</p>
-                <ActionLink
-                  href={`#${sections.faq}`}
-                  label={invite.action}
-                  icon="arrow-down"
-                  primary
-                  large
-                />
-              </div>
+          <div className="lx-container lx-hero__content">
+            <div className="lx-hero__copy">
+              <h2 id="convite-titulo" className="lx-headline">
+                {closing.title}
+              </h2>
+              <ActionLink
+                href={`#${sections.faq}`}
+                label={closing.action}
+                icon="arrow-down"
+                primary
+                large
+              />
             </div>
           </div>
         </section>

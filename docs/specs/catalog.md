@@ -2043,3 +2043,9 @@ A tríade abre com “Seu segundo lar como chave mestra. Para outros lares pelo 
 podem conciliar as viagens com o uso do próprio imóvel. “Um lugar para chamar de seu. Mais possibilidades para viver.”
 passa para o fechamento. A descrição de Luxchange, Luxplus e locação de temporada retoma a redação de Second Home
 Partners (§20), com as condições de participação e disponibilidade junto aos mecanismos correspondentes.
+
+### 21.4 Ajustes de redação e fechamento
+
+A Home apresenta a Luxtory no presente. O texto da tríade liga o segundo lar a outros destinos, e a seção sobre o
+Luxtory Club explica para quem é a proposta. O fechamento “Viva o verdadeiro luxo de sentir-se em casa em outros
+destinos.” fica centralizado na composição com a foto e o botão para as dúvidas.
