@@ -10,7 +10,11 @@ import { fundo } from './fundo.js';
 
 const ENTER = 480; // duration.slow: a leitura começa depois da entrada
 
-function blocks(fmt) {
+/**
+ * Blocos do filme. `resumo` (filme completo): o plano do fundo continua do bloco anterior, a revisão corta direto para
+ * a confirmação (pagamento e revalidação já aparecem na Request) e família e assinatura ficam para o fim do filme.
+ */
+export function blocks(fmt, { resumo = false } = {}) {
   const t = times(fmt);
   // No 9:16 a rota aparece dentro do calendário; o trecho vai até ela assentar.
   const calEnd = t.v ? t.calOut - 50 : t.calNext - 50;
@@ -26,7 +30,7 @@ function blocks(fmt) {
           'Use Créditos e pague a Taxa de intercâmbio, sem aceite de outro Membro.',
         ],
       },
-      shot: fundo(fmt),
+      shot: resumo ? { continue: true } : fundo(fmt),
       contact: 2_000,
     },
     {
@@ -100,29 +104,38 @@ function blocks(fmt) {
             readFrom: t.reviewIn + ENTER,
           },
         },
-        // Política e "Pagar taxa e confirmar"; o resto do processamento sai num corte.
-        { from: t.policy - 150, to: t.pay + 300 },
-        {
-          from: t.reviewOut - 50,
-          to: t.revalOut - 150,
-          hold: 300,
-          beat: {
-            label: 'pagamento aprovado e revalidação',
-            type: 'acao',
-            essential: 'Pagamento aprovado Confirmando a reserva',
-            readFrom: t.revalIn + ENTER,
-          },
-        },
+        // Política, pagamento e revalidação: no resumo (filme completo), a revisão corta direto para a confirmação.
+        ...(resumo
+          ? []
+          : [
+              // Política e "Pagar taxa e confirmar"; o resto do processamento sai num corte.
+              { from: t.policy - 150, to: t.pay + 300 },
+              {
+                from: t.reviewOut - 50,
+                to: t.revalOut - 150,
+                hold: 300,
+                beat: {
+                  label: 'pagamento aprovado e revalidação',
+                  type: 'acao',
+                  essential: 'Pagamento aprovado Confirmando a reserva',
+                  readFrom: t.revalIn + ENTER,
+                },
+              },
+            ]),
       ],
       sfx: [
-        { ms: t.policy, kind: 'tap', note: 'aceite da política' },
-        { ms: t.pay, kind: 'tap', note: 'Pagar taxa e confirmar' },
-        { ms: t.revalIn, kind: 'state', note: 'pagamento aprovado' },
-        ...[300, 500, 700, 900].map((d) => ({
-          ms: t.revalIn + d,
-          kind: 'check',
-          note: 'revalidação',
-        })),
+        ...(resumo
+          ? []
+          : [
+              { ms: t.policy, kind: 'tap', note: 'aceite da política' },
+              { ms: t.pay, kind: 'tap', note: 'Pagar taxa e confirmar' },
+              { ms: t.revalIn, kind: 'state', note: 'pagamento aprovado' },
+              ...[300, 500, 700, 900].map((d) => ({
+                ms: t.revalIn + d,
+                kind: 'check',
+                note: 'revalidação',
+              })),
+            ]),
       ],
       shot: { continue: true },
       contact: 3_000,
@@ -133,7 +146,7 @@ function blocks(fmt) {
       scene: 'D4',
       parts: [
         {
-          from: t.revalOut - 150,
+          from: resumo ? t.confirmed - 20 : t.revalOut - 150,
           to: t.confirmed + ENTER,
           hold: 3_100,
           fadeOut: 500,
@@ -149,8 +162,7 @@ function blocks(fmt) {
       shot: { continue: true },
       contact: 2_500,
     },
-    familia(fmt, 'D5'),
-    assinatura(),
+    ...(resumo ? [] : [familia(fmt, 'D5'), assinatura()]),
   ];
 }
 
