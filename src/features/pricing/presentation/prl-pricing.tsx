@@ -14,11 +14,14 @@ import {
   nightName,
   PrlLegend,
   PrlMonthCalendar,
+  SeasonSwatch,
 } from './prl-month-calendar';
 import { adjacentMonth } from './prl-months';
+import type { SeasonTier } from './prl-seasons';
+import { addNights } from './prl-selection';
 import type { PrlFormKind, PrlPublicationState } from './prl-state';
 
-const MAX_NIGHTS = 366;
+const SEASON_TIERS = ['super_alta', 'alta', 'media'] as const;
 
 function ReviewButtons({ kind }: { readonly kind: PrlFormKind }) {
   const { pending } = useFormStatus();
@@ -147,18 +150,7 @@ export function PrlPricing(props: {
         : text.calendar.notChange;
 
   const add = (dates: readonly string[]) => {
-    const next = new Map(selected);
-    let added = 0;
-    let capped = false;
-    for (const date of dates) {
-      if (next.has(date)) continue;
-      if (next.size >= MAX_NIGHTS) {
-        capped = true;
-        break;
-      }
-      next.set(date, common);
-      added += 1;
-    }
+    const { next, added, capped } = addNights(selected, dates, common);
     setSelected(next);
     return { added, capped };
   };
@@ -181,11 +173,12 @@ export function PrlPricing(props: {
     setGuidance(capped ? text.selection.capped(0) : '');
   };
 
-  const selectMonth = (season?: 'alta' | 'media') => {
+  // Filtro de apresentação: escolhe noites pela temporada visual; o grupo canônico da noite não muda.
+  const selectMonth = (tier?: SeasonTier) => {
     const { added, capped } = add(
       daysOf(month).filter((date) => {
         const night = byDate.get(date);
-        return eligible(night) && (season === undefined || night?.season === season);
+        return eligible(night) && (tier === undefined || night?.tier === tier);
       }),
     );
     setGuidance(capped ? text.selection.capped(added) : text.selection.added(added));
@@ -338,20 +331,17 @@ export function PrlPricing(props: {
                     >
                       {text.selection.month}
                     </button>
-                    <button
-                      className="lx-pricing__chip"
-                      type="button"
-                      onClick={() => selectMonth('alta')}
-                    >
-                      {text.selection.monthAlta}
-                    </button>
-                    <button
-                      className="lx-pricing__chip"
-                      type="button"
-                      onClick={() => selectMonth('media')}
-                    >
-                      {text.selection.monthMedia}
-                    </button>
+                    {SEASON_TIERS.map((tier) => (
+                      <button
+                        key={tier}
+                        className="lx-pricing__chip"
+                        type="button"
+                        onClick={() => selectMonth(tier)}
+                      >
+                        <SeasonSwatch tier={tier} />
+                        {text.seasons[tier]}
+                      </button>
+                    ))}
                   </div>
                 </div>
                 {years.length > 1 ? (
@@ -458,7 +448,7 @@ export function PrlPricing(props: {
                     {inMonth.map((date) => {
                       const night = byDate.get(date);
                       const amount = selected.get(date) ?? '';
-                      const meta = [night === undefined ? '' : text.seasons[night.season]];
+                      const meta = [night === undefined ? '' : text.seasons[night.tier]];
                       if (props.kind === 'change' && night?.inForce)
                         meta.push(text.selection.current(night.inForce));
                       if (hasCommon && amount !== common) meta.push(text.selection.exception);

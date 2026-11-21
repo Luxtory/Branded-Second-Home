@@ -11,6 +11,7 @@ import {
   nightName,
   PrlLegend,
   PrlMonthCalendar,
+  SeasonSwatch,
 } from './prl-month-calendar';
 import { adjacentMonth } from './prl-months';
 
@@ -47,7 +48,14 @@ function NightDetail(props: {
       <dl className="lx-pricing__facts">
         <div className="lx-pricing__fact">
           <dt>{text.season}</dt>
-          <dd>{text.seasons[night.season]}</dd>
+          <dd className="lx-pricing__season">
+            <SeasonSwatch tier={night.tier} />
+            {text.seasons[night.tier]}
+          </dd>
+        </div>
+        <div className="lx-pricing__fact">
+          <dt>{text.group}</dt>
+          <dd>{text.groups[night.season]}</dd>
         </div>
         <div className="lx-pricing__fact">
           <dt>{text.status}</dt>
@@ -140,6 +148,11 @@ export function PrlConsult(props: {
     scheduled: props.nights.filter((night) => night.scheduled.length > 0).length,
     absent: props.nights.filter((night) => night.status === 'absent').length,
   };
+  const seasons = (['super_alta', 'alta', 'media'] as const)
+    .map((tier) => [tier, props.nights.filter((night) => night.tier === tier).length] as const)
+    .filter(([, total]) => total > 0)
+    .map(([tier, total]) => `${total} ${text.seasons[tier]}`)
+    .join(' · ');
   const years = [...new Set(props.months.map((value) => value.slice(0, 4)))];
   const viewed = viewing === null ? undefined : byDate.get(viewing);
 
@@ -230,6 +243,10 @@ export function PrlConsult(props: {
               <div className="lx-pricing__fact">
                 <dt>{text.monthSummary.nights}</dt>
                 <dd>{text.nightsCount(props.nights.length)}</dd>
+              </div>
+              <div className="lx-pricing__fact">
+                <dt>{text.monthSummary.seasons}</dt>
+                <dd>{seasons}</dd>
               </div>
               <div className="lx-pricing__fact">
                 <dt>{text.monthSummary.inForce}</dt>

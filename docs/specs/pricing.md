@@ -87,13 +87,22 @@ string em unidade mínima (`amount_minor`) + `currency`.
   `01` §9, nunca editável, por noite, inclusive na janela de Carnaval), **preço** (sem preço · vigente em Warm Sand, com
   o valor na célula quando ela comporta · versão futura no losango), **seleção** (Moroccan Blue + ✓) ou **em detalhe**
   (contorno). Preço existente não significa disponibilidade, e noite sem preço continua no calendário.
+  **Temporadas (C2, decisão do fundador de 2026-11-21; ADR-0032 §11):** a tela divide o grupo canônico Alta/Super Alta
+  só para leitura — **Super Alta** (roxo, faixa mais grossa) = as 10 noites da janela de Carnaval do PD-003, **Alta**
+  (dourado) = janeiro, julho e dezembro, **Média/Baixa** (verde, faixa mais fina) = demais noites, 29/02 incluído
+  (`pricing/presentation/prl-seasons.ts`, derivada de `carnivalDates` do calendário canônico). O grupo canônico (`alta`
+  /`media`) continua governando Direito de Uso e os limites 103/262 e aparece no detalhe da noite como "Grupo de
+  Direito de Uso". A legenda tem dois grupos independentes — temporada (faixa) e preço/seleção (sem preço · preço
+  vigente com o valor, ou um ponto quando a célula não comporta · versão futura num losango próprio do módulo ·
+  selecionada ou em detalhe) — e nenhuma cor serve aos dois; a seleção preserva a faixa da temporada.
   - **Consultar:** a noite em detalhe ao lado (temporada, situação do preço, preço vigente e desde quando, versões
     futuras, histórico imutável sob demanda — valor, tipo, situação, vigência, autoridade, base, registro — no fuso da
     Second Home) e o resumo do mês (noites, com preço vigente, com versão futura, sem preço). Trocar de noite é
-    imediato (cliente, dados do mês vindos do servidor); trocar de mês recarrega no servidor (uma leitura
-    administrativa por mês). Depois de uma confirmação, a consulta abre na primeira noite publicada.
+    imediato (cliente, dados do mês vindos do servidor); trocar de mês — pelo link ou pelo teclado — recarrega no
+    servidor (uma leitura administrativa por mês) e remonta a consulta, com a noite e o foco vindos da URL do mês
+    novo. Depois de uma confirmação, a consulta abre na primeira noite publicada.
   - **Definir preços iniciais** (Admin ou Super Admin) e **Alterar preços** (só Super Admin; para o Admin o modo não
-    existe, nem pela URL): seleção por noite (`aria-pressed`), do mês (todas, só Alta/Super Alta, só Média/Baixa),
+    existe, nem pela URL): seleção por noite (`aria-pressed`), do mês (todas, só Super Alta, só Alta, só Média/Baixa),
     acumulada entre meses, até 366 noites — a seleção em lote diz quantas noites entraram e, no limite, que as demais
     ficaram de fora. O painel mostra a contagem, o **preço comum** (noites novas o recebem; reaplicá-lo às selecionadas
     é uma ação explícita, que diz a quantas noites foi aplicado) e as **noites do mês em tela** com o preço de cada uma

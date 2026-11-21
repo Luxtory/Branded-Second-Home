@@ -225,6 +225,16 @@ test.describe('W16 E4 — PRL e parâmetros econômicos no Admin', () => {
     await expect(priced).toContainText('Média/Baixa');
     await gate(page, errors, 'w16-07-prl-consulta-vigente');
     await widths(page, 'w16-07-prl-consulta-vigente');
+    // Troca de mês pelo teclado na consulta: o detalhe e o foco acompanham a noite do mês novo, nunca a anterior.
+    const lastOfMonth = addDays(`${nextMonth(month)}-01`, -1);
+    const firstOfNext = `${nextMonth(month)}-01`;
+    await day(page, lastOfMonth).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(page).toHaveURL(new RegExp(`mes=${nextMonth(month)}`));
+    await expect(page.locator('section[aria-labelledby="prl-noite"]')).toContainText(
+      civil(firstOfNext),
+    );
+    await expect(page.locator(':focus')).toHaveAttribute('data-date', firstOfNext);
 
     // A publicação inicial não alcança noite com preço; o Admin não abre a alteração nem pela URL.
     await page.goto(`/admin/prl/${home}?modo=inicial&mes=${month}`);
@@ -232,6 +242,33 @@ test.describe('W16 E4 — PRL e parâmetros econômicos no Admin', () => {
     // O dia inerte continua tocável para explicar o motivo (o Playwright o trata como desabilitado).
     await day(page, second).tap({ force: true });
     await expect(page.getByRole('status').filter({ hasText: 'já tem preço' })).toBeVisible();
+    // Temporadas de apresentação: avança até o mês da janela de Carnaval (Super Alta) e seleciona só ela; o resto do
+    // mês é Média/Baixa. Depois, janeiro (Alta). A seleção por temporada não muda o grupo canônico da noite.
+    const superAlta = page.locator('td[data-tier="super_alta"]');
+    for (let step = 0; step < 15 && (await superAlta.count()) === 0; step += 1)
+      await page.getByRole('button', { name: 'Próximo mês' }).tap();
+    const carnival = await superAlta.count();
+    expect(carnival).toBeGreaterThan(0);
+    await expect(page.locator('td[data-tier="media"]').first()).toBeVisible();
+    await expect(page.locator('.lx-pricing__legends')).toContainText('Super Alta');
+    await expect(
+      day(page, (await superAlta.first().locator('button').getAttribute('data-date')) ?? ''),
+    ).toHaveAccessibleName(/Temporada Super Alta/);
+    await page.getByRole('button', { name: 'Super Alta', exact: true }).tap();
+    await expect(page.getByRole('status')).toContainText(`${carnival} noites adicionadas.`);
+    await expect(
+      page.locator('td[data-tier="super_alta"] button[aria-pressed="true"]'),
+    ).toHaveCount(carnival);
+    await expect(page.locator('td[data-tier="media"] button[aria-pressed="true"]')).toHaveCount(0);
+    await gate(page, errors, 'w16-10-prl-temporadas-carnaval');
+    await widths(page, 'w16-10-prl-temporadas-carnaval');
+    await page.getByRole('button', { name: 'Limpar seleção' }).tap();
+    while ((await page.locator('td[data-tier="alta"]').count()) === 0)
+      await page.getByRole('button', { name: 'Mês anterior' }).tap();
+    await page.getByRole('button', { name: 'Alta', exact: true }).tap();
+    await expect(page.getByRole('status')).toContainText(/noites adicionadas\./);
+    await gate(page, errors, 'w16-11-prl-temporada-alta');
+    await page.getByRole('button', { name: 'Limpar seleção' }).tap();
     await page.goto(`/admin/prl/${home}?modo=alteracao&mes=${month}`);
     await expect(page.getByRole('form', { name: 'Alterar preços' })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Consultar' })).toHaveCount(1);

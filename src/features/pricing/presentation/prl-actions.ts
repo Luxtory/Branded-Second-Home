@@ -11,6 +11,7 @@ import { prlMessages as text } from './i18n/prl-pt-br';
 import { localToInstant } from './local-instant';
 import { loadPrlCalendar } from './prl-calendar-data';
 import { prlPath } from './prl-paths';
+import { seasonTiers } from './prl-seasons';
 import type {
   PrlFormKind,
   PrlPublicationField,
@@ -65,12 +66,13 @@ function view(
   },
 ): PrlReviewView {
   const money = (minor: string | null) => (minor === null ? null : formatMoney(BigInt(minor)));
+  const tierOf = seasonTiers();
   return {
     kind: review.kind,
     lines: review.rows.map((row) => ({
       date: row.stayDate,
       night: formatNight(row.stayDate),
-      season: text.seasons[row.season],
+      season: text.seasons[tierOf(row.stayDate, row.season)],
       current: money(row.currentMinor),
       scheduled: row.scheduled.map((version) =>
         text.scheduled(

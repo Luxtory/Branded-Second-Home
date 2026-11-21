@@ -3,13 +3,17 @@ import type { PrlNightState } from '../application/prl-review';
 import { nightStatus, prlHistory, sealedCalendar, type PrlVersion } from '../prl';
 import { formatAmount, formatInstant, formatMoney } from './format';
 import { prlMessages as text } from './i18n/prl-pt-br';
+import { seasonTiers, type SeasonTier } from './prl-seasons';
 
 type Reader = Pick<DatabaseTransaction, 'selectFrom'>;
 
 /** Uma noite selada no calendário do Admin, com os rótulos já formatados no servidor (sem valor calculado no cliente). */
 export interface PrlCalendarNight {
   readonly date: string;
+  /** Grupo canônico de Direito de Uso (calendário selado): governa direitos e limites. */
   readonly season: 'alta' | 'media';
+  /** Temporada de apresentação (Super Alta · Alta · Média/Baixa), derivada do grupo e da janela de Carnaval. */
+  readonly tier: SeasonTier;
   readonly status: 'absent' | 'in_force' | 'scheduled_only';
   /** Alguma versão (vigente ou agendada): define se a noite cabe na publicação inicial ou na alteração. */
   readonly hasVersion: boolean;
@@ -49,6 +53,7 @@ export async function loadPrlCalendar(
   for (const version of history)
     versions.set(version.stayDate, [...(versions.get(version.stayDate) ?? []), version]);
   const states = new Map<string, PrlNightState>();
+  const tierOf = seasonTiers();
   const nights = calendar.map(({ stayDate, season }) => {
     const own = versions.get(stayDate) ?? [];
     const status = nightStatus(own, now);
@@ -70,6 +75,7 @@ export async function loadPrlCalendar(
     return {
       date: stayDate,
       season,
+      tier: tierOf(stayDate, season),
       status:
         status.inForce !== null
           ? 'in_force'

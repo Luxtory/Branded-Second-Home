@@ -86,6 +86,9 @@ Nenhum. O Design System não expõe endpoints nem eventos.
   | `sand-wash` | `#F7F2ED` | Warm Sand a 16% sobre branco |
   | `error` | `#9B2226` | Erro sobre paper e wash |
   | `error-on-night` | `#F2B8B5` | Erro sobre night |
+  | `season-super-alta` | `#6B4A8C` | Temporada Super Alta na precificação do Admin (W16; 7,0:1 no branco) |
+  | `season-alta` | `#A57A16` | Temporada Alta na precificação do Admin (W16; 3,9:1 no branco) |
+  | `season-media` | `#4C7C55` | Temporada Média/Baixa na precificação do Admin (W16; 4,9:1 no branco) |
 
 ### Tipografia (três vozes, todas gratuitas, licença SIL OFL 1.1, self-hosted)
 

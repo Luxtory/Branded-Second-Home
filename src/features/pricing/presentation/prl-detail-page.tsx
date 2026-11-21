@@ -178,7 +178,10 @@ export async function AdminPrlDetailPage(props: {
           {month === null ? (
             <p className="lx-body">{text.noCalendar}</p>
           ) : mode === 'consultar' ? (
+            // Um mês por instância: a troca de mês (link ou teclado) remonta a consulta, e a noite em detalhe e o foco
+            // vêm da URL do mês novo, nunca do estado do mês anterior.
             <PrlConsult
+              key={month}
               basePath={`${prlPath(props.secondHomeId)}?modo=consultar`}
               months={model.months}
               month={month}

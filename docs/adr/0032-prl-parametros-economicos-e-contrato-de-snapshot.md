@@ -74,6 +74,12 @@ A W16 entrega REQ-013 e REQ-052 (`02` v4.6), com TECH-030, TECH-031 e TECH-033 (
 10. **Leitura só pelo servidor; nada ativado.** PRL sem GRANT a `authenticated`/`anon` (REQ-100: nenhum preço por noite
     ao Co-Owner); parâmetros globais invisíveis ao Titular. Sem evento, notificação ou capability nova; K1/K2/K3
     fechadas. Nenhum PRL ou parâmetro econômico real em Production sem autorização operacional do fundador.
+11. **Temporadas de apresentação (decisão do fundador, 2026-11-21, C2).** A tela de preços mostra três temporadas —
+    **Super Alta** = as 10 noites da janela de Carnaval do PD-003, **Alta** = janeiro, julho e dezembro, **Média/Baixa**
+    = demais noites, 29/02 incluído — derivadas do grupo canônico do calendário selado e de `carnivalDates` do
+    calendário canônico (TECH-041), sem migration, contrato ou segundo cálculo de Carnaval. Os canônicos definem duas
+    categorias (`01` §9, REQ-030); por isso a divisão é só de leitura: os grupos `alta`/`media` continuam governando
+    Direito de Uso e os limites 103/262, e o PRL continua por noite, sem preço por temporada.
 
 ## Consequences
 

@@ -15,9 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - W16 — PRL e parâmetros econômicos (REQ-013, REQ-052; TECH-030, TECH-031, TECH-033; ADR-0032). Admin: tela "PRL"
-  com o calendário do mês no centro e um painel ao lado — consulta da noite (temporada Alta/Super Alta ou Média/Baixa,
+  com o calendário do mês no centro e um painel ao lado — consulta da noite (temporada e grupo de Direito de Uso,
   preço vigente, versões futuras e histórico imutável com autoridade, base e vigência) e definição de preços em lote:
-  noites individuais, do mês, só Alta/Super Alta ou só Média/Baixa, acumuladas entre meses; preço comum aplicado
+  noites individuais, do mês ou por temporada — Super Alta (janela de Carnaval), Alta (janeiro, julho, dezembro) ou
+  Média/Baixa, cada uma com a sua cor no calendário —, acumuladas entre meses; preço comum aplicado
   explicitamente e preço próprio por noite; revisão com PRL total e prévia de Créditos antes de confirmar —, com preços
   iniciais por Admin ou Super Admin e alteração só pelo Super Admin, sempre com efeito para o futuro. Tela "Parâmetros
   econômicos" (Admin), em cartões: multiplicador e validade dos Créditos, percentual e mínimo do Luxchange Fee, prazo

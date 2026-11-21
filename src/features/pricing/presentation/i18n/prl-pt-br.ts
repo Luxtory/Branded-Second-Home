@@ -1,6 +1,8 @@
 // Textos do PRL no Admin (W16; REQ-013, REQ-052; spec pricing §5). Fatos do `01` §9 e §19 e da BR-181/BR-182, sem
-// valor comercial: nenhum preço, percentual ou exemplo econômico aparece aqui. Temporada = categoria canônica da noite
-// (`01` §9: Alta/Super Alta · Média/Baixa), nunca editável aqui; PRL = preço da noite; disponibilidade é outro conceito.
+// valor comercial: nenhum preço, percentual ou exemplo econômico aparece aqui. Temporada = apresentação em três (Super
+// Alta = janela de Carnaval do PD-003, Alta = jan/jul/dez, Média/Baixa; decisão do founder de 2026-11-21) do grupo
+// canônico de Direito de Uso (`01` §9: Alta/Super Alta · Média/Baixa), nunca editável aqui; PRL = preço da noite;
+// disponibilidade é outro conceito.
 export const prlMessages = {
   metadataTitle: 'PRL — Admin Luxtory',
   listTitle: 'PRL — Preço de Referência Luxtory',
@@ -34,7 +36,9 @@ export const prlMessages = {
   noCalendar:
     'O calendário desta Second Home ainda não foi gerado. Ele é gerado por exercício depois da formalização; só então as noites recebem preço.',
   season: 'Temporada',
-  seasons: { alta: 'Alta/Super Alta', media: 'Média/Baixa' },
+  seasons: { super_alta: 'Super Alta', alta: 'Alta', media: 'Média/Baixa' },
+  group: 'Grupo de Direito de Uso',
+  groups: { alta: 'Alta/Super Alta', media: 'Média/Baixa' },
   status: 'Situação do preço',
   statusAbsent: 'Sem preço definido',
   statusAbsentEffect:
@@ -63,6 +67,7 @@ export const prlMessages = {
   monthSummaryLabel: (month: string) => `Resumo de ${month}`,
   monthSummary: {
     nights: 'No calendário',
+    seasons: 'Temporadas',
     inForce: 'Com preço vigente',
     scheduled: 'Com versão futura',
     absent: 'Sem preço definido',
@@ -80,13 +85,13 @@ export const prlMessages = {
       ['S', 'sábado'],
     ] as readonly (readonly [string, string])[],
     caption: 'Preços em reais.',
-    legend: 'Legenda do calendário',
+    legendSeasons: 'Temporada',
+    legendPrice: 'Preço e seleção',
     legendAbsent: 'Sem preço',
     legendInForce: 'Preço vigente',
     legendScheduled: 'Versão futura',
     legendSelected: 'Selecionada',
     legendViewing: 'Em detalhe',
-    legendAlta: 'Temporada Alta/Super Alta (sem traço: Média/Baixa)',
     absentShort: 'sem preço',
     scheduledShort: 'com versão futura',
     selected: 'selecionada',
@@ -118,8 +123,6 @@ export const prlMessages = {
           : `${count} noites adicionadas.`,
     bulkLabel: (month: string) => `Selecionar em ${month}`,
     month: 'Todas',
-    monthAlta: 'Alta/Super Alta',
-    monthMedia: 'Média/Baixa',
     clear: 'Limpar seleção',
     common: 'Preço comum (R$)',
     commonHint:

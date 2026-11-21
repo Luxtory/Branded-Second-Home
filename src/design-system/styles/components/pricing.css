@@ -3,8 +3,8 @@
  * `.lx-pricing` ou `.lx-calendar--prl`: os calendários de reserva e de Direito de Uso não mudam.
  *
  * Estados de cada noite — nenhum depende só de cor, e cada dia diz o próprio estado no nome acessível:
- *   temporada  — Alta/Super Alta: o traço no alto do calendário canônico (mais firme aqui); Média/Baixa: sem traço;
- *   preço      — vigente: tom Warm Sand e, quando a célula comporta, o valor; versão futura: losango no canto;
+ *   temporada  — faixa no alto: Super Alta (roxo, mais grossa) · Alta (dourado) · Média/Baixa (verde, mais fina);
+ *   preço      — vigente: valor na célula (ou ponto, quando não cabe); versão futura: losango próprio no canto;
  *   seleção    — Moroccan Blue preenchido e ✓ (publicação); em detalhe: contorno (consulta);
  *   sem ação   — fora do calendário ou não elegível ao modo: número discreto, mas ainda focável (explica o motivo).
  *
@@ -229,9 +229,10 @@
     border-block-end: var(--lx-border-hairline) solid var(--lx-color-rule);
   }
 
-  @container (min-width: 24rem) {
+  /* Uma linha por noite já no painel lateral (com texto ampliado, o rem cresce e a linha volta a empilhar). */
+  @container (min-width: 20rem) {
     .lx-pricing__night {
-      grid-template-columns: minmax(0, 1fr) minmax(7rem, 10rem) var(--lx-target-min);
+      grid-template-columns: minmax(0, 1fr) 7rem var(--lx-target-min);
       grid-template-areas: "date amount remove";
     }
   }
@@ -260,6 +261,7 @@
   .lx-pricing__night .lx-input {
     grid-area: amount;
     min-inline-size: 0;
+    padding-inline: var(--lx-space-3);
     font-variant-numeric: tabular-nums;
   }
 
@@ -336,10 +338,17 @@
     border-inline-start-color: var(--lx-color-rule-strong);
   }
 
-  /* ——— Variante do calendário ——— */
-  .lx-calendar--prl {
-    /* preço vigente: o mesmo tom Warm Sand de "sua reserva", aqui com outro sinal (o valor, não o ponto) */
-    --lx-prl-in-force: color-mix(in srgb, var(--lx-color-rule) 40%, var(--lx-color-bg));
+  /* ——— Variante do calendário ———
+   * Hierarquia dos estados, de fora para dentro, sem que um esconda o outro:
+   *   temporada — faixa no alto da célula: cor (roxo · dourado · verde) e espessura (mais grossa quanto mais alta);
+   *   preço     — valor na célula quando comporta, ponto quando não comporta; versão futura no losango do canto;
+   *   seleção   — corpo Moroccan Blue + ✓, com a faixa preservada sobre um filete branco; detalhe — contorno;
+   *   foco      — o anel do DS, por dentro. A cor da temporada nunca é usada para preço ou seleção. */
+  .lx-calendar--prl,
+  .lx-pricing {
+    --lx-prl-band-super: var(--lx-space-2);
+    --lx-prl-band-alta: calc(var(--lx-space-1) * 1.5);
+    --lx-prl-band-media: var(--lx-space-1);
   }
 
   /* Um mês por vez: a área de trabalho tem um só calendário (o DS põe dois meses lado a lado a partir de 41rem). */
@@ -347,17 +356,12 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  /* Na legenda em duas colunas, a temporada (rótulo mais longo) ocupa a linha inteira. */
-  .lx-calendar--prl .lx-calendar__legend-item:last-child {
-    grid-column: 1 / -1;
-  }
-
-  /* Célula proporcional à largura do calendário (nunca abaixo do alvo de 48 px). */
+  /* Célula proporcional à largura do calendário (nunca abaixo do alvo de 48 px); o conteúdo começa abaixo da faixa. */
   .lx-calendar--prl .lx-calendar__day {
     align-content: center;
     gap: var(--lx-space-1);
     min-block-size: max(var(--lx-target-control), 8.5cqi);
-    padding-block: var(--lx-space-2);
+    padding-block: calc(var(--lx-space-2) + var(--lx-space-1)) var(--lx-space-2);
   }
 
   /* Com o valor na célula, todas as linhas têm a altura de número + valor (linhas iguais com ou sem preço). */
@@ -372,16 +376,74 @@
     }
   }
 
-  .lx-calendar--prl td[data-prl="in_force"] {
-    background-color: var(--lx-prl-in-force);
+  /* Temporada: faixa (cor + espessura) e um tom leve da mesma cor no corpo, para o mês se ler de relance. O tom só
+     identifica a temporada: preço é texto/ponto e seleção é Moroccan Blue sólido. */
+  .lx-calendar--prl td[data-tier],
+  .lx-pricing .lx-pricing__swatch[data-tier] {
+    --lx-prl-tier: var(--lx-derived-season-media);
+    --lx-prl-band: var(--lx-prl-band-media);
+    box-shadow: inset 0 var(--lx-prl-band) 0 var(--lx-prl-tier);
+    background-color: color-mix(in srgb, var(--lx-prl-tier) 7%, var(--lx-color-bg));
   }
 
-  /* Noite com preço vigente fora do modo (ex.: na publicação inicial): o número continua legível sobre o tom. */
-  .lx-calendar--prl td[data-prl="in_force"] > .lx-calendar__day[aria-disabled="true"] {
+  .lx-calendar--prl td[data-tier="super_alta"],
+  .lx-pricing .lx-pricing__swatch[data-tier="super_alta"] {
+    --lx-prl-tier: var(--lx-derived-season-super-alta);
+    --lx-prl-band: var(--lx-prl-band-super);
+  }
+
+  .lx-calendar--prl td[data-tier="alta"],
+  .lx-pricing .lx-pricing__swatch[data-tier="alta"] {
+    --lx-prl-tier: var(--lx-derived-season-alta);
+    --lx-prl-band: var(--lx-prl-band-alta);
+  }
+
+  /* Noite sem ação neste modo sobre o tom da temporada: o número usa o texto secundário do DS (contraste de texto). */
+  .lx-calendar--prl td[data-tier] > .lx-calendar__day[aria-disabled="true"] {
     color: var(--lx-color-fg-muted);
   }
 
-  /* Valor na célula só quando comporta; o preço completo fica no painel e no nome acessível. */
+  /* Selecionada: corpo Moroccan Blue; a faixa da temporada continua no alto, separada do azul por um filete branco. */
+  .lx-calendar--prl td[data-selected] {
+    background-color: var(--lx-color-accent);
+    box-shadow:
+      inset 0 var(--lx-prl-band) 0 var(--lx-prl-tier),
+      inset 0 calc(var(--lx-prl-band) + var(--lx-border-outline)) 0 var(--lx-color-bg);
+  }
+
+  .lx-calendar--prl td[data-selected] .lx-calendar__day,
+  .lx-calendar--prl td[data-selected] .lx-calendar__number {
+    color: var(--lx-color-action-fg);
+    font-weight: var(--lx-weight-semibold);
+  }
+
+  .lx-calendar--prl td[data-selected] .lx-calendar__day:focus-visible {
+    outline-color: var(--lx-color-action-fg);
+  }
+
+  @media (hover: hover) {
+    .lx-calendar--prl td[data-selected] .lx-calendar__day:hover {
+      background-color: var(--lx-color-action-bg-hover);
+    }
+  }
+
+  /* Em detalhe (consulta): contorno por dentro da célula, abaixo da faixa, e número em destaque. */
+  .lx-calendar--prl td[data-viewing] {
+    box-shadow:
+      inset 0 var(--lx-prl-band) 0 var(--lx-prl-tier),
+      inset 0 0 0 var(--lx-focus-width) var(--lx-color-accent);
+  }
+
+  .lx-calendar--prl td[data-viewing] .lx-calendar__number {
+    font-weight: var(--lx-weight-semibold);
+  }
+
+  .lx-calendar--prl td[data-viewing] .lx-calendar__day:focus-visible {
+    outline-offset: calc(-2 * var(--lx-focus-width) - var(--lx-border-hairline));
+  }
+
+  /* Preço vigente: o valor quando a célula comporta; senão um ponto sob o número. O preço completo fica no painel e no
+     nome acessível. */
   .lx-calendar--prl .lx-pricing__amount {
     display: none;
     max-inline-size: 100%;
@@ -395,26 +457,48 @@
     text-overflow: ellipsis;
   }
 
+  .lx-calendar--prl .lx-pricing__dot {
+    position: absolute;
+    inset-block-end: var(--lx-space-2);
+    inset-inline-start: calc(50% - var(--lx-space-1) / 2);
+    inline-size: var(--lx-space-1);
+    block-size: var(--lx-space-1);
+    background-color: currentColor;
+  }
+
   @container (min-width: 30rem) {
     .lx-calendar--prl .lx-pricing__amount {
       display: block;
     }
+
+    .lx-calendar--prl .lx-pricing__dot {
+      display: none;
+    }
   }
 
-  /* Temporada Alta/Super Alta: o traço canônico, mais largo e no tom do texto. */
-  .lx-calendar--prl td[data-season="alta"] .lx-calendar__day::before {
-    inset-inline: 30%;
-    background-color: var(--lx-color-fg);
+  /* Versão futura: losango próprio do módulo (o do DS significa 29/02 extraordinário), no canto, abaixo da faixa. */
+  .lx-calendar--prl .lx-pricing__future,
+  .lx-calendar--prl .lx-calendar__swatch[data-prl="future"]::before {
+    position: absolute;
+    inline-size: var(--lx-space-2);
+    block-size: var(--lx-space-2);
+    background-color: var(--lx-color-accent);
+    transform: rotate(45deg);
   }
 
-  .lx-calendar--prl td[data-season="alta"][data-range="start"] .lx-calendar__day::before {
+  .lx-calendar--prl .lx-pricing__future {
+    inset-block-start: var(--lx-space-3);
+    inset-inline-end: var(--lx-space-2);
+  }
+
+  .lx-calendar--prl td[data-selected] .lx-pricing__future {
     background-color: var(--lx-color-action-fg);
   }
 
-  /* Selecionada: Moroccan Blue (do DS) + ✓ no canto superior esquerdo (o direito é do losango; embaixo, o valor). */
+  /* ✓ da seleção no canto superior esquerdo, abaixo da faixa (o direito é do losango; embaixo, o valor). */
   .lx-calendar--prl .lx-pricing__check {
     position: absolute;
-    inset-block-start: var(--lx-space-1);
+    inset-block-start: var(--lx-space-3);
     inset-inline-start: var(--lx-space-1);
     inline-size: var(--lx-space-3);
     block-size: var(--lx-space-3);
@@ -427,26 +511,73 @@
     }
   }
 
-  /* Em detalhe (consulta): contorno por dentro da célula e número em destaque. */
-  .lx-calendar--prl td[data-viewing] {
-    box-shadow: inset 0 0 0 var(--lx-focus-width) var(--lx-color-accent);
+  /* Legendas: temporada e preço em grupos separados; no celular um embaixo do outro, com largura, lado a lado. */
+  .lx-pricing__legends {
+    display: grid;
+    gap: var(--lx-space-4) var(--lx-space-8);
   }
 
-  .lx-calendar--prl td[data-viewing] .lx-calendar__number {
-    font-weight: var(--lx-weight-semibold);
+  @container (min-width: 36rem) {
+    .lx-pricing__legends {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
   }
 
-  .lx-calendar--prl td[data-viewing] .lx-calendar__day:focus-visible {
-    outline-offset: calc(-2 * var(--lx-focus-width) - var(--lx-border-hairline));
+  .lx-pricing__legend {
+    display: grid;
+    align-content: start;
+    gap: var(--lx-space-2);
   }
 
-  .lx-calendar--prl .lx-calendar__swatch[data-prl="in_force"] {
-    background-color: var(--lx-prl-in-force);
+  .lx-pricing__legend > p {
+    margin: 0;
   }
 
-  .lx-calendar--prl .lx-calendar__swatch[data-season="alta"]::before {
-    inset-inline: 0;
+  .lx-calendar--prl .lx-pricing__legend .lx-calendar__legend {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  /* Amostra da temporada: um quadrado com a faixa no alto, como a célula. */
+  .lx-pricing .lx-pricing__swatch {
+    flex: none;
+    display: inline-block;
+    inline-size: var(--lx-space-4);
+    block-size: var(--lx-space-4);
+    border: var(--lx-border-hairline) solid var(--lx-color-rule);
+    background-color: var(--lx-color-bg);
+  }
+
+  .lx-pricing__chip .lx-pricing__swatch {
+    margin-inline-end: var(--lx-space-2);
+  }
+
+  .lx-pricing__season {
+    display: flex;
+    align-items: center;
+    gap: var(--lx-space-2);
+  }
+
+  .lx-calendar--prl .lx-calendar__swatch[data-prl="in_force"]::after {
+    content: "";
+    position: absolute;
+    inset: calc(50% - var(--lx-space-1) / 2);
     background-color: var(--lx-color-fg);
+  }
+
+  .lx-calendar--prl .lx-calendar__swatch[data-prl="future"] {
+    border-color: transparent;
+    background-color: transparent;
+  }
+
+  .lx-calendar--prl .lx-calendar__swatch[data-prl="future"]::before {
+    content: "";
+    inset: calc(50% - var(--lx-space-2) / 2);
+  }
+
+  .lx-calendar--prl .lx-calendar__swatch[data-selected] {
+    border-color: var(--lx-color-accent);
+    background-color: var(--lx-color-accent);
   }
 
   .lx-calendar--prl .lx-calendar__swatch[data-viewing] {

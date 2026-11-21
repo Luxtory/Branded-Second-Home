@@ -36,7 +36,7 @@ export const nightName = (date: string) =>
 /** Nome acessível da noite: data, temporada e situação do preço (o motivo e a seleção vêm de quem usa a grade). */
 export function nightDescription(date: string, night: PrlCalendarNight | undefined): string[] {
   if (night === undefined) return [nightName(date), text.calendar.unsealed];
-  const parts = [nightName(date), `${text.season} ${text.seasons[night.season]}`];
+  const parts = [nightName(date), `${text.season} ${text.seasons[night.tier]}`];
   parts.push(
     night.status === 'in_force'
       ? `${text.statusInForce} ${night.inForce ?? ''}`.trim()
@@ -158,9 +158,9 @@ export function PrlMonthCalendar(props: {
     cells.push(
       <td
         key={date}
-        data-season={night?.season === 'alta' ? 'alta' : undefined}
+        data-tier={night?.tier}
         data-prl={night?.status === 'in_force' ? 'in_force' : undefined}
-        data-range={view.selected ? 'start' : undefined}
+        data-selected={view.selected ? '' : undefined}
         data-viewing={view.viewing ? '' : undefined}
       >
         <button
@@ -180,8 +180,11 @@ export function PrlMonthCalendar(props: {
               {view.amount}
             </span>
           )}
+          {night?.status === 'in_force' ? (
+            <span className="lx-pricing__dot" aria-hidden="true" />
+          ) : null}
           {night !== undefined && night.scheduled.length > 0 ? (
-            <span className="lx-calendar__mark" aria-hidden="true" />
+            <span className="lx-pricing__future" aria-hidden="true" />
           ) : null}
           {view.selected ? <Icon name="check" className="lx-pricing__check" /> : null}
         </button>
@@ -229,37 +232,63 @@ export function PrlMonthCalendar(props: {
   );
 }
 
-/** Legenda: preço (sem · vigente · versão futura), seleção ou detalhe e temporada (traço = Alta/Super Alta). */
+const TIERS = ['super_alta', 'alta', 'media'] as const;
+
+/** Faixa da temporada (cor + espessura), a mesma da célula, para legenda e botões de seleção. */
+export function SeasonSwatch({ tier }: { readonly tier: (typeof TIERS)[number] }) {
+  return <span className="lx-pricing__swatch" aria-hidden="true" data-tier={tier} />;
+}
+
+/**
+ * Legenda em dois grupos independentes: a temporada (faixa colorida, mais grossa quanto mais alta) e o preço com a
+ * seleção ou o detalhe. Nenhuma cor serve aos dois grupos.
+ */
 export function PrlLegend({ mark }: { readonly mark: 'selected' | 'viewing' }) {
   return (
-    <ul className="lx-calendar__legend" aria-label={text.calendar.legend}>
-      <li className="lx-calendar__legend-item">
-        <span className="lx-calendar__swatch" aria-hidden="true" />
-        {text.calendar.legendAbsent}
-      </li>
-      <li className="lx-calendar__legend-item">
-        <span className="lx-calendar__swatch" aria-hidden="true" data-prl="in_force" />
-        {text.calendar.legendInForce}
-      </li>
-      <li className="lx-calendar__legend-item">
-        <span className="lx-calendar__swatch" aria-hidden="true" data-mark="leap" />
-        {text.calendar.legendScheduled}
-      </li>
-      {mark === 'selected' ? (
-        <li className="lx-calendar__legend-item">
-          <span className="lx-calendar__swatch" aria-hidden="true" data-range="start" />
-          {text.calendar.legendSelected}
-        </li>
-      ) : (
-        <li className="lx-calendar__legend-item">
-          <span className="lx-calendar__swatch" aria-hidden="true" data-viewing="" />
-          {text.calendar.legendViewing}
-        </li>
-      )}
-      <li className="lx-calendar__legend-item">
-        <span className="lx-calendar__swatch" aria-hidden="true" data-season="alta" />
-        {text.calendar.legendAlta}
-      </li>
-    </ul>
+    <div className="lx-pricing__legends">
+      <div className="lx-pricing__legend">
+        <p className="lx-pricing__eyebrow" id={`prl-legenda-temporada-${mark}`}>
+          {text.calendar.legendSeasons}
+        </p>
+        <ul className="lx-calendar__legend" aria-labelledby={`prl-legenda-temporada-${mark}`}>
+          {TIERS.map((tier) => (
+            <li className="lx-calendar__legend-item" key={tier}>
+              <SeasonSwatch tier={tier} />
+              {text.seasons[tier]}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="lx-pricing__legend">
+        <p className="lx-pricing__eyebrow" id={`prl-legenda-preco-${mark}`}>
+          {text.calendar.legendPrice}
+        </p>
+        <ul className="lx-calendar__legend" aria-labelledby={`prl-legenda-preco-${mark}`}>
+          <li className="lx-calendar__legend-item">
+            <span className="lx-calendar__swatch" aria-hidden="true" />
+            {text.calendar.legendAbsent}
+          </li>
+          <li className="lx-calendar__legend-item">
+            <span className="lx-calendar__swatch" aria-hidden="true" data-prl="in_force" />
+            {text.calendar.legendInForce}
+          </li>
+          <li className="lx-calendar__legend-item">
+            <span className="lx-calendar__swatch" aria-hidden="true" data-prl="future" />
+            {text.calendar.legendScheduled}
+          </li>
+          {mark === 'selected' ? (
+            <li className="lx-calendar__legend-item">
+              <span className="lx-calendar__swatch" aria-hidden="true" data-selected="" />
+              {text.calendar.legendSelected}
+            </li>
+          ) : (
+            <li className="lx-calendar__legend-item">
+              <span className="lx-calendar__swatch" aria-hidden="true" data-viewing="" />
+              {text.calendar.legendViewing}
+            </li>
+          )}
+        </ul>
+      </div>
+    </div>
   );
 }
