@@ -14,6 +14,28 @@
 > Pessoas, Second Homes, datas e valores são ilustrativos. Os oito masters só são gerados depois da aprovação deste
 > checkpoint, e nada é publicado antes da validação de direitos, das condições comerciais e da prontidão do produto.
 
+## v9: fundo comum e os quatro filmes (prévias provisórias)
+
+**Decisões:**
+- **Fundo das simulações:** a foto original do hero da home (`luxury-property-facade-hero.jpg`), sem o overlay da
+  página e sem mudar a página. Fica num plano contínuo do banner à confirmação (`filme/prova/fundo.js`): no 16:9, a
+  composição original, aproximando de 1,00 a 1,05; no 9:16, o recorte A, entre três testados, com chaminé e fachada
+  acima dos cartões e piscina abaixo. É ambientação do Luxtory Club; os nomes das Second Homes ficam só na interface.
+  A fonte tem 1672 × 941 e é a única no repositório: o 9:16 amplia ≈ 2,1×. Uma versão maior entra por
+  `out/entrada/HERO-9x16.*`.
+- **Som:** só efeitos de operação. `audio.modo: 'efeitos'` dispensa voz e trilha no preflight da exportação final,
+  que continua exigindo assets aprovados.
+- **Direct (36,4 s) e Luxplus (32,4 s):** banner aprovado, simulação, família e assinatura. O cartão de Créditos mostra
+  o saldo uma vez só, sem o número grande que duplicava a legenda. Marina: 39.000 → 27.500 no Direct, saldo inalterado
+  no Luxplus. O Luxplus não tem Créditos, taxa nem desconto, e o valor da estadia é ilustrativo.
+- **Filme completo (≈ 115 s):**
+  1. abertura com a ideia aprovada ("Sua Second Home pode ser o ponto de partida — não o limite.");
+  2. Créditos explicados uma vez (painel C04, com as ressalvas da L3);
+  3. Request inteira;
+  4. Direct e Luxplus só com o que os diferencia (a revisão corta para a confirmação);
+  5. síntese das três modalidades;
+  6. uma família e uma assinatura.
+
 ## v8.4: refinamento de direção (prévia técnica provisória)
 
 **Feito no código e na prévia:**
