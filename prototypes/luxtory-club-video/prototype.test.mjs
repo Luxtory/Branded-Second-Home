@@ -1222,6 +1222,20 @@ for (const fmt of ['16x9', '9x16']) {
       requestCurta(fmt).sfx.filter((x) => x.kind === 'state').length,
     );
     assert.ok(edl.duration >= 100_000 && edl.duration <= 135_000);
+    // O painel dos Créditos se monta por batidas: o corte espera a leitura (5 palavras/s, depois da entrada de 480 ms)
+    // da última linha, a da Membership vigente.
+    const [stage1, credits] = edl.ui.filter((u) => u.seq === 'creditos');
+    const count = (t) => t.split(/\s+/).length;
+    assert.equal(stage1.hold, 0, 'sem pausa no meio do painel');
+    assert.equal(stage1.to, credits.from);
+    assert.ok(
+      credits.to - (creditosSeq.BEATS.use + 480) >= (count(creditosSeq.USE_LINE) / 5) * 1000,
+    );
+    assert.ok(
+      credits.to - creditosSeq.BEATS.deposit >= (count(creditosSeq.FOOTNOTE) / 3 + 0.5) * 1000,
+      'ressalva lida até o corte',
+    );
+    assert.ok(credits.to <= creditosSeq.timeline().enter[0].out, 'corte antes da saída do painel');
     assert.deepEqual(
       edl.editorial.banners.map((b) => b.title),
       ['Luxtory Club', 'Luxchange Request', 'Luxchange Direct', 'Luxplus'],

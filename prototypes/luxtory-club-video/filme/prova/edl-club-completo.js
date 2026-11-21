@@ -4,9 +4,9 @@
 // → Request completa (a única com depósito, Garantia, aceite e revalidação) → Direct e Luxplus só com o que os
 // diferencia (a revisão corta direto para a confirmação) → síntese das três modalidades → família → assinatura.
 // Um plano contínuo do hero da home (fundo.js) do início à família; som só de operações.
-import { FOOTNOTE, ROWS } from '../../sequence-creditos.js';
+import { BEATS, FOOTNOTE, ROWS, USE_LINE } from '../../sequence-creditos.js';
 import { MODALIDADES } from '../../sequence-sintese.js';
-import { buildFilm } from './blocos.js';
+import { buildFilm, GRID_MS, skimMs } from './blocos.js';
 import { blocks as directBlocks } from './edl-direct-curta.js';
 import { blocks as luxplusBlocks } from './edl-luxplus-curta.js';
 import { blocks as requestBlocks } from './edl-request-curta.js';
@@ -14,7 +14,17 @@ import { assinatura, familia } from './encerramento.js';
 import { fundo } from './fundo.js';
 
 const ENTER = 480; // duration.slow: a leitura começa depois da entrada
-const CREDITS_PRIOR = 1_300; // primeira batida do painel (sequence-creditos.js)
+// O painel dos Créditos se monta por batidas (sequence-creditos.js) e é lido em duas etapas: o que já tem + o que gera,
+// depois o saldo único com a condição da Membership. O corte espera a leitura da última linha e a da ressalva
+// (≥ 1 s a cada 3 palavras + 0,5 s, desde a entrada); a primeira etapa fecha exatamente na grade (sem pausa no meio).
+const LEAD_MS = 600;
+const legalReadMs = (text) => (text.split(/\s+/).length / 3 + 0.5) * 1000;
+const CREDITS_FROM =
+  BEATS.total - Math.ceil((BEATS.total - BEATS.prior + LEAD_MS) / GRID_MS) * GRID_MS;
+const CREDITS_TO = Math.max(
+  BEATS.use + ENTER + skimMs(USE_LINE),
+  BEATS.deposit + legalReadMs(FOOTNOTE),
+);
 const SINTESE_FIRST_IN = 300; // primeiro cartão da síntese (sequence-sintese.js)
 
 function blocks(fmt) {
@@ -38,14 +48,24 @@ function blocks(fmt) {
       scene: 'C1',
       parts: [
         {
-          from: CREDITS_PRIOR - 600,
-          to: CREDITS_PRIOR + ENTER + 7_020,
+          from: CREDITS_FROM,
+          to: BEATS.total,
+          beat: {
+            label: 'Créditos Luxchange: os que já tem e os novos',
+            type: 'mensagem',
+            essential: `${ROWS.prior} ${ROWS.fresh}`,
+            readFrom: BEATS.prior + ENTER,
+          },
+        },
+        {
+          from: BEATS.total,
+          to: CREDITS_TO,
           fadeOut: 400,
           beat: {
-            label: 'Créditos Luxchange: um só saldo',
-            type: 'complexa',
-            essential: `${ROWS.prior} ${ROWS.fresh} ${ROWS.total} Com Membership vigente, em Luxchange Request ou Direct. ${FOOTNOTE}`,
-            readFrom: CREDITS_PRIOR + ENTER,
+            label: 'um só saldo, com Membership vigente',
+            type: 'mensagem',
+            essential: `${ROWS.total} ${USE_LINE}`,
+            readFrom: BEATS.total + ENTER,
           },
         },
       ],

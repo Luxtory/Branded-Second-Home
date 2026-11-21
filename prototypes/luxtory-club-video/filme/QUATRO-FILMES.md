@@ -35,6 +35,26 @@
   4. Direct e Luxplus só com o que os diferencia (a revisão corta para a confirmação);
   5. síntese das três modalidades;
   6. uma família e uma assinatura.
+- **Painel dos Créditos no filme completo:** ele se monta por batidas, e a linha da Membership entra por último. Por
+  isso, tem duas leituras: o que o Membro já tem mais o que gera, e depois o saldo único com a condição da Membership.
+  O corte espera essa última linha e a ressalva, que pede pelo menos 1 s a cada 3 palavras + 0,5 s. Na primeira QA, o
+  corte vinha antes disso: a linha ficava 1,3 s inteira na tela, quando a leitura rápida pede 1,6 s. Só o filme
+  completo foi renderizado de novo.
+
+**QA dos oito MP4 (24 fps):**
+- **Arquivos:**
+  - 0 erro de decodificação, 0 quadro preto e 0 parcial;
+  - quadros iguais ao relatório da montagem;
+  - assinatura decodificada em #0E4D65, de fonte #0F4E67.
+- **Áudio:**
+  - só os quatro efeitos (tap −17,5, check −24,4, estado −14,0 e confirmação −14,1 dBFS);
+  - sem cliques, com silêncio entre os efeitos;
+  - nenhum par de efeitos a menos de 150 ms.
+- **Congelamentos acima de 2,5 s:** só nas pausas de leitura (banner de abertura e síntese) e na assinatura. O fundo
+  contínuo se move devagar no filme completo, por durar ≈ 100 s.
+- **Avisos que continuam:**
+  - hero no 9:16 ampliado 2,12×;
+  - família no 16:9 ampliada 1,62×, e o quadro azul da família no 9:16 é provisório.
 
 ## v8.4: refinamento de direção (prévia técnica provisória)
 

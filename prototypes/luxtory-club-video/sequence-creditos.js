@@ -47,20 +47,21 @@ export function build(stage, fmt) {
         <li id="cr-row-deposit"><span class="demo-equation__op" aria-hidden="true">+</span><span>${ROWS.fresh}</span></li>
         <li id="cr-row-total" class="demo-equation__total"><span class="demo-equation__op" aria-hidden="true">=</span><span>${ROWS.total}</span></li>
       </ol>
-      <p class="demo-note" id="cr-use">${icon('i-info')}<span>Com Membership vigente, em Luxchange Request ou Direct.</span></p>
+      <p class="demo-note" id="cr-use">${icon('i-info')}<span>${USE_LINE}</span></p>
       <p class="demo-hint demo-footnote" id="cr-legal">${FOOTNOTE}</p>
     </section>`,
   );
   stage.dataset.fmt = fmt;
 }
 
+// Batidas alinhadas à narração (ROTEIRO.md §4): "usa os Créditos válidos que já tem" → "deposita datas elegíveis
+// para gerar novos" → "ou combina os dois" → "para viver outras Second Homes". Exportadas para o filme completo cortar
+// o painel só depois da leitura da última linha.
+export const BEATS = { prior: 1_300, deposit: 3_200, total: 5_400, use: 7_000 };
+export const USE_LINE = 'Com Membership vigente, em Luxchange Request ou Direct.';
+
 export function timeline() {
-  // Batidas alinhadas à narração (ROTEIRO.md §4): "usa os Créditos válidos que já tem" → "deposita datas elegíveis
-  // para gerar novos" → "ou combina os dois" → "para viver outras Second Homes".
-  const prior = 1_300;
-  const deposit = 3_200;
-  const total = 5_400;
-  const use = 7_000;
+  const { prior, deposit, total, use } = BEATS;
   return {
     duration: 10_500,
     enter: [
