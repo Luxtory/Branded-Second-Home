@@ -33,6 +33,7 @@ citing the canonical IDs):
 - [calendar](calendar.md) — módulo `calendar`: classificação civil (W8) e selagem do exercício com o job `open_exercise` (W10)
 - [inventory](inventory.md) — módulo `inventory`: custódia por noite, ocupação, matriz da TECH-023 e Inventário Central (W10)
 - [booking](booking.md) — módulo `booking`: reserva de uso próprio do Owner e do Co-Owner, autorização no banco presa à reserva e ativação privilegiada (W12); cancelamento, no-show, recuperação, exceção e invalidação com autorização independente (W13, §10)
+- [pricing](pricing.md) — módulo `pricing`: PRL por Second Home e data com autoridade no banco, valores exatos e contrato de snapshot `EconomicTerms` (W16)
 
 **Cross-cutting specs** (not a `src/features/` slice):
 

@@ -16,6 +16,8 @@ export const messages = {
     interests: 'Interesses',
     parties: 'Pessoas e empresas',
     bookings: 'Reservas',
+    prl: 'PRL',
+    parameters: 'Parâmetros econômicos',
   },
   home: {
     title: 'Administração',
@@ -46,6 +48,16 @@ export const messages = {
         includesLabel: 'Inclui',
         includes:
           'Reservas de uso próprio: comparecimento, exceções, apurações, recuperação e solicitações de autorização',
+      },
+      prl: {
+        includesLabel: 'Inclui',
+        includes:
+          'Preço de Referência Luxtory por noite: publicação inicial, alteração pelo Super Admin e histórico de versões',
+      },
+      parameters: {
+        includesLabel: 'Inclui',
+        includes:
+          'Multiplicador e validade dos Créditos, percentual e mínimo do Luxchange Fee, prazo da Request e valor-base do Membership',
       },
     },
   },
