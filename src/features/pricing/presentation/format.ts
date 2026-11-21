@@ -12,6 +12,16 @@ export function formatMoney(amountMinor: bigint, currency: Currency = 'BRL'): st
   );
 }
 
+/** Valor sem o símbolo da moeda, para espaços curtos (célula do calendário): "1.500,00". Mesma precisão exata. */
+export function formatAmount(amountMinor: bigint, currency: Currency = 'BRL'): string {
+  const decimal = minorToDecimal(amountMinor, currency);
+  const digits = decimal.includes('.') ? decimal.split('.')[1]!.length : 0;
+  return new Intl.NumberFormat(LOCALE, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(decimal as `${number}`);
+}
+
 /** Noite civil (`YYYY-MM-DD`) para leitura: "seg., 01/03/2027". */
 export function formatNight(stayDate: string): string {
   return new Intl.DateTimeFormat(LOCALE, {

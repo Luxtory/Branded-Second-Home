@@ -162,3 +162,7 @@ spec [`pricing`](pricing.md).
   vigência, término, base e autoridade, calculados no servidor; a confirmação refaz a validação); valor no formato da tela (reais com até 2 casas, percentual com até 4,
   multiplicador com até 6, meses e horas inteiros), convertido em texto para o valor canônico, sem `number`; horários em
   UTC (parâmetros globais não têm fuso de Second Home).
+  Apresentação (C2): um cartão por chave (dois por linha quando cabem, DS `lx-parameters`) com nome, finalidade em
+  linguagem operacional e a referência canônica numa linha própria (`01`/BR/TECH/PD por ID, fora do texto corrido);
+  situação e valor vigente em destaque; vigência e próxima versão em fatos curtos; histórico e "Publicar nova versão"
+  sob demanda. A revisão abre com "antes da nova vigência → novo" (o mesmo padrão da revisão do PRL).

@@ -1,7 +1,7 @@
 import type { DatabaseTransaction } from '@/features/platform';
 import type { PrlNightState } from '../application/prl-review';
 import { nightStatus, prlHistory, sealedCalendar, type PrlVersion } from '../prl';
-import { formatInstant, formatMoney } from './format';
+import { formatAmount, formatInstant, formatMoney } from './format';
 import { prlMessages as text } from './i18n/prl-pt-br';
 
 type Reader = Pick<DatabaseTransaction, 'selectFrom'>;
@@ -13,8 +13,12 @@ export interface PrlCalendarNight {
   readonly status: 'absent' | 'in_force' | 'scheduled_only';
   /** Alguma versão (vigente ou agendada): define se a noite cabe na publicação inicial ou na alteração. */
   readonly hasVersion: boolean;
+  /** Preço vigente agora ("R$ 1.500,00"), a forma curta para a célula ("1.500,00") e desde quando vale. */
   readonly inForce: string | null;
-  readonly scheduled: string | null;
+  readonly inForceShort: string | null;
+  readonly inForceSince: string | null;
+  /** Versões futuras, já formatadas ("R$ … a partir de …"), em ordem de início. */
+  readonly scheduled: readonly string[];
 }
 
 export interface PrlCalendarModel {
@@ -74,17 +78,15 @@ export async function loadPrlCalendar(
             : 'absent',
       hasVersion: own.length > 0,
       inForce: status.inForce === null ? null : formatMoney(status.inForce.amountMinor),
-      scheduled:
-        status.scheduled.length === 0
-          ? null
-          : status.scheduled
-              .map((version) =>
-                text.scheduled(
-                  formatMoney(version.amountMinor),
-                  formatInstant(version.effectiveFrom, timezone),
-                ),
-              )
-              .join(' · '),
+      inForceShort: status.inForce === null ? null : formatAmount(status.inForce.amountMinor),
+      inForceSince:
+        status.inForce === null ? null : formatInstant(status.inForce.effectiveFrom, timezone),
+      scheduled: status.scheduled.map((version) =>
+        text.scheduled(
+          formatMoney(version.amountMinor),
+          formatInstant(version.effectiveFrom, timezone),
+        ),
+      ),
     } satisfies PrlCalendarNight;
   });
   const months = [...new Set(calendar.map(({ stayDate }) => stayDate.slice(0, 7)))];

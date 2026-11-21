@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { Icon, PageHeader, RecordList } from '@/design-system/react';
+import { Icon, PageHeader } from '@/design-system/react';
 import { AuthUnavailable } from '@/features/identity';
 import { getDatabase, unavailableKeys } from '@/features/platform';
 import { ECONOMIC_PARAMETER_KEYS, type EconomicParameterKey } from '../domain/parameter';
@@ -31,69 +31,82 @@ function ParameterSection({
   const scheduled = versions.filter((version) => version.effectiveFrom.getTime() > now.getTime());
   const status =
     inForce !== null ? text.inForce : scheduled.length > 0 ? text.scheduledOnly : text.absentTitle;
-  const attributes = [
-    ...(inForce === null && scheduled.length === 0
-      ? [{ label: text.effect, value: text.absentEffect }]
-      : []),
+  const facts: [string, string][] = [
     ...(inForce === null
       ? []
-      : [
-          { label: text.value, value: show(inForce.value) },
-          { label: text.since, value: utc(inForce.effectiveFrom) },
-          {
-            label: text.until,
-            value: inForce.effectiveUntil === null ? text.untilOpen : utc(inForce.effectiveUntil),
-          },
-        ]),
-    ...(scheduled.length === 0
-      ? []
-      : [
-          {
-            label: text.scheduled,
-            value: scheduled
-              .map((version) =>
-                text.scheduledEntry(show(version.value), utc(version.effectiveFrom)),
-              )
-              .join(' · '),
-          },
-        ]),
+      : ([
+          [text.since, utc(inForce.effectiveFrom)],
+          [
+            text.until,
+            inForce.effectiveUntil === null ? text.untilOpen : utc(inForce.effectiveUntil),
+          ],
+        ] as [string, string][])),
+    ...scheduled.map(
+      (version) =>
+        [text.scheduled, text.scheduledEntry(show(version.value), utc(version.effectiveFrom))] as [
+          string,
+          string,
+        ],
+    ),
   ];
   return (
-    <section className="lx-page-section" aria-labelledby={`${parameter}-titulo`} id={parameter}>
-      <h2 className="lx-display-s" id={`${parameter}-titulo`}>
-        {copy.name}
-      </h2>
-      <p className="lx-body">
-        {copy.unit}. {copy.about}
-      </p>
-      <RecordList
-        label={`${text.status}: ${copy.name}`}
-        items={[{ id: `${parameter}-estado`, title: status, attributes }]}
-      />
-      {versions.length === 0 ? null : (
-        <details>
-          <summary className="lx-link">{`${text.history}: ${text.showHistory(versions.length)}`}</summary>
-          <ol>
-            {[...versions].reverse().map((version) => (
-              <li className="lx-body" key={version.id}>
-                <strong>{show(version.value)}</strong>
-                <br />
-                {text.since}: {utc(version.effectiveFrom)} · {text.until}:{' '}
-                {version.effectiveUntil === null ? text.untilOpen : utc(version.effectiveUntil)}
-                <br />
-                {text.authority}:{' '}
-                {version.authority === 'admin' ? text.authorityAdmin : version.authority} ·{' '}
-                {text.basis}: {version.authorizationRef} · {text.recordedAt}:{' '}
-                {utc(version.createdAt)}
-              </li>
-            ))}
-          </ol>
-        </details>
+    <section className="lx-parameter" aria-labelledby={`${parameter}-titulo`} id={parameter}>
+      <div className="lx-parameter__head">
+        <h2 className="lx-pricing__title" id={`${parameter}-titulo`}>
+          {copy.name}
+        </h2>
+        <p className="lx-pricing__text">
+          {copy.unit}. {copy.about}
+        </p>
+        <p className="lx-parameter__ref">{text.reference(copy.ref)}</p>
+      </div>
+      <div className="lx-parameter__status" data-ground="wash">
+        <p className="lx-pricing__eyebrow">{status}</p>
+        {inForce === null ? (
+          <p className="lx-pricing__text">{text.absentEffect}</p>
+        ) : (
+          <p className="lx-parameter__value">{show(inForce.value)}</p>
+        )}
+      </div>
+      {facts.length === 0 ? null : (
+        <dl className="lx-pricing__facts">
+          {facts.map(([label, value]) => (
+            <div className="lx-pricing__fact" key={`${label}-${value}`}>
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
       )}
-      <details>
-        <summary className="lx-link">{text.publish}</summary>
-        <EconomicParameterForm parameter={parameter} idempotencyKey={randomUUID()} />
-      </details>
+      <div className="lx-parameter__actions">
+        {versions.length === 0 ? null : (
+          <details key={`historico-${versions.length}`}>
+            <summary className="lx-link">{`${text.history} · ${text.showHistory(versions.length)}`}</summary>
+            <ol className="lx-pricing__history">
+              {[...versions].reverse().map((version) => (
+                <li key={version.id} data-current={version.id === inForce?.id ? '' : undefined}>
+                  <strong className="lx-pricing__night-name">{show(version.value)}</strong>
+                  <span className="lx-pricing__night-meta">
+                    {text.since}: {utc(version.effectiveFrom)} · {text.until}:{' '}
+                    {version.effectiveUntil === null ? text.untilOpen : utc(version.effectiveUntil)}
+                  </span>
+                  <span className="lx-pricing__night-meta">
+                    {text.authority}:{' '}
+                    {version.authority === 'admin' ? text.authorityAdmin : version.authority} ·{' '}
+                    {text.basis}: {version.authorizationRef} · {text.recordedAt}:{' '}
+                    {utc(version.createdAt)}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </details>
+        )}
+        {/* Uma versão nova remonta o formulário fechado e limpo: o retorno fica na mensagem do topo. */}
+        <details key={`publicar-${versions.length}`}>
+          <summary className="lx-link">{text.publish}</summary>
+          <EconomicParameterForm parameter={parameter} idempotencyKey={randomUUID()} />
+        </details>
+      </div>
     </section>
   );
 }
@@ -138,14 +151,18 @@ export async function AdminEconomicParametersPage(props: { readonly searchParams
             </div>
           </div>
         )}
-        {ECONOMIC_PARAMETER_KEYS.map((parameter) => (
-          <ParameterSection
-            key={parameter}
-            parameter={parameter}
-            versions={histories.get(parameter) ?? []}
-            now={now}
-          />
-        ))}
+        <div className="lx-page-section lx-parameters">
+          <div className="lx-parameters__grid">
+            {ECONOMIC_PARAMETER_KEYS.map((parameter) => (
+              <ParameterSection
+                key={parameter}
+                parameter={parameter}
+                versions={histories.get(parameter) ?? []}
+                now={now}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </AdminShell>
   );

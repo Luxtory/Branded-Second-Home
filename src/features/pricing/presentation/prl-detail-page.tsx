@@ -1,118 +1,64 @@
 import { randomUUID } from 'node:crypto';
 import { notFound } from 'next/navigation';
-import type { ReactNode } from 'react';
-import { Icon, PageHeader, RecordList, type RecordListItem } from '@/design-system/react';
+import { Icon, PageHeader } from '@/design-system/react';
 import { adminGate, adminRoleGate, AdminShell } from '@/features/admin';
 import { AuthUnavailable } from '@/features/identity';
 import { getDatabase, recordAdminRead, unavailableKeys } from '@/features/platform';
 import type { PrlVersion } from '../prl';
-import { formatInstant, formatMoney, formatMonth, formatNight } from './format';
+import { formatInstant, formatMoney } from './format';
 import { prlMessages as text } from './i18n/prl-pt-br';
-import { loadPrlCalendar, type PrlCalendarModel, type PrlCalendarNight } from './prl-calendar-data';
-import { PrlMonthCalendar } from './prl-month-calendar';
-import { adjacentMonth, initialMonth, monthIn } from './prl-months';
+import { loadPrlCalendar, type PrlCalendarModel } from './prl-calendar-data';
+import { PrlConsult, type PrlHistoryEntry } from './prl-consult';
+import { initialMonth, monthIn } from './prl-months';
 import { prlListPath, prlPath } from './prl-paths';
 import { PrlPricing } from './prl-pricing';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
+const NIGHT = /^\d{4}-\d{2}-\d{2}$/;
 const MODES = ['consultar', 'inicial', 'alteracao'] as const;
 type Mode = (typeof MODES)[number];
 type SearchParams = Record<string, string | string[] | undefined>;
 
-function Section(props: {
-  readonly id: string;
-  readonly title: string;
-  readonly children: ReactNode;
-}) {
-  return (
-    <section className="lx-page-section" aria-labelledby={props.id}>
-      <h2 className="lx-display-s" id={props.id}>
-        {props.title}
-      </h2>
-      {props.children}
-    </section>
-  );
-}
+const param = (params: SearchParams, key: string) =>
+  typeof params[key] === 'string' ? (params[key] as string) : '';
 
-function History({
-  versions,
-  timezone,
-}: {
-  readonly versions: readonly PrlVersion[];
-  readonly timezone: string;
-}) {
-  return (
-    <details>
-      <summary className="lx-link">{text.showHistory(versions.length)}</summary>
-      <ol>
-        {[...versions].reverse().map((version) => (
-          <li className="lx-body" key={version.id}>
-            <strong>
-              {text.versionTitle(
-                formatMoney(version.amountMinor),
-                text.kind[version.kind] ?? version.kind,
-              )}
-            </strong>
-            <br />
-            {text.validity}:{' '}
-            {version.effectiveTo === null
-              ? text.validityOpen(formatInstant(version.effectiveFrom, timezone))
-              : text.validityClosed(
-                  formatInstant(version.effectiveFrom, timezone),
-                  formatInstant(version.effectiveTo, timezone),
-                )}
-            <br />
-            {text.authority}: {text.authorities[version.authority] ?? version.authority} ·{' '}
-            {text.basis}: {version.authorizationRef} · {text.recordedAt}:{' '}
-            {formatInstant(version.createdAt, timezone)}
-          </li>
-        ))}
-      </ol>
-    </details>
-  );
-}
-
-function nightItem(
-  night: PrlCalendarNight,
+/** Histórico imutável de uma noite para leitura: valor, tipo, situação no instante, vigência, autoridade, base, registro. */
+function historyEntries(
   versions: readonly PrlVersion[],
+  now: Date,
   timezone: string,
-): RecordListItem {
-  const attributes: { label: string; value: ReactNode }[] = [
-    { label: text.season, value: text.seasons[night.season] },
-    {
-      label: text.status,
-      value:
-        night.status === 'in_force'
-          ? text.statusInForce
-          : night.status === 'scheduled_only'
-            ? text.statusScheduledOnly
-            : text.statusAbsent,
-    },
-  ];
-  if (night.inForce !== null) attributes.push({ label: text.inForceValue, value: night.inForce });
-  if (night.scheduled !== null)
-    attributes.push({ label: text.scheduledLabel, value: night.scheduled });
-  if (versions.length > 0)
-    attributes.push({
-      label: text.history,
-      value: <History versions={versions} timezone={timezone} />,
-    });
-  return {
-    id: night.date,
-    title: <span id={`noite-${night.date}`}>{formatNight(night.date)}</span>,
-    attributes,
-  };
-}
-
-function monthLink(id: string, mode: Mode, month: string) {
-  return `${prlPath(id)}?modo=${mode}&mes=${month}`;
+): PrlHistoryEntry[] {
+  return versions.map((version) => {
+    const from = formatInstant(version.effectiveFrom, timezone);
+    const state =
+      version.effectiveFrom.getTime() > now.getTime()
+        ? 'future'
+        : version.effectiveTo !== null && version.effectiveTo.getTime() <= now.getTime()
+          ? 'past'
+          : 'in_force';
+    return {
+      id: version.id,
+      value: formatMoney(version.amountMinor),
+      kind: text.kind[version.kind] ?? version.kind,
+      state,
+      validity:
+        version.effectiveTo !== null
+          ? text.validityClosed(from, formatInstant(version.effectiveTo, timezone))
+          : state === 'future'
+            ? text.validityFuture(from)
+            : text.validityOpen(from),
+      authority: text.authorities[version.authority] ?? version.authority,
+      basis: version.authorizationRef,
+      recordedAt: formatInstant(version.createdAt, timezone),
+    };
+  });
 }
 
 /**
- * `/admin/prl/[id]` (W16; REQ-013, REQ-052; spec pricing §5): consulta (calendário do mês + detalhe por noite com
- * histórico imutável) separada da publicação (calendário de seleção em lote, com revisão no servidor). Publicação
- * inicial: Admin ou Super Admin; alteração do publicado: só Super Admin (BR-181). Categoria canônica só organiza.
+ * `/admin/prl/[id]` (W16; REQ-013, REQ-052; spec pricing §5): o calendário de preços da Second Home em três modos —
+ * consultar (preço vigente, versões futuras e histórico por noite), definir preços iniciais (Admin ou Super Admin) e
+ * alterar preços (só Super Admin, BR-181). A temporada canônica só informa; a revisão e a confirmação são do servidor.
  */
 export async function AdminPrlDetailPage(props: {
   readonly secondHomeId: string;
@@ -125,13 +71,13 @@ export async function AdminPrlDetailPage(props: {
   const gate = await adminRoleGate(roles.includes('admin') ? 'admin' : 'super_admin');
   if (gate.kind === 'blocked') return gate.page;
   const superAdmin = roles.includes('super_admin');
-  const requestedMode = typeof props.searchParams.modo === 'string' ? props.searchParams.modo : '';
+  const requestedMode = param(props.searchParams, 'modo');
   const mode: Mode =
     (MODES as readonly string[]).includes(requestedMode) &&
     (requestedMode !== 'alteracao' || superAdmin)
       ? (requestedMode as Mode)
       : 'consultar';
-  const requestedMonth = typeof props.searchParams.mes === 'string' ? props.searchParams.mes : '';
+  const requestedMonth = param(props.searchParams, 'mes');
   const now = new Date();
   let read: { label: string; timezone: string; model: PrlCalendarModel } | null;
   try {
@@ -165,45 +111,30 @@ export async function AdminPrlDetailPage(props: {
   }
   if (read === null) notFound();
   const { model, timezone } = read;
-  // Mês de referência no fuso IANA da Second Home (TECH-040), nunca UTC; só meses selados.
+  // Mês de referência no fuso IANA da Second Home (TECH-040), nunca UTC; só meses do calendário.
   const current = monthIn(now, timezone);
   const month = initialMonth(
     model.months,
     MONTH.test(requestedMonth) ? requestedMonth : '',
     current,
   );
-  const previousMonth = month === null ? null : adjacentMonth(model.months, month, -1);
-  const nextMonth = month === null ? null : adjacentMonth(model.months, month, 1);
-  const done =
-    typeof props.searchParams.feito === 'string'
-      ? text.doneTitle[props.searchParams.feito]
-      : undefined;
-  const nightsOfMonth =
-    month === null ? [] : model.nights.filter((night) => night.date.startsWith(month));
-  const byDate = new Map(nightsOfMonth.map((night) => [night.date, night]));
+  const done = text.doneTitle[param(props.searchParams, 'feito')];
   const tabs: { mode: Mode; label: string }[] = [
     { mode: 'consultar', label: text.modes.consult },
     { mode: 'inicial', label: text.modes.initial },
     ...(superAdmin ? [{ mode: 'alteracao' as const, label: text.modes.change }] : []),
   ];
-  const navLink = (target: string, label: string, direction: -1 | 1) => (
-    <a
-      className="lx-calendar__nav-button"
-      href={monthLink(props.secondHomeId, 'consultar', target)}
-      aria-label={label}
-    >
-      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
-        <path
-          d={direction < 0 ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7'}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="square"
-        />
-      </svg>
-    </a>
-  );
-  const years = [...new Set(model.months.map((value) => value.slice(0, 4)))];
+  const modeLink = (target: Mode) =>
+    `${prlPath(props.secondHomeId)}?modo=${target}&mes=${month ?? current}`;
+  const title =
+    mode === 'consultar'
+      ? text.modes.consult
+      : mode === 'inicial'
+        ? text.modes.initial
+        : text.modes.change;
+  const nightsOfMonth =
+    month === null ? [] : model.nights.filter((night) => night.date.startsWith(month));
+  const requestedNight = param(props.searchParams, 'noite');
   return (
     <AdminShell roles={roles} current="prl">
       <div className="lx-container">
@@ -227,76 +158,54 @@ export async function AdminPrlDetailPage(props: {
               <a
                 key={tab.mode}
                 className={
-                  tab.mode === mode ? 'lx-button lx-button--primary' : 'lx-button lx-button--quiet'
+                  tab.mode === mode
+                    ? 'lx-button lx-button--primary'
+                    : 'lx-button lx-button--secondary'
                 }
-                href={monthLink(props.secondHomeId, tab.mode, month ?? current)}
+                href={modeLink(tab.mode)}
                 aria-current={tab.mode === mode ? 'page' : undefined}
               >
                 {tab.label}
               </a>
             ))}
           </div>
-          {superAdmin ? null : <p className="lx-body">{text.changeRestricted}</p>}
+          {superAdmin ? null : <p className="lx-hint">{text.changeRestricted}</p>}
         </nav>
-        {month === null ? (
-          <Section id="noites" title={text.sealedNone}>
-            <p className="lx-body">{text.monthEmpty}</p>
-          </Section>
-        ) : mode === 'consultar' ? (
-          <Section id="noites" title={text.monthTitle(formatMonth(month))}>
-            <PrlMonthCalendar
-              month={month}
-              nights={byDate}
-              previous={
-                previousMonth === null ? null : navLink(previousMonth, text.previousMonth, -1)
-              }
-              next={nextMonth === null ? null : navLink(nextMonth, text.nextMonth, 1)}
-            />
-            {years.length > 1 ? (
-              <div className="lx-form__actions" role="group" aria-label={text.calendar.exercises}>
-                {years.map((year) => (
-                  <a
-                    key={year}
-                    className="lx-button lx-button--quiet"
-                    href={monthLink(
-                      props.secondHomeId,
-                      'consultar',
-                      model.months.find((value) => value.startsWith(year))!,
-                    )}
-                    aria-current={month.startsWith(year) ? 'true' : undefined}
-                  >
-                    {text.calendar.exercise(year)}
-                  </a>
-                ))}
-              </div>
-            ) : null}
-            {nightsOfMonth.length === 0 ? (
-              <p className="lx-body">{text.monthEmpty}</p>
-            ) : (
-              <RecordList
-                label={text.nightsLabel(formatMonth(month))}
-                items={nightsOfMonth.map((night) =>
-                  nightItem(night, model.versions.get(night.date) ?? [], timezone),
-                )}
-              />
-            )}
-          </Section>
-        ) : (
-          <Section
-            id={mode === 'inicial' ? 'publicar-inicial' : 'alterar'}
-            title={mode === 'inicial' ? text.initialTitle : text.changeTitle}
-          >
-            <p className="lx-body">{mode === 'inicial' ? text.initialIntro : text.changeIntro}</p>
-            <PrlPricing
-              kind={mode === 'inicial' ? 'initial' : 'change'}
-              secondHomeId={props.secondHomeId}
-              idempotencyKey={randomUUID()}
+        <section className="lx-page-section" aria-labelledby="prl-modo">
+          <h2 className="lx-visually-hidden" id="prl-modo">
+            {title}
+          </h2>
+          {month === null ? (
+            <p className="lx-body">{text.noCalendar}</p>
+          ) : mode === 'consultar' ? (
+            <PrlConsult
+              basePath={`${prlPath(props.secondHomeId)}?modo=consultar`}
               months={model.months}
-              initialMonth={month}
-              nights={model.nights}
+              month={month}
+              nights={nightsOfMonth}
+              history={Object.fromEntries(
+                nightsOfMonth.map((night) => [
+                  night.date,
+                  historyEntries(model.versions.get(night.date) ?? [], now, timezone),
+                ]),
+              )}
+              initialNight={NIGHT.test(requestedNight) ? requestedNight : null}
+              focusOnMount={param(props.searchParams, 'foco') === '1'}
             />
-          </Section>
-        )}
+          ) : (
+            <>
+              <p className="lx-body">{mode === 'inicial' ? text.initialIntro : text.changeIntro}</p>
+              <PrlPricing
+                kind={mode === 'inicial' ? 'initial' : 'change'}
+                secondHomeId={props.secondHomeId}
+                idempotencyKey={randomUUID()}
+                months={model.months}
+                initialMonth={month}
+                nights={model.nights}
+              />
+            </>
+          )}
+        </section>
       </div>
     </AdminShell>
   );

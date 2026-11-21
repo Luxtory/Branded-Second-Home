@@ -69,13 +69,7 @@ function ReviewBlock({ state }: { readonly state: EconomicParameterState }) {
   const { pending } = useFormStatus();
   const facts: [string, string][] = [
     [text.review.current, review.current ?? text.review.currentNone],
-    ...(review.scheduled.length === 0
-      ? []
-      : ([[text.review.scheduled, review.scheduled.join(' · ')]] as [string, string][])),
-    [
-      text.review.change,
-      text.review.compare(review.previous ?? text.review.previousNone, review.proposed),
-    ],
+    ...review.scheduled.map((line) => [text.review.scheduled, line] as [string, string]),
     [text.review.from, review.from],
     [text.review.to, review.to],
     [text.review.basis, review.basis],
@@ -83,12 +77,18 @@ function ReviewBlock({ state }: { readonly state: EconomicParameterState }) {
   ];
   return (
     <>
-      <p className="lx-label">{text.review.title}</p>
-      <dl className="lx-evidence">
+      <div className="lx-pricing__block">
+        <p className="lx-pricing__eyebrow">{text.review.title}</p>
+        <p className="lx-pricing__text">{text.review.change}</p>
+        <p className="lx-pricing__summary">
+          {text.review.compare(review.previous ?? text.review.previousNone, review.proposed)}
+        </p>
+      </div>
+      <dl className="lx-pricing__facts">
         {facts.map(([label, value]) => (
-          <div className="lx-evidence__item" key={label}>
-            <dt className="lx-evidence__label">{label}</dt>
-            <dd className="lx-evidence__value">{value}</dd>
+          <div className="lx-pricing__fact" key={`${label}-${value}`}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
           </div>
         ))}
       </dl>
@@ -176,42 +176,44 @@ export function EconomicParameterForm(props: {
               />
             )}
           </Field>
-          <Field
-            id={id('effective_from')}
-            label={text.fields.effective_from}
-            hint={text.fields.effectiveFromHint}
-            error={error('effective_from', text.fields.effectiveFromError)}
-          >
-            {(fieldId, described, invalid) => (
-              <input
-                className="lx-input"
-                id={fieldId}
-                name="effective_from"
-                type="datetime-local"
-                defaultValue={value('effective_from')}
-                aria-describedby={described}
-                aria-invalid={invalid}
-              />
-            )}
-          </Field>
-          <Field
-            id={id('effective_to')}
-            label={text.fields.effective_to}
-            hint={text.fields.effectiveToHint}
-            error={error('effective_to', text.fields.effectiveToError)}
-          >
-            {(fieldId, described, invalid) => (
-              <input
-                className="lx-input"
-                id={fieldId}
-                name="effective_to"
-                type="datetime-local"
-                defaultValue={value('effective_to')}
-                aria-describedby={described}
-                aria-invalid={invalid}
-              />
-            )}
-          </Field>
+          <div className="lx-parameter__dates">
+            <Field
+              id={id('effective_from')}
+              label={text.fields.effective_from}
+              hint={text.fields.effectiveFromHint}
+              error={error('effective_from', text.fields.effectiveFromError)}
+            >
+              {(fieldId, described, invalid) => (
+                <input
+                  className="lx-input"
+                  id={fieldId}
+                  name="effective_from"
+                  type="datetime-local"
+                  defaultValue={value('effective_from')}
+                  aria-describedby={described}
+                  aria-invalid={invalid}
+                />
+              )}
+            </Field>
+            <Field
+              id={id('effective_to')}
+              label={text.fields.effective_to}
+              hint={text.fields.effectiveToHint}
+              error={error('effective_to', text.fields.effectiveToError)}
+            >
+              {(fieldId, described, invalid) => (
+                <input
+                  className="lx-input"
+                  id={fieldId}
+                  name="effective_to"
+                  type="datetime-local"
+                  defaultValue={value('effective_to')}
+                  aria-describedby={described}
+                  aria-invalid={invalid}
+                />
+              )}
+            </Field>
+          </div>
           <Field
             id={id('basis')}
             label={text.fields.basis}

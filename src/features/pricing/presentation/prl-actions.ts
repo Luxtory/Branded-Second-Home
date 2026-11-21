@@ -204,7 +204,9 @@ export async function prlPublicationAction(
     };
   if (outcome.status === 'unauthenticated') redirect('/entrar');
   if (outcome.status === 'committed')
-    redirect(`${prlPath(homeId)}?mes=${review.rows[0]!.stayDate.slice(0, 7)}&feito=${kind}`);
+    redirect(
+      `${prlPath(homeId)}?mes=${review.rows[0]!.stayDate.slice(0, 7)}&noite=${review.rows[0]!.stayDate}&feito=${kind}`,
+    );
   const key = outcome.operationId === null ? state.key : randomUUID();
   return {
     ...editing,
