@@ -26,6 +26,64 @@ test('Home: os três pilares têm o mesmo peso no celular e no desktop', async (
   }
 });
 
+test('Home: os títulos dos serviços têm duas linhas e alinham a primeira linha dos textos', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.evaluate(() => document.fonts.ready);
+  const headings = page.locator('#gestao').getByRole('heading', { level: 3 });
+  await expect(headings).toHaveText([
+    'Locação de temporada',
+    'Second Home Development',
+    'Second Home Partners',
+  ]);
+
+  for (const width of [390, 1024, 1265, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const layout = await headings.evaluateAll((nodes) =>
+      nodes.map((node) => ({
+        lines: Math.round(
+          node.getBoundingClientRect().height / parseFloat(getComputedStyle(node).lineHeight),
+        ),
+        textTop: node.nextElementSibling?.getBoundingClientRect().top,
+      })),
+    );
+    expect(
+      layout.map((item) => item.lines),
+      `${width}px`,
+    ).toEqual([2, 2, 2]);
+    if (width >= 1024) {
+      expect(new Set(layout.map((item) => item.textTop)).size, `${width}px`).toBe(1);
+    }
+  }
+});
+
+test('Home: o fechamento aparece abaixo da foto, com o quadro inteiro', async ({ page }) => {
+  await page.goto('/');
+  const closing = page.locator('#convite');
+  const photo = closing.locator('img');
+  await photo.scrollIntoViewIfNeeded();
+  await photo.evaluate((image) => (image as HTMLImageElement).decode());
+
+  for (const width of [1265, 390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const layout = await closing.evaluate((section) => {
+      const image = section.querySelector('img')!;
+      const photoBox = image.getBoundingClientRect();
+      return {
+        photoBottom: photoBox.bottom,
+        photoRatio: photoBox.width / photoBox.height,
+        naturalRatio: image.naturalWidth / image.naturalHeight,
+        titleTop: section.querySelector('h2')!.getBoundingClientRect().top,
+        buttonTop: section.querySelector('a')!.getBoundingClientRect().top,
+      };
+    });
+    expect(layout.titleTop, `${width}px`).toBeGreaterThanOrEqual(layout.photoBottom);
+    expect(layout.buttonTop, `${width}px`).toBeGreaterThanOrEqual(layout.photoBottom);
+    expect(layout.photoRatio, `${width}px`).toBeCloseTo(layout.naturalRatio, 2);
+  }
+});
+
 test('B2C: fechamentos itálicos na escala de título de página; B2B preservado', async ({
   page,
 }) => {

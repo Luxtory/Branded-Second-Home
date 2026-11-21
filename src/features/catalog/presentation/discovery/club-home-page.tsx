@@ -159,7 +159,7 @@ export function ClubHomePage() {
             <ul className="lx-siblings lx-siblings--trio" role="list">
               {services.items.map((item) => (
                 <li className="lx-siblings__item" key={item.title}>
-                  <h3 className="lx-display-m">{item.title}</h3>
+                  <h3 className={`lx-display-m ${styles['lx-service-title']}`}>{item.title}</h3>
                   <Paragraphs lines={item.text} />
                 </li>
               ))}
@@ -167,27 +167,20 @@ export function ClubHomePage() {
           </div>
         </section>
 
-        <section
-          id="convite"
-          className={`lx-hero lx-hero--closing ${styles['lx-club-closing']}`}
-          data-surface="blue"
-          aria-labelledby="convite-titulo"
-        >
-          <div className="lx-hero__slides" aria-hidden="true">
-            <div className="lx-hero__slide" data-active="">
-              {/* eslint-disable-next-line @next/next/no-img-element -- Next/Image injects a style blocked by the CSP. */}
-              <img
-                className="lx-hero__image lx-crop-x-80 lx-crop-y-65 lx-crop-lg-x-50 lx-crop-lg-y-65"
-                src="/images/home/hero/home-solucao-firepit-family.jpg"
-                alt=""
-                width={1376}
-                height={768}
-                loading="lazy"
-              />
-            </div>
-          </div>
-          <div className="lx-container lx-hero__content">
-            <div className="lx-hero__copy">
+        <section id="convite" data-surface="blue" aria-labelledby="convite-titulo">
+          {/* eslint-disable-next-line @next/next/no-img-element -- Next/Image injects a style blocked by the CSP. */}
+          <img
+            className={styles['lx-club-closing-photo']}
+            src="/images/home/hero/home-solucao-firepit-family.jpg"
+            alt=""
+            width={1376}
+            height={768}
+            loading="lazy"
+          />
+          <div className="lx-section">
+            <div
+              className={`lx-container lx-section-closing lx-stack ${styles['lx-club-closing-copy']}`}
+            >
               <h2 id="convite-titulo" className="lx-headline">
                 {closing.title}
               </h2>

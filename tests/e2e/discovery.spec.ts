@@ -287,9 +287,14 @@ test.describe('Discovery público — conteúdo', () => {
   }) => {
     await page.goto('/');
     await expect(page.locator('section#luxtory')).toContainText('créditos pelos períodos aceitos');
+    const membership = page.locator('section#liberdade .lx-blocks__item').filter({
+      has: page.getByText('Membership', { exact: true }),
+    });
+    await expect(membership).toContainText('locação de temporada com gestão profissional');
     const luxchange = page.locator('section#liberdade .lx-blocks__item').filter({
       has: page.getByText('Luxchange', { exact: true }),
     });
+    await expect(luxchange).toContainText('Os membros do clube disponibilizam períodos');
     await expect(luxchange).toContainText('taxa em dinheiro');
     const faq = page.locator('section#duvidas');
     const items = [
