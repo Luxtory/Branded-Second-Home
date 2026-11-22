@@ -767,3 +767,21 @@ Request (PD-005), valor-base anual do Membership (BR-141) — e o PRL de cada no
    (inclusive para um PRL inicial ainda não vigente).
 6. **Rollback:** as migrations recusam o `down` quando já há histórico (PRL ou parâmetro econômico); reverter só o
    código, nunca o histórico.
+
+## Preparar a W17 em produção (Créditos e Carteira)
+
+Nada a ativar: a K4 `credits` entra só no CHECK de `app.capability_activation`, sem linha (ADR-0033 §8). Sem a linha,
+o banco recusa toda escrita de lote ou movimento pelo papel da aplicação — nenhum Crédito é originado, reservado,
+consumido ou expirado. As migrations `pricing_economic_snapshot` e `credits_ledger` só criam estrutura (68 no total).
+
+1. **Pré-condições (só leitura, SQL Editor):** 68 migrations, a última `20261122120003`; `app.credit_lot` e
+   `app.credit_entry` vazias; nenhuma linha `credits` em `app.capability_activation`;
+   `SELECT * FROM app.credit_invariant_breaches()` sem linhas.
+2. **Job `expire_credit_lots`:** cron diário (`vercel.json`, 03:07 UTC) com o mesmo segredo dos demais jobs. Sem lote
+   vencido com saldo, conta zero itens; com a K4 fechada, nunca há lote.
+3. **Carteira (`/titular/carteira`):** só leitura por RLS; a seção "Créditos Luxchange" da Área do Titular só aparece
+   com lote visível — nenhuma Área muda enquanto a K4 estiver fechada.
+4. **Ativação (fora desta wave):** migration própria com autorização expressa do fundador, junto com a W20 (primeira
+   originadora), depois da política de backup (D2). Nunca inserir a linha pelo console.
+5. **Correções:** o ledger é append-only; consumo indevido corrige-se por `reverse_credit` (Admin + base registrada),
+   nunca por edição. **Rollback:** o `down` recusa com qualquer lote, movimento ou ativação; reverter só o código.

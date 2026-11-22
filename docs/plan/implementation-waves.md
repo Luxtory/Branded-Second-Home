@@ -121,7 +121,7 @@ A afiliação de imóveis existentes, as novas páginas do Club e a publicação
 | 14 | Seleção Luxtory, parâmetros e convidados | calendar, admin, booking | REQ-016, REQ-036, REQ-092, REQ-095 | 12 | — | R2 | ⬜ → ✅ concluída (#99, squash `c681727`, 2026-11-19; Production; K3 sem linha) |
 | 15 | Membership | identity | REQ-011, REQ-050, PD-001 | 7 | — | R3 | ⬜ → 🔄 em execução (plano aprovado em 2026-11-19, D1–D4; [`w15-membership.md`](w15-membership.md)): E0–E2 aprovadas no C1 (2026-11-19); E3 + E4 no mesmo PR draft #100, parada no C2 (merge só com autorização expressa) → ✅ concluída (#100, squash `108d6f5`, 2026-11-20; Production; nenhum Membership real) |
 | 16 | PRL, parâmetros econômicos e snapshot | pricing | REQ-013, REQ-052 | 10, 14 | — | R3 | ⬜ → ✅ concluída (#101, squash `f1fd297`, 2026-11-22; 66 migrations em Production; nenhum PRL ou parâmetro econômico real) |
-| 17 | Créditos e Carteira | credits | REQ-053, REQ-054, PD-008, INV-6 | 15 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w17-creditos-e-carteira.md`](w17-creditos-e-carteira.md), PR draft) |
+| 17 | Créditos e Carteira | credits | REQ-053, REQ-054, PD-008, INV-6 | 15 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w17-creditos-e-carteira.md`](w17-creditos-e-carteira.md), PR draft #106: E0–E4 entregues, trace REQ-053, REQ-054, PD-008, INV-6 4/4; aguardando autorização de merge) |
 | 18 | Políticas comerciais | pricing | REQ-082, REQ-104, PD-009 | 16 | — | R3 | ⬜ |
 | 19 | Pagamentos, Fee e settlement | billing | REQ-094 | 16 | — | R3 | ⬜ |
 | 20 | Luxchange — depósito | luxchange | REQ-051, REQ-060 | 13, 16, 17 | — | R3 | ⬜ |

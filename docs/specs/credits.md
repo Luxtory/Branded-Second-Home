@@ -1,6 +1,6 @@
 # Spec: credits
 
-- **Status**: W17 — em PR draft
+- **Status**: W17 — E0–E4 em PR draft (#106); aguardando auditoria e autorização de merge
 - **Owner**: módulo `credits` (TECH-011)
 - **IDs**: REQ-053, REQ-054, PD-008, INV-6 (dona, W17); ADR-007, TECH-025, TECH-031, TECH-044, TECH-051, TECH-053,
   TECH-054, TECH-070, TECH-071, TECH-072, TECH-090; complementos REQ-096 (estados do Crédito), REQ-098, TECH-001,
