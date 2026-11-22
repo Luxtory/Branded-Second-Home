@@ -1,8 +1,8 @@
 # Spec: pricing
 
-- **Status**: W16 — E1/E2 aprovadas no C1; E3/E4 em PR draft (C2) → ✅ concluída (#101, squash `f1fd297`, 2026-11-22; Production); W17 persiste o snapshot (§13)
+- **Status**: W16 — E1/E2 aprovadas no C1; E3/E4 em PR draft (C2) → ✅ concluída (#101, squash `f1fd297`, 2026-11-22; Production); W17 persiste o snapshot (§13); W18 políticas comerciais (§5 "Políticas comerciais") — 🔄 PR draft
 - **Owner**: módulo `pricing` (TECH-011)
-- **IDs**: REQ-013, REQ-052 (dona, W16); TECH-030, TECH-031, TECH-033; complementos REQ-095, TECH-001, TECH-051,
+- **IDs**: REQ-013, REQ-052 (dona, W16); REQ-082, REQ-104, PD-009 (dona, W18; complementos PD-010, TECH-032); TECH-030, TECH-031, TECH-033; complementos REQ-095, TECH-001, TECH-051,
   TECH-052, TECH-053, TECH-056
 - **Plano**: [`w16-prl-parametros-e-snapshot.md`](../plan/w16-prl-parametros-e-snapshot.md) · **Decisão**:
   [ADR-0032](../adr/0032-prl-parametros-economicos-e-contrato-de-snapshot.md) · **STRIDE**:
@@ -177,6 +177,37 @@ EconomicTerms {
 - **Obrigação futura (rastreável):** a primeira wave que produzir o efeito econômico persiste o snapshot com FK para
   as versões usadas, na mesma transação do efeito: W17 (validade do lote), W19 (Fee), W20 (Créditos do depósito), W21
   (Request — PD-007, EC-9), W23 (Luxplus). Até lá o REQ-052 não é declarado integralmente coberto.
+
+### Políticas comerciais (W18; TECH-032, PD-009, REQ-082, REQ-104; ADR-0034)
+
+Plano [`w18-politicas-comerciais.md`](../plan/w18-politicas-comerciais.md). A W18 não cria operação: entrega versões,
+validação, avaliação e a resolução da versão aceita para as W21–W25.
+
+- **Modelo:** `app.commercial_policy(id, mechanism, schema_version = 1, config jsonb, effective_from, effective_to,
+  authority = 'admin', authorization_ref, created_at, created_by, operation_id)`; `mechanism ∈ {luxchange_request,
+  luxchange_direct, luxplus, rental_external}`; CHECK `app.commercial_policy_config_valid(mechanism, config)`; versões
+  como `app.parameter` (append-only, sem retroatividade nem sobreposição, trava `app.commercial_policy:<mecanismo>`);
+  `app.commercial_policy_at(mechanism, at)`. Leitura só do `luxtory_app`.
+- **Esquema v1** (ADR-0034 §1): `cancellation` (1–5 faixas `{min_notice_hours, effects}`, decrescentes, última = 0),
+  `no_show` e `exception` — todos obrigatórios. Eixos exatos por mecanismo: Request/Direct `capacity, credits, fee`;
+  Luxplus `capacity, money`; locação `capacity, money, remuneration`. `capacity = "return_to_origin"` sempre (BR-163);
+  demais eixos são frações canônicas em [0, 1]; locação com `money + remuneration ≤ 1`.
+- **Command `publish_policy`** (TECH-051, Admin + base registrada, AAL2): entrada `{ mechanism, config,
+  effective_from | null, effective_to | null, basis }`; recusas: forma ou regra → `ERR_VALIDATION` (REQ-104); vigência
+  incompatível → `ERR_STATE_TRANSITION`; sem papel → `ERR_PERMISSION`. Auditoria com mecanismo, vigência, base e o
+  `config` (não pessoal).
+- **HTTP:** `POST /v1/admin/policies` (OpenAPI `publishPolicy`, 201) sobre o mesmo handler da Server Action.
+- **Avaliação** (`evaluatePolicy`, domínio): `(versão, snapshot, evento)` → efeitos normalizados por eixo
+  (devolvido/mantido); evento `cancellation` (instante → faixa pela antecedência em horas inteiras até o check-in),
+  `no_show`, `exception` (PD-010: só os efeitos declarados). Dinheiro `HALF_UP` uma vez; Créditos exatos.
+- **Resolução** (`EconomicTerms.policy`): `resolveEconomicTerms({ policy: { mechanism, acceptedPolicyId } })` trava em
+  compartilhado e devolve `{ policyId, mechanism, config, effectiveFrom }` vigente no `resolvedAt`; ausente ou diferente
+  da aceita → `ERR_POLICY_MISSING` (REQ-098: "política obrigatória ausente").
+- **Telas:** `/admin/politicas` — por mecanismo, versão vigente, agendadas e histórico; publicar com revisão (resumo,
+  consequências, prévia do componente de aceite) e confirmação. `PolicyTerms` (texto derivado do esquema, sem texto
+  livre) e `PolicyAcceptance` (checkbox obrigatório com a versão) em `pricing/presentation`, para W21–W25.
+- **Obrigações futuras:** W21 grava o vínculo `economic_snapshot` → versão aceita com FK e gatilho de vigência; W19–W25
+  aplicam os efeitos pelos ledgers (Créditos, Fee, pagamento, settlement, custódia); cancelamento ⛔ P-11.
 
 ## 6. Acceptance criteria
 
