@@ -27,7 +27,8 @@ const CREDITS_TO = Math.max(
 );
 const SINTESE_FIRST_IN = 300; // primeiro cartão da síntese (sequence-sintese.js)
 
-function blocks(fmt) {
+/** Blocos do filme completo (também usados pelos trechos de QA, edl-qa-*.js, sem cópia). */
+export function blocks(fmt) {
   return [
     {
       kind: 'banner',
@@ -51,7 +52,7 @@ function blocks(fmt) {
           from: CREDITS_FROM,
           to: BEATS.total,
           beat: {
-            label: 'Créditos Luxchange: os que já tem e os novos',
+            label: 'Créditos disponíveis + que podem ser gerados',
             type: 'mensagem',
             essential: `${ROWS.prior} ${ROWS.fresh}`,
             readFrom: BEATS.prior + ENTER,
@@ -62,7 +63,7 @@ function blocks(fmt) {
           to: CREDITS_TO,
           fadeOut: 400,
           beat: {
-            label: 'um só saldo, com Membership vigente',
+            label: '= saldo potencial, com Membership vigente',
             type: 'mensagem',
             essential: `${ROWS.total} ${USE_LINE}`,
             readFrom: BEATS.total + ENTER,

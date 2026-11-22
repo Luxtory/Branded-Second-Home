@@ -10,6 +10,11 @@
 // A voz (vo.wav) e a trilha (trilha.wav) entram do mesmo jeito; sem elas, a prova traz só efeitos e ambientes
 // sintéticos gerados aqui e a narração como legenda-guia na cópia de revisão.
 
+import { times } from '../../sequence-request.js';
+
+// Instantes da Request atual (sequence-request.js#times): os trechos depois da revisão seguem a sequência, com as
+// mesmas durações de antes (envio, recebida e aceite, confirmação).
+const T = times('16x9');
 const PLACA_LITORAL = 'public/images/home/hero/hero-lifestyle.jpg';
 const PLACA_SERRA = 'public/images/home/hero/luxury-property-facade-hero.jpg';
 const PLACEHOLDER_FOTO =
@@ -23,10 +28,10 @@ const UI = [
   // (30.000) e 15/05 (46.000, para as próximas experiências); depositar; depósito confirmado com o saldo de 94.000.
   { seq: 'request', at: 7_200, from: 10_600, to: 17_200 },
   // Pagamento da Taxa de intermediação, envio, Pendente e Garantia.
-  { seq: 'request', at: 13_800, from: 21_400, to: 24_400 },
-  { seq: 'request', at: 16_800, from: 26_700, to: 31_200 },
+  { seq: 'request', at: 13_800, from: T.sendCommit - 1_100, to: T.sendCommit + 1_900 },
+  { seq: 'request', at: 16_800, from: T.holderIn - 200, to: T.result - 200 },
   // O último trecho vai até o fim do fade da interface, senão ela sumiria num quadro.
-  { seq: 'request', at: 21_300, from: 31_200, to: 34_300 },
+  { seq: 'request', at: 21_300, from: T.result - 200, to: T.result + 2_900 },
 ];
 /** Instante da prova de um instante `ms` da sequência dentro do trecho `i` (efeitos alinhados às `marks`). */
 const onUi = (i, ms) => UI[i].at + (ms - UI[i].from);
@@ -159,10 +164,12 @@ export const EDL = {
     { at: onUi(1, 13_600), kind: 'tap', note: '15/05 → 46.000' },
     { at: onUi(1, 14_900), kind: 'tap', note: 'depositar' },
     { at: onUi(1, 16_000), kind: 'state', note: 'depósito confirmado; saldo 94.000' },
-    { at: onUi(2, 22_500), kind: 'state', note: 'Request Pendente; Garantia constituída' },
-    { at: onUi(3, 29_300), kind: 'tap', note: 'Aceitar' },
-    ...[29_700, 29_900, 30_100, 30_300].map((ms) => ({ at: onUi(3, ms), kind: 'check' })),
-    { at: onUi(4, 31_400), kind: 'chord', note: 'Request Aceita + Reserva Confirmada' },
+    { at: onUi(2, T.sendCommit), kind: 'state', note: 'Request Pendente; Garantia constituída' },
+    { at: onUi(3, T.accept), kind: 'tap', note: 'Aceitar' },
+    ...[400, 600, 800, 1_000]
+      .map((d) => T.accept + d)
+      .map((ms) => ({ at: onUi(3, ms), kind: 'check' })),
+    { at: onUi(4, T.result), kind: 'chord', note: 'Request Aceita + Reserva Confirmada' },
   ],
   ambience: [
     { from: 0, to: 7_200, kind: 'mar' },

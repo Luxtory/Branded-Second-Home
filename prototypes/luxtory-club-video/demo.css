@@ -643,8 +643,10 @@ body {
   translate: 0 -50%;
 }
 
+/* Legenda do depósito em linguagem do Membro (v10): colunas no tamanho dos rótulos, cada rótulo numa linha. */
 [data-fmt='16x9'] .demo-deposit-cal .lx-calendar__legend {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3, auto);
+  justify-content: space-between;
 }
 
 .demo-month-title {
@@ -749,6 +751,76 @@ body {
   color: var(--lx-color-headline);
 }
 
+/* Destinação dos Créditos (v10): a posição do controle (--pos, fração do saldo disponível, em milhares em --avail-k) é a
+   fonte única do preenchimento, do polegar e dos dois contadores; o controle para na marca da necessidade. */
+#alloc {
+  --k: round(nearest, var(--pos) * var(--avail-k), 1);
+  counter-reset: alloc-dest var(--k) alloc-rest calc(var(--avail-k) - var(--k));
+}
+
+.demo-count {
+  display: inline-grid;
+  justify-items: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.demo-count > *,
+.demo-count__live > * {
+  grid-area: 1 / 1;
+}
+
+.demo-count__live {
+  display: inline-grid;
+  justify-items: end;
+}
+
+/* Camadas: texto inicial → contador durante o movimento → texto final (mesmo desenho, sem salto). */
+.demo-count__live,
+.demo-count__final,
+#alloc[data-alloc] .demo-count__initial,
+#alloc[data-alloc='settled'] .demo-count__live {
+  visibility: hidden;
+}
+
+#alloc[data-alloc='moving'] .demo-count__live,
+#alloc[data-alloc='settled'] .demo-count__final {
+  visibility: visible;
+}
+
+/* Zero escrito como "0"; acima de mil, o contador com o separador de milhar do pt-BR (valores sempre em milhares). */
+.demo-count__zero {
+  opacity: calc(1 - min(1, var(--k)));
+}
+
+.demo-count__n--dest {
+  opacity: min(1, var(--k));
+}
+
+.demo-count__n--dest::before {
+  content: counter(alloc-dest) '.000';
+}
+
+.demo-count__n--rest::before {
+  content: counter(alloc-rest) '.000';
+}
+
+.demo-legend--three {
+  grid-template-columns: repeat(3, auto);
+  justify-content: space-between;
+}
+
+.demo-legend--three .demo-count,
+.demo-legend--three .demo-count__live {
+  justify-items: start;
+}
+
+/* 16:9: no cartão de tarefa há largura para a unidade ao lado do número (como no 9:16). */
+[data-fmt='16x9'] #alloc .demo-slider-value {
+  flex-direction: row;
+  align-items: baseline;
+  gap: var(--lx-space-2);
+}
+
 .demo-evidence-text {
   margin: 0;
   font-size: var(--lx-type-compact);
@@ -779,9 +851,9 @@ body {
 }
 
 [data-fmt='9x16'] .demo-deposit-cal .lx-calendar__legend {
-  grid-template-columns: repeat(3, auto);
-  justify-content: space-between;
-  gap: var(--lx-space-2);
+  grid-template-columns: repeat(2, auto);
+  justify-content: start;
+  gap: var(--lx-space-2) var(--lx-space-6);
   font-size: var(--lx-type-label);
 }
 
@@ -829,7 +901,10 @@ body {
   line-height: var(--lx-leading-title);
 }
 
+/* Operadores da equação legíveis à distância (v10): + e = no traço da utilitária, em Warm Sand. */
 .demo-equation__op {
+  font-family: var(--lx-font-utility);
+  font-weight: var(--lx-weight-semibold);
   color: var(--lx-color-accent);
 }
 

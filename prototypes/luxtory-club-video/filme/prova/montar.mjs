@@ -25,7 +25,15 @@
 // Uso: node prototypes/luxtory-club-video/filme/prova/montar.mjs [--edl=cinema] [--fmt=16x9|9x16] [--final]
 //      [--entrada=<pasta>] [--saida=<pasta>]
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
@@ -85,6 +93,20 @@ function ffmpeg(args) {
   });
   if (run.status !== 0)
     throw new MontagemError(`ffmpeg falhou (${run.status}): ${run.stderr.trim()}`);
+}
+
+/**
+ * Quadro de camada sempre em RGBA. Um quadro opaco, como o cartão de quadro inteiro da assinatura, sai do Chromium como
+ * PNG sem canal alfa. Uma sequência que troca de RGBA para RGB no meio faz o ffmpeg reconfigurar o grafo e perder a
+ * camada por alguns quadros: era a imagem anterior (a família) piscando 2–3 quadros no fim do dissolve da assinatura.
+ */
+const PNG_COLOR_TYPE_BYTE = 25; // IHDR: tipo de cor do PNG
+const PNG_RGBA = 6;
+function ensureRgba(file) {
+  if (readFileSync(file)[PNG_COLOR_TYPE_BYTE] === PNG_RGBA) return;
+  const tmp = `${file}.rgba.png`;
+  ffmpeg(['-i', file, '-pix_fmt', 'rgba', tmp]);
+  renameSync(tmp, file);
 }
 
 /** Arquivo de entrada aprovado para um asset (footage, voz, trilha), se existir. */
@@ -212,6 +234,7 @@ async function renderUiFrames(dir) {
         [hit.ms, hit.opacity],
       );
       await page.screenshot({ path: file, omitBackground: true });
+      ensureRgba(file);
       last = { key, file };
     }
   } finally {
@@ -228,10 +251,9 @@ async function renderEditorial(dir) {
     const page = await openStage(browser, origin, `seq=prova${EDL_NAME ? `&edl=${EDL_NAME}` : ''}`);
     for (let k = 0; k < FRAMES; k++) {
       await page.evaluate((t) => window.__demo.seek(t), (k * 1000) / FPS);
-      await page.screenshot({
-        path: join(dir, `${String(k).padStart(5, '0')}.png`),
-        omitBackground: true,
-      });
+      const file = join(dir, `${String(k).padStart(5, '0')}.png`);
+      await page.screenshot({ path: file, omitBackground: true });
+      ensureRgba(file);
     }
   } finally {
     await browser.close();
@@ -456,9 +478,11 @@ function measureLoudness(file) {
     { encoding: 'utf8' },
   );
   const summary = stderr.slice(stderr.lastIndexOf('Summary:'));
+  // Faixa em silêncio (um trecho sem efeitos, como o QA do encerramento): o ebur128 escreve "-inf" no pico.
+  const level = (v) => (v === '-inf' ? -Infinity : Number(v));
   return {
     integratedLufs: Number(summary.match(/I:\s+(-?[\d.]+) LUFS/)?.[1]),
-    truePeakDbtp: Number(summary.match(/Peak:\s+(-?[\d.]+) dBFS/)?.[1]),
+    truePeakDbtp: level(summary.match(/Peak:\s+(-?(?:[\d.]+|inf)) dBFS/)?.[1]),
   };
 }
 
@@ -626,15 +650,18 @@ function compose(uiDir, edDir, audio, tmp) {
   const bt709 = `scale=out_color_matrix=bt709:out_range=tv,format=yuv420p`;
   // Desfoque como camada com alfa (bem mais rápido que blend por pixel). Uma janela (soften → sharpen) por fades; várias
   // janelas (`windows`, uma por bloco de interface) por uma máscara de baixa resolução calculada no tempo e ampliada.
+  // Sem nenhuma janela (um trecho só de imagens e assinatura), a máscara é zero: nenhum desfoque.
   const maskInput = n + 3;
   const blur = windows
     ? [
-        `[${maskInput}:v]format=gray,geq=lum='255*clip(${windows
-          .map(
-            (w) =>
-              `clip((T-${sec(w.from)})/${sec(w.ramp)},0,1)*clip((${sec(w.to)}-T)/${sec(w.ramp)},0,1)`,
-          )
-          .join('+')},0,1)',scale=${W}:${H},format=gray[fmask]`,
+        `[${maskInput}:v]format=gray,geq=lum='255*clip(${
+          windows
+            .map(
+              (w) =>
+                `clip((T-${sec(w.from)})/${sec(w.ramp)},0,1)*clip((${sec(w.to)}-T)/${sec(w.ramp)},0,1)`,
+            )
+            .join('+') || '0'
+        },0,1)',scale=${W}:${H},format=gray[fmask]`,
         `[soft]gblur=sigma=${sigma},format=gbrap[softa]`,
         `[softa][fmask]alphamerge[blur]`,
       ]

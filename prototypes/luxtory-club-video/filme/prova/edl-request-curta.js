@@ -1,8 +1,9 @@
-// Demonstração conceitual — prévia da Luxchange Request (v8.2, filme/QUATRO-FILMES.md §5), no ritmo aprovado da v8.1.
-// Banner → datas → Créditos necessários × saldo → complementação com o depósito mínimo (16/05, 14.000 novos Créditos)
-// → depósito confirmado (saldo 62.000) → revisão com a Taxa de intercâmbio, política e envio → solicitação enviada
-// (55.000 em Garantia, 7.000 disponíveis) → solicitação recebida → aceite e revalidação → Créditos recebidos e reserva
-// confirmada → família na piscina (imagem aprovada da campanha) → assinatura oficial.
+// Demonstração conceitual — Luxchange Request, no ritmo aprovado da v8.1. Direção v10 (2026-11-22), um estado por vez:
+// banner → datas → Créditos necessários × saldo (faltam 7.000) → calendário do Direito de Uso (16/05 gera 14.000) →
+// depósito realizado (novo saldo de 62.000 na Carteira) → destinação dos 55.000 Créditos à solicitação (controle próprio;
+// permanecem 7.000) → revisão com a Taxa de intercâmbio, política e envio → solicitação enviada (55.000 em Garantia,
+// 7.000 disponíveis) → solicitação recebida → aceite e revalidação → Créditos recebidos e reserva confirmada (a Garantia
+// é consumida) → família na piscina (imagem aprovada da campanha) → assinatura oficial.
 //
 // Fundo (decisão de 2026-11-21): a simulação inteira acontece sobre o hero da home, sem overlay, num plano contínuo
 // (fundo.js), como ambientação do Luxtory Club; os nomes das Second Homes ficam só na interface. A família só no
@@ -13,16 +14,20 @@
 //
 // Imagens: um arquivo em out/entrada com o nome do asset tem prioridade (ex.: HERO-9x16.jpg em maior resolução).
 // Som: só efeitos de operação (audio.modo 'efeitos', decisão da campanha).
-import { REPLY_HOURS, times } from '../../sequence-request.js';
+import { depositScenario, requestScenario } from '../../data.js';
+import { brl, credits } from '../../format.js';
+import { DEPOSIT_ACTION, REPLY_HOURS, times } from '../../sequence-request.js';
 import { buildFilm } from './blocos.js';
 import { fundo } from './fundo.js';
 
 const ENTER = 480; // duration.slow: a leitura começa depois da entrada
+const EXIT = 280; // duration.moderate: o valor novo entra depois da saída do antigo
 
 const LEGAL = 'Imagens, interfaces e valores ilustrativos.';
-// Texto do controle que precisa ser lido na complementação (credits-step.js, direção v8.3).
-const COMPLEMENT_COPY =
-  'Faltam 7.000 Créditos. Uma data elegível gera 14.000 Créditos. O excedente permanece disponível.';
+// Valores lidos nas telas, da mesma fonte da interface (data.js → rules.js), nunca digitados à mão.
+const scenario = requestScenario();
+const dep = depositScenario();
+const { allocation } = scenario;
 
 /**
  * Blocos do filme. `resumo` (filme completo): o plano do fundo continua do bloco anterior e família e assinatura ficam
@@ -113,89 +118,84 @@ export function blocks(fmt, { resumo = false } = {}) {
       contact: 3_000,
     },
     {
-      // Complementação com o depósito mínimo (direção v8.2): o controle vai a 14.000, que é 16/05 inteira; saldo
-      // projetado de 62.000 e 7.000 depois da reserva, que ficam para experiências futuras. Entra com os cartões já
-      // abertos (corte na ação).
+      // Depósito de novas datas (direção v10): o calendário do Direito de Uso entra logo depois do toque em
+      // "Complementar saldo", sem corte; o Membro toca em 16/05, que gera os 14.000 Créditos inteiros dela (não existe
+      // depósito de só 7.000), e deposita. Um instante de processamento e corte em tempo morto.
       kind: 'ui',
       seq: 'request',
       scene: 'R3',
-      // O controle vai ao mínimo (14.000, 16/05) e a copy da direção v8.3 diz por quê: "Faltam 7.000 Créditos. Uma
-      // data elegível gera 14.000 Créditos. O excedente permanece disponível." No 16:9 o calendário já está ao lado;
-      // no 9:16 o controle tem a própria pausa e o calendário entra depois, só para mostrar 16/05 e o toque. O tempo
-      // parado até o depósito sai num corte invisível.
       parts: [
-        ...(fmt === '9x16'
-          ? [
-              {
-                from: Math.min(9_600, t.slider - 200),
-                to: t.topupOut - 100,
-                hold: 1_625,
-                beat: {
-                  label: 'complementação: faltam 7.000, uma data gera 14.000',
-                  type: 'mensagem',
-                  essential: `${COMPLEMENT_COPY} 62.000 7.000`,
-                  readFrom: t.topupIn + ENTER,
-                },
-              },
-              {
-                from: t.topupOut - 100,
-                to: t.datesIn + ENTER + 20,
-                hold: 1_200,
-                beat: {
-                  label: 'calendário: 16/05 selecionada',
-                  type: 'acao',
-                  essential: '16/05 Depositar datas e gerar Créditos',
-                  readFrom: t.datesIn + ENTER,
-                },
-              },
-            ]
-          : [
-              {
-                from: Math.min(9_600, t.slider - 200),
-                to: t.slider + 1_200,
-                hold: 2_200,
-                beat: {
-                  label: 'complementação: faltam 7.000, uma data gera 14.000 (16/05)',
-                  type: 'mensagem',
-                  essential: `${COMPLEMENT_COPY} 16/05 62.000 7.000`,
-                  readFrom: t.slider,
-                },
-              },
-            ]),
-        { from: t.depositPress - 300, to: t.depositOut },
+        {
+          from: t.topupPress + 200,
+          to: t.depositPress - 100,
+          beat: {
+            label: 'calendário: 16/05 gera 14.000 Créditos',
+            type: 'mensagem',
+            essential: `Selecionar datas do meu Direito de Uso 16/05 Créditos a gerar ${credits(dep.originated)} ${DEPOSIT_ACTION}`,
+            readFrom: t.datesIn + ENTER,
+          },
+        },
+        { from: t.depositPress - 100, to: t.depositOut },
       ],
       sfx: [
-        { ms: t.slider, kind: 'tap', note: 'controle → 14.000, o mínimo (16/05)' },
-        { ms: t.depositPress, kind: 'tap', note: 'Depositar datas e gerar Créditos' },
+        { ms: t.daySelect, kind: 'tap', note: '16/05' },
+        { ms: t.depositPress, kind: 'tap', note: DEPOSIT_ACTION },
       ],
       shot: { continue: true },
-      contact: 3_500,
+      contact: 3_000,
     },
     {
-      // Depósito confirmado (operação própria) e revisão: Créditos, Taxa de intercâmbio, política e envio.
+      // Depósito realizado (operação própria: o novo saldo já está na Carteira) e, só depois dele, a destinação dos
+      // Créditos à solicitação: o controle anda de 0 a 55.000 e a revisão se habilita com a necessidade coberta.
       kind: 'ui',
       seq: 'request',
       scene: 'R4',
       parts: [
         {
           from: t.depositOut + 100,
-          to: t.reviewPress - 50,
-          hold: 1_150,
+          to: t.allocPress - 50,
+          hold: 600,
           beat: {
-            label: 'depósito confirmado e saldo atualizado',
+            label: 'depósito realizado: novo saldo na Carteira',
             type: 'mensagem',
-            essential: 'Depósito confirmado 14.000 novos Créditos saldo 62.000',
+            essential: `Depósito realizado +${credits(dep.originated)} Créditos na sua Carteira Novo saldo disponível ${credits(dep.afterDeposit)}`,
             readFrom: t.depositedIn + ENTER,
           },
         },
+        {
+          from: t.allocPress - 50,
+          to: t.reviewPress - 50,
+          hold: 450,
+          beat: {
+            label: 'destinação dos Créditos à solicitação',
+            type: 'mensagem',
+            essential: `Créditos destinados à solicitação Destinados ${credits(allocation.allocated)} Disponíveis ${credits(allocation.available)} Necessários ${credits(allocation.needed)} Permanecerá disponível ${credits(allocation.remaining)}`,
+            readFrom: t.allocIn + ENTER,
+          },
+        },
+      ],
+      sfx: [
+        { ms: t.depositedIn, kind: 'state', note: 'depósito realizado' },
+        { ms: t.allocPress, kind: 'tap', note: 'Destinar Créditos' },
+        { ms: t.allocSlide, kind: 'tap', note: `destinação 0 → ${credits(allocation.allocated)}` },
+      ],
+      shot: { continue: true },
+      contact: 4_000,
+    },
+    {
+      // Revisão: Créditos destinados, Taxa de intercâmbio, política e envio.
+      kind: 'ui',
+      seq: 'request',
+      scene: 'R4b',
+      parts: [
         {
           from: t.reviewPress - 50,
           to: t.pay - 100,
           hold: 1_000,
           beat: {
-            label: 'revisão: Créditos e Taxa de intercâmbio',
+            label: 'revisão: Créditos destinados e Taxa de intercâmbio',
             type: 'mensagem',
-            essential: '55.000 Créditos Taxa de intercâmbio R$ 550,00 Pagar taxa e enviar',
+            essential: `${credits(allocation.allocated)} Créditos destinados Taxa de intercâmbio ${brl(scenario.feeCents)} Pagar taxa e enviar`,
             readFrom: t.reviewIn + ENTER,
           },
         },
@@ -204,17 +204,16 @@ export function blocks(fmt, { resumo = false } = {}) {
         { from: t.sendOut - 300, to: t.sendCommit - 100 },
       ],
       sfx: [
-        { ms: t.depositedIn, kind: 'state', note: 'depósito confirmado' },
         { ms: t.reviewPress, kind: 'tap', note: 'Revisar solicitação' },
         { ms: t.policy, kind: 'tap', note: 'aceite da política' },
         { ms: t.pay, kind: 'tap', note: 'Pagar taxa e enviar' },
       ],
       vo: {
-        after: 3_300,
+        after: 500,
         text: 'Seus Créditos ficam em Garantia e a Taxa de intercâmbio é paga no envio.',
       },
       shot: { continue: true },
-      contact: 4_500,
+      contact: 2_000,
     },
     {
       kind: 'ui',
@@ -229,7 +228,7 @@ export function blocks(fmt, { resumo = false } = {}) {
             label: 'solicitação enviada · Garantia',
             type: 'mensagem',
             essential: 'Solicitação enviada 55.000 em Garantia 7.000 disponíveis',
-            readFrom: t.sendCommit + 280 + ENTER,
+            readFrom: t.sendCommit + EXIT + ENTER,
           },
         },
       ],

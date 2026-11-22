@@ -3,12 +3,16 @@
 // pagamento e revalidação → reserva confirmada sem aceite de outro Membro → família → assinatura oficial.
 // Carteira própria de Marina: 39.000 → 27.500 (11.500 utilizados na confirmação). Fundo: o hero da home (fundo.js).
 // Som só de operações. A interface toca no tempo da sequência (sequence-direct.js); a edição só pausa e corta tempo morto.
+import { directScenario } from '../../data.js';
+import { brl, credits } from '../../format.js';
 import { times } from '../../sequence-direct.js';
 import { buildFilm } from './blocos.js';
 import { assinatura, familia } from './encerramento.js';
 import { fundo } from './fundo.js';
 
 const ENTER = 480; // duration.slow: a leitura começa depois da entrada
+// Créditos e Taxa de intercâmbio lidos na revisão, da mesma fonte da interface (12% da demonstração, data.js#DEMO).
+const scenario = directScenario();
 
 /**
  * Blocos do filme. `resumo` (filme completo): o plano do fundo continua do bloco anterior, a revisão corta direto para
@@ -99,8 +103,7 @@ export function blocks(fmt, { resumo = false } = {}) {
           beat: {
             label: 'revisão: Créditos e Taxa de intercâmbio',
             type: 'mensagem',
-            essential:
-              '11.500 Créditos Taxa de intercâmbio R$ 120,00 Aceite de outro Membro Não exigido',
+            essential: `${credits(scenario.credits)} Créditos Taxa de intercâmbio ${brl(scenario.feeCents)} Aceite de outro Membro Não exigido`,
             readFrom: t.reviewIn + ENTER,
           },
         },

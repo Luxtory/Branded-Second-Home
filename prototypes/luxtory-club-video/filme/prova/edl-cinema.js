@@ -14,9 +14,14 @@
 // Footage: conformado por retemporização (cada quadro da fonte vira um quadro do master; nenhum quadro inventado ou
 // descartado), salvo `conform: 'realtime'`, que exige verificação visual de judder.
 
+import { times } from '../../sequence-request.js';
+
+// Instantes da Request atual (sequence-request.js#times): os trechos depois da revisão seguem a sequência, com as
+// mesmas durações de antes (envio, recebida e aceite, confirmação).
+const T = times('16x9');
 const PLACA_LITORAL = 'public/images/home/hero/hero-lifestyle.jpg';
 const FOTO_PROVISORIA = 'placeholder: foto provisória do site (1344 px), não é a Azzura Home';
-const SEQ_REQUEST_MS = 35_000; // sequence-request.js#times().duration
+const SEQ_REQUEST_MS = T.duration;
 
 // Trechos da Request (sequence-request.js#times), sem acelerar nem desacelerar; `at` = início no tempo da prova. Cortes e
 // trechos na grade de 125 ms (3 quadros a 24 fps), para o corte de imagem e a troca da interface caírem no mesmo quadro.
@@ -24,11 +29,11 @@ const UI = [
   // Datas e rota: noites de outro Titular → Luxchange Request (ROTEIRO.md C05).
   { seq: 'request', at: 2_000, from: 0, to: 4_625 },
   // Pagamento enviado: Request Pendente, Garantia constituída (C07).
-  { seq: 'request', at: 6_625, from: 21_400, to: 24_400 },
+  { seq: 'request', at: 6_625, from: T.sendCommit - 1_100, to: T.sendCommit + 1_900 },
   // O outro Titular recebe e aceita; verificações (C08).
-  { seq: 'request', at: 9_625, from: 26_700, to: 31_200 },
+  { seq: 'request', at: 9_625, from: T.holderIn - 200, to: T.result - 200 },
   // Request Aceita + Reserva Confirmada, até o fim do fade da interface (C09).
-  { seq: 'request', at: 14_125, from: 31_200, to: 34_325 },
+  { seq: 'request', at: 14_125, from: T.result - 200, to: T.result + 2_925 },
 ];
 const onUi = (i, ms) => UI[i].at + (ms - UI[i].from);
 const UI_END = UI.at(-1).at + (UI.at(-1).to - UI.at(-1).from);
@@ -210,10 +215,12 @@ export function edlFor(fmt) {
     sfx: [
       { at: onUi(0, 2_400), kind: 'tap', note: 'entrada 04/06' },
       { at: onUi(0, 3_100), kind: 'tap', note: 'saída 07/06' },
-      { at: onUi(1, 22_500), kind: 'state', note: 'Request Pendente; Garantia constituída' },
-      { at: onUi(2, 29_300), kind: 'tap', note: 'Aceitar' },
-      ...[29_700, 29_900, 30_100, 30_300].map((ms) => ({ at: onUi(2, ms), kind: 'check' })),
-      { at: onUi(3, 31_400), kind: 'chord', note: 'Request Aceita + Reserva Confirmada' },
+      { at: onUi(1, T.sendCommit), kind: 'state', note: 'Request Pendente; Garantia constituída' },
+      { at: onUi(2, T.accept), kind: 'tap', note: 'Aceitar' },
+      ...[400, 600, 800, 1_000]
+        .map((d) => T.accept + d)
+        .map((ms) => ({ at: onUi(2, ms), kind: 'check' })),
+      { at: onUi(3, T.result), kind: 'chord', note: 'Request Aceita + Reserva Confirmada' },
     ],
     ambience: [
       { from: 0, to: 14_125, kind: 'mar' },

@@ -27,6 +27,8 @@ import * as assinaturaSeq from './sequence-assinatura.js';
 import * as creditosSeq from './sequence-creditos.js';
 import { datesCard, needCard, seasonOf, selectionStates } from './credits-step.js';
 import {
+  allocateCredits,
+  allocationCovers,
   creditsOfSelection,
   depositNightStatus,
   depositStops,
@@ -36,7 +38,7 @@ import {
 import { EDL } from './filme/prova/edl.js';
 import { edlFor } from './filme/prova/edl-cinema.js';
 import { edlFor as requestCurta } from './filme/prova/edl-request-curta.js';
-import { GRID_MS, legibility } from './filme/prova/blocos.js';
+import { GRID_MS, buildFilm, legibility } from './filme/prova/blocos.js';
 import {
   REQUEST_STATES,
   addMonthsUTC,
@@ -273,12 +275,32 @@ for (const fmt of ['16x9', '9x16']) {
         .every((tw) => tw.at === enter('#pending').in),
       'Garantia constituída exatamente no commit do envio, quando a Request fica Pendente (PD-005, PD-006)',
     );
-    // Garantia nunca antes do envio; depósito confirmado (operação própria) antes da revisão.
+    // Garantia nunca antes do envio; depósito confirmado (operação própria) antes da destinação e da revisão.
     assert.ok(enter('#lg-held').in > sendPress, 'Em Garantia só depois do envio');
     assert.ok(
       set('#deposit-go', 'data-pressed')[0].at < enter('#deposited').in &&
-        enter('#deposited').in < enter('#review').in,
-      'depósito confirmado antes da revisão da Request (REQ-060)',
+        enter('#deposited').in < enter('#alloc').in &&
+        enter('#alloc').in < enter('#review').in,
+      'depósito realizado → destinação → revisão (REQ-060): nenhum Crédito projetado é destinado',
+    );
+    // Destinação (v10): o controle anda de 0 até a necessidade; a revisão só se habilita na chegada.
+    const slide = tl.tween.find((tw) => tw.sel === '#alloc');
+    const enabled = set('#alloc-go', 'aria-disabled');
+    assert.equal(enabled[0].value, 'true', 'revisão desabilitada antes da destinação');
+    assert.equal(enabled.at(-1).value, null);
+    assert.equal(
+      enabled.at(-1).at,
+      slide.at + slide.dur,
+      'habilitada só com a necessidade coberta',
+    );
+    assert.ok(
+      slide.at > enter('#alloc').in &&
+        slide.at + slide.dur < set('#alloc-go', 'data-pressed')[0].at,
+    );
+    assert.equal(slide.from, 0);
+    assert.equal(
+      slide.to,
+      requestScenario().allocation.needed / requestScenario().allocation.available,
     );
     assert.ok(
       enter('#need').in < enter('#dates').in,
@@ -288,24 +310,16 @@ for (const fmt of ['16x9', '9x16']) {
     const exit = parseFloat(TOKENS.duration.moderate.$value);
     const handoffs = [
       ['#cal', '#need'],
+      ['#need', '#dates'],
       ['#dates', '#deposited'],
-      ['#deposited', '#review'],
+      ['#deposited', '#alloc'],
+      ['#alloc', '#review'],
       ['#review', '#pending'],
+      ['#review', '#credits'],
       ['#pending', '#holder'],
       ['#holder', '#accepted'],
       ['#holder', '#booking'],
-      ...(fmt === '9x16'
-        ? [
-            ['#home', '#cal'],
-            ['#need', '#topup'],
-            ['#topup', '#dates'],
-            ['#review', '#credits'],
-          ]
-        : [
-            ['#need', '#dates'],
-            ['#home', '#topup'],
-            ['#topup', '#credits'],
-          ]),
+      ...(fmt === '9x16' ? [['#home', '#cal']] : [['#home', '#dates']]),
     ];
     handoffs.push(['#lg-avail-before', '#lg-avail-after']);
     for (const [before, after] of handoffs)
@@ -355,7 +369,9 @@ test('[BR-220][BR-221][PD-008][01 §24] Direct: Inventário Luxtory, Créditos p
   const d = directScenario();
   assert.deepEqual(d.nights, ['2027-05-28']);
   assert.equal(d.credits, 11_500, 'PRL R$ 1.150,00 × 10');
-  assert.equal(d.feeCents, 12_000, '10% = R$ 115,00 < mínimo de R$ 120,00');
+  // Taxa da demonstração (12%, decisão comercial do filme) na mesma fórmula; o canônico (10%) continua no mínimo.
+  assert.equal(d.feeCents, 13_800, '12% de R$ 1.150,00 = R$ 138,00');
+  assert.equal(luxchangeFee(d.prlPeriodCents, CANONICAL), 12_000, '10% = R$ 115,00 < mínimo');
   // Carteira própria do Membro do Direct (outra família): não herda o saldo de quem fez a Request (direção v8.2).
   assert.notEqual(d.requesterName, requestScenario().requesterName);
   assert.deepEqual(
@@ -525,7 +541,7 @@ test('prova de montagem: EDL coerente com a interface aprovada e com as regras d
 test('[BR-190][BR-191][PD-008][REQ-060] Créditos: C04 conceitual; o saldo de Helena se forma uma vez, na Request', () => {
   const r = requestScenario();
   const dep = depositScenario();
-  // A formação do saldo (48.000 + 46.000 = 94.000) acontece só na Request; o C04 não antecipa nenhum número.
+  // A formação do saldo (48.000 + 14.000 = 62.000) acontece só na Request; o C04 não antecipa nenhum número.
   assert.equal(dep.priorAvailable + dep.originated, r.balances.beforeSend.available);
   assert.doesNotMatch(markup(creditosSeq) + markup(creditosSeq, '9x16'), /\d|Helena/);
   // A Garantia da Request (55.000) sai de lotes que já existiam e do lote recém-originado, pelo que vence primeiro.
@@ -546,7 +562,14 @@ test('[BR-190][BR-191][PD-008][REQ-060] Créditos: C04 conceitual; o saldo de He
     'camada editorial: nenhum controle ou etapa transacional',
   );
   assert.doesNotMatch(text, /R\$/, 'Créditos nunca em formato monetário (BR-190)');
-  assert.match(text, /válidos/);
+  // Direção v10: equação disponíveis + que podem ser gerados = saldo potencial. Antes do depósito confirmado, os novos
+  // Créditos são projeção: nunca "disponível" para o que ainda não foi gerado.
+  assert.match(text, /Créditos disponíveis atualmente/);
+  assert.match(text, /Créditos que podem ser gerados ao depositar datas/);
+  assert.match(text, /Saldo potencial para intercâmbio Luxchange/);
+  assert.doesNotMatch(text, /Saldo disponível|novos Créditos disponíveis/i);
+  assert.match(raw.html, /demo-equation__op[^>]*>\+</);
+  assert.match(raw.html, /demo-equation__total[^]*demo-equation__op[^>]*>=</);
   for (const sup of Object.values(creditosSeq.SUPERS)) assert.ok(text.includes(sup));
   // Batidas na ordem da narração e supers com tempo de leitura, um depois do outro no mesmo lugar.
   const tl = creditosSeq.timeline('16x9');
@@ -633,33 +656,25 @@ test('[BR-151][BR-200][REQ-060] depósito: elegibilidade por modalidade, datas i
 });
 
 for (const fmt of ['16x9', '9x16']) {
-  test(`Request ${fmt}: controle e calendário com uma fonte única (as datas) e só metas alcançáveis`, () => {
+  test(`Request ${fmt}: calendário com uma fonte única (as datas), data inteira e depósito antes da destinação`, () => {
     const dep = depositScenario();
     const tl = timeline(fmt);
-    const max = dep.stops.at(-1).credits;
-    const stops = dep.stops.map((x) => x.credits);
-    const slider = tl.tween.filter((tw) => tw.sel === '#topup-slider');
-    assert.ok(slider.length >= 1, 'o controle se move até a meta');
-    for (const tw of slider)
-      assert.ok(stops.includes(Math.round(tw.to * max)), `meta ${tw.to * max}`);
-    const finalValue = tl.set
-      .filter((x) => x.sel === '#topup-slider' && x.attr === 'aria-valuenow')
-      .at(-1);
-    assert.equal(Number(finalValue.value), dep.originated);
+    // Direção v10: a data se escolhe no calendário; o controle do depósito não entra no filme (um controle só, o da
+    // destinação, depois do depósito realizado).
+    assert.equal(tl.tween.filter((tw) => tw.sel === '#topup-slider').length, 0);
     const selected = tl.set
       .filter((x) => x.attr === 'data-selected' && x.sel.startsWith('[data-deposit-day'))
       .map((x) => x.sel.match(/\d{4}-\d{2}-\d{2}/)[0]);
-    assert.deepEqual(
-      [...selected].sort(),
-      dep.selected,
-      'as datas selecionadas somam o valor do controle',
-    );
-    // O controle vai ao mínimo que cobre a reserva (14.000, 16/05), que é o depósito de Helena (direção v8.2).
-    assert.deepEqual(
-      slider.map((tw) => Math.round(tw.to * max)),
-      [14_000],
-    );
-    assert.equal(selected[0], dep.minimum.nights[0]);
+    assert.deepEqual([...selected].sort(), dep.selected, 'a seleção é o depósito de data.js');
+    // A menor seleção que cobre os 7.000 que faltam é 16/05 inteira (14.000): não há depósito fracionário.
+    assert.deepEqual(dep.selected, dep.minimum.nights);
+    assert.equal(dep.originated, 14_000);
+    assert.ok(dep.originated > dep.shortfall);
+    // O valor a gerar troca de 0 para 14.000 no toque (saída antes da entrada) e fica até a saída do calendário.
+    const ts = (i) => tl.enter.find((e) => e.sel === `#ts-${i}`);
+    const tap = tl.set.find((x) => x.attr === 'data-selected').at;
+    assert.equal(ts(0).out, tap);
+    assert.ok(ts(1).in > tap);
     // O depósito só é pedido depois da última seleção.
     const lastSelect = Math.max(
       ...tl.set.filter((x) => x.attr === 'data-selected').map((x) => x.at),
@@ -864,8 +879,8 @@ test('isolamento: nenhuma URL externa, chamada de rede, credencial ou import do 
 test('[BR-201][REQ-060] prova: a complementação vai até o depósito confirmado (saldo atualizado), nomes novos', () => {
   const t = requestSeq.times('16x9');
   const complement = EDL.ui[1];
-  // O trecho da complementação contém o controle, o depósito e o cartão do depósito confirmado.
-  for (const at of [t.slider, t.depositPress, t.depositedIn])
+  // O trecho da complementação contém a escolha da data, o depósito e o cartão do depósito realizado.
+  for (const at of [t.daySelect, t.depositPress, t.depositedIn])
     assert.ok(at >= complement.from && at < complement.to, `instante ${at} dentro do trecho`);
   const labels = EDL.shots.map((s) => s.label).join(' ');
   assert.match(labels, /Azzura Home/);
@@ -997,8 +1012,8 @@ for (const fmt of ['16x9', '9x16']) {
   test(`[REQ-063][REQ-064] prévia curta da Request ${fmt}: ritmo, ordem dos fatos, família e assinatura`, () => {
     const edl = requestCurta(fmt);
     const t = requestSeq.times(fmt);
-    // Ritmo da v8.1: entre a prova de 24 s e a v8 de 69 s (meta editorial de 48–55 s, com a assinatura).
-    assert.ok(edl.duration >= 46_000 && edl.duration <= 56_000, `duração ${edl.duration}`);
+    // Ritmo da v8.1 (meta de 48–55 s com a assinatura) mais a etapa de destinação da v10 (≈ 4–5 s): até 60 s.
+    assert.ok(edl.duration >= 46_000 && edl.duration <= 60_000, `duração ${edl.duration}`);
     // Cada tela dentro da faixa proporcional do seu tipo (sem excesso nem insuficiência), contada depois da entrada.
     const report = legibility(edl);
     assert.deepEqual(
@@ -1031,12 +1046,16 @@ for (const fmt of ['16x9', '9x16']) {
       assert.ok(u, `instante ${ms} da Request na prévia`);
       return u.at + (ms - u.from);
     };
-    // Inclui a complementação (controle, duas datas, depósito) e a revisão com política e envio (v8.1).
+    // Inclui o depósito (toque em 16/05, depositar, depósito realizado), a destinação dos Créditos (v10) e a revisão com
+    // política e envio (v8.1).
     const order = [
       t.topupPress,
-      t.slider,
+      t.daySelect,
       t.depositPress,
       t.depositedIn,
+      t.allocPress,
+      t.allocSlide,
+      t.allocSlide + t.allocSlideMs,
       t.reviewPress,
       t.policy,
       t.pay,
@@ -1281,4 +1300,154 @@ test('síntese: as diferenças nos termos aprovados, sem termos proibidos nem pr
   assert.match(text, /Sem utilizar Créditos/);
   assert.doesNotMatch(text, FILM_TERMS);
   assert.doesNotMatch(text, /cota|diária|garantid|disponibilidade garantida|rentab/i);
+});
+
+test('[REQ-060][PD-005][PD-006][REQ-064] v10: depósito antes do uso, destinação limitada, Garantia no envio e consumo no aceite', () => {
+  const dep = depositScenario();
+  const r = requestScenario();
+  // A solicitação exige 55.000 Créditos; a carteira tem 48.000 e passa a 62.000 só com o depósito realizado.
+  assert.equal(r.credits, 55_000);
+  assert.equal(dep.priorAvailable, 48_000);
+  assert.equal(dep.afterDeposit, 62_000);
+  // Antes do depósito confirmado, os Créditos projetados não entram: 48.000 não cobrem a reserva e nada segue.
+  const before = allocateCredits(r.credits, { available: dep.priorAvailable, needed: r.credits });
+  assert.equal(before, 48_000);
+  assert.equal(allocationCovers(before, r.credits), false);
+  // Depois do depósito: a destinação cobre exatamente a necessidade e deixa 7.000 disponíveis.
+  assert.deepEqual(r.allocation, {
+    available: 62_000,
+    needed: 55_000,
+    allocated: 55_000,
+    remaining: 7_000,
+  });
+  assert.equal(allocationCovers(r.allocation.allocated, r.credits), true);
+  // O controle nunca destina acima do saldo nem acima da necessidade, nem abaixo de zero.
+  for (const [asked, expected] of [
+    [0, 0],
+    [-1_000, 0],
+    [30_000, 30_000],
+    [55_000, 55_000],
+    [60_000, 55_000],
+    [99_000, 55_000],
+  ])
+    assert.equal(
+      allocateCredits(asked, { available: 62_000, needed: 55_000 }),
+      expected,
+      `${asked}`,
+    );
+  assert.equal(
+    allocateCredits(99_000, { available: 40_000, needed: 55_000 }),
+    40_000,
+    'teto do saldo',
+  );
+  assert.equal(allocationCovers(30_000, 55_000), false, 'sem Request com Créditos parciais');
+  // Estados distintos: destinação (controle) → Garantia no envio → consumo no aceite.
+  assert.deepEqual(r.balances.afterSend, { available: 7_000, held: 55_000, consumed: 0 });
+  assert.deepEqual(r.balances.afterAccept, { available: 7_000, held: 0, consumed: 55_000 });
+  assert.equal(
+    r.hold.reduce((sum, p) => sum + p.quantity, 0),
+    55_000,
+    'a Garantia soma a necessidade (FEFO)',
+  );
+  assert.equal(
+    r.holder.lot.quantity,
+    55_000,
+    'quem cede recebe os Créditos originados pela cessão',
+  );
+  // Cartão de destinação: controle próprio (não o do depósito), revisão desabilitada até a cobertura integral.
+  const stage = { dataset: {}, insertAdjacentHTML: (_, html) => (stage.html = html) };
+  requestSeq.build(stage, '16x9');
+  assert.match(stage.html, /id="alloc-slider"[^>]*aria-valuemax="55000"/);
+  assert.match(stage.html, /id="alloc-go"[^>]*aria-disabled="true"/);
+  assert.doesNotMatch(
+    stage.html,
+    /id="topup"/,
+    'o controle do depósito não entra na Request do filme',
+  );
+  const text = stage.html.replace(/<[^>]+>/g, ' ');
+  for (const label of [
+    'Créditos destinados à solicitação',
+    'Disponíveis',
+    'Necessários',
+    'Permanecerá disponível',
+    'Depósito realizado',
+    'Novo saldo disponível',
+    'Créditos na sua Carteira',
+    'Depositar data e gerar Créditos',
+    'Disponível para depósito',
+    'Já comprometida',
+  ])
+    assert.ok(text.includes(label), label);
+  assert.doesNotMatch(text, /Elegível|Comprometida(?! )/);
+});
+
+test('[01 §24][BR-230] v10: Taxa de intercâmbio de 12% na demonstração (Request R$ 660, Direct R$ 138), canônico intacto', () => {
+  // Parâmetros canônicos inalterados; a demonstração muda só o prazo de resposta e o percentual da taxa.
+  assert.deepEqual(CANONICAL, {
+    creditMultiplier: 10,
+    creditValidityMonths: 24,
+    feePercent: 10,
+    feeMinimumCents: 12_000,
+    requestExpiryHours: 24,
+    depositMinNoticeDays: 14,
+    checkinHour: 14,
+    checkoutHour: 10,
+  });
+  assert.deepEqual(DEMO, { ...CANONICAL, requestExpiryHours: 48, feePercent: 12 });
+  assert.equal(requestScenario().feeCents, 66_000, '12% de R$ 5.500,00');
+  assert.equal(directScenario().feeCents, 13_800, '12% de R$ 1.150,00');
+  // Mesma fórmula, com o mínimo de R$ 120,00 preservado (caso sintético abaixo do mínimo).
+  assert.equal(luxchangeFee(90_000, DEMO), 12_000, '12% de R$ 900,00 = R$ 108,00 < mínimo');
+  assert.equal(luxchangeFee(100_000, DEMO), 12_000, 'no limite: 12% = mínimo');
+  // Créditos, PRLs, saldos e Garantia não dependem da taxa.
+  assert.equal(requestScenario().credits, creditsForPrl(550_000, CANONICAL));
+  assert.equal(directScenario().credits, 11_500);
+  // Telas: os valores exibidos saem do cenário; o Luxplus não tem Taxa de intercâmbio.
+  assert.match(markup(requestSeq), /R\$\s660,00/);
+  assert.match(markup(directSeq), /R\$\s138,00/);
+  assert.doesNotMatch(markup(requestSeq) + markup(directSeq), /R\$\s(550|120),00/);
+  assert.doesNotMatch(markup(luxplusSeq), /Taxa de intercâmbio/);
+  for (const fmt of ['16x9', '9x16']) {
+    const essentials = [requestCurta(fmt), directCurta.edlFor(fmt)]
+      .flatMap((e) => e.beats.map((b) => b.essential))
+      .join(' ');
+    assert.match(essentials, /R\$\s660,00/);
+    assert.match(essentials, /R\$\s138,00/);
+    assert.doesNotMatch(essentials, /PRL|R\$\s(550|120),00/);
+  }
+});
+
+test('v10: a logo da assinatura só entra depois do dissolve, com o Moroccan Blue opaco', () => {
+  const tl = assinaturaSeq.timeline();
+  const logo = tl.enter.find((e) => e.sel === '#endcard-logo');
+  const line = tl.enter.find((e) => e.sel === '#endcard-line');
+  assert.ok(logo.in > assinaturaSeq.MAX_DISSOLVE, 'logo depois do maior dissolve aceito');
+  assert.ok(line.in >= logo.in + logo.dur, 'a frase depois da logo assentar');
+  assert.equal(tl.duration, 6_000);
+  for (const fmt of ['16x9', '9x16'])
+    for (const edl of [
+      requestCurta(fmt),
+      directCurta.edlFor(fmt),
+      luxplusCurta.edlFor(fmt),
+      clubCompleto.edlFor(fmt),
+    ]) {
+      const sig = edl.ui.find((u) => u.seq === 'assinatura');
+      assert.ok(
+        sig.fadeIn <= assinaturaSeq.MAX_DISSOLVE && logo.in > sig.fadeIn,
+        `${fmt} dissolve ${sig.fadeIn}`,
+      );
+      // A família (plano anterior) termina embaixo do cartão: a logo nunca aparece com ela visível.
+      const family = edl.shots.find((s) => s.plan === 'S17b');
+      assert.ok(family.from < sig.at && sig.at + logo.in > sig.at + sig.fadeIn);
+    }
+  assert.throws(
+    () =>
+      buildFilm('16x9', {
+        id: 'x',
+        out: 'out/x',
+        audio: {},
+        blocks: () => [{ kind: 'signature', dissolve: 1_200 }],
+      }),
+    /Dissolve da assinatura/,
+  );
 });

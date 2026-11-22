@@ -14,6 +14,55 @@
 > Pessoas, Second Homes, datas e valores são ilustrativos. Os oito masters só são gerados depois da aprovação deste
 > checkpoint, e nada é publicado antes da validação de direitos, das condições comerciais e da prontidão do produto.
 
+## v10: lógica de Créditos, Taxa de intercâmbio de 12% e assinatura (filme completo 16:9, prévia interna)
+
+Os valores e a sequência desta seção são os vigentes. Onde `ROTEIRO.md`, `README.md` ou as seções abaixo citam
+46.000, 94.000, R$ 550, R$ 120 ou "Elegível", o trecho é histórico.
+
+**Decisões:**
+- **Painel dos Créditos:** é uma equação.
+  - Créditos disponíveis atualmente + Créditos que podem ser gerados ao depositar datas = Saldo potencial para
+    intercâmbio Luxchange.
+  - Antes do depósito confirmado, os novos Créditos são projeção, nunca saldo disponível.
+  - Os operadores + e = estão em Warm Sand, com o traço da fonte utilitária; o resultado também fica em Warm Sand.
+- **Request, um estado por vez:**
+  1. **Necessidade:** Créditos necessários 55.000, saldo disponível 48.000, faltam 7.000, CTA "Complementar saldo".
+  2. **Calendário do Direito de Uso:** o Membro escolhe 16/05, que gera 14.000. A data é inteira: não há depósito de só
+     7.000. O botão "Depositar data e gerar Créditos" só se habilita com data selecionada.
+  3. **Depósito realizado:** +14.000 Créditos na Carteira e novo saldo disponível de 62.000.
+  4. **Destinação à solicitação:** um controle próprio (`allocationCard`).
+     - A trilha mede o saldo de 62.000, e a marca indica a necessidade de 55.000.
+     - O controle anda de 0 até 55.000, e "Destinados" e "Permanecerá disponível" (62.000 → 7.000) acompanham a mesma
+       posição.
+     - "Revisar solicitação" só se habilita com a necessidade coberta por inteiro.
+     - A regra está em `rules.js#allocateCredits` e `#allocationCovers`: nunca acima do saldo nem da necessidade, nem com
+       Créditos parciais.
+  5. **Revisão:** 55.000 Créditos destinados e Taxa de intercâmbio de R$ 660,00.
+  6. **Envio:** 55.000 em Garantia e 7.000 disponíveis.
+  7. **Aceite e revalidação:** a Garantia é consumida e o cedente recebe os 55.000.
+  - Destinação, Garantia e consumo são estados diferentes.
+  - O controle do depósito ("Créditos adicionais desejados") sai do filme: a data se escolhe no calendário, e o único
+    controle na tela é o da destinação.
+- **Legenda do calendário:** Disponível para depósito · Selecionada · Indisponível · Já comprometida · Não reservada.
+  Os status internos e as regras de elegibilidade não mudam.
+- **Taxa de intercâmbio de 12%:**
+  - **Onde:** só em `data.js#DEMO`, na mesma fórmula (`rules.js#luxchangeFee`), com o mínimo de R$ 120,00 e para Request
+    e Direct.
+  - **Valores:** Request R$ 660,00 (12% de R$ 5.500,00) e Direct R$ 138,00 (12% de R$ 1.150,00).
+  - **O que não muda:** `CANONICAL` segue em 10% (01 §24) até uma atualização normativa, assim como Créditos, PRLs,
+    Garantia e FEFO.
+  - **Luxplus:** sem taxa.
+  - **Fonte única:** os textos dos EDLs derivam a taxa do cenário.
+- **Assinatura:**
+  - a logo entra aos 900 ms, depois do dissolve de 800 ms, com o Moroccan Blue já opaco;
+  - a frase entra aos 2.000 ms, e a duração continua em 6 s;
+  - `blocos.js` recusa um dissolve maior que o limite.
+  - Antes, a logo entrava aos 400 ms e aparecia sobre a família.
+- **Ritmo:** a destinação acrescenta ≈ 4,75 s. O filme completo passa de 116,1 s para 120,9 s, com Direct, Luxplus,
+  síntese, família e assinatura sem mudança.
+- **QA por trechos:** `edl-qa-jornada.js` (abertura até a solicitação enviada) e `edl-qa-encerramento.js` (família e
+  assinatura) usam os blocos do próprio filme, antes do render completo.
+
 ## v9: fundo comum e os quatro filmes (prévias provisórias)
 
 **Decisões:**

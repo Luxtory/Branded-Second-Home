@@ -6,6 +6,9 @@
 //      oferece metas alcançáveis com datas inteiras (rules.js#depositStops); nunca cria Créditos sem data;
 //   3. depósito confirmado como operação própria, antes de os novos Créditos ficarem disponíveis (REQ-060, BR-200 a
 //      BR-203). A data nunca paga a reserva: ela origina Créditos, que depois entram na Request ou no Direct.
+// Direção v10 (2026-11-22), na Request do filme: a data se escolhe no calendário (o controle do depósito sai de cena) e,
+// depois do depósito realizado, um controle próprio destina os Créditos à solicitação (allocationCard): saldo
+// insuficiente → depósito → novo saldo → destinação → revisão → envio, um estado por vez.
 // Owner e Co-Owner têm textos e estados próprios (BR-150, BR-151): o Owner não usa calendário de Direito de Uso.
 // Camada de interface do protótipo do vídeo; valores de data.js/rules.js; nenhum depósito ou pagamento real.
 import { DEPOSIT_STATUS, creditsOfSelection } from './rules.js';
@@ -22,17 +25,18 @@ export const ROLE_TEXT = {
     accordion: 'Selecionar datas do meu Direito de Uso',
     depositedNote:
       'As datas passam ao Inventário Luxtory e seguem consumidas do seu Direito de Uso.',
-    // Rótulos curtos na legenda (cabem numa linha também no 9:16); a descrição completa está no nome acessível de cada
-    // data (dayName): reservada e elegível, reservada e indisponível (menos de 14 dias), já comprometida, não reservada.
+    // Legenda em linguagem do Membro (direção v10): o título diz de onde vêm as datas; a legenda, o que se pode fazer
+    // com cada uma. Os status internos e as regras de elegibilidade não mudam. A descrição completa está no nome
+    // acessível de cada data (dayName).
     legend: {
-      [DEPOSIT_STATUS.eligible]: 'Elegível',
+      [DEPOSIT_STATUS.eligible]: 'Disponível para depósito',
       selected: 'Selecionada',
       [DEPOSIT_STATUS.reservedUnavailable]: 'Indisponível',
-      [DEPOSIT_STATUS.committed]: 'Comprometida',
+      [DEPOSIT_STATUS.committed]: 'Já comprometida',
       [DEPOSIT_STATUS.notReserved]: 'Não reservada',
     },
     dayName: {
-      [DEPOSIT_STATUS.eligible]: 'reservada, elegível para depósito',
+      [DEPOSIT_STATUS.eligible]: 'reservada, disponível para depósito',
       [DEPOSIT_STATUS.reservedUnavailable]:
         'reservada, indisponível para depósito (menos de 14 dias)',
       [DEPOSIT_STATUS.committed]: 'já comprometida',
@@ -46,13 +50,13 @@ export const ROLE_TEXT = {
     depositedNote:
       'As datas passam ao Inventário Luxtory e deixam de estar disponíveis para outros usos.',
     legend: {
-      [DEPOSIT_STATUS.eligible]: 'Elegível',
+      [DEPOSIT_STATUS.eligible]: 'Disponível para depósito',
       selected: 'Selecionada',
       [DEPOSIT_STATUS.unavailable]: 'Indisponível',
-      [DEPOSIT_STATUS.committed]: 'Comprometida',
+      [DEPOSIT_STATUS.committed]: 'Já comprometida',
     },
     dayName: {
-      [DEPOSIT_STATUS.eligible]: 'disponível, elegível para depósito',
+      [DEPOSIT_STATUS.eligible]: 'disponível para depósito',
       [DEPOSIT_STATUS.unavailable]: 'indisponível',
       [DEPOSIT_STATUS.committed]: 'já comprometida',
     },
@@ -89,7 +93,7 @@ export function needCard({ title, needed, available, role, sufficient }) {
     ? `<p class="demo-state demo-state--done">${icon('i-check')}Saldo suficiente</p>
       <button class="lx-button lx-button--primary" type="button" id="need-continue" tabindex="-1">Continuar com meu saldo</button>
       <details class="lx-disclosure demo-accordion demo-accordion--closed"><summary class="lx-disclosure__summary">Complementar saldo com datas ${t.source}${icon('i-next', 'demo-icon lx-disclosure__icon')}</summary></details>`
-    : `<p class="demo-note">${icon('i-info')}<span>Datas elegíveis inteiras ${t.source} geram novos Créditos.</span></p>
+    : `<p class="demo-note">${icon('i-info')}<span>Datas inteiras ${t.source} geram novos Créditos.</span></p>
       <button class="lx-button lx-button--primary" type="button" id="need-topup" tabindex="-1">${t.complement}</button>`;
   return `
     <section class="demo-card demo-card--task" id="need" data-surface="deep" aria-label="Créditos para esta estadia">
@@ -97,7 +101,7 @@ export function needCard({ title, needed, available, role, sufficient }) {
       <p class="lx-title">${title}</p>
       <dl class="lx-evidence">
         <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos necessários</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(needed)}</dd></div>
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Saldo válido disponível</dt><dd class="lx-evidence__value">${credits(available)}</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Saldo disponível</dt><dd class="lx-evidence__value">${credits(available)}</dd></div>
         ${missing ? `<div class="lx-evidence__item"><dt class="lx-evidence__label">Faltam</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(missing)}</dd></div>` : ''}
       </dl>
       ${decision}
@@ -235,34 +239,116 @@ export function datesCard(dep, states, { action }) {
           <div class="demo-swap">${months}</div>
           <ul class="lx-calendar__legend">${legend}</ul>
         </div>
-        <p class="demo-sync demo-only-9x16">
-          <span>A gerar <strong class="demo-figure">${swapSpans(
+        <p class="demo-sync" id="dates-sync">
+          <span>Créditos a gerar</span>
+          <strong class="demo-figure">${swapSpans(
             'ts',
             states.map((s) => credits(s.added)),
-          )}</strong></span>
-          <span>Saldo projetado <strong class="demo-figure">${swapSpans(
-            'tq',
-            states.map((s) => credits(s.projected)),
-          )}</strong></span>
+          )}</strong>
         </p>
       </details>
       <button class="lx-button lx-button--primary" type="button" id="deposit-go" tabindex="-1"${states[0].nights.length ? '' : ' aria-disabled="true"'}><span class="demo-swap"><span id="deposit-label">${action}</span><span id="deposit-busy">Confirmando o depósito</span></span></button>
     </section>`;
 }
 
-/** Cartão 3 — depósito confirmado (operação própria): novos Créditos e saldo disponível. */
+/**
+ * Cartão 3 — depósito realizado (operação própria, direção v10): os novos Créditos já estão na Carteira e formam o novo
+ * saldo disponível. Só depois dele a destinação à reserva começa (os Créditos projetados nunca são usados antes).
+ */
 export function depositedCard(dep, { next }) {
+  const dates = dep.selected.length === 1 ? 'Data depositada' : 'Datas depositadas';
   return `
-    <section class="demo-card demo-card--task" id="deposited" data-surface="deep" aria-label="Depósito confirmado">
-      <p class="demo-state demo-state--done">${icon('i-check')}Depósito confirmado</p>
-      <p><span class="lx-ordinal">${credits(dep.originated)}</span> <span class="demo-sub">novos Créditos</span></p>
+    <section class="demo-card demo-card--task" id="deposited" data-surface="deep" aria-label="Depósito realizado">
+      <p class="demo-state demo-state--done">${icon('i-check')}Depósito realizado</p>
+      <p><span class="lx-ordinal">+${credits(dep.originated)}</span> <span class="demo-sub">Créditos na sua Carteira</span></p>
       <dl class="lx-evidence">
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Datas depositadas</dt><dd class="demo-evidence-text">${nightsList(dep.selected)} · ${dep.secondHome.name}</dd></div>
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Saldo disponível</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(dep.afterDeposit)}</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">${dates}</dt><dd class="demo-evidence-text">${nightsList(dep.selected)} · ${dep.secondHome.name}</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Novo saldo disponível</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(dep.afterDeposit)}</dd></div>
       </dl>
       <p class="demo-note">${icon('i-info')}<span>${ROLE_TEXT[dep.role].depositedNote}</span></p>
       <button class="lx-button lx-button--primary" type="button" id="deposited-next" tabindex="-1">${next}</button>
     </section>`;
+}
+
+/** Créditos em milhares para o contador do cartão de destinação (o contador CSS escreve "N.000"). */
+const THOUSAND = 1_000;
+const thousands = (value) => {
+  if (value % THOUSAND)
+    throw new Error(`Contador de destinação só em milhares de Créditos: ${value}`);
+  return value / THOUSAND;
+};
+
+/**
+ * Valor que anda com o controle, em três camadas no mesmo lugar e com o mesmo desenho: o texto inicial, o contador CSS
+ * durante o movimento (decorativo, fora da árvore de acessibilidade) e o texto final. `data-alloc` no cartão escolhe a
+ * camada visível; leitores de tela e a verificação leem sempre um texto real.
+ */
+function countLayers(kind, from, to) {
+  const live =
+    kind === 'dest'
+      ? '<span class="demo-count__zero">0</span><span class="demo-count__n demo-count__n--dest"></span>'
+      : '<span class="demo-count__n demo-count__n--rest"></span>';
+  return `<span class="demo-count__initial">${credits(from)}</span><span class="demo-count__live" aria-hidden="true">${live}</span><span class="demo-count__final">${credits(to)}</span>`;
+}
+
+/**
+ * Cartão 4 — destinação dos Créditos à solicitação (direção v10), um controle distinto do depósito: a trilha é o saldo
+ * disponível, a marca é a necessidade da reserva e o controle para nela (rules.js#allocateCredits). "Destinados" e
+ * "Permanecerá disponível" são contadores CSS da mesma posição do controle, então andam juntos com ele. A revisão só se
+ * habilita com a necessidade coberta por inteiro (rules.js#allocationCovers); nenhuma Request segue com Créditos parciais.
+ * Coreografado para o vídeo como o controle do depósito (role="slider" fora da ordem de foco).
+ */
+export function allocationCard({ available, needed, next }) {
+  const style = `--pos: 0; --need: ${needed / available}; --avail-k: ${thousands(available)}`;
+  return `
+    <section class="demo-card demo-card--task" id="alloc" data-surface="deep" aria-label="Créditos destinados à solicitação" style="${style}">
+      <p class="lx-eyebrow">Créditos destinados à solicitação</p>
+      <div class="demo-slider-field">
+        <div class="demo-slider-head">
+          <span class="lx-label" id="alloc-label">Destinados</span>
+          <span class="demo-slider-value"><span class="demo-count">${countLayers('dest', 0, needed)}</span><span class="demo-unit">Créditos</span></span>
+        </div>
+        <div class="demo-slider" id="alloc-slider" role="slider" tabindex="-1" aria-labelledby="alloc-label" aria-valuemin="0" aria-valuemax="${needed}" aria-valuenow="0" aria-valuetext="0 Créditos">
+          <span class="demo-slider__track"></span>
+          <span class="demo-slider__fill"></span>
+          <span class="demo-slider__need" aria-hidden="true"></span>
+          <span class="demo-slider__thumb"></span>
+        </div>
+        <div class="demo-slider-scale" aria-hidden="true"><span>0</span><span>${credits(available)}</span></div>
+      </div>
+      <dl class="demo-legend demo-legend--three">
+        <div><dt>Disponíveis</dt><dd>${credits(available)}</dd></div>
+        <div><dt>Necessários</dt><dd>${credits(needed)}</dd></div>
+        <div><dt>Permanecerá disponível</dt><dd><span class="demo-count">${countLayers('rest', available, available - needed)}</span></dd></div>
+      </dl>
+      <button class="lx-button lx-button--primary" type="button" id="alloc-go" tabindex="-1" aria-disabled="true">${next}</button>
+    </section>`;
+}
+
+/**
+ * Coreografia da destinação: o controle anda de 0 até a necessidade (a posição é a fonte dos contadores), e o valor
+ * acessível e a ação de continuar acompanham a chegada. Antes disso a ação fica desabilitada.
+ */
+export function allocationChoreography({ available, needed }, { at, dur }) {
+  const end = at + dur;
+  return {
+    tween: [{ sel: '#alloc', prop: '--pos', at, from: 0, to: needed / available, dur }],
+    set: [
+      { sel: '#alloc-go', attr: 'aria-disabled', at: ALWAYS, value: 'true' },
+      { sel: '#alloc-go', attr: 'aria-disabled', at: end, value: null },
+      { sel: '#alloc-slider', attr: 'aria-valuenow', at: ALWAYS, value: '0' },
+      { sel: '#alloc-slider', attr: 'aria-valuetext', at: ALWAYS, value: '0 Créditos' },
+      { sel: '#alloc', attr: 'data-alloc', at, value: 'moving' },
+      { sel: '#alloc', attr: 'data-alloc', at: end, value: 'settled' },
+      { sel: '#alloc-slider', attr: 'aria-valuenow', at: end, value: String(needed) },
+      {
+        sel: '#alloc-slider',
+        attr: 'aria-valuetext',
+        at: end,
+        value: `${credits(needed)} Créditos`,
+      },
+    ],
+  };
 }
 
 /**
@@ -270,13 +356,14 @@ export function depositedCard(dep, { next }) {
  * calendário segue) ou `via: 'calendar'` (o toque na data move o controle). Gera, da mesma fonte, as células
  * selecionadas, a posição e o valor acessível do controle, e as trocas dos números (saída antes da entrada).
  */
-export function selectionChoreography(dep, steps, { tween, needed }) {
+export function selectionChoreography(dep, steps, { tween, needed, slider = true }) {
   const max = dep.stops.at(-1).credits;
   const states = selectionStates(dep, [[], ...steps.map((s) => s.nights)], needed);
   const enter = [];
   const set = [];
   const tweens = [];
-  const valueIds = ['tv', 'tp', 'ta', 'ts', 'tq'];
+  // Sem o controle do depósito (Request da direção v10: a data se escolhe no calendário), só o valor a gerar troca.
+  const valueIds = slider ? ['tv', 'tp', 'ta', 'ts'] : ['ts'];
   // A linha do tempo é a fonte do estado em cada quadro (stage.js remove o atributo antes do primeiro passo): sem datas,
   // a ação de depósito começa desabilitada.
   if (!states[0].nights.length)
@@ -290,22 +377,24 @@ export function selectionChoreography(dep, steps, { tween, needed }) {
     const step = steps[i - 1];
     const prev = states[i - 1];
     // O valor acompanha o controle: posição animada, valor acessível no fim do movimento.
-    tweens.push({
-      sel: '#topup-slider',
-      prop: '--pos',
-      at,
-      from: prev.added / max,
-      to: state.added / max,
-    });
-    set.push(
-      { sel: '#topup-slider', attr: 'aria-valuenow', at: at + EXIT, value: String(state.added) },
-      {
+    if (slider)
+      tweens.push({
         sel: '#topup-slider',
-        attr: 'aria-valuetext',
-        at: at + EXIT,
-        value: `${credits(state.added)} Créditos`,
-      },
-    );
+        prop: '--pos',
+        at,
+        from: prev.added / max,
+        to: state.added / max,
+      });
+    if (slider)
+      set.push(
+        { sel: '#topup-slider', attr: 'aria-valuenow', at: at + EXIT, value: String(state.added) },
+        {
+          sel: '#topup-slider',
+          attr: 'aria-valuetext',
+          at: at + EXIT,
+          value: `${credits(state.added)} Créditos`,
+        },
+      );
     // Datas novas na seleção: no toque (calendário) ou quando o controle chega à meta (metade do movimento).
     const selectedAt = step.via === 'slider' ? at + tween / 2 : at;
     // A ação de depósito só fica habilitada com pelo menos uma data selecionada (sem datas, não há o que depositar).
@@ -324,7 +413,9 @@ export function selectionChoreography(dep, steps, { tween, needed }) {
           at: selectedAt,
           value: true,
         },
-        { sel: `[data-pick="${night}"]`, attr: 'data-selected', at: selectedAt, value: true },
+        ...(slider
+          ? [{ sel: `[data-pick="${night}"]`, attr: 'data-selected', at: selectedAt, value: true }]
+          : []),
       );
   });
   return { enter, set, tween: tweens, states };

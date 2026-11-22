@@ -1,14 +1,16 @@
-// Motion graphic editorial dos Créditos (ROTEIRO.md C04), conceitual: Créditos válidos que você já tem + novos
-// Créditos de datas elegíveis depositadas → um só saldo para viver outras Second Homes, com Membership vigente, em
-// Luxchange Request ou Direct. Comunica liberdade, não contrato: sem números nem personagem; a formação do saldo de Helena (48.000 + 46.000 =
-// 94.000) acontece uma única vez no filme, na Request (credits-step.js). Camada editorial da montagem, não interface:
-// nenhum botão, nenhuma etapa transacional.
+// Motion graphic editorial dos Créditos (ROTEIRO.md C04), conceitual. Direção v10 (2026-11-22), como uma equação:
+// Créditos disponíveis atualmente + Créditos que podem ser gerados ao depositar datas = saldo potencial para intercâmbio
+// Luxchange. Antes do depósito confirmado, os novos Créditos são projeção: por isso "podem ser gerados" e "saldo
+// potencial", nunca "disponível"; o saldo disponível só aparece na Request, depois do depósito realizado
+// (credits-step.js). Sem números nem personagem: a formação do saldo de Helena (48.000 + 14.000 = 62.000) acontece uma
+// única vez no filme, na Request. Camada editorial da montagem, não interface: nenhum botão, nenhuma etapa
+// transacional.
 //
 // Regras que a composição respeita: Créditos só se usam com Membership vigente (BR-195, escrito no painel); valem 24
-// meses (BR-191: "válidos"); o depósito origina Créditos e a capacidade entra no Inventário Luxtory (REQ-060,
-// BR-202) — a data nunca paga a reserva diretamente; no Co-Owner, só data já reservada é depositada (BR-151, nota do painel);
-// lotes diferentes compõem o saldo (PD-008, mostrado na Request, não aqui). Obrigatórias pela L3 de b2c.md: a condição
-// de Membership vigente (painel e narração), "Crédito não é moeda" e a regra do Co-Owner (nota do painel); a taxa de cada
+// meses (BR-191); o depósito origina Créditos e a capacidade entra no Inventário Luxtory (REQ-060, BR-202) — a data
+// nunca paga a reserva diretamente; no Co-Owner, só data já reservada é depositada (BR-151, nota do painel); lotes
+// diferentes compõem o saldo (PD-008, mostrado na Request, não aqui). Obrigatórias pela L3 de b2c.md: a condição de
+// Membership vigente (painel e narração), "Crédito não é moeda" e a regra do Co-Owner (nota do painel); a taxa de cada
 // modalidade fica nos títulos das modalidades.
 import { ICONS, icon } from './shared.js';
 
@@ -27,9 +29,9 @@ export const SUPERS = {
 export const FOOTNOTE = `${SUPERS.credits} ${SUPERS.coOwner}`;
 
 export const ROWS = {
-  prior: 'Créditos válidos que você já tem',
-  fresh: 'Novos Créditos, de datas elegíveis depositadas',
-  total: 'Um só saldo para viver outras Second Homes',
+  prior: 'Créditos disponíveis atualmente',
+  fresh: 'Créditos que podem ser gerados ao depositar datas',
+  total: 'Saldo potencial para intercâmbio Luxchange',
 };
 
 export function build(stage, fmt) {
@@ -89,12 +91,13 @@ export function timeline() {
     ],
     marks: [
       { at: prior - 300, label: 'painel dos Créditos (conceitual, sem números)' },
-      { at: prior, label: 'Créditos válidos que você já tem' },
+      { at: prior, label: 'Créditos disponíveis atualmente' },
       {
         at: deposit,
-        label: '+ novos Créditos de datas elegíveis depositadas (entra a nota com as ressalvas)',
+        label:
+          '+ Créditos que podem ser gerados ao depositar datas (entra a nota com as ressalvas)',
       },
-      { at: total, label: '= um só saldo para viver outras Second Homes' },
+      { at: total, label: '= saldo potencial para intercâmbio Luxchange' },
       { at: use, label: 'com Membership vigente, em Request ou Direct' },
       { at: 10_500, label: 'fim (corte para C05)' },
     ],

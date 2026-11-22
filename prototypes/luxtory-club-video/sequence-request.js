@@ -1,7 +1,8 @@
-// Coreografia da Luxchange Request (revisão de UX de 2026-11-15): escolha da estadia → Créditos necessários × saldo →
-// complementação opcional por depósito de datas elegíveis (controle + calendário do Direito de Uso) → depósito
-// confirmado → revisão → Taxa de intercâmbio → pagamento e envio → Garantia (só no envio) → aceite expresso do
-// membro que recebe a solicitação → revalidação → solicitação aceita + reserva confirmada na mesma operação (REQ-064).
+// Coreografia da Luxchange Request (direção v10, 2026-11-22): escolha da estadia → Créditos necessários × saldo →
+// depósito de uma data do Direito de Uso (calendário) → depósito realizado (novo saldo na Carteira) → destinação dos
+// Créditos à solicitação (controle próprio, só com a necessidade coberta por inteiro) → revisão → Taxa de intercâmbio →
+// pagamento e envio → Garantia (só no envio) → aceite expresso do membro que recebe a solicitação → revalidação →
+// solicitação aceita + reserva confirmada na mesma operação (REQ-064), quando a Garantia é consumida.
 // Todo valor exibido vem de requestScenario() e depositScenario() (data.js → rules.js). A capacidade pedida não fica
 // bloqueada enquanto a Request está pendente (PD-005).
 // Copy do filme (direção final, 2026-11-19): "Membro" na comunicação (quem solicita / quem recebe), sem Owner, Co-Owner
@@ -24,13 +25,14 @@ import {
   swapIn,
 } from './shared.js';
 import {
+  allocationCard,
+  allocationChoreography,
   datesCard,
   depositedCard,
   openingMonth,
   needCard,
   selectionChoreography,
   selectionStates,
-  topupCard,
 } from './credits-step.js';
 
 const s = requestScenario();
@@ -42,11 +44,12 @@ const periodShort = periodCompact(s.checkin, s.checkout);
 const HOUR_MS = 3_600_000;
 export const REPLY_HOURS = (s.expiresAt - s.sentAt) / HOUR_MS;
 const GROW_MS = 480; // duration.slow
+export const DEPOSIT_ACTION = `Depositar ${dep.selected.length === 1 ? 'data' : 'datas'} e gerar Créditos`;
 // Segunda tela (direção v8.2): só a dependência do aceite, sem repetir o banner.
 const route = `${icon('i-info')}<span>Esta reserva depende do aceite do Membro que reservou as noites solicitadas.</span>`;
-// Seleção (fonte única: as datas). O controle vai ao mínimo que cobre o que falta (14.000: a sugestão para essa meta é
-// 16/05), e é isso que Helena deposita (direção v8.2): nada de datas a mais só para mostrar o controle. A meta é
-// alcançável com uma data inteira (rules.js#depositStops), e a seleção coincide com o depósito dos dados.
+// Seleção (fonte única: as datas): a menor seleção que cobre o que falta (14.000, só 16/05), que é o que Helena deposita
+// (direção v8.2). Cada data gera seus Créditos por inteiro (rules.js#depositStops); não há depósito de só 7.000. Na
+// direção v10 a data se escolhe no calendário, e a seleção coincide com o depósito dos dados.
 const SELECTION = [selectionForTarget(dep.eligible, dep.minimum.credits)];
 if (SELECTION.at(-1).join() !== dep.selected.join())
   throw new Error('Seleção da coreografia diferente do depósito de data.js');
@@ -77,15 +80,15 @@ export function build(stage, fmt) {
     </section>
 
     ${needCard({ title: `${periodShort} · ${s.nights.length} noites`, needed: s.credits, available: dep.priorAvailable, role: dep.role, sufficient: false })}
-    ${topupCard(dep, states)}
-    ${datesCard(dep, states, { action: 'Depositar datas e gerar Créditos' })}
-    ${depositedCard(dep, { next: 'Revisar solicitação' })}
+    ${datesCard(dep, states, { action: DEPOSIT_ACTION })}
+    ${depositedCard(dep, { next: 'Destinar Créditos' })}
+    ${allocationCard({ ...s.allocation, next: 'Revisar solicitação' })}
 
     <section class="demo-card demo-card--task" id="review" data-surface="deep" aria-label="Revisão da solicitação">
       <p class="lx-eyebrow">Revisar solicitação</p>
       <p class="lx-title">${s.secondHome.name} · ${period}</p>
       <dl class="lx-evidence">
-        <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos necessários</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(s.credits)}</dd><dd class="demo-hint">Vão para a Garantia no envio</dd></div>
+        <div class="lx-evidence__item"><dt class="lx-evidence__label">Créditos destinados</dt><dd class="lx-evidence__value lx-evidence__value--strong">${credits(s.allocation.allocated)}</dd><dd class="demo-hint">Vão para a Garantia no envio</dd></div>
         <div class="lx-evidence__item"><dt class="lx-evidence__label">Taxa de intercâmbio</dt><dd class="lx-evidence__value">${brl(s.feeCents)}</dd><dd class="demo-hint">Paga no envio, separada dos Créditos; devolvida se não houver aceite</dd></div>
       </dl>
       <label class="lx-check"><input type="checkbox" id="policy" tabindex="-1"><span>Li e aceito a política comercial aplicável</span></label>
@@ -153,7 +156,10 @@ export function build(stage, fmt) {
 
 const share = (part) => part / s.balances.beforeSend.available;
 
-/** Instantes de cada formato. Depois do depósito confirmado, os dois formatos seguem juntos. */
+/**
+ * Instantes de cada formato. Direção v10: um estado por vez — saldo insuficiente → calendário (16/05) → depósito
+ * realizado → destinação dos Créditos → revisão → envio. Depois da escolha das datas, os dois formatos seguem juntos.
+ */
 export function times(fmt) {
   const v = fmt === '9x16';
   return {
@@ -162,31 +168,33 @@ export function times(fmt) {
     needIn: 5_800,
     topupPress: 8_200,
     stepOut: 8_600,
-    topupIn: 8_900,
-    // 16:9: controle e calendário lado a lado. 9:16: um cartão por vez — controle, depois calendário.
-    // O valor troca sem crossfade (saída 280 ms + entrada 480 ms) e fica visível até a saída do cartão; a montagem
-    // corta o tempo parado entre o controle e o depósito.
-    slider: v ? 9_500 : 10_700,
-    topupOut: v ? 10_900 : 15_700,
-    datesIn: v ? 11_200 : 8_900,
-    depositPress: 14_900,
-    depositOut: 15_700,
-    depositedIn: 16_000,
-    reviewPress: 17_900,
-    reviewOut: 18_300,
-    reviewIn: 18_600,
-    policy: 19_600,
-    pay: 20_800,
-    sendOut: 22_200,
+    datesIn: 8_900,
+    // Toque em 16/05: o calendário já foi lido (título e legenda) e a data gera os Créditos inteiros dela.
+    daySelect: 11_000,
+    depositPress: 13_300,
+    depositOut: 14_100,
+    depositedIn: 14_400,
+    allocPress: 16_900,
+    allocOut: 17_300,
+    allocIn: 17_600,
+    // O controle de destinação anda de 0 até a necessidade (55.000); só na chegada a revisão se habilita.
+    allocSlide: 18_600,
+    allocSlideMs: 1_200,
+    reviewPress: 20_900,
+    reviewOut: 21_300,
+    reviewIn: 21_600,
+    policy: 22_600,
+    pay: 23_800,
+    sendOut: 25_200,
     // Commit do envio: a Request aparece Pendente e a Garantia é constituída no mesmo instante (PD-005, PD-006).
-    sendCommit: 22_500,
-    pendingOut: 26_500,
-    holderIn: 26_900,
-    accept: 29_300,
-    holderOut: 31_100,
+    sendCommit: 25_500,
+    pendingOut: 29_500,
+    holderIn: 29_900,
+    accept: 32_300,
+    holderOut: 34_100,
     // Aceite válido: o cartão do detentor sai e, na mesma operação, entram Request Aceita e Reserva Confirmada.
-    result: 31_400,
-    duration: 35_000,
+    result: 34_400,
+    duration: 38_000,
   };
 }
 
@@ -196,11 +204,15 @@ export function timeline(fmt) {
   const tween = 900; // duration.cinematic (stage.js MOTION.tween)
   const selection = selectionChoreography(
     dep,
-    [{ at: t.slider, nights: SELECTION[0], via: 'slider' }],
-    { tween, needed: s.credits },
+    [{ at: t.daySelect, nights: SELECTION[0], via: 'calendar' }],
+    { tween, needed: s.credits, slider: false },
   );
   // O calendário do depósito abre direto em maio, o primeiro mês com datas elegíveis (sem navegar a partir de abril).
   const opening = openingMonth(dep);
+  const allocation = allocationChoreography(s.allocation, {
+    at: t.allocSlide,
+    dur: t.allocSlideMs,
+  });
   const valueIn = t.sendCommit + 280;
   return {
     duration: t.duration,
@@ -213,15 +225,16 @@ export function timeline(fmt) {
       { sel: '#cal-route', in: 4_200 },
       // Créditos necessários × saldo: uma decisão (complementar)
       { sel: '#need', in: t.needIn, out: t.stepOut },
-      // Complementação: controle e calendário, sincronizados
-      { sel: '#topup', in: t.topupIn, out: t.topupOut },
+      // Depósito de novas datas: o calendário do Direito de Uso, um cartão só
       { sel: '#dates', in: t.datesIn, out: t.depositOut },
       ...opening.enter,
       ...selection.enter,
       { sel: '#deposit-label', in: ALWAYS, out: t.depositPress + 100 },
       { sel: '#deposit-busy', in: swapIn(t.depositPress + 100), dur: 0 },
-      // Depósito confirmado (operação própria) e, no 16:9, o saldo de Créditos ao lado
-      { sel: '#deposited', in: t.depositedIn, out: t.reviewOut },
+      // Depósito realizado (operação própria): os Créditos já estão na Carteira
+      { sel: '#deposited', in: t.depositedIn, out: t.allocOut },
+      // Destinação dos Créditos à solicitação: só depois do depósito realizado
+      { sel: '#alloc', in: t.allocIn, out: t.reviewOut },
       // Saldo e Garantia só no envio: antes disso o depósito confirmado já mostra o saldo (sem informação duplicada).
       { sel: '#credits', in: t.sendCommit, out: t.pendingOut },
       // Revisão, Taxa de intercâmbio, pagamento e envio
@@ -251,11 +264,14 @@ export function timeline(fmt) {
       { sel: '[data-day="2027-06-07"]', attr: 'data-range', at: 3_260, value: 'end' },
       ...press('#cal-next', 5_200),
       ...press('#need-topup', t.topupPress),
+      ...press(`[data-deposit-day="${SELECTION[0][0]}"] .lx-calendar__day`, t.daySelect),
       ...selection.set,
       ...press('#deposit-go', t.depositPress),
       { sel: '#deposit-go', attr: 'aria-busy', at: t.depositPress + 100, value: 'true' },
       { sel: '#deposit-go', attr: 'aria-busy', at: t.depositOut, value: null },
-      ...press('#deposited-next', t.reviewPress),
+      ...press('#deposited-next', t.allocPress),
+      ...allocation.set,
+      ...press('#alloc-go', t.reviewPress),
       { sel: '#policy', attr: 'checked', at: t.policy, value: true },
       ...press('#send', t.pay),
       { sel: '#send', attr: 'aria-busy', at: t.pay + 100, value: 'true' },
@@ -264,6 +280,7 @@ export function timeline(fmt) {
     ],
     tween: [
       ...selection.tween,
+      ...allocation.tween,
       // O cartão de quem recebe começa compacto (ações logo abaixo do texto); depois do toque em Aceitar, a área cresce
       // até a revalidação em duration.slow, sem vão reservado antes e sem salto de layout (v8.4).
       { sel: '#holder-swap', prop: '--grow', at: t.accept + 100, from: 0, to: 1, dur: GROW_MS },
@@ -290,16 +307,18 @@ export function timeline(fmt) {
       ...(v ? [] : [{ at: 5_200, label: 'toque · Continuar' }]),
       { at: t.needIn, label: 'Créditos necessários 55.000 × saldo 48.000: faltam 7.000' },
       { at: t.topupPress, label: 'toque · Complementar saldo (datas do meu Direito de Uso)' },
-      {
-        at: t.slider,
-        label: 'controle · Créditos adicionais desejados → 14.000, o mínimo (16/05)',
-      },
-      { at: t.depositPress, label: 'toque · Depositar datas e gerar Créditos' },
+      { at: t.daySelect, label: 'toque · 16/05 (gera 14.000 Créditos, a data inteira)' },
+      { at: t.depositPress, label: `toque · ${DEPOSIT_ACTION}` },
       {
         at: t.depositedIn,
-        label: `depósito confirmado: ${credits(dep.originated)} novos Créditos · saldo ${credits(dep.afterDeposit)}`,
+        label: `depósito realizado: +${credits(dep.originated)} · novo saldo ${credits(dep.afterDeposit)}`,
       },
-      { at: t.reviewPress, label: 'toque · Revisar Request' },
+      { at: t.allocPress, label: 'toque · Destinar Créditos' },
+      {
+        at: t.allocSlide,
+        label: `destinação: 0 → ${credits(s.allocation.allocated)} (permanecem ${credits(s.allocation.remaining)})`,
+      },
+      { at: t.reviewPress, label: 'toque · Revisar solicitação' },
       { at: t.policy, label: 'toque · aceite da política' },
       { at: t.pay, label: 'toque · Pagar taxa e enviar' },
       { at: t.sendCommit, label: 'solicitação pendente; Garantia constituída (55.000)' },
@@ -336,49 +355,72 @@ export const qa = {
       expect: [
         'Créditos necessários',
         credits(s.credits),
-        'Saldo válido disponível',
+        'Saldo disponível',
         credits(dep.priorAvailable),
         'Faltam',
         credits(dep.shortfall),
         'Complementar saldo',
-        'Datas elegíveis inteiras do meu Direito de Uso geram novos Créditos',
+        'Datas inteiras do meu Direito de Uso geram novos Créditos',
       ],
-      absent: ['Em Garantia'],
+      absent: ['Em Garantia', 'Destinados'],
     },
     {
-      t: 14_880,
+      t: T.depositPress - 100,
       name: 'complemento',
-      expect: [credits(dep.afterDeposit), 'Depositar datas e gerar Créditos'],
-      absent: ['Em Garantia'],
-    },
-    // Copy da complementação (direção v8.3): no 16:9 o controle fica ao lado do calendário; no 9:16 ele sai antes de o
-    // calendário entrar, então o ponto é logo depois de o controle assentar em 14.000.
-    ...[
-      { fmt: '16x9', t: 14_880 },
-      { fmt: '9x16', t: times('9x16').topupOut - 100 },
-    ].map(({ fmt, t }) => ({
-      fmt,
-      t,
-      name: `complemento-copy-${fmt}`,
       expect: [
-        `Faltam ${credits(dep.shortfall)} Créditos.`,
-        `Uma data elegível gera ${credits(dep.originated)} Créditos.`,
-        'O excedente permanece disponível.',
-        credits(dep.afterDeposit),
-        credits(s.balances.afterSend.available),
+        'Selecionar datas do meu Direito de Uso',
+        'Disponível para depósito',
+        'Já comprometida',
+        'Créditos a gerar',
+        credits(dep.originated),
+        DEPOSIT_ACTION,
       ],
-    })),
+      // Nada de saldo projetado como se estivesse disponível, nem de destinação, antes do depósito realizado.
+      absent: ['Em Garantia', 'Elegível', 'Destinados', credits(dep.afterDeposit)],
+    },
     {
-      t: 17_200,
+      t: T.allocPress - 200,
       name: 'deposito',
-      expect: ['Depósito confirmado', credits(dep.originated), credits(dep.afterDeposit)],
+      expect: [
+        'Depósito realizado',
+        `+${credits(dep.originated)}`,
+        'Créditos na sua Carteira',
+        'Novo saldo disponível',
+        credits(dep.afterDeposit),
+      ],
+      absent: ['Em Garantia', 'Destinados'],
+    },
+    {
+      t: T.allocSlide - 200,
+      name: 'destinacao-inicio',
+      expect: [
+        'Créditos destinados à solicitação',
+        'Disponíveis',
+        credits(s.allocation.available),
+        'Necessários',
+        credits(s.allocation.needed),
+        'Permanecerá disponível',
+      ],
       absent: ['Em Garantia'],
     },
     {
-      t: 20_400,
+      t: T.reviewPress - 200,
+      name: 'destinacao',
+      expect: [
+        'Créditos destinados à solicitação',
+        credits(s.allocation.available),
+        credits(s.allocation.needed),
+        credits(s.allocation.remaining),
+      ],
+      absent: ['Em Garantia'],
+    },
+    {
+      t: T.pay - 200,
       name: 'revisao',
       expect: [
-        credits(s.credits),
+        'Créditos destinados',
+        credits(s.allocation.allocated),
+        'Vão para a Garantia no envio',
         'Taxa de intercâmbio',
         brl(s.feeCents),
         'separada dos Créditos',
@@ -388,7 +430,7 @@ export const qa = {
       absent: ['Em Garantia'],
     },
     {
-      t: 24_600,
+      t: T.sendCommit + 2_100,
       name: 'pendente',
       expect: [
         'Aguardando resposta',
@@ -403,7 +445,7 @@ export const qa = {
       absent: ['lote', 'Créditos anteriores', 'Novo depósito', `${REPLY_HOURS} horas`],
     },
     {
-      t: 28_300,
+      t: T.holderIn + 1_400,
       name: 'recebida',
       expect: [
         'Membro que recebe',
@@ -418,7 +460,7 @@ export const qa = {
       ],
     },
     {
-      t: 30_900,
+      t: T.accept + 1_600,
       name: 'revalidacao',
       expect: [
         'Revalidando antes de confirmar',
@@ -427,7 +469,7 @@ export const qa = {
       ],
     },
     {
-      t: 33_000,
+      t: T.result + 1_600,
       name: 'confirmacao',
       expect: [
         'Solicitação aceita',
@@ -448,23 +490,24 @@ export const qa = {
       [s.checkout, 'end'],
     ]),
   },
-  // Seleção esperada no calendário do depósito, ao fim da complementação (fonte única: as datas).
-  deposit: { t: 14_880, selected: dep.selected },
+  // Seleção esperada no calendário do depósito, antes do toque em depositar (fonte única: as datas).
+  deposit: { t: T.depositPress - 100, selected: dep.selected },
   stills: {
     calendario: 4_800,
     creditos: 7_600,
-    complemento: 14_880,
-    deposito: 17_200,
-    revisao: 20_400,
-    pendente: 24_600,
-    revalidacao: 30_900,
-    confirmacao: 33_000,
+    complemento: T.depositPress - 100,
+    deposito: T.allocPress - 200,
+    destinacao: T.reviewPress - 200,
+    revisao: T.pay - 200,
+    pendente: T.sendCommit + 2_100,
+    revalidacao: T.accept + 1_600,
+    confirmacao: T.result + 1_600,
   },
   // Trecho do aceite: toque em Aceitar, revalidação, saída do cartão e Request Aceita + Reserva Confirmada.
   alpha: { from: T.accept - 200, seconds: 4 },
-  sample: { card: '#accepted', at: 33_000 },
-  edge: { card: '#booking', at: 33_000 },
-  motion: { card: '#holder', at: 28_300, enter: [T.holderIn, T.holderIn + 480] },
+  sample: { card: '#accepted', at: T.result + 1_600 },
+  edge: { card: '#booking', at: T.result + 1_600 },
+  motion: { card: '#holder', at: T.holderIn + 1_400, enter: [T.holderIn, T.holderIn + 480] },
   // Placas internas de teste da Azzura Home: a foto provisória do litoral e a mesma foto escurecida (placas.mjs).
   plates: {
     claro: 'public/images/home/hero/hero-lifestyle.jpg',

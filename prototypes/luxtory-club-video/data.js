@@ -5,6 +5,8 @@
 //   scenario() — valores derivados de FICTITIOUS pelas fórmulas de rules.js (nunca digitados à mão).
 import {
   DEPOSIT_STATUS,
+  allocateCredits,
+  allocationCovers,
   canDeposit,
   cessionEffect,
   creditsOfSelection,
@@ -33,11 +35,15 @@ export const CANONICAL = Object.freeze({
 });
 
 /**
- * Configuração da demonstração da Request (direção v8.3): proposta comercial de 48 horas para responder, dentro do PD-005
- * ("prazo padrão 24 horas, administrável"). Não é parâmetro aprovado para Production; CANONICAL guarda o padrão do 02. A
- * simulação expira de fato em 48 horas e a tela deriva o prazo dela (nunca um número escrito à mão).
+ * Configuração da demonstração (filmes do Luxtory Club). Não é parâmetro aprovado para Production; CANONICAL guarda os
+ * parâmetros dos canônicos e continua intocado.
+ * - Request (direção v8.3): proposta comercial de 48 horas para responder, dentro do PD-005 ("prazo padrão 24 horas,
+ *   administrável"). A simulação expira de fato em 48 horas e a tela deriva o prazo dela (nunca um número à mão).
+ * - Taxa de intercâmbio (decisão comercial de 2026-11-22, só para o filme): 12% do PRL do período, com o mesmo mínimo
+ *   de R$ 120,00 do 01 §24, na mesma fórmula (rules.js#luxchangeFee), para Request e Direct. O 01 §24 segue em 10% até
+ *   uma atualização normativa; o multiplicador de Créditos, os PRLs, a Garantia e o FEFO não mudam.
  */
-export const DEMO = Object.freeze({ ...CANONICAL, requestExpiryHours: 48 });
+export const DEMO = Object.freeze({ ...CANONICAL, requestExpiryHours: 48, feePercent: 12 });
 
 export const FICTITIOUS = Object.freeze({
   timeZone: 'America/Sao_Paulo',
@@ -252,8 +258,10 @@ export function requestScenario(data = FICTITIOUS, params = DEMO) {
   if (!(acceptedAt < expiresAt)) throw new Error('Aceite fictício fora do prazo');
   const prlPeriodCents = prlOfPeriod(r.prlCents);
   const credits = creditsForPrl(prlPeriodCents, params);
-  const hold = holdCreditsFefo(lots, credits, { now: sentAt, requestExpiresAt: expiresAt });
   const total = lots.reduce((sum, lot) => sum + lot.available, 0);
+  if (!allocationCovers(allocateCredits(credits, { available: total, needed: credits }), credits))
+    throw new Error('Saldo fictício insuficiente para a Request depois do depósito');
+  const hold = holdCreditsFefo(lots, credits, { now: sentAt, requestExpiresAt: expiresAt });
   return {
     requesterName: data.requester.name,
     secondHome: data.secondHomes[r.secondHome],
@@ -268,6 +276,13 @@ export function requestScenario(data = FICTITIOUS, params = DEMO) {
     acceptedAt,
     lots,
     hold,
+    // Destinação depois do depósito confirmado: limitada ao saldo e à necessidade; cobre a reserva por inteiro.
+    allocation: {
+      available: total,
+      needed: credits,
+      allocated: allocateCredits(credits, { available: total, needed: credits }),
+      remaining: total - allocateCredits(credits, { available: total, needed: credits }),
+    },
     balances: {
       beforeSend: { available: total, held: 0, consumed: 0 },
       afterSend: { available: total - credits, held: credits, consumed: 0 },
@@ -293,10 +308,10 @@ export function requestScenario(data = FICTITIOUS, params = DEMO) {
 
 /**
  * Cenário do Luxchange Direct (Inventário Luxtory): sem aceite de terceiro (BR-220); Créditos consumidos por FEFO
- * na confirmação (BR-221, PD-008); Fee pago antes da confirmação (TECH-082) — aqui, o ramo do mínimo (01 §24).
- * Carteira própria do Membro do Direct (direção v8.2): não herda o saldo de quem fez a Request.
+ * na confirmação (BR-221, PD-008); Fee pago antes da confirmação (TECH-082), com a configuração da demonstração (12%,
+ * mínimo de R$ 120,00). Carteira própria do Membro do Direct (direção v8.2): não herda o saldo de quem fez a Request.
  */
-export function directScenario(data = FICTITIOUS, params = CANONICAL) {
+export function directScenario(data = FICTITIOUS, params = DEMO) {
   const d = data.direct;
   const now = at(d.at);
   const lots = walletLots(data.directMember.lots, params);

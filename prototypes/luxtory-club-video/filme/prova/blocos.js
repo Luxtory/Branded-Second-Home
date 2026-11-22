@@ -7,7 +7,11 @@
 // - `signature`: assinatura oficial (sequence-assinatura.js) com dissolve da imagem para o cartão.
 // Nada aqui acelera ou desacelera interface: a sequência toca em tempo real e só ganha pausas. Os cortes e trechos caem
 // na grade de 3 quadros (125 ms a 24 fps), para o corte de imagem e a troca de interface coincidirem.
-import { DURATION as SIGNATURE_MS } from '../../sequence-assinatura.js';
+import {
+  LINE_IN as SIGNATURE_LINE_IN_MS,
+  MAX_DISSOLVE as SIGNATURE_MAX_DISSOLVE_MS,
+  DURATION as SIGNATURE_MS,
+} from '../../sequence-assinatura.js';
 
 export const FPS = 24;
 export const GRID_MS = 125;
@@ -21,7 +25,7 @@ const ENTER_MS = 480; // duration.slow (entrada do Core)
 const EXIT_MS = 280; // duration.moderate (saída do Core, stage.js MOTION.exit)
 const LEGAL_MS = 4_000;
 const LEGAL_DELAY_MS = 400; // a ressalva entra depois do corte
-const SIGNATURE_VO_AT_MS = 1_500; // narração da assinatura, depois de a logo assentar
+const SIGNATURE_VO_AT_MS = SIGNATURE_LINE_IN_MS; // narração da assinatura, com a frase, depois de a logo assentar
 // Narração: ritmo de conversa (≈ 2,6 palavras por segundo, ROTEIRO.md §4).
 const VO_WORDS_PER_S = 2.6;
 
@@ -200,6 +204,11 @@ const PLACE = {
   },
 
   signature(acc, block) {
+    // A logo entra depois do dissolve (sequence-assinatura.js): um dissolve maior a mostraria sobre a imagem anterior.
+    if (!(block.dissolve > 0 && block.dissolve <= SIGNATURE_MAX_DISSOLVE_MS))
+      throw new Error(
+        `Dissolve da assinatura fora de (0, ${SIGNATURE_MAX_DISSOLVE_MS}] ms: ${block.dissolve}`,
+      );
     const at = acc.t;
     acc.ui.push({ seq: 'assinatura', at, from: 0, to: SIGNATURE_MS, fadeIn: block.dissolve });
     acc.t = at + SIGNATURE_MS;

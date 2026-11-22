@@ -196,6 +196,20 @@ export function minimumCovering(eligible, shortfall) {
   return depositStops(eligible).find((s) => s.credits > 0 && s.credits >= shortfall) ?? null;
 }
 
+/**
+ * Destinação de Créditos a uma reserva (etapa editorial do filme, depois do depósito confirmado). A quantidade fica
+ * limitada pelo saldo disponível e pela necessidade da reserva. A reserva só segue com a necessidade coberta por
+ * inteiro: não existe Request ou Direct paga em parte com Créditos (os Créditos do período são PRL × multiplicador).
+ * Créditos projetados de um depósito ainda não confirmado não entram no saldo disponível.
+ */
+export function allocateCredits(requested, { available, needed }) {
+  return Math.max(0, Math.min(requested, available, needed));
+}
+
+export function allocationCovers(allocated, needed) {
+  return allocated === needed;
+}
+
 /** PD-002 — noites de [entrada, saída): a data de saída não é usada. Datas civis 'AAAA-MM-DD'. */
 export function nightsOf(checkinDate, checkoutDate) {
   const nights = [];

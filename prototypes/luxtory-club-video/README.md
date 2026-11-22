@@ -76,6 +76,9 @@ muda a cadência e `--realtime` refaz a comparação com captura em tempo real.
   TECH-044).
 - Luxchange Fee (na tela, "Taxa de intermediação") = maior entre 10% do PRL do período e R$ 120 (01 §24, BR-230, BR-231), com HALF_UP no valor final
   (TECH-033).
+  - Filmes, a partir da v10: a "Taxa de intercâmbio" usa 12% em `data.js#DEMO`, na mesma fórmula e com o mesmo mínimo.
+    São R$ 660,00 na Request e R$ 138,00 no Direct. `CANONICAL` segue em 10%. Os valores vigentes estão em
+    `filme/QUATRO-FILMES.md` § v10.
 - Request: Membership, Créditos em Garantia, Fee pago antes do envio, prazo de 24 h com `expires_at = sent_at + 24 h`
   e snapshot de PRL, Créditos e Fee (PD-005, PD-007, TECH-044). Pendente não bloqueia as noites (PD-005, REQ-063).
 - Garantia por FEFO, só com lotes válidos até a expiração da Request (PD-006, PD-008, TECH-071).

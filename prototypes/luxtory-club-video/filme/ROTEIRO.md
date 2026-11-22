@@ -42,6 +42,11 @@ Créditos de datas depositadas = um só saldo para viver outras Second Homes. O 
 saldo de 48.000, necessidade de 55.000, complementação, depósito de 46.000, saldo de 94.000 e uso de 55.000. O cenário
 completo, para referência da produção (a tabela não vai para a tela):
 
+> **Histórico.** Na v10 os valores vigentes são outros: depósito de 16/05 (+14.000), saldo de 62.000, destinação de
+> 55.000, 7.000 disponíveis e Taxa de intercâmbio de 12%, com R$ 660,00 na Request e R$ 138,00 no Direct. A sequência
+> também mudou: necessidade → calendário → depósito realizado → destinação → revisão. Tudo está em
+> `QUATRO-FILMES.md` § v10.
+
 | Momento | Créditos |
 |---|---|
 | Na Carteira, válidos, de 2 lotes | 48.000 |
