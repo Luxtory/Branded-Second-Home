@@ -14,6 +14,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- W16 — PRL e parâmetros econômicos (REQ-013, REQ-052; TECH-030, TECH-031, TECH-033; ADR-0032). Admin: tela "PRL"
+  com o calendário do mês no centro e um painel ao lado — consulta da noite (temporada e grupo de Direito de Uso,
+  preço vigente, versões futuras e histórico imutável com autoridade, base e vigência; resumo do mês com a situação
+  agora separada das alterações programadas) e definição de preços em lote:
+  noites individuais, do mês ou por temporada — Super Alta (janela de Carnaval), Alta (janeiro, julho, dezembro) ou
+  Média/Baixa, cada uma com a sua cor no calendário —, acumuladas entre meses; preço comum para as noites sem preço
+  próprio, preço próprio por noite que o comum nunca sobrescreve (substituição só explícita, com a contagem) e painel
+  compacto com a lista noite a noite sob demanda; seletores de mês e exercício (só meses do calendário) e noites
+  selecionadas junto ao calendário, por mês, removíveis, com "Limpar seleção"; revisão com PRL total e prévia de
+  Créditos antes de confirmar —, com preços
+  iniciais por Admin ou Super Admin e alteração só pelo Super Admin, sempre com efeito para o futuro. Tela "Parâmetros
+  econômicos" (Admin), em cartões: multiplicador e validade dos Créditos, percentual e mínimo do Luxchange Fee, prazo
+  da Request e valor-base anual do Membership, cada um ausente, vigente ou com versão futura, com histórico e nova
+  versão. REST `POST /v1/admin/prl` e `POST /v1/admin/prl/changes`
+  sobre os mesmos commands. Valores exatos (dinheiro em centavos, Créditos decimais, Fee com HALF_UP uma vez) e o
+  contrato `EconomicTerms` para as próximas waves. Publicar PRL ou parâmetro não cobra ninguém nem ativa mecanismos do
+  Club; nenhum valor real publicado sem autorização.
 - W15 — Membership (REQ-011, REQ-050, PD-001; ADR-0031). Admin: seção "Membership" nos dados da pessoa ou empresa
   (situação Vigente, Suspenso, Encerrado ou sem Membership; histórico com data, situação anterior, base registrada e
   papel) e confirmação de cada mudança com a base: ativar, suspender, reativar e encerrar, conforme a TECH-055; só

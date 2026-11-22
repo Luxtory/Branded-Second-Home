@@ -3,6 +3,7 @@ import {
   databaseBefore,
   differences,
   migrationDown,
+  migrationsFromNewest,
   snapshot,
   type Snapshot,
 } from '../support/catalog-snapshot';
@@ -39,7 +40,10 @@ describe('W15 — preservação do catálogo (E2)', () => {
   });
 
   it('[TECH-110][REQ-050] a W15 só acrescenta os objetos do Membership; nenhuma definição anterior muda', async () => {
-    const subject = await createTestDatabase();
+    // Banco só até a W15: as waves seguintes (W16+) têm a própria prova de preservação.
+    const newer = await migrationsFromNewest(W15);
+    const upToW15 = newer.length > 1 ? await databaseBefore(newer.at(-2)!) : null;
+    const subject = upToW15?.database ?? (await createTestDatabase());
     try {
       const after = await snapshot(subject);
       const changed = differences(w14Snapshot, after);
@@ -48,14 +52,16 @@ describe('W15 — preservação do catálogo (E2)', () => {
       expect(added.length).toBeGreaterThan(0);
       expect(added.filter((key) => !W15_OBJECTS.some((pattern) => pattern.test(key)))).toEqual([]);
     } finally {
-      await subject.drop();
+      await (upToW15 ? upToW15.dispose() : subject.drop());
     }
   });
 
   it('[TECH-110] desfazer a W15 restaura exatamente o catálogo da W14', async () => {
     const subject = await createTestDatabase();
     try {
-      await subject.pool.query(await migrationDown(W15));
+      // A W15 e as posteriores, da mais nova para a mais antiga.
+      for (const name of await migrationsFromNewest(W15))
+        await subject.pool.query(await migrationDown(name));
       expect(differences(w14Snapshot, await snapshot(subject))).toEqual([]);
     } finally {
       await subject.drop();

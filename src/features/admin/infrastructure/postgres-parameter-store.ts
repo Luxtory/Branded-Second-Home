@@ -8,8 +8,9 @@ type Reader = Pick<DatabaseTransaction, 'selectFrom'>;
 const toVersion = (row: {
   id: string;
   key: string;
-  second_home_id: string;
+  second_home_id: string | null;
   value: string;
+  currency: string | null;
   effective_from: Date | string;
   effective_to: Date | string | null;
   effective_until: Date | string | null;
@@ -18,6 +19,7 @@ const toVersion = (row: {
   key: row.key as ParameterKey,
   secondHomeId: row.second_home_id,
   value: row.value,
+  currency: row.currency === 'BRL' ? 'BRL' : null,
   effectiveFrom: new Date(row.effective_from),
   effectiveTo: row.effective_to === null ? null : new Date(row.effective_to),
   effectiveUntil: row.effective_until === null ? null : new Date(row.effective_until),
@@ -35,7 +37,9 @@ export function createPostgresParameterStore(): ParameterStore<DatabaseTransacti
       return row !== undefined;
     },
     async lockScope(tx, key, secondHomeId) {
-      await lockAdvisoryKeys(tx, [`app.parameter:${key}:${secondHomeId.toLowerCase()}`]);
+      await lockAdvisoryKeys(tx, [
+        `app.parameter:${key}:${secondHomeId?.toLowerCase() ?? 'global'}`,
+      ]);
     },
     async latest(tx, key, secondHomeId) {
       const row = await tx
@@ -45,12 +49,17 @@ export function createPostgresParameterStore(): ParameterStore<DatabaseTransacti
           'key',
           'second_home_id',
           'value',
+          'currency',
           'effective_from',
           'effective_to',
           'effective_until',
         ])
         .where('key', '=', key)
-        .where('second_home_id', '=', secondHomeId)
+        .where((eb) =>
+          secondHomeId === null
+            ? eb('second_home_id', 'is', null)
+            : eb('second_home_id', '=', secondHomeId),
+        )
         .orderBy('effective_from', 'desc')
         .limit(1)
         .executeTakeFirst();
@@ -64,6 +73,7 @@ export function createPostgresParameterStore(): ParameterStore<DatabaseTransacti
           key: draft.key,
           second_home_id: draft.secondHomeId,
           value: draft.value,
+          currency: draft.currency,
           // Sem início informado, o gatilho carimba o instante da gravação (NOT NULL é conferido depois dele).
           effective_from: draft.effectiveFrom ?? sql<Date>`NULL`,
           effective_to: draft.effectiveTo,
@@ -84,7 +94,7 @@ export function createPostgresParameterStore(): ParameterStore<DatabaseTransacti
 export async function parameterHistory(
   db: Reader,
   key: ParameterKey,
-  secondHomeId: string,
+  secondHomeId: string | null,
 ): Promise<readonly ParameterVersionRecord[]> {
   const rows = await db
     .selectFrom('app.parameter_version')
@@ -93,6 +103,7 @@ export async function parameterHistory(
       'key',
       'second_home_id',
       'value',
+      'currency',
       'effective_from',
       'effective_to',
       'effective_until',
@@ -101,7 +112,11 @@ export async function parameterHistory(
       'created_at',
     ])
     .where('key', '=', key)
-    .where('second_home_id', '=', secondHomeId)
+    .where((eb) =>
+      secondHomeId === null
+        ? eb('second_home_id', 'is', null)
+        : eb('second_home_id', '=', secondHomeId),
+    )
     .orderBy('effective_from')
     .execute();
   return rows.map((row) => ({
@@ -116,7 +131,7 @@ export async function parameterHistory(
 export async function parameterInForce(
   db: Reader,
   key: ParameterKey,
-  secondHomeId: string,
+  secondHomeId: string | null,
   at: Date,
 ): Promise<ParameterVersion | null> {
   const row = await db
@@ -124,8 +139,9 @@ export async function parameterInForce(
       sql<{
         id: string;
         key: string;
-        second_home_id: string;
+        second_home_id: string | null;
         value: string;
+        currency: string | null;
         effective_from: Date;
         effective_to: Date | null;
       }>`app.parameter_at(${key}, ${secondHomeId}::uuid, ${at.toISOString()}::timestamptz)`.as('p'),
