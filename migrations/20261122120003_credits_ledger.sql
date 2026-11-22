@@ -365,6 +365,14 @@ CREATE POLICY credit_entry_represented_read ON app.credit_entry FOR SELECT TO au
              AND d.valid_from <= now() AND (d.valid_until IS NULL OR now() < d.valid_until))
 );
 
+-- Funções auxiliares só para os gatilhos, que rodam com o papel de quem insere (`luxtory_app`); nenhum outro papel as
+-- executa (TECH-052; prontidão da W13: nenhuma função com acesso a dados executável por `anon`, `authenticated` ou pelo
+-- autorizador).
+REVOKE ALL ON FUNCTION app.assert_credits_active(), app.assert_credit_membership(uuid),
+  app.credit_expires_at(timestamptz, integer) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION app.assert_credits_active(), app.assert_credit_membership(uuid),
+  app.credit_expires_at(timestamptz, integer) TO luxtory_app;
+
 -- INV-6 (ADR-0033 §10): consultada após todo teste `db` (ADR-0005). Uma linha por violação.
 CREATE FUNCTION app.credit_invariant_breaches()
   RETURNS TABLE (invariant text, lot_id uuid, detail text)
@@ -413,6 +421,7 @@ AS $$
    WHERE p.id IS NULL OR l.originated_at <> s.resolved_at
       OR l.expires_at <> app.credit_expires_at(s.resolved_at, p.value::integer)
 $$;
+REVOKE ALL ON FUNCTION app.credit_invariant_breaches() FROM PUBLIC;
 
 
 -- migrate:down
