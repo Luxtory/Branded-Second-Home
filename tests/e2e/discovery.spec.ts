@@ -1,6 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { hasForbiddenTerm } from '../../src/features/catalog/domain/terminology';
-import { HOME_SECTIONS } from '../../src/features/catalog/presentation/discovery/paths';
 import { discoveryMessages } from '../../src/features/catalog/presentation/i18n/discovery-pt-br';
 import { signIn, STAFF_EMAIL } from './support/auth';
 import { readSeed } from './support/discovery';
@@ -12,9 +11,7 @@ import {
 } from './support/ui';
 
 // Discovery público B2C (docs/specs/catalog.md §13, §17.8): Home, Como funciona, Coleção, Home Concept e Home Edition,
-// lidos como `anon`, sobre o catálogo semeado por catalog.seed.ts (estado "há Home Edition publicada"; os outros estados
-// do CTA são provados em
-// tests/features/catalog/presentation/catalog-actions.test.tsx). Gate de UI do ADR-0009 em toda página.
+// com o catálogo semeado por catalog.seed.ts para as jornadas de Home Edition. Gate de UI do ADR-0009 em toda página.
 
 // Preço por dia ou por noite no texto renderizado (REQ-100), além da guarda canônica de terminologia.
 const PRICE_PER_DAY = /R\$\s?[\d.,]+\s*(\/|por)\s*(dia|noite)\b/i;
@@ -72,8 +69,14 @@ test.describe('Discovery público — gate de UI (ADR-0009)', () => {
     await button.click();
     const dialog = page.getByRole('dialog', { name: 'Menu' });
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByRole('link', { name: 'Coleção' })).toBeVisible();
-    await expect(dialog.getByRole('link', { name: 'Como funciona' })).toBeVisible();
+    await expect(dialog.getByRole('link', { name: 'Luxtory Club' })).toHaveAttribute(
+      'href',
+      '#luxtory',
+    );
+    await expect(dialog.getByRole('link', { name: 'Como funciona' })).toHaveAttribute(
+      'href',
+      '#liberdade',
+    );
     // A captura espera a entrada da gaveta terminar (sem animação a meio).
     const opened = () =>
       dialog.evaluate((node) => Promise.all(node.getAnimations().map((a) => a.finished)));
@@ -95,6 +98,26 @@ test.describe('Discovery público — gate de UI (ADR-0009)', () => {
       await expect(dialog).toBeHidden();
     }
     expect(errors).toEqual([]);
+  });
+
+  test('[WCAG 1.4.3] Hero do Club: contraste sobre a foto com movimento reduzido', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+      await page.goto('/', { waitUntil: 'networkidle' });
+      await page.evaluate(() => document.fonts.ready);
+      await expect(page.locator('.lx-home-hero__image')).toHaveCSS('animation-name', 'none');
+      expect(
+        await worstContrastUnder(page, '#inicio h1 em'),
+        `itálico a ${width}px`,
+      ).toBeGreaterThanOrEqual(3);
+      expect(
+        await worstContrastUnder(page, '.lx-home-hero__lead'),
+        `subtítulo a ${width}px`,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });
 
@@ -154,12 +177,32 @@ test.describe('Discovery público — Como funciona: header da Home e scrim unif
 test.describe('Discovery público — jornada a 390 px com toque', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
-  test('Home → Home Editions → Home Concept → Home Edition → Como funciona → Home Editions', async ({
+  test('Home → Club → como funciona → dúvidas', async ({ page }) => {
+    const errors = collectConsoleErrors(page);
+    await page.goto('/');
+    await page.getByRole('link', { name: 'Conheça a Luxtory' }).tap();
+    await expect(page).toHaveURL(/\/#luxtory$/);
+    await expect(page.locator('#luxtory h2')).toBeInViewport();
+
+    await page.getByRole('button', { name: 'Abrir menu' }).tap();
+    const menu = page.getByRole('dialog', { name: 'Menu' });
+    await menu.getByRole('link', { name: 'Como funciona' }).tap();
+    await expect(page).toHaveURL(/\/#liberdade$/);
+    await expect(menu).toBeHidden();
+    await expect(page.locator('#liberdade h2')).toBeInViewport();
+
+    await page.getByRole('link', { name: 'Tire suas dúvidas' }).tap();
+    await expect(page).toHaveURL(/\/#duvidas$/);
+    await expect(page.locator('#duvidas h2')).toBeInViewport();
+    expect(errors).toEqual([]);
+  });
+
+  test('Como funciona → Home Editions → Home Concept → Home Edition → Como funciona', async ({
     page,
   }) => {
     const seed = readSeed();
     const errors = collectConsoleErrors(page);
-    await page.goto('/');
+    await page.goto('/como-funciona');
     await page.getByRole('link', { name: HOME_EDITIONS_CTA }).tap();
     await expect(page).toHaveURL(/\/colecao#home-editions$/);
     await page
@@ -198,21 +241,32 @@ test.describe('Discovery público — conteúdo', () => {
     }
   });
 
-  test('Hero com função de desejo: abre a página; seu único convite desce para a renúncia, sem ação comercial', async ({
+  test('Hero preserva a headline e identifica o intercâmbio do Luxtory Club na primeira dobra', async ({
     page,
   }) => {
     await page.goto('/');
     const sections = await page
       .locator('main > section[id]')
       .evaluateAll((nodes) => nodes.map((node) => node.id));
-    // A ordem da copy do fundador (D-B2C-18): PICTURE (Hero) → PROBLEM → PROMISE → PROOF → PUSH → dúvidas.
-    expect(sections).toEqual([...HOME_SECTIONS]);
+    expect(sections).toEqual([
+      'inicio',
+      'possibilidade',
+      'luxtory',
+      'liberdade',
+      'gestao',
+      'convite',
+      'duvidas',
+    ]);
 
-    const hero = page.locator(`section#${HOME_SECTIONS[0]}`);
-    await expect(hero.getByRole('heading', { level: 1 })).toBeVisible();
+    const hero = page.locator('section#inicio');
+    const { lead, turn, tail } = discoveryMessages.home.hero.title;
+    await expect(hero.getByRole('heading', { level: 1 })).toHaveText(`${lead}${turn}${tail}`);
+    await expect(hero.locator('.lx-home-hero__lead')).toHaveText(
+      /Luxtory.*intercâmbio de estadias/i,
+    );
     const invite = hero.getByRole('link');
     await expect(invite).toHaveCount(1);
-    await expect(invite).toHaveAttribute('href', `#${HOME_SECTIONS[1]}`);
+    await expect(invite).toHaveAttribute('href', '#luxtory');
     // Carrossel só com duas ou mais fotos (spec catalog §13.10): então anterior, próxima e pausa; com uma, nenhum.
     const slides = await hero.locator('.lx-home-hero__slide').count();
     const controls = hero.getByRole('button');
@@ -228,30 +282,77 @@ test.describe('Discovery público — conteúdo', () => {
     await expect(hero.getByRole('button', { name: 'Próxima imagem' })).toBeVisible();
   });
 
-  test('[REQ-100] [REQ-101] FAQ da Home: perguntas abrem no lugar e as respostas passam pela guarda de terminologia', async ({
+  test('[BR-144] [BR-190] [BR-230] Home esclarece créditos, taxa, afiliação e disponibilidade', async ({
     page,
   }) => {
     await page.goto('/');
-    const faq = page.locator(`section#${HOME_SECTIONS.at(-1)}`);
-    const questions = faq.locator('summary');
-    await expect(questions).toHaveCount(discoveryMessages.home.faq.items.length + 1);
-    // A resposta vem da copy aplicada (D-B2C-19): a última frase do "A Luxtory é timeshare?".
-    const question = 'A Luxtory é timeshare?';
-    const lastLine =
-      discoveryMessages.home.faq.items.find((item) => item.question === question)?.answer.at(-1) ??
-      '';
-    expect(lastLine).not.toBe('');
-    const timeshare = faq.locator('details', { hasText: question });
-    await expect(timeshare.getByText(lastLine)).toBeHidden();
-    await timeshare.locator('summary').click();
-    await expect(timeshare.getByText(lastLine)).toBeVisible();
-    const answers = (await faq.textContent()) ?? '';
-    expect(hasForbiddenTerm(answers)).toBe(false);
-    await questions.last().click();
-    await expect(faq.getByRole('link', { name: 'Como Funciona' })).toHaveAttribute(
-      'href',
-      '/como-funciona',
+    await expect(page.locator('section#luxtory')).toContainText('créditos pelos períodos aceitos');
+    const membership = page.locator('section#liberdade .lx-blocks__item').filter({
+      has: page.getByText('Membership', { exact: true }),
+    });
+    await expect(membership).toContainText('locação de temporada com gestão profissional');
+    const luxchange = page.locator('section#liberdade .lx-blocks__item').filter({
+      has: page.getByText('Luxchange', { exact: true }),
+    });
+    await expect(luxchange).toContainText('Os membros do clube disponibilizam períodos');
+    await expect(luxchange).toContainText('taxa em dinheiro');
+    const faq = page.locator('section#duvidas');
+    const items = [
+      [
+        'Minha casa de lazer pode entrar na rede da Luxtory?',
+        'ter o imóvel aprovado pela Luxtory e contratar a associação',
+      ],
+      ['Minha casa continua sendo minha?', 'mantém a propriedade do imóvel'],
+      ['Posso escolher qualquer destino ou data?', 'depende da disponibilidade'],
+    ] as const;
+    for (const [question, answer] of items) {
+      const detail = faq.locator('details').filter({ hasText: question });
+      const body = detail.getByText(answer, { exact: false });
+      await expect(body).toHaveCount(1);
+      await expect(body).toBeHidden();
+      await detail.locator('summary').press('Enter');
+      await expect(body).toBeVisible();
+    }
+    const links = await page
+      .locator('a[href]')
+      .evaluateAll((anchors) => anchors.map((anchor) => anchor.getAttribute('href')));
+    expect(new Set(links)).toEqual(
+      new Set(['/', '#conteudo', '#luxtory', '#liberdade', '#duvidas']),
     );
+    await expect(page).toHaveTitle(/Luxtory Club/);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      'content',
+      /intercâmbio de estadias/,
+    );
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', '/');
+    await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute('content', 'pt_BR');
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      'content',
+      'noindex, nofollow',
+    );
+  });
+
+  test('[TECH-100] Home fechada: ausência de copy em HTML, RSC e prefetch', async ({ request }) => {
+    const representations: readonly Record<string, string>[] = [
+      {},
+      { RSC: '1' },
+      { RSC: '1', 'Next-Router-Prefetch': '1' },
+    ];
+    for (const headers of representations) {
+      const response = await request.get('http://127.0.0.1:3102/', { headers });
+      const body = await response.text();
+      if (headers.RSC === '1') {
+        expect([200, 404]).toContain(response.status());
+        if (headers['Next-Router-Prefetch'] !== '1') {
+          expect(body).toContain('NEXT_HTTP_ERROR_FALLBACK;404');
+        }
+      } else {
+        expect(response.status()).toBe(404);
+      }
+      expect(body).not.toContain(discoveryMessages.home.hero.title.lead.trim());
+      expect(body).not.toContain('Conheça a Luxtory');
+      expect(body).not.toContain('Intercâmbio de estadias de alto padrão');
+    }
   });
 
   test('[REQ-022] [BR-031] Home Concept sem Home Edition publicada: só no grupo dele; com Home Edition, o card leva à página dela, sem localização, modalidade nem condições', async ({
@@ -347,23 +448,21 @@ test.describe('Discovery público — conteúdo', () => {
   test('[REQ-103] Owner e Co-Owner com a mesma estrutura onde aparecem juntos', async ({
     page,
   }) => {
-    for (const path of [pathOf('home'), pathOf('howItWorks')]) {
-      await page.goto(path);
-      // Core: Editorial Comparison dividida (spec design-system §13.10); o nome da modalidade é o título ou o eyebrow.
-      const pairs = page.locator('[data-pair="modality"]');
-      expect(await pairs.count(), path).toBeGreaterThan(0);
-      for (const pair of await pairs.all()) {
-        const items = pair.locator('.lx-comparison__item');
-        await expect(items).toHaveCount(2);
-        const owner = items.nth(0);
-        const coOwner = items.nth(1);
-        const shape = (side: Locator) =>
-          side.evaluate((node) => [...node.children].map((child) => child.tagName));
-        const name = (side: Locator) => side.locator(':scope > :first-child').textContent();
-        expect(await name(owner), path).toBe('Owner');
-        expect(await name(coOwner), path).toBe('Co-Owner');
-        expect(await shape(owner), path).toEqual(await shape(coOwner));
-      }
+    await page.goto(pathOf('howItWorks'));
+    // Core: Editorial Comparison dividida (spec design-system §13.10); o nome da modalidade é o título ou o eyebrow.
+    const pairs = page.locator('[data-pair="modality"]');
+    expect(await pairs.count()).toBeGreaterThan(0);
+    for (const pair of await pairs.all()) {
+      const items = pair.locator('.lx-comparison__item');
+      await expect(items).toHaveCount(2);
+      const owner = items.nth(0);
+      const coOwner = items.nth(1);
+      const shape = (side: Locator) =>
+        side.evaluate((node) => [...node.children].map((child) => child.tagName));
+      const name = (side: Locator) => side.locator(':scope > :first-child').textContent();
+      expect(await name(owner)).toBe('Owner');
+      expect(await name(coOwner)).toBe('Co-Owner');
+      expect(await shape(owner)).toEqual(await shape(coOwner));
     }
   });
 
@@ -383,17 +482,15 @@ test.describe('Discovery público — conteúdo', () => {
     expect(invalid?.status()).toBe(404);
   });
 
-  test('[D-B2C-16] [D-B2C-27] com Home Edition publicada, a Home e o Como funciona levam ao primeiro grupo da Coleção', async ({
+  test('[D-B2C-16] [D-B2C-27] com Home Edition publicada, o Como funciona leva ao primeiro grupo da Coleção', async ({
     page,
   }) => {
-    for (const path of ['/', '/como-funciona']) {
-      await page.goto(path);
-      await expect(page.getByRole('link', { name: HOME_EDITIONS_CTA }), path).toHaveAttribute(
-        'href',
-        '/colecao#home-editions',
-      );
-      await expect(page.getByRole('link', { name: 'Conheça os Home Concepts' })).toHaveCount(0);
-    }
+    await page.goto('/como-funciona');
+    await expect(page.getByRole('link', { name: HOME_EDITIONS_CTA })).toHaveAttribute(
+      'href',
+      '/colecao#home-editions',
+    );
+    await expect(page.getByRole('link', { name: 'Conheça os Home Concepts' })).toHaveCount(0);
   });
 
   test('[REQ-103] [D-B2C-16] Como funciona: capítulos no Hero, condições sempre visíveis e fechamento por disponibilidade', async ({

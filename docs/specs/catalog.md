@@ -1989,3 +1989,74 @@ Print analisado: dois cards sem fotografia. Diagnóstico local: a captura fullpa
 Correção da cadeia de apresentação: solicitar as três fotografias desde o carregamento inicial (`loading=eager`, prioridade baixa), mantendo otimização Next, dimensões/sizes e mapeamento. Se o otimizador falhar, uma recuperação por foto usa seu original local, remove srcSet/sizes e preserva alt/geometria. Verificar também falha anterior à hidratação; se o original falhar, não repetir a recuperação. O frame tem fundo institucional para manter geometria e legibilidade durante falhas; nenhuma foto substituta, CSP relaxada ou dado sensível. Comportamento restrito à SHP; demais imagens permanecem com sua política.
 
 Aceite: testes de duração da participação e ausência de valor garantido; três solicitações/imagens carregadas sem rolagem; falha do otimizador antes da hidratação recupera original; falha dupla não gera loop; três cards iguais e legíveis. Preservar fluxo dos perfis, fontes e alinhamento da Home,3linhas por bloco nas larguras verificadas≥390, reflow200%, seis larguras, axe0, contraste e console sem erros no caminho normal. Capturas e CI no mesmo PR94; condição de lançamento de produção preservada.
+
+## 21. Home pública do Luxtory Club
+
+O briefing de reposicionamento da Luxtory orienta a nova composição de `/`. A §13.10 registra a versão original.
+O protagonista B2C agora é o proprietário de um imóvel de lazer de alto padrão. A Home vai do reconhecimento do
+valor da sua Second Home à compreensão de como o intercâmbio pode ampliar suas experiências.
+
+### 21.1 Auditoria e direção editorial
+
+| Seção original | Função | Decisão | Aplicação na nova Home |
+|---|---|---|---|
+| Hero | Despertar desejo | Adaptar | Headline, itálico, fotografia e composição originais. O subtítulo genérico dá lugar ao Club e ao intercâmbio. |
+| Renúncia | Identificar o que importa | Adaptar | A tríade e as colunas passam a valorizar a Second Home e o desejo por outros destinos. |
+| Regra | Mostrar o custo das alternativas | Reestruturar | O painel sintetiza a comparação e repete a tensão da Renúncia. A oportunidade cabe na seção da tríade. |
+| Possibilidade | Apresentar a promessa | Adaptar | A frase “Um lugar para chamar de seu. Mais possibilidades para viver.” abre a seção da tríade. Um diagrama reúne os três valores. |
+| Luxtory | Apresentar a solução | Adaptar | O split e a fotografia conceitual do Kaizen apresentam o Club e a seleção de imóveis. A marca licenciada perde o papel central. |
+| Pertencimento | Criar identificação | Reestruturar | O vínculo com pessoas e lugares entra na tríade e no convite, relacionado ao estilo de vida do proprietário. |
+| Patrimônio | Explicar a relação patrimonial | Reestruturar | O imóvel que o proprietário já conquistou ganha destaque na tríade. Owner e Co-Owner aparecem em Development. |
+| Liberdade | Explicar as possibilidades | Adaptar | Linhas editoriais apresentam Membership, Luxchange e Luxplus com funções distintas e informam o estágio da afiliação. |
+| Gestão | Explicar o apoio ao proprietário | Adaptar | A comparação de modalidades dá lugar a uma seção secundária para locação opcional, Development e Partners. |
+| Convite | Qualificar e orientar | Adaptar | O público ganha uma definição concisa. A fotografia de fechamento conduz às dúvidas do Club. |
+| FAQ | Responder objeções | Adaptar | Disclosures nativos tratam de elegibilidade, propriedade, períodos, créditos, disponibilidade e locação. |
+
+### 21.2 Brief e critérios de aceite
+
+| Ordem | Função | Mensagem e composição |
+|---|---|---|
+| Hero | PICTURE | Desejo e categoria na primeira dobra. Hero cinematográfico existente e convite para `#luxtory`. |
+| Tríade | PROBLEM → PROMISE | O proprietário valoriza o próprio lugar e pode querer descobrir outros. Diagrama e três colunas sobre Blue. |
+| Luxtory Club | PROOF | Proposta de intercâmbio entre proprietários e imóveis selecionados. Split Sand e imagem conceitual identificada. |
+| Como funciona | PROOF | Afiliação de imóveis existentes em desenvolvimento. Associação vigente, cessão válida de períodos, créditos internos e estadias adicionais pagas [F: BR-146, BR-151, BR-190, BR-195, BR-200, BR-202, BR-212, BR-240, BR-241, REQ-051, REQ-070]. Linhas editoriais em Deep. |
+| Serviços complementares | PROOF | A gestão de locação é opcional, com contratação própria e autorização de períodos [F: BR-250, BR-252]. Development e Partners são serviços complementares do briefing. Blocos em Sand. |
+| Convite | PUSH | Para quem já possui um imóvel de lazer de alto padrão e quer viver novas experiências em família ou com amigos. CTA para `#duvidas`. |
+| FAQ | PUSH | Participação condicionada à elegibilidade e à contratação. Uso de créditos condicionado à validade, às regras e à disponibilidade [F: BR-144, BR-146, BR-167, BR-190, BR-195]. |
+
+A composição é editorial e estática. Fotos são ilustrativas. Disponibilidade, imóveis afiliados, prazos, valores e
+resultados dependem de definição e confirmação operacionais. O contrato do Club continua nos documentos canônicos.
+
+Menu e rodapé da Home usam `#luxtory`, `#liberdade` e `#duvidas`. A futura `/club` poderá assumir a navegação de
+produto quando existir. O CTA para avaliação dependerá da jornada de `/afiliar-imovel` e da validação operacional.
+A apresentação de Development poderá receber um link quando `/second-home-development` estiver disponível.
+Second Home Partners é apresentado como serviço complementar. `/second-home-partner` tem jornada própria (§20, `D-LX-13`).
+
+Aceite em Chromium nas larguras 320, 390, 768, 1024, 1440 e 1920 px, com fluxo principal por toque a 390 px,
+contraste nos pixels do Hero, axe, movimento reduzido, metadados, fragmentos e portão público em HTML, RSC e prefetch.
+A nova Home aplica um gradiente local ao Hero para cumprir contraste sobre a foto. A versão anterior segue disponível
+no código, junto de sua copy e seus metadados.
+
+### 21.3 Revisão editorial
+
+A tríade abre com “Seu segundo lar como chave mestra. Para outros lares pelo mundo.” e mostra como os proprietários
+podem conciliar as viagens com o uso do próprio imóvel. “Um lugar para chamar de seu. Mais possibilidades para viver.”
+passa para o fechamento. A descrição de Luxchange, Luxplus e locação de temporada retoma a redação de Second Home
+Partners (§20), com as condições de participação e disponibilidade junto aos mecanismos correspondentes.
+
+### 21.4 Ajustes de redação e fechamento
+
+A Home apresenta a Luxtory no presente. O texto da tríade liga o segundo lar a outros destinos, e a seção sobre o
+Luxtory Club explica para quem é a proposta. O fechamento “Viva o verdadeiro luxo de sentir-se em casa em outros
+destinos.” fica centralizado na composição com a foto e o botão para as dúvidas.
+
+### 21.5 Clareza sobre o intercâmbio
+
+A apresentação do Club informa que os créditos vêm dos períodos aceitos. O bloco Luxchange explica que a reserva
+depende da disponibilidade e está sujeita à taxa em dinheiro prevista nas BR-230 e BR-231.
+
+### 21.6 Alinhamento dos serviços e foto do fechamento
+
+Os títulos dos três serviços são compostos em duas linhas para alinhar os textos das colunas. A foto do fechamento
+aparece inteira. A frase e o botão para as dúvidas ficam centralizados na faixa abaixo da imagem. As descrições de
+Membership e Luxchange usam a redação aprovada pelo fundador.

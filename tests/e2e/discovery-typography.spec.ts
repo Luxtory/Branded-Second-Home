@@ -1,58 +1,92 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { discoveryMessages } from '../../src/features/catalog/presentation/i18n/discovery-pt-br';
 
-const widths = [320, 360, 390, 768, 1024, 1440];
-const panelCopy = discoveryMessages.home.rule.panel;
-
-test('B2C: alternativas lado a lado, mesma escala dos resultados e seleção Warm Sand por teclado', async ({
-  page,
-}) => {
-  test.slow();
+test('Home: os três pilares têm o mesmo peso no celular e no desktop', async ({ page }) => {
+  const widths = [320, 390, 768, 1024, 1440, 1920];
+  await page.goto('/');
+  await page.evaluate(() => document.fonts.ready);
+  const pillars = page.locator('#possibilidade').getByRole('heading', { level: 3 });
+  await expect(pillars).toHaveText(['Patrimônio', 'Liberdade', 'Pertencimento']);
   for (const width of widths) {
     await page.setViewportSize({ width, height: 1000 });
-    await page.goto('/');
-    await page.evaluate(() => document.fonts.ready);
-    const panel = page.locator('.lx-panel-switch');
-    for (let index = 0; index < panelCopy.alternatives.length; index++) {
-      const alternative = panelCopy.alternatives[index]!;
-      const radio = panel.getByRole('radio', { name: alternative.label, exact: true });
-      if (index === 0) await radio.focus();
-      else await page.keyboard.press('ArrowRight');
-      await expect(radio).toBeChecked();
-      await expect(panel.locator('dd')).toHaveText([...alternative.values]);
-      const layout = await panel.evaluate((node) => {
-        const card = node.getBoundingClientRect();
-        const options = [...node.querySelectorAll('.lx-panel-switch__option')];
-        const texts = [...node.querySelectorAll('.lx-panel-switch__option > span, dt, dd')];
-        const selected = node.querySelector('label:has(input:checked)')!;
-        return {
-          card: card.toJSON(),
-          options: options.map((option) => option.getBoundingClientRect().toJSON()),
-          sizes: texts.map((text) => Number.parseFloat(getComputedStyle(text).fontSize)),
-          selected: getComputedStyle(selected).color,
-          remaining: options
-            .filter((option) => option !== selected)
-            .map((option) => getComputedStyle(option).color),
-        };
-      });
-      expect(new Set(layout.options.map((box) => box.top)).size, `${width}px: uma linha`).toBe(1);
-      for (const box of layout.options) {
-        expect(box.left).toBeGreaterThanOrEqual(layout.card.left);
-        expect(box.right).toBeLessThanOrEqual(layout.card.right + 1);
-        expect(box.height).toBeGreaterThanOrEqual(44);
-      }
-      expect(new Set(layout.sizes).size, `${width}px: uma escala`).toBe(1);
-      expect(layout.sizes[0]).toBeGreaterThanOrEqual(14);
-      expect(layout.sizes[0]).toBeLessThanOrEqual(24);
-      expect(layout.selected).toBe('rgb(205, 173, 142)');
-      expect(layout.remaining.every((color) => color !== layout.selected)).toBe(true);
-      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+    const layout = await pillars.evaluateAll((nodes) =>
+      nodes.map((node) => ({
+        top: node.getBoundingClientRect().top,
+        left: node.getBoundingClientRect().left,
+        size: getComputedStyle(node).fontSize,
+      })),
+    );
+    expect(new Set(layout.map((pillar) => pillar.size)).size, `${width}px`).toBe(1);
+    expect(new Set(layout.map((pillar) => pillar.top)).size, `${width}px`).toBe(
+      width < 768 ? 3 : 1,
+    );
+    expect(new Set(layout.map((pillar) => pillar.left)).size, `${width}px`).toBe(
+      width < 768 ? 1 : 3,
+    );
+  }
+});
+
+test('Home: os títulos dos serviços têm duas linhas e alinham a primeira linha dos textos', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.evaluate(() => document.fonts.ready);
+  const headings = page.locator('#gestao').getByRole('heading', { level: 3 });
+  await expect(headings).toHaveText([
+    'Locação de temporada',
+    'Second Home Development',
+    'Second Home Partners',
+  ]);
+
+  for (const width of [390, 1024, 1265, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const layout = await headings.evaluateAll((nodes) =>
+      nodes.map((node) => ({
+        lines: Math.round(
+          node.getBoundingClientRect().height / parseFloat(getComputedStyle(node).lineHeight),
+        ),
+        textTop: node.nextElementSibling?.getBoundingClientRect().top,
+      })),
+    );
+    expect(
+      layout.map((item) => item.lines),
+      `${width}px`,
+    ).toEqual([2, 2, 2]);
+    if (width >= 1024) {
+      expect(new Set(layout.map((item) => item.textTop)).size, `${width}px`).toBe(1);
     }
   }
 });
 
-test('B2C: fechamentos itálicos na escala da frase lifestyle; B2B preservado', async ({ page }) => {
+test('Home: o fechamento aparece abaixo da foto, com o quadro inteiro', async ({ page }) => {
+  await page.goto('/');
+  const closing = page.locator('#convite');
+  const photo = closing.locator('img');
+  await photo.scrollIntoViewIfNeeded();
+  await photo.evaluate((image) => (image as HTMLImageElement).decode());
+
+  for (const width of [1265, 390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const layout = await closing.evaluate((section) => {
+      const image = section.querySelector('img')!;
+      const photoBox = image.getBoundingClientRect();
+      return {
+        photoBottom: photoBox.bottom,
+        photoRatio: photoBox.width / photoBox.height,
+        naturalRatio: image.naturalWidth / image.naturalHeight,
+        titleTop: section.querySelector('h2')!.getBoundingClientRect().top,
+        buttonTop: section.querySelector('a')!.getBoundingClientRect().top,
+      };
+    });
+    expect(layout.titleTop, `${width}px`).toBeGreaterThanOrEqual(layout.photoBottom);
+    expect(layout.buttonTop, `${width}px`).toBeGreaterThanOrEqual(layout.photoBottom);
+    expect(layout.photoRatio, `${width}px`).toBeCloseTo(layout.naturalRatio, 2);
+  }
+});
+
+test('B2C: fechamentos itálicos na escala de título de página; B2B preservado', async ({
+  page,
+}) => {
   test.slow();
   for (const width of [390, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
@@ -62,7 +96,8 @@ test('B2C: fechamentos itálicos na escala da frase lifestyle; B2B preservado', 
       await page.evaluate(() => document.fonts.ready);
       if (path === '/') {
         referenceSize = await page
-          .getByText(discoveryMessages.home.luxtory.lifestyle, { exact: true })
+          .locator('#possibilidade .lx-display-m')
+          .first()
           .evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize));
       }
       const closings = page.locator(

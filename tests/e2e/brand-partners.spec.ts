@@ -312,13 +312,7 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     // B2C closings have a separate italic scale (D-B2C-22); compare the shared roles outside those closings.
     const roles = [
       ['CTA do Hero da Home', '/', '.lx-home-hero__action', HOME, '#inicio .lx-button'],
-      [
-        'CTA sobre o fechamento',
-        '/',
-        '.lx-hero--closing .lx-button',
-        HOME,
-        '#sua-marca .lx-button',
-      ],
+      ['CTA do fechamento', '/', '#convite .lx-button', HOME, '#sua-marca .lx-button'],
       ['índice do Hero', '/como-funciona', '.lx-hero__chapter-name', HOW, '.lx-anchors a'],
       [
         'rótulo de fase',
@@ -351,8 +345,8 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
       ],
       [
         'eyebrow',
-        '/',
-        'main section:not(.lx-home-hero) .lx-eyebrow',
+        '/como-funciona',
+        'main section:not(.lx-hero) .lx-eyebrow',
         HOME,
         'main section:not(.lx-hero) .lx-eyebrow',
       ],
@@ -415,33 +409,26 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     }
   });
 
-  test('[ADR-0003] Para quem vive: o diagrama com o tamanho renderizado da Home B2C a 390, 768 e 1440 px; no desktop, o topo no 01 e os pilares ao lado', async ({
+  test('[ADR-0003] Para quem vive: tamanho e proporção do diagrama, topo alinhado aos pilares no desktop', async ({
     page,
   }) => {
-    // A figura desenhada (object-fit: contain no B2C), não a caixa: é o tamanho que se vê (`D-BP-20`).
-    const drawn = async (path: string) => {
-      await page.goto(path);
-      const image = page.locator(`main img[src="${DIAGRAM}"]`);
-      await image.scrollIntoViewIfNeeded();
-      await image.evaluate(async (node: HTMLImageElement) => {
-        node.loading = 'eager';
-        await node.decode();
-      });
-      return image.evaluate((node: HTMLImageElement) => {
-        const box = node.getBoundingClientRect();
-        const ratio = node.naturalWidth / node.naturalHeight;
-        const contain = getComputedStyle(node).objectFit === 'contain';
-        const width = contain ? Math.min(box.width, box.height * ratio) : box.width;
-        const height = contain ? Math.min(box.height, box.width / ratio) : box.height;
-        return { width, height, top: box.top + (box.height - height) / 2, left: box.left, ratio };
-      });
-    };
-    for (const width of [390, 768, 1440]) {
+    // D-BP-20: largura aprovada nos três viewports de referência, medida na Home B2C original.
+    const referenceWidths = [
+      [390, 343],
+      [768, 576],
+      [1440, 437],
+    ] as const;
+    await page.goto(HOME);
+    const image = page.locator(`main img[src="${DIAGRAM}"]`);
+    await image.scrollIntoViewIfNeeded();
+    await image.evaluate((node: HTMLImageElement) => node.decode());
+    for (const [width, reference] of referenceWidths) {
       await page.setViewportSize({ width, height: 900 });
-      const reference = await drawn('/');
-      const diagram = await drawn(HOME);
-      expect(Math.abs(diagram.width - reference.width), `largura a ${width}px`).toBeLessThan(1);
-      expect(Math.abs(diagram.height - reference.height), `altura a ${width}px`).toBeLessThan(1);
+      const diagram = await image.evaluate((node: HTMLImageElement) => {
+        const { width, height, top, left } = node.getBoundingClientRect();
+        return { width, height, top, left, ratio: node.naturalWidth / node.naturalHeight };
+      });
+      expect(Math.abs(diagram.width - reference), `largura a ${width}px`).toBeLessThan(1);
       // Proporção original do SVG (667 × 748): nunca esticado.
       expect(Math.abs(diagram.width / diagram.height - diagram.ratio)).toBeLessThan(0.01);
       if (width < 1024) continue;
