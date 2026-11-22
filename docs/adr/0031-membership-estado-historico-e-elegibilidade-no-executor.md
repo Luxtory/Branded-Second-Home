@@ -2,7 +2,7 @@
 
 - **Date**: 2026-11-19
 - **Status**: Accepted (plano da W15 aprovado pelo fundador e pela auditoria independente em 2026-11-19; C1 aprovado;
-  E3 + E4 em PR draft, parada no C2)
+  E3 + E4 em PR draft, parada no C2; concluída pelo #100, squash `108d6f5`, 2026-11-20)
 - **Deciders**: Fundador (Luxtory), auditoria independente, agente de engenharia
 - **Tags**: architecture, security, database, identity, W15
 
