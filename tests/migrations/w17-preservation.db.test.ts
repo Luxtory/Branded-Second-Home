@@ -15,6 +15,7 @@ import { createTestDatabase } from '../support/test-database';
  * com a K4 `credits` sem linha. Nada do PRL, dos parâmetros, do Membership, da reserva ou da custódia muda.
  */
 const FIRST_W17 = '20261122120001_pricing_economic_snapshot';
+const LAST_W17 = '20261122120003_credits_ledger';
 
 const CHANGED = ['constraint app.capability_activation.capability_activation_capability_check'];
 
@@ -39,7 +40,10 @@ describe('W17 — preservação do catálogo (E1)', () => {
   });
 
   it('[TECH-110][ADR-0033] a W17 só acrescenta os objetos dos Créditos e amplia o CHECK da K4', async () => {
-    const subject = await createTestDatabase();
+    // Banco só até a W17: as waves seguintes (W18+) têm a própria prova de preservação.
+    const newer = (await migrationsFromNewest(FIRST_W17)).filter((name) => name > LAST_W17);
+    const upToW17 = newer.length > 0 ? await databaseBefore(newer.at(-1)!) : null;
+    const subject = upToW17?.database ?? (await createTestDatabase());
     try {
       const after = await snapshot(subject);
       const changed = differences(w16Snapshot, after);
@@ -50,7 +54,7 @@ describe('W17 — preservação do catálogo (E1)', () => {
       const check = after.get(CHANGED[0]!)!;
       expect(check.replace(", 'credits'::text", '')).toBe(w16Snapshot.get(CHANGED[0]!));
     } finally {
-      await subject.drop();
+      await (upToW17 ? upToW17.dispose() : subject.drop());
     }
   });
 

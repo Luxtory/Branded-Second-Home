@@ -220,6 +220,20 @@ export interface AppCentralInventory {
   stay_date: Timestamp | null;
 }
 
+export interface AppCommercialPolicy {
+  authority: string;
+  authorization_ref: string;
+  config: Json;
+  created_at: Timestamp;
+  created_by: string;
+  effective_from: Timestamp;
+  effective_to: Timestamp | null;
+  id: string;
+  mechanism: string;
+  operation_id: string;
+  schema_version: number;
+}
+
 export interface AppCreditEntry {
   basis: string | null;
   command: string;
@@ -931,6 +945,7 @@ export interface DB {
   'app.capability_activation': AppCapabilityActivation;
   'app.catalog_term': AppCatalogTerm;
   'app.central_inventory': AppCentralInventory;
+  'app.commercial_policy': AppCommercialPolicy;
   'app.credit_entry': AppCreditEntry;
   'app.credit_lot': AppCreditLot;
   'app.date_custody': AppDateCustody;
