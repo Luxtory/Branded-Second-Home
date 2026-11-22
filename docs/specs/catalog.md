@@ -2060,3 +2060,58 @@ depende da disponibilidade e está sujeita à taxa em dinheiro prevista nas BR-2
 Os títulos dos três serviços são compostos em duas linhas para alinhar os textos das colunas. A foto do fechamento
 aparece inteira. A frase e o botão para as dúvidas ficam centralizados na faixa abaixo da imagem. As descrições de
 Membership e Luxchange usam a redação aprovada pelo fundador.
+
+## 22. Página pública Luxtory Club
+
+### 22.1 Brief
+
+A página `/Luxtory-Club` atende o proprietário de um imóvel de lazer que chega da [Home](#21-home-pública-do-luxtory-club)
+e quer entender a proposta antes de avaliar a participação. O benefício é conhecer outros destinos mantendo a propriedade
+e o controle dos períodos que pode oferecer. A Home apresenta o conceito. Esta página responde como o modelo funciona.
+
+Na Home e na página histórica, a auditoria encontrou padrões úteis de abertura, imagens, lista de etapas, comparações e
+disclosures. A jornada histórica de compra de Branded Second Homes permanece no código. A explicação do Club é estática:
+usa os padrões existentes e as fotografias ilustrativas do acervo, sem consulta ao catálogo ou formulário.
+
+| Seção | Mensagem e composição |
+|---|---|
+| Abertura | Categoria e benefício na primeira dobra. Texto em Blue ao lado de uma fotografia ilustrativa. |
+| Como funciona | Avaliação, associação, escolha de períodos, créditos e estadia em sequência numerada. Condições próprias para imóveis preexistentes. |
+| Luxchange | Como o depósito gera créditos. Comparação entre Request e Direct. Condições comuns junto da comparação. |
+| Outras possibilidades | Luxplus e gestão opcional de locação, em split com fotografia. |
+| Seu imóvel e seus períodos | Propriedade, direitos sobre as datas oferecidas e efeito dos compromissos. |
+| Dúvidas e próximo passo | Disclosures nativos. A avaliação aguarda o canal de afiliação. Links para conteúdo da página. |
+
+[ThirdHome](https://www.thirdhome.com/exchange/how-it-works/) orienta a sequência numerada.
+[HomeExchange](https://www.homeexchange.com/pt/p/como-funciona-homeexchange) orienta a divulgação progressiva das condições.
+[The Registry Collection](https://www.theregistrycollection.com/pre-trc/br/pt/exchange-options) orienta a organização editorial
+por experiência. As regras, textos e fotografias são da Luxtory.
+
+### 22.2 Fatos e condições
+
+- Membership dá acesso aos mecanismos do modelo com associação ativa e apta (BR-144, BR-146, REQ-050/051).
+  A afiliação de imóveis preexistentes tem regras próprias pendentes (01 §1, BR-352).
+- Períodos disponíveis sujeitos a direitos válidos. A cessão ou a reserva vincula a data ao uso acordado
+  (BR-151, BR-167, BR-202, REQ-040/060). O depósito efetivado gera créditos com referência de valor por data e validade
+  (BR-180–195, BR-200–203). Créditos têm uso no intercâmbio.
+- Request depende do aceite do titular e da validação para confirmar a cessão e a reserva. Direct usa a disponibilidade sob
+  controle da Luxtory. Ambos dependem das condições, dos créditos e da taxa monetária. A política aplicável rege o
+  cancelamento (BR-210–232, REQ-061/063–066/082, PD-009, TECH-032).
+- Luxplus usa períodos disponíveis mediante pagamento próprio (BR-240/241, REQ-070). A locação pelo Club usa datas
+  autorizadas (REQ-071/072). Nos imóveis parceiros, a gestão em plataformas de terceiros é opcional e de contratação
+  própria, conforme 01 §1 e REQ-105. A entrega exige definição operacional (§20.6, P-SHP-02).
+
+As etapas e os mecanismos descrevem o modelo. A participação de imóveis preexistentes, as condições econômicas, a
+disponibilidade e o canal de avaliação continuam pendentes de definição ou comprovação. O formulário de Interesse
+registra interesse comercial em uma Second Home a partir de uma Home Edition publicada (REQ-022/024). Os CTAs da página
+levam às etapas e dúvidas.
+
+### 22.3 Rotas e aceite
+
+`/Luxtory-Club` mantém a grafia solicitada no canonical e no menu da Home. Em Preview e local, a página tem
+`noindex`. Em Production, o portão de Discovery controla o acesso e a indexação. O adaptador de
+`/como-funciona` redireciona para a nova página com o site aberto e responde 404 com o portão fechado. A copy e os
+componentes históricos são mantidos. Links B2C que já apontavam para o explicador usam o novo endereço compartilhado.
+
+Aceite em 320, 390, 768, 1024, 1440 e 1920 px. Fluxo por toque, revisão de quebras, fotografias, axe, links, metadados
+e portão. Verificar também as referências de navegação e tipografia das jornadas existentes. Revisão em Preview.

@@ -1,0 +1,12 @@
+.lx-club-hero-title > em {
+  display: block;
+}
+
+.lx-club-measure {
+  max-inline-size: var(--lx-layout-measure);
+}
+
+.lx-club-closing {
+  justify-items: center;
+  margin-block-start: 0;
+}

@@ -91,7 +91,7 @@ test('B2C: fechamentos itálicos na escala de título de página; B2B preservado
   for (const width of [390, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
     let referenceSize = 0;
-    for (const path of ['/', '/como-funciona', '/colecao']) {
+    for (const path of ['/', '/Luxtory-Club', '/colecao']) {
       await page.goto(path);
       await page.evaluate(() => document.fonts.ready);
       if (path === '/') {

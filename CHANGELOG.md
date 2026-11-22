@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Página pública `/Luxtory-Club` com etapas de participação, créditos, Request, Direct e serviços complementares
+  (catalog §22). O menu conecta a Home à página e o endereço `/como-funciona` redireciona para ela.
 - W15 — Membership (REQ-011, REQ-050, PD-001; ADR-0031). Admin: seção "Membership" nos dados da pessoa ou empresa
   (situação Vigente, Suspenso, Encerrado ou sem Membership; histórico com data, situação anterior, base registrada e
   papel) e confirmação de cada mudança com a base: ativar, suspender, reativar e encerrar, conforme a TECH-055; só

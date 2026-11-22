@@ -149,6 +149,7 @@ export function SplitPhoto({
   alt,
   crop,
   caption,
+  loading = 'lazy',
 }: {
   readonly src: string;
   readonly width: number;
@@ -156,11 +157,12 @@ export function SplitPhoto({
   readonly alt: string;
   readonly crop: string;
   readonly caption?: string;
+  readonly loading?: 'eager' | 'lazy';
 }) {
   return (
     <figure className="lx-media lx-split__media">
       {/* eslint-disable-next-line @next/next/no-img-element -- Next/Image injects an inline style blocked by the strict CSP. */}
-      <img className={crop} src={src} alt={alt} width={width} height={height} loading="lazy" />
+      <img className={crop} src={src} alt={alt} width={width} height={height} loading={loading} />
       {caption === undefined ? null : (
         <figcaption className="lx-media__caption">{caption}</figcaption>
       )}
