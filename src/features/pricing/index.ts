@@ -25,3 +25,18 @@ export {
   postgresEconomicSnapshotRecorder,
   recordEconomicSnapshot,
 } from './infrastructure/postgres-economic-snapshot';
+export {
+  CAPACITY_RETURN_TO_ORIGIN,
+  MECHANISM_AXES,
+  POLICY_EVENTS,
+  POLICY_MECHANISMS,
+  PolicyEvaluationError,
+  evaluatePolicy,
+  validatePolicyConfig,
+  type PolicyConfig,
+  type PolicyEvaluation,
+  type PolicyEventInput,
+  type PolicyMechanism,
+  type PolicySnapshot,
+} from './domain/commercial-policy';
+export type { EconomicTermsPolicy } from './application/economic-terms';

@@ -1,6 +1,8 @@
 import { sql } from 'kysely';
 import type { DatabaseTransaction } from '@/features/platform';
 import type { EconomicParameterKey, EconomicTermsStore } from '../application/economic-terms';
+import type { PolicyConfig, PolicyMechanism } from '../domain/commercial-policy';
+import { policyLockKey } from './postgres-policy-store';
 
 /**
  * Leitura dos termos econômicos pelas funções do banco (ADR-0032 §5, §8): `app.parameter_at` e
@@ -8,6 +10,30 @@ import type { EconomicParameterKey, EconomicTermsStore } from '../application/ec
  */
 export function createPostgresEconomicTermsStore(): EconomicTermsStore<DatabaseTransaction> {
   return {
+    async lockPolicy(tx, mechanism) {
+      await sql`SELECT pg_advisory_xact_lock_shared(hashtextextended(${policyLockKey(mechanism)}, 0))`.execute(
+        tx,
+      );
+    },
+    async policyAt(tx, mechanism, at) {
+      const { rows } = await sql<{
+        id: string;
+        mechanism: string;
+        config: unknown;
+        effective_from: string;
+      }>`SELECT id, mechanism, config,
+                to_char(effective_from AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS effective_from
+           FROM app.commercial_policy_at(${mechanism}, ${at}::timestamptz)`.execute(tx);
+      const row = rows[0];
+      return row === undefined
+        ? null
+        : {
+            policyId: row.id,
+            mechanism: row.mechanism as PolicyMechanism,
+            config: row.config as PolicyConfig,
+            effectiveFrom: row.effective_from,
+          };
+    },
     async lockParameters(tx, keys) {
       for (const key of keys)
         await sql`SELECT pg_advisory_xact_lock_shared(hashtextextended(${`app.parameter:${key}:global`}, 0))`.execute(
