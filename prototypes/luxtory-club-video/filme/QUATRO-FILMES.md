@@ -58,6 +58,13 @@ Os valores e a sequência desta seção são os vigentes. Onde `ROTEIRO.md`, `RE
   - a frase entra aos 2.000 ms, e a duração continua em 6 s;
   - `blocos.js` recusa um dissolve maior que o limite.
   - Antes, a logo entrava aos 400 ms e aparecia sobre a família.
+  - **Segundo defeito, achado na QA quadro a quadro:**
+    - **Sintoma:** a família voltava inteira por 2–3 quadros logo depois do dissolve (+792 a +875 ms). Já acontecia na
+      v9.
+    - **Causa:** quando o cartão fica opaco, o Chromium grava o quadro como PNG sem canal alfa. A troca de RGBA para RGB
+      no meio da sequência faz o ffmpeg reconfigurar o grafo e perder a camada de interface por alguns quadros.
+    - **Correção:** `montar.mjs` grava todo quadro de camada em RGBA.
+    - **Verificação:** 264/264 quadros em RGBA, Moroccan Blue limpo de +800 a +875 ms e logo a partir de +917 ms.
 - **Ritmo:** a destinação acrescenta ≈ 4,75 s. O filme completo passa de 116,1 s para 120,9 s, com Direct, Luxplus,
   síntese, família e assinatura sem mudança.
 - **QA por trechos:** `edl-qa-jornada.js` (abertura até a solicitação enviada) e `edl-qa-encerramento.js` (família e
