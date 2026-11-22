@@ -98,6 +98,12 @@ Membership e das classes 4–6 que o command usar.
 - **Extrato** (mais recente primeiro): data, tipo, quantidade, lote e operação; filtro por tipo e paginação (20 por
   página) por parâmetros de URL, sem JavaScript obrigatório.
 - Estados vazio, sem representação e indisponível. Mobile-first com paridade (ADR-0009).
+- Lote e operação aparecem pela referência curta (8 primeiros hexadecimais do id); nenhuma base de reversão nem
+  movimento-pai (fora do `GRANT` de coluna do `authenticated`).
+- Party pedida pela URL (`pessoa`) que o usuário não representa recebe a primeira representada (sem oráculo).
+- Área do Titular: seção "Créditos Luxchange" (disponível agora, somado entre as parties representadas) só quando há
+  ao menos um lote visível — com a K4 fechada, nenhuma Área muda.
+- Composição só de classes `lx-*` existentes (ADR-0003, consumer-driven): nenhum componente novo no Design System.
 
 ## 6. Acceptance criteria
 
