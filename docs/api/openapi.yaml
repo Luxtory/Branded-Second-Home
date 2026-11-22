@@ -2623,7 +2623,7 @@ paths:
         Chamado pelo Vercel Cron, que só faz `GET`, com `Authorization: Bearer <CRON_SECRET>`. Cada execução e cada
         item são idempotentes (TECH-090); execuções em paralelo produzem um único efeito. Só existem os jobs do
         registro de jobs implementados (W1: `outbox`; W10: `open_exercise`; W11: `close_exercise`; W13:
-        `advance_booking_states`, `flag_no_show_candidates`).
+        `advance_booking_states`, `flag_no_show_candidates`; W17: `expire_credit_lots`).
 
         `open_exercise` (spec calendar §5–§6, ADR-0024, ADR-0025): sela o exercício corrente e o seguinte de cada
         Second Home formalizada, um exercício por transação, com a custódia raiz de cada noite e, no Co-Owner, as
@@ -2654,6 +2654,12 @@ paths:
         reserva elegível não grava operação. Contagens: `candidates`, `processed`, `skipped` (já feito, estado ou
         instante mudou), `failed` (só log estruturado) e `deferred` (orçamento de tempo esgotado; a próxima execução
         continua); no `advance_booking_states`, também `transitions`.
+
+        `expire_credit_lots` (TECH-072, TECH-090; spec credits §5.3, ADR-0033 §5): registra `available → expired` de
+        todo o saldo disponível de cada lote de Créditos cujo `expires_at` já passou no relógio do banco, de qualquer
+        data — recupera atrasos sem prorrogar a validade (o uso já é recusado depois do vencimento, com ou sem o job).
+        Uma transação por lote; repetição ou execução concorrente não cria efeito novo. Contagens: `due`, `expired`,
+        `skipped` (já materializado), `failed` (só log estruturado) e `deferred` (orçamento de tempo esgotado).
       operationId: runJob
       security:
         - cronSecret: []
@@ -2665,7 +2671,8 @@ paths:
           description: Nome do job no TECH-090.
           schema:
             type: string
-            enum: [outbox, open_exercise, close_exercise, advance_booking_states, flag_no_show_candidates]
+            enum:
+              [outbox, open_exercise, close_exercise, advance_booking_states, flag_no_show_candidates, expire_credit_lots]
       responses:
         '200':
           description: Execução concluída

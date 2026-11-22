@@ -2,7 +2,7 @@
 
 - **Date**: 2026-11-20
 - **Status**: Accepted (plano da W16 aprovado pelo fundador e pela auditoria independente em 2026-11-20; E0–E2 em PR
-  draft, parada no C1)
+  draft, parada no C1; concluída pelo #101, squash `f1fd297`, 2026-11-22; persistência do snapshot: ADR-0033)
 - **Deciders**: Fundador (Luxtory), auditoria independente, agente de engenharia
 - **Tags**: architecture, security, database, pricing, admin, W16
 

@@ -3,6 +3,7 @@ import { titularMessages } from '@/features/identity/presentation/i18n/titular-p
 import { TitularAreaPage } from '@/features/identity/presentation/titular-pages';
 import { TitularOwnUseSection } from '@/features/booking/presentation/own-use-pages';
 import { TitularInitialDrawList } from '@/features/ownership/presentation/initial-draw-titular';
+import { TitularWalletSection } from '@/features/credits/presentation/wallet-page';
 
 export const metadata: Metadata = {
   title: titularMessages.metadata.area,
@@ -22,6 +23,7 @@ export default async function Page({
         <>
           <TitularOwnUseSection userId={session.userId} />
           <TitularInitialDrawList userId={session.userId} />
+          <TitularWalletSection session={session} />
         </>
       )}
     />

@@ -32,6 +32,10 @@
     {
       "path": "/api/jobs/flag_no_show_candidates",
       "schedule": "29 17 * * *"
+    },
+    {
+      "path": "/api/jobs/expire_credit_lots",
+      "schedule": "7 3 * * *"
     }
   ]
 }

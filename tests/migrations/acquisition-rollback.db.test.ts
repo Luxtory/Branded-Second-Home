@@ -29,7 +29,10 @@ describe('W8 — rollback concorrente preserva fatos', () => {
           // Later migrations (W13 booking lifecycle, W12 booking on stake/holding, W11 balance on stake, W10 custody on
           // stake, W9 draw tables on stake/holding) roll back first, newest first.
           for (const migration of [
-            // W16 first: the PRL references second_home_date and operation; the economic keys extend the W14 parameter.
+            // W17 first: credit lots reference party, operation and the snapshot; the snapshot references parameter.
+            '20261122120003_credits_ledger',
+            '20261122120001_pricing_economic_snapshot',
+            // W16 next: the PRL references second_home_date and operation; the economic keys extend the W14 parameter.
             '20261120055435_pricing_prl',
             '20261120055433_admin_parameter_economic_keys',
             // W15 next: the Membership references party and operation and its trigger reads holding.

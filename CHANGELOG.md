@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- W17 — Créditos e Carteira (REQ-053, REQ-054, PD-008, INV-6; ADR-007, TECH-025, TECH-031, TECH-044, TECH-070–072;
+  ADR-0033). Lotes de Créditos com ledger imutável no banco (buckets escritos só pelo gatilho do ledger, originação
+  com snapshot da validade, validade calendárica em UTC independente de job), consumo FEFO, Garantia, liberação,
+  `reverse_credit` (Admin + base registrada, sem tela) e job diário `expire_credit_lots`. Área do Titular: Carteira
+  (`/titular/carteira`) só leitura — saldo por estado (Disponível ou Indisponível por Membership, Em Garantia,
+  Consumido, Expirado), lotes na ordem de uso com origem, quantidade, originação e validade, e extrato com data, tipo,
+  quantidade, lote e operação, filtro por tipo e 20 movimentos por página; sem formato monetário, resgate, venda,
+  cessão ou transferência. Seção "Créditos Luxchange" na Área só com lote visível. K4 `credits` fechada: nada é
+  originado nem gasto até a ativação autorizada (W20).
+
 - W16 — PRL e parâmetros econômicos (REQ-013, REQ-052; TECH-030, TECH-031, TECH-033; ADR-0032). Admin: tela "PRL"
   com o calendário do mês no centro e um painel ao lado — consulta da noite (temporada e grupo de Direito de Uso,
   preço vigente, versões futuras e histórico imutável com autoridade, base e vigência; resumo do mês com a situação

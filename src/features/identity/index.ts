@@ -40,3 +40,9 @@ export {
 export type { HoldingDirectory, RepresentedHolding } from './application/party-ports';
 // W15 — texto do aviso de mudança do Membership para a central de notificações do Titular (booking).
 export { membershipNotificationCopy } from './presentation/membership-notification-copy';
+// W17 — parties representadas agora (RLS), com o Membership de cada uma, para a Carteira do módulo credits.
+export {
+  readTitularOverview,
+  type Representation as TitularRepresentationSummary,
+  type TitularOverview,
+} from './presentation/titular-read';

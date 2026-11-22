@@ -1,6 +1,6 @@
 # Spec: pricing
 
-- **Status**: W16 — E1/E2 aprovadas no C1; E3/E4 em PR draft (C2)
+- **Status**: W16 — E1/E2 aprovadas no C1; E3/E4 em PR draft (C2) → ✅ concluída (#101, squash `f1fd297`, 2026-11-22; Production); W17 persiste o snapshot (§13)
 - **Owner**: módulo `pricing` (TECH-011)
 - **IDs**: REQ-013, REQ-052 (dona, W16); TECH-030, TECH-031, TECH-033; complementos REQ-095, TECH-001, TECH-051,
   TECH-052, TECH-053, TECH-056

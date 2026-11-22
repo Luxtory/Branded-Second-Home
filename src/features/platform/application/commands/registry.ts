@@ -204,6 +204,16 @@ export const SYSTEM_COMMANDS: readonly CommandSpec[] = [
     critical: false,
     job: 'flag_no_show_candidates',
   },
+  // TECH-072/TECH-090 (W17; spec credits §5.3, ADR-0033 §5): registra `available → expired` do lote vencido; nunca
+  // prorroga e nunca é a única proteção da validade.
+  {
+    name: 'expire_credit_lots',
+    module: 'credits',
+    authority: 'system',
+    membership: 'not_applicable',
+    critical: false,
+    job: 'expire_credit_lots',
+  },
 ];
 
 export class CommandRegistryError extends Error {
