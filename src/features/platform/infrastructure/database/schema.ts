@@ -29,6 +29,8 @@ export type JsonPrimitive = boolean | number | string | null;
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
+export type Numeric = ColumnType<string, number | string, number | string>;
+
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export interface AppAcquisition {
@@ -218,6 +220,34 @@ export interface AppCentralInventory {
   stay_date: Timestamp | null;
 }
 
+export interface AppCreditEntry {
+  basis: string | null;
+  command: string;
+  created_at: Timestamp;
+  from_bucket: string;
+  id: string;
+  lot_id: string;
+  movement: string;
+  operation_id: string;
+  parent_entry_id: string | null;
+  quantity: Numeric;
+  to_bucket: string;
+}
+
+export interface AppCreditLot {
+  available: Generated<Numeric | null>;
+  consumed: Generated<Numeric>;
+  expired: Generated<Numeric>;
+  expires_at: Timestamp;
+  held: Generated<Numeric>;
+  id: string;
+  origin_command: string;
+  origin_operation_id: string;
+  originated_at: Timestamp;
+  party_id: string;
+  quantity: Numeric;
+}
+
 export interface AppDateCustody {
   authorization_ref: string | null;
   basis: string | null;
@@ -246,6 +276,18 @@ export interface AppDateOccupancy {
   second_home_id: string;
   stake_id: string | null;
   stay_date: Timestamp;
+}
+
+export interface AppEconomicSnapshot {
+  created_at: Timestamp;
+  operation_id: string;
+  resolved_at: Timestamp;
+}
+
+export interface AppEconomicSnapshotParameter {
+  operation_id: string;
+  parameter_id: string;
+  parameter_key: string;
 }
 
 export interface AppGuestNomination {
@@ -889,8 +931,12 @@ export interface DB {
   'app.capability_activation': AppCapabilityActivation;
   'app.catalog_term': AppCatalogTerm;
   'app.central_inventory': AppCentralInventory;
+  'app.credit_entry': AppCreditEntry;
+  'app.credit_lot': AppCreditLot;
   'app.date_custody': AppDateCustody;
   'app.date_occupancy': AppDateOccupancy;
+  'app.economic_snapshot': AppEconomicSnapshot;
+  'app.economic_snapshot_parameter': AppEconomicSnapshotParameter;
   'app.guest_nomination': AppGuestNomination;
   'app.holding': AppHolding;
   'app.home_concept': AppHomeConcept;

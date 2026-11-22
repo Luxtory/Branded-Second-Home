@@ -80,9 +80,12 @@ describe('W16 — preservação do catálogo da W14/W15 e rollback protegido (E2
   });
 
   it('[TECH-110][ADR-0032] a W16 só acrescenta os objetos do PRL e muda exatamente as cinco definições da W14 previstas', async () => {
-    const subject = await createTestDatabase({ migrated: false });
+    // Banco só até a W16: as waves seguintes (W17+) têm a própria prova de preservação.
+    const newer = (await migrationsFromNewest(FIRST_W16)).filter((name) => name > M2);
+    const upToW16 = newer.length > 0 ? await databaseBefore(newer.at(-1)!) : null;
+    const subject = upToW16?.database ?? (await createTestDatabase({ migrated: false }));
     try {
-      await w15.migrateThenAll(subject.url);
+      if (upToW16 === null) await w15.migrateThenAll(subject.url);
       const after = await snapshot(subject);
       const changed = differences(w15Snapshot, after);
       expect(changed.filter((key) => w15Snapshot.has(key)).sort()).toEqual(CHANGED);
@@ -120,7 +123,7 @@ describe('W16 — preservação do catálogo da W14/W15 e rollback protegido (E2
         before('view app.parameter_version'),
       );
     } finally {
-      await subject.drop();
+      await (upToW16 ? upToW16.dispose() : subject.drop());
     }
   });
 

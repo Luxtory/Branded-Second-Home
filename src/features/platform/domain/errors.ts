@@ -110,6 +110,8 @@ const CONSTRAINT_NAMES: ReadonlyMap<string, RejectionCode> = new Map([
   // W14 (ADR-0030 §4): declaração de convidados sem regras vigentes, ou com versão diferente da vigente.
   ['parameter_missing_guest_rules', 'ERR_PARAMETER_MISSING'],
   ['guest_rules_changed', 'ERR_GUEST_RULES_CHANGED'],
+  // W17 (ADR-0033 §7): Garantia ou consumo de Créditos sem Membership elegível da party do lote (BR-195).
+  ['credit_membership_ineligible', 'ERR_MEMBERSHIP_INELIGIBLE'],
 ]);
 
 export function rejectionForConstraint(constraint: string): RejectionCode | null {

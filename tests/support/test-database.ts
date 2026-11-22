@@ -12,8 +12,8 @@ export interface TestDatabase {
 }
 
 /**
- * Violação de invariante encontrada no fim de um teste db: inventário (TECH-021, INV-1, INV-2, INV-3, TECH-022, W10) e
- * Direito de Uso (TECH-026, TECH-027, INV-4, INV-5, W11).
+ * Violação de invariante encontrada no fim de um teste db: inventário (TECH-021, INV-1, INV-2, INV-3, TECH-022, W10),
+ * Direito de Uso (TECH-026, TECH-027, INV-4, INV-5, W11), reserva (W12/W13) e Créditos (INV-6, TECH-044, W17).
  */
 export class InventoryInvariantError extends Error {
   constructor(readonly breaches: readonly string[]) {
@@ -23,53 +23,52 @@ export class InventoryInvariantError extends Error {
 }
 
 /**
+ * Funções de invariantes consultadas após todo teste db (ADR-0005): inventário (W10), Direito de Uso (W11), reserva
+ * (W12/W13) e Créditos (W17, INV-6). Uma linha por violação, já formatada.
+ */
+const INVARIANT_QUERIES: readonly (readonly [string, string])[] = [
+  [
+    'app.inventory_invariant_breaches()',
+    `SELECT concat(invariant, '@', second_home_id, '/', stay_date) AS breach
+       FROM app.inventory_invariant_breaches() LIMIT 10`,
+  ],
+  [
+    'app.use_right_invariant_breaches()',
+    `SELECT concat(invariant, '@', second_home_id, '/', detail) AS breach
+       FROM app.use_right_invariant_breaches() LIMIT 10`,
+  ],
+  [
+    'app.booking_invariant_breaches()',
+    `SELECT concat(invariant, '@', second_home_id, '/', detail) AS breach
+       FROM app.booking_invariant_breaches() LIMIT 10`,
+  ],
+  [
+    'app.credit_invariant_breaches()',
+    `SELECT concat(invariant, '@', lot_id, '/', detail) AS breach
+       FROM app.credit_invariant_breaches() LIMIT 10`,
+  ],
+];
+
+/**
  * Consultas de invariantes após todo teste db (ADR-0005, W10), numa conexão própria — o pool do teste pode ter sido
- * encerrado ou ter conexões derrubadas de propósito. Sem a função (banco vazio ou migrations desfeitas), não há o
+ * encerrado ou ter conexões derrubadas de propósito. Função ausente (banco vazio ou migrations desfeitas) não tem o
  * que consultar.
  */
 async function inventoryBreaches(url: string): Promise<readonly string[]> {
   const client = new pg.Client({ connectionString: url });
   await client.connect();
   try {
-    const present = await client.query<{ present: boolean }>(
-      `SELECT to_regprocedure('app.inventory_invariant_breaches()') IS NOT NULL AS present`,
-    );
-    if (present.rows[0]?.present !== true) return [];
-    const { rows } = await client.query<{
-      invariant: string;
-      second_home_id: string;
-      stay_date: string;
-    }>(
-      `SELECT invariant, second_home_id, stay_date::text AS stay_date
-         FROM app.inventory_invariant_breaches() LIMIT 10`,
-    );
-    const breaches = rows.map((row) => `${row.invariant}@${row.second_home_id}/${row.stay_date}`);
-    const useRights = await client.query<{ present: boolean }>(
-      `SELECT to_regprocedure('app.use_right_invariant_breaches()') IS NOT NULL AS present`,
-    );
-    if (useRights.rows[0]?.present !== true) return breaches;
-    const ledger = await client.query<{
-      invariant: string;
-      second_home_id: string;
-      detail: string;
-    }>(`SELECT invariant, second_home_id, detail FROM app.use_right_invariant_breaches() LIMIT 10`);
-    const useRightBreaches = [
-      ...breaches,
-      ...ledger.rows.map((row) => `${row.invariant}@${row.second_home_id}/${row.detail}`),
-    ];
-    const bookings = await client.query<{ present: boolean }>(
-      `SELECT to_regprocedure('app.booking_invariant_breaches()') IS NOT NULL AS present`,
-    );
-    if (bookings.rows[0]?.present !== true) return useRightBreaches;
-    const booking = await client.query<{
-      invariant: string;
-      second_home_id: string;
-      detail: string;
-    }>(`SELECT invariant, second_home_id, detail FROM app.booking_invariant_breaches() LIMIT 10`);
-    return [
-      ...useRightBreaches,
-      ...booking.rows.map((row) => `${row.invariant}@${row.second_home_id}/${row.detail}`),
-    ];
+    const breaches: string[] = [];
+    for (const [procedure, query] of INVARIANT_QUERIES) {
+      const present = await client.query<{ present: boolean }>(
+        'SELECT to_regprocedure($1) IS NOT NULL AS present',
+        [procedure],
+      );
+      if (present.rows[0]?.present !== true) continue;
+      const { rows } = await client.query<{ breach: string }>(query);
+      breaches.push(...rows.map((row) => row.breach));
+    }
+    return breaches;
   } finally {
     await client.end();
   }
