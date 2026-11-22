@@ -785,3 +785,20 @@ consumido ou expirado. As migrations `pricing_economic_snapshot` e `credits_ledg
    originadora), depois da política de backup (D2). Nunca inserir a linha pelo console.
 5. **Correções:** o ledger é append-only; consumo indevido corrige-se por `reverse_credit` (Admin + base registrada),
    nunca por edição. **Rollback:** o `down` recusa com qualquer lote, movimento ou ativação; reverter só o código.
+
+## Preparar a W18 em produção (políticas comerciais)
+
+Nada a ativar: a migration `pricing_commercial_policy` só cria estrutura (69 no total) e nenhuma política é gravada
+(ADR-0034 §8). Sem política vigente, todo compromisso de Luxchange Request, Luxchange Direct, Luxplus e locação externa
+recusa com `ERR_POLICY_MISSING` — e esses mecanismos ainda não existem (W21–W25).
+
+1. **Pré-condições (só leitura, SQL Editor):** 69 migrations, a última `20261122180001`; `app.commercial_policy` vazia;
+   nenhuma capability nova em `app.capability_activation`.
+2. **Publicar uma política (quando a Luxtory definir os valores — PD-009, `03` §16):** só com autorização expressa do
+   fundador, pela tela `/admin/politicas` (Admin com MFA) ou por `POST /v1/admin/policies`, com a base registrada (ata
+   ou deliberação). Nunca por console, migration ou seed. O formulário só aceita o esquema fechado v1: faixas de
+   cancelamento terminando em 0 hora, no-show e exceção explícitos, percentuais de 0 a 100; a capacidade sempre volta à
+   origem (BR-163). Revisar a prévia "como o Titular verá" antes de confirmar.
+3. **Mudança:** nova versão com início presente ou futuro, nunca retroativa nem antes de um término explícito; versões
+   não se alteram nem se apagam. Operações já formadas mantêm a política aceita (vínculo gravado a partir da W21).
+4. **Rollback:** o `down` recusa com qualquer versão gravada; reverter só o código.

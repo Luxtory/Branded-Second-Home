@@ -18,6 +18,7 @@ export const messages = {
     bookings: 'Reservas',
     prl: 'PRL',
     parameters: 'Parâmetros econômicos',
+    policies: 'Políticas comerciais',
   },
   home: {
     title: 'Administração',
@@ -58,6 +59,11 @@ export const messages = {
         includesLabel: 'Inclui',
         includes:
           'Multiplicador e validade dos Créditos, percentual e mínimo do Luxchange Fee, prazo da Request e valor-base do Membership',
+      },
+      policies: {
+        includesLabel: 'Inclui',
+        includes:
+          'Prazos e efeitos de cancelamento, não comparecimento e exceção de Luxchange Request, Luxchange Direct, Luxplus e locação externa',
       },
     },
   },

@@ -8,7 +8,8 @@ import { messages } from './i18n/pt-br';
  * papéis exercidos que a seção aceita (sem hierarquia, ADR-0008); sem nenhum deles o item não aparece.
  */
 const SECTIONS: readonly {
-  readonly id: 'home' | 'catalog' | 'interests' | 'parties' | 'bookings' | 'prl' | 'parameters';
+  readonly id:
+    'home' | 'catalog' | 'interests' | 'parties' | 'bookings' | 'prl' | 'parameters' | 'policies';
   readonly href: string;
   readonly label: string;
   readonly roles?: readonly StaffRole[];
@@ -28,6 +29,8 @@ const SECTIONS: readonly {
   { id: 'prl', href: '/admin/prl', label: messages.nav.prl, roles: ['admin', 'super_admin'] },
   // W16: parâmetros econômicos globais, `set_parameter` do Admin (spec admin §14).
   { id: 'parameters', href: '/admin/parametros', label: messages.nav.parameters, roles: ['admin'] },
+  // W18: políticas comerciais, `publish_policy` do Admin (spec pricing §5 "Políticas comerciais").
+  { id: 'policies', href: '/admin/politicas', label: messages.nav.policies, roles: ['admin'] },
 ];
 
 export type AdminSection = (typeof SECTIONS)[number]['id'];
