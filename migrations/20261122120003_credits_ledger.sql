@@ -15,8 +15,8 @@ ALTER TABLE app.capability_activation
     CHECK (capability IN ('own_use_booking', 'own_use_lifecycle', 'luxtory_selection', 'credits'));
 
 -- Toda escrita de Créditos pelo papel da aplicação passa por aqui: sem a linha, recusa — inclusive SQL direto. A leitura
--- mantém a tabela travada em modo compartilhado até o fim da transação (mesma contenção da K1–K3). Falha técnica, não
--- recusa funcional: o nome não começa por `credits_`.
+-- mantém a tabela travada em modo compartilhado até o fim da transação (mesma contenção da K1–K3). Funcionalidade
+-- fechada, não recusa funcional (o nome não começa por `credits_`).
 CREATE FUNCTION app.assert_credits_active() RETURNS void
   LANGUAGE plpgsql STABLE SET search_path = pg_catalog, pg_temp
 AS $$

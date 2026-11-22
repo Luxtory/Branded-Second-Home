@@ -21,3 +21,7 @@ export {
   type EconomicTermsRequest,
 } from './application/economic-terms';
 export { createPostgresEconomicTermsStore } from './infrastructure/postgres-economic-terms-store';
+export {
+  postgresEconomicSnapshotRecorder,
+  recordEconomicSnapshot,
+} from './infrastructure/postgres-economic-snapshot';

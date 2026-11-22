@@ -8,6 +8,7 @@ import {
   createFlagNoShowCandidatesJob,
   createOwnUseBookingConsumers,
 } from '@/features/booking/jobs';
+import { createExpireCreditLotsJob } from '@/features/credits/jobs';
 import { createMembershipConsumers } from '@/features/identity/jobs';
 import { createInitialDrawConsumers } from '@/features/ownership';
 import type { Clock } from '../../application/clock';
@@ -78,5 +79,7 @@ export function createJobRegistry(environment: JobEnvironment): JobRegistry {
     advance_booking_states: createAdvanceBookingStatesJob(environment),
     // W13 — candidatas a no-show; nunca declara (spec booking §10.14).
     flag_no_show_candidates: createFlagNoShowCandidatesJob(environment),
+    // W17 — materializa a expiração do saldo disponível de lotes vencidos; nunca prorroga (spec credits §5.3).
+    expire_credit_lots: createExpireCreditLotsJob(environment),
   });
 }

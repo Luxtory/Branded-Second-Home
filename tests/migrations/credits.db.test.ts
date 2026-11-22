@@ -169,7 +169,7 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
           await client.query(
             `INSERT INTO app.economic_snapshot_parameter (operation_id, parameter_key, parameter_id)
              VALUES ($1, 'credit_multiplier', $2)`,
-            [op, c.validityId],
+            [op, c.validityId!],
           );
         }),
       ).rejects.toEqual(constraint('economic_snapshot_parameter_version'));

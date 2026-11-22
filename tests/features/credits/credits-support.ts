@@ -1,5 +1,22 @@
 import { randomUUID } from 'node:crypto';
 import pg from 'pg';
+import { createAuthorizationGuard } from '@/features/identity/application/authorization-guard';
+import { postgresMembershipGate } from '@/features/identity/infrastructure/postgres-membership';
+import { createPostgresGrantDirectory } from '@/features/identity/infrastructure/postgres-grants';
+import { createPostgresDelegationDirectory } from '@/features/identity/infrastructure/postgres-parties';
+import { createPostgresStaffDirectory } from '@/features/identity/infrastructure/postgres-staff-directory';
+import { createHoldingDirectory } from '@/features/ownership';
+import {
+  commandRegistry,
+  createCommandExecutor,
+  createPostgresCommandStore,
+  systemClock,
+  systemCommandGuard,
+  type CommandGuard,
+  type CommandHandler,
+  type DatabaseTransaction,
+  type JsonValue,
+} from '@/features/platform';
 import { bookingHarness, type BookingHarness, type Titular } from '../booking/booking-support';
 import {
   activate,
@@ -22,36 +39,40 @@ type Queryable = Pick<pg.Client | pg.Pool, 'query'>;
 /** Validade de teste deliberadamente diferente da inicial canônica (TECH-030), para revelar padrão embutido. */
 export const TEST_VALIDITY_MONTHS = 18;
 
+/** Titular com a Second Home de que é Owner (escopo do guard do Titular). */
+export interface CreditTitular extends Titular {
+  readonly homeId: string;
+}
+
 export interface CreditsHarness {
   readonly h: BookingHarness;
   readonly admin: Admin;
-  readonly titular: Titular;
-  readonly validityId: string;
+  readonly titular: CreditTitular;
+  /** Versão de `credit_validity_months` publicada; `null` quando o cenário a omite (TECH-001). */
+  readonly validityId: string | null;
 }
 
 /** Owner com Titular representado, Membership ativo, validade publicada e K4 ligada (o dono do schema ativa). */
 export async function creditsHarness(
-  options: { membership?: boolean; activated?: boolean; validityMonths?: number } = {},
+  options: { membership?: boolean; activated?: boolean; validityMonths?: number | null } = {},
 ): Promise<CreditsHarness> {
   const h = await bookingHarness();
-  const { titular } = await h.ownerScenario();
+  const { homeId, titular } = await h.ownerScenario();
   const admin = await addAdmin(h);
   if (options.membership !== false)
     await activateMembership(h.database.appUrl, admin, titular.partyId);
-  const validityId = await publishValidity(
-    h,
-    admin,
-    options.validityMonths ?? TEST_VALIDITY_MONTHS,
-  );
+  const months =
+    options.validityMonths === undefined ? TEST_VALIDITY_MONTHS : options.validityMonths;
+  const validityId = months === null ? null : await publishValidity(h, admin, months);
   if (options.activated !== false) await activate(h, 'credits');
-  return { h, admin, titular, validityId };
+  return { h, admin, titular: { ...titular, homeId }, validityId };
 }
 
 /** Segunda party Titular (outra Second Home Owner), com Membership ativo. */
-export async function secondTitular(c: CreditsHarness): Promise<Titular> {
-  const { titular } = await c.h.ownerScenario();
+export async function secondTitular(c: CreditsHarness): Promise<CreditTitular> {
+  const { homeId, titular } = await c.h.ownerScenario();
   await activateMembership(c.h.database.appUrl, c.admin, titular.partyId);
-  return titular;
+  return { ...titular, homeId };
 }
 
 export const suspend = (c: CreditsHarness, partyId: string) =>
@@ -273,4 +294,65 @@ export function monthsAgo(months: number, days = 0): Date {
   at.setUTCMonth(at.getUTCMonth() - months);
   at.setUTCDate(at.getUTCDate() - days);
   return at;
+}
+
+/**
+ * Executor real (TECH-054) com o guard do Titular (delegação + holding no escopo da Second Home), a verificação de
+ * Membership do identity e os privilégios reais do `luxtory_app`.
+ */
+export function titularExecutor(
+  c: CreditsHarness,
+  titular: CreditTitular,
+  options: { requestGuard?: boolean } = {},
+) {
+  // As autoridades "detentor" e "solicitante" da Request (aceite e retirada) chegam com a W21/W22: aqui um guard de
+  // teste explícito, só para exercitar a Garantia — o banco continua conferindo tudo o que é dos Créditos.
+  const requestGuard: CommandGuard = {
+    authorize: async () => ({ allowed: true, authorizationRef: `holding:${titular.holdingId}` }),
+  };
+  const titularGuard = createAuthorizationGuard({
+    session: { userId: titular.userId, assurance: 'aal1' },
+    staff: createPostgresStaffDirectory(() => c.h.db),
+    grants: createPostgresGrantDirectory(() => c.h.db),
+    delegations: createPostgresDelegationDirectory(() => c.h.db),
+    holdings: createHoldingDirectory(() => c.h.db),
+    clock: systemClock,
+  });
+  const executor = createCommandExecutor({
+    store: createPostgresCommandStore(c.h.db),
+    guard: options.requestGuard === true ? requestGuard : titularGuard,
+    clock: systemClock,
+    limits: { maxAttempts: 1, lockTimeoutMs: 10_000 },
+    log: c.h.log,
+    registry: commandRegistry,
+    membership: postgresMembershipGate,
+  });
+  return <I, R extends JsonValue>(
+    handler: CommandHandler<I, R, DatabaseTransaction>,
+    input: unknown,
+    key: string = randomUUID(),
+  ) =>
+    executor.execute(handler, {
+      actor: {
+        kind: 'user',
+        userId: titular.userId,
+        actingPartyId: titular.partyId,
+        role: 'titular',
+      },
+      idempotencyKey: key,
+      correlationId: randomUUID(),
+      input,
+    });
+}
+
+/** Executor de sistema (jobs do TECH-090) sobre o PostgreSQL do harness. */
+export function systemExecutor(c: CreditsHarness) {
+  return createCommandExecutor({
+    store: createPostgresCommandStore(c.h.db),
+    guard: systemCommandGuard,
+    clock: systemClock,
+    limits: { maxAttempts: 1, lockTimeoutMs: 10_000 },
+    log: c.h.log,
+    registry: commandRegistry,
+  });
 }

@@ -59,7 +59,8 @@ UTC independente de job (TECH-044, TECH-072), reversão compensatória (TECH-070
 - K4: `credits` no CHECK de `app.capability_activation`, sem linha (ADR-0033 §8).
 - Constraints nomeadas → código (TECH-056): `credits_*` → `ERR_CREDITS_INSUFFICIENT`; `credit_membership_ineligible`
   → `ERR_MEMBERSHIP_INELIGIBLE`; `permission_representation`/`permission_staff_role` → `ERR_PERMISSION`. Procedência,
-  par ou command fora da matriz e K4 fechada são falhas técnicas (`credit_*`, `credit_capability_not_activated`).
+  par ou command fora da matriz são falhas técnicas (`credit_*`); K4 fechada (`credit_capability_not_activated`) é
+  funcionalidade fechada (`CLOSED_CAPABILITIES`: rollback sem recusa gravada, como K1–K3).
 
 ### 5.2 Aplicação (`src/features/credits`)
 

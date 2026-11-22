@@ -71,7 +71,8 @@ TECH-072 e TECH-090 (`03` v3.18). Fatos que moldam a decisão:
    `FOR SHARE` em `app.membership`. Liberação, expiração e reversão não dependem de Membership: o saldo volta, mas
    segue "Indisponível por Membership" até a reativação (REQ-096, `03` §6).
 8. **K4 `credits` fechada.** O CHECK de `app.capability_activation` ganha `credits`, sem linha. Sem ela, o papel da
-   aplicação não grava lote nem movimento (`credit_capability_not_activated`, falha técnica, não recusa funcional). O snapshot não
+   aplicação não grava lote nem movimento (`credit_capability_not_activated`, funcionalidade fechada como K1–K3: o
+   executor desfaz sem gravar recusa nem operação). O snapshot não
    é coberto pela K4 (sem efeito econômico próprio; também servirá à W19). Ativar exige migration e autorização do
    fundador; o rollback é recusado com linha de Créditos.
 9. **Carteira por RLS.** O Titular lê lotes e movimentos das parties que representa por delegação vigente, por
