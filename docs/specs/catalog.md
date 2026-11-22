@@ -2115,3 +2115,18 @@ componentes históricos são mantidos. Links B2C que já apontavam para o explic
 
 Aceite em 320, 390, 768, 1024, 1440 e 1920 px. Fluxo por toque, revisão de quebras, fotografias, axe, links, metadados
 e portão. Verificar também as referências de navegação e tipografia das jornadas existentes. Revisão em Preview.
+
+### 22.4 Revisão de comunicação e composição
+
+O [Framework B2C](communication/framework-b2c.md#product-aware) orienta a página para um leitor que já conhece a proposta
+e precisa de prova para decidir. “Sua casa. Mais lugares para viver.” combina o desejo com o benefício concreto dos
+créditos na primeira dobra. As cinco etapas e a faixa sobre propriedade e uso respondem primeiro às dúvidas do proprietário.
+
+No Luxchange, a comparação usa títulos em português e os nomes Request e Direct como referência. As condições comuns
+explicam em que momento os créditos são usados e quem paga a taxa (BR-210–232, PD-005/006). Luxplus e locação mantêm
+as distinções de §22.2. A aderência ao modelo e o caminho de avaliação de imóveis existentes aparecem em texto corrido
+no fechamento. O CTA leva à faixa sobre condições de uso do imóvel.
+
+Abertura com mais espaço para a foto, etapas e FAQ em Wash, controle do imóvel em Sand e intercâmbio em Deep.
+A segunda foto mostra um momento de descanso do acervo. O cabeçalho permanece acessível durante a rolagem.
+Conferir âncoras abaixo do cabeçalho e capturar a página a partir do topo, com as fotografias carregadas.

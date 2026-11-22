@@ -12,15 +12,33 @@ test('apresenta a proposta e distingue os caminhos do intercâmbio (catalog §22
   const response = await page.goto(CLUB);
   expect(response?.status()).toBe(200);
   const hero = page.locator('#inicio');
-  await expect(hero.getByRole('heading', { level: 1 })).toHaveText('Da sua casa a novos destinos.');
+  await expect(hero.getByRole('heading', { level: 1 })).toHaveText(
+    'Sua casa. Mais lugares para viver.',
+  );
   await expect(hero).toContainText('clube de intercâmbio de estadias');
+  await expect(hero).toContainText('créditos para pedir estadias em outros destinos');
   await expect(page.locator('#como-funciona ol > li')).toHaveCount(5);
+  expect(
+    await page.locator('main > section').evaluateAll((sections) => sections.map(({ id }) => id)),
+  ).toEqual([
+    'inicio',
+    'como-funciona',
+    'condicoes',
+    'luxchange',
+    'outras-possibilidades',
+    'duvidas',
+    'proximo-passo',
+  ]);
   const exchange = page.locator('#luxchange');
   await expect(exchange).toContainText(/depósito/i);
   await expect(exchange).toContainText('taxa de intercâmbio em dinheiro');
-  await expect(exchange.getByRole('heading', { name: 'Request' })).toBeVisible();
-  await expect(exchange.getByRole('heading', { name: 'Direct' })).toBeVisible();
-  await expect(page.locator('#proximo-passo')).toContainText('em desenvolvimento');
+  await expect(exchange.getByRole('heading', { name: 'Pedido a outro membro' })).toBeVisible();
+  await expect(
+    exchange.getByRole('heading', { name: 'Reserva direta com a Luxtory' }),
+  ).toBeVisible();
+  await expect(exchange).toContainText('Seus créditos são usados quando a reserva se confirma');
+  await expect(page.locator('#proximo-passo')).toContainText('ainda está em definição');
+  await expect(page.locator('#proximo-passo p')).toHaveCSS('font-style', 'normal');
   await expect(page.locator('main form')).toHaveCount(0);
 });
 
@@ -65,7 +83,7 @@ test('portão B2C fechado protege as duas rotas inclusive com prefetch', async (
       } else {
         expect(response.status(), path).toBe(404);
       }
-      expect(body).not.toContain('Da sua casa');
+      expect(body).not.toContain('Mais lugares para viver');
       expect(body).not.toContain('Como funciona o intercâmbio de estadias');
       expect(body).not.toContain(discoveryMessages.howItWorks.hero.title);
     }
@@ -94,11 +112,24 @@ test.describe('jornada do Club a 390 px com toque', () => {
     await expect(page).toHaveURL(/#como-funciona$/);
     await expect(page.locator('#como-funciona h2')).toBeInViewport();
 
-    await page.getByRole('link', { name: 'Tire suas dúvidas' }).tap();
+    await page.getByRole('button', { name: 'Abrir menu' }).tap();
+    await page.getByRole('dialog').getByRole('link', { name: 'Dúvidas' }).tap();
     await expect(page).toHaveURL(/#duvidas$/);
     const answer = page.locator('#duvidas details').first();
     await answer.locator('summary').tap();
     await expect(answer).toHaveAttribute('open');
+    await page.getByRole('link', { name: 'Veja as condições' }).tap();
+    await expect(page).toHaveURL(/#condicoes$/);
+    await expect(page.locator('#condicoes h2')).toBeInViewport();
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const header = document.querySelector('header');
+          const title = document.querySelector('#condicoes h2');
+          return title!.getBoundingClientRect().top >= header!.getBoundingClientRect().bottom;
+        }),
+      )
+      .toBe(true);
     await page.getByRole('banner').getByRole('link', { name: 'Luxtory — página inicial' }).tap();
     await expect(page).toHaveURL(/\/$/);
     expect(errors).toEqual([]);

@@ -7,7 +7,13 @@ import { discoveryPaths } from './paths';
 import styles from './club-page.module.css';
 
 const { hero, steps, exchange, services, control, faq, next } = text;
-const sections = { steps: 'como-funciona', exchange: 'luxchange', faq: 'duvidas' } as const;
+const sections = {
+  steps: 'como-funciona',
+  control: 'condicoes',
+  exchange: 'luxchange',
+  faq: 'duvidas',
+} as const;
+const sectionClassName = `lx-section ${styles['lx-club-section']}`;
 
 /** Public explanation of the Club model (catalog §22). */
 export function ClubPage() {
@@ -24,13 +30,14 @@ export function ClubPage() {
       retractableMenu
     >
       <section id="inicio" data-surface="blue" aria-labelledby="club-titulo">
-        <div className="lx-split">
+        <div className="lx-split lx-split--wide-media">
           <div className="lx-split__text">
-            <div className="lx-split__inner">
+            <div className={`lx-split__inner ${styles['lx-club-hero-copy']}`}>
               <h1 id="club-titulo" className={`lx-statement ${styles['lx-club-hero-title']}`}>
                 <HeadlineText headline={hero.title} />
               </h1>
               <p className="lx-lead">{hero.text}</p>
+              <p className="lx-body">{hero.benefit}</p>
               <ActionLink
                 href={`#${sections.steps}`}
                 label={hero.action}
@@ -54,8 +61,8 @@ export function ClubPage() {
 
       <section
         id={sections.steps}
-        className="lx-section"
-        data-surface="sand"
+        className={sectionClassName}
+        data-surface="wash"
         aria-labelledby="etapas-titulo"
         tabIndex={-1}
       >
@@ -81,8 +88,25 @@ export function ClubPage() {
       </section>
 
       <section
+        id={sections.control}
+        className={sectionClassName}
+        data-surface="sand"
+        aria-labelledby="condicoes-titulo"
+        tabIndex={-1}
+      >
+        <div className="lx-container lx-columns">
+          <h2 id="condicoes-titulo" className="lx-headline">
+            <HeadlineText headline={control.title} />
+          </h2>
+          <div className={`lx-stack ${styles['lx-club-measure']}`}>
+            <Paragraphs lines={control.text} />
+          </div>
+        </div>
+      </section>
+
+      <section
         id={sections.exchange}
-        className="lx-section"
+        className={sectionClassName}
         data-surface="deep"
         aria-labelledby="luxchange-titulo"
         tabIndex={-1}
@@ -94,24 +118,27 @@ export function ClubPage() {
             </h2>
             <p className={`lx-body ${styles['lx-club-measure']}`}>{exchange.intro}</p>
           </div>
-          <div className="lx-stack">
-            <div className={`lx-stack ${styles['lx-club-measure']}`}>
-              <h3 className="lx-display-s">{exchange.deposit.title}</h3>
-              <Paragraphs lines={exchange.deposit.text} />
+          <div className={styles['lx-club-exchange-content']}>
+            <div className={`lx-columns ${styles['lx-club-start']}`}>
+              <div className={`lx-stack ${styles['lx-club-measure']}`}>
+                <h3 className="lx-display-s">{exchange.deposit.title}</h3>
+                <Paragraphs lines={exchange.deposit.text} />
+              </div>
+              <div className={`lx-stack ${styles['lx-club-measure']}`}>
+                <h3 className="lx-display-s">{exchange.conditions.title}</h3>
+                <Paragraphs lines={exchange.conditions.text} />
+              </div>
             </div>
             <div className="lx-stack">
               <h3 className="lx-display-s">{exchange.bookingTitle}</h3>
               <div className="lx-comparison lx-comparison--divided">
                 {exchange.methods.map((method) => (
                   <div className="lx-comparison__item lx-stack" key={method.title}>
-                    <h4 className="lx-display-m">{method.title}</h4>
-                    <p className="lx-subheadline">{method.subtitle}</p>
+                    <h4 className="lx-display-s">{method.title}</h4>
+                    <p className="lx-small">{method.name}</p>
                     <Paragraphs lines={method.text} />
                   </div>
                 ))}
-              </div>
-              <div className={`lx-stack ${styles['lx-club-measure']}`}>
-                <Paragraphs lines={exchange.conditions} />
               </div>
             </div>
           </div>
@@ -134,10 +161,10 @@ export function ClubPage() {
             </div>
           </div>
           <SplitPhoto
-            src="/images/home/kaizen/kaizen-k05.jpg"
+            src="/images/home/kaizen/kaizen-k07.jpg"
             width={1376}
             height={768}
-            crop="lx-crop-x-50"
+            crop="lx-crop-x-65"
             alt={services.photo.alt}
             caption={services.photo.caption}
           />
@@ -145,41 +172,16 @@ export function ClubPage() {
       </section>
 
       <section
-        id="condicoes"
-        className="lx-section"
-        data-surface="sand"
-        aria-labelledby="condicoes-titulo"
-      >
-        <div className="lx-container">
-          <div className="lx-section-head">
-            <h2 id="condicoes-titulo" className="lx-headline">
-              <HeadlineText headline={control.title} />
-            </h2>
-          </div>
-          <ul className="lx-siblings lx-siblings--trio" role="list">
-            {control.items.map((item) => (
-              <li className="lx-siblings__item" key={item.title}>
-                <h3 className="lx-display-s">{item.title}</h3>
-                <p className="lx-body">{item.text}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section
         id={sections.faq}
-        className="lx-section"
-        data-surface="white"
+        className={sectionClassName}
+        data-surface="wash"
         aria-labelledby="duvidas-titulo"
         tabIndex={-1}
       >
-        <div className="lx-container">
-          <div className="lx-section-head">
-            <h2 id="duvidas-titulo" className="lx-headline">
-              {faq.title}
-            </h2>
-          </div>
+        <div className={`lx-container lx-columns lx-columns--5-7 ${styles['lx-club-start']}`}>
+          <h2 id="duvidas-titulo" className="lx-headline">
+            {faq.title}
+          </h2>
           <div className="lx-faq lx-faq--start lx-disclosure">
             {faq.items.map(({ question, answer }) => (
               <details className="lx-disclosure__item" key={question}>
@@ -198,7 +200,7 @@ export function ClubPage() {
 
       <section
         id="proximo-passo"
-        className="lx-section"
+        className={sectionClassName}
         data-surface="blue"
         aria-labelledby="convite-titulo"
       >
@@ -206,8 +208,8 @@ export function ClubPage() {
           <h2 id="convite-titulo" className="lx-headline">
             <HeadlineText headline={next.title} />
           </h2>
-          <p className="lx-body">{next.text}</p>
-          <ActionLink href={`#${sections.faq}`} label={next.action} primary />
+          <p className={`lx-small ${styles['lx-club-measure']}`}>{next.text}</p>
+          <ActionLink href={`#${sections.control}`} label={next.action} primary />
         </div>
       </section>
     </SiteShell>

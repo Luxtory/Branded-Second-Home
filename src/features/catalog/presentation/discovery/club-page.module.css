@@ -1,5 +1,23 @@
 .lx-club-hero-title > em {
   display: block;
+  text-wrap: balance;
+}
+
+.lx-club-hero-copy > :global(.lx-button) {
+  justify-self: start;
+}
+
+.lx-club-section {
+  padding-block: calc(var(--lx-space-section) * 3 / 4);
+}
+
+.lx-club-start {
+  align-items: start;
+}
+
+.lx-club-exchange-content {
+  display: grid;
+  gap: var(--lx-space-12);
 }
 
 .lx-club-measure {

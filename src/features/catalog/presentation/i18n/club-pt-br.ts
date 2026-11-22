@@ -3,7 +3,7 @@ export const clubMessages = {
   metadata: {
     title: 'Luxtory Club | Como funciona o intercâmbio de estadias',
     description:
-      'Conheça o Luxtory Club, do imóvel aos créditos e à estadia. Entenda o intercâmbio, o Luxplus e as condições de participação.',
+      'Veja como funciona o intercâmbio de estadias do Luxtory Club e como os períodos do seu imóvel de lazer podem virar créditos para viajar.',
     siteName: 'Luxtory',
   },
   nav: {
@@ -12,8 +12,10 @@ export const clubMessages = {
     faq: 'Dúvidas',
   },
   hero: {
-    title: { lead: 'Da sua casa ', turn: 'a novos destinos.' },
+    title: { lead: 'Sua casa. ', turn: 'Mais lugares para viver.' },
     text: 'O Luxtory Club é um clube de intercâmbio de estadias para quem tem um imóvel de lazer de alto padrão.',
+    benefit:
+      'As datas da sua casa que entram no intercâmbio geram créditos para pedir estadias em outros destinos.',
     action: 'Veja como funciona',
     photo: {
       alt: 'Casa de lazer à beira-mar, com piscina ao pôr do sol.',
@@ -21,139 +23,132 @@ export const clubMessages = {
     },
   },
   steps: {
-    title: { lead: 'Como você ', turn: 'participa' },
+    title: { lead: 'Do seu imóvel ', turn: 'à próxima estadia' },
     intro:
-      'Estas são as etapas previstas para participar. As condições de avaliação e adesão de imóveis já existentes estão em definição.',
+      'A entrada de imóveis já existentes terá condições próprias de avaliação e adesão, ainda em definição.',
     items: [
       {
         title: 'Avaliação do imóvel',
-        text: 'A Luxtory avalia se o imóvel atende aos critérios de participação.',
+        text: 'A Luxtory avalia se o imóvel pode participar.',
       },
       {
         title: 'Associação',
-        text: 'O Membership é a associação à Luxtory que dá acesso ao intercâmbio e aos demais serviços do Club.',
+        text: 'Com o imóvel aprovado, você pode contratar o Membership, a associação ao Luxtory Club.',
       },
       {
-        title: 'Escolha dos períodos',
-        text: 'Você escolhe os períodos disponíveis que tem direito de ceder.',
+        title: 'Escolha das datas',
+        text: 'Você escolhe as datas disponíveis que tem direito de oferecer.',
       },
       {
         title: 'Créditos',
-        text: 'A Luxtory gera créditos quando a cessão do período é validada e concluída.',
+        text: 'Você recebe os créditos quando a Luxtory confirma que o período entrou no intercâmbio.',
       },
       {
-        title: 'Estadias',
-        text: 'Com os créditos, você pode solicitar uma estadia em outro destino, sujeita à confirmação da reserva.',
+        title: 'Próxima estadia',
+        text: 'Use os créditos para pedir uma estadia em outro destino. A reserva só vale depois da confirmação.',
       },
     ],
   },
   exchange: {
-    title: { lead: 'Luxchange. ', turn: 'Dos períodos às estadias.' },
-    intro: 'O Luxchange é o intercâmbio por créditos previsto no modelo do Club.',
+    title: { lead: 'Luxchange. ', turn: 'Como usar seus créditos.' },
+    intro: 'O Luxchange é a forma de pedir estadias com créditos no modelo do Club.',
     deposit: {
       title: 'Como você recebe créditos',
       text: [
-        'No depósito, você oferece um período à Luxtory. Os créditos entram no saldo quando a cessão é validada e concluída.',
-        'O valor de referência de cada data determina quantos créditos ela gera. Os créditos têm prazo de validade.',
+        'No depósito, você oferece um período à Luxtory. Quando esse período passa a fazer parte do intercâmbio, os créditos entram no seu saldo.',
+        'Cada data tem um valor de referência que define quantos créditos ela gera. Os créditos têm prazo de validade a partir da emissão.',
       ],
     },
     bookingTitle: 'Dois caminhos para reservar',
     methods: [
       {
-        title: 'Request',
-        subtitle: 'Solicitação a outro membro',
+        title: 'Pedido a outro membro',
+        name: 'Request',
         text: [
-          'Você envia o pedido a quem pode ceder a data. Enquanto essa pessoa decide, a solicitação não reserva o período.',
-          'Para enviar o pedido, você paga a taxa e os créditos necessários ficam reservados.',
-          'Com o aceite e a validação da Luxtory, a reserva se confirma. Quem cede a data recebe os créditos.',
+          'Você pede a data a quem pode oferecê-la. Enquanto essa pessoa decide, a data segue livre para outras reservas.',
+          'Para enviar o pedido, você paga a taxa. Os créditos necessários ficam separados no seu saldo.',
+          'Se a pessoa aceitar e a Luxtory validar as condições, a reserva se confirma. Quem oferece a data recebe os créditos.',
         ],
       },
       {
-        title: 'Direct',
-        subtitle: 'Reserva com a Luxtory',
+        title: 'Reserva direta com a Luxtory',
+        name: 'Direct',
         text: [
-          'Você escolhe um período que já está sob controle da Luxtory. A reserva dispensa o aceite de outro titular.',
-          'A confirmação depende da disponibilidade, da validação das condições e do pagamento da taxa.',
+          'Você escolhe entre as datas que a Luxtory já pode oferecer, sem esperar o aceite de outro membro.',
+          'A Luxtory confirma a reserva após conferir a disponibilidade, os créditos, as demais condições e o pagamento da taxa.',
         ],
       },
     ],
-    conditions: [
-      'Os dois caminhos exigem associação ativa, créditos válidos e suficientes e o cumprimento das regras do Club.',
-      'Quem solicita a estadia paga uma taxa de intercâmbio em dinheiro.',
-      'A data exibida indica disponibilidade. Conte com a estadia após receber a confirmação.',
-    ],
+    conditions: {
+      title: 'Associação, créditos e taxa',
+      text: [
+        'Você precisa ter associação ativa, cumprir as regras do Club e ter créditos válidos e suficientes para a estadia.',
+        'Seus créditos são usados quando a reserva se confirma. Quem pede a estadia paga a taxa de intercâmbio em dinheiro.',
+      ],
+    },
   },
   services: {
-    title: { lead: 'Outras formas de ', turn: 'aproveitar' },
+    title: { lead: 'Mais formas de ', turn: 'aproveitar' },
     items: [
       {
         title: 'Luxplus',
         text: [
-          'O Luxplus prevê estadias adicionais para associados em datas que a Luxtory disponibiliza para compra.',
-          'A hospedagem é paga em dinheiro, sem usar créditos do Luxchange.',
+          'O Luxplus prevê estadias extras para quem tem associação ativa. Você escolhe entre as datas que a Luxtory oferece.',
+          'Você paga em dinheiro e guarda os créditos do Luxchange para outra viagem.',
         ],
       },
       {
         title: 'Locação de temporada',
         text: [
-          'Para imóveis parceiros, está prevista a gestão opcional de locações em plataformas de terceiros, com contratação à parte.',
-          'Nas Second Homes do modelo original do Club, a locação pelo canal da Luxtory exige associação ativa e autorização das datas.',
+          'Para imóveis parceiros, está prevista a gestão opcional de locações em plataformas de terceiros. É um serviço à parte, sem exigir associação ao Club.',
+          'Para as Second Homes do modelo original, a locação pelo canal da Luxtory exige associação ativa. Você autoriza as datas que quer colocar para locação.',
         ],
       },
     ],
     photo: {
-      alt: 'Quarto de uma casa de lazer aberto para um jardim.',
+      alt: 'Duas pessoas em um espaço de descanso cercado por painéis de madeira.',
       caption: 'Imagem ilustrativa.',
     },
   },
   control: {
-    title: { lead: 'Seu imóvel ', turn: 'continua sendo seu' },
-    items: [
-      {
-        title: 'Propriedade',
-        text: 'A associação preserva a propriedade e os direitos de uso do seu imóvel.',
-      },
-      {
-        title: 'Calendário',
-        text: 'Você decide quais períodos pode oferecer, respeitando seus direitos de uso e os compromissos já assumidos.',
-      },
-      {
-        title: 'Períodos comprometidos',
-        text: 'Uma vez cedida ou reservada, a data fica vinculada ao uso acordado.',
-      },
+    title: { lead: 'Seu imóvel ', turn: 'continua sendo seu.' },
+    text: [
+      'Você mantém a propriedade do imóvel e os direitos de uso que já tem.',
+      'Você escolhe quais datas oferecer. Quando uma delas é cedida ou reservada, fica comprometida com o uso combinado.',
     ],
   },
   faq: {
     title: 'Dúvidas frequentes',
     items: [
       {
-        question: 'Posso retirar um período que ofereci?',
-        answer: 'Você pode retirar a oferta enquanto a data estiver livre de compromissos.',
+        question: 'Posso voltar atrás depois de oferecer uma data?',
+        answer: 'Pode, enquanto a data estiver livre de compromissos.',
       },
       {
-        question: 'E se minha solicitação for recusada ou expirar?',
+        question: 'E se o meu pedido for recusado ou vencer?',
         answer:
-          'No modelo do Club, os créditos reservados são liberados conforme sua validade original e a taxa é devolvida integralmente.',
+          'Você recebe de volta o valor integral da taxa. Os créditos que ainda estiverem válidos voltam a ficar disponíveis.',
       },
       {
         question: 'Para que posso usar meus créditos?',
-        answer: 'Os créditos têm uso exclusivo no intercâmbio, tanto em Request quanto em Direct.',
+        answer:
+          'Os créditos servem para reservar pelo Luxchange, tanto por pedido a outro membro quanto pela Luxtory. Eles não podem ser trocados por dinheiro.',
       },
       {
         question: 'Uma data pode gerar créditos e receita de locação?',
         answer:
-          'Você recebe créditos pela cessão do período. O uso posterior pela Luxtory não gera nova receita para você.',
+          'Você recebe créditos pelas datas que entram no intercâmbio. A receita de locação vem de outras datas que você autoriza e que são alugadas.',
       },
       {
-        question: 'Quais são as condições de cancelamento?',
+        question: 'Como funciona se eu precisar cancelar?',
         answer:
-          'A política apresentada antes do pedido ou da reserva define o que acontece com os créditos e os valores pagos.',
+          'As condições aparecem antes de você pedir ou reservar a estadia. Elas explicam o que acontece com seus créditos e com o valor pago em caso de cancelamento.',
       },
     ],
   },
   next: {
-    title: { lead: 'Um lugar para chamar de seu. ', turn: 'Mais possibilidades para viver.' },
-    text: 'A avaliação é o primeiro passo. O canal de afiliação está em desenvolvimento.',
-    action: 'Tire suas dúvidas',
+    title: { lead: 'O Club faz sentido ', turn: 'para o seu imóvel?' },
+    text: 'A primeira etapa é a avaliação. A forma de apresentar seu imóvel à Luxtory ainda está em definição.',
+    action: 'Veja as condições',
   },
 } as const;
