@@ -37,7 +37,7 @@ describe('CTA do Discovery por disponibilidade', () => {
         href: '/colecao#home-editions',
         label: 'Conheça as Home Editions',
       },
-      { primary: false, href: '/como-funciona', label: 'Entenda como funciona' },
+      { primary: false, href: '/Luxtory-Club', label: 'Entenda como funciona' },
     ]);
     expect(links(render('homeEditions', 'howItWorks'))).toEqual([
       {
@@ -61,7 +61,7 @@ describe('CTA do Discovery por disponibilidade', () => {
   it('[REQ-022] sem Concept publicado, nenhum caminho para uma Coleção vazia', () => {
     expect(catalogCta({ homeConcepts: false, homeEditions: false })).toBe('none');
     expect(links(render('none', 'home'))).toEqual([
-      { primary: true, href: '/como-funciona', label: 'Entenda como funciona' },
+      { primary: true, href: '/Luxtory-Club', label: 'Entenda como funciona' },
     ]);
     const howItWorks = render('none', 'howItWorks');
     expect(links(howItWorks)).toEqual([]);
@@ -72,7 +72,7 @@ describe('CTA do Discovery por disponibilidade', () => {
     expect(catalogCta(null)).toBe('unknown');
     const home = render('unknown', 'home');
     expect(links(home)).toEqual([
-      { primary: true, href: '/como-funciona', label: 'Entenda como funciona' },
+      { primary: true, href: '/Luxtory-Club', label: 'Entenda como funciona' },
     ]);
     for (const html of [home, render('unknown', 'howItWorks')]) {
       expect(html).not.toContain('/colecao');

@@ -2,7 +2,7 @@
 export const discoveryPaths = {
   home: '/',
   about: '/sobre',
-  howItWorks: '/como-funciona',
+  howItWorks: '/Luxtory-Club',
   collection: '/colecao',
   homeConcept: (homeConceptId: string) => `/colecao/${homeConceptId}`,
   homeEdition: (homeConceptId: string, homeEditionId: string) =>

@@ -78,6 +78,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   convidados, sem dados nem quantidade de convidados). Detalhe Admin da reserva mostra as declarações. A seleção fica
   fechada até a ativação autorizada (K3 sem linha); entrada só por Server Actions (REST `/v1` adiado).
 
+- Página pública `/Luxtory-Club` com etapas de participação, créditos, Request, Direct e serviços complementares
+  (catalog §22). A abertura mostra o benefício dos créditos, a faixa de controle do imóvel antecede a comparação e o
+  fechamento leva às condições de uso. A revisão explica a escolha por dia, a origem dos créditos e a simulação da
+  taxa proposta. O menu conecta a Home à página e `/como-funciona` redireciona para ela.
+
 ### Changed
 
 - Home da Luxtory: títulos dos serviços em duas linhas, foto do fechamento exibida inteira e textos de Membership e

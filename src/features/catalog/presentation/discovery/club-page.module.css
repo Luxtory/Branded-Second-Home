@@ -1,0 +1,162 @@
+:global(main):has(> section .lx-club-hero) {
+  overflow-wrap: anywhere;
+}
+
+:global([data-lx='core']):has(> main .lx-club-hero)
+  :global(:is(.lx-header__inner, .lx-mobile-nav__top) > .lx-logo) {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+}
+
+.lx-club-hero-copy {
+  margin-inline: 0;
+  min-inline-size: 0;
+}
+
+.lx-club-hero-copy > :global(.lx-button) {
+  justify-self: start;
+  padding-inline: clamp(var(--lx-space-2), (100% - 7em) / 2, var(--lx-space-8));
+}
+
+.lx-club-hero-copy > :global(.lx-button),
+.lx-club-closing > :global(.lx-button) {
+  max-inline-size: 100%;
+  flex-wrap: wrap;
+  text-align: center;
+}
+
+.lx-club-hero-title {
+  max-inline-size: none;
+  color: var(--lx-color-headline);
+  white-space: normal;
+}
+
+.lx-club-hero-title > em {
+  display: block;
+  color: inherit;
+  text-wrap: balance;
+}
+
+.lx-club-section {
+  padding-block: calc(var(--lx-space-section) * 3 / 4);
+}
+
+.lx-club-section-head {
+  margin-block-end: var(--lx-space-8);
+}
+
+.lx-club-columns {
+  align-items: start;
+  row-gap: var(--lx-space-6);
+}
+
+.lx-club-booking-media {
+  max-inline-size: var(--lx-layout-container-narrow);
+  margin: 0 auto;
+}
+
+.lx-club-booking-video {
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  background-color: var(--lx-color-bg);
+}
+
+.lx-club-exchange-content {
+  display: grid;
+  gap: var(--lx-space-8);
+}
+
+.lx-club-exchange-content :global(.lx-stack) {
+  gap: var(--lx-space-4);
+}
+
+.lx-club-conditions {
+  justify-items: center;
+  border-block-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+  padding-block-start: var(--lx-space-8);
+}
+
+.lx-club-conditions > h3 {
+  text-align: center;
+}
+
+.lx-club-fee-example {
+  justify-items: center;
+  justify-self: center;
+  inline-size: 100%;
+  max-inline-size: calc(var(--lx-layout-measure) + 2 * var(--lx-layout-gutter));
+  padding: var(--lx-layout-gutter);
+  text-align: center;
+}
+
+.lx-club-fee-example > :global(.lx-display-s) {
+  text-wrap: wrap;
+  text-wrap: pretty;
+}
+
+.lx-club-fee-example > :global(.lx-body) > strong {
+  white-space: nowrap;
+}
+
+.lx-club-services-copy > :global(.lx-stack) + :global(.lx-stack) {
+  border-block-start: var(--lx-border-hairline) solid var(--lx-color-rule);
+  padding-block-start: var(--lx-space-6);
+}
+
+.lx-club-measure {
+  max-inline-size: var(--lx-layout-measure);
+}
+
+.lx-club-closing {
+  justify-items: center;
+  margin-block-start: 0;
+}
+
+.lx-club-closing > p {
+  max-inline-size: var(--lx-layout-split-text);
+  font-size: var(--lx-type-body);
+  line-height: var(--lx-leading-reading);
+}
+
+:global(main):has(> section .lx-club-closing) + :global(.lx-footer) {
+  padding-block-start: var(--lx-space-12);
+}
+
+@media (min-width: 48rem) {
+  .lx-club-methods {
+    row-gap: var(--lx-space-4);
+  }
+
+  .lx-club-methods > :global(.lx-comparison__item) {
+    grid-row: span 5;
+    grid-template-rows: subgrid;
+  }
+}
+
+@media (min-width: 64rem) {
+  .lx-club-section-head {
+    margin-block-end: var(--lx-space-12);
+  }
+
+  .lx-club-exchange-content {
+    gap: var(--lx-space-12);
+  }
+
+  .lx-club-topics {
+    row-gap: var(--lx-space-4);
+  }
+
+  .lx-club-topics > :global(.lx-stack) {
+    align-self: stretch;
+    grid-row: span 4;
+    grid-template-rows: subgrid;
+  }
+}
+
+@media (min-width: 80rem) {
+  .lx-club-hero {
+    grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
+  }
+}

@@ -53,7 +53,7 @@ describe('Sobre a Luxtory — contrato aprovado, catalog §15', () => {
   it('renderiza o mesmo corpo com um H1 e todos os destaques nas duas jornadas', () => {
     const b2c = renderToStaticMarkup(createElement(AboutContent, { journey: 'discovery' }));
     const b2b = renderToStaticMarkup(createElement(AboutContent, { journey: 'brandPartners' }));
-    expect(b2c.replaceAll('/como-funciona', '/brand-partner/como-funciona')).toBe(b2b);
+    expect(b2c.replaceAll('/Luxtory-Club', '/brand-partner/como-funciona')).toBe(b2b);
     expect(b2c.match(/<h1\b/g)).toHaveLength(1);
     expect(b2c.match(/<section\b/g)).toHaveLength(5);
     const emphasis = strings(text.content).flatMap((line) => [...line.matchAll(/\*\*(.+?)\*\*/g)]);
@@ -62,7 +62,7 @@ describe('Sobre a Luxtory — contrato aprovado, catalog §15', () => {
   });
 
   for (const [journey, about, how] of [
-    ['discovery', '/sobre', '/como-funciona'],
+    ['discovery', '/sobre', '/Luxtory-Club'],
     ['brandPartners', '/brand-partner/sobre', '/brand-partner/como-funciona'],
   ] as const) {
     it(`[REQ-028] ${journey}: destinos explícitos da própria jornada e metadata noindex fora de Production`, () => {

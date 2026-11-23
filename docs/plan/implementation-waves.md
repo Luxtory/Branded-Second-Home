@@ -2006,3 +2006,12 @@ Autorizada pelo fundador após validação da copy completa. Dependência: SHP1 
 Refinamento SHP2 autorizado após o Preview em 2026-11-17: Hero em duas frases, oportunidade com foto/narrativa, fechamentos e carteira já vendida/futura. D-SHP-17; catalog §20.7; plano detalhado no adendo de shp-partner-profiles.md. Sem mudança de economia ou duração contratual.
 
 Definição complementar SHP2 em 2026-11-17: duração do direito de participação enquanto o imóvel permanecer afiliado, conforme fundador/01 v10.7; catalog §20.8 e D-SHP-18. Corrigir cadeia de carregamento/fallback das fotos observadas no print, sem alterar originais, APIs ou operação do Club.
+
+## Página pública Luxtory Club
+
+Dependência: Home dos PRs #102 e #103. Escopo e aceite em [catalog §22](../specs/catalog.md#22-página-pública-luxtory-club).
+
+1. Auditoria das regras, dos benchmarks e dos padrões da Home e do explicador histórico.
+2. Após 1, brief e copy em `club-pt-br.ts`. Cobrir origem e uso de créditos, compromisso de datas e pendências de afiliação.
+3. Após 2, testar e implementar a página e os adaptadores de rota. Verificar a navegação B2C e o portão de Discovery.
+4. Após 3, build, tipos, lint, testes direcionados e revisão visual. Apresentar a prévia para aprovação.

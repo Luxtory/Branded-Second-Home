@@ -1,2 +1,9 @@
-export { howItWorksMetadata as metadata } from '@/features/catalog/presentation/discovery/metadata';
-export { HowItWorksPage as default } from '@/features/catalog/presentation/discovery/how-it-works-page';
+import { notFound, permanentRedirect } from 'next/navigation';
+import { discoveryPaths } from '@/features/catalog/presentation/discovery/paths';
+import { isPublicSiteOpen } from '@/features/platform';
+
+/** The historical HowItWorksPage stays in the catalog feature. */
+export default function LegacyHowItWorksRoute() {
+  if (!isPublicSiteOpen()) notFound();
+  permanentRedirect(discoveryPaths.howItWorks);
+}

@@ -1,8 +1,8 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { hasForbiddenTerm } from '../../src/features/catalog/domain/terminology';
 import { discoveryMessages } from '../../src/features/catalog/presentation/i18n/discovery-pt-br';
 import { signIn, STAFF_EMAIL } from './support/auth';
-import { readSeed } from './support/discovery';
+import { readSeed, stubClubVideo } from './support/discovery';
 import {
   captureForReview,
   collectConsoleErrors,
@@ -10,7 +10,7 @@ import {
   worstContrastUnder,
 } from './support/ui';
 
-// Discovery público B2C (docs/specs/catalog.md §13, §17.8): Home, Como funciona, Coleção, Home Concept e Home Edition,
+// Discovery público B2C (docs/specs/catalog.md §13, §17.8): Home, Luxtory Club, Coleção, Home Concept e Home Edition,
 // com o catálogo semeado por catalog.seed.ts para as jornadas de Home Edition. Gate de UI do ADR-0009 em toda página.
 
 // Preço por dia ou por noite no texto renderizado (REQ-100), além da guarda canônica de terminologia.
@@ -19,7 +19,7 @@ const PRICE_PER_DAY = /R\$\s?[\d.,]+\s*(\/|por)\s*(dia|noite)\b/i;
 // O seed é lido dentro dos testes: o arquivo só existe depois do projeto `seed`.
 const PAGE_NAMES = [
   'home',
-  'howItWorks',
+  'club',
   'collection',
   'withHomeEdition',
   'withoutHomeEdition',
@@ -28,11 +28,13 @@ const PAGE_NAMES = [
 ] as const;
 type PageName = (typeof PAGE_NAMES)[number];
 
+test.beforeEach(({ page }) => stubClubVideo(page));
+
 function pathOf(name: PageName): string {
   const seed = readSeed();
   const paths: Record<PageName, string> = {
     home: '/',
-    howItWorks: '/como-funciona',
+    club: '/Luxtory-Club',
     collection: '/colecao',
     withHomeEdition: `/colecao/${seed.withHomeEdition.id}`,
     withoutHomeEdition: `/colecao/${seed.withoutHomeEdition.id}`,
@@ -44,7 +46,6 @@ function pathOf(name: PageName): string {
 
 // textContent: inclui as respostas fechadas do FAQ.
 const visibleText = async (page: Page) => (await page.locator('body').textContent()) ?? '';
-const HOME_EDITIONS_CTA = 'Conheça as Home Editions';
 
 test.describe('Discovery público — gate de UI (ADR-0009)', () => {
   for (const name of PAGE_NAMES) {
@@ -71,7 +72,7 @@ test.describe('Discovery público — gate de UI (ADR-0009)', () => {
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('link', { name: 'Luxtory Club' })).toHaveAttribute(
       'href',
-      '#luxtory',
+      '/Luxtory-Club',
     );
     await expect(dialog.getByRole('link', { name: 'Como funciona' })).toHaveAttribute(
       'href',
@@ -121,56 +122,27 @@ test.describe('Discovery público — gate de UI (ADR-0009)', () => {
   });
 });
 
-test.describe('Discovery público — Como funciona: header da Home e scrim uniforme', () => {
-  test('o Como funciona usa o header da Home: o menu abre pelo ícone oficial, também no desktop', async ({
+test.describe('Discovery público — menu do Luxtory Club', () => {
+  test('Luxtory Club usa o header da Home: o menu abre pelo ícone oficial, também no desktop', async ({
     page,
   }) => {
     const errors = collectConsoleErrors(page);
     for (const width of [390, 1440]) {
       await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
-      await page.goto('/como-funciona');
+      await page.goto('/Luxtory-Club');
       await expect(page.locator('header .lx-header__link')).toHaveCount(0);
       const button = page.getByRole('button', { name: 'Abrir menu' });
       await button.click();
       const dialog = page.getByRole('dialog', { name: 'Menu' });
       await expect(dialog.getByRole('link', { name: 'Como funciona' })).toHaveAttribute(
-        'aria-current',
-        'page',
+        'href',
+        '#como-funciona',
       );
       await page.keyboard.press('Escape');
       await expect(dialog).toBeHidden();
       await expect(button).toBeFocused();
     }
     expect(errors).toEqual([]);
-  });
-
-  test('[WCAG 1.4.3] Hero e CTA final com scrim uniforme: contraste medido nos pixels a 768 e 1440 px', async ({
-    page,
-  }) => {
-    test.slow();
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    // Headline Warm Sand (texto grande) ≥ 3:1; texto branco ≥ 4,5:1 (D-B2C-20, scrim.display-alpha).
-    const targets = [
-      ['#inicio h1', 3],
-      ['#inicio .lx-subheadline', 4.5],
-      ['#proximo-passo h2', 3],
-      ['#proximo-passo .lx-subheadline', 4.5],
-    ] as const;
-    for (const width of [768, 1440]) {
-      await page.setViewportSize({ width, height: width === 768 ? 1024 : 900 });
-      await page.goto('/como-funciona', { waitUntil: 'networkidle' });
-      await page.evaluate(async () => {
-        // A foto do CTA é lazy: carregar e decodificar todas antes de medir.
-        for (const image of document.images) {
-          image.loading = 'eager';
-          await image.decode().catch(() => undefined);
-        }
-      });
-      for (const [selector, min] of targets) {
-        const worst = await worstContrastUnder(page, selector);
-        expect(worst, `${selector} a ${width}px`).toBeGreaterThanOrEqual(min);
-      }
-    }
   });
 });
 
@@ -197,14 +169,10 @@ test.describe('Discovery público — jornada a 390 px com toque', () => {
     expect(errors).toEqual([]);
   });
 
-  test('Como funciona → Home Editions → Home Concept → Home Edition → Como funciona', async ({
-    page,
-  }) => {
+  test('Coleção → Home Concepts → Home Edition → Luxtory Club', async ({ page }) => {
     const seed = readSeed();
     const errors = collectConsoleErrors(page);
-    await page.goto('/como-funciona');
-    await page.getByRole('link', { name: HOME_EDITIONS_CTA }).tap();
-    await expect(page).toHaveURL(/\/colecao#home-editions$/);
+    await page.goto('/colecao#home-editions');
     await page
       .getByRole('list', { name: 'Home Concepts com Home Edition' })
       .getByRole('link', { name: seed.withHomeEdition.title })
@@ -221,9 +189,8 @@ test.describe('Discovery público — jornada a 390 px com toque', () => {
       seed.withHomeEdition.homeEdition.name,
     );
     await page.getByRole('link', { name: 'Entenda como funciona' }).tap();
-    await expect(page).toHaveURL(/\/como-funciona$/);
-    await page.getByRole('link', { name: HOME_EDITIONS_CTA }).tap();
-    await expect(page).toHaveURL(/\/colecao#home-editions$/);
+    await expect(page).toHaveURL(/\/Luxtory-Club$/);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     expect(errors).toEqual([]);
   });
 });
@@ -317,7 +284,7 @@ test.describe('Discovery público — conteúdo', () => {
       .locator('a[href]')
       .evaluateAll((anchors) => anchors.map((anchor) => anchor.getAttribute('href')));
     expect(new Set(links)).toEqual(
-      new Set(['/', '#conteudo', '#luxtory', '#liberdade', '#duvidas']),
+      new Set(['/', '/Luxtory-Club', '#conteudo', '#luxtory', '#liberdade', '#duvidas']),
     );
     await expect(page).toHaveTitle(/Luxtory Club/);
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
@@ -445,27 +412,6 @@ test.describe('Discovery público — conteúdo', () => {
     }
   });
 
-  test('[REQ-103] Owner e Co-Owner com a mesma estrutura onde aparecem juntos', async ({
-    page,
-  }) => {
-    await page.goto(pathOf('howItWorks'));
-    // Core: Editorial Comparison dividida (spec design-system §13.10); o nome da modalidade é o título ou o eyebrow.
-    const pairs = page.locator('[data-pair="modality"]');
-    expect(await pairs.count()).toBeGreaterThan(0);
-    for (const pair of await pairs.all()) {
-      const items = pair.locator('.lx-comparison__item');
-      await expect(items).toHaveCount(2);
-      const owner = items.nth(0);
-      const coOwner = items.nth(1);
-      const shape = (side: Locator) =>
-        side.evaluate((node) => [...node.children].map((child) => child.tagName));
-      const name = (side: Locator) => side.locator(':scope > :first-child').textContent();
-      expect(await name(owner)).toBe('Owner');
-      expect(await name(coOwner)).toBe('Co-Owner');
-      expect(await shape(owner)).toEqual(await shape(coOwner));
-    }
-  });
-
   test('[BR-015] [BR-021] Home Concept sem exposição, com encerramento eficaz ou sem versão aprovada não aparece e responde 404', async ({
     page,
   }) => {
@@ -480,60 +426,6 @@ test.describe('Discovery público — conteúdo', () => {
     }
     const invalid = await page.goto('/colecao/nao-e-um-id');
     expect(invalid?.status()).toBe(404);
-  });
-
-  test('[D-B2C-16] [D-B2C-27] com Home Edition publicada, o Como funciona leva ao primeiro grupo da Coleção', async ({
-    page,
-  }) => {
-    await page.goto('/como-funciona');
-    await expect(page.getByRole('link', { name: HOME_EDITIONS_CTA })).toHaveAttribute(
-      'href',
-      '/colecao#home-editions',
-    );
-    await expect(page.getByRole('link', { name: 'Conheça os Home Concepts' })).toHaveCount(0);
-  });
-
-  test('[REQ-103] [D-B2C-16] Como funciona: capítulos no Hero, condições sempre visíveis e fechamento por disponibilidade', async ({
-    page,
-  }) => {
-    // Especificação Visual e Copy do fundador (D-B2C-20, spec catalog §13.11).
-    const { howItWorks } = discoveryMessages;
-    await page.goto(pathOf('howItWorks'));
-    const hero = page.locator('section#inicio');
-    await expect(hero.getByRole('heading', { level: 1 })).toHaveText(howItWorks.hero.title);
-    await expect(hero.getByRole('link', { name: howItWorks.hero.anchor })).toHaveAttribute(
-      'href',
-      '#conexao',
-    );
-    const chapters = hero
-      .getByRole('navigation', { name: howItWorks.hero.chapters })
-      .getByRole('link');
-    await expect(chapters).toHaveCount(3);
-    for (const [index, id] of ['patrimonio', 'liberdade', 'pertencimento'].entries()) {
-      await expect(chapters.nth(index)).toHaveAttribute('href', `#${id}`);
-      await expect(page.locator(`main > section#${id}`)).toHaveCount(1);
-    }
-    await chapters.nth(1).focus();
-    await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(/#liberdade$/);
-
-    // As condições fazem parte da prova: todas visíveis, nenhuma dentro de um disclosure.
-    const conditions = page.locator('section#condicoes');
-    await expect(conditions.locator('details')).toHaveCount(0);
-    await expect(conditions.getByRole('listitem')).toHaveCount(howItWorks.conditions.items.length);
-    for (const item of howItWorks.conditions.items) await expect(conditions).toContainText(item);
-
-    // As quatro configurações Co-Owner com a mesma geometria; as duas listas do PUSH com o mesmo peso.
-    await expect(page.locator('.lx-figures__item')).toHaveCount(4);
-    const fit = page.locator('section#para-quem .lx-comparison__item');
-    await expect(fit).toHaveCount(2);
-    await expect(fit.nth(0).getByRole('listitem')).toHaveCount(howItWorks.fit.fits.length);
-    await expect(fit.nth(1).getByRole('listitem')).toHaveCount(howItWorks.fit.notFits.length);
-
-    // Com Home Edition publicada: o apoio e o CTA do primeiro grupo, sobre a fotografia de fechamento.
-    const next = page.locator('section#proximo-passo');
-    await expect(next).toContainText(howItWorks.next.text);
-    await expect(next.getByRole('link', { name: HOME_EDITIONS_CTA })).toBeVisible();
   });
 
   test('[TECH-100] CSP com nonce nas páginas públicas e no Admin; nenhum link para o Admin nem para Brand Partners', async ({

@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { discoveryPaths } from '@/features/catalog/presentation/discovery/paths';
 import { isSessionPath, refreshSession } from '@/features/identity/presentation/session-proxy';
 import {
   contentSecurityPolicy,
@@ -14,6 +15,7 @@ import {
  */
 export async function proxy(request: NextRequest) {
   const nonce = createNonce();
+  const pathname = request.nextUrl.pathname;
   const forwardedProto = request.headers.get('x-forwarded-proto');
   const secureTransport =
     forwardedProto === 'https' ||
@@ -21,9 +23,10 @@ export async function proxy(request: NextRequest) {
   const policy = contentSecurityPolicy(nonce, {
     development: process.env.NODE_ENV === 'development',
     secureTransport,
+    allowYouTubeEmbed: pathname === discoveryPaths.howItWorks,
   });
   const forwarded = { [NONCE_HEADER]: nonce, [CSP_HEADER]: policy };
-  const response = isSessionPath(request.nextUrl.pathname)
+  const response = isSessionPath(pathname)
     ? await refreshSession(request, forwarded)
     : NextResponse.next({ request: { headers: withForwardedHeaders(request.headers, forwarded) } });
   response.headers.set(CSP_HEADER, policy);

@@ -17,9 +17,11 @@ export function contentSecurityPolicy(
   {
     development,
     secureTransport,
+    allowYouTubeEmbed,
   }: {
     development: boolean;
     secureTransport: boolean;
+    allowYouTubeEmbed?: boolean;
   },
 ) {
   const script = [`'self'`, `'nonce-${nonce}'`, `'strict-dynamic'`];
@@ -35,6 +37,7 @@ export function contentSecurityPolicy(
     `form-action 'self'`,
     `frame-ancestors 'none'`,
   ];
+  if (allowYouTubeEmbed) directives.push(`frame-src 'self' https://www.youtube-nocookie.com`);
   // Em localhost HTTP, WebKit aplica o upgrade também aos assets self e tenta TLS em 127.0.0.1.
   // Em produção/preview HTTPS a diretiva permanece ativa.
   if (secureTransport) directives.push(`upgrade-insecure-requests`);
