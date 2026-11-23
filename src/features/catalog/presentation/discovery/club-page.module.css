@@ -31,10 +31,6 @@
   padding: var(--lx-layout-gutter);
 }
 
-.lx-club-fee-example dd {
-  margin: 0;
-}
-
 .lx-club-measure {
   max-inline-size: var(--lx-layout-measure);
 }

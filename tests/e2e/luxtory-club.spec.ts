@@ -18,7 +18,11 @@ test('apresenta a proposta e distingue os caminhos do intercâmbio (catalog §22
   await expect(hero.locator('.lx-split__text p')).toHaveText([
     'As datas da sua casa que entram no intercâmbio geram créditos para pedir estadias em outros destinos.',
   ]);
-  await expect(page.locator('#como-funciona ol > li')).toHaveCount(5);
+  const steps = page.locator('#como-funciona');
+  await expect(steps.locator('.lx-section-head p')).toHaveText(
+    'Para participar do intercâmbio, seu imóvel passa por uma avaliação da Luxtory.',
+  );
+  await expect(steps.locator('ol > li')).toHaveCount(5);
   expect(
     await page.locator('main > section').evaluateAll((sections) => sections.map(({ id }) => id)),
   ).toEqual([
@@ -30,31 +34,67 @@ test('apresenta a proposta e distingue os caminhos do intercâmbio (catalog §22
     'duvidas',
     'proximo-passo',
   ]);
+  const control = page.locator('#condicoes');
+  await expect(
+    control.getByRole('heading', { name: 'Propriedade e direito de uso' }),
+  ).toBeVisible();
+  await expect(control.locator('p')).toHaveText([
+    'O intercâmbio não altera sua propriedade ou participação no imóvel, nem seus direitos de uso.',
+    'Você escolhe quais datas disponibilizar. Após cedidas ou reservadas, elas ficam comprometidas e indisponíveis para outros usos.',
+  ]);
+
   const exchange = page.locator('#luxchange');
-  await expect(exchange.getByRole('heading', { name: 'De onde vêm os créditos' })).toBeVisible();
-  await expect(exchange).toContainText('Quando o depósito é concluído');
+  await expect(exchange.getByRole('heading', { name: 'Origem dos créditos' })).toBeVisible();
   await expect(exchange).toContainText(
-    'Você também recebe créditos ao aceitar um Luxchange Request',
+    'Pelo depósito: ao disponibilizar datas para intercâmbio, você recebe os créditos após a confirmação da Luxtory.',
   );
+  await expect(exchange).toContainText(
+    'Pelo Luxchange Request: você também recebe créditos ao aceitar uma solicitação para seu imóvel, após a confirmação da reserva pela Luxtory.',
+  );
+  await expect(exchange.locator('.lx-columns strong')).toHaveText([
+    'Pelo depósito:',
+    'Pelo Luxchange Request:',
+    'Preço de Referência Luxtory',
+    'Mais liberdade para escolher suas estadias.',
+  ]);
   await expect(exchange.getByRole('heading', { name: 'Intercâmbio por dia' })).toBeVisible();
-  await expect(exchange).toContainText('menor que uma semana');
+  await expect(exchange).toContainText('a partir de apenas um dia');
   await expect(exchange.getByRole('heading', { name: 'Luxchange Request' })).toBeVisible();
   await expect(exchange.getByRole('heading', { name: 'Luxchange Direct' })).toBeVisible();
-  await expect(exchange).toContainText('Solicitação de reserva a outro membro.');
-  await expect(exchange).toContainText('Reserva direta com a Luxtory.');
-  await expect(exchange).toContainText('Os créditos são usados na confirmação');
+  await expect(exchange.locator('.lx-comparison__item em')).toHaveText([
+    'Solicitação de reserva a outro membro.',
+    'Reserva direta com a Luxtory.',
+  ]);
+  await expect(exchange).toContainText('Os créditos são utilizados quando a reserva é confirmada.');
+  await expect(exchange).toContainText('transferidos ao membro que disponibilizou as datas.');
+  await expect(exchange).toContainText(
+    'Escolha entre as datas disponíveis no inventário da Luxtory.',
+  );
 
   const example = page.locator('#taxa-de-intercambio');
-  for (const text of ['12%', 'R$ 5.000', 'R$ 600', 'R$ 4.400', '88%', 'cobranças adicionais']) {
-    await expect(example).toContainText(text);
-  }
-  await expect(example).toContainText('mesmo imóvel, nas mesmas datas e condições');
+  await expect(example.getByRole('heading')).toHaveText('Taxa de intercâmbio — 12%');
+  await expect(example.locator('p').first()).toHaveText(
+    'Em uma estadia com preço de mercado de R$ 10.500, a taxa de intercâmbio seria de apenas R$ 1.260.',
+  );
+  await expect(example.locator('strong')).toHaveText([
+    'R$ 10.500',
+    'R$ 1.260',
+    'R$ 9.240 a menos em relação ao preço de mercado — 88% de diferença.',
+  ]);
+  await expect(example.locator('em')).toHaveText(
+    'Simulação referente exclusivamente à taxa de intercâmbio, sem considerar créditos utilizados, associação e eventuais custos adicionais.',
+  );
   const services = page.locator('#outras-possibilidades');
-  await expect(services).toContainText('Você paga pela estadia e guarda os créditos do Luxchange');
-  await expect(services).toContainText('exclusiva para membros com associação ativa');
+  await expect(services).toContainText('preservando seus créditos Luxchange para outra viagem.');
+  await expect(services).toContainText('Exclusiva para associados ativos');
+  await expect(services).toContainText('Você escolhe quais datas disponíveis deseja monetizar.');
   await expect(page.locator('main')).not.toContainText('paga em dinheiro');
-  await expect(page.locator('#proximo-passo')).toContainText('ainda está em definição');
-  await expect(page.locator('#proximo-passo p')).toHaveCSS('font-style', 'normal');
+  const closing = page.locator('#proximo-passo');
+  await expect(closing.locator('h2 em')).toHaveText('O Club faz sentido para o seu imóvel?');
+  await expect(closing.locator('p')).toHaveText(
+    'O primeiro passo é avaliar seu imóvel. O processo para apresentá-lo à Luxtory ainda está em definição.',
+  );
+  await expect(closing.locator('p')).toHaveCSS('font-style', 'normal');
   await expect(page.locator('main form')).toHaveCount(0);
 });
 

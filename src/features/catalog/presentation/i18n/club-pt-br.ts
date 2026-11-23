@@ -23,8 +23,7 @@ export const clubMessages = {
   },
   steps: {
     title: { lead: 'Do seu imóvel ', turn: 'à próxima estadia' },
-    intro:
-      'A entrada de imóveis já existentes terá condições próprias de avaliação e adesão, ainda em definição.',
+    intro: 'Para participar do intercâmbio, seu imóvel passa por uma avaliação da Luxtory.',
     items: [
       {
         title: 'Avaliação do imóvel',
@@ -52,16 +51,17 @@ export const clubMessages = {
     title: { lead: 'Luxchange. ', turn: 'Como usar seus créditos.' },
     intro: 'O Luxchange é a forma de pedir estadias com créditos no modelo do Club.',
     deposit: {
-      title: 'De onde vêm os créditos',
+      title: 'Origem dos créditos',
       text: [
-        'Você oferece datas à Luxtory. Quando o depósito é concluído e as datas entram no intercâmbio, os créditos entram no seu saldo.',
-        'Você também recebe créditos ao aceitar um Luxchange Request para o seu imóvel, depois que a Luxtory valida e confirma a reserva.',
-        'A quantidade de créditos depende do Preço de Referência Luxtory de cada data. Os créditos têm prazo de validade.',
+        '**Pelo depósito:** ao disponibilizar datas para intercâmbio, você recebe os créditos após a confirmação da Luxtory.',
+        '**Pelo Luxchange Request:** você também recebe créditos ao aceitar uma solicitação para seu imóvel, após a confirmação da reserva pela Luxtory.',
+        'Os créditos são calculados pelo **Preço de Referência Luxtory** de cada data e possuem prazo de validade.',
       ],
     },
     dates: {
       title: 'Intercâmbio por dia',
-      text: 'Você escolhe o período por dia. Pode pedir uma estadia menor que uma semana, conforme as datas disponíveis e as regras da estadia.',
+      description: 'Mais liberdade para escolher suas estadias.',
+      text: 'Na Luxtory, você pode solicitar intercâmbios a partir de apenas um dia, sem precisar reservar uma semana inteira.',
     },
     bookingTitle: 'Dois caminhos para reservar',
     methods: [
@@ -69,39 +69,34 @@ export const clubMessages = {
         title: 'Luxchange Request',
         description: 'Solicitação de reserva a outro membro.',
         text: [
-          'Você pede a data a quem pode oferecê-la. Enquanto essa pessoa decide, a data segue livre para outras reservas.',
-          'Para enviar o pedido, você paga a taxa. Os créditos necessários ficam separados no seu saldo.',
-          'Se a pessoa aceitar e a Luxtory validar as condições, a reserva se confirma. Quem oferece a data recebe os créditos.',
+          'Você paga a taxa e reserva os créditos necessários para enviar a solicitação.',
+          'Enquanto aguarda a resposta, as datas podem ser reservadas por outra pessoa.',
+          'Se o membro aceitar e a Luxtory confirmar a reserva, os créditos são utilizados e transferidos ao membro que disponibilizou as datas.',
         ],
       },
       {
         title: 'Luxchange Direct',
         description: 'Reserva direta com a Luxtory.',
         text: [
-          'Você escolhe entre as datas que a Luxtory já pode oferecer, sem esperar o aceite de outro membro.',
-          'A Luxtory confirma a reserva após conferir a disponibilidade, os créditos, as demais condições e o pagamento da taxa.',
+          'Escolha entre as datas disponíveis no inventário da Luxtory.',
+          'A reserva é confirmada após a verificação da disponibilidade, dos créditos e do pagamento da taxa.',
         ],
       },
     ],
     conditions: {
       title: 'Associação, créditos e taxa',
       text: [
-        'Você precisa ter associação ativa, cumprir as regras do Club e ter créditos válidos e suficientes para a estadia.',
-        'Os créditos são usados na confirmação da reserva. Quem pede a estadia paga a taxa de intercâmbio.',
+        'Nas duas modalidades, você precisa de associação ativa e créditos válidos e suficientes.',
+        'Quem solicita a estadia paga a taxa de intercâmbio. Os créditos são utilizados quando a reserva é confirmada.',
       ],
     },
     feeExample: {
-      title: 'Taxa de intercâmbio',
-      intro: 'Simulação com a taxa proposta de 12% sobre o preço de mercado da estadia.',
-      values: [
-        { label: 'Preço de mercado', value: 'R$ 5.000' },
-        { label: 'Taxa de intercâmbio no exemplo', value: 'R$ 600' },
-        { label: 'Diferença considerando só a taxa', value: '88% · R$ 4.400' },
+      title: 'Taxa de intercâmbio — 12%',
+      text: [
+        'Em uma estadia com preço de mercado de **R$ 10.500**, a taxa de intercâmbio seria de apenas **R$ 1.260**.',
+        '**R$ 9.240 a menos em relação ao preço de mercado — 88% de diferença.**',
       ],
-      notes: [
-        'A comparação usa o mesmo imóvel, nas mesmas datas e condições. Os 88% consideram apenas a taxa de intercâmbio.',
-        'A reserva também usa créditos. O custo da associação e cobranças adicionais, como limpeza ou tributos quando aplicáveis, reduzem a economia final.',
-      ],
+      note: 'Simulação referente exclusivamente à taxa de intercâmbio, sem considerar créditos utilizados, associação e eventuais custos adicionais.',
     },
   },
   services: {
@@ -110,15 +105,14 @@ export const clubMessages = {
       {
         title: 'Luxplus',
         text: [
-          'O Luxplus prevê estadias extras para quem tem associação ativa. Você escolhe entre as datas que a Luxtory oferece.',
-          'Você paga pela estadia e guarda os créditos do Luxchange para outra viagem.',
+          'Com a associação ativa, você pode comprar estadias adicionais nas datas disponíveis para Luxplus, preservando seus créditos Luxchange para outra viagem.',
         ],
       },
       {
         title: 'Locação de temporada',
         text: [
-          'A locação de temporada com gestão profissional pelo Luxtory Club é exclusiva para membros com associação ativa.',
-          'Você escolhe as datas disponíveis que quer colocar para locação.',
+          'Exclusiva para associados ativos, a gestão profissional de locação permite disponibilizar períodos ociosos do seu imóvel para locação.',
+          'Você escolhe quais datas disponíveis deseja monetizar.',
         ],
       },
     ],
@@ -128,10 +122,10 @@ export const clubMessages = {
     },
   },
   control: {
-    title: { lead: 'Seu imóvel ', turn: 'continua sendo seu.' },
+    title: 'Propriedade e direito de uso',
     text: [
-      'Você mantém a propriedade do imóvel e os direitos de uso que já tem.',
-      'Você escolhe quais datas disponibilizar. Quando uma data é cedida ou reservada, ela fica comprometida e indisponível para outros usos.',
+      'O intercâmbio não altera sua propriedade ou participação no imóvel, nem seus direitos de uso.',
+      'Você escolhe quais datas disponibilizar. Após cedidas ou reservadas, elas ficam comprometidas e indisponíveis para outros usos.',
     ],
   },
   faq: {
@@ -164,8 +158,8 @@ export const clubMessages = {
     ],
   },
   next: {
-    title: { lead: 'O Club faz sentido ', turn: 'para o seu imóvel?' },
-    text: 'A primeira etapa é a avaliação. A forma de apresentar seu imóvel à Luxtory ainda está em definição.',
+    title: 'O Club faz sentido para o seu imóvel?',
+    text: 'O primeiro passo é avaliar seu imóvel. O processo para apresentá-lo à Luxtory ainda está em definição.',
     action: 'Veja as condições',
   },
 } as const;

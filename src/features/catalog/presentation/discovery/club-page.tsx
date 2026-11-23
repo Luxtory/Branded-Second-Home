@@ -1,4 +1,5 @@
 import { Icon, SiteShell } from '@/design-system/react';
+import { Paragraphs as RichParagraphs } from '../brand-partners/rich-text';
 import { clubMessages as text } from '../i18n/club-pt-br';
 import { discoveryMessages } from '../i18n/discovery-pt-br';
 import { HeadlineText } from './headline';
@@ -99,7 +100,7 @@ export function ClubPage() {
       >
         <div className="lx-container lx-columns">
           <h2 id="condicoes-titulo" className="lx-headline">
-            <HeadlineText headline={control.title} />
+            {control.title}
           </h2>
           <div className={`lx-stack ${styles['lx-club-measure']}`}>
             <Paragraphs lines={control.text} />
@@ -125,10 +126,13 @@ export function ClubPage() {
             <div className={`lx-columns ${styles['lx-club-start']}`}>
               <div className={`lx-stack ${styles['lx-club-measure']}`}>
                 <h3 className="lx-display-s">{exchange.deposit.title}</h3>
-                <Paragraphs lines={exchange.deposit.text} />
+                <RichParagraphs lines={exchange.deposit.text} />
               </div>
               <div className={`lx-stack ${styles['lx-club-measure']}`}>
                 <h3 className="lx-display-s">{exchange.dates.title}</h3>
+                <p className="lx-body">
+                  <strong>{exchange.dates.description}</strong>
+                </p>
                 <p className="lx-body">{exchange.dates.text}</p>
                 <h3 className="lx-display-s">{exchange.conditions.title}</h3>
                 <Paragraphs lines={exchange.conditions.text} />
@@ -140,7 +144,9 @@ export function ClubPage() {
                 {exchange.methods.map((method) => (
                   <div className="lx-comparison__item lx-stack" key={method.title}>
                     <h4 className="lx-display-m">{method.title}</h4>
-                    <p className="lx-subheadline">{method.description}</p>
+                    <p className="lx-subheadline">
+                      <em>{method.description}</em>
+                    </p>
                     <Paragraphs lines={method.text} />
                   </div>
                 ))}
@@ -155,16 +161,10 @@ export function ClubPage() {
               <h3 id="taxa-titulo" className="lx-display-m">
                 {exchange.feeExample.title}
               </h3>
-              <p className="lx-body">{exchange.feeExample.intro}</p>
-              <dl className="lx-siblings lx-siblings--trio">
-                {exchange.feeExample.values.map(({ label, value }) => (
-                  <div className="lx-siblings__item" key={label}>
-                    <dt className="lx-body">{label}</dt>
-                    <dd className="lx-display-m">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-              <Paragraphs lines={exchange.feeExample.notes} />
+              <RichParagraphs lines={exchange.feeExample.text} />
+              <p className="lx-body">
+                <em>{exchange.feeExample.note}</em>
+              </p>
             </section>
           </div>
         </div>
@@ -231,7 +231,7 @@ export function ClubPage() {
       >
         <div className={`lx-container lx-section-closing lx-stack ${styles['lx-club-closing']}`}>
           <h2 id="convite-titulo" className="lx-headline">
-            <HeadlineText headline={next.title} />
+            <em>{next.title}</em>
           </h2>
           <p className={`lx-small ${styles['lx-club-measure']}`}>{next.text}</p>
           <ActionLink href={`#${sections.control}`} label={next.action} primary />
