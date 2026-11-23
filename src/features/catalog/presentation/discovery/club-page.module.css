@@ -83,10 +83,12 @@
 }
 
 .lx-club-fee-example {
+  justify-items: center;
   justify-self: center;
   inline-size: 100%;
   max-inline-size: calc(var(--lx-layout-measure) + 2 * var(--lx-layout-gutter));
   padding: var(--lx-layout-gutter);
+  text-align: center;
 }
 
 .lx-club-fee-example > :global(.lx-display-s) {
@@ -122,6 +124,17 @@
   padding-block-start: var(--lx-space-12);
 }
 
+@media (min-width: 48rem) {
+  .lx-club-methods {
+    row-gap: var(--lx-space-4);
+  }
+
+  .lx-club-methods > :global(.lx-comparison__item) {
+    grid-row: span 5;
+    grid-template-rows: subgrid;
+  }
+}
+
 @media (min-width: 64rem) {
   .lx-club-section-head {
     margin-block-end: var(--lx-space-12);
@@ -129,6 +142,16 @@
 
   .lx-club-exchange-content {
     gap: var(--lx-space-12);
+  }
+
+  .lx-club-topics {
+    row-gap: var(--lx-space-4);
+  }
+
+  .lx-club-topics > :global(.lx-stack) {
+    align-self: stretch;
+    grid-row: span 4;
+    grid-template-rows: subgrid;
   }
 }
 

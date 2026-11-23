@@ -162,22 +162,19 @@ export function ClubPage() {
             <p className={`lx-body ${styles['lx-club-measure']}`}>{exchange.intro}</p>
           </div>
           <div className={styles['lx-club-exchange-content']}>
-            <div className={`lx-columns ${styles['lx-club-columns']}`}>
+            <div className={`lx-columns ${styles['lx-club-columns']} ${styles['lx-club-topics']}`}>
               <div className={`lx-stack ${styles['lx-club-measure']}`}>
                 <h3 className="lx-display-s">{exchange.deposit.title}</h3>
                 <RichParagraphs lines={exchange.deposit.text} />
               </div>
               <div className={`lx-stack ${styles['lx-club-measure']}`}>
                 <h3 className="lx-display-s">{exchange.dates.title}</h3>
-                <p className="lx-body">
-                  <strong>{exchange.dates.description}</strong>
-                </p>
-                <p className="lx-body">{exchange.dates.text}</p>
+                <RichParagraphs lines={exchange.dates.text} />
               </div>
             </div>
             <div className="lx-stack">
               <h3 className="lx-display-s">{exchange.bookingTitle}</h3>
-              <div className="lx-comparison lx-comparison--divided">
+              <div className={`lx-comparison lx-comparison--divided ${styles['lx-club-methods']}`}>
                 {exchange.methods.map((method) => (
                   <div className="lx-comparison__item lx-stack" key={method.title}>
                     <h4 className="lx-display-m">{method.title}</h4>

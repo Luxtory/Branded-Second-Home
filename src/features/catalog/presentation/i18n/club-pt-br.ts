@@ -60,15 +60,18 @@ export const clubMessages = {
     deposit: {
       title: 'Origem dos créditos',
       text: [
-        '**Pelo depósito:** ao disponibilizar datas para intercâmbio, você recebe os créditos após a confirmação da Luxtory.',
-        '**Pelo Luxchange Request:** você também recebe créditos ao aceitar uma solicitação para seu imóvel, após a confirmação da reserva pela Luxtory.',
-        'Os créditos são calculados pelo **Preço de Referência Luxtory** de cada data e possuem prazo de validade.',
+        '**Pelo depósito:** você recebe créditos quando a Luxtory confirma a entrada das suas datas no intercâmbio.',
+        '**Pelo Luxchange Request:** você recebe créditos quando aceita um pedido para seu imóvel e a Luxtory confirma a reserva.',
+        'Os créditos são calculados com base no **Preço de Referência Luxtory** de cada data e têm prazo de validade.',
       ],
     },
     dates: {
       title: 'Intercâmbio por dia',
-      description: 'Mais liberdade para escolher suas estadias.',
-      text: 'Na Luxtory, você pode solicitar intercâmbios a partir de apenas um dia, sem precisar reservar uma semana inteira.',
+      text: [
+        '**A partir de um dia:** peça estadias curtas, como um fim de semana, sem reservar uma semana inteira.',
+        '**Consulte a disponibilidade:** veja as datas do imóvel que quer visitar e escolha o período que combina com sua viagem.',
+        'O total de créditos para a estadia depende do **Preço de Referência Luxtory** de cada data escolhida.',
+      ],
     },
     bookingTitle: 'Dois caminhos para reservar',
     methods: [
@@ -76,17 +79,18 @@ export const clubMessages = {
         title: 'Luxchange Request',
         description: 'Solicitação de reserva a outro membro.',
         text: [
-          'Você paga a taxa e reserva os créditos necessários para enviar a solicitação.',
-          'Enquanto aguarda a resposta, as datas podem ser reservadas por outra pessoa.',
-          'Se o membro aceitar e a Luxtory confirmar a reserva, os créditos são utilizados e transferidos ao membro que disponibilizou as datas.',
+          'Escolha as datas que outro membro oferece. Você paga a taxa e reserva os créditos para enviar o pedido.',
+          'Enquanto aguarda a resposta do membro, outra pessoa ainda pode reservar as mesmas datas que você solicitou.',
+          'Com o aceite do membro e a confirmação da Luxtory, seus créditos são usados. Quem cedeu as datas recebe créditos.',
         ],
       },
       {
         title: 'Luxchange Direct',
         description: 'Reserva direta com a Luxtory.',
         text: [
-          'Escolha entre as datas disponíveis no inventário da Luxtory.',
-          'A reserva é confirmada após a verificação da disponibilidade, dos créditos e do pagamento da taxa.',
+          'Escolha o imóvel e as datas da sua estadia entre as opções que a Luxtory disponibiliza para reserva direta.',
+          'A Luxtory confere se as datas continuam disponíveis e se você tem créditos válidos e suficientes para a estadia.',
+          'Você paga a taxa de intercâmbio. Ao confirmar a reserva, a Luxtory desconta do seu saldo os créditos da estadia.',
         ],
       },
     ],

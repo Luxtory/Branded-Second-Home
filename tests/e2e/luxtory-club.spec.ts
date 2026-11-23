@@ -75,19 +75,21 @@ test('apresenta a proposta e distingue os caminhos do intercâmbio (catalog §22
   const exchange = page.locator('#luxchange');
   await expect(exchange.getByRole('heading', { name: 'Origem dos créditos' })).toBeVisible();
   await expect(exchange).toContainText(
-    'Pelo depósito: ao disponibilizar datas para intercâmbio, você recebe os créditos após a confirmação da Luxtory.',
+    'Pelo depósito: você recebe créditos quando a Luxtory confirma a entrada das suas datas no intercâmbio.',
   );
   await expect(exchange).toContainText(
-    'Pelo Luxchange Request: você também recebe créditos ao aceitar uma solicitação para seu imóvel, após a confirmação da reserva pela Luxtory.',
+    'Pelo Luxchange Request: você recebe créditos quando aceita um pedido para seu imóvel e a Luxtory confirma a reserva.',
   );
   await expect(exchange.locator('.lx-columns strong')).toHaveText([
     'Pelo depósito:',
     'Pelo Luxchange Request:',
     'Preço de Referência Luxtory',
-    'Mais liberdade para escolher suas estadias.',
+    'A partir de um dia:',
+    'Consulte a disponibilidade:',
+    'Preço de Referência Luxtory',
   ]);
   await expect(exchange.getByRole('heading', { name: 'Intercâmbio por dia' })).toBeVisible();
-  await expect(exchange).toContainText('a partir de apenas um dia');
+  await expect(exchange).toContainText('sem reservar uma semana inteira');
   await expect(exchange.getByRole('heading', { name: 'Luxchange Request' })).toBeVisible();
   await expect(exchange.getByRole('heading', { name: 'Luxchange Direct' })).toBeVisible();
   const methodLabels = exchange.locator('.lx-comparison__item .lx-eyebrow');
@@ -102,13 +104,21 @@ test('apresenta a proposta e distingue os caminhos do intercâmbio (catalog §22
     'center',
   );
   await expect(exchange).toContainText('Os créditos são utilizados quando a reserva é confirmada.');
-  await expect(exchange).toContainText('transferidos ao membro que disponibilizou as datas.');
+  await expect(exchange).toContainText('Quem cedeu as datas recebe créditos.');
   await expect(exchange).toContainText(
-    'Escolha entre as datas disponíveis no inventário da Luxtory.',
+    'A Luxtory confere se as datas continuam disponíveis e se você tem créditos válidos e suficientes para a estadia.',
   );
+  expect(
+    await exchange
+      .locator('.lx-columns > div, .lx-comparison__item')
+      .evaluateAll((columns) =>
+        columns.map((column) => column.querySelectorAll('p.lx-body').length),
+      ),
+  ).toEqual([3, 3, 3, 3]);
 
   const example = page.locator('#taxa-de-intercambio');
   await expect(example.getByRole('heading')).toHaveText('Taxa de intercâmbio — 12%');
+  await expect(example).toHaveCSS('text-align', 'center');
   await expect(example.locator('p').first()).toHaveText(
     'Em uma estadia com preço de mercado de R$ 10.500, a taxa de intercâmbio seria de apenas R$ 1.260.',
   );
