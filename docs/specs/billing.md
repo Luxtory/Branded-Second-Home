@@ -133,4 +133,4 @@ configurado, a execução é no-op (`unconfigured`).
 - Consumidores reais (W21–W25); finalidades `luxplus`/locação; categorias além do Fee.
 - Vínculo PRL total ↔ noites do snapshot (W20/W21) e Fee ↔ Request (W21/W22).
 - Encerramentos por perda de elegibilidade revertendo Fee (W21); cancelamento pós-aceite (⛔ P-11).
-- PSP real e ativação (P-2, D2, autorização do fundador).
+- PSP real e ativação (P-2, D2, autorização do fundador). **Condição obrigatória para ativar a K5 (fundador, 2026-11-23):** validação confiável da aprovação pelo PSP real. Como o banco não fala com o PSP, um servidor comprometido com a credencial do `luxtory_app` poderia gravar `approved` sem aprovação real; antes da ativação, o adaptador do PSP contratado precisa confirmar cada aprovação na fonte do provedor (webhook autenticado pelo protocolo dele e/ou consulta servidor-a-servidor) e a conciliação precisa comparar todo `approved` com o provedor, alertando divergência. Nada disso é implementado na W19 (sem integração fictícia); é critério de aceite da wave que integrar o PSP.

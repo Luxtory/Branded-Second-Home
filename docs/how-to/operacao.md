@@ -818,7 +818,7 @@ mostra "Cobrança: Desativada" e o job `reconciliation` (cron `53 3 * * *`) é n
    §24). Publicar `luxchange_fee_rate` (fração canônica) e `luxchange_fee_minimum` só pelo procedimento da W16, com
    autorização operacional específica do fundador.
 4. **Ativação futura (fora da W19):** PSP contratado com adaptador próprio (TECH-081), política de backup (D2),
-   `PAYMENT_OUTCOME_GRACE_SECONDS` definido, migration da K5 e autorização expressa do fundador.
+   `PAYMENT_OUTCOME_GRACE_SECONDS` definido, migration da K5 e autorização expressa do fundador. **Condição obrigatória para ativar a K5 (fundador, 2026-11-23):** validação confiável da aprovação pelo PSP real. Como o banco não fala com o PSP, um servidor comprometido com a credencial do `luxtory_app` poderia gravar `approved` sem aprovação real; antes da ativação, o adaptador do PSP contratado precisa confirmar cada aprovação na fonte do provedor (webhook autenticado pelo protocolo dele e/ou consulta servidor-a-servidor) e a conciliação precisa comparar todo `approved` com o provedor, alertando divergência. Nada disso é implementado na W19 (sem integração fictícia); é critério de aceite da wave que integrar o PSP.
 5. **Alerta `payment_without_outcome`:** pagamento aprovado sem desfecho ou estorno falho; a conciliação já registra o
    estorno e tenta de novo a cada execução. Conferir no PSP antes de qualquer ação manual; nunca editar linhas.
 6. **Rollback:** o `down` recusa com qualquer fato financeiro ou com a K5 presente; reverter só o código.

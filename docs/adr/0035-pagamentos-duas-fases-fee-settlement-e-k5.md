@@ -74,7 +74,7 @@ A W19 entrega REQ-094 com ADR-006, ADR-008, TECH-025, TECH-080, TECH-081, TECH-0
    (`ERR_UNAVAILABLE`); nenhuma integração com PSP real.
 8. **K5 `payments` fechada.** O CHECK de `app.capability_activation` ganha `payments`, sem linha. Sem ela, o papel da
    aplicação não grava pagamento, Fee, reversão, estorno, settlement ou inbox (`payments_not_activated`). Ativar exige
-   migration, PSP contratado, política de backup (D2) e autorização do fundador.
+   migration, PSP contratado, política de backup (D2) e autorização do fundador. **Condição obrigatória para ativar a K5 (fundador, 2026-11-23):** validação confiável da aprovação pelo PSP real. Como o banco não fala com o PSP, um servidor comprometido com a credencial do `luxtory_app` poderia gravar `approved` sem aprovação real; antes da ativação, o adaptador do PSP contratado precisa confirmar cada aprovação na fonte do provedor (webhook autenticado pelo protocolo dele e/ou consulta servidor-a-servidor) e a conciliação precisa comparar todo `approved` com o provedor, alertando divergência. Nada disso é implementado na W19 (sem integração fictícia); é critério de aceite da wave que integrar o PSP.
 9. **Conciliação (TECH-090 `reconciliation`, TECH-101).** Command de sistema por item, com chave por execução: pagamento
    `pending` além da carência → consulta ao PSP; pagamento `approved` sem desfecho além da carência → alerta
    `payment_without_outcome` + estorno; estorno `pending` → chamada ao PSP; estorno `failed` → nova tentativa + alerta.

@@ -52,6 +52,6 @@ delegação). Servidor → PSP (saída). O papel `luxtory_app` é tratado como p
 
 - Servidor comprometido com a credencial do `luxtory_app`, após a ativação da K5, pode gravar `approved` sem o PSP ter
   aprovado (o banco não fala com o PSP). Mitigação futura: conciliação com o PSP real compara cada `approved` com a
-  consulta do provedor. Antes da ativação, nenhuma escrita é possível.
+  consulta do provedor. Antes da ativação, nenhuma escrita é possível. **Condição obrigatória para ativar a K5 (fundador, 2026-11-23):** validação confiável da aprovação pelo PSP real. Como o banco não fala com o PSP, um servidor comprometido com a credencial do `luxtory_app` poderia gravar `approved` sem aprovação real; antes da ativação, o adaptador do PSP contratado precisa confirmar cada aprovação na fonte do provedor (webhook autenticado pelo protocolo dele e/ou consulta servidor-a-servidor) e a conciliação precisa comparar todo `approved` com o provedor, alertando divergência. Nada disso é implementado na W19 (sem integração fictícia); é critério de aceite da wave que integrar o PSP.
 - O PRL total do Fee só fica amarrado às noites do snapshot na W20/W21.
 - Sem limitador por IP no webhook (o PSP não tem origem fixa garantida); a assinatura barra o custo de banco.
