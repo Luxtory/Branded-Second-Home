@@ -11,3 +11,6 @@ export {
   OWN_USE_EXCEPTION_RESOLVED,
   OWN_USE_NO_SHOW_DECLARED,
 } from './application/own-use-lifecycle-events';
+// W20 (ADR-0036 §1): cessão da reserva de uso próprio Co-Owner pelo depósito Luxchange, na transação do luxchange.
+export type { CedableBooking, OwnUseCessionPort } from './application/own-use-cession';
+export { createPostgresOwnUseCession as createOwnUseCessionPort } from './infrastructure/postgres-own-use-cession';

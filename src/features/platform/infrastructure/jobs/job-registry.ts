@@ -11,6 +11,7 @@ import {
 import { createReconciliationJob } from '@/features/billing/jobs';
 import { createExpireCreditLotsJob } from '@/features/credits/jobs';
 import { createMembershipConsumers } from '@/features/identity/jobs';
+import { createLuxchangeConsumers } from '@/features/luxchange/jobs';
 import { createInitialDrawConsumers } from '@/features/ownership';
 import type { Clock } from '../../application/clock';
 import { JobRegistry, type JobRunner } from '../../application/jobs/registry';
@@ -46,6 +47,8 @@ export function createOutboxConsumers({
     ...createOwnUseBookingConsumers({ clock }),
     // W15 — notificação da mudança de estado do Membership (spec identity §15).
     ...createMembershipConsumers({ clock }),
+    // W20 — notificação da originação de Créditos pelo depósito Luxchange (spec luxchange §5.5).
+    ...createLuxchangeConsumers({ clock }),
   ]);
 }
 

@@ -3395,6 +3395,9 @@ components:
         instante da escrita; nada acontece e a prévia emite chave nova (W13, D7; spec booking §10.5).
         `ERR_GUEST_RULES_CHANGED` — a versão de `guest_rules` aceita pelo Titular não é a vigente no instante da
         declaração de convidados; nada é gravado e a tela relê as regras atuais (W14, ADR-0030 §4; spec booking §11).
+        `ERR_DEPOSIT_TERMS_CHANGED` — os Créditos ou a validade revisados pelo Titular diferem dos recalculados no
+        instante transacional do depósito (PRL, multiplicador ou validade publicados nesse meio-tempo); nada é gravado e
+        a tela pede nova revisão (W20, ADR-0036 §8; spec luxchange §5.3).
       enum:
         - ERR_PERMISSION
         - ERR_MEMBERSHIP_INELIGIBLE
@@ -3425,6 +3428,7 @@ components:
         - ERR_RATE_LIMITED
         - ERR_CANCELLATION_TERMS_CHANGED
         - ERR_GUEST_RULES_CHANGED
+        - ERR_DEPOSIT_TERMS_CHANGED
 
     BrandPartnerContactRequest:
       type: object

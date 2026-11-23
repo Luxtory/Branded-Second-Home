@@ -24,6 +24,14 @@ export interface EconomicTermsRequest {
     readonly checkout: string;
   };
   /**
+   * Conjunto explícito de noites de uma Second Home (W20, ADR-0036 §4), em alternativa ao período: datas civis distintas
+   * em ordem crescente, consecutivas ou não. Só elas são precificadas e somadas; noite intermediária não entra.
+   */
+  readonly nights?: {
+    readonly secondHomeId: string;
+    readonly dates: readonly string[];
+  };
+  /**
    * Política comercial do mecanismo (TECH-032, PD-009): a versão apresentada e aceita pelo usuário. Sem versão vigente,
    * ou com a aceita diferente da vigente no instante da resolução → `ERR_POLICY_MISSING`.
    */
@@ -108,8 +116,45 @@ export interface EconomicTermsStore<Tx> {
 }
 
 const DAY_MS = 86_400_000;
+const CIVIL_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const nightsBetween = (checkin: string, checkout: string) =>
   (Date.parse(`${checkout}T00:00:00Z`) - Date.parse(`${checkin}T00:00:00Z`)) / DAY_MS;
+const dayAfter = (date: string) =>
+  new Date(Date.parse(`${date}T00:00:00Z`) + DAY_MS).toISOString().slice(0, 10);
+
+/**
+ * Intervalo `[primeira, última + 1)` lido de uma vez e as noites pedidas dentro dele. Conjunto vazio, fora de ordem,
+ * repetido, inválido ou que cobre mais de 366 noites → `ERR_VALIDATION` (o mesmo limite do período).
+ */
+function pricedSpan(request: EconomicTermsRequest) {
+  if (request.period !== undefined && request.nights !== undefined)
+    throw new CommandRejection('ERR_VALIDATION');
+  if (request.period !== undefined) {
+    const { secondHomeId, checkin, checkout } = request.period;
+    const count = nightsBetween(checkin, checkout);
+    if (!Number.isInteger(count) || count < 1 || count > MAX_PRL_NIGHTS)
+      throw new CommandRejection('ERR_VALIDATION');
+    return { secondHomeId, checkin, checkout, wanted: null };
+  }
+  if (request.nights === undefined) return null;
+  const { secondHomeId, dates } = request.nights;
+  const valid =
+    dates.length > 0 &&
+    dates.every(
+      (date, index) =>
+        CIVIL_DATE.test(date) &&
+        // Data civil real (`2027-02-30` não existe): ida e volta pelo calendário UTC.
+        !Number.isNaN(Date.parse(`${date}T00:00:00Z`)) &&
+        new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) === date &&
+        (index === 0 || dates[index - 1]! < date),
+    );
+  if (!valid) throw new CommandRejection('ERR_VALIDATION');
+  const checkin = dates[0]!;
+  const checkout = dayAfter(dates.at(-1)!);
+  if (nightsBetween(checkin, checkout) > MAX_PRL_NIGHTS)
+    throw new CommandRejection('ERR_VALIDATION');
+  return { secondHomeId, checkin, checkout, wanted: new Set(dates) };
+}
 
 /**
  * Resolve os termos econômicos dentro da transação do command (TECH-030/031/053/054): travas compartilhadas dos
@@ -125,12 +170,7 @@ export async function resolveEconomicTerms<Tx>(
   store: EconomicTermsStore<Tx>,
   request: EconomicTermsRequest,
 ): Promise<EconomicTerms> {
-  const { period } = request;
-  if (period !== undefined) {
-    const count = nightsBetween(period.checkin, period.checkout);
-    if (!Number.isInteger(count) || count < 1 || count > MAX_PRL_NIGHTS)
-      throw new CommandRejection('ERR_VALIDATION');
-  }
+  const span = pricedSpan(request);
   if (request.policy !== undefined)
     for (const [mechanism] of locks.claim('commercial_policy', [request.policy.mechanism]))
       await store.lockPolicy(tx, mechanism as PolicyMechanism);
@@ -144,21 +184,26 @@ export async function resolveEconomicTerms<Tx>(
 
   let resolvedAt: string;
   let nights: EconomicTermsNight[] = [];
-  if (period === undefined) {
+  if (span === null) {
     resolvedAt = await store.databaseInstant(tx);
   } else {
-    // A trava compartilhada do PRL é tomada pela própria função do banco, nesta posição da ordem total.
-    locks.claim('prl', [period.secondHomeId]);
+    // A trava compartilhada do PRL é tomada pela própria função do banco, nesta posição da ordem total; o conjunto de
+    // noites usa a mesma leitura (um instante) e descarta as noites não pedidas antes de qualquer decisão.
+    locks.claim('prl', [span.secondHomeId]);
     const inForce = await store.prlPeriodInForce(
       tx,
-      period.secondHomeId,
-      period.checkin,
-      period.checkout,
+      span.secondHomeId,
+      span.checkin,
+      span.checkout,
     );
     resolvedAt = inForce.resolvedAt;
-    if (inForce.nights.some((night) => night.prlId === null))
-      throw new CommandRejection('ERR_PRL_MISSING');
-    nights = inForce.nights.map((night) => ({
+    const priced = inForce.nights.filter(
+      (night) => span.wanted === null || span.wanted.has(night.stayDate),
+    );
+    if (span.wanted !== null && priced.length !== span.wanted.size)
+      throw new CommandRejection('ERR_VALIDATION');
+    if (priced.some((night) => night.prlId === null)) throw new CommandRejection('ERR_PRL_MISSING');
+    nights = priced.map((night) => ({
       stayDate: night.stayDate,
       prlId: night.prlId!,
       amountMinor: night.amountMinor!,
@@ -186,10 +231,10 @@ export async function resolveEconomicTerms<Tx>(
   }
   return {
     resolvedAt,
-    secondHomeId: period?.secondHomeId ?? null,
+    secondHomeId: span?.secondHomeId ?? null,
     nights,
     prlTotal:
-      period === undefined
+      span === null
         ? null
         : {
             amountMinor: sumMinor(nights.map((night) => BigInt(night.amountMinor))).toString(),

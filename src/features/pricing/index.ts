@@ -19,6 +19,7 @@ export {
   type EconomicParameterUnit,
   type EconomicTerms,
   type EconomicTermsRequest,
+  type EconomicTermsStore,
 } from './application/economic-terms';
 export { createPostgresEconomicTermsStore } from './infrastructure/postgres-economic-terms-store';
 export {

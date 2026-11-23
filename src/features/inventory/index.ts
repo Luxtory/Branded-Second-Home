@@ -34,6 +34,8 @@ import {
 import type { OwnUseLifecycleInventory } from './application/own-use-lifecycle';
 import type { ForfeitedCapacityRecovery } from './application/recover-future-capacity';
 import { createPostgresRootCustodyStore } from './infrastructure/postgres-root-custody-store';
+import type { LuxchangeCessionInventory } from './application/luxchange-cession';
+import { createPostgresLuxchangeCessionInventory } from './infrastructure/postgres-luxchange-cession-inventory';
 
 export type { AcquisitionModality, RootHolder } from './domain/root-custody';
 export type { OpenRootCustodiesInput } from './application/open-root-custodies';
@@ -76,4 +78,17 @@ export function createOwnUseLifecycleInventory(): OwnUseLifecycleInventory<Datab
 
 export function createForfeitedCapacityRecovery(): ForfeitedCapacityRecovery<DatabaseTransaction> {
   return createPostgresForfeitedCapacityRecovery();
+}
+
+// W20 (ADR-0036 §3): cessão ao Inventário Luxtory pelo depósito Luxchange, na transação do command do luxchange.
+export {
+  depositAuthorizationRef,
+  type CededOccupancyRelease,
+  type CessionSource,
+  type LuxchangeCessionInventory,
+  type NightCession,
+} from './application/luxchange-cession';
+
+export function createLuxchangeCessionInventory(): LuxchangeCessionInventory<DatabaseTransaction> {
+  return createPostgresLuxchangeCessionInventory();
 }

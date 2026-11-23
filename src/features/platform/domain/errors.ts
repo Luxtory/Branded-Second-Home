@@ -40,11 +40,14 @@ export const PLATFORM_ERROR_CODES = [
  * Códigos de produto, fora dos mínimos do TECH-056 (que dizem "mínimos") e depois dos gerais (enum `ErrorCode` do
  * OpenAPI): `ERR_CANCELLATION_TERMS_CHANGED` — os termos esperados da prévia do cancelamento diferem dos calculados no
  * instante da escrita (W13, D7; spec booking §10.5, §10.12); `ERR_GUEST_RULES_CHANGED` — a versão de `guest_rules`
- * aceita pelo Titular não é a vigente no instante da declaração (W14, ADR-0030 §4; spec booking §11).
+ * aceita pelo Titular não é a vigente no instante da declaração (W14, ADR-0030 §4; spec booking §11);
+ * `ERR_DEPOSIT_TERMS_CHANGED` — os Créditos ou a validade revisados diferem dos recalculados no instante transacional do
+ * depósito (W20, ADR-0036 §8; spec luxchange §5.3).
  */
 export const PRODUCT_ERROR_CODES = [
   'ERR_CANCELLATION_TERMS_CHANGED',
   'ERR_GUEST_RULES_CHANGED',
+  'ERR_DEPOSIT_TERMS_CHANGED',
 ] as const;
 
 export const ERROR_CODES = [
@@ -115,6 +118,8 @@ const CONSTRAINT_NAMES: ReadonlyMap<string, RejectionCode> = new Map([
   ['guest_rules_changed', 'ERR_GUEST_RULES_CHANGED'],
   // W17 (ADR-0033 §7): Garantia ou consumo de Créditos sem Membership elegível da party do lote (BR-195).
   ['credit_membership_ineligible', 'ERR_MEMBERSHIP_INELIGIBLE'],
+  // W20 (ADR-0036 §3; TECH-043): depósito a menos de 14 dias do check-in, pelo relógio do banco.
+  ['deposit_min_notice', 'ERR_MIN_NOTICE'],
 ]);
 
 export function rejectionForConstraint(constraint: string): RejectionCode | null {
@@ -141,7 +146,7 @@ export const PRIVILEGE_REFUSALS: ReadonlyMap<string, RejectionCode> = new Map([
 
 /**
  * Capabilities fechadas pela tabela de ativação privilegiada (`42501` nomeado): K1 (ADR-0026), K2 (ADR-0027), K3
- * (ADR-0030), K4 (ADR-0033) e K5 (ADR-0035).
+ * (ADR-0030), K4 (ADR-0033), K5 (ADR-0035) e K6 (ADR-0036).
  */
 export const CLOSED_CAPABILITIES: ReadonlyMap<string, string> = new Map([
   ['booking_not_activated', 'own_use_booking'],
@@ -149,6 +154,7 @@ export const CLOSED_CAPABILITIES: ReadonlyMap<string, string> = new Map([
   ['luxtory_selection_not_activated', 'luxtory_selection'],
   ['credit_capability_not_activated', 'credits'],
   ['payments_not_activated', 'payments'],
+  ['luxchange_deposit_not_activated', 'luxchange_deposit'],
 ]);
 
 /**
