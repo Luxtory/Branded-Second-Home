@@ -12,9 +12,8 @@ export const clubMessages = {
     faq: 'Dúvidas',
   },
   hero: {
-    title: { lead: 'Sua casa. ', turn: 'Mais lugares para viver.' },
-    text: 'O Luxtory Club é um clube de intercâmbio de estadias para quem tem um imóvel de lazer de alto padrão.',
-    benefit:
+    title: { lead: 'Hoje a sua casa de campo. ', turn: 'Amanhã uma casa na praia.' },
+    subheadline:
       'As datas da sua casa que entram no intercâmbio geram créditos para pedir estadias em outros destinos.',
     action: 'Veja como funciona',
     photo: {
@@ -53,17 +52,22 @@ export const clubMessages = {
     title: { lead: 'Luxchange. ', turn: 'Como usar seus créditos.' },
     intro: 'O Luxchange é a forma de pedir estadias com créditos no modelo do Club.',
     deposit: {
-      title: 'Como você recebe créditos',
+      title: 'De onde vêm os créditos',
       text: [
-        'No depósito, você oferece um período à Luxtory. Quando esse período passa a fazer parte do intercâmbio, os créditos entram no seu saldo.',
-        'Cada data tem um valor de referência que define quantos créditos ela gera. Os créditos têm prazo de validade a partir da emissão.',
+        'Você oferece datas à Luxtory. Quando o depósito é concluído e as datas entram no intercâmbio, os créditos entram no seu saldo.',
+        'Você também recebe créditos ao aceitar um Luxchange Request para o seu imóvel, depois que a Luxtory valida e confirma a reserva.',
+        'A quantidade de créditos depende do Preço de Referência Luxtory de cada data. Os créditos têm prazo de validade.',
       ],
+    },
+    dates: {
+      title: 'Intercâmbio por dia',
+      text: 'Você escolhe o período por dia. Pode pedir uma estadia menor que uma semana, conforme as datas disponíveis e as regras da estadia.',
     },
     bookingTitle: 'Dois caminhos para reservar',
     methods: [
       {
-        title: 'Pedido a outro membro',
-        name: 'Request',
+        title: 'Luxchange Request',
+        description: 'Solicitação de reserva a outro membro.',
         text: [
           'Você pede a data a quem pode oferecê-la. Enquanto essa pessoa decide, a data segue livre para outras reservas.',
           'Para enviar o pedido, você paga a taxa. Os créditos necessários ficam separados no seu saldo.',
@@ -71,8 +75,8 @@ export const clubMessages = {
         ],
       },
       {
-        title: 'Reserva direta com a Luxtory',
-        name: 'Direct',
+        title: 'Luxchange Direct',
+        description: 'Reserva direta com a Luxtory.',
         text: [
           'Você escolhe entre as datas que a Luxtory já pode oferecer, sem esperar o aceite de outro membro.',
           'A Luxtory confirma a reserva após conferir a disponibilidade, os créditos, as demais condições e o pagamento da taxa.',
@@ -83,7 +87,20 @@ export const clubMessages = {
       title: 'Associação, créditos e taxa',
       text: [
         'Você precisa ter associação ativa, cumprir as regras do Club e ter créditos válidos e suficientes para a estadia.',
-        'Seus créditos são usados quando a reserva se confirma. Quem pede a estadia paga a taxa de intercâmbio em dinheiro.',
+        'Os créditos são usados na confirmação da reserva. Quem pede a estadia paga a taxa de intercâmbio.',
+      ],
+    },
+    feeExample: {
+      title: 'Taxa de intercâmbio',
+      intro: 'Simulação com a taxa proposta de 12% sobre o preço de mercado da estadia.',
+      values: [
+        { label: 'Preço de mercado', value: 'R$ 5.000' },
+        { label: 'Taxa de intercâmbio no exemplo', value: 'R$ 600' },
+        { label: 'Diferença considerando só a taxa', value: '88% · R$ 4.400' },
+      ],
+      notes: [
+        'A comparação usa o mesmo imóvel, nas mesmas datas e condições. Os 88% consideram apenas a taxa de intercâmbio.',
+        'A reserva também usa créditos. O custo da associação e cobranças adicionais, como limpeza ou tributos quando aplicáveis, reduzem a economia final.',
       ],
     },
   },
@@ -94,14 +111,14 @@ export const clubMessages = {
         title: 'Luxplus',
         text: [
           'O Luxplus prevê estadias extras para quem tem associação ativa. Você escolhe entre as datas que a Luxtory oferece.',
-          'Você paga em dinheiro e guarda os créditos do Luxchange para outra viagem.',
+          'Você paga pela estadia e guarda os créditos do Luxchange para outra viagem.',
         ],
       },
       {
         title: 'Locação de temporada',
         text: [
-          'Para imóveis parceiros, está prevista a gestão opcional de locações em plataformas de terceiros. É um serviço à parte, sem exigir associação ao Club.',
-          'Para as Second Homes do modelo original, a locação pelo canal da Luxtory exige associação ativa. Você autoriza as datas que quer colocar para locação.',
+          'A locação de temporada com gestão profissional pelo Luxtory Club é exclusiva para membros com associação ativa.',
+          'Você escolhe as datas disponíveis que quer colocar para locação.',
         ],
       },
     ],
@@ -114,7 +131,7 @@ export const clubMessages = {
     title: { lead: 'Seu imóvel ', turn: 'continua sendo seu.' },
     text: [
       'Você mantém a propriedade do imóvel e os direitos de uso que já tem.',
-      'Você escolhe quais datas oferecer. Quando uma delas é cedida ou reservada, fica comprometida com o uso combinado.',
+      'Você escolhe quais datas disponibilizar. Quando uma data é cedida ou reservada, ela fica comprometida e indisponível para outros usos.',
     ],
   },
   faq: {

@@ -16,7 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Página pública `/Luxtory-Club` com etapas de participação, créditos, Request, Direct e serviços complementares
   (catalog §22). A abertura mostra o benefício dos créditos, a faixa de controle do imóvel antecede a comparação e o
-  fechamento leva às condições de uso. O menu conecta a Home à página e `/como-funciona` redireciona para ela.
+  fechamento leva às condições de uso. A revisão explica a escolha por dia, a origem dos créditos e a simulação da
+  taxa proposta. O menu conecta a Home à página e `/como-funciona` redireciona para ela.
 - W15 — Membership (REQ-011, REQ-050, PD-001; ADR-0031). Admin: seção "Membership" nos dados da pessoa ou empresa
   (situação Vigente, Suspenso, Encerrado ou sem Membership; histórico com data, situação anterior, base registrada e
   papel) e confirmação de cada mudança com a base: ativar, suspender, reativar e encerrar, conforme a TECH-055; só

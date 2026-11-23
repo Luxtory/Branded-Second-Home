@@ -13,10 +13,11 @@ test('apresenta a proposta e distingue os caminhos do intercâmbio (catalog §22
   expect(response?.status()).toBe(200);
   const hero = page.locator('#inicio');
   await expect(hero.getByRole('heading', { level: 1 })).toHaveText(
-    'Sua casa. Mais lugares para viver.',
+    'Hoje a sua casa de campo. Amanhã uma casa na praia.',
   );
-  await expect(hero).toContainText('clube de intercâmbio de estadias');
-  await expect(hero).toContainText('créditos para pedir estadias em outros destinos');
+  await expect(hero.locator('.lx-split__text p')).toHaveText([
+    'As datas da sua casa que entram no intercâmbio geram créditos para pedir estadias em outros destinos.',
+  ]);
   await expect(page.locator('#como-funciona ol > li')).toHaveCount(5);
   expect(
     await page.locator('main > section').evaluateAll((sections) => sections.map(({ id }) => id)),
@@ -30,13 +31,28 @@ test('apresenta a proposta e distingue os caminhos do intercâmbio (catalog §22
     'proximo-passo',
   ]);
   const exchange = page.locator('#luxchange');
-  await expect(exchange).toContainText(/depósito/i);
-  await expect(exchange).toContainText('taxa de intercâmbio em dinheiro');
-  await expect(exchange.getByRole('heading', { name: 'Pedido a outro membro' })).toBeVisible();
-  await expect(
-    exchange.getByRole('heading', { name: 'Reserva direta com a Luxtory' }),
-  ).toBeVisible();
-  await expect(exchange).toContainText('Seus créditos são usados quando a reserva se confirma');
+  await expect(exchange.getByRole('heading', { name: 'De onde vêm os créditos' })).toBeVisible();
+  await expect(exchange).toContainText('Quando o depósito é concluído');
+  await expect(exchange).toContainText(
+    'Você também recebe créditos ao aceitar um Luxchange Request',
+  );
+  await expect(exchange.getByRole('heading', { name: 'Intercâmbio por dia' })).toBeVisible();
+  await expect(exchange).toContainText('menor que uma semana');
+  await expect(exchange.getByRole('heading', { name: 'Luxchange Request' })).toBeVisible();
+  await expect(exchange.getByRole('heading', { name: 'Luxchange Direct' })).toBeVisible();
+  await expect(exchange).toContainText('Solicitação de reserva a outro membro.');
+  await expect(exchange).toContainText('Reserva direta com a Luxtory.');
+  await expect(exchange).toContainText('Os créditos são usados na confirmação');
+
+  const example = page.locator('#taxa-de-intercambio');
+  for (const text of ['12%', 'R$ 5.000', 'R$ 600', 'R$ 4.400', '88%', 'cobranças adicionais']) {
+    await expect(example).toContainText(text);
+  }
+  await expect(example).toContainText('mesmo imóvel, nas mesmas datas e condições');
+  const services = page.locator('#outras-possibilidades');
+  await expect(services).toContainText('Você paga pela estadia e guarda os créditos do Luxchange');
+  await expect(services).toContainText('exclusiva para membros com associação ativa');
+  await expect(page.locator('main')).not.toContainText('paga em dinheiro');
   await expect(page.locator('#proximo-passo')).toContainText('ainda está em definição');
   await expect(page.locator('#proximo-passo p')).toHaveCSS('font-style', 'normal');
   await expect(page.locator('main form')).toHaveCount(0);
@@ -83,10 +99,41 @@ test('portão B2C fechado protege as duas rotas inclusive com prefetch', async (
       } else {
         expect(response.status(), path).toBe(404);
       }
-      expect(body).not.toContain('Mais lugares para viver');
+      expect(body).not.toContain('Amanhã uma casa na praia');
       expect(body).not.toContain('Como funciona o intercâmbio de estadias');
       expect(body).not.toContain(discoveryMessages.howItWorks.hero.title);
     }
+  }
+});
+
+test('a abertura usa os tipos da Home e os títulos em Blue usam Warm Sand', async ({ page }) => {
+  for (const width of [390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    const homeHero = page.locator('#inicio');
+    const heading = await homeHero.locator('h1').evaluate((element) => {
+      const style = getComputedStyle(element);
+      return { family: style.fontFamily, size: style.fontSize, lineHeight: style.lineHeight };
+    });
+    const subheadline = await homeHero.locator('.lx-home-hero__lead').evaluate((element) => {
+      const style = getComputedStyle(element);
+      return { family: style.fontFamily, size: style.fontSize, lineHeight: style.lineHeight };
+    });
+    await page.goto(CLUB);
+    const clubHero = page.locator('#inicio');
+    const clubHeading = clubHero.locator('h1');
+    const clubSubheadline = clubHero.locator('.lx-split__text p');
+    for (const [element, style] of [
+      [clubHeading, heading],
+      [clubSubheadline, subheadline],
+    ] as const) {
+      await expect(element).toHaveCSS('font-family', style.family);
+      await expect(element).toHaveCSS('font-size', style.size);
+      await expect(element).toHaveCSS('line-height', style.lineHeight);
+    }
+    await expect(clubHeading).toHaveCSS('color', 'rgb(205, 173, 142)');
+    await expect(clubHeading.locator('em')).toHaveCSS('color', 'rgb(205, 173, 142)');
+    await expect(page.locator('#proximo-passo h2')).toHaveCSS('color', 'rgb(205, 173, 142)');
   }
 });
 

@@ -1,5 +1,12 @@
+.lx-club-hero-title {
+  max-inline-size: none;
+  color: var(--lx-color-headline);
+  white-space: normal;
+}
+
 .lx-club-hero-title > em {
   display: block;
+  color: inherit;
   text-wrap: balance;
 }
 
@@ -18,6 +25,14 @@
 .lx-club-exchange-content {
   display: grid;
   gap: var(--lx-space-12);
+}
+
+.lx-club-fee-example {
+  padding: var(--lx-layout-gutter);
+}
+
+.lx-club-fee-example dd {
+  margin: 0;
 }
 
 .lx-club-measure {

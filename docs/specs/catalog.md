@@ -2130,3 +2130,26 @@ no fechamento. O CTA leva à faixa sobre condições de uso do imóvel.
 Abertura com mais espaço para a foto, etapas e FAQ em Wash, controle do imóvel em Sand e intercâmbio em Deep.
 A segunda foto mostra um momento de descanso do acervo. O cabeçalho permanece acessível durante a rolagem.
 Conferir âncoras abaixo do cabeçalho e capturar a página a partir do topo, com as fotografias carregadas.
+
+### 22.5 Revisão de lançamento
+
+A abertura usa a tipografia do Hero da Home e Warm Sand no título sobre Blue. A comparação distingue solicitação
+a outro membro e reserva direta com a Luxtory. A escolha é por dia, sujeita a disponibilidade e às regras da
+estadia. Os créditos são gerados no depósito concluído ou no aceite de Request após validação. A quantidade usa
+o Preço de Referência Luxtory (PRL) por data e o multiplicador vigente (01 §§19–23, REQ-052/060/064).
+
+**Prévia da condição comercial em revisão.** A taxa de 12% sobre preço de mercado é ilustrada com uma estadia
+hipotética de R$ 5.000. A taxa simulada é R$ 600. `(5.000 − 600) ÷ 5.000 × 100 = 88%`. Comparar o mesmo
+imóvel, datas e condições, com a mesma base nos dois termos. A diferença considera só a taxa. O cálculo do custo
+final leva em conta a associação e demais cobranças aplicáveis, além do uso dos créditos. Os 88% pressupõem
+uma taxa efetiva de 12% sobre essa base. Se houver piso aplicável, a taxa efetiva pode ser maior.
+
+A regra registrada no 01 §24 e em TECH-030 é o maior valor entre 10% do PRL e R$ 120. Validar a base de mercado,
+a taxa, a aplicação do mínimo e os custos associados antes de apresentar a simulação como condição de lançamento.
+Na página do Club, a gestão profissional de locação de temporada é para associados ativos (BR-146, REQ-051).
+No Luxplus, paga-se pela estadia e preservam-se os créditos (BR-240/241, REQ-070).
+
+A [ThirdHome](https://www.thirdhome.com/pt-br/exchange/how-it-works/) orienta a sequência datas, créditos e
+reserva e a apresentação da taxa junto ao mecanismo. O [FAQ oficial](https://www.thirdhome.com/pt-br/faq/)
+lista estadias que também podem durar menos de uma semana. O diferencial da Luxtory é apresentado pela
+escolha e pela referência de valor por data.

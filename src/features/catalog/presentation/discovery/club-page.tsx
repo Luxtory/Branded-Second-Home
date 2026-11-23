@@ -27,17 +27,20 @@ export function ClubPage() {
         { href: `#${sections.faq}`, label: text.nav.faq, current: false },
       ]}
       closingStyle="subtle"
+      titleRole="headline"
       retractableMenu
     >
       <section id="inicio" data-surface="blue" aria-labelledby="club-titulo">
         <div className="lx-split lx-split--wide-media">
           <div className="lx-split__text">
             <div className={`lx-split__inner ${styles['lx-club-hero-copy']}`}>
-              <h1 id="club-titulo" className={`lx-statement ${styles['lx-club-hero-title']}`}>
+              <h1
+                id="club-titulo"
+                className={`lx-home-hero__title ${styles['lx-club-hero-title']}`}
+              >
                 <HeadlineText headline={hero.title} />
               </h1>
-              <p className="lx-lead">{hero.text}</p>
-              <p className="lx-body">{hero.benefit}</p>
+              <p className="lx-home-hero__lead">{hero.subheadline}</p>
               <ActionLink
                 href={`#${sections.steps}`}
                 label={hero.action}
@@ -125,6 +128,8 @@ export function ClubPage() {
                 <Paragraphs lines={exchange.deposit.text} />
               </div>
               <div className={`lx-stack ${styles['lx-club-measure']}`}>
+                <h3 className="lx-display-s">{exchange.dates.title}</h3>
+                <p className="lx-body">{exchange.dates.text}</p>
                 <h3 className="lx-display-s">{exchange.conditions.title}</h3>
                 <Paragraphs lines={exchange.conditions.text} />
               </div>
@@ -134,13 +139,33 @@ export function ClubPage() {
               <div className="lx-comparison lx-comparison--divided">
                 {exchange.methods.map((method) => (
                   <div className="lx-comparison__item lx-stack" key={method.title}>
-                    <h4 className="lx-display-s">{method.title}</h4>
-                    <p className="lx-small">{method.name}</p>
+                    <h4 className="lx-display-m">{method.title}</h4>
+                    <p className="lx-subheadline">{method.description}</p>
                     <Paragraphs lines={method.text} />
                   </div>
                 ))}
               </div>
             </div>
+            <section
+              id="taxa-de-intercambio"
+              aria-labelledby="taxa-titulo"
+              data-surface="sand"
+              className={`lx-stack ${styles['lx-club-fee-example']}`}
+            >
+              <h3 id="taxa-titulo" className="lx-display-m">
+                {exchange.feeExample.title}
+              </h3>
+              <p className="lx-body">{exchange.feeExample.intro}</p>
+              <dl className="lx-siblings lx-siblings--trio">
+                {exchange.feeExample.values.map(({ label, value }) => (
+                  <div className="lx-siblings__item" key={label}>
+                    <dt className="lx-body">{label}</dt>
+                    <dd className="lx-display-m">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+              <Paragraphs lines={exchange.feeExample.notes} />
+            </section>
           </div>
         </div>
       </section>
@@ -154,7 +179,7 @@ export function ClubPage() {
               </h2>
               {services.items.map((service) => (
                 <div className="lx-stack" key={service.title}>
-                  <h3 className="lx-display-s">{service.title}</h3>
+                  <h3 className="lx-display-m">{service.title}</h3>
                   <Paragraphs lines={service.text} />
                 </div>
               ))}
