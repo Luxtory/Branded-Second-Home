@@ -5,7 +5,7 @@ import { captureForReview, collectConsoleErrors, expectResponsive } from './supp
 
 const { hero, history, purpose, founder, invitation } = text.content;
 const journeys = [
-  { name: 'B2C', path: '/sobre', home: '/', how: '/como-funciona' },
+  { name: 'B2C', path: '/sobre', home: '/', how: '/Luxtory-Club' },
   {
     name: 'B2B',
     path: '/brand-partner/sobre',

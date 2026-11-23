@@ -313,43 +313,36 @@ test.describe('Brand Partners — gate de UI (ADR-0009)', () => {
     const roles = [
       ['CTA do Hero da Home', '/', '.lx-home-hero__action', HOME, '#inicio .lx-button'],
       ['CTA do fechamento', '/', '#convite .lx-button', HOME, '#sua-marca .lx-button'],
-      ['índice do Hero', '/como-funciona', '.lx-hero__chapter-name', HOW, '.lx-anchors a'],
       [
         'rótulo de fase',
-        '/como-funciona',
-        '.lx-answers--phases .lx-answers__label',
+        '/colecao',
+        '#como .lx-eyebrow',
         HOW,
         '.lx-answers--phases .lx-answers__label',
       ],
       [
         'Owner | Co-Owner',
-        '/como-funciona',
-        '[data-pair="modality"] .lx-comparison__item > :first-child',
+        '/colecao',
+        '#como .lx-eyebrow',
         HOW,
         '[data-pair="modality"] .lx-comparison__item > :first-child',
       ],
-      ['display-s', '/como-funciona', 'main .lx-display-s', HOW, 'main .lx-display-s'],
+      ['display-s', '/colecao', '#como .lx-display-s', HOW, 'main .lx-display-s'],
       [
         'subheadline',
-        '/como-funciona',
-        'main section:not(.lx-hero) p.lx-subheadline:not(.lx-section-closing, .lx-section-closing *)',
+        '/colecao',
+        "section[aria-labelledby='colecao'] .lx-subheadline",
         HOW,
         'main section:not(.lx-hero) p.lx-subheadline:not(.lx-section-closing, .lx-section-closing *)',
       ],
       [
         'corpo',
-        '/como-funciona',
-        'main section:not(.lx-hero) p.lx-body:not(.lx-section-closing, .lx-section-closing *)',
+        '/colecao',
+        '#como .lx-body',
         HOW,
         'main section:not(.lx-hero) p.lx-body:not(.lx-section-closing, .lx-section-closing *)',
       ],
-      [
-        'eyebrow',
-        '/como-funciona',
-        'main section:not(.lx-hero) .lx-eyebrow',
-        HOME,
-        'main section:not(.lx-hero) .lx-eyebrow',
-      ],
+      ['eyebrow', '/colecao', '#como .lx-eyebrow', HOME, 'main section:not(.lx-hero) .lx-eyebrow'],
     ] as const;
     const typeOf = async (path: string, selector: string) => {
       await page.goto(path);

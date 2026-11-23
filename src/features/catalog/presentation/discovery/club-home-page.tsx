@@ -38,7 +38,7 @@ export function ClubHomePage() {
         homeHref={discoveryPaths.home}
         labels={discoveryMessages.site}
         navItems={[
-          { href: `#${sections.club}`, label: text.nav.club, current: false },
+          { href: discoveryPaths.howItWorks, label: text.nav.club, current: false },
           { href: `#${sections.mechanics}`, label: text.nav.mechanics, current: false },
           { href: `#${sections.faq}`, label: text.nav.faq, current: false },
         ]}

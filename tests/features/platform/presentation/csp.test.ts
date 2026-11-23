@@ -43,6 +43,15 @@ describe('CSP e portão do site público (ADR-0014)', () => {
     expect(original.get('x-nonce')).toBeNull();
   });
 
+  it('[TECH-100] a política do vídeo permite apenas a origem oficial da incorporação', () => {
+    const options = { development: false, secureTransport: true };
+    const nonce = createNonce();
+    expect(contentSecurityPolicy(nonce, options)).not.toContain('www.youtube-nocookie.com');
+    const policy = contentSecurityPolicy(nonce, { ...options, allowYouTubeEmbed: true });
+    expect(policy.split('; ')).toContain("frame-src 'self' https://www.youtube-nocookie.com");
+    expect(policy).toContain("frame-ancestors 'none'");
+  });
+
   it('[ADR-0014] sessão renovada só nas rotas com Auth', () => {
     for (const path of [
       '/entrar',

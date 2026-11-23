@@ -334,3 +334,11 @@ rede e global, schema fechado, `Idempotency-Key`, honeypot, envio ao destinatár
 - As chaves `BRAND_PARTNERS_*` compartilhadas são dependência das duas jornadas: removê-las recusa os dois contatos
   (falha fechada e explícita), registrada no ADR-0028 e no runbook.
 
+## Demonstração em vídeo na Luxtory Club
+
+- O iframe usa um identificador de vídeo fixo. A CSP permite a origem `https://www.youtube-nocookie.com` em
+  `frame-src` apenas em `/Luxtory-Club` e preserva a política de scripts e de `frame-ancestors`.
+- O navegador se conecta ao YouTube ao carregar o player. A política de referência envia somente a origem em uma
+  conexão HTTPS entre domínios. O carregamento adiado e o link direto mantêm o texto da página disponível caso o
+  provedor esteja indisponível.
+

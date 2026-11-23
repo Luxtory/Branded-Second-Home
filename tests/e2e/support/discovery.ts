@@ -1,4 +1,14 @@
 import { readFileSync } from 'node:fs';
+import type { Page } from '@playwright/test';
+
+export function stubClubVideo(page: Page) {
+  return page.route('https://www.youtube-nocookie.com/embed/**', (route) =>
+    route.fulfill({
+      contentType: 'text/html; charset=utf-8',
+      body: '<!doctype html><html lang="pt-BR"><title>Vídeo</title><body data-video-test-frame><main aria-label="Demonstração em vídeo"><h1>Vídeo</h1></main></body></html>',
+    }),
+  );
+}
 
 // Catálogo fictício do E2E do Discovery (docs/specs/catalog.md §13, §17): semeado por tests/e2e/catalog.seed.ts pela API do
 // Admin, antes dos testes paralelos. Nomes e textos são de teste — nenhum dado real da Luxtory.
