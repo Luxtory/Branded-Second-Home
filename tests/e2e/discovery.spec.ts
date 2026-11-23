@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { hasForbiddenTerm } from '../../src/features/catalog/domain/terminology';
 import { discoveryMessages } from '../../src/features/catalog/presentation/i18n/discovery-pt-br';
 import { signIn, STAFF_EMAIL } from './support/auth';
-import { readSeed } from './support/discovery';
+import { readSeed, stubClubVideo } from './support/discovery';
 import {
   captureForReview,
   collectConsoleErrors,
@@ -27,6 +27,8 @@ const PAGE_NAMES = [
   'homeEditionWithoutMedia',
 ] as const;
 type PageName = (typeof PAGE_NAMES)[number];
+
+test.beforeEach(({ page }) => stubClubVideo(page));
 
 function pathOf(name: PageName): string {
   const seed = readSeed();
