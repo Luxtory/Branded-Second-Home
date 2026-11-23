@@ -78,3 +78,17 @@ Nenhuma lacuna material impede a W18: os valores são pré-requisito de operaç�
   W23 (Direct), W24 (Luxplus), W25 (locação), W19 (Fee/dinheiro).
 - Cancelamento pelo usuário nos mecanismos do Club: ⛔ P-11/D6 (nova versão do `03`).
 - Política por Second Home: não prevista; o escopo é o mecanismo (ampliável por migration).
+
+## Execução (2026-11-22)
+
+- E0 `26f8152`, E1 `5180566`, E2 `1fd3fd5`, E3 `37ff996` — branch `feat/w18-politicas-comerciais`, auditados pelo
+  fundador.
+- **Correção da auditoria (`f85fc5d`):** removida a regra `money + remuneration ≤ 1` da locação (domínio e CHECK do
+  banco, migration ainda não aplicada fora dos bancos de teste). Ela somava frações de bases distintas — valor bruto
+  pago × receita líquida do Titular (BR-253/BR-260) — e não protegia BR-163 (capacidade, eixo fixo) nem BR-270/INV-2
+  (decididos pela custódia na aplicação, W25). A conservação passou a ser conferida na avaliação, com valores: líquido
+  ≤ bruto e remuneração mantida ≤ valor retido do locatário (PD-010). Exemplo nos testes: bruto R$ 10.000, líquido
+  R$ 6.000, devolve 50% e mantém 75% → retém R$ 5.000 e mantém R$ 4.500 (aceito); com líquido = bruto, R$ 7.500 >
+  R$ 5.000 (recusado). ADR-0034 §1/§5 emendada.
+- E4: `npm run verify` ✅ (225 arquivos, 2123 testes, db:check 69, build); E2E completo local 168 ✅ + 1 timeout do axe em `collection.spec.ts` sob carga (7/7 isolado; fora do escopo da W18); `trace --expect REQ-082,REQ-104,PD-009,PD-010` 4/4; E2E `commercial-policies.spec.ts`
+  (axe 0 e sem overflow a 390/1440, toque a 390); CHANGELOG, runbook (`operacao.md` "Preparar a W18"), spec `admin`.
