@@ -37,7 +37,10 @@ function memoryStore(current: PaymentRecord | null): BillingStore<unknown> {
   return {
     openPayment: async () => row!,
     findPayment: async () => row,
-    updatePayment: async (_id, decide) => {
+    updatePayment: async (
+      _id: string,
+      decide: (current: PaymentRecord) => Partial<PaymentRecord> | null,
+    ) => {
       if (row === null) return null;
       const update = decide(row);
       if (update !== null) row = { ...row, ...update } as PaymentRecord;
