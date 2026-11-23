@@ -431,7 +431,11 @@ grupos (`__legends`/`__legend`) e `__swatch[data-tier]` para a amostra da tempor
 `__nights`/`__night` (data, meta, campo, `__remove` de 44 px), `__months` (atalhos), `__summary` (revisão),
 `__history`. **Parâmetros · `lx-parameters`** (mesmo arquivo): `.lx-parameters__grid` com um `section.lx-parameter`
 por chave (dois por linha a partir de 56rem), `__head`, `__ref`, `__status[data-ground="wash"]`, `__value`,
-`__actions` (histórico e nova versão em `details`), `__dates`.
+`__actions` (histórico e nova versão em `details`), `__dates`. **Depósito Luxchange (W20, spec `luxchange` §5.4):** a
+mesma variante `.lx-calendar--prl` serve ao calendário do Titular, dentro do layout `.lx-booking` (calendário +
+`.lx-booking__summary`): `td[data-tier]` para a temporada, `td[data-selected]` + `.lx-pricing__check` para a seleção,
+`.lx-pricing__amount`/`.lx-pricing__dot` para os **Créditos** da noite (nunca preço), `td[data-state="unavailable"]` do
+calendário base para as noites indisponíveis e `aria-disabled` + motivo ao toque para as demais. Sem CSS novo.
 
 **Record List · `lx-record-list`** — React: `RecordList` (`items`, `label`). A lista das superfícies de produto
 (ADR-0010 §9): um item por registro, título em Newsreader que leva ao detalhe (link esticado: o item inteiro é o alvo

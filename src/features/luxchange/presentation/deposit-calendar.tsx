@@ -122,6 +122,7 @@ export function DepositCalendar({ data }: { readonly data: DepositCalendarData }
   const [stale, setStale] = useState(false);
   const [loading, setLoading] = useState(false);
   const gridRef = useRef<HTMLTableElement>(null);
+  const reviewRef = useRef<HTMLHeadingElement>(null);
   const pendingFocus = useRef(false);
 
   const status = (date: string): Status => model.byDate.get(date)?.status ?? 'outside';
@@ -133,6 +134,12 @@ export function DepositCalendar({ data }: { readonly data: DepositCalendarData }
       : (days.find((date) => status(date) === 'eligible') ??
         days.find((date) => status(date) !== 'outside') ??
         days[0]!);
+
+  // Prévia aceita: o foco (e a rolagem, no celular) vai à revisão, que substitui o resumo no mesmo lugar.
+  const reviewing = preview?.status === 'ok';
+  useEffect(() => {
+    if (reviewing) reviewRef.current?.focus();
+  }, [reviewing]);
 
   useEffect(() => {
     if (!pendingFocus.current) return;
@@ -173,16 +180,19 @@ export function DepositCalendar({ data }: { readonly data: DepositCalendarData }
     setSelected(next);
     setPreview(null);
     setStale(false);
-    const bookingId = model.byDate.get(date)?.bookingId ?? null;
-    const booking = bookingId === null ? undefined : model.bookings.get(bookingId);
+    const night = model.byDate.get(date);
+    const booking = night?.bookingId == null ? undefined : model.bookings.get(night.bookingId);
+    // No celular a célula só mostra um ponto: o toque diz os Créditos da noite (ou da reserva).
     setGuidance(
-      booking === undefined
+      isOn
         ? null
-        : text.calendar.booking(
-            dayMonth(booking.checkinDate),
-            dayMonth(booking.checkoutDate),
-            booking.nights.length,
-          ),
+        : booking !== undefined
+          ? text.calendar.booking(
+              dayMonth(booking.checkinDate),
+              dayMonth(booking.checkoutDate),
+              booking.nights.length,
+            )
+          : text.calendar.nightCredits(dayMonth(date), formatCredits(night?.credits ?? '0')),
     );
   };
   const moveFocus = (date: string) => {
@@ -366,11 +376,8 @@ export function DepositCalendar({ data }: { readonly data: DepositCalendarData }
                 </button>
               )}
             </div>
-            <ul className="lx-calendar__legend" aria-label={text.calendar.legend}>
-              <li className="lx-calendar__legend-item">
-                <span className="lx-calendar__swatch" aria-hidden="true" />
-                {text.calendar.legendItems.eligible}
-              </li>
+            {/* `.lx-pricing` só como escopo das amostras de temporada do DS (mesma faixa das células). */}
+            <ul className="lx-calendar__legend lx-pricing" aria-label={text.calendar.legend}>
               <li className="lx-calendar__legend-item">
                 <span className="lx-calendar__swatch" aria-hidden="true" data-selected="" />
                 {text.calendar.legendItems.selected}
@@ -383,13 +390,17 @@ export function DepositCalendar({ data }: { readonly data: DepositCalendarData }
                 <span className="lx-pricing__swatch" aria-hidden="true" data-tier="alta" />
                 {text.calendar.legendItems.alta}
               </li>
+              <li className="lx-calendar__legend-item">
+                <span className="lx-pricing__swatch" aria-hidden="true" data-tier="media" />
+                {text.calendar.legendItems.media}
+              </li>
             </ul>
           </div>
         )}
       </section>
 
       <aside className="lx-booking__summary" aria-labelledby="deposito-resumo">
-        <h2 id="deposito-resumo" className="lx-title">
+        <h2 id="deposito-resumo" className="lx-title" ref={reviewRef} tabIndex={-1}>
           {ok === null ? text.summary.heading : text.review.heading}
         </h2>
         {ok === null ? (

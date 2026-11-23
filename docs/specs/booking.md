@@ -1,5 +1,9 @@
 # Reserva de uso próprio (W12)
 
+> **W20 (ADR-0036):** a reserva de uso próprio Co-Owner cedida pelo depósito Luxchange termina `cancelled` pela
+> transição própria `cession` (só `deposit_capacity`, reserva inteira, sem classe nem restituição); contrato em
+> [`luxchange.md`](luxchange.md) §5.1. Os commands e efeitos deste módulo não mudam.
+
 ## 1. Fontes e escopo
 
 Fontes: 01 BR-052, BR-103–BR-112, BR-151, BR-162, BR-163, BR-165, BR-166; 02 REQ-030–REQ-035, REQ-037, REQ-039, REQ-042,

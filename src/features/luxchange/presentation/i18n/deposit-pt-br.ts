@@ -43,7 +43,7 @@ export const depositMessages = {
     headingOwner: 'Escolha as datas',
     headingCoOwner: 'Datas do seu Direito de Uso',
     hintOwner:
-      'Toque nas noites livres que deseja ceder — consecutivas ou não. Cada noite mostra os Créditos que ela gera.',
+      'Toque nas noites que deseja ceder — consecutivas ou não. As noites com Créditos podem ser depositadas; nas demais, o toque explica o motivo.',
     hintCoOwner:
       'Toque numa reserva sua para cedê-la inteira. Para ceder só algumas noites, reserve exatamente essas noites antes.',
     caption: 'Calendário do depósito',
@@ -61,11 +61,12 @@ export const depositMessages = {
     empty: 'Não há datas futuras no calendário desta Second Home.',
     legend: 'Legenda',
     legendItems: {
-      eligible: 'Pode ser depositada',
       selected: 'Selecionada',
       unavailable: 'Indisponível',
       alta: 'Alta temporada',
+      media: 'Média/Baixa temporada',
     },
+    nightCredits: (date: string, credits: string) => `${date}: ${credits} Créditos.`,
     selectedCount: (nights: number) =>
       nights === 0
         ? 'Nenhuma noite selecionada.'
