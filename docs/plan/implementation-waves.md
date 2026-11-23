@@ -123,8 +123,8 @@ A afiliação de imóveis existentes, as novas páginas do Club e a publicação
 | 16 | PRL, parâmetros econômicos e snapshot | pricing | REQ-013, REQ-052 | 10, 14 | — | R3 | ⬜ → ✅ concluída (#101, squash `f1fd297`, 2026-11-22; 66 migrations em Production; nenhum PRL ou parâmetro econômico real) |
 | 17 | Créditos e Carteira | credits | REQ-053, REQ-054, PD-008, INV-6 | 15 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w17-creditos-e-carteira.md`](w17-creditos-e-carteira.md), PR draft #106: E0–E4 entregues, trace REQ-053, REQ-054, PD-008, INV-6 4/4; aguardando autorização de merge) → ✅ concluída (#106, squash `00f0a5e`, 2026-11-22; 68 migrations em Production; K4 fechada; nenhum Crédito real) |
 | 18 | Políticas comerciais | pricing | REQ-082, REQ-104, PD-009 | 16 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w18-politicas-comerciais.md`](w18-politicas-comerciais.md), PR draft) → ✅ concluída (#107, squash `1e974bc`, 2026-11-22; 69 migrations em Production; nenhuma política real) |
-| 19 | Pagamentos, Fee e settlement | billing | REQ-094 | 16 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w19-pagamentos-fee-e-settlement.md`](w19-pagamentos-fee-e-settlement.md), PR draft; Fee de referência 12% pelo `01` v10.8) |
-| 20 | Luxchange — depósito | luxchange | REQ-051, REQ-060 | 13, 16, 17 | — | R3 | ⬜ |
+| 19 | Pagamentos, Fee e settlement | billing | REQ-094 | 16 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w19-pagamentos-fee-e-settlement.md`](w19-pagamentos-fee-e-settlement.md), PR draft; Fee de referência 12% pelo `01` v10.8) → ✅ concluída (#108, squash `2fa37e8`, 2026-11-23; 70 migrations em Production; K5 fechada; nenhum pagamento real) |
+| 20 | Luxchange — depósito | luxchange | REQ-051, REQ-060 | 13, 16, 17 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-23; [`w20-luxchange-deposito.md`](w20-luxchange-deposito.md), branch isolada, PR draft) |
 | 21 | Request — envio | luxchange | REQ-062, PD-005, PD-007 | 18, 19, 20 | — | R3 | ⬜ |
 | 22 | Request — aceite e recusa | luxchange | REQ-061, REQ-063, REQ-064, REQ-096, PD-006 | 21 | — | R3 | ⬜ |
 | 23 | Luxchange Direct | luxchange | REQ-065 | 22 | — | R3 | ⬜ |
@@ -1414,6 +1414,16 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   Titular com Membership suspenso segue criando e cancelando uso próprio` · `[BR-201] Créditos = Σ PRL × multiplicador
   publicado` · `[CONC-10] depósito contra cancelamento` · `[TECH-043] antecedência de 14 dias`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-051,REQ-060 exits 0, stop after 4 tries`
+
+- **Emenda W20 (2026-11-23, iniciada pelo fundador; prevalece sobre as linhas acima no que divergir):** plano
+  [`w20-luxchange-deposito.md`](w20-luxchange-deposito.md),
+  [ADR-0036](../adr/0036-deposito-luxchange-cessao-snapshot-por-noite-e-k6.md), spec [`luxchange`](../specs/luxchange.md).
+  - A reserva Co-Owner cedida termina `cancelled` por uma transição própria `cession` (só `deposit_capacity`), com
+    liberação `ceded` e sem movimento do Direito de Uso; o Co-Owner cede reservas inteiras (uma ou mais da mesma
+    holding); o Owner, noites livres consecutivas ou não.
+  - Snapshot por noite (`economic_snapshot_night`), quantidade do lote e completude do depósito conferidas pelo banco;
+    K6 `luxchange_deposit` sem linha (o lote segue exigindo a K4); termos revisados conferidos no command
+    (`ERR_DEPOSIT_TERMS_CHANGED`).
 
 ### Wave 21 — Request: envio
 

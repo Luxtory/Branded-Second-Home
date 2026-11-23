@@ -35,6 +35,7 @@ citing the canonical IDs):
 - [booking](booking.md) — módulo `booking`: reserva de uso próprio do Owner e do Co-Owner, autorização no banco presa à reserva e ativação privilegiada (W12); cancelamento, no-show, recuperação, exceção e invalidação com autorização independente (W13, §10)
 - [credits](credits.md) — módulo `credits`: lotes de Créditos com ledger imutável escrito pelo banco, FEFO, Garantia, validade em UTC, snapshot na originação e Carteira não monetária (W17)
 - [pricing](pricing.md) — módulo `pricing`: PRL por Second Home e data com autoridade no banco, valores exatos e contrato de snapshot `EconomicTerms` (W16)
+- [luxchange](luxchange.md) — módulo `luxchange`: depósito de capacidade (`deposit_capacity`) com cessão ao Inventário Luxtory e originação de Créditos no mesmo commit, snapshot por noite e K6 (W20)
 
 **Cross-cutting specs** (not a `src/features/` slice):
 
