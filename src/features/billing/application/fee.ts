@@ -40,12 +40,21 @@ export function quoteLuxchangeFee(terms: EconomicTerms): FeeQuote {
   };
 }
 
+// Pagamentos já travados por sequência de travas (uma por transação de command): vincular e apurar o mesmo Fee na mesma
+// operação (Direct, W23) re-trava a mesma linha — seguro no PostgreSQL e sem nova entrada na ordem da TECH-053.
+const lockedPayments = new WeakMap<LockSequence, Set<string>>();
+
 async function lock<Tx>(
   context: BillingContext<Tx>,
   deps: FeeDependencies<Tx>,
   paymentId: string,
 ): Promise<LockedPayment> {
-  context.locks.claim('payment', [paymentId]);
+  const held = lockedPayments.get(context.locks) ?? new Set<string>();
+  if (!held.has(paymentId)) {
+    context.locks.claim('payment', [paymentId]);
+    held.add(paymentId);
+    lockedPayments.set(context.locks, held);
+  }
   const payment = await deps.store.lockPayment(context.tx, paymentId);
   if (payment === null) throw new CommandRejection('ERR_NOT_FOUND');
   return payment;

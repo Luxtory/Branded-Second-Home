@@ -145,6 +145,14 @@ describe('registro de commands (TECH-051, TECH-011)', () => {
         critical: false,
         job: 'expire_credit_lots',
       },
+      {
+        name: 'reconciliation',
+        module: 'billing',
+        authority: 'system',
+        membership: 'not_applicable',
+        critical: false,
+        job: 'reconciliation',
+      },
     ]);
     expect(SYSTEM_COMMANDS.filter((spec) => tech051Table().has(spec.name))).toEqual([]);
     expect(

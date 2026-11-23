@@ -35,7 +35,12 @@ export type OperationActor =
   | { readonly kind: 'admin'; readonly admin: Admin }
   | { readonly kind: 'system' };
 
-export type Capability = 'own_use_booking' | 'own_use_lifecycle' | 'luxtory_selection' | 'credits';
+export type Capability =
+  | 'own_use_booking'
+  | 'own_use_lifecycle'
+  | 'luxtory_selection'
+  | 'credits'
+  | 'payments';
 
 export interface BookingRow {
   readonly id: string;

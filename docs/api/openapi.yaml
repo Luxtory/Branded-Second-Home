@@ -50,6 +50,11 @@ tags:
       Manifestação de interesse (REQ-022–REQ-025; `docs/specs/ownership.md`, ADR-0017): registro público, sem conta,
       dos campos canônicos do `interest`. Nunca cria Ação, Direito de Uso, prerrogativa nem efeito econômico.
 
+  - name: billing
+    description: |
+      Pagamentos, Luxchange Fee e settlement (REQ-094, TECH-080–083; `docs/specs/billing.md`, ADR-0035). Só o webhook
+      do PSP é exposto; pagamento nunca reserva capacidade (ADR-008). Sem PSP contratado e com a K5 fechada, nada é
+      cobrado.
   - name: pricing
     description: |
       PRL por Second Home e data (REQ-013, REQ-052, TECH-030, TECH-051; `docs/specs/pricing.md`, ADR-0032): publicação
@@ -2666,6 +2671,71 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /v1/webhooks/psp/{provider}:
+    post:
+      tags: [billing]
+      summary: Recebe um evento autenticado do PSP (TECH-081)
+      description: |
+        Chamado pelo PSP, sem sessão (ADR-0035 §6). Ordem: provedor da rota = provedor configurado (`PAYMENT_GATEWAY`;
+        sem gateway ou outro provedor → `404`) → tipo de conteúdo e corpo de até 64 KiB efetivos → autenticação do
+        adaptador (assinatura HMAC sobre `timestamp.corpo` e tolerância de tempo do protocolo do provedor), **antes de
+        qualquer acesso ao banco** → deduplicação por `(provider, event_id)` na mesma transação que aplica a transição
+        monotônica (`webhook_inbox`, ADR-006). Evento duplicado, atrasado ou contraditório com um estado terminal
+        responde `200` sem efeito (`duplicate` ou `no_change`); objeto desconhecido é registrado (`unknown_object`).
+        Nenhum payload bruto é guardado (só o hash). K5 fechada → `503`.
+      operationId: receivePaymentWebhook
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - name: provider
+          in: path
+          required: true
+          description: Nome do adaptador configurado (`fake` fora de Production; nenhum PSP real contratado).
+          schema:
+            type: string
+            pattern: '^[a-z][a-z0-9_]{0,31}$'
+        - name: x-fake-signature
+          in: header
+          required: false
+          description: |
+            Assinatura do adaptador `fake`: `t=<segundos Unix>,v1=<HMAC-SHA256 hex de "t.corpo">` com
+            `PAYMENT_WEBHOOK_SECRET`. Um PSP real usa o cabeçalho e o esquema do próprio protocolo.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: JSON (`application/json`, UTF-8) de até 64 KiB, no formato do provedor configurado.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FakePaymentWebhookEvent'
+      responses:
+        '200':
+          description: Evento autenticado e registrado (ou já registrado)
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentWebhookResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          $ref: '#/components/responses/WebhookPayloadTooLarge'
+        '415':
+          $ref: '#/components/responses/AcquisitionUnsupportedMediaType'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
   /api/jobs/{job}:
     servers:
       - url: /
@@ -2677,7 +2747,7 @@ paths:
         Chamado pelo Vercel Cron, que só faz `GET`, com `Authorization: Bearer <CRON_SECRET>`. Cada execução e cada
         item são idempotentes (TECH-090); execuções em paralelo produzem um único efeito. Só existem os jobs do
         registro de jobs implementados (W1: `outbox`; W10: `open_exercise`; W11: `close_exercise`; W13:
-        `advance_booking_states`, `flag_no_show_candidates`; W17: `expire_credit_lots`).
+        `advance_booking_states`, `flag_no_show_candidates`; W17: `expire_credit_lots`; W19: `reconciliation`).
 
         `open_exercise` (spec calendar §5–§6, ADR-0024, ADR-0025): sela o exercício corrente e o seguinte de cada
         Second Home formalizada, um exercício por transação, com a custódia raiz de cada noite e, no Co-Owner, as
@@ -2714,6 +2784,14 @@ paths:
         data — recupera atrasos sem prorrogar a validade (o uso já é recusado depois do vencimento, com ou sem o job).
         Uma transação por lote; repetição ou execução concorrente não cria efeito novo. Contagens: `due`, `expired`,
         `skipped` (já materializado), `failed` (só log estruturado) e `deferred` (orçamento de tempo esgotado).
+
+        `reconciliation` (TECH-080, TECH-090, TECH-101; spec billing §4.5, ADR-0035 §9): sem gateway configurado é
+        no-op (`unconfigured`). Com gateway: pagamentos `pending` além da carência (`PAYMENT_OUTCOME_GRACE_SECONDS`) são
+        consultados no PSP; aprovados sem desfecho (nenhum Fee vinculado) ou com estorno falho geram o alerta
+        `payment_without_outcome` e um estorno (command de sistema `reconciliation`, uma operação por item); estornos
+        `pending` são executados no PSP com a chave do próprio estorno. Estado sempre monotônico; repetição ou execução
+        concorrente não cria efeito novo. Contagens: `confirmed`, `still_pending`, `refunds_opened`,
+        `refunds_succeeded`, `refunds_failed`, `alerts`, `failed` (só log estruturado) e `deferred`.
       operationId: runJob
       security:
         - cronSecret: []
@@ -2726,7 +2804,15 @@ paths:
           schema:
             type: string
             enum:
-              [outbox, open_exercise, close_exercise, advance_booking_states, flag_no_show_candidates, expire_credit_lots]
+              [
+                  outbox,
+                  open_exercise,
+                  close_exercise,
+                  advance_booking_states,
+                  flag_no_show_candidates,
+                  expire_credit_lots,
+                  reconciliation,
+                ]
       responses:
         '200':
           description: Execução concluída
@@ -2976,6 +3062,15 @@ components:
             $ref: '#/components/schemas/Error'
     PolicyPayloadTooLarge:
       description: 'ERR_PAYLOAD_TOO_LARGE: corpo acima de 16 KiB efetivos; nada gravado.'
+      headers:
+        x-correlation-id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    WebhookPayloadTooLarge:
+      description: 'ERR_PAYLOAD_TOO_LARGE: corpo acima de 64 KiB efetivos; nada lido nem gravado.'
       headers:
         x-correlation-id:
           $ref: '#/components/headers/CorrelationId'
@@ -3665,6 +3760,50 @@ components:
                     type: string
                     enum: [required, too_long, invalid, not_allowed]
 
+    FakePaymentWebhookEvent:
+      description: Evento do adaptador `fake` (testes e desenvolvimento). Nenhum dado pessoal.
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [id, type, payment]
+          properties:
+            id:
+              type: string
+              pattern: '^[!-~]{1,255}$'
+            type:
+              type: string
+              enum: [payment.approved, payment.failed]
+            payment:
+              type: string
+              minLength: 1
+              maxLength: 255
+              description: Referência do pagamento no provedor.
+        - type: object
+          additionalProperties: false
+          required: [id, type, refund, provider_refund]
+          properties:
+            id:
+              type: string
+              pattern: '^[!-~]{1,255}$'
+            type:
+              type: string
+              enum: [refund.succeeded, refund.failed]
+            refund:
+              type: string
+              format: uuid
+              description: Chave de idempotência enviada no estorno (id local do estorno).
+            provider_refund:
+              type: [string, 'null']
+              minLength: 1
+              maxLength: 255
+    PaymentWebhookResult:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [applied, no_change, unknown_object, duplicate]
     JobResult:
       type: object
       required: [job, result]
