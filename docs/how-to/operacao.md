@@ -741,3 +741,64 @@ Reaproveitadas: `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` (namespace
 valores são decisão da operação (TECH-001: o código não tem default). Nunca criar `BOOKING_AUTHORIZATION_LIMITER_MODE`
 na Vercel. Configurar essas variáveis, o Environment do autorizador (E5) e a ativação são decisões futuras do fundador.
 Workflow, programa e roteiro do aprovador (E5): [`autorizador-de-reservas.md`](autorizador-de-reservas.md).
+
+## Preparar a W16 em produção (PRL e parâmetros econômicos)
+
+Nada a ativar: a W16 não cria capability, e K1/K2/K3 continuam fechadas (ADR-0032 §10). As migrations
+`admin_parameter_economic_keys` e `pricing_prl` só criam estrutura; o deploy não publica PRL nem parâmetro.
+
+**Autorização (D4).** Nenhum PRL ou parâmetro econômico real é publicado em Production sem autorização operacional
+específica do fundador, registrada fora do repositório. Os valores iniciais vêm das fontes canônicas citadas por ID —
+multiplicador (`01` §20), validade dos Créditos (BR-191), percentual e mínimo do Luxchange Fee (`01` §24), prazo da
+Request (PD-005), valor-base anual do Membership (BR-141) — e o PRL de cada noite, da tabela aprovada pela Luxtory
+(P-5). Nunca copiar valores para o código, seed, migration, teste, PR ou commit (repositório público).
+
+1. **Pré-condições (só leitura, SQL Editor):** quantidade de migrations e a última aplicada; `app.capability_activation`
+   vazia; papéis ativos em `app.staff_role` (`admin` para publicar; `super_admin` para alterar PRL publicado — atribuição
+   pelo procedimento de staff acima, com base registrada); noites seladas da Second Home em `app.second_home_date`.
+2. **Parâmetros econômicos:** Admin com MFA, tela `/admin/parametros`, uma versão por chave, com a base (ex.: referência
+   da ata) e o início (vazio = imediato). Conferir em seguida a versão vigente e o histórico na própria tela.
+3. **PRL inicial:** Admin ou Super Admin com MFA, tela `/admin/prl/<Second Home>` (ou `POST /v1/admin/prl` com
+   `Idempotency-Key`): período de noites seladas sem PRL + valor + base. Até 366 noites por publicação; noite fora do
+   calendário selado ou já publicada recusa a publicação inteira.
+4. **Alteração do PRL publicado:** só Super Admin (tela ou `POST /v1/admin/prl/changes`), com início presente ou futuro
+   posterior ao último início de cada noite. Operações já formadas preservam a versão que as formou (BR-182).
+5. **Correções:** nada é editado nem apagado. Parâmetro errado → nova versão; PRL errado → alteração pelo Super Admin
+   (inclusive para um PRL inicial ainda não vigente).
+6. **Rollback:** as migrations recusam o `down` quando já há histórico (PRL ou parâmetro econômico); reverter só o
+   código, nunca o histórico.
+
+## Preparar a W17 em produção (Créditos e Carteira)
+
+Nada a ativar: a K4 `credits` entra só no CHECK de `app.capability_activation`, sem linha (ADR-0033 §8). Sem a linha,
+o banco recusa toda escrita de lote ou movimento pelo papel da aplicação — nenhum Crédito é originado, reservado,
+consumido ou expirado. As migrations `pricing_economic_snapshot` e `credits_ledger` só criam estrutura (68 no total).
+
+1. **Pré-condições (só leitura, SQL Editor):** 68 migrations, a última `20261122120003`; `app.credit_lot` e
+   `app.credit_entry` vazias; nenhuma linha `credits` em `app.capability_activation`;
+   `SELECT * FROM app.credit_invariant_breaches()` sem linhas.
+2. **Job `expire_credit_lots`:** cron diário (`vercel.json`, 03:07 UTC) com o mesmo segredo dos demais jobs. Sem lote
+   vencido com saldo, conta zero itens; com a K4 fechada, nunca há lote.
+3. **Carteira (`/titular/carteira`):** só leitura por RLS; a seção "Créditos Luxchange" da Área do Titular só aparece
+   com lote visível — nenhuma Área muda enquanto a K4 estiver fechada.
+4. **Ativação (fora desta wave):** migration própria com autorização expressa do fundador, junto com a W20 (primeira
+   originadora), depois da política de backup (D2). Nunca inserir a linha pelo console.
+5. **Correções:** o ledger é append-only; consumo indevido corrige-se por `reverse_credit` (Admin + base registrada),
+   nunca por edição. **Rollback:** o `down` recusa com qualquer lote, movimento ou ativação; reverter só o código.
+
+## Preparar a W18 em produção (políticas comerciais)
+
+Nada a ativar: a migration `pricing_commercial_policy` só cria estrutura (69 no total) e nenhuma política é gravada
+(ADR-0034 §8). Sem política vigente, todo compromisso de Luxchange Request, Luxchange Direct, Luxplus e locação externa
+recusa com `ERR_POLICY_MISSING` — e esses mecanismos ainda não existem (W21–W25).
+
+1. **Pré-condições (só leitura, SQL Editor):** 69 migrations, a última `20261122180001`; `app.commercial_policy` vazia;
+   nenhuma capability nova em `app.capability_activation`.
+2. **Publicar uma política (quando a Luxtory definir os valores — PD-009, `03` §16):** só com autorização expressa do
+   fundador, pela tela `/admin/politicas` (Admin com MFA) ou por `POST /v1/admin/policies`, com a base registrada (ata
+   ou deliberação). Nunca por console, migration ou seed. O formulário só aceita o esquema fechado v1: faixas de
+   cancelamento terminando em 0 hora, no-show e exceção explícitos, percentuais de 0 a 100; a capacidade sempre volta à
+   origem (BR-163). Revisar a prévia "como o Titular verá" antes de confirmar.
+3. **Mudança:** nova versão com início presente ou futuro, nunca retroativa nem antes de um término explícito; versões
+   não se alteram nem se apagam. Operações já formadas mantêm a política aceita (vínculo gravado a partir da W21).
+4. **Rollback:** o `down` recusa com qualquer versão gravada; reverter só o código.

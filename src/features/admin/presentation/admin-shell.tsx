@@ -4,28 +4,42 @@ import { SignOutButton, type StaffRole } from '@/features/identity';
 import { messages } from './i18n/pt-br';
 
 /**
- * Seções do Admin com tela. Cada wave acrescenta a sua quando a tela existir — nunca link para tela futura. `role`: o
- * papel exercido que a seção exige (sem hierarquia, ADR-0008); sem ele o item não aparece.
+ * Seções do Admin com tela. Cada wave acrescenta a sua quando a tela existir — nunca link para tela futura. `roles`: os
+ * papéis exercidos que a seção aceita (sem hierarquia, ADR-0008); sem nenhum deles o item não aparece.
  */
 const SECTIONS: readonly {
-  readonly id: 'home' | 'catalog' | 'interests' | 'parties' | 'bookings';
+  readonly id:
+    'home' | 'catalog' | 'interests' | 'parties' | 'bookings' | 'prl' | 'parameters' | 'policies';
   readonly href: string;
   readonly label: string;
-  readonly role?: StaffRole;
+  readonly roles?: readonly StaffRole[];
 }[] = [
   { id: 'home', href: '/admin', label: messages.nav.home },
-  { id: 'catalog', href: '/admin/catalogo', label: messages.nav.catalog, role: 'admin' },
-  { id: 'interests', href: '/admin/interesses', label: messages.nav.interests, role: 'admin' },
-  { id: 'parties', href: '/admin/pessoas-e-empresas', label: messages.nav.parties, role: 'admin' },
+  { id: 'catalog', href: '/admin/catalogo', label: messages.nav.catalog, roles: ['admin'] },
+  { id: 'interests', href: '/admin/interesses', label: messages.nav.interests, roles: ['admin'] },
+  {
+    id: 'parties',
+    href: '/admin/pessoas-e-empresas',
+    label: messages.nav.parties,
+    roles: ['admin'],
+  },
   // W13 E4b: reservas de uso próprio (spec booking §10.15).
-  { id: 'bookings', href: '/admin/reservas', label: messages.nav.bookings, role: 'admin' },
+  { id: 'bookings', href: '/admin/reservas', label: messages.nav.bookings, roles: ['admin'] },
+  // W16: PRL — publicação inicial por Admin ou Super Admin, alteração só pelo Super Admin (spec pricing §5).
+  { id: 'prl', href: '/admin/prl', label: messages.nav.prl, roles: ['admin', 'super_admin'] },
+  // W16: parâmetros econômicos globais, `set_parameter` do Admin (spec admin §14).
+  { id: 'parameters', href: '/admin/parametros', label: messages.nav.parameters, roles: ['admin'] },
+  // W18: políticas comerciais, `publish_policy` do Admin (spec pricing §5 "Políticas comerciais").
+  { id: 'policies', href: '/admin/politicas', label: messages.nav.policies, roles: ['admin'] },
 ];
 
 export type AdminSection = (typeof SECTIONS)[number]['id'];
 
 /** Seções que os papéis ativos alcançam (a página revalida o acesso no servidor). */
 export function availableSections(roles: readonly StaffRole[]) {
-  return SECTIONS.filter((section) => section.role === undefined || roles.includes(section.role));
+  return SECTIONS.filter(
+    (section) => section.roles === undefined || section.roles.some((role) => roles.includes(role)),
+  );
 }
 
 // Navegação em `night` com o logo Warm Sand (decisão visual do checkpoint 1 da W2B, ADR-0009).

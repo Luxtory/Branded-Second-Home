@@ -22,12 +22,14 @@ describe('LockSequence (TECH-053)', () => {
     expect(LOCK_CLASSES).toEqual(TECH_053_ORDER);
   });
 
-  it('[ADR-0027 §2][ADR-0030] reserva, capacidade Luxtory e parâmetro estendem entre as classes 5 e 6; a TECH-053 fica intacta', () => {
+  it('[ADR-0027 §2][ADR-0030][ADR-0032][ADR-0034] reserva, capacidade Luxtory, política, parâmetro e PRL estendem entre as classes 5 e 6; a TECH-053 fica intacta', () => {
     expect(LOCK_ORDER).toEqual([
       ...TECH_053_ORDER.slice(0, 5),
       'booking',
       'luxtory_capacity',
+      'commercial_policy',
       'parameter',
+      'prl',
       ...TECH_053_ORDER.slice(5),
     ]);
     const selection = new LockSequence();
@@ -38,11 +40,30 @@ describe('LockSequence (TECH-053)', () => {
     nomination.claim('booking', ['b']);
     expect(nomination.claim('parameter', [['guest_rules', 'h']])).toHaveLength(1);
     expect(() => nomination.claim('luxtory_capacity', [['h', '2027']])).toThrow(LockOrderViolation);
+    const policyTerms = new LockSequence();
+    expect(policyTerms.claim('commercial_policy', ['luxchange_request'])).toHaveLength(1);
+    expect(policyTerms.claim('parameter', [['luxchange_fee_rate', 'global']])).toHaveLength(1);
+    expect(() => policyTerms.claim('commercial_policy', ['luxplus'])).toThrow(LockOrderViolation);
     const locks = new LockSequence();
     locks.claim('stake', ['s']);
     locks.claim('second_home_date', [['h', '2026-12-01']]);
     expect(locks.claim('booking', ['b'])).toEqual(['b']);
     expect(locks.claim('balance_and_custody', [['h', '2026-12-01']])).toHaveLength(1);
+    // W16: parâmetros globais em ordem crescente de chave e depois o PRL da Second Home; nunca o inverso.
+    const terms = new LockSequence();
+    expect(
+      terms.claim('parameter', [
+        ['luxchange_fee_rate', 'global'],
+        ['credit_multiplier', 'global'],
+      ]),
+    ).toEqual([
+      ['credit_multiplier', 'global'],
+      ['luxchange_fee_rate', 'global'],
+    ]);
+    expect(terms.claim('prl', ['h'])).toEqual(['h']);
+    expect(() => terms.claim('parameter', [['request_deadline_hours', 'global']])).toThrow(
+      LockOrderViolation,
+    );
     const late = new LockSequence();
     late.claim('booking', ['b']);
     expect(() => late.claim('second_home_date', [['h', '2026-12-01']])).toThrow(LockOrderViolation);

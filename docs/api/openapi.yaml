@@ -50,6 +50,12 @@ tags:
       Manifestação de interesse (REQ-022–REQ-025; `docs/specs/ownership.md`, ADR-0017): registro público, sem conta,
       dos campos canônicos do `interest`. Nunca cria Ação, Direito de Uso, prerrogativa nem efeito econômico.
 
+  - name: pricing
+    description: |
+      PRL por Second Home e data (REQ-013, REQ-052, TECH-030, TECH-051; `docs/specs/pricing.md`, ADR-0032): publicação
+      inicial por Admin ou Super Admin e alteração só pelo Super Admin, com efeitos prospectivos. Dinheiro em unidade
+      mínima como string + moeda; nenhum preço é exibido ao Titular.
+
 paths:
   /health:
     get:
@@ -1997,6 +2003,166 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
+  /admin/prl:
+    post:
+      tags: [admin, pricing]
+      summary: Publica o PRL inicial de noites seladas de uma Second Home
+      description: |
+        Command crítico `publish_initial_prl` (TECH-051; W16, ADR-0032): papel Admin ou Super Admin com MFA, com a base.
+        Cada noite informada precisa estar selada na Second Home e não ter PRL publicado — senão 409
+        `ERR_STATE_TRANSITION` para a publicação inteira (nada é gravado). Início omitido = instante do banco; início no
+        passado → 409. Papel sem atribuição ativa → 403 `ERR_PERMISSION`. Second Home inexistente → 404. `Origin`
+        diferente do host → 403 (TECH-100). Sem valor padrão: cada noite traz seu valor.
+      operationId: publishInitialPrl
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrlPublicationRequest'
+      responses:
+        '201':
+          description: Publicação registrada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrlPublication'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '413':
+          $ref: '#/components/responses/PrlPayloadTooLarge'
+        '415':
+          $ref: '#/components/responses/AcquisitionUnsupportedMediaType'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/policies:
+    post:
+      tags: [admin, pricing]
+      summary: Publica uma versão de política comercial de um mecanismo do Club
+      description: |
+        Command crítico `publish_policy` (TECH-032, TECH-051; W18, ADR-0034): papel Admin com MFA, com a base. `config`
+        segue o esquema fechado v1 do mecanismo (`cancellation` em 1–5 faixas decrescentes terminando em 0, `no_show`,
+        `exception`; eixos exatos do mecanismo; `capacity` sempre `return_to_origin` — BR-163; frações canônicas em
+        [0, 1], incidindo cada uma sobre a base do próprio eixo). Política fora do esquema ou contrária à BR-163 ou a um INV → 400
+        `ERR_VALIDATION` (REQ-104), nada gravado. Início omitido = instante do banco; início no passado, não posterior a
+        todos os inícios do mecanismo ou antes de término explícito → 409 `ERR_STATE_TRANSITION`. Sem atribuição Admin
+        ativa → 403. Publicar não ativa mecanismo; nenhuma política é presumida (sem versão vigente o compromisso
+        dependente recusa com `ERR_POLICY_MISSING`).
+      operationId: publishPolicy
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommercialPolicyRequest'
+      responses:
+        '201':
+          description: Versão registrada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommercialPolicyVersion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '413':
+          $ref: '#/components/responses/PolicyPayloadTooLarge'
+        '415':
+          $ref: '#/components/responses/AcquisitionUnsupportedMediaType'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /admin/prl/changes:
+    post:
+      tags: [admin, pricing]
+      summary: Altera o PRL publicado de noites de uma Second Home (Super Admin)
+      description: |
+        Command crítico `change_published_prl` (TECH-051, BR-181; W16, ADR-0032): só papel Super Admin com MFA, com a
+        base. Cada noite informada precisa já ter PRL publicado — senão 409 `ERR_STATE_TRANSITION` para a publicação
+        inteira. Efeito prospectivo (BR-182): o início é o instante do banco ou um instante futuro, sempre posterior ao
+        último início de cada noite (inclusive versão agendada) — senão 409. Operações já formadas preservam a versão que
+        as formou. Admin → 403 `ERR_PERMISSION`. Second Home inexistente → 404. `Origin` diferente do host → 403.
+      operationId: changePublishedPrl
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrlPublicationRequest'
+      responses:
+        '201':
+          description: Publicação registrada
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrlPublication'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '413':
+          $ref: '#/components/responses/PrlPayloadTooLarge'
+        '415':
+          $ref: '#/components/responses/AcquisitionUnsupportedMediaType'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
   /brand-partner-contacts:
     post:
       tags: [brand-partners]
@@ -2511,7 +2677,7 @@ paths:
         Chamado pelo Vercel Cron, que só faz `GET`, com `Authorization: Bearer <CRON_SECRET>`. Cada execução e cada
         item são idempotentes (TECH-090); execuções em paralelo produzem um único efeito. Só existem os jobs do
         registro de jobs implementados (W1: `outbox`; W10: `open_exercise`; W11: `close_exercise`; W13:
-        `advance_booking_states`, `flag_no_show_candidates`).
+        `advance_booking_states`, `flag_no_show_candidates`; W17: `expire_credit_lots`).
 
         `open_exercise` (spec calendar §5–§6, ADR-0024, ADR-0025): sela o exercício corrente e o seguinte de cada
         Second Home formalizada, um exercício por transação, com a custódia raiz de cada noite e, no Co-Owner, as
@@ -2542,6 +2708,12 @@ paths:
         reserva elegível não grava operação. Contagens: `candidates`, `processed`, `skipped` (já feito, estado ou
         instante mudou), `failed` (só log estruturado) e `deferred` (orçamento de tempo esgotado; a próxima execução
         continua); no `advance_booking_states`, também `transitions`.
+
+        `expire_credit_lots` (TECH-072, TECH-090; spec credits §5.3, ADR-0033 §5): registra `available → expired` de
+        todo o saldo disponível de cada lote de Créditos cujo `expires_at` já passou no relógio do banco, de qualquer
+        data — recupera atrasos sem prorrogar a validade (o uso já é recusado depois do vencimento, com ou sem o job).
+        Uma transação por lote; repetição ou execução concorrente não cria efeito novo. Contagens: `due`, `expired`,
+        `skipped` (já materializado), `failed` (só log estruturado) e `deferred` (orçamento de tempo esgotado).
       operationId: runJob
       security:
         - cronSecret: []
@@ -2553,7 +2725,8 @@ paths:
           description: Nome do job no TECH-090.
           schema:
             type: string
-            enum: [outbox, open_exercise, close_exercise, advance_booking_states, flag_no_show_candidates]
+            enum:
+              [outbox, open_exercise, close_exercise, advance_booking_states, flag_no_show_candidates, expire_credit_lots]
       responses:
         '200':
           description: Execução concluída
@@ -2794,6 +2967,24 @@ components:
             $ref: '#/components/schemas/Error'
     AcquisitionUnsupportedMediaType:
       description: 'ERR_UNSUPPORTED_MEDIA_TYPE: exige application/json e charset UTF-8, se informado.'
+      headers:
+        x-correlation-id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    PolicyPayloadTooLarge:
+      description: 'ERR_PAYLOAD_TOO_LARGE: corpo acima de 16 KiB efetivos; nada gravado.'
+      headers:
+        x-correlation-id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    PrlPayloadTooLarge:
+      description: 'ERR_PAYLOAD_TOO_LARGE: corpo acima de 64 KiB efetivos (até 366 noites cabem com folga); nada gravado.'
       headers:
         x-correlation-id:
           $ref: '#/components/headers/CorrelationId'
@@ -3746,6 +3937,175 @@ components:
         created_at:
           type: string
           format: date-time
+    PolicyFraction:
+      type: string
+      pattern: '^(0|1|0[.][0-9]{0,5}[1-9])$'
+      description: Fração canônica em [0, 1] (até 6 casas, sem zero à direita), declarada explicitamente — nunca presumida.
+    PolicyEffects:
+      type: object
+      additionalProperties: false
+      required: [capacity]
+      description: |
+        Efeitos de um evento (TECH-032). Exatamente os eixos do mecanismo: Request e Direct `capacity, credits, fee`;
+        Luxplus `capacity, money`; locação `capacity, money, remuneration`. `capacity` é sempre `return_to_origin`
+        (BR-163). `credits`: fração dos Créditos consumidos revertida aos lotes de origem; `fee`: fração do Fee devolvida
+        em dinheiro; `money`: fração do valor pago devolvida; `remuneration`: fração da remuneração mantida.
+      properties:
+        capacity:
+          type: string
+          enum: [return_to_origin]
+        credits:
+          $ref: '#/components/schemas/PolicyFraction'
+        fee:
+          $ref: '#/components/schemas/PolicyFraction'
+        money:
+          $ref: '#/components/schemas/PolicyFraction'
+        remuneration:
+          $ref: '#/components/schemas/PolicyFraction'
+    CommercialPolicyConfig:
+      type: object
+      additionalProperties: false
+      required: [cancellation, no_show, exception]
+      description: Esquema fechado v1 (ADR-0034 §1). Todos os eventos são obrigatórios.
+      properties:
+        cancellation:
+          type: array
+          minItems: 1
+          maxItems: 5
+          description: Faixas por antecedência em horas até o check-in, estritamente decrescentes; a última tem 0 e cobre também o evento após o check-in.
+          items:
+            type: object
+            additionalProperties: false
+            required: [min_notice_hours, effects]
+            properties:
+              min_notice_hours:
+                type: integer
+                minimum: 0
+                maximum: 8760
+              effects:
+                $ref: '#/components/schemas/PolicyEffects'
+        no_show:
+          $ref: '#/components/schemas/PolicyEffects'
+        exception:
+          $ref: '#/components/schemas/PolicyEffects'
+    CommercialPolicyRequest:
+      type: object
+      additionalProperties: false
+      required: [mechanism, config, effective_from, effective_to, basis]
+      description: Uma versão de política. `effective_from` nulo = instante do banco; `effective_to` nulo = até a próxima versão. `basis` sem dado pessoal (TECH-051).
+      properties:
+        mechanism:
+          $ref: '#/components/schemas/PolicyMechanism'
+        config:
+          $ref: '#/components/schemas/CommercialPolicyConfig'
+        effective_from:
+          type: [string, 'null']
+          format: date-time
+        effective_to:
+          type: [string, 'null']
+          format: date-time
+        basis:
+          type: string
+          minLength: 1
+          maxLength: 255
+    PolicyMechanism:
+      type: string
+      enum: [luxchange_request, luxchange_direct, luxplus, rental_external]
+    CommercialPolicyVersion:
+      type: object
+      additionalProperties: false
+      required: [policy_id, mechanism, schema_version, effective_from, effective_to, operation_id]
+      properties:
+        policy_id:
+          type: string
+          format: uuid
+        mechanism:
+          $ref: '#/components/schemas/PolicyMechanism'
+        schema_version:
+          type: integer
+          enum: [1]
+        effective_from:
+          type: string
+          format: date-time
+        effective_to:
+          type: [string, 'null']
+          format: date-time
+        operation_id:
+          type: string
+          format: uuid
+    PrlPublicationRequest:
+      type: object
+      additionalProperties: false
+      required: [second_home_id, nights, effective_from, basis]
+      description: |
+        Uma publicação de PRL (ADR-0032 §1): noites distintas de uma Second Home, cada uma com seu valor em unidade
+        mínima (centavos) como string. `effective_from` nulo = instante do banco. `basis` = base registrada, sem dado
+        pessoal (TECH-051).
+      properties:
+        second_home_id:
+          type: string
+          format: uuid
+        nights:
+          type: array
+          minItems: 1
+          maxItems: 366
+          items:
+            type: object
+            additionalProperties: false
+            required: [stay_date, amount_minor]
+            properties:
+              stay_date:
+                type: string
+                format: date
+              amount_minor:
+                $ref: '#/components/schemas/MinorAmount'
+        effective_from:
+          type: [string, 'null']
+          format: date-time
+        basis:
+          type: string
+          minLength: 1
+          maxLength: 255
+    MinorAmount:
+      type: string
+      pattern: '^[1-9][0-9]{0,14}$'
+      description: Valor em unidade mínima da moeda (TECH-033), inteiro positivo como string — nunca número em JSON.
+    PrlPublication:
+      type: object
+      additionalProperties: false
+      required: [publication_id, second_home_id, kind, currency, effective_from, nights_count, first_stay_date, last_stay_date, operation_id]
+      description: |
+        Publicação registrada. `kind`: `initial` (PRL inicial) ou `change` (alteração do publicado). `effective_from` é o
+        instante do banco quando omitido na entrada. O valor de cada noite fica no histórico Admin, não na resposta.
+      properties:
+        publication_id:
+          type: string
+          format: uuid
+        second_home_id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum: [initial, change]
+        currency:
+          type: string
+          enum: [BRL]
+        effective_from:
+          type: string
+          format: date-time
+        nights_count:
+          type: integer
+          minimum: 1
+          maximum: 366
+        first_stay_date:
+          type: string
+          format: date
+        last_stay_date:
+          type: string
+          format: date
+        operation_id:
+          type: string
+          format: uuid
     TextList:
       type: array
       minItems: 1

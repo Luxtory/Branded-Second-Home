@@ -14,6 +14,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- W18 — Políticas comerciais (REQ-082, REQ-104, PD-009, PD-010; TECH-030, TECH-032, TECH-051; ADR-0034). Políticas
+  versionadas por mecanismo do Luxtory Club (Luxchange Request, Luxchange Direct, Luxplus, locação externa) com esquema
+  fechado validado na entrada, no domínio e no banco: faixas de cancelamento por antecedência, no-show e exceção, com
+  efeitos explícitos em Créditos, Luxchange Fee, valor pago e remuneração; a capacidade sempre volta à origem
+  imediatamente anterior (BR-163) e nenhuma política cria valor. Admin: tela "Políticas comerciais"
+  (`/admin/politicas`) com a situação de cada mecanismo (ausente, vigente ou agendada), a política como o Titular a
+  verá, histórico imutável e publicação revisada com consequências explícitas; `POST /v1/admin/policies`. Sem política
+  vigente, nenhum compromisso desses mecanismos confirma (`ERR_POLICY_MISSING`). Nenhuma política real publicada;
+  nada ativado.
+
+- W17 — Créditos e Carteira (REQ-053, REQ-054, PD-008, INV-6; ADR-007, TECH-025, TECH-031, TECH-044, TECH-070–072;
+  ADR-0033). Lotes de Créditos com ledger imutável no banco (buckets escritos só pelo gatilho do ledger, originação
+  com snapshot da validade, validade calendárica em UTC independente de job), consumo FEFO, Garantia, liberação,
+  `reverse_credit` (Admin + base registrada, sem tela) e job diário `expire_credit_lots`. Área do Titular: Carteira
+  (`/titular/carteira`) só leitura — saldo por estado (Disponível ou Indisponível por Membership, Em Garantia,
+  Consumido, Expirado), lotes na ordem de uso com origem, quantidade, originação e validade, e extrato com data, tipo,
+  quantidade, lote e operação, filtro por tipo e 20 movimentos por página; sem formato monetário, resgate, venda,
+  cessão ou transferência. Seção "Créditos Luxchange" na Área só com lote visível. K4 `credits` fechada: nada é
+  originado nem gasto até a ativação autorizada (W20).
+
+- W16 — PRL e parâmetros econômicos (REQ-013, REQ-052; TECH-030, TECH-031, TECH-033; ADR-0032). Admin: tela "PRL"
+  com o calendário do mês no centro e um painel ao lado — consulta da noite (temporada e grupo de Direito de Uso,
+  preço vigente, versões futuras e histórico imutável com autoridade, base e vigência; resumo do mês com a situação
+  agora separada das alterações programadas) e definição de preços em lote:
+  noites individuais, do mês ou por temporada — Super Alta (janela de Carnaval), Alta (janeiro, julho, dezembro) ou
+  Média/Baixa, cada uma com a sua cor no calendário —, acumuladas entre meses; preço comum para as noites sem preço
+  próprio, preço próprio por noite que o comum nunca sobrescreve (substituição só explícita, com a contagem) e painel
+  compacto com a lista noite a noite sob demanda; seletores de mês e exercício (só meses do calendário) e noites
+  selecionadas junto ao calendário, por mês, removíveis, com "Limpar seleção"; revisão com PRL total e prévia de
+  Créditos antes de confirmar —, com preços
+  iniciais por Admin ou Super Admin e alteração só pelo Super Admin, sempre com efeito para o futuro. Tela "Parâmetros
+  econômicos" (Admin), em cartões: multiplicador e validade dos Créditos, percentual e mínimo do Luxchange Fee, prazo
+  da Request e valor-base anual do Membership, cada um ausente, vigente ou com versão futura, com histórico e nova
+  versão. REST `POST /v1/admin/prl` e `POST /v1/admin/prl/changes`
+  sobre os mesmos commands. Valores exatos (dinheiro em centavos, Créditos decimais, Fee com HALF_UP uma vez) e o
+  contrato `EconomicTerms` para as próximas waves. Publicar PRL ou parâmetro não cobra ninguém nem ativa mecanismos do
+  Club; nenhum valor real publicado sem autorização.
 - W15 — Membership (REQ-011, REQ-050, PD-001; ADR-0031). Admin: seção "Membership" nos dados da pessoa ou empresa
   (situação Vigente, Suspenso, Encerrado ou sem Membership; histórico com data, situação anterior, base registrada e
   papel) e confirmação de cada mudança com a base: ativar, suspender, reativar e encerrar, conforme a TECH-055; só

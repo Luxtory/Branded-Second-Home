@@ -110,6 +110,8 @@ const CONSTRAINT_NAMES: ReadonlyMap<string, RejectionCode> = new Map([
   // W14 (ADR-0030 §4): declaração de convidados sem regras vigentes, ou com versão diferente da vigente.
   ['parameter_missing_guest_rules', 'ERR_PARAMETER_MISSING'],
   ['guest_rules_changed', 'ERR_GUEST_RULES_CHANGED'],
+  // W17 (ADR-0033 §7): Garantia ou consumo de Créditos sem Membership elegível da party do lote (BR-195).
+  ['credit_membership_ineligible', 'ERR_MEMBERSHIP_INELIGIBLE'],
 ]);
 
 export function rejectionForConstraint(constraint: string): RejectionCode | null {
@@ -135,13 +137,14 @@ export const PRIVILEGE_REFUSALS: ReadonlyMap<string, RejectionCode> = new Map([
 ]);
 
 /**
- * Capabilities fechadas pela tabela de ativação privilegiada (`42501` nomeado): K1 (ADR-0026), K2 (ADR-0027) e K3
- * (ADR-0030).
+ * Capabilities fechadas pela tabela de ativação privilegiada (`42501` nomeado): K1 (ADR-0026), K2 (ADR-0027), K3
+ * (ADR-0030) e K4 (ADR-0033).
  */
 export const CLOSED_CAPABILITIES: ReadonlyMap<string, string> = new Map([
   ['booking_not_activated', 'own_use_booking'],
   ['booking_lifecycle_not_activated', 'own_use_lifecycle'],
   ['luxtory_selection_not_activated', 'luxtory_selection'],
+  ['credit_capability_not_activated', 'credits'],
 ]);
 
 /**
@@ -151,6 +154,8 @@ export const CLOSED_CAPABILITIES: ReadonlyMap<string, string> = new Map([
 export const TECHNICAL_PRIVILEGE_ERRORS: readonly string[] = [
   'booking_channel_not_enabled',
   'booking_state_projection',
+  // W17: lote de Créditos só muda pelo gatilho do ledger (ADR-0033 §1).
+  'credit_lot_ledger_only',
   'inventory_transition_not_enabled',
   'use_right_balance_maintenance',
   'use_right_consumption_not_enabled',

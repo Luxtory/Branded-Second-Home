@@ -118,11 +118,11 @@ A afiliação de imóveis existentes, as novas páginas do Club e a publicação
 | 11 | Direito de Uso, janelas e rotações | calendar | REQ-030, REQ-031, REQ-032, REQ-033, REQ-039, PD-004, INV-4, INV-5 | 9, 10 | — | R2 | ⬜ → próxima executável (W9 e W10 ✅); ainda não iniciada → ✅ concluída (#76, squash `3a989e6`, 2026-10-30; 3 migrations aplicadas, 52 no total; Production sincronizada, sem aquisição nem movimento de Direito de Uso, gates operacionais fechados; risco residual ratificado, exclusivo da W11; `correct_use_right` para a W13 pela emenda D2) |
 | 12 | Reserva de uso próprio | booking | REQ-034, REQ-035, REQ-037, PD-002, INV-1 | 11 | — | R2 | ⬜ → próxima executável (W11 ✅ em 2026-10-30); ainda não iniciada → ✅ concluída como infraestrutura implantada com as reservas desativadas (#78, squash `57015e1`, 2026-11-02; 3 migrations aplicadas, 55 no total; `app.capability_activation` vazia; nenhuma reserva real autorizada) |
 | 13 | Cancelamento, no-show, recuperação e exceção | booking, inventory | REQ-080, REQ-081, REQ-083, REQ-084, PD-010 | 12 | — | R2 | ⬜ → próxima executável (W12 ✅ em 2026-11-02, reservas desativadas); ainda não iniciada · E0 documental em PR draft (2026-11-03); E1 não autorizada → em andamento: E0 concluída (#80, squash `5d9b636`, 2026-11-03; `02` v4.4 e `03` v3.16 emitidos); E1 autorizada pelo fundador em 2026-11-03 só em ambiente isolado (PR draft, sem merge, sem Production) → E1 concluída (#82, squash `26dd58d`, 2026-11-04; 4 migrations em Production, 59/0; ativação 0 linhas); E2 autorizada pelo fundador em 2026-11-05 (plano v2 auditado; PR draft, sem merge, sem Production, sem ativação) → E2 concluída (#83, squash `65223a9`, 2026-11-05; sem migration; K1/K2 fechadas) · **bloqueio B-A3** (2026-11-05): nenhuma ativação de reserva (K1, K2), recuperação (`recover_future_capacity`) ou autorização independente (senha, Environment ou uso do papel `luxtory_booking_authorizer`) antes de a correção da origem P-A na recuperação estar integrada na `main`, aplicada pela CI e validada (correção em PR draft) → B-A3 resolvido tecnicamente (#84, squash `afa2d12`, 2026-11-05; Production 60/0, validada somente leitura; ativação segue não autorizada) · E3 autorizada em 2026-11-05 só em branch isolada e PR draft → E3 concluída (#88, squash `dbb4ac6`, 2026-11-05; crons em Production, ativação 0) · E4a aprovada como referência visual (2026-11-06) · E4b autorizada em 2026-11-06 só em branch isolada e PR draft → E4b concluída (#92, squash `caa699c`, 2026-11-18; Production, nada ativado) · E5 autorizada em 2026-11-18 só em branch isolada, sandbox de teste e PR draft → ✅ implementação concluída (#96, squash `01ca51b`, 2026-11-18; E0–E7 cumpridas; nada ativado: K1/K2 fechadas; ativação depende de T-1320, T-1323, configuração real do autorizador, M1/T-1314 e decisão do fundador) |
-| 14 | Seleção Luxtory, parâmetros e convidados | calendar, admin, booking | REQ-016, REQ-036, REQ-092, REQ-095 | 12 | — | R2 | ⬜ |
-| 15 | Membership | identity | REQ-011, REQ-050, PD-001 | 7 | — | R3 | ⬜ → 🔄 em execução (plano aprovado em 2026-11-19, D1–D4; [`w15-membership.md`](w15-membership.md)): E0–E2 aprovadas no C1 (2026-11-19); E3 + E4 no mesmo PR draft #100, parada no C2 (merge só com autorização expressa) |
-| 16 | PRL, parâmetros econômicos e snapshot | pricing | REQ-013, REQ-052 | 10, 14 | — | R3 | ⬜ |
-| 17 | Créditos e Carteira | credits | REQ-053, REQ-054, PD-008, INV-6 | 15 | — | R3 | ⬜ |
-| 18 | Políticas comerciais | pricing | REQ-082, REQ-104, PD-009 | 16 | — | R3 | ⬜ |
+| 14 | Seleção Luxtory, parâmetros e convidados | calendar, admin, booking | REQ-016, REQ-036, REQ-092, REQ-095 | 12 | — | R2 | ⬜ → ✅ concluída (#99, squash `c681727`, 2026-11-19; Production; K3 sem linha) |
+| 15 | Membership | identity | REQ-011, REQ-050, PD-001 | 7 | — | R3 | ⬜ → 🔄 em execução (plano aprovado em 2026-11-19, D1–D4; [`w15-membership.md`](w15-membership.md)): E0–E2 aprovadas no C1 (2026-11-19); E3 + E4 no mesmo PR draft #100, parada no C2 (merge só com autorização expressa) → ✅ concluída (#100, squash `108d6f5`, 2026-11-20; Production; nenhum Membership real) |
+| 16 | PRL, parâmetros econômicos e snapshot | pricing | REQ-013, REQ-052 | 10, 14 | — | R3 | ⬜ → ✅ concluída (#101, squash `f1fd297`, 2026-11-22; 66 migrations em Production; nenhum PRL ou parâmetro econômico real) |
+| 17 | Créditos e Carteira | credits | REQ-053, REQ-054, PD-008, INV-6 | 15 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w17-creditos-e-carteira.md`](w17-creditos-e-carteira.md), PR draft #106: E0–E4 entregues, trace REQ-053, REQ-054, PD-008, INV-6 4/4; aguardando autorização de merge) → ✅ concluída (#106, squash `00f0a5e`, 2026-11-22; 68 migrations em Production; K4 fechada; nenhum Crédito real) |
+| 18 | Políticas comerciais | pricing | REQ-082, REQ-104, PD-009 | 16 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w18-politicas-comerciais.md`](w18-politicas-comerciais.md), PR draft) |
 | 19 | Pagamentos, Fee e settlement | billing | REQ-094 | 16 | — | R3 | ⬜ |
 | 20 | Luxchange — depósito | luxchange | REQ-051, REQ-060 | 13, 16, 17 | — | R3 | ⬜ |
 | 21 | Request — envio | luxchange | REQ-062, PD-005, PD-007 | 18, 19, 20 | — | R3 | ⬜ |
@@ -1296,6 +1296,22 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   formada preserva o PRL; data sem PRL não é ofertável` · `[TECH-001] parâmetro ausente → ERR_PARAMETER_MISSING;
   zero nunca presumido` · `[TECH-033] HALF_UP uma única vez no valor final`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-013,REQ-052 exits 0, stop after 4 tries`
+- **Emenda W16 (2026-11-20, plano aprovado pelo fundador e pela auditoria independente; prevalece sobre as linhas
+  acima no que divergir):** plano [`w16-prl-parametros-e-snapshot.md`](w16-prl-parametros-e-snapshot.md),
+  [ADR-0032](../adr/0032-prl-parametros-economicos-e-contrato-de-snapshot.md).
+  - **D1:** seis chaves econômicas globais em `app.parameter` — multiplicador, validade dos Créditos, percentual e
+    mínimo do Fee, prazo da Request e valor-base anual do Membership (só registro: sem cobrança, renovação,
+    faturamento, plano ou integração financeira; D1–D4 da W15 preservadas). Taxa de Administração, descontos Luxplus e
+    taxas e comissões de locação ficam adiados até a Luxtory definir a forma e haver consumidor.
+  - **D2:** `POST /v1/admin/prl` e `POST /v1/admin/prl/changes` como adaptadores mínimos dos handlers das Server Actions;
+    `POST /v1/admin/parameters` segue adiada (D5 da W14).
+  - **D3:** contrato `EconomicTerms` na W16; a tabela de snapshot nasce na primeira wave que produzir o efeito econômico,
+    na mesma transação (obrigação de W17, W19, W20, W21 e W23).
+  - **D4:** sem capability nova; nenhum PRL ou parâmetro econômico real em Production sem autorização operacional.
+  - **Cobertura parcial:** REQ-052 sem o vínculo persistente à operação (W20/W21; EC-9 na W21); REQ-095 sem Taxa de
+    Administração, descontos e taxas de locação.
+  - **Execução:** um PR draft; checkpoint C1 obrigatório depois das migrations e dos testes de banco (E1 + E2).
+    Migrations: 66 no total.
 
 ### Wave 17 — Créditos e Carteira
 
@@ -1314,6 +1330,15 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   inelegível bloqueia uso sem pausar validade; reativação restabelece saldo válido; a Carteira não usa formato
   monetário nem oferece venda ou cessão` · `[REQ-054] extrato com data, tipo, quantidade, lote e operação`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-053,REQ-054,PD-008,INV-6 exits 0, stop after 4 tries`
+- **Emenda W17 (2026-11-22, iniciada pelo fundador; prevalece sobre as linhas acima no que divergir):** plano
+  [`w17-creditos-e-carteira.md`](w17-creditos-e-carteira.md),
+  [ADR-0033](../adr/0033-creditos-lote-ledger-snapshot-e-k4.md), spec [`credits`](../specs/credits.md).
+  - Buckets escritos só pelo gatilho do ledger; originação decidida no banco (só `deposit_capacity`/`accept_request`,
+    validade calculada a partir do snapshot); snapshot persistido (`economic_snapshot` + `economic_snapshot_parameter`;
+    noites de PRL na W20); K4 `credits` sem linha; job `expire_credit_lots` no cron.
+  - FEFO, Garantia, liberação e consumo como funções para W20–W23; `reverse_credit` sem tela/rota até haver consumo.
+  - **Cobertura parcial:** originação real na W20/W22; Garantia × Request no banco na W21; fato gerador detalhado com a
+    custódia `luxchange_cession` (W20); aviso de expiração próxima ⛔ P-7. Migrations: 68 no total.
 
 ### Wave 18 — Políticas comerciais
 
@@ -1330,6 +1355,17 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   BR-163 ou um INV é recusado` · `[PD-010] exceção em mecanismo com política aplica só os efeitos da política
   vinculada`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-082,REQ-104,PD-009 exits 0, stop after 4 tries`
+
+- **Emenda W18 (2026-11-22, iniciada pelo fundador; prevalece sobre as linhas acima no que divergir):** plano
+  [`w18-politicas-comerciais.md`](w18-politicas-comerciais.md),
+  [ADR-0034](../adr/0034-politicas-comerciais-esquema-fechado-e-avaliacao.md), spec [`pricing`](../specs/pricing.md) §5 "Políticas comerciais".
+  - `app.commercial_policy` append-only por mecanismo, esquema fechado v1 validado no Zod, no domínio e no banco;
+    `publish_policy` (Admin + base) em `POST /v1/admin/policies` e `/admin/politicas`; nenhuma política real.
+  - Avaliação pura (snapshot + evento → efeitos normalizados); capacidade sempre à origem imediatamente anterior
+    (BR-163); resolução da versão vigente e aceita no `resolveEconomicTerms` → `ERR_POLICY_MISSING`.
+  - **Cobertura parcial:** vínculo persistente da política à operação (`economic_snapshot`) nasce na W21 com a primeira
+    operação (D3 da W16); aplicação dos efeitos pelos ledgers nas W21–W25; cancelamento só no domínio até P-11 (D6).
+    Migrations: 69 no total.
 
 ### Wave 19 — Pagamentos, Fee e settlement
 

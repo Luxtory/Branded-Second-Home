@@ -137,6 +137,14 @@ describe('registro de commands (TECH-051, TECH-011)', () => {
         critical: false,
         job: 'flag_no_show_candidates',
       },
+      {
+        name: 'expire_credit_lots',
+        module: 'credits',
+        authority: 'system',
+        membership: 'not_applicable',
+        critical: false,
+        job: 'expire_credit_lots',
+      },
     ]);
     expect(SYSTEM_COMMANDS.filter((spec) => tech051Table().has(spec.name))).toEqual([]);
     expect(

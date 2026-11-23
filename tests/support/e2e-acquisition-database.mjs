@@ -1,6 +1,6 @@
 // Disposable local/CI runbook fixture only. Never reads DATABASE_URL or contacts a deployed database.
 import { execFile } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -456,4 +456,171 @@ export async function freeE2eNights(homeId, year, season, count) {
     if (rows[0] === undefined) throw new Error(`no ${count} free ${season} nights in ${year}`);
     return rows[0].stay_date;
   });
+}
+
+/**
+ * Super Admin próprio do E2E da W16 (banco descartável): usuário de teste com o mesmo id derivado do e-mail que a
+ * autenticação de teste usa (tests/support/e2e-server.mjs) e a atribuição `super_admin` pelo caminho do runbook. O staff
+ * compartilhado continua só Admin, sem interferir nos specs paralelos.
+ * @param {string} email
+ */
+export async function ensureE2eSuperAdmin(email) {
+  const hex = createHash('sha256').update(email.trim().toLowerCase()).digest('hex');
+  const userId = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-5${hex.slice(13, 16)}-8${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+  await withClient(disposableOwnerUrl(), async (client) => {
+    await client.query('INSERT INTO auth.users (id) VALUES ($1) ON CONFLICT DO NOTHING', [userId]);
+    const { rows } = await client.query(
+      `SELECT 1 FROM app.staff_role WHERE user_id = $1 AND role = 'super_admin' AND revoked_at IS NULL`,
+      [userId],
+    );
+    if (rows.length === 0)
+      await client.query(`SELECT app.assign_staff_role($1, 'super_admin', 'E2E W16')`, [userId]);
+  });
+}
+
+/**
+ * K4 (`credits`, ADR-0033 §8) só no banco descartável do E2E (W17): liga apenas para o job `expire_credit_lots` registrar a
+ * expiração na interface real e desliga em seguida. Nunca em Production (a validação recusa qualquer banco não
+ * descartável).
+ */
+export async function setE2eCredits(open) {
+  const url = disposableOwnerUrl();
+  await withClient(url, (client) =>
+    client.query(
+      open
+        ? `INSERT INTO app.capability_activation VALUES ('credits', now(), 'e2e:fixture')
+           ON CONFLICT DO NOTHING`
+        : `DELETE FROM app.capability_activation WHERE capability = 'credits'`,
+    ),
+  );
+}
+
+const E2E_DAY = "interval '1 day'";
+
+/**
+ * Carteira com histórico (fato do fixture, W17): nenhuma jornada origina ou gasta Créditos antes da W20–W23, então os
+ * lotes e movimentos são gravados pelo dono do schema com os gatilhos desligados só nesta transação
+ * (`session_replication_role = replica`), já com os buckets que o gatilho do ledger produziria — as constraints de lote e
+ * de movimento continuam valendo. Sem parâmetro global de validade (o E2E da W16 exige a validade "Ausente"): as datas
+ * são do fixture. Lotes da party:
+ *  - A: depósito, 120, originado há 60 dias, válido por mais 300; 20 em Garantia (envio de Request) e 22 consumos de 0,5
+ *    (Direct) → 89 disponíveis;
+ *  - B: Créditos ao cedente no aceite, 40,5, vencido há 10 dias e expirado pelo job;
+ *  - C: depósito, 12,25, vencido há 1 dia e ainda não registrado pelo job (TECH-044: já é Expirado).
+ * Extrato: 27 movimentos (duas páginas de 20).
+ */
+export async function seedE2eCredits(partyId) {
+  if (!/^[0-9a-f-]{36}$/i.test(partyId)) throw new Error('Invalid fixture party id');
+  const url = disposableOwnerUrl();
+  return withClient(url, async (client) => {
+    await client.query('BEGIN');
+    try {
+      const lots = await seedCreditHistory(client, partyId);
+      await client.query('COMMIT');
+      return lots;
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      throw error;
+    }
+  });
+}
+
+/**
+ * SQL do histórico da Carteira, dentro da transação aberta pelo chamador com o dono do schema. Separado da conexão para
+ * que um teste `db` prove que o histórico respeita os invariantes do ledger (`app.credit_invariant_breaches()`).
+ */
+export async function seedCreditHistory(client, partyId) {
+  await client.query('SET LOCAL session_replication_role = replica');
+  const actor = await activeRepresentative(client, partyId);
+  const operation = async (command, at, system = false) => {
+    const { rows } = await client.query(
+      `INSERT INTO app.operation (id, command, actor_user_id, acting_party_id, role, idempotency_key,
+         correlation_id, authorization_ref, state, created_at, updated_at)
+       SELECT g.id, $1, $2, $3, $4, 'e2e:' || g.id, 'e2e:' || g.id, $5, 'committed', ${at}, ${at}
+         FROM (SELECT gen_random_uuid() AS id) g RETURNING id`,
+      [
+        command,
+        system ? null : actor,
+        system ? null : partyId,
+        system ? 'system' : 'titular',
+        system ? 'system:job' : `party:${partyId}`,
+      ],
+    );
+    return rows[0].id;
+  };
+  const lot = async (command, quantity, originatedDays, expiresDays, buckets) => {
+    const op = await operation(command, `now() - ${originatedDays} * ${E2E_DAY}`);
+    const { rows } = await client.query(
+      `INSERT INTO app.credit_lot (id, party_id, quantity, held, consumed, expired, originated_at, expires_at,
+         origin_operation_id, origin_command)
+       VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, now() - $6 * ${E2E_DAY}, now() + $7 * ${E2E_DAY}, $8, $9)
+       RETURNING id`,
+      [
+        partyId,
+        quantity,
+        buckets.held,
+        buckets.consumed,
+        buckets.expired,
+        originatedDays,
+        expiresDays,
+        op,
+        command,
+      ],
+    );
+    await entry(
+      rows[0].id,
+      op,
+      command,
+      'originate',
+      'external',
+      'available',
+      quantity,
+      originatedDays,
+    );
+    return rows[0].id;
+  };
+  const entry = async (
+    lotId,
+    op,
+    command,
+    movement,
+    from,
+    to,
+    quantity,
+    daysAgo,
+    parent = null,
+  ) => {
+    const { rows } = await client.query(
+      `INSERT INTO app.credit_entry (id, lot_id, operation_id, command, movement, from_bucket, to_bucket, quantity,
+         parent_entry_id, created_at)
+       VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, now() - $9 * ${E2E_DAY}) RETURNING id`,
+      [lotId, op, command, movement, from, to, quantity, parent, daysAgo],
+    );
+    return rows[0].id;
+  };
+  const lotA = await lot('deposit_capacity', '120', 60, 300, {
+    held: '20',
+    consumed: '11',
+    expired: '0',
+  });
+  const hold = await operation('send_request', `now() - 5 * ${E2E_DAY}`);
+  await entry(lotA, hold, 'send_request', 'hold', 'available', 'held', '20', 5);
+  for (let index = 0; index < 22; index += 1) {
+    const daysAgo = 50 - index * 2;
+    const direct = await operation('create_direct', `now() - ${daysAgo} * ${E2E_DAY}`);
+    await entry(lotA, direct, 'create_direct', 'consume', 'available', 'consumed', '0.5', daysAgo);
+  }
+  const lotB = await lot('accept_request', '40.5', 740, -10, {
+    held: '0',
+    consumed: '0',
+    expired: '40.5',
+  });
+  const expiry = await operation('expire_credit_lots', `now() - 9 * ${E2E_DAY}`, true);
+  await entry(lotB, expiry, 'expire_credit_lots', 'expire', 'available', 'expired', '40.5', 9);
+  const lotC = await lot('deposit_capacity', '12.25', 731, -1, {
+    held: '0',
+    consumed: '0',
+    expired: '0',
+  });
+  return { lotA, lotB, lotC };
 }

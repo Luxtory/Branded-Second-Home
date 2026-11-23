@@ -29,6 +29,8 @@ export type JsonPrimitive = boolean | number | string | null;
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
+export type Numeric = ColumnType<string, number | string, number | string>;
+
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export interface AppAcquisition {
@@ -218,6 +220,48 @@ export interface AppCentralInventory {
   stay_date: Timestamp | null;
 }
 
+export interface AppCommercialPolicy {
+  authority: string;
+  authorization_ref: string;
+  config: Json;
+  created_at: Timestamp;
+  created_by: string;
+  effective_from: Timestamp;
+  effective_to: Timestamp | null;
+  id: string;
+  mechanism: string;
+  operation_id: string;
+  schema_version: number;
+}
+
+export interface AppCreditEntry {
+  basis: string | null;
+  command: string;
+  created_at: Timestamp;
+  from_bucket: string;
+  id: string;
+  lot_id: string;
+  movement: string;
+  operation_id: string;
+  parent_entry_id: string | null;
+  quantity: Numeric;
+  to_bucket: string;
+}
+
+export interface AppCreditLot {
+  available: Generated<Numeric | null>;
+  consumed: Generated<Numeric>;
+  expired: Generated<Numeric>;
+  expires_at: Timestamp;
+  held: Generated<Numeric>;
+  id: string;
+  origin_command: string;
+  origin_operation_id: string;
+  originated_at: Timestamp;
+  party_id: string;
+  quantity: Numeric;
+}
+
 export interface AppDateCustody {
   authorization_ref: string | null;
   basis: string | null;
@@ -246,6 +290,18 @@ export interface AppDateOccupancy {
   second_home_id: string;
   stake_id: string | null;
   stay_date: Timestamp;
+}
+
+export interface AppEconomicSnapshot {
+  created_at: Timestamp;
+  operation_id: string;
+  resolved_at: Timestamp;
+}
+
+export interface AppEconomicSnapshotParameter {
+  operation_id: string;
+  parameter_id: string;
+  parameter_key: string;
 }
 
 export interface AppGuestNomination {
@@ -629,12 +685,13 @@ export interface AppParameter {
   authorization_ref: string;
   created_at: Timestamp;
   created_by: string;
+  currency: string | null;
   effective_from: Timestamp;
   effective_to: Timestamp | null;
   id: string;
   key: string;
   operation_id: string;
-  second_home_id: string;
+  second_home_id: string | null;
   value: string;
 }
 
@@ -643,6 +700,7 @@ export interface AppParameterVersion {
   authorization_ref: string | null;
   created_at: Timestamp | null;
   created_by: string | null;
+  currency: string | null;
   effective_from: Timestamp | null;
   effective_to: Timestamp | null;
   effective_until: Timestamp | null;
@@ -691,6 +749,45 @@ export interface AppPartyDocumentDigest {
   digest: Buffer;
   hmac_key_id: string;
   party_id: string;
+}
+
+export interface AppPrl {
+  amount_minor: Int8;
+  currency: string;
+  effective_from: Timestamp;
+  id: string;
+  publication_id: string;
+  second_home_id: string;
+  stay_date: Timestamp;
+}
+
+export interface AppPrlPublication {
+  authority: string;
+  authorization_ref: string;
+  created_at: Timestamp;
+  created_by: string;
+  effective_from: Timestamp;
+  id: string;
+  kind: string;
+  operation_id: string;
+  second_home_id: string;
+}
+
+export interface AppPrlVersion {
+  amount_minor: Int8 | null;
+  authority: string | null;
+  authorization_ref: string | null;
+  created_at: Timestamp | null;
+  created_by: string | null;
+  currency: string | null;
+  effective_from: Timestamp | null;
+  effective_to: Timestamp | null;
+  id: string | null;
+  kind: string | null;
+  operation_id: string | null;
+  publication_id: string | null;
+  second_home_id: string | null;
+  stay_date: Timestamp | null;
 }
 
 export interface AppPublicIdempotencyKey {
@@ -848,8 +945,13 @@ export interface DB {
   'app.capability_activation': AppCapabilityActivation;
   'app.catalog_term': AppCatalogTerm;
   'app.central_inventory': AppCentralInventory;
+  'app.commercial_policy': AppCommercialPolicy;
+  'app.credit_entry': AppCreditEntry;
+  'app.credit_lot': AppCreditLot;
   'app.date_custody': AppDateCustody;
   'app.date_occupancy': AppDateOccupancy;
+  'app.economic_snapshot': AppEconomicSnapshot;
+  'app.economic_snapshot_parameter': AppEconomicSnapshotParameter;
   'app.guest_nomination': AppGuestNomination;
   'app.holding': AppHolding;
   'app.home_concept': AppHomeConcept;
@@ -887,6 +989,9 @@ export interface DB {
   'app.party': AppParty;
   'app.party_delegation': AppPartyDelegation;
   'app.party_document_digest': AppPartyDocumentDigest;
+  'app.prl': AppPrl;
+  'app.prl_publication': AppPrlPublication;
+  'app.prl_version': AppPrlVersion;
   'app.public_idempotency_key': AppPublicIdempotencyKey;
   'app.second_home': AppSecondHome;
   'app.second_home_administration': AppSecondHomeAdministration;

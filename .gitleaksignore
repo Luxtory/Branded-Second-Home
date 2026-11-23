@@ -1,3 +1,5 @@
 # Falsos positivos revisados (gitleaks <commit>:<arquivo>:<regra>:<linha>). Cada linha cita o motivo; nada aqui é segredo.
 # UUID sintético de Idempotency-Key num teste (constante `KEY`, renomeada para `ATTEMPT_ID` no commit seguinte).
 6832ed8d2ad398db0b522c7940dbf253c34f0df8:tests/features/catalog/presentation/second-home-partner-contact-isolation.test.ts:generic-api-key:26
+# Nomes de migration num array de teste (`const W16 = [...economic_keys', '<migration>']`), reescrito no commit seguinte.
+ef5b62f163f6c392a5cf7b68285c81d3d1ec17c3:tests/migrations/w16-preservation.db.test.ts:generic-api-key:19

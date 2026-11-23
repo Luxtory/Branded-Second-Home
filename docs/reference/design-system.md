@@ -416,6 +416,23 @@ depois de prévia válida para as mesmas datas (`form.lx-booking__confirm`, com 
 aviso `.lx-message--info.lx-booking__closed` antes do Direito de Uso e uma dica no resumo. Sem preço por noite. "Noites", nunca "diárias" (REQ-100). React (E5b):
 `OwnUseCalendar` no slice `booking` compõe estas classes.
 
+**Pricing · `lx-pricing` + `lx-calendar--prl`** — Precificação do Admin (W16, spec `pricing` §5;
+`styles/components/pricing.css`). Composição: `.lx-pricing` (container) > `.lx-pricing__layout` >
+`.lx-pricing__calendar` + `.lx-pricing__panel[data-ground="wash"]` — no celular um depois do outro; a partir de 52rem de
+largura útil, calendário e painel lado a lado (3:2, até 88rem). A variante `.lx-calendar--prl` do calendário do DS só vale
+dentro dela (reservas e Direito de Uso não mudam): células proporcionais à largura (`8.5cqi`, nunca abaixo do alvo de
+48 px), `td[data-prl="in_force"]` em Warm Sand com o valor (`.lx-pricing__amount`, só a partir de 30rem de calendário),
+`td[data-tier="super_alta|alta|media"]` com a faixa da temporada (tokens `--lx-derived-season-*`, espessura crescente
+com a temporada), `td[data-selected]` + `.lx-pricing__check` para a seleção (a faixa fica sobre um filete branco),
+`td[data-viewing]` (contorno) para a noite em detalhe, `.lx-pricing__dot` (preço vigente quando o valor não cabe) e
+`.lx-pricing__future` (losango próprio de versão futura — o `.lx-calendar__mark` do DS é o 29/02). Legenda em dois
+grupos (`__legends`/`__legend`) e `__swatch[data-tier]` para a amostra da temporada (legenda, botões, detalhe). Peças do painel: `__eyebrow`, `__title`,
+`__text`, `__facts`/`__fact` (rótulo · valor), `__chips`/`__chip` (seleção em lote, 44 px), `__common` (campo + ação),
+`__nights`/`__night` (data, meta, campo, `__remove` de 44 px), `__months` (atalhos), `__summary` (revisão),
+`__history`. **Parâmetros · `lx-parameters`** (mesmo arquivo): `.lx-parameters__grid` com um `section.lx-parameter`
+por chave (dois por linha a partir de 56rem), `__head`, `__ref`, `__status[data-ground="wash"]`, `__value`,
+`__actions` (histórico e nova versão em `details`), `__dates`.
+
 **Record List · `lx-record-list`** — React: `RecordList` (`items`, `label`). A lista das superfícies de produto
 (ADR-0010 §9): um item por registro, título em Newsreader que leva ao detalhe (link esticado: o item inteiro é o alvo
 e mostra o foco) e atributos em `dl` ao lado a partir de `md`. Atributo sem valor não é passado (TECH-001). Serve de

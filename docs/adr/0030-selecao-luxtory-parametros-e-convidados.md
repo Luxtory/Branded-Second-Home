@@ -2,7 +2,7 @@
 
 - **Date**: 2026-11-19
 - **Status**: Accepted (plano corrigido da W14 aprovado pelo fundador e pela auditoria independente em 2026-11-19;
-  implementação em PR draft)
+  implementação em PR draft; concluída pelo #99, squash `c681727`, 2026-11-19)
 - **Deciders**: Fundador (Luxtory), auditoria independente, agente de engenharia
 - **Tags**: architecture, security, database, W14
 
