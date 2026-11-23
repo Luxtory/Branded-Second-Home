@@ -9,7 +9,15 @@ import { messages } from './i18n/pt-br';
  */
 const SECTIONS: readonly {
   readonly id:
-    'home' | 'catalog' | 'interests' | 'parties' | 'bookings' | 'prl' | 'parameters' | 'policies';
+    | 'home'
+    | 'catalog'
+    | 'interests'
+    | 'parties'
+    | 'bookings'
+    | 'prl'
+    | 'parameters'
+    | 'policies'
+    | 'finance';
   readonly href: string;
   readonly label: string;
   readonly roles?: readonly StaffRole[];
@@ -31,6 +39,8 @@ const SECTIONS: readonly {
   { id: 'parameters', href: '/admin/parametros', label: messages.nav.parameters, roles: ['admin'] },
   // W18: políticas comerciais, `publish_policy` do Admin (spec pricing §5 "Políticas comerciais").
   { id: 'policies', href: '/admin/politicas', label: messages.nav.policies, roles: ['admin'] },
+  // W19: apuração por categoria e conciliação de pagamentos, só leitura (spec billing §4.4).
+  { id: 'finance', href: '/admin/financeiro', label: messages.nav.finance, roles: ['admin'] },
 ];
 
 export type AdminSection = (typeof SECTIONS)[number]['id'];

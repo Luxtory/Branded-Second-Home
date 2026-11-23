@@ -13,6 +13,8 @@ import {
 } from '@/features/billing';
 import {
   CapabilityNotActivatedError,
+  type CommandHandler,
+  type DatabaseTransaction,
   systemClock,
   type OperationalAlertEvent,
 } from '@/features/platform';
@@ -337,8 +339,12 @@ describe('reversão, apuração e estorno (PD-006, TECH-082, TECH-083)', () => {
     if (outcome.status !== 'committed') throw new Error(`fee not charged: ${outcome.code}`);
     return { payment, feeChargeId: outcome.result.fee_charge_id };
   }
-  const requester = (
-    handler: ReturnType<typeof reversalHandler> | ReturnType<typeof settleHandler>,
+  const requester = <R extends Record<string, string>>(
+    handler: CommandHandler<
+      { second_home_id: string; fee_charge_id: string },
+      R,
+      DatabaseTransaction
+    >,
     feeChargeId: string,
   ) =>
     executorFor(b.c, b.titular, { requestGuard: true })(handler, {

@@ -65,4 +65,14 @@ describe('seções do Admin (ADR-0008, ADR-0009)', () => {
       false,
     );
   });
+
+  it('[REQ-094] Financeiro (W19): relatório por categoria só com o papel Admin exercido', () => {
+    expect(availableSections(['admin']).find((section) => section.id === 'finance')).toMatchObject({
+      href: '/admin/financeiro',
+      roles: ['admin'],
+    });
+    expect(availableSections(['super_admin']).some((section) => section.id === 'finance')).toBe(
+      false,
+    );
+  });
 });
