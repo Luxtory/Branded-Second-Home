@@ -1,6 +1,10 @@
 # 01 — Business Model & Business Rules — Luxtory Branded Second Home
 
-2026-11-17 · Luxtory (fundador) · Versão 10.7 — Status: final
+2026-11-22 · Luxtory (fundador) · Versão 10.8 — Status: final
+
+Revisão pontual autorizada pelo fundador em 2026-11-22 (decisão comercial para o Go-to-Market): o percentual de referência do Luxchange Fee passa de 10% para **12% do PRL total do período**. Substitui exclusivamente o percentual do parâmetro atual do §24; preserva o mínimo de R$ 120 por operação, a regra de cálculo (maior entre o percentual sobre o PRL total do período e o mínimo) e as BR-230, BR-231 e BR-232. O Fee continua parâmetro administrável (BR-232) e não altera o multiplicador de Créditos do §20 (PRL × 10). Esta revisão não publica parâmetro econômico, não habilita cobrança e não comprova operação: a publicação da versão vigente em Production depende de autorização operacional própria (TECH-030). Preserva as 192 BRs e os direitos constituídos. Impacto: `03` TECH-030 (valor inicial do Fee) e plano da W19.
+
+Histórico preservado — versão 10.7, emitida em 2026-11-17:
 
 Revisão pontual autorizada pelo fundador em 2026-11-17: define expressamente a duração da participação Second Home Partners. Enquanto o imóvel permanecer afiliado à Luxtory, o parceiro responsável pela afiliação participa do faturamento atribuível a esse imóvel, conforme as bases e condições do §35. A regra se aplica aos três perfis parceiros; preserva a oferta aos primeiros parceiros e não fixa percentual, valor mínimo ou pagamento sem faturamento. Não altera as 192 BRs, direitos constituídos ou regras econômicas dos demais mecanismos e não implementa afiliação/apuração financeira em software. Impacto: comunicação do REQ-105, Framework e catalog §20.8; nenhum novo REQ/TECH, entidade ou API.
 
@@ -442,7 +446,7 @@ Direct aplica-se quando a capacidade pretendida já integra o Inventário Luxtor
 
 ## 24. Luxchange Fee
 
-Parâmetro atual: **Luxchange Fee = maior entre 10% do PRL do período e R$ 120.**
+Parâmetro atual: **Luxchange Fee = maior entre 12% do PRL do período e R$ 120.**
 
 **BR-230** — Request e Direct estão sujeitos ao Luxchange Fee, devido pelo solicitante.
 

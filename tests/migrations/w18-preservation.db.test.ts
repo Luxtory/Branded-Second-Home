@@ -15,6 +15,7 @@ import { createTestDatabase } from '../support/test-database';
  * custódia (W13–W17) ficam intactos. Desfazer a W18 restaura exatamente o catálogo da W17.
  */
 const FIRST_W18 = '20261122180001_pricing_commercial_policy';
+const LAST_W18 = FIRST_W18;
 
 /** Objetos que a W18 acrescenta, e só eles. */
 const W18_OBJECTS = [
@@ -38,14 +39,17 @@ describe('W18 — preservação do catálogo (E1)', () => {
   });
 
   it('[TECH-110][ADR-0034] a W18 só acrescenta os objetos das políticas comerciais e não muda nada anterior', async () => {
-    const subject = await createTestDatabase();
+    // Banco só até a W18: as waves seguintes (W19+) têm a própria prova de preservação.
+    const newer = (await migrationsFromNewest(FIRST_W18)).filter((name) => name > LAST_W18);
+    const upToW18 = newer.length > 0 ? await databaseBefore(newer.at(-1)!) : null;
+    const subject = upToW18?.database ?? (await createTestDatabase());
     try {
       const changed = differences(w17Snapshot, await snapshot(subject));
       expect(changed.filter((key) => w17Snapshot.has(key))).toEqual([]);
       expect(changed.length).toBeGreaterThan(0);
       expect(changed.filter((key) => !W18_OBJECTS.some((pattern) => pattern.test(key)))).toEqual([]);
     } finally {
-      await subject.drop();
+      await (upToW18 ? upToW18.dispose() : subject.drop());
     }
   });
 

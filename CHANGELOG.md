@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- W19 — Pagamentos, Luxchange Fee e settlement (REQ-094; ADR-006, ADR-008, TECH-025, TECH-080–083, TECH-090, TECH-101;
+  ADR-0035). Decisão do fundador de 2026-11-22: o Luxchange Fee de referência passa de 10% para 12% do PRL total do
+  período, mínimo de R$ 120 por operação preservado (`01` v10.8 §24, `03` v3.19 TECH-030); o valor continua parâmetro
+  publicado, nunca padrão no código. Infraestrutura desativada: pagamento em duas fases (registro pendente antes do
+  PSP, vínculo pelo command de domínio), estados monotônicos, Fee único por operação conferido pelo banco com o
+  snapshot, reversão integral pré-aceite, estornos sem duplicidade, settlement fechado por categoria e beneficiário,
+  webhook `POST /v1/webhooks/psp/{provider}` autenticado e deduplicado, job `reconciliation` com alerta
+  `payment_without_outcome` e tela Admin "Financeiro" (`/admin/financeiro`) sem total consolidado. Sem PSP contratado e
+  com a K5 fechada, nenhuma cobrança é possível.
+
 - W18 — Políticas comerciais (REQ-082, REQ-104, PD-009, PD-010; TECH-030, TECH-032, TECH-051; ADR-0034). Políticas
   versionadas por mecanismo do Luxtory Club (Luxchange Request, Luxchange Direct, Luxplus, locação externa) com esquema
   fechado validado na entrada, no domínio e no banco: faixas de cancelamento por antecedência, no-show e exceção, com

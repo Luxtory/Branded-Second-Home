@@ -19,6 +19,7 @@ export const messages = {
     prl: 'PRL',
     parameters: 'Parâmetros econômicos',
     policies: 'Políticas comerciais',
+    finance: 'Financeiro',
   },
   home: {
     title: 'Administração',
@@ -64,6 +65,11 @@ export const messages = {
         includesLabel: 'Inclui',
         includes:
           'Prazos e efeitos de cancelamento, não comparecimento e exceção de Luxchange Request, Luxchange Direct, Luxplus e locação externa',
+      },
+      finance: {
+        includesLabel: 'Inclui',
+        includes:
+          'Apuração por categoria e beneficiário, sem total consolidado, e estado da conciliação de pagamentos',
       },
     },
   },

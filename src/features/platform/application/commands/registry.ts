@@ -214,6 +214,17 @@ export const SYSTEM_COMMANDS: readonly CommandSpec[] = [
     critical: false,
     job: 'expire_credit_lots',
   },
+  // TECH-080/TECH-090/TECH-101 (W19; spec billing §4.5, ADR-0035 §9): registra o estorno de um pagamento aprovado sem
+  // desfecho ou cujo estorno falhou; o fluxo consumidor o dispara logo após a recusa do domínio e o job é a rede de
+  // segurança.
+  {
+    name: 'reconciliation',
+    module: 'billing',
+    authority: 'system',
+    membership: 'not_applicable',
+    critical: false,
+    job: 'reconciliation',
+  },
 ];
 
 export class CommandRegistryError extends Error {

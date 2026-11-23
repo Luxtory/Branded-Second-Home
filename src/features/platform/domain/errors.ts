@@ -99,6 +99,9 @@ const CONSTRAINT_PREFIXES: readonly (readonly [string, RejectionCode])[] = [
   ['window_', 'ERR_WINDOW_NOT_OPEN'],
   ['stay_', 'ERR_STAY_LENGTH'],
   ['permission_', 'ERR_PERMISSION'],
+  // Pagamento (W19, ADR-0035): não aprovado, de outra finalidade ou party, já vinculado, em estorno ou com valor
+  // diferente do Fee calculado no instante da escrita.
+  ['payment_', 'ERR_PAYMENT_FAILED'],
 ];
 
 /** Índices com o nome exato do 03 §3.2 (W10), fora da convenção de prefixos. */
@@ -138,13 +141,14 @@ export const PRIVILEGE_REFUSALS: ReadonlyMap<string, RejectionCode> = new Map([
 
 /**
  * Capabilities fechadas pela tabela de ativação privilegiada (`42501` nomeado): K1 (ADR-0026), K2 (ADR-0027), K3
- * (ADR-0030) e K4 (ADR-0033).
+ * (ADR-0030), K4 (ADR-0033) e K5 (ADR-0035).
  */
 export const CLOSED_CAPABILITIES: ReadonlyMap<string, string> = new Map([
   ['booking_not_activated', 'own_use_booking'],
   ['booking_lifecycle_not_activated', 'own_use_lifecycle'],
   ['luxtory_selection_not_activated', 'luxtory_selection'],
   ['credit_capability_not_activated', 'credits'],
+  ['payments_not_activated', 'payments'],
 ]);
 
 /**
@@ -157,6 +161,8 @@ export const TECHNICAL_PRIVILEGE_ERRORS: readonly string[] = [
   // W17: lote de Créditos só muda pelo gatilho do ledger (ADR-0033 §1).
   'credit_lot_ledger_only',
   'inventory_transition_not_enabled',
+  // W19: categoria de settlement sem valores nem beneficiários definidos (ADR-0035 §5, BR-352).
+  'settlement_kind_not_enabled',
   'use_right_balance_maintenance',
   'use_right_consumption_not_enabled',
   'use_right_correction_not_enabled',

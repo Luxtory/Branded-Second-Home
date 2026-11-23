@@ -161,5 +161,9 @@ export {
   findPublicAttempt,
   PublicIdempotencyError,
 } from './infrastructure/idempotency/public-idempotency';
-export { isDatabaseUnavailable, violatedConstraint } from './infrastructure/database/errors';
+export {
+  isDatabaseUnavailable,
+  refusedPrivilege,
+  violatedConstraint,
+} from './infrastructure/database/errors';
 export { lockAdvisoryKeys } from './infrastructure/database/advisory-locks';

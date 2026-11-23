@@ -96,8 +96,14 @@ describe('W14 — preservação das funções e do catálogo da W12/W13 (E2)', (
 
       const check = after.get('constraint app.capability_activation.capability_activation_capability_check')!;
       expect(check).toContain("'luxtory_selection'");
-      // A W17 amplia o mesmo CHECK com a K4 `credits` (prova própria em w17-preservation).
-      expect(check.replace(", 'luxtory_selection'::text", '').replace(", 'credits'::text", '')).toBe(
+      // A W17 amplia o mesmo CHECK com a K4 `credits` e a W19 com a K5 `payments` (provas próprias em
+      // w17-preservation e w19-preservation).
+      expect(
+        check
+          .replace(", 'luxtory_selection'::text", '')
+          .replace(", 'credits'::text", '')
+          .replace(", 'payments'::text", ''),
+      ).toBe(
         w13Snapshot.get('constraint app.capability_activation.capability_activation_capability_check'),
       );
     } finally {

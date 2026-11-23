@@ -15,6 +15,7 @@ describe('seções do Admin (ADR-0008, ADR-0009)', () => {
       'prl',
       'parameters',
       'policies',
+      'finance',
     ]);
     expect(ids(['admin', 'super_admin'])).toEqual([
       'home',
@@ -25,6 +26,7 @@ describe('seções do Admin (ADR-0008, ADR-0009)', () => {
       'prl',
       'parameters',
       'policies',
+      'finance',
     ]);
     // W16: o PRL aceita Admin ou Super Admin (TECH-051); os parâmetros econômicos, só o Admin.
     expect(ids(['super_admin'])).toEqual(['home', 'prl']);
@@ -62,6 +64,16 @@ describe('seções do Admin (ADR-0008, ADR-0009)', () => {
       { href: '/admin/politicas', roles: ['admin'] },
     );
     expect(availableSections(['super_admin']).some((section) => section.id === 'policies')).toBe(
+      false,
+    );
+  });
+
+  it('[REQ-094] Financeiro (W19): relatório por categoria só com o papel Admin exercido', () => {
+    expect(availableSections(['admin']).find((section) => section.id === 'finance')).toMatchObject({
+      href: '/admin/financeiro',
+      roles: ['admin'],
+    });
+    expect(availableSections(['super_admin']).some((section) => section.id === 'finance')).toBe(
       false,
     );
   });

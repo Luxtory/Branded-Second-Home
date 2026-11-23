@@ -72,7 +72,9 @@ Regras:
 | `BOOKING_AUTHORIZATION_REQUEST_LIMIT` · `BOOKING_AUTHORIZATION_REQUEST_WINDOW_SECONDS` | Vercel — Production, **configuração posterior autorizada pelo fundador** | solicitações de autorização independente (`request_booking_authorization`, G-E4-1) por papel de staff por janela (inteiros positivos; valores no runbook, TECH-001). Ausentes → a solicitação é recusada com `ERR_PARAMETER_MISSING` | W13 |
 | `BOOKING_AUTHORIZATION_GLOBAL_LIMIT` · `BOOKING_AUTHORIZATION_GLOBAL_WINDOW_SECONDS` | Vercel — Production, configuração posterior | solicitações totais por janela (idem) | W13 |
 | `BOOKING_AUTHORIZATION_LIMITER_TIMEOUT_MS` | Vercel — Production, configuração posterior | prazo do limitador; sem resposta no prazo → recusa (falha fechada; idem) | W13 |
-| `PAYMENT_GATEWAY` | Preview, Development e CI | `fake` enquanto o PSP não é contratado; recusado em produção (TECH-081) | W19 |
+| `PAYMENT_GATEWAY` | Preview, Development e CI | `billing`: `fake` enquanto o PSP não é contratado; recusado em Production (`VERCEL_ENV=production` invalida o ambiente, TECH-081); ausente → pagamentos indisponíveis (`ERR_UNAVAILABLE`), webhook 404 e job `reconciliation` no-op (ADR-0035 §7) | W19 |
+| `PAYMENT_WEBHOOK_SECRET` | Preview, Development e CI (Sensitive) | `billing`: segredo HMAC do webhook do adaptador `fake` (≥ 32 caracteres); um PSP real terá o próprio segredo | W19 |
+| `PAYMENT_OUTCOME_GRACE_SECONDS` | onde houver gateway | `billing`: carência antes de a conciliação consultar um pagamento pendente ou estornar um aprovado sem desfecho; valor no runbook (TECH-001); ausente → a execução falha fechada | W19 |
 
 ## Fora do catálogo
 
