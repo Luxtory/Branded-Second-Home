@@ -60,3 +60,21 @@ Tela Admin / rota REST → executor (guard AAL2 + papel, idempotência, operaç�
 - Super Admin comprometido altera PRL: mitigado só por MFA, base registrada e trilha; sem segundo aprovador (não
   previsto no `01/02`).
 - Production sem Super Admin ativo: alteração indisponível até atribuição pelo runbook (operacional).
+
+## 7. Políticas comerciais (W18, ADR-0034)
+
+Superfície nova: `POST /v1/admin/policies`, a Server Action de `/admin/politicas` e `app.commercial_policy`.
+
+| Ameaça | Mitigação |
+|---|---|
+| T-1801 Tampering — política que contorna BR-163 ou INV (capacidade fora da origem, fração > 1, eixo de outro mecanismo) | Esquema fechado no Zod, no domínio e no CHECK `app.commercial_policy_config_valid` do banco; chaves extras recusadas |
+| T-1802 Elevation — servidor ou SQL com a credencial do `luxtory_app` forja versão | Operação `publish_policy` `pending` da transação, papel e autor da operação, autoridade de staff revalidada sob trava |
+| T-1803 Tampering — reescrever, apagar ou antecipar versão | Sem UPDATE/DELETE; `forbid_change`; início carimbado pelo banco, nunca retroativo, depois de todos os inícios |
+| T-1804 Tampering — política muda entre a apresentação e a confirmação | Aceite carrega o id da versão; resolução sob trava compartilhada exige versão vigente = aceita (`ERR_POLICY_MISSING`) |
+| T-1805 Repudiation — quem publicou, com qual base | `authority`, `authorization_ref`, `created_by`, `created_at`, `operation_id`; auditoria com o `config` |
+| T-1806 Information disclosure — leitura de políticas por anônimo/Titular direto no banco | Sem GRANT a `anon`/`authenticated`; o Titular verá a política pela renderização do servidor (W21+) |
+| T-1807 DoS — `config` gigante | Corpo até 16 KiB na rota; no máximo 5 faixas; validação antes de abrir transação |
+| T-1808 Spoofing — política de teste em ambiente operacional | Nenhuma política por migration/seed; fixtures só nos bancos efêmeros de teste |
+
+Risco residual: Admin comprometido publica política desfavorável — mitigado por MFA, base registrada, vigência
+nunca retroativa (operações já vinculadas não mudam) e trilha.

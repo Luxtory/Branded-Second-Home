@@ -166,3 +166,5 @@ spec [`pricing`](pricing.md).
   linguagem operacional e a referência canônica numa linha própria (`01`/BR/TECH/PD por ID, fora do texto corrido);
   situação e valor vigente em destaque; vigência e próxima versão em fatos curtos; histórico e "Publicar nova versão"
   sob demanda. A revisão abre com "antes da nova vigência → novo" (o mesmo padrão da revisão do PRL).
+- **W18 — políticas comerciais:** a seção "Políticas comerciais" (`/admin/politicas`, só Admin) pertence ao módulo
+  `pricing`; contrato em [`pricing.md`](pricing.md) §5 "Políticas comerciais" e [ADR-0034](../adr/0034-politicas-comerciais-esquema-fechado-e-avaliacao.md).

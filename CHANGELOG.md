@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- W18 — Políticas comerciais (REQ-082, REQ-104, PD-009, PD-010; TECH-030, TECH-032, TECH-051; ADR-0034). Políticas
+  versionadas por mecanismo do Luxtory Club (Luxchange Request, Luxchange Direct, Luxplus, locação externa) com esquema
+  fechado validado na entrada, no domínio e no banco: faixas de cancelamento por antecedência, no-show e exceção, com
+  efeitos explícitos em Créditos, Luxchange Fee, valor pago e remuneração; a capacidade sempre volta à origem
+  imediatamente anterior (BR-163) e nenhuma política cria valor. Admin: tela "Políticas comerciais"
+  (`/admin/politicas`) com a situação de cada mecanismo (ausente, vigente ou agendada), a política como o Titular a
+  verá, histórico imutável e publicação revisada com consequências explícitas; `POST /v1/admin/policies`. Sem política
+  vigente, nenhum compromisso desses mecanismos confirma (`ERR_POLICY_MISSING`). Nenhuma política real publicada;
+  nada ativado.
+
 - W17 — Créditos e Carteira (REQ-053, REQ-054, PD-008, INV-6; ADR-007, TECH-025, TECH-031, TECH-044, TECH-070–072;
   ADR-0033). Lotes de Créditos com ledger imutável no banco (buckets escritos só pelo gatilho do ledger, originação
   com snapshot da validade, validade calendárica em UTC independente de job), consumo FEFO, Garantia, liberação,

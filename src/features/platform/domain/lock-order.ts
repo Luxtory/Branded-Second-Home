@@ -22,12 +22,16 @@ export type LockClass = (typeof LOCK_CLASSES)[number];
  * (`app.luxtory_capacity:<id>:<ano>`) e o escopo de um parâmetro (`app.parameter:<chave>:<id>`), as mesmas chaves dos
  * gatilhos. Extensão da ADR-0032 (W16), logo depois de `parameter`: o PRL por Second Home (`app.prl:<id>`), exclusiva na
  * publicação e compartilhada na leitura em vigor, com os parâmetros globais travados antes (ordem crescente de chave).
+ * Extensão da ADR-0034 (W18), logo antes de `parameter`: a política comercial por mecanismo
+ * (`app.commercial_policy:<mecanismo>`), exclusiva na publicação e compartilhada na resolução dos termos, antes do
+ * instante do banco que fixa a resolução.
  * `LOCK_CLASSES` continua o espelho exato da TECH-053; commands que não travam essas classes não mudam.
  */
 export const LOCK_ORDER = [
   ...LOCK_CLASSES.slice(0, 5),
   'booking',
   'luxtory_capacity',
+  'commercial_policy',
   'parameter',
   'prl',
   ...LOCK_CLASSES.slice(5),

@@ -1,6 +1,7 @@
 import { CommandRejection, type LockSequence } from '@/features/platform';
 import { MAX_PRL_NIGHTS } from '../domain/prl';
 import { sumMinor, type Currency } from '../domain/money';
+import type { PolicyConfig, PolicyMechanism } from '../domain/commercial-policy';
 
 /** Chaves econômicas globais (spec admin §14), com a unidade de cada valor canônico. */
 export const ECONOMIC_PARAMETER_UNITS = {
@@ -22,6 +23,22 @@ export interface EconomicTermsRequest {
     readonly checkin: string;
     readonly checkout: string;
   };
+  /**
+   * Política comercial do mecanismo (TECH-032, PD-009): a versão apresentada e aceita pelo usuário. Sem versão vigente,
+   * ou com a aceita diferente da vigente no instante da resolução → `ERR_POLICY_MISSING`.
+   */
+  readonly policy?: {
+    readonly mechanism: PolicyMechanism;
+    readonly acceptedPolicyId: string;
+  };
+}
+
+/** Versão da política vigente no instante da resolução (imutável; vínculo persistente na W21). */
+export interface EconomicTermsPolicy {
+  readonly policyId: string;
+  readonly mechanism: PolicyMechanism;
+  readonly config: PolicyConfig;
+  readonly effectiveFrom: string;
 }
 
 export interface EconomicTermsNight {
@@ -51,6 +68,7 @@ export interface EconomicTerms {
   readonly nights: readonly EconomicTermsNight[];
   readonly prlTotal: { readonly amountMinor: string; readonly currency: Currency } | null;
   readonly parameters: Readonly<Partial<Record<EconomicParameterKey, EconomicTermsParameter>>>;
+  readonly policy: EconomicTermsPolicy | null;
 }
 
 export interface PrlNightInForce {
@@ -61,6 +79,10 @@ export interface PrlNightInForce {
 }
 
 export interface EconomicTermsStore<Tx> {
+  /** Trava compartilhada `app.commercial_policy:<mecanismo>` (a mesma do gatilho, em modo compartilhado). */
+  lockPolicy(tx: Tx, mechanism: PolicyMechanism): Promise<void>;
+  /** Versão vigente no instante exato (`app.commercial_policy_at`); nenhuma → `null`. */
+  policyAt(tx: Tx, mechanism: PolicyMechanism, at: string): Promise<EconomicTermsPolicy | null>;
   /** Travas compartilhadas `app.parameter:<chave>:global`, na ordem recebida. */
   lockParameters(tx: Tx, keys: readonly EconomicParameterKey[]): Promise<void>;
   /** `app.prl_period_in_force`: trava compartilhada do PRL e instante do banco depois dela; uma linha por noite. */
@@ -93,7 +115,8 @@ const nightsBetween = (checkin: string, checkout: string) =>
  * Resolve os termos econômicos dentro da transação do command (TECH-030/031/053/054): travas compartilhadas dos
  * parâmetros em ordem crescente, depois a do PRL; um único `resolvedAt` lido do banco depois de todas as travas; todas as
  * versões consultadas nesse instante. As travas seguem até o fim da transação: nenhuma publicação concorrente confirma
- * entre a resolução e o efeito. Noite sem PRL → `ERR_PRL_MISSING`; parâmetro exigido ausente → `ERR_PARAMETER_MISSING`.
+ * entre a resolução e o efeito. Noite sem PRL → `ERR_PRL_MISSING`; parâmetro exigido ausente → `ERR_PARAMETER_MISSING`;
+ * política ausente ou diferente da aceita → `ERR_POLICY_MISSING` (W18; a trava da política vem antes das demais).
  * Nada é presumido nem resolvido pela metade.
  */
 export async function resolveEconomicTerms<Tx>(
@@ -108,6 +131,9 @@ export async function resolveEconomicTerms<Tx>(
     if (!Number.isInteger(count) || count < 1 || count > MAX_PRL_NIGHTS)
       throw new CommandRejection('ERR_VALIDATION');
   }
+  if (request.policy !== undefined)
+    for (const [mechanism] of locks.claim('commercial_policy', [request.policy.mechanism]))
+      await store.lockPolicy(tx, mechanism as PolicyMechanism);
   const keys = locks
     .claim(
       'parameter',
@@ -142,6 +168,12 @@ export async function resolveEconomicTerms<Tx>(
 
   const found = await store.parametersAt(tx, keys, resolvedAt);
   if (keys.some((key) => !found.has(key))) throw new CommandRejection('ERR_PARAMETER_MISSING');
+  let policy: EconomicTermsPolicy | null = null;
+  if (request.policy !== undefined) {
+    policy = await store.policyAt(tx, request.policy.mechanism, resolvedAt);
+    if (policy === null || policy.policyId !== request.policy.acceptedPolicyId)
+      throw new CommandRejection('ERR_POLICY_MISSING');
+  }
   const parameters: Partial<Record<EconomicParameterKey, EconomicTermsParameter>> = {};
   for (const key of keys) {
     const version = found.get(key)!;
@@ -164,5 +196,6 @@ export async function resolveEconomicTerms<Tx>(
             currency: 'BRL',
           },
     parameters,
+    policy,
   };
 }
