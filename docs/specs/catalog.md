@@ -2077,9 +2077,10 @@ usa os padrões existentes e as fotografias ilustrativas do acervo, sem consulta
 |---|---|
 | Abertura | Categoria e benefício na primeira dobra. Texto em Blue ao lado de uma fotografia ilustrativa. |
 | Como funciona | Avaliação, associação, escolha de períodos, créditos e estadia em sequência numerada. Condições próprias para imóveis preexistentes. |
+| Propriedade e direito de uso | Propriedade, direitos sobre as datas oferecidas e efeito dos compromissos. |
+| Uma estadia. Três formas de reservar. | Vídeo de demonstração de Luxchange Request, Luxchange Direct e Luxplus em player responsivo 16:9, com acesso direto ao YouTube. |
 | Luxchange | Como o depósito gera créditos. Comparação entre Request e Direct. Condições comuns junto da comparação. |
 | Outras possibilidades | Luxplus e gestão opcional de locação, em split com fotografia. |
-| Seu imóvel e seus períodos | Propriedade, direitos sobre as datas oferecidas e efeito dos compromissos. |
 | Dúvidas e próximo passo | Disclosures nativos. A avaliação aguarda o canal de afiliação. Links para conteúdo da página. |
 
 [ThirdHome](https://www.thirdhome.com/exchange/how-it-works/) orienta a sequência numerada.

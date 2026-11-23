@@ -10,6 +10,16 @@ import {
 const CLUB = '/Luxtory-Club';
 const LEGACY = '/como-funciona';
 const CLOSED_B2C = 'http://127.0.0.1:3102';
+const VIDEO_EMBED = 'https://www.youtube-nocookie.com/embed/wTnxs8DEBWE?playsinline=1';
+
+test.beforeEach(async ({ page }) => {
+  await page.route(VIDEO_EMBED, (route) =>
+    route.fulfill({
+      contentType: 'text/html; charset=utf-8',
+      body: '<!doctype html><html lang="pt-BR"><title>Vídeo</title><body data-video-test-frame></body></html>',
+    }),
+  );
+});
 
 test('apresenta a proposta e distingue os caminhos do intercâmbio (catalog §22)', async ({
   page,
@@ -34,6 +44,7 @@ test('apresenta a proposta e distingue os caminhos do intercâmbio (catalog §22
     'inicio',
     'como-funciona',
     'condicoes',
+    'reservas-na-pratica',
     'luxchange',
     'outras-possibilidades',
     'duvidas',
@@ -47,6 +58,19 @@ test('apresenta a proposta e distingue os caminhos do intercâmbio (catalog §22
     'O intercâmbio não altera sua propriedade ou participação no imóvel, nem seus direitos de uso.',
     'Você escolhe quais datas disponibilizar. Após cedidas ou reservadas, elas ficam comprometidas e indisponíveis para outros usos.',
   ]);
+
+  const demonstration = page.locator('#reservas-na-pratica');
+  await expect(demonstration.getByRole('heading')).toHaveText(
+    'Uma estadia. Três formas de reservar.',
+  );
+  const player = demonstration.locator('iframe');
+  await expect(player).toHaveAttribute('src', VIDEO_EMBED);
+  await player.scrollIntoViewIfNeeded();
+  await expect(player.contentFrame().locator('body[data-video-test-frame]')).toBeAttached();
+  await expect(demonstration.getByRole('link', { name: 'Assistir no YouTube' })).toHaveAttribute(
+    'href',
+    'https://youtu.be/wTnxs8DEBWE',
+  );
 
   const exchange = page.locator('#luxchange');
   await expect(exchange.getByRole('heading', { name: 'Origem dos créditos' })).toBeVisible();
@@ -114,11 +138,16 @@ test('URL canônica, Preview sem indexação e legado redirecionado (ADR-0014)',
   page,
   request,
 }) => {
-  await page.goto(CLUB);
+  const response = await page.goto(CLUB);
   await expect(page).toHaveTitle(/Luxtory Club/);
   await expect(page.locator('link[rel=canonical]')).toHaveAttribute('href', CLUB);
   await expect(page.locator('meta[name=robots]')).toHaveAttribute('content', 'noindex, nofollow');
   await expect(page.locator('meta[name=description]')).toHaveAttribute('content', /intercâmbio/);
+  expect(response?.headers()['content-security-policy']).toContain(
+    "frame-src 'self' https://www.youtube-nocookie.com",
+  );
+  const home = await request.get('/');
+  expect(home.headers()['content-security-policy']).not.toContain('www.youtube-nocookie.com');
 
   const legacy = await request.get(LEGACY, { maxRedirects: 0 });
   expect(legacy.status()).toBe(308);

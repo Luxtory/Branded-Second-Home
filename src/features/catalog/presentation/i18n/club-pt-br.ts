@@ -47,6 +47,13 @@ export const clubMessages = {
       },
     ],
   },
+  demonstration: {
+    title: { lead: 'Uma estadia. ', turn: 'Três formas de reservar.' },
+    description:
+      'Acompanhe uma simulação de reserva com Luxchange Request, Luxchange Direct e Luxplus.',
+    playerTitle: 'Simulação de reserva do Luxtory Club',
+    watchOnYouTube: 'Assistir no YouTube',
+  },
   exchange: {
     title: { lead: 'Luxchange. ', turn: 'Como usar seus créditos.' },
     intro: 'O Luxchange é a forma de pedir estadias com créditos no modelo do Club.',

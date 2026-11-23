@@ -50,6 +50,19 @@
   row-gap: var(--lx-space-6);
 }
 
+.lx-club-booking-media {
+  max-inline-size: var(--lx-layout-container-narrow);
+  margin: 0 auto;
+}
+
+.lx-club-booking-video {
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  background-color: var(--lx-color-bg);
+}
+
 .lx-club-exchange-content {
   display: grid;
   gap: var(--lx-space-8);

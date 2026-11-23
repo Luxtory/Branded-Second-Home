@@ -7,7 +7,7 @@ import { ActionLink, Eyebrow, ordinal, Paragraphs, SplitPhoto } from './parts';
 import { discoveryPaths } from './paths';
 import styles from './club-page.module.css';
 
-const { hero, steps, exchange, services, control, faq, next } = text;
+const { hero, steps, exchange, services, control, demonstration, faq, next } = text;
 const sections = {
   steps: 'como-funciona',
   control: 'condicoes',
@@ -15,6 +15,7 @@ const sections = {
   faq: 'duvidas',
 } as const;
 const sectionClassName = `lx-section ${styles['lx-club-section']}`;
+const bookingVideoId = 'wTnxs8DEBWE';
 
 /** Public explanation of the Club model (catalog §22). */
 export function ClubPage() {
@@ -106,6 +107,43 @@ export function ClubPage() {
           <div className={`lx-stack ${styles['lx-club-measure']}`}>
             <Paragraphs lines={control.text} />
           </div>
+        </div>
+      </section>
+
+      <section
+        id="reservas-na-pratica"
+        className={sectionClassName}
+        data-surface="wash"
+        aria-labelledby="reservas-na-pratica-titulo"
+      >
+        <div className="lx-container">
+          <div className="lx-section-head lx-section-head--center">
+            <h2 id="reservas-na-pratica-titulo" className="lx-headline">
+              <HeadlineText headline={demonstration.title} />
+            </h2>
+            <p className="lx-body">{demonstration.description}</p>
+          </div>
+          <figure className={`lx-stack ${styles['lx-club-booking-media']}`}>
+            <iframe
+              className={styles['lx-club-booking-video']}
+              data-surface="deep"
+              src={`https://www.youtube-nocookie.com/embed/${bookingVideoId}?playsinline=1`}
+              title={demonstration.playerTitle}
+              loading="lazy"
+              allow="encrypted-media; picture-in-picture"
+              allowFullScreen
+            />
+            <figcaption>
+              <a
+                className="lx-link"
+                href={`https://youtu.be/${bookingVideoId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {demonstration.watchOnYouTube}
+              </a>
+            </figcaption>
+          </figure>
         </div>
       </section>
 
