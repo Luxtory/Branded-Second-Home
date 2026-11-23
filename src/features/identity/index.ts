@@ -46,3 +46,8 @@ export {
   type Representation as TitularRepresentationSummary,
   type TitularOverview,
 } from './presentation/titular-read';
+// W20: rota REST de um command do próprio Titular (POST /v1/luxchange/deposits).
+export {
+  createTitularCommandRoute,
+  type TitularCommandRouteOptions,
+} from './presentation/titular-command-route';

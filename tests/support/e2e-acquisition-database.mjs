@@ -495,6 +495,68 @@ export async function setE2eCredits(open) {
   );
 }
 
+/**
+ * K4 (`credits`) e K6 (`luxchange_deposit`, ADR-0036 §7) só no banco descartável do E2E (W20): ligam para a jornada real
+ * do depósito e desligam no fim. Nunca em Production (a validação recusa qualquer banco não descartável).
+ */
+export async function setE2eLuxchangeDeposit(open) {
+  const url = disposableOwnerUrl();
+  await withClient(url, (client) =>
+    client.query(
+      open
+        ? `INSERT INTO app.capability_activation VALUES ('credits', now(), 'e2e:fixture'),
+             ('luxchange_deposit', now(), 'e2e:fixture') ON CONFLICT DO NOTHING`
+        : `DELETE FROM app.capability_activation WHERE capability IN ('credits', 'luxchange_deposit')`,
+    ),
+  );
+}
+
+/**
+ * Multiplicador e validade publicados agora (fato do fixture, W20), só no banco descartável: versões globais gravadas
+ * pelo dono do schema com os gatilhos desligados só nesta transação, com operação `set_parameter` do Admin do E2E — as
+ * constraints de valor e de vigência continuam valendo. O E2E da W20 roda depois dos demais (projeto `chrome-luxchange`),
+ * então nenhum outro espera esses parâmetros "Ausentes".
+ */
+export async function publishE2eDepositParameters(multiplier, validityMonths) {
+  const url = disposableOwnerUrl();
+  await withClient(url, async (client) => {
+    await client.query('BEGIN');
+    try {
+      await client.query('SET LOCAL session_replication_role = replica');
+      const { rows } = await client.query(
+        `SELECT id, user_id FROM app.staff_role WHERE role = 'admin' AND revoked_at IS NULL
+          ORDER BY granted_at LIMIT 1`,
+      );
+      const staff = rows[0];
+      if (staff === undefined) throw new Error('Fixture needs an active Admin');
+      for (const [key, value] of [
+        ['credit_multiplier', String(multiplier)],
+        ['credit_validity_months', String(validityMonths)],
+      ]) {
+        const { rows: ops } = await client.query(
+          `INSERT INTO app.operation (id, command, actor_user_id, acting_party_id, role, idempotency_key,
+             correlation_id, authorization_ref, state, created_at, updated_at)
+           SELECT g.id, 'set_parameter', $1, NULL, 'admin', 'e2e:' || g.id, 'e2e:' || g.id, $2, 'committed', now(),
+                  now()
+             FROM (SELECT gen_random_uuid() AS id) g RETURNING id`,
+          [staff.user_id, `staff_role:${staff.id}`],
+        );
+        await client.query(
+          `INSERT INTO app.parameter (id, key, second_home_id, value, currency, effective_from, effective_to,
+             authority, authorization_ref, created_at, created_by, operation_id)
+           VALUES (gen_random_uuid(), $1, NULL, $2, NULL, clock_timestamp(), NULL, 'admin', 'Ata sintética W20 E2E',
+                   now(), $3, $4)`,
+          [key, value, staff.user_id, ops[0].id],
+        );
+      }
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      throw error;
+    }
+  });
+}
+
 const E2E_DAY = "interval '1 day'";
 
 /**

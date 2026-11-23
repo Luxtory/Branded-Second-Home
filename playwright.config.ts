@@ -19,6 +19,9 @@ const SEED_SPECS = '**/*.seed.ts';
 // Specs que ligam e desligam K1/K2 (`app.capability_activation`, estado global do banco descartável): nunca dois ao
 // mesmo tempo — o `finally` de um fecharia a capability no meio do fluxo do outro (W13 E4b).
 const OWN_USE_SPECS = '**/own-use-*.spec.ts';
+// W20: o depósito publica multiplicador e validade globais e liga K4/K6 no banco descartável; roda depois de todos os
+// outros projetos (o E2E da W16 exige esses parâmetros "Ausentes" e o da W17 liga/desliga a K4).
+const LUXCHANGE_SPECS = '**/luxchange-*.spec.ts';
 
 // E2E sobre o build de produção (npm run test:e2e = next build && playwright test), com o Chrome do sistema. O
 // servidor sobe o PostgreSQL embutido com as migrations e a autenticação de teste (tests/support/e2e-server.mjs).
@@ -35,7 +38,7 @@ export default defineConfig({
     { name: 'seed', testMatch: [SEED_SPECS], dependencies: ['setup'], use: { channel: 'chrome' } },
     {
       name: 'chrome',
-      testIgnore: [IGNORED, WEBKIT_SPECS, OWN_USE_SPECS],
+      testIgnore: [IGNORED, WEBKIT_SPECS, OWN_USE_SPECS, LUXCHANGE_SPECS],
       dependencies: ['seed'],
       use: { channel: 'chrome' },
     },
@@ -45,6 +48,14 @@ export default defineConfig({
       testMatch: [OWN_USE_SPECS],
       testIgnore: [IGNORED],
       dependencies: ['seed'],
+      workers: 1,
+      use: { channel: 'chrome' },
+    },
+    {
+      name: 'chrome-luxchange',
+      testMatch: [LUXCHANGE_SPECS],
+      testIgnore: [IGNORED],
+      dependencies: ['chrome', 'chrome-own-use'],
       workers: 1,
       use: { channel: 'chrome' },
     },

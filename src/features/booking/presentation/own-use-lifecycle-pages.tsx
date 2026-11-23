@@ -724,7 +724,11 @@ export async function TitularNotificationsListPage() {
     const received = `${shortInstantIn(createdAt, timeZone)}${zone(createdAt)}`;
     return {
       id: row.id,
-      ...(bookingId === undefined ? {} : { href: ownUsePaths.booking(bookingId) }),
+      ...(bookingId !== undefined
+        ? { href: ownUsePaths.booking(bookingId) }
+        : copy?.href === undefined
+          ? {}
+          : { href: copy.href }),
       title: copy?.title ?? base.unknown,
       attributes: [
         ...(home === undefined

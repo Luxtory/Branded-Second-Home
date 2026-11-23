@@ -60,6 +60,11 @@ tags:
       PRL por Second Home e data (REQ-013, REQ-052, TECH-030, TECH-051; `docs/specs/pricing.md`, ADR-0032): publicação
       inicial por Admin ou Super Admin e alteração só pelo Super Admin, com efeitos prospectivos. Dinheiro em unidade
       mínima como string + moeda; nenhum preço é exibido ao Titular.
+  - name: luxchange
+    description: |
+      Luxchange do Titular (REQ-051, REQ-060, TECH-051; `docs/specs/luxchange.md`, ADR-0036). W20: depósito de
+      capacidade — cessão ao Inventário Luxtory e originação de Créditos no mesmo commit. Créditos são unidade interna
+      (decimal exato em texto, BR-190); nenhum PRL em reais é exposto ao Titular (REQ-100).
 
 paths:
   /health:
@@ -2050,6 +2055,64 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '413':
+          $ref: '#/components/responses/PrlPayloadTooLarge'
+        '415':
+          $ref: '#/components/responses/AcquisitionUnsupportedMediaType'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /luxchange/deposits:
+    post:
+      tags: [luxchange]
+      summary: Deposita capacidade elegível no Luxchange e recebe Créditos
+      description: |
+        Command crítico `deposit_capacity` (TECH-051; W20, ADR-0036): o Titular representa `party_id` (delegação e holding
+        vigentes na Second Home, revalidadas na transação) e precisa de Membership elegível vigente (BR-146). Owner: noites
+        próprias livres (custódia `owner`, sem reserva de uso próprio — cancelar antes, TECH-023). Co-Owner: só datas já
+        reservadas no seu Direito de Uso, sempre a reserva inteira (uma ou mais da holding); o dia segue consumido
+        (REQ-060). Toda noite com ao menos 14 dias de antecedência do check-in (TECH-043) e PRL publicado. Créditos =
+        Σ PRL das noites × multiplicador publicado (`01` §20), exatos; validade pelo parâmetro publicado (TECH-044).
+        `expected_credits` e `expected_validity_months` são os termos que o Titular revisou: se o recálculo no instante
+        transacional diferir → 409 `ERR_DEPOSIT_TERMS_CHANGED`, nada é gravado. Recusas: 403 `ERR_PERMISSION` (sem
+        representação, holding ou origem diferente — TECH-100), 409 `ERR_MEMBERSHIP_INELIGIBLE`,
+        `ERR_CAPACITY_UNAVAILABLE`, `ERR_MIN_NOTICE`, `ERR_PRL_MISSING`, `ERR_PARAMETER_MISSING`, `ERR_STATE_TRANSITION`,
+        `ERR_IDEMPOTENCY_CONFLICT`. Funcionalidade fechada (K4 `credits` ou K6 `luxchange_deposit` sem ativação) → 503
+        `ERR_UNAVAILABLE`, nada gravado. Sem Fee. A cessão é vinculante depois da originação (BR-171).
+      operationId: depositCapacity
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LuxchangeDepositRequest'
+      responses:
+        '201':
+          description: Depósito confirmado (Créditos originados e noites no Inventário Luxtory)
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LuxchangeDeposit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '409':
           $ref: '#/components/responses/Conflict'
         '413':
@@ -4213,6 +4276,75 @@ components:
       type: string
       pattern: '^[1-9][0-9]{0,14}$'
       description: Valor em unidade mínima da moeda (TECH-033), inteiro positivo como string — nunca número em JSON.
+    LuxchangeDepositRequest:
+      type: object
+      additionalProperties: false
+      required: [party_id, second_home_id, nights, expected_credits, expected_validity_months]
+      properties:
+        party_id:
+          type: string
+          format: uuid
+          description: Party que o Titular representa (pseudônimo interno).
+        second_home_id:
+          type: string
+          format: uuid
+        nights:
+          type: array
+          minItems: 1
+          maxItems: 366
+          description: Datas civis distintas, em ordem crescente, consecutivas ou não.
+          items:
+            type: string
+            format: date
+        expected_credits:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+          description: Créditos revisados pelo Titular (decimal exato em texto).
+        expected_validity_months:
+          type: integer
+          minimum: 1
+          maximum: 1200
+          description: Validade revisada dos novos Créditos, em meses.
+    LuxchangeDeposit:
+      type: object
+      additionalProperties: false
+      required: [operation_id, lot_id, second_home_id, nights, credits, validity_months, originated_at, expires_at, ceded_bookings]
+      properties:
+        operation_id:
+          type: string
+          format: uuid
+          description: Referência rastreável do depósito (TECH-002).
+        lot_id:
+          type: string
+          format: uuid
+        second_home_id:
+          type: string
+          format: uuid
+        nights:
+          type: array
+          items:
+            type: string
+            format: date
+        credits:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+          description: Créditos originados (unidade interna, não monetária; BR-190).
+        validity_months:
+          type: integer
+          minimum: 1
+        originated_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+          description: Validade do lote (TECH-044), calculada pelo banco.
+        ceded_bookings:
+          type: array
+          description: Reservas de uso próprio Co-Owner cedidas por inteiro (vazio no Owner).
+          items:
+            type: string
+            format: uuid
     PrlPublication:
       type: object
       additionalProperties: false

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Icon, PageHeader, RecordList } from '@/design-system/react';
 import { AuthUnavailable, TitularShell, requireTitularSession } from '@/features/identity';
+import { luxchangePaths } from '@/features/luxchange/paths';
 import { unavailableKeys } from '@/features/platform';
 import { compareQuantities } from '../domain/credit';
 import { WALLET_STATES, type WalletState } from '../domain/wallet';
@@ -283,6 +284,11 @@ export async function TitularWalletPage({
       {header}
       <PartySelector view={view} />
       <Balance view={view} />
+      <p className="lx-body">
+        <a className="lx-link" href={luxchangePaths.deposit}>
+          {text.depositLink}
+        </a>
+      </p>
       <Lots view={view} />
       <Statement view={view} />
     </TitularShell>

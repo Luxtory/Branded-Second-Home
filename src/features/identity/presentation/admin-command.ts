@@ -117,7 +117,8 @@ async function preferredActiveRole(
   return roles.find((role) => active.some((record) => record.role === role)) ?? roles[0]!;
 }
 
-function requestCookies(request: Request): CookieJar {
+/** Cookies do request só para leitura da sessão (W20: também a rota de command do Titular). */
+export function requestCookies(request: Request): CookieJar {
   const cookies = new NextRequest(request.url, { headers: request.headers }).cookies;
   return { getAll: () => cookies.getAll(), setAll: () => undefined };
 }
@@ -131,7 +132,7 @@ async function readJson(request: Request): Promise<{ ok: true; value: unknown } 
 }
 
 /** Opt-in bounded JSON parsing after session verification; legacy endpoints retain their existing reader. */
-async function readCommandBody(
+export async function readCommandBody(
   request: Request,
   maxBodyBytes?: number,
 ): Promise<{ ok: true; value: unknown } | { ok: false; code: ErrorCode }> {
