@@ -1,5 +1,5 @@
 import { Icon, SiteShell } from '@/design-system/react';
-import { Paragraphs as RichParagraphs } from '../brand-partners/rich-text';
+import { Paragraphs as RichParagraphs, Rich } from '../brand-partners/rich-text';
 import { clubMessages as text } from '../i18n/club-pt-br';
 import { discoveryMessages } from '../i18n/discovery-pt-br';
 import { HeadlineText } from './headline';
@@ -30,9 +30,10 @@ export function ClubPage() {
       closingStyle="subtle"
       titleRole="headline"
       retractableMenu
+      menuTrigger="icon"
     >
       <section id="inicio" data-surface="blue" aria-labelledby="club-titulo">
-        <div className="lx-split lx-split--wide-media">
+        <div className={`lx-split ${styles['lx-club-hero']}`}>
           <div className="lx-split__text">
             <div className={`lx-split__inner ${styles['lx-club-hero-copy']}`}>
               <h1
@@ -71,7 +72,7 @@ export function ClubPage() {
         tabIndex={-1}
       >
         <div className="lx-container">
-          <div className="lx-section-head">
+          <div className={`lx-section-head ${styles['lx-club-section-head']}`}>
             <h2 id="etapas-titulo" className="lx-headline">
               <HeadlineText headline={steps.title} />
             </h2>
@@ -98,7 +99,7 @@ export function ClubPage() {
         aria-labelledby="condicoes-titulo"
         tabIndex={-1}
       >
-        <div className="lx-container lx-columns">
+        <div className={`lx-container lx-columns ${styles['lx-club-columns']}`}>
           <h2 id="condicoes-titulo" className="lx-headline">
             {control.title}
           </h2>
@@ -116,14 +117,14 @@ export function ClubPage() {
         tabIndex={-1}
       >
         <div className="lx-container">
-          <div className="lx-section-head">
+          <div className={`lx-section-head ${styles['lx-club-section-head']}`}>
             <h2 id="luxchange-titulo" className="lx-headline">
               <HeadlineText headline={exchange.title} />
             </h2>
             <p className={`lx-body ${styles['lx-club-measure']}`}>{exchange.intro}</p>
           </div>
           <div className={styles['lx-club-exchange-content']}>
-            <div className={`lx-columns ${styles['lx-club-start']}`}>
+            <div className={`lx-columns ${styles['lx-club-columns']}`}>
               <div className={`lx-stack ${styles['lx-club-measure']}`}>
                 <h3 className="lx-display-s">{exchange.deposit.title}</h3>
                 <RichParagraphs lines={exchange.deposit.text} />
@@ -134,8 +135,6 @@ export function ClubPage() {
                   <strong>{exchange.dates.description}</strong>
                 </p>
                 <p className="lx-body">{exchange.dates.text}</p>
-                <h3 className="lx-display-s">{exchange.conditions.title}</h3>
-                <Paragraphs lines={exchange.conditions.text} />
               </div>
             </div>
             <div className="lx-stack">
@@ -152,6 +151,14 @@ export function ClubPage() {
                 ))}
               </div>
             </div>
+            <div
+              className={`lx-columns lx-columns--5-7 ${styles['lx-club-columns']} ${styles['lx-club-conditions']}`}
+            >
+              <h3 className="lx-display-s">{exchange.conditions.title}</h3>
+              <div className="lx-stack">
+                <Paragraphs lines={exchange.conditions.text} />
+              </div>
+            </div>
             <section
               id="taxa-de-intercambio"
               aria-labelledby="taxa-titulo"
@@ -161,7 +168,12 @@ export function ClubPage() {
               <h3 id="taxa-titulo" className="lx-display-m">
                 {exchange.feeExample.title}
               </h3>
-              <RichParagraphs lines={exchange.feeExample.text} />
+              <p className="lx-body">
+                <Rich value={exchange.feeExample.text[0]} />
+              </p>
+              <p className="lx-display-s">
+                <Rich value={exchange.feeExample.text[1]} />
+              </p>
               <p className="lx-body">
                 <em>{exchange.feeExample.note}</em>
               </p>
@@ -173,7 +185,7 @@ export function ClubPage() {
       <section id="outras-possibilidades" data-surface="white" aria-labelledby="servicos-titulo">
         <div className="lx-split lx-split--media-start">
           <div className="lx-split__text">
-            <div className="lx-split__inner">
+            <div className={`lx-split__inner ${styles['lx-club-services-copy']}`}>
               <h2 id="servicos-titulo" className="lx-headline">
                 <HeadlineText headline={services.title} />
               </h2>
@@ -189,7 +201,7 @@ export function ClubPage() {
             src="/images/home/kaizen/kaizen-k07.jpg"
             width={1376}
             height={768}
-            crop="lx-crop-x-65"
+            crop="lx-crop-x-65 lx-crop-lg-x-50"
             alt={services.photo.alt}
             caption={services.photo.caption}
           />
@@ -203,7 +215,7 @@ export function ClubPage() {
         aria-labelledby="duvidas-titulo"
         tabIndex={-1}
       >
-        <div className={`lx-container lx-columns lx-columns--5-7 ${styles['lx-club-start']}`}>
+        <div className={`lx-container lx-columns lx-columns--5-7 ${styles['lx-club-columns']}`}>
           <h2 id="duvidas-titulo" className="lx-headline">
             {faq.title}
           </h2>
@@ -233,8 +245,8 @@ export function ClubPage() {
           <h2 id="convite-titulo" className="lx-headline">
             <em>{next.title}</em>
           </h2>
-          <p className={`lx-small ${styles['lx-club-measure']}`}>{next.text}</p>
-          <ActionLink href={`#${sections.control}`} label={next.action} primary />
+          <p>{next.text}</p>
+          <ActionLink href={`#${sections.control}`} label={next.action} icon="arrow-up" primary />
         </div>
       </section>
     </SiteShell>
