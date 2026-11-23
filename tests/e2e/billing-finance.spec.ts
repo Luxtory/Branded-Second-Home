@@ -22,11 +22,7 @@ test.describe('W19 E3 — financeiro no Admin', () => {
     await expect(
       page.locator('.lx-pricing__fact').filter({ hasText: 'Registro de pagamentos' }),
     ).toContainText('Fechado');
-    for (const group of [
-      'Receitas da Luxtory',
-      'Despesas',
-      'Obrigações com terceiros',
-    ])
+    for (const group of ['Receitas da Luxtory', 'Despesas', 'Obrigações com terceiros'])
       await expect(page.getByRole('heading', { level: 2, name: group })).toBeVisible();
     await expect(page.locator('section#luxchange_fee')).toContainText('Sem lançamentos');
     await expect(page.locator('section#luxchange_fee')).toContainText(

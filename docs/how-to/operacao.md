@@ -802,3 +802,23 @@ recusa com `ERR_POLICY_MISSING` — e esses mecanismos ainda não existem (W21�
 3. **Mudança:** nova versão com início presente ou futuro, nunca retroativa nem antes de um término explícito; versões
    não se alteram nem se apagam. Operações já formadas mantêm a política aceita (vínculo gravado a partir da W21).
 4. **Rollback:** o `down` recusa com qualquer versão gravada; reverter só o código.
+
+## Preparar a W19 em produção (pagamentos, Fee e settlement)
+
+Nada a ativar: a migration `billing_payments` só cria estrutura (70 no total) e a K5 `payments` entra só no CHECK de
+`app.capability_activation`, sem linha (ADR-0035 §8). Sem a linha, o banco recusa todo pagamento, Fee, estorno,
+settlement ou registro de webhook. Em Production não existe `PAYMENT_GATEWAY`: o webhook responde 404, `/admin/financeiro`
+mostra "Cobrança: Desativada" e o job `reconciliation` (cron `53 3 * * *`) é no-op (`unconfigured`).
+
+1. **Pré-condições (só leitura, SQL Editor):** 70 migrations, a última `20261123032330`; `app.payment`,
+   `app.fee_charge`, `app.refund`, `app.settlement` e `app.webhook_inbox` vazias; nenhuma linha `payments` em
+   `app.capability_activation`; `SELECT count(*) FROM app.billing_invariant_breaches()` = 0.
+2. **Nunca em Production:** `PAYMENT_GATEWAY=fake` (invalida o ambiente) nem `PAYMENT_WEBHOOK_SECRET` de teste.
+3. **Luxchange Fee:** referência comercial atual 12% do PRL total do período, mínimo R$ 120 por operação (`01` v10.8
+   §24). Publicar `luxchange_fee_rate` (fração canônica) e `luxchange_fee_minimum` só pelo procedimento da W16, com
+   autorização operacional específica do fundador.
+4. **Ativação futura (fora da W19):** PSP contratado com adaptador próprio (TECH-081), política de backup (D2),
+   `PAYMENT_OUTCOME_GRACE_SECONDS` definido, migration da K5 e autorização expressa do fundador.
+5. **Alerta `payment_without_outcome`:** pagamento aprovado sem desfecho ou estorno falho; a conciliação já registra o
+   estorno e tenta de novo a cada execução. Conferir no PSP antes de qualquer ação manual; nunca editar linhas.
+6. **Rollback:** o `down` recusa com qualquer fato financeiro ou com a K5 presente; reverter só o código.
