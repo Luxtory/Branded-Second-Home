@@ -45,13 +45,14 @@ describe('copy Second Home Partners (catalog §20.6)', () => {
       PAGE.filter((line) => /vital[ií]ci|receita para sempre|você supera|você acelera/i.test(line)),
     ).toEqual([]);
   });
-  it('[REQ-105] nove seções na mesma página, intermediadores depois das soluções; imagens informativas preservadas', () => {
+  it('[REQ-105] mantém as imagens dos empreendimentos e posiciona o convite Development antes das soluções', () => {
     const html = renderToStaticMarkup(createElement(SecondHomePartnersHomePage));
     expect([...html.matchAll(/<section id="([^"]+)"/g)].map((match) => match[1])).toEqual([
       'inicio',
       'oportunidade',
       'beneficios',
       'empreendimentos',
+      'desenvolvimento',
       'solucoes',
       'imobiliarias-e-corretores',
       'como-funciona',

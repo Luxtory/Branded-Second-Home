@@ -1,0 +1,10 @@
+@media (min-width: 64rem) {
+  .partnerCards {
+    row-gap: var(--lx-space-4);
+  }
+
+  .partnerCards > li {
+    grid-row: span 4;
+    grid-template-rows: subgrid;
+  }
+}

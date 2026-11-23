@@ -128,8 +128,8 @@ export const secondHomePartnersMessages = {
       'Avaliamos o perfil dos imóveis, a fase do projeto e as oportunidades apresentadas por cada parceiro.',
     items: [
       {
-        title: 'Imóveis sob demanda',
-        text: 'Casas de alto padrão sob demanda, em condomínios com potencial para a parceria.',
+        title: 'Imóveis em condomínios',
+        text: 'Casas de lazer existentes ou já em desenvolvimento.',
         image: 'second-home-condominio-sob-demanda.webp',
         alt: 'Casa contemporânea com fachada de vidro, madeira e pedra, cercada por jardins.',
       },
@@ -147,6 +147,13 @@ export const secondHomePartnersMessages = {
       },
     ],
     note: 'A participação depende da avaliação dos imóveis e das condições da parceria. Imagens ilustrativas.',
+  },
+  development: {
+    marker: 'Além da afiliação',
+    title: { lead: 'Novas Second Homes. ', turn: 'Desenvolvidas sob demanda.' },
+    intro:
+      'A Luxtory também conecta marcas, incorporadoras e parceiros especializados para desenvolver novas Second Homes de alto padrão.',
+    action: 'Conheça Second Home Development',
   },
   solutions: {
     marker: 'Mais liberdade para seus clientes',

@@ -2154,3 +2154,54 @@ A [ThirdHome](https://www.thirdhome.com/pt-br/exchange/how-it-works/) orienta a 
 reserva e a apresentação da taxa junto ao mecanismo. O [FAQ oficial](https://www.thirdhome.com/pt-br/faq/)
 lista estadias que também podem durar menos de uma semana. O diferencial da Luxtory é apresentado pela
 escolha e pela referência de valor por data.
+
+## 23. Second Home Development
+
+### 23.1. Oferta e brief editorial
+
+Decisão de comunicação do fundador de 2026-11-23. `/Second-Home-Development` apresenta desenvolvimento descentralizado
+e orientado por demanda para marcas hoteleiras e premium, incorporadoras e desenvolvedores, com investidores
+autorizados como público complementar. O papel da Luxtory é Product Management, do Discovery à estratégia de
+lançamento e ao acompanhamento contratado (01 §1, BR-035, BR-041). A realização cabe aos responsáveis habilitados.
+
+- **PICTURE e PROBLEM.** Hero B2B e Brand Experience. A identidade orienta um lugar e as experiências de quem o vive.
+- **PROMISE.** Marcas podem licenciar direitos e ampliar presença. Incorporadoras avaliam produto e demanda e preparam
+  o lançamento. Investidores podem financiar ou desenvolver, com condições e margem próprias (BR-010/015, BR-310/314).
+- **PROOF.** Patrimônio, Liberdade e Pertencimento mostram o valor ao comprador. Owner tem propriedade integral.
+  Co-Owner tem Ação na SPE e Direito de Uso, com administração profissional obrigatória (BR-052, BR-065/072, REQ-024/026).
+  Locais, modalidades, execução, replicação e acesso opcional ao Club dependem de aprovação, direitos, contratação e
+  disponibilidade aplicáveis (BR-032, BR-042/043, BR-146/161). As etapas explicam aprovações, Home Concept, Home Edition,
+  estruturação, Go-to-Market e realização. Pesquisa orienta hipóteses. Interesse precede aquisição formal (BR-030/041).
+- **PUSH.** Dúvidas e contato B2B na própria página, sem conta ou cadastro de lead.
+
+Conceito próprio permanece possibilidade em avaliação. O modelo vigente exige Home Edition de Home Concept aprovado
+com Brand Partner (01 §§1–4, BR-003/053/054, REQ-020, 03 §3). Formalizar titularidade, aprovações e replicação antes de
+oferecer a ampliação. Primeira aquisição como gatilho de obra e exploração das Ações ainda detidas são hipóteses
+jurídicas e financeiras. A página descreve a decisão de desenvolvimento por demanda e viabilidade; nenhum direito,
+receita, disponibilidade ou gatilho é criado. A copy não comprova condomínios conveniados nem operação.
+
+### 23.2. Rota, contato e encaminhamento
+
+Rota canônica com a grafia `/Second-Home-Development`, metadados próprios e noindex fora de produção. Adota o padrão
+de portão independente de BP1/SHP1. `SECOND_HOME_DEVELOPMENT_SITE=closed` fecha página, metadados, contato e convite
+em Partners. Em produção, a abertura requer `open`. A configuração de publicação é uma decisão do fundador.
+
+Contato localizado em `#conversa`, com Nome, Empresa, E-mail e Mensagem obrigatórios e Site opcional. O
+`POST /v1/second-home-development-contacts` segue os controles de TECH-057 e TECH-100, com schema próprio e caixa e
+namespace de proteção próprios. Origem autorizada, limite de corpo de 32 KiB, rate limit distribuído, honeypot,
+`Idempotency-Key`, texto simples, PII fora de logs e confirmação somente após o aceite do provedor. Transportes
+existentes de Resend e Upstash são reutilizados. Caixa corporativa, acesso, retenção, aviso de privacidade e recebimento
+de uma mensagem sintética devem ser validados antes de abrir em produção. O modo fake existente serve só a local/CI.
+
+No Second Home Partners, substituir o título e a descrição do primeiro card de `#empreendimentos` para falar de
+imóveis existentes ou em empreendimentos já em desenvolvimento em condomínios. Preservar as três fotografias e os
+outros dois cards. Entre `#empreendimentos` e `#solucoes`, apresentar o convite curto `#desenvolvimento` apenas quando
+a rota Development estiver acessível. Este encaminhamento não altera o contrato de contato, a afiliação ou as bases de
+participação no faturamento (REQ-105, 01 §35). A Home, Luxtory Club, Sobre e páginas Brand Partners conservam sua jornada.
+
+### 23.3. Aceite
+
+Reutilizar SiteShell, Hero B2B, comparações, etapas, perguntas nativas e acervo ilustrativo. Newsreader, Hanken Grotesk
+e tokens oficiais. H1, contraste, legibilidade e fotos verificados em 390/1440 px e reflow em 320–1920 px. Testar ordem
+do encaminhamento, portões em Local/Production, ausência de link quebrado, canonical, teclado, formulário, aceite,
+repetição e falhas sem perda da mensagem. Exigir build, tipos, lint e testes do Design System e fluxos afetados.

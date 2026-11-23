@@ -1,9 +1,11 @@
 import { getImageProps } from 'next/image';
 import { Icon } from '@/design-system/react';
+import { isSecondHomeDevelopmentSiteOpen } from '@/features/platform';
 import { HeadlineText } from '../discovery/headline';
 import { nb } from '../discovery/no-break';
 import { ActionLink, Eyebrow, ordinal } from '../discovery/parts';
 import { secondHomePartnersMessages as text } from '../i18n/second-home-partners-pt-br';
+import { secondHomeDevelopmentPaths } from '../second-home-development/paths';
 import { SecondHomePartnerContactForm } from './contact-form';
 import { DevelopmentImage } from './development-image';
 import { SECOND_HOME_PARTNERS_SECTIONS, titleOf } from './paths';
@@ -14,6 +16,7 @@ const {
   opportunity,
   benefits,
   developments,
+  development,
   solutions,
   intermediaries,
   process,
@@ -197,6 +200,34 @@ export function SecondHomePartnersHomePage() {
           </div>
         </div>
       </section>
+
+      {isSecondHomeDevelopmentSiteOpen() && (
+        <section
+          id="desenvolvimento"
+          className="lx-section"
+          data-surface="sand"
+          aria-labelledby={titleOf('desenvolvimento')}
+        >
+          <div className="lx-container lx-columns">
+            <div className="lx-stack">
+              <Eyebrow>{development.marker}</Eyebrow>
+              <h2 id={titleOf('desenvolvimento')} className="lx-headline">
+                <HeadlineText headline={development.title} />
+              </h2>
+            </div>
+            <div className="lx-stack">
+              <p className="lx-body">{nb(development.intro)}</p>
+              <div>
+                <ActionLink
+                  href={secondHomeDevelopmentPaths.home}
+                  label={development.action}
+                  primary
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* PROOF — Deep: mecanismos distintos; gestão das locações independente do Club. */}
       <section

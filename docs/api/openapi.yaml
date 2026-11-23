@@ -2497,6 +2497,135 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+
+  /second-home-development-contacts:
+    post:
+      tags: [catalog]
+      summary: Envia uma oportunidade de Second Home Development
+      operationId: createSecondHomeDevelopmentContact
+      description: |
+        Contato público da página Development (catalog §23). Utiliza a proteção de TECH-057 com destinatário e
+        namespace próprios. Exige origem autorizada, JSON de até 32 KiB e idempotência. A mensagem é texto simples.
+        Aceite do provedor não implica aprovação comercial, leitura ou prazo de resposta.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/ContactIdempotencyKey'
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [name, company, email, message]
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                company:
+                  type: string
+                  minLength: 1
+                  maxLength: 160
+                email:
+                  type: string
+                  format: email
+                  maxLength: 254
+                message:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+                website:
+                  type: string
+                  maxLength: 300
+                  description: Site opcional com esquema HTTP ou HTTPS. O servidor não acessa o endereço.
+                _trap:
+                  type: string
+                  description: Honeypot técnico.
+      responses:
+        '202':
+          description: Envio aceito pelo provedor.
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            cache-control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    enum: [accepted]
+        '400':
+          description: Dados inválidos ou chave de idempotência ausente ou inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Envio recusado pela proteção.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Jornada Development fechada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: A chave já foi usada com outro conteúdo na janela do provedor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: Corpo acima de 32 KiB.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Tipo de conteúdo diferente de application/json.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Limite por origem de rede ou global excedido.
+          headers:
+            retry-after:
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erro inesperado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Configuração, limitador ou transporte indisponível. Preserve a chave e o conteúdo ao repetir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /interests:
     post:
       tags: [ownership]

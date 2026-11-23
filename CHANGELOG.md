@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Second Home Development (catalog §23) — página B2B para marcas, incorporadoras e investidores, com contato e portão
+  próprios. Second Home Partners esclarece a afiliação de imóveis em condomínios e encaminha novos projetos à nova rota.
+
 - W19 — Pagamentos, Luxchange Fee e settlement (REQ-094; ADR-006, ADR-008, TECH-025, TECH-080–083, TECH-090, TECH-101;
   ADR-0035). Decisão do fundador de 2026-11-22: o Luxchange Fee de referência passa de 10% para 12% do PRL total do
   período, mínimo de R$ 120 por operação preservado (`01` v10.8 §24, `03` v3.19 TECH-030); o valor continua parâmetro

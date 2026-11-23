@@ -342,3 +342,16 @@ rede e global, schema fechado, `Idempotency-Key`, honeypot, envio ao destinatár
   conexão HTTPS entre domínios. O carregamento adiado e o link direto mantêm o texto da página disponível caso o
   provedor esteja indisponível.
 
+
+## Contato Second Home Development (catalog §23)
+
+Reutiliza os limites e o transporte de TECH-057. O endpoint tem finalidade própria e destinatário server-side.
+
+- **Spoofing e abuso.** Portão, allowlist exata de origem, honeypot e limites distribuídos de rede e global. Não há CORS.
+- **Adulteração e elevação.** JSON limitado a 32 KiB, schema fechado, campos em texto simples e remetente definido no
+  servidor. Site informado não é acessado. O envio não cria conta, autorização ou entidade de catálogo.
+- **Repúdio e repetição.** Correlação sem PII e idempotência com namespace distinto, incluindo retries ambíguos.
+- **Exposição.** Credenciais e destino no servidor. Campos e respostas brutas do provedor ficam fora dos logs. O
+  tratamento dos dados ocorre somente para envio e atendimento na caixa autorizada.
+- **Indisponibilidade.** Falha de configuração, limitador ou provedor retorna erro explícito. O formulário preserva
+  o texto e só confirma um aceite real do transporte.

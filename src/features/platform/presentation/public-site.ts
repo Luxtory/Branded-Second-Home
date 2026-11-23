@@ -30,6 +30,14 @@ export function isSecondHomePartnersSiteOpen(source?: EnvSource): boolean {
   return env.VERCEL_ENV !== 'production';
 }
 
+/** Independent publication gate for Second Home Development (catalog §23). */
+export function isSecondHomeDevelopmentSiteOpen(source?: EnvSource): boolean {
+  const env = loadEnv(source);
+  if (env.SECOND_HOME_DEVELOPMENT_SITE !== undefined)
+    return env.SECOND_HOME_DEVELOPMENT_SITE === 'open';
+  return env.VERCEL_ENV !== 'production';
+}
+
 /**
  * Escrita pública de interesse (W5, spec ownership §5): exige o site público aberto e `INTEREST_WRITES` — `closed` fecha
  * em qualquer ambiente; ausente, só Production fica fechada (ativação com `open`). Fechada, o endpoint responde 404.

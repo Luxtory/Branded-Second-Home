@@ -111,7 +111,11 @@ test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, 
     const ids = await page
       .locator('main section[id]')
       .evaluateAll((nodes) => nodes.map((node) => node.id));
-    expect(ids).toEqual([...SECOND_HOME_PARTNERS_SECTIONS]);
+    expect(ids).toEqual([
+      ...SECOND_HOME_PARTNERS_SECTIONS.slice(0, 4),
+      'desenvolvimento',
+      ...SECOND_HOME_PARTNERS_SECTIONS.slice(4),
+    ]);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(HERO_TITLE);
     await expect(page.locator('h1 em')).toHaveText(text.hero.title.turn);
 
@@ -160,7 +164,12 @@ test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, 
       .locator('a[href]')
       .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('href') ?? ''));
     const outside = hrefs.filter((href) => !href.startsWith('#') && !href.startsWith(PAGE));
-    expect(outside).toEqual([]);
+    expect(outside).toEqual(['/Second-Home-Development']);
+    await expect(
+      page
+        .locator('#desenvolvimento')
+        .getByRole('link', { name: 'Conheça Second Home Development' }),
+    ).toHaveAttribute('href', '/Second-Home-Development');
     const nav = page.getByRole('navigation', { name: text.site.nav });
     for (const label of [text.site.benefits, text.site.howItWorks, text.site.questions]) {
       await expect(nav.getByRole('link', { name: label })).toBeVisible();

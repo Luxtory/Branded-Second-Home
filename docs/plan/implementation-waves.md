@@ -2015,3 +2015,10 @@ Dependência: Home dos PRs #102 e #103. Escopo e aceite em [catalog §22](../spe
 2. Após 1, brief e copy em `club-pt-br.ts`. Cobrir origem e uso de créditos, compromisso de datas e pendências de afiliação.
 3. Após 2, testar e implementar a página e os adaptadores de rota. Verificar a navegação B2C e o portão de Discovery.
 4. Após 3, build, tipos, lint, testes direcionados e revisão visual. Apresentar a prévia para aprovação.
+
+## Second Home Development
+
+Brief e aceite em [catalog §23](../specs/catalog.md#23-second-home-development). Base `main` com as páginas Luxtory Club
+e Second Home Partners publicadas. Contrato do contato e portão precedem a implementação. Página/encaminhamento e
+contato são tarefas paralelizáveis com arquivos distintos. Integração sequencial com testes de navegação, envio,
+portões e regressão de Partners, build e revisão visual. Publicação requer autorização expressa.
