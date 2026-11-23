@@ -60,8 +60,13 @@
 }
 
 .lx-club-conditions {
+  justify-items: center;
   border-block-start: var(--lx-border-hairline) solid var(--lx-color-rule);
   padding-block-start: var(--lx-space-8);
+}
+
+.lx-club-conditions > h3 {
+  text-align: center;
 }
 
 .lx-club-fee-example {
@@ -69,6 +74,11 @@
   inline-size: 100%;
   max-inline-size: calc(var(--lx-layout-measure) + 2 * var(--lx-layout-gutter));
   padding: var(--lx-layout-gutter);
+}
+
+.lx-club-fee-example > :global(.lx-display-s) {
+  text-wrap: wrap;
+  text-wrap: pretty;
 }
 
 .lx-club-fee-example > :global(.lx-body) > strong {

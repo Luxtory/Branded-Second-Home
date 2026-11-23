@@ -3,7 +3,7 @@ import { Paragraphs as RichParagraphs, Rich } from '../brand-partners/rich-text'
 import { clubMessages as text } from '../i18n/club-pt-br';
 import { discoveryMessages } from '../i18n/discovery-pt-br';
 import { HeadlineText } from './headline';
-import { ActionLink, ordinal, Paragraphs, SplitPhoto } from './parts';
+import { ActionLink, Eyebrow, ordinal, Paragraphs, SplitPhoto } from './parts';
 import { discoveryPaths } from './paths';
 import styles from './club-page.module.css';
 
@@ -143,19 +143,15 @@ export function ClubPage() {
                 {exchange.methods.map((method) => (
                   <div className="lx-comparison__item lx-stack" key={method.title}>
                     <h4 className="lx-display-m">{method.title}</h4>
-                    <p className="lx-subheadline">
-                      <em>{method.description}</em>
-                    </p>
+                    <Eyebrow>{method.description}</Eyebrow>
                     <Paragraphs lines={method.text} />
                   </div>
                 ))}
               </div>
             </div>
-            <div
-              className={`lx-columns lx-columns--5-7 ${styles['lx-club-columns']} ${styles['lx-club-conditions']}`}
-            >
+            <div className={`lx-stack ${styles['lx-club-conditions']}`}>
               <h3 className="lx-display-s">{exchange.conditions.title}</h3>
-              <div className="lx-stack">
+              <div className={`lx-stack ${styles['lx-club-measure']}`}>
                 <Paragraphs lines={exchange.conditions.text} />
               </div>
             </div>

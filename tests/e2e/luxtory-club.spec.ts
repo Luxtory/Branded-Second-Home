@@ -66,10 +66,17 @@ test('apresenta a proposta e distingue os caminhos do intercâmbio (catalog §22
   await expect(exchange).toContainText('a partir de apenas um dia');
   await expect(exchange.getByRole('heading', { name: 'Luxchange Request' })).toBeVisible();
   await expect(exchange.getByRole('heading', { name: 'Luxchange Direct' })).toBeVisible();
-  await expect(exchange.locator('.lx-comparison__item em')).toHaveText([
+  const methodLabels = exchange.locator('.lx-comparison__item .lx-eyebrow');
+  await expect(methodLabels).toHaveText([
     'Solicitação de reserva a outro membro.',
     'Reserva direta com a Luxtory.',
   ]);
+  await expect(methodLabels.first()).toHaveCSS('font-style', 'normal');
+  await expect(methodLabels.last()).toHaveCSS('font-style', 'normal');
+  await expect(exchange.getByRole('heading', { name: 'Associação, créditos e taxa' })).toHaveCSS(
+    'text-align',
+    'center',
+  );
   await expect(exchange).toContainText('Os créditos são utilizados quando a reserva é confirmada.');
   await expect(exchange).toContainText('transferidos ao membro que disponibilizou as datas.');
   await expect(exchange).toContainText(
