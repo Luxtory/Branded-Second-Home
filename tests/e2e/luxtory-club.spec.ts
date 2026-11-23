@@ -1,6 +1,11 @@
 import { expect, test } from '@playwright/test';
 import { discoveryMessages } from '../../src/features/catalog/presentation/i18n/discovery-pt-br';
-import { captureForReview, collectConsoleErrors, expectResponsive } from './support/ui';
+import {
+  captureForReview,
+  collectConsoleErrors,
+  expectResponsive,
+  TEXT_ZOOM_WIDTHS,
+} from './support/ui';
 
 const CLUB = '/Luxtory-Club';
 const LEGACY = '/como-funciona';
@@ -183,6 +188,44 @@ test('acessibilidade e reflow de 320 a 1920 px (ADR-0009)', async ({ page }) => 
   await page.goto(CLUB);
   await expectResponsive(page, errors);
   await captureForReview(page, 'luxtory-club');
+});
+
+test('mantém o símbolo e o valor juntos na simulação da taxa', async ({ page }) => {
+  await page.setViewportSize({ width: 430, height: 900 });
+  await page.goto(CLUB);
+  await page.evaluate(() => document.fonts.ready);
+  const amounts = page.locator('#taxa-de-intercambio p').first().locator('strong');
+  expect(
+    await amounts.evaluateAll((elements) =>
+      elements.map((element) => {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        return range.getClientRects().length;
+      }),
+    ),
+  ).toEqual([1, 1]);
+});
+
+test('acomoda texto a 200% sem extrapolar a largura do celular', async ({ page }) => {
+  await page.goto(CLUB);
+  await page.evaluate(() => document.fonts.ready);
+  const [base, zoomed] = await page.evaluate(() => {
+    const root = document.documentElement;
+    const before = parseFloat(getComputedStyle(root).fontSize);
+    root.style.setProperty('font-size', '200%', 'important');
+    return [before, parseFloat(getComputedStyle(root).fontSize)];
+  });
+  expect(zoomed).toBe(base * 2);
+
+  for (const width of TEXT_ZOOM_WIDTHS) {
+    await page.setViewportSize({ width, height: 900 });
+    const overflow = await page.evaluate(() => {
+      const root = document.documentElement;
+      return root.scrollWidth - root.clientWidth;
+    });
+    expect(overflow, `overflow com ampliação de texto em ${width}px`).toBe(0);
+    await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeInViewport({ ratio: 1 });
+  }
 });
 
 test.describe('jornada do Club a 390 px com toque', () => {

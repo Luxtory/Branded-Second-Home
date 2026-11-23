@@ -1,9 +1,28 @@
+:global(main):has(> section .lx-club-hero) {
+  overflow-wrap: anywhere;
+}
+
+:global([data-lx='core']):has(> main .lx-club-hero)
+  :global(:is(.lx-header__inner, .lx-mobile-nav__top) > .lx-logo) {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+}
+
 .lx-club-hero-copy {
   margin-inline: 0;
+  min-inline-size: 0;
 }
 
 .lx-club-hero-copy > :global(.lx-button) {
   justify-self: start;
+  padding-inline: clamp(var(--lx-space-2), (100% - 7em) / 2, var(--lx-space-8));
+}
+
+.lx-club-hero-copy > :global(.lx-button),
+.lx-club-closing > :global(.lx-button) {
+  max-inline-size: 100%;
+  flex-wrap: wrap;
+  text-align: center;
 }
 
 .lx-club-hero-title {
@@ -50,6 +69,10 @@
   inline-size: 100%;
   max-inline-size: calc(var(--lx-layout-measure) + 2 * var(--lx-layout-gutter));
   padding: var(--lx-layout-gutter);
+}
+
+.lx-club-fee-example > :global(.lx-body) > strong {
+  white-space: nowrap;
 }
 
 .lx-club-services-copy > :global(.lx-stack) + :global(.lx-stack) {
