@@ -20,6 +20,7 @@ const W14 = [
   '20261119061701_admin_parameter',
 ];
 const FIRST_W14 = [...W14].sort()[0]!;
+const LAST_W14 = [...W14].sort().at(-1)!;
 
 /** Linhas inseridas por `after` sobre `before`: prefixo e sufixo comuns; o resto de `before` volta como `removed`. */
 function lineDelta(before: string, after: string) {
@@ -62,9 +63,12 @@ describe('W14 — preservação das funções e do catálogo da W12/W13 (E2)', (
   });
 
   it('[ADR-0030] a W14 só acrescenta o ramo da seleção às funções de custódia e o INV-4 às invariantes', async () => {
-    const subject = await createTestDatabase({ migrated: false });
+    // Banco só até a W14 (como as provas das W17–W20): a W20 acrescenta o ramo do depósito às mesmas funções, com
+    // prova própria em w20-preservation.
+    const newer = (await migrationsFromNewest(FIRST_W14)).filter((name) => name > LAST_W14);
+    const upToW14 = newer.length > 0 ? await databaseBefore(newer.at(-1)!) : null;
+    const subject = upToW14?.database ?? (await createTestDatabase());
     try {
-      await w13.migrateThenAll(subject.url);
       const after = await snapshot(subject);
       const changed = [...w13Snapshot.keys()].filter((key) => after.get(key) !== w13Snapshot.get(key));
       expect(changed.sort()).toEqual([
@@ -107,7 +111,7 @@ describe('W14 — preservação das funções e do catálogo da W12/W13 (E2)', (
         w13Snapshot.get('constraint app.capability_activation.capability_activation_capability_check'),
       );
     } finally {
-      await subject.drop();
+      await (upToW14 ? upToW14.dispose() : subject.drop());
     }
   });
 });

@@ -55,14 +55,14 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
         quantity: '1234.5',
         held: '0',
         available: '1234.5',
-        origin_command: 'deposit_capacity',
+        origin_command: 'accept_request',
       });
       const { rows } = await c.h.database.pool.query<{ ok: boolean; snap: boolean; entries: number }>(
         `SELECT l.expires_at = app.credit_expires_at(s.resolved_at, $2) AS ok,
                 l.originated_at = s.resolved_at AS snap,
                 (SELECT count(*)::int FROM app.credit_entry e
                   WHERE e.lot_id = l.id AND e.movement = 'originate' AND e.from_bucket = 'external'
-                    AND e.quantity = l.quantity AND e.command = 'deposit_capacity') AS entries
+                    AND e.quantity = l.quantity AND e.command = 'accept_request') AS entries
            FROM app.credit_lot l JOIN app.economic_snapshot s ON s.operation_id = l.origin_operation_id
           WHERE l.id = $1`,
         [lotId, TEST_VALIDITY_MONTHS],
@@ -77,7 +77,7 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
 
     it('sem snapshot da validade, nenhum lote nasce', async () => {
       await expect(
-        attempt(c.h.database.appUrl, 'deposit_capacity', titular(), (client, op) =>
+        attempt(c.h.database.appUrl, 'accept_request', titular(), (client, op) =>
           insertLot(client, op, c.titular.partyId, '5'),
         ),
       ).rejects.toEqual(constraint('credit_lot_snapshot_missing'));
@@ -85,7 +85,7 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
 
     it.each([
       ['command fora da originação', 'create_direct', false],
-      ['party diferente da que age', 'deposit_capacity', true],
+      ['party diferente da que age', 'accept_request', true],
     ])('recusa origem inválida: %s', async (_label, command, otherParty) => {
       await expect(
         attempt(c.h.database.appUrl, command, titular(), async (client, op) => {
@@ -97,7 +97,7 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
 
     it('validade, instante e buckets não vêm da entrada (privilégio por coluna)', async () => {
       await expect(
-        attempt(c.h.database.appUrl, 'deposit_capacity', titular(), async (client, op) => {
+        attempt(c.h.database.appUrl, 'accept_request', titular(), async (client, op) => {
           await recordValiditySnapshot(client, op);
           await client.query(
             `INSERT INTO app.credit_lot (id, party_id, quantity, origin_operation_id, expires_at)
@@ -110,7 +110,7 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
 
     it('retry na mesma operação não duplica o lote [TECH-025]', async () => {
       await expect(
-        attempt(c.h.database.appUrl, 'deposit_capacity', titular(), async (client, op) => {
+        attempt(c.h.database.appUrl, 'accept_request', titular(), async (client, op) => {
           await recordValiditySnapshot(client, op);
           await insertLot(client, op, c.titular.partyId, '5');
           await insertLot(client, op, c.titular.partyId, '5');
@@ -121,7 +121,7 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
     it('o servidor não escreve originação nem altera ou apaga lote e ledger', async () => {
       const lotId = await originate(c, '7');
       await expect(
-        move(c, 'deposit_capacity', titular(), [
+        move(c, 'accept_request', titular(), [
           { lotId, movement: 'originate', from: 'external', to: 'available', quantity: '7' },
         ]),
       ).rejects.toEqual(constraint('credit_entry_origination'));
@@ -153,7 +153,7 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
   describe('snapshot [TECH-031]', () => {
     it('instante fora da transação ou versão não vigente é recusado', async () => {
       await expect(
-        attempt(c.h.database.appUrl, 'deposit_capacity', titular(), (client, op) =>
+        attempt(c.h.database.appUrl, 'accept_request', titular(), (client, op) =>
           client.query(
             `INSERT INTO app.economic_snapshot (operation_id, resolved_at) VALUES ($1, now() - interval '1 second')`,
             [op],
@@ -161,7 +161,7 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
         ),
       ).rejects.toEqual(constraint('economic_snapshot_instant'));
       await expect(
-        attempt(c.h.database.appUrl, 'deposit_capacity', titular(), async (client, op) => {
+        attempt(c.h.database.appUrl, 'accept_request', titular(), async (client, op) => {
           await client.query(
             `INSERT INTO app.economic_snapshot (operation_id, resolved_at) VALUES ($1, clock_timestamp())`,
             [op],

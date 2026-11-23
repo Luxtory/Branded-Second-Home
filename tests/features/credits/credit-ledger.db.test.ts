@@ -72,8 +72,10 @@ function scoped<I extends { second_home_id: string }>(
 
 const partyOf = (actor: { kind: string; actingPartyId?: string | null }) => actor.actingPartyId!;
 
+// Originação genérica pelo aceite (W17); a originação por depósito exige o depósito inteiro desde a W20 (ADR-0036) e é
+// provada em tests/features/luxchange. A autoridade "detentor" chega com a W22: guard de teste explícito.
 const originateHandler = scoped(
-  'deposit_capacity',
+  'accept_request',
   homeScope.extend({ quantity: z.string() }),
   async ({ input, tx, locks, operationId, actor, requireEligibleMembership }) => {
     const party = partyOf(actor as { kind: string; actingPartyId: string });
@@ -173,7 +175,7 @@ describe('W17 — mecanismos dos Créditos (ADR-0033)', () => {
   describe('originação [TECH-025][TECH-031][TECH-044]', () => {
     it('persiste o snapshot da validade na mesma operação e um retry não duplica o lote', async () => {
       const party = await freshParty();
-      const run = titularExecutor(c, party);
+      const run = titularExecutor(c, party, { requestGuard: true });
       const key = randomUUID();
       const input = { second_home_id: party.homeId, quantity: '250.75' };
       const first = await run(originateHandler, input, key);
@@ -194,7 +196,7 @@ describe('W17 — mecanismos dos Créditos (ADR-0033)', () => {
       const party = await freshParty();
       await originate(c, '10', { titular: party });
       await suspend(c, party.partyId);
-      const run = titularExecutor(c, party);
+      const run = titularExecutor(c, party, { requestGuard: true });
       expect(
         await run(originateHandler, { second_home_id: party.homeId, quantity: '1' }),
       ).toMatchObject({ status: 'rejected', code: 'ERR_MEMBERSHIP_INELIGIBLE' });
@@ -422,7 +424,7 @@ describe('W17 — parâmetro ausente [TECH-001]', () => {
 
   it('sem credit_validity_months vigente → ERR_PARAMETER_MISSING; nada é presumido', async () => {
     expect(
-      await titularExecutor(c, c.titular)(originateHandler, {
+      await titularExecutor(c, c.titular, { requestGuard: true })(originateHandler, {
         second_home_id: c.titular.homeId,
         quantity: '1',
       }),
