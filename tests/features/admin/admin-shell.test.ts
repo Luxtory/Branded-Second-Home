@@ -15,6 +15,7 @@ describe('seções do Admin (ADR-0008, ADR-0009)', () => {
       'prl',
       'parameters',
       'policies',
+      'finance',
     ]);
     expect(ids(['admin', 'super_admin'])).toEqual([
       'home',
@@ -25,6 +26,7 @@ describe('seções do Admin (ADR-0008, ADR-0009)', () => {
       'prl',
       'parameters',
       'policies',
+      'finance',
     ]);
     // W16: o PRL aceita Admin ou Super Admin (TECH-051); os parâmetros econômicos, só o Admin.
     expect(ids(['super_admin'])).toEqual(['home', 'prl']);

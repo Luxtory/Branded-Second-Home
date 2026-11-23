@@ -11,6 +11,7 @@ import {
   unavailableKeys,
   withRoute,
   type Clock,
+  type Database,
   type EnvSource,
   type RouteContext,
 } from '@/features/platform';
@@ -30,6 +31,8 @@ export interface WebhookRouteDependencies {
   readonly source?: EnvSource;
   readonly clock?: Clock;
   readonly gateway?: () => PaymentGateway | null;
+  /** Banco da aplicação; padrão: `getDatabase(source)`. */
+  readonly database?: Database;
 }
 
 /**
@@ -62,7 +65,7 @@ export function createWebhookRoute(deps: WebhookRouteDependencies = {}) {
     try {
       const outcome = await handlePaymentWebhook(
         {
-          store: createPostgresBillingStore(getDatabase(deps.source)),
+          store: createPostgresBillingStore(deps.database ?? getDatabase(deps.source)),
           gateway,
           clock: deps.clock ?? systemClock,
           log,

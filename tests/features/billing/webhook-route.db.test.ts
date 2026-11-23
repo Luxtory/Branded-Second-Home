@@ -29,6 +29,7 @@ function call(
       PAYMENT_WEBHOOK_SECRET: WEBHOOK_SECRET,
     },
     gateway: () => (options.gateway === undefined ? gateway : options.gateway),
+    database: b.c.h.db,
   });
   return withRoute(route, b.log.logger)(
     new Request(`http://localhost:3000/v1/webhooks/psp/${provider}`, {
