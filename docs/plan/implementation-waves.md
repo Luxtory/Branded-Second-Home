@@ -122,8 +122,8 @@ A afiliação de imóveis existentes, as novas páginas do Club e a publicação
 | 15 | Membership | identity | REQ-011, REQ-050, PD-001 | 7 | — | R3 | ⬜ → 🔄 em execução (plano aprovado em 2026-11-19, D1–D4; [`w15-membership.md`](w15-membership.md)): E0–E2 aprovadas no C1 (2026-11-19); E3 + E4 no mesmo PR draft #100, parada no C2 (merge só com autorização expressa) → ✅ concluída (#100, squash `108d6f5`, 2026-11-20; Production; nenhum Membership real) |
 | 16 | PRL, parâmetros econômicos e snapshot | pricing | REQ-013, REQ-052 | 10, 14 | — | R3 | ⬜ → ✅ concluída (#101, squash `f1fd297`, 2026-11-22; 66 migrations em Production; nenhum PRL ou parâmetro econômico real) |
 | 17 | Créditos e Carteira | credits | REQ-053, REQ-054, PD-008, INV-6 | 15 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w17-creditos-e-carteira.md`](w17-creditos-e-carteira.md), PR draft #106: E0–E4 entregues, trace REQ-053, REQ-054, PD-008, INV-6 4/4; aguardando autorização de merge) → ✅ concluída (#106, squash `00f0a5e`, 2026-11-22; 68 migrations em Production; K4 fechada; nenhum Crédito real) |
-| 18 | Políticas comerciais | pricing | REQ-082, REQ-104, PD-009 | 16 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w18-politicas-comerciais.md`](w18-politicas-comerciais.md), PR draft) |
-| 19 | Pagamentos, Fee e settlement | billing | REQ-094 | 16 | — | R3 | ⬜ |
+| 18 | Políticas comerciais | pricing | REQ-082, REQ-104, PD-009 | 16 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w18-politicas-comerciais.md`](w18-politicas-comerciais.md), PR draft) → ✅ concluída (#107, squash `1e974bc`, 2026-11-22; 69 migrations em Production; nenhuma política real) |
+| 19 | Pagamentos, Fee e settlement | billing | REQ-094 | 16 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w19-pagamentos-fee-e-settlement.md`](w19-pagamentos-fee-e-settlement.md), PR draft; Fee de referência 12% pelo `01` v10.8) |
 | 20 | Luxchange — depósito | luxchange | REQ-051, REQ-060 | 13, 16, 17 | — | R3 | ⬜ |
 | 21 | Request — envio | luxchange | REQ-062, PD-005, PD-007 | 18, 19, 20 | — | R3 | ⬜ |
 | 22 | Request — aceite e recusa | luxchange | REQ-061, REQ-063, REQ-064, REQ-096, PD-006 | 21 | — | R3 | ⬜ |
@@ -1384,6 +1384,19 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   `[TECH-110] webhook duplicado ou fora de ordem não regride o estado; queda após o pagamento → conciliação confirma
   ou estorna` · `[TECH-082] Fee nunca vira Crédito`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-094 exits 0, stop after 4 tries`
+
+- **Emenda W19 (2026-11-22, iniciada pelo fundador; prevalece sobre as linhas acima no que divergir):** plano
+  [`w19-pagamentos-fee-e-settlement.md`](w19-pagamentos-fee-e-settlement.md),
+  [ADR-0035](../adr/0035-pagamentos-duas-fases-fee-settlement-e-k5.md), spec [`billing`](../specs/billing.md).
+  - Decisão comercial do fundador: Fee de referência 12% do PRL total do período, mínimo R$ 120 (`01` v10.8 §24,
+    `03` v3.19 TECH-030); valor publicado só pelo runbook com autorização operacional.
+  - Duas fases do TECH-080 sem mudar o executor (`payment(pending)` antes do PSP; `fee_charge` no command consumidor);
+    estados monotônicos; Fee conferido pelo banco com o snapshot; reversão integral pré-aceite; settlement fechado por
+    categoria (só `luxchange_fee` gravável); webhook HMAC + inbox; job `reconciliation`; K5 `payments` sem linha;
+    `/admin/financeiro` só leitura.
+  - **Cobertura parcial:** consumidores reais nas W21–W25; PRL total ↔ noites do snapshot na W20/W21; categorias além
+    do Fee nas waves donas (BR-352); P-11 aberta; PSP real e ativação dependem de P-2, D2 e autorização. Migrations: 70
+    no total.
 
 ### Wave 20 — Luxchange: depósito
 
