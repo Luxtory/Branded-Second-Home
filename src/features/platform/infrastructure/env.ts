@@ -36,6 +36,9 @@ const envShape = {
   // Notificação de staff dos alertas operacionais (W10, TECH-101). Ausente = Resend real, se configurado. `fake`
   // (transporte em memória) só local e na CI: recusado na Vercel, inclusive em Preview.
   OPS_ALERT_MODE: z.literal('fake').optional(),
+  // PSP (W19, ADR-0035 §7). Ausente = pagamentos indisponíveis. `fake` (PSP determinístico em memória) para testes e
+  // desenvolvimento: recusado em Production (TECH-081). Nenhum PSP real até a contratação (P-2).
+  PAYMENT_GATEWAY: z.literal('fake').optional(),
 };
 
 const envSchema = z.object(envShape).superRefine((env, context) => {
@@ -64,6 +67,13 @@ const envSchema = z.object(envShape).superRefine((env, context) => {
       code: 'custom',
       path: ['BOOKING_AUTHORIZATION_LIMITER_MODE'],
       message: 'fake booking authorization limiter on Vercel',
+    });
+  }
+  if (env.PAYMENT_GATEWAY === 'fake' && env.VERCEL_ENV === 'production') {
+    context.addIssue({
+      code: 'custom',
+      path: ['PAYMENT_GATEWAY'],
+      message: 'fake payment gateway in production',
     });
   }
   if (env.INTEREST_LIMITER_MODE === 'fake' && env.VERCEL_ENV !== undefined) {
@@ -209,6 +219,10 @@ const runtimeSchema = z.object({
   OPS_ALERT_EMAIL_FROM: sender,
   OPS_ALERT_EMAIL_TO: mailbox,
   OPS_ALERT_SEND_TIMEOUT_MS: positiveInteger,
+  // PSP (W19, ADR-0035 §6–§9): segredo HMAC do webhook do adaptador `fake` (um PSP real terá o próprio) e carência da
+  // conciliação antes de consultar um pendente ou estornar um aprovado sem desfecho (valor no runbook, TECH-001).
+  PAYMENT_WEBHOOK_SECRET: z.string().min(32),
+  PAYMENT_OUTCOME_GRACE_SECONDS: positiveInteger,
 });
 
 export type RuntimeConfig = z.infer<typeof runtimeSchema>;

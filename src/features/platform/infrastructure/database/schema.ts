@@ -304,6 +304,23 @@ export interface AppEconomicSnapshotParameter {
   parameter_key: string;
 }
 
+export interface AppFeeCharge {
+  amount_minor: Int8;
+  created_at: Timestamp;
+  currency: string;
+  id: string;
+  operation_id: string;
+  payer_party_id: string;
+  payment_id: string;
+  prl_total_minor: Int8;
+}
+
+export interface AppFeeChargeReversal {
+  created_at: Timestamp;
+  fee_charge_id: string;
+  operation_id: string;
+}
+
 export interface AppGuestNomination {
   booking_id: string;
   id: string;
@@ -751,6 +768,22 @@ export interface AppPartyDocumentDigest {
   party_id: string;
 }
 
+export interface AppPayment {
+  amount_minor: Int8;
+  created_at: Timestamp;
+  created_by_user_id: string;
+  currency: string;
+  id: string;
+  idempotency_key: string;
+  payer_party_id: string;
+  provider: string;
+  provider_payment_id: string | null;
+  purpose: string;
+  request_hash: string;
+  resolved_at: Timestamp | null;
+  state: string;
+}
+
 export interface AppPrl {
   amount_minor: Int8;
   currency: string;
@@ -797,6 +830,18 @@ export interface AppPublicIdempotencyKey {
   idempotency_key: string;
   request_hash: string;
   surface: string;
+}
+
+export interface AppRefund {
+  amount_minor: Int8;
+  created_at: Timestamp;
+  currency: string;
+  id: string;
+  operation_id: string;
+  payment_id: string;
+  provider_refund_id: string | null;
+  resolved_at: Timestamp | null;
+  state: string;
 }
 
 export interface AppSecondHome {
@@ -869,6 +914,17 @@ export interface AppSecondHomeOperationStart {
   second_home_id: string;
 }
 
+export interface AppSettlement {
+  amount_minor: Int8;
+  beneficiary_party_id: string | null;
+  created_at: Timestamp;
+  currency: string;
+  fee_charge_id: string | null;
+  id: string;
+  kind: string;
+  operation_id: string;
+}
+
 export interface AppSpe {
   acquisition_id: string;
   document_type: Generated<string | null>;
@@ -928,6 +984,18 @@ export interface AppUseRightLedger {
   stay_date: Timestamp | null;
 }
 
+export interface AppWebhookInbox {
+  event_id: string;
+  event_type: string;
+  id: string;
+  outcome: string;
+  payload_sha256: string;
+  payment_id: string | null;
+  provider: string;
+  received_at: Timestamp;
+  refund_id: string | null;
+}
+
 export interface DB {
   'app.acquisition': AppAcquisition;
   'app.audit_log': AppAuditLog;
@@ -952,6 +1020,8 @@ export interface DB {
   'app.date_occupancy': AppDateOccupancy;
   'app.economic_snapshot': AppEconomicSnapshot;
   'app.economic_snapshot_parameter': AppEconomicSnapshotParameter;
+  'app.fee_charge': AppFeeCharge;
+  'app.fee_charge_reversal': AppFeeChargeReversal;
   'app.guest_nomination': AppGuestNomination;
   'app.holding': AppHolding;
   'app.home_concept': AppHomeConcept;
@@ -989,19 +1059,23 @@ export interface DB {
   'app.party': AppParty;
   'app.party_delegation': AppPartyDelegation;
   'app.party_document_digest': AppPartyDocumentDigest;
+  'app.payment': AppPayment;
   'app.prl': AppPrl;
   'app.prl_publication': AppPrlPublication;
   'app.prl_version': AppPrlVersion;
   'app.public_idempotency_key': AppPublicIdempotencyKey;
+  'app.refund': AppRefund;
   'app.second_home': AppSecondHome;
   'app.second_home_administration': AppSecondHomeAdministration;
   'app.second_home_configuration': AppSecondHomeConfiguration;
   'app.second_home_date': AppSecondHomeDate;
   'app.second_home_initial_allocation': AppSecondHomeInitialAllocation;
   'app.second_home_operation_start': AppSecondHomeOperationStart;
+  'app.settlement': AppSettlement;
   'app.spe': AppSpe;
   'app.staff_role': AppStaffRole;
   'app.stake': AppStake;
   'app.use_right_balance': AppUseRightBalance;
   'app.use_right_ledger': AppUseRightLedger;
+  'app.webhook_inbox': AppWebhookInbox;
 }

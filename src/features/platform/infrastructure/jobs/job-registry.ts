@@ -8,6 +8,7 @@ import {
   createFlagNoShowCandidatesJob,
   createOwnUseBookingConsumers,
 } from '@/features/booking/jobs';
+import { createReconciliationJob } from '@/features/billing/jobs';
 import { createExpireCreditLotsJob } from '@/features/credits/jobs';
 import { createMembershipConsumers } from '@/features/identity/jobs';
 import { createInitialDrawConsumers } from '@/features/ownership';
@@ -81,5 +82,7 @@ export function createJobRegistry(environment: JobEnvironment): JobRegistry {
     flag_no_show_candidates: createFlagNoShowCandidatesJob(environment),
     // W17 — materializa a expiração do saldo disponível de lotes vencidos; nunca prorroga (spec credits §5.3).
     expire_credit_lots: createExpireCreditLotsJob(environment),
+    // W19 — conciliação de pagamentos e estornos; no-op sem gateway (spec billing §4.5).
+    reconciliation: createReconciliationJob(environment),
   });
 }

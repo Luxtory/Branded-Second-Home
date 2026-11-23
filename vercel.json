@@ -36,6 +36,10 @@
     {
       "path": "/api/jobs/expire_credit_lots",
       "schedule": "7 3 * * *"
+    },
+    {
+      "path": "/api/jobs/reconciliation",
+      "schedule": "53 3 * * *"
     }
   ]
 }

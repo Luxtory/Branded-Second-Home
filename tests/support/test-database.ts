@@ -13,7 +13,7 @@ export interface TestDatabase {
 
 /**
  * Violação de invariante encontrada no fim de um teste db: inventário (TECH-021, INV-1, INV-2, INV-3, TECH-022, W10),
- * Direito de Uso (TECH-026, TECH-027, INV-4, INV-5, W11), reserva (W12/W13) e Créditos (INV-6, TECH-044, W17).
+ * Direito de Uso (TECH-026, TECH-027, INV-4, INV-5, W11), reserva (W12/W13), Créditos (INV-6, TECH-044, W17) e pagamentos (TECH-025, TECH-082, W19).
  */
 export class InventoryInvariantError extends Error {
   constructor(readonly breaches: readonly string[]) {
@@ -46,6 +46,11 @@ const INVARIANT_QUERIES: readonly (readonly [string, string])[] = [
     'app.credit_invariant_breaches()',
     `SELECT concat(invariant, '@', lot_id, '/', detail) AS breach
        FROM app.credit_invariant_breaches() LIMIT 10`,
+  ], // W19 (ADR-0035): estornos, Fee e settlement.
+  [
+    'app.billing_invariant_breaches()',
+    `SELECT concat(invariant, '@', object_id, '/', detail) AS breach
+       FROM app.billing_invariant_breaches() LIMIT 10`,
   ],
 ];
 
