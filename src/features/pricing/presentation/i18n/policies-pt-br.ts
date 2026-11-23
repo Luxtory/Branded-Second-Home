@@ -118,8 +118,6 @@ export const policiesMessages = {
     axes: 'Os efeitos precisam cobrir exatamente os eixos do mecanismo.',
     capacity_not_origin: 'A capacidade sempre volta à origem imediatamente anterior (BR-163).',
     fraction: 'Os percentuais precisam estar entre 0 e 100.',
-    rental_value_created:
-      'Na locação, o valor devolvido ao locatário somado à remuneração mantida não pode passar de 100%.',
   } satisfies Record<PolicyIssue, string>,
   review: {
     title: 'Revise antes de publicar',

@@ -191,7 +191,8 @@ validação, avaliação e a resolução da versão aceita para as W21–W25.
 - **Esquema v1** (ADR-0034 §1): `cancellation` (1–5 faixas `{min_notice_hours, effects}`, decrescentes, última = 0),
   `no_show` e `exception` — todos obrigatórios. Eixos exatos por mecanismo: Request/Direct `capacity, credits, fee`;
   Luxplus `capacity, money`; locação `capacity, money, remuneration`. `capacity = "return_to_origin"` sempre (BR-163);
-  demais eixos são frações canônicas em [0, 1]; locação com `money + remuneration ≤ 1`.
+  demais eixos são frações canônicas em [0, 1], nunca somadas entre eixos (bases distintas — na locação, bruto pago ×
+  receita líquida, BR-253/BR-260); a avaliação confere na locação líquido ≤ bruto e remuneração mantida ≤ valor retido.
 - **Command `publish_policy`** (TECH-051, Admin + base registrada, AAL2): entrada `{ mechanism, config,
   effective_from | null, effective_to | null, basis }`; recusas: forma ou regra → `ERR_VALIDATION` (REQ-104); vigência
   incompatível → `ERR_STATE_TRANSITION`; sem papel → `ERR_PERMISSION`. Auditoria com mecanismo, vigência, base e o

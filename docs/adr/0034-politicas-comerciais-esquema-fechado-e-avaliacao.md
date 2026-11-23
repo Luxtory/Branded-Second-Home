@@ -64,9 +64,14 @@ A W18 entrega REQ-082, REQ-104 e PD-009 (`02` v4.6) com TECH-030, TECH-031, TECH
      (BR-163); `credits` = fração dos Créditos consumidos revertida aos lotes de origem (TECH-070); `fee` = fração do
      Fee devolvida em dinheiro (TECH-082); `money` = fração do valor pago devolvida; `remuneration` = fração da
      remuneração do beneficiário mantida. Frações canônicas em [0, 1] (`0`, `1` ou `0.` + até 6 casas sem zero final).
-   - Regras estruturais (REQ-104): fração > 1 cria valor (INV-6, PD-010) e é recusada; na locação, `money +
-     remuneration ≤ 1` em cada efeito — o titular não retém parcela do que foi devolvido ao locatário (nenhuma
-     compensação não prevista).
+   - Regras estruturais (REQ-104): fração > 1 cria valor (INV-6, PD-010) e é recusada. Frações de eixos diferentes
+     **não se somam**: na locação, `money` incide sobre o valor bruto pago pelo locatário e `remuneration` sobre a
+     receita líquida do Titular (BR-253/BR-260: bruto menos gestão, comissões, tributos e taxas). A conservação é
+     conferida na avaliação, com os valores de cada base (§5).
+   - **Emenda (2026-11-22, auditoria do fundador):** a versão inicial exigia `money + remuneration ≤ 1`, removida por
+     somar frações de bases distintas — recusava políticas economicamente possíveis (ex.: bruto R$ 10.000, líquido
+     R$ 6.000; devolver 50% e manter 75% retém R$ 5.000 e mantém R$ 4.500, sem valor criado) e não protegia BR-163
+     (capacidade, eixo fixo) nem BR-270/INV-2 (decididos pela custódia na aplicação, W25).
 2. **Validação em três camadas.** Zod (forma), `validatePolicyConfig` no domínio (regras e códigos de recusa) e
    `app.commercial_policy_config_valid(mechanism, config)` (IMMUTABLE) no CHECK da tabela. As três aplicam o mesmo
    esquema; o banco é a última palavra.
@@ -81,7 +86,9 @@ A W18 entrega REQ-082, REQ-104 e PD-009 (`02` v4.6) com TECH-030, TECH-031, TECH
 5. **Avaliação pura.** `evaluatePolicy(policy, snapshot, event)` (`event`: `cancellation` com instante, `no_show`,
    `exception`) exige que o snapshot traga exatamente os valores dos eixos do mecanismo e o check-in; devolve
    `{ policyId, mechanism, event, minNoticeHours, capacity: 'return_to_origin', credits?, fee?, money?, remuneration? }`
-   com parte devolvida/mantida. Dinheiro: devolução = `HALF_UP` (unidade mínima) uma única vez, mantido = total −
+   com parte devolvida/mantida. Na locação, a avaliação exige líquido ≤ bruto no snapshot (BR-253/BR-260) e
+   remuneração mantida ≤ valor retido do locatário (o excedente seria compensação não prevista, PD-010); a partilha do
+   retido entre Titular e deduções é do settlement (W19/W25). Dinheiro: devolução = `HALF_UP` (unidade mínima) uma única vez, mantido = total −
    devolução; Créditos: exatos. Determinística: mesmos dados, mesmo resultado; sem relógio implícito.
 6. **Resolução e aceite.** `resolveEconomicTerms` aceita `policy: { mechanism, acceptedPolicyId }`, trava em
    compartilhado, e devolve `terms.policy` vigente no `resolvedAt`; sem versão vigente, ou com `acceptedPolicyId`

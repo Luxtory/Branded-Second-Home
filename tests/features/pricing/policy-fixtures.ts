@@ -6,6 +6,21 @@ import type { PolicyConfig, PolicyMechanism } from '@/features/pricing';
  */
 const R = 'return_to_origin';
 
+/**
+ * Locação cujas frações somam mais de 1 (devolve 50% do bruto, mantém 75% do líquido): válida — as frações incidem sobre
+ * bases distintas (BR-253/BR-260) e a conferência é feita na avaliação, com os valores (ADR-0034 §1).
+ */
+export const RENTAL_DISTINCT_BASES = {
+  cancellation: [
+    {
+      min_notice_hours: 0,
+      effects: { capacity: 'return_to_origin', money: '0.5', remuneration: '0.75' },
+    },
+  ],
+  no_show: { capacity: 'return_to_origin', money: '0.5', remuneration: '0.75' },
+  exception: { capacity: 'return_to_origin', money: '0.5', remuneration: '0.75' },
+} as const;
+
 export const TEST_POLICIES: Readonly<Record<PolicyMechanism, PolicyConfig>> = {
   luxchange_request: {
     cancellation: [
@@ -114,14 +129,6 @@ export const INVALID_POLICIES: readonly (readonly [string, PolicyMechanism, unkn
     withRequest((c) => {
       delete c.exception;
     }),
-  ],
-  [
-    'PD-010: locação devolve ao locatário e mantém remuneração (valor criado)',
-    'rental_external',
-    {
-      ...clone(TEST_POLICIES.rental_external),
-      exception: { capacity: R, money: '0.6', remuneration: '0.5' },
-    },
   ],
   [
     'prazo: faixas sem cobertura até o check-in (última ≠ 0)',

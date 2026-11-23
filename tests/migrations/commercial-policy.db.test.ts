@@ -4,7 +4,11 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { POLICY_MECHANISMS, validatePolicyConfig } from '@/features/pricing';
 import { bookingHarness, type BookingHarness } from '../features/booking/booking-support';
 import { addAdmin, type Admin } from '../features/booking/lifecycle-support';
-import { INVALID_POLICIES, TEST_POLICIES } from '../features/pricing/policy-fixtures';
+import {
+  INVALID_POLICIES,
+  RENTAL_DISTINCT_BASES,
+  TEST_POLICIES,
+} from '../features/pricing/policy-fixtures';
 
 /**
  * W18 E1 — `app.commercial_policy` (TECH-030, TECH-032, TECH-052; REQ-104; ADR-0034 §1–§3): esquema fechado no CHECK
@@ -148,6 +152,8 @@ describe('W18 — políticas comerciais no banco (TECH-030, TECH-032, REQ-104)',
       expect(validatePolicyConfig(mechanism, config).length).toBeGreaterThan(0);
     }
     expect(await valid('own_use', TEST_POLICIES.luxchange_request)).toBe(false);
+    // Frações de bases distintas não se somam (BR-253/BR-260): o banco aceita como o domínio.
+    expect(await valid('rental_external', RENTAL_DISTINCT_BASES)).toBe(true);
   });
 
   it('[REQ-104][BR-163] política inválida nunca é gravada, mesmo pelo servidor', async () => {

@@ -7,8 +7,9 @@
 -- Esquema v1 (ADR-0034 §1): `config` tem exatamente `cancellation` (1 a 5 faixas `{min_notice_hours, effects}`,
 -- estritamente decrescentes, a última com 0), `no_show` e `exception`. Cada `effects` tem exatamente os eixos do
 -- mecanismo; `capacity` é sempre "return_to_origin" (BR-163, sem exceção no `01` para os mecanismos do Club); os demais
--- eixos são frações canônicas em [0, 1] (fração > 1 criaria valor: INV-6, PD-010). Na locação, `money + remuneration
--- ≤ 1`: o titular não retém parcela do que foi devolvido ao locatário.
+-- eixos são frações canônicas em [0, 1] (fração > 1 criaria valor: INV-6, PD-010). Frações de eixos diferentes não se
+-- somam: na locação `money` incide sobre o bruto pago e `remuneration` sobre a receita líquida (BR-253/BR-260); a
+-- conferência dos valores é feita na avaliação, com as bases reais (ADR-0034 §1).
 
 -- Fração canônica em [0, 1]: "0", "1" ou "0." com até 6 casas, sem zero à direita.
 CREATE FUNCTION app.commercial_policy_fraction_valid(p_value jsonb) RETURNS boolean
@@ -54,10 +55,6 @@ BEGIN
       RETURN false;
     END IF;
   END LOOP;
-  IF p_mechanism = 'rental_external'
-     AND (p_effects ->> 'money')::numeric + (p_effects ->> 'remuneration')::numeric > 1 THEN
-    RETURN false;
-  END IF;
   RETURN true;
 END $$;
 

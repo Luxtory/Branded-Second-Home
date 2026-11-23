@@ -2064,7 +2064,7 @@ paths:
         Command crítico `publish_policy` (TECH-032, TECH-051; W18, ADR-0034): papel Admin com MFA, com a base. `config`
         segue o esquema fechado v1 do mecanismo (`cancellation` em 1–5 faixas decrescentes terminando em 0, `no_show`,
         `exception`; eixos exatos do mecanismo; `capacity` sempre `return_to_origin` — BR-163; frações canônicas em
-        [0, 1]; na locação `money + remuneration ≤ 1`). Política fora do esquema ou contrária à BR-163 ou a um INV → 400
+        [0, 1], incidindo cada uma sobre a base do próprio eixo). Política fora do esquema ou contrária à BR-163 ou a um INV → 400
         `ERR_VALIDATION` (REQ-104), nada gravado. Início omitido = instante do banco; início no passado, não posterior a
         todos os inícios do mecanismo ou antes de término explícito → 409 `ERR_STATE_TRANSITION`. Sem atribuição Admin
         ativa → 403. Publicar não ativa mecanismo; nenhuma política é presumida (sem versão vigente o compromisso

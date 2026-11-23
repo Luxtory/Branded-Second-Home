@@ -59,8 +59,7 @@ export type PolicyIssue =
   | 'notice_range'
   | 'axes'
   | 'capacity_not_origin'
-  | 'fraction'
-  | 'rental_value_created';
+  | 'fraction';
 
 export interface PolicyIssueAt {
   readonly issue: PolicyIssue;
@@ -92,11 +91,6 @@ function effectsIssues(
     issues.push({ issue: 'capacity_not_origin', at });
   const fractions = MECHANISM_AXES[mechanism].filter((axis) => axis !== 'capacity');
   if (fractions.some((axis) => !isFraction(effects[axis]))) issues.push({ issue: 'fraction', at });
-  else if (
-    mechanism === 'rental_external' &&
-    new Exact(effects.money as string).plus(effects.remuneration as string).greaterThan(1)
-  )
-    issues.push({ issue: 'rental_value_created', at });
   return issues;
 }
 
@@ -132,7 +126,7 @@ function tiersIssues(mechanism: PolicyMechanism, tiers: readonly unknown[]): Pol
 
 /**
  * REQ-104 / BR-163 / INV-6 / TECH-082 no domínio: esquema fechado, eixos exatos do mecanismo, capacidade só à origem,
- * frações em [0, 1], faixas completas e decrescentes, locação sem valor criado. Lista vazia = política válida.
+ * frações em [0, 1], faixas completas e decrescentes. Lista vazia = política válida.
  */
 export function validatePolicyConfig(
   mechanism: PolicyMechanism,
@@ -157,6 +151,8 @@ export interface PolicyVersionRef {
 /**
  * O que formou a operação (TECH-031), só os valores dos eixos do mecanismo: Créditos consumidos (decimal exato), Fee e
  * valor pago (dinheiro) e remuneração do beneficiário (dinheiro). `checkInAt` é o instante do check-in da reserva.
+ * Na locação, `moneyPaid` é o valor **bruto** pago pelo locatário e `remuneration` a receita **líquida** do Titular
+ * (BR-253/BR-260: bruto menos gestão, comissões, tributos e taxas) — bases distintas, nunca somadas como frações.
  */
 export interface PolicySnapshot {
   readonly mechanism: PolicyMechanism;
@@ -257,6 +253,23 @@ function snapshotAxesMatch(snapshot: PolicySnapshot): boolean {
 }
 
 /**
+ * Locação (ADR-0034 §1): a conferência é sobre valores, cada um na sua base — nunca sobre a soma de frações de bases
+ * distintas. A receita líquida não excede o bruto (BR-253/BR-260) e a remuneração mantida não excede o que fica retido
+ * do locatário depois da devolução: o excedente seria compensação não prevista (PD-010, REQ-082). A partilha do retido
+ * entre Titular e deduções é do settlement (W19/W25).
+ */
+function assertRentalFunded(snapshot: PolicySnapshot, result: PolicyEvaluation): void {
+  const gross = snapshot.moneyPaid!;
+  const net = snapshot.remuneration!;
+  if (net.currency !== gross.currency || net.amountMinor > gross.amountMinor)
+    throw new PolicyEvaluationError('rental net revenue must not exceed the gross amount paid');
+  if (result.remuneration!.retained.amountMinor > result.money!.retained.amountMinor)
+    throw new PolicyEvaluationError(
+      'retained remuneration exceeds the amount retained from the renter',
+    );
+}
+
+/**
  * Avaliação determinística (TECH-032; ADR-0034 §5): só os efeitos declarados na política para o evento (PD-010 na
  * exceção), nos eixos do mecanismo. Mecanismo divergente, política fora do esquema ou snapshot incompleto → erro: nada
  * é presumido nem avaliado pela metade.
@@ -309,6 +322,7 @@ export function evaluatePolicy(
       effects.remuneration as string,
     );
     result.remuneration = { retained: split.refunded, reversed: split.retained };
+    assertRentalFunded(snapshot, result);
   }
   return result;
 }

@@ -11,7 +11,7 @@ import {
 import { publishPolicyInput } from '@/features/pricing/policies';
 import { policyInForce, scheduledPolicies } from '@/features/pricing/policies';
 import { policyVigencyConflict } from '@/features/pricing/domain/policy-vigency';
-import { INVALID_POLICIES, TEST_POLICIES } from './policy-fixtures';
+import { INVALID_POLICIES, RENTAL_DISTINCT_BASES, TEST_POLICIES } from './policy-fixtures';
 
 const CHECK_IN = '2027-03-10T17:00:00.000Z';
 const hoursBefore = (hours: number) =>
@@ -170,6 +170,43 @@ describe('Políticas comerciais — avaliação determinística (TECH-032, PD-00
         type: 'cancellation',
         at: 'ontem',
       }),
+    ).toThrow(PolicyEvaluationError);
+  });
+});
+
+describe('Locação — bases econômicas distintas (BR-253, BR-260, PD-010, REQ-104)', () => {
+  const rental = (gross: bigint, net: bigint): PolicySnapshot => ({
+    mechanism: 'rental_external',
+    checkInAt: CHECK_IN,
+    moneyPaid: brl(gross),
+    remuneration: brl(net),
+  });
+  const distinct = {
+    policyId: 'policy-distinct',
+    mechanism: 'rental_external' as const,
+    config: RENTAL_DISTINCT_BASES,
+  };
+
+  it('[REQ-104] frações de bases distintas não se somam: 50% do bruto devolvido + 75% do líquido mantido é válido', () => {
+    expect(validatePolicyConfig('rental_external', RENTAL_DISTINCT_BASES)).toEqual([]);
+  });
+
+  it('[BR-253][BR-260][PD-010] bruto R$ 10.000, líquido R$ 6.000: retém R$ 5.000 e mantém R$ 4.500 ao Titular, sem valor criado', () => {
+    const result = evaluatePolicy(distinct, rental(1_000_000n, 600_000n), { type: 'exception' });
+    expect(result.money).toEqual({ refunded: brl(500_000n), retained: brl(500_000n) });
+    expect(result.remuneration).toEqual({ retained: brl(450_000n), reversed: brl(150_000n) });
+  });
+
+  it('[PD-010][REQ-082] a conferência usa os valores: remuneração mantida acima do retido do locatário é recusada', () => {
+    // Sem deduções (líquido = bruto): 75% de R$ 10.000 = R$ 7.500 > R$ 5.000 retidos → compensação não prevista.
+    expect(() =>
+      evaluatePolicy(distinct, rental(1_000_000n, 1_000_000n), { type: 'exception' }),
+    ).toThrow(PolicyEvaluationError);
+  });
+
+  it('[BR-253][BR-260] receita líquida acima do bruto é snapshot inválido', () => {
+    expect(() =>
+      evaluatePolicy(policy('rental_external'), rental(100n, 101n), { type: 'no_show' }),
     ).toThrow(PolicyEvaluationError);
   });
 });
