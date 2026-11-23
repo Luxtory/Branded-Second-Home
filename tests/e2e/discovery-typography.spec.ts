@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { stubClubVideo } from './support/discovery';
 
 test('Home: os três pilares têm o mesmo peso no celular e no desktop', async ({ page }) => {
   const widths = [320, 390, 768, 1024, 1440, 1920];
@@ -88,6 +89,7 @@ test('B2C: fechamentos itálicos na escala de título de página; B2B preservado
   page,
 }) => {
   test.slow();
+  await stubClubVideo(page);
   for (const width of [390, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
     let referenceSize = 0;

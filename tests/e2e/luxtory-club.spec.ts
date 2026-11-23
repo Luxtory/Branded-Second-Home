@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { discoveryMessages } from '../../src/features/catalog/presentation/i18n/discovery-pt-br';
+import { stubClubVideo } from './support/discovery';
 import {
   captureForReview,
   collectConsoleErrors,
@@ -12,14 +13,7 @@ const LEGACY = '/como-funciona';
 const CLOSED_B2C = 'http://127.0.0.1:3102';
 const VIDEO_EMBED = 'https://www.youtube-nocookie.com/embed/wTnxs8DEBWE?playsinline=1';
 
-test.beforeEach(async ({ page }) => {
-  await page.route(VIDEO_EMBED, (route) =>
-    route.fulfill({
-      contentType: 'text/html; charset=utf-8',
-      body: '<!doctype html><html lang="pt-BR"><title>Vídeo</title><body data-video-test-frame></body></html>',
-    }),
-  );
-});
+test.beforeEach(({ page }) => stubClubVideo(page));
 
 test('apresenta a proposta e distingue os caminhos do intercâmbio (catalog §22)', async ({
   page,
