@@ -70,6 +70,28 @@ Os valores e a sequência desta seção são os vigentes. Onde `ROTEIRO.md`, `RE
 - **QA por trechos:** `edl-qa-jornada.js` (abertura até a solicitação enviada) e `edl-qa-encerramento.js` (família e
   assinatura) usam os blocos do próprio filme, antes do render completo.
 
+**QA do filme completo 16:9 (render único):**
+- **Arquivo:**
+  - 1920×1080, 24 fps, 2.901 quadros, 120,875 s;
+  - vídeo e áudio com a mesma duração (diferença de 0 ms);
+  - 0 erro de decodificação no arquivo inteiro, 0 quadro preto, 0 parcial;
+  - 2.901/2.901 quadros de interface e editoriais em RGBA.
+- **Áudio:** só efeitos (18 tap, 2 estado, 4 check, 3 confirmação), com silêncio entre eles e sem par a menos de 150 ms.
+- **Encerramento:**
+  - Moroccan Blue #0E4D65 em todos os quadros a partir de +800 ms;
+  - logo a partir de +917 ms;
+  - nenhum salto de luminância e a marca estável até o último quadro.
+- **Congelamentos acima de 2,5 s:** só nas pausas de leitura (banner de abertura, confirmação do Luxplus e síntese) e
+  na assinatura.
+- **Testes:**
+  - protótipo 56/56 e Design System 56/56;
+  - `check.mjs` conforme nas seis sequências e nos dois formatos;
+  - ESLint, Prettier e typecheck sem erros.
+- **Avisos que continuam:**
+  - família no 16:9 ampliada 1,62×.
+  - O filme é prévia interna até a aprovação comercial e jurídica da taxa de 12%, do prazo de 48 h e dos demais
+    parâmetros não homologados.
+
 ## v9: fundo comum e os quatro filmes (prévias provisórias)
 
 **Decisões:**
