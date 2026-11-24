@@ -1,5 +1,6 @@
 import { getImageProps } from 'next/image';
 import { Icon } from '@/design-system/react';
+import { ClubBookingVideo } from '../discovery/club-booking-video';
 import { HeadlineText } from '../discovery/headline';
 import { nb } from '../discovery/no-break';
 import { ActionLink, Eyebrow, ordinal } from '../discovery/parts';
@@ -27,6 +28,7 @@ const [
   BENEFITS,
   DEVELOPMENTS,
   SOLUTIONS,
+  BOOKING_DEMONSTRATION,
   INTERMEDIARIES,
   PROCESS,
   FAQ,
@@ -234,6 +236,8 @@ export function SecondHomePartnersHomePage() {
           </div>
         </div>
       </section>
+
+      <ClubBookingVideo id={BOOKING_DEMONSTRATION} />
 
       <section
         id={INTERMEDIARIES}

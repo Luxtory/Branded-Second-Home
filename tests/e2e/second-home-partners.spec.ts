@@ -3,6 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { secondHomePartnersMessages as text } from '../../src/features/catalog/presentation/i18n/second-home-partners-pt-br';
 import { SECOND_HOME_PARTNERS_SECTIONS } from '../../src/features/catalog/presentation/second-home-partners/paths';
 import { messages as platformText } from '../../src/features/platform/presentation/i18n/pt-br';
+import { stubClubVideo } from './support/discovery';
 import {
   captureForReview,
   collectConsoleErrors,
@@ -101,6 +102,8 @@ async function fillContact(page: Page) {
 
 const submitButton = (page: Page) => page.getByRole('button', { name: conversation.submit });
 
+test.beforeEach(({ page }) => stubClubVideo(page));
+
 test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, catalog §20.1–20.2)', () => {
   test('[REQ-105] Master Copy verbatim, seções na ordem, três benefícios e três soluções com o mesmo peso (D-SHP-07, D-SHP-09)', async ({
     page,
@@ -135,6 +138,29 @@ test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, 
     }
   });
 
+  test('[REQ-105] demonstração usa o mesmo vídeo do Club depois das soluções (catalog §20.9)', async ({
+    page,
+  }) => {
+    const response = await page.goto(PAGE);
+    expect(response?.headers()['content-security-policy']).toContain(
+      "frame-src 'self' https://www.youtube-nocookie.com",
+    );
+    const section = page.locator('#solucoes + #reservas-na-pratica');
+    await expect(section.getByRole('heading')).toHaveText('Uma estadia. Três formas de reservar.');
+    await expect(section).toHaveAttribute('data-surface', 'wash');
+    const player = section.locator('iframe');
+    await expect(player).toHaveAttribute(
+      'src',
+      'https://www.youtube-nocookie.com/embed/wTnxs8DEBWE?playsinline=1',
+    );
+    await player.scrollIntoViewIfNeeded();
+    await expect(player.contentFrame().locator('body[data-video-test-frame]')).toBeAttached();
+    await expect(section.getByRole('link', { name: 'Assistir no YouTube' })).toHaveAttribute(
+      'href',
+      'https://youtu.be/wTnxs8DEBWE',
+    );
+  });
+
   test('[REQ-105] CTA único leva ao formulário; o link secundário leva aos benefícios', async ({
     page,
   }) => {
@@ -160,7 +186,7 @@ test.describe('Second Home Partners — copy, estrutura e navegação (REQ-105, 
       .locator('a[href]')
       .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('href') ?? ''));
     const outside = hrefs.filter((href) => !href.startsWith('#') && !href.startsWith(PAGE));
-    expect(outside).toEqual([]);
+    expect(outside).toEqual(['https://youtu.be/wTnxs8DEBWE']);
     const nav = page.getByRole('navigation', { name: text.site.nav });
     for (const label of [text.site.benefits, text.site.howItWorks, text.site.questions]) {
       await expect(nav.getByRole('link', { name: label })).toBeVisible();
