@@ -64,7 +64,8 @@ export async function creditsHarness(
   const months =
     options.validityMonths === undefined ? TEST_VALIDITY_MONTHS : options.validityMonths;
   const validityId = months === null ? null : await publishValidity(h, admin, months);
-  if (options.activated !== false) await activate(h, 'credits');
+  // K4 e, desde a W20, a K7: os testes do ledger exercitam também os mecanismos de Request/Direct (W21–W23).
+  if (options.activated !== false) await activate(h, 'credits', 'luxchange_exchange');
   return { h, admin, titular: { ...titular, homeId }, validityId };
 }
 
@@ -134,16 +135,21 @@ export async function insertLot(
 
 const titularActor = (titular: Titular): OperationActor => ({ kind: 'titular', titular });
 
-/** Originação completa (snapshot + lote) na operação de `command`, confirmada. */
+/**
+ * Originação completa (snapshot + lote) na operação de `command`, confirmada. Desde a W20 (ADR-0036 §5–§6), uma
+ * originação por `deposit_capacity` só confirma com o depósito inteiro (noites cedidas, PRL e multiplicador no snapshot)
+ * — provado em `tests/features/luxchange`. Os fixtures genéricos do ledger originam por `accept_request`, cujas regras
+ * de cessão chegam com a W22 (K4 fechada até lá).
+ */
 export function originate(
   c: CreditsHarness,
   quantity: string,
-  options: { titular?: Titular; command?: 'deposit_capacity' | 'accept_request' } = {},
+  options: { titular?: Titular; command?: 'accept_request' } = {},
 ): Promise<string> {
   const titular = options.titular ?? c.titular;
   return asOperation(
     c.h.database.appUrl,
-    options.command ?? 'deposit_capacity',
+    options.command ?? 'accept_request',
     titularActor(titular),
     async (client, op) => {
       await recordValiditySnapshot(client, op);

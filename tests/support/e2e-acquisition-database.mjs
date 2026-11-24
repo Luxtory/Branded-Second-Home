@@ -245,9 +245,9 @@ export async function seedE2eStartedOwnerBooking(homeId) {
  * Ação abre meses à frente, então a interface não reserva noite próxima. Mesmo SQL do fixture histórico dos testes db
  * (`historicBooking`): regra de abertura e de movimento do ledger desligadas só nesta transação do dono; custódia
  * `reserved_right`, consumo e ocupação gravados e conferidos pelas constraints. Primeira noite livre a partir de
- * `fromOffset` dias, uma noite.
+ * `fromOffset` dias; `nights` noites consecutivas livres (padrão: uma — W13; W20 usa reservas de várias noites).
  */
-export async function seedE2eSoonCoOwnerBooking(homeId, partyId, fromOffset = 3) {
+export async function seedE2eSoonCoOwnerBooking(homeId, partyId, fromOffset = 3, nights = 1) {
   if (!/^[0-9a-f-]{36}$/i.test(homeId) || !/^[0-9a-f-]{36}$/i.test(partyId))
     throw new Error('Invalid fixture ids');
   const url = disposableOwnerUrl();
@@ -259,23 +259,27 @@ export async function seedE2eSoonCoOwnerBooking(homeId, partyId, fromOffset = 3)
         [homeId, partyId],
       );
       const holding = holdings[0];
-      const { rows: nights } = await client.query(
+      // Primeira sequência de `nights` noites seguidas livres (spe_pool) com saldo no bucket de cada uma.
+      const { rows: starts } = await client.query(
         `SELECT d.stay_date::text AS d FROM app.second_home_date d
-          JOIN app.date_custody c ON c.second_home_id = d.second_home_id AND c.stay_date = d.stay_date
-                                 AND c.closed_at IS NULL AND c.holder_kind = 'spe_pool'
-          JOIN app.use_right_balance b ON b.stake_id = $3 AND b.exercise_year = d.exercise_year
-                                      AND b.bucket = CASE WHEN d.is_leap_day THEN 'leap' ELSE d.season END
-                                      AND b.remaining > 0
          WHERE d.second_home_id = $1 AND d.stay_date >= current_date + $2::int AND d.checkin_at > now()
+           AND (SELECT count(*) FROM app.second_home_date n
+                  JOIN app.date_custody c ON c.second_home_id = n.second_home_id AND c.stay_date = n.stay_date
+                                         AND c.closed_at IS NULL AND c.holder_kind = 'spe_pool'
+                  JOIN app.use_right_balance b ON b.stake_id = $3 AND b.exercise_year = n.exercise_year
+                                              AND b.bucket = CASE WHEN n.is_leap_day THEN 'leap' ELSE n.season END
+                                              AND b.remaining >= $4
+                 WHERE n.second_home_id = d.second_home_id AND n.stay_date >= d.stay_date
+                   AND n.stay_date < d.stay_date + $4::int) = $4
          ORDER BY d.stay_date LIMIT 1`,
-        [homeId, fromOffset, holding?.stake_id ?? null],
+        [homeId, fromOffset, holding?.stake_id ?? null, nights],
       );
-      if (holding === undefined || nights[0] === undefined)
-        throw new Error('Co-Owner fixture needs a free sealed night with balance');
-      const checkin = nights[0].d;
+      if (holding === undefined || starts[0] === undefined)
+        throw new Error('Co-Owner fixture needs free sealed nights with balance');
+      const checkin = starts[0].d;
       const { rows: out } = await client.query(
-        `SELECT ($1::date + 1)::text AS checkout, gen_random_uuid() AS id, gen_random_uuid() AS op`,
-        [checkin],
+        `SELECT ($1::date + $2::int)::text AS checkout, gen_random_uuid() AS id, gen_random_uuid() AS op`,
+        [checkin, nights],
       );
       const { checkout, id, op } = out[0];
       await client.query(
@@ -300,33 +304,40 @@ export async function seedE2eSoonCoOwnerBooking(homeId, partyId, fromOffset = 3)
          VALUES ($1, $2, 'own_use', $3, $4, $5, $6, 'confirmed', $7, now())`,
         [id, homeId, holding.id, holding.stake_id, checkin, checkout, op],
       );
-      const { rows: closed } = await client.query(
-        `UPDATE app.date_custody SET closed_at = now(), closed_by_operation = $3
-          WHERE second_home_id = $1 AND stay_date = $2 AND closed_at IS NULL RETURNING id`,
-        [homeId, checkin, op],
-      );
-      await client.query(
-        `INSERT INTO app.date_custody (id, second_home_id, stay_date, holder_kind, stake_id, basis, parent_custody_id,
-           opened_by_operation)
-         VALUES (gen_random_uuid(), $1, $2, 'use_right', $3, 'reserved_right', $4, $5)`,
-        [homeId, checkin, holding.stake_id, closed[0].id, op],
-      );
-      await client.query(
-        `INSERT INTO app.use_right_ledger (id, second_home_id, acquisition_id, stake_id, exercise_year, bucket,
-           movement, quantity, stay_date, operation_id, created_at)
-         SELECT gen_random_uuid(), d.second_home_id, a.id, $3, d.exercise_year,
-                CASE WHEN d.is_leap_day THEN 'leap' ELSE d.season END, 'consume', 1, d.stay_date, $4, now()
-           FROM app.second_home_date d JOIN app.acquisition a ON a.second_home_id = d.second_home_id
-          WHERE d.second_home_id = $1 AND d.stay_date = $2`,
-        [homeId, checkin, holding.stake_id, op],
-      );
-      await client.query(
-        `INSERT INTO app.date_occupancy (id, second_home_id, stay_date, booking_id, channel, custody_id, stake_id,
-           opened_by_operation)
-         SELECT gen_random_uuid(), $1, $2, $3, 'own_use', c.id, $4, $5
-           FROM app.date_custody c WHERE c.second_home_id = $1 AND c.stay_date = $2 AND c.closed_at IS NULL`,
-        [homeId, checkin, id, holding.stake_id, op],
-      );
+      for (let night = 0; night < nights; night += 1) {
+        const { rows: day } = await client.query(`SELECT ($1::date + $2::int)::text AS d`, [
+          checkin,
+          night,
+        ]);
+        const stay = day[0].d;
+        const { rows: closed } = await client.query(
+          `UPDATE app.date_custody SET closed_at = now(), closed_by_operation = $3
+            WHERE second_home_id = $1 AND stay_date = $2 AND closed_at IS NULL RETURNING id`,
+          [homeId, stay, op],
+        );
+        await client.query(
+          `INSERT INTO app.date_custody (id, second_home_id, stay_date, holder_kind, stake_id, basis, parent_custody_id,
+             opened_by_operation)
+           VALUES (gen_random_uuid(), $1, $2, 'use_right', $3, 'reserved_right', $4, $5)`,
+          [homeId, stay, holding.stake_id, closed[0].id, op],
+        );
+        await client.query(
+          `INSERT INTO app.use_right_ledger (id, second_home_id, acquisition_id, stake_id, exercise_year, bucket,
+             movement, quantity, stay_date, operation_id, created_at)
+           SELECT gen_random_uuid(), d.second_home_id, a.id, $3, d.exercise_year,
+                  CASE WHEN d.is_leap_day THEN 'leap' ELSE d.season END, 'consume', 1, d.stay_date, $4, now()
+             FROM app.second_home_date d JOIN app.acquisition a ON a.second_home_id = d.second_home_id
+            WHERE d.second_home_id = $1 AND d.stay_date = $2`,
+          [homeId, stay, holding.stake_id, op],
+        );
+        await client.query(
+          `INSERT INTO app.date_occupancy (id, second_home_id, stay_date, booking_id, channel, custody_id, stake_id,
+             opened_by_operation)
+           SELECT gen_random_uuid(), $1, $2, $3, 'own_use', c.id, $4, $5
+             FROM app.date_custody c WHERE c.second_home_id = $1 AND c.stay_date = $2 AND c.closed_at IS NULL`,
+          [homeId, stay, id, holding.stake_id, op],
+        );
+      }
       await client.query('SET CONSTRAINTS ALL IMMEDIATE');
       await client.query(
         'ALTER TABLE app.use_right_ledger ENABLE TRIGGER use_right_ledger_movement',
@@ -493,6 +504,68 @@ export async function setE2eCredits(open) {
         : `DELETE FROM app.capability_activation WHERE capability = 'credits'`,
     ),
   );
+}
+
+/**
+ * K4 (`credits`) e K6 (`luxchange_deposit`, ADR-0036 §7) só no banco descartável do E2E (W20): ligam para a jornada real
+ * do depósito e desligam no fim. Nunca em Production (a validação recusa qualquer banco não descartável).
+ */
+export async function setE2eLuxchangeDeposit(open) {
+  const url = disposableOwnerUrl();
+  await withClient(url, (client) =>
+    client.query(
+      open
+        ? `INSERT INTO app.capability_activation VALUES ('credits', now(), 'e2e:fixture'),
+             ('luxchange_deposit', now(), 'e2e:fixture') ON CONFLICT DO NOTHING`
+        : `DELETE FROM app.capability_activation WHERE capability IN ('credits', 'luxchange_deposit')`,
+    ),
+  );
+}
+
+/**
+ * Multiplicador e validade publicados agora (fato do fixture, W20), só no banco descartável: versões globais gravadas
+ * pelo dono do schema com os gatilhos desligados só nesta transação, com operação `set_parameter` do Admin do E2E — as
+ * constraints de valor e de vigência continuam valendo. O E2E da W20 roda depois dos demais (projeto `chrome-luxchange`),
+ * então nenhum outro espera esses parâmetros "Ausentes".
+ */
+export async function publishE2eDepositParameters(multiplier, validityMonths) {
+  const url = disposableOwnerUrl();
+  await withClient(url, async (client) => {
+    await client.query('BEGIN');
+    try {
+      await client.query('SET LOCAL session_replication_role = replica');
+      const { rows } = await client.query(
+        `SELECT id, user_id FROM app.staff_role WHERE role = 'admin' AND revoked_at IS NULL
+          ORDER BY granted_at LIMIT 1`,
+      );
+      const staff = rows[0];
+      if (staff === undefined) throw new Error('Fixture needs an active Admin');
+      for (const [key, value] of [
+        ['credit_multiplier', String(multiplier)],
+        ['credit_validity_months', String(validityMonths)],
+      ]) {
+        const { rows: ops } = await client.query(
+          `INSERT INTO app.operation (id, command, actor_user_id, acting_party_id, role, idempotency_key,
+             correlation_id, authorization_ref, state, created_at, updated_at)
+           SELECT g.id, 'set_parameter', $1, NULL, 'admin', 'e2e:' || g.id, 'e2e:' || g.id, $2, 'committed', now(),
+                  now()
+             FROM (SELECT gen_random_uuid() AS id) g RETURNING id`,
+          [staff.user_id, `staff_role:${staff.id}`],
+        );
+        await client.query(
+          `INSERT INTO app.parameter (id, key, second_home_id, value, currency, effective_from, effective_to,
+             authority, authorization_ref, created_at, created_by, operation_id)
+           VALUES (gen_random_uuid(), $1, NULL, $2, NULL, clock_timestamp(), NULL, 'admin', 'Ata sintética W20 E2E',
+                   now(), $3, $4)`,
+          [key, value, staff.user_id, ops[0].id],
+        );
+      }
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      throw error;
+    }
+  });
 }
 
 const E2E_DAY = "interval '1 day'";

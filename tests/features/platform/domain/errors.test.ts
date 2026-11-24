@@ -47,6 +47,10 @@ describe('códigos de erro (TECH-056)', () => {
     // W14: declaração sem regras vigentes ou com versão diferente da vigente.
     expect(rejectionForConstraint('parameter_missing_guest_rules')).toBe('ERR_PARAMETER_MISSING');
     expect(rejectionForConstraint('guest_rules_changed')).toBe('ERR_GUEST_RULES_CHANGED');
+    // W20 (ADR-0036 §3): antecedência do depósito e origem/sucessora da cessão.
+    expect(rejectionForConstraint('deposit_min_notice')).toBe('ERR_MIN_NOTICE');
+    expect(rejectionForConstraint('custody_deposit_source')).toBe('ERR_CAPACITY_UNAVAILABLE');
+    expect(rejectionForConstraint('luxchange_deposit_complete')).toBeNull();
     // Proveniência da operação é erro de código, não recusa funcional.
     expect(rejectionForConstraint('inventory_operation_provenance')).toBeNull();
   });
@@ -63,6 +67,7 @@ describe('códigos de erro (TECH-056)', () => {
     expect(PRODUCT_ERROR_CODES).toEqual([
       'ERR_CANCELLATION_TERMS_CHANGED',
       'ERR_GUEST_RULES_CHANGED',
+      'ERR_DEPOSIT_TERMS_CHANGED',
     ]);
     expect(ERROR_CODES.slice(-PRODUCT_ERROR_CODES.length)).toEqual([...PRODUCT_ERROR_CODES]);
     for (const code of PRODUCT_ERROR_CODES) expect(TECH_056_ERROR_CODES).not.toContain(code);

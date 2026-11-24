@@ -217,3 +217,21 @@ export async function readWalletSummary(
     ),
   };
 }
+
+/**
+ * Saldo disponível agora de uma party representada (W20: resumo do depósito Luxchange), sob RLS: lotes válidos com
+ * Membership `active` (BR-195); sem Membership elegível, zero. Party que o usuário não representa: zero (sem oráculo).
+ */
+export async function readAvailableCredits(
+  session: VerifiedSession,
+  partyId: string,
+  membershipActive: boolean,
+  deps: Pick<WalletReadDependencies, 'db' | 'clock'> = {},
+): Promise<string> {
+  const db = deps.db ?? getDatabase();
+  const now = (deps.clock ?? systemClock).now();
+  const lots = await withUserRead(db, { sub: session.userId, role: 'authenticated' }, (tx) =>
+    partyLots(tx, partyId),
+  );
+  return walletTotals(lots.map(toLot), membershipActive, now).available;
+}

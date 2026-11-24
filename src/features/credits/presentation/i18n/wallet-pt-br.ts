@@ -18,6 +18,8 @@ export type CreditMovement = (typeof CREDIT_MOVEMENTS)[number];
 export const walletMessages = {
   metadataTitle: 'Carteira',
   title: 'Carteira',
+  /** W20: entrada do depósito Luxchange (Créditos originados pela cessão de datas). */
+  depositLink: 'Depositar datas no Luxchange',
   lead: 'Seus Créditos Luxchange: quanto pode usar agora, de onde vieram e até quando valem.',
   backToArea: 'Área do Titular',
   nature:

@@ -43,6 +43,8 @@ export const adminBookingMessages = {
     in_exception: 'Em exceção',
   } as Record<string, string>,
   exceptionState: { operational: 'Em exceção operacional', unauthorized_booking: 'Em apuração' },
+  /** W20 (ADR-0036 §1): reserva Co-Owner encerrada pela cessão ao Luxchange (estado técnico `cancelled`). */
+  cededState: 'Cedida ao Luxchange',
   reasons: {
     emergency_maintenance: 'manutenção emergencial',
     security: 'segurança',
@@ -129,6 +131,7 @@ export const adminBookingMessages = {
     no_show: 'no-show',
     exception: 'exceção',
     invalidation: 'invalidação',
+    ceded: 'cessão ao Luxchange',
   } as Record<string, string>,
   purposes: {
     no_show: 'No-show',

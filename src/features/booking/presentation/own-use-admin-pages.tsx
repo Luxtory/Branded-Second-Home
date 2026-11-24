@@ -95,10 +95,12 @@ function Page({
 
 const detailPath = (id: string) => `/admin/reservas/${id}`;
 const actPath = (id: string, a: AdminAct) => `${detailPath(id)}/${ACT_PATHS[a]}`;
-const stateLabel = (booking: Pick<AdminBookingDetail, 'state' | 'exception'>) =>
+const stateLabel = (booking: Pick<AdminBookingDetail, 'state' | 'exception' | 'history'>) =>
   booking.state === 'in_exception' && booking.exception !== null
     ? text.exceptionState[booking.exception.type]
-    : (text.state[booking.state] ?? booking.state);
+    : booking.state === 'cancelled' && booking.history[0]?.kind === 'cession'
+      ? text.cededState
+      : (text.state[booking.state] ?? booking.state);
 const leadOf = (booking: AdminBookingDetail) =>
   text.lead2(
     stateLabel(booking),
@@ -440,7 +442,9 @@ export async function AdminBookingPage(props: {
           items={[
             ...booking.history.map((row, index) => ({
               id: `${index}-${row.at.toISOString()}`,
-              title: `${text.state[row.from] ?? row.from} → ${text.state[row.to] ?? row.to}`,
+              title: `${text.state[row.from] ?? row.from} → ${
+                row.kind === 'cession' ? text.cededState : (text.state[row.to] ?? row.to)
+              }`,
               attributes: [
                 { label: text.detail.when, value: instantIn(row.at, booking.timezone) },
                 { label: text.detail.by, value: text.roles[row.role] ?? row.role },

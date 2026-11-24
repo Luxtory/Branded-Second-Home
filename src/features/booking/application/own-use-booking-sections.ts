@@ -1,4 +1,4 @@
-import type { BookingState, ExceptionType } from '../domain/own-use-lifecycle';
+import type { BookingState, ExceptionType, TransitionKind } from '../domain/own-use-lifecycle';
 
 /**
  * Seções da lista de reservas do Titular (W13 E4b; spec booking §10.15). A situação exibida é sempre o estado gravado
@@ -35,6 +35,7 @@ export type DisplayState =
   | 'cancelled_timely'
   | 'cancelled_late'
   | 'cancelled'
+  | 'ceded'
   | 'no_show'
   | 'operational_exception'
   | 'unauthorized_review';
@@ -44,6 +45,8 @@ export function displayState(
   facts: {
     readonly exceptionType: ExceptionType | null;
     readonly cancellationClass: 'timely' | 'late' | null;
+    /** Natureza da última transição: `cession` (W20) encerra a reserva cedida ao Luxchange, não um cancelamento. */
+    readonly lastKind?: TransitionKind | null;
   },
 ): DisplayState {
   if (state === 'in_exception')
@@ -51,6 +54,7 @@ export function displayState(
       ? 'unauthorized_review'
       : 'operational_exception';
   if (state === 'cancelled') {
+    if (facts.lastKind === 'cession') return 'ceded';
     if (facts.cancellationClass === 'timely') return 'cancelled_timely';
     if (facts.cancellationClass === 'late') return 'cancelled_late';
     return 'cancelled';

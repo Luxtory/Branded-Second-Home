@@ -36,7 +36,13 @@ export type OperationActor =
   | { readonly kind: 'system' };
 
 export type Capability =
-  'own_use_booking' | 'own_use_lifecycle' | 'luxtory_selection' | 'credits' | 'payments';
+  | 'own_use_booking'
+  | 'own_use_lifecycle'
+  | 'luxtory_selection'
+  | 'credits'
+  | 'payments'
+  | 'luxchange_deposit'
+  | 'luxchange_exchange';
 
 export interface BookingRow {
   readonly id: string;

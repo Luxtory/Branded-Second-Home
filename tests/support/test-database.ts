@@ -51,6 +51,11 @@ const INVARIANT_QUERIES: readonly (readonly [string, string])[] = [
     'app.billing_invariant_breaches()',
     `SELECT concat(invariant, '@', object_id, '/', detail) AS breach
        FROM app.billing_invariant_breaches() LIMIT 10`,
+  ], // W20 (ADR-0036): depósito completo e cessão só por depósito ou aceite.
+  [
+    'app.luxchange_invariant_breaches()',
+    `SELECT concat(invariant, '@', operation_id, '/', detail) AS breach
+       FROM app.luxchange_invariant_breaches() LIMIT 10`,
   ],
 ];
 

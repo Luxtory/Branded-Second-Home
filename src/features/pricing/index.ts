@@ -19,6 +19,7 @@ export {
   type EconomicParameterUnit,
   type EconomicTerms,
   type EconomicTermsRequest,
+  type EconomicTermsStore,
 } from './application/economic-terms';
 export { createPostgresEconomicTermsStore } from './infrastructure/postgres-economic-terms-store';
 export {
@@ -40,3 +41,5 @@ export {
   type PolicySnapshot,
 } from './domain/commercial-policy';
 export type { EconomicTermsPolicy } from './application/economic-terms';
+// W20: temporadas de apresentação da W16 (ADR-0032 §11), também no calendário do depósito Luxchange (só leitura).
+export { seasonTiers, type SeasonTier } from './presentation/prl-seasons';

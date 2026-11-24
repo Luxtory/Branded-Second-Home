@@ -53,6 +53,8 @@ channels:
         $ref: '#/components/messages/OwnUseBookingInvalidated'
       membershipStateChanged:
         $ref: '#/components/messages/MembershipStateChanged'
+      luxchangeCreditsOriginated:
+        $ref: '#/components/messages/LuxchangeCreditsOriginated'
 
 operations:
   publishOutboxEvent:
@@ -314,6 +316,25 @@ components:
                 const: identity.membership_state_changed
               payload:
                 $ref: '#/components/schemas/MembershipStateChangedPayload'
+    LuxchangeCreditsOriginated:
+      name: luxchange.credits_originated
+      title: Originação de Créditos pelo depósito Luxchange (REQ-097, REQ-060, W20)
+      description: |
+        Gravado por `deposit_capacity` na transação do depósito, depois do lote e da cessão das noites
+        (`dedup_key` = `luxchange.credits_originated:<lot_id>`; um lote por operação, TECH-025). Consumido pela
+        notificação à party que depositou — todos os representantes com delegação vigente a veem. Recusa ou rollback não
+        gravam evento. Notificação não cria direito, prazo nem consequência econômica (REQ-097). Só ids, datas, contagem,
+        quantidade e validade: nunca PRL (REQ-100) nem dado pessoal (ADR-0036).
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/OutboxEnvelope'
+          - type: object
+            properties:
+              type:
+                const: luxchange.credits_originated
+              payload:
+                $ref: '#/components/schemas/LuxchangeCreditsOriginatedPayload'
     OutboxEvent:
       name: OutboxEvent
       title: Envelope de evento do outbox
@@ -621,6 +642,40 @@ components:
           type: string
           format: date-time
           description: Instante do banco na mudança.
+    LuxchangeCreditsOriginatedPayload:
+      type: object
+      additionalProperties: false
+      required: [lot_id, recipient_party_id, second_home_id, nights, first_night, last_night, credits, expires_at]
+      properties:
+        lot_id:
+          type: string
+          format: uuid
+        recipient_party_id:
+          type: string
+          format: uuid
+          description: A party que depositou (pseudônimo interno, nunca documento).
+        second_home_id:
+          type: string
+          format: uuid
+        nights:
+          type: integer
+          minimum: 1
+          maximum: 366
+          description: Noites cedidas ao Inventário Luxtory.
+        first_night:
+          type: string
+          format: date
+        last_night:
+          type: string
+          format: date
+        credits:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+          description: Créditos originados, decimal exato em texto (unidade interna, não monetária; BR-190).
+        expires_at:
+          type: string
+          format: date-time
+          description: Validade do lote (TECH-044), calculada pelo banco.
     OutboxEnvelope:
       type: object
       additionalProperties: false

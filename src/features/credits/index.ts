@@ -16,3 +16,5 @@ export type { CreditStore, OriginatedLot, SnapshotRecorder } from './application
 export { createReverseCreditHandler, type ReverseCreditResult } from './application/reverse-credit';
 export { isCreditQuantity } from './domain/credit';
 export { createPostgresCreditStore } from './infrastructure/postgres-credit-store';
+// W20: saldo disponível da party representada, para o resumo do depósito Luxchange (leitura sob RLS).
+export { readAvailableCredits } from './presentation/wallet-read';

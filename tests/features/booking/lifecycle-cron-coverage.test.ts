@@ -14,6 +14,7 @@ interface Cron {
 }
 const crons = (JSON.parse(readFileSync('vercel.json', 'utf8')) as { crons: Cron[] }).crons;
 const HOUR_MS = 3_600_000;
+const CPU_BOUND_TIMEOUT_MS = 30_000;
 const DAY_MS = 24 * HOUR_MS;
 
 const hoursOf = (job: string): number[] =>
@@ -67,16 +68,22 @@ describe('cadência dos jobs do ciclo no Vercel Hobby (W13 E3)', () => {
     expect(hoursOf('flag_no_show_candidates').sort((a, b) => a - b)).toEqual([5, 17]);
   });
 
-  it('[TECH-046][spec booking §10.14] candidatos 2×/dia: toda janela de 1 noite tem disparo garantido em Brasília, Manaus, Nova York (com horário de verão) e outros fusos, o ano inteiro', () => {
-    const hours = hoursOf('flag_no_show_candidates');
-    for (const zone of ZONES)
-      for (const day of DAYS_2027) {
-        const start = local(day, '14:00', zone);
-        const end = local(day.add({ days: 1 }), '10:00', zone);
-        expect(end - start, `${zone} ${day.toString()}`).toBeGreaterThanOrEqual(19 * HOUR_MS);
-        expect(guaranteedRun(hours, start, end), `${zone} ${day.toString()}`).toBe(true);
-      }
-  });
+  it(
+    '[TECH-046][spec booking §10.14] candidatos 2×/dia: toda janela de 1 noite tem disparo garantido em Brasília, Manaus, Nova York (com horário de verão) e outros fusos, o ano inteiro',
+    () => {
+      const hours = hoursOf('flag_no_show_candidates');
+      for (const zone of ZONES)
+        for (const day of DAYS_2027) {
+          const start = local(day, '14:00', zone);
+          const end = local(day.add({ days: 1 }), '10:00', zone);
+          expect(end - start, `${zone} ${day.toString()}`).toBeGreaterThanOrEqual(19 * HOUR_MS);
+          expect(guaranteedRun(hours, start, end), `${zone} ${day.toString()}`).toBe(true);
+        }
+      // Ano inteiro × fusos com o polyfill do Temporal: ~1 s isolado, mas passou de 5 s (padrão do projeto `unit`) sob a
+      // carga do `npm run verify` completo (auditoria da W20, 2 de 2). O limite explícito não muda nenhuma asserção.
+    },
+    CPU_BOUND_TIMEOUT_MS,
+  );
 
   it('[spec booking §10.14] limite conhecido: um único disparo às 17 UTC perderia a janela de 1 noite em Manaus', () => {
     const missed = DAYS_2027.filter(

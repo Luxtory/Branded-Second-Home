@@ -298,6 +298,13 @@ export interface AppEconomicSnapshot {
   resolved_at: Timestamp;
 }
 
+export interface AppEconomicSnapshotNight {
+  operation_id: string;
+  prl_id: string;
+  second_home_id: string;
+  stay_date: Timestamp;
+}
+
 export interface AppEconomicSnapshotParameter {
   operation_id: string;
   parameter_id: string;
@@ -1019,6 +1026,7 @@ export interface DB {
   'app.date_custody': AppDateCustody;
   'app.date_occupancy': AppDateOccupancy;
   'app.economic_snapshot': AppEconomicSnapshot;
+  'app.economic_snapshot_night': AppEconomicSnapshotNight;
   'app.economic_snapshot_parameter': AppEconomicSnapshotParameter;
   'app.fee_charge': AppFeeCharge;
   'app.fee_charge_reversal': AppFeeChargeReversal;

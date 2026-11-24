@@ -30,9 +30,9 @@ conflict, 01 prevails (BR-380, REQ-104).
 
 | Doc | Path | Defines | IDs |
 |---|---|---|---|
-| 01 — Business Model & Business Rules v10.5 | `docs/specs/canonical/01-business-model-business-rules.md` | what the business is; structural rules | 192 `BR-xxx` |
-| 02 — Product Spec v4.5 | `docs/specs/canonical/02-product-spec.md` | functional behavior, invariants, product decisions | 67 `REQ-xxx` · 6 `INV-n` · 11 `PD-xxx` |
-| 03 — Technical Spec v3.17 | `docs/specs/canonical/03-technical-spec.md` | how to build: data model, locks, ledgers, API, QA | 51 `TECH-xxx` · `ADR-001…008` |
+| 01 — Business Model & Business Rules v10.8 | `docs/specs/canonical/01-business-model-business-rules.md` | what the business is; structural rules | 192 `BR-xxx` |
+| 02 — Product Spec v4.6 | `docs/specs/canonical/02-product-spec.md` | functional behavior, invariants, product decisions | 67 `REQ-xxx` · 6 `INV-n` · 11 `PD-xxx` |
+| 03 — Technical Spec v3.19 | `docs/specs/canonical/03-technical-spec.md` | how to build: data model, locks, ledgers, API, QA | 51 `TECH-xxx` · `ADR-001…008` |
 
 - **Never edit them.** Changes only via a new version issued by Luxtory, followed by impact
   analysis and traceability update.

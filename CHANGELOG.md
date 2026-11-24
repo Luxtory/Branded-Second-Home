@@ -14,6 +14,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- W20 — Depósito Luxchange (REQ-051, REQ-060; BR-151, BR-200–BR-203; TECH-022, TECH-023, TECH-043, TECH-051;
+  ADR-0036). O Titular cede datas elegíveis da sua Second Home ao Inventário Luxtory e recebe, no mesmo commit, Créditos
+  = Σ PRL das noites cedidas × multiplicador publicado, com validade e procedência rastreáveis; sem Fee. Owner: noites
+  livres, consecutivas ou não. Co-Owner: reservas de uso próprio confirmadas, sempre inteiras ("Datas do seu Direito de
+  Uso"); a reserva termina por cessão e o dia segue consumido do Direito de Uso. Antecedência mínima de 14 dias e
+  Membership vigente; se PRL, multiplicador ou validade mudarem entre a revisão e a confirmação, nada é gravado e a tela
+  pede nova revisão. Área do Titular: jornada `/titular/luxchange/deposito` (Second Home, calendário com Créditos por
+  noite e o motivo de cada indisponibilidade, resumo com saldo atual e potencial, revisão vinculante, resultado lido do
+  banco), link na Carteira e aviso "Depósito concluído" na central; `POST /v1/luxchange/deposits`. Nenhum valor em reais
+  é mostrado ao Titular. Infraestrutura desativada: K6 `luxchange_deposit` e K4 `credits` fechadas; nenhum PRL ou
+  parâmetro real publicado. Auditoria independente: a nova chave K7 `luxchange_exchange` (fechada) impede que a K4 ligada
+  para o depósito abra originação por aceite ou movimentos de Request/Direct antes das W21–W23; fatos do depósito só na
+  transação do próprio snapshot; a reserva cedida aparece como "Cedida ao Luxchange" (Titular e Admin), nunca como
+  cancelada; o calendário mostra as três temporadas da W16 (Super Alta, Alta, Média/Baixa) e permite ir direto a mês e
+  exercício; a revisão identifica a Second Home, o vínculo e os Créditos de cada data, e a confirmação confere cada
+  data, o total e a validade revisados (troca de valores entre noites com a mesma soma pede nova revisão). Antecedência
+  de 14 dias (336 horas antes do check-in) também na tela aberta: a data que passa do prazo sai da seleção, com o motivo
+  "Esta data exige pelo menos 14 dias de antecedência para depósito."; reserva Co-Owner só inteira dentro do prazo.
+
 - W19 — Pagamentos, Luxchange Fee e settlement (REQ-094; ADR-006, ADR-008, TECH-025, TECH-080–083, TECH-090, TECH-101;
   ADR-0035). Decisão do fundador de 2026-11-22: o Luxchange Fee de referência passa de 10% para 12% do PRL total do
   período, mínimo de R$ 120 por operação preservado (`01` v10.8 §24, `03` v3.19 TECH-030); o valor continua parâmetro

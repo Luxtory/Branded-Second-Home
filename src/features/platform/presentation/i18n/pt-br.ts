@@ -50,6 +50,8 @@ export const messages = {
       'As condições do cancelamento mudaram desde a prévia. Revise a nova prévia antes de confirmar.',
     ERR_GUEST_RULES_CHANGED:
       'As regras de convidados da Second Home mudaram. Leia as regras atuais antes de declarar.',
+    ERR_DEPOSIT_TERMS_CHANGED:
+      'Os Créditos ou a validade do depósito mudaram desde a revisão. Revise os valores atualizados antes de confirmar.',
   },
   // Notificação de staff dos alertas operacionais (W10, TECH-101): só identificadores e códigos, nunca PII.
   operationalAlert: {

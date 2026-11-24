@@ -803,6 +803,30 @@ recusa com `ERR_POLICY_MISSING` — e esses mecanismos ainda não existem (W21�
    não se alteram nem se apagam. Operações já formadas mantêm a política aceita (vínculo gravado a partir da W21).
 4. **Rollback:** o `down` recusa com qualquer versão gravada; reverter só o código.
 
+## Preparar a W20 em produção (depósito Luxchange)
+
+Nada a ativar: a migration `luxchange_deposit` (71 no total) cria o snapshot por noite e as regras do depósito, e as
+chaves K6 `luxchange_deposit` e K7 `luxchange_exchange` entram só no CHECK de `app.capability_activation`, sem linha
+(ADR-0036 §7). Sem K6 e K4, o banco recusa toda cessão e todo lote; a rota `POST /v1/luxchange/deposits` responde 503 e
+a tela mostra o depósito como ainda indisponível (consulta sem confirmação). Sem K7, o banco recusa originação por
+aceite e Garantia/consumo/liberação de Request e Direct, mesmo com a K4 ligada.
+
+1. **Pré-condições (só leitura, SQL Editor):** 71 migrations, a última `20261123211619`; `app.economic_snapshot_night`
+   vazia; nenhuma custódia `luxchange_cession`; nenhuma linha `luxchange_deposit` nem `credits` em
+   `app.capability_activation` (nem `luxchange_exchange`); `SELECT count(*) FROM app.luxchange_invariant_breaches()` = 0 e
+   `app.credit_invariant_breaches()` = 0.
+2. **Valores econômicos:** multiplicador de referência PRL × 10 (`01` §20) e validade de 24 meses (BR-191) só por
+   `set_parameter` com autorização operacional do fundador; PRL das noites pelo procedimento da W16. Sem eles, o
+   depósito recusa com `ERR_PARAMETER_MISSING`/`ERR_PRL_MISSING` (TECH-001).
+3. **Ativação futura (fora da W20):** D2 (backup e restauração testados), PRL e parâmetros publicados, migration que
+   insere `credits` e `luxchange_deposit` e autorização expressa do fundador. **Nunca inserir `luxchange_exchange` (K7)
+   junto:** ela abre Request/Direct, cujo lastro no banco chega nas W21–W23 (STRIDE T-2012). Antes de qualquer ativação
+   futura da K7, conferir que a migration da W21 já tirou retirada e recusa da trava (contrato no ADR-0036): desligar a
+   K7 nunca pode prender Créditos em Garantia (`SELECT count(*) FROM app.credit_lot WHERE held > 0` deve poder chegar a
+   zero só com encerramentos).
+4. **Rollback:** o `down` recusa com snapshot por noite, transição `cession`, cessão de depósito ou a K6/K7 presente;
+   reverter só o código.
+
 ## Preparar a W19 em produção (pagamentos, Fee e settlement)
 
 Nada a ativar: a migration `billing_payments` só cria estrutura (70 no total) e a K5 `payments` entra só no CHECK de

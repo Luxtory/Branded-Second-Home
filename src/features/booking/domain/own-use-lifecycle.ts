@@ -16,7 +16,9 @@ export type TransitionKind =
   | 'no_show'
   | 'exception_opening'
   | 'exception_resolution'
-  | 'invalidation';
+  | 'invalidation'
+  // W20 (ADR-0036 §1): cessão da reserva Co-Owner pelo depósito Luxchange — só `deposit_capacity` a grava.
+  | 'cession';
 
 /** Transições que liberam noites (`cancelled` ou `no_show`). */
 export type ClosingKind = 'cancellation' | 'no_show' | 'exception_resolution' | 'invalidation';
@@ -78,6 +80,7 @@ const TRANSITIONS: Readonly<
     ['in_exception', 'cancelled'],
   ],
   invalidation: [['in_exception', 'cancelled']],
+  cession: [['confirmed', 'cancelled']],
 };
 
 export function isAllowedTransition(

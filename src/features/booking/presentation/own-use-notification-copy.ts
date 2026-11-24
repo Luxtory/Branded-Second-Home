@@ -6,6 +6,7 @@ import {
   OWN_USE_NO_SHOW_DECLARED,
 } from '../application/own-use-lifecycle-events';
 import { membershipNotificationCopy } from '@/features/identity';
+import { depositNotificationCopy } from '@/features/luxchange/notifications';
 import {
   lifecycleLabels,
   lifecycleNotificationMessages as text,
@@ -25,6 +26,8 @@ export interface NotificationCopy {
   readonly what: string;
   /** Linhas extras (ex.: saldo devolvido por categoria). */
   readonly extra: readonly (readonly [string, string])[];
+  /** Destino do aviso quando não é uma reserva (W20: resultado do depósito Luxchange). */
+  readonly href?: string;
 }
 
 export interface NotificationFormat {
@@ -180,7 +183,10 @@ export function notificationCopy(
     case OWN_USE_BOOKING_INVALIDATED:
       return invalidated(data, format);
     default:
-      // W15: mudança do Membership (texto do identity); outros tipos → aviso genérico.
-      return membershipNotificationCopy(kind, data, format.instant);
+      // W15: mudança do Membership (texto do identity); W20: depósito Luxchange; outros tipos → aviso genérico.
+      return (
+        depositNotificationCopy(kind, data, format) ??
+        membershipNotificationCopy(kind, data, format.instant)
+      );
   }
 }

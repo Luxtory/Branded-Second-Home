@@ -582,9 +582,13 @@ describe('W16 — PRL por Second Home e data no banco (REQ-013, REQ-052)', () =>
         `DELETE FROM app.prl WHERE id = '${version!.id}'`,
         `UPDATE app.prl_publication SET effective_from = effective_from`,
         `DELETE FROM app.prl_publication`,
-        `TRUNCATE app.prl`,
       ])
         await expect(h.database.pool.query(sql)).rejects.toMatchObject({ code: '42501' });
+      // W20 (ADR-0036 §4): o snapshot por noite referencia `app.prl`, e o PostgreSQL recusa o TRUNCATE pela FK antes do
+      // gatilho — a tabela continua intocável.
+      await expect(h.database.pool.query(`TRUNCATE app.prl`)).rejects.toMatchObject({
+        code: expect.stringMatching(/^(42501|0A000)$/),
+      });
       expect((await versionsOf(home, next('02-01'))).map((v) => v.amount_minor)).toEqual([
         '10001',
       ]);
