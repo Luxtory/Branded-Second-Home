@@ -1,6 +1,10 @@
 # 02 — Product Spec — Luxtory Branded Second Home
 
-2026-11-17 · Luxtory (fundador) · Versão 4.6 — final · Base normativa: 01 v10.6 (192 BRs) · PD-001 a PD-011 ratificados
+2026-11-24 · Luxtory (fundador) · Versão 4.7 — PROPOSTA (W21, E0) — não vigente até aprovação expressa do fundador; vigente: versão 4.6 · Base normativa proposta: 01 v10.9 (192 BRs) · PD-001 a PD-011 ratificados; PD-012 proposto
+
+Revisão W21 proposta ao fundador em 2026-11-24, pendente de aprovação expressa: acrescenta o PD-012 — complemento por datas na Request — e harmoniza PD-005, PD-006, PD-007, REQ-060, REQ-062, REQ-063, REQ-064, REQ-096, REQ-097, REQ-098, §15, §17 e §18. Nenhuma Business Rule é redefinida (BR-380): o complemento é disponibilidade oferecida sob condição (BR-170, BR-171; `01` §18, esclarecimento proposto), cuja cessão é depósito no instante do aceite (BR-200 a BR-203), composta com a Request (BR-210 a BR-214). Total normativo proposto: **67 REQ · 6 INV · 12 PD**. Rastreabilidade técnica em `03` v3.20 (TECH-073), também proposto; decisão em [ADR-0037](../../adr/0037-request-lastro-complemento-por-datas-e-encerramentos.md) (Proposed).
+
+Histórico preservado — versão 4.6, emitida em 2026-11-17 (base normativa: 01 v10.6; PD-001 a PD-011 ratificados):
 
 Revisão SHP autorizada pelo fundador em 2026-11-17: amplia somente REQ-105 aos três perfis e à copy de lançamento aprovada. Mesma página, nove seções, formulário por perfil; nenhum novo REQ, PD ou INV (67 REQ · 6 INV · 11 PD). TECH-057 / 03 v3.18; catalog §20.6. Nenhum serviço do Club implementado ou habilitado por esta revisão.
 
@@ -88,11 +92,11 @@ Decisões funcionais desta camada, **ratificadas e canônicas**. Não são deriv
 
 **PD-004 — 29 de fevereiro.** O Co-Owner contemplado PODE reservá-lo a partir de 15 de setembro do ano anterior, ou imediatamente após a formalização se ela ocorrer depois dessa data. Não utilizado, o direito extraordinário expira com a data, sem rollover nem transferência automática — único desfecho compatível com a BR-161, que esgota as origens do Inventário Luxtory e não inclui essa capacidade.
 
-**PD-005 — Request.** Prazo padrão 24 horas, administrável. Para enviar, o solicitante DEVE ter Membership elegível, Créditos suficientes em Garantia e pagar antecipadamente o Luxchange Fee. A capacidade NÃO fica bloqueada enquanto pendente; múltiplas Requests PODEM coexistir.
+**PD-005 — Request.** Prazo padrão 24 horas, administrável. Para enviar, o solicitante DEVE ter Membership elegível, lastro suficiente — Créditos em Garantia e, se o solicitante escolher, complemento por datas (PD-012) — e pagar antecipadamente o Luxchange Fee. A capacidade solicitada NÃO fica bloqueada enquanto pendente; múltiplas Requests PODEM coexistir.
 
-**PD-006 — Garantia e vinculação.** Créditos em Garantia ficam indisponíveis para outras operações e não têm validade prorrogada; somente lotes válidos até a expiração prevista da Request PODEM lastreá-la. Recusa, expiração, retirada pré-aceite, perda de elegibilidade ou confirmação concorrente liberam os Créditos e revertem integralmente o Fee. O primeiro aceite que passar pela revalidação final confirma a operação. Após o aceite, cancelamento segue a política aplicável e não desfaz unilateralmente os Créditos originados ao cedente.
+**PD-006 — Garantia e vinculação.** Créditos em Garantia ficam indisponíveis para outras operações e não têm validade prorrogada; somente lotes válidos até a expiração prevista da Request e unidades do complemento por datas (PD-012) PODEM lastreá-la. Recusa, expiração, retirada pré-aceite, perda de elegibilidade ou confirmação concorrente liberam os Créditos e as unidades comprometidas e revertem integralmente o Fee. O primeiro aceite que passar pela revalidação final confirma a operação. Após o aceite, cancelamento segue a política aplicável e não desfaz unilateralmente os Créditos originados ao cedente nem ao solicitante pelo complemento.
 
-**PD-007 — Snapshot da Request.** PRL, Créditos necessários e Fee apresentados no envio permanecem vinculados à Request até seu encerramento. Esta é decisão de produto com efeito econômico, e não derivação da BR-182: a BR-182 é silente sobre operação pendente. Ela existe porque o PD-005 cobra o Fee antecipadamente, e não se cobra para depois alterar o preço.
+**PD-007 — Snapshot da Request.** PRL, Créditos necessários, Fee, multiplicador e validade dos Créditos apresentados no envio permanecem vinculados à Request até seu encerramento e são os usados no aceite, inclusive para os Créditos do cedente — que os conhece antes de aceitar — e, havendo complemento por datas (PD-012), para o PRL de cada data comprometida e o lote do complemento. A data de originação dos Créditos do aceite é a do aceite. Esta é decisão de produto com efeito econômico, e não derivação da BR-182: a BR-182 é silente sobre operação pendente. Ela existe porque o PD-005 cobra o Fee antecipadamente, e não se cobra para depois alterar o preço; pela mesma razão, o que o solicitante aceitou ceder não é revalorizado depois do envio.
 
 **PD-008 — Consumo de Créditos.** Primeiro o lote de expiração mais próxima; em empate, o de originação mais antiga.
 
@@ -103,6 +107,18 @@ Decisões funcionais desta camada, **ratificadas e canônicas**. Não são deriv
 **PD-010 — Exceção extraordinária.** Manutenção emergencial, segurança, sinistro, caso fortuito ou força maior colocam a operação afetada em tratamento de exceção. O produto não transfere capacidade à Luxtory nem cria restituição, Crédito, indenização ou compensação não previstos; aplica a política vigente e permite resolução administrativa auditável.
 
 **PD-011 — Auditabilidade funcional.** Toda ação econômica ou que altere inventário DEVE permitir comprovar ator, papel, data e hora, objeto e autorização ou base. Sorteios DEVEM permitir comprovar participantes, método ou insumo de aleatoriedade e resultado. O `03` define como registrar e proteger essas evidências.
+
+**PD-012 — Complemento por datas na Request (proposto, W21).** O solicitante PODE compor o lastro da Request com Créditos em Garantia e com datas próprias oferecidas sob a condição do aceite — o complemento por datas. Antes do aceite não é depósito, não é Garantia de Créditos e não gera Crédito.
+
+1. **Unidade e elegibilidade.** A unidade do complemento é a noite própria disponível do Owner ou a reserva de uso próprio confirmada do Co-Owner, inteira, de holding vigente do solicitante, elegível ao depósito (BR-151, BR-200 a BR-203). A antecedência mínima do depósito DEVE estar cumprida, para toda noite da unidade, no instante máximo de aceite — a expiração prevista da Request — e é revalidada no aceite.
+2. **Composição.** O solicitante escolhe as unidades, ou nenhuma. Os Créditos potenciais de uma unidade são a soma, por noite, do PRL vigente no envio multiplicado pelo multiplicador vigente no envio (`01` §20). Os Créditos em Garantia são a diferença positiva entre os Créditos necessários e os Créditos potenciais das unidades escolhidas, selecionados por FEFO entre os lotes disponíveis válidos até a expiração prevista (PD-006, PD-008).
+3. **Seleção sem sobra evitável.** Quando os Créditos potenciais alcançam sozinhos os Créditos necessários, nenhuma unidade escolhida pode ser dispensada mantendo a cobertura. O excedente é a parte dos Créditos potenciais que não é necessária à Request.
+4. **Consentimento.** O envio exige aceite expresso do solicitante, depois de exibidos: as unidades e, por data, os Créditos potenciais; o total coberto; os Créditos em Garantia; o excedente; o prazo de resposta; a cessão definitiva das unidades no aceite; o consumo dos Créditos necessários; o destino do excedente; a liberação em recusa, retirada, expiração ou encerramento; e, no Co-Owner, que o dia cedido permanece consumido do Direito de Uso. Créditos potenciais nunca são apresentados como saldo. Antes do envio confirmado, as datas são apresentadas como "a comprometer", nunca como comprometidas. O consentimento fica vinculado à Request com os valores exibidos.
+5. **Pendência.** As unidades permanecem do solicitante, com custódia, reserva e Direito de Uso inalterados, e não constituem Crédito, saldo, cessão nem reserva. Enquanto a Request puder ser aceita — pendente, não expirada e elegível —, a unidade não pode ser usada, cancelada, depositada nem vinculada a outro compromisso que constitua obrigação sobre ela (outro complemento, aceite de Request alheia, confirmação de locação); exposição em canal sem compromisso não é impedida (BR-164). Uma unidade lastreia no máximo uma Request. A oferta é retirável retirando a Request e não é compromisso constituído para fins das BR-171 e BR-344 (`01` §18 e §34, esclarecimentos); as obrigações já constituídas pela Request — Garantia, Fee pago, liberação e estorno — seguem as regras da Request.
+6. **Atos que o compromisso não impede.** Exceção (PD-010), invalidação (REQ-084), transferência da holding, mudança de Membership e demais atos administrativos ou extraordinários previstos no `01` ou em PD não são impedidos e, quando tornam a unidade ou o solicitante inelegíveis, encerram a Request (TECH-024).
+7. **Encerramento pré-aceite.** Recusa, retirada, expiração, perda de elegibilidade ou confirmação concorrente liberam as unidades sem cessão e sem Créditos, liberam a Garantia e revertem integralmente o Fee (PD-006). Fatos posteriores válidos sobre a unidade são preservados.
+8. **Aceite.** Revalidadas as condições aplicáveis, num único resultado: as unidades são cedidas ao Inventário Luxtory e originam ao solicitante um lote com originação no aceite, quantidade igual aos Créditos potenciais vinculados e a validade vinculada (BR-201 a BR-203, PD-007); consomem-se os Créditos em Garantia e, do lote originado, somente o restante dos Créditos necessários; o excedente permanece disponível nesse lote. A capacidade solicitada é cedida e reservada e o cedente recebe os Créditos correspondentes (BR-212, BR-213, PD-007). No Co-Owner, o dia cedido permanece consumido do Direito de Uso (REQ-060).
+9. **Independência do depósito.** O depósito definitivo (REQ-060) permanece independente: nenhum encerramento de Request o desfaz, e data já depositada não integra complemento.
 
 ## 4. Atores, permissões e auditabilidade
 
@@ -275,15 +291,15 @@ econômicas ficam no contrato.
 
 ## 10. Luxchange
 
-**REQ-060 \[BR-151, BR-200 a BR-203\]** — O Owner deposita capacidade própria disponível; o Co-Owner, somente data já reservada. Respeitada a antecedência do `01`, a originação dos Créditos e a entrada da capacidade no Inventário Luxtory constituem o mesmo resultado funcional. O dia depositado pelo Co-Owner **permanece consumido** de seu Direito de Uso: a contraprestação são os Créditos, não a devolução do saldo. Uso posterior pela Luxtory não gera nova remuneração ao cedente.
+**REQ-060 \[BR-151, BR-200 a BR-203\]** — O Owner deposita capacidade própria disponível; o Co-Owner, somente data já reservada. Respeitada a antecedência do `01`, a originação dos Créditos e a entrada da capacidade no Inventário Luxtory constituem o mesmo resultado funcional. O dia depositado pelo Co-Owner **permanece consumido** de seu Direito de Uso: a contraprestação são os Créditos, não a devolução do saldo. Uso posterior pela Luxtory não gera nova remuneração ao cedente. O complemento por datas (PD-012) é cessão sob a condição do aceite da Request: até o aceite não há depósito, Crédito nem entrada no Inventário Luxtory.
 
 **REQ-061 \[BR-151, BR-210, BR-211\]** — A rota é determinada pela titularidade: capacidade elegível de outro Titular fora do Inventário Luxtory → Request; capacidade já no Inventário Luxtory → Direct. O detentor PODE aceitar ou recusar, sem aceite automático ou tácito; o solicitante nunca aceita a própria Request.
 
-**REQ-062 \[BR-230 a BR-232, PD-005 a PD-007\]** — Para enviar Request aplicam-se prazo, Créditos em Garantia, pagamento antecipado do Fee e snapshot econômico definidos nos PDs. O Fee é monetário, devido pelo solicitante e apresentado separadamente dos Créditos.
+**REQ-062 \[BR-200 a BR-203, BR-230 a BR-232, PD-005 a PD-007, PD-012\]** — Para enviar Request aplicam-se prazo, Créditos em Garantia, complemento por datas quando escolhido, pagamento antecipado do Fee e snapshot econômico definidos nos PDs. O Fee é monetário, devido pelo solicitante e apresentado separadamente dos Créditos. Antes do envio, o solicitante vê os Créditos necessários, os Créditos em Garantia, os Créditos potenciais das unidades escolhidas, o total coberto, o eventual excedente e o destino de cada recurso no aceite e no encerramento pré-aceite, e consente expressamente nos termos do PD-012.
 
-**REQ-063 \[BR-164 a BR-167, PD-005, PD-006\]** — Request pendente não constitui reserva nem bloqueia capacidade. Múltiplas Requests PODEM coexistir; a confirmação válida de uma encerra as concorrentes, sem penalidade a nenhum solicitante.
+**REQ-063 \[BR-164 a BR-167, PD-005, PD-006, PD-012\]** — Request pendente não constitui reserva nem bloqueia a capacidade solicitada; o complemento por datas compromete somente a capacidade do próprio solicitante (PD-012). Múltiplas Requests PODEM coexistir; a confirmação válida de uma encerra as concorrentes, sem penalidade a nenhum solicitante.
 
-**REQ-064 \[BR-212 a BR-214, PD-006\]** — No aceite, o produto revalida capacidade, Membership de ambos os Titulares, garantia e demais condições. Válidas, confirma cessão e reserva, consome os Créditos em Garantia e origina Créditos ao cedente com data de originação própria. Recusa, expiração, perda de elegibilidade ou encerramento pré-aceite não constituem cessão nem reserva e liberam as garantias conforme o PD-006.
+**REQ-064 \[BR-200 a BR-203, BR-212 a BR-214, PD-006, PD-007, PD-012\]** — No aceite, o produto revalida capacidade, Membership de ambos os Titulares, Garantia, unidades do complemento e demais condições, sem recalcular valores vinculados. Válidas, confirma cessão e reserva, cede as unidades do complemento originando ao solicitante os Créditos correspondentes, consome os Créditos em Garantia e o restante necessário do lote do complemento e origina ao cedente os Créditos correspondentes, todos com data de originação no aceite e valores do envio. Recusa, expiração, perda de elegibilidade ou encerramento pré-aceite não constituem cessão nem reserva e liberam as garantias e as unidades conforme os PD-006 e PD-012.
 
 **REQ-065 \[BR-220, BR-221, BR-230 a BR-232\]** — O Direct dispensa aceite de terceiro, exige Membership e Créditos suficientes e só confirma após validação e pagamento do Fee aplicável.
 
@@ -335,13 +351,14 @@ econômicas ficam no contrato.
 | Membership | Vigente · Suspenso · Encerrado |
 | Crédito | Disponível · Em Garantia · Consumido · Expirado · Indisponível por Membership |
 | Request | Pendente · Aceita · Recusada · Expirada · Cancelada pré-aceite |
+| Complemento por datas | Comprometido · Cedido · Liberado |
 | Reserva | Confirmada · Em uso · Concluída · Cancelada · No-show · Em exceção |
 
 Estados adicionais só existem quando necessários à jornada e nunca criam consequência econômica nova.
 
-**REQ-097 \[BR-092, BR-100, BR-103, BR-191, BR-210 a BR-214, BR-290, BR-340 a BR-346, PD-005 a PD-011\]** — Notificar o ator afetado sobre: abertura da elegibilidade anual e resultado do sorteio; direito ao 29 de fevereiro no exercício; confirmação, cancelamento ou exceção de reserva; Request recebida e seu resultado; entrada e saída de Créditos em Garantia; pagamento e reversão do Fee; originação e expiração próxima de lotes; mudança de elegibilidade do Membership; suspensão e regularização por inadimplência; transferência concluída. Notificações de calendário e uso próprio alcançam também Titular sem Membership. Notificação não cria direito, prazo nem consequência econômica própria.
+**REQ-097 \[BR-092, BR-100, BR-103, BR-191, BR-210 a BR-214, BR-290, BR-340 a BR-346, PD-005 a PD-011\]** — Notificar o ator afetado sobre: abertura da elegibilidade anual e resultado do sorteio; direito ao 29 de fevereiro no exercício; confirmação, cancelamento ou exceção de reserva; Request recebida e seu resultado; entrada e saída de Créditos em Garantia; comprometimento e liberação de datas do complemento; pagamento, reversão e devolução do Fee; originação e expiração próxima de lotes; mudança de elegibilidade do Membership; suspensão e regularização por inadimplência; transferência concluída. Notificações de calendário e uso próprio alcançam também Titular sem Membership. Notificação não cria direito, prazo nem consequência econômica própria.
 
-**REQ-098 \[BR-103 a BR-112, BR-146, BR-165, BR-166, BR-195, BR-352, PD-005 a PD-010\]** — Operação recusada informa causa funcional clara: permissão; elegibilidade ou disponibilidade da capacidade; janela não aberta; saldo ou limite sazonal; duração ou adjacência; Membership; Créditos ou garantia; pagamento; política ou parâmetro obrigatório ausente; conflito com reserva confirmada. Códigos técnicos pertencem ao `03`.
+**REQ-098 \[BR-103 a BR-112, BR-146, BR-165, BR-166, BR-195, BR-352, PD-005 a PD-010\]** — Operação recusada informa causa funcional clara: permissão; elegibilidade ou disponibilidade da capacidade; janela não aberta; saldo ou limite sazonal; duração ou adjacência; Membership; Créditos ou garantia; data comprometida com Request pendente; pagamento; política ou parâmetro obrigatório ausente; conflito com reserva confirmada. Códigos técnicos pertencem ao `03`.
 
 ## 15. Edge cases obrigatórios
 
@@ -363,6 +380,11 @@ Tratados sem criar regra econômica nova:
 14. média projetada alterada entre a apresentação e a manifestação: a pré-qualificação permanece vinculada à referência apresentada;
 15. Home Edition que deixa de ser pública entre a página e o envio: a manifestação não é registrada.
 16. reserva não reconhecida pela party, em apuração, com datas que se iniciam ou terminam antes da autorização ou da execução da invalidação.
+17. unidade do complemento por datas atingida por exceção, invalidação, transferência ou mudança de Membership durante a pendência;
+18. alteração de PRL, multiplicador ou validade dos Créditos durante a pendência de Request, com ou sem complemento;
+19. reserva Co-Owner comprometida cujo prazo de cancelamento tempestivo transcorre durante a pendência;
+20. data comprometida como complemento que é capacidade solicitada por outro membro;
+21. Request expirada ainda não encerrada cujas unidades o solicitante volta a usar ou oferecer.
 
 Toda confirmação revalida as condições aplicáveis. Falhando qualquer uma, a operação não confirma e aplica apenas consequências já definidas no `01`, em PD ou em política vigente.
 
@@ -394,10 +416,10 @@ As 192 BRs do `01` v10.2, uma a uma. Serve como mecanismo de auditoria contra om
 | BR-010 | REQ-021, 028, 029 | BR-194 | REQ-053, 093 |
 | BR-011 | REQ-021 | BR-195 | REQ-053, 093 |
 | BR-012 | `01-only` | BR-196 | REQ-053, 093 |
-| BR-013 | REQ-021 | BR-200 | REQ-060 |
-| BR-014 | REQ-021 | BR-201 | REQ-060 |
-| BR-015 | REQ-021, 028, 029 | BR-202 | REQ-060 |
-| BR-016 | REQ-094 | BR-203 | REQ-060 |
+| BR-013 | REQ-021 | BR-200 | REQ-060, 062, 064 |
+| BR-014 | REQ-021 | BR-201 | REQ-060, 062, 064 |
+| BR-015 | REQ-021, 028, 029 | BR-202 | REQ-060, 062, 064 |
+| BR-016 | REQ-094 | BR-203 | REQ-060, 062, 064 |
 | BR-017 | REQ-021 | BR-210 | REQ-061 |
 | BR-018 | REQ-021 | BR-211 | REQ-061 |
 | BR-019 | REQ-021 | BR-212 | REQ-064 |
@@ -483,12 +505,12 @@ As 192 BRs do `01` v10.2, uma a uma. Serve como mecanismo de auditoria contra om
 | BR-161 | REQ-040, 041, INV-3 |  |  |
 | BR-162 | REQ-039, 040 |  |  |
 | BR-163 | REQ-040, 081, 084, PD-009 |  |  |
-| BR-164 | REQ-042 |  |  |
+| BR-164 | REQ-042, 063 |  |  |
 | BR-165 | REQ-042, INV-1 |  |  |
 | BR-166 | REQ-042 |  |  |
 | BR-167 | REQ-042 |  |  |
-| BR-170 | REQ-043 |  |  |
-| BR-171 | REQ-043 |  |  |
+| BR-170 | REQ-043, 062 |  |  |
+| BR-171 | REQ-043, 062 |  |  |
 | BR-180 | REQ-052 |  |  |
 | BR-181 | REQ-052, 013 |  |  |
 
@@ -518,3 +540,10 @@ integração com plataformas de locação dependem de requisito próprio.
 média projetada de investimento e a correção estrutural da manifestação de interesse do REQ-022 entram em software
 na W4.2; o contato e a pré-qualificação comercial do REQ-022 entram na W6. M0 é documental; não declara nenhum
 requisito entregue em software.
+
+**Recorte W21 (2026-11-24, proposto; pendente de aprovação expressa do fundador):** o PD-012 — complemento por datas na
+Request — e as harmonizações dos PD-005 a PD-007 e dos REQ-060, REQ-062 a REQ-064 e REQ-096 a REQ-098 entram em
+software em duas etapas: a W21 entrega o envio, os compromissos das datas, a Garantia e os encerramentos pré-aceite; a
+W22, o aceite composto e a recusa. Total normativo proposto: **67 REQ · 6 INV · 12 PD**; edge cases 17 a 21. Nenhuma
+operação econômica é habilitada por esta revisão: políticas, parâmetros, PRL, PSP, backup testado e ativação continuam
+pré-requisitos de operação.

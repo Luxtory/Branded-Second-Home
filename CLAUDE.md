@@ -34,6 +34,11 @@ conflict, 01 prevails (BR-380, REQ-104).
 | 02 — Product Spec v4.6 | `docs/specs/canonical/02-product-spec.md` | functional behavior, invariants, product decisions | 67 `REQ-xxx` · 6 `INV-n` · 11 `PD-xxx` |
 | 03 — Technical Spec v3.19 | `docs/specs/canonical/03-technical-spec.md` | how to build: data model, locks, ledgers, API, QA | 51 `TECH-xxx` · `ADR-001…008` |
 
+> **W21 (branch `feat/w21-luxchange-request-envio`, E0 de 2026-11-24):** `01` v10.9 (esclarecimento §18/§34), `02` v4.7
+> (PD-012, complemento por datas) e `03` v3.20 (TECH-073) estão **propostos e não vigentes** até aprovação expressa do
+> fundador (checkpoint C0 em [`w21-luxchange-request-envio.md`](docs/plan/w21-luxchange-request-envio.md)). Até lá valem
+> as versões da tabela acima e o gate 11/11 PD; nada da W21 é implementado nem ativado com base nos textos propostos.
+
 - **Never edit them.** Changes only via a new version issued by Luxtory, followed by impact
   analysis and traceability update.
 - **They are the spec.** Module specs (`docs/specs/<module>.md`), tests and commits cite the IDs

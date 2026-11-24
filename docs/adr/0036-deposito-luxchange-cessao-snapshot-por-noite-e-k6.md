@@ -131,6 +131,21 @@ decisão:
 - **Uma K7 para Request e Direct.** Adequada enquanto a ativação de Request (W21+W22) e Direct (W23) for conjunta. Se o
   fundador decidir ativar um antes do lastro do outro, a wave que antecipar a ativação divide a chave na própria
   migration (Request / Direct). A necessidade não está demonstrada hoje: não dividir agora.
+- **Emenda W21 (2026-11-24, proposta — pendente de aprovação expressa do fundador; ADR-0037; `01` v10.9 §18 e §34,
+  `02` v4.7 PD-012 e `03` v3.20 TECH-073, também propostos).** Nada da decisão acima é alterado ou removido.
+  (1) O depósito continua definitivo e independente; nenhum encerramento de Request desfaz depósito (BR-171, REQ-060).
+  (2) Único acréscimo ao comportamento do depósito: noite com compromisso **efetivo** de complemento por datas (Request
+  pendente, não expirada e elegível) não é depositável — recusa `ERR_CAPACITY_UNAVAILABLE`, com a orientação de retirar
+  a solicitação; compromisso não efetivo nunca impede o depósito, ainda que o encerramento da Request não tenha sido
+  materializado. (3) A transição `cession`, os ramos de cessão, a conferência de quantidade e `parent_custody_id` passam
+  a servir também ao aceite com complemento (W22), só pelo contrato da ADR-0037 §8, com
+  `authorization_ref = request_complement:<request>`; nenhum caminho da W20 é relaxado e o ramo de originação do
+  depósito permanece igual. (4) O contrato da K7 acima é generalizado pela ADR-0037 §10: K4, K5, K6 e K7 abrem só
+  compromissos novos; a K6 passa a ser exigida também no envio e no aceite com complemento (cessão ao Inventário sob
+  condição); encerramentos, liberações, expiração de lotes, reversões e estornos de obrigações existentes nunca dependem
+  de chave. A divisão da K7 continua não demonstrada (decisão na E0 da W22). (5) Nenhum dado de Production é alterado;
+  a migration da W21 só acrescenta tabelas e ramos, com `down` que restaura as definições da W20 e é recusado havendo
+  Request, compromisso ou chave ativa.
 
 ## Alternatives considered
 

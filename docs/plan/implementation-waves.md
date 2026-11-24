@@ -124,8 +124,8 @@ A afiliação de imóveis existentes, as novas páginas do Club e a publicação
 | 17 | Créditos e Carteira | credits | REQ-053, REQ-054, PD-008, INV-6 | 15 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w17-creditos-e-carteira.md`](w17-creditos-e-carteira.md), PR draft #106: E0–E4 entregues, trace REQ-053, REQ-054, PD-008, INV-6 4/4; aguardando autorização de merge) → ✅ concluída (#106, squash `00f0a5e`, 2026-11-22; 68 migrations em Production; K4 fechada; nenhum Crédito real) |
 | 18 | Políticas comerciais | pricing | REQ-082, REQ-104, PD-009 | 16 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w18-politicas-comerciais.md`](w18-politicas-comerciais.md), PR draft) → ✅ concluída (#107, squash `1e974bc`, 2026-11-22; 69 migrations em Production; nenhuma política real) |
 | 19 | Pagamentos, Fee e settlement | billing | REQ-094 | 16 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w19-pagamentos-fee-e-settlement.md`](w19-pagamentos-fee-e-settlement.md), PR draft; Fee de referência 12% pelo `01` v10.8) → ✅ concluída (#108, squash `2fa37e8`, 2026-11-23; 70 migrations em Production; K5 fechada; nenhum pagamento real) |
-| 20 | Luxchange — depósito | luxchange | REQ-051, REQ-060 | 13, 16, 17 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-23; [`w20-luxchange-deposito.md`](w20-luxchange-deposito.md), branch isolada: E0–E4 entregues, trace REQ-051, REQ-060 2/2; auditoria independente de 2026-11-24 aplicada — K7 `luxchange_exchange` e fatos do depósito só na transação do snapshot; PR draft a abrir pelo fundador; merge só com autorização) |
-| 21 | Request — envio | luxchange | REQ-062, PD-005, PD-007 | 18, 19, 20 | — | R3 | ⬜ |
+| 20 | Luxchange — depósito | luxchange | REQ-051, REQ-060 | 13, 16, 17 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-23; [`w20-luxchange-deposito.md`](w20-luxchange-deposito.md), branch isolada: E0–E4 entregues, trace REQ-051, REQ-060 2/2; auditoria independente de 2026-11-24 aplicada — K7 `luxchange_exchange` e fatos do depósito só na transação do snapshot; PR draft a abrir pelo fundador; merge só com autorização) → ✅ concluída (#109, squash `5b8a047`, 2026-11-24; CI da `main` 45467480372; 71 migrations em Production; K6 e K7 fechadas; nenhum depósito real; D2 pendente) |
+| 21 | Request — envio | luxchange | REQ-062, PD-005, PD-007 (+ PD-012 proposto) | 18, 19, 20 | — | R3 | ⬜ → 🔄 E0 documental em revisão (2026-11-24; [`w21-luxchange-request-envio.md`](w21-luxchange-request-envio.md); `01` v10.9, `02` v4.7, `03` v3.20 e ADR-0037 **propostos, não vigentes** até aprovação expressa do fundador no C0; E1 não autorizada) |
 | 22 | Request — aceite e recusa | luxchange | REQ-061, REQ-063, REQ-064, REQ-096, PD-006 | 21 | — | R3 | ⬜ |
 | 23 | Luxchange Direct | luxchange | REQ-065 | 22 | — | R3 | ⬜ |
 | 24 | Luxplus | booking, billing | REQ-066, REQ-070 | 23 | — | R3 | ⬜ |
@@ -1447,6 +1447,18 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   `[TECH-072] lote vencido em Garantia é liberado como expired, nunca como available` · `[TECH-044] Request vencida
   não é aceita mesmo sem o job ter rodado`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-062,PD-005,PD-007 exits 0, stop after 5 tries`
+- **Emenda W21 (2026-11-24, PROPOSTA — pendente de aprovação expressa do fundador; só prevalece sobre as linhas acima
+  depois do C0):** plano [`w21-luxchange-request-envio.md`](w21-luxchange-request-envio.md),
+  [ADR-0037](../adr/0037-request-lastro-complemento-por-datas-e-encerramentos.md) (Proposed), `01` v10.9, `02` v4.7
+  (PD-012) e `03` v3.20 (TECH-073) propostos.
+  - Direção aprovada pelo fundador: complemento por datas sob a condição do aceite, `G = max(0, N − P)` com FEFO entre os
+    lotes elegíveis, depósito da W20 preservado, W21 = envio/compromissos/encerramentos e W22 = aceite composto/recusa.
+  - Lastro da Request no banco (Request, noites, complemento, consentimento, política no snapshot, completude no
+    COMMIT); compromisso efetivo pelo relógio do banco e por inelegibilidade provada; materialização idempotente por
+    `after()`, consumidor e Cron diário, nunca como única proteção; chaves fechadas só impedem compromisso novo.
+  - W22 passa a incluir o aceite composto do contrato da ADR-0037 §8; a W21 entrega só o plano somente leitura.
+  - Goal proposto (depois do C0): `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect
+    REQ-062,PD-005,PD-007,PD-012 exits 0, stop after 5 tries`.
 
 ### Wave 22 — Request: aceite e recusa
 
@@ -1628,8 +1640,8 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
 | W18 | REQ-082, REQ-104 | PD-009 | — |
 | W19 | REQ-094 | — | — |
 | W20 | REQ-051, REQ-060 | — | — |
-| W21 | REQ-062 | PD-005, PD-007 | — |
-| W22 | REQ-061, REQ-063, REQ-064, REQ-096 | PD-006 | — |
+| W21 | REQ-062 | PD-005, PD-007, PD-012 (proposto; envio) | — |
+| W22 | REQ-061, REQ-063, REQ-064, REQ-096 | PD-006, PD-012 (proposto; aceite) | — |
 | W23 | REQ-065 | — | — |
 | W24 | REQ-066, REQ-070 | — | — |
 | W25 | REQ-012, REQ-041, REQ-042, REQ-043, REQ-071, REQ-072 | — | — |

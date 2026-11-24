@@ -1,6 +1,10 @@
 # 01 — Business Model & Business Rules — Luxtory Branded Second Home
 
-2026-11-22 · Luxtory (fundador) · Versão 10.8 — Status: final
+2026-11-24 · Luxtory (fundador) · Versão 10.9 — Status: PROPOSTA (W21, E0) — não vigente até aprovação expressa do fundador; vigente: versão 10.8
+
+Esclarecimento pontual proposto ao fundador em 2026-11-24 (W21), pendente de aprovação expressa: explicita, nos §18 e §34, o tratamento da disponibilidade oferecida sob condição — como datas oferecidas para complementar o lastro de uma Request, cuja cessão depende do aceite. Não cria nem altera Business Rule; preserva as 192 BRs, os parâmetros vigentes e os direitos constituídos. Delimita, para essa hipótese, o alcance das expressões "outro compromisso econômico incompatível" (BR-170, BR-171) e "compromissos anteriormente constituídos" (BR-344), sem afastar as obrigações que a própria Request constitui. Compatibilidade: `02` v4.7 (PD-012) e `03` v3.20 (TECH-073), também propostos.
+
+Histórico preservado — versão 10.8, emitida em 2026-11-22:
 
 Revisão pontual autorizada pelo fundador em 2026-11-22 (decisão comercial para o Go-to-Market): o percentual de referência do Luxchange Fee passa de 10% para **12% do PRL total do período**. Substitui exclusivamente o percentual do parâmetro atual do §24; preserva o mínimo de R$ 120 por operação, a regra de cálculo (maior entre o percentual sobre o PRL total do período e o mínimo) e as BR-230, BR-231 e BR-232. O Fee continua parâmetro administrável (BR-232) e não altera o multiplicador de Créditos do §20 (PRL × 10). Esta revisão não publica parâmetro econômico, não habilita cobrança e não comprova operação: a publicação da versão vigente em Production depende de autorização operacional própria (TECH-030). Preserva as 192 BRs e os direitos constituídos. Impacto: `03` TECH-030 (valor inicial do Fee) e plano da W19.
 
@@ -380,6 +384,8 @@ O **Inventário Central** representa toda a capacidade física da Second Home. O
 
 **BR-171** — Depois de constituído um desses compromissos, a cessão torna-se vinculante na extensão necessária ao cumprimento da obrigação.
 
+**Esclarecimento — oferta sob condição (v10.9, proposto).** A disponibilidade voluntariamente oferecida sob condição — como datas oferecidas para complementar o lastro de uma Request, cuja cessão depende do aceite da Request — permanece retirável nos termos da BR-170 até a ocorrência da condição; retirá-la encerra a Request de que faz parte. Enquanto a condição não ocorre, a oferta não origina Créditos, não constitui reserva nem cessão e não gera obrigação de ceder perante terceiro, e o Luxchange Fee pago pela Request não é contraprestação da disponibilidade oferecida (BR-231); o compromisso da BR-171 sobre essa disponibilidade constitui-se somente com a ocorrência da condição e na extensão por ela definida. A inexistência de cessão antes do aceite não afasta as obrigações que a própria Request já constituiu nos termos do `02` — Créditos reservados como garantia, Luxchange Fee pago (BR-230) e os deveres de liberar a garantia e de reverter e estornar o Fee nos encerramentos anteriores ao aceite —, que seguem as regras da Request. A indisponibilidade da capacidade oferecida para outros usos decorre da própria oferta e cessa com a sua retirada ou com o encerramento da Request; encerrada a Request antes do aceite, nenhuma cessão, Crédito ou consequência econômica sobre a disponibilidade oferecida é constituída (BR-214).
+
 ## 19. PRL — Preço de Referência Luxtory
 
 Cada data de cada Second Home possui um PRL. **PRL do período = soma do PRL das datas correspondentes.**
@@ -602,6 +608,8 @@ O Investor NÃO constitui terceira modalidade de propriedade.
 **BR-343** — A obrigação de preservação do Home Concept acompanha a Second Home conforme os instrumentos aplicáveis.
 
 **BR-344** — A transferência NÃO extingue automaticamente reservas ou compromissos anteriormente constituídos.
+
+**Esclarecimento — oferta sob condição na transferência (v10.9, proposto).** A oferta sob condição ainda não ocorrida (§18, esclarecimento) não é compromisso anteriormente constituído para fins da BR-344, porque não constitui reserva, cessão nem obrigação de ceder: a transferência da capacidade oferecida a encerra, com a Request de que faz parte, sem cessão nem Crédito. A transferência preserva, nos termos da BR-344, as reservas e os compromissos constituídos sobre a mesma capacidade — inclusive a reserva de uso próprio oferecida, que acompanha a participação ou a Second Home transferida conforme as BR-344 e BR-345 —, e não extingue as obrigações econômicas já constituídas pela Request, que se resolvem pelo seu encerramento: liberação da garantia ao solicitante e reversão e estorno do Fee.
 
 **BR-345** — A transferência transmite ao adquirente o Direito de Uso remanescente do exercício, deduzido o já consumido ou comprometido pelo transmitente.
 
