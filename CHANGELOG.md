@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Second Home Partners (REQ-105, catalog §20.9). A seção “Uma estadia. Três formas de reservar.” do Luxtory Club
+  mostra Luxchange Request, Luxchange Direct e Luxplus logo depois de “Mais liberdade para seus clientes”.
+
 - W20 — Depósito Luxchange (REQ-051, REQ-060; BR-151, BR-200–BR-203; TECH-022, TECH-023, TECH-043, TECH-051;
   ADR-0036). O Titular cede datas elegíveis da sua Second Home ao Inventário Luxtory e recebe, no mesmo commit, Créditos
   = Σ PRL das noites cedidas × multiplicador publicado, com validade e procedência rastreáveis; sem Fee. Owner: noites

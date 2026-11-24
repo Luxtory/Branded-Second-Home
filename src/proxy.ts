@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { discoveryPaths } from '@/features/catalog/presentation/discovery/paths';
+import { secondHomePartnersPaths } from '@/features/catalog/presentation/second-home-partners/paths';
 import { isSessionPath, refreshSession } from '@/features/identity/presentation/session-proxy';
 import {
   contentSecurityPolicy,
@@ -23,7 +24,8 @@ export async function proxy(request: NextRequest) {
   const policy = contentSecurityPolicy(nonce, {
     development: process.env.NODE_ENV === 'development',
     secureTransport,
-    allowYouTubeEmbed: pathname === discoveryPaths.howItWorks,
+    allowYouTubeEmbed:
+      pathname === discoveryPaths.howItWorks || pathname === secondHomePartnersPaths.home,
   });
   const forwarded = { [NONCE_HEADER]: nonce, [CSP_HEADER]: policy };
   const response = isSessionPath(pathname)

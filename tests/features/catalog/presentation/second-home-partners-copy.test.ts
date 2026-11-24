@@ -45,7 +45,7 @@ describe('copy Second Home Partners (catalog §20.6)', () => {
       PAGE.filter((line) => /vital[ií]ci|receita para sempre|você supera|você acelera/i.test(line)),
     ).toEqual([]);
   });
-  it('[REQ-105] nove seções na mesma página, intermediadores depois das soluções; imagens informativas preservadas', () => {
+  it('[REQ-105] demonstração depois das soluções e antes dos intermediadores; imagens informativas preservadas', () => {
     const html = renderToStaticMarkup(createElement(SecondHomePartnersHomePage));
     expect([...html.matchAll(/<section id="([^"]+)"/g)].map((match) => match[1])).toEqual([
       'inicio',
@@ -53,6 +53,7 @@ describe('copy Second Home Partners (catalog §20.6)', () => {
       'beneficios',
       'empreendimentos',
       'solucoes',
+      'reservas-na-pratica',
       'imobiliarias-e-corretores',
       'como-funciona',
       'perguntas',

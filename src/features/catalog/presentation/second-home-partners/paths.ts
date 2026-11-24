@@ -6,7 +6,7 @@ export const secondHomePartnersPaths = {
 } as const;
 
 /**
- * Seções na ordem da Master Copy (catalog §20.2): PICTURE → PROBLEM → PROMISE → PROOF (soluções, processo, perguntas) →
+ * Seções na ordem da Master Copy (catalog §20.2 e §20.9): PICTURE → PROBLEM → PROMISE → PROOF (soluções, vídeo, processo, perguntas) →
  * PUSH; o E2E lê a ordem pelos `id`.
  */
 export const SECOND_HOME_PARTNERS_SECTIONS = [
@@ -15,6 +15,7 @@ export const SECOND_HOME_PARTNERS_SECTIONS = [
   'beneficios',
   'empreendimentos',
   'solucoes',
+  'reservas-na-pratica',
   'imobiliarias-e-corretores',
   'como-funciona',
   'perguntas',

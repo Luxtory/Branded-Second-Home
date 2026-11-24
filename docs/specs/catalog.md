@@ -1990,6 +1990,19 @@ Correção da cadeia de apresentação: solicitar as três fotografias desde o c
 
 Aceite: testes de duração da participação e ausência de valor garantido; três solicitações/imagens carregadas sem rolagem; falha do otimizador antes da hidratação recupera original; falha dupla não gera loop; três cards iguais e legíveis. Preservar fluxo dos perfis, fontes e alinhamento da Home,3linhas por bloco nas larguras verificadas≥390, reflow200%, seis larguras, axe0, contraste e console sem erros no caminho normal. Capturas e CI no mesmo PR94; condição de lançamento de produção preservada.
 
+### 20.9 Demonstração das reservas após as soluções
+
+Na jornada Second Home Partners, o vídeo da [§22.1](#221-brief) integra o PROOF após “Mais liberdade para seus
+clientes” e antes do bloco para imobiliárias e corretores. O parceiro conhece Luxchange e Luxplus (REQ-105) antes
+de ver Luxchange Request (REQ-061/063), Luxchange Direct (REQ-064/066) e Luxplus (REQ-070) em uma simulação.
+
+Reusar o título, a descrição, a superfície Wash e o player responsivo 16:9 do Club, com carregamento adiado e link
+direto para o mesmo vídeo no YouTube. A gestão de locações segue descrita no bloco de soluções.
+
+Aceite. A seção ocupa o novo `#reservas-na-pratica` depois de `#solucoes`. Autorizar o iframe da mesma origem do player
+nas duas rotas que exibem a demonstração. Conferir o carregamento do iframe, o link, a composição responsiva e a
+acessibilidade da página.
+
 ## 21. Home pública do Luxtory Club
 
 O briefing de reposicionamento da Luxtory orienta a nova composição de `/`. A §13.10 registra a versão original.
