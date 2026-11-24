@@ -45,6 +45,8 @@ completude adiada, não só no código.
 | T-2009 | **E** Elevation of privilege | Ativar o depósito sem decisão; command sem Membership | K6 (cessão) e K4 (lote) sem linha; Membership `active` no executor (classe 3) e no banco (`FOR SHARE`); rollback recusado com fato de depósito ou sob ativação |
 | T-2010 | **E** Elevation of privilege | CSRF na rota ou na Server Action | Rota exige mesma origem (TECH-100) e `Idempotency-Key`; Server Actions protegidas pelo Next; nenhum efeito por GET |
 | T-2011 | **T** Tampering | Replay ou duplo clique cria dois depósitos | Idempotência (ADR-006); travas das noites; segundo depósito vê a noite cedida → `ERR_CAPACITY_UNAVAILABLE` |
+| T-2012 | **E** Elevation of privilege | Com a K4 ligada para o depósito, servidor comprometido origina Créditos por aceite forjado ou gasta Créditos por Garantia/Direct forjados (W21–W23 ainda sem lastro) | K7 `luxchange_exchange` (sem linha) em `credit_lot_originate` (aceite) e `credit_entry_write` (send/accept/direct/withdraw/reject); teste adversarial reproduz e prova a recusa |
+| T-2013 | **T** Tampering | Operação `pending` reaproveitada noutra transação acrescenta noites/cessões a um depósito já conferido no COMMIT | Noites do snapshot e escritas do depósito só na transação do snapshot (`created_at ≥ now()`); teste adversarial |
 
 ## 5. Abuse cases
 

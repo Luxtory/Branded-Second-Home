@@ -64,7 +64,8 @@ export async function creditsHarness(
   const months =
     options.validityMonths === undefined ? TEST_VALIDITY_MONTHS : options.validityMonths;
   const validityId = months === null ? null : await publishValidity(h, admin, months);
-  if (options.activated !== false) await activate(h, 'credits');
+  // K4 e, desde a W20, a K7: os testes do ledger exercitam também os mecanismos de Request/Direct (W21–W23).
+  if (options.activated !== false) await activate(h, 'credits', 'luxchange_exchange');
   return { h, admin, titular: { ...titular, homeId }, validityId };
 }
 

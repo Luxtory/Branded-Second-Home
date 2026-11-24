@@ -146,7 +146,7 @@ export const PRIVILEGE_REFUSALS: ReadonlyMap<string, RejectionCode> = new Map([
 
 /**
  * Capabilities fechadas pela tabela de ativação privilegiada (`42501` nomeado): K1 (ADR-0026), K2 (ADR-0027), K3
- * (ADR-0030), K4 (ADR-0033), K5 (ADR-0035) e K6 (ADR-0036).
+ * (ADR-0030), K4 (ADR-0033), K5 (ADR-0035), K6 e K7 (ADR-0036).
  */
 export const CLOSED_CAPABILITIES: ReadonlyMap<string, string> = new Map([
   ['booking_not_activated', 'own_use_booking'],
@@ -155,6 +155,7 @@ export const CLOSED_CAPABILITIES: ReadonlyMap<string, string> = new Map([
   ['credit_capability_not_activated', 'credits'],
   ['payments_not_activated', 'payments'],
   ['luxchange_deposit_not_activated', 'luxchange_deposit'],
+  ['luxchange_exchange_not_activated', 'luxchange_exchange'],
 ]);
 
 /**

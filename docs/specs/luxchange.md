@@ -40,7 +40,11 @@ uso próprio (ADR-0036 §2), imóveis fora do modelo de Second Home.
 
 ### 5.1 Banco (migration `luxchange_deposit`)
 
-- **K6** `luxchange_deposit` no CHECK de `app.capability_activation`, sem linha. Depósito exige K6 (cessão) e K4 (lote).
+- **K6** `luxchange_deposit` e **K7** `luxchange_exchange` no CHECK de `app.capability_activation`, sem linha. Depósito
+  exige K6 (cessão) e K4 (lote). K7 fecha os movimentos de Créditos de Request e Direct (originação no aceite,
+  Garantia, consumo, liberação) até o lastro das W21–W23: ativar a K4 para o depósito não abre o intercâmbio.
+- **Mesma transação:** toda escrita do depósito e toda noite do snapshot exigem o snapshot criado na transação corrente
+  (`economic_snapshot_night_transaction`, `luxchange_deposit_transaction`).
 - **`app.economic_snapshot_night`** `(operation_id, second_home_id, stay_date, prl_id)`, PK `(operation_id, stay_date)`,
   FK para `app.economic_snapshot`, `app.second_home_date` e `app.prl`; só-inserção; versão do PRL = a vigente no
   `resolved_at` (`app.prl_at`), mesma Second Home em todas as noites da operação.
@@ -123,7 +127,9 @@ datas, contagem e quantidade. Consumidor `luxchange_deposit_notification` grava 
 
 - Noite sem PRL no conjunto → `ERR_PRL_MISSING`; noite intermediária (não pedida) sem PRL não importa.
 - Multiplicador ou validade ausentes → `ERR_PARAMETER_MISSING`.
-- PRL, multiplicador ou validade publicados entre a revisão e a confirmação → `ERR_DEPOSIT_TERMS_CHANGED`.
+- PRL, multiplicador ou validade publicados entre a revisão e a confirmação que mudem o **total de Créditos ou a
+  validade** apresentados → `ERR_DEPOSIT_TERMS_CHANGED`; publicação que não muda nenhum dos dois confirma, com as
+  versões novas no snapshot (ADR-0036 §8).
 - Reserva Co-Owner em exceção, em uso ou já encerrada → `ERR_STATE_TRANSITION`/`ERR_CAPACITY_UNAVAILABLE`.
 - Noite de outra Second Home, de outra holding ou já depositada → `ERR_CAPACITY_UNAVAILABLE`.
 - Owner com reserva de uso próprio na noite → `ERR_CAPACITY_UNAVAILABLE` (cancelar antes, TECH-023).

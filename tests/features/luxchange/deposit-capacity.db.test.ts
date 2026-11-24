@@ -22,6 +22,7 @@ import {
 import {
   activeCustody,
   book,
+  changePrl,
   coOwnerTitular,
   depositDate,
   depositHarness,
@@ -259,6 +260,33 @@ describe('W20 — depósito Luxchange pelo command (REQ-051, REQ-060)', () => {
       );
     }
     expect(await economicFacts(d.c.h.database.pool)).toEqual(before);
+  });
+
+  it('[ADR-0036 §8][REQ-052] termos revisados = Créditos e validade apresentados: versões novas com o mesmo total confirmam e ficam no snapshot', async () => {
+    // Duas noites novas; a alteração (Super Admin) sobe uma e desce a outra no mesmo valor: o total visto não muda.
+    const [a, b] = [depositDate(13), depositDate(14)];
+    await publishPrl(d, owner.homeId, { [a]: '40000', [b]: '60000' });
+    const versions = async () =>
+      (
+        await d.c.h.database.pool.query<{ id: string }>(
+          `SELECT v.id FROM unnest($2::date[]) AS n(stay_date), app.prl_at($1, n.stay_date, clock_timestamp()) v
+            ORDER BY n.stay_date`,
+          [owner.homeId, [a, b]],
+        )
+      ).rows.map((row) => row.id);
+    const old = await versions();
+    expect((await changePrl(d, owner.homeId, { [a]: '45000', [b]: '55000' })).status).toBe(
+      'committed',
+    );
+    const current = await versions();
+    expect(current).not.toEqual(old);
+    const outcome = await run(input(owner.homeId, [a, b], 100_000n));
+    expect(outcome).toMatchObject({ status: 'committed' });
+    const { rows } = await d.c.h.database.pool.query<{ prl_id: string }>(
+      `SELECT prl_id FROM app.economic_snapshot_night WHERE operation_id = $1 ORDER BY stay_date`,
+      [outcome.operationId],
+    );
+    expect(rows.map((row) => row.prl_id)).toEqual(current);
   });
 
   it('[REQ-097][TECH-091] uma notificação por depósito, sem duplicata na reentrega; recusas não notificam', async () => {

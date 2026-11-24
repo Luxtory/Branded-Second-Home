@@ -141,3 +141,28 @@ Request e Garantia (W21), aceite/recusa (W22), Direct (W23), Luxplus, locação 
 pós-aceite (P-11), retirada do depósito (BR-170/171: depois da originação a cessão é vinculante; nenhuma restituição
 automática), encerramento de Requests pendentes pelo depósito (gatilho da W21 sobre os commands das W12/W13/W15/W20),
 mudanças de Membership, PRL ou políticas reais.
+
+## Auditoria independente (2026-11-23, instrução do fundador)
+
+| Achado | Prioridade | Evidência | Decisão |
+|---|---|---|---|
+| Com a K4 ligada, `accept_request` forjado origina Créditos sem lastro; `send_request`/`create_direct` forjados movem Créditos | P1 (ativação) | `tests/migrations/luxchange-deposit.db.test.ts` "ativação do depósito não abre Request/Direct" (reproduzido antes da correção) | K7 `luxchange_exchange` fechada no banco; depósito = K4 + K6 |
+| Operação `pending` reaproveitada noutra transação cede noites sem Créditos | P1 (ativação) | mesmo arquivo, "operação pendente reaproveitada" (reproduzido) | noites do snapshot e escritas do depósito só na transação do snapshot |
+| Termos: total igual com versões de PRL diferentes | descartado como defeito | `deposit-capacity.db.test.ts` "termos revisados = Créditos e validade apresentados" | contrato explícito: igualdade dos termos apresentados; snapshot com as versões usadas (ADR-0036 §8) |
+| Reserva cedida exibida como "Cancelada" | P2 | `own-use-booking-sections.ts` (`displayState`) | situação "Cedida ao Luxchange" (Titular e Admin) |
+| Duas faixas de temporada no depósito × três aprovadas na W16 | P2 | `deposit-read.ts` × ADR-0032 §11 | reutiliza a classificação da W16 (só apresentação) |
+| Spec dizia "2 meses quando cabem"; o calendário mostra 1 | P2 | `docs/specs/luxchange.md` §5.4 × `deposit-calendar.tsx` | 1 mês por vez (Créditos legíveis na célula) + ir direto a mês/exercício, como na W16; spec corrigida |
+| Dica do Co-Owner sugere refazer reservas (14 × 15 dias) | P2 | `deposit-pt-br.ts` `hintCoOwner` | copy sem sugerir cancelamento/re-reserva |
+
+### Fronteiras com as próximas waves (registro)
+
+- **W21 (envio de Request):** compor saldo disponível com Créditos já originados por depósito só quando o produto
+  autorizar; Garantia (`held`) é temporária e nunca se confunde com a cessão definitiva da capacidade; encerrar Requests
+  pendentes incompatíveis após mudança de capacidade (TECH-024, incluindo o depósito); preservar o snapshot da Request
+  (PD-007); comunicar que a recusa de uma Request não desfaz um depósito anterior. Ativar a K7 só com esse lastro.
+- **W22 (aceite/recusa):** originação pelo aceite com lastro completo no banco — cessão da capacidade do cedente,
+  consumo da Garantia e encerramento das concorrentes no mesmo commit; substitui a regra "aceite só com a K7".
+- **W23 (Direct):** a capacidade `luxtory/inventory/luxchange_cession` é origem possível de Direct; reserva, cobrança e
+  consumo de Créditos são da W23.
+- **Membership e go-to-market:** a W20 só verifica a elegibilidade vigente; a decisão comercial de primeiro ano gratuito
+  é validada na wave do Membership antes da ativação comercial, sem valores embutidos aqui.

@@ -25,6 +25,7 @@ const CHANGED = [
   'constraint app.capability_activation.capability_activation_capability_check',
   'function app.assert_booking_closure_complete(uuid)',
   'function app.booking_state_transition_check()',
+  'function app.credit_entry_write()',
   'function app.credit_lot_originate()',
   'function app.date_custody_close()',
   'function app.date_custody_open()',
@@ -36,7 +37,7 @@ const W20_OBJECTS = [
   /^acl app\.economic_snapshot_night_(pkey|prl_idx)$/,
   /^policy economic_snapshot_night\./,
   /^(trigger|constraint) app\.economic_snapshot\.economic_snapshot_operation_constraint$/,
-  /^function(-acl)? app\.(economic_snapshot_night_write|economic_snapshot_operation_constraint|assert_luxchange_deposit_active|assert_luxchange_deposit_complete|luxchange_deposit_[a-z_]+|luxchange_invariant_breaches)\(/,
+  /^function(-acl)? app\.(economic_snapshot_night_write|economic_snapshot_operation_constraint|assert_luxchange_deposit_active|assert_luxchange_exchange_active|assert_luxchange_deposit_complete|luxchange_deposit_[a-z_]+|luxchange_invariant_breaches)\(/,
 ];
 
 /**
@@ -100,7 +101,9 @@ describe('W20 — preservação do catálogo (E1)', () => {
     expect(added.length).toBeGreaterThan(0);
     expect(added.filter((key) => !W20_OBJECTS.some((pattern) => pattern.test(key)))).toEqual([]);
     const check = after.get(CHANGED[3]!)!;
-    expect(check.replace(", 'luxchange_deposit'::text", '')).toBe(w19Snapshot.get(CHANGED[3]!));
+    expect(
+      check.replace(", 'luxchange_deposit'::text", '').replace(", 'luxchange_exchange'::text", ''),
+    ).toBe(w19Snapshot.get(CHANGED[3]!));
   });
 
   it('[REQ-060][ADR-0036] funções da W13/W14/W17: só o ramo do depósito, antes dos caminhos existentes', () => {
@@ -146,7 +149,10 @@ describe('W20 — preservação do catálogo (E1)', () => {
     expect(release).toContain(w13Path.map((line) => `  ${line}`).join('\n'));
     expect(release).toContain('app.luxchange_deposit_release(');
 
-    expect(added('function app.credit_lot_originate()')).toContain('credit_lot_deposit_quantity');
+    const lot = added('function app.credit_lot_originate()');
+    expect(lot).toContain('credit_lot_deposit_quantity');
+    expect(lot).toContain('app.assert_luxchange_exchange_active()');
+    expect(added('function app.credit_entry_write()')).toContain('app.assert_luxchange_exchange_active()');
   });
 
   it('[TECH-110] desfazer a W20 restaura exatamente o catálogo da W19', async () => {

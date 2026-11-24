@@ -9,12 +9,14 @@
 -- ganham só o ramo do depósito antes dos caminhos existentes (provas de preservação); nada mais muda.
 -- `search_path = pg_catalog, pg_temp` em toda função nova (T-1312).
 
--- K6 (ADR-0036 §7): só amplia o CHECK. Nenhuma linha.
+-- K6 e K7 (ADR-0036 §7): só ampliam o CHECK. Nenhuma linha. K6 `luxchange_deposit` abre a cessão do depósito; K7
+-- `luxchange_exchange` abre os movimentos de Créditos de Request e Direct (originação no aceite, Garantia, consumo e
+-- liberação — W21–W23, ainda sem lastro no banco). Ativar a K4 para o depósito nunca abre o intercâmbio.
 ALTER TABLE app.capability_activation
   DROP CONSTRAINT capability_activation_capability_check,
   ADD CONSTRAINT capability_activation_capability_check
     CHECK (capability IN ('own_use_booking', 'own_use_lifecycle', 'luxtory_selection', 'credits', 'payments',
-                          'luxchange_deposit'));
+                          'luxchange_deposit', 'luxchange_exchange'));
 
 -- Toda escrita do depósito pelo papel da aplicação passa por aqui: sem a linha, recusa — inclusive SQL direto.
 -- Funcionalidade fechada, não recusa funcional.
@@ -26,6 +28,19 @@ BEGIN
      AND NOT EXISTS (SELECT 1 FROM app.capability_activation WHERE capability = 'luxchange_deposit') THEN
     RAISE EXCEPTION 'Luxchange deposit is not activated'
       USING ERRCODE = 'insufficient_privilege', CONSTRAINT = 'luxchange_deposit_not_activated';
+  END IF;
+END $$;
+
+-- Movimentos de Créditos de Request e Direct pelo papel da aplicação (W20 auditoria; ADR-0036 §7): sem a linha, recusa —
+-- inclusive SQL direto. Funcionalidade fechada até as waves donas (W21–W23) trazerem o lastro no banco.
+CREATE FUNCTION app.assert_luxchange_exchange_active() RETURNS void
+  LANGUAGE plpgsql STABLE SET search_path = pg_catalog, pg_temp
+AS $$
+BEGIN
+  IF NOT app.acts_as_schema_owner()
+     AND NOT EXISTS (SELECT 1 FROM app.capability_activation WHERE capability = 'luxchange_exchange') THEN
+    RAISE EXCEPTION 'Luxchange exchange (Request and Direct) is not activated'
+      USING ERRCODE = 'insufficient_privilege', CONSTRAINT = 'luxchange_exchange_not_activated';
   END IF;
 END $$;
 
@@ -47,13 +62,20 @@ CREATE INDEX economic_snapshot_night_prl_idx ON app.economic_snapshot_night (prl
 CREATE FUNCTION app.economic_snapshot_night_write() RETURNS trigger
   LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
-DECLARE v_resolved_at timestamptz; v_in_force uuid;
+DECLARE v_resolved_at timestamptz; v_created_at timestamptz; v_in_force uuid;
 BEGIN
   PERFORM app.assert_operation_in_transaction(NEW.operation_id);
-  SELECT s.resolved_at INTO v_resolved_at FROM app.economic_snapshot s WHERE s.operation_id = NEW.operation_id;
+  SELECT s.resolved_at, s.created_at INTO v_resolved_at, v_created_at
+    FROM app.economic_snapshot s WHERE s.operation_id = NEW.operation_id;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'a snapshot night belongs to the snapshot of its operation'
       USING ERRCODE = 'check_violation', CONSTRAINT = 'economic_snapshot_night_snapshot';
+  END IF;
+  -- Só na transação do próprio snapshot (`created_at` é carimbado depois do início dela): uma operação `pending`
+  -- reaproveitada noutra transação não acrescenta noites a um depósito já conferido no COMMIT (auditoria W20).
+  IF v_created_at < now() THEN
+    RAISE EXCEPTION 'snapshot nights are recorded in the transaction of the snapshot'
+      USING ERRCODE = 'check_violation', CONSTRAINT = 'economic_snapshot_night_transaction';
   END IF;
   SELECT v.id INTO v_in_force FROM app.prl_at(NEW.second_home_id, NEW.stay_date, v_resolved_at) v;
   IF v_in_force IS DISTINCT FROM NEW.prl_id THEN
@@ -113,6 +135,12 @@ BEGIN
                     AND n.stay_date = p_stay_date) THEN
     RAISE EXCEPTION 'every deposited night is priced in the snapshot of its operation'
       USING ERRCODE = 'check_violation', CONSTRAINT = 'luxchange_deposit_snapshot';
+  END IF;
+  -- Toda escrita do depósito na transação do snapshot, a mesma em que a completude é conferida no COMMIT.
+  IF NOT EXISTS (SELECT 1 FROM app.economic_snapshot s WHERE s.operation_id = p_operation AND s.created_at >= now())
+  THEN
+    RAISE EXCEPTION 'deposit writes happen in the transaction of the snapshot of their operation'
+      USING ERRCODE = 'check_violation', CONSTRAINT = 'luxchange_deposit_transaction';
   END IF;
   RETURN op;
 END $$;
@@ -782,6 +810,108 @@ BEGIN
   RETURN NEW;
 END $$;
 
+CREATE OR REPLACE FUNCTION app.credit_entry_write() RETURNS trigger
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
+AS $$
+DECLARE
+  op app.operation;
+  lot app.credit_lot;
+  parent app.credit_entry;
+  v_now timestamptz;
+  v_valid boolean;
+  v_left numeric;
+BEGIN
+  PERFORM app.assert_credits_active();
+  PERFORM app.assert_operation_in_transaction(NEW.operation_id);
+  SELECT * INTO STRICT op FROM app.operation WHERE id = NEW.operation_id;
+  IF op.command IN ('send_request', 'accept_request', 'create_direct', 'withdraw_request', 'reject_request') THEN
+    -- W20 auditoria (ADR-0036 §7): Garantia, consumo e liberação de Request/Direct só com a K7 (W21–W23).
+    PERFORM app.assert_luxchange_exchange_active();
+  END IF;
+  SELECT * INTO lot FROM app.credit_lot WHERE id = NEW.lot_id FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'credit movement on an unknown lot'
+      USING ERRCODE = 'foreign_key_violation', CONSTRAINT = 'credit_entry_lot_id_fkey';
+  END IF;
+  v_now := clock_timestamp();
+  v_valid := v_now < lot.expires_at;
+  NEW.command := op.command;
+  NEW.created_at := v_now;
+  IF NEW.parent_entry_id IS NOT NULL THEN
+    SELECT * INTO parent FROM app.credit_entry WHERE id = NEW.parent_entry_id;
+    IF NOT FOUND OR parent.lot_id <> NEW.lot_id
+       OR parent.movement <> (CASE WHEN NEW.movement = 'reverse' THEN 'consume' ELSE 'hold' END) THEN
+      RAISE EXCEPTION 'the movement follows a hold or a consumption of the same lot'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_parent';
+    END IF;
+  END IF;
+
+  IF NEW.movement = 'originate' THEN
+    -- Só o gatilho do lote (dono) escreve a originação, uma vez, com a quantidade e a operação do lote.
+    IF NOT app.acts_as_schema_owner() OR NEW.quantity <> lot.quantity
+       OR NEW.operation_id <> lot.origin_operation_id THEN
+      RAISE EXCEPTION 'origination is recorded only with its lot'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_origination';
+    END IF;
+    NEW.created_at := lot.originated_at;
+  ELSIF NEW.movement = 'hold' OR (NEW.movement = 'consume' AND NEW.from_bucket = 'available') THEN
+    -- Garantia (envio de Request) e consumo direto (Direct): a party que age gasta os próprios Créditos.
+    IF op.command <> (CASE WHEN NEW.movement = 'hold' THEN 'send_request' ELSE 'create_direct' END)
+       OR op.acting_party_id IS DISTINCT FROM lot.party_id OR op.actor_user_id IS NULL THEN
+      RAISE EXCEPTION 'credits are spent only by their party through an authorized mechanism'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_mechanism';
+    END IF;
+    PERFORM app.lock_own_use_representation(op.actor_user_id, lot.party_id, v_now);
+  ELSIF NEW.movement = 'consume' THEN
+    -- Aceite: consome a Garantia da Request (o detentor age; a party do lote é a solicitante).
+    IF op.command <> 'accept_request' THEN
+      RAISE EXCEPTION 'a hold is consumed only by the acceptance'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_mechanism';
+    END IF;
+  ELSIF NEW.movement = 'release' THEN
+    IF op.command NOT IN ('withdraw_request', 'reject_request') THEN
+      RAISE EXCEPTION 'a hold is released only by a pre-acceptance closing'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_mechanism';
+    END IF;
+  ELSIF NEW.movement = 'expire' THEN
+    IF op.command <> 'expire_credit_lots' OR v_valid OR NEW.quantity <> lot.available THEN
+      RAISE EXCEPTION 'expiration records the whole available balance of a lot past its validity'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_expiration';
+    END IF;
+  ELSIF NEW.movement = 'reverse' THEN
+    IF op.command <> 'reverse_credit' THEN
+      RAISE EXCEPTION 'a consumption is reversed only by reverse_credit'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_mechanism';
+    END IF;
+    PERFORM app.lock_own_use_admin_authority(op);
+  END IF;
+
+  -- Uso exige `now < expires_at` e Membership elegível (TECH-044, TECH-071, BR-195), independentemente de job.
+  IF NEW.movement IN ('hold', 'consume') THEN
+    IF NOT v_valid THEN
+      RAISE EXCEPTION 'credits are usable only before the lot expires'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credits_lot_expired';
+    END IF;
+    PERFORM app.assert_credit_membership(lot.party_id);
+  END IF;
+  -- Liberação e reversão voltam a `available` só antes do vencimento; depois, `expired` (TECH-070, TECH-072).
+  IF NEW.movement IN ('release', 'reverse')
+     AND NEW.to_bucket <> (CASE WHEN v_valid THEN 'available' ELSE 'expired' END) THEN
+    RAISE EXCEPTION 'a released or reversed balance returns to available only before the lot expires'
+      USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_validity_bucket';
+  END IF;
+  -- Nenhuma liberação, consumo ou reversão acima do que o movimento-pai ainda reserva ou consumiu.
+  IF NEW.parent_entry_id IS NOT NULL THEN
+    SELECT parent.quantity - coalesce(sum(c.quantity), 0) INTO v_left
+      FROM app.credit_entry c WHERE c.parent_entry_id = parent.id;
+    IF NEW.quantity > v_left THEN
+      RAISE EXCEPTION 'the movement exceeds what its hold or consumption still covers'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credits_parent_exceeded';
+    END IF;
+  END IF;
+  RETURN NEW;
+END $$;
+
 CREATE OR REPLACE FUNCTION app.credit_lot_originate() RETURNS trigger
   LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
@@ -805,6 +935,10 @@ BEGIN
   IF NOT FOUND THEN
     RAISE EXCEPTION 'the origination records the credit validity in the snapshot of its operation'
       USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_lot_snapshot_missing';
+  END IF;
+  IF op.command = 'accept_request' THEN
+    -- W20 auditoria (ADR-0036 §7): o aceite só origina com a K7; as regras de lastro (cessão, Garantia) são da W22.
+    PERFORM app.assert_luxchange_exchange_active();
   END IF;
   IF op.command = 'deposit_capacity' AND NOT app.luxchange_deposit_quantity_matches(op.id, NEW.quantity) THEN
     -- W20 (ADR-0036 §5; BR-201, `01` §20): Créditos = Σ PRL das noites do snapshot × multiplicador do snapshot.
@@ -871,11 +1005,13 @@ REVOKE ALL ON FUNCTION app.luxchange_invariant_breaches() FROM PUBLIC;
 
 -- Funções auxiliares só para os gatilhos, que rodam com o papel de quem escreve (`luxtory_app`); nenhum outro papel as
 -- executa (TECH-052; prontidão da W13).
-REVOKE ALL ON FUNCTION app.assert_luxchange_deposit_active(), app.luxchange_deposit_write(uuid, uuid, date),
+REVOKE ALL ON FUNCTION app.assert_luxchange_deposit_active(), app.assert_luxchange_exchange_active(),
+  app.luxchange_deposit_write(uuid, uuid, date),
   app.luxchange_deposit_close(uuid, app.date_custody), app.luxchange_deposit_open(app.date_custody),
   app.luxchange_deposit_release(uuid, app.date_occupancy, text), app.luxchange_deposit_quantity_matches(uuid, numeric),
   app.assert_luxchange_deposit_complete(uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION app.assert_luxchange_deposit_active(), app.luxchange_deposit_write(uuid, uuid, date),
+GRANT EXECUTE ON FUNCTION app.assert_luxchange_deposit_active(), app.assert_luxchange_exchange_active(),
+  app.luxchange_deposit_write(uuid, uuid, date),
   app.luxchange_deposit_close(uuid, app.date_custody), app.luxchange_deposit_open(app.date_custody),
   app.luxchange_deposit_release(uuid, app.date_occupancy, text), app.luxchange_deposit_quantity_matches(uuid, numeric),
   app.assert_luxchange_deposit_complete(uuid) TO luxtory_app;
@@ -901,7 +1037,8 @@ BEGIN
      OR EXISTS (SELECT 1 FROM app.booking_state_transition WHERE kind = 'cession')
      OR EXISTS (SELECT 1 FROM app.date_custody c JOIN app.operation o ON o.id = c.opened_by_operation
                  WHERE o.command = 'deposit_capacity')
-     OR EXISTS (SELECT 1 FROM app.capability_activation WHERE capability = 'luxchange_deposit') THEN
+     OR EXISTS (SELECT 1 FROM app.capability_activation
+                 WHERE capability IN ('luxchange_deposit', 'luxchange_exchange')) THEN
     RAISE EXCEPTION 'W20 rollback would discard deposit facts or remove the rule under an activation decision';
   END IF;
 END $$;
@@ -1337,6 +1474,104 @@ BEGIN
   RETURN NEW;
 END $$;
 
+CREATE OR REPLACE FUNCTION app.credit_entry_write() RETURNS trigger
+  LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
+AS $$
+DECLARE
+  op app.operation;
+  lot app.credit_lot;
+  parent app.credit_entry;
+  v_now timestamptz;
+  v_valid boolean;
+  v_left numeric;
+BEGIN
+  PERFORM app.assert_credits_active();
+  PERFORM app.assert_operation_in_transaction(NEW.operation_id);
+  SELECT * INTO STRICT op FROM app.operation WHERE id = NEW.operation_id;
+  SELECT * INTO lot FROM app.credit_lot WHERE id = NEW.lot_id FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'credit movement on an unknown lot'
+      USING ERRCODE = 'foreign_key_violation', CONSTRAINT = 'credit_entry_lot_id_fkey';
+  END IF;
+  v_now := clock_timestamp();
+  v_valid := v_now < lot.expires_at;
+  NEW.command := op.command;
+  NEW.created_at := v_now;
+  IF NEW.parent_entry_id IS NOT NULL THEN
+    SELECT * INTO parent FROM app.credit_entry WHERE id = NEW.parent_entry_id;
+    IF NOT FOUND OR parent.lot_id <> NEW.lot_id
+       OR parent.movement <> (CASE WHEN NEW.movement = 'reverse' THEN 'consume' ELSE 'hold' END) THEN
+      RAISE EXCEPTION 'the movement follows a hold or a consumption of the same lot'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_parent';
+    END IF;
+  END IF;
+
+  IF NEW.movement = 'originate' THEN
+    -- Só o gatilho do lote (dono) escreve a originação, uma vez, com a quantidade e a operação do lote.
+    IF NOT app.acts_as_schema_owner() OR NEW.quantity <> lot.quantity
+       OR NEW.operation_id <> lot.origin_operation_id THEN
+      RAISE EXCEPTION 'origination is recorded only with its lot'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_origination';
+    END IF;
+    NEW.created_at := lot.originated_at;
+  ELSIF NEW.movement = 'hold' OR (NEW.movement = 'consume' AND NEW.from_bucket = 'available') THEN
+    -- Garantia (envio de Request) e consumo direto (Direct): a party que age gasta os próprios Créditos.
+    IF op.command <> (CASE WHEN NEW.movement = 'hold' THEN 'send_request' ELSE 'create_direct' END)
+       OR op.acting_party_id IS DISTINCT FROM lot.party_id OR op.actor_user_id IS NULL THEN
+      RAISE EXCEPTION 'credits are spent only by their party through an authorized mechanism'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_mechanism';
+    END IF;
+    PERFORM app.lock_own_use_representation(op.actor_user_id, lot.party_id, v_now);
+  ELSIF NEW.movement = 'consume' THEN
+    -- Aceite: consome a Garantia da Request (o detentor age; a party do lote é a solicitante).
+    IF op.command <> 'accept_request' THEN
+      RAISE EXCEPTION 'a hold is consumed only by the acceptance'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_mechanism';
+    END IF;
+  ELSIF NEW.movement = 'release' THEN
+    IF op.command NOT IN ('withdraw_request', 'reject_request') THEN
+      RAISE EXCEPTION 'a hold is released only by a pre-acceptance closing'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_mechanism';
+    END IF;
+  ELSIF NEW.movement = 'expire' THEN
+    IF op.command <> 'expire_credit_lots' OR v_valid OR NEW.quantity <> lot.available THEN
+      RAISE EXCEPTION 'expiration records the whole available balance of a lot past its validity'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_expiration';
+    END IF;
+  ELSIF NEW.movement = 'reverse' THEN
+    IF op.command <> 'reverse_credit' THEN
+      RAISE EXCEPTION 'a consumption is reversed only by reverse_credit'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_mechanism';
+    END IF;
+    PERFORM app.lock_own_use_admin_authority(op);
+  END IF;
+
+  -- Uso exige `now < expires_at` e Membership elegível (TECH-044, TECH-071, BR-195), independentemente de job.
+  IF NEW.movement IN ('hold', 'consume') THEN
+    IF NOT v_valid THEN
+      RAISE EXCEPTION 'credits are usable only before the lot expires'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credits_lot_expired';
+    END IF;
+    PERFORM app.assert_credit_membership(lot.party_id);
+  END IF;
+  -- Liberação e reversão voltam a `available` só antes do vencimento; depois, `expired` (TECH-070, TECH-072).
+  IF NEW.movement IN ('release', 'reverse')
+     AND NEW.to_bucket <> (CASE WHEN v_valid THEN 'available' ELSE 'expired' END) THEN
+    RAISE EXCEPTION 'a released or reversed balance returns to available only before the lot expires'
+      USING ERRCODE = 'check_violation', CONSTRAINT = 'credit_entry_validity_bucket';
+  END IF;
+  -- Nenhuma liberação, consumo ou reversão acima do que o movimento-pai ainda reserva ou consumiu.
+  IF NEW.parent_entry_id IS NOT NULL THEN
+    SELECT parent.quantity - coalesce(sum(c.quantity), 0) INTO v_left
+      FROM app.credit_entry c WHERE c.parent_entry_id = parent.id;
+    IF NEW.quantity > v_left THEN
+      RAISE EXCEPTION 'the movement exceeds what its hold or consumption still covers'
+        USING ERRCODE = 'check_violation', CONSTRAINT = 'credits_parent_exceeded';
+    END IF;
+  END IF;
+  RETURN NEW;
+END $$;
+
 CREATE OR REPLACE FUNCTION app.credit_lot_originate() RETURNS trigger
   LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
@@ -1401,6 +1636,7 @@ DROP FUNCTION app.luxchange_deposit_close(uuid, app.date_custody);
 DROP FUNCTION app.luxchange_deposit_write(uuid, uuid, date);
 DROP TABLE app.economic_snapshot_night;
 DROP FUNCTION app.economic_snapshot_night_write();
+DROP FUNCTION app.assert_luxchange_exchange_active();
 DROP FUNCTION app.assert_luxchange_deposit_active();
 ALTER TABLE app.capability_activation
   DROP CONSTRAINT capability_activation_capability_check,

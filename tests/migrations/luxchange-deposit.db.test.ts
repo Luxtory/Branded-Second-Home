@@ -5,6 +5,7 @@ import { migrationDown } from '../support/catalog-snapshot';
 import { connect, deactivate } from '../features/booking/lifecycle-support';
 import { reactivate, secondTitular, suspend } from '../features/credits/credits-support';
 import {
+  activeCustody,
   book,
   cedeOwnerNight,
   coOwnerTitular,
@@ -323,5 +324,138 @@ describe('W20 — barreiras do depósito do Co-Owner no banco (REQ-060, TECH-022
       expected_validity_months: TEST_VALIDITY_MONTHS,
     });
     expect(outcome).toMatchObject({ status: 'committed' });
+  });
+});
+
+/**
+ * W20 auditoria — ativação segura (ADR-0036 §7): com K4 e K6 ligadas para o depósito e o `luxtory_app` tratado como
+ * comprometido, nenhum mecanismo de Request/Direct (W21–W23, ainda sem lastro no banco) origina, retém ou consome
+ * Créditos, e uma operação `pending` reaproveitada noutra transação não acrescenta fatos a um depósito já conferido.
+ */
+describe('W20 — ativação do depósito não abre Request/Direct nem fatos fora da transação (INV-6, REQ-060)', () => {
+  let d: DepositHarness;
+  let owner: CreditTitular;
+  const PRICE = '22222';
+
+  beforeAll(async () => {
+    d = await depositHarness();
+    owner = d.c.titular;
+    await publishPrl(
+      d,
+      owner.homeId,
+      Object.fromEntries(Array.from({ length: 6 }, (_, i) => [depositDate(i), PRICE])),
+    );
+  }, 240_000);
+  afterAll(async () => {
+    await d?.c.h.close();
+  });
+
+  async function inOperation(
+    command: string,
+    work: (client: pg.Client, op: string) => Promise<unknown>,
+    options: { commitOperation?: boolean } = {},
+  ): Promise<string> {
+    const client = await connect(d.c.h.database.appUrl);
+    try {
+      await client.query('BEGIN');
+      const op = await openDepositOperation(client, owner, owner.homeId, command);
+      await work(client, op);
+      if (options.commitOperation !== false)
+        await client.query(`UPDATE app.operation SET state = 'committed' WHERE id = $1`, [op]);
+      await client.query('COMMIT');
+      return op;
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      throw error;
+    } finally {
+      await client.end();
+    }
+  }
+
+  const depositLot = async () => {
+    const outcome = await depositRunner(d, owner)({
+      second_home_id: owner.homeId,
+      nights: [depositDate(0)],
+      expected_credits: expectedCredits(BigInt(PRICE)),
+      expected_validity_months: TEST_VALIDITY_MONTHS,
+    });
+    if (outcome.status !== 'committed') throw new Error(JSON.stringify(outcome));
+    return (outcome.result as { lot_id: string }).lot_id;
+  };
+
+  it('[INV-6] aceite forjado não origina Créditos sem lastro, mesmo com K4 e K6 ligadas', async () => {
+    const before = await economicFacts(d.c.h.database.pool);
+    await expect(
+      inOperation('accept_request', async (client, op) => {
+        await client.query(
+          `INSERT INTO app.economic_snapshot (operation_id, resolved_at) VALUES ($1, clock_timestamp())`,
+          [op],
+        );
+        await client.query(
+          `INSERT INTO app.economic_snapshot_parameter (operation_id, parameter_key, parameter_id)
+           SELECT $1, 'credit_validity_months', v.id
+             FROM app.economic_snapshot s, app.parameter_at('credit_validity_months', NULL, s.resolved_at) v
+            WHERE s.operation_id = $1`,
+          [op],
+        );
+        await insertDepositLot(client, op, owner.partyId, '999999');
+      }),
+    ).rejects.toEqual(constraint('luxchange_exchange_not_activated'));
+    expect(await economicFacts(d.c.h.database.pool)).toEqual(before);
+  });
+
+  it('[INV-6] Garantia ou consumo forjados (send_request/create_direct) não movem Créditos do depósito', async () => {
+    const lotId = await depositLot();
+    for (const [command, movement, from, to] of [
+      ['send_request', 'hold', 'available', 'held'],
+      ['create_direct', 'consume', 'available', 'consumed'],
+    ] as const)
+      await expect(
+        inOperation(command, (client, op) =>
+          client.query(
+            `INSERT INTO app.credit_entry (id, lot_id, operation_id, movement, from_bucket, to_bucket, quantity)
+             VALUES ($1, $2, $3, $4, $5, $6, 1)`,
+            [randomUUID(), lotId, op, movement, from, to],
+          ),
+        ),
+      ).rejects.toEqual(constraint('luxchange_exchange_not_activated'));
+  });
+
+  it('[REQ-060][INV-2] operação pendente reaproveitada noutra transação não cede noites sem Créditos', async () => {
+    // 1ª transação: depósito completo, mas a operação fica `pending` (servidor comprometido).
+    const op = await inOperation(
+      'deposit_capacity',
+      async (client, id) => {
+        await recordDepositSnapshot(client, id, owner.homeId, [depositDate(2)]);
+        await insertDepositLot(client, id, owner.partyId, expectedCredits(BigInt(PRICE)));
+        await cedeOwnerNight(client, id, owner.homeId, depositDate(2));
+      },
+      { commitOperation: false },
+    );
+    // 2ª transação, mesma operação: acrescentar uma noite ao snapshot e cedê-la sem Créditos.
+    const client = await connect(d.c.h.database.appUrl);
+    try {
+      await client.query('BEGIN');
+      await expect(
+        (async () => {
+          await client.query(
+            `INSERT INTO app.economic_snapshot_night (operation_id, second_home_id, stay_date, prl_id)
+             SELECT $1, $2, $3::date, v.id
+               FROM app.economic_snapshot s, app.prl_at($2, $3::date, s.resolved_at) v WHERE s.operation_id = $1`,
+            [op, owner.homeId, depositDate(3)],
+          );
+          await cedeOwnerNight(client, op, owner.homeId, depositDate(3));
+          await client.query('COMMIT');
+        })(),
+      ).rejects.toEqual(constraint('economic_snapshot_night_transaction'));
+    } finally {
+      await client.query('ROLLBACK').catch(() => undefined);
+      await client.end();
+    }
+    expect(
+      (await activeCustody(d.c.h.database.pool, owner.homeId, [depositDate(3)]))[0]!.holder_kind,
+    ).toBe('owner');
+    // A operação forjada termina coerente: nenhuma cessão ou lote fora do depósito conferido.
+    await d.c.h.database.pool.query(`UPDATE app.operation SET state = 'committed' WHERE id = $1`, [op]);
   });
 });

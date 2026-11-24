@@ -41,7 +41,8 @@ export type Capability =
   | 'luxtory_selection'
   | 'credits'
   | 'payments'
-  | 'luxchange_deposit';
+  | 'luxchange_deposit'
+  | 'luxchange_exchange';
 
 export interface BookingRow {
   readonly id: string;
