@@ -132,7 +132,7 @@ export const depositMessages = {
     confirm: 'Confirmar depósito',
     back: 'Voltar e alterar datas',
     stale:
-      'Os Créditos ou a validade mudaram. Revise os valores atualizados abaixo antes de confirmar.',
+      'Os Créditos de uma ou mais datas, o total ou a validade mudaram. Revise os valores atualizados abaixo antes de confirmar.',
     refresh: 'Revisar valores atualizados',
   },
   outcome: {
@@ -145,7 +145,7 @@ export const depositMessages = {
     ERR_PARAMETER_MISSING: 'O depósito ainda não está configurado pela Luxtory.',
     ERR_STATE_TRANSITION: 'Uma das reservas mudou de situação. Atualize o calendário.',
     ERR_DEPOSIT_TERMS_CHANGED:
-      'Os Créditos ou a validade mudaram desde a revisão. Revise os valores atualizados antes de confirmar.',
+      'Os Créditos de uma ou mais datas, o total ou a validade mudaram desde a revisão. Revise os valores atualizados antes de confirmar.',
     ERR_IDEMPOTENCY_CONFLICT:
       'Esta confirmação já foi usada para outro pedido. Revise o depósito de novo.',
     ERR_VALIDATION: 'Não foi possível ler as datas escolhidas. Escolha de novo.',

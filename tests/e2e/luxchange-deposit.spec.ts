@@ -180,7 +180,7 @@ test.describe('W20 E3 — depósito Luxchange na Área do Titular', () => {
       try {
         await confirm.tap();
         await expect(summary(titular).getByRole('alert')).toContainText(
-          'Os Créditos ou a validade mudaram desde a revisão.',
+          'Os Créditos de uma ou mais datas, o total ou a validade mudaram desde a revisão.',
         );
         await expect(titular).toHaveURL(/\/titular\/luxchange\/deposito$/);
         await summary(titular).getByRole('button', { name: 'Revisar valores atualizados' }).tap();

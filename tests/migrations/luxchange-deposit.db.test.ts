@@ -320,6 +320,7 @@ describe('W20 — barreiras do depósito do Co-Owner no banco (REQ-060, TECH-022
     const outcome = await depositRunner(d, co)({
       second_home_id: co.homeId,
       nights: [depositDate(10)],
+      expected_night_credits: [expectedCredits(BigInt(PRICE))],
       expected_credits: expectedCredits(BigInt(PRICE)),
       expected_validity_months: TEST_VALIDITY_MONTHS,
     });
@@ -376,6 +377,7 @@ describe('W20 — ativação do depósito não abre Request/Direct nem fatos for
     const outcome = await depositRunner(d, owner)({
       second_home_id: owner.homeId,
       nights: [depositDate(0)],
+      expected_night_credits: [expectedCredits(BigInt(PRICE))],
       expected_credits: expectedCredits(BigInt(PRICE)),
       expected_validity_months: TEST_VALIDITY_MONTHS,
     });

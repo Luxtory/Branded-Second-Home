@@ -43,6 +43,7 @@ describe('POST /v1/luxchange/deposits (W20)', () => {
     party_id: owner.partyId,
     second_home_id: owner.homeId,
     nights: [depositDate(offset)],
+    expected_night_credits: [expectedCredits(BigInt(PRL))],
     expected_credits: expectedCredits(BigInt(PRL)),
     expected_validity_months: TEST_VALIDITY_MONTHS,
     ...extra,
@@ -104,9 +105,17 @@ describe('POST /v1/luxchange/deposits (W20)', () => {
   });
 
   it('[ADR-0036 §8] termos diferentes dos revisados → 409 ERR_DEPOSIT_TERMS_CHANGED', async () => {
-    const response = await call(headers(), body(2, { expected_credits: '1' }));
-    expect(response.status).toBe(409);
-    expect(await response.json()).toMatchObject({ code: 'ERR_DEPOSIT_TERMS_CHANGED' });
+    for (const extra of [{ expected_credits: '1' }, { expected_night_credits: ['1'] }]) {
+      const response = await call(headers(), body(2, extra));
+      expect(response.status).toBe(409);
+      expect(await response.json()).toMatchObject({ code: 'ERR_DEPOSIT_TERMS_CHANGED' });
+    }
+    // Sem os Créditos por data, ou com quantidade diferente da de datas: contrato inválido, nada executado.
+    for (const extra of [
+      { expected_night_credits: undefined },
+      { expected_night_credits: [expectedCredits(BigInt(PRL)), expectedCredits(BigInt(PRL))] },
+    ])
+      expect((await call(headers(), body(2, extra))).status).toBe(400);
   });
 
   it('[ADR-0036 §7] K6 fechada → 503 ERR_UNAVAILABLE, nada gravado', async () => {

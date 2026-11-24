@@ -15,7 +15,7 @@ import {
   type RejectionCode,
 } from '@/features/platform';
 import { creditsForPrl, resolveEconomicTerms, type EconomicTermsStore } from '@/features/pricing';
-import { bookingNights, evaluateDeposit, sameCredits } from '../domain/deposit';
+import { bookingNights, evaluateDeposit, sameCredits, sameNightCredits } from '../domain/deposit';
 import { creditsOriginatedEvent } from './deposit-events';
 import { CREDITS_CAPABILITY, LUXCHANGE_DEPOSIT_CAPABILITY, type DepositStore } from './ports';
 
@@ -27,14 +27,26 @@ const MAX_VALIDITY_MONTHS = 1200;
 const ascending = (dates: readonly string[]) =>
   dates.every((date, index) => index === 0 || dates[index - 1]! < date);
 
-export const depositCapacityInput = z.strictObject({
-  second_home_id: z.uuid(),
-  /** Datas civis distintas, em ordem crescente, consecutivas ou não (ADR-0036 §2, §4). */
-  nights: z.array(z.iso.date()).min(1).max(MAX_DEPOSIT_NIGHTS).refine(ascending),
-  /** Termos revisados pelo Titular (ADR-0036 §8): conferidos com o recálculo no instante transacional. */
-  expected_credits: z.string().refine(isCreditQuantity),
-  expected_validity_months: z.number().int().min(1).max(MAX_VALIDITY_MONTHS),
-});
+export const depositCapacityInput = z
+  .strictObject({
+    second_home_id: z.uuid(),
+    /** Datas civis distintas, em ordem crescente, consecutivas ou não (ADR-0036 §2, §4). */
+    nights: z.array(z.iso.date()).min(1).max(MAX_DEPOSIT_NIGHTS).refine(ascending),
+    /**
+     * Termos revisados pelo Titular (ADR-0036 §8), conferidos com o recálculo no instante transacional: os Créditos de
+     * cada data (mesma ordem de `nights`), o total e a validade.
+     */
+    expected_night_credits: z
+      .array(z.string().refine(isCreditQuantity))
+      .min(1)
+      .max(MAX_DEPOSIT_NIGHTS),
+    expected_credits: z.string().refine(isCreditQuantity),
+    expected_validity_months: z.number().int().min(1).max(MAX_VALIDITY_MONTHS),
+  })
+  .refine((input) => input.expected_night_credits.length === input.nights.length, {
+    path: ['expected_night_credits'],
+    message: 'one reviewed credit amount per night, in the order of the nights',
+  });
 export type DepositCapacityInput = z.infer<typeof depositCapacityInput>;
 
 export type DepositCapacityResult = {
@@ -137,13 +149,20 @@ export function createDepositCapacityHandler<Tx>(
         parameters: ['credit_multiplier', 'credit_validity_months'],
         nights: { secondHomeId: input.second_home_id, dates: input.nights },
       });
+      const multiplier = terms.parameters.credit_multiplier!.value;
       const credits = creditsForPrl(
         BigInt(terms.prlTotal!.amountMinor),
         terms.prlTotal!.currency,
-        terms.parameters.credit_multiplier!.value,
+        multiplier,
       );
+      const byNight = new Map(terms.nights.map((night) => [night.stayDate, night] as const));
+      const nightCredits = input.nights.map((stayDate) => {
+        const night = byNight.get(stayDate)!;
+        return creditsForPrl(BigInt(night.amountMinor), night.currency, multiplier);
+      });
       const validityMonths = Number(terms.parameters.credit_validity_months!.value);
       if (
+        !sameNightCredits(input.expected_night_credits, nightCredits) ||
         !sameCredits(credits, input.expected_credits) ||
         validityMonths !== input.expected_validity_months
       )

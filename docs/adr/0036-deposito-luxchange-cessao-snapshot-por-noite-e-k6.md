@@ -73,12 +73,15 @@ decisão:
    aceite forjado ou gastar Créditos por Garantia/Direct forjados (reproduzido na auditoria). Depósito = K4 + K6;
    intercâmbio = K4 + K7, só depois do lastro da wave dona. Ativar exige migration e autorização do fundador; o rollback
    é recusado com fato de depósito ou sob ativação.
-8. **Termos revisados = o que o Titular viu.** O command recebe o total de Créditos e a validade (meses) que o Titular
-   revisou e os compara, por igualdade exata, com o recálculo no instante transacional; diferença → recusa com
+8. **Termos revisados = o que o Titular viu.** A revisão mostra os Créditos de cada data, o total e a validade; o command
+   recebe os três (`expected_night_credits` na ordem de `nights`, `expected_credits`, `expected_validity_months`) e os
+   compara, por igualdade decimal exata, com o recálculo no instante transacional; qualquer diferença → recusa com
    `ERR_DEPOSIT_TERMS_CHANGED`, sem efeito (precedente D7 da W13). O contrato é a igualdade dos termos apresentados, não
    a identidade das versões: o Titular nunca vê o PRL (REQ-100), e nenhum canônico exige versões idênticas no depósito.
-   Uma publicação que não muda o total nem a validade (ex.: alterações que se compensam entre noites) confirma, e o
-   snapshot registra as versões efetivamente usadas (REQ-052, TECH-031). Nada é originado com termos que o Titular não
+   Alterações que se compensam entre noites (mesma soma) são recusadas, porque mudam um valor exibido; uma versão nova
+   com os mesmos valores (ex.: multiplicador republicado igual) confirma, e o snapshot registra as versões efetivamente
+   usadas (REQ-052, TECH-031). A 1ª rodada da auditoria conferia só o total e a validade; com a revisão por data
+   (mesma rodada), o contrato passou a incluir cada data (2ª rodada). Nada é originado com termos que o Titular não
    viu.
 9. **Sem PRL em dinheiro para o Titular.** A jornada mostra Créditos por noite e o total; nunca o PRL em reais (REQ-100,
    ADR-0032 §10). A prévia é leitura do servidor; o command é a única fonte de efeito.

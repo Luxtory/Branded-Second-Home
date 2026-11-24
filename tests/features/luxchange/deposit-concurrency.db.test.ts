@@ -47,6 +47,7 @@ describe('W20 — depósito sob concorrência (CONC-10, TECH-053)', () => {
   const body = (homeId: string, nights: readonly string[], prl = PRL, multiplier = '10') => ({
     second_home_id: homeId,
     nights,
+    expected_night_credits: nights.map(() => expectedCredits(BigInt(prl), multiplier)),
     expected_credits: expectedCredits(BigInt(prl) * BigInt(nights.length), multiplier),
     expected_validity_months: TEST_VALIDITY_MONTHS,
   });

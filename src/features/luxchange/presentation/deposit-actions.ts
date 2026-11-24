@@ -127,6 +127,9 @@ export async function confirmDepositAction(
   const input = {
     second_home_id: field(form, 'second_home_id'),
     nights,
+    expected_night_credits: field(form, 'expected_night_credits')
+      .split(',')
+      .filter((credits) => credits !== ''),
     expected_credits: field(form, 'expected_credits'),
     expected_validity_months: Number(field(form, 'expected_validity_months')),
   };

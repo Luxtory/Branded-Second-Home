@@ -139,9 +139,9 @@ datas, contagem e quantidade. Consumidor `luxchange_deposit_notification` grava 
 
 - Noite sem PRL no conjunto → `ERR_PRL_MISSING`; noite intermediária (não pedida) sem PRL não importa.
 - Multiplicador ou validade ausentes → `ERR_PARAMETER_MISSING`.
-- PRL, multiplicador ou validade publicados entre a revisão e a confirmação que mudem o **total de Créditos ou a
-  validade** apresentados → `ERR_DEPOSIT_TERMS_CHANGED`; publicação que não muda nenhum dos dois confirma, com as
-  versões novas no snapshot (ADR-0036 §8).
+- PRL, multiplicador ou validade publicados entre a revisão e a confirmação que mudem os **Créditos de qualquer data, o
+  total ou a validade** apresentados → `ERR_DEPOSIT_TERMS_CHANGED` (alterações que se compensam entre noites também);
+  versão nova com os mesmos valores confirma, com as versões novas no snapshot (ADR-0036 §8).
 - Reserva Co-Owner em exceção, em uso ou já encerrada → `ERR_STATE_TRANSITION`/`ERR_CAPACITY_UNAVAILABLE`.
 - Noite de outra Second Home, de outra holding ou já depositada → `ERR_CAPACITY_UNAVAILABLE`.
 - Owner com reserva de uso próprio na noite → `ERR_CAPACITY_UNAVAILABLE` (cancelar antes, TECH-023).

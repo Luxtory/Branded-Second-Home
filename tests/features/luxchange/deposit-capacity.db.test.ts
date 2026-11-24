@@ -29,6 +29,7 @@ import {
   depositRunner,
   economicFacts,
   expectedCredits,
+  publishMultiplier,
   publishPrl,
   type CreditTitular,
   type DepositHarness,
@@ -44,10 +45,19 @@ describe('W20 — depósito Luxchange pelo command (REQ-051, REQ-060)', () => {
   let owner: CreditTitular;
   let run: ReturnType<typeof depositRunner>;
 
-  /** Termos que o Titular revisou: os mesmos que o servidor calcula para as noites e o PRL publicado. */
-  const input = (homeId: string, nights: readonly string[], totalMinor: bigint) => ({
+  /**
+   * Termos que o Titular revisou: os mesmos que o servidor calcula para as noites e o PRL publicado — Créditos de cada
+   * data (padrão: uma noite com o total), o total e a validade.
+   */
+  const input = (
+    homeId: string,
+    nights: readonly string[],
+    totalMinor: bigint,
+    nightMinor: readonly bigint[] = [totalMinor],
+  ) => ({
     second_home_id: homeId,
     nights,
+    expected_night_credits: nightMinor.map((minor) => expectedCredits(minor)),
     expected_credits: expectedCredits(totalMinor),
     expected_validity_months: TEST_VALIDITY_MONTHS,
   });
@@ -72,7 +82,7 @@ describe('W20 — depósito Luxchange pelo command (REQ-051, REQ-060)', () => {
   it('[REQ-060][BR-201][REQ-052] Owner: noites livres não consecutivas viram Créditos exatos e Inventário no mesmo commit', async () => {
     const nights = [depositDate(4), depositDate(7)];
     const total = prlOf(4) + prlOf(7);
-    const outcome = await run(input(owner.homeId, nights, total));
+    const outcome = await run(input(owner.homeId, nights, total, [prlOf(4), prlOf(7)]));
     expect(outcome).toMatchObject({ status: 'committed', replayed: false });
     if (outcome.status !== 'committed') return;
     const result = outcome.result;
@@ -153,10 +163,15 @@ describe('W20 — depósito Luxchange pelo command (REQ-051, REQ-060)', () => {
   it('[ADR-0036 §8] termos diferentes dos revisados → ERR_DEPOSIT_TERMS_CHANGED; nada é originado', async () => {
     const before = await economicFacts(d.c.h.database.pool);
     const nights = [depositDate(8)];
-    expect(await run(input(owner.homeId, nights, prlOf(8) + 1n))).toMatchObject({
-      status: 'rejected',
-      code: 'ERR_DEPOSIT_TERMS_CHANGED',
-    });
+    // Total diferente com a noite certa, noite diferente com o total certo: os dois são termos não revisados.
+    for (const [total, night] of [
+      [prlOf(8) + 1n, prlOf(8)],
+      [prlOf(8), prlOf(8) + 1n],
+    ] as const)
+      expect(await run(input(owner.homeId, nights, total, [night]))).toMatchObject({
+        status: 'rejected',
+        code: 'ERR_DEPOSIT_TERMS_CHANGED',
+      });
     expect(
       await run({ ...input(owner.homeId, nights, prlOf(8)), expected_validity_months: 24 }),
     ).toMatchObject({ status: 'rejected', code: 'ERR_DEPOSIT_TERMS_CHANGED' });
@@ -262,31 +277,37 @@ describe('W20 — depósito Luxchange pelo command (REQ-051, REQ-060)', () => {
     expect(await economicFacts(d.c.h.database.pool)).toEqual(before);
   });
 
-  it('[ADR-0036 §8][REQ-052] termos revisados = Créditos e validade apresentados: versões novas com o mesmo total confirmam e ficam no snapshot', async () => {
-    // Duas noites novas; a alteração (Super Admin) sobe uma e desce a outra no mesmo valor: o total visto não muda.
+  it('[ADR-0036 §8][REQ-052] termos revisados por noite: valores trocados com a mesma soma são recusados; versões novas com os mesmos valores confirmam', async () => {
     const [a, b] = [depositDate(13), depositDate(14)];
     await publishPrl(d, owner.homeId, { [a]: '40000', [b]: '60000' });
-    const versions = async () =>
-      (
-        await d.c.h.database.pool.query<{ id: string }>(
-          `SELECT v.id FROM unnest($2::date[]) AS n(stay_date), app.prl_at($1, n.stay_date, clock_timestamp()) v
-            ORDER BY n.stay_date`,
-          [owner.homeId, [a, b]],
-        )
-      ).rows.map((row) => row.id);
-    const old = await versions();
+    // A revisão mostrou 4.000 e 6.000 (total 10.000). O Super Admin altera para 4.500 e 5.500: a soma não muda.
+    const reviewed = input(owner.homeId, [a, b], 100_000n, [40_000n, 60_000n]);
     expect((await changePrl(d, owner.homeId, { [a]: '45000', [b]: '55000' })).status).toBe(
       'committed',
     );
-    const current = await versions();
-    expect(current).not.toEqual(old);
-    const outcome = await run(input(owner.homeId, [a, b], 100_000n));
+    const before = await economicFacts(d.c.h.database.pool);
+    expect(await run(reviewed)).toMatchObject({
+      status: 'rejected',
+      code: 'ERR_DEPOSIT_TERMS_CHANGED',
+    });
+    expect(await economicFacts(d.c.h.database.pool)).toEqual(before);
+    // O contrato é o valor apresentado, não a versão: um multiplicador republicado com o mesmo valor (versão nova) e os
+    // valores por noite revisados de novo confirmam, e o snapshot registra as versões efetivamente usadas.
+    const multiplierId = await publishMultiplier(d.c, '10');
+    const outcome = await run(input(owner.homeId, [a, b], 100_000n, [45_000n, 55_000n]));
     expect(outcome).toMatchObject({ status: 'committed' });
-    const { rows } = await d.c.h.database.pool.query<{ prl_id: string }>(
-      `SELECT prl_id FROM app.economic_snapshot_night WHERE operation_id = $1 ORDER BY stay_date`,
+    const { rows } = await d.c.h.database.pool.query<{ amount: string; multiplier: string }>(
+      `SELECT l.amount_minor::text AS amount, sp.parameter_id::text AS multiplier
+         FROM app.economic_snapshot_night n JOIN app.prl l ON l.id = n.prl_id
+         JOIN app.economic_snapshot_parameter sp
+           ON sp.operation_id = n.operation_id AND sp.parameter_key = 'credit_multiplier'
+        WHERE n.operation_id = $1 ORDER BY n.stay_date`,
       [outcome.operationId],
     );
-    expect(rows.map((row) => row.prl_id)).toEqual(current);
+    expect(rows).toEqual([
+      { amount: '45000', multiplier: multiplierId },
+      { amount: '55000', multiplier: multiplierId },
+    ]);
   });
 
   it('[REQ-097][TECH-091] uma notificação por depósito, sem duplicata na reentrega; recusas não notificam', async () => {
@@ -341,6 +362,7 @@ describe('W20 — depósito do Co-Owner: reserva inteira, Direito de Uso consumi
   const input = (nights: readonly string[]) => ({
     second_home_id: co.homeId,
     nights,
+    expected_night_credits: nights.map(() => expectedCredits(BigInt(PRL))),
     expected_credits: expectedCredits(BigInt(PRL) * BigInt(nights.length)),
     expected_validity_months: TEST_VALIDITY_MONTHS,
   });

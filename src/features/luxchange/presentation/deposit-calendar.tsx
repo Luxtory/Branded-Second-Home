@@ -83,6 +83,11 @@ function ConfirmForm(props: {
       <input type="hidden" name="second_home_id" value={preview.secondHomeId} />
       <input type="hidden" name="party_id" value={preview.partyId} />
       <input type="hidden" name="nights" value={preview.nights.join(',')} />
+      <input
+        type="hidden"
+        name="expected_night_credits"
+        value={preview.nightCredits.map((night) => night.credits).join(',')}
+      />
       <input type="hidden" name="expected_credits" value={preview.credits} />
       <input type="hidden" name="expected_validity_months" value={preview.validityMonths} />
       <div className="lx-field">

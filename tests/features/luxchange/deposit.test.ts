@@ -7,6 +7,7 @@ import {
   evaluateDeposit,
   nightAvailability,
   sameCredits,
+  sameNightCredits,
   sumCredits,
   withinNotice,
   type DepositBookingFacts,
@@ -219,6 +220,15 @@ describe('W20 — regras puras do depósito (REQ-051, REQ-060, TECH-043)', () =>
     expect(sameCredits('12.5', '12.5')).toBe(true);
     expect(sameCredits('abc', '1')).toBe(false);
     expect(() => sumCredits(['1.0'])).toThrow(RangeError);
+  });
+
+  it('[ADR-0036 §8] termos por noite: mesma quantidade e igualdade exata em cada data, na ordem das datas', () => {
+    expect(sameNightCredits(['4000', '6000'], ['4000', '6000'])).toBe(true);
+    // Mesma soma, valores trocados ou redistribuídos entre as datas: não são os termos revisados.
+    expect(sameNightCredits(['4000', '6000'], ['6000', '4000'])).toBe(false);
+    expect(sameNightCredits(['4000', '6000'], ['4500', '5500'])).toBe(false);
+    expect(sameNightCredits(['4000'], ['4000', '6000'])).toBe(false);
+    expect(sameNightCredits(['1234.5'], ['1234.50'])).toBe(false);
   });
 
   it('noites de uma reserva em datas civis, atravessando o fim do mês', () => {

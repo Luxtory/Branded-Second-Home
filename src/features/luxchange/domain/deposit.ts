@@ -195,3 +195,14 @@ export function sameCredits(left: string, right: string): boolean {
   const { units } = scaled([left, right]);
   return units[0] === units[1];
 }
+
+/**
+ * Termos revisados por noite (ADR-0036 §8): os Créditos que a revisão mostrou para cada data, na ordem das datas, são
+ * exatamente os recalculados — mesma quantidade de noites e igualdade decimal exata em cada posição.
+ */
+export function sameNightCredits(reviewed: readonly string[], current: readonly string[]): boolean {
+  return (
+    reviewed.length === current.length &&
+    reviewed.every((credits, index) => sameCredits(credits, current[index]!))
+  );
+}
