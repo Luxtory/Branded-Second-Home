@@ -1,4 +1,21 @@
+.opportunity {
+  row-gap: var(--lx-space-6);
+}
+
+.opportunity > :global(.lx-section-head) {
+  margin-bottom: 0;
+}
+
 @media (min-width: 64rem) {
+  .coOwnerFigures {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .coOwnerFigures > div {
+    padding-top: 0;
+    border-top: 0;
+  }
+
   .partnerCards {
     row-gap: var(--lx-space-4);
   }

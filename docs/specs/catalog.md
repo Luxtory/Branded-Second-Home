@@ -2205,3 +2205,25 @@ Reutilizar SiteShell, Hero B2B, comparações, etapas, perguntas nativas e acerv
 e tokens oficiais. H1, contraste, legibilidade e fotos verificados em 390/1440 px e reflow em 320–1920 px. Testar ordem
 do encaminhamento, portões em Local/Production, ausência de link quebrado, canonical, teclado, formulário, aceite,
 repetição e falhas sem perda da mensagem. Exigir build, tipos, lint e testes do Design System e fluxos afetados.
+
+### 23.4. Revisão editorial dos 5Ps
+
+Revisão solicitada pelo fundador em 2026-11-23 para marcas hoteleiras e de identidade consolidada, incorporadoras
+e investidores. A jornada usa o Framework dos 5Ps e a composição editorial de
+[Second Home Partners](communication/framework-second-home-partners.md#8-5ps--arquitetura-narrativa).
+
+| P | Seções | Mensagem |
+| --- | --- | --- |
+| Picture | `#inicio` | Casas de lazer desejadas pelo público e uma identidade com espaço para ganhar novos destinos |
+| Problem | `#oportunidade` | Produto, público, destino e investimento precisam fazer sentido juntos |
+| Promise | `#brand-experience` | A Luxtory dirige o produto sob demanda com parceiros que investem e realizam o projeto |
+| Proof | `#sob-demanda`, `#para-quem-vive`, `#como-funciona`, `#governanca`, `#perguntas` | Pesquisa de conceito, interesse após a Home Edition publicada, modalidades, uso e papéis |
+| Push | `#parceiros`, `#conversa` | Benefícios por perfil e convite para apresentar uma oportunidade |
+
+O comprador pode indicar o destino e a modalidade desejados. A localização e o produto são definidos na
+estruturação, conforme demanda e viabilidade (BR-030, BR-035). Owner admite personalização dos elementos permitidos.
+Co-Owner conserva o padrão da Home Edition. Os responsáveis pela execução seguem o conceito aprovado (BR-017,
+BR-019, BR-301). O exemplo Co-Owner usa oito Ações iguais, 1/8 (12,5%) por acionista e 44 dias anuais de Direito
+de Uso. Os limites são 12 em Alta / Super Alta e 32 em Média / Baixa. Cada categoria tem saldo próprio no
+calendário (01 §§8.1 e 9, BR-076 e BR-080–082). Validar a sequência, as cifras, a leitura em telas estreitas
+e os encaminhamentos entre as páginas.

@@ -3,10 +3,11 @@ export const secondHomeDevelopmentMessages = {
   metadata: {
     title: 'Second Home Development | Luxtory',
     description:
-      'Desenvolvimento sob demanda de Second Homes Owner e Co-Owner. A Luxtory conecta marcas, incorporadoras e especialistas, da pesquisa ao lançamento.',
+      'Second Homes sob demanda nas modalidades Owner e Co-Owner. A Luxtory conecta marcas, incorporadoras e investidores, da pesquisa ao lançamento.',
     siteName: 'Luxtory',
   },
   nav: {
+    modalities: 'Owner e Co-Owner',
     steps: 'Como funciona',
     roles: 'Papéis e governança',
     questions: 'Dúvidas',
@@ -17,47 +18,55 @@ export const secondHomeDevelopmentMessages = {
     name: 'Second Home Development',
     title: { lead: 'Second Homes extraordinárias. ', turn: 'Desenvolvidas sob demanda.' },
     paragraphs: [
-      'Conectamos marcas, incorporadoras e especialistas para criar Second Homes.',
-      'A Luxtory dirige o produto, da pesquisa ao lançamento, em projetos Owner e Co-Owner.',
+      'Uma marca que faz parte das férias dos clientes. Um conceito de casa que pode ganhar vida em novos destinos.',
+      'A Luxtory une marcas, incorporadoras e investidores em projetos Owner e Co-Owner.',
     ],
     action: 'Conversar sobre uma oportunidade',
+  },
+  opportunity: {
+    title: { lead: 'Qual casa? Em qual destino? ', turn: 'Para quem?' },
+    paragraphs: [
+      'Para marcas, o desafio é traduzir sua identidade em uma casa em que o público se reconheça.',
+      'Para incorporadoras e investidores, é entender o que o público quer antes de escolher onde e como investir.',
+    ],
   },
   experience: {
     title: { lead: 'Da marca vista ', turn: 'à marca vivida.' },
     paragraphs: [
-      'A identidade da marca pode orientar a arquitetura, os ambientes e o jeito de viver a casa.',
-      'Pense em um lugar para descansar, receber amigos e celebrar em família. A marca passa a fazer parte desses momentos.',
+      'A Luxtory reúne marcas, incorporadoras, investidores e especialistas para criar Second Homes sob demanda.',
+      'A identidade da marca dá origem ao conceito da casa. A Luxtory conduz a gestão de produto da pesquisa ao lançamento.',
+      'Investimento, obra e operação cabem aos parceiros responsáveis, conforme a estrutura de cada projeto.',
     ],
     photoAlt: 'Família reunida ao redor de uma fogueira em uma casa de lazer.',
     equation: {
-      first: 'A identidade da sua marca',
-      second: 'Momentos de lazer com quem importa',
-      result: 'Novas ocasiões para se conectar com seu público.',
+      first: 'Identidade da marca',
+      second: 'Jeito de viver do público',
+      result: 'Um conceito de casa que dá forma à experiência.',
     },
   },
   partners: {
     title: { lead: 'Um projeto. ', turn: 'Diferentes formas de participar.' },
     items: [
       {
-        title: 'Marcas hoteleiras e premium',
+        title: 'Marcas hoteleiras e outras marcas consolidadas',
         paragraphs: [
-          'Leve a identidade da sua marca a Second Homes em outros destinos.',
+          'Leve a identidade da sua marca a novos destinos e aos momentos de lazer dos seus clientes.',
           'O licenciamento pode gerar remuneração. Direitos e aprovações são definidos em contrato.',
-          'A realização cabe aos parceiros. A operação hoteleira é uma decisão à parte.',
+          'Os parceiros realizam o projeto. A operação hoteleira é uma decisão à parte.',
         ],
       },
       {
         title: 'Incorporadoras e desenvolvedores',
         paragraphs: [
-          'Use a pesquisa para entender o público antes de assumir compromissos maiores.',
-          'Com a Luxtory, avalie conceito, proposta de valor e modalidade de aquisição.',
-          'Leve os diferenciais do projeto aos materiais e argumentos de lançamento.',
+          'Use a pesquisa para tomar decisões de produto antes de investir na obra.',
+          'Desenvolva um conceito de casa e avalie a modalidade mais adequada ao público.',
+          'Leve os diferenciais do projeto aos materiais e argumentos de venda.',
         ],
       },
       {
         title: 'Investidores imobiliários',
         paragraphs: [
-          'Financie ou desenvolva projetos autorizados conforme o escopo da oportunidade.',
+          'Avalie onde financiar ou desenvolver projetos com conceito e público definidos.',
           'Aportes, responsabilidades e riscos seguem a estrutura acordada.',
           'O investidor pode ter margem própria na comercialização, conforme seus direitos.',
         ],
@@ -69,15 +78,15 @@ export const secondHomeDevelopmentMessages = {
     items: [
       {
         title: 'Patrimônio',
-        text: 'Um lugar seu, com propriedade integral ou participação na empresa proprietária do imóvel, conforme a modalidade.',
+        text: 'A casa inteira ou uma participação na empresa proprietária, com Direito de Uso.',
       },
       {
         title: 'Liberdade',
-        text: 'A modalidade pode ser escolhida entre as opções do projeto, conforme o perfil de uso e os recursos de cada comprador.',
+        text: 'Indique onde quer ter sua casa de lazer e a modalidade que prefere. O projeto depende da viabilidade no destino.',
       },
       {
         title: 'Pertencimento',
-        text: 'Uma casa alinhada ao seu estilo de vida. Um lugar para voltar, receber quem ama e criar suas próprias histórias.',
+        text: 'Uma casa alinhada ao seu jeito de viver, com o padrão de qualidade acordado com as empresas parceiras.',
       },
     ],
     acquisitionTitle: 'Formas de aquisição',
@@ -85,18 +94,35 @@ export const secondHomeDevelopmentMessages = {
       {
         title: 'Owner',
         paragraphs: [
-          'O comprador adquire a propriedade integral da Second Home.',
-          'Pode contratar a administração profissional do imóvel.',
+          'Você adquire a propriedade integral da Second Home.',
+          'Você pode personalizar os elementos permitidos pelo conceito da casa.',
+          'A gestão profissional pode ser contratada.',
         ],
       },
       {
         title: 'Co-Owner',
         paragraphs: [
-          'O comprador adquire uma Ação na SPE, a empresa proprietária do imóvel, com Direito de Uso.',
-          'A administração profissional é obrigatória. O uso segue o calendário e as regras do imóvel.',
+          'Você adquire uma Ação na SPE, a empresa proprietária do imóvel, com Direito de Uso.',
+          'A casa segue o padrão da Home Edition, a configuração aprovada do projeto.',
+          'A gestão profissional é obrigatória.',
         ],
       },
     ],
+    coOwnerExample: {
+      title: 'Co-Owner na prática',
+      intro: 'O exemplo considera oito Ações iguais, uma por acionista, em um ano civil completo.',
+      figures: [
+        { label: 'Participação', value: '1/8 (12,5%)' },
+        { label: 'Direito de Uso anual', value: '44 dias' },
+        { label: 'Alta / Super Alta', value: 'Até 12 dias' },
+        { label: 'Média / Baixa', value: 'Até 32 dias' },
+      ],
+      calendar: [
+        'Alta / Super Alta inclui janeiro, julho, dezembro e a janela de 10 dias do Carnaval.',
+        'Média / Baixa corresponde às demais datas. Cada grupo tem seu próprio saldo.',
+        'O acesso ao calendário começa por sorteio. A ordem muda a cada ano e você escolhe entre as datas disponíveis.',
+      ],
+    },
     commitments: 'Despesas, direitos e responsabilidades seguem a estrutura de cada imóvel.',
     club: [
       'O Luxtory Club pode ampliar as experiências em outros destinos.',
@@ -105,30 +131,28 @@ export const secondHomeDevelopmentMessages = {
     clubLink: 'Conheça o Luxtory Club',
   },
   model: {
-    title: { lead: 'Desenvolvimento ', turn: 'sob demanda.' },
-    intro:
-      'No modelo descentralizado, a Luxtory dirige o produto e articula os parceiros responsáveis por investir, estruturar e realizar cada projeto.',
+    title: { lead: 'Como o público ', turn: 'orienta o projeto.' },
+    intro: 'A Luxtory escuta o público em duas etapas, do conceito da casa à escolha dos destinos.',
     items: [
       {
-        title: 'Da demanda ao projeto',
+        title: 'O que a pesquisa revela',
         paragraphs: [
-          'A pesquisa orienta as escolhas de produto e a decisão de investimento.',
-          'Cada projeto avança com viabilidade, capital, estrutura jurídica e autorizações.',
+          'Conversamos com o público para saber se o conceito combina com seu jeito de usar uma casa de lazer.',
+          'As respostas ajudam a decidir o que desenvolver antes de assumir compromissos de obra.',
         ],
       },
       {
-        title: 'Em diferentes destinos',
+        title: 'O que o interesse revela',
         paragraphs: [
-          'A realização pode ocorrer em condomínios de lazer por parceria ou em outros locais compatíveis.',
-          'Cada replicação depende dos direitos, das aprovações e da viabilidade no destino.',
+          'Com a configuração da casa publicada, o interessado indica o destino e a modalidade desejados.',
+          'A Luxtory cruza essas preferências com a viabilidade em condomínios de lazer e outros locais compatíveis.',
         ],
       },
     ],
   },
   steps: {
     title: { lead: 'Da primeira hipótese ', turn: 'ao produto no mercado.' },
-    intro:
-      'A Luxtory conduz o Product Management. O percurso segue a fase e o escopo de cada projeto.',
+    intro: 'A Luxtory conduz a gestão de produto conforme a fase e o escopo de cada projeto.',
     items: [
       {
         title: 'Discovery e oportunidade',
@@ -171,8 +195,7 @@ export const secondHomeDevelopmentMessages = {
       },
     ],
     note: [
-      'O Discovery testa hipóteses de demanda.',
-      'O comprador pode manifestar interesse após a publicação da Home Edition. A aquisição é formalizada em uma etapa posterior.',
+      'A manifestação de interesse abre uma conversa. A aquisição é formalizada depois da estruturação da Second Home.',
     ],
   },
   roles: {
@@ -232,15 +255,15 @@ export const secondHomeDevelopmentMessages = {
       },
     ],
     affiliation: {
-      question: 'Já tenho imóveis para apresentar à Luxtory. Por onde começo?',
-      answer:
-        'Second Home Partners trata da afiliação de imóveis existentes ou em desenvolvimento.',
+      question: 'Já tenho um imóvel pronto ou em desenvolvimento. Por onde começo?',
+      answer: 'Para afiliar seu imóvel à Luxtory, o caminho é Second Home Partners.',
       link: 'Conheça Second Home Partners',
     },
   },
   contact: {
     title: { lead: 'Vamos conversar ', turn: 'sobre sua oportunidade.' },
-    intro: 'Conte o que você quer desenvolver, onde fica o projeto e em que fase ele está.',
+    intro:
+      'Apresente sua marca, o local que tem em mente ou o tipo de projeto em que quer investir.',
     privacy:
       'A Luxtory usa os dados do contato para analisar a oportunidade e responder à sua mensagem.',
   },

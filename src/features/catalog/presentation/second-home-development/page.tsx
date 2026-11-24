@@ -15,13 +15,14 @@ import { secondHomeDevelopmentPaths } from './paths';
 
 const sections = {
   opening: 'inicio',
+  opportunity: 'oportunidade',
   experience: 'brand-experience',
-  partners: 'parceiros',
-  living: 'para-quem-vive',
   model: 'sob-demanda',
+  living: 'para-quem-vive',
   steps: 'como-funciona',
   roles: 'governanca',
   faq: 'perguntas',
+  partners: 'parceiros',
   contact: secondHomeDevelopmentPaths.contact,
 } as const;
 
@@ -47,7 +48,9 @@ function SectionHeading({
 }
 
 export function SecondHomeDevelopmentPage() {
-  const { hero, experience, partners, living, model, steps, roles, faq, contact } = text;
+  const { hero, opportunity, experience, model, living, steps, roles, faq, partners, contact } =
+    text;
+  const { coOwnerExample } = living;
   const questions: readonly {
     readonly question: string;
     readonly answer: string;
@@ -59,6 +62,7 @@ export function SecondHomeDevelopmentPage() {
       homeHref={secondHomeDevelopmentPaths.home}
       labels={discoveryMessages.site}
       navItems={[
+        { href: `#${sections.living}`, label: text.nav.modalities, current: false },
         { href: `#${sections.steps}`, label: text.nav.steps, current: false },
         { href: `#${sections.roles}`, label: text.nav.roles, current: false },
         { href: `#${sections.faq}`, label: text.nav.questions, current: false },
@@ -98,6 +102,20 @@ export function SecondHomeDevelopmentPage() {
       </section>
 
       <section
+        id={sections.opportunity}
+        className="lx-section"
+        data-surface="white"
+        aria-labelledby={titleId(sections.opportunity)}
+      >
+        <div className={`lx-container lx-columns lx-columns--5-7 ${styles.opportunity}`}>
+          <SectionHeading section={sections.opportunity} title={opportunity.title} />
+          <div className="lx-stack">
+            <Paragraphs lines={opportunity.paragraphs} />
+          </div>
+        </div>
+      </section>
+
+      <section
         id={sections.experience}
         className="lx-section"
         data-surface="wash"
@@ -130,21 +148,21 @@ export function SecondHomeDevelopmentPage() {
       </section>
 
       <section
-        id={sections.partners}
+        id={sections.model}
         className="lx-section"
-        data-surface="deep"
-        aria-labelledby={titleId(sections.partners)}
+        data-surface="blue"
+        aria-labelledby={titleId(sections.model)}
       >
         <div className="lx-container">
-          <SectionHeading section={sections.partners} title={partners.title} />
-          <ul className={`lx-siblings lx-siblings--trio ${styles.partnerCards}`} role="list">
-            {partners.items.map((partner) => (
-              <li key={partner.title} className="lx-siblings__item lx-stack">
-                <h3 className="lx-display-m">{partner.title}</h3>
-                <Paragraphs lines={partner.paragraphs} />
-              </li>
+          <SectionHeading section={sections.model} title={model.title} intro={model.intro} />
+          <div className="lx-comparison lx-comparison--divided">
+            {model.items.map((item) => (
+              <div key={item.title} className="lx-comparison__item lx-stack">
+                <h3 className="lx-display-m">{item.title}</h3>
+                <Paragraphs lines={item.paragraphs} />
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       </section>
 
@@ -174,29 +192,35 @@ export function SecondHomeDevelopmentPage() {
                 </div>
               ))}
             </div>
+            <div id="exemplo-co-owner" className="lx-figures__item">
+              <div className="lx-stack">
+                <h4 className="lx-display-m">{coOwnerExample.title}</h4>
+                <p className="lx-body">{nb(coOwnerExample.intro)}</p>
+              </div>
+              <dl className={`lx-figures__data ${styles.coOwnerFigures}`}>
+                {coOwnerExample.figures.map(({ label, value }, index) => (
+                  <div key={label}>
+                    <dt>{nb(label)}</dt>
+                    <dd
+                      className={
+                        index === 1
+                          ? 'lx-figures__value lx-figures__value--primary'
+                          : 'lx-figures__value'
+                      }
+                    >
+                      {nb(value)}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <div className="lx-stack">
+                <Paragraphs lines={coOwnerExample.calendar} />
+              </div>
+            </div>
             <Paragraphs lines={[living.commitments, ...living.club]} />
             {isPublicSiteOpen() && (
               <ActionLink href={discoveryPaths.howItWorks} label={living.clubLink} />
             )}
-          </div>
-        </div>
-      </section>
-
-      <section
-        id={sections.model}
-        className="lx-section"
-        data-surface="blue"
-        aria-labelledby={titleId(sections.model)}
-      >
-        <div className="lx-container">
-          <SectionHeading section={sections.model} title={model.title} intro={model.intro} />
-          <div className="lx-comparison lx-comparison--divided">
-            {model.items.map((item) => (
-              <div key={item.title} className="lx-comparison__item lx-stack">
-                <h3 className="lx-display-m">{item.title}</h3>
-                <Paragraphs lines={item.paragraphs} />
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -264,6 +288,33 @@ export function SecondHomeDevelopmentPage() {
                 </div>
               </details>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section
+        id={sections.partners}
+        className="lx-section"
+        data-surface="deep"
+        aria-labelledby={titleId(sections.partners)}
+      >
+        <div className="lx-container">
+          <SectionHeading section={sections.partners} title={partners.title} />
+          <ul className={`lx-siblings lx-siblings--trio ${styles.partnerCards}`} role="list">
+            {partners.items.map((partner) => (
+              <li key={partner.title} className="lx-siblings__item lx-stack">
+                <h3 className="lx-display-m">{partner.title}</h3>
+                <Paragraphs lines={partner.paragraphs} />
+              </li>
+            ))}
+          </ul>
+          <div className="lx-section-closing">
+            <ActionLink
+              href={`#${sections.contact}`}
+              label={hero.action}
+              primary
+              icon="arrow-down"
+            />
           </div>
         </div>
       </section>

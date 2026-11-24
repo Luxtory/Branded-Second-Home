@@ -16,20 +16,38 @@ async function fillContact(page: Page) {
   return form;
 }
 
-test('a proposta B2B tem a rota canônica, as modalidades e as seis etapas (catalog §23)', async ({
+test('o percurso B2B segue os 5Ps e mostra o Direito de Uso de oito Co-Owners (catalog §23)', async ({
   page,
 }) => {
   expect((await page.goto(PAGE))?.status()).toBe(200);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(HEADLINE);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', PAGE);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow');
+  await expect(
+    page.locator('#inicio + #oportunidade + #brand-experience + #sob-demanda + #para-quem-vive'),
+  ).toHaveCount(1);
+  await expect(page.locator('#perguntas + #parceiros + #conversa')).toHaveCount(1);
   await expect(page.locator('#para-quem-vive h3')).toContainText([
     'Patrimônio',
     'Liberdade',
     'Pertencimento',
     'Formas de aquisição',
   ]);
-  await expect(page.locator('#para-quem-vive h4')).toHaveText(['Owner', 'Co-Owner']);
+  await expect(page.locator('#para-quem-vive .lx-comparison h4')).toHaveText(['Owner', 'Co-Owner']);
+  const example = page.locator('#exemplo-co-owner');
+  await expect(example.locator('dt')).toHaveText([
+    'Participação',
+    'Direito de Uso anual',
+    'Alta / Super Alta',
+    'Média / Baixa',
+  ]);
+  await expect(example.locator('dd')).toHaveText([
+    '1/8 (12,5%)',
+    '44 dias',
+    'Até 12 dias',
+    'Até 32 dias',
+  ]);
+  await expect(example).toContainText('janela de 10 dias do Carnaval');
   await expect(page.locator('#como-funciona .lx-numbered > li')).toHaveCount(6);
   await expect(page.locator('#governanca h3')).toHaveCount(5);
   await expect(
