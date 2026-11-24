@@ -29,7 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   transação do próprio snapshot; a reserva cedida aparece como "Cedida ao Luxchange" (Titular e Admin), nunca como
   cancelada; o calendário mostra as três temporadas da W16 (Super Alta, Alta, Média/Baixa) e permite ir direto a mês e
   exercício; a revisão identifica a Second Home, o vínculo e os Créditos de cada data, e a confirmação confere cada
-  data, o total e a validade revisados (troca de valores entre noites com a mesma soma pede nova revisão).
+  data, o total e a validade revisados (troca de valores entre noites com a mesma soma pede nova revisão). Antecedência
+  de 14 dias (336 horas antes do check-in) também na tela aberta: a data que passa do prazo sai da seleção, com o motivo
+  "Esta data exige pelo menos 14 dias de antecedência para depósito."; reserva Co-Owner só inteira dentro do prazo.
 
 - W19 — Pagamentos, Luxchange Fee e settlement (REQ-094; ADR-006, ADR-008, TECH-025, TECH-080–083, TECH-090, TECH-101;
   ADR-0035). Decisão do fundador de 2026-11-22: o Luxchange Fee de referência passa de 10% para 12% do PRL total do

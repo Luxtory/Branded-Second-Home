@@ -54,6 +54,12 @@ const summary = (page: Page) => page.locator('aside[aria-labelledby="deposito-re
 
 const cell = (page: Page, date: string) => page.locator(`td:has(button[data-date="${date}"])`);
 
+/** Noite fora da seleção: indisponível não é alternável (sem `aria-pressed`) e a célula não fica marcada. */
+async function expectUnselected(page: Page, date: string) {
+  await expect(day(page, date)).not.toHaveAttribute('aria-pressed', 'true');
+  await expect(cell(page, date)).not.toHaveAttribute('data-selected');
+}
+
 /** Vai direto ao mês pelos seletores "Exercício" e "Mês" (W16): sem tocar "Próximo mês" em sequência. */
 async function jumpTo(page: Page, month: string) {
   const year = page.getByLabel('Exercício', { exact: true });
@@ -104,7 +110,15 @@ test.describe('W20 E3 — depósito Luxchange na Área do Titular', () => {
       string,
     ];
     // PRL deliberadamente quebrado: 1.234,56 e 987,65 → 12.345,6 + 9.876,5 Créditos; a noite do meio fica sem PRL.
-    await publishPrl(page, home, { [first]: '123456', [second]: '98765' });
+    // Também com PRL: uma noite a 10 dias (sempre dentro dos 14) e as candidatas à fronteira dos 14 dias (13 a 16).
+    const near = addDays(civilToday(), 10);
+    const boundaryCandidates = [13, 14, 15, 16].map((offset) => addDays(civilToday(), offset));
+    await publishPrl(page, home, {
+      [first]: '123456',
+      [second]: '98765',
+      [near]: '50000',
+      ...Object.fromEntries(boundaryCandidates.map((date) => [date, '50000'])),
+    });
 
     try {
       await titular.goto('/titular');
@@ -140,6 +154,22 @@ test.describe('W20 E3 — depósito Luxchange na Área do Titular', () => {
       await day(titular, gap).tap({ force: true });
       await expect(titular.getByText(/ainda sem referência para o depósito/)).toBeVisible();
       await expect(day(titular, gap)).toHaveAttribute('aria-disabled', 'true');
+
+      // Menos de 14 dias (BR-200, TECH-043): bloqueada ao toque e ao teclado, com o motivo exato.
+      await jumpTo(titular, near.slice(0, 7));
+      await expect(day(titular, near)).toHaveAttribute('aria-disabled', 'true');
+      await expect(day(titular, near)).toHaveAccessibleName(
+        /exige pelo menos 14 dias de antecedência para depósito/,
+      );
+      await day(titular, near).tap({ force: true });
+      await expect(
+        titular.getByText('Esta data exige pelo menos 14 dias de antecedência para depósito.'),
+      ).toBeVisible();
+      await day(titular, near).focus();
+      await titular.keyboard.press('Enter');
+      await titular.keyboard.press('Space');
+      await expectUnselected(titular, near);
+      await expect(summary(titular)).toContainText('0 Créditos');
 
       await showMonth(titular, first);
       await day(titular, first).tap();
@@ -221,6 +251,33 @@ test.describe('W20 E3 — depósito Luxchange na Área do Titular', () => {
       await titular.goto('/titular/notificacoes');
       await expect(titular.locator('main')).toContainText('Depósito concluído');
       await expect(titular.locator('main')).toContainText('26.666,52 Créditos por 2 noites');
+
+      // O tempo passa com o calendário aberto (relógio do navegador controlado): a noite selecionável mais próxima do
+      // prazo — check-in em menos de 24 h + 336 h — sai da seleção e fica bloqueada, sem nova leitura da página.
+      await titular.clock.install({ time: new Date() });
+      await titular.goto('/titular/luxchange/deposito');
+      let boundary: string | undefined;
+      for (const date of boundaryCandidates) {
+        await jumpTo(titular, date.slice(0, 7));
+        if ((await day(titular, date).getAttribute('aria-disabled')) !== 'true') {
+          boundary = date;
+          break;
+        }
+      }
+      expect(boundary, 'primeira noite ainda dentro do prazo').toBeDefined();
+      await day(titular, boundary!).tap();
+      await expect(day(titular, boundary!)).toHaveAttribute('aria-pressed', 'true');
+      await titular.clock.fastForward('25:00:00');
+      await expect(day(titular, boundary!)).toHaveAttribute('aria-disabled', 'true');
+      await expectUnselected(titular, boundary!);
+      await expect(
+        titular.getByText(/deixaram de cumprir os 14 dias de antecedência/),
+      ).toBeVisible();
+      await expect(summary(titular)).toContainText('0 Créditos');
+      await day(titular, boundary!).tap({ force: true });
+      await expect(
+        titular.getByText('Esta data exige pelo menos 14 dias de antecedência para depósito.'),
+      ).toBeVisible();
     } finally {
       await context.close();
     }

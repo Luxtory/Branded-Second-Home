@@ -37,7 +37,7 @@ const W20_OBJECTS = [
   /^acl app\.economic_snapshot_night_(pkey|prl_idx)$/,
   /^policy economic_snapshot_night\./,
   /^(trigger|constraint) app\.economic_snapshot\.economic_snapshot_operation_constraint$/,
-  /^function(-acl)? app\.(economic_snapshot_night_write|economic_snapshot_in_current_transaction|economic_snapshot_operation_constraint|assert_luxchange_deposit_active|assert_luxchange_exchange_active|assert_luxchange_deposit_complete|luxchange_deposit_[a-z_]+|luxchange_invariant_breaches)\(/,
+  /^function(-acl)? app\.(economic_snapshot_night_write|economic_snapshot_in_current_transaction|economic_snapshot_operation_constraint|luxchange_deposit_notice_met|assert_luxchange_deposit_active|assert_luxchange_exchange_active|assert_luxchange_deposit_complete|luxchange_deposit_[a-z_]+|luxchange_invariant_breaches)\(/,
 ];
 
 /**

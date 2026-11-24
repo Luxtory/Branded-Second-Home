@@ -45,7 +45,9 @@ decisão:
    o snapshot** (`app.economic_snapshot_in_current_transaction`: `xmin` da linha do snapshot = xid da transação
    corrente, mais `created_at ≥ now()` contra coincidência de xid após wraparound). Uma operação `pending` reaproveitada
    noutra transação (o papel da aplicação consegue comitar sem marcar a operação, ADR-0024 §3) não acrescenta noites nem
-   cessões a um depósito já conferido no COMMIT — nem em sequência, nem em concorrência. A primeira versão comparava só
+   cessões a um depósito já conferido no COMMIT — nem em sequência, nem em concorrência. A antecedência é o predicado
+   puro `app.luxchange_deposit_notice_met(checkin_at, instante)` (`instante ≤ checkin_at − 336 h`, inclusivo), chamado
+   com `clock_timestamp()` na escrita da noite e na transição `cession`. A primeira versão comparava só
    tempo (`created_at ≥ now()`); como `now()` é o início da transação, uma transação iniciada antes do snapshot de outra
    passava (reproduzido na 2ª rodada da auditoria). O snapshot é só-inserção, então o `xmin` não muda; inserido em
    savepoint, falha fechada (nenhum command de depósito usa savepoint).

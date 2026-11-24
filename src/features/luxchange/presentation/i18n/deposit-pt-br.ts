@@ -84,7 +84,7 @@ export const depositMessages = {
       eligible: 'pode ser depositada',
       selected: 'selecionada',
       ceded: 'já depositada no Luxchange',
-      notice: 'menos de 14 dias de antecedência',
+      notice: 'exige pelo menos 14 dias de antecedência para depósito',
       booked: 'reservada para seu uso — cancele a reserva antes de depositar',
       not_reserved: 'não reservada — reserve no seu calendário de uso antes de depositar',
       no_reference: 'ainda sem referência para o depósito',
@@ -92,6 +92,10 @@ export const depositMessages = {
       started: 'data passada',
     } as const,
     explain: (date: string, reason: string) => `${date}: ${reason}.`,
+    /** Regra da Luxtory (BR-200, TECH-043): check-in a pelo menos 336 horas do instante atual. */
+    noticeRule: 'Esta data exige pelo menos 14 dias de antecedência para depósito.',
+    noticeLapsed:
+      'Uma ou mais datas deixaram de cumprir os 14 dias de antecedência e saíram da seleção. Revise as datas antes de continuar.',
     booking: (from: string, to: string, nights: number) =>
       `Reserva de ${from} a ${to} (${nights} ${plural(nights, 'noite', 'noites')}).`,
   },

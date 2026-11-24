@@ -99,6 +99,15 @@ funcionalidade fechada (503 `ERR_UNAVAILABLE`, nada gravado).
    reservada — Co-Owner reserva antes —, sem referência econômica publicada, indisponível). Co-Owner: título "Datas do
    seu Direito de Uso"; tocar uma noite seleciona a reserva inteira, com todas as suas noites (a dica não sugere
    cancelar nem refazer reservas).
+   **Antecedência mínima (BR-200, TECH-043 — 336 horas antes do check-in oficial):** objetivo comercial da Luxtory de
+   ter janela para ofertar as noites depositadas. Só é selecionável a noite com check-in a pelo menos 336 h do instante
+   atual (no limite exato, permitida; 335h59 bloqueada); as demais ficam bloqueadas ao toque, ao teclado e a qualquer
+   outro meio, com o motivo acessível "Esta data exige pelo menos 14 dias de antecedência para depósito." O calendário
+   aberto reaplica a regra com o passar do tempo (relógio ancorado no instante do banco da leitura, reavaliado no
+   próximo prazo, ao voltar à aba e a cada minuto): a noite que passa do prazo sai da seleção — e a revisão volta ao
+   resumo — com aviso. Co-Owner: a reserva só é selecionável se todas as noites cumprem o prazo. O command e o banco
+   revalidam com o relógio do banco (`app.luxchange_deposit_notice_met(checkin_at, clock_timestamp())`), inclusive
+   contra chamadas diretas à API e concorrência.
 3. **Resumo** — datas, noites, "Créditos a receber", "Saldo atual" (zero real quando não há lote), "Saldo potencial após
    o depósito" (informativo) e validade dos novos Créditos.
 4. **Revisão e confirmação** — prévia do servidor: Second Home, vínculo (Owner ou Co-Owner), cada data com os seus

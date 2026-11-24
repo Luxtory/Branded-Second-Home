@@ -62,6 +62,27 @@ describe('W20 — regras puras do depósito (REQ-051, REQ-060, TECH-043)', () =>
     expect(withinNotice(FAR, limit + 1)).toBe(false);
   });
 
+  it('[BR-200][TECH-043] critérios de aceite: 335h59 bloqueada, 336h e 336h01 permitidas (exemplo 01/11 15h → 15/11 15h)', () => {
+    const checkinAt = '2026-11-15T15:00:00-03:00';
+    const at = (iso: string) => Date.parse(iso);
+    const owner336 = at('2026-11-01T15:00:00-03:00'); // exatamente 336 h antes: no limite, permitido
+    const cases = [
+      ['2026-11-01T15:01:00-03:00', false], // 335h59min
+      ['2026-11-01T15:00:00-03:00', true], // 336h
+      ['2026-11-01T14:59:00-03:00', true], // 336h01min
+    ] as const;
+    expect(Date.parse(checkinAt) - owner336).toBe(336 * 3_600_000);
+    for (const [instant, allowed] of cases) {
+      expect(withinNotice(checkinAt, at(instant)), instant).toBe(allowed);
+      // A mesma regra classifica a noite do calendário (Owner livre).
+      expect(
+        nightAvailability(owner, night('2026-11-15', { checkinAt }), () => undefined, at(instant))
+          .kind,
+        instant,
+      ).toBe(allowed ? 'eligible' : 'notice');
+    }
+  });
+
   it('[REQ-051][TECH-023] Owner: só capacidade própria livre; reservada pede cancelamento antes', () => {
     const none = () => undefined;
     expect(nightAvailability(owner, night('2027-03-10'), none, NOW)).toEqual({
@@ -206,6 +227,26 @@ describe('W20 — regras puras do depósito (REQ-051, REQ-060, TECH-043)', () =>
         selected: ['2027-01-05', '2027-03-10'],
         nights: facts,
         bookings: [],
+        nowMs: NOW,
+      }),
+    ).toEqual({ ok: false, code: 'ERR_MIN_NOTICE' });
+  });
+
+  it('[BR-200][REQ-060] Co-Owner: reserva com uma noite dentro dos 14 dias não é cedida, mesmo selecionando a noite distante', () => {
+    // Reserva de 4 noites: a 1ª a menos de 336 h do instante, a última com folga — cedida inteira ou nada.
+    const close = '2027-01-10T17:00:00.000Z'; // ~9 dias depois de NOW
+    const facts = ['2027-01-10', '2027-01-11', '2027-01-12', '2027-01-13'].map((date, index) =>
+      night(date, {
+        ...reserved(date, 'b-near'),
+        checkinAt: index === 0 ? close : FAR,
+      }),
+    );
+    expect(
+      evaluateDeposit({
+        holding: co,
+        selected: ['2027-01-10', '2027-01-11', '2027-01-12', '2027-01-13'],
+        nights: facts,
+        bookings: [booking('b-near', '2027-01-10', '2027-01-14')],
         nowMs: NOW,
       }),
     ).toEqual({ ok: false, code: 'ERR_MIN_NOTICE' });

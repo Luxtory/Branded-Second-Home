@@ -158,6 +158,7 @@ mudanças de Membership, PRL ou políticas reais.
 | Revisão sem Second Home, vínculo e Créditos por data; rótulo "Saldo atual da Carteira" | P2 | `deposit-calendar.tsx` (revisão) | revisão com Second Home, vínculo e cada data com seus Créditos; "Saldo atual" | corrigido |
 | Dois avisos quase iguais enquanto a revisão atualizada carrega (termos alterados) | P2 | E2E "Owner" (strict mode: 2 `alert`) | um único aviso por vez | corrigido |
 | Sem teste de depósito × revogação da representação, reserva em exceção/cancelada e reserva atravessando o mês | P2 (cobertura) | — | `deposit-concurrency.db.test.ts`, `deposit-capacity.db.test.ts` | coberto |
+| (2ª rodada) Calendário congelado no instante da leitura: uma noite que passa do prazo de 336 h com a tela aberta continuava selecionável; motivo com texto diferente do definido pela Luxtory | P2 | `deposit-calendar.tsx` (estado fixo); copy "menos de 14 dias de antecedência" | relógio ancorado no banco + reavaliação no próximo prazo; seleção e revisão derivadas da elegibilidade atual; motivo exato; bordas 335h59/336h/336h01 testadas no domínio, na tela, no banco (`luxchange_deposit_notice_met`) e no command; E2E com toque, teclado e relógio controlado | corrigido |
 | Projeto `chrome-luxchange` pulado quando outro projeto falha | descartado como falso verde | `reports/dep-proof` (local): dependência com falha → "did not run" e saída 1 | semântica do Playwright impede falso verde; risco residual é só falta de cobertura numa execução já vermelha | documentado |
 
 ### Fronteiras com as próximas waves (registro)

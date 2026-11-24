@@ -2,11 +2,21 @@ import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createOwnUseLifecycleHandlers } from '@/features/booking/presentation/own-use-lifecycle-handlers';
 import { createLuxchangeConsumers } from '@/features/luxchange/jobs';
+import { createOwnUseCessionPort } from '@/features/booking';
+import { createPostgresCreditStore } from '@/features/credits';
+import { createLuxchangeCessionInventory } from '@/features/inventory';
+import { createDepositCapacityHandler } from '@/features/luxchange';
+import { createPostgresDepositStore } from '@/features/luxchange/infrastructure/postgres-deposit-store';
 import {
   CapabilityNotActivatedError,
   systemClock,
+  type CommandHandler,
   type DatabaseTransaction,
 } from '@/features/platform';
+import {
+  createPostgresEconomicTermsStore,
+  postgresEconomicSnapshotRecorder,
+} from '@/features/pricing';
 import { ConsumerRegistry } from '@/features/platform/application/outbox/consumers';
 import { dispatchOutbox } from '@/features/platform/application/outbox/dispatcher';
 import { createPostgresOutboxStore } from '@/features/platform/infrastructure/outbox/postgres-outbox-store';
@@ -275,6 +285,53 @@ describe('W20 — depósito Luxchange pelo command (REQ-051, REQ-060)', () => {
       );
     }
     expect(await economicFacts(d.c.h.database.pool)).toEqual(before);
+  });
+
+  it('[BR-200][TECH-043] bordas da antecedência: 335h59 recusa; 336h e 336h01 depositam — no banco e no command', async () => {
+    // Predicado do banco (chamado com clock_timestamp() nas regras de escrita), nas três bordas do critério de aceite.
+    const { rows } = await d.c.h.database.pool.query<Record<string, boolean>>(
+      `SELECT app.luxchange_deposit_notice_met(c, c - interval '335 hours 59 minutes') AS h335m59,
+              app.luxchange_deposit_notice_met(c, c - interval '336 hours') AS h336,
+              app.luxchange_deposit_notice_met(c, c - interval '336 hours 1 minute') AS h336m01
+         FROM (SELECT timestamptz '2026-11-15 15:00:00-03' AS c) AS x`,
+    );
+    expect(rows[0]).toEqual({ h335m59: false, h336: true, h336m01: true });
+    // Command (o mesmo da API): instante do banco injetado na leitura do handler; a escrita segue conferida pelo relógio
+    // real do banco (noites distantes, então só a borda injetada decide).
+    const nights = [depositDate(15), depositDate(16), depositDate(17)] as const;
+    await publishPrl(d, owner.homeId, Object.fromEntries(nights.map((night) => [night, '70000'])));
+    const checkin = async (night: string) =>
+      (
+        await d.c.h.database.pool.query<{ at: string }>(
+          `SELECT checkin_at::text AS at FROM app.second_home_date WHERE second_home_id = $1 AND stay_date = $2`,
+          [owner.homeId, night],
+        )
+      ).rows[0]!.at;
+    const at = (base: string, beforeMs: number) =>
+      createDepositCapacityHandler<DatabaseTransaction>({
+        store: {
+          ...createPostgresDepositStore(),
+          databaseInstant: async () => new Date(Date.parse(base) - beforeMs).toISOString(),
+        },
+        bookings: createOwnUseCessionPort(),
+        inventory: createLuxchangeCessionInventory(),
+        terms: createPostgresEconomicTermsStore(),
+        credits: createPostgresCreditStore(),
+        snapshots: postgresEconomicSnapshotRecorder,
+      }) as unknown as CommandHandler<unknown, never, DatabaseTransaction>;
+    const HOUR = 3_600_000;
+    const MINUTE = 60_000;
+    for (const [night, before, expected] of [
+      [nights[0], 336 * HOUR - MINUTE, { status: 'rejected', code: 'ERR_MIN_NOTICE' }],
+      [nights[1], 336 * HOUR, { status: 'committed' }],
+      [nights[2], 336 * HOUR + MINUTE, { status: 'committed' }],
+    ] as const)
+      expect(
+        await run(input(owner.homeId, [night], 70_000n), {
+          handler: at(await checkin(night), before),
+        }),
+        night,
+      ).toMatchObject(expected);
   });
 
   it('[ADR-0036 §8][REQ-052] termos revisados por noite: valores trocados com a mesma soma são recusados; versões novas com os mesmos valores confirmam', async () => {

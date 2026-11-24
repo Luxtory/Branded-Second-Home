@@ -54,6 +54,8 @@ export interface DepositNightView {
   readonly credits: string | null;
   /** Co-Owner: reserva cedível a que a noite pertence. */
   readonly bookingId: string | null;
+  /** Check-in oficial da noite (instante): a tela reaplica a antecedência de 336 h com o passar do tempo. */
+  readonly checkinAt: string;
 }
 
 export interface DepositBookingView {
@@ -67,6 +69,8 @@ export interface DepositCalendarData {
   readonly holding: DepositHoldingOption;
   /** Data civil de hoje no fuso da Second Home. */
   readonly today: string;
+  /** Instante do banco em que a tela foi lida: âncora do relógio da antecedência no navegador. */
+  readonly at: string;
   readonly nights: readonly DepositNightView[];
   readonly bookings: readonly DepositBookingView[];
   /** Validade dos novos Créditos (parâmetro publicado), em meses; `null` = ausente. */
@@ -261,12 +265,14 @@ export async function readDepositCalendar(
           ? creditsForPrl(BigInt(price), 'BRL', multiplier)
           : null,
       bookingId: availability.kind === 'eligible' ? availability.bookingId : null,
+      checkinAt: fact.checkinAt,
     };
   });
   const views = cedableBookings(bookings, nights);
   return {
     holding: option,
     today: read.today,
+    at: read.at,
     nights: wholeBookings(nights, views),
     bookings: views,
     validityMonths: validity === null ? null : Number(validity),
@@ -296,7 +302,7 @@ function cedableBookings(
 }
 
 /** Reserva só inteira: se uma noite não pode (sem referência, sem Créditos), nenhuma da reserva pode. */
-function wholeBookings(
+export function wholeBookings(
   nights: readonly DepositNightView[],
   bookings: readonly DepositBookingView[],
 ): DepositNightView[] {

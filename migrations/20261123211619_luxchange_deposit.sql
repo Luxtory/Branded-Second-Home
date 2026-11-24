@@ -112,6 +112,15 @@ CREATE TRIGGER economic_snapshot_night_no_delete BEFORE DELETE ON app.economic_s
 CREATE TRIGGER economic_snapshot_night_no_truncate BEFORE TRUNCATE ON app.economic_snapshot_night
   FOR EACH STATEMENT EXECUTE FUNCTION app.forbid_change();
 
+-- Antecedência mínima do depósito (BR-200, TECH-043; ADR-0036 §3): o instante `p_at` está a pelo menos 336 horas do
+-- check-in oficial da noite — no limite exato, permitido. Predicado puro, chamado com `clock_timestamp()` nas regras de
+-- escrita: as bordas (335h59, 336h, 336h01) ficam testáveis sem controlar o relógio do banco.
+CREATE FUNCTION app.luxchange_deposit_notice_met(p_checkin timestamptz, p_at timestamptz) RETURNS boolean
+  LANGUAGE sql IMMUTABLE STRICT SET search_path = pg_catalog, pg_temp
+AS $$
+  SELECT p_at <= p_checkin - interval '336 hours'
+$$;
+
 -- Escrita do depósito (ADR-0036 §3): K6; operação `pending` da transação com command `deposit_capacity`, papel Titular,
 -- party que age e Second Home da operação; representação travada; Membership `active` (`FOR SHARE`); noite selada com
 -- antecedência de 14 dias do check-in pelo relógio do banco (TECH-043: `now ≤ checkin_at − 14 dias`, em instantes) e
@@ -139,7 +148,7 @@ BEGIN
     RAISE EXCEPTION 'only a sealed night is deposited'
       USING ERRCODE = 'check_violation', CONSTRAINT = 'custody_deposit_night';
   END IF;
-  IF v_at > v_checkin - interval '336 hours' THEN
+  IF NOT app.luxchange_deposit_notice_met(v_checkin, v_at) THEN
     RAISE EXCEPTION 'a capacity is deposited at least 14 days before the check-in of the night'
       USING ERRCODE = 'check_violation', CONSTRAINT = 'deposit_min_notice';
   END IF;
@@ -441,7 +450,7 @@ BEGIN
       RAISE EXCEPTION 'a booking is ceded whole, before its first night'
         USING ERRCODE = 'check_violation', CONSTRAINT = 'custody_deposit_whole_booking';
     END IF;
-    IF v_at > i.first_checkin_at - interval '336 hours' THEN
+    IF NOT app.luxchange_deposit_notice_met(i.first_checkin_at, v_at) THEN
       RAISE EXCEPTION 'a capacity is deposited at least 14 days before its first check-in'
         USING ERRCODE = 'check_violation', CONSTRAINT = 'deposit_min_notice';
     END IF;
@@ -1017,8 +1026,10 @@ REVOKE ALL ON FUNCTION app.luxchange_invariant_breaches() FROM PUBLIC;
 
 -- Funções auxiliares só para os gatilhos, que rodam com o papel de quem escreve (`luxtory_app`); nenhum outro papel as
 -- executa (TECH-052; prontidão da W13).
-REVOKE ALL ON FUNCTION app.economic_snapshot_in_current_transaction(uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION app.economic_snapshot_in_current_transaction(uuid) TO luxtory_app;
+REVOKE ALL ON FUNCTION app.economic_snapshot_in_current_transaction(uuid),
+  app.luxchange_deposit_notice_met(timestamptz, timestamptz) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION app.economic_snapshot_in_current_transaction(uuid),
+  app.luxchange_deposit_notice_met(timestamptz, timestamptz) TO luxtory_app;
 REVOKE ALL ON FUNCTION app.assert_luxchange_deposit_active(), app.assert_luxchange_exchange_active(),
   app.luxchange_deposit_write(uuid, uuid, date),
   app.luxchange_deposit_close(uuid, app.date_custody), app.luxchange_deposit_open(app.date_custody),
@@ -1649,6 +1660,7 @@ DROP FUNCTION app.luxchange_deposit_open(app.date_custody);
 DROP FUNCTION app.luxchange_deposit_close(uuid, app.date_custody);
 DROP FUNCTION app.luxchange_deposit_write(uuid, uuid, date);
 DROP FUNCTION app.economic_snapshot_in_current_transaction(uuid);
+DROP FUNCTION app.luxchange_deposit_notice_met(timestamptz, timestamptz);
 DROP TABLE app.economic_snapshot_night;
 DROP FUNCTION app.economic_snapshot_night_write();
 DROP FUNCTION app.assert_luxchange_exchange_active();

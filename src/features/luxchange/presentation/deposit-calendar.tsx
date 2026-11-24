@@ -23,10 +23,14 @@ import {
   monthName,
   monthOnly,
 } from './deposit-format';
+import { applyNotice, nextNoticeChange, NOTICE_RECHECK_MS } from './deposit-notice';
 import type { DepositCalendarData, DepositNightView } from './deposit-read';
 import { depositMessages as text } from './i18n/deposit-pt-br';
 
 const DAY_MS = 86_400_000;
+/** Instante atual pelo relógio ancorado no banco (só em eventos e no relógio da antecedência, nunca na renderização). */
+const anchoredNow = (base: { readonly server: number; readonly client: number }) =>
+  base.server + (Date.now() - base.client);
 const toDate = (date: string) => new Date(`${date}T00:00:00Z`);
 const addDays = (date: string, days: number) =>
   new Date(toDate(date).getTime() + days * DAY_MS).toISOString().slice(0, 10);
@@ -126,21 +130,26 @@ function ConfirmForm(props: {
  */
 export function DepositCalendar({ data }: { readonly data: DepositCalendarData }) {
   const coOwner = data.holding.modality === 'co_owner';
+  // Relógio da antecedência (336 h): âncora no instante do banco da leitura + tempo decorrido no aparelho (o relógio do
+  // aparelho pode estar errado; só a diferença conta). O command e o banco revalidam com o relógio do banco.
+  const [nowMs, setNowMs] = useState(() => Date.parse(data.at));
+  const clockBase = useRef<{ readonly server: number; readonly client: number } | null>(null);
   const model = useMemo(() => {
-    const byDate = new Map(data.nights.map((night) => [night.date, night]));
+    const nights = applyNotice(data.nights, nowMs);
+    const byDate = new Map(nights.map((night) => [night.date, night]));
     const bookings = new Map(data.bookings.map((booking) => [booking.id, booking]));
     const months = [...new Set(data.nights.map((night) => night.date.slice(0, 7)))];
     const years = [...new Set(months.map((value) => value.slice(0, 4)))];
     return { byDate, bookings, months, years };
-  }, [data]);
+  }, [data, nowMs]);
   const firstEligible = data.nights.find((night) => night.status === 'eligible');
   const [month, setMonth] = useState(
     (firstEligible ?? data.nights[0])?.date.slice(0, 7) ?? data.today.slice(0, 7),
   );
   const [focusDate, setFocusDate] = useState<string | null>(null);
-  const [selected, setSelected] = useState<readonly string[]>([]);
+  const [picked, setPicked] = useState<readonly string[]>([]);
   const [guidance, setGuidance] = useState<string | null>(null);
-  const [preview, setPreview] = useState<DepositPreviewResponse | null>(null);
+  const [previewState, setPreview] = useState<DepositPreviewResponse | null>(null);
   const [stale, setStale] = useState(false);
   const [loading, setLoading] = useState(false);
   const gridRef = useRef<HTMLTableElement>(null);
@@ -148,6 +157,44 @@ export function DepositCalendar({ data }: { readonly data: DepositCalendarData }
   const pendingFocus = useRef(false);
 
   const status = (date: string): Status => model.byDate.get(date)?.status ?? 'outside';
+  // Seleção e revisão valem só enquanto cada noite ainda pode ser depositada agora: a que passou do prazo sai da seleção
+  // e a revisão volta ao resumo, com o motivo (nada fica selecionável por informação desatualizada).
+  const selected = useMemo(
+    () => picked.filter((date) => model.byDate.get(date)?.status === 'eligible'),
+    [picked, model],
+  );
+  const preview =
+    previewState?.status === 'ok' &&
+    previewState.nights.some((date) => model.byDate.get(date)?.status !== 'eligible')
+      ? null
+      : previewState;
+  const lapsed = selected.length < picked.length || (previewState !== null && preview === null);
+
+  useEffect(() => {
+    const base = { server: Date.parse(data.at), client: Date.now() };
+    clockBase.current = base;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const tick = () => {
+      const now = anchoredNow(base);
+      setNowMs(now);
+      schedule(now);
+    };
+    // Reavalia exatamente no próximo prazo (check-in − 336 h + 1 ms) e, por segurança, a cada minuto.
+    const schedule = (now: number) => {
+      clearTimeout(timer);
+      const next = nextNoticeChange(data.nights, now);
+      const wait = next === null ? NOTICE_RECHECK_MS : Math.min(next - now, NOTICE_RECHECK_MS);
+      timer = setTimeout(tick, Math.max(0, wait));
+    };
+    schedule(base.server);
+    document.addEventListener('visibilitychange', tick);
+    window.addEventListener('focus', tick);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('visibilitychange', tick);
+      window.removeEventListener('focus', tick);
+    };
+  }, [data]);
   const days = daysOf(month);
   const index = model.months.indexOf(month);
   const focused =
@@ -180,8 +227,8 @@ export function DepositCalendar({ data }: { readonly data: DepositCalendarData }
       ? (model.bookings.get(bookingId)?.nights ?? [date])
       : [date];
   };
-  const explain = (date: string) => {
-    const night = model.byDate.get(date);
+  const explain = (date: string, night = model.byDate.get(date)) => {
+    if (night?.status === 'notice') return text.calendar.noticeRule;
     const reason =
       night === undefined
         ? text.calendar.status.unavailable
@@ -190,8 +237,18 @@ export function DepositCalendar({ data }: { readonly data: DepositCalendarData }
   };
   const choose = (date: string) => {
     setFocusDate(date);
-    if (status(date) !== 'eligible') {
-      setGuidance(explain(date));
+    // Antecedência conferida no instante do toque (não no último tique do relógio).
+    const base = clockBase.current;
+    const live = base === null ? nowMs : anchoredNow(base);
+    if (live !== nowMs) setNowMs(live);
+    // O primeiro toque depois do prazo assume a seleção atual: o aviso de datas retiradas dá lugar ao motivo do toque.
+    if (lapsed) {
+      setPicked(selected);
+      setPreview(null);
+    }
+    const night = applyNotice(data.nights, live).find((value) => value.date === date);
+    if (night?.status !== 'eligible') {
+      setGuidance(explain(date, night));
       return;
     }
     const unit = unitOf(date);
@@ -199,10 +256,9 @@ export function DepositCalendar({ data }: { readonly data: DepositCalendarData }
     const next = isOn
       ? selected.filter((value) => !unit.includes(value))
       : [...new Set([...selected, ...unit])].sort();
-    setSelected(next);
+    setPicked(next);
     setPreview(null);
     setStale(false);
-    const night = model.byDate.get(date);
     const booking = night?.bookingId == null ? undefined : model.bookings.get(night.bookingId);
     // No celular a célula só mostra um ponto: o toque diz os Créditos da noite (ou da reserva).
     setGuidance(
@@ -435,14 +491,16 @@ export function DepositCalendar({ data }: { readonly data: DepositCalendarData }
             </div>
             <div className="lx-calendar__selection">
               <p className="lx-hint" aria-live="polite">
-                {guidance ?? text.calendar.selectedCount(selected.length)}
+                {lapsed
+                  ? text.calendar.noticeLapsed
+                  : (guidance ?? text.calendar.selectedCount(selected.length))}
               </p>
               {selected.length === 0 ? null : (
                 <button
                   className="lx-calendar__clear"
                   type="button"
                   onClick={() => {
-                    setSelected([]);
+                    setPicked([]);
                     setPreview(null);
                     setGuidance(null);
                   }}
