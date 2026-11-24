@@ -45,8 +45,10 @@ export const depositMessages = {
     hintOwner:
       'Toque nas noites que deseja ceder — consecutivas ou não. As noites com Créditos podem ser depositadas; nas demais, o toque explica o motivo.',
     hintCoOwner:
-      'Toque numa reserva sua para cedê-la inteira. Para ceder só algumas noites, reserve exatamente essas noites antes.',
+      'Toque numa reserva sua para selecioná-la. Cada reserva é cedida inteira, com todas as suas noites.',
     caption: 'Calendário do depósito',
+    jumpMonth: 'Mês',
+    jumpYear: 'Exercício',
     previous: 'Mês anterior',
     next: 'Próximo mês',
     weekdays: [
@@ -63,8 +65,9 @@ export const depositMessages = {
     legendItems: {
       selected: 'Selecionada',
       unavailable: 'Indisponível',
-      alta: 'Alta temporada',
-      media: 'Média/Baixa temporada',
+      super_alta: 'Super Alta (Carnaval)',
+      alta: 'Alta',
+      media: 'Média/Baixa',
     },
     nightCredits: (date: string, credits: string) => `${date}: ${credits} Créditos.`,
     selectedCount: (nights: number) =>
@@ -72,7 +75,11 @@ export const depositMessages = {
         ? 'Nenhuma noite selecionada.'
         : `${nights} ${plural(nights, 'noite selecionada', 'noites selecionadas')}.`,
     clear: 'Limpar seleção',
-    season: { alta: 'Alta temporada', media: 'Média/Baixa temporada' } as const,
+    season: {
+      super_alta: 'temporada Super Alta (Carnaval)',
+      alta: 'temporada Alta',
+      media: 'temporada Média/Baixa',
+    } as const,
     status: {
       eligible: 'pode ser depositada',
       selected: 'selecionada',
@@ -97,7 +104,7 @@ export const depositMessages = {
     nights: 'Noites',
     nightsValue: (nights: number) => `${nights} ${plural(nights, 'noite', 'noites')}`,
     receive: 'Créditos a receber',
-    balance: 'Saldo atual da Carteira',
+    balance: 'Saldo atual',
     potential: 'Saldo potencial após o depósito',
     potentialNote:
       'Soma informativa: os novos Créditos só entram na Carteira depois da confirmação.',
@@ -111,6 +118,7 @@ export const depositMessages = {
   review: {
     heading: 'Revise antes de confirmar',
     what: 'Você vai ceder',
+    nightLine: (date: string, credits: string) => `${date} · ${credits} Créditos`,
     get: 'Você vai receber',
     consequences: 'O que acontece',
     ownerEffect:

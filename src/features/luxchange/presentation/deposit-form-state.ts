@@ -15,8 +15,12 @@ export type DepositPreviewResponse =
   | {
       readonly status: 'ok';
       readonly secondHomeId: string;
+      readonly secondHomeLabel: string;
+      readonly modality: 'owner' | 'co_owner';
       readonly partyId: string;
       readonly nights: readonly string[];
+      /** Créditos de cada noite cedida (texto decimal exato), da mesma leitura que soma o total. */
+      readonly nightCredits: readonly { readonly date: string; readonly credits: string }[];
       readonly credits: string;
       readonly validityMonths: number;
       readonly balance: string;

@@ -18,6 +18,7 @@ export const longDate = (date: string) =>
   fmt({ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(toDate(date));
 export const fullDate = (date: string) =>
   fmt({ day: '2-digit', month: '2-digit', year: 'numeric' }).format(toDate(date));
+export const monthOnly = (month: string) => fmt({ month: 'long' }).format(toDate(`${month}-01`));
 export const monthName = (month: string) =>
   fmt({ month: 'long', year: 'numeric' }).format(toDate(`${month}-01`));
 

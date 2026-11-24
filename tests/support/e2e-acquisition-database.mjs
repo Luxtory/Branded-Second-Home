@@ -245,9 +245,9 @@ export async function seedE2eStartedOwnerBooking(homeId) {
  * Ação abre meses à frente, então a interface não reserva noite próxima. Mesmo SQL do fixture histórico dos testes db
  * (`historicBooking`): regra de abertura e de movimento do ledger desligadas só nesta transação do dono; custódia
  * `reserved_right`, consumo e ocupação gravados e conferidos pelas constraints. Primeira noite livre a partir de
- * `fromOffset` dias, uma noite.
+ * `fromOffset` dias; `nights` noites consecutivas livres (padrão: uma — W13; W20 usa reservas de várias noites).
  */
-export async function seedE2eSoonCoOwnerBooking(homeId, partyId, fromOffset = 3) {
+export async function seedE2eSoonCoOwnerBooking(homeId, partyId, fromOffset = 3, nights = 1) {
   if (!/^[0-9a-f-]{36}$/i.test(homeId) || !/^[0-9a-f-]{36}$/i.test(partyId))
     throw new Error('Invalid fixture ids');
   const url = disposableOwnerUrl();
@@ -259,23 +259,27 @@ export async function seedE2eSoonCoOwnerBooking(homeId, partyId, fromOffset = 3)
         [homeId, partyId],
       );
       const holding = holdings[0];
-      const { rows: nights } = await client.query(
+      // Primeira sequência de `nights` noites seguidas livres (spe_pool) com saldo no bucket de cada uma.
+      const { rows: starts } = await client.query(
         `SELECT d.stay_date::text AS d FROM app.second_home_date d
-          JOIN app.date_custody c ON c.second_home_id = d.second_home_id AND c.stay_date = d.stay_date
-                                 AND c.closed_at IS NULL AND c.holder_kind = 'spe_pool'
-          JOIN app.use_right_balance b ON b.stake_id = $3 AND b.exercise_year = d.exercise_year
-                                      AND b.bucket = CASE WHEN d.is_leap_day THEN 'leap' ELSE d.season END
-                                      AND b.remaining > 0
          WHERE d.second_home_id = $1 AND d.stay_date >= current_date + $2::int AND d.checkin_at > now()
+           AND (SELECT count(*) FROM app.second_home_date n
+                  JOIN app.date_custody c ON c.second_home_id = n.second_home_id AND c.stay_date = n.stay_date
+                                         AND c.closed_at IS NULL AND c.holder_kind = 'spe_pool'
+                  JOIN app.use_right_balance b ON b.stake_id = $3 AND b.exercise_year = n.exercise_year
+                                              AND b.bucket = CASE WHEN n.is_leap_day THEN 'leap' ELSE n.season END
+                                              AND b.remaining >= $4
+                 WHERE n.second_home_id = d.second_home_id AND n.stay_date >= d.stay_date
+                   AND n.stay_date < d.stay_date + $4::int) = $4
          ORDER BY d.stay_date LIMIT 1`,
-        [homeId, fromOffset, holding?.stake_id ?? null],
+        [homeId, fromOffset, holding?.stake_id ?? null, nights],
       );
-      if (holding === undefined || nights[0] === undefined)
-        throw new Error('Co-Owner fixture needs a free sealed night with balance');
-      const checkin = nights[0].d;
+      if (holding === undefined || starts[0] === undefined)
+        throw new Error('Co-Owner fixture needs free sealed nights with balance');
+      const checkin = starts[0].d;
       const { rows: out } = await client.query(
-        `SELECT ($1::date + 1)::text AS checkout, gen_random_uuid() AS id, gen_random_uuid() AS op`,
-        [checkin],
+        `SELECT ($1::date + $2::int)::text AS checkout, gen_random_uuid() AS id, gen_random_uuid() AS op`,
+        [checkin, nights],
       );
       const { checkout, id, op } = out[0];
       await client.query(
@@ -300,33 +304,40 @@ export async function seedE2eSoonCoOwnerBooking(homeId, partyId, fromOffset = 3)
          VALUES ($1, $2, 'own_use', $3, $4, $5, $6, 'confirmed', $7, now())`,
         [id, homeId, holding.id, holding.stake_id, checkin, checkout, op],
       );
-      const { rows: closed } = await client.query(
-        `UPDATE app.date_custody SET closed_at = now(), closed_by_operation = $3
-          WHERE second_home_id = $1 AND stay_date = $2 AND closed_at IS NULL RETURNING id`,
-        [homeId, checkin, op],
-      );
-      await client.query(
-        `INSERT INTO app.date_custody (id, second_home_id, stay_date, holder_kind, stake_id, basis, parent_custody_id,
-           opened_by_operation)
-         VALUES (gen_random_uuid(), $1, $2, 'use_right', $3, 'reserved_right', $4, $5)`,
-        [homeId, checkin, holding.stake_id, closed[0].id, op],
-      );
-      await client.query(
-        `INSERT INTO app.use_right_ledger (id, second_home_id, acquisition_id, stake_id, exercise_year, bucket,
-           movement, quantity, stay_date, operation_id, created_at)
-         SELECT gen_random_uuid(), d.second_home_id, a.id, $3, d.exercise_year,
-                CASE WHEN d.is_leap_day THEN 'leap' ELSE d.season END, 'consume', 1, d.stay_date, $4, now()
-           FROM app.second_home_date d JOIN app.acquisition a ON a.second_home_id = d.second_home_id
-          WHERE d.second_home_id = $1 AND d.stay_date = $2`,
-        [homeId, checkin, holding.stake_id, op],
-      );
-      await client.query(
-        `INSERT INTO app.date_occupancy (id, second_home_id, stay_date, booking_id, channel, custody_id, stake_id,
-           opened_by_operation)
-         SELECT gen_random_uuid(), $1, $2, $3, 'own_use', c.id, $4, $5
-           FROM app.date_custody c WHERE c.second_home_id = $1 AND c.stay_date = $2 AND c.closed_at IS NULL`,
-        [homeId, checkin, id, holding.stake_id, op],
-      );
+      for (let night = 0; night < nights; night += 1) {
+        const { rows: day } = await client.query(`SELECT ($1::date + $2::int)::text AS d`, [
+          checkin,
+          night,
+        ]);
+        const stay = day[0].d;
+        const { rows: closed } = await client.query(
+          `UPDATE app.date_custody SET closed_at = now(), closed_by_operation = $3
+            WHERE second_home_id = $1 AND stay_date = $2 AND closed_at IS NULL RETURNING id`,
+          [homeId, stay, op],
+        );
+        await client.query(
+          `INSERT INTO app.date_custody (id, second_home_id, stay_date, holder_kind, stake_id, basis, parent_custody_id,
+             opened_by_operation)
+           VALUES (gen_random_uuid(), $1, $2, 'use_right', $3, 'reserved_right', $4, $5)`,
+          [homeId, stay, holding.stake_id, closed[0].id, op],
+        );
+        await client.query(
+          `INSERT INTO app.use_right_ledger (id, second_home_id, acquisition_id, stake_id, exercise_year, bucket,
+             movement, quantity, stay_date, operation_id, created_at)
+           SELECT gen_random_uuid(), d.second_home_id, a.id, $3, d.exercise_year,
+                  CASE WHEN d.is_leap_day THEN 'leap' ELSE d.season END, 'consume', 1, d.stay_date, $4, now()
+             FROM app.second_home_date d JOIN app.acquisition a ON a.second_home_id = d.second_home_id
+            WHERE d.second_home_id = $1 AND d.stay_date = $2`,
+          [homeId, stay, holding.stake_id, op],
+        );
+        await client.query(
+          `INSERT INTO app.date_occupancy (id, second_home_id, stay_date, booking_id, channel, custody_id, stake_id,
+             opened_by_operation)
+           SELECT gen_random_uuid(), $1, $2, $3, 'own_use', c.id, $4, $5
+             FROM app.date_custody c WHERE c.second_home_id = $1 AND c.stay_date = $2 AND c.closed_at IS NULL`,
+          [homeId, stay, id, holding.stake_id, op],
+        );
+      }
       await client.query('SET CONSTRAINTS ALL IMMEDIATE');
       await client.query(
         'ALTER TABLE app.use_right_ledger ENABLE TRIGGER use_right_ledger_movement',

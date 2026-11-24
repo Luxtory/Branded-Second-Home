@@ -12,7 +12,7 @@ import { dispatchOutbox } from '@/features/platform/application/outbox/dispatche
 import { createPostgresOutboxStore } from '@/features/platform/infrastructure/outbox/postgres-outbox-store';
 import { eventValidator } from '../../support/asyncapi';
 import { addDays } from '../booking/booking-support';
-import { deactivate } from '../booking/lifecycle-support';
+import { activate, asOperation, deactivate, openException } from '../booking/lifecycle-support';
 import {
   suspend,
   reactivate,
@@ -437,6 +437,45 @@ describe('W20 — depósito do Co-Owner: reserva inteira, Direito de Uso consumi
     expect(
       (await activeCustody(d.c.h.database.pool, co.homeId, [depositDate(11)]))[0]!.holder_kind,
     ).toBe('spe_pool');
+  });
+
+  it('[REQ-060][TECH-055] só reserva confirmada: em exceção ou já cancelada → recusada; atravessando o mês → cedida inteira', async () => {
+    await activate(d.c.h, 'own_use_lifecycle');
+    // Em exceção operacional (Admin): a cessão só parte de `confirmed`.
+    const inException = await book(d, co, depositDate(30), 1);
+    await asOperation(
+      d.c.h.database.appUrl,
+      'open_exception',
+      { kind: 'admin', admin: d.c.admin },
+      (client, op) => openException(client, op, inException, 'operational'),
+    );
+    // Cancelada no prazo pelo Titular: as noites voltaram à SPE (não são mais Direito de Uso reservado).
+    const cancelled = await book(d, co, depositDate(32), 1);
+    expect(
+      await depositRunner(d, co)(
+        {
+          second_home_id: co.homeId,
+          booking_id: cancelled,
+          expected_cancellation_class: 'timely',
+          expected_first_affected_date: depositDate(32),
+        },
+        { handler: createOwnUseLifecycleHandlers().cancelOwnUseBooking },
+      ),
+    ).toMatchObject({ status: 'committed' });
+    await publishPrl(d, co.homeId, { [depositDate(30)]: PRL, [depositDate(32)]: PRL });
+    for (const night of [depositDate(30), depositDate(32)])
+      expect(await run(input([night]))).toMatchObject({
+        status: 'rejected',
+        code: 'ERR_CAPACITY_UNAVAILABLE',
+      });
+    // Reserva que atravessa o fim do mês: as duas noites, em meses diferentes, cedidas juntas.
+    let last = depositDate(34);
+    while (addDays(last, 1).slice(8) !== '01') last = addDays(last, 1);
+    await publishPrl(d, co.homeId, { [last]: PRL, [addDays(last, 1)]: PRL });
+    const across = await book(d, co, last, 2);
+    const outcome = await run(input([last, addDays(last, 1)]));
+    expect(outcome).toMatchObject({ status: 'committed' });
+    if (outcome.status === 'committed') expect(outcome.result.ceded_bookings).toEqual([across]);
   });
 
   it('[REQ-051][BR-147] Membership suspenso: depósito recusado, mas o uso próprio segue reservando e cancelando', async () => {

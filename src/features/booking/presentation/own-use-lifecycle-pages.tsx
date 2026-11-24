@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { luxchangePaths } from '@/features/luxchange/paths';
 import { notFound, redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { PageHeader, RecordList } from '@/design-system/react';
@@ -207,6 +208,34 @@ function CancellationSection({
   readonly booking: TitularBookingDetail;
   readonly preview: CancellationPreview;
 }) {
+  if (booking.display === 'ceded') {
+    // W20 (ADR-0036 §1): cessão ao Luxchange, não cancelamento — sem classe, sem restituição, Direito de Uso consumido.
+    const rows: (readonly [string, ReactNode])[] = [];
+    if (booking.cancelledAt !== null)
+      rows.push([
+        detailText.cededAt,
+        `${shortInstantIn(booking.cancelledAt, booking.timezone)} ${lifecycleLabels.local}`,
+      ]);
+    rows.push([detailText.cededNights, String(booking.releasedNights)]);
+    return (
+      <Section id="cessao" title={detailText.cession}>
+        <div className="lx-booking__rights">
+          <Facts rows={rows} />
+          <p className="lx-booking__footnote">{detailText.cededNote}</p>
+          {booking.depositOperationId === null ? null : (
+            <p className="lx-body">
+              <a
+                className="lx-link"
+                href={luxchangePaths.depositResult(booking.depositOperationId)}
+              >
+                {detailText.cededLink}
+              </a>
+            </p>
+          )}
+        </div>
+      </Section>
+    );
+  }
   if (booking.state === 'cancelled') {
     const rows: (readonly [string, ReactNode])[] = [];
     if (booking.cancelledAt !== null)

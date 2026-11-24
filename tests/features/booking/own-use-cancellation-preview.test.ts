@@ -149,6 +149,27 @@ describe('W13 E4b — seções e situação da lista', () => {
       expect(bookingSection(state, start, before)).toBe('history');
   });
 
+  it('[REQ-060][REQ-096] W20: reserva encerrada pela cessão ao Luxchange aparece como cedida, nunca como cancelamento', () => {
+    expect(
+      displayState('cancelled', {
+        exceptionType: null,
+        cancellationClass: null,
+        lastKind: 'cession',
+      }),
+    ).toBe('ceded');
+    // Sem a natureza da última transição, o comportamento da W13 não muda.
+    expect(
+      displayState('cancelled', {
+        exceptionType: null,
+        cancellationClass: 'timely',
+        lastKind: 'cancellation',
+      }),
+    ).toBe('cancelled_timely');
+    expect(displayState('cancelled', { exceptionType: null, cancellationClass: null })).toBe(
+      'cancelled',
+    );
+  });
+
   it('[REQ-096][REQ-084] P-A e P-B pelo registro da exceção; classificação do cancelamento gravada', () => {
     expect(
       displayState('in_exception', { exceptionType: 'operational', cancellationClass: null }),

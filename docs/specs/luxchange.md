@@ -89,20 +89,31 @@ funcionalidade fechada (503 `ERR_UNAVAILABLE`, nada gravado).
 ### 5.4 Jornada (`/titular/luxchange/deposito`)
 
 1. **Second Home** — holdings vigentes das parties representadas (Owner e Co-Owner), com o vínculo explícito.
-2. **Datas** — calendário do DS (1 mês no celular, 2 quando cabem; foco itinerante; alvos ≥ 44 × 48 px) com Créditos por
-   noite elegível, temporada, seleção inequívoca e o motivo de cada indisponibilidade (antecedência, já depositada,
-   reservada para uso próprio — Owner precisa cancelar antes —, não reservada — Co-Owner reserva antes —, sem referência
-   econômica publicada, indisponível). Co-Owner: título "Datas do seu Direito de Uso"; tocar uma noite seleciona a
-   reserva inteira.
-3. **Resumo** — datas, noites, Créditos a receber, saldo atual da Carteira (zero real quando não há lote), saldo potencial
-   (informativo) e validade dos novos Créditos.
-4. **Revisão e confirmação** — prévia do servidor; consequências (as datas deixam de estar disponíveis para uso
-   incompatível; no Co-Owner, o dia segue consumido do Direito de Uso; a cessão é vinculante depois da originação);
-   confirmação explícita.
+2. **Datas** — calendário do DS, **um mês por vez em todas as larguras** (os Créditos exatos de cada noite precisam caber
+   legíveis na célula; dois meses lado a lado os truncariam), com "Próximo/Anterior" e **ir direto a mês e exercício**
+   (seletores nativos rotulados, como no calendário do PRL da W16); foco itinerante; alvos ≥ 44 × 48 px. Por noite
+   elegível: Créditos, **temporada de apresentação da W16** (Super Alta — janela de Carnaval —, Alta, Média/Baixa;
+   ADR-0032 §11, só leitura: o grupo canônico continua governando direitos), seleção inequívoca e o motivo de cada
+   indisponibilidade (antecedência, já depositada, reservada para uso próprio — Owner precisa cancelar antes —, não
+   reservada — Co-Owner reserva antes —, sem referência econômica publicada, indisponível). Co-Owner: título "Datas do
+   seu Direito de Uso"; tocar uma noite seleciona a reserva inteira, com todas as suas noites (a dica não sugere
+   cancelar nem refazer reservas).
+3. **Resumo** — datas, noites, "Créditos a receber", "Saldo atual" (zero real quando não há lote), "Saldo potencial após
+   o depósito" (informativo) e validade dos novos Créditos.
+4. **Revisão e confirmação** — prévia do servidor: Second Home, vínculo (Owner ou Co-Owner), cada data com os seus
+   Créditos, total, saldos e validade; consequências (as datas deixam de estar disponíveis para uso incompatível; no
+   Co-Owner, o dia segue consumido do Direito de Uso; a cessão é vinculante depois da originação); confirmação explícita.
+   Termos alterados entre a revisão e a confirmação: recusa com aviso e "Revisar valores atualizados" (um único aviso
+   por vez).
 5. **Resultado** (`/titular/luxchange/deposito/[operationId]`) — lido do banco: datas cedidas, Créditos originados,
    validade, referência da operação e acesso à Carteira.
 
 Nunca PRL em reais (REQ-100). Termos internos (`reserved_right`, custódia, snapshot) não aparecem.
+
+**Reserva cedida** (W13 × W20): no Titular e no Admin, a reserva encerrada pela transição `cession` aparece como
+**"Cedida ao Luxchange"** — nunca "Cancelada" —; o detalhe do Titular mostra a seção "Cessão ao Luxchange" (instante,
+noites cedidas, o Direito de Uso segue consumido) com link para o resultado do depósito; o histórico do Admin mostra
+"Confirmada → Cedida ao Luxchange".
 
 ### 5.5 Evento e notificação
 

@@ -15,6 +15,7 @@ import {
   createPostgresEconomicTermsStore,
   postgresEconomicSnapshotRecorder,
 } from '@/features/pricing';
+import { revokeDelegation, secondRepresentative } from '../booking/booking-support';
 import { activate } from '../booking/lifecycle-support';
 import { suspend, reactivate, TEST_VALIDITY_MONTHS } from '../credits/credits-support';
 import {
@@ -137,6 +138,17 @@ describe('W20 — depósito sob concorrência (CONC-10, TECH-053)', () => {
     await reactivate(d.c, owner.partyId);
     if (deposit.status === 'rejected') expect(deposit.code).toBe('ERR_MEMBERSHIP_INELIGIBLE');
     const custody = await activeCustody(d.c.h.database.pool, owner.homeId, [depositDate(8)]);
+    expect(custody[0]!.holder_kind).toBe(deposit.status === 'committed' ? 'luxtory' : 'owner');
+  });
+
+  it('[TECH-050] depósito × revogação da representação: ou deposita antes, ou é recusado depois', async () => {
+    const representative = await secondRepresentative(d.c.h, owner);
+    const [deposit] = await Promise.all([
+      depositRunner(d, representative)(body(owner.homeId, [depositDate(9)])),
+      revokeDelegation(d.c.h, representative.userId),
+    ]);
+    if (deposit.status === 'rejected') expect(deposit.code).toBe('ERR_PERMISSION');
+    const custody = await activeCustody(d.c.h.database.pool, owner.homeId, [depositDate(9)]);
     expect(custody[0]!.holder_kind).toBe(deposit.status === 'committed' ? 'luxtory' : 'owner');
   });
 

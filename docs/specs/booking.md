@@ -2,7 +2,9 @@
 
 > **W20 (ADR-0036):** a reserva de uso próprio Co-Owner cedida pelo depósito Luxchange termina `cancelled` pela
 > transição própria `cession` (só `deposit_capacity`, reserva inteira, sem classe nem restituição); contrato em
-> [`luxchange.md`](luxchange.md) §5.1. Os commands e efeitos deste módulo não mudam.
+> [`luxchange.md`](luxchange.md) §5.1. Os commands e efeitos deste módulo não mudam. Na leitura, a natureza `cession` da
+> última transição vira a situação **"Cedida ao Luxchange"** (Titular e Admin; nunca "Cancelada"), com a seção "Cessão
+> ao Luxchange" no detalhe do Titular ([`luxchange.md`](luxchange.md) §5.4).
 
 ## 1. Fontes e escopo
 

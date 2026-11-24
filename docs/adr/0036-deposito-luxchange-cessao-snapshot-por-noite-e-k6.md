@@ -78,6 +78,10 @@ decisão:
    viu.
 9. **Sem PRL em dinheiro para o Titular.** A jornada mostra Créditos por noite e o total; nunca o PRL em reais (REQ-100,
    ADR-0032 §10). A prévia é leitura do servidor; o command é a única fonte de efeito.
+10. **Leitura da cessão (auditoria da W20).** A reserva encerrada por `cession` aparece como "Cedida ao Luxchange" no
+    Titular e no Admin, nunca como cancelamento (o estado técnico continua `cancelled`, TECH-055; a natureza vem da
+    última transição). O calendário do depósito usa as temporadas de apresentação da W16 (ADR-0032 §11), um mês por vez,
+    com salto direto a mês/exercício.
 
 ## Consequences
 
@@ -94,7 +98,8 @@ decisão:
 
 - O Co-Owner não cede parte de uma reserva de várias noites (precisa reservar exatamente o que quer ceder).
 - A regra de completude percorre os fatos da operação no COMMIT (custo proporcional às noites, até 366).
-- A originação por `accept_request` continua só com a regra da W17 até a W22 (K4 fechada).
+- A originação por `accept_request` e os movimentos de Request/Direct ficam fechados pela K7 até o lastro das W21–W23
+  (a W22 troca a regra "só com a K7" pelas regras de lastro no banco).
 
 ### Neutral / follow-ups
 

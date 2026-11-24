@@ -24,6 +24,7 @@ import {
   type CancellationClass,
   type ExceptionType,
   type Modality,
+  type TransitionKind,
 } from '../domain/own-use-lifecycle';
 
 /**
@@ -61,6 +62,8 @@ export interface TitularBookingDetail extends TitularBookingItem {
   } | null;
   readonly cancellationClass: CancellationClass | null;
   readonly cancelledAt: Date | null;
+  /** Operação do depósito Luxchange que cedeu a reserva (W20); `null` fora da cessão. */
+  readonly depositOperationId: string | null;
   /** Noites liberadas pelo fechamento (cancelamento, no-show ou invalidação); 0 enquanto ativa. */
   readonly releasedNights: number;
   readonly nights: readonly PreviewNight[];
@@ -108,7 +111,14 @@ async function serverFacts(tx: DatabaseTransaction, ids: readonly string[]) {
           .onRef('d.second_home_id', '=', 'b.second_home_id')
           .onRef('d.stay_date', '=', 'b.checkin_date'),
       )
-      .select(['b.id', 'b.cancellation_class', 'd.checkin_at'])
+      .leftJoin('app.booking_state_transition as t', 't.id', 'b.last_transition_id')
+      .select([
+        'b.id',
+        'b.cancellation_class',
+        'd.checkin_at',
+        't.kind as last_kind',
+        't.operation_id as last_operation',
+      ])
       .where('b.id', 'in', ids)
       .execute(),
     openExceptions(tx, ids),
@@ -118,6 +128,8 @@ async function serverFacts(tx: DatabaseTransaction, ids: readonly string[]) {
       row.id,
       {
         cancellationClass: (row.cancellation_class as CancellationClass | null) ?? null,
+        lastKind: (row.last_kind as TransitionKind | null) ?? null,
+        lastOperationId: row.last_operation ?? null,
         firstCheckinAt: new Date(row.checkin_at),
         exception: exceptions.get(row.id) ?? null,
       },
@@ -127,6 +139,8 @@ async function serverFacts(tx: DatabaseTransaction, ids: readonly string[]) {
 
 interface ServerFacts {
   readonly cancellationClass: CancellationClass | null;
+  readonly lastKind: TransitionKind | null;
+  readonly lastOperationId: string | null;
   readonly firstCheckinAt: Date;
   readonly exception: TitularBookingDetail['exception'];
 }
@@ -169,6 +183,7 @@ function item(
     display: displayState(state, {
       exceptionType: facts.exception?.type ?? null,
       cancellationClass: facts.cancellationClass,
+      lastKind: facts.lastKind,
     }),
     section: bookingSection(state, facts.firstCheckinAt, now),
     checkinDate: row.checkinDate,
@@ -284,6 +299,7 @@ async function detail(
     exception: fact.exception,
     cancellationClass: fact.cancellationClass,
     cancelledAt: cancelledAt === undefined ? null : new Date(cancelledAt.recorded_at),
+    depositOperationId: fact.lastKind === 'cession' ? fact.lastOperationId : null,
     releasedNights: Number(released.n),
     nights: nights.map((night) => ({
       stayDate: night.stay_date,

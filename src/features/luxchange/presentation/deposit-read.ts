@@ -10,7 +10,12 @@ import {
   type Database,
   type DatabaseTransaction,
 } from '@/features/platform';
-import { createPostgresEconomicTermsStore, creditsForPrl } from '@/features/pricing';
+import {
+  createPostgresEconomicTermsStore,
+  creditsForPrl,
+  seasonTiers,
+  type SeasonTier,
+} from '@/features/pricing';
 import {
   bookingNights,
   nightAvailability,
@@ -42,7 +47,8 @@ export type DepositNightStatus = NightAvailability['kind'] | 'no_reference';
 
 export interface DepositNightView {
   readonly date: string;
-  readonly season: 'alta' | 'media';
+  /** Temporada de apresentação da W16 (ADR-0032 §11): Super Alta (Carnaval), Alta, Média/Baixa — só leitura. */
+  readonly season: SeasonTier;
   readonly status: DepositNightStatus;
   /** Créditos da noite (texto decimal exato) quando pode ser depositada. */
   readonly credits: string | null;
@@ -240,6 +246,7 @@ export async function readDepositCalendar(
   const byId = new Map(bookings.map((booking) => [booking.id, booking]));
   const facts = new Map(read.facts.map((fact) => [fact.stayDate, fact]));
   const nowMs = Date.parse(read.at);
+  const tierOf = seasonTiers();
   const nights = read.dates.map((row): DepositNightView => {
     const fact = facts.get(row.stay_date)!;
     const availability = nightAvailability(holding, fact, (id) => byId.get(id), nowMs);
@@ -247,7 +254,7 @@ export async function readDepositCalendar(
     const eligible = availability.kind === 'eligible';
     return {
       date: row.stay_date,
-      season: row.season === 'alta' ? 'alta' : 'media',
+      season: tierOf(row.stay_date, row.season === 'alta' ? 'alta' : 'media'),
       status: eligible && price === undefined ? 'no_reference' : availability.kind,
       credits:
         eligible && price !== undefined && multiplier !== null

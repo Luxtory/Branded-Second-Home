@@ -6,7 +6,7 @@
 - **Scope**: command `deposit_capacity`, `POST /v1/luxchange/deposits`, Server Actions e telas
   `/titular/luxchange/deposito*`; `app.economic_snapshot_night`; transição `cession`; ramos do depósito em
   `date_custody_open`/`date_custody_close`/`date_occupancy_release`; quantidade do lote de depósito; completude no
-  COMMIT; K6 `luxchange_deposit`; evento `luxchange.credits_originated` e notificação
+  COMMIT; K6 `luxchange_deposit`; K7 `luxchange_exchange`; evento `luxchange.credits_originated` e notificação
 - **Linked spec**: `docs/specs/luxchange.md`
 - **Linked ADR(s)**: ADR-0036, ADR-0033, ADR-0032, ADR-0031, ADR-0027, ADR-0026, ADR-0024
 
@@ -57,5 +57,6 @@ completude adiada, não só no código.
 
 ## 6. Residual risks
 
-- A originação por `accept_request` segue só com as regras da W17 até a W22 (K4 fechada).
+- A originação por `accept_request` e os movimentos de Request/Direct ficam fechados pela K7 (sem linha) até o lastro
+  das W21–W23; ativar a K7 sem esse lastro reabre T-2012 (decisão do fundador, nunca da W20).
 - Ativação real depende de D2 (backup/restauração), PRL e parâmetros publicados por autorização do fundador.

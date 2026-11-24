@@ -435,7 +435,9 @@ por chave (dois por linha a partir de 56rem), `__head`, `__ref`, `__status[data-
 mesma variante `.lx-calendar--prl` serve ao calendário do Titular, dentro do layout `.lx-booking` (calendário +
 `.lx-booking__summary`): `td[data-tier]` para a temporada, `td[data-selected]` + `.lx-pricing__check` para a seleção,
 `.lx-pricing__amount`/`.lx-pricing__dot` para os **Créditos** da noite (nunca preço), `td[data-state="unavailable"]` do
-calendário base para as noites indisponíveis e `aria-disabled` + motivo ao toque para as demais. Sem CSS novo.
+calendário base para as noites indisponíveis e `aria-disabled` + motivo ao toque para as demais. Temporadas de
+apresentação da W16 (`super_alta`, `alta`, `media`) na legenda (swatches dentro de `.lx-pricing`) e salto direto a mês e
+exercício com `.lx-pricing__jump` (seletores nativos rotulados); um mês por vez em todas as larguras. Sem CSS novo.
 
 **Record List · `lx-record-list`** — React: `RecordList` (`items`, `label`). A lista das superfícies de produto
 (ADR-0010 §9): um item por registro, título em Newsreader que leva ao detalhe (link esticado: o item inteiro é o alvo

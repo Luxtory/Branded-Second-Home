@@ -24,7 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   noite e o motivo de cada indisponibilidade, resumo com saldo atual e potencial, revisão vinculante, resultado lido do
   banco), link na Carteira e aviso "Depósito concluído" na central; `POST /v1/luxchange/deposits`. Nenhum valor em reais
   é mostrado ao Titular. Infraestrutura desativada: K6 `luxchange_deposit` e K4 `credits` fechadas; nenhum PRL ou
-  parâmetro real publicado.
+  parâmetro real publicado. Auditoria independente: a nova chave K7 `luxchange_exchange` (fechada) impede que a K4 ligada
+  para o depósito abra originação por aceite ou movimentos de Request/Direct antes das W21–W23; fatos do depósito só na
+  transação do próprio snapshot; a reserva cedida aparece como "Cedida ao Luxchange" (Titular e Admin), nunca como
+  cancelada; o calendário mostra as três temporadas da W16 (Super Alta, Alta, Média/Baixa) e permite ir direto a mês e
+  exercício; a revisão identifica a Second Home, o vínculo e os Créditos de cada data.
 
 - W19 — Pagamentos, Luxchange Fee e settlement (REQ-094; ADR-006, ADR-008, TECH-025, TECH-080–083, TECH-090, TECH-101;
   ADR-0035). Decisão do fundador de 2026-11-22: o Luxchange Fee de referência passa de 10% para 12% do PRL total do

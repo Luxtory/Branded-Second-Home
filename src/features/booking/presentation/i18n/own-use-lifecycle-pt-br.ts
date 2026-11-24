@@ -17,6 +17,7 @@ export type DisplayStateKey =
   | 'cancelled_timely'
   | 'cancelled_late'
   | 'cancelled'
+  | 'ceded'
   | 'no_show'
   | 'operational_exception'
   | 'unauthorized_review';
@@ -29,6 +30,7 @@ export const lifecycleLabels = {
     cancelled_timely: 'Cancelada dentro do prazo',
     cancelled_late: 'Cancelada fora do prazo',
     cancelled: 'Cancelada',
+    ceded: 'Cedida ao Luxchange',
     no_show: 'No-show',
     operational_exception: 'Em exceção operacional',
     unauthorized_review: 'Em apuração',
@@ -93,6 +95,12 @@ export const bookingDetailMessages = {
   classTimely: 'Dentro do prazo',
   classLate: 'Fora do prazo',
   releasedNights: 'Noites liberadas',
+  cession: 'Cessão ao Luxchange',
+  cededAt: 'Cedida em',
+  cededNights: 'Noites cedidas',
+  cededNote:
+    'As noites passaram ao Inventário Luxtory pelo depósito no Luxchange e continuam consumidas do Direito de Uso desta Ação: a contraprestação são os Créditos do depósito.',
+  cededLink: 'Ver o depósito',
   cancelledTitle: 'Reserva cancelada',
   cancelledTimely: (n: number) =>
     `${theNights(n)} ${n === 1 ? 'voltou' : 'voltaram'} ao Direito de Uso desta Ação. O aviso também está em Notificações.`,

@@ -1,12 +1,28 @@
 'use client';
 
-import { useActionState, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import {
+  useActionState,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
 import { useFormStatus } from 'react-dom';
 import { Icon } from '@/design-system/react';
 import { sumCredits } from '../domain/deposit';
 import { confirmDepositAction, previewDepositAction } from './deposit-actions';
 import type { DepositFormState, DepositPreviewResponse } from './deposit-form-state';
-import { dateList, dayMonth, formatCredits, fullDate, longDate, monthName } from './deposit-format';
+import {
+  dateList,
+  dayMonth,
+  formatCredits,
+  fullDate,
+  longDate,
+  monthName,
+  monthOnly,
+} from './deposit-format';
 import type { DepositCalendarData, DepositNightView } from './deposit-read';
 import { depositMessages as text } from './i18n/deposit-pt-br';
 
@@ -44,7 +60,7 @@ function Submit({ disabled }: { readonly disabled: boolean }) {
   );
 }
 
-function Fact({ label, value }: { readonly label: string; readonly value: string }) {
+function Fact({ label, value }: { readonly label: string; readonly value: ReactNode }) {
   return (
     <div className="lx-booking__fact">
       <dt>{label}</dt>
@@ -109,7 +125,8 @@ export function DepositCalendar({ data }: { readonly data: DepositCalendarData }
     const byDate = new Map(data.nights.map((night) => [night.date, night]));
     const bookings = new Map(data.bookings.map((booking) => [booking.id, booking]));
     const months = [...new Set(data.nights.map((night) => night.date.slice(0, 7)))];
-    return { byDate, bookings, months };
+    const years = [...new Set(months.map((value) => value.slice(0, 4)))];
+    return { byDate, bookings, months, years };
   }, [data]);
   const firstEligible = data.nights.find((night) => night.status === 'eligible');
   const [month, setMonth] = useState(
@@ -314,6 +331,59 @@ export function DepositCalendar({ data }: { readonly data: DepositCalendarData }
           <p className="lx-body">{text.calendar.empty}</p>
         ) : (
           <div className="lx-calendar lx-calendar--prl">
+            <div className="lx-pricing__jump">
+              <div className="lx-field">
+                <label className="lx-label" htmlFor="deposito-ir-mes">
+                  {text.calendar.jumpMonth}
+                </label>
+                <div className="lx-select-wrap">
+                  <select
+                    className="lx-select"
+                    id="deposito-ir-mes"
+                    value={month}
+                    onChange={(event) => setMonth(event.target.value)}
+                  >
+                    {model.months
+                      .filter((value) => value.startsWith(month.slice(0, 4)))
+                      .map((value) => (
+                        <option key={value} value={value}>
+                          {monthOnly(value)}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+              {model.years.length < 2 ? null : (
+                <div className="lx-field">
+                  <label className="lx-label" htmlFor="deposito-ir-ano">
+                    {text.calendar.jumpYear}
+                  </label>
+                  <div className="lx-select-wrap">
+                    <select
+                      className="lx-select"
+                      id="deposito-ir-ano"
+                      value={month.slice(0, 4)}
+                      onChange={(event) =>
+                        // Como na W16: o mesmo mês no outro exercício, se selado; senão, o primeiro selado dele.
+                        setMonth(
+                          model.months.find(
+                            (value) => value === `${event.target.value}-${month.slice(5)}`,
+                          ) ??
+                            model.months.find((value) => value.startsWith(event.target.value)) ??
+                            month,
+                        )
+                      }
+                    >
+                      {model.years.map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="lx-calendar__months">
               <div className="lx-calendar__month">
                 <div className="lx-calendar__header">
@@ -387,6 +457,10 @@ export function DepositCalendar({ data }: { readonly data: DepositCalendarData }
                 {text.calendar.legendItems.unavailable}
               </li>
               <li className="lx-calendar__legend-item">
+                <span className="lx-pricing__swatch" aria-hidden="true" data-tier="super_alta" />
+                {text.calendar.legendItems.super_alta}
+              </li>
+              <li className="lx-calendar__legend-item">
                 <span className="lx-pricing__swatch" aria-hidden="true" data-tier="alta" />
                 {text.calendar.legendItems.alta}
               </li>
@@ -452,13 +526,24 @@ export function DepositCalendar({ data }: { readonly data: DepositCalendarData }
           </>
         ) : (
           <>
-            {stale ? (
+            {/* Só com a revisão nova na tela: enquanto ela carrega, segue um único aviso (o da recusa). */}
+            {stale && !loading ? (
               <p className="lx-booking__outcome" role="alert">
                 {text.review.stale}
               </p>
             ) : null}
             <dl className="lx-booking__facts">
-              <Fact label={text.review.what} value={ok.nights.map(fullDate).join(', ')} />
+              <Fact label={text.steps.home} value={ok.secondHomeLabel} />
+              <Fact label={text.chooser.role} value={text.chooser.roles[ok.modality]} />
+              <Fact
+                label={text.review.what}
+                value={ok.nightCredits.map((night, index) => (
+                  <span key={night.date}>
+                    {index === 0 ? null : <br />}
+                    {text.review.nightLine(fullDate(night.date), formatCredits(night.credits))}
+                  </span>
+                ))}
+              />
               <Fact
                 label={text.summary.nights}
                 value={text.summary.nightsValue(ok.nights.length)}

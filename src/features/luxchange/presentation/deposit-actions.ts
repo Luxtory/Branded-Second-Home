@@ -49,11 +49,15 @@ export async function previewDepositAction(raw: unknown): Promise<DepositPreview
     const reason = refusalOf(data, parsed.data.nights);
     if (reason !== null) return { status: 'refused', reason };
     const credits = selectionCredits(data, parsed.data.nights)!;
+    const byDate = new Map(data.nights.map((night) => [night.date, night.credits!] as const));
     return {
       status: 'ok',
       secondHomeId: data.holding.secondHomeId,
+      secondHomeLabel: data.holding.label,
+      modality: data.holding.modality,
       partyId: data.holding.partyId,
       nights: parsed.data.nights,
+      nightCredits: parsed.data.nights.map((date) => ({ date, credits: byDate.get(date)! })),
       credits,
       validityMonths: data.validityMonths,
       balance: data.balance,

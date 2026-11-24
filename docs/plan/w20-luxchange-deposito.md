@@ -144,15 +144,19 @@ mudanças de Membership, PRL ou políticas reais.
 
 ## Auditoria independente (2026-11-23, instrução do fundador)
 
-| Achado | Prioridade | Evidência | Decisão |
-|---|---|---|---|
-| Com a K4 ligada, `accept_request` forjado origina Créditos sem lastro; `send_request`/`create_direct` forjados movem Créditos | P1 (ativação) | `tests/migrations/luxchange-deposit.db.test.ts` "ativação do depósito não abre Request/Direct" (reproduzido antes da correção) | K7 `luxchange_exchange` fechada no banco; depósito = K4 + K6 |
-| Operação `pending` reaproveitada noutra transação cede noites sem Créditos | P1 (ativação) | mesmo arquivo, "operação pendente reaproveitada" (reproduzido) | noites do snapshot e escritas do depósito só na transação do snapshot |
-| Termos: total igual com versões de PRL diferentes | descartado como defeito | `deposit-capacity.db.test.ts` "termos revisados = Créditos e validade apresentados" | contrato explícito: igualdade dos termos apresentados; snapshot com as versões usadas (ADR-0036 §8) |
-| Reserva cedida exibida como "Cancelada" | P2 | `own-use-booking-sections.ts` (`displayState`) | situação "Cedida ao Luxchange" (Titular e Admin) |
-| Duas faixas de temporada no depósito × três aprovadas na W16 | P2 | `deposit-read.ts` × ADR-0032 §11 | reutiliza a classificação da W16 (só apresentação) |
-| Spec dizia "2 meses quando cabem"; o calendário mostra 1 | P2 | `docs/specs/luxchange.md` §5.4 × `deposit-calendar.tsx` | 1 mês por vez (Créditos legíveis na célula) + ir direto a mês/exercício, como na W16; spec corrigida |
-| Dica do Co-Owner sugere refazer reservas (14 × 15 dias) | P2 | `deposit-pt-br.ts` `hintCoOwner` | copy sem sugerir cancelamento/re-reserva |
+| Achado | Prioridade | Evidência | Decisão | Status |
+|---|---|---|---|---|
+| Com a K4 ligada, `accept_request` forjado origina Créditos sem lastro; `send_request`/`create_direct` forjados movem Créditos | P1 (ativação) | `tests/migrations/luxchange-deposit.db.test.ts` "ativação do depósito não abre Request/Direct" (falhava antes da correção); `credit-ledger.db.test.ts` "K7 luxchange_exchange" | K7 `luxchange_exchange` fechada no banco (`credit_lot_originate`, `credit_entry_write`); depósito = K4 + K6 | corrigido (`36f1464`) |
+| Operação `pending` reaproveitada noutra transação cede noite sem Créditos | P1 (ativação) | mesmo arquivo, "operação pendente reaproveitada" (falhava antes) | noites do snapshot e escritas do depósito só na transação do snapshot | corrigido (`36f1464`) |
+| Termos: total igual com versões de PRL diferentes | descartado como defeito | `deposit-capacity.db.test.ts` "termos revisados = Créditos e validade apresentados" | contrato explícito: igualdade dos termos apresentados; snapshot com as versões usadas (ADR-0036 §8) | documentado e testado |
+| Reserva cedida exibida como "Cancelada" (Titular e histórico do Admin) | P2 | `own-use-booking-sections.ts` (`displayState`); E2E Co-Owner | situação "Cedida ao Luxchange", seção "Cessão ao Luxchange" com link ao depósito, histórico do Admin | corrigido |
+| Duas faixas de temporada no depósito × três aprovadas na W16 | P2 | `deposit-read.ts` × ADR-0032 §11 | reutiliza `seasonTiers` da W16 (só apresentação); legenda com três | corrigido |
+| Spec dizia "2 meses quando cabem"; o calendário mostra 1 | P2 | spec §5.4 × `deposit-calendar.tsx` | 1 mês por vez (Créditos legíveis na célula) + ir direto a mês/exercício, como na W16; spec corrigida | corrigido |
+| Dica do Co-Owner sugeria refazer reservas para ceder parte (14 × 15 dias) | P2 | `deposit-pt-br.ts` `hintCoOwner` | copy sem sugerir cancelamento/re-reserva | corrigido |
+| Revisão sem Second Home, vínculo e Créditos por data; rótulo "Saldo atual da Carteira" | P2 | `deposit-calendar.tsx` (revisão) | revisão com Second Home, vínculo e cada data com seus Créditos; "Saldo atual" | corrigido |
+| Dois avisos quase iguais enquanto a revisão atualizada carrega (termos alterados) | P2 | E2E "Owner" (strict mode: 2 `alert`) | um único aviso por vez | corrigido |
+| Sem teste de depósito × revogação da representação, reserva em exceção/cancelada e reserva atravessando o mês | P2 (cobertura) | — | `deposit-concurrency.db.test.ts`, `deposit-capacity.db.test.ts` | coberto |
+| Projeto `chrome-luxchange` pulado quando outro projeto falha | descartado como falso verde | `reports/dep-proof` (local): dependência com falha → "did not run" e saída 1 | semântica do Playwright impede falso verde; risco residual é só falta de cobertura numa execução já vermelha | documentado |
 
 ### Fronteiras com as próximas waves (registro)
 
