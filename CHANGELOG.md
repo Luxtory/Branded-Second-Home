@@ -107,6 +107,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Second Home Partners (REQ-105). Título de abertura discretamente maior dentro da escala fluida do Design System.
+
 - Home da Luxtory: títulos dos serviços em duas linhas, foto do fechamento exibida inteira e textos de Membership e
   Luxchange revisados.
 - A Home pública apresenta o Luxtory Club e a proposta de intercâmbio de estadias em imóveis de lazer de alto padrão.

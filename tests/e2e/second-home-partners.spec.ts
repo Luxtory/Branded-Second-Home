@@ -347,6 +347,15 @@ test.describe('Second Home Partners — gate de UI (ADR-0009, catalog §20.5)', 
     for (const width of [320, 390, 768, 1024, 1440, 1920]) {
       await page.setViewportSize({ width, height: 900 });
       await home.setViewportSize({ width, height: 900 });
+      const [heroSize, sectionSize] = await Promise.all([
+        page
+          .locator('#inicio h1')
+          .evaluate((heading) => Number.parseFloat(getComputedStyle(heading).fontSize)),
+        page
+          .locator('#oportunidade h2')
+          .evaluate((heading) => Number.parseFloat(getComputedStyle(heading).fontSize)),
+      ]);
+      expect(heroSize, `hierarquia do título em ${width}px`).toBeGreaterThan(sectionSize);
       const lead = await page.locator('h1 > span').boundingBox();
       const turn = await page.locator('h1 > em').boundingBox();
       expect(lead).not.toBeNull();
