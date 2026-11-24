@@ -202,7 +202,7 @@ export function SecondHomeDevelopmentPage() {
         aria-labelledby={titleId(sections.model)}
       >
         <div className="lx-container">
-          <SectionHeading section={sections.model} title={model.title} intro={model.intro} />
+          <SectionHeading section={sections.model} title={model.title} />
           <div className="lx-comparison lx-comparison--divided">
             {model.items.map((item) => (
               <div key={item.title} className="lx-comparison__item lx-stack">
@@ -280,7 +280,7 @@ export function SecondHomeDevelopmentPage() {
         aria-labelledby={titleId(sections.steps)}
       >
         <div className="lx-container">
-          <SectionHeading section={sections.steps} title={steps.title} intro={steps.intro} />
+          <SectionHeading section={sections.steps} title={steps.title} />
           <ol className="lx-numbered" role="list">
             {steps.items.map((step, index) => (
               <li className="lx-numbered__item" key={step.title}>

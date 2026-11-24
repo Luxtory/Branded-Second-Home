@@ -2252,3 +2252,15 @@ dessas empresas. O SVG original e as três alternativas de §23.5 seguem como re
 
 A página se dirige às empresas ao apresentar a parceria e o contato. Na prova de compra, uso e Co-Owner, o comprador
 é descrito em terceira pessoa. Verificar ordem e perspectiva na jornada e alinhamento dos três blocos no desktop.
+
+### 23.7. Revisão editorial integral
+
+Revisão de 2026-11-24. O desenvolvimento descentralizado fica explícito na análise de viabilidade e nas
+responsabilidades de investimento e execução de cada projeto. A prova descreve o teste de conceito e, depois da
+publicação da configuração da casa, o interesse do público quanto a destino e modalidade. A oferta vem após a
+estruturação e as autorizações aplicáveis (BR-030, BR-035, BR-041). A aquisição e o exemplo Co-Owner seguem §23.4.
+
+Os benefícios explicam como cada empresa pode licenciar e aprovar a identidade, orientar o produto e sua venda
+ou avaliar e estruturar o investimento. A margem da investidora segue as condições acordadas (BR-313).
+O contato convida a apresentar a marca, o local ou o investimento a avaliar. O aceite confere o fluxo B2B,
+a sequência comercial e a leitura em 320 a 1920 px.

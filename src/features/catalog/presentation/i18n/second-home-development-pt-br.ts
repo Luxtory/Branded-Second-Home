@@ -18,7 +18,7 @@ export const secondHomeDevelopmentMessages = {
     name: 'Second Home Development',
     title: { lead: 'Second Homes extraordinárias. ', turn: 'Desenvolvidas sob demanda.' },
     paragraphs: [
-      'Uma marca que faz parte das férias de seus clientes. Um conceito de casa que pode ganhar vida em novos destinos.',
+      'Uma marca presente nas férias de seus clientes. Uma casa que eles desejam ter.',
       'A Luxtory une marcas, incorporadoras e investidoras em projetos Owner e Co-Owner.',
     ],
     action: 'Conversar sobre uma oportunidade',
@@ -73,8 +73,8 @@ export const secondHomeDevelopmentMessages = {
   experience: {
     title: { lead: 'Desenvolvimento descentralizado. ', turn: 'Guiado pela demanda.' },
     paragraphs: [
-      'A Luxtory reúne marcas, incorporadoras e investidoras para desenvolver Second Homes em parceria com condomínios de lazer.',
-      'A Luxtory conduz o produto, da pesquisa ao lançamento. Os parceiros avaliam a viabilidade, definem o aporte e executam cada projeto.',
+      'A Luxtory coordena o desenvolvimento de Second Homes em parceria com condomínios de lazer, da pesquisa ao lançamento.',
+      'Cada projeto tem sua própria análise de viabilidade. O investimento e a execução cabem aos parceiros responsáveis.',
     ],
     photoAlt: 'Família reunida ao redor de uma fogueira em uma casa de lazer.',
     branded: {
@@ -86,30 +86,30 @@ export const secondHomeDevelopmentMessages = {
     },
   },
   partners: {
-    title: { lead: 'Um projeto. ', turn: 'Diferentes formas de participar.' },
+    title: { lead: 'Como sua empresa ', turn: 'pode participar.' },
     items: [
       {
         title: 'Marcas hoteleiras e outras marcas consolidadas',
         paragraphs: [
           'Leve a identidade da sua marca a novos destinos e aos momentos de lazer dos seus clientes.',
-          'O licenciamento pode gerar remuneração. Direitos e aprovações são definidos em contrato.',
-          'Os parceiros realizam o projeto. A operação hoteleira é uma decisão à parte.',
+          'Licencie o uso da marca, com remuneração e aprovações definidas em contrato.',
+          'A obra e a operação da casa cabem aos parceiros contratados para essas funções.',
         ],
       },
       {
         title: 'Incorporadoras e desenvolvedores',
         paragraphs: [
-          'Use a pesquisa para tomar decisões de produto antes de investir na obra.',
-          'Desenvolva um conceito de casa e avalie a modalidade mais adequada ao público.',
-          'Leve os diferenciais do projeto aos materiais e argumentos de venda.',
+          'Use a pesquisa para orientar o conceito da casa antes dos compromissos de obra.',
+          'Avalie o destino e a modalidade de aquisição com base no que o público procura.',
+          'Conte com a Luxtory na preparação dos materiais e argumentos de venda.',
         ],
       },
       {
         title: 'Investidoras imobiliárias',
         paragraphs: [
-          'Avalie onde financiar ou desenvolver projetos com conceito e público definidos.',
-          'Aportes, responsabilidades e riscos seguem a estrutura acordada.',
-          'A investidora pode ter margem própria na comercialização, conforme seus direitos.',
+          'Avalie cada oportunidade a partir do conceito, dos sinais de interesse e das condições do projeto.',
+          'Defina o aporte e as responsabilidades para cada empreendimento.',
+          'O preço de venda pode incluir sua margem, conforme as condições acordadas.',
         ],
       },
     ],
@@ -173,65 +173,63 @@ export const secondHomeDevelopmentMessages = {
   },
   model: {
     title: { lead: 'Como o público ', turn: 'orienta o projeto.' },
-    intro: 'A Luxtory escuta o público em duas etapas, do conceito da casa à escolha dos destinos.',
     items: [
       {
-        title: 'O que a pesquisa revela',
+        title: 'Pesquisa de conceito',
         paragraphs: [
-          'Conversamos com o público para entender o que ele valoriza em uma casa de lazer.',
-          'As respostas ajudam a decidir o que desenvolver antes de assumir compromissos de obra.',
+          'A Luxtory testa o conceito com o público para entender o que ele valoriza na casa e na experiência de uso.',
+          'As respostas orientam as escolhas de produto antes dos compromissos de obra.',
         ],
       },
       {
-        title: 'O que o interesse revela',
+        title: 'Interesse pela casa',
         paragraphs: [
           'Com a configuração da casa publicada, o interessado indica o destino e a modalidade desejados.',
-          'A Luxtory cruza essas preferências com a viabilidade em condomínios de lazer e outros locais compatíveis.',
+          'Os parceiros avaliam a viabilidade em cada local. A Luxtory cruza essa análise com as preferências do público.',
         ],
       },
     ],
   },
   steps: {
     title: { lead: 'Da primeira hipótese ', turn: 'ao produto no mercado.' },
-    intro: 'A Luxtory conduz a gestão de produto conforme a fase e o escopo de cada projeto.',
     items: [
       {
-        title: 'Discovery e oportunidade',
+        title: 'Pesquisa e oportunidade',
         paragraphs: [
-          'Ouvimos o público e analisamos mercado e contexto para testar hipóteses de produto.',
+          'A Luxtory avalia o mercado e pesquisa o que o público procura em uma casa de lazer.',
         ],
       },
       {
         title: 'Conceito e estratégia',
         paragraphs: [
-          'Definimos público, proposta de valor e experiência. Essas escolhas dão forma ao conceito de casa, o Home Concept.',
+          'Público, proposta de valor e experiência dão forma ao Home Concept, o conceito da casa.',
         ],
       },
       {
         title: 'Aprovações e licenciamento',
         paragraphs: [
-          'Nos projetos com marca, ela aprova o Home Concept. O licenciamento define os direitos antes da configuração final.',
-          'A Home Edition é a configuração da casa. Ela é publicada após a aprovação do produto.',
+          'Quando há marca parceira, ela aprova o conceito da casa e licencia o uso de sua identidade.',
+          'A Home Edition, a configuração da casa, é publicada após a aprovação do produto.',
         ],
       },
       {
         title: 'Estruturação e lançamento',
         paragraphs: [
-          'Com os parceiros, definimos local, modalidade e condições. Preparamos o lançamento e os materiais que apoiam a equipe de vendas.',
-          'A oferta formal depende da estruturação e das autorizações aplicáveis.',
+          'A Luxtory e os parceiros definem local, modalidade e condições conforme a demanda e a viabilidade.',
+          'A Luxtory prepara os materiais de venda. A oferta formal vem após a estruturação e as autorizações.',
         ],
       },
       {
-        title: 'Desenvolvimento e realização',
+        title: 'Construção',
         paragraphs: [
-          'A obra avança quando o projeto reúne as condições necessárias.',
-          'Os responsáveis executam. A Luxtory acompanha a aderência ao conceito aprovado.',
+          'Os responsáveis executam a obra conforme as condições aprovadas.',
+          'A Luxtory acompanha a execução para preservar o conceito da casa.',
         ],
       },
       {
         title: 'Operação e evolução',
         paragraphs: [
-          'A operação cabe aos prestadores contratados. Quando previsto, a Luxtory acompanha a resposta do mercado e orienta ajustes no produto.',
+          'Prestadores contratados cuidam da casa. A Luxtory acompanha a resposta do mercado e orienta ajustes quando previsto.',
         ],
       },
     ],
@@ -255,13 +253,13 @@ export const secondHomeDevelopmentMessages = {
       {
         question: 'Incorporadora',
         answer: [
-          'Avalia a viabilidade e responde pelo investimento, pela estruturação e pela realização que assumir.',
+          'Avalia a viabilidade e assume a estruturação, o investimento e a obra conforme o contrato.',
         ],
       },
       {
         question: 'Investidora',
         answer: [
-          'Financia ou desenvolve projetos autorizados, conforme os direitos e as responsabilidades acordados.',
+          'Financia ou desenvolve projetos autorizados pela Luxtory, conforme os direitos e as responsabilidades acordados.',
         ],
       },
       {
@@ -271,10 +269,7 @@ export const secondHomeDevelopmentMessages = {
         ],
       },
     ],
-    contract: [
-      'As responsabilidades de cada parte ficam definidas nos contratos da parceria.',
-      'Gestão de produto, execução e licenciamento têm condições próprias.',
-    ],
+    contract: ['As responsabilidades de cada parte ficam definidas nos contratos da parceria.'],
   },
   faq: {
     title: { lead: 'Dúvidas ', turn: 'frequentes.' },
@@ -287,12 +282,12 @@ export const secondHomeDevelopmentMessages = {
       {
         question: 'Posso apresentar um conceito próprio?',
         answer:
-          'A Luxtory avalia propostas que partem da identidade do empreendimento. O desenvolvimento nesse formato depende da formalização do modelo.',
+          'Sua empresa pode apresentar a ideia. O desenvolvimento com conceito próprio depende da formalização desse modelo.',
       },
       {
         question: 'Como se define a modalidade de aquisição?',
         answer:
-          'A modalidade depende do público, da viabilidade e da estrutura jurídica de cada Second Home.',
+          'A modalidade é definida com base no interesse do público, na viabilidade e na estrutura jurídica de cada projeto.',
       },
     ],
     affiliation: {
@@ -304,7 +299,7 @@ export const secondHomeDevelopmentMessages = {
   contact: {
     title: { lead: 'Vamos conversar ', turn: 'sobre sua oportunidade.' },
     intro:
-      'Apresente sua marca, o local que tem em mente ou o tipo de projeto em que quer investir.',
+      'Apresente a marca, o local ou a oportunidade de investimento que sua empresa quer avaliar com a Luxtory.',
     privacy:
       'A Luxtory usa os dados do contato para analisar a oportunidade e responder à sua mensagem.',
   },

@@ -48,6 +48,10 @@ test('o percurso B2B segue os 5Ps e mostra o Direito de Uso de oito Co-Owners (c
   await expect(page.locator('#brand-experience').getByRole('heading', { level: 2 })).toHaveText(
     'Desenvolvimento descentralizado. Guiado pela demanda.',
   );
+  await expect(page.locator('#sob-demanda h3')).toHaveText([
+    'Pesquisa de conceito',
+    'Interesse pela casa',
+  ]);
   await expect(page.locator('#perguntas + #parceiros + #conversa')).toHaveCount(1);
   await expect(page.locator('#para-quem-vive h2')).toHaveText(
     'O que a casa entrega aos seus clientes.',
@@ -74,7 +78,12 @@ test('o percurso B2B segue os 5Ps e mostra o Direito de Uso de oito Co-Owners (c
     'Até 32 dias',
   ]);
   await expect(example).toContainText('janela de 10 dias do Carnaval');
-  await expect(page.locator('#como-funciona .lx-numbered > li')).toHaveCount(6);
+  const steps = page.locator('#como-funciona .lx-numbered > li');
+  await expect(steps).toHaveCount(6);
+  await expect(steps.nth(2)).toContainText('publicada após a aprovação do produto');
+  await expect(steps.nth(3)).toContainText(
+    'A oferta formal vem após a estruturação e as autorizações.',
+  );
   await expect(page.locator('#governanca h3')).toHaveCount(5);
   await expect(
     page.locator('#inicio').getByRole('link', { name: 'Conversar sobre uma oportunidade' }),
