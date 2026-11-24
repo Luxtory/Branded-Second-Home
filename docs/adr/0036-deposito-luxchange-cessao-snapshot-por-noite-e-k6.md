@@ -117,6 +117,20 @@ decisão:
 - W22: originação pelo aceite exige, no banco, cessão da capacidade do cedente, consumo da Garantia e encerramento das
   concorrentes na mesma operação (substitui a regra atual de "só com a K7"); reutiliza `cession` e o snapshot por noite.
 - W23: Direct consome `luxtory/inventory/luxchange_cession` com a K7 e as regras do Inventário.
+- **Contrato da K7 para W21–W23 (auditoria, 2ª rodada; nada implementado agora).** Hoje a K7 trava também os
+  encerramentos (`withdraw_request`, `reject_request`), e é seguro porque nenhuma Garantia pode existir com a K7 sem
+  linha (`send_request` travado). Mas a Garantia só sai por retirada ou recusa (W17: `release`), e a expiração de lote só
+  alcança o saldo `available`: se a K7 fosse ligada e depois desligada, as Garantias ficariam presas. Contrato mínimo:
+  (1) a K7 abre só compromissos e efeitos econômicos novos — `send_request` (Garantia nova), `create_direct` (consumo) e
+  `accept_request` (consumo da Garantia e originação ao cedente); (2) encerramentos nunca dependem da K7 — retirada,
+  recusa, expiração da Request (W21), expiração de lotes e `reverse_credit` —, sempre limitados à Garantia existente da
+  mesma Request (regra da W17 pelo `parent_entry_id`); (3) a migration da W21 que trouxer o lastro da Request e pedir a
+  ativação da K7 tira os encerramentos da trava **na mesma migration**, antes de qualquer Garantia poder existir;
+  (4) desligar a K7 depois só impede novos envios, Directs e aceites: as Requests pendentes se encerram por retirada,
+  recusa ou expiração, liberando a Garantia (para `available`, ou `expired` se o lote venceu — TECH-072).
+- **Uma K7 para Request e Direct.** Adequada enquanto a ativação de Request (W21+W22) e Direct (W23) for conjunta. Se o
+  fundador decidir ativar um antes do lastro do outro, a wave que antecipar a ativação divide a chave na própria
+  migration (Request / Direct). A necessidade não está demonstrada hoje: não dividir agora.
 
 ## Alternatives considered
 

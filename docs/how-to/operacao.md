@@ -820,7 +820,10 @@ aceite e Garantia/consumo/liberação de Request e Direct, mesmo com a K4 ligada
    depósito recusa com `ERR_PARAMETER_MISSING`/`ERR_PRL_MISSING` (TECH-001).
 3. **Ativação futura (fora da W20):** D2 (backup e restauração testados), PRL e parâmetros publicados, migration que
    insere `credits` e `luxchange_deposit` e autorização expressa do fundador. **Nunca inserir `luxchange_exchange` (K7)
-   junto:** ela abre Request/Direct, cujo lastro no banco chega nas W21–W23 (STRIDE T-2012).
+   junto:** ela abre Request/Direct, cujo lastro no banco chega nas W21–W23 (STRIDE T-2012). Antes de qualquer ativação
+   futura da K7, conferir que a migration da W21 já tirou retirada e recusa da trava (contrato no ADR-0036): desligar a
+   K7 nunca pode prender Créditos em Garantia (`SELECT count(*) FROM app.credit_lot WHERE held > 0` deve poder chegar a
+   zero só com encerramentos).
 4. **Rollback:** o `down` recusa com snapshot por noite, transição `cession`, cessão de depósito ou a K6/K7 presente;
    reverter só o código.
 

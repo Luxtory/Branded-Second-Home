@@ -171,5 +171,9 @@ mudanças de Membership, PRL ou políticas reais.
   consumo da Garantia e encerramento das concorrentes no mesmo commit; substitui a regra "aceite só com a K7".
 - **W23 (Direct):** a capacidade `luxtory/inventory/luxchange_cession` é origem possível de Direct; reserva, cobrança e
   consumo de Créditos são da W23.
+- **K7 (contrato mínimo; ADR-0036, follow-ups):** a K7 abre só compromissos novos (envio, Direct, aceite); retirada,
+  recusa, expiração da Request e dos lotes nunca dependem dela. A W21 tira os encerramentos da trava na mesma migration
+  que traz o lastro e pede a ativação; desligar a K7 nunca prende Garantia. Chave dividida (Request / Direct) só se a
+  ativação de um vier antes do lastro do outro.
 - **Membership e go-to-market:** a W20 só verifica a elegibilidade vigente; a decisão comercial de primeiro ano gratuito
   é validada na wave do Membership antes da ativação comercial, sem valores embutidos aqui.

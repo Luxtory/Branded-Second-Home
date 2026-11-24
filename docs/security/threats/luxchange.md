@@ -59,4 +59,6 @@ completude adiada, não só no código.
 
 - A originação por `accept_request` e os movimentos de Request/Direct ficam fechados pela K7 (sem linha) até o lastro
   das W21–W23; ativar a K7 sem esse lastro reabre T-2012 (decisão do fundador, nunca da W20).
+- Hoje a K7 também trava retirada e recusa. Sem Garantia possível isso é inócuo; a W21 deve tirá-las da trava antes de
+  ativar a K7, ou desligá-la depois prenderia Créditos em Garantia (contrato no ADR-0036, follow-ups).
 - Ativação real depende de D2 (backup/restauração), PRL e parâmetros publicados por autorização do fundador.
