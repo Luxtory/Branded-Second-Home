@@ -104,13 +104,53 @@ export function SecondHomeDevelopmentPage() {
       <section
         id={sections.opportunity}
         className="lx-section"
-        data-surface="white"
+        data-surface="blue"
         aria-labelledby={titleId(sections.opportunity)}
       >
-        <div className={`lx-container lx-columns lx-columns--5-7 ${styles.opportunity}`}>
-          <SectionHeading section={sections.opportunity} title={opportunity.title} />
-          <div className="lx-stack">
-            <Paragraphs lines={opportunity.paragraphs} />
+        <div className="lx-container">
+          <div className="lx-triad-comparison__top">
+            <div className="lx-triad-comparison__copy">
+              <h2 id={titleId(sections.opportunity)} className="lx-headline">
+                <HeadlineText headline={opportunity.title} />
+              </h2>
+              <p className="lx-body">
+                {nb(opportunity.intro)}{' '}
+                <strong className={styles.marketValues}>{nb(opportunity.values)}</strong>
+              </p>
+              <p className="lx-body">{nb(opportunity.tension)}</p>
+              <ul
+                className={styles.marketAlternatives}
+                role="list"
+                aria-label={opportunity.alternativesLabel}
+              >
+                {opportunity.alternatives.map(({ title, text }) => (
+                  <li key={title}>
+                    <h3 className="lx-display-s">{nb(title)}</h3>
+                    <p className="lx-body">{nb(text)}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <figure className="lx-triad-comparison__diagram">
+              {/* eslint-disable-next-line @next/next/no-img-element -- Serve the original Home diagram with its geometry and CSP intact. */}
+              <img
+                src="/diagrams/core/triade-valor-desejado.svg"
+                alt={opportunity.diagramAlt}
+                width={723}
+                height={640}
+                loading="lazy"
+              />
+            </figure>
+          </div>
+          <div className="lx-section-group">
+            <div className={`lx-comparison lx-comparison--divided ${styles.opportunityAudiences}`}>
+              {opportunity.audiences.map(({ title, paragraphs }) => (
+                <div key={title} className="lx-comparison__item">
+                  <h3 className="lx-display-m">{nb(title)}</h3>
+                  <Paragraphs lines={paragraphs} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -121,29 +161,33 @@ export function SecondHomeDevelopmentPage() {
         data-surface="wash"
         aria-labelledby={titleId(sections.experience)}
       >
-        <div className="lx-split">
-          <div className="lx-split__text">
-            <div className="lx-split__inner lx-stack">
-              <SectionHeading section={sections.experience} title={experience.title} />
+        <div className="lx-container">
+          <div className={`lx-columns ${styles.promiseMain}`}>
+            <h2 id={titleId(sections.experience)} className="lx-headline">
+              <HeadlineText headline={experience.title} />
+            </h2>
+            <div className="lx-stack">
               <Paragraphs lines={experience.paragraphs} />
-              <div className="lx-equation" data-surface="deep">
-                <p className="lx-equation__term lx-display-s">{experience.equation.first}</p>
-                <p className="lx-equation__operator lx-display-s">+</p>
-                <p className="lx-equation__term lx-display-s">{experience.equation.second}</p>
-                <p className="lx-equation__term lx-equation__result lx-display-s">
-                  {experience.equation.result}
-                </p>
-              </div>
             </div>
           </div>
-          <SplitPhoto
-            src="/images/home/hero/home-solucao-firepit-family.jpg"
-            width={1376}
-            height={768}
-            crop="lx-crop-x-65"
-            alt={experience.photoAlt}
-            caption={text.illustration}
-          />
+          <div className="lx-section-group">
+            <div className={`lx-columns ${styles.brandStory}`}>
+              <div className="lx-stack">
+                <h3 className="lx-display-m">
+                  <HeadlineText headline={experience.branded.title} />
+                </h3>
+                <Paragraphs lines={experience.branded.paragraphs} />
+              </div>
+              <SplitPhoto
+                src="/images/home/hero/home-solucao-firepit-family.jpg"
+                width={1376}
+                height={768}
+                crop="lx-crop-x-50"
+                alt={experience.photoAlt}
+                caption={text.illustration}
+              />
+            </div>
+          </div>
         </div>
       </section>
 

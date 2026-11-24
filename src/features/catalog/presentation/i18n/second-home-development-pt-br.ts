@@ -24,24 +24,57 @@ export const secondHomeDevelopmentMessages = {
     action: 'Conversar sobre uma oportunidade',
   },
   opportunity: {
-    title: { lead: 'Qual casa? Em qual destino? ', turn: 'Para quem?' },
-    paragraphs: [
-      'Para marcas, o desafio é traduzir sua identidade em uma casa em que o público se reconheça.',
-      'Para incorporadoras e investidores, é entender o que o público quer antes de escolher onde e como investir.',
+    title: { lead: 'As alternativas mudam. ', turn: 'A renúncia continua.' },
+    intro: 'No mercado de lazer, tudo gira em torno de três valores.',
+    values: 'Patrimônio. Liberdade. Pertencimento.',
+    tension:
+      'Você quer os três. As alternativas ainda costumam fazer você abrir mão de um desses valores para ter os outros.',
+    diagramAlt: 'Diagrama da tríade de valor: Patrimônio. Liberdade. Pertencimento.',
+    alternativesLabel: 'As alternativas',
+    alternatives: [
+      {
+        title: 'Imóvel próprio',
+        text: 'Entrega patrimônio e pertencimento. O uso fica concentrado em um destino, com responsabilidades de gestão e manutenção do imóvel.',
+      },
+      {
+        title: 'Hospedagem',
+        text: 'Hotéis e locações de temporada dão liberdade de destino. O pagamento cobre a estadia. Criar vínculo com o lugar costuma ser mais difícil.',
+      },
+      {
+        title: 'Copropriedade',
+        text: 'Entrega patrimônio com eficiência. Reunir liberdade e pertencimento na mesma experiência costuma ser mais difícil.',
+      },
+    ],
+    audiences: [
+      {
+        title: 'Para marcas',
+        paragraphs: [
+          'Uma marca forte quer ser reconhecida pelo que representa. Seu valor cresce quando o público volta a escolhê-la por essa identidade.',
+          'Eventos e ativações aproximam o público. Em encontros breves e parecidos, fica mais difícil criar uma lembrança que ele associe à marca.',
+        ],
+      },
+      {
+        title: 'Para incorporadoras e investidores',
+        paragraphs: [
+          'Quem incorpora quer vender cedo uma casa que o público deseje. Quem investe quer bom retorno em menos tempo e risco sob controle.',
+          'Terreno, infraestrutura e obra podem exigir muito capital antes das vendas. O prazo de retorno fica ligado ao ritmo de vendas de um só projeto.',
+        ],
+      },
     ],
   },
   experience: {
-    title: { lead: 'Da marca vista ', turn: 'à marca vivida.' },
+    title: { lead: 'Desenvolvimento descentralizado. ', turn: 'Guiado pela demanda.' },
     paragraphs: [
-      'A Luxtory reúne marcas, incorporadoras, investidores e especialistas para criar Second Homes sob demanda.',
-      'A identidade da marca dá origem ao conceito da casa. A Luxtory conduz a gestão de produto da pesquisa ao lançamento.',
-      'Investimento, obra e operação cabem aos parceiros responsáveis, conforme a estrutura de cada projeto.',
+      'A Luxtory reúne marcas, incorporadoras e investidores para desenvolver Second Homes em parceria com condomínios de lazer.',
+      'A Luxtory conduz o produto, da pesquisa ao lançamento. Os parceiros avaliam a viabilidade, definem o aporte e executam cada projeto.',
     ],
     photoAlt: 'Família reunida ao redor de uma fogueira em uma casa de lazer.',
-    equation: {
-      first: 'Identidade da marca',
-      second: 'Jeito de viver do público',
-      result: 'Um conceito de casa que dá forma à experiência.',
+    branded: {
+      title: { lead: 'Da marca vista ', turn: 'à marca vivida.' },
+      paragraphs: [
+        'Uma Branded Second Home é uma casa de lazer criada a partir da identidade da marca.',
+        'A identidade orienta a arquitetura, os ambientes e o jeito de receber. A marca passa a fazer parte desses momentos.',
+      ],
     },
   },
   partners: {

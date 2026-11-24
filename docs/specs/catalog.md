@@ -2227,3 +2227,19 @@ BR-019, BR-301). O exemplo Co-Owner usa oito Ações iguais, 1/8 (12,5%) por aci
 de Uso. Os limites são 12 em Alta / Super Alta e 32 em Média / Baixa. Cada categoria tem saldo próprio no
 calendário (01 §§8.1 e 9, BR-076 e BR-080–082). Validar a sequência, as cifras, a leitura em telas estreitas
 e os encaminhamentos entre as páginas.
+
+### 23.5. Tríade de valor e o desafio de cada público
+
+Revisão solicitada pelo fundador em 2026-11-23. Logo após a Hero, `#oportunidade` recupera a narrativa de renúncia da
+antiga Home e o SVG original `/diagrams/core/triade-valor-desejado.svg`. A comparação usa Imóvel próprio, Hospedagem e
+Copropriedade. O texto do comprador e o diagrama dividem a primeira faixa. Os desejos e obstáculos de marcas e de
+incorporadoras e investidores ocupam duas colunas equivalentes na segunda faixa. Em telas estreitas, a leitura segue
+comprador, diagrama, marcas e incorporadoras e investidores.
+
+`#brand-experience` apresenta desenvolvimento descentralizado e guiado pela demanda em parceria com condomínios de
+lazer. A Luxtory conduz o produto, e os parceiros assumem os papéis acordados para cada projeto. Uma Branded Second
+Home é explicada a partir da identidade da marca e da experiência de quem vai viver nela. Retorno, tempo de venda e
+risco são objetivos e fatores de decisão do investidor, conforme BR-035, BR-041 e BR-374.
+
+O aceite cobre a ordem dos 5Ps, as três alternativas, a fonte e a descrição acessível do diagrama, o alinhamento em
+desktop, a leitura em mobile e os fluxos de Proof e Push de §23.4.

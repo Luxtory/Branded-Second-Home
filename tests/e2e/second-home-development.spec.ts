@@ -26,6 +26,28 @@ test('o percurso B2B segue os 5Ps e mostra o Direito de Uso de oito Co-Owners (c
   await expect(
     page.locator('#inicio + #oportunidade + #brand-experience + #sob-demanda + #para-quem-vive'),
   ).toHaveCount(1);
+  const opportunity = page.locator('#oportunidade');
+  await expect(opportunity.getByRole('heading', { level: 2 })).toHaveText(
+    'As alternativas mudam. A renúncia continua.',
+  );
+  await expect(
+    opportunity.getByRole('list', { name: 'As alternativas' }).getByRole('heading'),
+  ).toHaveText(['Imóvel próprio', 'Hospedagem', 'Copropriedade']);
+  await expect(
+    opportunity.getByRole('img', {
+      name: 'Diagrama da tríade de valor: Patrimônio. Liberdade. Pertencimento.',
+    }),
+  ).toHaveAttribute('src', '/diagrams/core/triade-valor-desejado.svg');
+  await expect(opportunity.getByRole('heading', { level: 3 })).toHaveText([
+    'Imóvel próprio',
+    'Hospedagem',
+    'Copropriedade',
+    'Para marcas',
+    'Para incorporadoras e investidores',
+  ]);
+  await expect(page.locator('#brand-experience').getByRole('heading', { level: 2 })).toHaveText(
+    'Desenvolvimento descentralizado. Guiado pela demanda.',
+  );
   await expect(page.locator('#perguntas + #parceiros + #conversa')).toHaveCount(1);
   await expect(page.locator('#para-quem-vive h3')).toContainText([
     'Patrimônio',

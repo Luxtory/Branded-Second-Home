@@ -1,9 +1,45 @@
-.opportunity {
+.marketValues {
+  display: block;
+}
+
+.marketAlternatives {
+  display: grid;
+  gap: var(--lx-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.marketAlternatives > li {
+  display: grid;
+  gap: var(--lx-space-1);
+  padding-top: var(--lx-space-4);
+  border-top: var(--lx-border-hairline) solid var(--lx-color-rule);
+}
+
+.promiseMain,
+.brandStory {
   row-gap: var(--lx-space-6);
 }
 
-.opportunity > :global(.lx-section-head) {
-  margin-bottom: 0;
+.brandStory {
+  align-items: center;
+}
+
+.brandStory > :global(.lx-split__media) {
+  aspect-ratio: 1376 / 768;
+  min-height: 0;
+}
+
+@media (min-width: 48rem) {
+  .opportunityAudiences {
+    row-gap: var(--lx-space-4);
+  }
+
+  .opportunityAudiences > div {
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+  }
 }
 
 @media (min-width: 64rem) {
