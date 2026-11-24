@@ -43,8 +43,9 @@ uso próprio (ADR-0036 §2), imóveis fora do modelo de Second Home.
 - **K6** `luxchange_deposit` e **K7** `luxchange_exchange` no CHECK de `app.capability_activation`, sem linha. Depósito
   exige K6 (cessão) e K4 (lote). K7 fecha os movimentos de Créditos de Request e Direct (originação no aceite,
   Garantia, consumo, liberação) até o lastro das W21–W23: ativar a K4 para o depósito não abre o intercâmbio.
-- **Mesma transação:** toda escrita do depósito e toda noite do snapshot exigem o snapshot criado na transação corrente
-  (`economic_snapshot_night_transaction`, `luxchange_deposit_transaction`).
+- **Mesma transação:** toda escrita do depósito e toda noite do snapshot exigem o snapshot inserido pela transação
+  corrente — identidade pelo `xmin` do snapshot, não por tempo (`economic_snapshot_night_transaction`,
+  `luxchange_deposit_transaction`; ADR-0036 §3).
 - **`app.economic_snapshot_night`** `(operation_id, second_home_id, stay_date, prl_id)`, PK `(operation_id, stay_date)`,
   FK para `app.economic_snapshot`, `app.second_home_date` e `app.prl`; só-inserção; versão do PRL = a vigente no
   `resolved_at` (`app.prl_at`), mesma Second Home em todas as noites da operação.

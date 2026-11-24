@@ -44,6 +44,20 @@ BEGIN
   END IF;
 END $$;
 
+-- Identidade transacional do snapshot (auditoria da W20, 2ª rodada; ADR-0036 §3): o snapshot da operação foi inserido
+-- pela transação corrente. `now()` é só o início da transação — uma transação iniciada antes do snapshot de outra passaria
+-- num teste de tempo —, então a prova é o `xmin` da linha (o snapshot é só-inserção: nunca atualizado nem apagado, e
+-- travas não mudam o `xmin`) igual ao xid da transação corrente. `created_at >= now()` exclui uma coincidência de xid
+-- depois de um wraparound. Inserido dentro de savepoint, o `xmin` é o da subtransação: falha fechada (nenhum command de
+-- depósito usa savepoint).
+CREATE FUNCTION app.economic_snapshot_in_current_transaction(p_operation uuid) RETURNS boolean
+  LANGUAGE sql SET search_path = pg_catalog, pg_temp
+AS $$
+  SELECT EXISTS (SELECT 1 FROM app.economic_snapshot s
+                  WHERE s.operation_id = p_operation AND s.xmin = pg_current_xact_id()::xid
+                    AND s.created_at >= now())
+$$;
+
 -- Snapshot por noite (TECH-031, REQ-052; ADR-0036 §4; follow-up da ADR-0033 §4): a versão imutável do PRL de cada noite
 -- usada pela operação, lida pela FK (sem cópia de valor). Só-inserção.
 CREATE TABLE app.economic_snapshot_night (
@@ -62,18 +76,17 @@ CREATE INDEX economic_snapshot_night_prl_idx ON app.economic_snapshot_night (prl
 CREATE FUNCTION app.economic_snapshot_night_write() RETURNS trigger
   LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp
 AS $$
-DECLARE v_resolved_at timestamptz; v_created_at timestamptz; v_in_force uuid;
+DECLARE v_resolved_at timestamptz; v_in_force uuid;
 BEGIN
   PERFORM app.assert_operation_in_transaction(NEW.operation_id);
-  SELECT s.resolved_at, s.created_at INTO v_resolved_at, v_created_at
-    FROM app.economic_snapshot s WHERE s.operation_id = NEW.operation_id;
+  SELECT s.resolved_at INTO v_resolved_at FROM app.economic_snapshot s WHERE s.operation_id = NEW.operation_id;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'a snapshot night belongs to the snapshot of its operation'
       USING ERRCODE = 'check_violation', CONSTRAINT = 'economic_snapshot_night_snapshot';
   END IF;
-  -- Só na transação do próprio snapshot (`created_at` é carimbado depois do início dela): uma operação `pending`
-  -- reaproveitada noutra transação não acrescenta noites a um depósito já conferido no COMMIT (auditoria W20).
-  IF v_created_at < now() THEN
+  -- Só na transação que inseriu o snapshot (identidade, não tempo): uma operação `pending` reaproveitada noutra
+  -- transação — sequencial ou concorrente — não acrescenta noites a um depósito já conferido no COMMIT.
+  IF NOT app.economic_snapshot_in_current_transaction(NEW.operation_id) THEN
     RAISE EXCEPTION 'snapshot nights are recorded in the transaction of the snapshot'
       USING ERRCODE = 'check_violation', CONSTRAINT = 'economic_snapshot_night_transaction';
   END IF;
@@ -136,9 +149,8 @@ BEGIN
     RAISE EXCEPTION 'every deposited night is priced in the snapshot of its operation'
       USING ERRCODE = 'check_violation', CONSTRAINT = 'luxchange_deposit_snapshot';
   END IF;
-  -- Toda escrita do depósito na transação do snapshot, a mesma em que a completude é conferida no COMMIT.
-  IF NOT EXISTS (SELECT 1 FROM app.economic_snapshot s WHERE s.operation_id = p_operation AND s.created_at >= now())
-  THEN
+  -- Toda escrita do depósito na transação que inseriu o snapshot — a mesma em que a completude é conferida no COMMIT.
+  IF NOT app.economic_snapshot_in_current_transaction(p_operation) THEN
     RAISE EXCEPTION 'deposit writes happen in the transaction of the snapshot of their operation'
       USING ERRCODE = 'check_violation', CONSTRAINT = 'luxchange_deposit_transaction';
   END IF;
@@ -1005,6 +1017,8 @@ REVOKE ALL ON FUNCTION app.luxchange_invariant_breaches() FROM PUBLIC;
 
 -- Funções auxiliares só para os gatilhos, que rodam com o papel de quem escreve (`luxtory_app`); nenhum outro papel as
 -- executa (TECH-052; prontidão da W13).
+REVOKE ALL ON FUNCTION app.economic_snapshot_in_current_transaction(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION app.economic_snapshot_in_current_transaction(uuid) TO luxtory_app;
 REVOKE ALL ON FUNCTION app.assert_luxchange_deposit_active(), app.assert_luxchange_exchange_active(),
   app.luxchange_deposit_write(uuid, uuid, date),
   app.luxchange_deposit_close(uuid, app.date_custody), app.luxchange_deposit_open(app.date_custody),
@@ -1634,6 +1648,7 @@ DROP FUNCTION app.luxchange_deposit_release(uuid, app.date_occupancy, text);
 DROP FUNCTION app.luxchange_deposit_open(app.date_custody);
 DROP FUNCTION app.luxchange_deposit_close(uuid, app.date_custody);
 DROP FUNCTION app.luxchange_deposit_write(uuid, uuid, date);
+DROP FUNCTION app.economic_snapshot_in_current_transaction(uuid);
 DROP TABLE app.economic_snapshot_night;
 DROP FUNCTION app.economic_snapshot_night_write();
 DROP FUNCTION app.assert_luxchange_exchange_active();

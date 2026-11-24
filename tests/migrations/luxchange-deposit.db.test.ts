@@ -458,4 +458,44 @@ describe('W20 — ativação do depósito não abre Request/Direct nem fatos for
     // A operação forjada termina coerente: nenhuma cessão ou lote fora do depósito conferido.
     await d.c.h.database.pool.query(`UPDATE app.operation SET state = 'committed' WHERE id = $1`, [op]);
   });
+
+  it('[REQ-060][INV-2] concorrência: transação iniciada antes do snapshot de outra não reaproveita a operação pendente', async () => {
+    // B começa primeiro: o `now()` de B (início da transação) fica anterior ao snapshot que A ainda vai gravar.
+    const b = await connect(d.c.h.database.appUrl);
+    let op = '';
+    try {
+      await b.query('BEGIN');
+      await b.query('SELECT now()');
+      // A: depósito completo de uma noite, comitado com a operação ainda `pending` (servidor comprometido).
+      op = await inOperation(
+        'deposit_capacity',
+        async (client, id) => {
+          await recordDepositSnapshot(client, id, owner.homeId, [depositDate(4)]);
+          await insertDepositLot(client, id, owner.partyId, expectedCredits(BigInt(PRICE)));
+          await cedeOwnerNight(client, id, owner.homeId, depositDate(4));
+        },
+        { commitOperation: false },
+      );
+      // B, depois do COMMIT de A: acrescenta outra noite ao snapshot de A e a cede, sem Créditos.
+      await expect(
+        (async () => {
+          await b.query(
+            `INSERT INTO app.economic_snapshot_night (operation_id, second_home_id, stay_date, prl_id)
+             SELECT $1, $2, $3::date, v.id
+               FROM app.economic_snapshot s, app.prl_at($2, $3::date, s.resolved_at) v WHERE s.operation_id = $1`,
+            [op, owner.homeId, depositDate(5)],
+          );
+          await cedeOwnerNight(b, op, owner.homeId, depositDate(5));
+          await b.query('COMMIT');
+        })(),
+      ).rejects.toEqual(constraint('economic_snapshot_night_transaction'));
+    } finally {
+      await b.query('ROLLBACK').catch(() => undefined);
+      await b.end();
+    }
+    expect(
+      (await activeCustody(d.c.h.database.pool, owner.homeId, [depositDate(5)]))[0]!.holder_kind,
+    ).toBe('owner');
+    await d.c.h.database.pool.query(`UPDATE app.operation SET state = 'committed' WHERE id = $1`, [op]);
+  });
 });

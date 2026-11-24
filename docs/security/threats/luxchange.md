@@ -46,7 +46,7 @@ completude adiada, não só no código.
 | T-2010 | **E** Elevation of privilege | CSRF na rota ou na Server Action | Rota exige mesma origem (TECH-100) e `Idempotency-Key`; Server Actions protegidas pelo Next; nenhum efeito por GET |
 | T-2011 | **T** Tampering | Replay ou duplo clique cria dois depósitos | Idempotência (ADR-006); travas das noites; segundo depósito vê a noite cedida → `ERR_CAPACITY_UNAVAILABLE` |
 | T-2012 | **E** Elevation of privilege | Com a K4 ligada para o depósito, servidor comprometido origina Créditos por aceite forjado ou gasta Créditos por Garantia/Direct forjados (W21–W23 ainda sem lastro) | K7 `luxchange_exchange` (sem linha) em `credit_lot_originate` (aceite) e `credit_entry_write` (send/accept/direct/withdraw/reject); teste adversarial reproduz e prova a recusa |
-| T-2013 | **T** Tampering | Operação `pending` reaproveitada noutra transação acrescenta noites/cessões a um depósito já conferido no COMMIT | Noites do snapshot e escritas do depósito só na transação do snapshot (`created_at ≥ now()`); teste adversarial |
+| T-2013 | **T** Tampering | Operação `pending` reaproveitada noutra transação — sequencial ou iniciada antes do snapshot de outra (concorrente) — acrescenta noites/cessões a um depósito já conferido no COMMIT | Noites do snapshot e escritas do depósito só na transação que inseriu o snapshot (`xmin` do snapshot = xid corrente; snapshot só-inserção); testes adversariais sequencial e concorrente com duas conexões `luxtory_app` |
 
 ## 5. Abuse cases
 

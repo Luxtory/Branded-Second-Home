@@ -41,10 +41,14 @@ decisão:
    `owner` da holding Owner vigente, sem ocupação; ou `reserved_right` da reserva cedida na mesma operação),
    `date_custody_open` (sucessora `luxtory/inventory/luxchange_cession` com `authorization_ref = 'deposit_capacity:<op>'`)
    e `date_occupancy_release` (só `ceded`, da reserva cedida na mesma operação). Uma operação de depósito nunca usa os
-   caminhos da W13 e vice-versa. **Toda escrita do depósito e toda noite do snapshot acontecem na transação do próprio
-   snapshot** (`economic_snapshot.created_at ≥ now()`): uma operação `pending` reaproveitada noutra transação (o papel
-   da aplicação consegue comitar sem marcar a operação, ADR-0024 §3) não acrescenta noites nem cessões a um depósito
-   já conferido no COMMIT (auditoria da W20).
+   caminhos da W13 e vice-versa. **Toda escrita do depósito e toda noite do snapshot acontecem na transação que inseriu
+   o snapshot** (`app.economic_snapshot_in_current_transaction`: `xmin` da linha do snapshot = xid da transação
+   corrente, mais `created_at ≥ now()` contra coincidência de xid após wraparound). Uma operação `pending` reaproveitada
+   noutra transação (o papel da aplicação consegue comitar sem marcar a operação, ADR-0024 §3) não acrescenta noites nem
+   cessões a um depósito já conferido no COMMIT — nem em sequência, nem em concorrência. A primeira versão comparava só
+   tempo (`created_at ≥ now()`); como `now()` é o início da transação, uma transação iniciada antes do snapshot de outra
+   passava (reproduzido na 2ª rodada da auditoria). O snapshot é só-inserção, então o `xmin` não muda; inserido em
+   savepoint, falha fechada (nenhum command de depósito usa savepoint).
 4. **Snapshot por noite.** `app.economic_snapshot_night(operation_id, second_home_id, stay_date, prl_id)`, só-inserção,
    FK para a versão imutável de `app.prl` e para a noite selada; o banco confere que a versão é a vigente
    (`app.prl_at`) no `resolved_at` do snapshot e que todas as noites são da mesma Second Home. O resolvedor
@@ -122,3 +126,12 @@ decisão:
 - **Banco calculando os Créditos sozinho.** O servidor apresentaria um valor e o banco gravaria outro sem conferência.
   Rejeitada em favor do cálculo no servidor conferido pelo banco (mesmo padrão da validade, ADR-0033).
 - **Uma consulta de PRL por noite.** Vários instantes de resolução e travas repetidas. Rejeitada.
+- **Mesma transação por tempo (`created_at ≥ now()`).** `now()` é o início da transação: uma transação iniciada antes do
+  snapshot de outra passava. Substituída pela identidade do `xmin` (auditoria, 2ª rodada).
+- **Completude reexecutada a cada noite inserida** (gatilho adiado em `economic_snapshot_night`). Correta, mas O(n²) no
+  COMMIT até 366 noites e dependente do argumento de que todo fato novo exige noite nova. Rejeitada.
+- **Coluna com o xid no snapshot.** Altera a tabela da W17 já aplicada em Production com a mesma semântica do `xmin`.
+  Rejeitada.
+- **`assert_operation_in_transaction` por `xmin` da operação, para todas as waves.** A linha da operação é atualizável
+  pelo `luxtory_app` (o `xmin` pode ser renovado por um UPDATE) e o impacto alcançaria todas as waves. Rejeitada.
+- **Marcador de transação por GUC ou advisory lock.** Forjável pelo próprio `luxtory_app`. Rejeitado.
