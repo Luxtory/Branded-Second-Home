@@ -2243,3 +2243,12 @@ risco são objetivos e fatores de decisão do investidor, conforme BR-035, BR-04
 
 O aceite cobre a ordem dos 5Ps, as três alternativas, a fonte e a descrição acessível do diagrama, o alinhamento em
 desktop, a leitura em mobile e os fluxos de Proof e Push de §23.4.
+
+### 23.6. Interlocução B2B
+
+Revisão solicitada pelo fundador em 2026-11-24. Em `#oportunidade`, marcas, incorporadoras e investidoras têm um
+bloco próprio com objetivo e obstáculo, nessa ordem. A tríade vem em seguida e descreve os desejos dos clientes
+dessas empresas. O SVG original e as três alternativas de §23.5 seguem como referência visual e editorial.
+
+A página se dirige às empresas ao apresentar a parceria e o contato. Na prova de compra, uso e Co-Owner, o comprador
+é descrito em terceira pessoa. Verificar ordem e perspectiva na jornada e alinhamento dos três blocos no desktop.

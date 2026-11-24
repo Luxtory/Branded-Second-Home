@@ -31,17 +31,6 @@
   min-height: 0;
 }
 
-@media (min-width: 48rem) {
-  .opportunityAudiences {
-    row-gap: var(--lx-space-4);
-  }
-
-  .opportunityAudiences > div {
-    grid-row: span 3;
-    grid-template-rows: subgrid;
-  }
-}
-
 @media (min-width: 64rem) {
   .coOwnerFigures {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -52,12 +41,21 @@
     border-top: 0;
   }
 
+  .opportunityAudiences,
   .partnerCards {
     row-gap: var(--lx-space-4);
   }
 
+  .opportunityAudiences > li,
+  .partnerCards > li {
+    grid-template-rows: subgrid;
+  }
+
+  .opportunityAudiences > li {
+    grid-row: span 3;
+  }
+
   .partnerCards > li {
     grid-row: span 4;
-    grid-template-rows: subgrid;
   }
 }

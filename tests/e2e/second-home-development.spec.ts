@@ -28,7 +28,7 @@ test('o percurso B2B segue os 5Ps e mostra o Direito de Uso de oito Co-Owners (c
   ).toHaveCount(1);
   const opportunity = page.locator('#oportunidade');
   await expect(opportunity.getByRole('heading', { level: 2 })).toHaveText(
-    'As alternativas mudam. A renúncia continua.',
+    'O que está em jogo em cada projeto.',
   );
   await expect(
     opportunity.getByRole('list', { name: 'As alternativas' }).getByRole('heading'),
@@ -39,16 +39,19 @@ test('o percurso B2B segue os 5Ps e mostra o Direito de Uso de oito Co-Owners (c
     }),
   ).toHaveAttribute('src', '/diagrams/core/triade-valor-desejado.svg');
   await expect(opportunity.getByRole('heading', { level: 3 })).toHaveText([
-    'Imóvel próprio',
-    'Hospedagem',
-    'Copropriedade',
     'Para marcas',
-    'Para incorporadoras e investidores',
+    'Para incorporadoras',
+    'Para investidoras',
+    'As alternativas mudam. A renúncia continua.',
   ]);
+  await expect(opportunity.getByText(/^Seus clientes querem os três\./)).toBeVisible();
   await expect(page.locator('#brand-experience').getByRole('heading', { level: 2 })).toHaveText(
     'Desenvolvimento descentralizado. Guiado pela demanda.',
   );
   await expect(page.locator('#perguntas + #parceiros + #conversa')).toHaveCount(1);
+  await expect(page.locator('#para-quem-vive h2')).toHaveText(
+    'O que a casa entrega aos seus clientes.',
+  );
   await expect(page.locator('#para-quem-vive h3')).toContainText([
     'Patrimônio',
     'Liberdade',
@@ -56,6 +59,7 @@ test('o percurso B2B segue os 5Ps e mostra o Direito de Uso de oito Co-Owners (c
     'Formas de aquisição',
   ]);
   await expect(page.locator('#para-quem-vive .lx-comparison h4')).toHaveText(['Owner', 'Co-Owner']);
+  await expect(page.locator('#para-quem-vive').getByText(/^O comprador adquire/)).toHaveCount(2);
   const example = page.locator('#exemplo-co-owner');
   await expect(example.locator('dt')).toHaveText([
     'Participação',

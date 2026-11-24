@@ -108,48 +108,52 @@ export function SecondHomeDevelopmentPage() {
         aria-labelledby={titleId(sections.opportunity)}
       >
         <div className="lx-container">
-          <div className="lx-triad-comparison__top">
-            <div className="lx-triad-comparison__copy">
-              <h2 id={titleId(sections.opportunity)} className="lx-headline">
-                <HeadlineText headline={opportunity.title} />
-              </h2>
-              <p className="lx-body">
-                {nb(opportunity.intro)}{' '}
-                <strong className={styles.marketValues}>{nb(opportunity.values)}</strong>
-              </p>
-              <p className="lx-body">{nb(opportunity.tension)}</p>
-              <ul
-                className={styles.marketAlternatives}
-                role="list"
-                aria-label={opportunity.alternativesLabel}
-              >
-                {opportunity.alternatives.map(({ title, text }) => (
-                  <li key={title}>
-                    <h3 className="lx-display-s">{nb(title)}</h3>
-                    <p className="lx-body">{nb(text)}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <figure className="lx-triad-comparison__diagram">
-              {/* eslint-disable-next-line @next/next/no-img-element -- Serve the original Home diagram with its geometry and CSP intact. */}
-              <img
-                src="/diagrams/core/triade-valor-desejado.svg"
-                alt={opportunity.diagramAlt}
-                width={723}
-                height={640}
-                loading="lazy"
-              />
-            </figure>
-          </div>
+          <SectionHeading section={sections.opportunity} title={opportunity.title} />
+          <ul
+            className={`lx-siblings lx-siblings--trio ${styles.opportunityAudiences}`}
+            role="list"
+          >
+            {opportunity.audiences.map(({ title, paragraphs }) => (
+              <li key={title} className="lx-siblings__item lx-stack">
+                <h3 className="lx-display-m">{nb(title)}</h3>
+                <Paragraphs lines={paragraphs} />
+              </li>
+            ))}
+          </ul>
           <div className="lx-section-group">
-            <div className={`lx-comparison lx-comparison--divided ${styles.opportunityAudiences}`}>
-              {opportunity.audiences.map(({ title, paragraphs }) => (
-                <div key={title} className="lx-comparison__item">
-                  <h3 className="lx-display-m">{nb(title)}</h3>
-                  <Paragraphs lines={paragraphs} />
-                </div>
-              ))}
+            <div className="lx-triad-comparison__top">
+              <div className="lx-triad-comparison__copy">
+                <h3 className="lx-headline">
+                  <HeadlineText headline={opportunity.marketTitle} />
+                </h3>
+                <p className="lx-body">
+                  {nb(opportunity.intro)}{' '}
+                  <strong className={styles.marketValues}>{nb(opportunity.values)}</strong>
+                </p>
+                <p className="lx-body">{nb(opportunity.tension)}</p>
+                <ul
+                  className={styles.marketAlternatives}
+                  role="list"
+                  aria-label={opportunity.alternativesLabel}
+                >
+                  {opportunity.alternatives.map(({ title, text }) => (
+                    <li key={title}>
+                      <h4 className="lx-display-s">{nb(title)}</h4>
+                      <p className="lx-body">{nb(text)}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <figure className="lx-triad-comparison__diagram">
+                {/* eslint-disable-next-line @next/next/no-img-element -- Serve the original Home diagram with its geometry and CSP intact. */}
+                <img
+                  src="/diagrams/core/triade-valor-desejado.svg"
+                  alt={opportunity.diagramAlt}
+                  width={723}
+                  height={640}
+                  loading="lazy"
+                />
+              </figure>
             </div>
           </div>
         </div>
