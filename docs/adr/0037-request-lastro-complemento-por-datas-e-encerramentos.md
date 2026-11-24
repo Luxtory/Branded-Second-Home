@@ -39,7 +39,8 @@ em Production, nenhuma capability ativa):
 
 - `app.luxchange_request` — `id`, `operation_id` (único; a operação `send_request`), `requester_party_id`,
   `holder_party_id`, `holder_holding_id`, `second_home_id`, `checkin`, `checkout`, `credits_required` (`N`),
-  `guarantee_credits` (`G`), `complement_credits` (`P`), `complement_consumption` (`C`), `complement_excess` (`E`),
+  `guarantee_credits` (`G`), `complement_credits` (`P`), `complement_consumption` (`C = N − G`) e `complement_excess`
+  (`E = P − C`) como colunas geradas,
   `sent_at`, `expires_at`, `state`, `closure_reason`, `closed_by_operation`, `closed_at`. `state` é projeção escrita só
   pelo gatilho de `app.luxchange_request_transition` (só-inserção: `request_id`, `operation_id`, `from_state`,
   `to_state`, `reason`, `evidence_kind`, `evidence_id`, `created_at`; um único evento terminal por Request).
@@ -160,14 +161,17 @@ não pode mais ser aceita.
 | Mudança administrativa de elegibilidade | não é recusada; a prova torna o compromisso não efetivo no mesmo instante | nenhum bloqueio residual; o encerramento é materializado depois |
 | Atos no limite do prazo sobre a mesma noite | serializam pela trava da noite; custódia ativa única | só um ato vence |
 
-**Critérios verificáveis (E1, PostgreSQL real, duas ou mais conexões, cada cenário repetido ao menos 50 vezes com
-intercalações forçadas):** todos os fluxos acima, mais Request vencida sem execução do cron, depósito após a expiração,
-retirada × aceite × expiração e tentativa de dupla cessão ou dupla originação. Aceita-se a etapa só se: nenhuma execução
-termina em `40P01` (deadlock) ou em `lock_timeout`; cada cenário de corrida tem exatamente um vencedor com o estado final
-esperado; nenhuma data fica recusada depois de `expires_at` ou de inelegibilidade provada sem job, com o índice físico
-ainda `active`; as invariantes do banco ficam vazias. Toda função nova declara as travas que toma, conferidas contra a
-ordem estendida da TECH-053 (Request 1 → Membership 3 → Ação 4 → noite 5 → reserva → custódia 6 → lote 7 → pagamento 8)
-por teste estático do `LockSequence`.
+**Critérios verificáveis (E1).** Testes de banco determinísticos, com PostgreSQL real e duas ou mais conexões em
+intercalação controlada — o padrão dos testes de concorrência das W13–W20: uma transação trava e espera, a outra tenta, a
+ordem dos COMMIT é imposta —, cobrindo os fluxos acima, a Request vencida sem execução do cron, o depósito depois da
+expiração, retirada × aceite × expiração e a tentativa de dupla cessão ou dupla originação; repetição proporcional ao
+risco só nos cenários de limite de prazo. A etapa é aceita quando: nenhuma cessão, originação ou utilização de Créditos
+se duplica; nenhuma data fica recusada depois de perder a eficácia do compromisso, com o índice físico ainda `active`;
+nenhum encerramento ou estorno se duplica; nenhuma operação fica parcialmente confirmada; o estado final é o esperado e as
+invariantes do banco ficam vazias, inclusive depois do retry do executor. Deadlock ou timeout recuperado pelo retry com a
+mesma chave (TECH-053) não é falha econômica, mas cada ocorrência em teste é investigada; a ordem estendida da TECH-053
+(Request 1 → Membership 3 → Ação 4 → noite 5 → reserva → custódia 6 → lote 7 → pagamento 8) continua imposta em tempo de
+execução pelo `LockSequence` existente.
 
 ### 7. Encerramentos
 
@@ -206,11 +210,17 @@ condições:
 5. **Consumo.** `held → consumed` só das entradas `hold` da operação de envio da mesma Request, por inteiro;
    `available → consumed` só do lote do item 4 (`origin_operation_id` = esta operação) e exatamente `C`; `E` permanece
    `available`.
-6. **Cedente (hipótese de produto, sujeita à confirmação do fundador).** Lote do detentor: quantidade `N`, calculada com
-   os valores vinculantes do envio mesmo que o PRL mude depois; mesma originação e validade do envio; o detentor vê
-   esses valores antes de aceitar. Capacidade solicitada cedida (`request_destination:<request>`) e reservada
+6. **Cedente (hipótese de produto, sujeita à confirmação do fundador).** Lote do detentor com a quantidade devida pela
+   capacidade solicitada: Σ PRL das noites solicitadas × multiplicador, ambos do snapshot do envio, mesmo que o PRL mude
+   depois (BR-201, BR-212). O banco recalcula e confere essa quantidade com a mesma soma que a W20 já confere no depósito
+   (`app.luxchange_deposit_quantity_matches`, aplicada às noites e ao multiplicador do snapshot do envio), sem cálculo
+   novo. Hoje ela é igual a `N` porque os Créditos necessários são a mesma soma (`01` §20) e nenhum canônico prevê
+   benefício sobre eles — os benefícios de Membership da BR-232 alcançam só o Fee; a conferência do cedente é feita pela
+   fórmula do PRL, nunca por igualdade com o débito, para que um benefício futuro sobre o débito não altere a
+   contraprestação nem o inverso. Originação só no aceite, com validade contada desse instante; o detentor vê a
+   quantidade antes de aceitar. Capacidade solicitada cedida (`request_destination:<request>`) e reservada
    (`luxchange_request`, TECH-023); apuração do Fee só da Request aceita; concorrentes encerradas (TECH-024).
-7. **Prova.** Completude no COMMIT contra o plano do §9; invariantes após todo teste; replay pelo executor;
+7. **Prova.** Completude no COMMIT contra os termos vinculantes do §9; invariantes após todo teste; replay pelo executor;
    `UNIQUE (request_id)` na aceitação e `UNIQUE (origin_operation_id, party_id)` nos lotes.
 8. **Rastreabilidade.** Noite do complemento → `custody_id` cedida → custódia sucessora (`parent_custody_id`) → lote do
    solicitante (mesma operação, party) → consumo (`parent_entry_id`/operação).
@@ -221,17 +231,20 @@ condições:
 |---|---|---|---|
 | `economic_snapshot_write` | `resolved_at` na transação | inalterado: o snapshot do aceite só fixa o instante | intacto |
 | `economic_snapshot_parameter_write` | versão vigente em `resolved_at` | inalterado: o aceite não grava parâmetros vinculantes; lê os do envio pela Request | intacto |
-| `credit_lot_originate` | party que age; validade do snapshot da origem; aceite só com K7 | ramo novo para `accept_request` com aceitação: cedente (party que age) e solicitante (party da Request, só com compromissos consumidos pela operação); instante do snapshot do aceite; quantidades e meses do snapshot do envio; K4 + K7 (+ K6 com complemento) | ramo do depósito inalterado |
+| `credit_lot_originate` | party que age; validade do snapshot da origem; aceite só com K7 | ramo novo para `accept_request` com aceitação: cedente (party que age; Σ PRL das noites solicitadas × multiplicador do envio) e solicitante (party da Request, só com compromissos consumidos pela operação; `P`); instante do snapshot do aceite; quantidades e meses do snapshot do envio; K4 + K7 (+ K6 com complemento) | ramo do depósito inalterado |
 | `credit_entry_write` | `held → consumed` com qualquer `accept_request`; `available → consumed` só `create_direct` | `held → consumed` só da Garantia da Request aceita; `available → consumed` do lote da mesma operação e só `C` | — |
 | `date_custody_close/open`, `date_occupancy_release`, transição `cession` | ramos só de `deposit_capacity` | ramos de `accept_request` só para compromissos efetivos da Request aceita (`request_complement`) e para a capacidade solicitada (`request_destination`) | ramos do depósito inalterados |
 | `settlement` (W19) | `accept_request` + Fee de `send_request` | Fee da operação de envio da Request aceita | — |
 
 ### 9. Entrega estrutural da W21 para o aceite
 
-`app.luxchange_request_acceptance_plan(request_id, accepted_at)` (somente leitura) e `planCompositeAcceptance` no domínio,
-com teste cruzado: noites a ceder (com custódia e reserva), `P`, `G`, `C`, `E`, `N` do cedente, validade, `expires_at` dos
-lotes para o `accepted_at` dado e as versões do envio. A W21 não cria nenhum ramo de escrita do aceite; a regra "aceite só
-com a K7" (ADR-0036 §7) permanece até a W22.
+Os termos vinculantes do aceite são gravados no envio e conferidos pelo banco nesse momento: `N`, `G`, `P`, `C` e `E` na
+Request; noites solicitadas e do complemento com custódia, reserva e versão do PRL; multiplicador e validade pelo
+snapshot do envio. O domínio calcula para a prévia e o banco recalcula e confere na inserção (padrão do Fee e do
+depósito); no aceite não há recálculo nem segundo planejador — a W22 lê esses termos e confere os efeitos contra eles. A
+W21 prova estruturalmente, em testes de banco, que os termos gravados bastam para recompor todos os efeitos do aceite nos
+três cenários (`G > 0` com `E = 0`; `G = 0` com `E > 0`; sem complemento), sem função de produção nova. A W21 não cria
+nenhum ramo de escrita do aceite; a regra "aceite só com a K7" (ADR-0036 §7) permanece até a W22.
 
 ### 10. Capabilities
 
@@ -292,7 +305,8 @@ Membership elegível, com limite de taxa. Nunca PRL em reais; Créditos potencia
 - Nenhuma data cedida sem aceite; nenhum Crédito de data não cedida; nenhum saldo fictício; depósito da W20 intacto.
 - Prazo e exclusividade decididos pelo relógio do banco; nenhum bloqueio residual por atraso de job.
 - Encerramentos e estornos nunca presos por chave.
-- O aceite da W22 nasce com contrato, plano e testes estruturais; a regra de composição pode mudar sem mudar o aceite.
+- O aceite da W22 nasce com contrato e termos vinculantes conferidos no envio; a regra de composição pode mudar sem
+  mudar o aceite.
 
 ### Negative
 
@@ -308,8 +322,8 @@ Membership elegível, com limite de taxa. Nunca PRL em reais; Créditos potencia
 | Escrita forjada pelo `luxtory_app` | regras nos gatilhos; completude no COMMIT; `xmin`; invariantes após todo teste; testes adversariais |
 | Corrida na expiração | predicado efetivo pelo relógio do banco; materialização sob trava da classe 1; critérios do §6 |
 | Regressão das waves anteriores | ramos antes dos caminhos; testes de preservação; `db:check` |
-| Divergência domínio × banco | dupla implementação com teste cruzado (padrão do Fee e do depósito) |
-| Complexidade do aceite composto | plano somente leitura na W21; checkpoint dedicado na W22 |
+| Divergência domínio × banco | o domínio calcula para a prévia; o banco recalcula e confere no envio (padrão do Fee e do depósito); no aceite, nenhum recálculo |
+| Complexidade do aceite composto | termos vinculantes gravados e conferidos no envio; checkpoint dedicado na W22 |
 
 ## Alternatives considered
 

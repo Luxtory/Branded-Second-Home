@@ -31,8 +31,10 @@ proposta desta E0 é decisão aprovada antes da autorização expressa do fundad
 2. `01` v10.9 — **mudança de alcance a sinalizar:** os esclarecimentos delimitam, para a oferta sob condição, o alcance de
    "outro compromisso econômico incompatível" (BR-170, BR-171) e de "compromissos anteriormente constituídos" (BR-344),
    preservando as obrigações já constituídas pela Request. Sem nova BR.
-3. **Hipótese de produto (PD-007 ampliado):** Créditos do membro solicitado calculados com os valores vinculantes do envio,
-   ainda que o PRL mude depois, conhecidos por ele antes de aceitar.
+3. **Hipótese de produto (PD-007 ampliado), ainda não ratificada:** Créditos do membro solicitado = Σ PRL das noites
+   solicitadas × multiplicador, ambos do envio, ainda que o PRL mude depois; originados no aceite, com validade desse
+   instante; conhecidos por ele antes de aceitar; conferidos pelo banco pela fórmula do PRL
+   (`app.luxchange_deposit_quantity_matches`, já existente), não por igualdade com o débito.
 
 ## Diagnóstico E0
 
@@ -49,7 +51,7 @@ proposta desta E0 é decisão aprovada antes da autorização expressa do fundad
 
 | W21 | W22 | W23 |
 |---|---|---|
-| tabelas da Request, noites, complemento, consentimento e política no snapshot; lastro e completude do envio; encerramentos com prova; predicado de compromisso efetivo; ramos de recusa nas funções das W12/W13/W20; contrato das capabilities; plano somente leitura do aceite | aceitação; cessão do complemento e da capacidade solicitada; lotes do solicitante e do cedente; consumo da Garantia e de `C`; reserva; apuração do Fee; encerramento das concorrentes; recusa; troca da regra "aceite só com a K7" pelo lastro | Direct |
+| tabelas da Request, noites, complemento, consentimento e política no snapshot; lastro e completude do envio; encerramentos com prova; predicado de compromisso efetivo; ramos de recusa nas funções das W12/W13/W20; contrato das capabilities; termos vinculantes do aceite gravados e conferidos no envio | aceitação; cessão do complemento e da capacidade solicitada; lotes do solicitante e do cedente; consumo da Garantia e de `C`; reserva; apuração do Fee; encerramento das concorrentes; recusa; troca da regra "aceite só com a K7" pelo lastro | Direct |
 | `send_request`, `withdraw_request`, `expire_requests` e `close_ineligible_request` (job + consumidor); guard; orquestração do pagamento; eventos, notificações, auditoria | `accept_request`, `reject_request`; telas do detentor | `create_direct` |
 | telas: nova solicitação, complemento por datas, revisão e aceites, pagamento, resultado, minhas solicitações, recebidas (só leitura), "comprometida" nas telas de reserva e depósito, Carteira com Créditos potenciais | — | — |
 
@@ -62,7 +64,7 @@ Fora de todas: ativação, PSP real, cancelamento pós-aceite (⛔ P-11), dados 
 | E0 | esta entrega documental: canônicos propostos, ADR-0037, emenda da ADR-0036, índice de ADRs, este plano, W20 ✅ e emenda proposta no plano de waves, nota de proposta no `CLAUDE.md` | **C0:** aprovação expressa dos textos; só então os status mudam de "PROPOSTA" para "final" e as referências do `CLAUDE.md` passam às novas versões |
 | E0b | documental, depois do C0 e antes da migration: spec `luxchange` (Request e complemento), STRIDE `luxchange` | revisão junto do C1 |
 | E1 | migration única (72) + testes de banco, corrida, tempo, forja e preservação + `db:check` | **C1:** revisão da migration antes de qualquer código de aplicação |
-| E2 | domínio, commands, guard, pagamento, job, consumidor, eventos, notificações, auditoria; plano do aceite com teste cruzado | **C2** |
+| E2 | domínio, commands, guard, pagamento, job, consumidor, eventos, notificações, auditoria | **C2** |
 | E3 | OpenAPI/AsyncAPI → rotas → telas; E2E 390/1440 | **C3:** revisão renderizada |
 | E4 | `verify`, `test:e2e`, `trace --expect REQ-062,PD-005,PD-007,PD-012`, CHANGELOG, runbook, NOTES; PR draft; CI | **C4:** GO/HOLD |
 
@@ -83,10 +85,14 @@ Fora de todas: ativação, PSP real, cancelamento pós-aceite (⛔ P-11), dados 
 - `[TECH-072]` lote vencido em Garantia volta como `expired`.
 - `[ADR-0037 §10]` com K4, K5 e K7 fechadas, encerramentos e estornos concluem; envios, Garantias e compromissos novos são
   recusados.
-- `[ADR-0037 §9]` plano do aceite igual no domínio e no banco nos três cenários (`G > 0` com `E = 0`; `G = 0` com `E > 0`;
-  sem complemento).
-- `[CONC-13]`…`[CONC-18]` e os critérios verificáveis da ADR-0037 §6 (PostgreSQL real, duas ou mais conexões, 50
-  repetições por cenário, nenhum `40P01` nem `lock_timeout`, exatamente um vencedor, invariantes vazias).
+- `[ADR-0037 §9]` termos vinculantes do aceite gravados no envio (`N`, `G`, `P`, `C`, `E`, noites com custódia e PRL,
+  multiplicador e validade) iguais ao recálculo do banco e suficientes para recompor os efeitos do aceite nos três
+  cenários (`G > 0` com `E = 0`; `G = 0` com `E > 0`; sem complemento); a quantidade do cedente é conferida pela fórmula
+  do PRL, não por igualdade com o débito.
+- `[CONC-13]`…`[CONC-18]` e os critérios da ADR-0037 §6: intercalações controladas com PostgreSQL real e duas ou mais
+  conexões; nenhuma dupla cessão, originação, utilização, encerramento ou estorno; nenhuma data recusada depois de perder
+  a eficácia do compromisso; nenhuma confirmação parcial; estado final e invariantes corretos inclusive depois do retry do
+  executor.
 
 ## Riscos
 

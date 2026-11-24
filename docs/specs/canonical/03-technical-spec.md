@@ -743,7 +743,7 @@ Valores (exatos, `numeric`; versões do snapshot do envio):
 
 `potencial(u) = Σ_n prl.amount_minor(n) ÷ 10^expoente × multiplicador`
 
-`P = Σ_u potencial(u)` · `N = Créditos necessários` · `G = max(0, N − P)` · consumo do lote do complemento `C = N − G` · excedente `E = P − C`.
+`P = Σ_u potencial(u)` · `N = Créditos necessários = Σ PRL das noites solicitadas × multiplicador` · `G = max(0, N − P)` · consumo do lote do complemento `C = N − G` · excedente `E = P − C`.
 
 Seleção: se `P ≥ N`, então `P − min_u potencial(u) < N`.
 
@@ -759,7 +759,7 @@ Aceite (uma transação; tudo conferido no banco e no COMMIT):
 2. cessão de cada noite de compromisso efetivo, com a custódia registrada no compromisso ainda ativa, reserva Co-Owner `confirmed`, `luxchange_cession` com `request_complement:<request>` e transição `cession`, sem movimento do Direito de Uso; compromisso → `consumed`;
 3. lote do solicitante: quantidade `P` recalculada pelo banco com as versões do envio; `originated_at` = `resolved_at` do aceite; `expires_at = originated_at + validade do envio`;
 4. consumo de toda a Garantia restante e de exatamente `C` do lote do item 3; `E` permanece `available`;
-5. lote do cedente: quantidade `N`, mesma originação e mesma validade do envio.
+5. lote do cedente: Σ PRL das noites solicitadas × multiplicador, ambos do snapshot do envio, recalculada e conferida pelo banco pela fórmula do PRL — nunca por igualdade com o débito do solicitante; mesma originação e mesma validade do envio.
 
 Encerramento pré-aceite: compromissos `released`; nenhuma custódia, reserva, ledger do Direito de Uso ou lote.
 

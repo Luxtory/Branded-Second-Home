@@ -1456,7 +1456,7 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   - Lastro da Request no banco (Request, noites, complemento, consentimento, política no snapshot, completude no
     COMMIT); compromisso efetivo pelo relógio do banco e por inelegibilidade provada; materialização idempotente por
     `after()`, consumidor e Cron diário, nunca como única proteção; chaves fechadas só impedem compromisso novo.
-  - W22 passa a incluir o aceite composto do contrato da ADR-0037 §8; a W21 entrega só o plano somente leitura.
+  - W22 passa a incluir o aceite composto do contrato da ADR-0037 §8; a W21 grava e confere no envio os termos vinculantes do aceite.
   - Goal proposto (depois do C0): `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect
     REQ-062,PD-005,PD-007,PD-012 exits 0, stop after 5 tries`.
 
