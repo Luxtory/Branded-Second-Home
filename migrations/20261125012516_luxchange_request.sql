@@ -202,9 +202,10 @@ $$;
 
 -- Por que a Request não pode mais ser aceita (TECH-024, TECH-044): vencida pelo relógio do banco, período iniciado, ou
 -- inelegibilidade provada por fato registrado desde o envio. NULL = ainda pode ser aceita. Ordem fixa (determinística).
+-- VOLATILE: lê o relógio do banco (`clock_timestamp()`), não o instante do início da transação.
 CREATE FUNCTION app.luxchange_request_closure_reason(p_request uuid,
   OUT reason text, OUT evidence_kind text, OUT evidence_id uuid)
-  LANGUAGE plpgsql STABLE SET search_path = pg_catalog, pg_temp
+  LANGUAGE plpgsql VOLATILE SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE r app.luxchange_request; v_now timestamptz := clock_timestamp(); v_id uuid;
 BEGIN
@@ -294,7 +295,7 @@ END $$;
 
 -- Compromisso efetivo (TECH-024): ativo, da Request pendente que ainda pode ser aceita. Só lê (nenhuma trava).
 CREATE FUNCTION app.luxchange_complement_effective(p_second_home_id uuid, p_stay_date date) RETURNS uuid
-  LANGUAGE sql STABLE SET search_path = pg_catalog, pg_temp
+  LANGUAGE sql VOLATILE SET search_path = pg_catalog, pg_temp
 AS $$
   SELECT c.request_id FROM app.luxchange_request_complement_night c
     JOIN app.luxchange_request r ON r.id = c.request_id
@@ -304,7 +305,7 @@ AS $$
 $$;
 
 CREATE FUNCTION app.luxchange_complement_effective_booking(p_booking uuid) RETURNS uuid
-  LANGUAGE sql STABLE SET search_path = pg_catalog, pg_temp
+  LANGUAGE sql VOLATILE SET search_path = pg_catalog, pg_temp
 AS $$
   SELECT u.request_id FROM app.luxchange_request_complement_unit u
     JOIN app.luxchange_request r ON r.id = u.request_id
