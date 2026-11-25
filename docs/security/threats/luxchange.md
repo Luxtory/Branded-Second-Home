@@ -105,8 +105,9 @@ gatilho de encerramento não executa command dentro da transação de entrega do
 (recusado em Production pela validação do ambiente).
 
 **Limite de taxa (E3, revisão do C3):** limitador existente reaproveitado (T-2111, T-2113) — superfícies `read`
-(capacidade alheia e prévia) e `send` (pagamento da Taxa), por usuário pseudonimizado e global, namespaces próprios,
-falha fechada; a retirada nunca é limitada.
+(capacidade alheia e prévia) e `send` (pagamento da Taxa e `send_request`, este também em chamada direta à rota ou à
+action, com pagamento inválido), por usuário ou representação pseudonimizados e global, namespaces próprios, falha
+fechada; a retirada nunca é limitada.
 
 **Residual risks (W21):** os limites do runbook ainda não estão configurados em Production (decisão do fundador, junto
 da ativação); até lá, leitura da capacidade e pagamento ficam recusados — coerente com K4–K7 fechadas; estorno de Request vencida em que ninguém age começa só na

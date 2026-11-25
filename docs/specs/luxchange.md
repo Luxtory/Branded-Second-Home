@@ -326,9 +326,10 @@ Request, com gatilhos desligados).
   idempotência, 409.
 - **Limite de taxa** (TECH-100; STRIDE T-2111/T-2113), com o limitador existente (`createUpstashRateLimiter`, modo
   fake só local/CI): superfície `read` (catálogo, calendário e prévia — página, rota e action) e `send` (pagamento da
-  Taxa — rota e action), por usuário (SHA-256 de `luxtory:<superfície>:<user_id>`) e global, em namespaces próprios por
-  ambiente; excesso → 429 `ERR_RATE_LIMITED` com `retry-after`; limites ausentes → 422 `ERR_PARAMETER_MISSING`; Upstash
-  sem resposta → 503. O envio fica limitado pelo pagamento; a retirada nunca é limitada. Variáveis e proposta de valores:
+  Taxa por usuário, rota e action; `send_request` por representação, pelo gancho `consumeQuota` do executor, inclusive em
+  chamada direta — o replay não consome), com limite global e uma janela comum (5 variáveis), em namespaces próprios por
+  ambiente; chave SHA-256 de `luxtory:<superfície>:<id>`; excesso → 429 `ERR_RATE_LIMITED`; limites ausentes → 422
+  `ERR_PARAMETER_MISSING`; Upstash sem resposta → 503. A retirada nunca é limitada. Variáveis e proposta de valores:
   runbook, "Preparar a W21 em produção".
 - **Encerramento sem Garantia** (correção da revisão do C3): Request com `G = 0` (o complemento cobre `N`) não retém
   Créditos; retirada, expiração e encerramento por inelegibilidade liberam só as datas e revertem a Taxa

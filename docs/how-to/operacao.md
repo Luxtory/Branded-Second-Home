@@ -856,23 +856,22 @@ solicitações como ainda indisponíveis; retirada e encerramento nunca dependem
 `/api/jobs/expire_requests` (`37 3 * * *`) é a recuperação dos encerramentos; sem Request, não faz nada.
 
 **Limite de taxa (TECH-100; STRIDE T-2111, T-2113).** A leitura da capacidade alheia (catálogo, calendário e prévia) e o
-pagamento da Taxa só funcionam com os limites configurados; sem eles, são recusados com `ERR_PARAMETER_MISSING` (falha
-fechada, só os nomes das chaves no log). O envio fica limitado pelo pagamento (cada envio exige um pagamento aprovado
-próprio) e a retirada nunca é limitada.
+pagamento da Taxa e o envio (`send_request`, também chamado direto) só funcionam com os limites configurados; sem eles,
+são recusados com `ERR_PARAMETER_MISSING` (falha fechada, só os nomes das chaves no log). A retirada nunca é limitada.
 
 | Variável | Formato validado | Sensitive |
 |---|---|---|
-| `LUXCHANGE_REQUEST_READ_LIMIT` / `LUXCHANGE_REQUEST_READ_WINDOW_SECONDS` | inteiros positivos (leituras e prévias por usuário por janela, em segundos) | não |
-| `LUXCHANGE_REQUEST_SEND_LIMIT` / `LUXCHANGE_REQUEST_SEND_WINDOW_SECONDS` | inteiros positivos (pagamentos da Taxa por usuário por janela) | não |
-| `LUXCHANGE_REQUEST_GLOBAL_LIMIT` / `LUXCHANGE_REQUEST_GLOBAL_WINDOW_SECONDS` | inteiros positivos (total por janela, contado em cada superfície) | não |
+| `LUXCHANGE_REQUEST_READ_LIMIT` | inteiro positivo (leituras e prévias por usuário por janela) | não |
+| `LUXCHANGE_REQUEST_SEND_LIMIT` | inteiro positivo (pagamentos da Taxa por usuário e envios por representação, por janela) | não |
+| `LUXCHANGE_REQUEST_GLOBAL_LIMIT` / `LUXCHANGE_REQUEST_WINDOW_SECONDS` | inteiros positivos (total por janela em cada superfície; janela comum, em segundos) | não |
 | `LUXCHANGE_REQUEST_LIMITER_TIMEOUT_MS` | inteiro positivo (prazo do Upstash; sem resposta → recusa) | não |
 
 Reaproveitadas, sem alteração: `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` (namespaces próprios
 `luxtory:luxchange-request-read:<ambiente>` e `luxtory:luxchange-request-send:<ambiente>`; chave = SHA-256 de
 `luxtory:<superfície>:<user_id>`, sem segredo novo). **Proposta para decisão do fundador** (TECH-001: o código não tem
-default; nada configurado na W21): leitura 60 por 300 s por usuário; pagamento 10 por 3.600 s por usuário; global 3.000
-por 300 s; timeout 1.500 ms — perfil de um membro explorando algumas Second Homes e ajustando datas, bem abaixo dos
-limites das páginas públicas. Nunca criar `LUXCHANGE_REQUEST_LIMITER_MODE` na Vercel. Configurar essas variáveis é
+default; nada configurado na W21): janela de 600 s; leitura 120 por usuário; envio 10 (cada tentativa de envio pela
+tela consome dois: o pagamento e o envio); global 5.000 por superfície; timeout 1.500 ms — perfil de um membro
+explorando algumas Second Homes e ajustando datas, bem abaixo dos limites das páginas públicas. Nunca criar `LUXCHANGE_REQUEST_LIMITER_MODE` na Vercel. Configurar essas variáveis é
 pré-requisito da ativação, junto de D2, PSP validado, parâmetros (`luxchange_fee_rate`, `luxchange_fee_minimum`,
 `request_deadline_hours`), política `luxchange_request` publicada e a W22.
 

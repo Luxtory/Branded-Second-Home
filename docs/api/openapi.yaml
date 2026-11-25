@@ -2282,7 +2282,9 @@ paths:
         depois da resposta (conciliação como rede de segurança). Recusas: 403 `ERR_PERMISSION`; 422
         `ERR_MEMBERSHIP_INELIGIBLE`, `ERR_CAPACITY_UNAVAILABLE`, `ERR_MIN_NOTICE`, `ERR_CREDITS_INSUFFICIENT`,
         `ERR_CREDIT_HOLD_INVALID`, `ERR_PAYMENT_FAILED`, `ERR_POLICY_MISSING`, `ERR_PRL_MISSING`, `ERR_PARAMETER_MISSING`;
-        409 `ERR_REQUEST_TERMS_CHANGED`, `ERR_STATE_TRANSITION`, `ERR_IDEMPOTENCY_CONFLICT`; 400 `ERR_VALIDATION`.
+        409 `ERR_REQUEST_TERMS_CHANGED`, `ERR_STATE_TRANSITION`, `ERR_IDEMPOTENCY_CONFLICT`; 400 `ERR_VALIDATION`; 429
+        `ERR_RATE_LIMITED` (limite de envio por representação e global, consumido depois do guard e da idempotência — o
+        replay não consome; limites ausentes → 422 `ERR_PARAMETER_MISSING`).
         Funcionalidade fechada (K4, K5, K7; K6 com complemento) → 503 `ERR_UNAVAILABLE`, nada gravado.
       operationId: sendRequest
       security:
@@ -2322,6 +2324,15 @@ paths:
           $ref: '#/components/responses/AcquisitionUnsupportedMediaType'
         '422':
           description: Recusa de negócio da Request (`ERR_MEMBERSHIP_INELIGIBLE`, `ERR_CAPACITY_UNAVAILABLE`, `ERR_MIN_NOTICE`, `ERR_CREDITS_INSUFFICIENT`, `ERR_CREDIT_HOLD_INVALID`, `ERR_PAYMENT_FAILED`, `ERR_PRL_MISSING`, `ERR_POLICY_MISSING`, `ERR_PARAMETER_MISSING`).
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: '`ERR_RATE_LIMITED`: limite de envio da representação ou global excedido (W21; TECH-100).'
           headers:
             x-correlation-id:
               $ref: '#/components/headers/CorrelationId'
