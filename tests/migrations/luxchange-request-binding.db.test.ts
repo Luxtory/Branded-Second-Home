@@ -12,7 +12,9 @@ import {
 import { activateMembership } from '../features/identity/membership-support';
 import { openDepositOperation } from '../features/luxchange/luxchange-support';
 import {
+  feeFor,
   newRequester,
+  payFee,
   pricedNights,
   publishNights,
   requestFixture,
@@ -115,6 +117,36 @@ describe('W21 — vínculos do envio no banco (ADR-0037 §4)', () => {
     } finally {
       await second.query('ROLLBACK');
       await second.end();
+    }
+  });
+
+  it('[TECH-082] Fee de send_request sem a Request da operação é recusado depois das regras da W19', async () => {
+    const { r } = await plain();
+    const paymentId = await payFee(f, await feeFor(f, 500_000n), r);
+    const client = await connect(c.h.database.appUrl);
+    try {
+      await client.query('BEGIN');
+      const op = await openDepositOperation(client, r, f.holder.homeId, 'send_request');
+      await client.query(`INSERT INTO app.economic_snapshot (operation_id, resolved_at) VALUES ($1, clock_timestamp())`, [
+        op,
+      ]);
+      await client.query(
+        `INSERT INTO app.economic_snapshot_parameter (operation_id, parameter_key, parameter_id)
+         SELECT $1, k, (SELECT v.id FROM app.parameter_at(k, NULL, s.resolved_at) v)
+           FROM app.economic_snapshot s, unnest(ARRAY['luxchange_fee_rate', 'luxchange_fee_minimum']) k
+          WHERE s.operation_id = $1`,
+        [op],
+      );
+      await expect(
+        client.query(
+          `INSERT INTO app.fee_charge (id, operation_id, payment_id, payer_party_id, prl_total_minor, amount_minor, currency)
+           SELECT $1, $2, p.id, $3, 500000, p.amount_minor, 'BRL' FROM app.payment p WHERE p.id = $4`,
+          [randomUUID(), op, r.partyId, paymentId],
+        ),
+      ).rejects.toEqual(constraint('billing_fee_request_nights'));
+    } finally {
+      await client.query('ROLLBACK');
+      await client.end();
     }
   });
 

@@ -2,7 +2,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createOwnUseLifecycleHandlers } from '@/features/booking/presentation/own-use-lifecycle-handlers';
 import type { CommandHandler, DatabaseTransaction } from '@/features/platform';
 import { addDays } from '../booking/booking-support';
-import { activate, bookNow } from '../booking/lifecycle-support';
+import { activate, bookNow, connect, lastStartedNight } from '../booking/lifecycle-support';
+import { lifecycleRunner } from '../booking/own-use-lifecycle-support';
 import {
   TEST_VALIDITY_MONTHS,
   creditsHarness,
@@ -15,16 +16,23 @@ import {
 } from '../credits/credits-support';
 import { activateMembership } from '../identity/membership-support';
 import { staffRunner } from '../pricing/pricing-support';
-import { depositRunner, expectedCredits, type DepositHarness } from './luxchange-support';
+import {
+  depositRunner,
+  expectedCredits,
+  openDepositOperation,
+  type DepositHarness,
+} from './luxchange-support';
 import {
   ageRequest,
   closeRequest,
   newRequester,
   pricedNights,
+  publishDeadline,
   publishNights,
   requestFixture,
   requestRow,
   sendRequest,
+  writeRequest,
   type RequestFixture,
 } from './request-support';
 
@@ -260,6 +268,99 @@ describe('W21 — compromisso efetivo do complemento por datas (ADR-0037 §5–�
           holds: [],
         }),
       ).rejects.toEqual(constraint('luxchange_complement_booking_active'));
+    });
+
+    it('[EC-17] ato administrativo sobre a reserva comprometida não é recusado; a Request deixa de poder ser aceita e é encerrada com a prova', async () => {
+      const { bookingId, sent } = await commitBooking();
+      const outcome = await lifecycleRunner(c.h).asAdmin(
+        c.admin,
+        createOwnUseLifecycleHandlers().openException,
+        {
+          second_home_id: co.homeId,
+          booking_id: bookingId,
+          basis: 'Relatório da administração ADM-W21',
+          exception_type: 'operational',
+          reason: 'casualty',
+        },
+      );
+      expect(outcome).toMatchObject({ status: 'committed' });
+      const { rows } = await pool().query<{ reason: string; evidence_kind: string }>(
+        'SELECT reason, evidence_kind FROM app.luxchange_request_closure_reason($1)',
+        [sent.requestId],
+      );
+      expect(rows[0]).toEqual({
+        reason: 'complement_unavailable',
+        evidence_kind: 'booking_transition',
+      });
+      await closeRequest(f, sent, 'close_ineligible_request');
+      expect(await requestRow(pool(), sent.requestId)).toMatchObject({
+        state: 'cancelled_pre_accept',
+        closure_reason: 'complement_unavailable',
+      });
+      expect(await unitState(sent.requestId)).toEqual(['released']);
+    });
+  });
+
+  describe('período solicitado iniciado [TECH-044][TECH-073]', () => {
+    it('noite já iniciada não é solicitada; Request pendente cujo período começou é encerrada com prova do relógio, sem job', async () => {
+      const night = await lastStartedNight(c.h, f.holder.homeId);
+      await publishNights(c, f.holder.homeId, { [night]: 5_000n });
+      const r = await newRequester(f);
+      const lot = await originate(c, '1000', { titular: r });
+      const spec = { requester: r, nights: [night], holds: [{ lotId: lot, quantity: '500' }] };
+      await expect(sendRequest(f, spec)).rejects.toEqual(
+        constraint('luxchange_request_period_started'),
+      );
+
+      // Fato histórico: Request enviada uma hora antes do check-in, com prazo longo ainda em curso.
+      const { rows: start } = await pool().query<{ checkin_at: Date }>(
+        'SELECT checkin_at FROM app.second_home_date WHERE second_home_id = $1 AND stay_date = $2',
+        [f.holder.homeId, night],
+      );
+      await publishDeadline(c, '2000');
+      let sent;
+      const owner = await connect(c.h.database.url);
+      try {
+        await owner.query('BEGIN');
+        await owner.query(
+          'ALTER TABLE app.luxchange_request DISABLE TRIGGER luxchange_request_open',
+        );
+        const op = await openDepositOperation(owner, r, f.holder.homeId, 'send_request');
+        sent = await writeRequest(owner, op, f, {
+          ...spec,
+          historicalSentAt: new Date(start[0]!.checkin_at.getTime() - 3_600_000),
+        });
+        // A completude adiada do envio roda aqui (antes de religar o gatilho), como na fixture histórica da W13.
+        await owner.query('SET CONSTRAINTS ALL IMMEDIATE');
+        await owner.query('SET CONSTRAINTS ALL DEFERRED');
+        await owner.query(
+          'ALTER TABLE app.luxchange_request ENABLE TRIGGER luxchange_request_open',
+        );
+        await owner.query(`UPDATE app.operation SET state = 'committed' WHERE id = $1`, [op]);
+        await owner.query('COMMIT');
+      } catch (error) {
+        await owner.query('ROLLBACK').catch(() => undefined);
+        throw error;
+      } finally {
+        await owner.end();
+        await publishDeadline(c, '30');
+      }
+      const row = await requestRow(pool(), sent.requestId);
+      expect(row.state).toBe('pending');
+      expect(row.expires_at.getTime()).toBeGreaterThan(Date.now());
+      const { rows } = await pool().query<{ reason: string; evidence_kind: string }>(
+        'SELECT reason, evidence_kind FROM app.luxchange_request_closure_reason($1)',
+        [sent.requestId],
+      );
+      expect(rows[0]).toEqual({ reason: 'period_started', evidence_kind: 'clock' });
+      await expect(closeRequest(f, sent, 'expire_requests')).rejects.toEqual(
+        constraint('luxchange_request_closing_reason'),
+      );
+      await closeRequest(f, sent, 'close_ineligible_request');
+      expect(await requestRow(pool(), sent.requestId)).toMatchObject({
+        state: 'cancelled_pre_accept',
+        closure_reason: 'period_started',
+      });
     });
   });
 

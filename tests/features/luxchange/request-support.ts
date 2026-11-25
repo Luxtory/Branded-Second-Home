@@ -249,6 +249,11 @@ export interface RequestSpec {
   readonly holds: readonly HoldSpec[];
   readonly complement?: readonly ComplementUnitSpec[];
   readonly paymentId?: string;
+  /**
+   * Fato histórico (só fixture do dono do schema, com o gatilho de abertura desligado na transação, como as reservas
+   * históricas da W13): `sent_at` informado e `expires_at = sent_at + prazo do snapshot`; a completude no COMMIT vale.
+   */
+  readonly historicalSentAt?: Date;
   /** Requests do mesmo solicitante que não podem mais ser aceitas, encerradas nesta transação antes do novo compromisso. */
   readonly materialize?: readonly SentRequest[];
   /** Desvios deliberados (testes de recusa): cada um troca só o valor indicado. */
@@ -378,10 +383,18 @@ export async function writeRequest(
       [required, complement],
     ));
   const requestId = randomUUID();
+  const historical = spec.historicalSentAt !== undefined;
   await client.query(
     `INSERT INTO app.luxchange_request (id, operation_id, requester_party_id, holder_party_id, holder_holding_id,
-       second_home_id, checkin, checkout, credits_required, guarantee_credits, complement_credits)
-     VALUES ($1, $2, $3, $4, $5, $6, $7::date, $8::date, $9, $10, $11)`,
+       second_home_id, checkin, checkout, credits_required, guarantee_credits, complement_credits${
+         historical ? ', sent_at, expires_at, state' : ''
+       })
+     VALUES ($1, $2, $3, $4, $5, $6, $7::date, $8::date, $9, $10, $11${
+       historical
+         ? `, $12::timestamptz, $12::timestamptz
+              + make_interval(hours => app.luxchange_snapshot_parameter($2, 'request_deadline_hours')::integer), 'pending'`
+         : ''
+     })`,
     [
       requestId,
       op,
@@ -394,6 +407,7 @@ export async function writeRequest(
       required,
       guarantee,
       complement,
+      ...(historical ? [spec.historicalSentAt!.toISOString()] : []),
     ],
   );
   if (!skip.has('nights'))
