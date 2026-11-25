@@ -164,9 +164,9 @@ function TargetCalendar(props: {
               {selection.guidance ??
                 (selection.range.length === 0
                   ? text.journey.summaryEmpty
-                  : text.journey.selection(
+                  : text.stay(
                       dayMonth(selection.range[0]!),
-                      dayMonth(selection.range.at(-1)!),
+                      dayMonth(nextDay(selection.range.at(-1)!)),
                       selection.range.length,
                     ))}
             </p>
@@ -176,16 +176,6 @@ function TargetCalendar(props: {
               </button>
             )}
           </div>
-          <ul className="lx-calendar__legend lx-pricing" aria-label={text.journey.datesHeading}>
-            <li className="lx-calendar__legend-item">
-              <span className="lx-calendar__swatch" aria-hidden="true" data-selected="" />
-              {text.journey.status.selected}
-            </li>
-            <li className="lx-calendar__legend-item">
-              <span className="lx-calendar__swatch" aria-hidden="true" data-state="unavailable" />
-              {text.journey.status.unavailable}
-            </li>
-          </ul>
         </div>
       )}
     </section>
@@ -297,9 +287,17 @@ function PolicySection({ policy }: { readonly policy: Preview['policy'] }) {
         </h2>
         <p className="lx-hint">{text.review.policyBefore}</p>
       </div>
-      <h3 className="lx-label">{text.review.policyAfter}</h3>
-      <p className="lx-hint">{text.review.policyAfterHint}</p>
-      <PolicyTerms mechanism="luxchange_request" config={policy.config} headingLevel={4} />
+      {/* Divulgação progressiva: os termos completos ficam a um toque, antes do aceite obrigatório na revisão. */}
+      <details className="lx-hint">
+        <summary className="lx-label">{text.review.policyAfter}</summary>
+        <p>{text.review.policyAfterHint}</p>
+        <PolicyTerms
+          mechanism="luxchange_request"
+          config={policy.config}
+          headingLevel={3}
+          audience="member"
+        />
+      </details>
     </section>
   );
 }
@@ -413,6 +411,7 @@ function Review(props: {
           ))}
         </ul>
       </details>
+      <h3 className="lx-label">{text.review.confirmation}</h3>
       <PolicyAcceptance policyId={preview.policy.id} since={preview.policy.since} />
       {hasComplement ? (
         <div className="lx-field">
@@ -576,11 +575,7 @@ export function RequestJourney({ data }: { readonly data: RequestJourneyData }) 
             <p className="lx-booking__status" role="status">
               {range.length === 0
                 ? text.journey.summaryEmpty
-                : text.journey.selection(
-                    dayMonth(range[0]!),
-                    dayMonth(range.at(-1)!),
-                    range.length,
-                  )}
+                : text.stay(dayMonth(range[0]!), dayMonth(nextDay(range.at(-1)!)), range.length)}
             </p>
             <dl className="lx-booking__facts">
               <Fact label={text.review.required} value={credits(estimate)} />

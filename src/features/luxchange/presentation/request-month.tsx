@@ -21,7 +21,7 @@ const daysOf = (month: string) => {
 };
 
 export interface MonthDay {
-  /** `on`: pode ser escolhida; `off`: indisponível (riscada); `past`: passada (sem ação, sem risco). */
+  /** `on`: pode ser escolhida (mostra os Créditos); `off` e `past`: indisponível ou passada — discretas, sem ação. */
   readonly status: 'on' | 'off' | 'past';
   readonly credits: string | null;
   readonly season: SeasonTier;
@@ -92,12 +92,7 @@ export function RequestMonth(props: {
       const day = props.day(date);
       const isSelected = props.selected.has(date);
       return (
-        <td
-          key={date}
-          data-tier={day?.season}
-          data-selected={isSelected ? '' : undefined}
-          data-state={day?.status === 'off' ? 'unavailable' : undefined}
-        >
+        <td key={date} data-selected={isSelected ? '' : undefined}>
           <button
             className="lx-calendar__day"
             type="button"

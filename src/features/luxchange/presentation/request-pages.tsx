@@ -27,10 +27,12 @@ import { requestMessages as text } from './i18n/request-pt-br';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DAY_MS = 86_400_000;
-const lastNight = (checkout: string) =>
-  new Date(Date.parse(`${checkout}T00:00:00Z`) - DAY_MS).toISOString().slice(0, 10);
 const period = (checkin: string, checkout: string) =>
-  `${fullDate(checkin)} a ${fullDate(lastNight(checkout))}`;
+  text.stay(
+    fullDate(checkin),
+    fullDate(checkout),
+    Math.round((Date.parse(`${checkout}T00:00:00Z`) - Date.parse(`${checkin}T00:00:00Z`)) / DAY_MS),
+  );
 const credits = (value: string) => text.credits(formatCredits(value));
 const param = (value: string | string[] | undefined) => (typeof value === 'string' ? value : null);
 
@@ -175,9 +177,7 @@ export async function TitularNewRequestPage({
     if (data === null) notFound();
     return (
       <TitularShell>
-        {header(
-          `${data.home.label} · ${text.journey.partyLabel(data.party.documentType, data.party.maskedDocument)}`,
-        )}
+        {header(data.home.label)}
         <p className="lx-body">
           <a className="lx-link" href={luxchangePaths.newRequest}>
             {text.journey.changeHome}
@@ -208,8 +208,10 @@ export async function TitularNewRequestPage({
               {text.journey.home}
             </h2>
             <p className="lx-hint">
-              {text.journey.who}:{' '}
-              {text.journey.partyLabel(party.documentType, party.maskedDocument)}.{' '}
+              {/* A pessoa ou empresa só aparece quando o usuário representa mais de uma que pode solicitar. */}
+              {eligible.length > 1
+                ? `${text.journey.who}: ${text.journey.partyLabel(party.documentType, party.maskedDocument)}. `
+                : null}
               {text.journey.homeHint}
             </p>
             {start.homes.length === 0 ? (

@@ -34,7 +34,7 @@ import {
 } from './request-handlers';
 import { productionRequestFlow } from './request-production';
 import { instantDateTime } from './request-format';
-import { productionRequestQuota, type RequestQuotaDecision } from './request-quota';
+import { productionRequestQuota, withSendQuota, type RequestQuotaDecision } from './request-quota';
 import { readRequestJourney } from './request-read';
 import { REQUEST_CONSENT_TEXT_VERSION, type RequestOutcomeKey } from './i18n/request-pt-br';
 
@@ -69,7 +69,11 @@ const OUTCOMES: readonly RequestOutcomeKey[] = [
   'ERR_VALIDATION',
 ];
 const outcomeOf = (code: string): RequestOutcomeKey =>
-  (OUTCOMES as readonly string[]).includes(code) ? (code as RequestOutcomeKey) : 'unavailable';
+  code === 'ERR_RATE_LIMITED'
+    ? 'rate_limited'
+    : (OUTCOMES as readonly string[]).includes(code)
+      ? (code as RequestOutcomeKey)
+      : 'unavailable';
 
 export type RequestPreviewResponse =
   | {
@@ -220,7 +224,7 @@ export async function submitRequestAction(raw: unknown): Promise<RequestSubmitRe
   let committed: string | null = null;
   try {
     const outcome = await executeTitularCommand(
-      createSendRequestProductionHandler(db),
+      withSendQuota(createSendRequestProductionHandler(db), productionRequestQuota()),
       expectedOf(request, quote, paymentId),
       sendKey,
       { partyId: request.party_id, holdings: createHoldingDirectory(() => db) },

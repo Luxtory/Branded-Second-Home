@@ -37,13 +37,17 @@ export const requestMessages = {
   lead: 'Peça noites de outro membro com os seus Créditos e, se quiser, com datas suas.',
   backToArea: 'Voltar para a Área do Titular',
   credits: (value: string) => `${value} Créditos`,
+  /** Estadia: uma noite como "Noite de …"; várias, com entrada e saída explícitas. */
+  stay: (first: string, checkout: string, nights: number) =>
+    nights === 1 ? `Noite de ${first}` : `Entrada ${first} · saída ${checkout} · ${nights} noites`,
   hours: (value: number) => `${value} horas a partir do envio`,
   list: {
     sent: 'Minhas solicitações',
     sentEmpty: 'Você ainda não enviou solicitações.',
     received: 'Recebidas',
     receivedEmpty: 'Nenhuma solicitação recebida.',
-    receivedHint: 'Só leitura: o aceite e a recusa chegam numa próxima versão.',
+    receivedHint:
+      'Solicitações de outros membros para datas das suas Second Homes, com a situação de cada uma.',
     new: 'Nova solicitação',
     dates: 'Datas',
     state: 'Situação',
@@ -81,15 +85,13 @@ export const requestMessages = {
     next: 'Próximo mês',
     datesHeading: 'Datas que você quer',
     datesHint:
-      'Toque na primeira e na última noite. Reservas de outro membro entram inteiras. Datas indisponíveis não mostram o motivo.',
+      'Toque na primeira e na última noite. As datas solicitáveis mostram os Créditos da noite; reservas de outro membro entram inteiras. Datas indisponíveis não mostram o motivo.',
     status: {
       requestable: 'Solicitável',
       unavailable: 'Indisponível',
       past: 'Passada',
       selected: 'Selecionada',
     },
-    selection: (first: string, last: string, nights: number) =>
-      `${first} a ${last} · ${nights} ${nights === 1 ? 'noite' : 'noites'}`,
     selectionInvalid: 'O período precisa ter só noites solicitáveis e contínuas.',
     clear: 'Limpar seleção',
     complementHeading: 'Datas suas para comprometer (opcional)',
@@ -127,31 +129,31 @@ export const requestMessages = {
   review: {
     heading: 'Prévia da solicitação',
     required: 'Créditos necessários',
-    balance: 'Saldo disponível antes do envio',
-    potential: 'Créditos potenciais do complemento',
+    balance: 'Créditos disponíveis antes do envio',
+    potential: 'Créditos potenciais das datas oferecidas',
     potentialHint: (dates: string) =>
       `Ainda não originados (${dates}): só viram Créditos se a solicitação for aceita.`,
     guarantee: 'Créditos em Garantia',
-    guaranteeHint:
-      'Saem do saldo no envio e voltam para a Carteira se a solicitação não for aceita.',
-    covered: 'Cobertura total',
+    guaranteeHint: 'Reservados até a resposta; voltam para a Carteira se não houver aceite.',
+    covered: 'Total coberto',
     coveredBreakdown: (guarantee: string, potential: string) =>
-      `${guarantee} em Garantia + ${potential} do complemento.`,
+      `${guarantee} em Garantia + ${potential} das datas oferecidas.`,
     excess: 'Excedente',
     excessHint: (months: number) =>
-      `Originado na sua Carteira se a solicitação for aceita, com validade de ${months} meses.`,
-    available: 'Saldo disponível após o envio',
+      `Fica disponível na sua Carteira só depois do aceite, com validade de ${months} meses.`,
+    available: 'Créditos disponíveis após o envio',
     groupFee: 'Taxa e prazo',
     fee: 'Taxa de intermediação',
-    feeHint: 'Paga agora e devolvida integralmente se a solicitação não for aceita.',
+    feeHint: 'Paga no envio; devolvida integralmente se não houver aceite.',
     deadline: 'Prazo para resposta',
     nights: 'Créditos por noite solicitada',
     policy: 'Política da solicitação',
     policyBefore:
-      'Até a resposta: se a solicitação não for aceita, a Taxa de intermediação é devolvida integralmente, a Garantia volta para a Carteira e as datas comprometidas são liberadas.',
-    policyAfter: 'Depois do aceite (estadia confirmada)',
+      'Até a resposta, sem aceite, a solicitação termina sem custo: a Taxa de intermediação é devolvida integralmente, a Garantia volta para a Carteira e as datas oferecidas são liberadas. As condições comerciais valem só depois do aceite.',
+    policyAfter: 'Condições depois do aceite (estadia confirmada)',
     policyAfterHint:
-      'Valem as condições abaixo para cancelamento, não comparecimento e exceções. Nelas, “Luxchange Fee” é a Taxa de intermediação.',
+      'Cancelamento, não comparecimento e exceções extraordinárias da estadia confirmada:',
+    confirmation: 'Confirmação',
     acceptComplement:
       'Aceito comprometer as datas acima: se a solicitação for aceita, elas são cedidas ao Inventário Luxtory pelos Créditos potenciais.',
     send: 'Pagar a Taxa e enviar',
@@ -238,12 +240,11 @@ export const requestMessages = {
     received: 'Solicitação recebida',
     closed: 'Solicitação encerrada',
     receivedClosed: 'Solicitação recebida encerrada',
-    sentWhat: (dates: string) =>
-      `Você solicitou ${dates}. Os Créditos em Garantia e as datas comprometidas ficam reservados até a resposta.`,
-    receivedWhat: (dates: string) => `Um membro solicitou ${dates} da sua Second Home.`,
-    closedWhat: (dates: string, reason: string) =>
-      `Sua solicitação de ${dates} foi encerrada: ${reason}.`,
-    receivedClosedWhat: (dates: string) => `A solicitação de ${dates} foi encerrada.`,
+    sentWhat: (stay: string) =>
+      `${stay}. Os Créditos em Garantia e as datas oferecidas ficam reservados até a resposta.`,
+    receivedWhat: (stay: string) => `Um membro solicitou datas da sua Second Home — ${stay}.`,
+    closedWhat: (stay: string, reason: string) => `${stay}: ${reason}.`,
+    receivedClosedWhat: (stay: string) => `${stay}: a solicitação foi encerrada.`,
     guarantee: 'Créditos em Garantia',
     released: 'Garantia liberada',
     deadline: 'Prazo para resposta',
@@ -255,6 +256,5 @@ export const requestMessages = {
     fee: 'Taxa de intermediação',
     feePaid: 'Paga',
     feeRefund: 'Devolução solicitada',
-    period: (first: string, last: string) => (first === last ? first : `${first} a ${last}`),
   },
 };

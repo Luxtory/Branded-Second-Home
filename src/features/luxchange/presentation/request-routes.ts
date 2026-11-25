@@ -32,6 +32,7 @@ import {
 import { productionRequestFlow } from './request-production';
 import {
   productionRequestQuota,
+  withSendQuota,
   type RequestQuota,
   type RequestQuotaDecision,
 } from './request-quota';
@@ -156,10 +157,10 @@ const unsupported: RequestFlowDependencies['send'] = () => {
  * depois do commit também dispara os encerramentos por evento.
  */
 export function createSendRequestRoute(deps: RequestRouteDependencies = {}) {
-  const { database, flow, afterResponse } = resolved(deps);
+  const { database, flow, afterResponse, quota } = resolved(deps);
   return createTitularCommandRoute({
     ...pick(deps),
-    handler: () => createSendRequestProductionHandler(database()),
+    handler: () => withSendQuota(createSendRequestProductionHandler(database()), quota),
     holdings: (db) => createHoldingDirectory(db),
     includePartyId: true,
     successStatus: HTTP_CREATED,

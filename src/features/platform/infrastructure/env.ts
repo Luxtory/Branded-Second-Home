@@ -215,14 +215,13 @@ const runtimeSchema = z.object({
   BOOKING_AUTHORIZATION_GLOBAL_WINDOW_SECONDS: positiveInteger,
   BOOKING_AUTHORIZATION_LIMITER_TIMEOUT_MS: positiveInteger,
   // Request Luxchange (W21; valores no runbook, nenhum default — TECH-001): leitura da capacidade alheia e prévia
-  // (`READ`) e pagamento da Taxa (`SEND`), por usuário, com limite global por superfície, no Upstash acima em namespaces
-  // próprios. Ausente → a leitura ou o pagamento é recusado (falha fechada); a retirada nunca é limitada.
+  // (`READ`) e pagamento da Taxa + envio (`SEND`), com limite global por superfície e uma janela comum, no Upstash acima
+  // em namespaces próprios. Ausente → a leitura, o pagamento ou o envio é recusado (falha fechada); a retirada nunca é
+  // limitada.
   LUXCHANGE_REQUEST_READ_LIMIT: positiveInteger,
-  LUXCHANGE_REQUEST_READ_WINDOW_SECONDS: positiveInteger,
   LUXCHANGE_REQUEST_SEND_LIMIT: positiveInteger,
-  LUXCHANGE_REQUEST_SEND_WINDOW_SECONDS: positiveInteger,
   LUXCHANGE_REQUEST_GLOBAL_LIMIT: positiveInteger,
-  LUXCHANGE_REQUEST_GLOBAL_WINDOW_SECONDS: positiveInteger,
+  LUXCHANGE_REQUEST_WINDOW_SECONDS: positiveInteger,
   LUXCHANGE_REQUEST_LIMITER_TIMEOUT_MS: positiveInteger,
   // W6 (ADR-0018): segredos próprios, um por finalidade — HMAC do hash de idempotência (o conteúdo inclui contato e
   // pré-qualificação) e assinatura do contexto de apresentação da Home Edition. Nunca o segredo da pseudonimização.

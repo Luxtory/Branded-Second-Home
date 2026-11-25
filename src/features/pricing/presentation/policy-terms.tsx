@@ -5,15 +5,19 @@ import { policiesMessages as text } from './i18n/policies-pt-br';
 function Effects({
   mechanism,
   effects,
+  member,
 }: {
   readonly mechanism: PolicyMechanism;
   readonly effects: PolicyEffects;
+  readonly member: boolean;
 }) {
+  const line = (axis: ReturnType<typeof fractionAxes>[number], percent: string) =>
+    member && axis === 'fee' ? text.terms.memberFee(percent) : text.terms.effects[axis](percent);
   return (
     <ul className="lx-pricing__history">
       <li>{text.terms.capacity}</li>
       {fractionAxes(mechanism).map((axis) => (
-        <li key={axis}>{text.terms.effects[axis](fractionToPercent(effects[axis] as string))}</li>
+        <li key={axis}>{line(axis, fractionToPercent(effects[axis] as string))}</li>
       ))}
     </ul>
   );
@@ -36,7 +40,10 @@ export function PolicyTerms(props: {
   readonly mechanism: PolicyMechanism;
   readonly config: PolicyConfig;
   readonly headingLevel?: 3 | 4;
+  /** `member`: a tela do membro (Taxa de intermediação); padrão: o texto do Admin. */
+  readonly audience?: 'admin' | 'member';
 }) {
+  const member = props.audience === 'member';
   const Heading = props.headingLevel === 4 ? 'h4' : 'h3';
   const tiers = props.config.cancellation;
   return (
@@ -45,13 +52,13 @@ export function PolicyTerms(props: {
       {tiers.map((tier, index) => (
         <div key={tier.min_notice_hours}>
           <p className="lx-pricing__text">{tierLabel(tiers, index)}</p>
-          <Effects mechanism={props.mechanism} effects={tier.effects} />
+          <Effects mechanism={props.mechanism} effects={tier.effects} member={member} />
         </div>
       ))}
       <Heading className="lx-pricing__subhead">{text.terms.noShow}</Heading>
-      <Effects mechanism={props.mechanism} effects={props.config.no_show} />
+      <Effects mechanism={props.mechanism} effects={props.config.no_show} member={member} />
       <Heading className="lx-pricing__subhead">{text.terms.exception}</Heading>
-      <Effects mechanism={props.mechanism} effects={props.config.exception} />
+      <Effects mechanism={props.mechanism} effects={props.config.exception} member={member} />
     </div>
   );
 }

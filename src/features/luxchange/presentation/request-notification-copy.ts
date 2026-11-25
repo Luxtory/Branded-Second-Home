@@ -18,8 +18,8 @@ type Format = {
 const DAY_MS = 86_400_000;
 const str = (data: Readonly<Record<string, unknown>>, key: string) =>
   typeof data[key] === 'string' ? (data[key] as string) : null;
-const lastNight = (checkout: string) =>
-  new Date(Date.parse(`${checkout}T00:00:00Z`) - DAY_MS).toISOString().slice(0, 10);
+const nightsBetween = (checkin: string, checkout: string) =>
+  Math.round((Date.parse(`${checkout}T00:00:00Z`) - Date.parse(`${checkin}T00:00:00Z`)) / DAY_MS);
 const isReason = (value: string | null): value is RequestClosureReason =>
   value !== null && (REQUEST_CLOSURE_REASONS as readonly string[]).includes(value);
 
@@ -41,7 +41,11 @@ export function requestNotificationCopy(
     str(data, 'checkout'),
   ];
   if (requestId === null || checkin === null || checkout === null) return null;
-  const dates = text.period(format.date(checkin), format.date(lastNight(checkout)));
+  const dates = requestMessages.stay(
+    format.date(checkin),
+    format.date(checkout),
+    nightsBetween(checkin, checkout),
+  );
   const expires = str(data, 'expires_at');
   switch (kind) {
     case REQUEST_SENT_NOTIFICATION: {

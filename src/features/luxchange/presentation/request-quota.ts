@@ -7,7 +7,10 @@ import {
   loadRuntimeConfig,
   RateLimiterUnavailableError,
   rootLogger,
+  type CommandHandler,
   type EnvSource,
+  type JsonValue,
+  type QuotaDecision,
   type RateLimiter,
   type RateLimitPolicies,
 } from '@/features/platform';
@@ -34,21 +37,11 @@ export type RequestQuota = (
 ) => Promise<RequestQuotaDecision>;
 
 const SURFACES = {
-  read: {
-    name: 'luxchange-request-read',
-    limit: 'LUXCHANGE_REQUEST_READ_LIMIT',
-    window: 'LUXCHANGE_REQUEST_READ_WINDOW_SECONDS',
-  },
-  send: {
-    name: 'luxchange-request-send',
-    limit: 'LUXCHANGE_REQUEST_SEND_LIMIT',
-    window: 'LUXCHANGE_REQUEST_SEND_WINDOW_SECONDS',
-  },
+  read: { name: 'luxchange-request-read', limit: 'LUXCHANGE_REQUEST_READ_LIMIT' },
+  send: { name: 'luxchange-request-send', limit: 'LUXCHANGE_REQUEST_SEND_LIMIT' },
 } as const;
-const GLOBAL_KEYS = [
-  'LUXCHANGE_REQUEST_GLOBAL_LIMIT',
-  'LUXCHANGE_REQUEST_GLOBAL_WINDOW_SECONDS',
-] as const;
+/** Uma janela para as duas superfícies e o total (variáveis mínimas; TECH-001). */
+const COMMON_KEYS = ['LUXCHANGE_REQUEST_GLOBAL_LIMIT', 'LUXCHANGE_REQUEST_WINDOW_SECONDS'] as const;
 const LIVE_KEYS = [
   'UPSTASH_REDIS_REST_URL',
   'UPSTASH_REDIS_REST_TOKEN',
@@ -64,13 +57,11 @@ const fakes = new Map<RequestSurface, RateLimiter>();
 
 function policiesFor(surface: RequestSurface, source: EnvSource): RateLimitPolicies {
   const own = SURFACES[surface];
-  const limits = loadRuntimeConfig([own.limit, own.window, ...GLOBAL_KEYS], source);
+  const limits = loadRuntimeConfig([own.limit, ...COMMON_KEYS], source);
+  const windowSeconds = limits.LUXCHANGE_REQUEST_WINDOW_SECONDS;
   return {
-    network: { limit: limits[own.limit], windowSeconds: limits[own.window] },
-    global: {
-      limit: limits.LUXCHANGE_REQUEST_GLOBAL_LIMIT,
-      windowSeconds: limits.LUXCHANGE_REQUEST_GLOBAL_WINDOW_SECONDS,
-    },
+    network: { limit: limits[own.limit], windowSeconds },
+    global: { limit: limits.LUXCHANGE_REQUEST_GLOBAL_LIMIT, windowSeconds },
   };
 }
 
@@ -131,6 +122,24 @@ export function createRequestQuota(deps: RequestQuotaDependencies = {}): Request
       });
       return { status: 'unavailable' };
     }
+  };
+}
+
+/**
+ * `send_request` com o limite de envio (gancho `consumeQuota` do executor, como na W13): chamadas diretas à rota ou à
+ * action também contam, inclusive com pagamento inválido; o replay de uma chave concluída nunca consome. Chave pela
+ * autorização do guard (representação usuário → party).
+ */
+export function withSendQuota<I, R extends JsonValue, Tx>(
+  handler: CommandHandler<I, R, Tx>,
+  quota: RequestQuota,
+): CommandHandler<I, R, Tx> {
+  return {
+    ...handler,
+    async consumeQuota(authorizationRef): Promise<QuotaDecision> {
+      if (authorizationRef === null) return 'unavailable';
+      return (await quota('send', authorizationRef)).status;
+    },
   };
 }
 
