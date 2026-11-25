@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createRequestQuota,
   requestQuotaKey,
+  withSendQuota,
 } from '@/features/luxchange/presentation/request-quota';
 import { loadEnv, RateLimiterUnavailableError, type RateLimiter } from '@/features/platform';
 
@@ -10,11 +11,9 @@ import { loadEnv, RateLimiterUnavailableError, type RateLimiter } from '@/featur
 // pseudônima por usuário, namespaces separados de leitura e pagamento, falha fechada.
 const LIMITS = {
   LUXCHANGE_REQUEST_READ_LIMIT: '2',
-  LUXCHANGE_REQUEST_READ_WINDOW_SECONDS: '60',
   LUXCHANGE_REQUEST_SEND_LIMIT: '1',
-  LUXCHANGE_REQUEST_SEND_WINDOW_SECONDS: '60',
   LUXCHANGE_REQUEST_GLOBAL_LIMIT: '100',
-  LUXCHANGE_REQUEST_GLOBAL_WINDOW_SECONDS: '60',
+  LUXCHANGE_REQUEST_WINDOW_SECONDS: '60',
   LUXCHANGE_REQUEST_LIMITER_MODE: 'fake',
 };
 
@@ -79,5 +78,20 @@ describe('W21 E3 — limite das superfícies da Request (TECH-100)', () => {
     expect(() =>
       loadEnv({ LUXCHANGE_REQUEST_LIMITER_MODE: 'fake', VERCEL_ENV: 'preview' }),
     ).toThrow();
+  });
+
+  it('[TECH-100] send_request: o gancho do executor conta por representação na superfície de envio; sem autorização → unavailable', async () => {
+    const limiter = recording(true);
+    const handler = withSendQuota(
+      { command: 'send_request', input: {} as never, execute: async () => ({}) },
+      createRequestQuota({ source: LIMITS, limiter: () => limiter }),
+    );
+    expect(await handler.consumeQuota!('party_delegation:abc')).toBe('allowed');
+    expect(limiter.keys).toEqual([
+      createHash('sha256')
+        .update('luxtory:luxchange-request-send:party_delegation:abc')
+        .digest('hex'),
+    ]);
+    expect(await handler.consumeQuota!(null)).toBe('unavailable');
   });
 });

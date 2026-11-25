@@ -135,6 +135,117 @@ describe('W21 E2 — encerramento da Request pela aplicação (ADR-0037 §7)', (
     expect(eventValidator('luxchange.request_closed')(event.rows[0])).toBe(true);
   });
 
+  /**
+   * Request com G = 0 (W21 C3): a noite Owner oferecida (200 Créditos potenciais) cobre os 150 necessários, sem Créditos
+   * na Carteira — nenhuma Garantia é retida.
+   */
+  async function sentZero(holder = f.holder) {
+    const r = await newRequester(f);
+    const nights = await pricedNights(f, [1_500n], holder.homeId);
+    const [offered] = await pricedNights(f, [2_000n], r.homeId);
+    const { outcome } = await app.quoteAndSend(
+      r,
+      app.shape(
+        r,
+        nights,
+        [{ kind: 'owner_night', second_home_id: r.homeId, stay_date: offered! }],
+        holder,
+      ),
+    );
+    if (outcome.status !== 'committed') throw new Error(JSON.stringify(outcome));
+    expect(outcome.result).toMatchObject({ guarantee_credits: '0', complement_excess: '50' });
+    return { r, offered: offered!, request: outcome.result };
+  }
+  /** Datas liberadas, Taxa revertida com estorno integral, um encerramento, nenhuma quebra de invariante. */
+  async function expectClosedWithoutGuarantee(requestId: string, home: string, night: string) {
+    const { rows } = await pool().query<{
+      transitions: number;
+      active: number;
+      effective: boolean;
+      reversals: number;
+      refunds: number;
+      full: boolean;
+      luxchange: number;
+      credits: number;
+    }>(
+      `SELECT (SELECT count(*)::int FROM app.luxchange_request_transition WHERE request_id = $1) AS transitions,
+              (SELECT count(*)::int FROM app.luxchange_request_complement_night
+                WHERE request_id = $1 AND state = 'active') AS active,
+              app.luxchange_complement_effective($2::uuid, $3::date) IS NOT NULL AS effective,
+              (SELECT count(*)::int FROM app.fee_charge_reversal v JOIN app.fee_charge f ON f.id = v.fee_charge_id
+                 JOIN app.luxchange_request r ON r.operation_id = f.operation_id WHERE r.id = $1) AS reversals,
+              (SELECT count(*)::int FROM app.refund x JOIN app.fee_charge f ON f.payment_id = x.payment_id
+                 JOIN app.luxchange_request r ON r.operation_id = f.operation_id WHERE r.id = $1) AS refunds,
+              (SELECT bool_and(x.amount_minor = f.amount_minor) FROM app.refund x
+                 JOIN app.fee_charge f ON f.payment_id = x.payment_id
+                 JOIN app.luxchange_request r ON r.operation_id = f.operation_id WHERE r.id = $1) AS full,
+              (SELECT count(*)::int FROM app.luxchange_invariant_breaches()) AS luxchange,
+              (SELECT count(*)::int FROM app.credit_invariant_breaches()) AS credits`,
+      [requestId, home, night],
+    );
+    expect(rows[0]).toEqual({
+      transitions: 1,
+      active: 0,
+      effective: false,
+      reversals: 1,
+      refunds: 1,
+      full: true,
+      luxchange: 0,
+      credits: 0,
+    });
+  }
+
+  it('[PD-012][PD-005] G = 0 — retirada: datas liberadas, Taxa estornada integralmente; replay sem efeito, nova tentativa recusada', async () => {
+    const { r, offered, request } = await sentZero();
+    const key = randomUUID();
+    const outcome = await app.withdraw(r, request.request_id, key);
+    expect(outcome).toMatchObject({
+      status: 'committed',
+      result: { state: 'cancelled_pre_accept', reason: 'withdrawn', guarantee_released: '0' },
+    });
+    expect(await app.withdraw(r, request.request_id, key)).toMatchObject({ replayed: true });
+    expect(await app.withdraw(r, request.request_id)).toMatchObject({
+      code: 'ERR_STATE_TRANSITION',
+    });
+    await expectClosedWithoutGuarantee(request.request_id, r.homeId, offered);
+  });
+
+  it('[PD-012][PD-007] G = 0 — expiração pelo job: encerra por prazo com as datas liberadas e a Taxa estornada', async () => {
+    const { r, offered, request } = await sentZero();
+    await ageRequest(f, request.request_id);
+    expect((await job()).failed).toBe(0);
+    expect(await requestRow(pool(), request.request_id)).toMatchObject({
+      state: 'expired',
+      closure_reason: 'expired',
+    });
+    await expectClosedWithoutGuarantee(request.request_id, r.homeId, offered);
+  });
+
+  it('[PD-012][EC-17] G = 0 — perda de elegibilidade do detentor: o job encerra; datas liberadas e Taxa estornada', async () => {
+    const holder = await secondTitular(c);
+    const { r, offered, request } = await sentZero(holder);
+    await suspend(c, holder.partyId);
+    try {
+      expect((await job()).failed).toBe(0);
+      expect(await requestRow(pool(), request.request_id)).toMatchObject({
+        state: 'cancelled_pre_accept',
+        closure_reason: 'holder_membership',
+      });
+      await expectClosedWithoutGuarantee(request.request_id, r.homeId, offered);
+    } finally {
+      await reactivate(c, holder.partyId);
+    }
+  });
+
+  it('[PD-012][CONC-16] G = 0 — retirada e job concorrentes sobre a Request vencida: um encerramento e um estorno', async () => {
+    const { r, offered, request } = await sentZero();
+    await ageRequest(f, request.request_id);
+    const settled = await Promise.allSettled([app.withdraw(r, request.request_id), job()]);
+    expect(settled.every((outcome) => outcome.status === 'fulfilled')).toBe(true);
+    expect(await requestRow(pool(), request.request_id)).toMatchObject({ state: 'expired' });
+    await expectClosedWithoutGuarantee(request.request_id, r.homeId, offered);
+  });
+
   it('[TECH-051] só o solicitante retira: o detentor (outra party) não encontra a Request; Request alheia não vaza', async () => {
     const { request } = await sent();
     expect(await app.withdraw(f.holder, request.request_id)).toMatchObject({

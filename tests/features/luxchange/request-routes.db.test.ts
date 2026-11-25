@@ -257,6 +257,43 @@ describe('W21 E3 — rotas /v1/luxchange/requests*', () => {
       [r.partyId],
     );
     expect(rows[0]!.n).toBe(0);
+    // Envio direto (send_request) também limitado, pelo gancho do executor: nada gravado; o replay não consome.
+    const paid = (await (
+      await post(fee, '/luxchange/requests/fee-payment', headers(r), shape)
+    ).json()) as { payment_id: string; quote: Parameters<typeof app.sendInput>[1] };
+    const input = app.sendInput(shape, paid.quote, paid.payment_id);
+    const key = randomUUID();
+    const limitedSend = withRoute(createSendRequestRoute(limited), log());
+    const refusedSend = await post(
+      limitedSend,
+      '/luxchange/requests',
+      headers(r, { 'idempotency-key': key }),
+      input,
+    );
+    expect(refusedSend.status).toBe(429);
+    expect(await refusedSend.json()).toMatchObject({ code: 'ERR_RATE_LIMITED' });
+    const requests = async () =>
+      (
+        await pool().query<{ n: number }>(
+          'SELECT count(*)::int AS n FROM app.luxchange_request WHERE requester_party_id = $1',
+          [r.partyId],
+        )
+      ).rows[0]!.n;
+    expect(await requests()).toBe(0);
+    expect(
+      (await post(send, '/luxchange/requests', headers(r, { 'idempotency-key': key }), input))
+        .status,
+    ).toBe(201);
+    const replay = await post(
+      limitedSend,
+      '/luxchange/requests',
+      headers(r, { 'idempotency-key': key }),
+      input,
+    );
+    expect(replay.status).toBe(201);
+    expect(replay.headers.get('idempotency-replayed')).toBe('true');
+    expect(await requests()).toBe(1);
+    await drain();
     const missing = withRoute(
       createRequestPreviewRoute({
         ...deps(),

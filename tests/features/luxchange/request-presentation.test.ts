@@ -134,7 +134,13 @@ describe('W21 E3 — formatação e avisos', () => {
       title: 'Solicitação enviada',
       href: '/titular/luxchange/solicitacoes/r',
     });
-    expect(sent!.what).toContain('2027-03-02 a 2027-03-03');
+    expect(sent!.what).toContain('Entrada 2027-03-02 · saída 2027-03-04 · 2 noites');
+    const single = requestNotificationCopy(
+      'luxchange.request_received',
+      { ...where, checkout: '2027-03-03' },
+      format,
+    );
+    expect(single!.what).toContain('Noite de 2027-03-02');
     expect(sent!.extra).toContainEqual(['Créditos em Garantia', '270 Créditos']);
     const received = requestNotificationCopy('luxchange.request_received', where, format);
     expect(received).toMatchObject({

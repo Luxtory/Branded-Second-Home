@@ -16,7 +16,7 @@ import {
   post,
   titularFor,
 } from './support/own-use';
-import { collectConsoleErrors } from './support/ui';
+import { captureForReview, collectConsoleErrors } from './support/ui';
 
 // W21 E3 (spec luxchange §13.5; REQ-062, REQ-097, REQ-100, PD-005, PD-007, PD-012; ADR-0037): Request completa pela
 // jornada real do Titular, com o PostgreSQL real e o PSP fake num segundo `next start` (porta do E2E + 3) — os demais
@@ -200,20 +200,20 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
       await press(dayA, true);
       await press(await showDate(target(requester), wantedB, true), true);
       await expect(summary(requester).locator('.lx-booking__status')).toHaveText(
-        `${wantedA.slice(8, 10)}/${wantedA.slice(5, 7)} a ${wantedB.slice(8, 10)}/${wantedB.slice(5, 7)} · 2 noites`,
+        `Entrada ${wantedA.slice(8, 10)}/${wantedA.slice(5, 7)} · saída ${addDays(wantedB, 1).slice(8, 10)}/${addDays(wantedB, 1).slice(5, 7)} · 2 noites`,
       );
       await expect(fact(summary(requester), 'Créditos necessários')).toContainText(
         '1.000 Créditos',
       );
-      await expect(fact(summary(requester), 'Saldo disponível antes do envio')).toContainText(
+      await expect(fact(summary(requester), 'Créditos disponíveis antes do envio')).toContainText(
         '2.000 Créditos',
       );
       // Datas próprias: a noite com 14 dias no fim do prazo, com os Créditos potenciais.
       const own = await showDate(complement(requester), ownNight, true);
       await press(own, true);
-      await expect(fact(summary(requester), 'Créditos potenciais do complemento')).toContainText(
-        '300 Créditos',
-      );
+      await expect(
+        fact(summary(requester), 'Créditos potenciais das datas oferecidas'),
+      ).toContainText('300 Créditos');
       await gate(requester, errors, 'w21-03-selecao');
 
       // Prévia do servidor na ordem de leitura: N, saldo antes, G, P (ainda não originados), cobertura, saldo depois.
@@ -223,24 +223,24 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
       const labels = await review.locator('.lx-booking__fact dt').allInnerTexts();
       expect(labels).toEqual([
         'Créditos necessários',
-        'Saldo disponível antes do envio',
+        'Créditos disponíveis antes do envio',
         'Créditos em Garantia',
-        'Créditos potenciais do complemento',
-        'Cobertura total',
-        'Saldo disponível após o envio',
+        'Créditos potenciais das datas oferecidas',
+        'Total coberto',
+        'Créditos disponíveis após o envio',
         'Taxa de intermediação',
         'Prazo para resposta',
       ]);
       for (const [label, value] of [
         ['Créditos necessários', '1.000 Créditos'],
-        ['Saldo disponível antes do envio', '2.000 Créditos'],
+        ['Créditos disponíveis antes do envio', '2.000 Créditos'],
         ['Créditos em Garantia', '700 Créditos'],
-        ['Créditos potenciais do complemento', '300 Créditos'],
-        ['Créditos potenciais do complemento', 'Ainda não originados'],
-        ['Créditos potenciais do complemento', br(ownNight).slice(0, 5)],
-        ['Cobertura total', '1.000 Créditos'],
-        ['Cobertura total', '700 em Garantia + 300 do complemento'],
-        ['Saldo disponível após o envio', '1.300 Créditos'],
+        ['Créditos potenciais das datas oferecidas', '300 Créditos'],
+        ['Créditos potenciais das datas oferecidas', 'Ainda não originados'],
+        ['Créditos potenciais das datas oferecidas', br(ownNight).slice(0, 5)],
+        ['Total coberto', '1.000 Créditos'],
+        ['Total coberto', '700 em Garantia + 300 das datas oferecidas'],
+        ['Créditos disponíveis após o envio', '1.300 Créditos'],
         ['Taxa de intermediação', 'R$ 98,76'],
         ['Prazo para resposta', '24 horas a partir do envio'],
       ] as const)
@@ -251,11 +251,15 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
       const policy = requester.locator('section[aria-labelledby="solicitacao-politica-titulo"]');
       await expect(policy.getByRole('heading', { name: 'Política da solicitação' })).toBeVisible();
       await expect(policy).toContainText('a Taxa de intermediação é devolvida integralmente');
-      await expect(
-        policy.getByRole('heading', { name: 'Depois do aceite (estadia confirmada)' }),
-      ).toBeVisible();
+      // Divulgação progressiva: as condições depois do aceite ficam a um toque, antes do aceite obrigatório.
+      await press(
+        policy.locator('summary', { hasText: 'Condições depois do aceite (estadia confirmada)' }),
+        true,
+      );
       for (const term of ['Cancelamento', 'Não comparecimento (no-show)'])
         await expect(policy.getByRole('heading', { name: term })).toBeVisible();
+      await expect(policy).toContainText('da Taxa de intermediação é devolvido');
+      await expect(policy).not.toContainText('Luxchange Fee');
       const send = review.getByRole('button', { name: 'Pagar a Taxa e enviar' });
       await expect(send).toBeDisabled();
       await review.getByLabel(/Li e aceito a política comercial/).check();
@@ -263,6 +267,22 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
       await review.getByLabel(/Aceito comprometer as datas acima/).check();
       await expect(send).toBeEnabled();
       await gate(requester, errors, 'w21-04-previa');
+      // Texto ampliado (200% na raiz, como o ajuste de fonte do sistema): sem overflow horizontal e prévia legível.
+      await requester.evaluate(() => {
+        document.documentElement.style.fontSize = '200%';
+      });
+      // A prévia não transborda por conta própria. (Shell e grade do calendário do DS passam alguns px a 320 px com 200%:
+      // achado do Design System, compartilhado pelos calendários das W12/W16/W20, registrado no relatório do C3.)
+      for (const width of [320, 390]) {
+        await requester.setViewportSize({ width, height: 844 });
+        const overflow = await summary(requester).evaluate((el) => el.scrollWidth - el.clientWidth);
+        expect(overflow, `prévia com texto ampliado a ${width}px`).toBeLessThanOrEqual(0);
+      }
+      await captureForReview(requester, 'w21-12-previa-texto-ampliado', { fromTop: true });
+      await requester.evaluate(() => {
+        document.documentElement.style.fontSize = '';
+      });
+      await requester.setViewportSize(MOBILE.viewport);
 
       // Pagamento aprovado → envio → detalhe com o estado real.
       await press(send, true);
@@ -341,7 +361,9 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
       await expect(fact(summary(requester), 'Créditos necessários')).toContainText('500 Créditos');
       await summary(requester).getByRole('button', { name: 'Ver prévia' }).click();
       await expect(fact(summary(requester), 'Créditos em Garantia')).toContainText('500 Créditos');
-      await expect(fact(summary(requester), 'Créditos potenciais do complemento')).toHaveCount(0);
+      await expect(
+        fact(summary(requester), 'Créditos potenciais das datas oferecidas'),
+      ).toHaveCount(0);
       await expect(summary(requester).getByLabel(/Aceito comprometer/)).toHaveCount(0);
       await summary(requester)
         .getByLabel(/Li e aceito a política comercial/)
@@ -409,20 +431,20 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
       await expect(option).toHaveCount(1);
       await expect(reservation).toContainText('600 Créditos potenciais');
       await option.check();
-      await expect(fact(summary(requester), 'Créditos potenciais do complemento')).toContainText(
-        '600 Créditos',
-      );
+      await expect(
+        fact(summary(requester), 'Créditos potenciais das datas oferecidas'),
+      ).toContainText('600 Créditos');
       await press(summary(requester).getByRole('button', { name: 'Ver prévia' }), true);
       const review = summary(requester);
       for (const [label, value] of [
         ['Créditos necessários', '500 Créditos'],
-        ['Saldo disponível antes do envio', '0 Créditos'],
+        ['Créditos disponíveis antes do envio', '0 Créditos'],
         ['Créditos em Garantia', '0 Créditos'],
-        ['Créditos potenciais do complemento', '600 Créditos'],
-        ['Créditos potenciais do complemento', coLabel],
-        ['Cobertura total', '0 em Garantia + 500 do complemento'],
+        ['Créditos potenciais das datas oferecidas', '600 Créditos'],
+        ['Créditos potenciais das datas oferecidas', coLabel],
+        ['Total coberto', '0 em Garantia + 500 das datas oferecidas'],
         ['Excedente', '100 Créditos'],
-        ['Saldo disponível após o envio', '0 Créditos'],
+        ['Créditos disponíveis após o envio', '0 Créditos'],
       ] as const)
         await expect(fact(review, label)).toContainText(value);
       await review.getByLabel(/Li e aceito a política comercial/).check();
