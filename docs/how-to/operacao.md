@@ -876,3 +876,13 @@ limites das páginas públicas. Nunca criar `LUXCHANGE_REQUEST_LIMITER_MODE` na 
 pré-requisito da ativação, junto de D2, PSP validado, parâmetros (`luxchange_fee_rate`, `luxchange_fee_minimum`,
 `request_deadline_hours`), política `luxchange_request` publicada e a W22.
 
+**Taxa de intermediação (Luxchange Fee).** O cálculo é o do `01` §24: o maior entre `luxchange_fee_rate` × PRL total
+das noites solicitadas (arredondado ao centavo, meio para cima) e `luxchange_fee_minimum` (centavos de real), lidos dos
+parâmetros versionados no instante do envio — nada fixo no código (`luxchangeFee` no pricing; testes em
+`tests/features/pricing/values.test.ts` e `tests/features/billing/fee.test.ts`). Não há mecanismo de benefício ou
+desconto na W21. Para o Go-to-Market, a decisão comercial vigente corresponde a `luxchange_fee_rate` = `0.12` e
+`luxchange_fee_minimum` = `12000` (R$ 120), publicados por `set_parameter` com autorização operacional do fundador
+(TECH-030). Os testes usam de propósito valores fictícios — percentual 0,12 e mínimo de 9876 centavos (R$ 98,76, um
+valor não redondo que expõe erros de arredondamento e formatação); por isso as capturas do E2E mostram R$ 98,76: com
+PRL total de R$ 100,00, 12% (R$ 12,00) fica abaixo do mínimo de teste, e o mínimo prevalece.
+

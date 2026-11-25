@@ -343,15 +343,20 @@ Request, com gatilhos desligados).
   leitura), escolha da party e da Second Home ("a partir de N Créditos por noite"), calendário da Second Home solicitada
   ("Solicitável"/"Indisponível"/"Passada", sem motivo; reserva Co-Owner do detentor inteira), datas próprias opcionais
   (Owner por noite; Co-Owner por reserva; só com 336 h no fim do prazo e sem compromisso efetivo), resumo estimado,
-  prévia do servidor (Créditos necessários, saldo disponível, datas a comprometer, Créditos potenciais, Créditos em
-  Garantia, total coberto, saldo potencial para intercâmbio, excedente, saldo que continua disponível, Taxa de
-  intermediação em R$, prazo em horas, validade, Créditos por noite) em grupos de uma natureza só — Carteira agora,
-  cobertura (Garantia + Créditos potenciais ainda não originados), depois do envio, Taxa e prazo —, os termos efetivos
-  da política `luxchange_request` (`PolicyTerms`) e dois aceites (política — `PolicyAcceptance`, o id da versão
-  apresentada precisa ser o da prévia; complemento), "Pagar a
+  prévia do servidor numa lista única, na ordem de leitura — Créditos necessários, saldo disponível antes do envio,
+  Créditos em Garantia, Créditos potenciais do complemento (ainda não originados, com as datas), cobertura total
+  (Garantia + complemento), excedente só quando existe (com a validade), saldo disponível após o envio — e Taxa e prazo,
+  com os Créditos por noite recolhíveis. Sem "saldo potencial para intercâmbio" na Request: ele somaria Créditos que não
+  ficam disponíveis ao mesmo tempo (o conceito segue na simulação do depósito). A política `luxchange_request` fica numa
+  seção da página que separa os dois regimes — até a resposta, sem aceite, Taxa devolvida integralmente, Garantia e
+  datas liberadas; depois do aceite, os termos efetivos (`PolicyTerms`, onde "Luxchange Fee" é a Taxa de
+  intermediação) — e a revisão traz dois aceites (política — `PolicyAcceptance`, o id da versão apresentada precisa ser
+  o da prévia; complemento), "Pagar a
   Taxa e enviar" (pendente → "Pagamento em processamento"; termos mudados antes da cobrança → nova prévia, nada cobrado;
   recusa depois do pagamento → "devolução em processamento") e detalhe com o estado real da Request, do pagamento e do
-  estorno ("solicitada — em processamento" até o PSP confirmar; nunca "devolvida" antes) e "Retirar solicitação". A
+  estorno — Taxa com o estado do pagamento na mesma linha ("paga", "pagamento em processamento") e "Devolução da Taxa"
+  só quando existe ("solicitada — em processamento" até o PSP confirmar, nunca "concluída" antes) — e "Retirar
+  solicitação". A
   capacidade alheia só é lida com Membership ativo; Créditos potenciais nunca como saldo; nunca PRL em reais. Versão do
   texto dos aceites: `request-consent.pt-br.v2` (i18n).
 - **Integração**: Carteira (seção "Datas comprometidas com solicitação pendente", Créditos potenciais não utilizáveis),
@@ -362,6 +367,6 @@ Request, com gatilhos desligados).
   próprias, prévia, termos e aceite da política, pagamento no PSP fake, detalhe, Carteira, recebida e aviso do
   solicitado, retirada e estorno), a 1440 px (Garantia só, do início à retirada) e Co-Owner (reserva inteira como datas
   próprias, `G = 0` e excedente, aviso na reserva comprometida, retirada); axe e overflow a cada etapa. Capturas `w21-`
-  publicadas pela CI como artefato `ui-captures` do run. O PSP fake roda num segundo
+  a 320, 390 e 1440 px publicadas pela CI como artefato `ui-captures` do run. O PSP fake roda num segundo
   `next start` do servidor de E2E (porta + 3), só para este spec. O seed da Carteira da W17 continua como histórico
   sintético; a Carteira com uma Request real fica provada por este spec.
