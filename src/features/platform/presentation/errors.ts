@@ -33,6 +33,7 @@ export const ERROR_STATUS: Readonly<Record<ErrorCode, number>> = {
   ERR_CANCELLATION_TERMS_CHANGED: 409,
   ERR_GUEST_RULES_CHANGED: 409,
   ERR_DEPOSIT_TERMS_CHANGED: 409,
+  ERR_REQUEST_TERMS_CHANGED: 409,
 };
 
 /** Resposta no schema `Error` do OpenAPI, com a causa funcional em pt-BR (REQ-098). */

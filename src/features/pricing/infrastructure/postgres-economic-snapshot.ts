@@ -27,6 +27,30 @@ export async function recordEconomicSnapshot(
                       ${night.prlId}::uuid)`.execute(tx);
 }
 
+/**
+ * Vínculo persistente da política aceita com a operação (W21; obrigação da W18, ADR-0037 §1): a versão resolvida nos
+ * termos, gravada no snapshot da mesma operação. O banco confere que é a vigente no instante da resolução e que só o
+ * envio de Request a grava. Termos sem política → erro de programação do consumidor.
+ */
+export async function recordAcceptedPolicy(
+  tx: DatabaseTransaction,
+  operationId: string,
+  terms: EconomicTerms,
+): Promise<void> {
+  if (terms.policy === null) throw new MissingAcceptedPolicyError();
+  await sql`INSERT INTO app.economic_snapshot_policy (operation_id, policy_id)
+            VALUES (${operationId}::uuid, ${terms.policy.policyId}::uuid)`.execute(tx);
+}
+
+export class MissingAcceptedPolicyError extends Error {
+  constructor() {
+    super(
+      'The accepted policy is recorded only from terms resolved with a policy (W21, ADR-0037 §1)',
+    );
+    this.name = 'MissingAcceptedPolicyError';
+  }
+}
+
 /** Gravador do snapshot como porta dos módulos consumidores. */
 export const postgresEconomicSnapshotRecorder = {
   record: recordEconomicSnapshot,

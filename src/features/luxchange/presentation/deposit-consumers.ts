@@ -6,10 +6,14 @@ import {
   type OutboxConsumer,
 } from '@/features/platform';
 import { buildDepositConsumers } from '../application/deposit-consumers';
+import { buildRequestConsumers } from '../application/request-consumers';
 
-/** Consumidores do outbox do depósito Luxchange (W20), registrados pelo job `outbox` do platform. */
+/** Consumidores do outbox do Luxchange — depósito (W20) e Request (W21) —, registrados pelo job `outbox` do platform. */
 export function createLuxchangeConsumers({
   clock = systemClock,
 }: { readonly clock?: Clock } = {}): readonly OutboxConsumer<DatabaseTransaction>[] {
-  return buildDepositConsumers<DatabaseTransaction>({ clock, notify: recordNotification });
+  return [
+    ...buildDepositConsumers<DatabaseTransaction>({ clock, notify: recordNotification }),
+    ...buildRequestConsumers<DatabaseTransaction>({ clock, notify: recordNotification }),
+  ];
 }

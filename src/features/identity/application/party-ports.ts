@@ -166,6 +166,8 @@ export interface HoldingDirectory {
     secondHomeId: string,
     at: Date,
   ): Promise<RepresentedHolding | null>;
+  /** Uma holding vigente da party em qualquer Second Home (W21: membro solicitante), em ordem estável; nenhuma → `null`. */
+  anyCurrentHolding(partyId: string, at: Date): Promise<RepresentedHolding | null>;
 }
 
 /**

@@ -2812,7 +2812,8 @@ paths:
         Chamado pelo Vercel Cron, que só faz `GET`, com `Authorization: Bearer <CRON_SECRET>`. Cada execução e cada
         item são idempotentes (TECH-090); execuções em paralelo produzem um único efeito. Só existem os jobs do
         registro de jobs implementados (W1: `outbox`; W10: `open_exercise`; W11: `close_exercise`; W13:
-        `advance_booking_states`, `flag_no_show_candidates`; W17: `expire_credit_lots`; W19: `reconciliation`).
+        `advance_booking_states`, `flag_no_show_candidates`; W17: `expire_credit_lots`; W19: `reconciliation`; W21:
+        `expire_requests`).
 
         `open_exercise` (spec calendar §5–§6, ADR-0024, ADR-0025): sela o exercício corrente e o seguinte de cada
         Second Home formalizada, um exercício por transação, com a custódia raiz de cada noite e, no Co-Owner, as
@@ -2857,6 +2858,14 @@ paths:
         `pending` são executados no PSP com a chave do próprio estorno. Estado sempre monotônico; repetição ou execução
         concorrente não cria efeito novo. Contagens: `confirmed`, `still_pending`, `refunds_opened`,
         `refunds_succeeded`, `refunds_failed`, `alerts`, `failed` (só log estruturado) e `deferred`.
+
+        `expire_requests` (TECH-024, TECH-044, TECH-090; spec luxchange §13.4, ADR-0037 §7): materializa o encerramento
+        pré-aceite das Requests pendentes que não podem mais ser aceitas — vencidas pelo relógio do banco (command de
+        sistema `expire_requests`) ou inelegíveis com prova registrada desde o envio (`close_ineligible_request`) —, uma
+        transação por Request e chave de idempotência por Request: Garantia inteira liberada, compromissos liberados,
+        Taxa de intermediação revertida com estorno integral (processado no PSP em seguida; sem PSP, fica `pending` para
+        a conciliação). Nunca a única proteção de prazo ou exclusividade. Contagens: `due`, `expired`,
+        `closed_ineligible`, `skipped` (já encerrada ou replay), `failed` (só log estruturado) e `deferred`.
       operationId: runJob
       security:
         - cronSecret: []
@@ -2877,6 +2886,7 @@ paths:
                   flag_no_show_candidates,
                   expire_credit_lots,
                   reconciliation,
+                  expire_requests,
                 ]
       responses:
         '200':
@@ -3462,7 +3472,10 @@ components:
         declaração de convidados; nada é gravado e a tela relê as regras atuais (W14, ADR-0030 §4; spec booking §11).
         `ERR_DEPOSIT_TERMS_CHANGED` — os Créditos ou a validade revisados pelo Titular diferem dos recalculados no
         instante transacional do depósito (PRL, multiplicador ou validade publicados nesse meio-tempo); nada é gravado e
-        a tela pede nova revisão (W20, ADR-0036 §8; spec luxchange §5.3).
+        a tela pede nova revisão (W20, ADR-0036 §8; spec luxchange §5.3). `ERR_REQUEST_TERMS_CHANGED` — algum termo
+        revisado da Request (Créditos por noite, Créditos necessários, Créditos potenciais, Garantia, Taxa de
+        intermediação, prazo em horas, validade) difere do recalculado no instante transacional do envio; nada é gravado e
+        a tela pede nova revisão (W21, ADR-0037 §3; spec luxchange §13.4).
       enum:
         - ERR_PERMISSION
         - ERR_MEMBERSHIP_INELIGIBLE
@@ -3494,6 +3507,7 @@ components:
         - ERR_CANCELLATION_TERMS_CHANGED
         - ERR_GUEST_RULES_CHANGED
         - ERR_DEPOSIT_TERMS_CHANGED
+        - ERR_REQUEST_TERMS_CHANGED
 
     BrandPartnerContactRequest:
       type: object

@@ -339,6 +339,7 @@ describe('guard: ativação pelo próprio convidado (invitee, W7)', () => {
 describe('guard do Titular (W12, TECH-050/051)', () => {
   const OWN_USE = spec('create_own_use_booking');
   const HOME = '00000000-0000-4000-8000-0000000000d1';
+  const OTHER_PARTY = '00000000-0000-4000-8000-0000000000c3';
   const titular: Actor = {
     kind: 'user',
     userId: PARTNER_USER,
@@ -351,6 +352,8 @@ describe('guard do Titular (W12, TECH-050/051)', () => {
   ) => ({
     currentHolding: async (partyId: string, secondHomeId: string) =>
       rows[`${partyId}:${secondHomeId}`] ?? null,
+    anyCurrentHolding: async (partyId: string) =>
+      Object.entries(rows).find(([key]) => key.startsWith(`${partyId}:`))?.[1] ?? null,
   });
   const titularGuard = (
     holdingRows: Parameters<typeof holdings>[0] | undefined,
@@ -397,5 +400,47 @@ describe('guard do Titular (W12, TECH-050/051)', () => {
     await expect(
       titularGuard(held).authorize(OWN_USE, { ...titular, role: 'grantee' }, {}, scope),
     ).resolves.toEqual({ allowed: false });
+  });
+
+  it('[TECH-051][W21] membro solicitante: escopo `party` da própria party com holding vigente em qualquer Second Home', async () => {
+    const SEND = spec('send_request');
+    await expect(
+      titularGuard(held).authorize(SEND, titular, {}, { type: 'party', id: PARTY }),
+    ).resolves.toEqual({ allowed: true, authorizationRef: 'holding:holding-1' });
+    for (const [rows, scope] of [
+      [{}, { type: 'party', id: PARTY }],
+      [held, { type: 'party', id: OTHER_PARTY }],
+    ] as const)
+      await expect(titularGuard(rows).authorize(SEND, titular, {}, scope)).resolves.toEqual({
+        allowed: false,
+      });
+    await expect(
+      titularGuard(held, []).authorize(SEND, titular, {}, { type: 'party', id: PARTY }),
+    ).resolves.toEqual({ allowed: false });
+  });
+
+  it('[TECH-051][W21] solicitante (`requester`): só a delegação vigente da party que age, escopo `party` dela', async () => {
+    const WITHDRAW = spec('withdraw_request');
+    await expect(
+      titularGuard({}).authorize(WITHDRAW, titular, {}, { type: 'party', id: PARTY }),
+    ).resolves.toEqual({
+      allowed: true,
+      authorizationRef: expect.stringMatching(/^party_delegation:/),
+    });
+    for (const [actor, scope, delegations] of [
+      [titular, { type: 'party', id: OTHER_PARTY }, undefined],
+      [titular, { type: 'second_home', id: HOME }, undefined],
+      [{ ...titular, actingPartyId: null }, { type: 'party', id: PARTY }, undefined],
+      [{ ...titular, role: 'admin' }, { type: 'party', id: PARTY }, undefined],
+      [titular, { type: 'party', id: PARTY }, []],
+    ] as const)
+      await expect(
+        titularGuard({}, delegations === undefined ? undefined : [...delegations]).authorize(
+          WITHDRAW,
+          actor as Actor,
+          {},
+          scope,
+        ),
+      ).resolves.toEqual({ allowed: false });
   });
 });

@@ -189,6 +189,19 @@ export function sumCredits(values: readonly string[]): string {
   );
 }
 
+/** Comparação exata de duas quantidades em texto decimal canônico (negativo, zero ou positivo). */
+export function compareCredits(left: string, right: string): number {
+  const { units } = scaled([left, right]);
+  return units[0]! < units[1]! ? -1 : units[0]! > units[1]! ? 1 : 0;
+}
+
+/** Diferença exata `left − right` de quantidades em texto decimal canônico; resultado negativo → erro (bug do chamador). */
+export function subtractCredits(left: string, right: string): string {
+  const { digits, units } = scaled([left, right]);
+  if (units[0]! < units[1]!) throw new RangeError(`negative credit difference: ${left} − ${right}`);
+  return fromUnits(units[0]! - units[1]!, digits);
+}
+
 /** Igualdade exata de duas quantidades em texto decimal canônico. */
 export function sameCredits(left: string, right: string): boolean {
   if (!DECIMAL.test(left) || !DECIMAL.test(right)) return false;

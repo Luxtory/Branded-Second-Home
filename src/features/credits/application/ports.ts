@@ -57,6 +57,16 @@ export interface CreditStore<Tx> {
   lockConsumption(tx: Tx, entryId: string): Promise<OpenEntry | null>;
   /** Um lote travado `FOR UPDATE`; `null` = inexistente. */
   lockLot(tx: Tx, lotId: string): Promise<LockedLot | null>;
+  /**
+   * Reenvio (W21, EC-21): numa única trava da classe 7, em ordem FEFO, os lotes utilizáveis da party e os lotes das
+   * Garantias das operações informadas; devolve os lotes travados (com o saldo e a validade lidos depois da trava) e as
+   * Garantias com saldo restante.
+   */
+  lockLotsReleasing(
+    tx: Tx,
+    partyId: string,
+    holdOperationIds: readonly string[],
+  ): Promise<{ readonly lots: readonly LockedLot[]; readonly open: readonly OpenEntry[] }>;
   insertLot(
     tx: Tx,
     input: { operationId: string; partyId: string; quantity: string },

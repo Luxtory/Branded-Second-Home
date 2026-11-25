@@ -18,12 +18,15 @@ export {
   type EconomicParameterKey,
   type EconomicParameterUnit,
   type EconomicTerms,
+  type EconomicTermsHomeNight,
   type EconomicTermsRequest,
   type EconomicTermsStore,
 } from './application/economic-terms';
 export { createPostgresEconomicTermsStore } from './infrastructure/postgres-economic-terms-store';
 export {
+  MissingAcceptedPolicyError,
   postgresEconomicSnapshotRecorder,
+  recordAcceptedPolicy,
   recordEconomicSnapshot,
 } from './infrastructure/postgres-economic-snapshot';
 export {

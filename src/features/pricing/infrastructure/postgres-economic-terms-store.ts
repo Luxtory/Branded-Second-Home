@@ -62,6 +62,28 @@ export function createPostgresEconomicTermsStore(): EconomicTermsStore<DatabaseT
         })),
       };
     },
+    async lockPrl(tx, secondHomeId) {
+      await sql`SELECT pg_advisory_xact_lock_shared(hashtextextended(${`app.prl:${secondHomeId.toLowerCase()}`}, 0))`.execute(
+        tx,
+      );
+    },
+    async prlNightsAt(tx, secondHomeId, dates, at) {
+      const { rows } = await sql<{
+        night: string;
+        prl_id: string | null;
+        amount: string | null;
+        currency: string | null;
+      }>`SELECT d.night::text AS night, v.id AS prl_id, v.amount_minor::text AS amount, v.currency
+           FROM unnest(${[...dates]}::date[]) AS d(night)
+           LEFT JOIN LATERAL app.prl_at(${secondHomeId}::uuid, d.night, ${at}::timestamptz) v ON true
+          ORDER BY d.night`.execute(tx);
+      return rows.map((row) => ({
+        stayDate: row.night,
+        prlId: row.prl_id,
+        amountMinor: row.amount,
+        currency: row.currency,
+      }));
+    },
     async databaseInstant(tx) {
       const { rows } = await sql<{ at: string }>`
         SELECT to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS at`.execute(

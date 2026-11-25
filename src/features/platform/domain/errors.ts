@@ -42,12 +42,15 @@ export const PLATFORM_ERROR_CODES = [
  * instante da escrita (W13, D7; spec booking §10.5, §10.12); `ERR_GUEST_RULES_CHANGED` — a versão de `guest_rules`
  * aceita pelo Titular não é a vigente no instante da declaração (W14, ADR-0030 §4; spec booking §11);
  * `ERR_DEPOSIT_TERMS_CHANGED` — os Créditos ou a validade revisados diferem dos recalculados no instante transacional do
- * depósito (W20, ADR-0036 §8; spec luxchange §5.3).
+ * depósito (W20, ADR-0036 §8; spec luxchange §5.3); `ERR_REQUEST_TERMS_CHANGED` — algum termo revisado da Request
+ * (Créditos por noite, `N`, `P`, `G`, Taxa de intermediação, prazo, validade) difere do recalculado no instante
+ * transacional do envio (W21, ADR-0037 §3; spec luxchange §13.4).
  */
 export const PRODUCT_ERROR_CODES = [
   'ERR_CANCELLATION_TERMS_CHANGED',
   'ERR_GUEST_RULES_CHANGED',
   'ERR_DEPOSIT_TERMS_CHANGED',
+  'ERR_REQUEST_TERMS_CHANGED',
 ] as const;
 
 export const ERROR_CODES = [
@@ -120,6 +123,19 @@ const CONSTRAINT_NAMES: ReadonlyMap<string, RejectionCode> = new Map([
   ['credit_membership_ineligible', 'ERR_MEMBERSHIP_INELIGIBLE'],
   // W20 (ADR-0036 §3; TECH-043): depósito a menos de 14 dias do check-in, pelo relógio do banco.
   ['deposit_min_notice', 'ERR_MIN_NOTICE'],
+  // W21 (ADR-0037 §4–§7): recusas funcionais do envio e do encerramento da Request conferidas pelo banco. As demais
+  // constraints da Request (N, P, G, consentimento, completude) só falham por bug ou forja: falha técnica.
+  ['luxchange_complement_notice', 'ERR_MIN_NOTICE'],
+  ['luxchange_complement_night_active', 'ERR_CAPACITY_UNAVAILABLE'],
+  ['luxchange_complement_booking_active', 'ERR_CAPACITY_UNAVAILABLE'],
+  ['luxchange_complement_booking', 'ERR_CAPACITY_UNAVAILABLE'],
+  ['luxchange_request_holder_holding', 'ERR_CAPACITY_UNAVAILABLE'],
+  ['luxchange_request_period_started', 'ERR_CAPACITY_UNAVAILABLE'],
+  ['luxchange_request_holder_ineligible', 'ERR_MEMBERSHIP_INELIGIBLE'],
+  ['luxchange_request_self_dealing', 'ERR_PERMISSION'],
+  ['luxchange_request_closing_binding', 'ERR_PERMISSION'],
+  ['luxchange_request_still_acceptable', 'ERR_STATE_TRANSITION'],
+  ['credit_hold_request', 'ERR_CREDIT_HOLD_INVALID'],
 ]);
 
 export function rejectionForConstraint(constraint: string): RejectionCode | null {

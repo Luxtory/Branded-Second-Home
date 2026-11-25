@@ -60,7 +60,30 @@ async function authorize(
   if (spec.authority === 'grantee') return authorizeGrantee(deps, spec, actor, scope);
   if (spec.authority === 'invitee') return authorizeInvitee(deps, actor, scope);
   if (spec.authority === 'titular') return authorizeTitular(deps, actor, scope);
+  if (spec.authority === 'requester') return authorizeRequester(deps, actor, scope);
   return DENY;
+}
+
+/**
+ * Solicitante de Request (TECH-051 "solicitante"; W21): o usuário representa, agora, a party que age — e só ela, pelo
+ * escopo `party`. Que a party é a solicitante da Request é conferido dentro da transação, sob a trava da Request, e pelo
+ * banco; encerrar a própria obrigação não depende de holding nem de Membership (ADR-0037 §7, §10).
+ */
+async function authorizeRequester(
+  deps: GuardDependencies,
+  actor: Extract<Actor, { kind: 'user' }>,
+  scope: CommandScope | null,
+): Promise<AuthorizationDecision> {
+  if (actor.role !== 'titular' || actor.actingPartyId === null) return DENY;
+  if (scope === null || scope.type !== 'party' || scope.id !== actor.actingPartyId) return DENY;
+  const delegation = await deps.delegations.currentDelegation(
+    actor.userId,
+    actor.actingPartyId,
+    deps.clock.now(),
+  );
+  return delegation === null
+    ? DENY
+    : { allowed: true, authorizationRef: `party_delegation:${delegation.id}` };
 }
 
 /**
@@ -74,7 +97,10 @@ async function authorizeTitular(
 ): Promise<AuthorizationDecision> {
   if (actor.role !== 'titular' || actor.actingPartyId === null || deps.holdings === undefined)
     return DENY;
-  if (scope === null || scope.type !== 'second_home') return DENY;
+  // Escopo `second_home`: holding na Second Home do command (W12). Escopo `party` (W21, membro solicitante): a própria
+  // party que age, com holding vigente em qualquer Second Home — a Second Home da operação é a solicitada.
+  const byParty = scope?.type === 'party' && scope.id === actor.actingPartyId;
+  if (scope === null || (scope.type !== 'second_home' && !byParty)) return DENY;
   const now = deps.clock.now();
   const delegation = await deps.delegations.currentDelegation(
     actor.userId,
@@ -82,7 +108,9 @@ async function authorizeTitular(
     now,
   );
   if (delegation === null) return DENY;
-  const holding = await deps.holdings.currentHolding(actor.actingPartyId, scope.id, now);
+  const holding = byParty
+    ? await deps.holdings.anyCurrentHolding(actor.actingPartyId, now)
+    : await deps.holdings.currentHolding(actor.actingPartyId, scope.id, now);
   return holding === null ? DENY : { allowed: true, authorizationRef: `holding:${holding.id}` };
 }
 

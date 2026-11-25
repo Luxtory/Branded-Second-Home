@@ -41,6 +41,7 @@ export {
 } from './application/payments';
 export {
   chargeLuxchangeFee,
+  lockPayments,
   quoteLuxchangeFee,
   recordFeeSettlement,
   reverseLuxchangeFee,

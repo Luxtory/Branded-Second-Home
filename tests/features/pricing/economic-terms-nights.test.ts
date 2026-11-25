@@ -34,6 +34,21 @@ function fakeStore(prices: Readonly<Record<string, string>>) {
       return { resolvedAt: '2027-01-01T00:00:00.000000Z', nights };
     },
     databaseInstant: async () => '2027-01-01T00:00:00.000000Z',
+    async lockPrl(_tx, secondHomeId) {
+      calls.push(['lock', secondHomeId]);
+    },
+    async prlNightsAt(_tx, secondHomeId, dates, at) {
+      calls.push(['at', secondHomeId, at]);
+      return dates.map((stayDate) => {
+        const amount = prices[`${secondHomeId}:${stayDate}`] ?? null;
+        return {
+          stayDate,
+          prlId: amount === null ? null : `prl-${secondHomeId}-${stayDate}`,
+          amountMinor: amount,
+          currency: amount === null ? null : 'BRL',
+        };
+      });
+    },
     parametersAt: async () =>
       new Map([['credit_multiplier', { id: 'p-1', value: '10', currency: null }]]),
   };
@@ -91,6 +106,93 @@ describe('W20 — EconomicTerms por conjunto de noites (REQ-052, ADR-0036 §4)',
           parameters: [],
           period: { secondHomeId: HOME, checkin: '2027-03-01', checkout: '2027-03-02' },
           nights: { secondHomeId: HOME, dates: ['2027-03-01'] },
+        }),
+      ),
+    ).toBe('ERR_VALIDATION');
+    expect(calls).toEqual([]);
+  });
+});
+
+describe('W21 — noites de outras Second Homes no mesmo instante (ADR-0037 §4; PD-012, TECH-031)', () => {
+  const LOW = '00000000-0000-4000-8000-000000000001';
+  const HIGH = '00000000-0000-4000-8000-0000000000ff';
+  const withOthers = (
+    store: EconomicTermsStore<null>,
+    others: { secondHomeId: string; dates: string[] }[],
+  ) =>
+    resolveEconomicTerms(null, new LockSequence(), store, {
+      parameters: ['credit_multiplier'],
+      nights: { secondHomeId: HOME, dates: ['2027-03-01'] },
+      otherNights: others,
+    });
+
+  it('[TECH-053] todas as travas do PRL, em ordem crescente, antes do instante; as outras noites lidas nesse instante', async () => {
+    const { store, calls } = fakeStore({
+      '2027-03-01': '10001',
+      [`${LOW}:2027-04-01`]: '300',
+      [`${HIGH}:2027-04-02`]: '400',
+    });
+    const terms = await withOthers(store, [
+      { secondHomeId: HIGH, dates: ['2027-04-02'] },
+      { secondHomeId: LOW, dates: ['2027-04-01'] },
+    ]);
+    expect(calls).toEqual([
+      ['lock', LOW],
+      ['lock', HOME],
+      ['lock', HIGH],
+      [HOME, '2027-03-01', '2027-03-02'],
+      ['at', LOW, '2027-01-01T00:00:00.000000Z'],
+      ['at', HIGH, '2027-01-01T00:00:00.000000Z'],
+    ]);
+    expect(terms.otherNights).toEqual([
+      {
+        secondHomeId: LOW,
+        stayDate: '2027-04-01',
+        prlId: `prl-${LOW}-2027-04-01`,
+        amountMinor: '300',
+        currency: 'BRL',
+      },
+      {
+        secondHomeId: HIGH,
+        stayDate: '2027-04-02',
+        prlId: `prl-${HIGH}-2027-04-02`,
+        amountMinor: '400',
+        currency: 'BRL',
+      },
+    ]);
+    // Fora do PRL total e das noites do snapshot.
+    expect(terms.prlTotal).toEqual({ amountMinor: '10001', currency: 'BRL' });
+    expect(terms.nights).toHaveLength(1);
+  });
+
+  it('[TECH-001] noite de outra Second Home sem PRL → ERR_PRL_MISSING; sem pedido, nenhuma trava a mais', async () => {
+    const { store, calls } = fakeStore({ '2027-03-01': '10001' });
+    expect(await code(withOthers(store, [{ secondHomeId: LOW, dates: ['2027-04-01'] }]))).toBe(
+      'ERR_PRL_MISSING',
+    );
+    calls.length = 0;
+    const terms = await resolve(store, ['2027-03-01']);
+    expect(calls).toEqual([[HOME, '2027-03-01', '2027-03-02']]);
+    expect(terms.otherNights).toBeUndefined();
+  });
+
+  it('sem o PRL principal, com a mesma Second Home, repetida ou com datas inválidas → ERR_VALIDATION', async () => {
+    const { store, calls } = fakeStore({ '2027-03-01': '10001' });
+    for (const others of [
+      [{ secondHomeId: HOME, dates: ['2027-04-01'] }],
+      [
+        { secondHomeId: LOW, dates: ['2027-04-01'] },
+        { secondHomeId: LOW, dates: ['2027-04-02'] },
+      ],
+      [{ secondHomeId: LOW, dates: ['2027-04-02', '2027-04-01'] }],
+      [{ secondHomeId: LOW, dates: [] }],
+    ])
+      expect(await code(withOthers(store, others))).toBe('ERR_VALIDATION');
+    expect(
+      await code(
+        resolveEconomicTerms(null, new LockSequence(), store, {
+          parameters: [],
+          otherNights: [{ secondHomeId: LOW, dates: ['2027-04-01'] }],
         }),
       ),
     ).toBe('ERR_VALIDATION');

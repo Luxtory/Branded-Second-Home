@@ -52,6 +52,8 @@ export const messages = {
       'As regras de convidados da Second Home mudaram. Leia as regras atuais antes de declarar.',
     ERR_DEPOSIT_TERMS_CHANGED:
       'Os Créditos ou a validade do depósito mudaram desde a revisão. Revise os valores atualizados antes de confirmar.',
+    ERR_REQUEST_TERMS_CHANGED:
+      'Os valores da solicitação mudaram desde a revisão. Revise os valores atualizados antes de enviar.',
   },
   // Notificação de staff dos alertas operacionais (W10, TECH-101): só identificadores e códigos, nunca PII.
   operationalAlert: {

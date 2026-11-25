@@ -61,6 +61,28 @@ async function lock<Tx>(
 }
 
 /**
+ * Trava de uma vez, em ordem crescente de id (TECH-053, classe 8), os pagamentos que a transação vai tocar — no reenvio
+ * de Request (W21, EC-21), os dos Fees revertidos pelos encerramentos materializados e o do novo Fee. Vincular, reverter
+ * ou apurar depois reutiliza a trava, sem nova entrada na ordem.
+ */
+export async function lockPayments<Tx>(
+  context: BillingContext<Tx>,
+  deps: FeeDependencies<Tx>,
+  paymentIds: readonly string[],
+): Promise<void> {
+  const held = lockedPayments.get(context.locks) ?? new Set<string>();
+  const keys = context.locks.claim(
+    'payment',
+    paymentIds.filter((id) => !held.has(id)),
+  );
+  for (const id of keys) held.add(id);
+  lockedPayments.set(context.locks, held);
+  for (const id of keys)
+    if ((await deps.store.lockPayment(context.tx, id)) === null)
+      throw new CommandRejection('ERR_NOT_FOUND');
+}
+
+/**
  * Etapa 4 do TECH-080 para o Fee (TECH-082): dentro da transação de `send_request` ou `create_direct`, depois do
  * snapshot, vincula o pagamento aprovado da party que age ao Fee da operação. Pagamento de outra party →
  * `ERR_PERMISSION`; não aprovado, de outra finalidade, já vinculado, em estorno ou com valor diferente do Fee calculado

@@ -11,7 +11,7 @@ import {
 import { createReconciliationJob } from '@/features/billing/jobs';
 import { createExpireCreditLotsJob } from '@/features/credits/jobs';
 import { createMembershipConsumers } from '@/features/identity/jobs';
-import { createLuxchangeConsumers } from '@/features/luxchange/jobs';
+import { createExpireRequestsJob, createLuxchangeConsumers } from '@/features/luxchange/jobs';
 import { createInitialDrawConsumers } from '@/features/ownership';
 import type { Clock } from '../../application/clock';
 import { JobRegistry, type JobRunner } from '../../application/jobs/registry';
@@ -47,7 +47,8 @@ export function createOutboxConsumers({
     ...createOwnUseBookingConsumers({ clock }),
     // W15 — notificação da mudança de estado do Membership (spec identity §15).
     ...createMembershipConsumers({ clock }),
-    // W20 — notificação da originação de Créditos pelo depósito Luxchange (spec luxchange §5.5).
+    // W20 — notificação da originação de Créditos pelo depósito Luxchange (spec luxchange §5.5); W21 — notificações
+    // do envio e do encerramento da Request (spec luxchange §13.6).
     ...createLuxchangeConsumers({ clock }),
   ]);
 }
@@ -87,5 +88,7 @@ export function createJobRegistry(environment: JobEnvironment): JobRegistry {
     expire_credit_lots: createExpireCreditLotsJob(environment),
     // W19 — conciliação de pagamentos e estornos; no-op sem gateway (spec billing §4.5).
     reconciliation: createReconciliationJob(environment),
+    // W21 — encerramentos pré-aceite das Requests vencidas ou inelegíveis; nunca a única proteção (ADR-0037 §7).
+    expire_requests: createExpireRequestsJob(environment),
   });
 }

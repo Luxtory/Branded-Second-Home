@@ -270,3 +270,45 @@ Migration aplicada pelo pipeline com K4–K7 sem linha; nada enviável em Produc
 PSP com validação confiável, de parâmetros (`credit_multiplier`, `credit_validity_months`, `luxchange_fee_rate`,
 `luxchange_fee_minimum`, `request_deadline_hours`) e política `luxchange_request` publicados, por migration e autorização
 do fundador.
+
+### 13.10 Aplicação (E2) — contratos implementados
+
+Slice `src/features/luxchange` (ADR-0037; decisões técnicas não repetidas aqui):
+
+- **Domínio** (`domain/request.ts`, puro): capacidade solicitada (Owner livre, Co-Owner por reserva confirmada inteira,
+  noites futuras, sem compromisso efetivo), unidades do complemento (como no depósito, com 336 h cumpridas no prazo de
+  resposta), composição `N`, `P`, `G`, `C`, `E` com a regra de seleção, e o documento de termos do consentimento no formato
+  que o banco recompõe (`app.luxchange_request_terms`).
+- **`send_request`** (`application/send-request.ts`; registro TECH-051 `titular` + Membership; escopo do guard `party`):
+  entrada `party_id`, `second_home_id`, `checkin`, `checkout`, `complement[]` (`owner_night` com `second_home_id` e
+  `stay_date`; `co_owner_booking` com `booking_id`), `payment_id`, `accepted_policy_id`, `consent_text_version` e
+  `expected` (Créditos por noite, `credits_required`, Créditos potenciais por noite do complemento, `complement_credits`,
+  `guarantee_credits`, `fee_amount_minor`, `deadline_hours`, `credit_validity_months`); resultado com `request_id`,
+  `sent_at`, `expires_at`, `N`, `G`, `P`, `C`, `E`, Taxa, `fee_charge_id` e, no reenvio que materializa encerramentos
+  (EC-21), `materialized[]` e `refund_ids[]`. Garantia pelo `holdCredits` (FEFO, cobertura até `expires_at`); no reenvio,
+  `holdCreditsReleasing`.
+- **Prévia** (`quoteRequest`; ADR-0037 §3 item 1): as mesmas regras sem travas nem escrita, com a política vigente; devolve os valores no
+  formato de `expected`.
+- **Fluxo** (`application/request-flow.ts`): `payRequestFee` refaz a prévia e cobra a Taxa da prévia (`initiatePayment`,
+  chave da revisão); `submitRequest` executa o envio e, recusado ou com falha depois de pagamento aprovado **da própria
+  party**, dispara `reconcilePayment` (estorno imediato); confirmado, processa os estornos do reenvio.
+- **`withdraw_request`** (autoridade `requester`: delegação vigente da party que age, escopo `party`; sem Membership;
+  entrada `party_id`, `request_id`): Request de outra party ou inexistente → `ERR_NOT_FOUND`; encerrada →
+  `ERR_STATE_TRANSITION`. **`expire_requests`/`close_ineligible_request`** (sistema, job `expire_requests`; entrada
+  `request_id`): só com o motivo correspondente. Resultado comum: `state`, `reason` (decididos pelo banco),
+  `guarantee_released`, `refund_id` (processado depois do commit).
+- **Job `expire_requests`** (cron diário no `vercel.json` e disparo manual): uma transação por Request, chave
+  `<command>:<request_id>`; contagens `due`, `expired`, `closed_ineligible`, `skipped`, `failed`, `deferred`.
+- **Eventos** `luxchange.request_sent` e `luxchange.request_closed` (AsyncAPI) e **notificações**
+  `luxchange.request_sent` e `luxchange.request_closed` (solicitante; o encerramento traz motivo e Garantia liberada),
+  `luxchange.request_received` e `luxchange.request_received_closed` (solicitado; Second Home, datas, prazo e estado —
+  nunca motivo, party do solicitante, Créditos ou complemento).
+- **Erros**: `ERR_REQUEST_TERMS_CHANGED` (produto, 409); recusas do banco mapeadas (antecedência do complemento →
+  `ERR_MIN_NOTICE`; compromisso efetivo, unidade já comprometida, capacidade, período iniciado →
+  `ERR_CAPACITY_UNAVAILABLE`; detentor inelegível → `ERR_MEMBERSHIP_INELIGIBLE`; autonegociação e encerramento por outra
+  party → `ERR_PERMISSION`; Garantia sem lastro → `ERR_CREDIT_HOLD_INVALID`; Request ainda aceitável →
+  `ERR_STATE_TRANSITION`); as demais constraints da Request só falham por bug ou forja (falha técnica).
+
+Fica para a E3: rotas `/v1/luxchange/requests*` (OpenAPI antes do handler), telas, texto das notificações na central
+(hoje caem no aviso genérico), E2E 390/1440 e o seed do E2E da Carteira com a Request completa (hoje grava Garantia sem
+Request, com gatilhos desligados).
