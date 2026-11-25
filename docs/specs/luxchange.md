@@ -213,7 +213,8 @@ cancelamento pós-aceite (⛔ P-11); qualquer ativação, PSP real ou valor econ
 
 | Command | Rota | Autoridade | Notas |
 |---|---|---|---|
-| — (pagamento do Fee) | `POST /v1/luxchange/requests/fee-payment` | Titular | refaz a cotação no servidor e chama `initiatePayment` com o Fee cotado; devolve `payment_id`, estado e valor |
+| — (prévia) | `POST /v1/luxchange/requests/preview` | Titular | as regras do envio sem trava nem escrita; devolve os termos no formato de `expected` (E3) |
+| — (pagamento do Fee) | `POST /v1/luxchange/requests/fee-payment` | Titular | refaz a prévia no servidor e chama `initiatePayment` com o Fee da prévia; devolve `payment_id`, estado e valor |
 | `send_request` | `POST /v1/luxchange/requests` | Titular + Membership | corpo: `party_id`, `second_home_id`, `checkin`, `checkout`, unidades do complemento, `payment_id`, `accepted_policy_id`, `consent_text_version` e os termos revisados (Créditos por noite, `N`, Créditos potenciais por noite, `P`, `G`, Fee, prazo em horas, validade); 201 com `request_id`, `sent_at`, `expires_at`, `N`, `G`, `P`, `C`, `E` |
 | `withdraw_request` | `POST /v1/luxchange/requests/{id}/withdraw` | requester | `cancelled_pre_accept` (`withdrawn`) ou `expired` se vencida |
 | `expire_requests`, `close_ineligible_request` | job `POST /api/jobs/expire_requests` | system | materialização idempotente por Request |
@@ -312,3 +313,41 @@ Slice `src/features/luxchange` (ADR-0037; decisões técnicas não repetidas aqu
 Fica para a E3: rotas `/v1/luxchange/requests*` (OpenAPI antes do handler), telas, texto das notificações na central
 (hoje caem no aviso genérico), E2E 390/1440 e o seed do E2E da Carteira com a Request completa (hoje grava Garantia sem
 Request, com gatilhos desligados).
+
+### 13.11 Rotas, telas e encerramentos por evento (E3) — contratos implementados
+
+- **Rotas** (OpenAPI `previewRequest`, `payRequestFee`, `sendRequest`, `withdrawRequest`): mesma origem, sessão do
+  Titular, `party_id` representada, corpo JSON limitado a 64 KiB, `Idempotency-Key` nos commands e no pagamento.
+  `sendRequest` e `withdrawRequest` usam o utilitário de rota do Titular (guard, executor de produção, Membership);
+  prévia e pagamento usam a variante sem command (`createTitularSessionRoute`). Depois da resposta (`after()`): estornos
+  das Requests encerradas no reenvio; envio recusado ou com falha depois de pagamento aprovado da própria party →
+  recuperação do pagamento (estorno), com a conciliação como rede de segurança; retirada confirmada → processamento do
+  estorno no PSP. Nada disso muda a resposta do command. Limite de taxa: não há limitador novo nas rotas da W21 (ver
+  STRIDE §7, risco residual).
+- **Encerramentos por evento** (ADR-0037 §7): o consumidor `luxchange_request_closure_trigger` só anota que um evento
+  relevante foi entregue (`identity.membership_state_changed`, `booking.own_use_confirmed`, `…_cancelled`,
+  `…_no_show_declared`, `…_exception_opened`, `…_exception_resolved`, `…_invalidated`, `luxchange.credits_originated`,
+  `luxchange.request_sent`); terminada a varredura do outbox (transações de entrega encerradas), o job
+  `expire_requests` roda uma vez, pelo executor, sobre as Requests que o banco diz não poderem mais ser aceitas. Falha do
+  disparo não desfaz o evento; o cron diário recupera. Nenhuma fila, tabela ou agendador novo.
+- **Telas** (`/titular/luxchange/solicitacoes`, `/nova`, `/[requestId]`): lista (Minhas solicitações; Recebidas só
+  leitura), escolha da party e da Second Home ("a partir de N Créditos por noite"), calendário da Second Home solicitada
+  ("Solicitável"/"Indisponível"/"Passada", sem motivo; reserva Co-Owner do detentor inteira), datas próprias opcionais
+  (Owner por noite; Co-Owner por reserva; só com 336 h no fim do prazo e sem compromisso efetivo), resumo estimado,
+  prévia do servidor (Créditos necessários, saldo disponível, datas a comprometer, Créditos potenciais, Créditos em
+  Garantia, total coberto, saldo potencial para intercâmbio, excedente, saldo que continua disponível, Taxa de
+  intermediação em R$, prazo em horas, validade, Créditos por noite), dois aceites (política; complemento), "Pagar a
+  Taxa e enviar" (pendente → "Pagamento em processamento"; termos mudados antes da cobrança → nova prévia, nada cobrado;
+  recusa depois do pagamento → "devolução em processamento") e detalhe com o estado real da Request, do pagamento e do
+  estorno ("solicitada — em processamento" até o PSP confirmar; nunca "devolvida" antes) e "Retirar solicitação". A
+  capacidade alheia só é lida com Membership ativo; Créditos potenciais nunca como saldo; nunca PRL em reais. Versão do
+  texto dos aceites: `request-consent.pt-br.v1` (i18n).
+- **Integração**: Carteira (seção "Datas comprometidas com solicitação pendente", Créditos potenciais não utilizáveis),
+  depósito (data comprometida riscada, com orientação de retirar a solicitação), reserva e cancelamento (aviso na
+  reserva Co-Owner comprometida) e calendário de uso próprio (datas comprometidas da Second Home) — compostos pelas
+  rotas do app, sem importação do luxchange pelos slices `booking` e `credits`. Central: textos dos quatro avisos.
+- **E2E** (`luxchange-request.spec.ts`): Request completa a 390 px com toque (depósito real para os Créditos, datas
+  próprias, prévia, aceites, pagamento no PSP fake, detalhe, Carteira, recebida e aviso do solicitado, retirada e
+  estorno) e a 1440 px (Garantia só, do início à retirada); axe e overflow a cada etapa. O PSP fake roda num segundo
+  `next start` do servidor de E2E (porta + 3), só para este spec. O seed da Carteira da W17 continua como histórico
+  sintético; a Carteira com uma Request real fica provada por este spec.

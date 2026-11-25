@@ -96,6 +96,17 @@ completude adiada, não só no código.
 solicitação); depósito da data depois do vencimento sem job (prossegue; o encerramento posterior só marca `released`);
 servidor comprometido grava Request sem consentimento (COMMIT recusado).
 
-**Residual risks (W21):** estorno de Request vencida em que ninguém age começa só na recuperação diária (Cron do plano
-Hobby); a reserva Co-Owner perto dos 15 dias pode ter o prazo tempestivo transcorrendo durante a pendência (aviso na
+**E3 (2026-11-25) — rotas, telas e encerramentos por evento:** `POST /v1/luxchange/requests/preview` (leitura do
+servidor, sem escrita) e as Server Actions equivalentes; leitura da capacidade alheia só com Membership ativo (T-2111),
+sem detentor, motivo nem PRL; detalhe da Request só pela RLS do solicitante (de outra party: 404, sem oráculo); avisos do
+solicitado sem party, Créditos ou complemento de quem pediu; pagamento só depois de conferir que os termos revisados
+ainda valem (nada é cobrado por prévia vencida); efeitos depois da resposta nunca mudam o desfecho do command; o
+gatilho de encerramento não executa command dentro da transação de entrega do outbox. PSP fake só no servidor de E2E
+(recusado em Production pela validação do ambiente).
+
+**Residual risks (W21):** limite de taxa das rotas e da leitura da capacidade (T-2111, T-2113) **não implementado na
+W21**: exigiria limitador com variáveis novas em Production (decisão do fundador: sem mudança de ambiente nem
+infraestrutura nova nesta wave); mitigações atuais — sessão, representação, Membership ativo para ler e Taxa paga por
+envio — e o limitador entra como pendência antes da ativação; estorno de Request vencida em que ninguém age começa só na
+recuperação diária (Cron do plano Hobby; com evento relevante, logo depois da varredura do outbox); a reserva Co-Owner perto dos 15 dias pode ter o prazo tempestivo transcorrendo durante a pendência (aviso na
 tela); ativação real continua dependente de W22, D2, PSP validado, parâmetros, política e autorização do fundador.

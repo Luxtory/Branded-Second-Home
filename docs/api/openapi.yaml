@@ -2126,6 +2126,216 @@ paths:
         '503':
           $ref: '#/components/responses/Unavailable'
 
+  /luxchange/requests/preview:
+    post:
+      tags: [luxchange]
+      summary: Prévia da Request (Créditos, Garantia, complemento por datas, Taxa e prazo)
+      description: |
+        Leitura do servidor (W21; ADR-0037 §3 item 1; spec luxchange §13.10): as mesmas regras do envio, sem travas nem
+        escrita, com a política `luxchange_request` vigente. O Titular representa `party_id`. Devolve os Créditos de cada
+        noite solicitada, os Créditos potenciais de cada data comprometida (nunca saldo), `N`, `P`, `G`, `C`, `E`, a Taxa
+        de intermediação, o prazo em horas, a validade e a política — os termos que a tela apresenta e que o envio confere
+        (`expected`). Nunca PRL em reais (REQ-100). Recusas: 403 `ERR_PERMISSION`, 409 `ERR_MEMBERSHIP_INELIGIBLE`,
+        `ERR_CAPACITY_UNAVAILABLE`, `ERR_MIN_NOTICE`, `ERR_PRL_MISSING`, `ERR_PARAMETER_MISSING`, `ERR_POLICY_MISSING`;
+        400 `ERR_VALIDATION` (inclusive seleção do complemento com data dispensável). Funcionalidade fechada → 503.
+      operationId: previewRequest
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LuxchangeRequestShape'
+      responses:
+        '200':
+          description: Prévia calculada no instante do banco
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LuxchangeRequestPreview'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /luxchange/requests/fee-payment:
+    post:
+      tags: [luxchange, billing]
+      summary: Paga a Taxa de intermediação da Request antes do envio
+      description: |
+        W21 (ADR-0037 §3 item 4; TECH-080): refaz a prévia no servidor e cobra exatamente a Taxa da prévia no PSP, com a
+        `Idempotency-Key` da revisão (a mesma chave nunca cobra duas vezes; outro valor com a mesma chave → 409
+        `ERR_IDEMPOTENCY_CONFLICT`). Só com o pagamento `approved` o envio prossegue; `pending` → "Pagamento em
+        processamento". Recusas da prévia como em `previewRequest`. Sem PSP configurado ou K5 fechada → 503.
+      operationId: payRequestFee
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LuxchangeRequestShape'
+      responses:
+        '201':
+          description: Pagamento registrado (estado do PSP)
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LuxchangeRequestFeePayment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /luxchange/requests:
+    post:
+      tags: [luxchange]
+      summary: Envia a Request com Créditos em Garantia e, se escolhido, datas próprias comprometidas
+      description: |
+        Command crítico `send_request` (TECH-051; W21, ADR-0037 §3–§4): o Titular representa `party_id` (delegação vigente
+        e holding vigente em qualquer Second Home) com Membership elegível; o detentor também elegível e não representado
+        por quem age (BR-211). Noites contínuas da Second Home solicitada (Owner livres; Co-Owner reservas confirmadas
+        inteiras), futuras e sem compromisso efetivo; complemento por datas de holdings do solicitante com 336 h de
+        antecedência no prazo de resposta. O banco fixa `sent_at` e `expires_at`; a Garantia sai em FEFO; a Taxa já paga é
+        vinculada. `expected` são os termos revisados: qualquer diferença do recálculo → 409 `ERR_REQUEST_TERMS_CHANGED`,
+        nada gravado. Recusado depois de pagamento aprovado da própria party, o servidor dispara a devolução da Taxa logo
+        depois da resposta (conciliação como rede de segurança). Recusas: 403 `ERR_PERMISSION`; 409
+        `ERR_MEMBERSHIP_INELIGIBLE`, `ERR_CAPACITY_UNAVAILABLE`, `ERR_MIN_NOTICE`, `ERR_CREDITS_INSUFFICIENT`,
+        `ERR_CREDIT_HOLD_INVALID`, `ERR_PAYMENT_FAILED`, `ERR_POLICY_MISSING`, `ERR_PRL_MISSING`, `ERR_PARAMETER_MISSING`,
+        `ERR_REQUEST_TERMS_CHANGED`, `ERR_STATE_TRANSITION`, `ERR_IDEMPOTENCY_CONFLICT`; 400 `ERR_VALIDATION`.
+        Funcionalidade fechada (K4, K5, K7; K6 com complemento) → 503 `ERR_UNAVAILABLE`, nada gravado.
+      operationId: sendRequest
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LuxchangeRequestSend'
+      responses:
+        '201':
+          description: Request enviada (Garantia, datas comprometidas e Taxa vinculada)
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LuxchangeRequestSent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '413':
+          $ref: '#/components/responses/PrlPayloadTooLarge'
+        '415':
+          $ref: '#/components/responses/AcquisitionUnsupportedMediaType'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
+  /luxchange/requests/{requestId}/withdraw:
+    post:
+      tags: [luxchange]
+      summary: Retira a Request pendente
+      description: |
+        Command `withdraw_request` (TECH-051 autoridade "solicitante", sem Membership; ADR-0037 §7): a party representada
+        retira a própria Request — `cancelled_pre_accept` (`withdrawn`), ou `expired` se o prazo já venceu (o banco
+        decide). Garantia liberada por inteiro, datas comprometidas liberadas e Taxa revertida com estorno integral, cujo
+        processamento no PSP começa logo depois da resposta (`refund_id`; conciliação como rede de segurança). Request de
+        outra party ou inexistente → 404 `ERR_NOT_FOUND`; já encerrada → 409 `ERR_STATE_TRANSITION`. Nenhuma chave de
+        funcionalidade é exigida (encerrar obrigação existente nunca fica preso).
+      operationId: withdrawRequest
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [party_id]
+              properties:
+                party_id:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Request encerrada (estado e motivo decididos pelo banco)
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            idempotency-replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LuxchangeRequestClosing'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
   /admin/policies:
     post:
       tags: [admin, pricing]
@@ -4292,6 +4502,398 @@ components:
       type: string
       pattern: '^[1-9][0-9]{0,14}$'
       description: Valor em unidade mínima da moeda (TECH-033), inteiro positivo como string — nunca número em JSON.
+    LuxchangeRequestShape:
+      type: object
+      additionalProperties: false
+      required: [party_id, second_home_id, checkin, checkout, complement]
+      properties:
+        party_id:
+          type: string
+          format: uuid
+          description: Party solicitante que o Titular representa.
+        second_home_id:
+          type: string
+          format: uuid
+          description: Second Home solicitada.
+        checkin:
+          type: string
+          format: date
+        checkout:
+          type: string
+          format: date
+          description: Dia seguinte à última noite (período `[checkin, checkout)`, até 366 noites).
+        complement:
+          type: array
+          maxItems: 366
+          description: Datas próprias a comprometer (complemento por datas, PD-012).
+          items:
+            $ref: '#/components/schemas/LuxchangeComplementUnit'
+    LuxchangeComplementUnit:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [kind, second_home_id, stay_date]
+          properties:
+            kind:
+              type: string
+              const: owner_night
+            second_home_id:
+              type: string
+              format: uuid
+            stay_date:
+              type: string
+              format: date
+        - type: object
+          additionalProperties: false
+          required: [kind, booking_id]
+          properties:
+            kind:
+              type: string
+              const: co_owner_booking
+            booking_id:
+              type: string
+              format: uuid
+    LuxchangeRequestTerms:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          night_credits,
+          credits_required,
+          complement_nights,
+          complement_credits,
+          guarantee_credits,
+          fee_amount_minor,
+          deadline_hours,
+          credit_validity_months,
+        ]
+      properties:
+        night_credits:
+          type: array
+          minItems: 1
+          maxItems: 366
+          description: Créditos de cada noite solicitada, na ordem das noites (decimal exato; nunca PRL em reais).
+          items:
+            type: string
+            pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+        credits_required:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+          description: Créditos necessários (N).
+        complement_nights:
+          type: array
+          maxItems: 366
+          description: Créditos potenciais de cada data comprometida (nunca saldo).
+          items:
+            type: object
+            additionalProperties: false
+            required: [second_home_id, stay_date, credits]
+            properties:
+              second_home_id:
+                type: string
+                format: uuid
+              stay_date:
+                type: string
+                format: date
+              credits:
+                type: string
+                pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+        complement_credits:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+          description: Créditos potenciais das datas comprometidas (P).
+        guarantee_credits:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+          description: Créditos em Garantia (G = max(0, N − P)).
+        fee_amount_minor:
+          type: string
+          pattern: '^[1-9][0-9]{0,15}$'
+          description: Taxa de intermediação em centavos de real.
+        deadline_hours:
+          type: integer
+          minimum: 1
+          maximum: 9999
+          description: Prazo de resposta em horas, contado do envio.
+        credit_validity_months:
+          type: integer
+          minimum: 1
+          maximum: 1200
+    LuxchangeRequestPreview:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          second_home_id,
+          checkin,
+          checkout,
+          night_credits,
+          credits_required,
+          complement_nights,
+          complement_credits,
+          guarantee_credits,
+          complement_consumption,
+          complement_excess,
+          fee_amount_minor,
+          fee_currency,
+          deadline_hours,
+          credit_validity_months,
+          policy_id,
+          resolved_at,
+        ]
+      properties:
+        second_home_id:
+          type: string
+          format: uuid
+        checkin:
+          type: string
+          format: date
+        checkout:
+          type: string
+          format: date
+        night_credits:
+          type: array
+          minItems: 1
+          maxItems: 366
+          description: Créditos de cada noite solicitada, na ordem das noites (decimal exato; nunca PRL em reais).
+          items:
+            type: string
+            pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+        credits_required:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+          description: Créditos necessários (N).
+        complement_nights:
+          type: array
+          maxItems: 366
+          description: Créditos potenciais de cada data comprometida (nunca saldo).
+          items:
+            type: object
+            additionalProperties: false
+            required: [second_home_id, stay_date, credits]
+            properties:
+              second_home_id:
+                type: string
+                format: uuid
+              stay_date:
+                type: string
+                format: date
+              credits:
+                type: string
+                pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+        complement_credits:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+          description: Créditos potenciais das datas comprometidas (P).
+        guarantee_credits:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+          description: Créditos em Garantia (G = max(0, N − P)).
+        fee_amount_minor:
+          type: string
+          pattern: '^[1-9][0-9]{0,15}$'
+          description: Taxa de intermediação em centavos de real.
+        deadline_hours:
+          type: integer
+          minimum: 1
+          maximum: 9999
+          description: Prazo de resposta em horas, contado do envio.
+        credit_validity_months:
+          type: integer
+          minimum: 1
+          maximum: 1200
+        complement_consumption:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+          description: Créditos potenciais consumidos no aceite (C = N − G).
+        complement_excess:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+          description: Excedente que fica disponível ao solicitante no aceite (E = P − C).
+        fee_currency:
+          type: string
+          const: BRL
+        policy_id:
+          type: string
+          format: uuid
+          description: Versão da política `luxchange_request` vigente, aceita no envio.
+        resolved_at:
+          type: string
+          format: date-time
+    LuxchangeRequestFeePayment:
+      type: object
+      required: [payment_id, state, amount_minor, currency, quote]
+      properties:
+        payment_id:
+          type: string
+          format: uuid
+        state:
+          type: string
+          enum: [pending, approved, failed]
+        amount_minor:
+          type: string
+          pattern: '^[1-9][0-9]*$'
+        currency:
+          type: string
+          const: BRL
+        quote:
+          $ref: '#/components/schemas/LuxchangeRequestPreview'
+    LuxchangeRequestSend:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          party_id,
+          second_home_id,
+          checkin,
+          checkout,
+          complement,
+          payment_id,
+          accepted_policy_id,
+          consent_text_version,
+          expected,
+        ]
+      properties:
+        party_id:
+          type: string
+          format: uuid
+          description: Party solicitante que o Titular representa.
+        second_home_id:
+          type: string
+          format: uuid
+          description: Second Home solicitada.
+        checkin:
+          type: string
+          format: date
+        checkout:
+          type: string
+          format: date
+          description: Dia seguinte à última noite (período `[checkin, checkout)`, até 366 noites).
+        complement:
+          type: array
+          maxItems: 366
+          description: Datas próprias a comprometer (complemento por datas, PD-012).
+          items:
+            $ref: '#/components/schemas/LuxchangeComplementUnit'
+        payment_id:
+          type: string
+          format: uuid
+        accepted_policy_id:
+          type: string
+          format: uuid
+        consent_text_version:
+          type: string
+          pattern: '^[a-z0-9][a-z0-9._-]{0,63}$'
+        expected:
+          $ref: '#/components/schemas/LuxchangeRequestTerms'
+    LuxchangeRequestSent:
+      type: object
+      required:
+        [
+          request_id,
+          operation_id,
+          second_home_id,
+          checkin,
+          checkout,
+          sent_at,
+          expires_at,
+          credits_required,
+          guarantee_credits,
+          complement_credits,
+          complement_consumption,
+          complement_excess,
+          fee_amount_minor,
+          fee_charge_id,
+          materialized,
+          refund_ids,
+        ]
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        operation_id:
+          type: string
+          format: uuid
+        second_home_id:
+          type: string
+          format: uuid
+        checkin:
+          type: string
+          format: date
+        checkout:
+          type: string
+          format: date
+        sent_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        credits_required:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+        guarantee_credits:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+        complement_credits:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+        complement_consumption:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+        complement_excess:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+        fee_amount_minor:
+          type: string
+          pattern: '^[1-9][0-9]*$'
+        fee_charge_id:
+          type: string
+          format: uuid
+        materialized:
+          type: array
+          description: Requests anteriores do solicitante encerradas neste envio (datas reutilizadas, EC-21).
+          items:
+            type: string
+            format: uuid
+        refund_ids:
+          type: array
+          description: Estornos `pending` das Taxas dessas Requests, processados depois da resposta.
+          items:
+            type: string
+            format: uuid
+    LuxchangeRequestClosing:
+      type: object
+      required: [request_id, operation_id, state, reason, guarantee_released, refund_id]
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        operation_id:
+          type: string
+          format: uuid
+        state:
+          type: string
+          enum: [expired, cancelled_pre_accept]
+        reason:
+          type: string
+          enum:
+            [
+              withdrawn,
+              expired,
+              period_started,
+              requester_membership,
+              holder_membership,
+              capacity_unavailable,
+              complement_unavailable,
+            ]
+        guarantee_released:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+        refund_id:
+          type: string
+          format: uuid
+          description: Estorno `pending` da Taxa (não concluído na resposta).
     LuxchangeDepositRequest:
       type: object
       additionalProperties: false
