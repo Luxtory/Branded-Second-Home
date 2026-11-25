@@ -568,6 +568,73 @@ export async function publishE2eDepositParameters(multiplier, validityMonths) {
   });
 }
 
+/**
+ * K4, K5, K6 e K7 (`credits`, `payments`, `luxchange_deposit`, `luxchange_exchange`; ADR-0037 §10) só no banco
+ * descartável do E2E (W21): ligam para a jornada real da Request e desligam no fim. Nunca em Production (a validação
+ * recusa qualquer banco não descartável).
+ */
+export async function setE2eLuxchangeRequest(open) {
+  const url = disposableOwnerUrl();
+  await withClient(url, (client) =>
+    client.query(
+      open
+        ? `INSERT INTO app.capability_activation VALUES ('credits', now(), 'e2e:fixture'),
+             ('payments', now(), 'e2e:fixture'), ('luxchange_deposit', now(), 'e2e:fixture'),
+             ('luxchange_exchange', now(), 'e2e:fixture') ON CONFLICT DO NOTHING`
+        : `DELETE FROM app.capability_activation
+            WHERE capability IN ('credits', 'payments', 'luxchange_deposit', 'luxchange_exchange')`,
+    ),
+  );
+}
+
+/**
+ * Parâmetros da Request publicados agora (fato do fixture, W21), só no banco descartável, pelo mesmo caminho de
+ * `publishE2eDepositParameters`: multiplicador, validade, Taxa de intermediação (percentual e mínimo em centavos) e prazo
+ * de resposta em horas. Versões novas: o spec não depende do que os anteriores publicaram.
+ */
+export async function publishE2eRequestParameters(values) {
+  const url = disposableOwnerUrl();
+  await withClient(url, async (client) => {
+    await client.query('BEGIN');
+    try {
+      await client.query('SET LOCAL session_replication_role = replica');
+      const { rows } = await client.query(
+        `SELECT id, user_id FROM app.staff_role WHERE role = 'admin' AND revoked_at IS NULL
+          ORDER BY granted_at LIMIT 1`,
+      );
+      const staff = rows[0];
+      if (staff === undefined) throw new Error('Fixture needs an active Admin');
+      for (const [key, value] of Object.entries(values)) {
+        const { rows: ops } = await client.query(
+          `INSERT INTO app.operation (id, command, actor_user_id, acting_party_id, role, idempotency_key,
+             correlation_id, authorization_ref, state, created_at, updated_at)
+           SELECT g.id, 'set_parameter', $1, NULL, 'admin', 'e2e:' || g.id, 'e2e:' || g.id, $2, 'committed', now(),
+                  now()
+             FROM (SELECT gen_random_uuid() AS id) g RETURNING id`,
+          [staff.user_id, `staff_role:${staff.id}`],
+        );
+        await client.query(
+          `INSERT INTO app.parameter (id, key, second_home_id, value, currency, effective_from, effective_to,
+             authority, authorization_ref, created_at, created_by, operation_id)
+           VALUES (gen_random_uuid(), $1, NULL, $2, $3, clock_timestamp(), NULL, 'admin', 'Ata sintética W21 E2E',
+                   now(), $4, $5)`,
+          [
+            key,
+            String(value),
+            key === 'luxchange_fee_minimum' ? 'BRL' : null,
+            staff.user_id,
+            ops[0].id,
+          ],
+        );
+      }
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      throw error;
+    }
+  });
+}
+
 const E2E_DAY = "interval '1 day'";
 
 /**
