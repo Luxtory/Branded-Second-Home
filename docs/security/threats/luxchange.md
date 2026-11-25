@@ -62,3 +62,40 @@ completude adiada, não só no código.
 - Hoje a K7 também trava retirada e recusa. Sem Garantia possível isso é inócuo; a W21 deve tirá-las da trava antes de
   ativar a K7, ou desligá-la depois prenderia Créditos em Garantia (contrato no ADR-0036, follow-ups).
 - Ativação real depende de D2 (backup/restauração), PRL e parâmetros publicados por autorização do fundador.
+
+## 7. W21 — Request: envio, complemento por datas e encerramentos (2026-11-24)
+
+- **Scope**: `send_request`, `withdraw_request`, `expire_requests` e `close_ineligible_request` (job `expire_requests` e
+  consumidor de eventos); `POST /v1/luxchange/requests/fee-payment`, `POST /v1/luxchange/requests`,
+  `POST /v1/luxchange/requests/{id}/withdraw`; telas `/titular/luxchange/solicitacoes*`; tabelas da Request, das noites,
+  do complemento e do consentimento; ramos de recusa por compromisso efetivo nas funções das W12/W13/W20; contrato das
+  capabilities (ADR-0037 §10); guard `requester` e Titular fora da própria Second Home.
+- **Linked**: `docs/specs/luxchange.md` §13 · ADR-0037 · `02` v4.7 PD-012 · `03` v3.20 TECH-073.
+- **Assets novos**: Garantia de Créditos da Request; compromissos do complemento (datas do solicitante); pagamento e
+  reversão do Fee; consentimento; ocupação e presença inferíveis das datas solicitáveis.
+
+| ID | Ameaça | Cenário | Mitigação |
+|---|---|---|---|
+| T-2101 | **S** Spoofing | Usuário envia Request por party que não representa, ou de party sem holding vigente | Guard: delegação vigente + holding vigente em qualquer Second Home; banco exige representação travada da party que age |
+| T-2102 | **E** Elevation of privilege | Mesmo usuário representa solicitante e detentor e fecha o próprio intercâmbio | Envio recusado quando o ator representa o detentor; o aceite (W22) recusa o mesmo caso (BR-211) |
+| T-2103 | **T** Tampering | Servidor comprometido grava Request sem Garantia, com `N`/`P`/`G` divergentes, Garantia de lote que vence antes do prazo, ou Fee sobre PRL que não é o das noites | Gatilhos e completude no COMMIT: `N` recalculado sobre as noites solicitadas do snapshot, `P` sobre as noites comprometidas, `G = max(0, N − P)`, cobertura `lot.expires_at ≥ expires_at`, soma da Garantia = `G`, `fee_charge.prl_total_minor` = Σ noites solicitadas; `xmin` do snapshot |
+| T-2104 | **T** Tampering | Comprometer datas de outra party, data já depositada, reserva parcial ou data que não cumprirá as 336 h no prazo | Unidade só da holding vigente da party que age, elegível ao depósito, reserva inteira, `luxchange_deposit_notice_met(checkin_at, expires_at)` no banco |
+| T-2105 | **T** Tampering | Mesma data lastreando duas Requests; uso da data comprometida por depósito, reserva ou cancelamento do próprio Titular | Índice único de compromisso `active`; ramos de recusa por compromisso efetivo nas W12/W13/W20; travas da noite e da reserva |
+| T-2106 | **D** Denial of service | Data presa por Request vencida ou inelegível sem job; job atrasado prende Garantia | Compromisso efetivo depende do relógio do banco e da inelegibilidade provada; compromisso não efetivo nunca recusa; reutilização materializa sob trava; job só materializa |
+| T-2107 | **T** Tampering | Encerramento forjado de Request elegível para liberar Garantia ou reverter Fee; liberação parcial; reversão dupla | Encerramento de sistema só com prazo vencido ou prova registrada `≥ sent_at`; retirada só pelo representante do solicitante; completude no COMMIT; `fee_charge_reversal` única; estorno integral |
+| T-2108 | **E** Elevation of privilege | Desligar K4/K5/K6/K7 prende Garantia, datas ou estornos; ou caminho isento usado para criar efeito novo | Chave fechada só impede compromisso novo; caminhos isentos exigem objeto preexistente e encerramento comprovado na mesma operação; nada isento cria Crédito, capacidade ou cobrança |
+| T-2109 | **T** Tampering | Termos ou consentimento diferentes do exibido; prazo divergente | Command recompara (`ERR_REQUEST_TERMS_CHANGED`); consentimento gravado com versão do texto e valores conferidos pelo banco; `expires_at` calculado pelo banco a partir das horas do snapshot |
+| T-2110 | **R** Repudiation | Solicitante nega ter oferecido as datas ou aceito a cessão no aceite | Consentimento só-inserção vinculado à Request; operação com ator e chave; auditoria sem PII; compromissos com custódia e versão do PRL |
+| T-2111 | **I** Information disclosure | Calendário solicitável revela ocupação ou ausência do detentor; identidade das parties | Só "Solicitável/Indisponível", sem motivo nem identidade; leitura só com Membership elegível; limite de taxa; detentor lê a Request por colunas restritas (sem party do solicitante nem complemento); nunca PRL em reais |
+| T-2112 | **T** Tampering | Pagamento aprovado usado duas vezes, aprovado sem envio retido, ou envio sem pagamento | `payment_already_bound`; `fee_charge` exige pagamento `approved` e valor do Fee; aprovado sem desfecho estornado pela conciliação; fake recusado em Production |
+| T-2113 | **D** Denial of service | Solicitações em massa contra um detentor ou corrida de envios | Cada envio exige Fee pago e lastro; limite de taxa nas rotas; travas em ordem total com retry limitado |
+| T-2114 | **E** Elevation of privilege | Aceite forjado move recursos do solicitante (W22) | Só pelo contrato da ADR-0037 §8: aceitação única, compromissos efetivos e Garantia da mesma Request, quantidades recalculadas pelo banco; até lá, aceite fechado pela K7 |
+
+**Abuse cases (W21):** solicitante comprometido tenta reofertar a mesma data numa segunda aba (índice único →
+`ERR_CAPACITY_UNAVAILABLE`); Co-Owner tenta cancelar a reserva comprometida (recusa com orientação de retirar a
+solicitação); depósito da data depois do vencimento sem job (prossegue; o encerramento posterior só marca `released`);
+servidor comprometido grava Request sem consentimento (COMMIT recusado).
+
+**Residual risks (W21):** estorno de Request vencida em que ninguém age começa só na recuperação diária (Cron do plano
+Hobby); a reserva Co-Owner perto dos 15 dias pode ter o prazo tempestivo transcorrendo durante a pendência (aviso na
+tela); ativação real continua dependente de W22, D2, PSP validado, parâmetros, política e autorização do fundador.

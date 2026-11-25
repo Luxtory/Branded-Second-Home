@@ -7,6 +7,11 @@
 > [ADR-0036](../adr/0036-deposito-luxchange-cessao-snapshot-por-noite-e-k6.md). Plano:
 > [`w20-luxchange-deposito.md`](../plan/w20-luxchange-deposito.md). STRIDE:
 > [`luxchange.md`](../security/threats/luxchange.md). O texto canônico prevalece; aqui só o contrato de implementação.
+>
+> **W21 (§13):** envio de Request, complemento por datas e encerramentos pré-aceite — `01` v10.9, `02` v4.7 (REQ-062,
+> PD-005, PD-007, PD-012), `03` v3.20 (TECH-024, TECH-031, TECH-043, TECH-044, TECH-061, TECH-071–TECH-073, TECH-082,
+> TECH-090). Decisão: [ADR-0037](../adr/0037-request-lastro-complemento-por-datas-e-encerramentos.md). Plano:
+> [`w21-luxchange-request-envio.md`](../plan/w21-luxchange-request-envio.md). Aceite e recusa: W22; Direct: W23.
 
 ## 1. Goal
 
@@ -178,3 +183,90 @@ Nenhuma bloqueante. Encerramento de Requests pendentes pelo depósito é da W21 
 ## 12. References
 
 `02` §15 e `03` §12 (CONC-10); ADR-0024, ADR-0026, ADR-0027, ADR-0031, ADR-0032, ADR-0033, ADR-0036.
+
+## 13. W21 — Request: envio, complemento por datas e encerramentos
+
+Contrato de implementação da W21. Regras: `02` v4.7 (PD-005 a PD-007, PD-012, REQ-062 a REQ-064, REQ-096 a REQ-098) e
+`03` v3.20 (TECH-073 e associados). Decisões técnicas, banco, chaves e prova de concorrência:
+[ADR-0037](../adr/0037-request-lastro-complemento-por-datas-e-encerramentos.md) — não repetidas aqui.
+
+### 13.1 Goal
+
+O membro solicitante envia uma Request para noites contínuas de outro Titular, fora do Inventário Luxtory, com
+Créditos em Garantia e, se escolher, datas próprias comprometidas sob a condição do aceite; paga a Taxa de intermediação
+antes do envio; acompanha, retira ou vê encerrar a Request sem que a capacidade solicitada seja bloqueada.
+
+### 13.2 Non-goals
+
+Aceite composto e recusa (W22); Direct (W23); envio automático depois de pagamento assíncrono (wave do PSP real);
+cancelamento pós-aceite (⛔ P-11); qualquer ativação, PSP real ou valor econômico real.
+
+### 13.3 Actors
+
+- **Membro solicitante** — Titular com holding vigente em qualquer Second Home e Membership elegível; não representa o
+  detentor.
+- **Membro solicitado** — Titular da capacidade solicitada (Owner: noites livres; Co-Owner: reservas inteiras); na W21
+  só é notificado e vê a solicitação recebida, sem ação.
+- **Sistema** — job `expire_requests` e consumidor de eventos (encerramentos).
+
+### 13.4 Commands e API
+
+| Command | Rota | Autoridade | Notas |
+|---|---|---|---|
+| — (pagamento do Fee) | `POST /v1/luxchange/requests/fee-payment` | Titular | refaz a cotação no servidor e chama `initiatePayment` com o Fee cotado; devolve `payment_id`, estado e valor |
+| `send_request` | `POST /v1/luxchange/requests` | Titular + Membership | corpo: `party_id`, `second_home_id`, `checkin`, `checkout`, unidades do complemento, `payment_id`, `accepted_policy_id`, `consent_text_version` e os termos revisados (Créditos por noite, `N`, Créditos potenciais por noite, `P`, `G`, Fee, prazo em horas, validade); 201 com `request_id`, `sent_at`, `expires_at`, `N`, `G`, `P`, `C`, `E` |
+| `withdraw_request` | `POST /v1/luxchange/requests/{id}/withdraw` | requester | `cancelled_pre_accept` (`withdrawn`) ou `expired` se vencida |
+| `expire_requests`, `close_ineligible_request` | job `POST /api/jobs/expire_requests` | system | materialização idempotente por Request |
+
+Todas com `Idempotency-Key`, mesma origem e OpenAPI antes do handler. Recusas: `ERR_PERMISSION`,
+`ERR_MEMBERSHIP_INELIGIBLE`, `ERR_CAPACITY_UNAVAILABLE`, `ERR_MIN_NOTICE`, `ERR_CREDITS_INSUFFICIENT`,
+`ERR_CREDIT_HOLD_INVALID`, `ERR_PAYMENT_FAILED`, `ERR_POLICY_MISSING`, `ERR_PRL_MISSING`, `ERR_PARAMETER_MISSING`,
+`ERR_REQUEST_TERMS_CHANGED` (novo), `ERR_STATE_TRANSITION`, `ERR_IDEMPOTENCY_CONFLICT`, `ERR_VALIDATION`. Chave fechada:
+503 `ERR_UNAVAILABLE`, nada gravado.
+
+### 13.5 Jornada (`/titular/luxchange/solicitacoes*`)
+
+1. **Second Home** com capacidade solicitável (catálogo; "a partir de N Créditos por noite"; só com Membership elegível).
+2. **Datas** — calendário do Design System, um mês por vez, "Solicitável"/"Indisponível"/"Passada", sem motivo nem
+   identidade; período contínuo; detentor Co-Owner por reserva inteira.
+3. **Como cobrir os Créditos necessários** — Créditos necessários; datas próprias a comprometer (opcional; calendário do
+   depósito, só datas com 336 h cumpridas no prazo de resposta; Co-Owner por reserva inteira) com Créditos potenciais por
+   data e total; Créditos da Carteira que ficarão em Garantia (calculados, FEFO); total coberto; excedente; Créditos que
+   continuam disponíveis, com a validade.
+4. **Revisão e aceites** — os itens do PD-012 item 4, a Taxa de intermediação (só o total, em R$), o prazo ("24 horas a
+   partir do envio"), a política e dois aceites separados (política; complemento). Datas aparecem como **a comprometer**.
+5. **Pagamento e envio** — pagamento aprovado → envio; pendente → "Pagamento em processamento"; recusa → "Revisar valores
+   atualizados" e "Pagamento sem solicitação enviada — devolução em processamento".
+6. **Resultado** — prazo exato, Créditos em Garantia, datas comprometidas, Taxa paga.
+7. **Minhas solicitações** — lista e detalhe com histórico, estados financeiros (ADR-0037 §11) e **Retirar**;
+   **Recebidas** só leitura (datas, Second Home, prazo).
+8. **Telas existentes** — reserva, cancelamento e depósito mostram a data comprometida e orientam a retirar a
+   solicitação; a Carteira mostra "datas comprometidas com solicitação pendente (Créditos potenciais, não utilizáveis)".
+
+Nunca PRL em reais; Créditos potenciais nunca como saldo; textos pela camada de i18n, com versão do texto do
+consentimento.
+
+### 13.6 Eventos e notificações
+
+`luxchange.request_sent` e `luxchange.request_closed` (AsyncAPI; ids, datas, quantidades, motivo; sem PII). Solicitante:
+enviada (Garantia, datas comprometidas, Taxa paga) e encerrada (motivo, Garantia liberada, datas liberadas, devolução da
+Taxa). Solicitado: recebida e encerrada. Notificação não cria direito nem prazo (REQ-097).
+
+### 13.7 Acceptance criteria
+
+Os do [plano da W21](../plan/w21-luxchange-request-envio.md#critérios-de-aceite-da-w21), com as tags `[REQ-062]`,
+`[PD-005]`, `[PD-007]`, `[PD-012]`, `[EC-6]`–`[EC-9]`, `[EC-17]`–`[EC-21]` e `[CONC-13]`–`[CONC-18]` nos títulos dos
+testes; preservação das W12–W20 (inclusive `luxchange-deposit.db.test.ts`) e invariantes vazias após todo teste `db`.
+
+### 13.8 Edge cases
+
+`02` §15 itens 6–9 e 17–21; Request cujo check-in chega antes do prazo (encerra por período iniciado); Garantia com lote
+que vence entre o envio e o encerramento (liberado como `expired`); unidades de mais de uma holding do solicitante;
+29/02 reservado pelo Co-Owner contemplado como unidade do complemento (elegível como no depósito).
+
+### 13.9 Rollout
+
+Migration aplicada pelo pipeline com K4–K7 sem linha; nada enviável em Production. Ativação só depois da W22, de D2, do
+PSP com validação confiável, de parâmetros (`credit_multiplier`, `credit_validity_months`, `luxchange_fee_rate`,
+`luxchange_fee_minimum`, `request_deadline_hours`) e política `luxchange_request` publicados, por migration e autorização
+do fundador.
