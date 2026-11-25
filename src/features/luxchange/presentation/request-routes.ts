@@ -30,6 +30,11 @@ import {
   createWithdrawRequestProductionHandler,
 } from './request-handlers';
 import { productionRequestFlow } from './request-production';
+import {
+  productionRequestQuota,
+  type RequestQuota,
+  type RequestQuotaDecision,
+} from './request-quota';
 
 /** Corpo efetivo até 64 KiB: 366 noites e as unidades do complemento cabem com folga (STRIDE T-2008). */
 const MAX_BODY_BYTES = 65_536;
@@ -53,13 +58,30 @@ export interface RequestRouteDependencies {
   /** Agendamento depois da resposta; padrão: `after()` do Next. */
   readonly afterResponse?: (task: () => Promise<void>) => void;
   readonly afterCommit?: TitularCommandRouteOptions<unknown, never>['afterCommit'];
+  /** Limite das superfícies (TECH-100); padrão: o limitador de produção. */
+  readonly quota?: RequestQuota;
 }
 
 const resolved = (deps: RequestRouteDependencies) => ({
   database: deps.database ?? (() => getDatabase(deps.source)),
   flow: deps.flow ?? ((db: Database, log: LogPort) => productionRequestFlow(db, log, deps.source)),
   afterResponse: deps.afterResponse ?? ((task: () => Promise<void>) => after(task)),
+  quota: deps.quota ?? productionRequestQuota(),
 });
+
+/** Desfecho do limitador → resposta (`null` = segue): 429 com `retry-after`, 409 sem limites, 503 sem resposta segura. */
+export function quotaRefusal(
+  decision: RequestQuotaDecision,
+  correlationId: string,
+): Response | null {
+  if (decision.status === 'allowed') return null;
+  if (decision.status === 'parameter_missing')
+    return errorResponse('ERR_PARAMETER_MISSING', correlationId);
+  if (decision.status === 'unavailable') return errorResponse('ERR_UNAVAILABLE', correlationId);
+  const limited = errorResponse('ERR_RATE_LIMITED', correlationId);
+  limited.headers.set('retry-after', String(decision.retryAfterSeconds));
+  return limited;
+}
 
 const json = (body: unknown, status: number) =>
   Response.json(body, { status, headers: { 'cache-control': 'no-store' } });
@@ -75,7 +97,7 @@ function refusal(error: unknown, correlationId: string): Response {
 
 /** `POST /v1/luxchange/requests/preview` (OpenAPI `previewRequest`): a prévia do servidor, sem escrita. */
 export function createRequestPreviewRoute(deps: RequestRouteDependencies = {}) {
-  const { database, flow } = resolved(deps);
+  const { database, flow, quota } = resolved(deps);
   return createTitularSessionRoute({
     maxBodyBytes: MAX_BODY_BYTES,
     ...(deps.source === undefined ? {} : { source: deps.source }),
@@ -83,6 +105,8 @@ export function createRequestPreviewRoute(deps: RequestRouteDependencies = {}) {
     async run({ session, body, correlationId, log }) {
       const parsed = requestShape.safeParse(body);
       if (!parsed.success) return errorResponse('ERR_VALIDATION', correlationId);
+      const refused = quotaRefusal(await quota('read', session.userId), correlationId);
+      if (refused !== null) return refused;
       try {
         const viewer = { userId: session.userId, partyId: parsed.data.party_id };
         return json(await flow(database(), log).quote(viewer, parsed.data), HTTP_OK);
@@ -95,7 +119,7 @@ export function createRequestPreviewRoute(deps: RequestRouteDependencies = {}) {
 
 /** `POST /v1/luxchange/requests/fee-payment` (OpenAPI `payRequestFee`): prévia refeita e Taxa da prévia cobrada no PSP. */
 export function createRequestFeePaymentRoute(deps: RequestRouteDependencies = {}) {
-  const { database, flow } = resolved(deps);
+  const { database, flow, quota } = resolved(deps);
   return createTitularSessionRoute({
     maxBodyBytes: MAX_BODY_BYTES,
     ...(deps.source === undefined ? {} : { source: deps.source }),
@@ -103,6 +127,8 @@ export function createRequestFeePaymentRoute(deps: RequestRouteDependencies = {}
     async run({ request, session, body, correlationId, log }) {
       const parsed = requestShape.safeParse(body);
       if (!parsed.success) return errorResponse('ERR_VALIDATION', correlationId);
+      const refused = quotaRefusal(await quota('send', session.userId), correlationId);
+      if (refused !== null) return refused;
       try {
         const viewer = { userId: session.userId, partyId: parsed.data.party_id };
         const paid = await payRequestFee(

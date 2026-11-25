@@ -99,7 +99,11 @@ export interface ComplementHomeView {
 
 export interface RequestJourneyData {
   readonly party: RequestPartyOption;
-  readonly home: { readonly secondHomeId: string; readonly label: string };
+  readonly home: {
+    readonly secondHomeId: string;
+    readonly label: string;
+    readonly timezone: string;
+  };
   readonly today: string;
   readonly nights: readonly RequestNightView[];
   /** Saldo disponível agora na Carteira da party solicitante. */
@@ -348,7 +352,7 @@ export async function readRequestJourney(
       );
       const deadline = parameters.get('request_deadline_hours')?.value ?? null;
       return {
-        home: { secondHomeId: home.id, label: home.label },
+        home: { secondHomeId: home.id, label: home.label, timezone: home.timezone },
         target,
         at,
         deadlineHours: deadline === null ? null : Number(deadline),

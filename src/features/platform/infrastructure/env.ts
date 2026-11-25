@@ -33,6 +33,9 @@ const envShape = {
   // Limitador da solicitação de autorização independente (W13 E4b, G-E4-1). Ausente = Upstash real. `fake` (contadores
   // em memória) só local e na CI: recusado na Vercel.
   BOOKING_AUTHORIZATION_LIMITER_MODE: z.literal('fake').optional(),
+  // Limitador da Request Luxchange (W21; TECH-100, STRIDE T-2111/T-2113). Ausente = Upstash real. `fake` (contadores em
+  // memória) só local e na CI: recusado na Vercel.
+  LUXCHANGE_REQUEST_LIMITER_MODE: z.literal('fake').optional(),
   // Notificação de staff dos alertas operacionais (W10, TECH-101). Ausente = Resend real, se configurado. `fake`
   // (transporte em memória) só local e na CI: recusado na Vercel, inclusive em Preview.
   OPS_ALERT_MODE: z.literal('fake').optional(),
@@ -67,6 +70,13 @@ const envSchema = z.object(envShape).superRefine((env, context) => {
       code: 'custom',
       path: ['BOOKING_AUTHORIZATION_LIMITER_MODE'],
       message: 'fake booking authorization limiter on Vercel',
+    });
+  }
+  if (env.LUXCHANGE_REQUEST_LIMITER_MODE === 'fake' && env.VERCEL_ENV !== undefined) {
+    context.addIssue({
+      code: 'custom',
+      path: ['LUXCHANGE_REQUEST_LIMITER_MODE'],
+      message: 'fake luxchange request limiter on Vercel',
     });
   }
   if (env.PAYMENT_GATEWAY === 'fake' && env.VERCEL_ENV === 'production') {
@@ -204,6 +214,16 @@ const runtimeSchema = z.object({
   BOOKING_AUTHORIZATION_GLOBAL_LIMIT: positiveInteger,
   BOOKING_AUTHORIZATION_GLOBAL_WINDOW_SECONDS: positiveInteger,
   BOOKING_AUTHORIZATION_LIMITER_TIMEOUT_MS: positiveInteger,
+  // Request Luxchange (W21; valores no runbook, nenhum default — TECH-001): leitura da capacidade alheia e prévia
+  // (`READ`) e pagamento da Taxa (`SEND`), por usuário, com limite global por superfície, no Upstash acima em namespaces
+  // próprios. Ausente → a leitura ou o pagamento é recusado (falha fechada); a retirada nunca é limitada.
+  LUXCHANGE_REQUEST_READ_LIMIT: positiveInteger,
+  LUXCHANGE_REQUEST_READ_WINDOW_SECONDS: positiveInteger,
+  LUXCHANGE_REQUEST_SEND_LIMIT: positiveInteger,
+  LUXCHANGE_REQUEST_SEND_WINDOW_SECONDS: positiveInteger,
+  LUXCHANGE_REQUEST_GLOBAL_LIMIT: positiveInteger,
+  LUXCHANGE_REQUEST_GLOBAL_WINDOW_SECONDS: positiveInteger,
+  LUXCHANGE_REQUEST_LIMITER_TIMEOUT_MS: positiveInteger,
   // W6 (ADR-0018): segredos próprios, um por finalidade — HMAC do hash de idempotência (o conteúdo inclui contato e
   // pré-qualificação) e assinatura do contexto de apresentação da Home Edition. Nunca o segredo da pseudonimização.
   INTEREST_REQUEST_HMAC_SECRET: z.string().min(32),

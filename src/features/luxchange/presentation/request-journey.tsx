@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, useTransition, type ReactNode } from 'react';
+import { PolicyAcceptance, PolicyTerms } from '@/features/pricing/policy-components';
 import { compareCredits, subtractCredits, sumCredits } from '../domain/deposit';
 import {
   previewRequestAction,
@@ -282,7 +283,21 @@ function ComplementHome(props: {
   );
 }
 
-/** Revisão (spec §13.5 itens 3–5): os termos da prévia do servidor, os dois aceites e o pagamento seguido do envio. */
+/** Grupo da revisão: título curto e os fatos de uma natureza só (saldo, cobertura, depois do envio, Taxa). */
+function Group(props: { readonly title: string; readonly children: ReactNode }) {
+  return (
+    <>
+      <h3 className="lx-label">{props.title}</h3>
+      <dl className="lx-booking__facts">{props.children}</dl>
+    </>
+  );
+}
+
+/**
+ * Revisão (spec §13.5 itens 3–5; PD-009, PD-012): os termos da prévia do servidor em grupos de uma natureza só — saldo
+ * disponível, cobertura (Garantia + Créditos potenciais ainda não originados), o que fica depois do envio e a Taxa —, os
+ * termos efetivos da política com o aceite da versão apresentada, o aceite do complemento e o pagamento seguido do envio.
+ */
 function Review(props: {
   readonly preview: Preview;
   readonly complement: readonly ComplementOptionView[];
@@ -293,7 +308,7 @@ function Review(props: {
 }) {
   const { preview } = props;
   const q = preview.quote;
-  const [acceptedPolicy, setAcceptedPolicy] = useState(false);
+  const [acceptedPolicyId, setAcceptedPolicyId] = useState<string | null>(null);
   const [acceptedComplement, setAcceptedComplement] = useState(false);
   const [outcome, setOutcome] = useState<RequestSubmitResponse | null>(null);
   const [pending, startTransition] = useTransition();
@@ -302,6 +317,7 @@ function Review(props: {
     compareCredits(preview.balance, q.guarantee_credits) >= 0
       ? subtractCredits(preview.balance, q.guarantee_credits)
       : '0';
+  const ready = acceptedPolicyId === preview.policy.id && (!hasComplement || acceptedComplement);
   const submit = () =>
     startTransition(async () => {
       setOutcome(
@@ -310,7 +326,7 @@ function Review(props: {
           quote: q,
           paymentKey: preview.paymentKey,
           sendKey: preview.sendKey,
-          acceptedPolicy,
+          acceptedPolicyId,
           acceptedComplement,
         }),
       );
@@ -322,11 +338,52 @@ function Review(props: {
       <br />
     </span>
   ));
-  return (
+  const breakdown = (line: string) => (
     <>
-      <dl className="lx-booking__facts">
-        <Fact label={text.review.required} value={credits(q.credits_required)} />
+      <br />
+      <span className="lx-hint">{line}</span>
+    </>
+  );
+  const nights = datesBetween(q.checkin, q.checkout);
+  return (
+    <form
+      className="lx-form"
+      onChange={(event) => {
+        const form = new FormData(event.currentTarget);
+        const policy = form.get('accepted_policy_id');
+        setAcceptedPolicyId(typeof policy === 'string' ? policy : null);
+        setAcceptedComplement(form.get('accepted_complement') === 'on');
+      }}
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (ready && !pending) submit();
+      }}
+    >
+      <Group title={text.review.groupNow}>
         <Fact label={text.review.balance} value={credits(preview.balance)} />
+        <Fact
+          label={text.review.exchange}
+          value={
+            <>
+              {credits(preview.exchange)}
+              {breakdown(
+                text.review.exchangeBreakdown(
+                  formatCredits(preview.balance),
+                  formatCredits(q.complement_credits),
+                ),
+              )}
+            </>
+          }
+          hint={text.review.exchangeHint}
+        />
+      </Group>
+      <Group title={text.review.groupCoverage}>
+        <Fact label={text.review.required} value={credits(q.credits_required)} />
+        <Fact
+          label={text.review.guarantee}
+          value={credits(q.guarantee_credits)}
+          hint={text.review.guaranteeHint}
+        />
         <Fact
           label={text.review.committed}
           value={hasComplement ? committedLines : text.detail.none}
@@ -337,25 +394,30 @@ function Review(props: {
           hint={text.review.potentialHint}
         />
         <Fact
-          label={text.review.guarantee}
-          value={credits(q.guarantee_credits)}
-          hint={text.review.guaranteeHint}
-        />
-        <Fact
           label={text.review.covered}
-          value={credits(sumCredits([q.guarantee_credits, q.complement_consumption]))}
-        />
-        <Fact
-          label={text.review.exchange}
-          value={credits(preview.exchange)}
-          hint={text.review.exchangeHint}
+          value={
+            <>
+              {credits(sumCredits([q.guarantee_credits, q.complement_consumption]))}
+              {breakdown(
+                text.review.coveredBreakdown(
+                  formatCredits(q.guarantee_credits),
+                  formatCredits(q.complement_consumption),
+                ),
+              )}
+            </>
+          }
         />
         <Fact
           label={text.review.excess}
           value={credits(q.complement_excess)}
           hint={text.review.excessHint}
         />
+      </Group>
+      <Group title={text.review.groupAfter}>
         <Fact label={text.review.available} value={credits(available)} />
+        <Fact label={text.review.heldAfter} value={credits(q.guarantee_credits)} />
+      </Group>
+      <Group title={text.review.groupFee}>
         <Fact
           label={text.review.fee}
           value={formatFee(q.fee_amount_minor)}
@@ -365,38 +427,24 @@ function Review(props: {
         <Fact
           label={text.review.nights}
           value={q.night_credits.map((value, index) => (
-            <span key={index}>
+            <span key={nights[index]}>
               {index === 0 ? null : <br />}
-              {fullDate(datesBetween(q.checkin, q.checkout).at(index)!)}: {credits(value)}
+              {fullDate(nights[index]!)}: {credits(value)}
             </span>
           ))}
         />
-      </dl>
+      </Group>
       <p className="lx-booking__footnote">{text.review.validity(q.credit_validity_months)}</p>
-      <div className="lx-field">
-        <label className="lx-choice" htmlFor="solicitacao-politica">
-          <input
-            id="solicitacao-politica"
-            type="checkbox"
-            checked={acceptedPolicy}
-            onChange={(event) => setAcceptedPolicy(event.target.checked)}
-            required
-          />
-          <span className="lx-choice__title">{text.review.acceptPolicy}</span>
-          <span className="lx-choice__desc">
-            {text.review.policy} ·{' '}
-            {text.review.policyVersion(q.policy_id.slice(0, 8).toUpperCase())}
-          </span>
-        </label>
-      </div>
+      <h3 className="lx-label">{text.review.policy}</h3>
+      <PolicyTerms mechanism="luxchange_request" config={preview.policy.config} headingLevel={4} />
+      <PolicyAcceptance policyId={preview.policy.id} since={preview.policy.since} />
       {hasComplement ? (
         <div className="lx-field">
           <label className="lx-choice" htmlFor="solicitacao-complemento">
             <input
               id="solicitacao-complemento"
+              name="accepted_complement"
               type="checkbox"
-              checked={acceptedComplement}
-              onChange={(event) => setAcceptedComplement(event.target.checked)}
               required
             />
             <span className="lx-choice__title">{text.review.acceptComplement}</span>
@@ -426,10 +474,9 @@ function Review(props: {
       ) : (
         <button
           className="lx-button lx-button--primary"
-          type="button"
-          disabled={!acceptedPolicy || (hasComplement && !acceptedComplement) || pending}
+          type="submit"
+          disabled={!ready || pending}
           aria-busy={pending || undefined}
-          onClick={submit}
         >
           {pending
             ? text.review.sending
@@ -441,7 +488,7 @@ function Review(props: {
       <button className="lx-button lx-button--quiet" type="button" onClick={props.onBack}>
         {text.review.back}
       </button>
-    </>
+    </form>
   );
 }
 

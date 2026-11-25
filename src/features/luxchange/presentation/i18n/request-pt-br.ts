@@ -3,8 +3,11 @@
  * "membro solicitado", "Créditos necessários", "Saldo disponível", "Créditos em Garantia", "Taxa de intermediação",
  * "prévia". Créditos potenciais nunca aparecem como saldo; estorno solicitado nunca aparece como concluído.
  */
-/** Versão dos textos dos aceites da revisão (`review.acceptPolicy`, `review.acceptComplement`), gravada no consentimento. */
-export const REQUEST_CONSENT_TEXT_VERSION = 'request-consent.pt-br.v1';
+/**
+ * Versão dos textos dos aceites da revisão, gravada no consentimento: o aceite da política comercial (`PolicyAcceptance`
+ * do pricing, versão apresentada) e `review.acceptComplement`.
+ */
+export const REQUEST_CONSENT_TEXT_VERSION = 'request-consent.pt-br.v2';
 
 export type RequestOutcomeKey =
   | 'ERR_PERMISSION'
@@ -23,6 +26,7 @@ export type RequestOutcomeKey =
   | 'ERR_NOT_FOUND'
   | 'ERR_VALIDATION'
   | 'payment_pending'
+  | 'rate_limited'
   | 'not_activated'
   | 'unavailable'
   | 'unauthenticated';
@@ -126,30 +130,38 @@ export const requestMessages = {
     balance: 'Saldo disponível na Carteira',
     committed: 'Datas a comprometer',
     potential: 'Créditos potenciais das datas',
-    potentialHint: 'Não são saldo: só viram Créditos se a solicitação for aceita.',
+    potentialHint:
+      'Ainda não originados: não são saldo e só viram Créditos se a solicitação for aceita.',
     guarantee: 'Créditos em Garantia',
-    guaranteeHint: 'Saem do saldo disponível agora e voltam se a solicitação não for aceita.',
+    guaranteeHint: 'Saem do saldo disponível no envio e voltam se a solicitação não for aceita.',
     covered: 'Total coberto',
     exchange: 'Saldo potencial para intercâmbio',
-    exchangeHint:
-      'Saldo disponível + Créditos potenciais das datas. Os potenciais não podem ser usados antes do aceite.',
+    exchangeHint: 'Os Créditos potenciais não podem ser usados antes do aceite.',
+    exchangeBreakdown: (balance: string, potential: string) =>
+      `${balance} disponíveis + ${potential} potenciais, ainda não originados.`,
+    coveredBreakdown: (guarantee: string, potential: string) =>
+      `${guarantee} em Garantia + ${potential} potenciais.`,
+    groupNow: 'Sua Carteira agora',
+    groupCoverage: 'Como os Créditos necessários são cobertos',
+    groupAfter: 'Depois do envio',
+    groupFee: 'Taxa e prazo',
+    heldAfter: 'Em Garantia até a resposta',
     excess: 'Excedente',
-    excessHint: 'Se a solicitação for aceita, fica disponível na sua Carteira.',
+    excessHint:
+      'Créditos potenciais que sobram da cobertura; se a solicitação for aceita, entram na sua Carteira.',
     fee: 'Taxa de intermediação',
     feeHint: 'Paga agora e devolvida integralmente se a solicitação não for aceita.',
     deadline: 'Prazo para resposta',
     validity: (months: number) => `Validade dos Créditos originados: ${months} meses`,
     nights: 'Créditos por noite solicitada',
     policy: 'Política da solicitação',
-    acceptPolicy: 'Li e aceito a política da solicitação.',
     acceptComplement:
       'Aceito comprometer as datas acima: se a solicitação for aceita, elas são cedidas ao Inventário Luxtory pelos Créditos potenciais.',
     send: 'Pagar a Taxa e enviar',
     sending: 'Enviando…',
     refresh: 'Ver prévia atualizada',
     back: 'Voltar à seleção',
-    available: 'Continuam disponíveis na Carteira',
-    policyVersion: (code: string) => `Versão ${code}`,
+    available: 'Saldo disponível depois do envio',
     refunding: 'Pagamento sem solicitação enviada — devolução em processamento.',
     retry: 'Tentar enviar de novo',
   },
@@ -204,6 +216,7 @@ export const requestMessages = {
     ERR_NOT_FOUND: 'Solicitação não encontrada.',
     ERR_VALIDATION: 'Revise a seleção: alguma data sua não é necessária para cobrir os Créditos.',
     payment_pending: 'Pagamento em processamento. Você poderá enviar quando ele for aprovado.',
+    rate_limited: 'Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo.',
     not_activated: 'As solicitações ainda não estão disponíveis.',
     unavailable: 'Não foi possível concluir agora. Tente novamente.',
     unauthenticated: 'Sua sessão terminou. Entre de novo.',

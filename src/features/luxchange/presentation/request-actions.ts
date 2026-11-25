@@ -6,6 +6,8 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { PaymentRejection, PaymentsUnavailableError } from '@/features/billing';
 import { executeTitularCommand, requireTitularSession } from '@/features/identity';
+import type { PolicyConfig } from '@/features/pricing/policy-components';
+import { policyHistory } from '@/features/pricing/policies';
 import { createHoldingDirectory } from '@/features/ownership';
 import {
   CapabilityNotActivatedError,
@@ -32,6 +34,8 @@ import {
   createWithdrawRequestProductionHandler,
 } from './request-handlers';
 import { productionRequestFlow } from './request-production';
+import { instantDateTime } from './request-format';
+import { productionRequestQuota, type RequestQuotaDecision } from './request-quota';
 import { readRequestJourney } from './request-read';
 import { REQUEST_CONSENT_TEXT_VERSION, type RequestOutcomeKey } from './i18n/request-pt-br';
 
@@ -78,8 +82,21 @@ export type RequestPreviewResponse =
       /** Chaves da revisão: a do pagamento da Taxa e a do envio (a mesma tentativa nunca cobra nem envia duas vezes). */
       readonly paymentKey: string;
       readonly sendKey: string;
+      /** Política `luxchange_request` da prévia (PD-009): termos efetivos, versão e início da vigência, para o aceite. */
+      readonly policy: {
+        readonly id: string;
+        readonly config: PolicyConfig;
+        readonly since: string;
+      };
     }
   | { readonly status: 'refused'; readonly reason: RequestOutcomeKey };
+
+/** Desfecho do limitador na action (TECH-100): excesso, limites ausentes ou limitador sem resposta segura. */
+function quotaOutcome(decision: RequestQuotaDecision): RequestOutcomeKey | null {
+  if (decision.status === 'allowed') return null;
+  if (decision.status === 'limited') return 'rate_limited';
+  return decision.status === 'parameter_missing' ? 'ERR_PARAMETER_MISSING' : 'unavailable';
+}
 
 function refusal(error: unknown): { status: 'refused'; reason: RequestOutcomeKey } {
   if (error instanceof CommandRejection || error instanceof PaymentRejection)
@@ -96,12 +113,19 @@ export async function previewRequestAction(raw: unknown): Promise<RequestPreview
   if (!parsed.success) return { status: 'refused', reason: 'ERR_VALIDATION' };
   const session = await requireTitularSession();
   if (session === 'unavailable') return { status: 'refused', reason: 'unauthenticated' };
+  const limited = quotaOutcome(await productionRequestQuota()('read', session.userId));
+  if (limited !== null) return { status: 'refused', reason: limited };
   try {
     const flow = productionRequestFlow(getDatabase(), rootLogger);
     const viewer = { userId: session.userId, partyId: parsed.data.party_id };
     const quote = await flow.quote(viewer, parsed.data);
     const journey = await readRequestJourney(session, viewer.partyId, quote.second_home_id);
     const balance = journey?.balance ?? '0';
+    // A versão que a prévia resolveu, com os termos que o membro vê e aceita (o envio grava essa versão no snapshot).
+    const policy = (await policyHistory(getDatabase(), 'luxchange_request')).find(
+      (version) => version.id === quote.policy_id,
+    );
+    if (policy === undefined) return { status: 'refused', reason: 'ERR_POLICY_MISSING' };
     return {
       status: 'ok',
       quote,
@@ -109,6 +133,14 @@ export async function previewRequestAction(raw: unknown): Promise<RequestPreview
       exchange: sumCredits([balance, quote.complement_credits]),
       paymentKey: randomUUID(),
       sendKey: randomUUID(),
+      policy: {
+        id: policy.id,
+        config: policy.config,
+        since: instantDateTime(
+          policy.effectiveFrom.toISOString(),
+          journey?.home.timezone ?? 'America/Sao_Paulo',
+        ),
+      },
     };
   } catch (error) {
     return refusal(error);
@@ -120,7 +152,8 @@ const submission = z.strictObject({
   quote: z.custom<RequestQuote>((value) => typeof value === 'object' && value !== null),
   paymentKey: z.uuid(),
   sendKey: z.uuid(),
-  acceptedPolicy: z.literal(true),
+  /** Id da versão apresentada e aceita (`PolicyAcceptance`): precisa ser a da prévia revisada. */
+  acceptedPolicyId: z.uuid(),
   acceptedComplement: z.boolean(),
 });
 
@@ -164,10 +197,14 @@ export async function submitRequestAction(raw: unknown): Promise<RequestSubmitRe
   const parsed = submission.safeParse(raw);
   if (!parsed.success) return { status: 'refused', reason: 'ERR_VALIDATION' };
   const { shape: request, quote, paymentKey, sendKey } = parsed.data;
+  if (parsed.data.acceptedPolicyId !== quote.policy_id)
+    return { status: 'refused', reason: 'ERR_VALIDATION' };
   if (request.complement.length > 0 && !parsed.data.acceptedComplement)
     return { status: 'refused', reason: 'ERR_VALIDATION' };
   const session = await requireTitularSession();
   if (session === 'unavailable') return { status: 'refused', reason: 'unauthenticated' };
+  const limited = quotaOutcome(await productionRequestQuota()('send', session.userId));
+  if (limited !== null) return { status: 'refused', reason: limited };
   const db = getDatabase();
   const flow = productionRequestFlow(db, rootLogger);
   const viewer = { userId: session.userId, partyId: request.party_id };

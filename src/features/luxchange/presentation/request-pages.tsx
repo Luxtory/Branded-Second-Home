@@ -13,6 +13,7 @@ import { dateList, formatCredits, fullDate } from './deposit-format';
 import { readDepositHoldings } from './deposit-read';
 import { formatFee, instantDateTime } from './request-format';
 import { RequestJourney } from './request-journey';
+import { productionRequestQuota } from './request-quota';
 import {
   readRequestDetail,
   readRequestJourney,
@@ -144,6 +145,23 @@ export async function TitularNewRequestPage({
 }) {
   const session = await requireTitularSession();
   if (session === 'unavailable') return <AuthUnavailable />;
+  // Catálogo e calendário leem a capacidade alheia: uma unidade da superfície `read` por carregamento (TECH-100).
+  const quota = await productionRequestQuota()('read', session.userId);
+  if (quota.status !== 'allowed')
+    return (
+      <TitularShell>
+        {header(text.lead)}
+        <Notice
+          body={
+            quota.status === 'limited'
+              ? text.outcome.rate_limited
+              : quota.status === 'parameter_missing'
+                ? text.journey.closed
+                : text.outcome.unavailable
+          }
+        />
+      </TitularShell>
+    );
   const partyId = param(searchParams.party);
   const homeId = param(searchParams.casa);
   if (partyId !== null && homeId !== null) {
