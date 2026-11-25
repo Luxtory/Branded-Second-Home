@@ -204,6 +204,9 @@ export async function captureForReview(
 ) {
   const dir = process.env.UI_CAPTURE_DIR;
   if (dir === undefined || dir === '') return;
+  // Prefixos opcionais (separados por vírgula): a CI captura só o checkpoint em auditoria (ex.: `w21-`).
+  const only = (process['env']['UI_CAPTURE_ONLY'] ?? '').split(',').filter(Boolean);
+  if (only.length > 0 && !only.some((prefix) => name.startsWith(prefix))) return;
   const original = page.viewportSize();
   for (const viewport of AXE_VIEWPORTS) {
     await page.setViewportSize(viewport);

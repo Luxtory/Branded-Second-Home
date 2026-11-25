@@ -80,6 +80,17 @@ jobs:
         run: npm run test:e2e
         env:
           PLAYWRIGHT_WEBKIT: '1'
+          # Capturas de revisão do checkpoint em auditoria (390 e 1440 px; material do PR, não baseline — ADR-0009).
+          UI_CAPTURE_DIR: reports/ui-captures
+          UI_CAPTURE_ONLY: 'w21-'
+      - name: Capturas de revisão (checkpoint)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ui-captures
+          path: reports/ui-captures/
+          if-no-files-found: ignore
+          retention-days: 14
       - name: W8 acquisition writes closed (PostgreSQL real)
         run: npx playwright test tests/e2e/acquisition-admin.spec.ts --grep 'gate W8 fechado'
         env:
