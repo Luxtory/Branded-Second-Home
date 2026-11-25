@@ -19,11 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   potenciais, que só viram Créditos no aceite), paga a Taxa de intermediação antes do envio e acompanha ou retira a
   solicitação; encerrada antes do aceite, a Garantia volta, as datas são liberadas e a Taxa é devolvida integralmente.
   Área do Titular: `/titular/luxchange/solicitacoes` (lista, recebidas só leitura, nova solicitação com calendário
-  "Solicitável/Indisponível/Passada", prévia com Créditos necessários, Garantia, excedente, Taxa e prazo, dois aceites,
+  "Solicitável/Indisponível/Passada", prévia com Créditos necessários, Garantia, Créditos potenciais ainda não
+  originados, excedente, Taxa e prazo, os termos da política comercial com o aceite da versão apresentada,
   detalhe com o estado real do pagamento e da devolução); Carteira, depósito, reserva e calendário mostram as datas
   comprometidas; quatro avisos na central. API: `POST /v1/luxchange/requests/preview`, `/fee-payment`,
   `/v1/luxchange/requests` e `/{id}/withdraw`. Encerramentos por evento depois da varredura do outbox, com o job diário
-  `expire_requests` como recuperação. Infraestrutura desativada: K4, K5, K6 e K7 fechadas; aceite e recusa só na W22.
+  `expire_requests` como recuperação. Limite de taxa na leitura da capacidade e no pagamento da Taxa (limitador
+  existente; limites a configurar na ativação). Infraestrutura desativada: K4, K5, K6 e K7 fechadas; aceite e recusa só
+  na W22.
 
 - Second Home Partners (REQ-105, catalog §20.9). A seção “Uma estadia. Três formas de reservar.” do Luxtory Club
   mostra Luxchange Request, Luxchange Direct e Luxplus logo depois de “Mais liberdade para seus clientes”.

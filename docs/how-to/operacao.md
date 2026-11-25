@@ -846,3 +846,33 @@ mostra "Cobrança: Desativada" e o job `reconciliation` (cron `53 3 * * *`) é n
 5. **Alerta `payment_without_outcome`:** pagamento aprovado sem desfecho ou estorno falho; a conciliação já registra o
    estorno e tenta de novo a cada execução. Conferir no PSP antes de qualquer ação manual; nunca editar linhas.
 6. **Rollback:** o `down` recusa com qualquer fato financeiro ou com a K5 presente; reverter só o código.
+
+## Preparar a W21 em produção (Request Luxchange: envio)
+
+Nada a ativar: a migration `luxchange_request` (72 no total) cria a Request, as noites, o complemento por datas, o
+consentimento e as regras de encerramento; K4 `credits`, K5 `payments`, K6 `luxchange_deposit` e K7
+`luxchange_exchange` seguem sem linha (ADR-0037 §10). Sem elas, a prévia e o envio respondem 503 e as telas mostram as
+solicitações como ainda indisponíveis; retirada e encerramento nunca dependem de chave. O cron diário
+`/api/jobs/expire_requests` (`37 3 * * *`) é a recuperação dos encerramentos; sem Request, não faz nada.
+
+**Limite de taxa (TECH-100; STRIDE T-2111, T-2113).** A leitura da capacidade alheia (catálogo, calendário e prévia) e o
+pagamento da Taxa só funcionam com os limites configurados; sem eles, são recusados com `ERR_PARAMETER_MISSING` (falha
+fechada, só os nomes das chaves no log). O envio fica limitado pelo pagamento (cada envio exige um pagamento aprovado
+próprio) e a retirada nunca é limitada.
+
+| Variável | Formato validado | Sensitive |
+|---|---|---|
+| `LUXCHANGE_REQUEST_READ_LIMIT` / `LUXCHANGE_REQUEST_READ_WINDOW_SECONDS` | inteiros positivos (leituras e prévias por usuário por janela, em segundos) | não |
+| `LUXCHANGE_REQUEST_SEND_LIMIT` / `LUXCHANGE_REQUEST_SEND_WINDOW_SECONDS` | inteiros positivos (pagamentos da Taxa por usuário por janela) | não |
+| `LUXCHANGE_REQUEST_GLOBAL_LIMIT` / `LUXCHANGE_REQUEST_GLOBAL_WINDOW_SECONDS` | inteiros positivos (total por janela, contado em cada superfície) | não |
+| `LUXCHANGE_REQUEST_LIMITER_TIMEOUT_MS` | inteiro positivo (prazo do Upstash; sem resposta → recusa) | não |
+
+Reaproveitadas, sem alteração: `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` (namespaces próprios
+`luxtory:luxchange-request-read:<ambiente>` e `luxtory:luxchange-request-send:<ambiente>`; chave = SHA-256 de
+`luxtory:<superfície>:<user_id>`, sem segredo novo). **Proposta para decisão do fundador** (TECH-001: o código não tem
+default; nada configurado na W21): leitura 60 por 300 s por usuário; pagamento 10 por 3.600 s por usuário; global 3.000
+por 300 s; timeout 1.500 ms — perfil de um membro explorando algumas Second Homes e ajustando datas, bem abaixo dos
+limites das páginas públicas. Nunca criar `LUXCHANGE_REQUEST_LIMITER_MODE` na Vercel. Configurar essas variáveis é
+pré-requisito da ativação, junto de D2, PSP validado, parâmetros (`luxchange_fee_rate`, `luxchange_fee_minimum`,
+`request_deadline_hours`), política `luxchange_request` publicada e a W22.
+

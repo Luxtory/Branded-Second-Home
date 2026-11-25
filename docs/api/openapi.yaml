@@ -2135,9 +2135,12 @@ paths:
         escrita, com a política `luxchange_request` vigente. O Titular representa `party_id`. Devolve os Créditos de cada
         noite solicitada, os Créditos potenciais de cada data comprometida (nunca saldo), `N`, `P`, `G`, `C`, `E`, a Taxa
         de intermediação, o prazo em horas, a validade e a política — os termos que a tela apresenta e que o envio confere
-        (`expected`). Nunca PRL em reais (REQ-100). Recusas: 403 `ERR_PERMISSION`, 409 `ERR_MEMBERSHIP_INELIGIBLE`,
-        `ERR_CAPACITY_UNAVAILABLE`, `ERR_MIN_NOTICE`, `ERR_PRL_MISSING`, `ERR_PARAMETER_MISSING`, `ERR_POLICY_MISSING`;
-        400 `ERR_VALIDATION` (inclusive seleção do complemento com data dispensável). Funcionalidade fechada → 503.
+        (`expected`). Nunca PRL em reais (REQ-100). Recusas: 403 `ERR_PERMISSION`; 422 `ERR_MEMBERSHIP_INELIGIBLE`,
+        `ERR_CAPACITY_UNAVAILABLE`, `ERR_MIN_NOTICE`, `ERR_CREDITS_INSUFFICIENT`, `ERR_CREDIT_HOLD_INVALID`,
+        `ERR_PRL_MISSING`, `ERR_PARAMETER_MISSING`, `ERR_POLICY_MISSING`; 400 `ERR_VALIDATION` (inclusive seleção do
+        complemento com data dispensável). Funcionalidade fechada → 503. Limite da superfície de leitura (por usuário e
+        global; limites do runbook — ausentes → 422 `ERR_PARAMETER_MISSING`; limitador sem resposta segura → 503):
+        excedido → 429 `ERR_RATE_LIMITED`.
       operationId: previewRequest
       security:
         - sessionCookie: []
@@ -2167,6 +2170,29 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '409':
           $ref: '#/components/responses/Conflict'
+        '422':
+          description: Recusa de negócio da Request (`ERR_MEMBERSHIP_INELIGIBLE`, `ERR_CAPACITY_UNAVAILABLE`, `ERR_MIN_NOTICE`, `ERR_CREDITS_INSUFFICIENT`, `ERR_CREDIT_HOLD_INVALID`, `ERR_PAYMENT_FAILED`, `ERR_PRL_MISSING`, `ERR_POLICY_MISSING`, `ERR_PARAMETER_MISSING`).
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: '`ERR_RATE_LIMITED`: limite por usuário ou global da superfície excedido (W21; TECH-100).'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            retry-after:
+              description: Segundos até a próxima tentativa poder ser aceita.
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           $ref: '#/components/responses/InternalError'
         '503':
@@ -2180,7 +2206,9 @@ paths:
         W21 (ADR-0037 §3 item 4; TECH-080): refaz a prévia no servidor e cobra exatamente a Taxa da prévia no PSP, com a
         `Idempotency-Key` da revisão (a mesma chave nunca cobra duas vezes; outro valor com a mesma chave → 409
         `ERR_IDEMPOTENCY_CONFLICT`). Só com o pagamento `approved` o envio prossegue; `pending` → "Pagamento em
-        processamento". Recusas da prévia como em `previewRequest`. Sem PSP configurado ou K5 fechada → 503.
+        processamento". Recusas da prévia como em `previewRequest`. Sem PSP configurado ou K5 fechada → 503. Limite da
+        superfície de pagamento (por usuário e global; o envio fica limitado por ele, pois cada envio exige um pagamento
+        aprovado próprio): excedido → 429 `ERR_RATE_LIMITED`.
       operationId: payRequestFee
       security:
         - sessionCookie: []
@@ -2211,6 +2239,29 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '409':
           $ref: '#/components/responses/Conflict'
+        '422':
+          description: Recusa de negócio da Request (`ERR_MEMBERSHIP_INELIGIBLE`, `ERR_CAPACITY_UNAVAILABLE`, `ERR_MIN_NOTICE`, `ERR_CREDITS_INSUFFICIENT`, `ERR_CREDIT_HOLD_INVALID`, `ERR_PAYMENT_FAILED`, `ERR_PRL_MISSING`, `ERR_POLICY_MISSING`, `ERR_PARAMETER_MISSING`).
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: '`ERR_RATE_LIMITED`: limite por usuário ou global da superfície excedido (W21; TECH-100).'
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+            retry-after:
+              description: Segundos até a próxima tentativa poder ser aceita.
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           $ref: '#/components/responses/InternalError'
         '503':
@@ -2228,10 +2279,10 @@ paths:
         antecedência no prazo de resposta. O banco fixa `sent_at` e `expires_at`; a Garantia sai em FEFO; a Taxa já paga é
         vinculada. `expected` são os termos revisados: qualquer diferença do recálculo → 409 `ERR_REQUEST_TERMS_CHANGED`,
         nada gravado. Recusado depois de pagamento aprovado da própria party, o servidor dispara a devolução da Taxa logo
-        depois da resposta (conciliação como rede de segurança). Recusas: 403 `ERR_PERMISSION`; 409
+        depois da resposta (conciliação como rede de segurança). Recusas: 403 `ERR_PERMISSION`; 422
         `ERR_MEMBERSHIP_INELIGIBLE`, `ERR_CAPACITY_UNAVAILABLE`, `ERR_MIN_NOTICE`, `ERR_CREDITS_INSUFFICIENT`,
-        `ERR_CREDIT_HOLD_INVALID`, `ERR_PAYMENT_FAILED`, `ERR_POLICY_MISSING`, `ERR_PRL_MISSING`, `ERR_PARAMETER_MISSING`,
-        `ERR_REQUEST_TERMS_CHANGED`, `ERR_STATE_TRANSITION`, `ERR_IDEMPOTENCY_CONFLICT`; 400 `ERR_VALIDATION`.
+        `ERR_CREDIT_HOLD_INVALID`, `ERR_PAYMENT_FAILED`, `ERR_POLICY_MISSING`, `ERR_PRL_MISSING`, `ERR_PARAMETER_MISSING`;
+        409 `ERR_REQUEST_TERMS_CHANGED`, `ERR_STATE_TRANSITION`, `ERR_IDEMPOTENCY_CONFLICT`; 400 `ERR_VALIDATION`.
         Funcionalidade fechada (K4, K5, K7; K6 com complemento) → 503 `ERR_UNAVAILABLE`, nada gravado.
       operationId: sendRequest
       security:
@@ -2269,6 +2320,15 @@ paths:
           $ref: '#/components/responses/PrlPayloadTooLarge'
         '415':
           $ref: '#/components/responses/AcquisitionUnsupportedMediaType'
+        '422':
+          description: Recusa de negócio da Request (`ERR_MEMBERSHIP_INELIGIBLE`, `ERR_CAPACITY_UNAVAILABLE`, `ERR_MIN_NOTICE`, `ERR_CREDITS_INSUFFICIENT`, `ERR_CREDIT_HOLD_INVALID`, `ERR_PAYMENT_FAILED`, `ERR_PRL_MISSING`, `ERR_POLICY_MISSING`, `ERR_PARAMETER_MISSING`).
+          headers:
+            x-correlation-id:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           $ref: '#/components/responses/InternalError'
         '503':

@@ -322,8 +322,17 @@ Request, com gatilhos desligados).
   prévia e pagamento usam a variante sem command (`createTitularSessionRoute`). Depois da resposta (`after()`): estornos
   das Requests encerradas no reenvio; envio recusado ou com falha depois de pagamento aprovado da própria party →
   recuperação do pagamento (estorno), com a conciliação como rede de segurança; retirada confirmada → processamento do
-  estorno no PSP. Nada disso muda a resposta do command. Limite de taxa: não há limitador novo nas rotas da W21 (ver
-  STRIDE §7, risco residual).
+  estorno no PSP. Nada disso muda a resposta do command. Recusas de negócio respondem 422; termos mudados, estado e
+  idempotência, 409.
+- **Limite de taxa** (TECH-100; STRIDE T-2111/T-2113), com o limitador existente (`createUpstashRateLimiter`, modo
+  fake só local/CI): superfície `read` (catálogo, calendário e prévia — página, rota e action) e `send` (pagamento da
+  Taxa — rota e action), por usuário (SHA-256 de `luxtory:<superfície>:<user_id>`) e global, em namespaces próprios por
+  ambiente; excesso → 429 `ERR_RATE_LIMITED` com `retry-after`; limites ausentes → 422 `ERR_PARAMETER_MISSING`; Upstash
+  sem resposta → 503. O envio fica limitado pelo pagamento; a retirada nunca é limitada. Variáveis e proposta de valores:
+  runbook, "Preparar a W21 em produção".
+- **Encerramento sem Garantia** (correção da revisão do C3): Request com `G = 0` (o complemento cobre `N`) não retém
+  Créditos; retirada, expiração e encerramento por inelegibilidade liberam só as datas e revertem a Taxa
+  (`guarantee_released` = 0). Antes da correção, o encerramento recusava com `ERR_STATE_TRANSITION`.
 - **Encerramentos por evento** (ADR-0037 §7): o consumidor `luxchange_request_closure_trigger` só anota que um evento
   relevante foi entregue (`identity.membership_state_changed`, `booking.own_use_confirmed`, `…_cancelled`,
   `…_no_show_declared`, `…_exception_opened`, `…_exception_resolved`, `…_invalidated`, `luxchange.credits_originated`,
@@ -336,18 +345,23 @@ Request, com gatilhos desligados).
   (Owner por noite; Co-Owner por reserva; só com 336 h no fim do prazo e sem compromisso efetivo), resumo estimado,
   prévia do servidor (Créditos necessários, saldo disponível, datas a comprometer, Créditos potenciais, Créditos em
   Garantia, total coberto, saldo potencial para intercâmbio, excedente, saldo que continua disponível, Taxa de
-  intermediação em R$, prazo em horas, validade, Créditos por noite), dois aceites (política; complemento), "Pagar a
+  intermediação em R$, prazo em horas, validade, Créditos por noite) em grupos de uma natureza só — Carteira agora,
+  cobertura (Garantia + Créditos potenciais ainda não originados), depois do envio, Taxa e prazo —, os termos efetivos
+  da política `luxchange_request` (`PolicyTerms`) e dois aceites (política — `PolicyAcceptance`, o id da versão
+  apresentada precisa ser o da prévia; complemento), "Pagar a
   Taxa e enviar" (pendente → "Pagamento em processamento"; termos mudados antes da cobrança → nova prévia, nada cobrado;
   recusa depois do pagamento → "devolução em processamento") e detalhe com o estado real da Request, do pagamento e do
   estorno ("solicitada — em processamento" até o PSP confirmar; nunca "devolvida" antes) e "Retirar solicitação". A
   capacidade alheia só é lida com Membership ativo; Créditos potenciais nunca como saldo; nunca PRL em reais. Versão do
-  texto dos aceites: `request-consent.pt-br.v1` (i18n).
+  texto dos aceites: `request-consent.pt-br.v2` (i18n).
 - **Integração**: Carteira (seção "Datas comprometidas com solicitação pendente", Créditos potenciais não utilizáveis),
   depósito (data comprometida riscada, com orientação de retirar a solicitação), reserva e cancelamento (aviso na
   reserva Co-Owner comprometida) e calendário de uso próprio (datas comprometidas da Second Home) — compostos pelas
   rotas do app, sem importação do luxchange pelos slices `booking` e `credits`. Central: textos dos quatro avisos.
 - **E2E** (`luxchange-request.spec.ts`): Request completa a 390 px com toque (depósito real para os Créditos, datas
-  próprias, prévia, aceites, pagamento no PSP fake, detalhe, Carteira, recebida e aviso do solicitado, retirada e
-  estorno) e a 1440 px (Garantia só, do início à retirada); axe e overflow a cada etapa. O PSP fake roda num segundo
+  próprias, prévia, termos e aceite da política, pagamento no PSP fake, detalhe, Carteira, recebida e aviso do
+  solicitado, retirada e estorno), a 1440 px (Garantia só, do início à retirada) e Co-Owner (reserva inteira como datas
+  próprias, `G = 0` e excedente, aviso na reserva comprometida, retirada); axe e overflow a cada etapa. Capturas `w21-`
+  publicadas pela CI como artefato `ui-captures` do run. O PSP fake roda num segundo
   `next start` do servidor de E2E (porta + 3), só para este spec. O seed da Carteira da W17 continua como histórico
   sintético; a Carteira com uma Request real fica provada por este spec.

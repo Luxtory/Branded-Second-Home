@@ -104,9 +104,11 @@ ainda valem (nada é cobrado por prévia vencida); efeitos depois da resposta nu
 gatilho de encerramento não executa command dentro da transação de entrega do outbox. PSP fake só no servidor de E2E
 (recusado em Production pela validação do ambiente).
 
-**Residual risks (W21):** limite de taxa das rotas e da leitura da capacidade (T-2111, T-2113) **não implementado na
-W21**: exigiria limitador com variáveis novas em Production (decisão do fundador: sem mudança de ambiente nem
-infraestrutura nova nesta wave); mitigações atuais — sessão, representação, Membership ativo para ler e Taxa paga por
-envio — e o limitador entra como pendência antes da ativação; estorno de Request vencida em que ninguém age começa só na
+**Limite de taxa (E3, revisão do C3):** limitador existente reaproveitado (T-2111, T-2113) — superfícies `read`
+(capacidade alheia e prévia) e `send` (pagamento da Taxa), por usuário pseudonimizado e global, namespaces próprios,
+falha fechada; a retirada nunca é limitada.
+
+**Residual risks (W21):** os limites do runbook ainda não estão configurados em Production (decisão do fundador, junto
+da ativação); até lá, leitura da capacidade e pagamento ficam recusados — coerente com K4–K7 fechadas; estorno de Request vencida em que ninguém age começa só na
 recuperação diária (Cron do plano Hobby; com evento relevante, logo depois da varredura do outbox); a reserva Co-Owner perto dos 15 dias pode ter o prazo tempestivo transcorrendo durante a pendência (aviso na
 tela); ativação real continua dependente de W22, D2, PSP validado, parâmetros, política e autorização do fundador.
