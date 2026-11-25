@@ -1,12 +1,12 @@
 # W21 — Luxchange Request: envio — plano
 
-IDs (dona): REQ-062, PD-005, PD-007 e, se aprovado, o envio do PD-012. TECH: TECH-024, TECH-031, TECH-043, TECH-044,
-TECH-061, TECH-071, TECH-072, TECH-073 (proposto), TECH-082, TECH-090 (com TECH-001, TECH-002, TECH-025, TECH-051–TECH-056,
+IDs (dona): REQ-062, PD-005, PD-007 e o envio do PD-012. TECH: TECH-024, TECH-031, TECH-043, TECH-044,
+TECH-061, TECH-071, TECH-072, TECH-073, TECH-082, TECH-090 (com TECH-001, TECH-002, TECH-025, TECH-051–TECH-056,
 TECH-070, TECH-080, TECH-091). Complementos: REQ-096, REQ-097, REQ-098, REQ-100, REQ-101, INV-6, EC-6 a EC-9 e EC-17 a
-EC-21, CONC-5, CONC-8, CONC-12 e CONC-13 a CONC-18 (propostos). Base: `main` `9a55ffb` (W20 #109 `5b8a047` + #110,
-catalog). Canônicos vigentes: `01` v10.8 · `02` v4.6 · `03` v3.19. Propostos nesta E0, **não vigentes até aprovação
-expressa do fundador**: `01` v10.9 · `02` v4.7 · `03` v3.20. Decisão: [ADR-0037](../adr/0037-request-lastro-complemento-por-datas-e-encerramentos.md)
-(Proposed) e emenda proposta na [ADR-0036](../adr/0036-deposito-luxchange-cessao-snapshot-por-noite-e-k6.md).
+EC-21, CONC-5, CONC-8, CONC-12 e CONC-13 a CONC-18. Base: `main` `b1337f7` (W20 #109 `5b8a047` + #110 e #111,
+catalog). Canônicos vigentes desde o C0 (fundador, 2026-11-24): `01` v10.9 · `02` v4.7 · `03` v3.20 (antes: v10.8 · v4.6
+· v3.19). Decisão: [ADR-0037](../adr/0037-request-lastro-complemento-por-datas-e-encerramentos.md)
+e emenda W21 na [ADR-0036](../adr/0036-deposito-luxchange-cessao-snapshot-por-noite-e-k6.md).
 
 ## Autorização (fundador, 2026-11-24)
 
@@ -14,6 +14,12 @@ E0 exclusivamente documental, numa única branch da W21 (`feat/w21-luxchange-req
 **Não autorizado:** E1, migrations, implementação econômica, merge, deploy, escrita em Production, ativação de K1–K7,
 publicação de PRL, parâmetros ou políticas reais, pagamentos reais ou simulados em Production, antecipação da W22. Nenhuma
 proposta desta E0 é decisão aprovada antes da autorização expressa do fundador no checkpoint C0.
+
+**C0 aprovado (fundador, 2026-11-24):** PD-012; PD-007 ampliado, inclusive os Créditos do membro solicitado calculados
+pelos valores do envio e originados no aceite; `01` v10.9; REQ-063 e guardrails; EC-17 a EC-21 e CONC-13 a CONC-18 como
+cobertura de comportamento, sem nova infraestrutura de testes; "Taxa de intermediação" na comunicação com o membro.
+Autorizados depois do C0: commit de vigência, E0b (spec e STRIDE), push e PR draft para auditoria independente.
+Continuam não autorizados: E1, merge, migrations em Production e ativação de capabilities.
 
 ## Decisões do fundador já tomadas (rodadas de 2026-11-24)
 
@@ -25,13 +31,13 @@ proposta desta E0 é decisão aprovada antes da autorização expressa do fundad
 - Interface: "Taxa de intermediação"; `Luxchange Fee` permanece como nome técnico e econômico interno. O alinhamento da
   página pública é PR de comunicação separado.
 
-## Pendente do fundador (C0)
+## Itens que dependiam do fundador no C0 (aprovados em 2026-11-24)
 
 1. Aprovação dos textos de `01` v10.9, `02` v4.7, `03` v3.20, ADR-0037 e da emenda da ADR-0036.
 2. `01` v10.9 — **mudança de alcance a sinalizar:** os esclarecimentos delimitam, para a oferta sob condição, o alcance de
    "outro compromisso econômico incompatível" (BR-170, BR-171) e de "compromissos anteriormente constituídos" (BR-344),
    preservando as obrigações já constituídas pela Request. Sem nova BR.
-3. **Hipótese de produto (PD-007 ampliado), ainda não ratificada:** Créditos do membro solicitado = Σ PRL das noites
+3. **Hipótese de produto (PD-007 ampliado), ratificada pelo fundador no C0:** Créditos do membro solicitado = Σ PRL das noites
    solicitadas × multiplicador, ambos do envio, ainda que o PRL mude depois; originados no aceite, com validade desse
    instante; conhecidos por ele antes de aceitar; conferidos pelo banco pela fórmula do PRL
    (`app.luxchange_deposit_quantity_matches`, já existente), não por igualdade com o débito.
@@ -40,7 +46,7 @@ proposta desta E0 é decisão aprovada antes da autorização expressa do fundad
 
 | Item | Estado |
 |---|---|
-| `main` | `9a55ffb`; desde a W20 entrou só o #110 (catalog, sem migration nem canônico) |
+| `main` | `b1337f7`; desde a W20 entraram só o #110 e o #111 (catalog, sem migration nem canônico) |
 | Production (só leitura, 2026-11-24) | 71 migrations (md5 `c9064352…` = local), `capability_activation` vazia (CHECK K1–K7), tabelas econômicas vazias, invariantes de credits, luxchange e billing vazias, sem `app.luxchange_request` |
 | Prontos para reuso | W16 `resolveEconomicTerms` (conjunto de noites, política), `creditsForPrl`, `luxchangeFee`; W17 `holdCredits`/`releaseHold`, FEFO; W18 política e `PolicyAcceptance`; W19 `initiatePayment`, `chargeLuxchangeFee`, `reverseLuxchangeFee`, `processRefund`, `reconcilePayment`; W20 `cession`, snapshot por noite, `xmin`, calendário do depósito; registro com `send_request`/`withdraw_request`; job `expire_requests` no TECH-090 |
 | Lacunas | K4/K5/K7 prendem encerramentos; guard sem `requester` e sem Titular fora da própria Second Home; banco sem a Request (cobertura, vínculo Fee ↔ noites, liberação só por retirada/recusa); `held → consumed` e apuração aceitam qualquer `accept_request`; `credit_lot_originate` sem caminho para originar ao solicitante no aceite |
@@ -61,7 +67,7 @@ Fora de todas: ativação, PSP real, cancelamento pós-aceite (⛔ P-11), dados 
 
 | Etapa | Conteúdo | Checkpoint |
 |---|---|---|
-| E0 | esta entrega documental: canônicos propostos, ADR-0037, emenda da ADR-0036, índice de ADRs, este plano, W20 ✅ e emenda proposta no plano de waves, nota de proposta no `CLAUDE.md` | **C0:** aprovação expressa dos textos; só então os status mudam de "PROPOSTA" para "final" e as referências do `CLAUDE.md` passam às novas versões |
+| E0 | esta entrega documental: canônicos (vigentes desde o C0), ADR-0037, emenda da ADR-0036, índice de ADRs, este plano, W20 ✅ e emenda proposta no plano de waves, nota de proposta no `CLAUDE.md` | **C0:** aprovado pelo fundador em 2026-11-24; vigência formalizada no commit seguinte (status "final", ADR-0037 Accepted, referências do `CLAUDE.md`) |
 | E0b | documental, depois do C0 e antes da migration: spec `luxchange` (Request e complemento), STRIDE `luxchange` | revisão junto do C1 |
 | E1 | migration única (72) + testes de banco, corrida, tempo, forja e preservação + `db:check` | **C1:** revisão da migration antes de qualquer código de aplicação |
 | E2 | domínio, commands, guard, pagamento, job, consumidor, eventos, notificações, auditoria | **C2** |

@@ -1,8 +1,8 @@
 # 02 — Product Spec — Luxtory Branded Second Home
 
-2026-11-24 · Luxtory (fundador) · Versão 4.7 — PROPOSTA (W21, E0) — não vigente até aprovação expressa do fundador; vigente: versão 4.6 · Base normativa proposta: 01 v10.9 (192 BRs) · PD-001 a PD-011 ratificados; PD-012 proposto
+2026-11-24 · Luxtory (fundador) · Versão 4.7 — final · Base normativa: 01 v10.9 (192 BRs) · PD-001 a PD-012 ratificados
 
-Revisão W21 proposta ao fundador em 2026-11-24, pendente de aprovação expressa: acrescenta o PD-012 — complemento por datas na Request — e harmoniza PD-005, PD-006, PD-007, REQ-060, REQ-062, REQ-063, REQ-064, REQ-096, REQ-097, REQ-098, §15, §17 e §18. Nenhuma Business Rule é redefinida (BR-380): o complemento é disponibilidade oferecida sob condição (BR-170, BR-171; `01` §18, esclarecimento proposto), cuja cessão é depósito no instante do aceite (BR-200 a BR-203), composta com a Request (BR-210 a BR-214). Total normativo proposto: **67 REQ · 6 INV · 12 PD**. Rastreabilidade técnica em `03` v3.20 (TECH-073), também proposto; decisão em [ADR-0037](../../adr/0037-request-lastro-complemento-por-datas-e-encerramentos.md) (Proposed).
+Revisão W21 autorizada pelo fundador em 2026-11-24 (checkpoint C0): acrescenta o PD-012 — complemento por datas na Request — e harmoniza PD-005, PD-006, PD-007, REQ-060, REQ-062, REQ-063, REQ-064, REQ-096, REQ-097, REQ-098, §15, §17 e §18. Nenhuma Business Rule é redefinida (BR-380): o complemento é disponibilidade oferecida sob condição (BR-170, BR-171; `01` §18, esclarecimento), cuja cessão é depósito no instante do aceite (BR-200 a BR-203), composta com a Request (BR-210 a BR-214). Total normativo: **67 REQ · 6 INV · 12 PD**. Rastreabilidade técnica em `03` v3.20 (TECH-073); decisão em [ADR-0037](../../adr/0037-request-lastro-complemento-por-datas-e-encerramentos.md).
 
 Histórico preservado — versão 4.6, emitida em 2026-11-17 (base normativa: 01 v10.6; PD-001 a PD-011 ratificados):
 
@@ -108,7 +108,7 @@ Decisões funcionais desta camada, **ratificadas e canônicas**. Não são deriv
 
 **PD-011 — Auditabilidade funcional.** Toda ação econômica ou que altere inventário DEVE permitir comprovar ator, papel, data e hora, objeto e autorização ou base. Sorteios DEVEM permitir comprovar participantes, método ou insumo de aleatoriedade e resultado. O `03` define como registrar e proteger essas evidências.
 
-**PD-012 — Complemento por datas na Request (proposto, W21).** O solicitante PODE compor o lastro da Request com Créditos em Garantia e com datas próprias oferecidas sob a condição do aceite — o complemento por datas. Antes do aceite não é depósito, não é Garantia de Créditos e não gera Crédito.
+**PD-012 — Complemento por datas na Request.** O solicitante PODE compor o lastro da Request com Créditos em Garantia e com datas próprias oferecidas sob a condição do aceite — o complemento por datas. Antes do aceite não é depósito, não é Garantia de Créditos e não gera Crédito.
 
 1. **Unidade e elegibilidade.** A unidade do complemento é a noite própria disponível do Owner ou a reserva de uso próprio confirmada do Co-Owner, inteira, de holding vigente do solicitante, elegível ao depósito (BR-151, BR-200 a BR-203). A antecedência mínima do depósito DEVE estar cumprida, para toda noite da unidade, no instante máximo de aceite — a expiração prevista da Request — e é revalidada no aceite.
 2. **Composição.** O solicitante escolhe as unidades, ou nenhuma. Os Créditos potenciais de uma unidade são a soma, por noite, do PRL vigente no envio multiplicado pelo multiplicador vigente no envio (`01` §20). Os Créditos em Garantia são a diferença positiva entre os Créditos necessários e os Créditos potenciais das unidades escolhidas, selecionados por FEFO entre os lotes disponíveis válidos até a expiração prevista (PD-006, PD-008).
@@ -541,9 +541,9 @@ média projetada de investimento e a correção estrutural da manifestação de 
 na W4.2; o contato e a pré-qualificação comercial do REQ-022 entram na W6. M0 é documental; não declara nenhum
 requisito entregue em software.
 
-**Recorte W21 (2026-11-24, proposto; pendente de aprovação expressa do fundador):** o PD-012 — complemento por datas na
+**Recorte W21 (2026-11-24, aprovado pelo fundador no checkpoint C0):** o PD-012 — complemento por datas na
 Request — e as harmonizações dos PD-005 a PD-007 e dos REQ-060, REQ-062 a REQ-064 e REQ-096 a REQ-098 entram em
 software em duas etapas: a W21 entrega o envio, os compromissos das datas, a Garantia e os encerramentos pré-aceite; a
-W22, o aceite composto e a recusa. Total normativo proposto: **67 REQ · 6 INV · 12 PD**; edge cases 17 a 21. Nenhuma
+W22, o aceite composto e a recusa. Total normativo: **67 REQ · 6 INV · 12 PD**; edge cases 17 a 21. Nenhuma
 operação econômica é habilitada por esta revisão: políticas, parâmetros, PRL, PSP, backup testado e ativação continuam
 pré-requisitos de operação.

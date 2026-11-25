@@ -43,8 +43,8 @@ described by Michael Nygard. The ADR process itself is established in
 | 0033 | [Créditos: lote + ledger com buckets escritos pelo banco, snapshot persistido na originação e K4](0033-creditos-lote-ledger-snapshot-e-k4.md) | Accepted (W17 iniciada pelo fundador em 2026-11-22; PR draft) |
 | 0034 | [Políticas comerciais: esquema fechado por mecanismo, versões append-only e avaliação pura](0034-politicas-comerciais-esquema-fechado-e-avaliacao.md) | Accepted (W18; concluída: #107 `1e974bc`) |
 | 0035 | [Pagamentos em duas fases, Fee por operação, settlement por categoria e K5](0035-pagamentos-duas-fases-fee-settlement-e-k5.md) | Accepted (W19; concluída: #108 `2fa37e8`) |
-| 0036 | [Depósito Luxchange: cessão integral da reserva, snapshot por noite, completude no banco e K6](0036-deposito-luxchange-cessao-snapshot-por-noite-e-k6.md) | Accepted (W20; concluída: #109 `5b8a047`; emenda W21 proposta) |
-| 0037 | [Request: lastro no banco, complemento por datas sob a condição do aceite, encerramentos e contrato das capabilities](0037-request-lastro-complemento-por-datas-e-encerramentos.md) | Proposed (W21, E0 — pendente de aprovação do fundador) |
+| 0036 | [Depósito Luxchange: cessão integral da reserva, snapshot por noite, completude no banco e K6](0036-deposito-luxchange-cessao-snapshot-por-noite-e-k6.md) | Accepted (W20; concluída: #109 `5b8a047`; emenda W21 aprovada no C0 da W21) |
+| 0037 | [Request: lastro no banco, complemento por datas sob a condição do aceite, encerramentos e contrato das capabilities](0037-request-lastro-complemento-por-datas-e-encerramentos.md) | Accepted (C0 da W21 aprovado pelo fundador em 2026-11-24; antes: Proposed; implementação pendente) |
 
 The technical decisions ADR-001…008 of the canonical
 [03 — Technical Spec](../specs/canonical/03-technical-spec.md) also apply, by reference.

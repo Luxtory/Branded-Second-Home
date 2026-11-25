@@ -1,15 +1,15 @@
 # 0037. Request: lastro no banco, complemento por datas sob a condição do aceite, encerramentos e contrato das capabilities
 
 - **Date**: 2026-11-24
-- **Status**: Proposed (W21, E0 — pendente de aprovação expressa do fundador; depende de `01` v10.9, `02` v4.7 e `03` v3.20,
-  propostos na mesma E0)
+- **Status**: Accepted (C0 da W21 aprovado pelo fundador em 2026-11-24, com `01` v10.9, `02` v4.7 e `03` v3.20;
+  implementação nas W21 E1–E4 e na W22)
 - **Deciders**: Fundador (Luxtory), agente de engenharia
 - **Tags**: architecture, security, database, luxchange, credits, billing, inventory, booking, W21, W22
 
 ## Context
 
-A W21 entrega REQ-062, PD-005, PD-007 e o envio do PD-012 (`02` v4.7, proposto), com TECH-024, TECH-031, TECH-043,
-TECH-044, TECH-061, TECH-071, TECH-072, TECH-073, TECH-082 e TECH-090 (`03` v3.20, proposto); a W22 entrega o aceite e a
+A W21 entrega REQ-062, PD-005, PD-007 e o envio do PD-012 (`02` v4.7), com TECH-024, TECH-031, TECH-043,
+TECH-044, TECH-061, TECH-071, TECH-072, TECH-073, TECH-082 e TECH-090 (`03` v3.20); a W22 entrega o aceite e a
 recusa sobre o contrato definido aqui. Fatos verificados na `main` (`9a55ffb`, mesma base de banco da W20: 71 migrations
 em Production, nenhuma capability ativa):
 
@@ -131,7 +131,10 @@ Gatilhos (o papel da aplicação é tratado como potencialmente comprometido, AD
 do snapshot (`xmin`); solicitante representado e `active`; detentor `active` e ≠ solicitante; usuário que age não
 representa o detentor; noites solicitadas contínuas, de uma Second Home, futuras, elegíveis do detentor e sem compromisso
 efetivo; unidades do solicitante, elegíveis ao depósito, com `luxchange_deposit_notice_met(checkin_at, expires_at)`;
-`N`, `P`, `G`, `C`, `E` exatos pelo snapshot; Garantia só da Request da operação, cobertura e soma `= G`;
+`N` recalculado pelo banco sobre as noites do snapshot do envio — exatamente as noites solicitadas, o mesmo conjunto de
+`luxchange_request_night`; as do complemento nunca entram em `economic_snapshot_night` —, `P` igual à soma das noites
+efetivamente comprometidas (cada uma com o `prl_id` do snapshot e o multiplicador do envio), `G = max(0, N − P)`, `C` e
+`E` gerados; Garantia só da Request da operação, cobertura e soma `= G`;
 `fee_charge.prl_total_minor = Σ` noites solicitadas. Completude no COMMIT: Request, noites, unidades, consentimento,
 snapshot com política e parâmetros, Garantia exata, um Fee, e nenhuma escrita de custódia, ocupação, transição de reserva
 ou ledger do Direito de Uso.
@@ -224,6 +227,11 @@ condições:
    `UNIQUE (request_id)` na aceitação e `UNIQUE (origin_operation_id, party_id)` nos lotes.
 8. **Rastreabilidade.** Noite do complemento → `custody_id` cedida → custódia sucessora (`parent_custody_id`) → lote do
    solicitante (mesma operação, party) → consumo (`parent_entry_id`/operação).
+
+**Revalidação no aceite.** Valores congelados não dispensam revalidação: o aceite revalida todos os direitos, estados,
+prazos e recursos — capacidade solicitada, compromissos e reservas do complemento, Memberships, representação, Garantia,
+prazo da Request e antecedência —, sem recalcular o PRL vigente, e confere os efeitos econômicos contra o snapshot
+imutável do envio e os compromissos autorizados.
 
 **Compatibilidade com os gatilhos atuais:**
 

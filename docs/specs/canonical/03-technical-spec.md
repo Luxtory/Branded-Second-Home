@@ -1,8 +1,8 @@
 # 03 — Technical Spec — Luxtory Branded Second Home
 
-2026-11-24 · **Versão 3.20 — PROPOSTA (W21, E0)** — não vigente até aprovação expressa do fundador; vigente: versão 3.19 · Base normativa proposta: `01` v10.9 · `02` v4.7
+2026-11-24 · **Versão 3.20 — FINAL** · Base normativa: `01` v10.9 final · `02` v4.7 final
 
-Revisão W21 proposta ao fundador em 2026-11-24, pendente de aprovação expressa: implementa o PD-012 (complemento por datas) e o PD-007 ampliado do `02` v4.7 — TECH-022, TECH-024, TECH-031, TECH-043, TECH-051, TECH-053, TECH-055, TECH-070, TECH-071, novo TECH-073, TECH-090, §7, §12 (CONC-13 a CONC-18), §13 e §14. Demais regras da v3.19 preservadas. Decisão em [ADR-0037](../../adr/0037-request-lastro-complemento-por-datas-e-encerramentos.md) (Proposed); plano em [`w21-luxchange-request-envio.md`](../../plan/w21-luxchange-request-envio.md). Cobertura normativa proposta: **67 REQ · 6 INV · 12 PD**.
+Revisão W21 autorizada pelo fundador em 2026-11-24 (checkpoint C0): implementa o PD-012 (complemento por datas) e o PD-007 ampliado do `02` v4.7 — TECH-022, TECH-024, TECH-031, TECH-043, TECH-051, TECH-053, TECH-055, TECH-070, TECH-071, novo TECH-073, TECH-090, §7, §12 (CONC-13 a CONC-18), §13 e §14. Demais regras da v3.19 preservadas. Decisão em [ADR-0037](../../adr/0037-request-lastro-complemento-por-datas-e-encerramentos.md); plano em [`w21-luxchange-request-envio.md`](../../plan/w21-luxchange-request-envio.md). Cobertura normativa: **67 REQ · 6 INV · 12 PD**.
 
 Histórico preservado — versão 3.19 (2026-11-22; base normativa: `01` v10.8 final · `02` v4.6 final):
 
@@ -746,6 +746,8 @@ Valores (exatos, `numeric`; versões do snapshot do envio):
 `P = Σ_u potencial(u)` · `N = Créditos necessários = Σ PRL das noites solicitadas × multiplicador` · `G = max(0, N − P)` · consumo do lote do complemento `C = N − G` · excedente `E = P − C`.
 
 Seleção: se `P ≥ N`, então `P − min_u potencial(u) < N`.
+
+As noites do snapshot do envio (`economic_snapshot_night`) são exatamente as noites solicitadas, e é sobre elas que o banco recalcula `N`; as noites do complemento nunca entram nesse snapshot e ficam só nos compromissos, cada uma com o próprio `prl_id`, e é sobre elas que o banco recalcula `P`.
 
 Garantia: lotes da party com `available > 0`, `now < expires_at` e `expires_at ≥ request.expires_at`, `ORDER BY expires_at, originated_at, id`, retirando de cada lote até completar `G` (o último, parcialmente).
 

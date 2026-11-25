@@ -131,8 +131,8 @@ decisão:
 - **Uma K7 para Request e Direct.** Adequada enquanto a ativação de Request (W21+W22) e Direct (W23) for conjunta. Se o
   fundador decidir ativar um antes do lastro do outro, a wave que antecipar a ativação divide a chave na própria
   migration (Request / Direct). A necessidade não está demonstrada hoje: não dividir agora.
-- **Emenda W21 (2026-11-24, proposta — pendente de aprovação expressa do fundador; ADR-0037; `01` v10.9 §18 e §34,
-  `02` v4.7 PD-012 e `03` v3.20 TECH-073, também propostos).** Nada da decisão acima é alterado ou removido.
+- **Emenda W21 (2026-11-24, aprovada pelo fundador no checkpoint C0 da W21; ADR-0037; `01` v10.9 §18 e §34,
+  `02` v4.7 PD-012 e `03` v3.20 TECH-073).** Nada da decisão acima é alterado ou removido.
   (1) O depósito continua definitivo e independente; nenhum encerramento de Request desfaz depósito (BR-171, REQ-060).
   (2) Único acréscimo ao comportamento do depósito: noite com compromisso **efetivo** de complemento por datas (Request
   pendente, não expirada e elegível) não é depositável — recusa `ERR_CAPACITY_UNAVAILABLE`, com a orientação de retirar
