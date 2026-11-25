@@ -80,9 +80,10 @@ jobs:
         run: npm run test:e2e
         env:
           PLAYWRIGHT_WEBKIT: '1'
-          # Capturas de revisão do checkpoint em auditoria (390 e 1440 px; material do PR, não baseline — ADR-0009).
+          # Capturas de revisão do checkpoint em auditoria (320, 390 e 1440 px; material do PR, não baseline — ADR-0009).
           UI_CAPTURE_DIR: reports/ui-captures
           UI_CAPTURE_ONLY: 'w21-'
+          UI_CAPTURE_WIDTHS: '320,390,1440'
       - name: Capturas de revisão (checkpoint)
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
