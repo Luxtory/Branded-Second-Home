@@ -8,12 +8,12 @@ import {
   ageLot,
   creditsHarness,
   monthsAgo,
-  move,
   originate,
   secondTitular,
   type CreditTitular,
   type CreditsHarness,
 } from './credits-support';
+import { requestFixture, sendGuaranteedRequest } from '../luxchange/request-support';
 
 /**
  * W17 E3 — leitura da Carteira com o PostgreSQL real e a RLS do `authenticated` (TECH-052): saldo por estado do REQ-096,
@@ -57,11 +57,11 @@ describe('Carteira — leitura sob RLS [REQ-053][REQ-054][PD-008]', () => {
     expiredLot = await originate(c, '10');
     heldLot = await originate(c, '2.5');
     otherLot = await originate(c, '7', { titular: other });
-    await move(c, 'send_request', { kind: 'titular', titular: c.titular }, [
-      { lotId: heldLot, movement: 'hold', from: 'available', to: 'held', quantity: '1' },
-    ]);
-    // Vencido antes do job: inutilizável e exibido como Expirado sem movimento de expiração (TECH-044).
+    // Vencido antes do job: inutilizável e exibido como Expirado sem movimento de expiração (TECH-044) — e, por isso,
+    // fora do FEFO da Garantia.
     await ageLot(c.h, expiredLot, monthsAgo(TEST_VALIDITY_MONTHS, 1));
+    // Desde a W21 (ADR-0037 §4), a Garantia lastreia uma Request completa.
+    await sendGuaranteedRequest(await requestFixture(c), heldLot, '1');
   }, 240_000);
   afterAll(async () => {
     await c?.h.close();

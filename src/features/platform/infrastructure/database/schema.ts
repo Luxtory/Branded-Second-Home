@@ -311,6 +311,11 @@ export interface AppEconomicSnapshotParameter {
   parameter_key: string;
 }
 
+export interface AppEconomicSnapshotPolicy {
+  operation_id: string;
+  policy_id: string;
+}
+
 export interface AppFeeCharge {
   amount_minor: Int8;
   created_at: Timestamp;
@@ -606,6 +611,91 @@ export interface AppInvestorAuthorization {
   revoked_at: Timestamp | null;
   valid_from: Timestamp;
   valid_until: Timestamp | null;
+}
+
+export interface AppLuxchangeRequest {
+  checkin: Timestamp;
+  checkout: Timestamp;
+  closed_at: Timestamp | null;
+  closed_by_operation: string | null;
+  closure_reason: string | null;
+  complement_consumption: Generated<Numeric | null>;
+  complement_credits: Numeric;
+  complement_excess: Generated<Numeric | null>;
+  credits_required: Numeric;
+  expires_at: Timestamp;
+  guarantee_credits: Numeric;
+  holder_holding_id: string;
+  holder_party_id: string;
+  id: string;
+  last_transition_id: string | null;
+  operation_id: string;
+  requester_party_id: string;
+  second_home_id: string;
+  sent_at: Timestamp;
+  state: string;
+}
+
+export interface AppLuxchangeRequestComplementNight {
+  custody_id: string;
+  potential_credits: Numeric;
+  prl_id: string;
+  request_id: string;
+  second_home_id: string;
+  state: string;
+  stay_date: Timestamp;
+  unit_id: string;
+}
+
+export interface AppLuxchangeRequestComplementUnit {
+  booking_id: string | null;
+  closed_by_operation: string | null;
+  holding_id: string;
+  id: string;
+  kind: string;
+  potential_credits: Numeric;
+  request_id: string;
+  state: string;
+}
+
+export interface AppLuxchangeRequestConsent {
+  created_at: Timestamp;
+  request_id: string;
+  terms: Json;
+  text_version: string;
+}
+
+export interface AppLuxchangeRequestNight {
+  booking_id: string | null;
+  custody_id: string;
+  request_id: string;
+  second_home_id: string;
+  stay_date: Timestamp;
+}
+
+export interface AppLuxchangeRequestReceived {
+  checkin: Timestamp | null;
+  checkout: Timestamp | null;
+  closed_at: Timestamp | null;
+  closure_reason: string | null;
+  expires_at: Timestamp | null;
+  holder_party_id: string | null;
+  id: string | null;
+  second_home_id: string | null;
+  sent_at: Timestamp | null;
+  state: string | null;
+}
+
+export interface AppLuxchangeRequestTransition {
+  created_at: Timestamp;
+  evidence_id: string | null;
+  evidence_kind: string;
+  from_state: string;
+  id: string;
+  operation_id: string;
+  reason: string;
+  request_id: string;
+  to_state: string;
 }
 
 export interface AppLuxtoryInventory {
@@ -1028,6 +1118,7 @@ export interface DB {
   'app.economic_snapshot': AppEconomicSnapshot;
   'app.economic_snapshot_night': AppEconomicSnapshotNight;
   'app.economic_snapshot_parameter': AppEconomicSnapshotParameter;
+  'app.economic_snapshot_policy': AppEconomicSnapshotPolicy;
   'app.fee_charge': AppFeeCharge;
   'app.fee_charge_reversal': AppFeeChargeReversal;
   'app.guest_nomination': AppGuestNomination;
@@ -1054,6 +1145,13 @@ export interface DB {
   'app.interest_contact': AppInterestContact;
   'app.interest_qualification': AppInterestQualification;
   'app.investor_authorization': AppInvestorAuthorization;
+  'app.luxchange_request': AppLuxchangeRequest;
+  'app.luxchange_request_complement_night': AppLuxchangeRequestComplementNight;
+  'app.luxchange_request_complement_unit': AppLuxchangeRequestComplementUnit;
+  'app.luxchange_request_consent': AppLuxchangeRequestConsent;
+  'app.luxchange_request_night': AppLuxchangeRequestNight;
+  'app.luxchange_request_received': AppLuxchangeRequestReceived;
+  'app.luxchange_request_transition': AppLuxchangeRequestTransition;
   'app.luxtory_inventory': AppLuxtoryInventory;
   'app.luxtory_legal_identity': AppLuxtoryLegalIdentity;
   'app.membership': AppMembership;
