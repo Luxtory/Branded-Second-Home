@@ -16,7 +16,6 @@ import {
   rootLogger,
   unavailableKeys,
 } from '@/features/platform';
-import { sumCredits } from '../domain/deposit';
 import {
   payRequestFee,
   processRequestRefunds,
@@ -77,8 +76,6 @@ export type RequestPreviewResponse =
       readonly status: 'ok';
       readonly quote: RequestQuote;
       readonly balance: string;
-      /** Saldo potencial para intercâmbio: disponível + Créditos potenciais das datas (não utilizáveis antes do aceite). */
-      readonly exchange: string;
       /** Chaves da revisão: a do pagamento da Taxa e a do envio (a mesma tentativa nunca cobra nem envia duas vezes). */
       readonly paymentKey: string;
       readonly sendKey: string;
@@ -130,7 +127,6 @@ export async function previewRequestAction(raw: unknown): Promise<RequestPreview
       status: 'ok',
       quote,
       balance,
-      exchange: sumCredits([balance, quote.complement_credits]),
       paymentKey: randomUUID(),
       sendKey: randomUUID(),
       policy: {

@@ -283,20 +283,32 @@ function ComplementHome(props: {
   );
 }
 
-/** Grupo da revisão: título curto e os fatos de uma natureza só (saldo, cobertura, depois do envio, Taxa). */
-function Group(props: { readonly title: string; readonly children: ReactNode }) {
+/**
+ * Política da solicitação (PD-009), no corpo da página durante a revisão: os dois regimes sem contradição — até a
+ * resposta, sem aceite, a Taxa volta inteira (com a Garantia e as datas); depois do aceite, valem os termos efetivos da
+ * versão apresentada (`PolicyTerms`), aceita na revisão.
+ */
+function PolicySection({ policy }: { readonly policy: Preview['policy'] }) {
   return (
-    <>
-      <h3 className="lx-label">{props.title}</h3>
-      <dl className="lx-booking__facts">{props.children}</dl>
-    </>
+    <section className="lx-booking__period" aria-labelledby="solicitacao-politica-titulo">
+      <div className="lx-booking__intro">
+        <h2 id="solicitacao-politica-titulo" className="lx-display-s">
+          {text.review.policy}
+        </h2>
+        <p className="lx-hint">{text.review.policyBefore}</p>
+      </div>
+      <h3 className="lx-label">{text.review.policyAfter}</h3>
+      <p className="lx-hint">{text.review.policyAfterHint}</p>
+      <PolicyTerms mechanism="luxchange_request" config={policy.config} headingLevel={4} />
+    </section>
   );
 }
 
 /**
- * Revisão (spec §13.5 itens 3–5; PD-009, PD-012): os termos da prévia do servidor em grupos de uma natureza só — saldo
- * disponível, cobertura (Garantia + Créditos potenciais ainda não originados), o que fica depois do envio e a Taxa —, os
- * termos efetivos da política com o aceite da versão apresentada, o aceite do complemento e o pagamento seguido do envio.
+ * Revisão (spec §13.5 itens 3–5; PD-009, PD-012): os termos da prévia do servidor na ordem em que se leem — Créditos
+ * necessários, saldo antes do envio, Garantia, Créditos potenciais do complemento (ainda não originados), cobertura,
+ * excedente eventual e saldo depois do envio —, a Taxa e o prazo, o aceite da versão apresentada da política, o aceite
+ * do complemento e o pagamento seguido do envio. Cobertura nunca aparece como saldo livre.
  */
 function Review(props: {
   readonly preview: Preview;
@@ -313,6 +325,7 @@ function Review(props: {
   const [outcome, setOutcome] = useState<RequestSubmitResponse | null>(null);
   const [pending, startTransition] = useTransition();
   const hasComplement = props.complement.length > 0;
+  const hasExcess = compareCredits(q.complement_excess, '0') > 0;
   const available =
     compareCredits(preview.balance, q.guarantee_credits) >= 0
       ? subtractCredits(preview.balance, q.guarantee_credits)
@@ -331,19 +344,9 @@ function Review(props: {
         }),
       );
     });
-  const committedLines = props.complement.map((option) => (
-    <span key={option.key}>
-      {props.homes.get(option.secondHomeId) ?? ''}: {dateList(option.nights)} —{' '}
-      {text.journey.potential(formatCredits(option.credits))}
-      <br />
-    </span>
-  ));
-  const breakdown = (line: string) => (
-    <>
-      <br />
-      <span className="lx-hint">{line}</span>
-    </>
-  );
+  const committedDates = props.complement
+    .map((option) => `${props.homes.get(option.secondHomeId) ?? ''} ${dateList(option.nights)}`)
+    .join('; ');
   const nights = datesBetween(q.checkin, q.checkout);
   return (
     <form
@@ -359,84 +362,57 @@ function Review(props: {
         if (ready && !pending) submit();
       }}
     >
-      <Group title={text.review.groupNow}>
-        <Fact label={text.review.balance} value={credits(preview.balance)} />
-        <Fact
-          label={text.review.exchange}
-          value={
-            <>
-              {credits(preview.exchange)}
-              {breakdown(
-                text.review.exchangeBreakdown(
-                  formatCredits(preview.balance),
-                  formatCredits(q.complement_credits),
-                ),
-              )}
-            </>
-          }
-          hint={text.review.exchangeHint}
-        />
-      </Group>
-      <Group title={text.review.groupCoverage}>
+      <dl className="lx-booking__facts">
         <Fact label={text.review.required} value={credits(q.credits_required)} />
+        <Fact label={text.review.balance} value={credits(preview.balance)} />
         <Fact
           label={text.review.guarantee}
           value={credits(q.guarantee_credits)}
           hint={text.review.guaranteeHint}
         />
-        <Fact
-          label={text.review.committed}
-          value={hasComplement ? committedLines : text.detail.none}
-        />
-        <Fact
-          label={text.review.potential}
-          value={credits(q.complement_credits)}
-          hint={text.review.potentialHint}
-        />
+        {hasComplement ? (
+          <Fact
+            label={text.review.potential}
+            value={credits(q.complement_credits)}
+            hint={text.review.potentialHint(committedDates)}
+          />
+        ) : null}
         <Fact
           label={text.review.covered}
-          value={
-            <>
-              {credits(sumCredits([q.guarantee_credits, q.complement_consumption]))}
-              {breakdown(
-                text.review.coveredBreakdown(
-                  formatCredits(q.guarantee_credits),
-                  formatCredits(q.complement_consumption),
-                ),
-              )}
-            </>
-          }
+          value={credits(q.credits_required)}
+          hint={text.review.coveredBreakdown(
+            formatCredits(q.guarantee_credits),
+            formatCredits(q.complement_consumption),
+          )}
         />
-        <Fact
-          label={text.review.excess}
-          value={credits(q.complement_excess)}
-          hint={text.review.excessHint}
-        />
-      </Group>
-      <Group title={text.review.groupAfter}>
+        {hasExcess ? (
+          <Fact
+            label={text.review.excess}
+            value={credits(q.complement_excess)}
+            hint={text.review.excessHint(q.credit_validity_months)}
+          />
+        ) : null}
         <Fact label={text.review.available} value={credits(available)} />
-        <Fact label={text.review.heldAfter} value={credits(q.guarantee_credits)} />
-      </Group>
-      <Group title={text.review.groupFee}>
+      </dl>
+      <h3 className="lx-label">{text.review.groupFee}</h3>
+      <dl className="lx-booking__facts">
         <Fact
           label={text.review.fee}
           value={formatFee(q.fee_amount_minor)}
           hint={text.review.feeHint}
         />
         <Fact label={text.review.deadline} value={text.hours(q.deadline_hours)} />
-        <Fact
-          label={text.review.nights}
-          value={q.night_credits.map((value, index) => (
-            <span key={nights[index]}>
-              {index === 0 ? null : <br />}
+      </dl>
+      <details className="lx-hint">
+        <summary>{text.review.nights}</summary>
+        <ul className="lx-booking__issues">
+          {q.night_credits.map((value, index) => (
+            <li key={nights[index]}>
               {fullDate(nights[index]!)}: {credits(value)}
-            </span>
+            </li>
           ))}
-        />
-      </Group>
-      <p className="lx-booking__footnote">{text.review.validity(q.credit_validity_months)}</p>
-      <h3 className="lx-label">{text.review.policy}</h3>
-      <PolicyTerms mechanism="luxchange_request" config={preview.policy.config} headingLevel={4} />
+        </ul>
+      </details>
       <PolicyAcceptance policyId={preview.policy.id} since={preview.policy.since} />
       {hasComplement ? (
         <div className="lx-field">
@@ -588,6 +564,7 @@ export function RequestJourney({ data }: { readonly data: RequestJourneyData }) 
             ))
           )}
         </section>
+        {ok === null ? null : <PolicySection policy={ok.policy} />}
       </div>
 
       <aside className="lx-booking__summary" aria-labelledby="solicitacao-resumo">
@@ -611,7 +588,7 @@ export function RequestJourney({ data }: { readonly data: RequestJourneyData }) 
               <Fact
                 label={text.review.potential}
                 value={credits(potential)}
-                hint={text.review.potentialHint}
+                hint={text.journey.potentialHint}
               />
               <Fact
                 label={text.review.deadline}

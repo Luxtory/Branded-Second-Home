@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { randomUUID } from 'node:crypto';
 import { notFound } from 'next/navigation';
 import { Icon, PageHeader, RecordList } from '@/design-system/react';
@@ -51,11 +52,12 @@ function Notice({ body }: { readonly body: string }) {
   );
 }
 
-const header = (lead: string) => (
+const header = (lead: string, actions?: ReactNode) => (
   <PageHeader
     title={text.title}
     lead={lead}
     context={{ href: luxchangePaths.area, label: text.backToArea }}
+    actions={actions}
   />
 );
 
@@ -74,12 +76,12 @@ export async function TitularRequestsPage() {
   if (list === 'unavailable') return <AuthUnavailable />;
   return (
     <TitularShell>
-      {header(text.lead)}
-      <p className="lx-body">
+      {header(
+        text.lead,
         <a className="lx-button lx-button--primary" href={luxchangePaths.newRequest}>
           {text.list.new}
-        </a>
-      </p>
+        </a>,
+      )}
       <section className="lx-page-section" aria-labelledby="solicitacoes-enviadas">
         <h2 className="lx-display-s" id="solicitacoes-enviadas">
           {text.list.sent}
@@ -254,7 +256,8 @@ export async function TitularRequestDetailPage({
   if (detail === 'unavailable') return <AuthUnavailable />;
   if (detail === null) notFound();
   const pending = detail.state === 'pending';
-  const refund = detail.refundState === null ? text.refund.none : text.refund[detail.refundState];
+  // A Taxa traz o estado real do pagamento; a devolução só aparece quando existe (solicitada ≠ concluída).
+  const fee = `${formatFee(detail.feeAmountMinor)} · ${text.detail.paymentStates[detail.paymentState] ?? detail.paymentState}`;
   return (
     <TitularShell>
       <PageHeader
@@ -295,12 +298,10 @@ export async function TitularRequestDetailPage({
                       .join(', '),
               ],
               [text.detail.potential, credits(detail.complementCredits)],
-              [text.detail.fee, formatFee(detail.feeAmountMinor)],
-              [
-                text.detail.payment,
-                text.detail.paymentStates[detail.paymentState] ?? detail.paymentState,
-              ],
-              [text.detail.refundLabel, refund],
+              [text.detail.fee, fee],
+              ...(detail.refundState === null
+                ? []
+                : [[text.detail.refundLabel, text.refund[detail.refundState]]]),
               [
                 text.detail.nights,
                 detail.nightCredits.length > 3

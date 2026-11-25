@@ -65,10 +65,9 @@ export const requestMessages = {
     complement_unavailable: 'Datas suas comprometidas deixaram de estar disponíveis',
   },
   refund: {
-    none: 'Taxa de intermediação paga',
-    pending: 'Devolução da Taxa solicitada — em processamento',
-    succeeded: 'Taxa de intermediação devolvida',
-    failed: 'Devolução da Taxa em nova tentativa',
+    pending: 'Solicitada — em processamento',
+    succeeded: 'Concluída',
+    failed: 'Em nova tentativa',
   },
   journey: {
     who: 'Quem solicita',
@@ -101,6 +100,7 @@ export const requestMessages = {
     complementBooking: (first: string, last: string, nights: number) =>
       `Reserva de ${first} a ${last} (${nights} ${nights === 1 ? 'noite' : 'noites'})`,
     potential: (value: string) => `${value} Créditos potenciais`,
+    potentialHint: 'Ainda não originados: só viram Créditos se a solicitação for aceita.',
     preview: 'Ver prévia',
     datesCaption: 'Calendário da Second Home solicitada',
     complementCaption: (label: string) => `Datas suas em ${label}`,
@@ -127,41 +127,37 @@ export const requestMessages = {
   review: {
     heading: 'Prévia da solicitação',
     required: 'Créditos necessários',
-    balance: 'Saldo disponível na Carteira',
-    committed: 'Datas a comprometer',
-    potential: 'Créditos potenciais das datas',
-    potentialHint:
-      'Ainda não originados: não são saldo e só viram Créditos se a solicitação for aceita.',
+    balance: 'Saldo disponível antes do envio',
+    potential: 'Créditos potenciais do complemento',
+    potentialHint: (dates: string) =>
+      `Ainda não originados (${dates}): só viram Créditos se a solicitação for aceita.`,
     guarantee: 'Créditos em Garantia',
-    guaranteeHint: 'Saem do saldo disponível no envio e voltam se a solicitação não for aceita.',
-    covered: 'Total coberto',
-    exchange: 'Saldo potencial para intercâmbio',
-    exchangeHint: 'Os Créditos potenciais não podem ser usados antes do aceite.',
-    exchangeBreakdown: (balance: string, potential: string) =>
-      `${balance} disponíveis + ${potential} potenciais, ainda não originados.`,
+    guaranteeHint:
+      'Saem do saldo no envio e voltam para a Carteira se a solicitação não for aceita.',
+    covered: 'Cobertura total',
     coveredBreakdown: (guarantee: string, potential: string) =>
-      `${guarantee} em Garantia + ${potential} potenciais.`,
-    groupNow: 'Sua Carteira agora',
-    groupCoverage: 'Como os Créditos necessários são cobertos',
-    groupAfter: 'Depois do envio',
-    groupFee: 'Taxa e prazo',
-    heldAfter: 'Em Garantia até a resposta',
+      `${guarantee} em Garantia + ${potential} do complemento.`,
     excess: 'Excedente',
-    excessHint:
-      'Créditos potenciais que sobram da cobertura; se a solicitação for aceita, entram na sua Carteira.',
+    excessHint: (months: number) =>
+      `Originado na sua Carteira se a solicitação for aceita, com validade de ${months} meses.`,
+    available: 'Saldo disponível após o envio',
+    groupFee: 'Taxa e prazo',
     fee: 'Taxa de intermediação',
     feeHint: 'Paga agora e devolvida integralmente se a solicitação não for aceita.',
     deadline: 'Prazo para resposta',
-    validity: (months: number) => `Validade dos Créditos originados: ${months} meses`,
     nights: 'Créditos por noite solicitada',
     policy: 'Política da solicitação',
+    policyBefore:
+      'Até a resposta: se a solicitação não for aceita, a Taxa de intermediação é devolvida integralmente, a Garantia volta para a Carteira e as datas comprometidas são liberadas.',
+    policyAfter: 'Depois do aceite (estadia confirmada)',
+    policyAfterHint:
+      'Valem as condições abaixo para cancelamento, não comparecimento e exceções. Nelas, “Luxchange Fee” é a Taxa de intermediação.',
     acceptComplement:
       'Aceito comprometer as datas acima: se a solicitação for aceita, elas são cedidas ao Inventário Luxtory pelos Créditos potenciais.',
     send: 'Pagar a Taxa e enviar',
     sending: 'Enviando…',
     refresh: 'Ver prévia atualizada',
     back: 'Voltar à seleção',
-    available: 'Saldo disponível depois do envio',
     refunding: 'Pagamento sem solicitação enviada — devolução em processamento.',
     retry: 'Tentar enviar de novo',
   },
@@ -185,11 +181,10 @@ export const requestMessages = {
       'A Garantia volta para a sua Carteira, as datas comprometidas são liberadas e a Taxa é devolvida integralmente.',
     back: 'Ver todas as solicitações',
     sent: 'Solicitação enviada. O membro solicitado tem até o prazo abaixo para responder.',
-    payment: 'Pagamento da Taxa',
     paymentStates: {
-      pending: 'Em processamento',
-      approved: 'Aprovado',
-      failed: 'Não aprovado',
+      pending: 'pagamento em processamento',
+      approved: 'paga',
+      failed: 'pagamento não aprovado',
     } as Readonly<Record<string, string>>,
     refundLabel: 'Devolução da Taxa',
     nights: 'Créditos por noite solicitada',
