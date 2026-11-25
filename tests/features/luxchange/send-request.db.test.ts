@@ -146,6 +146,12 @@ describe('W21 E2 — envio da Request pela aplicação (ADR-0037 §3–§4)', ()
       complement_consumption: '500',
       complement_excess: '100',
     });
+    // W21 E3 (achado do E2E Co-Owner): Request sem Garantia (G = 0) também encerra — reserva liberada, Taxa revertida.
+    const withdrawn = await app.withdraw(co, committed(outcome).result.request_id);
+    expect(withdrawn).toMatchObject({
+      status: 'committed',
+      result: { state: 'cancelled_pre_accept', reason: 'withdrawn', guarantee_released: '0' },
+    });
   });
 
   it('[TECH-025] mesma chave: replay sem nova Request, Garantia ou cobrança; outro conteúdo → ERR_IDEMPOTENCY_CONFLICT', async () => {

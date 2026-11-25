@@ -50,6 +50,9 @@ async function lockRequest<I, Tx>(
  * motivo e prova), liberação de toda a Garantia (classe 7; `expired` se o lote venceu) e reversão integral da Taxa com
  * estorno `pending` (classe 8). Nenhuma chave é exigida: obrigação existente nunca fica presa (ADR-0037 §10).
  */
+/** Garantia zero em qualquer escala decimal devolvida pelo banco (`0`, `0.00`). */
+const NO_GUARANTEE = /^0(\.0+)?$/;
+
 async function closeLocked<I, Tx>(
   context: CommandContext<I, Tx>,
   deps: ClosingDependencies<Tx>,
@@ -57,11 +60,14 @@ async function closeLocked<I, Tx>(
 ): Promise<RequestClosingResult> {
   const { tx, locks, operationId } = context;
   const closing: RecordedClosing = await deps.store.insertClosing(tx, request.id, operationId);
-  const released = await releaseHold(
-    { tx, locks, operationId },
-    { store: deps.credits },
-    { holdOperationId: request.operationId },
-  );
+  // Request com `G = 0` (o complemento cobre `N`) nunca reteve Créditos: não há Garantia a liberar (PD-012).
+  const released = NO_GUARANTEE.test(request.guaranteeCredits)
+    ? []
+    : await releaseHold(
+        { tx, locks, operationId },
+        { store: deps.credits },
+        { holdOperationId: request.operationId },
+      );
   const { refundId } = await reverseLuxchangeFee(
     { tx, locks, operationId },
     { store: deps.billing },
