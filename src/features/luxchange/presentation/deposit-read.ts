@@ -27,6 +27,7 @@ import {
 } from '../domain/deposit';
 import { MAX_DEPOSIT_NIGHTS } from '../application/deposit-capacity';
 import { createPostgresDepositStore } from '../infrastructure/postgres-deposit-store';
+import { createPostgresRequestStore } from '../infrastructure/postgres-request-store';
 
 /**
  * Leitura da jornada do depósito (W20; spec luxchange §5.4): a holding é provada pela RLS do Titular (delegação +
@@ -43,7 +44,8 @@ export interface DepositHoldingOption {
   readonly membershipActive: boolean;
 }
 
-export type DepositNightStatus = NightAvailability['kind'] | 'no_reference';
+/** `committed` (W21): elegível, mas comprometida com uma Request pendente (complemento por datas, ADR-0037 §4). */
+export type DepositNightStatus = NightAvailability['kind'] | 'no_reference' | 'committed';
 
 export interface DepositNightView {
   readonly date: string;
@@ -85,6 +87,8 @@ export interface DepositCalendarData {
 export interface DepositReadDependencies {
   readonly db?: Database;
   readonly clock?: Clock;
+  /** Resumo do Titular (padrão: a leitura sob RLS do identity); injetável nos testes. */
+  readonly overview?: typeof readTitularOverview;
 }
 
 interface HoldingRow {
@@ -97,7 +101,7 @@ interface HoldingRow {
   readonly timezone: string;
 }
 
-const civilDay = (timezone: string, at: Date) =>
+export const civilDay = (timezone: string, at: Date) =>
   new Intl.DateTimeFormat('en-CA', {
     timeZone: timezone,
     year: 'numeric',
@@ -129,7 +133,7 @@ export async function readDepositHoldings(
   deps: DepositReadDependencies = {},
 ): Promise<DepositHoldingOption[]> {
   const db = deps.db ?? getDatabase();
-  const overview = await readTitularOverview(session, { db });
+  const overview = await (deps.overview ?? readTitularOverview)(session, { db });
   const active = new Set(
     overview.representations
       .filter((party) => party.membership?.state === 'active')
@@ -149,7 +153,7 @@ export async function readDepositHoldings(
 }
 
 /** PRL em vigor por noite (servidor), lido em intervalos de até 366 noites; noite sem PRL não aparece. */
-async function prlInForce(
+export async function prlInForce(
   tx: DatabaseTransaction,
   secondHomeId: string,
   dates: readonly string[],
@@ -196,13 +200,28 @@ async function serverFacts(tx: DatabaseTransaction, holding: HoldingRow, today: 
     store.capabilities(tx),
   ]);
   const prl = days.length === 0 ? null : await prlInForce(tx, holding.second_home_id, days);
+  // W21: compromissos efetivos de complemento (predicado do banco): a data elegível aparece como comprometida.
+  const committed = await createPostgresRequestStore().committed(
+    tx,
+    days.map((stayDate) => ({ secondHomeId: holding.second_home_id, stayDate })),
+    bookings.map((booking) => booking.id),
+  );
   const at = prl?.at ?? (await store.databaseInstant(tx));
   const parameters = await createPostgresEconomicTermsStore().parametersAt(
     tx,
     ['credit_multiplier', 'credit_validity_months'],
     at,
   );
-  return { dates, facts, bookings, capabilities, prices: prl?.prices ?? new Map(), at, parameters };
+  return {
+    dates,
+    facts,
+    bookings,
+    capabilities,
+    prices: prl?.prices ?? new Map(),
+    at,
+    parameters,
+    committed,
+  };
 }
 
 /**
@@ -217,7 +236,7 @@ export async function readDepositCalendar(
 ): Promise<DepositCalendarData | null> {
   const db = deps.db ?? getDatabase();
   const now = (deps.clock ?? systemClock).now();
-  const option = (await readDepositHoldings(session, { db })).find(
+  const option = (await readDepositHoldings(session, { db, overview: deps.overview })).find(
     (item) => item.holdingId === holdingId,
   );
   if (option === undefined) return null;
@@ -255,16 +274,24 @@ export async function readDepositCalendar(
     const fact = facts.get(row.stay_date)!;
     const availability = nightAvailability(holding, fact, (id) => byId.get(id), nowMs);
     const price = read.prices.get(row.stay_date);
-    const eligible = availability.kind === 'eligible';
+    const isCommitted =
+      availability.kind === 'eligible' &&
+      (read.committed.nights.has(`${option.secondHomeId}:${row.stay_date}`) ||
+        (availability.bookingId !== null && read.committed.bookings.has(availability.bookingId)));
+    const eligible = availability.kind === 'eligible' && !isCommitted;
     return {
       date: row.stay_date,
       season: tierOf(row.stay_date, row.season === 'alta' ? 'alta' : 'media'),
-      status: eligible && price === undefined ? 'no_reference' : availability.kind,
+      status: isCommitted
+        ? 'committed'
+        : eligible && price === undefined
+          ? 'no_reference'
+          : availability.kind,
       credits:
         eligible && price !== undefined && multiplier !== null
           ? creditsForPrl(BigInt(price), 'BRL', multiplier)
           : null,
-      bookingId: availability.kind === 'eligible' ? availability.bookingId : null,
+      bookingId: eligible && availability.kind === 'eligible' ? availability.bookingId : null,
       checkinAt: fact.checkinAt,
     };
   });

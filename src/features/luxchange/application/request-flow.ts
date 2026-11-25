@@ -88,19 +88,24 @@ export async function submitRequest(
   try {
     outcome = await deps.send(viewer, input, idempotencyKey, correlationId);
   } catch (error) {
-    await recover(deps, viewer, input.payment_id, correlationId);
+    await recoverRequestPayment(deps, viewer, input.payment_id, correlationId);
     throw error;
   }
   if (outcome.status === 'committed') {
-    for (const refundId of outcome.result.refund_ids) await refund(deps, refundId, correlationId);
+    await processRequestRefunds(deps, outcome.result.refund_ids, correlationId);
     return outcome;
   }
-  await recover(deps, viewer, input.payment_id, correlationId);
+  await recoverRequestPayment(deps, viewer, input.payment_id, correlationId);
   return outcome;
 }
 
-async function recover(
-  deps: RequestFlowDependencies,
+/**
+ * Recuperação de pagamento aprovado sem Request confirmada (TECH-080 etapa 6): só pagamento aprovado da própria party; a
+ * conciliação revalida o vínculo sob a trava do pagamento (Fee vinculado e não revertido → nada a estornar). Falha só vira
+ * log: o job `reconciliation` é a rede de segurança.
+ */
+export async function recoverRequestPayment(
+  deps: Pick<RequestFlowDependencies, 'findPayment' | 'reconcile' | 'log'>,
   viewer: RequestViewer,
   paymentId: string,
   correlationId: string,
@@ -119,14 +124,20 @@ async function recover(
   }
 }
 
-async function refund(deps: RequestFlowDependencies, refundId: string, correlationId: string) {
-  try {
-    await deps.processRefund(refundId);
-  } catch (error) {
-    deps.log.warn('send_request refund deferred', {
-      refund_id: refundId,
-      reason: errorName(error),
-      correlation_id: correlationId,
-    });
-  }
+/** Estornos `pending` depois do commit (TECH-080); falha fica `pending` e a conciliação reprocessa (TECH-101). */
+export async function processRequestRefunds(
+  deps: Pick<RequestFlowDependencies, 'processRefund' | 'log'>,
+  refundIds: readonly string[],
+  correlationId: string,
+) {
+  for (const refundId of refundIds)
+    try {
+      await deps.processRefund(refundId);
+    } catch (error) {
+      deps.log.warn('request refund deferred', {
+        refund_id: refundId,
+        reason: errorName(error),
+        correlation_id: correlationId,
+      });
+    }
 }

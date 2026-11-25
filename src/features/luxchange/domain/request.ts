@@ -124,6 +124,48 @@ export function evaluateRequested(input: {
   return { ok: true, bookingByNight };
 }
 
+/**
+ * Capacidade solicitável de uma Second Home para o calendário (W21 E3; spec luxchange §13.5 item 2): as regras de
+ * `evaluateRequested` sobre todas as noites lidas, sem PRL nem Membership (a leitura aplica). Owner: noites livres;
+ * Co-Owner: só reservas confirmadas que entram inteiras, das holdings informadas (quem lê nunca vê a própria capacidade).
+ * Devolve noite → reserva (Owner: `null`); o que não aparece é "Indisponível", sem motivo.
+ */
+export function requestableCapacity(input: {
+  readonly owner: RequestHolding | null;
+  /** Holdings Co-Owner vigentes que podem ser solicitadas, por id. */
+  readonly holdings: ReadonlyMap<string, RequestHolding>;
+  readonly nights: readonly DepositNightFacts[];
+  readonly bookings: readonly DepositBookingFacts[];
+  readonly committed: ReadonlySet<string>;
+  readonly nowMs: number;
+}): Map<string, string | null> {
+  const capacity = new Map<string, string | null>();
+  const open = (night: DepositNightFacts) =>
+    Date.parse(night.checkinAt) > input.nowMs && !input.committed.has(night.stayDate);
+  if (input.owner !== null) {
+    for (const night of input.nights)
+      if (open(night) && isFreeOwnerNight(night)) capacity.set(night.stayDate, null);
+    return capacity;
+  }
+  const facts = new Map(input.nights.map((night) => [night.stayDate, night]));
+  const bookings = new Map(input.bookings.map((booking) => [booking.id, booking]));
+  for (const booking of input.bookings) {
+    const holding = input.holdings.get(booking.holdingId);
+    if (holding === undefined) continue;
+    const dates = bookingNights(booking);
+    const whole = dates.every((date) => {
+      const night = facts.get(date);
+      return (
+        night !== undefined &&
+        open(night) &&
+        bookedByHolding(night, holding, (id) => bookings.get(id))?.id === booking.id
+      );
+    });
+    if (whole) for (const date of dates) capacity.set(date, booking.id);
+  }
+  return capacity;
+}
+
 /** Unidade do complemento escolhida pelo solicitante (PD-012): noite Owner livre ou reserva Co-Owner inteira. */
 export type ComplementUnitInput =
   | { readonly kind: 'owner_night'; readonly secondHomeId: string; readonly stayDate: string }

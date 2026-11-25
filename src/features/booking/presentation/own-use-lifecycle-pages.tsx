@@ -303,6 +303,8 @@ function CancellationSection({
 export async function TitularBookingDetailPage(props: {
   readonly bookingId: string;
   readonly searchParams: SearchParams;
+  /** W21: aviso composto pela rota (reserva comprometida com solicitação pendente), sem importar o luxchange. */
+  readonly notice?: ReactNode;
 }) {
   const session = await requireTitularSession();
   if (session === 'unavailable') return <AuthUnavailable />;
@@ -329,6 +331,7 @@ export async function TitularBookingDetailPage(props: {
         lead={lead}
         context={{ href: ownUsePaths.bookings, label: bookingsMessages.title }}
       />
+      {props.notice}
       {param(props.searchParams, 'cancelada') === '1' && booking.state === 'cancelled' ? (
         <CancelledNotice booking={booking} />
       ) : null}
@@ -621,6 +624,8 @@ function TermsChanged(props: {
 export async function TitularCancellationPage(props: {
   readonly bookingId: string;
   readonly searchParams: SearchParams;
+  /** W21: aviso composto pela rota (reserva comprometida com solicitação pendente). */
+  readonly notice?: ReactNode;
 }) {
   const session = await requireTitularSession();
   if (session === 'unavailable') return <AuthUnavailable />;
@@ -645,17 +650,23 @@ export async function TitularCancellationPage(props: {
       context={{ href: ownUsePaths.booking(booking.id), label: text.back }}
     />
   );
+  const noticed = (
+    <>
+      {header}
+      {props.notice}
+    </>
+  );
   if (param(props.searchParams, 'condicoes') === 'mudaram')
     return (
       <TitularShell>
-        {header}
+        {noticed}
         <TermsChanged booking={booking} preview={preview} />
       </TitularShell>
     );
   if (preview.kind === 'nothing_left')
     return (
       <TitularShell>
-        {header}
+        {noticed}
         <Message kind="info" title={text.nothingLeftTitle} body={text.nothingLeftBody} />
         <p className="lx-body">
           <a className="lx-link" href={ownUsePaths.booking(booking.id)}>
@@ -671,7 +682,7 @@ export async function TitularCancellationPage(props: {
       : instantIn(dateFromMicros(preview.timelyUntil), booking.timezone);
   return (
     <TitularShell>
-      {header}
+      {noticed}
       {preview.kind === 'closed' ? (
         <div className="lx-booking__closed">
           <Message kind="info" title={text.closedTitle} body={text.closedBody} />

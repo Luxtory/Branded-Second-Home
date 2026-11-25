@@ -6,7 +6,10 @@ import {
   OWN_USE_NO_SHOW_DECLARED,
 } from '../application/own-use-lifecycle-events';
 import { membershipNotificationCopy } from '@/features/identity';
-import { depositNotificationCopy } from '@/features/luxchange/notifications';
+import {
+  depositNotificationCopy,
+  requestNotificationCopy,
+} from '@/features/luxchange/notifications';
 import {
   lifecycleLabels,
   lifecycleNotificationMessages as text,
@@ -183,9 +186,10 @@ export function notificationCopy(
     case OWN_USE_BOOKING_INVALIDATED:
       return invalidated(data, format);
     default:
-      // W15: mudança do Membership (texto do identity); W20: depósito Luxchange; outros tipos → aviso genérico.
+      // W15: mudança do Membership (texto do identity); W20: depósito Luxchange; W21: Request; outros → aviso genérico.
       return (
         depositNotificationCopy(kind, data, format) ??
+        requestNotificationCopy(kind, data, format) ??
         membershipNotificationCopy(kind, data, format.instant)
       );
   }
