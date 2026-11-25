@@ -156,7 +156,7 @@ test.describe('W16 E4 — PRL e parâmetros econômicos no Admin', () => {
     await gate(page, errors, 'w16-03-prl-lista');
     await item.getByRole('link', { name: label }).tap();
     // A navegação do toque termina antes do `goto` do mês: duas navegações simultâneas abortam uma delas (ERR_ABORTED).
-    await expect(page).toHaveURL(new RegExp(`/admin/prl/${home}(\\?|$)`));
+    await page.waitForURL((url) => url.pathname === `/admin/prl/${home}`);
     const [first, second] = twoNights();
     const month = first.slice(0, 7);
     const later = `${nextMonth(month)}-10`;
