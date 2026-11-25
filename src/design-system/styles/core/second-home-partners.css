@@ -1,5 +1,9 @@
 /* Second Home Partners (catalog §20.6): local compositions using existing Core roles and tokens. */
 @layer lx.components {
+  [data-lx="core"] main:has(> #imobiliarias-e-corretores) #inicio h1.lx-headline--home-hero {
+    font-size: calc(var(--lx-type-home-hero) * 1.12);
+  }
+
   /* The founder's two sentences stay in successive blocks, each reflowing naturally on narrow screens. */
   [data-lx="core"] main:has(> #imobiliarias-e-corretores) #inicio h1 > :is(span, em) {
     display: block;
