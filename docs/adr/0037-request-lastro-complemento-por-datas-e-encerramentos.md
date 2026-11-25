@@ -54,8 +54,9 @@ em Production, nenhuma capability ativa):
   `UNIQUE (second_home_id, stay_date) WHERE state = 'active'`. Não reutiliza `economic_snapshot_night`, cuja PK e regra de
   Second Home colidiriam com noites do complemento em outra Second Home ou na mesma data das solicitadas.
 - `app.luxchange_request_consent` — `request_id` (PK), `text_version`, `terms` (`jsonb` canônico do que foi exibido),
-  `created_at`; só-inserção; o gatilho confere que `terms` traz exatamente `N`, `G`, `P`, `C`, `E`, Fee, prazo em horas,
-  `expires_at`, validade e o potencial de cada noite gravados na Request.
+  `created_at`; só-inserção; o banco confere que `terms` traz exatamente o que foi apresentado — `N`, `G`, `P`, `C`, `E`, Fee,
+  prazo em horas, validade, política e os Créditos de cada noite — e que isso coincide com a Request. O `expires_at` não
+  integra o consentimento: é resultado do envio, gravado na Request, e o banco prova `expires_at = sent_at + prazo`.
 - `app.economic_snapshot_policy(operation_id PK, policy_id)` — versão `luxchange_request` aceita, vigente no
   `resolved_at` (obrigação da W18).
 - Nenhuma linha existente é alterada; funções das W12–W20 ganham só ramos novos antes dos caminhos atuais.
@@ -108,8 +109,8 @@ validade do envio (24 meses: vence em 25/11/2028 09:00 UTC), 5.000 disponíveis.
 5. **Envio** (`send_request`, uma transação): travas, revalidação integral e recálculo; qualquer valor diferente do
    revisado → `ERR_REQUEST_TERMS_CHANGED`; data de complemento que deixou de cumprir a antecedência em `expires_at` →
    `ERR_MIN_NOTICE`. O banco fixa `sent_at` (relógio na inserção) e `expires_at = sent_at + horas do snapshot` e grava
-   Request, noites, compromissos, consentimento (com as horas consentidas e o `expires_at` efetivo), Garantia e
-   `fee_charge`. Só depois do COMMIT a tela diz "comprometidas" e mostra o prazo exato.
+   Request (com o `expires_at` derivado do envio), noites, compromissos, consentimento (com a duração consentida),
+   Garantia e `fee_charge`. Só depois do COMMIT a tela diz "comprometidas" e mostra o prazo exato.
 6. **Falha depois do pagamento aprovado**: o pagamento fica sem desfecho; o fluxo dispara `reconcilePayment` logo após a
    recusa (estorno `pending` idempotente por pagamento, chamada ao PSP) e o job `reconciliation` é a rede de segurança. O
    membro vê "Pagamento sem solicitação enviada — devolução em processamento" e "Revisar valores atualizados".
