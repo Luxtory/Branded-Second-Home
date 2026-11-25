@@ -128,6 +128,15 @@ do complemento `FOR UPDATE` (5, ordem `(second_home_id, stay_date)`) → reserva
 revisados → snapshot → Request → noites solicitadas → unidades e noites do complemento → consentimento → Garantia (7) →
 `fee_charge` com o pagamento por último (8) → outbox → auditoria.
 
+Travas das classes 5 e 6 (implementação da E1/E2): as noites e as reservas usam as travas consultivas do `LockSequence`
+(`app.second_home_date:<casa>:<data>`, `app.booking:<id>`), as mesmas dos gatilhos das W12/W13/W20 — o `luxtory_app`
+não tem `UPDATE` em `second_home_date` nem em `booking`, então não há trava de linha nelas. O command as toma exclusivas
+na ordem total; os gatilhos da W21 as tomam de novo antes de ler o estado (reentrantes para o command): compartilhada na
+noite solicitada (Requests coexistem), exclusiva na noite comprometida, compartilhada na reserva comprometida e exclusiva
+nos atos do Titular que a recusam (cancelamento, cessão). "`FOR SHARE`/`FOR UPDATE`" acima significa esse modo das travas.
+Na materialização do reenvio, a liberação das Garantias encerradas e a nova Garantia são uma única trava da classe 7
+(`holdCreditsReleasing`), e os pagamentos dos Fees revertidos e do novo Fee uma única trava da classe 8 (`lockPayments`).
+
 Gatilhos (o papel da aplicação é tratado como potencialmente comprometido, ADR-0024 §3): operação `pending` na transação
 do snapshot (`xmin`); solicitante representado e `active`; detentor `active` e ≠ solicitante; usuário que age não
 representa o detentor; noites solicitadas contínuas, de uma Second Home, futuras, elegíveis do detentor e sem compromisso
@@ -135,7 +144,8 @@ efetivo; unidades do solicitante, elegíveis ao depósito, com `luxchange_deposi
 `N` recalculado pelo banco sobre as noites do snapshot do envio — exatamente as noites solicitadas, o mesmo conjunto de
 `luxchange_request_night`; as do complemento nunca entram em `economic_snapshot_night` —, `P` igual à soma das noites
 efetivamente comprometidas (cada uma com o `prl_id` do snapshot e o multiplicador do envio), `G = max(0, N − P)`, `C` e
-`E` gerados; Garantia só da Request da operação, cobertura e soma `= G`;
+`E` gerados; Garantia só da Request da operação, cobertura e soma `= G`, em FEFO conferido também pelo banco (nenhum lote
+elegível que vença antes — ou empate e seja mais antigo — fica com saldo livre: `credit_hold_fefo`);
 `fee_charge.prl_total_minor = Σ` noites solicitadas. Completude no COMMIT: Request, noites, unidades, consentimento,
 snapshot com política e parâmetros, Garantia exata, um Fee, e nenhuma escrita de custódia, ocupação, transição de reserva
 ou ledger do Direito de Uso.
@@ -244,6 +254,7 @@ imutável do envio e os compromissos autorizados.
 | `credit_entry_write` | `held → consumed` com qualquer `accept_request`; `available → consumed` só `create_direct` | `held → consumed` só da Garantia da Request aceita; `available → consumed` do lote da mesma operação e só `C` | — |
 | `date_custody_close/open`, `date_occupancy_release`, transição `cession` | ramos só de `deposit_capacity` | ramos de `accept_request` só para compromissos efetivos da Request aceita (`request_complement`) e para a capacidade solicitada (`request_destination`) | ramos do depósito inalterados |
 | `settlement` (W19) | `accept_request` + Fee de `send_request` | Fee da operação de envio da Request aceita | — |
+| `date_occupancy_complement_guard` (W21) | recusa só ocupação `own_use` sobre data com compromisso efetivo; os demais canais seguem impedidos pelas regras vigentes do Inventário | quando o canal `luxchange_request` passar a ser autorizado, a confirmação da ocupação da capacidade solicitada respeita os compromissos efetivos de complemento por datas, reutilizando o predicado `app.luxchange_complement_effective` e as travas já estabelecidas — sem subsistema de bloqueio paralelo | — |
 
 ### 9. Entrega estrutural da W21 para o aceite
 
