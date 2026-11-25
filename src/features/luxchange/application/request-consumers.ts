@@ -110,3 +110,35 @@ export function buildRequestConsumers<Tx>(
     },
   ];
 }
+
+/**
+ * Eventos (contratos do AsyncAPI) cujo fato pode tirar a elegibilidade de uma Request pendente (ADR-0037 §5, §7):
+ * Membership, reserva de uso próprio (confirmação, cancelamento, no-show, exceção, invalidação), depósito (custódia
+ * cedida) e Request nova (compromisso sobre capacidade solicitada por outra).
+ */
+export const REQUEST_ELIGIBILITY_EVENTS = [
+  'identity.membership_state_changed',
+  'booking.own_use_confirmed',
+  'booking.own_use_cancelled',
+  'booking.own_use_no_show_declared',
+  'booking.own_use_exception_opened',
+  'booking.own_use_exception_resolved',
+  'booking.own_use_invalidated',
+  'luxchange.credits_originated',
+  REQUEST_SENT,
+] as const;
+
+/**
+ * Gatilho dos encerramentos por evento (ADR-0037 §7): só anota, na varredura do outbox, que houve evento relevante —
+ * nada é gravado nem executado na transação de entrega. Quem roda a varredura executa os encerramentos depois dela, pelo
+ * executor (job `expire_requests`), uma vez por varredura.
+ */
+export function buildRequestClosureTrigger<Tx>(onRelevant: () => void): OutboxConsumer<Tx> {
+  return {
+    name: 'luxchange_request_closure_trigger',
+    eventTypes: REQUEST_ELIGIBILITY_EVENTS,
+    async handle() {
+      onRelevant();
+    },
+  };
+}
