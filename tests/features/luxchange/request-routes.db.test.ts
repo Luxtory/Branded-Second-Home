@@ -55,6 +55,7 @@ describe('W21 E3 — rotas /v1/luxchange/requests*', () => {
     flow: () => app.flow(f.c.titular),
     afterResponse: (task) => void pending.push(task),
     afterCommit: vi.fn(),
+    quota: async () => ({ status: 'allowed' }),
   });
   const drain = async () => {
     while (pending.length > 0) await pending.shift()!();
@@ -234,6 +235,55 @@ describe('W21 E3 — rotas /v1/luxchange/requests*', () => {
     expect(await refunds()).toEqual([]);
     await drain();
     expect(await refunds()).toEqual([{ state: 'succeeded' }]);
+  });
+
+  it('[TECH-100] limite excedido: prévia e pagamento → 429 com retry-after, nada cobrado; limites ausentes → 422', async () => {
+    const { r, shape } = await ready();
+    const limited: RequestRouteDependencies = {
+      ...deps(),
+      quota: async () => ({ status: 'limited', retryAfterSeconds: 37 }),
+    };
+    for (const [route, path] of [
+      [withRoute(createRequestPreviewRoute(limited), log()), '/luxchange/requests/preview'],
+      [withRoute(createRequestFeePaymentRoute(limited), log()), '/luxchange/requests/fee-payment'],
+    ] as const) {
+      const response = await post(route, path, headers(r), shape);
+      expect(response.status).toBe(429);
+      expect(response.headers.get('retry-after')).toBe('37');
+      expect(await response.json()).toMatchObject({ code: 'ERR_RATE_LIMITED' });
+    }
+    const { rows } = await pool().query<{ n: number }>(
+      'SELECT count(*)::int AS n FROM app.payment WHERE payer_party_id = $1',
+      [r.partyId],
+    );
+    expect(rows[0]!.n).toBe(0);
+    const missing = withRoute(
+      createRequestPreviewRoute({
+        ...deps(),
+        quota: async () => ({ status: 'parameter_missing' }),
+      }),
+      log(),
+    );
+    const refused = await post(missing, '/luxchange/requests/preview', headers(r), shape);
+    expect(refused.status).toBe(422);
+    expect(await refused.json()).toMatchObject({ code: 'ERR_PARAMETER_MISSING' });
+  });
+
+  it('[TECH-056] recusa de negócio (noite sem PRL) → 422 no schema do contrato', async () => {
+    const r = await newRequester(f);
+    const refused = await post(
+      preview,
+      '/luxchange/requests/preview',
+      headers(r),
+      app.shape(r, f.freshNights(1)),
+    );
+    expect(refused.status).toBe(422);
+    const valid = responseValidator('/luxchange/requests/preview', 'post', 422);
+    const body = await refused.json();
+    expect(valid(body), JSON.stringify(valid.errors)).toBe(true);
+    expect(body).toMatchObject({
+      code: expect.stringMatching(/^ERR_(PRL_MISSING|CAPACITY_UNAVAILABLE)$/),
+    });
   });
 
   it('[ADR-0037 §10] chave fechada: envio e prévia 503 sem nada gravado; retirada segue', async () => {

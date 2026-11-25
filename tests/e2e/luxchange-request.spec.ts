@@ -2,12 +2,14 @@ import { randomUUID } from 'node:crypto';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import {
   publishE2eRequestParameters,
+  seedE2eSoonCoOwnerBooking,
   setE2eLuxchangeRequest,
 } from '../support/e2e-acquisition-database.mjs';
 import {
   addDays,
   civilToday,
   FLOW_TIMEOUT_MS,
+  formalizedCoOwner,
   formalizedOwner,
   gate,
   MOBILE,
@@ -216,30 +218,50 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
       );
       await gate(requester, errors, 'w21-03-selecao');
 
-      // Prévia do servidor: N, P, G, C, E, Taxa e prazo; potenciais nunca como saldo.
+      // Prévia do servidor: N, P, G, C, E, Taxa e prazo, cada número com a sua natureza; potenciais nunca como saldo.
       await press(summary(requester).getByRole('button', { name: 'Ver prévia' }), true);
       const review = summary(requester);
       await expect(review.getByRole('heading', { name: 'Prévia da solicitação' })).toBeVisible();
+      for (const group of [
+        'Sua Carteira agora',
+        'Como os Créditos necessários são cobertos',
+        'Depois do envio',
+        'Taxa e prazo',
+      ])
+        await expect(review.getByRole('heading', { name: group })).toBeVisible();
       for (const [label, value] of [
-        ['Créditos necessários', '1.000 Créditos'],
         ['Saldo disponível na Carteira', '2.000 Créditos'],
-        ['Créditos potenciais das datas', '300 Créditos'],
+        [
+          'Saldo potencial para intercâmbio',
+          '2.000 disponíveis + 300 potenciais, ainda não originados',
+        ],
+        ['Créditos necessários', '1.000 Créditos'],
         ['Créditos em Garantia', '700 Créditos'],
-        ['Total coberto', '1.000 Créditos'],
-        ['Saldo potencial para intercâmbio', '2.300 Créditos'],
+        ['Créditos potenciais das datas', 'Ainda não originados'],
+        ['Total coberto', '700 em Garantia + 300 potenciais'],
         ['Excedente', '0 Créditos'],
-        ['Continuam disponíveis na Carteira', '1.300 Créditos'],
+        ['Saldo disponível depois do envio', '1.300 Créditos'],
+        ['Em Garantia até a resposta', '700 Créditos'],
         ['Taxa de intermediação', 'R$ 98,76'],
         ['Prazo para resposta', '24 horas a partir do envio'],
       ] as const)
         await expect(fact(review, label)).toContainText(value);
+      await expect(fact(review, 'Saldo potencial para intercâmbio')).toContainText(
+        '2.300 Créditos',
+      );
+      await expect(fact(review, 'Créditos potenciais das datas')).toContainText('300 Créditos');
+      await expect(fact(review, 'Total coberto')).toContainText('1.000 Créditos');
       await expect(fact(review, 'Datas a comprometer')).toContainText(br(ownNight).slice(0, 5));
-      await expect(review).toContainText('Não são saldo');
+      // PD-009: os termos efetivos da política aparecem antes do aceite, que se vincula à versão apresentada.
+      await expect(review.getByRole('heading', { name: 'Política da solicitação' })).toBeVisible();
+      for (const term of ['Cancelamento', 'Não comparecimento (no-show)'])
+        await expect(review.getByRole('heading', { name: term })).toBeVisible();
       const send = review.getByRole('button', { name: 'Pagar a Taxa e enviar' });
       await expect(send).toBeDisabled();
-      await review.getByLabel('Li e aceito a política da solicitação.').check();
+      await review.getByLabel(/Li e aceito a política comercial/).check();
       await expect(send).toBeDisabled();
       await review.getByLabel(/Aceito comprometer as datas acima/).check();
+      await expect(send).toBeEnabled();
       await gate(requester, errors, 'w21-04-previa');
 
       // Pagamento aprovado → envio → detalhe com o estado real.
@@ -321,7 +343,9 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
       await expect(fact(summary(requester), 'Créditos em Garantia')).toContainText('500 Créditos');
       await expect(fact(summary(requester), 'Datas a comprometer')).toContainText('Nenhuma');
       await expect(summary(requester).getByLabel(/Aceito comprometer/)).toHaveCount(0);
-      await summary(requester).getByLabel('Li e aceito a política da solicitação.').check();
+      await summary(requester)
+        .getByLabel(/Li e aceito a política comercial/)
+        .check();
       await gate(requester, errors, 'w21-08-previa-desktop');
       await summary(requester).getByRole('button', { name: 'Pagar a Taxa e enviar' }).click();
       await expect(requester).toHaveURL(/\?enviada=1$/);
@@ -344,6 +368,106 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
     } finally {
       await context.close();
       await holderContext.close();
+    }
+  });
+  test('[PD-012][REQ-062][REQ-097] Co-Owner: só a reserva inteira compromete; composição, envio, reserva e retirada', async ({
+    page,
+    browser,
+  }) => {
+    test.setTimeout(FLOW_TIMEOUT_MS);
+    const suffix = randomUUID().slice(0, 6);
+    const holderLabel = `Second Home W21 solicitada Co ${suffix}`;
+    const coLabel = `Second Home W21 Co-Owner ${suffix}`;
+    const { home: holderHome, acquirer: holderParty } = await formalizedOwner(page, holderLabel);
+    await page.context().clearCookies();
+    const { home: coHome, acquirers } = await formalizedCoOwner(page, coLabel);
+    const requesterParty = acquirers[0];
+    await activateMembership(page, holderParty);
+    await activateMembership(page, requesterParty);
+    const wanted = addDays(civilToday(), 25);
+    // A reserva do Direito de Uso (2 noites a R$ 30,00 → 300 Créditos potenciais cada) cobre a noite pedida (500):
+    // G = 0, C = 500, E = 100 — sem Créditos na Carteira.
+    // A fixture da reserva exige a representação ativa da party (como no depósito da W20).
+    const { titular: requester, context } = await titularFor(page, browser, requesterParty);
+    const booking = await seedE2eSoonCoOwnerBooking(coHome, requesterParty, 30, 2);
+    const second = addDays(booking.checkin, 1);
+    await publishPrl(page, holderHome, { [wanted]: '5000' });
+    await publishPrl(page, coHome, { [booking.checkin]: '3000', [second]: '3000' });
+    const errors = collectConsoleErrors(requester);
+    try {
+      await requester.goto('/titular/luxchange/solicitacoes/nova');
+      await press(requester.getByRole('link', { name: holderLabel }), true);
+      await expect(requester).toHaveURL(/\/solicitacoes\/nova\?party=/);
+      await press(await showDate(target(requester), wanted, true), true);
+
+      // Co-Owner: a reserva aparece como uma opção inteira (sem noites avulsas), com os Créditos potenciais da reserva.
+      const reservation = complement(requester).getByRole('group', { name: coLabel });
+      await expect(reservation.locator('button[data-date]')).toHaveCount(0);
+      const option = reservation.getByRole('checkbox', {
+        name: `Reserva de ${booking.checkin.slice(8, 10)}/${booking.checkin.slice(5, 7)} a ${second.slice(8, 10)}/${second.slice(5, 7)} (2 noites)`,
+      });
+      await expect(option).toHaveCount(1);
+      await expect(reservation).toContainText('600 Créditos potenciais');
+      await option.check();
+      await expect(fact(summary(requester), 'Créditos potenciais das datas')).toContainText(
+        '600 Créditos',
+      );
+      await press(summary(requester).getByRole('button', { name: 'Ver prévia' }), true);
+      const review = summary(requester);
+      for (const [label, value] of [
+        ['Saldo disponível na Carteira', '0 Créditos'],
+        [
+          'Saldo potencial para intercâmbio',
+          '0 disponíveis + 600 potenciais, ainda não originados',
+        ],
+        ['Créditos necessários', '500 Créditos'],
+        ['Créditos em Garantia', '0 Créditos'],
+        ['Total coberto', '0 em Garantia + 500 potenciais'],
+        ['Excedente', '100 Créditos'],
+        ['Saldo disponível depois do envio', '0 Créditos'],
+      ] as const)
+        await expect(fact(review, label)).toContainText(value);
+      await expect(fact(review, 'Datas a comprometer')).toContainText(coLabel);
+      await review.getByLabel(/Li e aceito a política comercial/).check();
+      await review.getByLabel(/Aceito comprometer as datas acima/).check();
+      await gate(requester, errors, 'w21-10-coowner-previa');
+      await press(review.getByRole('button', { name: 'Pagar a Taxa e enviar' }), true);
+      await expect(requester).toHaveURL(/\?enviada=1$/);
+      const main = requester.locator('main');
+      for (const [label, value] of [
+        ['Situação', 'Aguardando resposta'],
+        ['Créditos em Garantia', '0 Créditos'],
+        ['Créditos potenciais das datas comprometidas', '600 Créditos'],
+        ['Datas comprometidas', `${coLabel} ${br(booking.checkin)}, ${coLabel} ${br(second)}`],
+        ['Pagamento da Taxa', 'Aprovado'],
+      ] as const)
+        await expect(fact(main, label)).toContainText(value);
+      const detailUrl = requester.url().replace(/\?enviada=1$/, '');
+
+      // A reserva comprometida orienta a retirar a solicitação (não pode ser cancelada nem depositada enquanto pendente).
+      await requester.goto(`/titular/reservas/${booking.bookingId}`);
+      const notice = requester
+        .getByRole('status')
+        .filter({ hasText: 'comprometida com uma solicitação sua' });
+      await expect(notice).toBeVisible();
+      await expect(notice.getByRole('link', { name: 'Ver solicitação' })).toHaveAttribute(
+        'href',
+        new URL(detailUrl).pathname,
+      );
+      await gate(requester, errors, 'w21-11-coowner-reserva');
+
+      await requester.goto(detailUrl);
+      await press(requester.getByRole('button', { name: 'Retirar solicitação' }), true);
+      await expect(fact(requester.locator('main'), 'Situação')).toContainText(
+        'Encerrada · Retirada por você',
+      );
+      await expectRefundSettles(requester);
+      await requester.goto(`/titular/reservas/${booking.bookingId}`);
+      await expect(
+        requester.getByRole('status').filter({ hasText: 'comprometida com uma solicitação sua' }),
+      ).toHaveCount(0);
+    } finally {
+      await context.close();
     }
   });
 });

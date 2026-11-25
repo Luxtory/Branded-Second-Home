@@ -97,13 +97,35 @@ describe('W21 E3 — encerramento da Request por evento (ADR-0037 §7)', () => {
     const holder = await secondTitular(c);
     const { request } = await sent(holder);
     const other = await sent(f.holder);
-    expect(await membership('suspendMembership', holder.partyId)).toMatchObject({
-      status: 'committed',
-    });
+    const suspended = await membership('suspendMembership', holder.partyId);
+    expect(suspended).toMatchObject({ status: 'committed' });
     // O command da suspensão não encerra nada: a Request só deixa de ser aceitável.
     expect(await requestRow(pool(), request.request_id)).toMatchObject({ state: 'pending' });
     const result = await dispatch();
     expect(result).toMatchObject({ request_closures_closed_ineligible: 1 });
+    // Ordem provada no banco: evento confirmado → entrega registrada (recibo do gatilho) → executor (operação
+    // `close_ineligible_request` confirmada, chave por Request) → encerramento.
+    const { rows: order } = await pool().query<{
+      delivered: boolean;
+      receipt_before_close: boolean;
+      close_before_transition: boolean;
+      closings: number;
+    }>(
+      `SELECT o.delivered_at IS NOT NULL AS delivered,
+              x.received_at <= op.created_at AS receipt_before_close,
+              op.created_at <= t.created_at AS close_before_transition,
+              (SELECT count(*)::int FROM app.operation WHERE idempotency_key = op.idempotency_key) AS closings
+         FROM app.outbox o
+         JOIN app.outbox_receipt x ON x.event_id = o.id AND x.consumer = 'luxchange_request_closure_trigger'
+         JOIN app.operation op ON op.command = 'close_ineligible_request' AND op.state = 'committed'
+                              AND op.idempotency_key = 'close_ineligible_request:' || $2
+         JOIN app.luxchange_request_transition t ON t.request_id = $2::uuid
+        WHERE o.operation_id = $1 AND o.event_type = 'identity.membership_state_changed'`,
+      [(suspended as { operationId: string }).operationId, request.request_id],
+    );
+    expect(order).toEqual([
+      { delivered: true, receipt_before_close: true, close_before_transition: true, closings: 1 },
+    ]);
     expect(await requestRow(pool(), request.request_id)).toMatchObject({
       state: 'cancelled_pre_accept',
       closure_reason: 'holder_membership',

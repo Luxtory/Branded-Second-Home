@@ -129,6 +129,15 @@ try {
     BOOKING_AUTHORIZATION_REQUEST_WINDOW_SECONDS: '60',
     BOOKING_AUTHORIZATION_GLOBAL_LIMIT: '200',
     BOOKING_AUTHORIZATION_GLOBAL_WINDOW_SECONDS: '60',
+    // W21 (TECH-100): limitador determinístico da Request (leitura da capacidade e pagamento da Taxa), com limites
+    // folgados — o 429 é provado nos testes da rota com o limitador injetado.
+    LUXCHANGE_REQUEST_LIMITER_MODE: 'fake',
+    LUXCHANGE_REQUEST_READ_LIMIT: '200',
+    LUXCHANGE_REQUEST_READ_WINDOW_SECONDS: '60',
+    LUXCHANGE_REQUEST_SEND_LIMIT: '50',
+    LUXCHANGE_REQUEST_SEND_WINDOW_SECONDS: '60',
+    LUXCHANGE_REQUEST_GLOBAL_LIMIT: '500',
+    LUXCHANGE_REQUEST_GLOBAL_WINDOW_SECONDS: '60',
     // W6 (ADR-0018): segredos próprios de teste, gerados a cada execução — hash de idempotência e contexto de
     // apresentação da Home Edition. O E2E lê o contexto da própria página.
     INTEREST_REQUEST_HMAC_SECRET: randomBytes(32).toString('base64url'),
