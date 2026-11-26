@@ -365,7 +365,7 @@ describe('W21 — compromisso efetivo do complemento por datas (ADR-0037 §5–�
   });
 
   describe('capacidade solicitada [TECH-024][PD-005]', () => {
-    it('Requests de membros diferentes coexistem sobre a mesma noite do detentor; reserva Co-Owner do detentor só inteira', async () => {
+    it('[EC-8][PD-005] Requests de membros diferentes coexistem sobre a mesma noite do detentor; reserva Co-Owner do detentor só inteira', async () => {
       const nights = await pricedNights(f, [5_000n]);
       for (let i = 0; i < 2; i += 1) {
         const r = await newRequester(f);

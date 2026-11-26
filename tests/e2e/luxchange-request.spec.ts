@@ -63,12 +63,12 @@ const complement = (page: Page) =>
 const summary = (page: Page) => page.locator('aside[aria-labelledby="solicitacao-resumo"]');
 /**
  * Texto a 200% na raiz em 320 e 390 px (verificação enxuta de redimensionamento e reflow). NÃO declara conformidade
- * WCAG 1.4.10: há uma dívida conhecida e registrada (spec luxchange §13.11) — o título de display de uma palavra longa
- * do PageHeader ("Solicitações") passa da coluna e a página rola até 2 px a 320 px. O teste só tolera esse caso quando a
- * causa é comprovadamente o título (H1 mais largo que a coluna do cabeçalho) e nenhum outro elemento transborda; um
- * desvio maior, outra causa ou qualquer transbordo fora do cabeçalho falha. Resolvida a dívida, a tolerância sai.
+ * WCAG 1.4.10: há uma dívida conhecida e registrada (spec luxchange §13.11) — o título `h1.lx-display-m` de uma palavra
+ * longa do PageHeader ("Solicitações") passa da coluna e a página rola alguns px (2 a 3 px conforme a renderização de
+ * fonte). Atribuição estrutural, sem tolerância fixa: a rolagem nunca pode ir além do quanto o próprio texto do título
+ * passa da janela; nada fora do cabeçalho transborda; nenhum controle fica alcançável só com rolagem horizontal.
+ * Resolvida a dívida, a exceção do título sai.
  */
-const KNOWN_TITLE_DEBT_PX = 2;
 async function expectReflowWithLargeText(page: Page) {
   await page.evaluate(() => {
     document.documentElement.style.fontSize = '200%';
@@ -77,19 +77,13 @@ async function expectReflowWithLargeText(page: Page) {
     await page.setViewportSize({ width, height: 844 });
     const measure = await page.evaluate(() => {
       const limit = document.documentElement.clientWidth;
-      const header = document.querySelector('.lx-page-header');
-      const title = header?.querySelector('h1');
-      // Largura real do texto do título (Range), contra a coluna do cabeçalho (o pai do cabeçalho).
+      const title = document.querySelector('.lx-page-header h1.lx-display-m');
       const range = document.createRange();
       if (title) range.selectNodeContents(title);
-      const column = header?.parentElement?.getBoundingClientRect();
-      const columnRight = column
-        ? column.right - parseFloat(getComputedStyle(header!.parentElement!).paddingRight)
-        : 0;
       return {
         overflow: document.documentElement.scrollWidth - limit,
-        titleCause: title ? range.getBoundingClientRect().right > columnRight + 0.5 : false,
-        // Elementos mais externos que passam da borda, fora do cabeçalho (nenhum é aceito).
+        // Quanto o texto do título passa da janela (o único transbordo aceito, e só até essa medida).
+        titleOvershoot: title ? range.getBoundingClientRect().right - limit : 0,
         outside: [...document.querySelectorAll('main *')]
           .filter((el) => el.getBoundingClientRect().right > limit + 0.5)
           .filter(
@@ -98,21 +92,24 @@ async function expectReflowWithLargeText(page: Page) {
           )
           .filter((el) => el.closest('.lx-page-header') === null)
           .map((el) => `${el.tagName}.${el.className}`),
+        // Controles cujo centro fica fora da janela (exigiriam rolagem horizontal para serem usados).
+        unreachable: [...document.querySelectorAll('main :is(a, button, input, select, summary)')]
+          .map((el) => ({ el, r: el.getBoundingClientRect() }))
+          .filter(({ r }) => r.width > 0 && r.left + r.width / 2 > limit)
+          .map(({ el }) => `${el.tagName} "${(el.textContent ?? '').trim().slice(0, 30)}"`),
       };
     });
     expect(measure.outside, `transbordo fora do cabeçalho com texto a 200% em ${width}px`).toEqual(
       [],
     );
-    if (measure.overflow > 0) {
-      expect(
-        measure.titleCause,
-        `rolagem de ${measure.overflow}px sem ser o título conhecido (${width}px)`,
-      ).toBe(true);
+    expect(measure.unreachable, `controle fora da janela com texto a 200% em ${width}px`).toEqual(
+      [],
+    );
+    if (measure.overflow > 0)
       expect(
         measure.overflow,
-        `dívida do título maior que a medida (${width}px)`,
-      ).toBeLessThanOrEqual(KNOWN_TITLE_DEBT_PX);
-    }
+        `rolagem de ${measure.overflow}px além do texto do título (${measure.titleOvershoot.toFixed(1)}px) em ${width}px`,
+      ).toBeLessThanOrEqual(Math.ceil(measure.titleOvershoot));
   }
   await page.evaluate(() => {
     document.documentElement.style.fontSize = '';

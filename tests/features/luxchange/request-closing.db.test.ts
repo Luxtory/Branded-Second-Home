@@ -237,7 +237,7 @@ describe('W21 E2 — encerramento da Request pela aplicação (ADR-0037 §7)', (
     }
   });
 
-  it('[PD-012][CONC-16] G = 0 — retirada e job concorrentes sobre a Request vencida: um encerramento e um estorno', async () => {
+  it('[PD-012][CONC-12] G = 0 — retirada e job concorrentes sobre a Request vencida: um encerramento e um estorno', async () => {
     const { r, offered, request } = await sentZero();
     await ageRequest(f, request.request_id);
     const settled = await Promise.allSettled([app.withdraw(r, request.request_id), job()]);
