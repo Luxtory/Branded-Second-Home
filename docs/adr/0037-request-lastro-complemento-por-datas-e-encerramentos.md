@@ -2,7 +2,8 @@
 
 - **Date**: 2026-11-24
 - **Status**: Accepted (C0 da W21 aprovado pelo fundador em 2026-11-24, com `01` v10.9, `02` v4.7 e `03` v3.20;
-  implementação nas W21 E1–E4 e na W22)
+  implementação nas W21 E1–E4 e na W22); emenda W22 (§14) na E0b da W22, em 2026-11-26, com a direção aprovada pelo
+  fundador no C0 da W22
 - **Deciders**: Fundador (Luxtory), agente de engenharia
 - **Tags**: architecture, security, database, luxchange, credits, billing, inventory, booking, W21, W22
 
@@ -60,7 +61,8 @@ em Production, nenhuma capability ativa):
 - `app.economic_snapshot_policy(operation_id PK, policy_id)` — versão `luxchange_request` aceita, vigente no
   `resolved_at` (obrigação da W18).
 - Nenhuma linha existente é alterada; funções das W12–W20 ganham só ramos novos antes dos caminhos atuais.
-- A tabela de aceitação (`luxchange_request_acceptance`) e todo ramo de escrita do aceite nascem na W22.
+- A tabela de aceitação (`luxchange_request_acceptance`) e todo ramo de escrita do aceite nascem na W22. **Emenda W22
+  (§14.1):** a aceitação é registrada pela própria transição `accepted`; a tabela não é criada.
 
 ### 2. Composição e FEFO (PD-012, TECH-073)
 
@@ -208,7 +210,8 @@ condições:
 
 1. **Aceitação.** Operação `accept_request` `pending`, na transação do próprio snapshot (`xmin`); o snapshot do aceite
    só fixa o instante do aceite (`resolved_at`, depois das travas), que precisa ser `< request.expires_at`; linha
-   `luxchange_request_acceptance(request_id PK, operation_id UNIQUE)` gravada antes dos demais efeitos; Request `pending`
+   `luxchange_request_acceptance(request_id PK, operation_id UNIQUE)` gravada antes dos demais efeitos (**emenda W22,
+   §14.1:** a linha é a transição `accepted`, com as mesmas garantias); Request `pending`
    e `closure_reason IS NULL`; ator representa o detentor e não representa o solicitante (BR-211); Memberships das duas
    parties `active` (`FOR SHARE`).
 2. **Consentimento vinculante.** Só compromissos `active` e Garantia criados pela operação de envio da mesma Request,
@@ -235,7 +238,9 @@ condições:
    quantidade antes de aceitar. Capacidade solicitada cedida (`request_destination:<request>`) e reservada
    (`luxchange_request`, TECH-023); apuração do Fee só da Request aceita; concorrentes encerradas (TECH-024).
 7. **Prova.** Completude no COMMIT contra os termos vinculantes do §9; invariantes após todo teste; replay pelo executor;
-   `UNIQUE (request_id)` na aceitação e `UNIQUE (origin_operation_id, party_id)` nos lotes.
+   `UNIQUE (request_id)` na aceitação e `UNIQUE (origin_operation_id, party_id)` nos lotes (**emenda W22, §14.1:**
+   `conflict_luxchange_request_closed UNIQUE (request_id)` da transição e índice parcial único em `operation_id` para
+   `accepted`).
 8. **Rastreabilidade.** Noite do complemento → `custody_id` cedida → custódia sucessora (`parent_custody_id`) → lote do
    solicitante (mesma operação, party) → consumo (`parent_entry_id`/operação).
 
@@ -255,6 +260,9 @@ imutável do envio e os compromissos autorizados.
 | `date_custody_close/open`, `date_occupancy_release`, transição `cession` | ramos só de `deposit_capacity` | ramos de `accept_request` só para compromissos efetivos da Request aceita (`request_complement`) e para a capacidade solicitada (`request_destination`) | ramos do depósito inalterados |
 | `settlement` (W19) | `accept_request` + Fee de `send_request` | Fee da operação de envio da Request aceita | — |
 | `date_occupancy_complement_guard` (W21) | recusa só ocupação `own_use` sobre data com compromisso efetivo; os demais canais seguem impedidos pelas regras vigentes do Inventário | quando o canal `luxchange_request` passar a ser autorizado, a confirmação da ocupação da capacidade solicitada respeita os compromissos efetivos de complemento por datas, reutilizando o predicado `app.luxchange_complement_effective` e as travas já estabelecidas — sem subsistema de bloqueio paralelo | — |
+| `luxchange_request_transition` (W21; emenda W22) | só encerramentos pré-aceite | acrescenta `accepted` (registro da aceitação, §14.1) e `declined` (recusa) | — |
+| `app.booking`, `booking_open`, `assert_booking_complete`, `booking_state_transition_check` (W12/W13; emenda W22) | só `own_use` | canal `luxchange_request` da party solicitante, aberto só pelo aceite (§14.2); caminho `own_use` intacto | ramo `cession` do depósito inalterado |
+| Encerramento das concorrentes (emenda W22) | — | na operação do aceite, com o motivo provado pelo banco e rastreio até a Request aceita (§14.3) | — |
 
 ### 9. Entrega estrutural da W21 para o aceite
 
@@ -317,6 +325,55 @@ vigente + party = solicitante da Request. Ambos revalidados no banco.
 RLS: o solicitante lê as próprias Requests, unidades, noites e consentimento; o detentor lê as recebidas por colunas
 restritas (sem party do solicitante nem complemento). Calendário solicitável sem motivo nem identidade, só para
 Membership elegível, com limite de taxa. Nunca PRL em reais; Créditos potenciais nunca como saldo.
+
+### 14. Emenda W22 (E0b, 2026-11-26)
+
+Direção aprovada pelo fundador no C0 da W22; plano
+[`w22-luxchange-request-aceite-recusa.md`](../plan/w22-luxchange-request-aceite-recusa.md). Nada do §1 ao §13 é removido;
+onde esta seção diverge, ela prevalece. Canônicos inalterados; nenhuma regra econômica muda.
+
+1. **Registro da aceitação (Q1).** A linha de aceitação única da Request (`03` TECH-073 item 1) é a transição
+   `pending → accepted` em `app.luxchange_request_transition`; a tabela `luxchange_request_acceptance` não é criada.
+   Garantias, todas conferidas pelo banco: uma aceitação por Request (`conflict_luxchange_request_closed UNIQUE
+   (request_id)` — um único evento terminal, então aceite e qualquer encerramento se excluem); uma Request por operação
+   de aceite (índice parcial único em `operation_id` onde `to_state = 'accepted'`); `accepted` só com operação
+   `accept_request` pendente na transação do snapshot (`xmin`), papel Titular, party que age = detentor e sem
+   representação do solicitante (BR-211), Memberships `active` (`FOR SHARE`), `resolved_at < expires_at` e
+   `closure_reason` nulo; primeiro efeito do aceite — cessões, lotes, consumos, reserva e apuração exigem a transição
+   `accepted` da mesma operação e Request; projeção `state = 'accepted'`, `closure_reason = 'accepted'`,
+   `closed_by_operation`, `closed_at`, sem liberar compromissos; completude no COMMIT pelo constraint trigger já existente
+   da transição, que desvia `accepted` para a asserção do aceite e mantém o caminho pré-aceite intacto. `declined` (recusa)
+   segue o encerramento pré-aceite do §7. Se a implementação encontrar invariante não demonstrável pela transição, a
+   tabela do §8 volta a valer, com nova revisão do fundador.
+2. **Reserva do solicitante (Q2).** `app.booking` ganha `party_id` (Titular, `03` §3.1); `holding_id` só fica nulo no
+   canal `luxchange_request`: `CHECK (channel = 'luxchange_request' OR (holding_id IS NOT NULL AND party_id IS NULL))` e
+   `CHECK (channel <> 'luxchange_request' OR (holding_id IS NULL AND stake_id IS NULL AND party_id IS NOT NULL))`. Vínculo
+   sem coluna extra: `booking.opened_by_operation` = operação da transição `accepted` (1:1 por `booking_one_per_operation`
+   e pelo índice do item 1); `party_id = requester_party_id`; Second Home e período iguais aos da Request; K7, não a K1.
+   `booking_open`, `assert_booking_complete` e `booking_state_transition_check` ganham só ramos do canal novo, antes dos
+   caminhos atuais; na reserva `luxchange_request` só há `advance` (cancelamento, no-show e exceção ficam para a P-11 e a
+   W26). Regras, constraints, gatilhos e invariantes do `own_use` não mudam; os canais Direct, Luxplus, locação e uso
+   Luxtory também não.
+3. **Concorrentes (Q4).** A operação do aceite encerra, no mesmo commit, toda Request pendente com noite solicitada ou de
+   complemento ativo sobre as noites cedidas: `cancelled_pre_accept` com o motivo provado pelo banco — quando a causa é
+   o aceite, `capacity_unavailable` com evidência na custódia fechada pela operação do aceite, que leva à transição
+   `accepted` e à custódia sucessora (`request_destination:<id>` ou `request_complement:<id>`). Economia separada: na
+   aceita, Garantia `held → consumed`, compromissos `consumed`, Fee apurado e lotes originados; nas concorrentes,
+   Garantia liberada, compromissos `released`, Fee revertido com estorno integral e nenhum lote. Liberação e reversão
+   pela operação do aceite só alcançam Request encerrada antes do aceite por ela; consumo e apuração, só a aceita. Sem
+   motivo novo enquanto os existentes descreverem a causa.
+4. **Serialização envio × aceite.** A proteção é do banco: toda escrita de noite de Request toma a trava da noite no
+   próprio gatilho antes de ler a custódia (compartilhada na solicitada, exclusiva na comprometida), e o aceite toma
+   exclusivas as noites solicitadas e do complemento (classe 5). Depois dessas travas, nenhuma Request nova pode ser
+   gravada sobre elas; as já commitadas e fora do conjunto travado na classe 1 são detectadas por uma verificação do
+   banco que aborta o aceite com `serialization_failure` (`40001`), e o executor refaz a transação inteira com a mesma
+   chave, dentro do limite de tentativas. A completude no COMMIT recusa, como violação permanente (nunca repetida),
+   qualquer aceite que deixe Request pendente sobre noite cedida.
+5. **Prazos.** Capacidade solicitada: só noite futura no aceite (TECH-043; a antecedência de 14 dias é do depósito e do
+   complemento). Complemento: `luxchange_deposit_notice_met(checkin_at, resolved_at)`, garantido pelo envio e
+   revalidado.
+6. **Recusa.** `reject_request` pelo representante do detentor, sem Membership e sem chave: `declined`, ou `expired` se
+   vencida; mesma completude e mesma conferência de efeitos colaterais da retirada.
 
 ## Consequences
 

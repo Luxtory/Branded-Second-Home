@@ -18,6 +18,10 @@ CONC-8, CONC-12, CONC-16 e CONC-18. Base: `main` `e7454dd` (W21, #112). Canônic
   Autorizados: esta revisão do plano, commit, push e PR draft só com os documentos da E0.
 - **E1 em HOLD.** Não autorizados: código, migration 73, merge, deploy, escrita em Production, ativação de capabilities.
   A E0b e a E1 só começam com a aprovação expressa deste plano revisto.
+- **E0b (fundador, 2026-11-26, após auditoria do `28e9728`): GO.** Direção de Q1–Q5 aprovada; só as emendas documentais
+  previstas (ADR-0037 §14 e marcas nas linhas afetadas, spec `luxchange` §14, STRIDE `luxchange` §8). O PR draft é aberto
+  pelo fundador a partir da branch publicada. `40001` no retry do executor só na E2, depois da prova do banco na E1.
+  E1 continua em HOLD.
 
 ## Estado verificado (2026-11-26, só leitura)
 
@@ -90,9 +94,9 @@ Equivalência com o contrato da ADR-0037 §8 (tabela `luxchange_request_acceptan
 
 Nenhum invariante exclusivo da tabela foi encontrado; o `03` (TECH-073 item 1) exige "linha de aceitação única da
 Request", não uma tabela. Projeção: `closure_reason = 'accepted'`, `closed_by_operation`, `closed_at` (o CHECK
-`luxchange_request_closure` já trata todo estado diferente de `pending` como terminal). **Emendas da ADR-0037 na E0b**,
-sem mudança de regra: §1 (linha 63), §8 item 1 (linha 211), §8 item 7 (linha 238) e uma linha na tabela de
-compatibilidade do §8; §5 e §6 continuam válidos (o aceite usa o predicado e a trava da classe 1). **Condição de
+`luxchange_request_closure` já trata todo estado diferente de `pending` como terminal). **Emendas da ADR-0037 na E0b**
+(feitas: §14.1 e marcas no §1, no §8 itens 1 e 7 e na tabela de compatibilidade do §8), sem mudança de regra; §5 e §6
+continuam válidos (o aceite usa o predicado e a trava da classe 1). **Condição de
 revisão:** se a E1 encontrar invariante não demonstrável pela transição, volta à tabela da ADR e ao C1.
 
 ### Q2 — reserva `luxchange_request` da party solicitante (aprovada com ajustes)
@@ -199,12 +203,30 @@ Intercalações:
 | (c) envio sem a trava da aplicação (defeito ou forja) | a trava do gatilho reproduz (a) ou (b) |
 | (d) envio commitado antes da varredura da classe 1 | entra no conjunto travado e é encerrado no mesmo commit |
 
-A exclusão vem da trava da noite em toda escrita de Request — não da consulta final. A revarredura só detecta a janela
-entre as classes 1 e 5, e a completude no COMMIT ("nenhuma Request pendente sobre noite cedida", lida pelo gatilho
-adiado no estado commitado) é defesa em profundidade. Mudança na plataforma: reconhecer `40001` em
-`isTransientDatabaseError` (uma constante + teste), reutilizando o retry da TECH-053, limitado por `maxAttempts`
-(esgotado → `ERR_UNAVAILABLE`, nada gravado). Alternativa rejeitada: trava de classe 1 por noite no envio — mudaria a
-ordem de travas da W21.
+A exclusão vem da trava da noite em toda escrita de Request — não de uma consulta final. Duas verificações, ambas no
+banco (migration 73), com papéis distintos:
+
+- **Revarredura** — função chamada pelo handler logo depois da classe 5: Request pendente sobre as noites do aceite e
+  fora do conjunto travado na classe 1 → `serialization_failure` (`40001`). É conflito transitório: a nova tentativa a
+  inclui na classe 1 e a encerra.
+- **Completude no COMMIT** — Request pendente sobre noite cedida → `check_violation`: violação permanente (defeito ou
+  forja), nunca repetida, registrada como falha técnica. Depois da revarredura, a trava da noite impede Request nova
+  sobre essas noites até o COMMIT; essa asserção só falha por defeito.
+
+O `40001` sai da revarredura, não do COMMIT, para que retry nunca mascare uma inconsistência permanente: uma Request que
+estava no conjunto travado e não foi encerrada é defeito e falha sem repetição.
+
+Divisão das provas (orientação do fundador, 2026-11-26):
+
+- **E1 (banco):** com duas conexões reais, o conflito envio × aceite é identificado pela revarredura, a transação aborta
+  sem efeito parcial e nenhuma Request fica pendente sobre capacidade cedida; aceite forjado que pule a revarredura é
+  recusado no COMMIT; o estado econômico final é conferido (lotes, entradas, apurações, reversões, estornos, custódias e
+  ocupações) e as invariantes ficam vazias.
+- **E2 (aplicação):** `40001` entra em `isTransientDatabaseError` (uma constante, reutilizando o retry da TECH-053); teste
+  de integração prova que o executor refaz a transação inteira com a mesma chave, sem duplicar efeitos, e respeita
+  `maxAttempts` (esgotado → `ERR_UNAVAILABLE`, nada gravado).
+
+Alternativa rejeitada: trava de classe 1 por noite no envio — mudaria a ordem de travas da W21.
 
 O mesmo raciocínio cobre aceite × aceite (CONC-4: as duas Requests entram na classe 1 das duas operações, em ordem de
 id; a segunda encontra a sua encerrada → `ERR_CONCURRENT_CONFIRMATION`, ou `ERR_STATE_TRANSITION` se é a mesma Request já
@@ -250,7 +272,8 @@ Uso (`reject_request` entra na lista da conferência de efeitos colaterais da co
 **Banco — migration única 73** (`luxchange_request_accept`): estados e pares `accepted`/`declined` e o índice parcial
 da Q1; ramos em `transition_check`/`apply` e o desvio na completude; ramos `accept_request` (antes dos caminhos atuais)
 em `credit_lot_originate`, `credit_entry_write`, `settlement_write`, `fee_charge_reversal_write`, fechamento/abertura de
-custódia e liberação `ceded`; os objetos da tabela da Q2; `reject_request` como encerramento isento; view do detentor
+custódia e liberação `ceded`; os objetos da tabela da Q2; revarredura das Requests fora do conjunto travado (`40001`) e
+asserção permanente no COMMIT ("Serialização"); `reject_request` como encerramento isento; view do detentor
 com Créditos e validade (colunas acrescentadas); `luxchange_invariant_breaches()` com o aceite. `down` recusa com Request
 aceita ou recusada, reserva `luxchange_request` ou a K7 presente; sem linhas, restaura a W21.
 
@@ -315,8 +338,8 @@ gates completos nos checkpoints.
 | Etapa | Conteúdo | Checkpoint — GO / HOLD |
 |---|---|---|
 | E0 | esta entrega | **C0** — GO condicionado (2026-11-26); decisões incorporadas nesta revisão; PR draft só documental |
-| — | revisão deste plano pelo fundador | **aprovação expressa** — GO: Q1–Q5 incorporadas com as condições; serialização envio × aceite demonstrada; nenhum canônico editado. HOLD: qualquer condição sem resposta |
-| E0b | emendas da ADR-0037 (Q1 e as linhas citadas; Q2 e Q4 na tabela de compatibilidade), spec `luxchange` §14, STRIDE `luxchange` (aceite e recusa) | revisão junto do C1 |
+| — | revisão deste plano pelo fundador | **aprovação expressa** — GO: Q1–Q5 incorporadas com as condições; serialização envio × aceite demonstrada; nenhum canônico editado. HOLD: qualquer condição sem resposta → **GO dado em 2026-11-26** (auditoria do `28e9728`): direção de Q1–Q5 aprovada |
+| E0b | emendas da ADR-0037 (§14 e marcas no §1, no §8 itens 1 e 7 e na tabela de compatibilidade do §8), spec `luxchange` §14, STRIDE `luxchange` §8 | revisão junto do C1 → antecipada pelo fundador para a **autorização da E1** — GO: emendas fiéis a Q1–Q5, canônicos e W20/W21 intactos, nenhuma estrutura nova. HOLD: emenda que mude regra econômica ou introduza estrutura não prevista |
 | E1 | migration 73 + testes de banco (vínculos, forja, concorrência, tempo, preservação) + `db:check` | **C1** — GO: todos os cenários db verdes, invariantes vazias, preservação intacta, nenhuma linha de ativação. HOLD: deadlock não explicado, duplicidade, estado parcial, regressão ou invariante que exija a tabela da Q1 |
 | E2 | domínio, handlers, guard, portas, `40001`, eventos, notificações, auditoria | **C2** — GO: replay, retry e guard verdes, cobertura ≥ 80% em `domain`/`application`, sem PII em logs. HOLD: divergência domínio × banco |
 | E3 | OpenAPI/AsyncAPI → rotas → telas; E2E 390/1440; capturas 320/390/1440 | **C3** (revisão renderizada) — GO: axe 0, sem overflow, textos conferidos com a comunicação. HOLD: texto que prometa pagamento concluído ou revele identidade |

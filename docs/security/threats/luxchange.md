@@ -113,3 +113,37 @@ fechada; a retirada nunca é limitada.
 da ativação); até lá, leitura da capacidade e pagamento ficam recusados — coerente com K4–K7 fechadas; estorno de Request vencida em que ninguém age começa só na
 recuperação diária (Cron do plano Hobby; com evento relevante, logo depois da varredura do outbox); a reserva Co-Owner perto dos 15 dias pode ter o prazo tempestivo transcorrendo durante a pendência (aviso na
 tela); ativação real continua dependente de W22, D2, PSP validado, parâmetros, política e autorização do fundador.
+
+## 8. W22 — Request: aceite composto e recusa (2026-11-26)
+
+- **Scope**: `accept_request` e `reject_request`; `POST /v1/luxchange/requests/{id}/accept` e `…/reject`; Recebidas
+  acionáveis e revisão do detentor; transição `accepted`/`declined`; reserva `luxchange_request` da party solicitante
+  (`app.booking.party_id`); ramos do aceite em originação, ledger de Créditos, apuração, reversão, cessão, custódia e
+  ocupação; encerramento das concorrentes na operação do aceite; guard `holder`.
+- **Linked**: `docs/specs/luxchange.md` §14 · ADR-0037 §8, §10 e §14 · plano da W22 · `02` v4.7 · `03` v3.20 TECH-073.
+- **Assets novos**: capacidade cedida e reserva do solicitante; lotes do cedente e do complemento; consumo da Garantia
+  e de `C`; apuração da Taxa; encerramentos e estornos das concorrentes.
+
+| ID | Ameaça | Cenário | Mitigação |
+|---|---|---|---|
+| T-2201 | **S** Spoofing | Usuário aceita ou recusa Request de party que não representa | Guard `holder` (delegação vigente, escopo `party`); handler confere `holder_party_id` sob a trava da Request (outra party → `ERR_NOT_FOUND`, sem oráculo); banco exige operação do Titular que representa o detentor |
+| T-2202 | **E** Elevation of privilege | Solicitante aceita a própria Request, inclusive por usuário que representa as duas parties | Banco recusa a transição `accepted` quando o ator representa o solicitante (BR-211); `requester_party_id <> holder_party_id` já no envio |
+| T-2203 | **T** Tampering | Servidor comprometido consome Garantia de outra Request, origina lote ao solicitante sem compromissos consumidos, grava quantidade do cedente pelo débito ou `C` diferente | Ramos do aceite exigem a transição `accepted` da mesma operação e Request; quantidades recalculadas pelo banco (cedente pela fórmula do PRL do envio; `P` pelos `prl_id` dos compromissos; consumo exato de `C`); completude no COMMIT; invariantes |
+| T-2204 | **T** Tampering | Aceite duplo, aceite × aceite de Requests sobre a mesma capacidade, aceite depois do prazo ou de retirada | Um único evento terminal por Request; índice parcial único em `operation_id`; trava da classe 1 nas Requests envolvidas; `resolved_at < expires_at` e predicado no instante da transição (CONC-4, CONC-5) |
+| T-2205 | **T** Tampering | Envio concorrente deixa Request pendente sobre capacidade cedida | Trava da noite em todo gatilho de Request antes de ler a custódia; verificação do banco aborta o aceite (`40001`) quando há Request nova fora do conjunto travado; completude no COMMIT recusa, como violação permanente, Request pendente sobre noite cedida |
+| T-2206 | **T** Tampering | Reserva `luxchange_request` para outra party, sem a custódia da operação, ou `own_use` sem holding | CHECKs por canal; `booking_open` exige operação `accept_request` com a transição `accepted`, `party_id` = solicitante, período da Request; ocupação só sobre `luxchange_cession` aberta pela operação (TECH-023) |
+| T-2207 | **E** Elevation of privilege | Caminho isento (recusa, concorrentes) usado para liberar a Garantia da Request aceita, ou mesmo Fee apurado e revertido | Liberação e reversão pela operação do aceite só de Request encerrada antes do aceite por ela; consumo e apuração só da aceita; Fee apurado nunca revertido e vice-versa (W19) |
+| T-2208 | **T** Tampering | Cessão de reserva Co-Owner do solicitante sem compromisso efetivo, ou da capacidade solicitada já comprometida pelo detentor | Cessão do complemento só de compromisso `active` da Request aceita, com a custódia registrada ainda ativa e 14 dias no `resolved_at`; capacidade solicitada com compromisso efetivo recusa o aceite (CONC-16) |
+| T-2209 | **R** Repudiation | Detentor nega ter aceito ou ter visto os Créditos | Operação com ator, chave e auditoria sem PII; `expected_credits` comparado com o que o banco recompõe; resultado lido do banco |
+| T-2210 | **I** Information disclosure | Detentor vê identidade do solicitante, complemento ou quantas Requests concorriam; solicitante vê identidade do detentor | View do detentor com colunas restritas (só Créditos do cedente e validade acrescentados); resposta do aceite sem dados do solicitante nem das concorrentes; RLS da reserva por canal (`booking_holder_read` intacta; `booking_requester_read` só para a party da reserva, sem GRANT de `party_id`); notificações sem party |
+| T-2211 | **D** Denial of service | Envios repetidos nas mesmas noites fazem o aceite esgotar as tentativas | Retry limitado pelo executor → `ERR_UNAVAILABLE`, nada gravado; envio exige Taxa paga e lastro; limite de taxa do envio (W21) |
+| T-2212 | **D** Denial of service | Desligar K4/K5/K6/K7 prende a recusa ou os estornos das concorrentes | Recusa isenta de chave; encerramento das concorrentes só ocorre dentro de um aceite, que exige as chaves; estornos seguem com a K5 desligada (ADR-0037 §10) |
+
+**Abuse cases (W22):** detentor clica duas vezes em "Aceitar" (mesma chave → replay; outra chave → um único aceite);
+dois membros com Requests sobre as mesmas noites e o detentor aceita uma (a outra encerra sem penalidade, com
+rastreio); detentor que acabou de transferir a holding tenta aceitar (Request inelegível → recusa); servidor
+comprometido tenta originar Créditos ao detentor sem ceder as noites (COMMIT recusado).
+
+**Residual risks (W22):** a reserva `luxchange_request` não tem cancelamento, no-show nem exceção até a P-11 e a W26
+(decisão do fundador antes da ativação); estornos das concorrentes dependem do PSP (P-2) e da conciliação; ativação
+real continua dependente de D2, PSP validado, parâmetros, política e autorização do fundador.
