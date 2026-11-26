@@ -61,6 +61,12 @@ const target = (page: Page) => page.locator('section[aria-labelledby="solicitaca
 const complement = (page: Page) =>
   page.locator('section[aria-labelledby="solicitacao-complemento-titulo"]');
 const summary = (page: Page) => page.locator('aside[aria-labelledby="solicitacao-resumo"]');
+/** Estado do saldo na Carteira (W17): rótulo e quantidade de um estado do Crédito. */
+const balance = (page: Page, label: string) =>
+  page
+    .locator('.lx-evidence__item')
+    .filter({ has: page.locator('dt').getByText(label, { exact: true }) })
+    .first();
 const fact = (scope: Locator, label: string) =>
   scope
     .locator('.lx-booking__fact')
@@ -85,7 +91,7 @@ async function press(locator: Locator, touch: boolean) {
 
 /** Lê o detalhe até o estorno sair de "solicitado" (o PSP fake conclui depois da resposta) — nunca o contrário. */
 async function expectRefundSettles(page: Page) {
-  const refund = fact(page.locator('main'), 'Devolução da Taxa');
+  const refund = fact(page.locator('main'), 'Devolução integral da Taxa');
   await expect(refund).toContainText(/Solicitada — em processamento|Concluída/);
   await expect(async () => {
     await page.reload();
@@ -271,12 +277,24 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
       await requester.evaluate(() => {
         document.documentElement.style.fontSize = '200%';
       });
-      // A prévia não transborda por conta própria. (Shell e grade do calendário do DS passam alguns px a 320 px com 200%:
-      // achado do Design System, compartilhado pelos calendários das W12/W16/W20, registrado no relatório do C3.)
+      // A prévia não transborda e a grade do calendário fica dentro da janela (a coluna em `lx-grid` não se alarga com a
+      // palavra longa do título). Resta só o título de uma palavra do PageHeader a 320 px (limitação medida no relatório).
       for (const width of [320, 390]) {
         await requester.setViewportSize({ width, height: 844 });
         const overflow = await summary(requester).evaluate((el) => el.scrollWidth - el.clientWidth);
         expect(overflow, `prévia com texto ampliado a ${width}px`).toBeLessThanOrEqual(0);
+        const tables = await requester
+          .locator('.lx-calendar__table')
+          .evaluateAll((all) =>
+            Math.max(
+              ...all.map(
+                (el) => el.getBoundingClientRect().right - document.documentElement.clientWidth,
+              ),
+            ),
+          );
+        expect(tables, `grades do calendário com texto ampliado a ${width}px`).toBeLessThanOrEqual(
+          0,
+        );
       }
       await captureForReview(requester, 'w21-12-previa-texto-ampliado', { fromTop: true });
       await requester.evaluate(() => {
@@ -301,7 +319,7 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
       ] as const)
         await expect(fact(main, label)).toContainText(value);
       // Pendente: nenhuma devolução existe, então a linha não aparece.
-      await expect(fact(main, 'Devolução da Taxa')).toHaveCount(0);
+      await expect(fact(main, 'Devolução integral da Taxa')).toHaveCount(0);
       await gate(requester, errors, 'w21-05-enviada');
       const detailUrl = requester.url().replace(/\?enviada=1$/, '');
 
@@ -337,12 +355,22 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
         fact(requester.locator('main'), 'Garantia liberada para a Carteira'),
       ).toContainText('700 Créditos');
       await expect(requester.getByRole('button', { name: 'Retirar solicitação' })).toHaveCount(0);
+      // Encerrada: o compromisso terminou — rótulos no passado, valores históricos preservados.
+      for (const [label, value] of [
+        ['Datas anteriormente comprometidas — liberadas', br(ownNight)],
+        ['Créditos potenciais considerados no envio — não originados', '300 Créditos'],
+        ['Taxa de intermediação paga no envio', 'R$ 98,76'],
+      ] as const)
+        await expect(fact(requester.locator('main'), label)).toContainText(value);
       await expectRefundSettles(requester);
       await gate(requester, errors, 'w21-07-retirada');
+      // Carteira: sem datas comprometidas; a Garantia voltou ao saldo disponível (lotes do depósito, ainda válidos).
       await requester.goto('/titular/carteira');
       await expect(
         requester.locator('section[aria-labelledby="carteira-comprometidas"]'),
       ).toHaveCount(0);
+      await expect(balance(requester, 'Disponível')).toContainText('2.000 Créditos');
+      await expect(balance(requester, 'Em Garantia')).toContainText('0 Créditos');
       await expect(async () => {
         await requester.goto('/titular/notificacoes');
         await expect(requester.getByText('Solicitação encerrada').first()).toBeVisible({
@@ -360,10 +388,18 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
       await dayC.click();
       await expect(fact(summary(requester), 'Créditos necessários')).toContainText('500 Créditos');
       await summary(requester).getByRole('button', { name: 'Ver prévia' }).click();
-      await expect(fact(summary(requester), 'Créditos em Garantia')).toContainText('500 Créditos');
+      // Só Garantia: disponíveis após o envio = disponíveis antes − Garantia (2.000 − 500).
+      for (const [label, value] of [
+        ['Créditos disponíveis antes do envio', '2.000 Créditos'],
+        ['Créditos em Garantia', '500 Créditos'],
+        ['Total coberto', 'Coberto pela Garantia'],
+        ['Créditos disponíveis após o envio', '1.500 Créditos'],
+      ] as const)
+        await expect(fact(summary(requester), label)).toContainText(value);
       await expect(
         fact(summary(requester), 'Créditos potenciais das datas oferecidas'),
       ).toHaveCount(0);
+      await expect(fact(summary(requester), 'Excedente')).toHaveCount(0);
       await expect(summary(requester).getByLabel(/Aceito comprometer/)).toHaveCount(0);
       await summary(requester)
         .getByLabel(/Li e aceito a política comercial/)
@@ -374,6 +410,11 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
       await expect(fact(requester.locator('main'), 'Créditos em Garantia')).toContainText(
         '500 Créditos',
       );
+      // Na Carteira, o envio só reteve a Garantia: nada originado, nada consumido.
+      await requester.goto('/titular/carteira');
+      await expect(balance(requester, 'Disponível')).toContainText('1.500 Créditos');
+      await expect(balance(requester, 'Em Garantia')).toContainText('500 Créditos');
+      await expect(balance(requester, 'Consumido')).toContainText('0 Créditos');
       await requester.goto('/titular/luxchange/solicitacoes');
       await expect(
         requester.locator('section[aria-labelledby="solicitacoes-enviadas"]'),
