@@ -138,6 +138,7 @@ export const requestMessages = {
     covered: 'Total coberto',
     coveredBreakdown: (guarantee: string, potential: string) =>
       `${guarantee} em Garantia + ${potential} das datas oferecidas.`,
+    coveredByGuarantee: 'Coberto pela Garantia.',
     excess: 'Excedente',
     excessHint: (months: number) =>
       `Fica disponível na sua Carteira só depois do aceite, com validade de ${months} meses.`,
@@ -175,6 +176,10 @@ export const requestMessages = {
     guarantee: 'Créditos em Garantia',
     potential: 'Créditos potenciais das datas comprometidas',
     committed: 'Datas comprometidas',
+    /** Encerrada: o compromisso terminou; valores históricos preservados. */
+    potentialClosed: 'Créditos potenciais considerados no envio — não originados',
+    committedClosed: 'Datas anteriormente comprometidas — liberadas',
+    feeClosed: 'Taxa de intermediação paga no envio',
     none: 'Nenhuma',
     fee: 'Taxa de intermediação',
     released: 'Garantia liberada para a Carteira',
@@ -188,7 +193,7 @@ export const requestMessages = {
       approved: 'paga',
       failed: 'pagamento não aprovado',
     } as Readonly<Record<string, string>>,
-    refundLabel: 'Devolução da Taxa',
+    refundLabel: 'Devolução integral da Taxa',
     nights: 'Créditos por noite solicitada',
     closedAt: 'Encerrada em',
     withdrawing: 'Retirando…',

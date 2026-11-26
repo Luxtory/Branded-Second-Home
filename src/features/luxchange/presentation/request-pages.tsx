@@ -292,15 +292,20 @@ export async function TitularRequestDetailPage({
                 credits(detail.guaranteeCredits),
               ],
               [
-                text.detail.committed,
+                pending ? text.detail.committed : text.detail.committedClosed,
                 detail.complement.length === 0
                   ? text.detail.none
                   : detail.complement
                       .map((night) => `${night.homeLabel} ${fullDate(night.date)}`)
                       .join(', '),
               ],
-              [text.detail.potential, credits(detail.complementCredits)],
-              [text.detail.fee, fee],
+              [
+                pending ? text.detail.potential : text.detail.potentialClosed,
+                credits(detail.complementCredits),
+              ],
+              pending
+                ? [text.detail.fee, fee]
+                : [text.detail.feeClosed, formatFee(detail.feeAmountMinor)],
               ...(detail.refundState === null
                 ? []
                 : [[text.detail.refundLabel, text.refund[detail.refundState]]]),

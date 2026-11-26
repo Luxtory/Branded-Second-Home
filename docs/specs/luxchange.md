@@ -355,9 +355,13 @@ Request, com gatilhos desligados).
   o da prévia; complemento), "Pagar a
   Taxa e enviar" (pendente → "Pagamento em processamento"; termos mudados antes da cobrança → nova prévia, nada cobrado;
   recusa depois do pagamento → "devolução em processamento") e detalhe com o estado real da Request, do pagamento e do
-  estorno — Taxa com o estado do pagamento na mesma linha ("paga", "pagamento em processamento") e "Devolução da Taxa"
-  só quando existe ("solicitada — em processamento" até o PSP confirmar, nunca "concluída" antes) — e "Retirar
-  solicitação". A
+  estorno — Taxa com o estado do pagamento na mesma linha ("paga", "pagamento em processamento") e "Devolução integral
+  da Taxa" só quando existe ("solicitada — em processamento" até o PSP confirmar, nunca "concluída" antes) — e "Retirar
+  solicitação". Encerrada, os rótulos passam ao passado sem mudar valores: "Datas anteriormente comprometidas —
+  liberadas", "Créditos potenciais considerados no envio — não originados", "Taxa de intermediação paga no envio" e a
+  devolução integral em linha própria. Texto ampliado (200% a 320 px): a prévia e a grade do calendário cabem na janela
+  (as seções da jornada ficam em `lx-grid`, cuja coluna não cresce com uma palavra longa de título); resta só o título
+  de uma palavra do `PageHeader` ("Solicitações"), que passa 2 px — limitação do Design System, medida no C3. A
   capacidade alheia só é lida com Membership ativo; Créditos potenciais nunca como saldo; nunca PRL em reais. Versão do
   texto dos aceites: `request-consent.pt-br.v2` (i18n).
 - **Integração**: Carteira (seção "Datas comprometidas com solicitação pendente", Créditos potenciais não utilizáveis),

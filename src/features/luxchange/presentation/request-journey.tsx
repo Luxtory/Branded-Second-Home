@@ -378,10 +378,14 @@ function Review(props: {
         <Fact
           label={text.review.covered}
           value={credits(q.credits_required)}
-          hint={text.review.coveredBreakdown(
-            formatCredits(q.guarantee_credits),
-            formatCredits(q.complement_consumption),
-          )}
+          hint={
+            hasComplement
+              ? text.review.coveredBreakdown(
+                  formatCredits(q.guarantee_credits),
+                  formatCredits(q.complement_consumption),
+                )
+              : text.review.coveredByGuarantee
+          }
         />
         {hasExcess ? (
           <Fact
@@ -526,7 +530,9 @@ export function RequestJourney({ data }: { readonly data: RequestJourneyData }) 
 
   return (
     <div className="lx-booking">
-      <div className="lx-page-section">
+      {/* `lx-grid`: trilhas minmax(0, 1fr) — uma palavra longa num título (texto ampliado) não alarga a coluna nem
+          descentraliza a grade do calendário, que sangra a margem centrada na janela. */}
+      <div className="lx-grid">
         <TargetCalendar
           data={data}
           selection={{
@@ -542,26 +548,29 @@ export function RequestJourney({ data }: { readonly data: RequestJourneyData }) 
           }}
         />
         <section className="lx-booking__period" aria-labelledby="solicitacao-complemento-titulo">
-          <div className="lx-booking__intro">
-            <h2 id="solicitacao-complemento-titulo" className="lx-display-s">
-              {text.journey.complementHeading}
-            </h2>
-            <p className="lx-hint">{text.journey.complementHint}</p>
+          {/* Mesma razão do `lx-grid` externo: "comprometer" no título, com texto ampliado, não alarga a seção. */}
+          <div className="lx-grid">
+            <div className="lx-booking__intro">
+              <h2 id="solicitacao-complemento-titulo" className="lx-display-s">
+                {text.journey.complementHeading}
+              </h2>
+              <p className="lx-hint">{text.journey.complementHint}</p>
+            </div>
+            {!data.complementOpen ? (
+              <p className="lx-body">{text.journey.complementClosed}</p>
+            ) : data.complement.length === 0 ? (
+              <p className="lx-body">{text.journey.complementEmpty}</p>
+            ) : (
+              data.complement.map((home) => (
+                <ComplementHome
+                  key={home.holdingId}
+                  home={home}
+                  picked={new Set(picked.keys())}
+                  toggle={toggle}
+                />
+              ))
+            )}
           </div>
-          {!data.complementOpen ? (
-            <p className="lx-body">{text.journey.complementClosed}</p>
-          ) : data.complement.length === 0 ? (
-            <p className="lx-body">{text.journey.complementEmpty}</p>
-          ) : (
-            data.complement.map((home) => (
-              <ComplementHome
-                key={home.holdingId}
-                home={home}
-                picked={new Set(picked.keys())}
-                toggle={toggle}
-              />
-            ))
-          )}
         </section>
         {ok === null ? null : <PolicySection policy={ok.policy} />}
       </div>
