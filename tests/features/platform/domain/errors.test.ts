@@ -68,6 +68,7 @@ describe('códigos de erro (TECH-056)', () => {
       'ERR_CANCELLATION_TERMS_CHANGED',
       'ERR_GUEST_RULES_CHANGED',
       'ERR_DEPOSIT_TERMS_CHANGED',
+      'ERR_REQUEST_TERMS_CHANGED',
     ]);
     expect(ERROR_CODES.slice(-PRODUCT_ERROR_CODES.length)).toEqual([...PRODUCT_ERROR_CODES]);
     for (const code of PRODUCT_ERROR_CODES) expect(TECH_056_ERROR_CODES).not.toContain(code);

@@ -42,6 +42,24 @@ export async function currentHolding(
   return row === undefined ? null : { id: row.id, role: roleOf(row.role), stakeId: row.stake_id };
 }
 
+/** Uma holding vigente da party em qualquer Second Home (W21: membro solicitante), a mais antiga primeiro. */
+export async function anyCurrentHolding(
+  db: Executor,
+  partyId: string,
+  at: Date,
+): Promise<CurrentHolding | null> {
+  const row = await db
+    .selectFrom('app.holding')
+    .select(['id', 'role', 'stake_id'])
+    .where('party_id', '=', partyId)
+    .where('valid_from', '<=', at)
+    .where((eb) => eb.or([eb('valid_until', 'is', null), eb('valid_until', '>', at)]))
+    .orderBy('valid_from')
+    .orderBy('id')
+    .executeTakeFirst();
+  return row === undefined ? null : { id: row.id, role: roleOf(row.role), stakeId: row.stake_id };
+}
+
 /**
  * Party de uma holding, vigente ou não (W13): a reserva fica presa à holding da época (`booking.holding_id`), e as
  * notificações do ciclo dela vão a essa party (spec booking §10.12, como na confirmação, ADR-0026 D6).
@@ -60,5 +78,6 @@ export function createHoldingDirectory(database: () => Database) {
   return {
     currentHolding: (partyId: string, secondHomeId: string, at: Date) =>
       currentHolding(database(), partyId, secondHomeId, at),
+    anyCurrentHolding: (partyId: string, at: Date) => anyCurrentHolding(database(), partyId, at),
   };
 }

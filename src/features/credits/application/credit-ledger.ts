@@ -5,6 +5,7 @@ import {
   compareQuantities,
   instantMicros,
   parseCreditQuantity,
+  sumQuantities,
   type Allocation,
   type UsableLot,
 } from '../domain/credit';
@@ -106,6 +107,68 @@ export async function holdCredits<Tx>(
         : 'ERR_CREDIT_HOLD_INVALID',
     );
   return record(context, deps, drafts(allocations, 'hold', 'available', 'held'));
+}
+
+/**
+ * Reenvio de Request que materializa o encerramento de Requests anteriores do mesmo solicitante (W21; EC-21, ADR-0037
+ * §4; TECH-053): libera por inteiro as Garantias das operações `releasing` (`available`, ou `expired` se o lote venceu) e
+ * retém `quantity` em FEFO sobre o saldo resultante, entre os lotes que cobrem `coverUntil` — tudo com uma única trava da
+ * classe 7. `quantity = "0"` só libera. Mesmas recusas de `holdCredits`.
+ */
+export async function holdCreditsReleasing<Tx>(
+  context: LedgerContext<Tx>,
+  deps: LedgerDependencies<Tx>,
+  input: {
+    readonly partyId: string;
+    readonly quantity: string;
+    readonly coverUntil: string;
+    readonly releasing: readonly string[];
+  },
+): Promise<{ readonly released: Movement[]; readonly held: Movement[] }> {
+  const { lots, open } = await deps.store.lockLotsReleasing(
+    context.tx,
+    input.partyId,
+    input.releasing,
+  );
+  claimLots(context.locks, lots);
+  const releases: EntryDraft[] = open.map((entry) => ({
+    lotId: entry.lotId,
+    movement: 'release',
+    from: 'held',
+    to: entry.valid ? 'available' : 'expired',
+    quantity: entry.remaining,
+    parentEntryId: entry.entryId,
+  }));
+  const returned = new Map<string, string[]>();
+  for (const entry of open)
+    if (entry.valid)
+      returned.set(entry.lotId, [...(returned.get(entry.lotId) ?? []), entry.remaining]);
+  const usable: UsableLot[] = lots
+    .filter((lot) => lot.valid)
+    .map((lot) => ({
+      id: lot.id,
+      available: sumQuantities([lot.available, ...(returned.get(lot.id) ?? [])]),
+      expiresAt: lot.expiresAt,
+      originatedAt: lot.originatedAt,
+    }))
+    .filter((lot) => compareQuantities(lot.available, '0') > 0);
+  let holds: EntryDraft[] = [];
+  if (compareQuantities(input.quantity, '0') > 0) {
+    const until = instantMicros(input.coverUntil);
+    const allocations = allocateFefo(
+      usable.filter((lot) => instantMicros(lot.expiresAt) >= until),
+      input.quantity,
+    );
+    if (allocations === null)
+      throw new CommandRejection(
+        allocateFefo(usable, input.quantity) === null
+          ? 'ERR_CREDITS_INSUFFICIENT'
+          : 'ERR_CREDIT_HOLD_INVALID',
+      );
+    holds = drafts(allocations, 'hold', 'available', 'held');
+  }
+  const movements = await record(context, deps, [...releases, ...holds]);
+  return { released: movements.slice(0, releases.length), held: movements.slice(releases.length) };
 }
 
 /** Consumo direto (Direct; `available → consumed`) em FEFO (PD-008). */

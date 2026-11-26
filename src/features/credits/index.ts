@@ -5,6 +5,7 @@ export {
   consumeCredits,
   consumeHold,
   holdCredits,
+  holdCreditsReleasing,
   originateCreditLot,
   releaseHold,
   MissingValidityTermsError,

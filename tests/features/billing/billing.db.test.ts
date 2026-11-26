@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import {
   createFakePaymentGateway,
   createReconcilePaymentHandler,
@@ -7,6 +8,7 @@ import {
   initiatePayment,
   processRefund,
   reconcilePayment,
+  reverseLuxchangeFee,
   runReconciliation,
   settlementReport,
   type FakePaymentGateway,
@@ -32,7 +34,17 @@ import {
   settleHandler,
   type BillingHarness,
 } from './billing-support';
-import { systemExecutor } from '../credits/credits-support';
+import { originate, systemExecutor } from '../credits/credits-support';
+import {
+  newRequester,
+  pricedNights,
+  requestFixture,
+  sendRequest,
+  transactionQueryable,
+  writeClosing,
+  type RequestFixture,
+  type SentRequest,
+} from '../luxchange/request-support';
 
 /**
  * W19 — pagamentos, Fee, estornos, settlement, webhook e conciliação sobre o PostgreSQL real, com o executor real
@@ -40,6 +52,9 @@ import { systemExecutor } from '../credits/credits-support';
  * comercial atual) e mínimo deliberadamente fora do canônico.
  */
 let b: BillingHarness;
+// Desde a W21 (ADR-0037 §4), o Fee de `send_request` pertence a uma Request completa (noites do snapshot); as regras de
+// cálculo do Fee são exercitadas pelo Direct, que segue a mesma conferência do banco.
+let f: RequestFixture;
 const RATE_12 = '0.12';
 const MINIMUM = 9_876n;
 
@@ -102,6 +117,7 @@ async function refundsOf(paymentId: string) {
 
 beforeAll(async () => {
   b = await billingHarness({ rate: RATE_12, minimum: MINIMUM.toString() });
+  f = await requestFixture(b.c);
 }, 240_000);
 
 afterAll(async () => {
@@ -202,12 +218,12 @@ describe('Luxchange Fee por operação (TECH-082, BR-230, TECH-025)', () => {
   it('[BR-230][TECH-082] 12% do PRL total do período, conferido pelo banco com o snapshot; um Fee por operação e por pagamento', async () => {
     const prl = 500_000n;
     const payment = await pay(b, fee(prl));
-    const outcome = await run('send_request', {
+    const outcome = await run('create_direct', {
       payment_id: payment.id,
       prl_total_minor: prl.toString(),
     });
     expect(outcome).toMatchObject({ status: 'committed', result: { amount_minor: '60000' } });
-    const again = await run('send_request', {
+    const again = await run('create_direct', {
       payment_id: payment.id,
       prl_total_minor: prl.toString(),
     });
@@ -216,7 +232,10 @@ describe('Luxchange Fee por operação (TECH-082, BR-230, TECH-025)', () => {
 
   it('[BR-230] mínimo por operação quando 12% fica abaixo dele', async () => {
     const payment = await pay(b, MINIMUM);
-    const outcome = await run('send_request', { payment_id: payment.id, prl_total_minor: '40000' });
+    const outcome = await run('create_direct', {
+      payment_id: payment.id,
+      prl_total_minor: '40000',
+    });
     expect(outcome).toMatchObject({
       status: 'committed',
       result: { amount_minor: MINIMUM.toString() },
@@ -226,7 +245,7 @@ describe('Luxchange Fee por operação (TECH-082, BR-230, TECH-025)', () => {
   it('[TECH-080] valor diferente do Fee calculado agora, pagamento de outra party ou não aprovado → recusa sem efeito', async () => {
     const wrong = await pay(b, fee(500_000n) + 1n);
     expect(
-      await run('send_request', { payment_id: wrong.id, prl_total_minor: '500000' }),
+      await run('create_direct', { payment_id: wrong.id, prl_total_minor: '500000' }),
     ).toMatchObject({
       status: 'rejected',
       code: 'ERR_PAYMENT_FAILED',
@@ -234,7 +253,7 @@ describe('Luxchange Fee por operação (TECH-082, BR-230, TECH-025)', () => {
     const other = await secondTitular(b.c);
     const theirs = await pay(b, fee(500_000n), other);
     expect(
-      await run('send_request', { payment_id: theirs.id, prl_total_minor: '500000' }),
+      await run('create_direct', { payment_id: theirs.id, prl_total_minor: '500000' }),
     ).toMatchObject({
       status: 'rejected',
       code: 'ERR_PERMISSION',
@@ -255,7 +274,7 @@ describe('Luxchange Fee por operação (TECH-082, BR-230, TECH-025)', () => {
       },
     );
     expect(
-      await run('send_request', { payment_id: failed.id, prl_total_minor: '500000' }),
+      await run('create_direct', { payment_id: failed.id, prl_total_minor: '500000' }),
     ).toMatchObject({
       status: 'rejected',
       code: 'ERR_PAYMENT_FAILED',
@@ -330,15 +349,48 @@ describe('Luxchange Fee por operação (TECH-082, BR-230, TECH-025)', () => {
 });
 
 describe('reversão, apuração e estorno (PD-006, TECH-082, TECH-083)', () => {
+  /** Request enviada (W21) com PRL total de 500.000: Fee de 12% pago e vinculado; Garantia de 50.000 Créditos. */
   async function chargedRequest() {
-    const payment = await pay(b, fee(500_000n));
-    const outcome = await run('send_request', {
-      payment_id: payment.id,
-      prl_total_minor: '500000',
+    const requester = await newRequester(f);
+    const lot = await originate(b.c, '50000', { titular: requester });
+    const nights = await pricedNights(f, [500_000n]);
+    const sent = await sendRequest(f, {
+      requester,
+      nights,
+      holds: [{ lotId: lot, quantity: '50000' }],
     });
-    if (outcome.status !== 'committed') throw new Error(`fee not charged: ${outcome.code}`);
-    return { payment, feeChargeId: outcome.result.fee_charge_id };
+    return { payment: { id: sent.paymentId }, feeChargeId: sent.feeChargeId!, sent, requester };
   }
+  /** Retirada (W21): encerramento da Request + `reverseLuxchangeFee` do slice billing (estorno integral). */
+  function withdrawal(
+    sent: SentRequest,
+  ): CommandHandler<{ second_home_id: string }, { refund_id: string }, DatabaseTransaction> {
+    return {
+      command: 'withdraw_request',
+      input: z.strictObject({ second_home_id: z.uuid() }),
+      secondHomeId: (value) => value.second_home_id,
+      scope: (value) => ({ type: 'second_home', id: value.second_home_id }),
+      async execute({ tx, locks, operationId, audit }) {
+        audit({
+          objectType: 'billing_test',
+          objectId: 'withdraw_request',
+          before: null,
+          after: null,
+        });
+        await writeClosing(transactionQueryable(tx), operationId, sent, { skip: ['fee'] });
+        const { refundId } = await reverseLuxchangeFee(
+          { tx, locks, operationId },
+          { store: b.store },
+          { feeChargeId: sent.feeChargeId! },
+        );
+        return { refund_id: refundId };
+      },
+    };
+  }
+  const withdraw = (charged: Awaited<ReturnType<typeof chargedRequest>>) =>
+    executorFor(b.c, charged.requester, { requestGuard: true })(withdrawal(charged.sent), {
+      second_home_id: charged.requester.homeId,
+    });
   const requester = <R extends Record<string, string>>(
     handler: CommandHandler<
       { second_home_id: string; fee_charge_id: string },
@@ -353,16 +405,21 @@ describe('reversão, apuração e estorno (PD-006, TECH-082, TECH-083)', () => {
     });
 
   it('[PD-006][TECH-082] desfecho pré-aceite reverte integralmente: estorno do valor cobrado, sem Crédito; uma vez só', async () => {
-    const { payment, feeChargeId } = await chargedRequest();
-    const credits = await capacityFootprint(b);
-    const reversed = await requester(reversalHandler(b, 'withdraw_request'), feeChargeId);
+    const charged = await chargedRequest();
+    const { payment, feeChargeId } = charged;
+    const { entries, ...credits } = await capacityFootprint(b);
+    const reversed = await withdraw(charged);
     expect(reversed.status).toBe('committed');
     const [refund] = await refundsOf(payment.id);
     expect(refund).toMatchObject({ state: 'pending', amount_minor: fee(500_000n).toString() });
+    // O PSP que cobrou o Fee (o fake da fixture da Request) processa o estorno.
     expect(
-      await processRefund({ store: b.store, gateway: b.gateway, log: b.log.logger }, refund!.id),
+      await processRefund({ store: b.store, gateway: f.gateway, log: b.log.logger }, refund!.id),
     ).toBe('succeeded');
-    expect(await capacityFootprint(b)).toEqual(credits);
+    // Sem Crédito novo e sem capacidade: só a liberação da Garantia da Request.
+    const { entries: after, ...footprint } = await capacityFootprint(b);
+    expect(footprint).toEqual(credits);
+    expect(Number(after) - Number(entries)).toBe(charged.sent.holdIds.length);
     expect(await requester(reversalHandler(b, 'reject_request'), feeChargeId)).toMatchObject({
       status: 'rejected',
       code: 'ERR_STATE_TRANSITION',
@@ -374,13 +431,14 @@ describe('reversão, apuração e estorno (PD-006, TECH-082, TECH-083)', () => {
   });
 
   it('[TECH-083][TECH-025] aceite apura o Fee como receita Luxtory uma vez; Fee apurado não é revertido', async () => {
-    const { feeChargeId } = await chargedRequest();
+    const charged = await chargedRequest();
+    const { feeChargeId } = charged;
     expect(await requester(settleHandler(b), feeChargeId)).toMatchObject({ status: 'committed' });
     expect(await requester(settleHandler(b), feeChargeId)).toMatchObject({
       status: 'rejected',
       code: 'ERR_STATE_TRANSITION',
     });
-    expect(await requester(reversalHandler(b, 'withdraw_request'), feeChargeId)).toMatchObject({
+    expect(await withdraw(charged)).toMatchObject({
       status: 'rejected',
       code: 'ERR_STATE_TRANSITION',
     });
@@ -566,7 +624,7 @@ describe('webhook (ADR-006, TECH-081, TECH-110)', () => {
 describe('conciliação e recuperação (TECH-090, TECH-101, TECH-080)', () => {
   it('[TECH-080] aprovado + falha do domínio → sem desfecho → estorno pela conciliação (fluxo imediato), uma vez', async () => {
     const payment = await pay(b, fee(500_000n));
-    const failed = await run('send_request', {
+    const failed = await run('create_direct', {
       payment_id: payment.id,
       prl_total_minor: '500000',
       fail_after_charge: true,
@@ -577,7 +635,7 @@ describe('conciliação e recuperação (TECH-090, TECH-101, TECH-080)', () => {
     expect(await reconcilePayment(reconcileDeps(), payment.id, randomUUID())).toBeNull();
     expect(await refundsOf(payment.id)).toHaveLength(1);
     expect(
-      await run('send_request', { payment_id: payment.id, prl_total_minor: '500000' }),
+      await run('create_direct', { payment_id: payment.id, prl_total_minor: '500000' }),
     ).toMatchObject({
       status: 'rejected',
       code: 'ERR_PAYMENT_FAILED',
@@ -683,7 +741,7 @@ describe('conciliação e recuperação (TECH-090, TECH-101, TECH-080)', () => {
   it('[TECH-110] vínculo do Fee × estorno da conciliação em paralelo: exatamente um vence', async () => {
     const payment = await pay(b, fee(300_000n));
     const [bind, refund] = await Promise.all([
-      run('send_request', { payment_id: payment.id, prl_total_minor: '300000' }),
+      run('create_direct', { payment_id: payment.id, prl_total_minor: '300000' }),
       reconcilePayment(reconcileDeps(), payment.id, randomUUID()),
     ]);
     const bound = bind.status === 'committed';

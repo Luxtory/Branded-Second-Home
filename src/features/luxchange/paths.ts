@@ -6,6 +6,13 @@ export const luxchangePaths = {
     `/titular/luxchange/deposito?holding=${encodeURIComponent(holdingId)}`,
   depositResult: (operationId: string) =>
     `/titular/luxchange/deposito/${encodeURIComponent(operationId)}`,
+  /** W21: solicitações (Request) — lista, nova e detalhe. */
+  requests: '/titular/luxchange/solicitacoes',
+  newRequest: '/titular/luxchange/solicitacoes/nova',
+  newRequestFor: (partyId: string, secondHomeId: string) =>
+    `/titular/luxchange/solicitacoes/nova?party=${encodeURIComponent(partyId)}&casa=${encodeURIComponent(secondHomeId)}`,
+  request: (requestId: string) =>
+    `/titular/luxchange/solicitacoes/${encodeURIComponent(requestId)}`,
   wallet: '/titular/carteira',
   area: '/titular',
 } as const;

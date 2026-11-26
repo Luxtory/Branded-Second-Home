@@ -197,6 +197,9 @@ export async function expectResponsive(page: Page, consoleErrors: readonly strin
  * Capturas de revisão dos checkpoints (material do PR, não baseline — ADR-0009): só com `UI_CAPTURE_DIR`, a 390 e
  * 1440 px, página inteira e assentada.
  */
+/** A partir desta largura a captura usa a altura de desktop. */
+const CAPTURE_DESKTOP_MIN = 1024;
+
 export async function captureForReview(
   page: Page,
   name: string,
@@ -204,8 +207,17 @@ export async function captureForReview(
 ) {
   const dir = process.env.UI_CAPTURE_DIR;
   if (dir === undefined || dir === '') return;
+  // Prefixos opcionais (separados por vírgula): a CI captura só o checkpoint em auditoria (ex.: `w21-`).
+  const only = (process['env']['UI_CAPTURE_ONLY'] ?? '').split(',').filter(Boolean);
+  if (only.length > 0 && !only.some((prefix) => name.startsWith(prefix))) return;
   const original = page.viewportSize();
-  for (const viewport of AXE_VIEWPORTS) {
+  // Larguras opcionais (ex.: `320,390,1440`); padrão: as larguras do axe.
+  const widths = (process['env']['UI_CAPTURE_WIDTHS'] ?? '').split(',').filter(Boolean).map(Number);
+  const viewports =
+    widths.length === 0
+      ? AXE_VIEWPORTS
+      : widths.map((width) => ({ width, height: width < CAPTURE_DESKTOP_MIN ? 844 : 900 }));
+  for (const viewport of viewports) {
     await page.setViewportSize(viewport);
     // Optional for operational pages: fixed app navigation stays at the top in a full-page capture.
     if (options.fromTop === true) await page.evaluate(() => window.scrollTo(0, 0));

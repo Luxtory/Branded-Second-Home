@@ -40,6 +40,10 @@
     {
       "path": "/api/jobs/reconciliation",
       "schedule": "53 3 * * *"
+    },
+    {
+      "path": "/api/jobs/expire_requests",
+      "schedule": "37 3 * * *"
     }
   ]
 }

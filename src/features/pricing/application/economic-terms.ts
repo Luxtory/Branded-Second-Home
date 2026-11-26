@@ -32,6 +32,14 @@ export interface EconomicTermsRequest {
     readonly dates: readonly string[];
   };
   /**
+   * Noites de outras Second Homes precificadas no mesmo instante (W21, ADR-0037 §4: datas do complemento por datas), sem
+   * entrar no snapshot de noites nem no PRL total. Exige `nights` ou `period`; noite sem PRL → `ERR_PRL_MISSING`.
+   */
+  readonly otherNights?: readonly {
+    readonly secondHomeId: string;
+    readonly dates: readonly string[];
+  }[];
+  /**
    * Política comercial do mecanismo (TECH-032, PD-009): a versão apresentada e aceita pelo usuário. Sem versão vigente,
    * ou com a aceita diferente da vigente no instante da resolução → `ERR_POLICY_MISSING`.
    */
@@ -57,6 +65,11 @@ export interface EconomicTermsNight {
   readonly currency: Currency;
 }
 
+/** Noite de outra Second Home precificada no mesmo instante (`otherNights`). */
+export interface EconomicTermsHomeNight extends EconomicTermsNight {
+  readonly secondHomeId: string;
+}
+
 export interface EconomicTermsParameter {
   readonly parameterId: string;
   /** Texto canônico gravado no banco. */
@@ -77,6 +90,8 @@ export interface EconomicTerms {
   readonly prlTotal: { readonly amountMinor: string; readonly currency: Currency } | null;
   readonly parameters: Readonly<Partial<Record<EconomicParameterKey, EconomicTermsParameter>>>;
   readonly policy: EconomicTermsPolicy | null;
+  /** Noites de `otherNights`, na ordem `(second_home_id, data)`; ausente quando não pedidas. */
+  readonly otherNights?: readonly EconomicTermsHomeNight[];
 }
 
 export interface PrlNightInForce {
@@ -102,6 +117,15 @@ export interface EconomicTermsStore<Tx> {
   ): Promise<{ readonly resolvedAt: string; readonly nights: readonly PrlNightInForce[] }>;
   /** Instante do banco (`clock_timestamp()`), para resolução sem PRL. */
   databaseInstant(tx: Tx): Promise<string>;
+  /** Trava compartilhada `app.prl:<id>` (a mesma de `prlPeriodInForce`), sem ler o instante. */
+  lockPrl(tx: Tx, secondHomeId: string): Promise<void>;
+  /** Versão do PRL de cada noite vigente no instante (`app.prl_at`); sem versão → campos nulos. */
+  prlNightsAt(
+    tx: Tx,
+    secondHomeId: string,
+    dates: readonly string[],
+    at: string,
+  ): Promise<readonly PrlNightInForce[]>;
   /** Versões vigentes no instante exato (`app.parameter_at`); chave ausente não aparece. */
   parametersAt(
     tx: Tx,
@@ -117,6 +141,16 @@ export interface EconomicTermsStore<Tx> {
 
 const DAY_MS = 86_400_000;
 const CIVIL_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const isCivilDateSet = (dates: readonly string[]) =>
+  dates.length > 0 &&
+  dates.every(
+    (date, index) =>
+      CIVIL_DATE.test(date) &&
+      // Data civil real (`2027-02-30` não existe): ida e volta pelo calendário UTC.
+      !Number.isNaN(Date.parse(`${date}T00:00:00Z`)) &&
+      new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) === date &&
+      (index === 0 || dates[index - 1]! < date),
+  );
 const nightsBetween = (checkin: string, checkout: string) =>
   (Date.parse(`${checkout}T00:00:00Z`) - Date.parse(`${checkin}T00:00:00Z`)) / DAY_MS;
 const dayAfter = (date: string) =>
@@ -138,17 +172,7 @@ function pricedSpan(request: EconomicTermsRequest) {
   }
   if (request.nights === undefined) return null;
   const { secondHomeId, dates } = request.nights;
-  const valid =
-    dates.length > 0 &&
-    dates.every(
-      (date, index) =>
-        CIVIL_DATE.test(date) &&
-        // Data civil real (`2027-02-30` não existe): ida e volta pelo calendário UTC.
-        !Number.isNaN(Date.parse(`${date}T00:00:00Z`)) &&
-        new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) === date &&
-        (index === 0 || dates[index - 1]! < date),
-    );
-  if (!valid) throw new CommandRejection('ERR_VALIDATION');
+  if (!isCivilDateSet(dates)) throw new CommandRejection('ERR_VALIDATION');
   const checkin = dates[0]!;
   const checkout = dayAfter(dates.at(-1)!);
   if (nightsBetween(checkin, checkout) > MAX_PRL_NIGHTS)
@@ -171,6 +195,7 @@ export async function resolveEconomicTerms<Tx>(
   request: EconomicTermsRequest,
 ): Promise<EconomicTerms> {
   const span = pricedSpan(request);
+  const others = otherHomes(request, span?.secondHomeId ?? null);
   if (request.policy !== undefined)
     for (const [mechanism] of locks.claim('commercial_policy', [request.policy.mechanism]))
       await store.lockPolicy(tx, mechanism as PolicyMechanism);
@@ -188,8 +213,13 @@ export async function resolveEconomicTerms<Tx>(
     resolvedAt = await store.databaseInstant(tx);
   } else {
     // A trava compartilhada do PRL é tomada pela própria função do banco, nesta posição da ordem total; o conjunto de
-    // noites usa a mesma leitura (um instante) e descarta as noites não pedidas antes de qualquer decisão.
-    locks.claim('prl', [span.secondHomeId]);
+    // noites usa a mesma leitura (um instante) e descarta as noites não pedidas antes de qualquer decisão. Com noites de
+    // outras Second Homes, todas as travas do PRL vêm antes do instante, em ordem crescente (a da função é reentrante).
+    const homes = locks.claim('prl', [
+      span.secondHomeId,
+      ...others.map((home) => home.secondHomeId),
+    ]);
+    if (others.length > 0) for (const home of homes) await store.lockPrl(tx, home);
     const inForce = await store.prlPeriodInForce(
       tx,
       span.secondHomeId,
@@ -209,6 +239,21 @@ export async function resolveEconomicTerms<Tx>(
       amountMinor: night.amountMinor!,
       currency: night.currency as Currency,
     }));
+  }
+
+  const otherNights: EconomicTermsHomeNight[] = [];
+  for (const home of others) {
+    const priced = await store.prlNightsAt(tx, home.secondHomeId, home.dates, resolvedAt);
+    if (priced.length !== home.dates.length || priced.some((night) => night.prlId === null))
+      throw new CommandRejection('ERR_PRL_MISSING');
+    for (const night of priced)
+      otherNights.push({
+        secondHomeId: home.secondHomeId,
+        stayDate: night.stayDate,
+        prlId: night.prlId!,
+        amountMinor: night.amountMinor!,
+        currency: night.currency as Currency,
+      });
   }
 
   const found = await store.parametersAt(tx, keys, resolvedAt);
@@ -242,5 +287,29 @@ export async function resolveEconomicTerms<Tx>(
           },
     parameters,
     policy,
+    ...(request.otherNights === undefined ? {} : { otherNights }),
   };
+}
+
+/**
+ * Noites de outras Second Homes (`otherNights`), uma entrada por Second Home em ordem de id: exige o PRL principal; data
+ * inválida, repetida, fora de ordem, Second Home repetida ou a do PRL principal → `ERR_VALIDATION`.
+ */
+function otherHomes(request: EconomicTermsRequest, main: string | null) {
+  const others = [...(request.otherNights ?? [])].sort((a, b) =>
+    a.secondHomeId < b.secondHomeId ? -1 : a.secondHomeId > b.secondHomeId ? 1 : 0,
+  );
+  if (others.length === 0) return others;
+  if (
+    main === null ||
+    others.some(
+      (home, index) =>
+        home.secondHomeId === main ||
+        (index > 0 && others[index - 1]!.secondHomeId === home.secondHomeId) ||
+        !isCivilDateSet(home.dates) ||
+        home.dates.length > MAX_PRL_NIGHTS,
+    )
+  )
+    throw new CommandRejection('ERR_VALIDATION');
+  return others;
 }

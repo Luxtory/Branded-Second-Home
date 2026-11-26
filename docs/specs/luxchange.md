@@ -7,6 +7,11 @@
 > [ADR-0036](../adr/0036-deposito-luxchange-cessao-snapshot-por-noite-e-k6.md). Plano:
 > [`w20-luxchange-deposito.md`](../plan/w20-luxchange-deposito.md). STRIDE:
 > [`luxchange.md`](../security/threats/luxchange.md). O texto canônico prevalece; aqui só o contrato de implementação.
+>
+> **W21 (§13):** envio de Request, complemento por datas e encerramentos pré-aceite — `01` v10.9, `02` v4.7 (REQ-062,
+> PD-005, PD-007, PD-012), `03` v3.20 (TECH-024, TECH-031, TECH-043, TECH-044, TECH-061, TECH-071–TECH-073, TECH-082,
+> TECH-090). Decisão: [ADR-0037](../adr/0037-request-lastro-complemento-por-datas-e-encerramentos.md). Plano:
+> [`w21-luxchange-request-envio.md`](../plan/w21-luxchange-request-envio.md). Aceite e recusa: W22; Direct: W23.
 
 ## 1. Goal
 
@@ -178,3 +183,210 @@ Nenhuma bloqueante. Encerramento de Requests pendentes pelo depósito é da W21 
 ## 12. References
 
 `02` §15 e `03` §12 (CONC-10); ADR-0024, ADR-0026, ADR-0027, ADR-0031, ADR-0032, ADR-0033, ADR-0036.
+
+## 13. W21 — Request: envio, complemento por datas e encerramentos
+
+Contrato de implementação da W21. Regras: `02` v4.7 (PD-005 a PD-007, PD-012, REQ-062 a REQ-064, REQ-096 a REQ-098) e
+`03` v3.20 (TECH-073 e associados). Decisões técnicas, banco, chaves e prova de concorrência:
+[ADR-0037](../adr/0037-request-lastro-complemento-por-datas-e-encerramentos.md) — não repetidas aqui.
+
+### 13.1 Goal
+
+O membro solicitante envia uma Request para noites contínuas de outro Titular, fora do Inventário Luxtory, com
+Créditos em Garantia e, se escolher, datas próprias comprometidas sob a condição do aceite; paga a Taxa de intermediação
+antes do envio; acompanha, retira ou vê encerrar a Request sem que a capacidade solicitada seja bloqueada.
+
+### 13.2 Non-goals
+
+Aceite composto e recusa (W22); Direct (W23); envio automático depois de pagamento assíncrono (wave do PSP real);
+cancelamento pós-aceite (⛔ P-11); qualquer ativação, PSP real ou valor econômico real.
+
+### 13.3 Actors
+
+- **Membro solicitante** — Titular com holding vigente em qualquer Second Home e Membership elegível; não representa o
+  detentor.
+- **Membro solicitado** — Titular da capacidade solicitada (Owner: noites livres; Co-Owner: reservas inteiras); na W21
+  só é notificado e vê a solicitação recebida, sem ação.
+- **Sistema** — job `expire_requests` e consumidor de eventos (encerramentos).
+
+### 13.4 Commands e API
+
+| Command | Rota | Autoridade | Notas |
+|---|---|---|---|
+| — (prévia) | `POST /v1/luxchange/requests/preview` | Titular | as regras do envio sem trava nem escrita; devolve os termos no formato de `expected` (E3) |
+| — (pagamento do Fee) | `POST /v1/luxchange/requests/fee-payment` | Titular | refaz a prévia no servidor e chama `initiatePayment` com o Fee da prévia; devolve `payment_id`, estado e valor |
+| `send_request` | `POST /v1/luxchange/requests` | Titular + Membership | corpo: `party_id`, `second_home_id`, `checkin`, `checkout`, unidades do complemento, `payment_id`, `accepted_policy_id`, `consent_text_version` e os termos revisados (Créditos por noite, `N`, Créditos potenciais por noite, `P`, `G`, Fee, prazo em horas, validade); 201 com `request_id`, `sent_at`, `expires_at`, `N`, `G`, `P`, `C`, `E` |
+| `withdraw_request` | `POST /v1/luxchange/requests/{id}/withdraw` | requester | `cancelled_pre_accept` (`withdrawn`) ou `expired` se vencida |
+| `expire_requests`, `close_ineligible_request` | job `POST /api/jobs/expire_requests` | system | materialização idempotente por Request |
+
+Todas com `Idempotency-Key`, mesma origem e OpenAPI antes do handler. Recusas: `ERR_PERMISSION`,
+`ERR_MEMBERSHIP_INELIGIBLE`, `ERR_CAPACITY_UNAVAILABLE`, `ERR_MIN_NOTICE`, `ERR_CREDITS_INSUFFICIENT`,
+`ERR_CREDIT_HOLD_INVALID`, `ERR_PAYMENT_FAILED`, `ERR_POLICY_MISSING`, `ERR_PRL_MISSING`, `ERR_PARAMETER_MISSING`,
+`ERR_REQUEST_TERMS_CHANGED` (novo), `ERR_STATE_TRANSITION`, `ERR_IDEMPOTENCY_CONFLICT`, `ERR_VALIDATION`. Chave fechada:
+503 `ERR_UNAVAILABLE`, nada gravado.
+
+### 13.5 Jornada (`/titular/luxchange/solicitacoes*`)
+
+1. **Second Home** com capacidade solicitável (catálogo; "a partir de N Créditos por noite"; só com Membership elegível).
+2. **Datas** — calendário do Design System, um mês por vez, "Solicitável"/"Indisponível"/"Passada", sem motivo nem
+   identidade; período contínuo; detentor Co-Owner por reserva inteira.
+3. **Como cobrir os Créditos necessários** — Créditos necessários; datas próprias a comprometer (opcional; calendário do
+   depósito, só datas com 336 h cumpridas no prazo de resposta; Co-Owner por reserva inteira) com Créditos potenciais por
+   data e total; Créditos da Carteira que ficarão em Garantia (calculados, FEFO); total coberto; excedente; Créditos que
+   continuam disponíveis, com a validade.
+4. **Revisão e aceites** — os itens do PD-012 item 4, a Taxa de intermediação (só o total, em R$), o prazo ("24 horas a
+   partir do envio"), a política e dois aceites separados (política; complemento). Datas aparecem como **a comprometer**.
+5. **Pagamento e envio** — pagamento aprovado → envio; pendente → "Pagamento em processamento"; recusa → "Revisar valores
+   atualizados" e "Pagamento sem solicitação enviada — devolução em processamento".
+6. **Resultado** — prazo exato, Créditos em Garantia, datas comprometidas, Taxa paga.
+7. **Minhas solicitações** — lista e detalhe com histórico, estados financeiros (ADR-0037 §11) e **Retirar**;
+   **Recebidas** só leitura (datas, Second Home, prazo).
+8. **Telas existentes** — reserva, cancelamento e depósito mostram a data comprometida e orientam a retirar a
+   solicitação; a Carteira mostra "datas comprometidas com solicitação pendente (Créditos potenciais, não utilizáveis)".
+
+Nunca PRL em reais; Créditos potenciais nunca como saldo; textos pela camada de i18n, com versão do texto do
+consentimento.
+
+### 13.6 Eventos e notificações
+
+`luxchange.request_sent` e `luxchange.request_closed` (AsyncAPI; ids, datas, quantidades, motivo; sem PII). Solicitante:
+enviada (Garantia, datas comprometidas, Taxa paga) e encerrada (motivo, Garantia liberada, datas liberadas, devolução da
+Taxa). Solicitado: recebida e encerrada. Notificação não cria direito nem prazo (REQ-097).
+
+### 13.7 Acceptance criteria
+
+Os do [plano da W21](../plan/w21-luxchange-request-envio.md#critérios-de-aceite-da-w21), com as tags `[REQ-062]`,
+`[PD-005]`, `[PD-007]`, `[PD-012]`, `[EC-6]`–`[EC-9]`, `[EC-17]`–`[EC-21]` e `[CONC-13]`–`[CONC-18]` nos títulos dos
+testes; preservação das W12–W20 (inclusive `luxchange-deposit.db.test.ts`) e invariantes vazias após todo teste `db`.
+
+### 13.8 Edge cases
+
+`02` §15 itens 6–9 e 17–21; Request cujo check-in chega antes do prazo (encerra por período iniciado); Garantia com lote
+que vence entre o envio e o encerramento (liberado como `expired`); unidades de mais de uma holding do solicitante;
+29/02 reservado pelo Co-Owner contemplado como unidade do complemento (elegível como no depósito).
+
+### 13.9 Rollout
+
+Migration aplicada pelo pipeline com K4–K7 sem linha; nada enviável em Production. Ativação só depois da W22, de D2, do
+PSP com validação confiável, de parâmetros (`credit_multiplier`, `credit_validity_months`, `luxchange_fee_rate`,
+`luxchange_fee_minimum`, `request_deadline_hours`) e política `luxchange_request` publicados, por migration e autorização
+do fundador.
+
+### 13.10 Aplicação (E2) — contratos implementados
+
+Slice `src/features/luxchange` (ADR-0037; decisões técnicas não repetidas aqui):
+
+- **Domínio** (`domain/request.ts`, puro): capacidade solicitada (Owner livre, Co-Owner por reserva confirmada inteira,
+  noites futuras, sem compromisso efetivo), unidades do complemento (como no depósito, com 336 h cumpridas no prazo de
+  resposta), composição `N`, `P`, `G`, `C`, `E` com a regra de seleção, e o documento de termos do consentimento no formato
+  que o banco recompõe (`app.luxchange_request_terms`).
+- **`send_request`** (`application/send-request.ts`; registro TECH-051 `titular` + Membership; escopo do guard `party`):
+  entrada `party_id`, `second_home_id`, `checkin`, `checkout`, `complement[]` (`owner_night` com `second_home_id` e
+  `stay_date`; `co_owner_booking` com `booking_id`), `payment_id`, `accepted_policy_id`, `consent_text_version` e
+  `expected` (Créditos por noite, `credits_required`, Créditos potenciais por noite do complemento, `complement_credits`,
+  `guarantee_credits`, `fee_amount_minor`, `deadline_hours`, `credit_validity_months`); resultado com `request_id`,
+  `sent_at`, `expires_at`, `N`, `G`, `P`, `C`, `E`, Taxa, `fee_charge_id` e, no reenvio que materializa encerramentos
+  (EC-21), `materialized[]` e `refund_ids[]`. Garantia pelo `holdCredits` (FEFO, cobertura até `expires_at`); no reenvio,
+  `holdCreditsReleasing`.
+- **Prévia** (`quoteRequest`; ADR-0037 §3 item 1): as mesmas regras sem travas nem escrita, com a política vigente; devolve os valores no
+  formato de `expected`.
+- **Fluxo** (`application/request-flow.ts`): `payRequestFee` refaz a prévia e cobra a Taxa da prévia (`initiatePayment`,
+  chave da revisão); `submitRequest` executa o envio e, recusado ou com falha depois de pagamento aprovado **da própria
+  party**, dispara `reconcilePayment` (estorno imediato); confirmado, processa os estornos do reenvio.
+- **`withdraw_request`** (autoridade `requester`: delegação vigente da party que age, escopo `party`; sem Membership;
+  entrada `party_id`, `request_id`): Request de outra party ou inexistente → `ERR_NOT_FOUND`; encerrada →
+  `ERR_STATE_TRANSITION`. **`expire_requests`/`close_ineligible_request`** (sistema, job `expire_requests`; entrada
+  `request_id`): só com o motivo correspondente. Resultado comum: `state`, `reason` (decididos pelo banco),
+  `guarantee_released`, `refund_id` (processado depois do commit).
+- **Job `expire_requests`** (cron diário no `vercel.json` e disparo manual): uma transação por Request, chave
+  `<command>:<request_id>`; contagens `due`, `expired`, `closed_ineligible`, `skipped`, `failed`, `deferred`.
+- **Eventos** `luxchange.request_sent` e `luxchange.request_closed` (AsyncAPI) e **notificações**
+  `luxchange.request_sent` e `luxchange.request_closed` (solicitante; o encerramento traz motivo e Garantia liberada),
+  `luxchange.request_received` e `luxchange.request_received_closed` (solicitado; Second Home, datas, prazo e estado —
+  nunca motivo, party do solicitante, Créditos ou complemento).
+- **Erros**: `ERR_REQUEST_TERMS_CHANGED` (produto, 409); recusas do banco mapeadas (antecedência do complemento →
+  `ERR_MIN_NOTICE`; compromisso efetivo, unidade já comprometida, capacidade, período iniciado →
+  `ERR_CAPACITY_UNAVAILABLE`; detentor inelegível → `ERR_MEMBERSHIP_INELIGIBLE`; autonegociação e encerramento por outra
+  party → `ERR_PERMISSION`; Garantia sem lastro → `ERR_CREDIT_HOLD_INVALID`; Request ainda aceitável →
+  `ERR_STATE_TRANSITION`); as demais constraints da Request só falham por bug ou forja (falha técnica).
+
+Fica para a E3: rotas `/v1/luxchange/requests*` (OpenAPI antes do handler), telas, texto das notificações na central
+(hoje caem no aviso genérico), E2E 390/1440 e o seed do E2E da Carteira com a Request completa (hoje grava Garantia sem
+Request, com gatilhos desligados).
+
+### 13.11 Rotas, telas e encerramentos por evento (E3) — contratos implementados
+
+- **Rotas** (OpenAPI `previewRequest`, `payRequestFee`, `sendRequest`, `withdrawRequest`): mesma origem, sessão do
+  Titular, `party_id` representada, corpo JSON limitado a 64 KiB, `Idempotency-Key` nos commands e no pagamento.
+  `sendRequest` e `withdrawRequest` usam o utilitário de rota do Titular (guard, executor de produção, Membership);
+  prévia e pagamento usam a variante sem command (`createTitularSessionRoute`). Depois da resposta (`after()`): estornos
+  das Requests encerradas no reenvio; envio recusado ou com falha depois de pagamento aprovado da própria party →
+  recuperação do pagamento (estorno), com a conciliação como rede de segurança; retirada confirmada → processamento do
+  estorno no PSP. Nada disso muda a resposta do command. Recusas de negócio respondem 422; termos mudados, estado e
+  idempotência, 409.
+- **Limite de taxa** (TECH-100; STRIDE T-2111/T-2113), com o limitador existente (`createUpstashRateLimiter`, modo
+  fake só local/CI): superfície `read` (catálogo, calendário e prévia — página, rota e action) e `send` (pagamento da
+  Taxa por usuário, rota e action; `send_request` por representação, pelo gancho `consumeQuota` do executor, inclusive em
+  chamada direta — o replay não consome), com limite global e uma janela comum (5 variáveis), em namespaces próprios por
+  ambiente; chave SHA-256 de `luxtory:<superfície>:<id>`; excesso → 429 `ERR_RATE_LIMITED`; limites ausentes → 422
+  `ERR_PARAMETER_MISSING`; Upstash sem resposta → 503. A retirada nunca é limitada. Variáveis e proposta de valores:
+  runbook, "Preparar a W21 em produção".
+- **Encerramento sem Garantia** (correção da revisão do C3): Request com `G = 0` (o complemento cobre `N`) não retém
+  Créditos; retirada, expiração e encerramento por inelegibilidade liberam só as datas e revertem a Taxa
+  (`guarantee_released` = 0). Antes da correção, o encerramento recusava com `ERR_STATE_TRANSITION`.
+- **Encerramentos por evento** (ADR-0037 §7): o consumidor `luxchange_request_closure_trigger` só anota que um evento
+  relevante foi entregue (`identity.membership_state_changed`, `booking.own_use_confirmed`, `…_cancelled`,
+  `…_no_show_declared`, `…_exception_opened`, `…_exception_resolved`, `…_invalidated`, `luxchange.credits_originated`,
+  `luxchange.request_sent`); terminada a varredura do outbox (transações de entrega encerradas), o job
+  `expire_requests` roda uma vez, pelo executor, sobre as Requests que o banco diz não poderem mais ser aceitas. Falha do
+  disparo não desfaz o evento; o cron diário recupera. Nenhuma fila, tabela ou agendador novo.
+- **Telas** (`/titular/luxchange/solicitacoes`, `/nova`, `/[requestId]`): lista (Minhas solicitações; Recebidas só
+  leitura), escolha da party e da Second Home ("a partir de N Créditos por noite"), calendário da Second Home solicitada
+  ("Solicitável"/"Indisponível"/"Passada", sem motivo; reserva Co-Owner do detentor inteira), datas próprias opcionais
+  (Owner por noite; Co-Owner por reserva; só com 336 h no fim do prazo e sem compromisso efetivo), resumo estimado,
+  prévia do servidor numa lista única, na ordem de leitura — Créditos necessários, saldo disponível antes do envio,
+  Créditos em Garantia, Créditos potenciais do complemento (ainda não originados, com as datas), cobertura total
+  (Garantia + complemento), excedente só quando existe (com a validade), saldo disponível após o envio — e Taxa e prazo,
+  com os Créditos por noite recolhíveis. Sem "saldo potencial para intercâmbio" na Request: ele somaria Créditos que não
+  ficam disponíveis ao mesmo tempo (o conceito segue na simulação do depósito). A política `luxchange_request` fica numa
+  seção da página que separa os dois regimes — até a resposta, sem aceite, Taxa devolvida integralmente, Garantia e
+  datas liberadas; depois do aceite, os termos efetivos (`PolicyTerms`, onde "Luxchange Fee" é a Taxa de
+  intermediação) — e a revisão traz dois aceites (política — `PolicyAcceptance`, o id da versão apresentada precisa ser
+  o da prévia; complemento), "Pagar a
+  Taxa e enviar" (pendente → "Pagamento em processamento"; termos mudados antes da cobrança → nova prévia, nada cobrado;
+  recusa depois do pagamento → "devolução em processamento") e detalhe com o estado real da Request, do pagamento e do
+  estorno — Taxa com o estado do pagamento na mesma linha ("paga", "pagamento em processamento") e "Devolução integral
+  da Taxa" só quando existe ("solicitada — em processamento" até o PSP confirmar, nunca "concluída" antes) — e "Retirar
+  solicitação". Encerrada, os rótulos passam ao passado sem mudar valores: "Datas anteriormente comprometidas —
+  liberadas", "Créditos potenciais considerados no envio — não originados", "Taxa de intermediação paga no envio" e a
+  devolução integral em linha própria. Texto ampliado (200% a 320 px): a prévia e a grade do calendário cabem na janela
+  (as seções da jornada ficam em `lx-grid`, cuja coluna não cresce com uma palavra longa de título); resta só o título
+  de uma palavra do `PageHeader` ("Solicitações"), que passa 2 px — dívida registrada abaixo.
+- **Dívida de acessibilidade (antes de declarar conformidade plena; prioridade relativa baixa).**
+  - Reprodução: 320 px de largura, fonte da raiz a 200% (`html { font-size: 200% }`), páginas
+    `/titular/luxchange/solicitacoes`, `/nova` e `/[requestId]`.
+  - Componente: título `h1.lx-display-m` do `PageHeader`; o Design System desliga a hifenização dos títulos de display
+    (`hyphens: none`), e a palavra "Solicitações" (282 px) não cabe na coluna (240 px).
+  - Medição: a página rola 2 px na horizontal; os últimos 2 px da caixa do título ficam fora da janela até a rolagem.
+  - Impacto: visual e de baixo impacto; nenhum controle ou conteúdo fica inacessível; WCAG 1.4.10 (reflow) não é atendido
+    integralmente nesse cenário (1.4.4, redimensionamento, segue verificável).
+  - Critério de resolução: nenhuma rolagem horizontal não intencional a 320 px com texto a 200% e com zoom de 400%,
+    verificando redimensionamento do texto e reflow. Correção local (título ou composição da página) ou do Design System
+    — a decidir; o hífen opcional não funciona com `hyphens: none`.
+  - Teste: o E2E atribui a rolagem ao título sem tolerância fixa — ela nunca vai além do quanto o próprio texto do
+    `h1.lx-display-m` passa da janela (2 px localmente, 3 px no Chrome do CI) —, exige que nada fora do cabeçalho
+    transborde e que nenhum controle fique alcançável só com rolagem horizontal; não declara conformidade; resolvida a
+    dívida, a exceção é removida. A
+  capacidade alheia só é lida com Membership ativo; Créditos potenciais nunca como saldo; nunca PRL em reais. Versão do
+  texto dos aceites: `request-consent.pt-br.v2` (i18n).
+- **Integração**: Carteira (seção "Datas comprometidas com solicitação pendente", Créditos potenciais não utilizáveis),
+  depósito (data comprometida riscada, com orientação de retirar a solicitação), reserva e cancelamento (aviso na
+  reserva Co-Owner comprometida) e calendário de uso próprio (datas comprometidas da Second Home) — compostos pelas
+  rotas do app, sem importação do luxchange pelos slices `booking` e `credits`. Central: textos dos quatro avisos.
+- **E2E** (`luxchange-request.spec.ts`): Request completa a 390 px com toque (depósito real para os Créditos, datas
+  próprias, prévia, termos e aceite da política, pagamento no PSP fake, detalhe, Carteira, recebida e aviso do
+  solicitado, retirada e estorno), a 1440 px (Garantia só, do início à retirada) e Co-Owner (reserva inteira como datas
+  próprias, `G = 0` e excedente, aviso na reserva comprometida, retirada); axe e overflow a cada etapa. Capturas `w21-`
+  a 320, 390 e 1440 px publicadas pela CI como artefato `ui-captures` do run. O PSP fake roda num segundo
+  `next start` do servidor de E2E (porta + 3), só para este spec. O seed da Carteira da W17 continua como histórico
+  sintético; a Carteira com uma Request real fica provada por este spec.

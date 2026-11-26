@@ -41,6 +41,10 @@ described by Michael Nygard. The ADR process itself is established in
 | 0031 | [Membership: estado com histórico escrito pelo banco e elegibilidade verificada no executor](0031-membership-estado-historico-e-elegibilidade-no-executor.md) | Accepted (plano da W15 aprovado em 2026-11-19; C1 aprovado; E3 + E4 em PR draft; concluída: #100 `108d6f5`) |
 | 0032 | [PRL por data com autoridade no banco, parâmetros econômicos globais e contrato de snapshot](0032-prl-parametros-economicos-e-contrato-de-snapshot.md) | Accepted (plano da W16 aprovado em 2026-11-20; E0–E2 em PR draft, parada no C1; concluída: #101 `f1fd297`) |
 | 0033 | [Créditos: lote + ledger com buckets escritos pelo banco, snapshot persistido na originação e K4](0033-creditos-lote-ledger-snapshot-e-k4.md) | Accepted (W17 iniciada pelo fundador em 2026-11-22; PR draft) |
+| 0034 | [Políticas comerciais: esquema fechado por mecanismo, versões append-only e avaliação pura](0034-politicas-comerciais-esquema-fechado-e-avaliacao.md) | Accepted (W18; concluída: #107 `1e974bc`) |
+| 0035 | [Pagamentos em duas fases, Fee por operação, settlement por categoria e K5](0035-pagamentos-duas-fases-fee-settlement-e-k5.md) | Accepted (W19; concluída: #108 `2fa37e8`) |
+| 0036 | [Depósito Luxchange: cessão integral da reserva, snapshot por noite, completude no banco e K6](0036-deposito-luxchange-cessao-snapshot-por-noite-e-k6.md) | Accepted (W20; concluída: #109 `5b8a047`; emenda W21 aprovada no C0 da W21) |
+| 0037 | [Request: lastro no banco, complemento por datas sob a condição do aceite, encerramentos e contrato das capabilities](0037-request-lastro-complemento-por-datas-e-encerramentos.md) | Accepted (C0 da W21 aprovado pelo fundador em 2026-11-24; antes: Proposed; implementação pendente) |
 
 The technical decisions ADR-001…008 of the canonical
 [03 — Technical Spec](../specs/canonical/03-technical-spec.md) also apply, by reference.

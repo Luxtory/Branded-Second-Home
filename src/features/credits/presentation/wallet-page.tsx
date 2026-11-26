@@ -1,6 +1,11 @@
 import type { ReactNode } from 'react';
 import { Icon, PageHeader, RecordList } from '@/design-system/react';
-import { AuthUnavailable, TitularShell, requireTitularSession } from '@/features/identity';
+import {
+  AuthUnavailable,
+  TitularShell,
+  requireTitularSession,
+  type VerifiedSession,
+} from '@/features/identity';
 import { luxchangePaths } from '@/features/luxchange/paths';
 import { unavailableKeys } from '@/features/platform';
 import { compareQuantities } from '../domain/credit';
@@ -252,8 +257,11 @@ function PartySelector({ view }: { readonly view: WalletView }) {
 /** `/titular/carteira`: saldo por estado, lotes na ordem FEFO e extrato filtrável da party representada. */
 export async function TitularWalletPage({
   searchParams,
+  extra,
 }: {
   readonly searchParams: Readonly<Record<string, string | string[] | undefined>>;
+  /** W21: seção composta pela rota para a party exibida (datas comprometidas com solicitação pendente). */
+  readonly extra?: (session: VerifiedSession, partyId: string) => ReactNode;
 }) {
   const session = await requireTitularSession();
   if (session === 'unavailable') return <AuthUnavailable />;
@@ -284,6 +292,7 @@ export async function TitularWalletPage({
       {header}
       <PartySelector view={view} />
       <Balance view={view} />
+      {extra?.(session, view.party.partyId)}
       <p className="lx-body">
         <a className="lx-link" href={luxchangePaths.deposit}>
           {text.depositLink}

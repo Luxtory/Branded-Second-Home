@@ -29,7 +29,10 @@ describe('W8 — rollback concorrente preserva fatos', () => {
           // Later migrations (W13 booking lifecycle, W12 booking on stake/holding, W11 balance on stake, W10 custody on
           // stake, W9 draw tables on stake/holding) roll back first, newest first.
           for (const migration of [
-            // W20 first: the snapshot nights reference the snapshot, the PRL and second_home_date, and its functions read
+            // W21 first: the Request, its commitments and the accepted policy reference the snapshot, PRL, custody,
+            // bookings, holdings and the W18 policy; its down restores the W17/W19/W20 functions it replaced.
+            '20261125012516_luxchange_request',
+            // W20 next: the snapshot nights reference the snapshot, the PRL and second_home_date, and its functions read
             // the credit lots, custody and bookings.
             '20261123211619_luxchange_deposit',
             // W17 next: credit lots reference party, operation and the snapshot; the snapshot references parameter.

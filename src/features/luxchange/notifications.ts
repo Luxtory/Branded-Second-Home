@@ -4,3 +4,4 @@ export {
   depositNotificationCopy,
   type DepositNotificationCopy,
 } from './presentation/deposit-notification-copy';
+export { requestNotificationCopy } from './presentation/request-notification-copy';

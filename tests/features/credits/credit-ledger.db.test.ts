@@ -28,6 +28,16 @@ import {
 } from '@/features/pricing';
 import { staffRunner } from '../pricing/pricing-support';
 import {
+  prlForCredits,
+  pricedNights,
+  publishDeadline,
+  requestFixture,
+  transactionQueryable,
+  writeClosing,
+  writeRequest,
+  type RequestFixture,
+} from '../luxchange/request-support';
+import {
   TEST_VALIDITY_MONTHS,
   ageLot,
   creditsHarness,
@@ -111,21 +121,38 @@ const directHandler = scoped(
   },
 );
 
-const holdHandler = scoped(
-  'send_request',
-  homeScope.extend({ quantity: z.string(), cover_until: z.string() }),
-  async ({ input, tx, locks, operationId, actor, requireEligibleMembership }) => {
-    const party = partyOf(actor as { kind: string; actingPartyId: string });
-    await requireEligibleMembership([party]);
-    return summary(
-      await holdCredits({ tx, locks, operationId }, deps, {
-        partyId: party,
-        quantity: input.quantity,
-        coverUntil: input.cover_until,
-      }),
-    );
-  },
-);
+/**
+ * Garantia pelo `holdCredits` (FEFO do slice) sobre o lastro da W21 (ADR-0037 §4): a mesma transação grava a Request das
+ * noites informadas (snapshot, Fee pago, consentimento) e a Garantia cobre até o `expires_at` dela. A composição completa
+ * do envio (complemento, revalidação, termos revisados) é da E2.
+ */
+const holdHandler = (f: RequestFixture, titular: CreditTitular) =>
+  scoped(
+    'send_request',
+    homeScope.extend({ nights: z.array(z.string()) }),
+    async ({ input, tx, locks, operationId, actor, requireEligibleMembership }) => {
+      const party = partyOf(actor as { kind: string; actingPartyId: string });
+      await requireEligibleMembership([party]);
+      const db = transactionQueryable(tx);
+      const sent = await writeRequest(db, operationId, f, {
+        requester: titular,
+        nights: input.nights,
+        holds: [],
+        tamper: { skip: ['holds'] },
+      });
+      const { rows } = await db.query<{ expires_at: Date; guarantee: string }>(
+        `SELECT expires_at, guarantee_credits::text AS guarantee FROM app.luxchange_request WHERE id = $1`,
+        [sent.requestId],
+      );
+      return summary(
+        await holdCredits({ tx, locks, operationId }, deps, {
+          partyId: party,
+          quantity: rows[0]!.guarantee,
+          coverUntil: rows[0]!.expires_at.toISOString(),
+        }),
+      );
+    },
+  );
 
 const acceptHandler = scoped(
   'accept_request',
@@ -140,19 +167,40 @@ const acceptHandler = scoped(
   },
 );
 
+/** Retirada (W21): encerramento da Request da operação de envio + `releaseHold` (bucket pela validade) + Fee revertido. */
 const withdrawHandler = scoped(
   'withdraw_request',
   homeScope.extend({ hold_operation_id: z.uuid() }),
-  async ({ input, tx, locks, operationId }) =>
-    summary(
+  async ({ input, tx, locks, operationId }) => {
+    const db = transactionQueryable(tx);
+    const { rows } = await db.query<{ id: string; fee: string | null }>(
+      `SELECT r.id, f.id AS fee FROM app.luxchange_request r LEFT JOIN app.fee_charge f ON f.operation_id = r.operation_id
+        WHERE r.operation_id = $1`,
+      [input.hold_operation_id],
+    );
+    const request = rows[0]!;
+    await writeClosing(
+      db,
+      operationId,
+      {
+        requestId: request.id,
+        operationId: input.hold_operation_id,
+        holdIds: [],
+        feeChargeId: request.fee,
+        paymentId: '',
+        unitIds: [],
+      },
+      { skip: ['release'] },
+    );
+    return summary(
       await releaseHold({ tx, locks, operationId }, deps, {
         holdOperationId: input.hold_operation_id,
       }),
-    ),
+    );
+  },
 );
 
 const nextYear = new Date().getUTCFullYear() + 1;
-const inDays = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
 
 describe('W17 — mecanismos dos Créditos (ADR-0033)', () => {
   let c: CreditsHarness;
@@ -262,42 +310,56 @@ describe('W17 — mecanismos dos Créditos (ADR-0033)', () => {
   });
 
   describe('Garantia [TECH-071][EC-6]', () => {
+    let f: RequestFixture;
+    beforeAll(async () => {
+      // Prazo da Request de 45 dias (1.080 h): o lote que vence em ~1 mês não cobre a Garantia.
+      f = await requestFixture(c, { deadlineHours: '1080' });
+    }, 240_000);
+    const nightsFor = async (credits: string) => pricedNights(f, [prlForCredits(f, credits)]);
+
     it('só lotes que cobrem o prazo da Request; cobertura insuficiente com saldo suficiente → ERR_CREDIT_HOLD_INVALID', async () => {
       const party = await freshParty();
       const soon = await originate(c, '8', { titular: party });
       const late = await originate(c, '4', { titular: party });
       // Vence em ~1 mês: não cobre uma Request com prazo em 45 dias.
       await ageLot(c.h, soon, monthsAgo(TEST_VALIDITY_MONTHS - 1));
-      const run = titularExecutor(c, party);
-      const cover = { second_home_id: party.homeId, cover_until: inDays(45) };
-      expect(await run(holdHandler, { ...cover, quantity: '6' })).toMatchObject({
+      const run = titularExecutor(c, party, { requestGuard: true });
+      const send = async (credits: string) =>
+        run(holdHandler(f, party), {
+          second_home_id: f.holder.homeId,
+          nights: await nightsFor(credits),
+        });
+      expect(await send('6')).toMatchObject({
         status: 'rejected',
         code: 'ERR_CREDIT_HOLD_INVALID',
       });
-      expect(await run(holdHandler, { ...cover, quantity: '13' })).toMatchObject({
+      expect(await send('13')).toMatchObject({
         status: 'rejected',
         code: 'ERR_CREDITS_INSUFFICIENT',
       });
-      const held = await committed<MovementsResult>(run(holdHandler, { ...cover, quantity: '4' }));
+      const held = await committed<MovementsResult>(send('4'));
       expect(held.movements).toEqual([{ lot: late, quantity: '4' }]);
-      // Prazo curto: o lote que vence antes volta a ser o primeiro (FEFO).
-      const short = await committed<MovementsResult>(
-        run(holdHandler, { second_home_id: party.homeId, cover_until: inDays(2), quantity: '2' }),
-      );
-      expect(short.movements).toEqual([{ lot: soon, quantity: '2' }]);
+      // Prazo curto (48 h): o lote que vence antes volta a ser o primeiro (FEFO).
+      await publishDeadline(c, '48');
+      try {
+        const short = await committed<MovementsResult>(send('2'));
+        expect(short.movements).toEqual([{ lot: soon, quantity: '2' }]);
+      } finally {
+        await publishDeadline(c, '1080');
+      }
     });
 
     it('aceite consome a Garantia; retirada libera — para expired se o lote venceu [TECH-072]', async () => {
       const requester = await freshParty();
       const holder = await freshParty();
       const lotA = await originate(c, '10', { titular: requester });
-      const run = titularExecutor(c, requester);
       const runRequester = titularExecutor(c, requester, { requestGuard: true });
-      const hold1 = await run(holdHandler, {
-        second_home_id: requester.homeId,
-        cover_until: inDays(1),
-        quantity: '6',
-      });
+      const send = async (credits: string) =>
+        runRequester(holdHandler(f, requester), {
+          second_home_id: f.holder.homeId,
+          nights: await nightsFor(credits),
+        });
+      const hold1 = await send('6');
       expect(hold1.status).toBe('committed');
       const accepted = await committed<MovementsResult>(
         titularExecutor(c, holder, { requestGuard: true })(acceptHandler, {
@@ -308,23 +370,20 @@ describe('W17 — mecanismos dos Créditos (ADR-0033)', () => {
       expect(accepted.movements).toEqual([{ lot: lotA, quantity: '6' }]);
       expect(await lotRow(c.h.database.pool, lotA)).toMatchObject({ held: '0', consumed: '6' });
 
-      const hold2 = await run(holdHandler, {
-        second_home_id: requester.homeId,
-        cover_until: inDays(1),
-        quantity: '3',
-      });
+      const hold2 = await send('3');
+      expect(hold2.status).toBe('committed');
       await ageLot(c.h, lotA, monthsAgo(TEST_VALIDITY_MONTHS, 6));
       await committed(
         runRequester(withdrawHandler, {
-          second_home_id: requester.homeId,
+          second_home_id: f.holder.homeId,
           hold_operation_id: hold2.operationId!,
         }),
       );
       expect(await lotRow(c.h.database.pool, lotA)).toMatchObject({ held: '0', expired: '3' });
-      // Nada mais reservado por essa operação.
+      // Nada mais reservado por essa operação: a Request já está encerrada.
       expect(
         await runRequester(withdrawHandler, {
-          second_home_id: requester.homeId,
+          second_home_id: f.holder.homeId,
           hold_operation_id: hold2.operationId!,
         }),
       ).toMatchObject({ status: 'rejected', code: 'ERR_STATE_TRANSITION' });

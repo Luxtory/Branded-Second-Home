@@ -88,6 +88,9 @@ export const depositMessages = {
       booked: 'reservada para seu uso — cancele a reserva antes de depositar',
       not_reserved: 'não reservada — reserve no seu calendário de uso antes de depositar',
       no_reference: 'ainda sem referência para o depósito',
+      /** W21: data comprometida com uma solicitação pendente (complemento por datas). */
+      committed:
+        'comprometida com uma solicitação sua pendente — retire a solicitação para depositar',
       unavailable: 'indisponível',
       started: 'data passada',
     } as const,

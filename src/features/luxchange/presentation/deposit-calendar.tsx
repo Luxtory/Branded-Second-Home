@@ -48,7 +48,7 @@ const daysOf = (month: string) =>
 type Status = DepositNightView['status'] | 'outside';
 
 /** Estados indisponíveis com o número riscado do DS; os demais são só "sem ação" (passado, antecedência). */
-const STRUCK: ReadonlySet<Status> = new Set(['ceded', 'booked', 'unavailable']);
+const STRUCK: ReadonlySet<Status> = new Set(['ceded', 'booked', 'unavailable', 'committed']);
 
 function Submit({ disabled }: { readonly disabled: boolean }) {
   const { pending } = useFormStatus();

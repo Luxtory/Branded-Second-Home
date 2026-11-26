@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import { Icon, PageHeader, RecordList } from '@/design-system/react';
 import { AuthUnavailable, TitularShell, requireTitularSession } from '@/features/identity';
@@ -21,7 +22,14 @@ async function orUnavailable<T>(read: () => Promise<T>): Promise<T | 'unavailabl
 }
 
 /** `/titular/calendario/[holdingId]`: calendário de uso próprio da holding que o usuário representa (RLS); senão 404. */
-export async function TitularOwnUseCalendarPage({ holdingId }: { readonly holdingId: string }) {
+export async function TitularOwnUseCalendarPage({
+  holdingId,
+  notice,
+}: {
+  readonly holdingId: string;
+  /** W21: aviso composto pela rota (datas comprometidas com solicitação pendente), sem importar o luxchange. */
+  readonly notice?: ReactNode;
+}) {
   const session = await requireTitularSession();
   if (session === 'unavailable') return <AuthUnavailable />;
   const data = UUID.test(holdingId)
@@ -36,6 +44,7 @@ export async function TitularOwnUseCalendarPage({ holdingId }: { readonly holdin
         lead={calendarMessages.context(data.secondHomeLabel, data.role)}
         context={{ href: AREA, label: calendarMessages.backToArea }}
       />
+      {notice}
       {data.bookingOpen ? null : (
         <div className="lx-message lx-message--info lx-booking__closed" role="status">
           <Icon name="alert" className="lx-message__icon" />

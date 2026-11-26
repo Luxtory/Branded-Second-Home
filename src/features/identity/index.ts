@@ -49,5 +49,7 @@ export {
 // W20: rota REST de um command do próprio Titular (POST /v1/luxchange/deposits).
 export {
   createTitularCommandRoute,
+  createTitularSessionRoute,
   type TitularCommandRouteOptions,
+  type TitularSessionRouteOptions,
 } from './presentation/titular-command-route';

@@ -846,3 +846,59 @@ mostra "Cobrança: Desativada" e o job `reconciliation` (cron `53 3 * * *`) é n
 5. **Alerta `payment_without_outcome`:** pagamento aprovado sem desfecho ou estorno falho; a conciliação já registra o
    estorno e tenta de novo a cada execução. Conferir no PSP antes de qualquer ação manual; nunca editar linhas.
 6. **Rollback:** o `down` recusa com qualquer fato financeiro ou com a K5 presente; reverter só o código.
+
+## Preparar a W21 em produção (Request Luxchange: envio)
+
+Nada a ativar: a migration `luxchange_request` (72 no total) cria a Request, as noites, o complemento por datas, o
+consentimento e as regras de encerramento; K4 `credits`, K5 `payments`, K6 `luxchange_deposit` e K7
+`luxchange_exchange` seguem sem linha (ADR-0037 §10). Sem elas, a prévia e o envio respondem 503 e as telas mostram as
+solicitações como ainda indisponíveis; retirada e encerramento nunca dependem de chave. O cron diário
+`/api/jobs/expire_requests` (`37 3 * * *`) é a recuperação dos encerramentos; sem Request, não faz nada.
+
+**Limite de taxa (TECH-100; STRIDE T-2111, T-2113).** A leitura da capacidade alheia (catálogo, calendário e prévia) e o
+pagamento da Taxa e o envio (`send_request`, também chamado direto) só funcionam com os limites configurados; sem eles,
+são recusados com `ERR_PARAMETER_MISSING` (falha fechada, só os nomes das chaves no log). A retirada nunca é limitada.
+
+| Variável | Formato validado | Sensitive |
+|---|---|---|
+| `LUXCHANGE_REQUEST_READ_LIMIT` | inteiro positivo (leituras e prévias por usuário por janela) | não |
+| `LUXCHANGE_REQUEST_SEND_LIMIT` | inteiro positivo (pagamentos da Taxa por usuário e envios por representação, por janela) | não |
+| `LUXCHANGE_REQUEST_GLOBAL_LIMIT` / `LUXCHANGE_REQUEST_WINDOW_SECONDS` | inteiros positivos (total por janela em cada superfície; janela comum, em segundos) | não |
+| `LUXCHANGE_REQUEST_LIMITER_TIMEOUT_MS` | inteiro positivo (prazo do Upstash; sem resposta → recusa) | não |
+
+Reaproveitadas, sem alteração: `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` (namespaces próprios
+`luxtory:luxchange-request-read:<ambiente>` e `luxtory:luxchange-request-send:<ambiente>`; chave = SHA-256 de
+`luxtory:<superfície>:<user_id>`, sem segredo novo). **Proposta para decisão do fundador** (TECH-001: o código não tem
+default; nada configurado na W21): janela de 600 s; leitura 120 por usuário; envio 10 (cada tentativa de envio pela
+tela consome dois: o pagamento e o envio); global 5.000 por superfície; timeout 1.500 ms — perfil de um membro
+explorando algumas Second Homes e ajustando datas, bem abaixo dos limites das páginas públicas. Nunca criar `LUXCHANGE_REQUEST_LIMITER_MODE` na Vercel. Configurar essas variáveis é
+pré-requisito da ativação, junto de D2, PSP validado, parâmetros (`luxchange_fee_rate`, `luxchange_fee_minimum`,
+`request_deadline_hours`), política `luxchange_request` publicada e a W22.
+
+**Taxa de intermediação (Luxchange Fee).** O cálculo é o do `01` §24: o maior entre `luxchange_fee_rate` × PRL total
+das noites solicitadas (arredondado ao centavo, meio para cima) e `luxchange_fee_minimum` (centavos de real), lidos dos
+parâmetros versionados no instante do envio — nada fixo no código (`luxchangeFee` no pricing; testes em
+`tests/features/pricing/values.test.ts` e `tests/features/billing/fee.test.ts`). Não há mecanismo de benefício ou
+desconto na W21. Para o Go-to-Market, a decisão comercial vigente corresponde a `luxchange_fee_rate` = `0.12` e
+`luxchange_fee_minimum` = `12000` (R$ 120), publicados por `set_parameter` com autorização operacional do fundador
+(TECH-030). Os testes usam de propósito valores fictícios — percentual 0,12 e mínimo de 9876 centavos (R$ 98,76, um
+valor não redondo que expõe erros de arredondamento e formatação); por isso as capturas do E2E mostram R$ 98,76: com
+PRL total de R$ 100,00, 12% (R$ 12,00) fica abaixo do mínimo de teste, e o mínimo prevalece.
+
+1. **Pré-condições depois do merge (só leitura, SQL Editor):** 72 migrations, a última `20261125012516`;
+   `app.luxchange_request` vazia; nenhuma linha `credits`, `payments`, `luxchange_deposit` nem `luxchange_exchange` em
+   `app.capability_activation`; `SELECT count(*) FROM app.luxchange_invariant_breaches()` = 0 e
+   `app.credit_invariant_breaches()` = 0.
+2. **Latência dos encerramentos:** com evento relevante (Membership, reserva, cancelamento, exceção, depósito, novo
+   envio), a Request que não pode mais ser aceita encerra logo depois da varredura do outbox; a expiração puramente
+   temporal, sem nenhum evento, espera o cron diário — até cerca de 24 h para liberar a Garantia e iniciar o estorno. A
+   tela nunca diz "devolvida" antes do PSP confirmar. Decisão do fundador antes do Go-to-Market (sem infraestrutura nova
+   na W21).
+3. **Gates de ativação (todos com autorização expressa do fundador; nenhum na W21):** variáveis do limitador acima;
+   parâmetros versionados da Taxa e do prazo (`luxchange_fee_rate`, `luxchange_fee_minimum`, `request_deadline_hours`),
+   com multiplicador e validade; política `luxchange_request` publicada; PSP real contratado e validado; D2 (backup e
+   restauração testados); W22 (aceite e recusa); migration de ativação de K4–K7; decisão sobre a latência do item 2;
+   resolução da dívida de acessibilidade do título (spec luxchange §13.11) antes de declarar conformidade plena.
+4. **Rollback:** o `down` da migration 72 recusa com Request, política no snapshot ou a K7 presente; sem linhas, restaura
+   exatamente a W20. Reverter só o código nos demais casos.
+

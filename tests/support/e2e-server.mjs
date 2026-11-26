@@ -19,6 +19,8 @@ const E2E_STAFF_EMAIL = 'staff@luxtory.test';
 const E2E_VISITOR_EMAIL = 'visitante@luxtory.test';
 
 const APP_ROLE = 'luxtory_app';
+/** Porta do servidor com PSP fake = porta do E2E + 3 (3101 e 3102 são os servidores fechados do Playwright). */
+const E2E_PAYMENTS_PORT_OFFSET = 3;
 const DATABASE = 'luxtory_e2e';
 
 // Mesmo id que `testUserId` do adapter de teste (src/features/identity/infrastructure/auth/test-auth-gateway.ts); se
@@ -54,12 +56,16 @@ const acquisitionFixtureFile = join(process.cwd(), E2E_ACQUISITION_DATABASE_FILE
 const port = process.argv[2] ?? '3100';
 const postgres = await startPostgresProcess();
 let next;
+// W21: segundo `next start` sobre o mesmo banco, com o PSP fake (só o spec da Request o usa; os demais seguem sem PSP).
+let payments;
+const paymentsPort = String(Number(port) + E2E_PAYMENTS_PORT_OFFSET);
 let stopping = false;
 
 async function stop(code) {
   if (stopping) return;
   stopping = true;
   next?.kill('SIGTERM');
+  payments?.kill('SIGTERM');
   rmSync(acquisitionFixtureFile, { force: true });
   await postgres.stop();
   process.exit(code);
@@ -80,65 +86,83 @@ try {
     { mode: 0o600 },
   );
   chmodSync(acquisitionFixtureFile, 0o600);
+  const childEnv = {
+    ...process.env,
+    AUTH_MODE: 'test',
+    DATABASE_URL: databaseUrl,
+    // Valores só de teste; os de produção vêm do runbook (TECH-001).
+    COMMAND_MAX_ATTEMPTS: '3',
+    // W8 is opened only in this disposable local/CI child; a separate closed run exercises its read state.
+    ACQUISITION_WRITES: source.E2E_ACQUISITION_GATE === 'closed' ? 'closed' : 'open',
+    COMMAND_LOCK_TIMEOUT_MS: '5000',
+    OUTBOX_BATCH_SIZE: '100',
+    CRON_SECRET: cronSecret,
+    // W9 (spec ownership §16.3): orçamentos de teste do sorteio. A folga de um dia garante que a revelação nunca
+    // consulta a drand durante o E2E; o estado concluído vem de uma rodada real gravada (e2e-initial-draw.ts).
+    DRAW_TRANSACTION_TIMEOUT_MS: '10000',
+    DRAW_BEACON_TIMEOUT_MS: '5000',
+    DRAW_BEACON_LEAD_SECONDS: '86400',
+    // Mídia do catálogo em diretório local descartável (ADR-0015; `local` é recusado na Vercel).
+    MEDIA_STORAGE: 'local',
+    MEDIA_LOCAL_DIR: mkdtempSync(join(tmpdir(), 'luxtory-e2e-media-')),
+    // Contato Brand Partners (spec catalog §14.6): envio e limitador determinísticos em memória — nenhum e-mail real,
+    // nenhum Upstash. Origem permitida = o próprio servidor do E2E; limites folgados (o 429 é provado nos testes da
+    // rota e na interface por interceptação).
+    BRAND_PARTNERS_CONTACT_MODE: 'fake',
+    BRAND_PARTNERS_CONTACT_HMAC_SECRET: randomBytes(32).toString('base64url'),
+    BRAND_PARTNERS_ALLOWED_ORIGINS: `http://127.0.0.1:${port}`,
+    BRAND_PARTNERS_CONTACT_NETWORK_LIMIT: '200',
+    BRAND_PARTNERS_CONTACT_NETWORK_WINDOW_SECONDS: '60',
+    BRAND_PARTNERS_CONTACT_GLOBAL_LIMIT: '500',
+    BRAND_PARTNERS_CONTACT_GLOBAL_WINDOW_SECONDS: '60',
+    // Interesse (spec ownership §5): limitador determinístico em memória (nenhum Upstash) e limites folgados — o 429
+    // é provado nos testes da rota. O segredo da pseudonimização é o mesmo da BP1, com domínio próprio.
+    INTEREST_LIMITER_MODE: 'fake',
+    INTEREST_NETWORK_LIMIT: '200',
+    INTEREST_NETWORK_WINDOW_SECONDS: '60',
+    INTEREST_GLOBAL_LIMIT: '500',
+    INTEREST_GLOBAL_WINDOW_SECONDS: '60',
+    // W13 E4b (G-E4-1): limitador determinístico da solicitação de autorização independente, com limites folgados — o
+    // excesso, a indisponibilidade e o replay são provados nos testes db pelo executor de produção.
+    BOOKING_AUTHORIZATION_LIMITER_MODE: 'fake',
+    BOOKING_AUTHORIZATION_REQUEST_LIMIT: '50',
+    BOOKING_AUTHORIZATION_REQUEST_WINDOW_SECONDS: '60',
+    BOOKING_AUTHORIZATION_GLOBAL_LIMIT: '200',
+    BOOKING_AUTHORIZATION_GLOBAL_WINDOW_SECONDS: '60',
+    // W21 (TECH-100): limitador determinístico da Request (leitura da capacidade e pagamento da Taxa), com limites
+    // folgados — o 429 é provado nos testes da rota com o limitador injetado.
+    LUXCHANGE_REQUEST_LIMITER_MODE: 'fake',
+    LUXCHANGE_REQUEST_READ_LIMIT: '200',
+    LUXCHANGE_REQUEST_SEND_LIMIT: '50',
+    LUXCHANGE_REQUEST_GLOBAL_LIMIT: '500',
+    LUXCHANGE_REQUEST_WINDOW_SECONDS: '60',
+    // W6 (ADR-0018): segredos próprios de teste, gerados a cada execução — hash de idempotência e contexto de
+    // apresentação da Home Edition. O E2E lê o contexto da própria página.
+    INTEREST_REQUEST_HMAC_SECRET: randomBytes(32).toString('base64url'),
+    INTEREST_CONTEXT_HMAC_SECRET: randomBytes(32).toString('base64url'),
+    // W7 (ADR-0020): anéis de teste da party, gerados a cada execução (cifra e HMAC com material separado).
+    PII_ENCRYPTION_KEYRING: `e2e1:${randomBytes(32).toString('base64')}`,
+    PII_ENCRYPTION_ACTIVE_KEY_ID: 'e2e1',
+    PII_HMAC_KEYRING: `h2e1:${randomBytes(32).toString('base64')}`,
+    PII_HMAC_ACTIVE_KEY_ID: 'h2e1',
+    // Vazio = ausente para a aplicação, e impede que um arquivo `.env*` local o defina.
+    VERCEL_ENV: '',
+  };
   next = spawn('npx', ['next', 'start', '--port', port, '--hostname', '127.0.0.1'], {
     stdio: 'inherit',
-    env: {
-      ...process.env,
-      AUTH_MODE: 'test',
-      DATABASE_URL: databaseUrl,
-      // Valores só de teste; os de produção vêm do runbook (TECH-001).
-      COMMAND_MAX_ATTEMPTS: '3',
-      // W8 is opened only in this disposable local/CI child; a separate closed run exercises its read state.
-      ACQUISITION_WRITES: source.E2E_ACQUISITION_GATE === 'closed' ? 'closed' : 'open',
-      COMMAND_LOCK_TIMEOUT_MS: '5000',
-      OUTBOX_BATCH_SIZE: '100',
-      CRON_SECRET: cronSecret,
-      // W9 (spec ownership §16.3): orçamentos de teste do sorteio. A folga de um dia garante que a revelação nunca
-      // consulta a drand durante o E2E; o estado concluído vem de uma rodada real gravada (e2e-initial-draw.ts).
-      DRAW_TRANSACTION_TIMEOUT_MS: '10000',
-      DRAW_BEACON_TIMEOUT_MS: '5000',
-      DRAW_BEACON_LEAD_SECONDS: '86400',
-      // Mídia do catálogo em diretório local descartável (ADR-0015; `local` é recusado na Vercel).
-      MEDIA_STORAGE: 'local',
-      MEDIA_LOCAL_DIR: mkdtempSync(join(tmpdir(), 'luxtory-e2e-media-')),
-      // Contato Brand Partners (spec catalog §14.6): envio e limitador determinísticos em memória — nenhum e-mail real,
-      // nenhum Upstash. Origem permitida = o próprio servidor do E2E; limites folgados (o 429 é provado nos testes da
-      // rota e na interface por interceptação).
-      BRAND_PARTNERS_CONTACT_MODE: 'fake',
-      BRAND_PARTNERS_CONTACT_HMAC_SECRET: randomBytes(32).toString('base64url'),
-      BRAND_PARTNERS_ALLOWED_ORIGINS: `http://127.0.0.1:${port}`,
-      BRAND_PARTNERS_CONTACT_NETWORK_LIMIT: '200',
-      BRAND_PARTNERS_CONTACT_NETWORK_WINDOW_SECONDS: '60',
-      BRAND_PARTNERS_CONTACT_GLOBAL_LIMIT: '500',
-      BRAND_PARTNERS_CONTACT_GLOBAL_WINDOW_SECONDS: '60',
-      // Interesse (spec ownership §5): limitador determinístico em memória (nenhum Upstash) e limites folgados — o 429
-      // é provado nos testes da rota. O segredo da pseudonimização é o mesmo da BP1, com domínio próprio.
-      INTEREST_LIMITER_MODE: 'fake',
-      INTEREST_NETWORK_LIMIT: '200',
-      INTEREST_NETWORK_WINDOW_SECONDS: '60',
-      INTEREST_GLOBAL_LIMIT: '500',
-      INTEREST_GLOBAL_WINDOW_SECONDS: '60',
-      // W13 E4b (G-E4-1): limitador determinístico da solicitação de autorização independente, com limites folgados — o
-      // excesso, a indisponibilidade e o replay são provados nos testes db pelo executor de produção.
-      BOOKING_AUTHORIZATION_LIMITER_MODE: 'fake',
-      BOOKING_AUTHORIZATION_REQUEST_LIMIT: '50',
-      BOOKING_AUTHORIZATION_REQUEST_WINDOW_SECONDS: '60',
-      BOOKING_AUTHORIZATION_GLOBAL_LIMIT: '200',
-      BOOKING_AUTHORIZATION_GLOBAL_WINDOW_SECONDS: '60',
-      // W6 (ADR-0018): segredos próprios de teste, gerados a cada execução — hash de idempotência e contexto de
-      // apresentação da Home Edition. O E2E lê o contexto da própria página.
-      INTEREST_REQUEST_HMAC_SECRET: randomBytes(32).toString('base64url'),
-      INTEREST_CONTEXT_HMAC_SECRET: randomBytes(32).toString('base64url'),
-      // W7 (ADR-0020): anéis de teste da party, gerados a cada execução (cifra e HMAC com material separado).
-      PII_ENCRYPTION_KEYRING: `e2e1:${randomBytes(32).toString('base64')}`,
-      PII_ENCRYPTION_ACTIVE_KEY_ID: 'e2e1',
-      PII_HMAC_KEYRING: `h2e1:${randomBytes(32).toString('base64')}`,
-      PII_HMAC_ACTIVE_KEY_ID: 'h2e1',
-      // Vazio = ausente para a aplicação, e impede que um arquivo `.env*` local o defina.
-      VERCEL_ENV: '',
-    },
+    env: childEnv,
   });
   next.once('exit', (code) => void stop(code ?? 1));
+  payments = spawn('npx', ['next', 'start', '--port', paymentsPort, '--hostname', '127.0.0.1'], {
+    stdio: 'inherit',
+    env: {
+      ...childEnv,
+      // Valores só de teste: o gateway fake é recusado em Production pela validação do ambiente (ADR-0035 §7).
+      PAYMENT_GATEWAY: 'fake',
+      PAYMENT_WEBHOOK_SECRET: randomBytes(32).toString('base64url'),
+    },
+  });
+  payments.once('exit', (code) => void stop(code ?? 1));
 } catch (error) {
   console.error(error);
   await stop(1);

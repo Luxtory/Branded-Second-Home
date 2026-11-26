@@ -125,6 +125,39 @@ export function createPostgresCreditStore(): CreditStore<DatabaseTransaction> {
           } satisfies LockedLot);
     },
 
+    async lockLotsReleasing(tx, partyId, holdOperationIds) {
+      const releasing = sql`l.id IN (SELECT e.lot_id FROM app.credit_entry e
+                                      WHERE e.operation_id = ANY (${[...holdOperationIds]}::uuid[])
+                                        AND e.movement = 'hold')`;
+      const scope = sql`((l.party_id = ${partyId}::uuid AND l.available > 0 AND l.expires_at > clock_timestamp())
+                         OR ${releasing})`;
+      await lockLots(tx, scope);
+      const { rows } = await sql<{
+        id: string;
+        available: string;
+        valid: boolean;
+        expires_at: string;
+        originated_at: string;
+      }>`SELECT l.id, l.available::text AS available, clock_timestamp() < l.expires_at AS valid,
+                ${iso('l.expires_at')} AS expires_at, ${iso('l.originated_at')} AS originated_at
+           FROM app.credit_lot l WHERE ${scope}
+          ORDER BY l.expires_at, l.originated_at, l.id`.execute(tx);
+      const open = await openEntries(
+        tx,
+        sql`e.operation_id = ANY (${[...holdOperationIds]}::uuid[]) AND e.movement = 'hold'`,
+      );
+      return {
+        lots: rows.map((row): LockedLot => ({
+          id: row.id,
+          available: row.available,
+          valid: row.valid,
+          expiresAt: row.expires_at,
+          originatedAt: row.originated_at,
+        })),
+        open,
+      };
+    },
+
     async insertLot(tx, input) {
       const { rows } = await sql<{
         id: string;

@@ -14,10 +14,12 @@ import {
   type Database,
   type DatabaseTransaction,
   type EnvSource,
+  type CommandOutcome,
   type JsonValue,
   type LogPort,
   type RouteContext,
 } from '@/features/platform';
+import type { VerifiedSession } from '../domain/session';
 import { createAuthorizationGuard } from '../application/authorization-guard';
 import type { HoldingDirectory } from '../application/party-ports';
 import { createAuthGateway } from '../infrastructure/auth/auth-gateway';
@@ -40,6 +42,24 @@ export interface TitularCommandRouteOptions<I, R extends JsonValue> {
   readonly database?: () => Database;
   /** Disparo do outbox depois de um commit novo; padrão: `after()` do Next (TECH-091). */
   readonly afterCommit?: (log: LogPort) => void;
+  /** W21: a entrada do command mantém `party_id` (escopo `party` do guard do solicitante). */
+  readonly includePartyId?: boolean;
+  /** W21: campos da entrada vindos do caminho (ex.: id da Request); `null` → 400 `ERR_VALIDATION`. */
+  readonly pathInput?: (request: Request) => Record<string, unknown> | null;
+  /**
+   * W21: efeito depois do desfecho (recusa, commit ou falha técnica — `null`), agendado para depois da resposta
+   * (`after()` do Next, padrão): estornos, recuperação de pagamento e disparos. Nunca muda o desfecho do command.
+   */
+  readonly afterOutcome?: (
+    outcome: CommandOutcome<R> | null,
+    details: {
+      readonly input: unknown;
+      readonly partyId: string;
+      readonly userId: string;
+      readonly log: LogPort;
+      readonly correlationId: string;
+    },
+  ) => void;
 }
 
 /**
@@ -66,7 +86,15 @@ export function createTitularCommandRoute<I, R extends JsonValue>(
       if (!body.ok) return errorResponse(body.code, correlationId);
       const parsed = representation.safeParse(body.value);
       if (!parsed.success) return errorResponse('ERR_VALIDATION', correlationId);
-      const { party_id: partyId, ...input } = parsed.data;
+      const { party_id: partyId, ...rest } = parsed.data;
+      const fromPath = options.pathInput === undefined ? {} : options.pathInput(request);
+      if (fromPath === null) return errorResponse('ERR_VALIDATION', correlationId);
+      const input = {
+        ...rest,
+        ...fromPath,
+        ...(options.includePartyId === true ? { party_id: partyId } : {}),
+      };
+      const details = { input, partyId, userId: session.userId, log, correlationId };
       const guard = createAuthorizationGuard({
         session,
         staff: createPostgresStaffDirectory(database),
@@ -82,12 +110,19 @@ export function createTitularCommandRoute<I, R extends JsonValue>(
         database: database(),
         membership: postgresMembershipGate,
       });
-      const outcome = await executor.execute(options.handler(), {
-        actor: { kind: 'user', userId: session.userId, actingPartyId: partyId, role: 'titular' },
-        idempotencyKey: idempotencyKey(request),
-        correlationId,
-        input,
-      });
+      let outcome: CommandOutcome<R>;
+      try {
+        outcome = await executor.execute(options.handler(), {
+          actor: { kind: 'user', userId: session.userId, actingPartyId: partyId, role: 'titular' },
+          idempotencyKey: idempotencyKey(request),
+          correlationId,
+          input,
+        });
+      } catch (error) {
+        if (!(error instanceof CapabilityNotActivatedError)) options.afterOutcome?.(null, details);
+        throw error;
+      }
+      options.afterOutcome?.(outcome, details);
       return commandResponse(outcome, {
         correlationId,
         successStatus: options.successStatus,
@@ -102,6 +137,52 @@ export function createTitularCommandRoute<I, R extends JsonValue>(
       const keys = unavailableKeys(error);
       if (keys === null) throw error;
       log.error('titular command unavailable', { keys });
+      return errorResponse('ERR_UNAVAILABLE', correlationId);
+    }
+  };
+}
+
+export interface TitularSessionRouteOptions {
+  readonly maxBodyBytes: number;
+  readonly source?: EnvSource;
+  readonly clock?: Clock;
+  /** Trabalho da rota com a sessão verificada e o corpo JSON lido (limite já conferido). */
+  readonly run: (context: {
+    readonly request: Request;
+    readonly session: VerifiedSession;
+    readonly body: unknown;
+    readonly correlationId: string;
+    readonly log: LogPort;
+  }) => Promise<Response>;
+}
+
+/**
+ * `POST /v1/*` do Titular que não é um command (W21: prévia e pagamento da Taxa da Request): mesma origem → sessão
+ * verificada → corpo JSON limitado → trabalho da rota, que revalida a representação. Funcionalidade fechada ou
+ * configuração ausente → 503 `ERR_UNAVAILABLE`, nada gravado.
+ */
+export function createTitularSessionRoute(options: TitularSessionRouteOptions) {
+  const clock = options.clock ?? systemClock;
+  return async (request: Request, { correlationId, log }: RouteContext) => {
+    if (!isSameOrigin(request)) return errorResponse('ERR_PERMISSION', correlationId);
+    try {
+      const session = await createAuthGateway(
+        requestCookies(request),
+        options.source,
+        clock,
+      ).session();
+      if (session === null) return errorResponse('ERR_UNAUTHENTICATED', correlationId);
+      const body = await readCommandBody(request, options.maxBodyBytes);
+      if (!body.ok) return errorResponse(body.code, correlationId);
+      return await options.run({ request, session, body: body.value, correlationId, log });
+    } catch (error) {
+      if (error instanceof CapabilityNotActivatedError) {
+        log.info('titular route not activated', { capability: error.capability });
+        return errorResponse('ERR_UNAVAILABLE', correlationId);
+      }
+      const keys = unavailableKeys(error);
+      if (keys === null) throw error;
+      log.error('titular route unavailable', { keys });
       return errorResponse('ERR_UNAVAILABLE', correlationId);
     }
   };

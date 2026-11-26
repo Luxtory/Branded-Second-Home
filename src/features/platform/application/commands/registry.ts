@@ -214,6 +214,25 @@ export const SYSTEM_COMMANDS: readonly CommandSpec[] = [
     critical: false,
     job: 'expire_credit_lots',
   },
+  // TECH-024/TECH-044/TECH-090 (W21; ADR-0037 §7; spec luxchange §13.4): materializam o encerramento pré-aceite da
+  // Request que não pode mais ser aceita — vencida (`expire_requests`) ou inelegível com prova (`close_ineligible_request`);
+  // o banco decide o motivo. Nunca a única proteção de prazo ou exclusividade.
+  {
+    name: 'expire_requests',
+    module: 'luxchange',
+    authority: 'system',
+    membership: 'not_applicable',
+    critical: false,
+    job: 'expire_requests',
+  },
+  {
+    name: 'close_ineligible_request',
+    module: 'luxchange',
+    authority: 'system',
+    membership: 'not_applicable',
+    critical: false,
+    job: 'expire_requests',
+  },
   // TECH-080/TECH-090/TECH-101 (W19; spec billing §4.5, ADR-0035 §9): registra o estorno de um pagamento aprovado sem
   // desfecho ou cujo estorno falhou; o fluxo consumidor o dispara logo após a recusa do domínio e o job é a rede de
   // segurança.

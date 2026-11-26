@@ -146,6 +146,22 @@ describe('registro de commands (TECH-051, TECH-011)', () => {
         job: 'expire_credit_lots',
       },
       {
+        name: 'expire_requests',
+        module: 'luxchange',
+        authority: 'system',
+        membership: 'not_applicable',
+        critical: false,
+        job: 'expire_requests',
+      },
+      {
+        name: 'close_ineligible_request',
+        module: 'luxchange',
+        authority: 'system',
+        membership: 'not_applicable',
+        critical: false,
+        job: 'expire_requests',
+      },
+      {
         name: 'reconciliation',
         module: 'billing',
         authority: 'system',

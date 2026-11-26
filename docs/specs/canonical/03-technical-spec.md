@@ -1,6 +1,10 @@
 # 03 — Technical Spec — Luxtory Branded Second Home
 
-2026-11-22 · **Versão 3.19 — FINAL** · Base normativa: `01` v10.8 final · `02` v4.6 final
+2026-11-24 · **Versão 3.20 — FINAL** · Base normativa: `01` v10.9 final · `02` v4.7 final
+
+Revisão W21 autorizada pelo fundador em 2026-11-24 (checkpoint C0): implementa o PD-012 (complemento por datas) e o PD-007 ampliado do `02` v4.7 — TECH-022, TECH-024, TECH-031, TECH-043, TECH-051, TECH-053, TECH-055, TECH-070, TECH-071, novo TECH-073, TECH-090, §7, §12 (CONC-13 a CONC-18), §13 e §14. Demais regras da v3.19 preservadas. Decisão em [ADR-0037](../../adr/0037-request-lastro-complemento-por-datas-e-encerramentos.md); plano em [`w21-luxchange-request-envio.md`](../../plan/w21-luxchange-request-envio.md). Cobertura normativa: **67 REQ · 6 INV · 12 PD**.
+
+Histórico preservado — versão 3.19 (2026-11-22; base normativa: `01` v10.8 final · `02` v4.6 final):
 
 Revisão pontual autorizada pelo fundador em 2026-11-22: acompanha o `01` v10.8 (§24) e atualiza somente o valor inicial do Luxchange Fee na TECH-030 para 12% do PRL, mínimo R$ 120. Fórmula, TECH-031/032/033, TECH-080–083 e demais regras da v3.18 preservadas; versões iniciais continuam publicadas pelo runbook com autorização operacional, nunca como padrão no código.
 
@@ -226,10 +230,12 @@ Inventário Luxtory:
 | `spe_pool` | `luxtory/{purpose}` | seleção Luxtory |
 | `use_right/reserved_right` | `spe_pool` | cancelamento tempestivo |
 | `use_right/reserved_right` | `use_right/forfeited_right` | futuro de cancelamento tardio/no-show |
-| `owner` ou `use_right/reserved_right` | `luxtory/inventory/luxchange_cession` | depósito ou Request aceita |
+| `owner` ou `use_right/reserved_right` | `luxtory/inventory/luxchange_cession` | depósito; Request aceita (capacidade do detentor); complemento por datas no aceite (capacidade do solicitante, PD-012) |
 | `use_right/forfeited_right` | `luxtory/inventory/recovered_future_capacity` | BR-283 |
 | `use_right/reserved_right` | `spe_pool` | invalidação de reserva não autorizada (REQ-084), na operação de `correct_use_right` |
 | `luxtory/inventory` | pai | regra/política aplicável ou correção compensatória válida |
+
+A custódia `luxchange_cession` aberta guarda `parent_custody_id` da custódia cedida e `authorization_ref` igual a `deposit_capacity:<operação>`, `request_destination:<request>` ou `request_complement:<request>`.
 
 Na seleção Luxtory:
 
@@ -263,11 +269,17 @@ Créditos apontam às custódias que os originaram; settlements apontam à ocupa
 
 `reserved_right` devolvido por política/reversão pode receber nova `own_use` sem novo consumo do Direito de Uso.
 
-**TECH-024 — Concorrência multicanal.** `rental_offer` e Request pendente não alteram custódia/ocupação.
+**TECH-024 — Concorrência multicanal.** `rental_offer` e Request pendente não alteram custódia/ocupação e não bloqueiam a capacidade solicitada.
 
-Confirmação incompatível fecha ofertas no mesmo commit e encerra Requests concorrentes idempotentemente, liberando Garantia e revertendo Fee.
+Confirmação incompatível fecha ofertas no mesmo commit e encerra Requests concorrentes idempotentemente, liberando Garantia e compromissos do complemento e revertendo Fee.
 
-Qualquer mudança de Membership, custódia ou outro requisito que torne capacidade, solicitante ou detentor inelegível encerra a Request pendente com o mesmo efeito.
+Qualquer mudança de Membership, custódia, ocupação, reserva, holding, compromisso ou outro requisito que torne capacidade, solicitante ou detentor inelegível encerra a Request pendente com o mesmo efeito. A inelegibilidade é provada por fato registrado com instante `≥ sent_at` no histórico só-inserção.
+
+**Complemento por datas (PD-012).** O compromisso de unidade do solicitante não altera custódia, ocupação, reserva nem Direito de Uso. É **efetivo** quando:
+
+`state = 'active' ∧ request.state = 'pending' ∧ now < request.expires_at ∧ nenhuma inelegibilidade provada`
+
+(`now` = relógio do banco no instante da verificação). Só o compromisso efetivo recusa atos do próprio Titular sobre a unidade — ocupação própria, cancelamento, depósito, outro compromisso, aceite de Request alheia que a tenha como capacidade solicitada e confirmação de locação — e torna a unidade inelegível como capacidade solicitada. Compromisso não efetivo nunca recusa nada, ainda que o encerramento da Request não tenha sido materializado. Exceção, invalidação, transferência, mudança de Membership e demais atos administrativos ou extraordinários não são recusados pelo compromisso: encerram a Request. Exposição sem compromisso (oferta de locação) não é recusada.
 
 Aceite sempre revalida; primeiro aceite válido confirma.
 
@@ -350,7 +362,7 @@ Planos Membership são opcionais e não são inventados. Não podem alterar prop
 
 PRL · multiplicador · validade do Crédito originado · Fee · plano · desconto · política · taxas/comissões · beneficiários.
 
-Request fixa PRL, Créditos necessários e Fee no envio.
+Request fixa no envio: PRL das noites solicitadas, multiplicador, validade dos Créditos, Créditos necessários, Fee (percentual e mínimo), prazo e política aceita; com complemento por datas (PD-012), também o PRL de cada noite comprometida. O aceite usa esses valores para todos os seus efeitos, inclusive os Créditos do cedente, e registra o próprio instante (`resolved_at` do snapshot do aceite) como data de originação; revalidação no aceite confere elegibilidade, nunca recalcula valor vinculado.
 
 **TECH-032 — Políticas.** Política versionada com schema fechado para:
 
@@ -410,6 +422,12 @@ Depósito:
 
 `now ≤ checkin_at − 14 dias`
 
+Complemento por datas (PD-012), no envio, para toda noite de toda unidade:
+
+`request.expires_at ≤ checkin_at − 14 dias`
+
+e, no aceite, `aceite ≤ checkin_at − 14 dias`. Como `aceite < expires_at`, a regra do envio garante a do aceite.
+
 Noite futura:
 
 `now < checkin_at`
@@ -466,6 +484,8 @@ Suspensão/encerramento afetam prospectivamente novos commands dependentes; não
 
 A tabela é fechada para commands econômicos/estado crítico.
 
+Complemento por datas (PD-012): em `send_request`, o Titular autoriza a cessão de cada unidade sob a condição do aceite da mesma Request, com o consentimento do PD-012; essa autorização registrada é a única base dos efeitos do aceite sobre capacidade e Créditos do solicitante. Em `accept_request`, os efeitos sobre recursos do solicitante são somente os do TECH-073, somente sobre compromissos efetivos e Garantia da própria Request aceita. Nenhum command move recurso de party que não age sem compromisso registrado da própria party.
+
 Além de Admin + base registrada, exigem autorização independente do papel da aplicação — expressa, de uso único e
 vinculada à reserva, ao incidente, à finalidade, às datas afetadas e a uma validade —: `declare_no_show`,
 `recover_future_capacity`, `resolve_exception` quando cancela a reserva e a invalidação do REQ-084
@@ -500,6 +520,8 @@ Todo command toca apenas o subconjunto necessário, preservando essa ordem.
 
 Deadlock/timeout → retry limitado com a mesma `idempotency_key`.
 
+Complemento por datas (PD-012): antes de comprometer unidades, `send_request` trava na classe 1, em ordem crescente de id, as Requests do mesmo solicitante com compromisso ativo sobre essas unidades e materializa, na mesma transação, o encerramento das que não podem mais ser aceitas; as demais mantêm a recusa. Compromissos são escritos sob a trava das noites (classe 5) e da reserva. Verificações de compromisso efetivo em gatilhos só leem; não travam fora de ordem. O aceite trava a Request (1), os Memberships das duas parties (3), as Ações (4) e as noites solicitadas e do complemento (5) em ordem crescente.
+
 **TECH-054 — Protocolo.**
 
 autoriza → idempotência → `BEGIN` → locks → revalidação integral → estados/ledgers/snapshot/audit → `COMMIT|ROLLBACK` → outbox.
@@ -527,6 +549,12 @@ Reserva:
 Request:
 
 `pending → accepted | declined | expired | cancelled_pre_accept`
+
+Compromisso do complemento por datas (PD-012):
+
+`active → consumed | released`
+
+`consumed` só no aceite da mesma Request; `released` só no encerramento pré-aceite da mesma Request.
 
 Membership:
 
@@ -614,9 +642,9 @@ Todos seguem TECH-053/054.
 | Recuperação BR-283 | `forfeited_right → luxtory/inventory/recovered_future_capacity` |
 | Seleção Luxtory | `spe_pool → luxtory` dentro de categoria/limite |
 | Depósito | capacidade elegível → `luxchange_cession` + Créditos |
-| Request envio | snapshot + Garantia + Fee; sem bloqueio de capacidade |
-| Request aceite | cessão + reserva + consumo Garantia + Créditos cedente |
-| Request pré-aceite encerrada | libera Garantia + reversão integral Fee |
+| Request envio | snapshot + Garantia + complemento comprometido + consentimento + Fee; sem bloqueio da capacidade solicitada |
+| Request aceite | cessão + reserva + consumo Garantia + Créditos cedente; com complemento, cessão das unidades + lote do solicitante + consumo de `C` (TECH-073) |
+| Request pré-aceite encerrada | libera Garantia e compromissos + reversão integral Fee |
 | Direct | Inventário + Créditos + Fee → reserva |
 | Luxplus | Inventário + pagamento → reserva + settlement Luxtory |
 | Locação | oferta → reserva externa + settlement Titular |
@@ -683,6 +711,8 @@ Somente por política aplicável ou correção compensatória válida.
 
 Nunca cria quantidade, muda party ou transfere Crédito livremente.
 
+No aceite: originação ao cedente e, com complemento por datas, ao solicitante — no máximo um lote por party (`credit_lot UNIQUE(origin_operation_id, party_id)`); `held → consumed` somente da Garantia da Request aceita; `available → consumed` somente do lote do complemento originado pela mesma operação, na quantidade do TECH-073.
+
 **TECH-071 — FEFO/Garantia.**
 
 `ORDER BY expires_at, originated_at, id`.
@@ -693,9 +723,11 @@ Garantia exige:
 
 `lot.expires_at ≥ request.expires_at`.
 
+Com complemento por datas, a quantidade da Garantia é a do TECH-073.
+
 Aceite: `held → consumed`.
 
-Encerramento pré-aceite libera Garantia.
+Encerramento pré-aceite libera Garantia e compromissos do complemento.
 
 **TECH-072 — Membership/expiração.** Membership não altera lote nem validade.
 
@@ -704,6 +736,34 @@ Job materializa expiração do saldo disponível.
 Lote vencido pode permanecer temporariamente `held` enquanto a Request ainda estiver pendente; não é utilizável.
 
 Ao liberar Garantia vencida: `held → expired`.
+
+**TECH-073 — Complemento por datas (PD-012).**
+
+Valores (exatos, `numeric`; versões do snapshot do envio):
+
+`potencial(u) = Σ_n prl.amount_minor(n) ÷ 10^expoente × multiplicador`
+
+`P = Σ_u potencial(u)` · `N = Créditos necessários = Σ PRL das noites solicitadas × multiplicador` · `G = max(0, N − P)` · consumo do lote do complemento `C = N − G` · excedente `E = P − C`.
+
+Seleção: se `P ≥ N`, então `P − min_u potencial(u) < N`.
+
+As noites do snapshot do envio (`economic_snapshot_night`) são exatamente as noites solicitadas, e é sobre elas que o banco recalcula `N`; as noites do complemento nunca entram nesse snapshot e ficam só nos compromissos, cada uma com o próprio `prl_id`, e é sobre elas que o banco recalcula `P`.
+
+Garantia: lotes da party com `available > 0`, `now < expires_at` e `expires_at ≥ request.expires_at`, `ORDER BY expires_at, originated_at, id`, retirando de cada lote até completar `G` (o último, parcialmente).
+
+Unidades: Owner = noite `owner` livre; Co-Owner = reserva `confirmed` inteira, com custódia `reserved_right` da Ação. Uma unidade em no máximo um compromisso `active` (`UNIQUE … WHERE state = 'active'` por noite e por reserva).
+
+Consentimento: registro só-inserção vinculado à Request, com a versão do texto exibido e os valores exibidos; o banco confere que os valores são os da Request.
+
+Aceite (uma transação; tudo conferido no banco e no COMMIT):
+
+1. linha de aceitação única da Request, com `snapshot.resolved_at` do aceite `< request.expires_at`;
+2. cessão de cada noite de compromisso efetivo, com a custódia registrada no compromisso ainda ativa, reserva Co-Owner `confirmed`, `luxchange_cession` com `request_complement:<request>` e transição `cession`, sem movimento do Direito de Uso; compromisso → `consumed`;
+3. lote do solicitante: quantidade `P` recalculada pelo banco com as versões do envio; `originated_at` = `resolved_at` do aceite; `expires_at = originated_at + validade do envio`;
+4. consumo de toda a Garantia restante e de exatamente `C` do lote do item 3; `E` permanece `available`;
+5. lote do cedente: Σ PRL das noites solicitadas × multiplicador, ambos do snapshot do envio, recalculada e conferida pelo banco pela fórmula do PRL — nunca por igualdade com o débito do solicitante; mesma originação e mesma validade do envio.
+
+Encerramento pré-aceite: compromissos `released`; nenhuma custódia, reserva, ledger do Direito de Uso ou lote.
 
 ---
 
@@ -745,6 +805,8 @@ Valor líquido devido ao Titular permanece obrigação apurada.
 `open_exercise · close_exercise · expire_requests · expire_credit_lots · advance_booking_states · flag_no_show_candidates · close_delinquency_authorization · reconciliation · outbox`
 
 Execução/item é idempotente. Job nunca é única proteção de validade ou INV.
+
+`expire_requests` materializa também os encerramentos por inelegibilidade (TECH-024). Expiração e inelegibilidade são decididas pelo relógio do banco e pelo histórico; jobs e consumidores só materializam, de forma idempotente, e nunca são a única proteção de prazo ou exclusividade.
 
 **TECH-091 — Notificações.** Eventos do REQ-097 saem via outbox com deduplicação. Falha de entrega não desfaz domínio.
 
@@ -829,11 +891,11 @@ Relógio é injetável.
 
 Concorrência:
 
-reserva×reserva · bucket×bucket · adjacência · aceite×aceite · aceite×retirada/expiração · confirmação×rental_offer · Direct×Luxplus · mesmos Créditos · Request×Direct · depósito×cancelamento · seleção Luxtory×reserva · retries/jobs paralelos.
+reserva×reserva · bucket×bucket · adjacência · aceite×aceite · aceite×retirada/expiração · confirmação×rental_offer · Direct×Luxplus · mesmos Créditos · Request×Direct · depósito×cancelamento · seleção Luxtory×reserva · retries/jobs paralelos · complemento×cancelamento · complemento×depósito · complemento×complemento · complemento×aceite alheio · expiração×reutilização do complemento · aceite×exceção no complemento.
 
 Tempo:
 
-14h/10h · 1 noite · 14/15 dias · `expires_at` · job atrasado · reversão após expiração · 29/02 · 31/01 · Carnaval · 2100 · troca de exercício · fusos.
+14h/10h · 1 noite · 14/15 dias · `expires_at` · job atrasado · reversão após expiração · 29/02 · 31/01 · Carnaval · 2100 · troca de exercício · fusos · antecedência do complemento em `expires_at` · aceite no limite do prazo.
 
 Regras estruturais:
 
@@ -844,7 +906,11 @@ Regras estruturais:
 - inadimplência não altera reserva confirmada nem rotação;
 - Data da Second Home selada exige custódia ativa;
 - seleção Luxtory para Inventário exige `annual_allocation`;
-- 29/02 é Média/Baixa, mas não consome bucket ordinário.
+- 29/02 é Média/Baixa, mas não consome bucket ordinário;
+- Créditos potenciais do complemento nunca entram no saldo, e unidade não cedida nunca origina Crédito;
+- aceite composto confere `P`, `G`, `C`, `E`, originação e validade no banco;
+- FEFO da Garantia com vários lotes, empate e lote que vence antes do prazo da Request;
+- compromisso de Request vencida ou inelegível não recusa ato do Titular, sem depender de job.
 
 Um teste por edge case do `02 §15`.
 
@@ -852,7 +918,7 @@ Auditoria: commits concorrentes → exatamente um seal por evento, cadeia válid
 
 Sorteio: vetor fixo reproduz exatamente `fy-v1`.
 
-**Gate global do produto:** 67/67 REQ cobertos · 11/11 PD cobertos · 6/6 INV protegidos/testados · migrations esperadas · reconciliação sem drift.
+**Gate global do produto:** 67/67 REQ cobertos · 12/12 PD cobertos · 6/6 INV protegidos/testados · migrations esperadas · reconciliação sem drift.
 
 Esse é o alvo global de implementação, não uma declaração de testes já aprovados. BP0 usa somente gates
 documentais; BP1 comprova REQ-028/TECH-057; SHP1 comprova REQ-105/TECH-057; REQ-029/TECH-058 só recebe evidência de implementação na BP2.
@@ -871,7 +937,10 @@ A implementação NÃO pode:
 - usar CRUD genérico em estado crítico;
 - reescrever histórico econômico/auditoria;
 - depender de job para validade;
-- bloquear capacidade por Request pendente ou pagamento;
+- bloquear a capacidade solicitada por Request pendente ou pagamento;
+- tratar Créditos potenciais do complemento como saldo, lote ou Crédito antes do aceite;
+- originar Crédito de unidade não cedida, ou mover recurso de party que não age sem compromisso registrado dela;
+- deixar compromisso não efetivo recusar ato do Titular, ou depender de job para liberar unidade;
 - criar quarta origem de Inventário Luxtory;
 - aceitar par econômico fora da TECH-023;
 - tratar `forfeited_right` como reutilizável;
@@ -902,9 +971,9 @@ Números sem prefixo = `TECH-xxx`.
 | 014 | §3.1, 051 | 054 | 070 |
 | 015 | 002, 092 | 060 | 022–023, §7 |
 | 016 | 026 | 061 | 061 |
-| 020 | §3.1 | 062 | 031–032, 071, 082 |
-| 021 | §3.1, 020 | 063 | 024, 061 |
-| 022 | §3.1, 020 | 064 | 024, 061, §7 |
+| 020 | §3.1 | 062 | 031–032, 043, 071, 073, 082 |
+| 021 | §3.1, 020 | 063 | 024, 061, 073 |
+| 022 | §3.1, 020 | 064 | 024, 061, 073, §7 |
 | 023 | §3.1 | 065 | 082, §7 |
 | 024 | 020 | 066 | 021, 023 |
 | 025 | §3.1, 020 | 070 | 031–033, 083, §7 |
@@ -940,13 +1009,14 @@ Números sem prefixo = `TECH-xxx`.
 | INV-4 | 026 | PD-004 | 027, 042 |
 | INV-5 | 026 | PD-005 | §7, 082 |
 | INV-6 | 070–072 | PD-006 | 024, 061, 071 |
-|  |  | PD-007 | 031 |
+|  |  | PD-007 | 031, 073 |
 |  |  | PD-008 | 071 |
 |  |  | PD-009 | 032 |
 |  |  | PD-010 | §7 Exceção |
 |  |  | PD-011 | 002, 092, 093 |
+|  |  | PD-012 | 022, 024, 031, 043, 051, 053, 055, 070, 071, 073, 090 |
 
-**Rastreabilidade normativa: 66/66 REQ · 6/6 INV · 11/11 PD.** Não equivale à cobertura executada de testes.
+**Rastreabilidade normativa: 67/67 REQ · 6/6 INV · 12/12 PD.** Não equivale à cobertura executada de testes.
 
 ---
 

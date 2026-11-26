@@ -55,6 +55,10 @@ channels:
         $ref: '#/components/messages/MembershipStateChanged'
       luxchangeCreditsOriginated:
         $ref: '#/components/messages/LuxchangeCreditsOriginated'
+      luxchangeRequestSent:
+        $ref: '#/components/messages/LuxchangeRequestSent'
+      luxchangeRequestClosed:
+        $ref: '#/components/messages/LuxchangeRequestClosed'
 
 operations:
   publishOutboxEvent:
@@ -335,6 +339,44 @@ components:
                 const: luxchange.credits_originated
               payload:
                 $ref: '#/components/schemas/LuxchangeCreditsOriginatedPayload'
+    LuxchangeRequestSent:
+      name: luxchange.request_sent
+      title: Request enviada (REQ-062, REQ-097, W21)
+      description: |
+        Gravado por `send_request` na transação do envio, depois da Garantia e do Fee (`dedup_key` =
+        `luxchange.request_sent:<request_id>`). Consumido pelas notificações ao solicitante (enviada: Garantia, datas
+        comprometidas) e ao solicitado (recebida: Second Home, datas, prazo — sem a party do solicitante, Créditos nem
+        complemento). Recusa ou rollback não gravam evento. Notificação não cria direito, prazo nem consequência econômica
+        (REQ-097). Só ids, datas e quantidades: nunca PRL, valores em reais (REQ-100) nem dado pessoal (ADR-0037).
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/OutboxEnvelope'
+          - type: object
+            properties:
+              type:
+                const: luxchange.request_sent
+              payload:
+                $ref: '#/components/schemas/LuxchangeRequestSentPayload'
+    LuxchangeRequestClosed:
+      name: luxchange.request_closed
+      title: Request encerrada antes do aceite (PD-005, REQ-097, W21)
+      description: |
+        Gravado na transação do encerramento pré-aceite — `withdraw_request`, `expire_requests`,
+        `close_ineligible_request` ou o reenvio que materializa o encerramento (`dedup_key` =
+        `luxchange.request_closed:<request_id>`; um por Request). Consumido pelas notificações ao solicitante (motivo,
+        Garantia liberada, devolução da Taxa) e ao solicitado (só o estado: nunca o motivo). Notificação não cria direito,
+        prazo nem consequência econômica (REQ-097). Sem PRL, valores em reais nem dado pessoal (ADR-0037).
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/OutboxEnvelope'
+          - type: object
+            properties:
+              type:
+                const: luxchange.request_closed
+              payload:
+                $ref: '#/components/schemas/LuxchangeRequestClosedPayload'
     OutboxEvent:
       name: OutboxEvent
       title: Envelope de evento do outbox
@@ -676,6 +718,122 @@ components:
           type: string
           format: date-time
           description: Validade do lote (TECH-044), calculada pelo banco.
+    LuxchangeRequestSentPayload:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          request_id,
+          requester_party_id,
+          holder_party_id,
+          second_home_id,
+          checkin,
+          checkout,
+          credits_required,
+          guarantee_credits,
+          complement_credits,
+          complement_nights,
+          expires_at,
+        ]
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        requester_party_id:
+          type: string
+          format: uuid
+          description: Party solicitante (pseudônimo interno, nunca documento).
+        holder_party_id:
+          type: string
+          format: uuid
+          description: Party do detentor da capacidade solicitada (pseudônimo interno, nunca documento).
+        second_home_id:
+          type: string
+          format: uuid
+        checkin:
+          type: string
+          format: date
+        checkout:
+          type: string
+          format: date
+        credits_required:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+          description: Créditos necessários (N), decimal exato em texto.
+        guarantee_credits:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+          description: Créditos em Garantia (G = max(0, N − P)).
+        complement_credits:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+          description: Créditos potenciais das datas comprometidas (P); nunca saldo.
+        complement_nights:
+          type: integer
+          minimum: 0
+          description: Noites comprometidas como complemento por datas.
+        expires_at:
+          type: string
+          format: date-time
+          description: Prazo de resposta, fixado pelo banco no envio.
+    LuxchangeRequestClosedPayload:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          request_id,
+          requester_party_id,
+          holder_party_id,
+          second_home_id,
+          checkin,
+          checkout,
+          state,
+          reason,
+          guarantee_released,
+          closed_at,
+        ]
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        requester_party_id:
+          type: string
+          format: uuid
+        holder_party_id:
+          type: string
+          format: uuid
+        second_home_id:
+          type: string
+          format: uuid
+        checkin:
+          type: string
+          format: date
+        checkout:
+          type: string
+          format: date
+        state:
+          type: string
+          enum: [expired, cancelled_pre_accept]
+        reason:
+          type: string
+          enum:
+            [
+              withdrawn,
+              expired,
+              period_started,
+              requester_membership,
+              holder_membership,
+              capacity_unavailable,
+              complement_unavailable,
+            ]
+          description: Motivo decidido e provado pelo banco (ADR-0037 §5, §7).
+        guarantee_released:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
+          description: Créditos em Garantia liberados no encerramento.
+        closed_at:
+          type: string
+          format: date-time
     OutboxEnvelope:
       type: object
       additionalProperties: false

@@ -71,6 +71,8 @@ export const policiesMessages = {
       money: (percent: string) => `${percent}% do valor pago é devolvido.`,
       remuneration: (percent: string) => `${percent}% da remuneração do Titular é mantida.`,
     } satisfies Record<FractionAxis, (percent: string) => string>,
+    /** W21: para o membro, o nome aprovado na comunicação ("Taxa de intermediação"); Admin segue "Luxchange Fee". */
+    memberFee: (percent: string) => `${percent}% da Taxa de intermediação é devolvido em dinheiro.`,
   },
   acceptance: {
     label: (version: string, since: string) =>
