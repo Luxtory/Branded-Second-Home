@@ -61,6 +61,65 @@ const target = (page: Page) => page.locator('section[aria-labelledby="solicitaca
 const complement = (page: Page) =>
   page.locator('section[aria-labelledby="solicitacao-complemento-titulo"]');
 const summary = (page: Page) => page.locator('aside[aria-labelledby="solicitacao-resumo"]');
+/**
+ * Texto a 200% na raiz em 320 e 390 px (verificação enxuta de redimensionamento e reflow). NÃO declara conformidade
+ * WCAG 1.4.10: há uma dívida conhecida e registrada (spec luxchange §13.11) — o título de display de uma palavra longa
+ * do PageHeader ("Solicitações") passa da coluna e a página rola até 2 px a 320 px. O teste só tolera esse caso quando a
+ * causa é comprovadamente o título (H1 mais largo que a coluna do cabeçalho) e nenhum outro elemento transborda; um
+ * desvio maior, outra causa ou qualquer transbordo fora do cabeçalho falha. Resolvida a dívida, a tolerância sai.
+ */
+const KNOWN_TITLE_DEBT_PX = 2;
+async function expectReflowWithLargeText(page: Page) {
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = '200%';
+  });
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    const measure = await page.evaluate(() => {
+      const limit = document.documentElement.clientWidth;
+      const header = document.querySelector('.lx-page-header');
+      const title = header?.querySelector('h1');
+      // Largura real do texto do título (Range), contra a coluna do cabeçalho (o pai do cabeçalho).
+      const range = document.createRange();
+      if (title) range.selectNodeContents(title);
+      const column = header?.parentElement?.getBoundingClientRect();
+      const columnRight = column
+        ? column.right - parseFloat(getComputedStyle(header!.parentElement!).paddingRight)
+        : 0;
+      return {
+        overflow: document.documentElement.scrollWidth - limit,
+        titleCause: title ? range.getBoundingClientRect().right > columnRight + 0.5 : false,
+        // Elementos mais externos que passam da borda, fora do cabeçalho (nenhum é aceito).
+        outside: [...document.querySelectorAll('main *')]
+          .filter((el) => el.getBoundingClientRect().right > limit + 0.5)
+          .filter(
+            (el) =>
+              !el.parentElement || el.parentElement.getBoundingClientRect().right <= limit + 0.5,
+          )
+          .filter((el) => el.closest('.lx-page-header') === null)
+          .map((el) => `${el.tagName}.${el.className}`),
+      };
+    });
+    expect(measure.outside, `transbordo fora do cabeçalho com texto a 200% em ${width}px`).toEqual(
+      [],
+    );
+    if (measure.overflow > 0) {
+      expect(
+        measure.titleCause,
+        `rolagem de ${measure.overflow}px sem ser o título conhecido (${width}px)`,
+      ).toBe(true);
+      expect(
+        measure.overflow,
+        `dívida do título maior que a medida (${width}px)`,
+      ).toBeLessThanOrEqual(KNOWN_TITLE_DEBT_PX);
+    }
+  }
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = '';
+  });
+  await page.setViewportSize(MOBILE.viewport);
+}
+
 /** Estado do saldo na Carteira (W17): rótulo e quantidade de um estado do Crédito. */
 const balance = (page: Page, label: string) =>
   page
@@ -185,6 +244,7 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
       await expect(requester).toHaveURL(/\/titular\/luxchange\/solicitacoes$/);
       await expect(requester.getByText('Você ainda não enviou solicitações.')).toBeVisible();
       await gate(requester, errors, 'w21-01-solicitacoes-vazia');
+      await expectReflowWithLargeText(requester);
       await press(requester.getByRole('link', { name: 'Nova solicitação' }), true);
       const option = requester.getByRole('link', { name: holderLabel });
       await expect(option.locator('xpath=ancestor::li[1]')).toContainText(
@@ -277,8 +337,8 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
       await requester.evaluate(() => {
         document.documentElement.style.fontSize = '200%';
       });
-      // A prévia não transborda e a grade do calendário fica dentro da janela (a coluna em `lx-grid` não se alarga com a
-      // palavra longa do título). Resta só o título de uma palavra do PageHeader a 320 px (limitação medida no relatório).
+      // A prévia não transborda e as grades do calendário ficam dentro da janela (a coluna em `lx-grid` não se alarga com a
+      // palavra longa do título de seção).
       for (const width of [320, 390]) {
         await requester.setViewportSize({ width, height: 844 });
         const overflow = await summary(requester).evaluate((el) => el.scrollWidth - el.clientWidth);
@@ -297,6 +357,7 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
         );
       }
       await captureForReview(requester, 'w21-12-previa-texto-ampliado', { fromTop: true });
+      await expectReflowWithLargeText(requester);
       await requester.evaluate(() => {
         document.documentElement.style.fontSize = '';
       });
@@ -321,6 +382,7 @@ test.describe('W21 E3 — Request: envio, acompanhamento e retirada', () => {
       // Pendente: nenhuma devolução existe, então a linha não aparece.
       await expect(fact(main, 'Devolução integral da Taxa')).toHaveCount(0);
       await gate(requester, errors, 'w21-05-enviada');
+      await expectReflowWithLargeText(requester);
       const detailUrl = requester.url().replace(/\?enviada=1$/, '');
 
       // Carteira: Garantia e datas comprometidas como Créditos potenciais, não utilizáveis.

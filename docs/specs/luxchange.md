@@ -361,7 +361,20 @@ Request, com gatilhos desligados).
   liberadas", "Créditos potenciais considerados no envio — não originados", "Taxa de intermediação paga no envio" e a
   devolução integral em linha própria. Texto ampliado (200% a 320 px): a prévia e a grade do calendário cabem na janela
   (as seções da jornada ficam em `lx-grid`, cuja coluna não cresce com uma palavra longa de título); resta só o título
-  de uma palavra do `PageHeader` ("Solicitações"), que passa 2 px — limitação do Design System, medida no C3. A
+  de uma palavra do `PageHeader` ("Solicitações"), que passa 2 px — dívida registrada abaixo.
+- **Dívida de acessibilidade (antes de declarar conformidade plena; prioridade relativa baixa).**
+  - Reprodução: 320 px de largura, fonte da raiz a 200% (`html { font-size: 200% }`), páginas
+    `/titular/luxchange/solicitacoes`, `/nova` e `/[requestId]`.
+  - Componente: título `h1.lx-display-m` do `PageHeader`; o Design System desliga a hifenização dos títulos de display
+    (`hyphens: none`), e a palavra "Solicitações" (282 px) não cabe na coluna (240 px).
+  - Medição: a página rola 2 px na horizontal; os últimos 2 px da caixa do título ficam fora da janela até a rolagem.
+  - Impacto: visual e de baixo impacto; nenhum controle ou conteúdo fica inacessível; WCAG 1.4.10 (reflow) não é atendido
+    integralmente nesse cenário (1.4.4, redimensionamento, segue verificável).
+  - Critério de resolução: nenhuma rolagem horizontal não intencional a 320 px com texto a 200% e com zoom de 400%,
+    verificando redimensionamento do texto e reflow. Correção local (título ou composição da página) ou do Design System
+    — a decidir; o hífen opcional não funciona com `hyphens: none`.
+  - Teste: o E2E tolera só esse caso (até 2 px, causa comprovada no título, nada fora do cabeçalho) e não declara
+    conformidade; resolvida a dívida, a tolerância é removida. A
   capacidade alheia só é lida com Membership ativo; Créditos potenciais nunca como saldo; nunca PRL em reais. Versão do
   texto dos aceites: `request-consent.pt-br.v2` (i18n).
 - **Integração**: Carteira (seção "Datas comprometidas com solicitação pendente", Créditos potenciais não utilizáveis),
