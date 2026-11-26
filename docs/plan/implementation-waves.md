@@ -125,8 +125,8 @@ A afiliação de imóveis existentes, as novas páginas do Club e a publicação
 | 18 | Políticas comerciais | pricing | REQ-082, REQ-104, PD-009 | 16 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w18-politicas-comerciais.md`](w18-politicas-comerciais.md), PR draft) → ✅ concluída (#107, squash `1e974bc`, 2026-11-22; 69 migrations em Production; nenhuma política real) |
 | 19 | Pagamentos, Fee e settlement | billing | REQ-094 | 16 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-22; [`w19-pagamentos-fee-e-settlement.md`](w19-pagamentos-fee-e-settlement.md), PR draft; Fee de referência 12% pelo `01` v10.8) → ✅ concluída (#108, squash `2fa37e8`, 2026-11-23; 70 migrations em Production; K5 fechada; nenhum pagamento real) |
 | 20 | Luxchange — depósito | luxchange | REQ-051, REQ-060 | 13, 16, 17 | — | R3 | ⬜ → 🔄 em execução (iniciada pelo fundador em 2026-11-23; [`w20-luxchange-deposito.md`](w20-luxchange-deposito.md), branch isolada: E0–E4 entregues, trace REQ-051, REQ-060 2/2; auditoria independente de 2026-11-24 aplicada — K7 `luxchange_exchange` e fatos do depósito só na transação do snapshot; PR draft a abrir pelo fundador; merge só com autorização) → ✅ concluída (#109, squash `5b8a047`, 2026-11-24; CI da `main` 45467480372; 71 migrations em Production; K6 e K7 fechadas; nenhum depósito real; D2 pendente) |
-| 21 | Request — envio | luxchange | REQ-062, PD-005, PD-007, PD-012 (envio) | 18, 19, 20 | — | R3 | ⬜ → 🔄 E0 documental em revisão (2026-11-24; [`w21-luxchange-request-envio.md`](w21-luxchange-request-envio.md); `01` v10.9, `02` v4.7, `03` v3.20 e ADR-0037 **propostos, não vigentes** até aprovação expressa do fundador no C0; E1 não autorizada) → C0 aprovado pelo fundador (2026-11-24): `01` v10.9, `02` v4.7, `03` v3.20 e ADR-0037 vigentes; E0b e PR draft de auditoria; E1 não autorizada) |
-| 22 | Request — aceite e recusa | luxchange | REQ-061, REQ-063, REQ-064, REQ-096, PD-006 | 21 | — | R3 | ⬜ |
+| 21 | Request — envio | luxchange | REQ-062, PD-005, PD-007, PD-012 (envio) | 18, 19, 20 | — | R3 | ⬜ → 🔄 E0 documental em revisão (2026-11-24; [`w21-luxchange-request-envio.md`](w21-luxchange-request-envio.md); `01` v10.9, `02` v4.7, `03` v3.20 e ADR-0037 **propostos, não vigentes** até aprovação expressa do fundador no C0; E1 não autorizada) → C0 aprovado pelo fundador (2026-11-24): `01` v10.9, `02` v4.7, `03` v3.20 e ADR-0037 vigentes; E0b e PR draft de auditoria; E1 não autorizada) → ✅ concluída (#112, squash `e7454dd`, 2026-11-26; CI da `main` 45751611052; 72 migrations em Production; infraestrutura desativada: K4–K7 sem linha, nenhuma Request, pagamento ou Crédito real; D2 pendente) |
+| 22 | Request — aceite e recusa | luxchange | REQ-061, REQ-063, REQ-064, REQ-096, PD-006 | 21 | — | R3 | ⬜ → 🔄 E0 documental em revisão (2026-11-26; [`w22-luxchange-request-aceite-recusa.md`](w22-luxchange-request-aceite-recusa.md); C0 com GO condicionado em 2026-11-26: Q1–Q5 incorporadas ao plano; E1 em HOLD até a aprovação expressa do plano revisto) |
 | 23 | Luxchange Direct | luxchange | REQ-065 | 22 | — | R3 | ⬜ |
 | 24 | Luxplus | booking, billing | REQ-066, REQ-070 | 23 | — | R3 | ⬜ |
 | 25 | Locação externa | booking, billing | REQ-012, REQ-041, REQ-042, REQ-043, REQ-071, REQ-072 | 22 | — | R3 | ⬜ |
@@ -1478,6 +1478,19 @@ como **histórico / posteriormente superado**; não resta wave paralelizável na
   `[TECH-023] reserved_right devolvido por política (exceção resolvida) recebe nova reserva de uso próprio sem novo
   consumo` · `[REQ-096] estados de Home Concept, Membership, Crédito, Request e Reserva conferem com o 02`.
 - **Goal command**: `/goal npm run verify && npm run test:e2e exit 0 and npm run trace -- --expect REQ-061,REQ-063,REQ-064,REQ-096,PD-006 exits 0, stop after 5 tries`
+- **Emenda W22 (E0, 2026-11-26; C0 do fundador com GO condicionado — E1 só com aprovação expressa do plano revisto):** plano
+  [`w22-luxchange-request-aceite-recusa.md`](w22-luxchange-request-aceite-recusa.md), sobre o contrato vinculante da
+  [ADR-0037](../adr/0037-request-lastro-complemento-por-datas-e-encerramentos.md) §8 e §10 (canônicos inalterados).
+  - Q1: aceitação registrada pela própria transição `accepted` (equivalência com a tabela da ADR demonstrada no plano;
+    emendas da ADR na E0b). Q2: reserva `luxchange_request` com `party_id` da party solicitante, `holding_id` nulo só
+    nesse canal, caminho `own_use` intacto. Q4: concorrentes encerradas com os motivos já provados, rastreio até a
+    Request vencedora e economia separada da aceita. Q5: revisão do detentor em página, sem motivo livre nem identidade
+    do solicitante. Serialização envio × aceite pela trava da noite, revarredura e `40001` transitório no executor.
+  - Q3 — **critério `[TECH-023] reserved_right devolvido` preservado e adiado condicionalmente:** nenhum fluxo da W22
+    produz o estado; depende da P-11 (TECH-051 sem command de cancelamento por política; nova versão do `03`, D6); o E0
+    da primeira wave que implementar cancelamento ou reversão por política sobre ocupação apoiada em `reserved_right`
+    reabre o critério; até lá `custody_reserved_right_reuse` segue recusando, com teste de preservação na W22.
+  - Acréscimos ao trace: `[CONC-18]` (da W21) e `[PD-012]` (aceite).
 
 ### Wave 23 — Luxchange Direct
 

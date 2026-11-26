@@ -224,7 +224,7 @@ condições:
 5. **Consumo.** `held → consumed` só das entradas `hold` da operação de envio da mesma Request, por inteiro;
    `available → consumed` só do lote do item 4 (`origin_operation_id` = esta operação) e exatamente `C`; `E` permanece
    `available`.
-6. **Cedente (hipótese de produto, sujeita à confirmação do fundador).** Lote do detentor com a quantidade devida pela
+6. **Cedente (PD-007 ampliado, ratificado pelo fundador no C0 da W21 em 2026-11-24).** Lote do detentor com a quantidade devida pela
    capacidade solicitada: Σ PRL das noites solicitadas × multiplicador, ambos do snapshot do envio, mesmo que o PRL mude
    depois (BR-201, BR-212). O banco recalcula e confere essa quantidade com a mesma soma que a W20 já confere no depósito
    (`app.luxchange_deposit_quantity_matches`, aplicada às noites e ao multiplicador do snapshot do envio), sem cálculo
