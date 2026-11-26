@@ -885,3 +885,20 @@ desconto na W21. Para o Go-to-Market, a decisão comercial vigente corresponde a
 valor não redondo que expõe erros de arredondamento e formatação); por isso as capturas do E2E mostram R$ 98,76: com
 PRL total de R$ 100,00, 12% (R$ 12,00) fica abaixo do mínimo de teste, e o mínimo prevalece.
 
+1. **Pré-condições depois do merge (só leitura, SQL Editor):** 72 migrations, a última `20261125012516`;
+   `app.luxchange_request` vazia; nenhuma linha `credits`, `payments`, `luxchange_deposit` nem `luxchange_exchange` em
+   `app.capability_activation`; `SELECT count(*) FROM app.luxchange_invariant_breaches()` = 0 e
+   `app.credit_invariant_breaches()` = 0.
+2. **Latência dos encerramentos:** com evento relevante (Membership, reserva, cancelamento, exceção, depósito, novo
+   envio), a Request que não pode mais ser aceita encerra logo depois da varredura do outbox; a expiração puramente
+   temporal, sem nenhum evento, espera o cron diário — até cerca de 24 h para liberar a Garantia e iniciar o estorno. A
+   tela nunca diz "devolvida" antes do PSP confirmar. Decisão do fundador antes do Go-to-Market (sem infraestrutura nova
+   na W21).
+3. **Gates de ativação (todos com autorização expressa do fundador; nenhum na W21):** variáveis do limitador acima;
+   parâmetros versionados da Taxa e do prazo (`luxchange_fee_rate`, `luxchange_fee_minimum`, `request_deadline_hours`),
+   com multiplicador e validade; política `luxchange_request` publicada; PSP real contratado e validado; D2 (backup e
+   restauração testados); W22 (aceite e recusa); migration de ativação de K4–K7; decisão sobre a latência do item 2;
+   resolução da dívida de acessibilidade do título (spec luxchange §13.11) antes de declarar conformidade plena.
+4. **Rollback:** o `down` da migration 72 recusa com Request, política no snapshot ou a K7 presente; sem linhas, restaura
+   exatamente a W20. Reverter só o código nos demais casos.
+

@@ -373,8 +373,10 @@ Request, com gatilhos desligados).
   - Critério de resolução: nenhuma rolagem horizontal não intencional a 320 px com texto a 200% e com zoom de 400%,
     verificando redimensionamento do texto e reflow. Correção local (título ou composição da página) ou do Design System
     — a decidir; o hífen opcional não funciona com `hyphens: none`.
-  - Teste: o E2E tolera só esse caso (até 2 px, causa comprovada no título, nada fora do cabeçalho) e não declara
-    conformidade; resolvida a dívida, a tolerância é removida. A
+  - Teste: o E2E atribui a rolagem ao título sem tolerância fixa — ela nunca vai além do quanto o próprio texto do
+    `h1.lx-display-m` passa da janela (2 px localmente, 3 px no Chrome do CI) —, exige que nada fora do cabeçalho
+    transborde e que nenhum controle fique alcançável só com rolagem horizontal; não declara conformidade; resolvida a
+    dívida, a exceção é removida. A
   capacidade alheia só é lida com Membership ativo; Créditos potenciais nunca como saldo; nunca PRL em reais. Versão do
   texto dos aceites: `request-consent.pt-br.v2` (i18n).
 - **Integração**: Carteira (seção "Datas comprometidas com solicitação pendente", Créditos potenciais não utilizáveis),

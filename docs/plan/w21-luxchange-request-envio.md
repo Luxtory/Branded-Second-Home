@@ -99,6 +99,9 @@ Fora de todas: ativação, PSP real, cancelamento pós-aceite (⛔ P-11), dados 
   conexões; nenhuma dupla cessão, originação, utilização, encerramento ou estorno; nenhuma data recusada depois de perder
   a eficácia do compromisso; nenhuma confirmação parcial; estado final e invariantes corretos inclusive depois do retry do
   executor.
+  Nota do C4 (2026-11-25): o CONC-18 do `03` §12 (aceite × exceção no complemento) depende do aceite e só é testável na
+  W22; na W21 ficam provados CONC-13 a CONC-17 (o CONC-16 na estrutura da W21, sem aceite) e o EC-8 (Requests de membros
+  diferentes coexistem sobre a mesma capacidade).
 
 ## Riscos
 
