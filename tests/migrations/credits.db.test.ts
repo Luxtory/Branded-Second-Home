@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { rejectionForConstraint } from '@/features/platform/domain/errors';
 import { waitForLockWaiter } from '../support/platform-fixtures';
-import { connect, openOperation } from '../features/booking/lifecycle-support';
+import { activate, asOperation, connect, openOperation } from '../features/booking/lifecycle-support';
 import { asUser } from '../features/calendar/luxtory-selection-support';
 import {
   TEST_VALIDITY_MONTHS,
@@ -20,15 +20,21 @@ import {
   recordValiditySnapshot,
   secondTitular,
   suspend,
+  type CreditTitular,
   type CreditsHarness,
 } from '../features/credits/credits-support';
-import type { Titular } from '../features/booking/booking-support';
 import {
   closeRequest,
+  newRequester,
+  pricedNights,
+  prlForCredits,
+  sendRequest,
+  writeClosing,
   requestFixture,
   sendGuaranteedRequest,
   type RequestFixture,
 } from '../features/luxchange/request-support';
+import { cedeRequestNights, writeAcceptance, writeAcceptedTransition } from '../features/luxchange/w22-support';
 
 /**
  * W17 E1 — regras dos Créditos no banco (ADR-0033; ADR-007, TECH-025, TECH-031, TECH-044, TECH-070–072; INV-6). As
@@ -40,7 +46,7 @@ const denied = expect.objectContaining({ code: '42501' });
 
 describe('W17 — Créditos no banco (ADR-0033)', () => {
   let c: CreditsHarness;
-  let other: Titular;
+  let other: CreditTitular;
   // Desde a W21 (ADR-0037 §4), toda Garantia lastreia uma Request completa; os movimentos seguintes são os da W17.
   let f: RequestFixture;
   const titular = () => ({ kind: 'titular' as const, titular: c.titular });
@@ -50,14 +56,31 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
     c = await creditsHarness();
     other = await secondTitular(c);
     f = await requestFixture(c);
+    await activate(c.h, 'luxchange_deposit');
   }, 240_000);
   afterAll(async () => {
     await c?.h.close();
   });
 
+  async function sentFor(holder: CreditTitular, quantity: string) {
+    const requester = await newRequester(f);
+    const lotId = await originate(c, quantity, { titular: requester });
+    return sendRequest(f, {
+      holder, requester, nights: await pricedNights(f, [prlForCredits(f, quantity)], holder.homeId),
+      holds: [{ lotId, quantity }],
+    });
+  }
+
+  async function acceptedLot(holder: CreditTitular, quantity: string) {
+    const sent = await sentFor(holder, quantity);
+    const result = await asOperation(c.h.database.appUrl, 'accept_request', { kind: 'titular', titular: holder },
+      (client, op) => writeAcceptance(client, op, sent));
+    return result.holderLotId;
+  }
+
   describe('originação [INV-6][TECH-025][TECH-031][TECH-044]', () => {
     it('grava validade e instante a partir do snapshot, com a originação escrita pelo banco', async () => {
-      const lotId = await originate(c, '1234.5');
+      const lotId = await acceptedLot(c.titular, '1234.5');
       const lot = await lotRow(c.h.database.pool, lotId);
       expect(lot).toMatchObject({
         party_id: c.titular.partyId,
@@ -80,13 +103,13 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
     });
 
     it('aceite de Request origina Créditos ao cedente (a party que age)', async () => {
-      const lotId = await originate(c, '10', { command: 'accept_request', titular: other });
+      const lotId = await acceptedLot(other, '10');
       expect((await lotRow(c.h.database.pool, lotId)).origin_command).toBe('accept_request');
     });
 
     it('sem snapshot da validade, nenhum lote nasce', async () => {
       await expect(
-        attempt(c.h.database.appUrl, 'accept_request', titular(), (client, op) =>
+        attempt(c.h.database.appUrl, 'deposit_capacity', titular(), (client, op) =>
           insertLot(client, op, c.titular.partyId, '5'),
         ),
       ).rejects.toEqual(constraint('credit_lot_snapshot_missing'));
@@ -94,7 +117,7 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
 
     it.each([
       ['command fora da originação', 'create_direct', false],
-      ['party diferente da que age', 'accept_request', true],
+      ['party diferente da que age no depósito', 'deposit_capacity', true],
     ])('recusa origem inválida: %s', async (_label, command, otherParty) => {
       await expect(
         attempt(c.h.database.appUrl, command, titular(), async (client, op) => {
@@ -118,9 +141,11 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
     });
 
     it('retry na mesma operação não duplica o lote [TECH-025]', async () => {
+      const sent = await sentFor(c.titular, '5');
       await expect(
         attempt(c.h.database.appUrl, 'accept_request', titular(), async (client, op) => {
-          await recordValiditySnapshot(client, op);
+          await writeAcceptedTransition(client, op, sent.requestId);
+          await cedeRequestNights(client, op, sent.requestId);
           await insertLot(client, op, c.titular.partyId, '5');
           await insertLot(client, op, c.titular.partyId, '5');
         }),
@@ -200,16 +225,19 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
     it('Garantia, liberação, consumo e reversão escrevem os buckets pelo ledger', async () => {
       const party = await secondTitular(c);
       const lotId = await originate(c, '100', { titular: party });
-      const [hold] = (await sendGuaranteedRequest(f, lotId, '40', party)).holdIds;
+      const withdrawn = await sendGuaranteedRequest(f, lotId, '15', party);
+      const accepted = await sendGuaranteedRequest(f, lotId, '25', party);
       expect(await lotRow(c.h.database.pool, lotId)).toMatchObject({ held: '40', available: '60' });
-      // Liberação parcial pelo mecanismo da recusa (o vínculo da recusa com a Request chega na W22).
-      await move(c, 'reject_request', { kind: 'titular', titular: other }, [
-        { lotId, movement: 'release', from: 'held', to: 'available', quantity: '15', parent: hold },
-      ]);
-      // O detentor aceita: consome a Garantia restante da solicitante.
-      const [consumed] = await move(c, 'accept_request', { kind: 'titular', titular: other }, [
-        { lotId, movement: 'consume', from: 'held', to: 'consumed', quantity: '25', parent: hold },
-      ]);
+      await closeRequest(f, withdrawn, 'withdraw_request', party);
+      const acceptOp = await asOperation(c.h.database.appUrl, 'accept_request', { kind: 'titular', titular: f.holder },
+        async (client, op) => {
+          await writeAcceptance(client, op, accepted);
+          return op;
+        });
+      const { rows: [consumption] } = await c.h.database.pool.query<{ id: string }>(
+        "SELECT id FROM app.credit_entry WHERE operation_id=$1 AND lot_id=$2 AND movement='consume'", [acceptOp, lotId],
+      );
+      const consumed = consumption!.id;
       expect(await lotRow(c.h.database.pool, lotId)).toMatchObject({ held: '0', consumed: '25', available: '75' });
       await move(c, 'reverse_credit', admin(), [
         { lotId, movement: 'reverse', from: 'consumed', to: 'available', quantity: '5', parent: consumed, basis: 'Correção' },
@@ -220,10 +248,14 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
     it('nada acima do que a Garantia ou o consumo ainda cobre [INV-6]', async () => {
       const party = await secondTitular(c);
       const lotId = await originate(c, '10', { titular: party });
-      const [hold] = (await sendGuaranteedRequest(f, lotId, '4', party)).holdIds;
-      const error = await move(c, 'reject_request', { kind: 'titular', titular: other }, [
-        { lotId, movement: 'release', from: 'held', to: 'available', quantity: '5', parent: hold },
-      ]).catch((e: unknown) => e);
+      const sent = await sendGuaranteedRequest(f, lotId, '4', party);
+      const [hold] = sent.holdIds;
+      const error = await attempt(c.h.database.appUrl, 'withdraw_request', { kind: 'titular', titular: party },
+        async (client, op) => {
+          await writeClosing(client, op, sent, { skip: ['release', 'fee'] });
+          await insertEntry(client, op, { lotId, movement: 'release', from: 'held', to: 'available', quantity: '5', parent: hold });
+        },
+      ).catch((e: unknown) => e);
       expect(error).toEqual(constraint('credits_parent_exceeded'));
       expect(rejectionForConstraint('credits_parent_exceeded')).toBe('ERR_CREDITS_INSUFFICIENT');
       const [consumed] = await move(c, 'create_direct', { kind: 'titular', titular: party }, [
@@ -433,7 +465,9 @@ describe('W17 — Créditos no banco (ADR-0033)', () => {
       const lotId = await originate(c, '2');
       await c.h.database.pool.query(`DELETE FROM app.capability_activation WHERE capability = 'credits'`);
       try {
-        await expect(originate(c, '1')).rejects.toEqual(constraint('credit_capability_not_activated'));
+        await expect(attempt(c.h.database.appUrl, 'deposit_capacity', titular(),
+          (client, op) => insertLot(client, op, c.titular.partyId, '1'),
+        )).rejects.toEqual(constraint('credit_capability_not_activated'));
         await expect(
           move(c, 'create_direct', titular(), [
             { lotId, movement: 'consume', from: 'available', to: 'consumed', quantity: '1' },

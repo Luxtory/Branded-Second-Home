@@ -144,6 +144,6 @@ dois membros com Requests sobre as mesmas noites e o detentor aceita uma (a outr
 rastreio); detentor que acabou de transferir a holding tenta aceitar (Request inelegível → recusa); servidor
 comprometido tenta originar Créditos ao detentor sem ceder as noites (COMMIT recusado).
 
-**Residual risks (W22):** a reserva `luxchange_request` não tem cancelamento, no-show nem exceção até a P-11 e a W26
-(decisão do fundador antes da ativação); estornos das concorrentes dependem do PSP (P-2) e da conciliação; ativação
+**Residual risks (W22):** a reserva `luxchange_request` não tem cancelamento, no-show nem exceção (o cancelamento depende
+da P-11, com wave de implementação ainda não definida; decisão do fundador antes da ativação); estornos das concorrentes dependem do PSP (P-2) e da conciliação; ativação
 real continua dependente de D2, PSP validado, parâmetros, política e autorização do fundador.

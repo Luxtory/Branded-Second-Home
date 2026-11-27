@@ -22,6 +22,7 @@ import {
   activate,
   addAdmin,
   asOperation,
+  bookNow,
   connect,
   openOperation,
   type Admin,
@@ -133,29 +134,68 @@ export async function insertLot(
   return id;
 }
 
-const titularActor = (titular: Titular): OperationActor => ({ kind: 'titular', titular });
+/** Funds ledger fixtures with a real W20 deposit, on a date outside the Request fixtures' initial window. */
+export async function prepareCreditDeposit(c: CreditsHarness, titular: Titular, quantity: string) {
+  const { depositDate, publishMultiplier, publishPrl, TEST_MULTIPLIER } =
+    await import('../luxchange/luxchange-support');
+  const pool = c.h.database.pool;
+  const parameter = async (key: string) =>
+    (
+      await pool.query<{ value: string }>(
+        'SELECT value FROM app.parameter_at($1,NULL,clock_timestamp())',
+        [key],
+      )
+    ).rows[0]?.value;
+  if (!(await parameter('credit_multiplier'))) await publishMultiplier(c, TEST_MULTIPLIER);
+  const {
+    rows: [source],
+  } = await pool.query<{ home_id: string; night: string; prl: string }>(
+    `SELECT h.second_home_id AS home_id, d.stay_date::text AS night,
+            trim_scale($3::numeric * 100 / m.value::numeric)::text AS prl
+       FROM app.holding h JOIN app.second_home_date d ON d.second_home_id=h.second_home_id
+       CROSS JOIN app.parameter_at('credit_multiplier',NULL,clock_timestamp()) m
+      WHERE h.id=$1 AND d.stay_date BETWEEN $2::date AND $2::date + 90
+        AND NOT EXISTS (SELECT 1 FROM app.prl p WHERE p.second_home_id=d.second_home_id AND p.stay_date=d.stay_date)
+      ORDER BY d.stay_date LIMIT 1`,
+    [titular.holdingId, depositDate(120), quantity],
+  );
+  if (!source || !/^\d+$/.test(source.prl))
+    throw new Error(`No fixture PRL for ${quantity} Credits`);
+  await activate(c.h, 'luxchange_deposit');
+  if (titular.stakeId) {
+    await activate(c.h, 'own_use_booking');
+    const { addDays } = await import('../booking/booking-support');
+    await bookNow(c.h, titular, source.home_id, source.night, addDays(source.night, 1));
+  }
+  const { staffRunner } = await import('../pricing/pricing-support');
+  await publishPrl(
+    { c, admin: { ...c.admin, role: 'admin' }, multiplierId: null, run: staffRunner(c.h) },
+    source.home_id,
+    { [source.night]: source.prl },
+  );
+  return {
+    second_home_id: source.home_id,
+    nights: [source.night],
+    expected_night_credits: [quantity],
+    expected_credits: quantity,
+    expected_validity_months: Number(await parameter('credit_validity_months')),
+  };
+}
 
-/**
- * Originação completa (snapshot + lote) na operação de `command`, confirmada. Desde a W20 (ADR-0036 §5–§6), uma
- * originação por `deposit_capacity` só confirma com o depósito inteiro (noites cedidas, PRL e multiplicador no snapshot)
- * — provado em `tests/features/luxchange`. Os fixtures genéricos do ledger originam por `accept_request`, cujas regras
- * de cessão chegam com a W22 (K4 fechada até lá).
- */
-export function originate(
+export async function originate(
   c: CreditsHarness,
   quantity: string,
-  options: { titular?: Titular; command?: 'accept_request' } = {},
+  options: { titular?: Titular } = {},
 ): Promise<string> {
+  const { depositRunner } = await import('../luxchange/luxchange-support');
   const titular = options.titular ?? c.titular;
-  return asOperation(
-    c.h.database.appUrl,
-    options.command ?? 'accept_request',
-    titularActor(titular),
-    async (client, op) => {
-      await recordValiditySnapshot(client, op);
-      return insertLot(client, op, titular.partyId, quantity);
-    },
-  );
+  const outcome = await depositRunner(
+    { c },
+    titular,
+  )(await prepareCreditDeposit(c, titular, quantity));
+  if (outcome.status !== 'committed')
+    throw new Error(`Deposit fixture: ${JSON.stringify(outcome)}`);
+  return outcome.result.lot_id;
 }
 
 export interface EntryInput {

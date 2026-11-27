@@ -91,7 +91,7 @@ describe('Carteira — leitura sob RLS [REQ-053][REQ-054][PD-008]', () => {
       quantity: '2.5',
       available: '1.5',
       held: '1',
-      originCommand: 'accept_request',
+      originCommand: 'deposit_capacity',
     });
     // Mais recente primeiro: a Garantia, depois as originações (a do lote envelhecido é a mais antiga).
     expect(view!.statement.items.map((entry) => [entry.kind, entry.lotId, entry.quantity])).toEqual(

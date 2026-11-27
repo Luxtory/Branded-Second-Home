@@ -771,7 +771,8 @@ describe('W21 — Request no banco (ADR-0037)', () => {
         ]);
       const [view] = await received(f.holder.userId);
       expect(Object.keys(view!).sort()).toEqual(
-        ['checkin', 'checkout', 'closed_at', 'closure_reason', 'expires_at', 'holder_party_id', 'id', 'second_home_id', 'sent_at', 'state'].sort(),
+        ['checkin', 'checkout', 'closed_at', 'closure_reason', 'expires_at', 'holder_party_id', 'id', 'second_home_id', 'sent_at', 'state',
+          'holder_credits', 'credit_validity_months', 'credit_expires_at'].sort(),
       );
       expect(await received(r.userId)).toEqual([]);
       const stranger = await secondTitular(c);

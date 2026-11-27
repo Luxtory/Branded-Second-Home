@@ -117,7 +117,7 @@ Impacto levantado e tratamento (caminho `own_use` idêntico em todos):
 |---|---|---|
 | `booking_open` (W12) | só `own_use`, K1, holding da party que age | ramo `luxchange_request` antes do caminho atual |
 | `booking_complete_constraint` / `assert_booking_complete` (W12) | regra do `own_use` em toda reserva | desvio por canal no início: `luxchange_request` → completude do aceite; demais canais sem mudança |
-| `booking_state_transition_check` (W13/W20) | `cession` só `deposit_capacity`; `lock_own_use_titular` | ramos `accept_request`: reserva do detentor (representação dele, só noite futura — sem 14 dias, TECH-043) e do complemento (autorização pelo compromisso registrado, TECH-051; 14 dias no `resolved_at`); reserva `luxchange_request`: só `advance`; cancelamento, no-show e exceção recusados (P-11/W26) |
+| `booking_state_transition_check` (W13/W20) | `cession` só `deposit_capacity`; `lock_own_use_titular` | ramos `accept_request`: reserva do detentor (representação dele, só noite futura — sem 14 dias, TECH-043) e do complemento (autorização pelo compromisso registrado, TECH-051; 14 dias no `resolved_at`); reserva `luxchange_request`: só `advance`; cancelamento, no-show e exceção recusados (cancelamento dependente da P-11; wave de implementação ainda não definida) |
 | `assert_booking_closure_complete` (W20) | conclusão da cessão só do depósito | ramo da cessão pelo aceite |
 | `booking_state_guard` (W13) | imutabilidade com `holding_id` | `party_id` incluído na comparação (`IS DISTINCT FROM` trata nulo) |
 | `lock_own_use_titular`, `assert_own_use_write` (W12/W13) | leem `holding_id` | inalterados: só alcançados no `own_use` |
@@ -376,7 +376,8 @@ gates completos nos checkpoints.
 
 ## Fora da W22 e Go-to-Market
 
-Fora: Direct (W23), Luxplus (W24), cancelamento pós-aceite, no-show e exceção da reserva `luxchange_request` (⛔ P-11/W26),
+Fora: Direct (W23), Luxplus (W24), cancelamento pós-aceite, no-show e exceção da reserva `luxchange_request` (⛔ cancelamento dependente da P-11; wave de
+implementação ainda não definida),
 reutilização de `reserved_right` devolvido (Q3), PSP real, ativação, parâmetros e políticas reais. Antes de qualquer
 operação real (decisões do fundador, separadas da implementação): backup adequado (D2), PSP (P-2), parâmetros e política
 `luxchange_request` publicados, variáveis do limitador, migration de ativação K4–K7, latência da expiração e decisão

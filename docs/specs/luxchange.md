@@ -411,8 +411,8 @@ penalidade. A recusa encerra a Request como os demais desfechos pré-aceite.
 
 ### 14.2 Non-goals
 
-Direct (W23); Luxplus (W24); cancelamento pós-aceite e no-show ou exceção da reserva `luxchange_request` (⛔ P-11,
-W26); reutilização de `reserved_right` devolvido (emenda D4 da W12; adiada com dependência da P-11 — plano da W22, Q3);
+Direct (W23); Luxplus (W24); cancelamento pós-aceite e no-show ou exceção da reserva `luxchange_request` (⛔ o
+cancelamento depende da P-11; wave de implementação ainda não definida); reutilização de `reserved_right` devolvido (emenda D4 da W12; adiada com dependência da P-11 — plano da W22, Q3);
 escolha do cedente no aceite (o detentor é o registrado no envio); PSP real, ativação e valores econômicos reais.
 
 ### 14.3 Actors

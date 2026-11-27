@@ -750,7 +750,8 @@ export async function seedCreditHistory(client, partyId) {
     const direct = await operation('create_direct', `now() - ${daysAgo} * ${E2E_DAY}`);
     await entry(lotA, direct, 'create_direct', 'consume', 'available', 'consumed', '0.5', daysAgo);
   }
-  const lotB = await lot('accept_request', '40.5', 740, -10, {
+  // This wallet projection seed has no accepted Request. Acceptance origins are covered by the database tests.
+  const lotB = await lot('deposit_capacity', '40.5', 740, -10, {
     held: '0',
     consumed: '0',
     expired: '40.5',

@@ -139,7 +139,7 @@ export function book(d: DepositHarness, titular: CreditTitular, checkin: string,
 }
 
 /** Executor real (TECH-054) com o guard do Titular, a verificação de Membership e os privilégios do `luxtory_app`. */
-export function depositRunner(d: DepositHarness, titular: Titular) {
+export function depositRunner(d: Pick<DepositHarness, 'c'>, titular: Titular) {
   const guard = createAuthorizationGuard({
     session: { userId: titular.userId, assurance: 'aal1' },
     staff: createPostgresStaffDirectory(() => d.c.h.db),

@@ -351,8 +351,8 @@ onde esta seção diverge, ela prevalece. Canônicos inalterados; nenhuma regra 
    sem coluna extra: `booking.opened_by_operation` = operação da transição `accepted` (1:1 por `booking_one_per_operation`
    e pelo índice do item 1); `party_id = requester_party_id`; Second Home e período iguais aos da Request; K7, não a K1.
    `booking_open`, `assert_booking_complete` e `booking_state_transition_check` ganham só ramos do canal novo, antes dos
-   caminhos atuais; na reserva `luxchange_request` só há `advance` (cancelamento, no-show e exceção ficam para a P-11 e a
-   W26). Regras, constraints, gatilhos e invariantes do `own_use` não mudam; os canais Direct, Luxplus, locação e uso
+   caminhos atuais; na reserva `luxchange_request` só há `advance` (cancelamento, no-show e exceção ficam fora: o
+   cancelamento depende da P-11, com wave de implementação ainda não definida). Regras, constraints, gatilhos e invariantes do `own_use` não mudam; os canais Direct, Luxplus, locação e uso
    Luxtory também não.
 3. **Concorrentes (Q4).** A operação do aceite encerra, no mesmo commit, toda Request pendente com noite solicitada ou de
    complemento ativo sobre as noites cedidas: `cancelled_pre_accept` com o motivo provado pelo banco — quando a causa é
