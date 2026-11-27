@@ -241,13 +241,19 @@ export async function seedE2eStartedOwnerBooking(homeId) {
 }
 
 /**
- * Reserva de Co-Owner dentro dos próximos 15 dias (fato do fixture, W13 E4b): no cenário parcial do E2E a janela desta
+ * Reserva futura de Co-Owner (fato do fixture): no cenário parcial do E2E a janela desta
  * Ação abre meses à frente, então a interface não reserva noite próxima. Mesmo SQL do fixture histórico dos testes db
  * (`historicBooking`): regra de abertura e de movimento do ledger desligadas só nesta transação do dono; custódia
  * `reserved_right`, consumo e ocupação gravados e conferidos pelas constraints. Primeira noite livre a partir de
- * `fromOffset` dias; `nights` noites consecutivas livres (padrão: uma — W13; W20 usa reservas de várias noites).
+ * `fromOffset` dias; `nights` noites consecutivas livres. A W13 limita a antecedência do primeiro check-in.
  */
-export async function seedE2eSoonCoOwnerBooking(homeId, partyId, fromOffset = 3, nights = 1) {
+export async function seedE2eSoonCoOwnerBooking(
+  homeId,
+  partyId,
+  fromOffset = 3,
+  nights = 1,
+  { maxHoursUntilCheckin = /** @type {number | null} */ (null) } = {},
+) {
   if (!/^[0-9a-f-]{36}$/i.test(homeId) || !/^[0-9a-f-]{36}$/i.test(partyId))
     throw new Error('Invalid fixture ids');
   const url = disposableOwnerUrl();
@@ -261,8 +267,9 @@ export async function seedE2eSoonCoOwnerBooking(homeId, partyId, fromOffset = 3,
       const holding = holdings[0];
       // Primeira sequência de `nights` noites seguidas livres (spe_pool) com saldo no bucket de cada uma.
       const { rows: starts } = await client.query(
-        `SELECT d.stay_date::text AS d FROM app.second_home_date d
+        `SELECT d.stay_date::text AS d, d.checkin_at FROM app.second_home_date d
          WHERE d.second_home_id = $1 AND d.stay_date >= current_date + $2::int AND d.checkin_at > now()
+           AND ($5::int IS NULL OR d.checkin_at < now() + make_interval(hours => $5::int))
            AND (SELECT count(*) FROM app.second_home_date n
                   JOIN app.date_custody c ON c.second_home_id = n.second_home_id AND c.stay_date = n.stay_date
                                          AND c.closed_at IS NULL AND c.holder_kind = 'spe_pool'
@@ -272,11 +279,16 @@ export async function seedE2eSoonCoOwnerBooking(homeId, partyId, fromOffset = 3,
                  WHERE n.second_home_id = d.second_home_id AND n.stay_date >= d.stay_date
                    AND n.stay_date < d.stay_date + $4::int) = $4
          ORDER BY d.stay_date LIMIT 1`,
-        [homeId, fromOffset, holding?.stake_id ?? null, nights],
+        [homeId, fromOffset, holding?.stake_id ?? null, nights, maxHoursUntilCheckin],
       );
       if (holding === undefined || starts[0] === undefined)
-        throw new Error('Co-Owner fixture needs free sealed nights with balance');
-      const checkin = starts[0].d;
+        throw new Error(
+          `Co-Owner fixture needs ${nights} free sealed night(s) with balance from day ${fromOffset}` +
+            (maxHoursUntilCheckin === null
+              ? ''
+              : ` and check-in within ${maxHoursUntilCheckin} hours`),
+        );
+      const { d: checkin, checkin_at: checkinAt } = starts[0];
       const { rows: out } = await client.query(
         `SELECT ($1::date + $2::int)::text AS checkout, gen_random_uuid() AS id, gen_random_uuid() AS op`,
         [checkin, nights],
@@ -345,7 +357,7 @@ export async function seedE2eSoonCoOwnerBooking(homeId, partyId, fromOffset = 3,
       await client.query('ALTER TABLE app.booking ENABLE TRIGGER booking_open');
       await client.query(`UPDATE app.operation SET state = 'committed' WHERE id = $1`, [op]);
       await client.query('COMMIT');
-      return { bookingId: id, checkin, checkout };
+      return { bookingId: id, checkin, checkout, checkinAt };
     } catch (error) {
       await client.query('ROLLBACK').catch(() => undefined);
       throw error;

@@ -86,7 +86,11 @@ export async function formalizedOwner(page: Page, label: string, startDate: stri
 
 /** Co-Owner parcial formalizado pela tela do Admin (contrato da W8), com sorteio concluído, exercício selado e Direito
  *  de Uso concedido pelos jobs reais (W9–W11). */
-export async function formalizedCoOwner(page: Page, label: string) {
+export async function formalizedCoOwner(
+  page: Page,
+  label: string,
+  { altaPerStake = 1 }: { altaPerStake?: 1 | 2 } = {},
+) {
   const cnpj = () => validCnpj(randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase());
   await signIn(page, STAFF_EMAIL);
   await expect(page).toHaveURL(/\/admin$/);
@@ -104,7 +108,7 @@ export async function formalizedCoOwner(page: Page, label: string) {
     (await post(page, '/v1/admin/parties', { document: randomCpf() })).id,
   ] as const;
   const spe = (await post(page, '/v1/admin/parties', { document: cnpj() })).id;
-  const scenario = partialAcquisitionScenario(new Date());
+  const scenario = partialAcquisitionScenario(new Date(), altaPerStake);
   await page.goto(`/admin/catalogo/second-homes/${home}/formalizacao`);
   const allocation = section(page, 'initial-allocation-form');
   await allocation.locator('summary').tap();

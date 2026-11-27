@@ -453,7 +453,7 @@ describe('custódia e selagem: barreiras do banco (W10)', () => {
       await asOwner(h, (client, op) => occupy(client, op, coOwner, night, 'own_use', stakes[0]!));
     });
 
-    it('[TECH-023] Request aceita: cessão e ocupação do solicitante na mesma operação; outra operação falha', async () => {
+    it('[TECH-023] a matriz de Request exige a mesma operação da cessão; Direct aceita a custódia', async () => {
       const cession = {
         holder_kind: 'luxtory',
         purpose: 'inventory',
@@ -461,13 +461,22 @@ describe('custódia e selagem: barreiras do banco (W10)', () => {
         authorization_ref: 'base:request',
       };
       await asOwner(h, (client, op) => transition(client, op, owner, nextYear('07-04'), cession));
-      await expect(asOwner(h, (client, op) => occupy(client, op, owner, nextYear('07-04'), 'luxchange_request'))).rejects.toEqual(
-        constraint('custody_occupancy_matrix'),
+      // Exercise the shared matrix directly. W22 tests insert occupancies against a real accepted Request.
+      const { rows } = await h.database.pool.query<{ same_operation: boolean; valid: boolean }>(
+        `SELECT p.same_operation, app.occupancy_pair_valid(
+           jsonb_populate_record(NULL::app.date_occupancy,
+             jsonb_build_object('channel', 'luxchange_request', 'opened_by_operation', p.operation_id)), c
+         ) AS valid
+         FROM app.date_custody c
+         CROSS JOIN LATERAL (VALUES (true, c.opened_by_operation), (false, $3::uuid)) p(same_operation, operation_id)
+         WHERE c.second_home_id = $1 AND c.stay_date = $2 AND c.closed_at IS NULL
+         ORDER BY p.same_operation DESC`,
+        [owner, nextYear('07-04'), randomUUID()],
       );
-      await asOwner(h, async (client, op) => {
-        await transition(client, op, owner, nextYear('07-05'), cession);
-        await occupy(client, op, owner, nextYear('07-05'), 'luxchange_request');
-      });
+      expect(rows).toEqual([
+        { same_operation: true, valid: true },
+        { same_operation: false, valid: false },
+      ]);
       await asOwner(h, (client, op) => occupy(client, op, owner, nextYear('07-04'), 'luxchange_direct'));
     });
 

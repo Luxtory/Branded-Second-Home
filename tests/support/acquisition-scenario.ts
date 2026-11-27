@@ -1,7 +1,7 @@
 import { createCivilCalendar } from '../../src/features/calendar/index';
 
 /** Fixed synthetic alternatives for the browser fixture, never a production allocation policy. */
-export function partialAcquisitionScenario(at: Date) {
+export function partialAcquisitionScenario(at: Date, altaPerStake: 1 | 2 = 1) {
   const calendar = createCivilCalendar();
   const timezone = 'America/Sao_Paulo';
   let operationDate = calendar.localDate(at, timezone);
@@ -17,7 +17,7 @@ export function partialAcquisitionScenario(at: Date) {
     operationDate,
     // Keep one unused night so a check-in boundary during the browser workflow cannot invalidate this fixture.
     // The choices remain fixed explicit test amounts (or explicit zero), never a proportional allocation.
-    alta: capacity.alta >= 3 ? 1 : 0,
+    alta: altaPerStake === 2 && capacity.alta >= 5 ? 2 : Number(capacity.alta >= 3),
     media: capacity.media >= 5 ? 2 : 0,
   };
 }

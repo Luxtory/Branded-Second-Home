@@ -193,7 +193,7 @@ describe('W22 E1 — reserva de destino [REQ-064][REQ-096][TECH-023][TECH-052]',
     expect(await requestRow(pool(), sent.requestId)).toMatchObject({ state: 'pending' });
   });
 
-  it('rejeita custódia alheia e canal indevido na ocupação, e exige a ocupação no COMMIT', async () => {
+  it('aplica a matriz de ocupação, rejeita custódia alheia e canal indevido e exige ocupação no COMMIT', async () => {
     const { sent } = await send();
     for (const channel of ['luxchange_request', 'luxchange_direct']) {
       await expect(
@@ -213,6 +213,22 @@ describe('W22 E1 — reserva de destino [REQ-064][REQ-096][TECH-023][TECH-052]',
           : { code: '42501' },
       );
     }
+
+    await expect(
+      operation(async (client, op) => {
+        await accept(client, op, sent.requestId);
+        await cedeRequestNights(client, op, sent.requestId);
+        const bookingId = await insertBooking(client, op, sent.requestId);
+        await client.query(
+          `INSERT INTO app.date_occupancy
+             (id,second_home_id,stay_date,booking_id,channel,custody_id,stake_id,opened_by_operation)
+           SELECT gen_random_uuid(),c.second_home_id,c.stay_date,$1,'luxchange_request',c.id,$3,$2
+           FROM app.date_custody c
+           WHERE c.opened_by_operation=$2 AND c.authorization_ref=$4`,
+          [bookingId, op, randomUUID(), `request_destination:${sent.requestId}`],
+        );
+      }),
+    ).rejects.toMatchObject(violation('custody_occupancy_matrix'));
 
     await expect(
       operation(async (client, op) => {

@@ -1,4 +1,4 @@
-import { sql } from 'kysely';
+import { sql, type NotNull } from 'kysely';
 import { lockAdvisoryKeys, type DatabaseTransaction } from '@/features/platform';
 import type { OwnUseCessionPort } from '../application/own-use-cession';
 
@@ -24,6 +24,8 @@ export function createPostgresOwnUseCession(): OwnUseCessionPort<DatabaseTransac
           'last_transition_id',
         ])
         .where('id', 'in', [...bookingIds])
+        .where('holding_id', 'is not', null)
+        .$narrowType<{ holding_id: NotNull }>()
         .orderBy('id')
         .execute();
       return rows.map((row) => ({

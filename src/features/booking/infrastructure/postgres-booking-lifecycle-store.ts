@@ -1,4 +1,4 @@
-import { sql } from 'kysely';
+import { sql, type NotNull } from 'kysely';
 import { holdingParty } from '@/features/ownership';
 import { lockAdvisoryKeys, type DatabaseTransaction } from '@/features/platform';
 import { OWN_USE_LIFECYCLE_CAPABILITY } from '../application/own-use-closing';
@@ -78,6 +78,8 @@ export function createPostgresBookingLifecycleStore(): BookingLifecycleStore<Dat
         ])
         .where('id', '=', bookingId)
         .where('channel', '=', 'own_use')
+        // booking_holding_channel requires a holding for own_use.
+        .$narrowType<{ holding_id: NotNull }>()
         .executeTakeFirst();
       return row === undefined ? null : toBooking(row);
     },
