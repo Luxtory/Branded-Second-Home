@@ -1,5 +1,10 @@
 import type { DepositNightFacts } from '../domain/deposit';
-import type { RequestClosureReason, RequestHolding, RequestTermsDocument } from '../domain/request';
+import type {
+  RequestClosingState,
+  RequestClosureReason,
+  RequestHolding,
+  RequestTermsDocument,
+} from '../domain/request';
 
 /** K7 do intercâmbio (ADR-0036 §7) e K5 dos pagamentos (ADR-0035 §8), além da K4 e da K6. */
 export const LUXCHANGE_EXCHANGE_CAPABILITY = 'luxchange_exchange';
@@ -14,7 +19,7 @@ export interface LockedRequest {
   readonly secondHomeId: string;
   readonly checkin: string;
   readonly checkout: string;
-  readonly state: 'pending' | 'expired' | 'cancelled_pre_accept';
+  readonly state: 'pending' | 'accepted' | RequestClosingState;
   readonly guaranteeCredits: string;
   readonly expiresAt: string;
   /** Motivo pelo qual não pode mais ser aceita (relógio do banco e histórico); `null` = ainda pode. */
@@ -26,7 +31,7 @@ export interface LockedRequest {
 /** Encerramento gravado: o banco decide estado, motivo e prova. */
 export interface RecordedClosing {
   readonly transitionId: string;
-  readonly state: 'expired' | 'cancelled_pre_accept';
+  readonly state: RequestClosingState;
   readonly reason: RequestClosureReason;
   readonly closedAt: string;
 }

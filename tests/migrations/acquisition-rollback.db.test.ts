@@ -29,7 +29,8 @@ describe('W8 — rollback concorrente preserva fatos', () => {
           // Later migrations (W13 booking lifecycle, W12 booking on stake/holding, W11 balance on stake, W10 custody on
           // stake, W9 draw tables on stake/holding) roll back first, newest first.
           for (const migration of [
-            // W22 first: restore W21's catalog before dropping the Request and its acceptance dependencies.
+            // Restore the W22/E1 ledger trigger, then W21's catalog before dropping Request dependencies.
+            '20261128024452_luxchange_guarantee_release_validity',
             '20261126164050_luxchange_request_accept',
             // W21: the Request, its commitments and the accepted policy reference the snapshot, PRL, custody,
             // bookings, holdings and the W18 policy; its down restores the W17/W19/W20 functions it replaced.

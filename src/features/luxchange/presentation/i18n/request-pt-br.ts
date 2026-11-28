@@ -62,6 +62,7 @@ export const requestMessages = {
   reasons: {
     withdrawn: 'Retirada por você',
     expired: 'Prazo de resposta encerrado',
+    declined: 'Solicitação recusada',
     period_started: 'O período solicitado começou',
     requester_membership: 'Seu Membership deixou de estar ativo',
     holder_membership: 'O membro solicitado deixou de poder responder',
@@ -245,6 +246,15 @@ export const requestMessages = {
     received: 'Solicitação recebida',
     closed: 'Solicitação encerrada',
     receivedClosed: 'Solicitação recebida encerrada',
+    accepted: 'Solicitação aceita',
+    receivedAccepted: 'Cessão confirmada',
+    acceptedWhat: (stay: string) => `Reserva confirmada para ${stay}.`,
+    receivedAcceptedWhat: (stay: string) => `Datas cedidas: ${stay}.`,
+    guaranteeConsumed: 'Garantia consumida',
+    complementConsumed: 'Créditos do complemento consumidos',
+    excess: 'Créditos disponíveis do complemento',
+    receivedCredits: 'Créditos recebidos',
+    creditExpiry: 'Validade dos Créditos',
     sentWhat: (stay: string) =>
       `${stay}. Os Créditos em Garantia e as datas oferecidas ficam reservados até a resposta.`,
     receivedWhat: (stay: string) => `Um membro solicitou datas da sua Second Home — ${stay}.`,

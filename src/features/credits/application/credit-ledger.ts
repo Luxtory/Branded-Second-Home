@@ -9,7 +9,14 @@ import {
   type Allocation,
   type UsableLot,
 } from '../domain/credit';
-import type { CreditStore, EntryDraft, OpenEntry, OriginatedLot, SnapshotRecorder } from './ports';
+import type {
+  CreditStore,
+  EntryDraft,
+  OpenEntry,
+  OriginatedLot,
+  RequestAcceptanceCreditStore,
+  SnapshotRecorder,
+} from './ports';
 
 /**
  * Mecanismos dos Créditos (ADR-0033; TECH-070, TECH-071, TECH-072) para os commands das waves seguintes, dentro da
@@ -227,6 +234,63 @@ export async function releaseHold<Tx>(
       parentEntryId: entry.entryId,
     })),
   );
+}
+
+/** Applies only the original holds and the lot originated for the accepted Request (TECH-073). */
+export async function settleRequestCredits<Tx>(
+  context: LedgerContext<Tx>,
+  store: RequestAcceptanceCreditStore<Tx>,
+  winner: { readonly operationId: string; readonly guarantee: string },
+  rivals: readonly { readonly operationId: string; readonly guarantee: string }[],
+  complement: { readonly lotId: string; readonly quantity: string } | null,
+): Promise<ReadonlyMap<string, string>> {
+  const guarantees = [winner, ...rivals].filter(
+    (request) => compareQuantities(request.guarantee, '0') > 0,
+  );
+  const { tx, locks, operationId } = context;
+  const { lots, holds } = await store.lockAcceptanceLots(
+    tx,
+    guarantees.map((request) => request.operationId),
+    complement?.lotId ?? null,
+  );
+  claimLots(locks, lots);
+  const byOperation = new Map<string, OpenEntry[]>();
+  for (const hold of holds) {
+    const entries = byOperation.get(hold.operationId) ?? [];
+    entries.push(hold);
+    byOperation.set(hold.operationId, entries);
+  }
+  const released = new Map<string, string>();
+  const entries: EntryDraft[] = [];
+  for (const request of guarantees) {
+    const original = byOperation.get(request.operationId) ?? [];
+    const consume = request.operationId === winner.operationId;
+    const quantity = sumQuantities(original.map((hold) => hold.remaining));
+    if (
+      compareQuantities(quantity, request.guarantee) !== 0 ||
+      (consume && original.some((hold) => !hold.valid))
+    )
+      throw new CommandRejection('ERR_CREDIT_HOLD_INVALID');
+    if (!consume) released.set(request.operationId, quantity);
+    for (const hold of original)
+      entries.push({
+        lotId: hold.lotId,
+        quantity: hold.remaining,
+        parentEntryId: hold.entryId,
+        from: 'held',
+        movement: consume ? 'consume' : 'release',
+        to: consume ? 'consumed' : hold.valid ? 'available' : 'expired',
+      });
+  }
+  if (complement !== null)
+    entries.push({
+      ...complement,
+      movement: 'consume',
+      from: 'available',
+      to: 'consumed',
+    });
+  await store.insertEntries(tx, operationId, entries);
+  return released;
 }
 
 /**

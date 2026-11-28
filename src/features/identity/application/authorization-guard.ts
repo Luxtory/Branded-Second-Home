@@ -60,16 +60,16 @@ async function authorize(
   if (spec.authority === 'grantee') return authorizeGrantee(deps, spec, actor, scope);
   if (spec.authority === 'invitee') return authorizeInvitee(deps, actor, scope);
   if (spec.authority === 'titular') return authorizeTitular(deps, actor, scope);
-  if (spec.authority === 'requester') return authorizeRequester(deps, actor, scope);
+  if (spec.authority === 'requester' || spec.authority === 'holder')
+    return authorizeRequestParty(deps, actor, scope);
   return DENY;
 }
 
 /**
- * Solicitante de Request (TECH-051 "solicitante"; W21): o usuário representa, agora, a party que age — e só ela, pelo
- * escopo `party`. Que a party é a solicitante da Request é conferido dentro da transação, sob a trava da Request, e pelo
- * banco; encerrar a própria obrigação não depende de holding nem de Membership (ADR-0037 §7, §10).
+ * Solicitante ou detentor (TECH-051): confirma a delegação vigente no escopo `party`. O handler e o banco conferem
+ * o vínculo da party com a Request travada. Encerramentos não dependem de holding nem de Membership (ADR-0037 §10).
  */
-async function authorizeRequester(
+async function authorizeRequestParty(
   deps: GuardDependencies,
   actor: Extract<Actor, { kind: 'user' }>,
   scope: CommandScope | null,

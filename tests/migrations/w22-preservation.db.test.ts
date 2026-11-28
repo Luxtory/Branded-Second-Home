@@ -8,6 +8,7 @@ import { requestFixture, requestRow, sendGuaranteedRequest } from '../features/l
 import { fundRequestCredits, writeAcceptance, writeRejection } from '../features/luxchange/w22-support';
 
 const W22 = '20261126164050_luxchange_request_accept';
+const GUARANTEE_VALIDITY = '20261128024452_luxchange_guarantee_release_validity';
 
 async function bookingColumns(db: TestDatabase) {
   return (await db.pool.query(
@@ -34,17 +35,20 @@ describe('W22 — reversibilidade e preservação [TECH-052][TECH-110]', () => {
   let historical: Awaited<ReturnType<typeof databaseBefore>>;
   let up: string;
   let down: string;
+  let restore73: string;
 
   beforeAll(async () => {
     historical = await databaseBefore(W22);
     up = (await readFile(new URL(`../../migrations/${W22}.sql`, import.meta.url), 'utf8')).split('-- migrate:down')[0]!;
     down = await migrationDown(W22);
+    restore73 = await migrationDown(GUARANTEE_VALIDITY);
   });
   afterAll(async () => historical?.dispose());
 
   it('73 sem ativação; down restaura funções, políticas, colunas, índices e grants da W21 e up os recompõe', async () => {
     const subject = await createTestDatabase();
     try {
+      await subject.pool.query(restore73);
       const current = await snapshot(subject);
       const columns = await bookingColumns(subject);
       const beforeIndexes = await indexes(subject);
@@ -74,6 +78,7 @@ describe('W22 — reversibilidade e preservação [TECH-052][TECH-110]', () => {
   it('K7 impede o down mesmo sem Request ou reserva', async () => {
     const subject = await createTestDatabase();
     try {
+      await subject.pool.query(restore73);
       await activate({ database: subject }, 'luxchange_exchange');
       const before = await snapshot(subject);
       await expect(subject.pool.query(down)).rejects.toThrow(/rollback/i);
@@ -88,6 +93,7 @@ describe('W22 — reversibilidade e preservação [TECH-052][TECH-110]', () => {
   it.each(['pending', 'accepted', 'declined'] as const)('down com Request %s preserva seus fatos econômicos', async state => {
     const c = await creditsHarness();
     try {
+      await c.h.database.pool.query(restore73);
       const f = await requestFixture(c);
       await activate(c.h, 'luxchange_deposit');
       const lot = await fundRequestCredits(f, c.titular, '500');

@@ -27,6 +27,7 @@ export function createPostgresLuxchangeCessionInventory(): LuxchangeCessionInven
               .where('holder_kind', '=', 'use_right')
               .where('basis', '=', 'reserved_right')
               .where('stake_id', '=', source.stakeId);
+      if (cession.request !== undefined) query = query.where('id', '=', cession.request.custodyId);
       const closed = await query.returning('id').executeTakeFirst();
       if (closed === undefined) return false;
       await tx
@@ -38,7 +39,10 @@ export function createPostgresLuxchangeCessionInventory(): LuxchangeCessionInven
           holder_kind: 'luxtory',
           purpose: 'inventory',
           inventory_origin: 'luxchange_cession',
-          authorization_ref: depositAuthorizationRef(cession.operationId),
+          authorization_ref:
+            cession.request === undefined
+              ? depositAuthorizationRef(cession.operationId)
+              : `${cession.request.purpose}:${cession.request.id}`,
           parent_custody_id: closed.id,
           opened_by_operation: cession.operationId,
         })

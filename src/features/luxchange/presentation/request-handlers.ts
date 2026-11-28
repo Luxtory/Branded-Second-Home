@@ -1,16 +1,24 @@
 import { createPostgresBillingStore } from '@/features/billing';
 import { createOwnUseCessionPort } from '@/features/booking';
 import { createPostgresCreditStore } from '@/features/credits';
+import { createLuxchangeCessionInventory } from '@/features/inventory';
 import type { CommandHandler, Database, DatabaseTransaction } from '@/features/platform';
+import {
+  createAcceptRequestHandler,
+  type AcceptRequestInput,
+  type AcceptRequestResult,
+} from '../application/accept-request';
 import {
   createPostgresEconomicTermsStore,
   postgresEconomicSnapshotRecorder,
   recordAcceptedPolicy,
 } from '@/features/pricing';
 import {
+  createRejectRequestHandler,
   createSystemClosingHandler,
   createWithdrawRequestHandler,
   type ClosingDependencies,
+  type RejectRequestInput,
   type RequestClosingResult,
   type SystemClosingInput,
   type WithdrawRequestInput,
@@ -22,6 +30,7 @@ import {
   type SendRequestResult,
 } from '../application/send-request';
 import { createPostgresRequestStore } from '../infrastructure/postgres-request-store';
+import { createPostgresRequestAcceptanceStore } from '../infrastructure/postgres-request-acceptance';
 
 /** Dependências de produção do envio e da prévia (superfícies públicas de booking, credits, billing e pricing). */
 export function requestDependencies(db: Database): SendRequestDependencies<DatabaseTransaction> {
@@ -58,6 +67,25 @@ export function createWithdrawRequestProductionHandler(
   db: Database,
 ): CommandHandler<WithdrawRequestInput, RequestClosingResult, DatabaseTransaction> {
   return createWithdrawRequestHandler(closingDependencies(db));
+}
+
+/** `reject_request` com as dependências de produção. */
+export function createRejectRequestProductionHandler(
+  db: Database,
+): CommandHandler<RejectRequestInput, RequestClosingResult, DatabaseTransaction> {
+  return createRejectRequestHandler(closingDependencies(db));
+}
+
+export function createAcceptRequestProductionHandler(
+  db: Database,
+): CommandHandler<AcceptRequestInput, AcceptRequestResult, DatabaseTransaction> {
+  return createAcceptRequestHandler({
+    store: createPostgresRequestAcceptanceStore(),
+    bookings: createOwnUseCessionPort(),
+    inventory: createLuxchangeCessionInventory(),
+    credits: createPostgresCreditStore(),
+    billing: createPostgresBillingStore(db),
+  });
 }
 
 /** `expire_requests` ou `close_ineligible_request` com as dependências de produção. */

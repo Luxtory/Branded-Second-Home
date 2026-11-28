@@ -2,9 +2,9 @@ import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { CommandHandler } from '@/features/platform';
 import { advanceSteps, type BookingState } from '../domain/own-use-lifecycle';
-import { lockTarget, reject } from './own-use-closing';
+import { reject } from './own-use-closing';
 import type { BookingJobStore } from './own-use-lifecycle-jobs';
-import type { BookingLifecycleStore } from './own-use-lifecycle-ports';
+import type { BookingAdvanceStore, BookingLifecycleStore } from './own-use-lifecycle-ports';
 
 export const bookingJobInput = z.strictObject({
   second_home_id: z.uuid(),
@@ -19,8 +19,8 @@ export type AdvanceBookingStatesResult = {
   readonly transitions: number;
 };
 
-export interface BookingJobDependencies<Tx> {
-  readonly store: BookingLifecycleStore<Tx>;
+export interface BookingJobDependencies<Tx, Store = BookingLifecycleStore<Tx>> {
+  readonly store: Store;
   readonly jobs: BookingJobStore<Tx>;
   readonly newId?: () => string;
 }
@@ -32,7 +32,7 @@ export interface BookingJobDependencies<Tx> {
  * exceção ou terminal → `ERR_STATE_TRANSITION`, sem efeito. Nenhum evento nem escrita de ledger, custódia ou ocupação.
  */
 export function createAdvanceBookingStatesHandler<Tx>(
-  deps: BookingJobDependencies<Tx>,
+  deps: BookingJobDependencies<Tx, BookingAdvanceStore<Tx>>,
 ): CommandHandler<BookingJobInput, AdvanceBookingStatesResult, Tx> {
   const newId = deps.newId ?? randomUUID;
   return {
@@ -40,14 +40,19 @@ export function createAdvanceBookingStatesHandler<Tx>(
     input: bookingJobInput,
     secondHomeId: (input) => input.second_home_id,
     async execute(context) {
-      const { input, tx } = context;
-      const found = await deps.store.findBooking(tx, input.booking_id);
+      const { input, tx, locks } = context;
+      const found = await deps.store.findAdvanceBooking(tx, input.booking_id);
       if (found === null || found.secondHomeId !== input.second_home_id)
         throw reject('ERR_NOT_FOUND');
-      const booking = await lockTarget(deps, context, found, []);
-      const period = await deps.store.period(tx, booking.id);
+      if (found.stakeId !== null)
+        for (const key of locks.claim('stake', [found.stakeId]))
+          await deps.store.lockStake(tx, key);
+      for (const key of locks.claim('booking', [found.id])) await deps.store.lockBooking(tx, key);
+      const booking = await deps.store.findAdvanceBooking(tx, found.id);
+      if (booking === null) throw reject('ERR_NOT_FOUND');
+      const period = await deps.store.advancePeriod(tx, booking.id);
       const at = await deps.jobs.databaseNow(tx);
-      const steps = advanceSteps(booking.state, period.nights[0]!.checkinAt, period.checkoutAt, at);
+      const steps = advanceSteps(booking.state, period.firstCheckinAt, period.checkoutAt, at);
       if (steps.length === 0) throw reject('ERR_STATE_TRANSITION');
       let current = booking;
       const transitionIds: string[] = [];

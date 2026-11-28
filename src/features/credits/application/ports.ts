@@ -40,6 +40,20 @@ export interface OriginatedLot {
   readonly expiresAt: string;
 }
 
+export interface RequestAcceptanceCreditStore<Tx> extends Pick<
+  CreditStore<Tx>,
+  'insertLot' | 'insertEntries'
+> {
+  lockAcceptanceLots(
+    tx: Tx,
+    holdOperationIds: readonly string[],
+    complementLotId: string | null,
+  ): Promise<{
+    readonly lots: readonly Pick<LockedLot, 'id' | 'expiresAt' | 'originatedAt'>[];
+    readonly holds: readonly (OpenEntry & { readonly operationId: string })[];
+  }>;
+}
+
 /** Persistência dos Créditos (PostgreSQL em `infrastructure/`); toda trava segue a TECH-053. */
 export interface CreditStore<Tx> {
   /**

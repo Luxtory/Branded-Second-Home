@@ -8,12 +8,18 @@ export {
   holdCreditsReleasing,
   originateCreditLot,
   releaseHold,
+  settleRequestCredits,
   MissingValidityTermsError,
   type LedgerContext,
   type LedgerDependencies,
   type Movement,
 } from './application/credit-ledger';
-export type { CreditStore, OriginatedLot, SnapshotRecorder } from './application/ports';
+export type {
+  CreditStore,
+  OriginatedLot,
+  RequestAcceptanceCreditStore,
+  SnapshotRecorder,
+} from './application/ports';
 export { createReverseCreditHandler, type ReverseCreditResult } from './application/reverse-credit';
 export { isCreditQuantity } from './domain/credit';
 export { createPostgresCreditStore } from './infrastructure/postgres-credit-store';

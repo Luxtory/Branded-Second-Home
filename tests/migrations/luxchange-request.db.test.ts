@@ -635,16 +635,19 @@ describe('W21 — Request no banco (ADR-0037)', () => {
           `INSERT INTO app.luxchange_request_transition (id, request_id, operation_id, reason) VALUES ($1, $2, $3, 'expired')`,
           [randomUUID(), sent.requestId, op],
         );
-        await expect(
-          insertEntry(client, op, {
-            lotId: lot,
-            movement: 'release',
-            from: 'held',
-            to: 'available',
-            quantity: '300',
-            parent: sent.holdIds[0]!,
-          }),
-        ).rejects.toEqual(constraint('credit_entry_validity_bucket'));
+        const release = await insertEntry(client, op, {
+          lotId: lot,
+          movement: 'release',
+          from: 'held',
+          to: 'available',
+          quantity: '300',
+          parent: sent.holdIds[0]!,
+        });
+        const { rows } = await client.query(
+          'SELECT to_bucket, quantity::text FROM app.credit_entry WHERE id = $1',
+          [release],
+        );
+        expect(rows).toEqual([{ to_bucket: 'expired', quantity: '300' }]);
       } finally {
         await client.query('ROLLBACK');
         await client.end();

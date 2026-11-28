@@ -1,6 +1,8 @@
 import { REQUEST_CLOSURE_REASONS, type RequestClosureReason } from '../domain/request';
 import {
+  REQUEST_ACCEPTED_NOTIFICATION,
   REQUEST_CLOSED_NOTIFICATION,
+  REQUEST_RECEIVED_ACCEPTED_NOTIFICATION,
   REQUEST_RECEIVED_CLOSED_NOTIFICATION,
   REQUEST_RECEIVED_NOTIFICATION,
   REQUEST_SENT_NOTIFICATION,
@@ -48,6 +50,42 @@ export function requestNotificationCopy(
   );
   const expires = str(data, 'expires_at');
   switch (kind) {
+    case REQUEST_ACCEPTED_NOTIFICATION: {
+      const guarantee = str(data, 'guarantee_credits');
+      const consumed = str(data, 'complement_consumption');
+      const excess = str(data, 'complement_excess');
+      const expiry = str(data, 'complement_credit_expires_at');
+      if (guarantee === null || consumed === null || excess === null) return null;
+      return {
+        title: text.accepted,
+        what: text.acceptedWhat(dates),
+        extra: [
+          [text.guaranteeConsumed, requestMessages.credits(formatCredits(guarantee))],
+          [text.complementConsumed, requestMessages.credits(formatCredits(consumed))],
+          ...(expiry === null
+            ? []
+            : [
+                [text.excess, requestMessages.credits(formatCredits(excess))] as const,
+                [text.creditExpiry, format.instant(expiry)] as const,
+              ]),
+        ],
+        href: luxchangePaths.request(requestId),
+      };
+    }
+    case REQUEST_RECEIVED_ACCEPTED_NOTIFICATION: {
+      const quantity = str(data, 'holder_credits');
+      const expiry = str(data, 'holder_credit_expires_at');
+      if (quantity === null || expiry === null) return null;
+      return {
+        title: text.receivedAccepted,
+        what: text.receivedAcceptedWhat(dates),
+        extra: [
+          [text.receivedCredits, requestMessages.credits(formatCredits(quantity))],
+          [text.creditExpiry, format.instant(expiry)],
+        ],
+        href: luxchangePaths.requests,
+      };
+    }
     case REQUEST_SENT_NOTIFICATION: {
       const guarantee = str(data, 'guarantee_credits');
       const committed = typeof data.complement_nights === 'number' ? data.complement_nights : null;
@@ -77,7 +115,7 @@ export function requestNotificationCopy(
       const released = str(data, 'guarantee_released');
       if (!isReason(reason) || released === null) return null;
       return {
-        title: text.closed,
+        title: reason === 'declined' ? requestMessages.reasons.declined : text.closed,
         what: text.closedWhat(dates, requestMessages.reasons[reason].toLowerCase()),
         extra: [
           [text.released, requestMessages.credits(formatCredits(released))],

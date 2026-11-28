@@ -13,6 +13,11 @@ export interface NightCession {
   readonly stayDate: string;
   readonly source: CessionSource;
   readonly operationId: string;
+  readonly request?: {
+    readonly id: string;
+    readonly custodyId: string;
+    readonly purpose: 'request_destination' | 'request_complement';
+  };
 }
 
 export interface CededOccupancyRelease {

@@ -2,9 +2,11 @@ import { sql, type NotNull } from 'kysely';
 import { holdingParty } from '@/features/ownership';
 import { lockAdvisoryKeys, type DatabaseTransaction } from '@/features/platform';
 import { OWN_USE_LIFECYCLE_CAPABILITY } from '../application/own-use-closing';
-import type {
-  BookingLifecycleStore,
-  LifecycleBooking,
+import {
+  BOOKING_ADVANCE_CHANNELS,
+  type BookingAdvanceStore,
+  type BookingLifecycleStore,
+  type LifecycleBooking,
 } from '../application/own-use-lifecycle-ports';
 import type { BookingState, CancellationClass, ExceptionType } from '../domain/own-use-lifecycle';
 import { microsFromText } from './lifecycle-instants';
@@ -51,7 +53,8 @@ const micros = (column: string) =>
  * classe e primeira noite afetada na transição; os valores de instante enviados não prevalecem. As travas usam as
  * mesmas chaves dos gatilhos, uma instrução por chave.
  */
-export function createPostgresBookingLifecycleStore(): BookingLifecycleStore<DatabaseTransaction> {
+export function createPostgresBookingLifecycleStore(): BookingLifecycleStore<DatabaseTransaction> &
+  BookingAdvanceStore<DatabaseTransaction> {
   const creation = createPostgresBookingStore();
   return {
     async lifecycleActivated(tx) {
@@ -82,6 +85,32 @@ export function createPostgresBookingLifecycleStore(): BookingLifecycleStore<Dat
         .$narrowType<{ holding_id: NotNull }>()
         .executeTakeFirst();
       return row === undefined ? null : toBooking(row);
+    },
+    async findAdvanceBooking(tx, bookingId) {
+      const row = await tx
+        .selectFrom('app.booking')
+        .select(['id', 'second_home_id', 'stake_id', 'state', 'last_transition_id'])
+        .where('id', '=', bookingId)
+        .where('channel', 'in', BOOKING_ADVANCE_CHANNELS)
+        .executeTakeFirst();
+      return row === undefined
+        ? null
+        : {
+            id: row.id,
+            secondHomeId: row.second_home_id,
+            stakeId: row.stake_id,
+            state: stateOf(row.state),
+            lastTransitionId: row.last_transition_id,
+          };
+    },
+    async advancePeriod(tx, bookingId) {
+      const { rows } = await sql<{ checkin_us: string; checkout_us: string }>`
+        SELECT ${micros('first_checkin_at')} AS checkin_us, ${micros('checkout_at')} AS checkout_us
+          FROM app.booking_period_instants(${bookingId}::uuid)`.execute(tx);
+      return {
+        firstCheckinAt: microsFromText(rows[0]!.checkin_us),
+        checkoutAt: microsFromText(rows[0]!.checkout_us),
+      };
     },
     async period(tx, bookingId) {
       const nights = await tx

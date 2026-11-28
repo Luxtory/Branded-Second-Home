@@ -2,13 +2,20 @@ import { randomUUID } from 'node:crypto';
 import { sql } from 'kysely';
 import type { DatabaseTransaction } from '@/features/platform';
 import type { UsableLot } from '../domain/credit';
-import type { CreditStore, LockedLot, OpenEntry, OriginatedLot } from '../application/ports';
+import type {
+  CreditStore,
+  LockedLot,
+  OpenEntry,
+  OriginatedLot,
+  RequestAcceptanceCreditStore,
+} from '../application/ports';
 
 /** Instante em ISO 8601 UTC com microssegundos: mesma ordem do PostgreSQL na comparação de texto (TECH-053). */
 const iso = (column: string) =>
   sql.raw(`to_char(${column} AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`);
 
 interface OpenRow {
+  readonly operation_id: string;
   readonly entry_id: string;
   readonly lot_id: string;
   readonly remaining: string;
@@ -30,20 +37,28 @@ const toOpen = (row: OpenRow): OpenEntry => ({
  * Créditos no PostgreSQL (ADR-0033). Travas de linha em ordem FEFO = ordem da classe 7 da TECH-053; saldos lidos depois
  * das travas (READ COMMITTED relê a versão confirmada). Validade sempre pelo relógio do banco.
  */
-export function createPostgresCreditStore(): CreditStore<DatabaseTransaction> {
+export function createPostgresCreditStore(): CreditStore<DatabaseTransaction> &
+  RequestAcceptanceCreditStore<DatabaseTransaction> {
   /** Trava os lotes que `filter` seleciona, em ordem FEFO; devolve os ids travados. */
-  async function lockLots(tx: DatabaseTransaction, filter: ReturnType<typeof sql>): Promise<void> {
-    await sql`SELECT l.id FROM app.credit_lot l WHERE ${filter}
-               ORDER BY l.expires_at, l.originated_at, l.id FOR UPDATE`.execute(tx);
+  async function lockLots(tx: DatabaseTransaction, filter: ReturnType<typeof sql>) {
+    const { rows } = await sql<{ id: string; expires_at: string; originated_at: string }>`
+      SELECT l.id, ${iso('l.expires_at')} AS expires_at, ${iso('l.originated_at')} AS originated_at
+        FROM app.credit_lot l WHERE ${filter}
+       ORDER BY l.expires_at, l.originated_at, l.id FOR UPDATE`.execute(tx);
+    return rows.map((row) => ({
+      id: row.id,
+      expiresAt: row.expires_at,
+      originatedAt: row.originated_at,
+    }));
   }
 
   /** Movimentos (de `filter`) com o saldo que ainda não saiu deles, depois de os lotes estarem travados. */
   async function openEntries(
     tx: DatabaseTransaction,
     filter: ReturnType<typeof sql>,
-  ): Promise<OpenEntry[]> {
+  ): Promise<OpenRow[]> {
     const { rows } = await sql<OpenRow>`
-      SELECT e.id AS entry_id, e.lot_id,
+      SELECT e.id AS entry_id, e.lot_id, e.operation_id,
              (e.quantity - coalesce((SELECT sum(c.quantity) FROM app.credit_entry c WHERE c.parent_entry_id = e.id), 0))::text
                AS remaining,
              clock_timestamp() < l.expires_at AS valid,
@@ -51,7 +66,7 @@ export function createPostgresCreditStore(): CreditStore<DatabaseTransaction> {
         FROM app.credit_entry e JOIN app.credit_lot l ON l.id = e.lot_id
        WHERE ${filter}
        ORDER BY l.expires_at, l.originated_at, l.id`.execute(tx);
-    return rows.filter((row) => !/^0(\.0*)?$/.test(row.remaining)).map(toOpen);
+    return rows.filter((row) => !/^0(\.0*)?$/.test(row.remaining));
   }
 
   return {
@@ -81,10 +96,12 @@ export function createPostgresCreditStore(): CreditStore<DatabaseTransaction> {
         sql`l.id IN (SELECT e.lot_id FROM app.credit_entry e
                       WHERE e.operation_id = ${operationId}::uuid AND e.movement = ${movement})`,
       );
-      return openEntries(
-        tx,
-        sql`e.operation_id = ${operationId}::uuid AND e.movement = ${movement}`,
-      );
+      return (
+        await openEntries(
+          tx,
+          sql`e.operation_id = ${operationId}::uuid AND e.movement = ${movement}`,
+        )
+      ).map(toOpen);
     },
 
     async lockConsumption(tx, entryId) {
@@ -93,7 +110,7 @@ export function createPostgresCreditStore(): CreditStore<DatabaseTransaction> {
         sql`l.id = (SELECT e.lot_id FROM app.credit_entry e WHERE e.id = ${entryId}::uuid AND e.movement = 'consume')`,
       );
       const { rows } = await sql<OpenRow>`
-        SELECT e.id AS entry_id, e.lot_id,
+        SELECT e.id AS entry_id, e.lot_id, e.operation_id,
                (e.quantity - coalesce((SELECT sum(c.quantity) FROM app.credit_entry c WHERE c.parent_entry_id = e.id), 0))::text
                  AS remaining,
                clock_timestamp() < l.expires_at AS valid,
@@ -154,7 +171,23 @@ export function createPostgresCreditStore(): CreditStore<DatabaseTransaction> {
           expiresAt: row.expires_at,
           originatedAt: row.originated_at,
         })),
-        open,
+        open: open.map(toOpen),
+      };
+    },
+
+    async lockAcceptanceLots(tx, holdOperationIds, complementLotId) {
+      const holds = sql`e.operation_id = ANY (${[...holdOperationIds]}::uuid[]) AND e.movement = 'hold'`;
+      const lots = await lockLots(
+        tx,
+        sql`l.id = ${complementLotId}::uuid OR l.id IN (
+        SELECT e.lot_id FROM app.credit_entry e WHERE ${holds})`,
+      );
+      return {
+        lots,
+        holds: (await openEntries(tx, holds)).map((row) => ({
+          ...toOpen(row),
+          operationId: row.operation_id,
+        })),
       };
     },
 

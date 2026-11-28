@@ -135,6 +135,9 @@ const CONSTRAINT_NAMES: ReadonlyMap<string, RejectionCode> = new Map([
   ['luxchange_request_self_dealing', 'ERR_PERMISSION'],
   ['luxchange_request_closing_binding', 'ERR_PERMISSION'],
   ['luxchange_request_still_acceptable', 'ERR_STATE_TRANSITION'],
+  ['luxchange_request_accept_deadline', 'ERR_STATE_TRANSITION'],
+  ['luxchange_request_accept_ineligible', 'ERR_CAPACITY_UNAVAILABLE'],
+  ['luxchange_request_cession_holding', 'ERR_CAPACITY_UNAVAILABLE'],
   ['credit_hold_request', 'ERR_CREDIT_HOLD_INVALID'],
 ]);
 

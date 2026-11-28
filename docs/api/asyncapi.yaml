@@ -59,6 +59,8 @@ channels:
         $ref: '#/components/messages/LuxchangeRequestSent'
       luxchangeRequestClosed:
         $ref: '#/components/messages/LuxchangeRequestClosed'
+      luxchangeRequestAccepted:
+        $ref: '#/components/messages/LuxchangeRequestAccepted'
 
 operations:
   publishOutboxEvent:
@@ -362,11 +364,12 @@ components:
       name: luxchange.request_closed
       title: Request encerrada antes do aceite (PD-005, REQ-097, W21)
       description: |
-        Gravado na transação do encerramento pré-aceite — `withdraw_request`, `expire_requests`,
+        Gravado na transação do encerramento pré-aceite — `withdraw_request`, `reject_request`, `expire_requests`,
         `close_ineligible_request` ou o reenvio que materializa o encerramento (`dedup_key` =
         `luxchange.request_closed:<request_id>`; um por Request). Consumido pelas notificações ao solicitante (motivo,
         Garantia liberada, devolução da Taxa) e ao solicitado (só o estado: nunca o motivo). Notificação não cria direito,
         prazo nem consequência econômica (REQ-097). Sem PRL, valores em reais nem dado pessoal (ADR-0037).
+        O aceite também grava este evento para cada Request concorrente encerrada na mesma transação.
       contentType: application/json
       payload:
         allOf:
@@ -377,6 +380,23 @@ components:
                 const: luxchange.request_closed
               payload:
                 $ref: '#/components/schemas/LuxchangeRequestClosedPayload'
+    LuxchangeRequestAccepted:
+      name: luxchange.request_accepted
+      title: Request aceita (REQ-061, REQ-064, REQ-097)
+      description: |
+        Gravado na transação de `accept_request` (`dedup_key` = `luxchange.request_accepted:<request_id>`).
+        As parties identificam destinatários internos. Cada notificação recebe somente datas e os efeitos do
+        aceite autorizados para seu destinatário. Sem PRL, dados pessoais ou valores em reais.
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/OutboxEnvelope'
+          - type: object
+            properties:
+              type:
+                const: luxchange.request_accepted
+              payload:
+                $ref: '#/components/schemas/LuxchangeRequestAcceptedPayload'
     OutboxEvent:
       name: OutboxEvent
       title: Envelope de evento do outbox
@@ -813,7 +833,7 @@ components:
           format: date
         state:
           type: string
-          enum: [expired, cancelled_pre_accept]
+          enum: [expired, cancelled_pre_accept, declined]
         reason:
           type: string
           enum:
@@ -825,8 +845,9 @@ components:
               holder_membership,
               capacity_unavailable,
               complement_unavailable,
+              declined,
             ]
-          description: Motivo decidido e provado pelo banco (ADR-0037 §5, §7).
+          description: Motivo decidido e provado pelo banco (ADR-0037 §5, §7, §14.6).
         guarantee_released:
           type: string
           pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
@@ -834,6 +855,38 @@ components:
         closed_at:
           type: string
           format: date-time
+    LuxchangeRequestAcceptedPayload:
+      type: object
+      additionalProperties: false
+      required:
+        [request_id, requester_party_id, holder_party_id, second_home_id, booking_id, checkin, checkout,
+        credits_required, guarantee_credits, complement_credits, complement_consumption, complement_excess,
+        holder_credits, holder_credit_expires_at]
+      properties:
+        request_id: { type: string, format: uuid }
+        requester_party_id: { type: string, format: uuid }
+        holder_party_id: { type: string, format: uuid }
+        second_home_id: { type: string, format: uuid }
+        booking_id: { type: string, format: uuid }
+        checkin: { type: string, format: date }
+        checkout: { type: string, format: date }
+        credits_required:
+          $ref: '#/components/schemas/LuxchangeRequestCreditQuantity'
+        guarantee_credits:
+          $ref: '#/components/schemas/LuxchangeRequestCreditQuantity'
+        complement_credits:
+          $ref: '#/components/schemas/LuxchangeRequestCreditQuantity'
+        complement_consumption:
+          $ref: '#/components/schemas/LuxchangeRequestCreditQuantity'
+        complement_excess:
+          $ref: '#/components/schemas/LuxchangeRequestCreditQuantity'
+        holder_credits:
+          $ref: '#/components/schemas/LuxchangeRequestCreditQuantity'
+        holder_credit_expires_at: { type: string, format: date-time }
+        complement_credit_expires_at: { type: string, format: date-time }
+    LuxchangeRequestCreditQuantity:
+      type: string
+      pattern: '^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$'
     OutboxEnvelope:
       type: object
       additionalProperties: false

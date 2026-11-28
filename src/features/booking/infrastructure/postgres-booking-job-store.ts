@@ -1,6 +1,7 @@
 import { sql } from 'kysely';
 import type { Database, DatabaseTransaction } from '@/features/platform';
 import type { BookingJobStore, BookingSweepCandidate } from '../application/own-use-lifecycle-jobs';
+import { BOOKING_ADVANCE_CHANNELS } from '../application/own-use-lifecycle-ports';
 import { microsFromText } from './lifecycle-instants';
 
 /**
@@ -25,7 +26,7 @@ export async function advanceCandidates(db: Database): Promise<readonly BookingS
   const { rows } = await sql<CandidateRow>`
     SELECT b.id, b.second_home_id, b.last_transition_id
       FROM app.booking b CROSS JOIN LATERAL app.booking_period_instants(b.id) AS i
-     WHERE b.channel = 'own_use' AND b.state IN ('confirmed', 'in_use')
+     WHERE b.channel = ANY (${BOOKING_ADVANCE_CHANNELS}::text[]) AND b.state IN ('confirmed', 'in_use')
        AND clock_timestamp() >= CASE WHEN b.state = 'confirmed' THEN i.first_checkin_at ELSE i.checkout_at END
      ORDER BY i.first_checkin_at, b.id`.execute(db);
   return rows.map(toCandidate);
