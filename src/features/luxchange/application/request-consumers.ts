@@ -1,13 +1,15 @@
 import { z } from 'zod';
 import type { Clock, OutboxConsumer } from '@/features/platform';
-import { REQUEST_CLOSURE_REASONS } from '../domain/request';
-import { REQUEST_CLOSED, REQUEST_SENT } from './request-events';
+import { REQUEST_CLOSING_STATES, REQUEST_CLOSURE_REASONS } from '../domain/request';
+import { REQUEST_ACCEPTED, REQUEST_CLOSED, REQUEST_SENT } from './request-events';
 
 /** Tipos das notificações da Request na central do Titular (REQ-097; spec luxchange §13.6). */
 export const REQUEST_SENT_NOTIFICATION = 'luxchange.request_sent';
 export const REQUEST_RECEIVED_NOTIFICATION = 'luxchange.request_received';
 export const REQUEST_CLOSED_NOTIFICATION = 'luxchange.request_closed';
 export const REQUEST_RECEIVED_CLOSED_NOTIFICATION = 'luxchange.request_received_closed';
+export const REQUEST_ACCEPTED_NOTIFICATION = 'luxchange.request_accepted';
+export const REQUEST_RECEIVED_ACCEPTED_NOTIFICATION = 'luxchange.request_received_accepted';
 
 const date = z.iso.date();
 const credits = z.string().regex(/^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$/);
@@ -32,10 +34,27 @@ const closed = z.strictObject({
   second_home_id: z.uuid(),
   checkin: date,
   checkout: date,
-  state: z.enum(['expired', 'cancelled_pre_accept']),
+  state: z.enum(REQUEST_CLOSING_STATES),
   reason: z.enum(REQUEST_CLOSURE_REASONS),
   guarantee_released: credits,
   closed_at: instant,
+});
+const accepted = z.strictObject({
+  request_id: z.uuid(),
+  requester_party_id: z.uuid(),
+  holder_party_id: z.uuid(),
+  second_home_id: z.uuid(),
+  booking_id: z.uuid(),
+  checkin: date,
+  checkout: date,
+  credits_required: credits,
+  guarantee_credits: credits,
+  complement_credits: credits,
+  complement_consumption: credits,
+  complement_excess: credits,
+  holder_credits: credits,
+  holder_credit_expires_at: instant,
+  complement_credit_expires_at: instant.optional(),
 });
 
 export interface RequestConsumerDependencies<Tx> {
@@ -64,7 +83,7 @@ export function buildRequestConsumers<Tx>(
   return [
     {
       name: 'luxchange_request_notification',
-      eventTypes: [REQUEST_SENT, REQUEST_CLOSED],
+      eventTypes: [REQUEST_SENT, REQUEST_CLOSED, REQUEST_ACCEPTED],
       async handle(event, tx) {
         const at = deps.clock.now();
         const notify = (
@@ -89,6 +108,32 @@ export function buildRequestConsumers<Tx>(
             complement_nights: payload.complement_nights,
           });
           await notify(payload.holder_party_id, REQUEST_RECEIVED_NOTIFICATION, where);
+          return;
+        }
+        if (event.type === REQUEST_ACCEPTED) {
+          const payload = accepted.parse(event.payload);
+          const stay = {
+            request_id: payload.request_id,
+            second_home_id: payload.second_home_id,
+            checkin: payload.checkin,
+            checkout: payload.checkout,
+          };
+          await notify(payload.requester_party_id, REQUEST_ACCEPTED_NOTIFICATION, {
+            ...stay,
+            booking_id: payload.booking_id,
+            credits_required: payload.credits_required,
+            guarantee_credits: payload.guarantee_credits,
+            complement_consumption: payload.complement_consumption,
+            complement_excess: payload.complement_excess,
+            ...(payload.complement_credit_expires_at === undefined
+              ? {}
+              : { complement_credit_expires_at: payload.complement_credit_expires_at }),
+          });
+          await notify(payload.holder_party_id, REQUEST_RECEIVED_ACCEPTED_NOTIFICATION, {
+            ...stay,
+            holder_credits: payload.holder_credits,
+            holder_credit_expires_at: payload.holder_credit_expires_at,
+          });
           return;
         }
         const payload = closed.parse(event.payload);

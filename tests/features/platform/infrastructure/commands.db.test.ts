@@ -229,6 +229,96 @@ describe('pipeline de commands em PostgreSQL real (TECH-054)', () => {
     expect(await count('app.test_widget', `id = 'w-1' AND n = 1`)).toBe(1);
   });
 
+  it('[TECH-053][ADR-006] 40001 após escrita desfaz a tentativa e refaz o command inteiro uma vez', async () => {
+    const { executor, log } = testExecutor(db, { maxAttempts: 2, lockTimeoutMs: 250 });
+    const normal = widgetHandler();
+    const attempts: { id: string; xid: string; locks: unknown; input: unknown }[] = [];
+    const handler = widgetHandler({
+      async execute(context) {
+        const { rows } = await sql<{
+          xid: string;
+        }>`SELECT pg_current_xact_id()::text AS xid`.execute(context.tx);
+        attempts.push({
+          id: context.operationId,
+          xid: rows[0]!.xid,
+          locks: context.locks,
+          input: context.input,
+        });
+        const result = await normal.execute(context);
+        if (attempts.length === 1)
+          await sql`DO $$ BEGIN RAISE SQLSTATE '40001'; END $$`.execute(context.tx);
+        return result;
+      },
+    });
+    const command = request('w-1', 'k-serialization-replay');
+    const committed = await executor.execute(handler, command);
+
+    expect(committed).toMatchObject({ status: 'committed', result: { n: 1 }, replayed: false });
+    expect(await executor.execute(handler, command)).toEqual({ ...committed, replayed: true });
+    expect(attempts).toHaveLength(2);
+    expect(attempts.map((attempt) => attempt.id)).toEqual([
+      committed.operationId,
+      committed.operationId,
+    ]);
+    expect(attempts[0]!.input).toBe(attempts[1]!.input);
+    expect(attempts[0]!.xid).not.toBe(attempts[1]!.xid);
+    expect(attempts[0]!.locks).not.toBe(attempts[1]!.locks);
+    expect(log.warn).toHaveBeenCalledExactlyOnceWith('command retry', {
+      command: 'test_command',
+      operation_id: committed.operationId,
+      attempt: 1,
+    });
+    expect(await count('app.test_widget', 'n = 1')).toBe(1);
+    for (const table of ['operation', 'idempotency_record', 'audit_log', 'outbox'])
+      expect(await count(`app.${table}`)).toBe(1);
+  });
+
+  it.each(['40001', '23514'] as const)(
+    '[TECH-053] %s: esgotamento é indisponível e violação de completude falha sem retry',
+    async (code) => {
+      const { executor, log } = testExecutor(db, { maxAttempts: 2, lockTimeoutMs: 250 });
+      const normal = widgetHandler();
+      let attempts = 0;
+      const handler = widgetHandler({
+        async execute(context) {
+          attempts += 1;
+          await normal.execute(context);
+          await (
+            code === '40001'
+              ? sql`DO $$ BEGIN RAISE SQLSTATE '40001'; END $$`
+              : sql`DO $$ BEGIN RAISE SQLSTATE '23514' USING CONSTRAINT = 'luxchange_request_accept_complete'; END $$`
+          ).execute(context.tx);
+          throw new Error('Expected a PostgreSQL error');
+        },
+      });
+      const result = executor.execute(handler, request('w-1', `k-sqlstate-${code}`));
+
+      if (code === '40001') {
+        await expect(result).resolves.toEqual({
+          status: 'rejected',
+          code: 'ERR_UNAVAILABLE',
+          operationId: null,
+          replayed: false,
+        });
+        expect(attempts).toBe(2);
+        expect(log.error).toHaveBeenCalledWith(
+          'command retries exhausted',
+          expect.objectContaining({ attempt: 2 }),
+        );
+      } else {
+        await expect(result).rejects.toMatchObject({
+          code: '23514',
+          constraint: 'luxchange_request_accept_complete',
+        });
+        expect(attempts).toBe(1);
+        expect(log.warn).not.toHaveBeenCalled();
+      }
+      expect(await count('app.test_widget', 'n <> 0')).toBe(0);
+      for (const table of ['operation', 'idempotency_record', 'audit_log', 'outbox'])
+        expect(await count(`app.${table}`)).toBe(0);
+    },
+  );
+
   it('[REQ-098] recusa grava operation(failed) sem efeito e o replay repete a mesma causa', async () => {
     const { executor } = testExecutor(db);
     const refusing = widgetHandler({

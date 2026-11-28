@@ -26,6 +26,8 @@ import {
   postgresEconomicSnapshotRecorder,
   resolveEconomicTerms,
 } from '@/features/pricing';
+import { depositRunner } from '../luxchange/luxchange-support';
+import { writeAcceptance } from '../luxchange/w22-support';
 import { staffRunner } from '../pricing/pricing-support';
 import {
   prlForCredits,
@@ -44,6 +46,7 @@ import {
   lotRow,
   monthsAgo,
   originate,
+  prepareCreditDeposit,
   secondTitular,
   suspend,
   systemExecutor,
@@ -158,12 +161,30 @@ const acceptHandler = scoped(
   'accept_request',
   homeScope.extend({ hold_operation_id: z.uuid() }),
   async ({ input, tx, locks, operationId, actor, requireEligibleMembership }) => {
-    await requireEligibleMembership([partyOf(actor as { kind: string; actingPartyId: string })]);
-    return summary(
-      await consumeHold({ tx, locks, operationId }, deps, {
-        holdOperationId: input.hold_operation_id,
-      }),
+    const db = transactionQueryable(tx);
+    const {
+      rows: [sent],
+    } = await db.query<{
+      requestId: string;
+      operationId: string;
+      feeChargeId: string;
+      paymentId: string;
+    }>(
+      `SELECT r.id AS "requestId",r.operation_id AS "operationId",f.id AS "feeChargeId",f.payment_id AS "paymentId"
+       FROM app.luxchange_request r JOIN app.fee_charge f ON f.operation_id=r.operation_id WHERE r.operation_id=$1`,
+      [input.hold_operation_id],
     );
+    const party = partyOf(actor as { kind: string; actingPartyId: string });
+    await requireEligibleMembership([party]);
+    let movements: readonly Movement[] = [];
+    await writeAcceptance(db, operationId, { ...sent!, holdIds: [], unitIds: [] }, [], {
+      consumeGuarantee: async () => {
+        movements = await consumeHold({ tx, locks, operationId }, deps, {
+          holdOperationId: input.hold_operation_id,
+        });
+      },
+    });
+    return summary(movements);
   },
 );
 
@@ -227,17 +248,18 @@ describe('W17 — mecanismos dos Créditos (ADR-0033)', () => {
   describe('originação [TECH-025][TECH-031][TECH-044]', () => {
     it('persiste o snapshot da validade na mesma operação e um retry não duplica o lote', async () => {
       const party = await freshParty();
-      const run = titularExecutor(c, party, { requestGuard: true });
+      const run = depositRunner({ c }, party);
       const key = randomUUID();
-      const input = { second_home_id: party.homeId, quantity: '250.75' };
-      const first = await run(originateHandler, input, key);
-      const second = await run(originateHandler, input, key);
+      const input = await prepareCreditDeposit(c, party, '250.7');
+      const first = await run(input, { key });
+      const second = await run(input, { key });
       expect(first).toMatchObject({ status: 'committed', replayed: false });
       expect(second).toMatchObject({ status: 'committed', replayed: true });
       const { rows } = await c.h.database.pool.query<{ lots: number; versions: string[] }>(
         `SELECT count(DISTINCT l.id)::int AS lots, array_agg(sp.parameter_id::text) AS versions
            FROM app.credit_lot l
            JOIN app.economic_snapshot_parameter sp ON sp.operation_id = l.origin_operation_id
+            AND sp.parameter_key = 'credit_validity_months'
           WHERE l.party_id = $1`,
         [party.partyId],
       );
@@ -351,7 +373,7 @@ describe('W17 — mecanismos dos Créditos (ADR-0033)', () => {
 
     it('aceite consome a Garantia; retirada libera — para expired se o lote venceu [TECH-072]', async () => {
       const requester = await freshParty();
-      const holder = await freshParty();
+      const holder = f.holder;
       const lotA = await originate(c, '10', { titular: requester });
       const runRequester = titularExecutor(c, requester, { requestGuard: true });
       const send = async (credits: string) =>

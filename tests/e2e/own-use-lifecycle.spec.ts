@@ -336,16 +336,30 @@ test.describe('W13 E4b — ciclo da reserva de uso próprio pelas telas reais', 
   }) => {
     test.setTimeout(FLOW_TIMEOUT_MS * 2);
     const label = `Second Home sintética Ciclo Co ${Date.now().toString(36)}`;
-    const { home, acquirers } = await formalizedCoOwner(page, label);
+    const { home, acquirers } = await formalizedCoOwner(page, label, { altaPerStake: 2 });
     const { titular, context } = await titularFor(page, browser, acquirers[0]);
     const errors = collectConsoleErrors(titular);
     const adminErrors = collectConsoleErrors(page);
     try {
       await setE2eOwnUseBooking(true);
       await setE2eOwnUseLifecycle(true);
-      // Duas noites próximas (fixture dentro de 15 dias): uma para a exceção operacional, outra fora do prazo.
-      const operational = await seedE2eSoonCoOwnerBooking(home, acquirers[0], 3);
-      const late = await seedE2eSoonCoOwnerBooking(home, acquirers[0], 6);
+      // As duas reservas precisam estar fora do prazo de cancelamento, inclusive na virada de exercício.
+      const lateCancellation = { maxHoursUntilCheckin: 360 };
+      const operational = await seedE2eSoonCoOwnerBooking(
+        home,
+        acquirers[0],
+        3,
+        1,
+        lateCancellation,
+      );
+      const late = await seedE2eSoonCoOwnerBooking(home, acquirers[0], 6, 1, lateCancellation);
+      for (const { checkinAt } of [operational, late]) {
+        const hoursUntilCheckin = (checkinAt.getTime() - Date.now()) / 3_600_000;
+        expect(hoursUntilCheckin, `check-in ${checkinAt.toISOString()}`).toBeGreaterThan(0);
+        expect(hoursUntilCheckin, `check-in ${checkinAt.toISOString()}`).toBeLessThan(
+          lateCancellation.maxHoursUntilCheckin,
+        );
+      }
 
       // Admin abre exceção operacional (sem efeito em noites, saldo ou custódia).
       await page.goto(`/admin/reservas/${operational.bookingId}/excecao`);

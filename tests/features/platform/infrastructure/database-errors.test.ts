@@ -7,6 +7,7 @@ import {
 } from '@/features/platform/domain/errors';
 import {
   isDatabaseUnavailable,
+  isTransientDatabaseError,
   refusedPrivilege,
   violatedConstraint,
 } from '@/features/platform/infrastructure/database/errors';
@@ -15,6 +16,12 @@ const pgError = (code: string, constraint?: string) =>
   Object.assign(new Error('pg'), { code, ...(constraint === undefined ? {} : { constraint }) });
 
 describe('classificação de erros do banco', () => {
+  it('[TECH-053] 40001, deadlock e lock_timeout são transitórios; check_violation é permanente', () => {
+    for (const code of ['40001', '40P01', '55P03'])
+      expect(isTransientDatabaseError(pgError(code))).toBe(true);
+    expect(isTransientDatabaseError(pgError('23514'))).toBe(false);
+  });
+
   it('[TECH-056] banco inalcançável ou recusando conexões é indisponibilidade (503), não erro interno', () => {
     expect(isDatabaseUnavailable(pgError('ECONNREFUSED'))).toBe(true);
     expect(isDatabaseUnavailable(pgError('ETIMEDOUT'))).toBe(true);

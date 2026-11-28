@@ -3,7 +3,7 @@ import { reverseLuxchangeFee, type BillingStore } from '@/features/billing';
 import { releaseHold, type CreditStore } from '@/features/credits';
 import { CommandRejection, type CommandContext, type CommandHandler } from '@/features/platform';
 import { sumCredits } from '../domain/deposit';
-import type { RequestClosureReason } from '../domain/request';
+import type { RequestClosingState, RequestClosureReason } from '../domain/request';
 import { requestClosedEvent } from './request-events';
 import type { LockedRequest, RecordedClosing, RequestStore } from './request-ports';
 
@@ -16,22 +16,27 @@ export interface ClosingDependencies<Tx> {
 export type RequestClosingResult = {
   readonly request_id: string;
   readonly operation_id: string;
-  readonly state: 'expired' | 'cancelled_pre_accept';
+  readonly state: RequestClosingState;
   readonly reason: RequestClosureReason;
   readonly guarantee_released: string;
   /** Estorno `pending` da Taxa de intermediação; quem chama o processa depois do commit (TECH-080). */
   readonly refund_id: string;
 };
 
-export const withdrawRequestInput = z.strictObject({
-  /** Party que age (escopo `party` do guard do solicitante). */
+const memberClosingInput = z.strictObject({
+  /** Party que age (escopo `party` do guard). */
   party_id: z.uuid(),
   request_id: z.uuid(),
 });
+export const withdrawRequestInput = memberClosingInput;
+export const rejectRequestInput = memberClosingInput;
 export type WithdrawRequestInput = z.infer<typeof withdrawRequestInput>;
+export type RejectRequestInput = z.infer<typeof rejectRequestInput>;
 
 export const systemClosingInput = z.strictObject({ request_id: z.uuid() });
 export type SystemClosingInput = z.infer<typeof systemClosingInput>;
+
+type MemberClosingCommand = 'withdraw_request' | 'reject_request';
 
 /** Trava da Request (TECH-053, classe 1), relida depois da trava; inexistente → `ERR_NOT_FOUND`. */
 async function lockRequest<I, Tx>(
@@ -48,7 +53,7 @@ async function lockRequest<I, Tx>(
 /**
  * Encerramento pré-aceite (ADR-0037 §7) na transação do command, com a Request já travada: evento (o banco decide estado,
  * motivo e prova), liberação de toda a Garantia (classe 7; `expired` se o lote venceu) e reversão integral da Taxa com
- * estorno `pending` (classe 8). Nenhuma chave é exigida: obrigação existente nunca fica presa (ADR-0037 §10).
+ * estorno `pending` (classe 8). O encerramento dispensa capabilities (ADR-0037 §10).
  */
 /** Garantia zero em qualquer escala decimal devolvida pelo banco (`0`, `0.00`). */
 const NO_GUARANTEE = /^0(\.0+)?$/;
@@ -57,6 +62,7 @@ async function closeLocked<I, Tx>(
   context: CommandContext<I, Tx>,
   deps: ClosingDependencies<Tx>,
   request: LockedRequest,
+  action: MemberClosingCommand | 'close_request',
 ): Promise<RequestClosingResult> {
   const { tx, locks, operationId } = context;
   const closing: RecordedClosing = await deps.store.insertClosing(tx, request.id, operationId);
@@ -93,7 +99,7 @@ async function closeLocked<I, Tx>(
     objectId: request.id,
     before: { state: request.state },
     after: {
-      act: context.actor.kind === 'system' ? 'close_request' : 'withdraw_request',
+      act: action,
       state: closing.state,
       reason: closing.reason,
       transition_id: closing.transitionId,
@@ -120,20 +126,36 @@ async function closeLocked<I, Tx>(
 export function createWithdrawRequestHandler<Tx>(
   deps: ClosingDependencies<Tx>,
 ): CommandHandler<WithdrawRequestInput, RequestClosingResult, Tx> {
+  return createMemberClosingHandler('withdraw_request', deps);
+}
+
+/** `reject_request` (TECH-051 autoridade "detentor"; ADR-0037 §14.6): a delegação é para o detentor registrado. */
+export function createRejectRequestHandler<Tx>(
+  deps: ClosingDependencies<Tx>,
+): CommandHandler<RejectRequestInput, RequestClosingResult, Tx> {
+  return createMemberClosingHandler('reject_request', deps);
+}
+
+function createMemberClosingHandler<Tx>(
+  command: MemberClosingCommand,
+  deps: ClosingDependencies<Tx>,
+): CommandHandler<z.infer<typeof memberClosingInput>, RequestClosingResult, Tx> {
   return {
-    command: 'withdraw_request',
-    input: withdrawRequestInput,
+    command,
+    input: memberClosingInput,
     scope: (input) => ({ type: 'party', id: input.party_id }),
     async execute(context) {
       const { input, actor, tx } = context;
       if (actor.kind !== 'user' || actor.actingPartyId !== input.party_id)
         throw new CommandRejection('ERR_PERMISSION');
       const request = await lockRequest(context, deps.store, input.request_id);
-      if (request.requesterPartyId !== input.party_id) throw new CommandRejection('ERR_NOT_FOUND');
-      if (request.state !== 'pending') throw new CommandRejection('ERR_STATE_TRANSITION');
+      const partyId =
+        command === 'withdraw_request' ? request.requesterPartyId : request.holderPartyId;
+      if (partyId !== input.party_id) throw new CommandRejection('ERR_NOT_FOUND');
       if (!(await deps.store.lockDelegation(tx, actor.userId, input.party_id, context.now)))
         throw new CommandRejection('ERR_PERMISSION');
-      return closeLocked(context, deps, request);
+      if (request.state !== 'pending') throw new CommandRejection('ERR_STATE_TRANSITION');
+      return closeLocked(context, deps, request, command);
     },
   };
 }
@@ -161,7 +183,7 @@ export function createSystemClosingHandler<Tx>(
         (command === 'expire_requests') !== (reason === 'expired')
       )
         throw new CommandRejection('ERR_STATE_TRANSITION');
-      return closeLocked(context, deps, request);
+      return closeLocked(context, deps, request, 'close_request');
     },
   };
 }

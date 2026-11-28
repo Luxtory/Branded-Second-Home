@@ -1,5 +1,6 @@
 // SQLSTATEs que o núcleo trata (https://www.postgresql.org/docs/17/errcodes-appendix.html).
 const DEADLOCK_DETECTED = '40P01';
+const SERIALIZATION_FAILURE = '40001';
 const INSUFFICIENT_PRIVILEGE = '42501';
 const LOCK_NOT_AVAILABLE = '55P03'; // lock_timeout esgotado
 const INTEGRITY_CONSTRAINT_CLASS = '23';
@@ -10,10 +11,12 @@ function field(error: unknown, name: 'code' | 'constraint'): string | null {
   return typeof value === 'string' ? value : null;
 }
 
-/** Deadlock ou espera de lock esgotada: a transação pode ser refeita com a mesma chave (TECH-053). */
+/** Conflito de serialização, deadlock ou lock_timeout: refaz a transação com a mesma chave (TECH-053). */
 export function isTransientDatabaseError(error: unknown): boolean {
   const code = field(error, 'code');
-  return code === DEADLOCK_DETECTED || code === LOCK_NOT_AVAILABLE;
+  return (
+    code === SERIALIZATION_FAILURE || code === DEADLOCK_DETECTED || code === LOCK_NOT_AVAILABLE
+  );
 }
 
 /** Nome da constraint violada, se o erro for de integridade (classe 23). */

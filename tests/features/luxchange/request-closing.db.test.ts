@@ -2,14 +2,18 @@ import { randomUUID } from 'node:crypto';
 import { performance } from 'node:perf_hooks';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { processRefund } from '@/features/billing';
+import { createReconciliationJob } from '@/features/billing/jobs';
+import { createRejectRequestProductionHandler } from '@/features/luxchange';
 import { createLuxchangeConsumers } from '@/features/luxchange/jobs';
 import { runExpireRequests } from '@/features/luxchange/application/expire-requests';
+import { processRequestRefunds } from '@/features/luxchange/application/request-flow';
 import { closableRequests } from '@/features/luxchange/infrastructure/postgres-request-store';
 import { systemClock, type DatabaseTransaction } from '@/features/platform';
 import { ConsumerRegistry } from '@/features/platform/application/outbox/consumers';
 import { dispatchOutbox } from '@/features/platform/application/outbox/dispatcher';
 import { createPostgresOutboxStore } from '@/features/platform/infrastructure/outbox/postgres-outbox-store';
 import { activate, deactivate } from '../booking/lifecycle-support';
+import { revokeDelegation, secondRepresentative } from '../booking/booking-support';
 import {
   TEST_VALIDITY_MONTHS,
   ageLot,
@@ -25,6 +29,8 @@ import {
   type CreditTitular,
 } from '../credits/credits-support';
 import { eventValidator } from '../../support/asyncapi';
+import { ownerDelegation } from '../../support/party-fixtures';
+import { activeCustody } from './luxchange-support';
 import { requestApp } from './request-app-support';
 import {
   ageRequest,
@@ -376,5 +382,290 @@ describe('W21 E2 — encerramento da Request pela aplicação (ADR-0037 §7)', (
     expect(Object.keys(byKind.get('luxchange.request_received')!)).not.toContain(
       'credits_required',
     );
+  });
+
+  describe('W22 E2 — reject_request pelo detentor (ADR-0037 §14.6)', () => {
+    const handler = () => createRejectRequestProductionHandler(c.h.db);
+    const reject = (titular: CreditTitular, requestId: string, key?: string) =>
+      app.executorFor(titular)(
+        handler(),
+        { party_id: titular.partyId, request_id: requestId },
+        key,
+      );
+
+    it('[REQ-061][PD-006][REQ-097] recusa sem Membership e capabilities, com replay, outbox e estorno após o COMMIT', async () => {
+      const { r, lot, request } = await sent();
+      const id = request.request_id;
+      const destination = await activeCustody(pool(), f.holder.homeId, [request.checkin]);
+      const calls = f.gateway.calls.refunds;
+      const key = randomUUID();
+      await suspend(c, f.holder.partyId);
+      await deactivate(c.h, 'credits', 'payments', 'luxchange_exchange', 'luxchange_deposit');
+      try {
+        const committed = await reject(f.holder, id, key);
+        expect(committed).toMatchObject({
+          status: 'committed',
+          replayed: false,
+          result: {
+            state: 'declined',
+            reason: 'declined',
+            guarantee_released: '300',
+          },
+        });
+        if (committed.status !== 'committed') throw new Error('Expected a committed rejection');
+        const { operation_id: op, refund_id: refundId } = committed.result;
+        expect(f.gateway.calls.refunds).toBe(calls);
+        expect(await reject(f.holder, id, key)).toEqual({ ...committed, replayed: true });
+        expect(await reject(f.holder, randomUUID(), key)).toMatchObject({
+          code: 'ERR_IDEMPOTENCY_CONFLICT',
+        });
+        expect(await reject(f.holder, id)).toMatchObject({ code: 'ERR_STATE_TRANSITION' });
+        expect(await requestRow(pool(), id)).toMatchObject({
+          state: 'declined',
+          closure_reason: 'declined',
+        });
+        expect(await lotRow(pool(), lot)).toMatchObject({ held: '0', available: '300' });
+        expect(await activeCustody(pool(), f.holder.homeId, [request.checkin])).toEqual(
+          destination,
+        );
+
+        expect(
+          (
+            await pool().query(
+              `SELECT (SELECT count(*)::int FROM app.luxchange_request_transition WHERE request_id = $1) AS transitions,
+                  (SELECT count(*)::int FROM app.luxchange_request_complement_unit WHERE request_id = $1 AND state = 'released') AS units,
+                  (SELECT count(*)::int FROM app.luxchange_request_complement_night WHERE request_id = $1 AND state = 'released') AS nights,
+                  (SELECT count(*)::int FROM app.fee_charge_reversal WHERE operation_id = $2) AS reversals,
+                  (SELECT count(*)::int FROM app.date_custody WHERE opened_by_operation = $2 OR closed_by_operation = $2) AS custodies,
+                  (SELECT count(*)::int FROM app.booking WHERE opened_by_operation = $2) AS bookings,
+                  (SELECT count(*)::int FROM app.booking_state_transition WHERE operation_id = $2) AS booking_transitions,
+                  (SELECT count(*)::int FROM app.date_occupancy WHERE opened_by_operation = $2 OR released_by_operation = $2) AS occupancies,
+                  (SELECT count(*)::int FROM app.use_right_ledger WHERE operation_id = $2) AS use_right,
+                  (SELECT count(*)::int FROM app.luxchange_invariant_breaches()) AS luxchange,
+                  (SELECT count(*)::int FROM app.credit_invariant_breaches()) AS credits`,
+              [id, op],
+            )
+          ).rows,
+        ).toEqual([
+          {
+            transitions: 1,
+            units: 1,
+            nights: 1,
+            reversals: 1,
+            custodies: 0,
+            bookings: 0,
+            booking_transitions: 0,
+            occupancies: 0,
+            use_right: 0,
+            luxchange: 0,
+            credits: 0,
+          },
+        ]);
+        const refunds = await refundOf(op);
+        expect(refunds).toHaveLength(1);
+        expect(refunds[0]).toMatchObject({ id: refundId, state: 'pending' });
+        expect(refunds[0]!.amount).toBe(refunds[0]!.fee);
+        expect(await f.store.pendingRefunds()).toContain(refundId);
+        expect(
+          (await pool().query(`SELECT command, state FROM app.operation WHERE id = $1`, [op])).rows,
+        ).toEqual([{ command: 'reject_request', state: 'committed' }]);
+        const audit = await pool().query(
+          'SELECT before, after FROM app.audit_log WHERE operation_id = $1',
+          [op],
+        );
+        expect(audit.rows).toEqual([
+          {
+            before: { state: 'pending' },
+            after: expect.objectContaining({
+              act: 'reject_request',
+              state: 'declined',
+              reason: 'declined',
+              guarantee_released: '300',
+              refund_id: refundId,
+            }),
+          },
+        ]);
+        const event = await pool().query<{ id: string }>(
+          `SELECT id, event_type AS type, dedup_key, operation_id,
+                  to_char(occurred_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS occurred_at, payload
+             FROM app.outbox WHERE operation_id = $1`,
+          [op],
+        );
+        expect(event.rows).toEqual([
+          expect.objectContaining({
+            type: 'luxchange.request_closed',
+            dedup_key: `luxchange.request_closed:${id}`,
+            payload: expect.objectContaining({
+              state: 'declined',
+              reason: 'declined',
+              guarantee_released: '300',
+            }),
+          }),
+        ]);
+        expect(eventValidator('luxchange.request_closed')(event.rows[0])).toBe(true);
+        const sweep = () =>
+          dispatchOutbox({
+            store: createPostgresOutboxStore(c.h.db),
+            consumers: new ConsumerRegistry<DatabaseTransaction>(
+              createLuxchangeConsumers({ clock: systemClock }),
+            ),
+            clock: systemClock,
+            batchSize: 50,
+            log: c.h.log,
+          });
+        expect((await sweep()).failed).toBe(0);
+        expect((await sweep()).failed).toBe(0);
+        const notifications = await pool().query(
+          `SELECT recipient_party_id AS party, kind, data FROM app.notification
+            WHERE event_id = $1 ORDER BY kind`,
+          [event.rows[0]!.id],
+        );
+        const data = {
+          request_id: id,
+          second_home_id: f.holder.homeId,
+          checkin: request.checkin,
+          checkout: request.checkout,
+          state: 'declined',
+          closed_at: expect.any(String),
+        };
+        expect(notifications.rows).toEqual([
+          {
+            party: r.partyId,
+            kind: 'luxchange.request_closed',
+            data: { ...data, reason: 'declined', guarantee_released: '300' },
+          },
+          { party: f.holder.partyId, kind: 'luxchange.request_received_closed', data },
+        ]);
+        const flow = app.flow(f.holder);
+        await processRequestRefunds(flow, [refundId], randomUUID());
+        await processRequestRefunds(flow, [refundId], randomUUID());
+        expect(f.gateway.calls.refunds).toBe(calls + 1);
+        expect(await refundOf(op)).toEqual([
+          expect.objectContaining({ id: refundId, state: 'succeeded' }),
+        ]);
+      } finally {
+        await activate(c.h, 'credits', 'payments', 'luxchange_exchange', 'luxchange_deposit');
+        await reactivate(c, f.holder.partyId);
+      }
+    });
+
+    it.each(['declined', 'expired'] as const)(
+      '[PD-012][REQ-096] G = 0, estado %s decidido pelo banco, sem movimento no ledger',
+      async (state) => {
+        const { r, offered, request } = await sentZero();
+        const id = request.request_id;
+        if (state === 'expired') await ageRequest(f, id);
+        const result = await reject(f.holder, id);
+        expect(result).toMatchObject({
+          status: 'committed',
+          result: { state, reason: state, guarantee_released: '0' },
+        });
+        expect(
+          (
+            await pool().query('SELECT 1 FROM app.credit_entry WHERE operation_id = $1', [
+              result.operationId,
+            ])
+          ).rows,
+        ).toEqual([]);
+        expect(
+          (
+            await pool().query('SELECT after FROM app.audit_log WHERE operation_id = $1', [
+              result.operationId,
+            ])
+          ).rows,
+        ).toEqual([
+          { after: expect.objectContaining({ act: 'reject_request', state, reason: state }) },
+        ]);
+        await expectClosedWithoutGuarantee(id, r.homeId, offered);
+        if (state === 'expired') {
+          if (result.status !== 'committed') throw new Error('Expected a committed rejection');
+          const reconcile = createReconciliationJob({
+            database: c.h.db,
+            gateway: f.gateway,
+            log: f.log.logger,
+            source: {
+              PAYMENT_OUTCOME_GRACE_SECONDS: '3600',
+              COMMAND_MAX_ATTEMPTS: '1',
+              COMMAND_LOCK_TIMEOUT_MS: '10000',
+            },
+          });
+          expect(await reconcile({ correlationId: randomUUID() })).toMatchObject({ failed: 0 });
+          expect(await f.store.findRefund(result.result.refund_id)).toMatchObject({
+            state: 'succeeded',
+          });
+        }
+      },
+    );
+
+    it('[REQ-061][TECH-051] Request alheia equivale a inexistente, e a chave é obrigatória', async () => {
+      const { r, request } = await sentZero();
+      const id = request.request_id;
+      const outsider = await newRequester(f);
+      for (const actor of [r, outsider]) {
+        expect(await reject(actor, id)).toMatchObject({ code: 'ERR_NOT_FOUND' });
+        expect(await reject(actor, randomUUID())).toMatchObject({ code: 'ERR_NOT_FOUND' });
+      }
+      expect(await reject(f.holder, id, '')).toMatchObject({
+        code: 'ERR_VALIDATION',
+        operationId: null,
+      });
+      expect(await requestRow(pool(), id)).toMatchObject({ state: 'pending' });
+      await app.withdraw(r, id);
+    });
+
+    it('[TECH-050] revogação depois do guard é revalidada dentro da transação', async () => {
+      const { r, request } = await sentZero();
+      const representative = { ...f.holder, ...(await secondRepresentative(c.h, f.holder)) };
+      const inner = handler();
+      const revoked = await app.executorFor(representative)(
+        {
+          ...inner,
+          async execute(context) {
+            await revokeDelegation(c.h, representative.userId);
+            return inner.execute(context);
+          },
+        },
+        { party_id: representative.partyId, request_id: request.request_id },
+      );
+      expect(revoked).toMatchObject({ code: 'ERR_PERMISSION', operationId: expect.any(String) });
+      expect(await reject(representative, request.request_id)).toMatchObject({
+        code: 'ERR_PERMISSION',
+        operationId: null,
+      });
+      expect(await requestRow(pool(), request.request_id)).toMatchObject({ state: 'pending' });
+      await app.withdraw(r, request.request_id);
+    });
+
+    it('[REQ-061][BR-211] com a holding de origem encerrada, o detentor registrado ainda recusa mesmo representando ambas as parties', async () => {
+      const holder = await secondTitular(c);
+      const { r, offered, request } = await sentZero(holder);
+      const id = request.request_id;
+      await ownerDelegation(pool(), { partyId: r.partyId, userId: holder.userId });
+      // Model the end of the original holding on transfer, as the W13 read tests do before W28.
+      const client = await pool().connect();
+      try {
+        await client.query('BEGIN');
+        await client.query('ALTER TABLE app.holding DISABLE TRIGGER holding_no_change');
+        await client.query('UPDATE app.holding SET valid_until = clock_timestamp() WHERE id = $1', [
+          holder.holdingId,
+        ]);
+        await client.query('ALTER TABLE app.holding ENABLE TRIGGER holding_no_change');
+        await client.query('COMMIT');
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
+      }
+      expect(await closableRequests(c.h.db, 500)).toContainEqual({
+        requestId: id,
+        reason: 'capacity_unavailable',
+      });
+      expect(await reject(holder, id)).toMatchObject({
+        status: 'committed',
+        result: { state: 'declined' },
+      });
+      await expectClosedWithoutGuarantee(id, r.homeId, offered);
+    });
   });
 });

@@ -24,6 +24,21 @@ export interface LifecycleBooking {
   readonly openedByOperation: string;
 }
 
+export const BOOKING_ADVANCE_CHANNELS = ['own_use', 'luxchange_request'] as const;
+
+export type BookingAdvanceTarget = Pick<
+  LifecycleBooking,
+  'id' | 'secondHomeId' | 'stakeId' | 'state' | 'lastTransitionId'
+>;
+
+export interface BookingAdvanceStore<Tx> extends Pick<
+  BookingLifecycleStore<Tx>,
+  'lockStake' | 'lockBooking' | 'insertTransition'
+> {
+  findAdvanceBooking(tx: Tx, bookingId: string): Promise<BookingAdvanceTarget | null>;
+  advancePeriod(tx: Tx, bookingId: string): Promise<{ firstCheckinAt: Micros; checkoutAt: Micros }>;
+}
+
 export interface LifecyclePeriod {
   /** Noites da reserva com o check-in gravado na selagem, em ordem crescente. */
   readonly nights: readonly LifecycleNight[];
@@ -56,7 +71,7 @@ export interface RecordedTransition {
 
 export interface TransitionDraft {
   readonly id: string;
-  readonly booking: LifecycleBooking;
+  readonly booking: Pick<LifecycleBooking, 'id' | 'state' | 'lastTransitionId'>;
   readonly kind: TransitionKind;
   readonly toState: BookingState;
   readonly operationId: string;

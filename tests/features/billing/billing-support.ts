@@ -1,3 +1,5 @@
+import { transactionQueryable, type SentRequest } from '../luxchange/request-support';
+import { writeAcceptance } from '../luxchange/w22-support';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import {
@@ -199,19 +201,22 @@ export function reversalHandler(b: BillingHarness, command: 'withdraw_request' |
 }
 
 /** Aceite (W22): apuração do Fee como receita Luxtory. */
-export function settleHandler(b: BillingHarness) {
+export function settleHandler(b: BillingHarness, sent: SentRequest) {
   return scoped<z.infer<typeof feeChargeInput>, { settlement_id: string }>(
     'accept_request',
     feeChargeInput,
     async ({ input, tx, locks, operationId, actor, requireEligibleMembership }) => {
       await requireEligibleMembership([(actor as { actingPartyId: string }).actingPartyId]);
-      const { settlementId } = await recordFeeSettlement(
-        { tx, locks, operationId },
-        { store: b.store },
-        {
-          feeChargeId: input.fee_charge_id,
+      let settlementId = '';
+      await writeAcceptance(transactionQueryable(tx), operationId, sent, [], {
+        settle: async () => {
+          ({ settlementId } = await recordFeeSettlement(
+            { tx, locks, operationId },
+            { store: b.store },
+            { feeChargeId: input.fee_charge_id },
+          ));
         },
-      );
+      });
       return { settlement_id: settlementId };
     },
   );

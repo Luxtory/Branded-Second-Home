@@ -25,9 +25,12 @@ export {
   type SendRequestResult,
 } from './application/send-request';
 export {
+  createRejectRequestHandler,
   createSystemClosingHandler,
   createWithdrawRequestHandler,
+  rejectRequestInput,
   withdrawRequestInput,
+  type RejectRequestInput,
   type RequestClosingResult,
   type WithdrawRequestInput,
 } from './application/close-request';
@@ -38,7 +41,13 @@ export {
   type RequestFlowDependencies,
   type RequestViewer,
 } from './application/request-flow';
-export { REQUEST_CLOSED, REQUEST_SENT } from './application/request-events';
+export { REQUEST_ACCEPTED, REQUEST_CLOSED, REQUEST_SENT } from './application/request-events';
+export {
+  createAcceptRequestHandler,
+  acceptRequestInput,
+  type AcceptRequestInput,
+  type AcceptRequestResult,
+} from './application/accept-request';
 export {
   REQUEST_CLOSED_NOTIFICATION,
   REQUEST_RECEIVED_CLOSED_NOTIFICATION,
@@ -46,6 +55,8 @@ export {
   REQUEST_SENT_NOTIFICATION,
 } from './application/request-consumers';
 export {
+  createAcceptRequestProductionHandler,
+  createRejectRequestProductionHandler,
   createSendRequestProductionHandler,
   createSystemClosingProductionHandler,
   createWithdrawRequestProductionHandler,

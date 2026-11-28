@@ -7,6 +7,7 @@ import {
   PAYMENTS_CAPABILITY,
   type ClosableRequest,
   type LockedRequest,
+  type RecordedClosing,
   type RequestStore,
 } from '../application/request-ports';
 import type { RequestClosureReason, RequestHolding } from '../domain/request';
@@ -251,13 +252,14 @@ export function createPostgresRequestStore(): RequestStore<DatabaseTransaction> 
     },
 
     async insertClosing(tx, requestId, operationId) {
+      // O gatilho deriva estado e motivo a partir do command e do relógio do banco (ADR-0037 §7 e §14.6).
       const { rows } = await sql<{
         id: string;
-        to_state: 'expired' | 'cancelled_pre_accept';
-        reason: RequestClosureReason;
+        to_state: RecordedClosing['state'];
+        reason: RecordedClosing['reason'];
         created_at: string;
-      }>`INSERT INTO app.luxchange_request_transition (id, request_id, operation_id, reason)
-         VALUES (${randomUUID()}::uuid, ${requestId}::uuid, ${operationId}::uuid, 'withdrawn')
+      }>`INSERT INTO app.luxchange_request_transition (id, request_id, operation_id)
+         VALUES (${randomUUID()}::uuid, ${requestId}::uuid, ${operationId}::uuid)
          RETURNING id, to_state, reason, ${iso('created_at')} AS created_at`.execute(tx);
       const row = rows[0]!;
       return {

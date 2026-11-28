@@ -336,7 +336,10 @@ export function requestTerms(input: {
   };
 }
 
-/** Motivos de encerramento pré-aceite decididos pelo banco (ADR-0037 §5, §7). */
+export const REQUEST_CLOSING_STATES = ['expired', 'cancelled_pre_accept', 'declined'] as const;
+export type RequestClosingState = (typeof REQUEST_CLOSING_STATES)[number];
+
+/** Motivos de encerramento pré-aceite decididos pelo banco (ADR-0037 §5, §7, §14.6). */
 export const REQUEST_CLOSURE_REASONS = [
   'withdrawn',
   'expired',
@@ -345,5 +348,6 @@ export const REQUEST_CLOSURE_REASONS = [
   'holder_membership',
   'capacity_unavailable',
   'complement_unavailable',
+  'declined',
 ] as const;
 export type RequestClosureReason = (typeof REQUEST_CLOSURE_REASONS)[number];

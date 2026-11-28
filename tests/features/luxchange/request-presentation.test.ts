@@ -169,4 +169,21 @@ describe('W21 E3 — formatação e avisos', () => {
     ).toBeNull();
     expect(requestNotificationCopy('outro', where, format)).toBeNull();
   });
+
+  it('[REQ-097] recusa avisa o solicitante com devolução solicitada', () => {
+    const copy = requestNotificationCopy(
+      'luxchange.request_closed',
+      {
+        request_id: 'r',
+        checkin: '2027-03-02',
+        checkout: '2027-03-04',
+        state: 'declined',
+        reason: 'declined',
+        guarantee_released: '270',
+      },
+      { date: (date) => date, instant: (instant) => instant },
+    );
+    expect(copy).toMatchObject({ title: 'Solicitação recusada' });
+    expect(copy!.extra).toContainEqual(['Taxa de intermediação', 'Devolução solicitada']);
+  });
 });

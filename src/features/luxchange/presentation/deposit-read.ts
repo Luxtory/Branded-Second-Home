@@ -1,4 +1,4 @@
-import { sql } from 'kysely';
+import { sql, type NotNull } from 'kysely';
 import { readAvailableCredits } from '@/features/credits';
 import { readTitularOverview, type VerifiedSession } from '@/features/identity';
 import {
@@ -196,6 +196,7 @@ async function serverFacts(tx: DatabaseTransaction, holding: HoldingRow, today: 
       ])
       .where('holding_id', '=', holding.id)
       .where('state', '=', 'confirmed')
+      .$narrowType<{ holding_id: NotNull }>()
       .execute(),
     store.capabilities(tx),
   ]);

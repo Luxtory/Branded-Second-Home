@@ -85,10 +85,11 @@ export interface AppBooking {
   checkin_date: Timestamp;
   checkout_date: Timestamp;
   confirmed_at: Timestamp;
-  holding_id: string;
+  holding_id: string | null;
   id: string;
   last_transition_id: string | null;
   opened_by_operation: string;
+  party_id: string | null;
   second_home_id: string;
   stake_id: string | null;
   state: string;
@@ -678,7 +679,10 @@ export interface AppLuxchangeRequestReceived {
   checkout: Timestamp | null;
   closed_at: Timestamp | null;
   closure_reason: string | null;
+  credit_expires_at: Timestamp | null;
+  credit_validity_months: number | null;
   expires_at: Timestamp | null;
+  holder_credits: Numeric | null;
   holder_party_id: string | null;
   id: string | null;
   second_home_id: string | null;

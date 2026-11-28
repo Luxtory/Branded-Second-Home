@@ -399,8 +399,8 @@ describe('reversão, apuração e estorno (PD-006, TECH-082, TECH-083)', () => {
     >,
     feeChargeId: string,
   ) =>
-    executorFor(b.c, b.titular, { requestGuard: true })(handler, {
-      second_home_id: b.titular.homeId,
+    executorFor(b.c, f.holder, { requestGuard: true })(handler, {
+      second_home_id: f.holder.homeId,
       fee_charge_id: feeChargeId,
     });
 
@@ -424,7 +424,7 @@ describe('reversão, apuração e estorno (PD-006, TECH-082, TECH-083)', () => {
       status: 'rejected',
       code: 'ERR_STATE_TRANSITION',
     });
-    expect(await requester(settleHandler(b), feeChargeId)).toMatchObject({
+    expect(await requester(settleHandler(b, charged.sent), feeChargeId)).toMatchObject({
       status: 'rejected',
       code: 'ERR_STATE_TRANSITION',
     });
@@ -433,8 +433,10 @@ describe('reversão, apuração e estorno (PD-006, TECH-082, TECH-083)', () => {
   it('[TECH-083][TECH-025] aceite apura o Fee como receita Luxtory uma vez; Fee apurado não é revertido', async () => {
     const charged = await chargedRequest();
     const { feeChargeId } = charged;
-    expect(await requester(settleHandler(b), feeChargeId)).toMatchObject({ status: 'committed' });
-    expect(await requester(settleHandler(b), feeChargeId)).toMatchObject({
+    expect(await requester(settleHandler(b, charged.sent), feeChargeId)).toMatchObject({
+      status: 'committed',
+    });
+    expect(await requester(settleHandler(b, charged.sent), feeChargeId)).toMatchObject({
       status: 'rejected',
       code: 'ERR_STATE_TRANSITION',
     });

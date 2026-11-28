@@ -5,7 +5,7 @@ import { FLOW_TIMEOUT_MS, formalizedOwner, gate, job, MOBILE, titularFor } from 
 import { collectConsoleErrors } from './support/ui';
 
 // W17 E3 (spec credits §5.4; REQ-053, REQ-054, REQ-096, PD-008, TECH-044): Carteira do Titular com o PostgreSQL real.
-// Nenhuma jornada origina ou gasta Créditos antes da W20–W23: o histórico é fato do fixture (`seedE2eCredits`). O
+// O histórico sintético de depósitos e movimentos vem de `seedE2eCredits`. O
 // Membership muda pela tela real do Admin (W15). A K4 `credits` liga só para o job `expire_credit_lots` registrar a
 // expiração já vencida e desliga em seguida; nenhuma outra capability é tocada.
 test.describe.configure({ mode: 'serial' });
@@ -72,14 +72,14 @@ test.describe('W17 E3 — Carteira de Créditos na Área do Titular', () => {
       await expect(main.getByRole('button', { name: /resgat|vend|ced|transfer/i })).toHaveCount(0);
       await gate(titular, errors, 'w17-01-carteira-sem-membership');
 
-      // Lotes na ordem de uso (PD-008): vence antes primeiro.
+      // Lotes na ordem de uso (PD-008): o depósito mais antigo vence antes dos demais.
       await expect(lots(titular).getByRole('heading', { level: 3 })).toHaveText([
         `Lote ${code(lotB)}`,
         `Lote ${code(lotC)}`,
         `Lote ${code(lotA)}`,
       ]);
       const first = lots(titular).getByRole('listitem').first();
-      await expect(first).toContainText('Cessão em Request aceita');
+      await expect(first).toContainText('Depósito Luxchange');
       await expect(first).toContainText('40,5 Créditos');
       await expect(situation(titular, 0)).toHaveText('Expirado');
       await expect(situation(titular, 1)).toHaveText('Expirado');

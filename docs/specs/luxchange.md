@@ -12,6 +12,10 @@
 > PD-005, PD-007, PD-012), `03` v3.20 (TECH-024, TECH-031, TECH-043, TECH-044, TECH-061, TECH-071–TECH-073, TECH-082,
 > TECH-090). Decisão: [ADR-0037](../adr/0037-request-lastro-complemento-por-datas-e-encerramentos.md). Plano:
 > [`w21-luxchange-request-envio.md`](../plan/w21-luxchange-request-envio.md). Aceite e recusa: W22; Direct: W23.
+>
+> **W22 (§14):** aceite composto e recusa — `02` v4.7 (REQ-061, REQ-063, REQ-064, REQ-096, PD-006, aceite do PD-012),
+> `03` v3.20 (TECH-023, TECH-024, TECH-043, TECH-051, TECH-055, TECH-061, TECH-070, TECH-073). Decisão: ADR-0037 §8, §10 e
+> emenda §14. Plano: [`w22-luxchange-request-aceite-recusa.md`](../plan/w22-luxchange-request-aceite-recusa.md).
 
 ## 1. Goal
 
@@ -390,3 +394,91 @@ Request, com gatilhos desligados).
   a 320, 390 e 1440 px publicadas pela CI como artefato `ui-captures` do run. O PSP fake roda num segundo
   `next start` do servidor de E2E (porta + 3), só para este spec. O seed da Carteira da W17 continua como histórico
   sintético; a Carteira com uma Request real fica provada por este spec.
+
+## 14. W22 — Request: aceite composto e recusa
+
+Contrato de implementação da W22. Regras: `02` v4.7 (REQ-061, REQ-063, REQ-064, REQ-096, PD-006, aceite do PD-012) e
+`03` v3.20 (TECH-073 e associados). Decisões técnicas, banco, chaves e prova de concorrência: ADR-0037 §8, §10 e emenda
+§14 — não repetidas aqui. Plano, testes e checkpoints:
+[`w22-luxchange-request-aceite-recusa.md`](../plan/w22-luxchange-request-aceite-recusa.md).
+
+### 14.1 Goal
+
+O membro solicitado vê cada Request recebida com as datas, o prazo e os Créditos que receberá, e a aceita ou recusa. O
+primeiro aceite válido confirma, num único resultado, a cessão, a reserva do solicitante, os lotes do cedente e do
+complemento, o consumo dos Créditos e a apuração da Taxa; as Requests concorrentes se encerram no mesmo commit, sem
+penalidade. A recusa encerra a Request como os demais desfechos pré-aceite.
+
+### 14.2 Non-goals
+
+Direct (W23); Luxplus (W24); cancelamento pós-aceite e no-show ou exceção da reserva `luxchange_request` (⛔ o
+cancelamento depende da P-11; wave de implementação ainda não definida); reutilização de `reserved_right` devolvido (emenda D4 da W12; adiada com dependência da P-11 — plano da W22, Q3);
+escolha do cedente no aceite (o detentor é o registrado no envio); PSP real, ativação e valores econômicos reais.
+
+### 14.3 Actors
+
+- **Membro solicitado (detentor)** — party `holder_party_id` da Request, representada pelo usuário com delegação
+  vigente; Membership elegível para aceitar (não para recusar); nunca representa também o solicitante (BR-211).
+- **Membro solicitante** — não age no aceite; recebe a reserva, o lote do complemento (se houver) e as notificações.
+- **Solicitantes concorrentes** — têm as Requests encerradas pelo aceite, sem penalidade.
+
+### 14.4 Commands e API
+
+| Command | Rota | Autoridade | Notas |
+|---|---|---|---|
+| `accept_request` | `POST /v1/luxchange/requests/{requestId}/accept` | `holder` + Membership | corpo `party_id`, `expected_credits` (Créditos do cedente exibidos na revisão); 201 com `request_id`, `state`, `booking_id`, datas cedidas, lote do detentor (`lot_id`, `credits`, `originated_at`, `expires_at`) — nada do solicitante nem das concorrentes |
+| `reject_request` | `POST /v1/luxchange/requests/{requestId}/reject` | `holder` | corpo `party_id`; 200 com `state` (`declined`, ou `expired` se vencida) |
+
+Mesma origem, sessão do Titular, `Idempotency-Key` e OpenAPI antes do handler, com o utilitário de rota do Titular da
+W21. Recusas: `ERR_PERMISSION`, `ERR_NOT_FOUND` (Request de outra party ou inexistente, sem oráculo),
+`ERR_MEMBERSHIP_INELIGIBLE`, `ERR_CAPACITY_UNAVAILABLE`, `ERR_MIN_NOTICE`, `ERR_STATE_TRANSITION` (encerrada ou já
+aceita), `ERR_CONCURRENT_CONFIRMATION` (encerrada por outra confirmação), `ERR_REQUEST_TERMS_CHANGED` (`expected_credits`
+diferente do que o banco recompõe), `ERR_IDEMPOTENCY_CONFLICT`, `ERR_VALIDATION`. Chave fechada no aceite: 503
+`ERR_UNAVAILABLE`, nada gravado; a recusa nunca depende de chave. Depois da resposta (`after()`): estornos das
+concorrentes. Aceite e recusa sem limitador próprio, como a retirada.
+
+### 14.5 Jornada (`/titular/luxchange/solicitacoes*`)
+
+1. **Recebidas** — cartões com Second Home, período ("Entrada · Saída"), noites, prazo exato e restante, "Créditos que
+   você receberá" e estado; estado vazio explicativo; ação "Analisar solicitação" enquanto puder ser aceita.
+2. **Revisão do detentor** (página, não modal) — datas e vínculo (Owner: noites livres; Co-Owner: reserva inteira, que
+   será encerrada por cessão, com o dia seguindo consumido do Direito de Uso); Créditos a receber, originados no aceite,
+   com a validade em meses; prazo; consequência da cessão; confirmação explícita e "Aceitar e ceder as datas";
+   "Recusar" com confirmação e sem campo de motivo. Nunca a identidade do solicitante nem o complemento.
+3. **Resultado** — datas cedidas, Créditos recebidos com validade e acesso à Carteira; recusa: "Solicitação recusada".
+4. **Solicitante** — detalhe "Aceita" (reserva confirmada, Créditos consumidos da Garantia e do complemento, excedente
+   disponível com validade, datas cedidas como "Cedidas ao Luxchange", "Taxa definitiva") ou "Recusada" (rótulos de
+   encerramento da §13.11); estadia no detalhe da Request ("Minhas reservas" segue `own_use`).
+5. **Telas existentes** — Carteira com os lotes novos (origens já rotuladas); reserva Co-Owner cedida como "Cedida ao
+   Luxchange", com link para a solicitação.
+
+Design System, mobile-first, componentes atuais (`PageHeader`, `lx-app-*`, prévia da Request, mês do calendário,
+`PolicyTerms`); textos pela camada de i18n; nunca PRL em reais, "cota", "diárias" ou Créditos como dinheiro.
+
+### 14.6 Eventos e notificações
+
+`luxchange.request_accepted` (novo; AsyncAPI; ids, datas e quantidades — `N`, `G`, `P`, `C`, `E` e Créditos do cedente —,
+sem PII) e `luxchange.request_closed` (recusa e concorrentes). Notificações: solicitante — aceita (reserva confirmada,
+Créditos consumidos, excedente) e recusada (Garantia liberada, datas liberadas, devolução da Taxa); detentor — aceite
+concluído (datas cedidas, Créditos recebidos e validade); concorrentes — as notificações de encerramento da W21.
+Nenhuma traz party, nome ou complemento da outra parte; notificação não cria direito nem prazo (REQ-097).
+
+### 14.7 Acceptance criteria
+
+Os do [plano da W22](../plan/w22-luxchange-request-aceite-recusa.md#critérios-de-aceite-da-w22), com as tags `[REQ-061]`,
+`[REQ-063]`, `[REQ-064]`, `[REQ-096]`, `[PD-006]`, `[PD-012]`, `[EC-8]`, `[CONC-4]`, `[CONC-5]`, `[CONC-16]` e `[CONC-18]`
+nos títulos dos testes; preservação das W12–W21 e invariantes vazias após todo teste `db`.
+
+### 14.8 Edge cases
+
+`02` §15 itens 8, 17, 19 e 20; aceite no limite do prazo (relógio do banco); Request vencida sem o job (TECH-044);
+envio concorrente sobre as mesmas noites durante o aceite (ADR-0037 §14.4); detentor que perdeu a holding (Request
+inelegível); usuário que representa as duas parties; Request com `G = 0` e excedente; Request sem complemento;
+complemento em mais de uma holding ou Second Home do solicitante; 29/02 reservado pelo Co-Owner como unidade do
+complemento.
+
+### 14.9 Rollout
+
+Migration 73 aplicada pelo pipeline com K4–K7 sem linha; nada aceitável em Production. Ativação só depois de D2, PSP
+validado, parâmetros e política `luxchange_request` publicados e da decisão sobre operar sem cancelamento pós-aceite
+enquanto a P-11 estiver aberta, por migration e autorização do fundador.
